@@ -38,7 +38,7 @@
 #include "gdscript_workspace.h"
 #include "lsp.hpp"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For jsonrpc.
 #ifdef MODULE_JSONRPC_ENABLED
 #include "modules/jsonrpc/jsonrpc.h"
 #else

@@ -36,7 +36,7 @@ void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		rot_x -= mm->get_relative().y * 0.01;
 		rot_y -= mm->get_relative().x * 0.01;
 		if (rot_x < -Math_PI / 2) {

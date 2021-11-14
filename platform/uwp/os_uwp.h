@@ -59,7 +59,7 @@ public:
 		bool alt = false, shift = false, control = false;
 		MessageType type = KEY_EVENT_MESSAGE;
 		bool pressed = false;
-		Key keycode = KEY_NONE;
+		Key keycode = Key::NONE;
 		unsigned int physical_keycode = 0;
 		unsigned int unicode = 0;
 		bool echo = false;
@@ -107,7 +107,7 @@ private:
 	bool control_mem;
 	bool meta_mem;
 	bool force_quit;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	MouseButton last_button_state = MouseButton::NONE;
 
 	CursorShape cursor_shape;
 

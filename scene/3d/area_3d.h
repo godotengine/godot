@@ -47,17 +47,23 @@ public:
 	};
 
 private:
-	SpaceOverride space_override = SPACE_OVERRIDE_DISABLED;
+	SpaceOverride gravity_space_override = SPACE_OVERRIDE_DISABLED;
 	Vector3 gravity_vec;
 	real_t gravity;
 	bool gravity_is_point = false;
 	real_t gravity_distance_scale = 0.0;
+
+	SpaceOverride linear_damp_space_override = SPACE_OVERRIDE_DISABLED;
+	SpaceOverride angular_damp_space_override = SPACE_OVERRIDE_DISABLED;
 	real_t angular_damp = 0.1;
 	real_t linear_damp = 0.1;
+
 	int priority = 0;
+
 	real_t wind_force_magnitude = 0.0;
 	real_t wind_attenuation_factor = 0.0;
 	NodePath wind_source_path;
+
 	bool monitoring = false;
 	bool monitorable = false;
 	bool locked = false;
@@ -144,20 +150,29 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_space_override_mode(SpaceOverride p_mode);
-	SpaceOverride get_space_override_mode() const;
+	void set_gravity_space_override_mode(SpaceOverride p_mode);
+	SpaceOverride get_gravity_space_override_mode() const;
 
 	void set_gravity_is_point(bool p_enabled);
 	bool is_gravity_a_point() const;
 
-	void set_gravity_distance_scale(real_t p_scale);
-	real_t get_gravity_distance_scale() const;
+	void set_gravity_point_distance_scale(real_t p_scale);
+	real_t get_gravity_point_distance_scale() const;
 
-	void set_gravity_vector(const Vector3 &p_vec);
-	Vector3 get_gravity_vector() const;
+	void set_gravity_point_center(const Vector3 &p_center);
+	const Vector3 &get_gravity_point_center() const;
+
+	void set_gravity_direction(const Vector3 &p_direction);
+	const Vector3 &get_gravity_direction() const;
 
 	void set_gravity(real_t p_gravity);
 	real_t get_gravity() const;
+
+	void set_linear_damp_space_override_mode(SpaceOverride p_mode);
+	SpaceOverride get_linear_damp_space_override_mode() const;
+
+	void set_angular_damp_space_override_mode(SpaceOverride p_mode);
+	SpaceOverride get_angular_damp_space_override_mode() const;
 
 	void set_angular_damp(real_t p_angular_damp);
 	real_t get_angular_damp() const;

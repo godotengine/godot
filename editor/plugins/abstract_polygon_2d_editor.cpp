@@ -245,11 +245,11 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (!_has_resource()) {
-		if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 			create_resource->set_text(String("No polygon resource on this node.\nCreate and assign one?"));
 			create_resource->popup_centered();
 		}
-		return (mb.is_valid() && mb->get_button_index() == 1);
+		return (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT);
 	}
 
 	CanvasItemEditor::Tool tool = CanvasItemEditor::get_singleton()->get_current_tool();
@@ -264,7 +264,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Vector2 cpoint = _get_node()->to_local(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
 
 		if (mode == MODE_EDIT || (_is_line() && mode == MODE_CREATE)) {
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (mb->is_pressed()) {
 					if (mb->is_ctrl_pressed() || mb->is_shift_pressed() || mb->is_alt_pressed()) {
 						return false;
@@ -326,7 +326,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 						return true;
 					}
 				}
-			} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed() && !edited_point.valid()) {
+			} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed() && !edited_point.valid()) {
 				const PosVertex closest = closest_point(gpoint);
 
 				if (closest.valid()) {
@@ -335,7 +335,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 				}
 			}
 		} else if (mode == MODE_DELETE) {
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
+			if (mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 				const PosVertex closest = closest_point(gpoint);
 
 				if (closest.valid()) {
@@ -346,7 +346,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		}
 
 		if (mode == MODE_CREATE) {
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
+			if (mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 				if (_is_line()) {
 					// for lines, we don't have a wip mode, and we can undo each single add point.
 					Vector<Vector2> vertices = _get_polygon(0);
@@ -384,7 +384,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 						return true;
 					}
 				}
-			} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed() && wip_active) {
+			} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed() && wip_active) {
 				_wip_cancel();
 			}
 		}
@@ -395,7 +395,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 	if (mm.is_valid()) {
 		Vector2 gpoint = mm->get_position();
 
-		if (edited_point.valid() && (wip_active || (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT))) {
+		if (edited_point.valid() && (wip_active || (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE)) {
 			Vector2 cpoint = _get_node()->to_local(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
 
 			//Move the point in a single axis. Should only work when editing a polygon and while holding shift.
@@ -443,7 +443,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_pressed()) {
-		if (k->get_keycode() == KEY_DELETE || k->get_keycode() == KEY_BACKSPACE) {
+		if (k->get_keycode() == Key::KEY_DELETE || k->get_keycode() == Key::BACKSPACE) {
 			if (wip_active && selected_point.polygon == -1) {
 				if (wip.size() > selected_point.vertex) {
 					wip.remove(selected_point.vertex);
@@ -460,9 +460,9 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					return true;
 				}
 			}
-		} else if (wip_active && k->get_keycode() == KEY_ENTER) {
+		} else if (wip_active && k->get_keycode() == Key::ENTER) {
 			_wip_close();
-		} else if (wip_active && k->get_keycode() == KEY_ESCAPE) {
+		} else if (wip_active && k->get_keycode() == Key::ESCAPE) {
 			_wip_cancel();
 		}
 	}

@@ -70,7 +70,7 @@ public:
 
 	struct DefaultTextureParam {
 		StringName name;
-		Ref<Texture2D> param;
+		List<Ref<Texture2D>> params;
 	};
 
 private:
@@ -328,8 +328,8 @@ protected:
 	GDVIRTUAL0RC(int, _get_output_port_count)
 	GDVIRTUAL1RC(int, _get_output_port_type, int)
 	GDVIRTUAL1RC(String, _get_output_port_name, int)
-	GDVIRTUAL4RC(String, _get_code, Vector<String>, TypedArray<String>, int, int)
-	GDVIRTUAL1RC(String, _get_global_code, int)
+	GDVIRTUAL4RC(String, _get_code, Vector<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
+	GDVIRTUAL1RC(String, _get_global_code, Shader::Mode)
 	GDVIRTUAL0RC(bool, _is_highend)
 
 protected:
@@ -696,5 +696,7 @@ public:
 
 	VisualShaderNodeGlobalExpression();
 };
+
+extern String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name);
 
 #endif // VISUAL_SHADER_H

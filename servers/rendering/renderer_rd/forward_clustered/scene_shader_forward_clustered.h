@@ -135,7 +135,7 @@ public:
 		uint32_t ubo_size;
 
 		String code;
-		Map<StringName, RID> default_texture_params;
+		Map<StringName, Map<int, RID>> default_texture_params;
 
 		DepthDraw depth_draw;
 		DepthTest depth_test;
@@ -166,7 +166,7 @@ public:
 		uint32_t index = 0;
 
 		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
 		void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
 

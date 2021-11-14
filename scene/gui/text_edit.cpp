@@ -1407,7 +1407,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (mb->is_pressed()) {
-			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && !mb->is_command_pressed()) {
+			if (mb->get_button_index() == MouseButton::WHEEL_UP && !mb->is_command_pressed()) {
 				if (mb->is_shift_pressed()) {
 					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
 				} else if (mb->is_alt_pressed()) {
@@ -1418,7 +1418,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					_scroll_up(3 * mb->get_factor());
 				}
 			}
-			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && !mb->is_command_pressed()) {
+			if (mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_pressed()) {
 				if (mb->is_shift_pressed()) {
 					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
 				} else if (mb->is_alt_pressed()) {
@@ -1429,13 +1429,13 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					_scroll_down(3 * mb->get_factor());
 				}
 			}
-			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_LEFT) {
+			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
 				h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
 			}
-			if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_RIGHT) {
+			if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
 				h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
 			}
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+			if (mb->get_button_index() == MouseButton::LEFT) {
 				_reset_caret_blink_timer();
 
 				Point2i pos = get_line_column_at_pos(mpos);
@@ -1538,11 +1538,11 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				update();
 			}
 
-			if (is_middle_mouse_paste_enabled() && mb->get_button_index() == MOUSE_BUTTON_MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
+			if (is_middle_mouse_paste_enabled() && mb->get_button_index() == MouseButton::MIDDLE && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 				paste_primary_clipboard();
 			}
 
-			if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && context_menu_enabled) {
+			if (mb->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
 				_reset_caret_blink_timer();
 
 				Point2i pos = get_line_column_at_pos(mpos);
@@ -1574,7 +1574,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				grab_focus();
 			}
 		} else {
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+			if (mb->get_button_index() == MouseButton::LEFT) {
 				dragging_minimap = false;
 				dragging_selection = false;
 				can_drag_minimap = false;
@@ -1613,7 +1613,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			mpos.x = get_size().x - mpos.x;
 		}
 
-		if (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT && get_viewport()->gui_get_drag_data() == Variant()) { // Ignore if dragging.
+		if ((mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE && get_viewport()->gui_get_drag_data() == Variant()) { // Ignore if dragging.
 			_reset_caret_blink_timer();
 
 			if (draw_minimap && !dragging_selection) {
@@ -1681,7 +1681,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		// If a modifier has been pressed, and nothing else, return.
-		if (k->get_keycode() == KEY_CTRL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT || k->get_keycode() == KEY_META) {
+		if (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META) {
 			return;
 		}
 
@@ -1898,7 +1898,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		// Handle Unicode (if no modifiers active). Tab	has a value of 0x09.
-		if (allow_unicode_handling && editable && (k->get_unicode() >= 32 || k->get_keycode() == KEY_TAB)) {
+		if (allow_unicode_handling && editable && (k->get_unicode() >= 32 || k->get_keycode() == Key::TAB)) {
 			handle_unicode_input(k->get_unicode());
 			accept_event();
 			return;
@@ -3697,8 +3697,10 @@ void TextEdit::set_selection_mode(SelectionMode p_mode, int p_line, int p_column
 	if (p_line >= 0) {
 		ERR_FAIL_INDEX(p_line, text.size());
 		selection.selecting_line = p_line;
+		selection.selecting_column = CLAMP(selection.selecting_column, 0, text[selection.selecting_line].length());
 	}
 	if (p_column >= 0) {
+		ERR_FAIL_INDEX(selection.selecting_line, text.size());
 		ERR_FAIL_INDEX(p_column, text[selection.selecting_line].length());
 		selection.selecting_column = p_column;
 	}
@@ -5249,21 +5251,21 @@ void TextEdit::_generate_context_menu() {
 	// Reorganize context menu.
 	menu->clear();
 	if (editable) {
-		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_cut") : 0);
+		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_cut") : Key::NONE);
 	}
-	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_copy") : 0);
+	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_copy") : Key::NONE);
 	if (editable) {
-		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_paste") : 0);
+		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_paste") : Key::NONE);
 	}
 	menu->add_separator();
 	if (is_selecting_enabled()) {
-		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_text_select_all") : 0);
+		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_text_select_all") : Key::NONE);
 	}
 	if (editable) {
 		menu->add_item(RTR("Clear"), MENU_CLEAR);
 		menu->add_separator();
-		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_undo") : 0);
-		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_redo") : 0);
+		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_undo") : Key::NONE);
+		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_redo") : Key::NONE);
 	}
 	menu->add_separator();
 	menu->add_submenu_item(RTR("Text Writing Direction"), "DirMenu");
@@ -5284,25 +5286,25 @@ void TextEdit::_generate_context_menu() {
 	}
 }
 
-int TextEdit::_get_menu_action_accelerator(const String &p_action) {
+Key TextEdit::_get_menu_action_accelerator(const String &p_action) {
 	const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(p_action);
 	if (!events) {
-		return 0;
+		return Key::NONE;
 	}
 
 	// Use first event in the list for the accelerator.
 	const List<Ref<InputEvent>>::Element *first_event = events->front();
 	if (!first_event) {
-		return 0;
+		return Key::NONE;
 	}
 
 	const Ref<InputEventKey> event = first_event->get();
 	if (event.is_null()) {
-		return 0;
+		return Key::NONE;
 	}
 
 	// Use physical keycode if non-zero
-	if (event->get_physical_keycode() != 0) {
+	if (event->get_physical_keycode() != Key::NONE) {
 		return event->get_physical_keycode_with_modifiers();
 	} else {
 		return event->get_keycode_with_modifiers();
@@ -5457,10 +5459,10 @@ int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line) const {
 
 /* Selection */
 void TextEdit::_click_selection_held() {
-	// Warning: is_mouse_button_pressed(MOUSE_BUTTON_LEFT) returns false for double+ clicks, so this doesn't work for MODE_WORD
+	// Warning: is_mouse_button_pressed(MouseButton::LEFT) returns false for double+ clicks, so this doesn't work for MODE_WORD
 	// and MODE_LINE. However, moving the mouse triggers _gui_input, which calls these functions too, so that's not a huge problem.
 	// I'm unsure if there's an actual fix that doesn't have a ton of side effects.
-	if (Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT) && selection.selecting_mode != SelectionMode::SELECTION_MODE_NONE) {
+	if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT) && selection.selecting_mode != SelectionMode::SELECTION_MODE_NONE) {
 		switch (selection.selecting_mode) {
 			case SelectionMode::SELECTION_MODE_POINTER: {
 				_update_selection_mode_pointer();

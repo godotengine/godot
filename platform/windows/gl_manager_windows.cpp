@@ -197,9 +197,6 @@ Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND
 		return FAILED;
 	}
 
-	// the display could be invalid .. check NYI
-	GLDisplay &gl_display = _displays[win.gldisplay_id];
-
 	// make current
 	window_make_current(_windows.size() - 1);
 

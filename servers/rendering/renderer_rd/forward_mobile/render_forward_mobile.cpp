@@ -1821,6 +1821,10 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		const RenderElementInfo &element_info = p_params->element_info[i];
 		const GeometryInstanceForwardMobile *inst = surf->owner;
 
+		if (inst->instance_count == 0) {
+			continue;
+		}
+
 		uint32_t base_spec_constants = p_params->spec_constant_base_flags;
 
 		// GeometryInstanceForwardMobile::PushConstant push_constant = inst->push_constant;

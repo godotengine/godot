@@ -1462,7 +1462,7 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneFormatI
 
 		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
-				importer = E;
+				importer = E->get();
 				break;
 			}
 		}
@@ -1492,7 +1492,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 
 		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
-				importer = E;
+				importer = E->get();
 				break;
 			}
 		}

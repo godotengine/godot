@@ -85,13 +85,6 @@
 				Returns the space assigned to the area.
 			</description>
 		</method>
-		<method name="area_get_space_override_mode" qualifiers="const">
-			<return type="int" enum="PhysicsServer3D.AreaSpaceOverrideMode" />
-			<argument index="0" name="area" type="RID" />
-			<description>
-				Returns the space override mode for the area.
-			</description>
-		</method>
 		<method name="area_get_transform" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="area" type="RID" />
@@ -199,14 +192,6 @@
 			<argument index="1" name="space" type="RID" />
 			<description>
 				Assigns a space to the area.
-			</description>
-		</method>
-		<method name="area_set_space_override_mode">
-			<return type="void" />
-			<argument index="0" name="area" type="RID" />
-			<argument index="1" name="mode" type="int" enum="PhysicsServer3D.AreaSpaceOverrideMode" />
-			<description>
-				Sets the space override mode for the area. The modes are described in the [enum AreaSpaceOverrideMode] constants.
 			</description>
 		</method>
 		<method name="area_set_transform">
@@ -320,7 +305,7 @@
 			<return type="PhysicsDirectBodyState3D" />
 			<argument index="0" name="body" type="RID" />
 			<description>
-				Returns the [PhysicsDirectBodyState3D] of the body.
+				Returns the [PhysicsDirectBodyState3D] of the body. Returns [code]null[/code] if the body is destroyed or removed from the physics space.
 			</description>
 		</method>
 		<method name="body_get_max_contacts_reported" qualifiers="const">
@@ -1211,40 +1196,49 @@
 		<constant name="SHAPE_CUSTOM" value="10" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_OVERRIDE_MODE" value="0" enum="AreaParameter">
+			Constant to set/get gravity override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY" value="1" enum="AreaParameter">
 			Constant to set/get gravity strength in an area.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="2" enum="AreaParameter">
 			Constant to set/get gravity vector/center in an area.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="3" enum="AreaParameter">
 			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="4" enum="AreaParameter">
 			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="5" enum="AreaParameter">
 			This constant was used to set/get the falloff factor for point gravity. It has been superseded by [constant AREA_PARAM_GRAVITY_DISTANCE_SCALE].
 		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP" value="5" enum="AreaParameter">
-			Constant to set/get the linear dampening factor of an area.
+		<constant name="AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE" value="6" enum="AreaParameter">
+			Constant to set/get linear damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
 		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6" enum="AreaParameter">
-			Constant to set/get the angular dampening factor of an area.
+		<constant name="AREA_PARAM_LINEAR_DAMP" value="7" enum="AreaParameter">
+			Constant to set/get the linear damping factor of an area.
 		</constant>
-		<constant name="AREA_PARAM_PRIORITY" value="7" enum="AreaParameter">
+		<constant name="AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE" value="8" enum="AreaParameter">
+			Constant to set/get angular damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
+		</constant>
+		<constant name="AREA_PARAM_ANGULAR_DAMP" value="9" enum="AreaParameter">
+			Constant to set/get the angular damping factor of an area.
+		</constant>
+		<constant name="AREA_PARAM_PRIORITY" value="10" enum="AreaParameter">
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
-		<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="8" enum="AreaParameter">
+		<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="11" enum="AreaParameter">
 			Constant to set/get the magnitude of area-specific wind force.
 		</constant>
-		<constant name="AREA_PARAM_WIND_SOURCE" value="9" enum="AreaParameter">
+		<constant name="AREA_PARAM_WIND_SOURCE" value="12" enum="AreaParameter">
 			Constant to set/get the 3D vector that specifies the origin from which an area-specific wind blows.
 		</constant>
-		<constant name="AREA_PARAM_WIND_DIRECTION" value="10" enum="AreaParameter">
+		<constant name="AREA_PARAM_WIND_DIRECTION" value="13" enum="AreaParameter">
 			Constant to set/get the 3D vector that specifies the direction in which an area-specific wind blows.
 		</constant>
-		<constant name="AREA_PARAM_WIND_ATTENUATION_FACTOR" value="11" enum="AreaParameter">
+		<constant name="AREA_PARAM_WIND_ATTENUATION_FACTOR" value="14" enum="AreaParameter">
 			Constant to set/get the exponential rate at which wind force decreases with distance from its origin.
 		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">

@@ -3051,7 +3051,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	VisualShader::Type type = get_current_shader_type();
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		selected_constants.clear();
 		selected_uniforms.clear();
 		selected_comment = -1;
@@ -3211,7 +3211,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 
 void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> ie = p_ie;
-	if (ie.is_valid() && (ie->get_keycode() == KEY_UP || ie->get_keycode() == KEY_DOWN || ie->get_keycode() == KEY_ENTER || ie->get_keycode() == KEY_KP_ENTER)) {
+	if (ie.is_valid() && (ie->get_keycode() == Key::UP || ie->get_keycode() == Key::DOWN || ie->get_keycode() == Key::ENTER || ie->get_keycode() == Key::KP_ENTER)) {
 		members->gui_input(ie);
 		node_filter->accept_event();
 	}
@@ -4527,6 +4527,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("MultiplyByAxisAngle", "Particles", "Transform", "VisualShaderNodeParticleMultiplyByAxisAngle", "A node for help to multiply a position input vector by rotation using specific axis. Intended to work with emitters.", -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_EMIT | TYPE_FLAGS_PROCESS | TYPE_FLAGS_COLLIDE, Shader::MODE_PARTICLES));
 
 	add_options.push_back(AddOption("BoxEmitter", "Particles", "Emitters", "VisualShaderNodeParticleBoxEmitter", "", -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_EMIT, Shader::MODE_PARTICLES));
+	add_options.push_back(AddOption("MeshEmitter", "Particles", "Emitters", "VisualShaderNodeParticleMeshEmitter", "", -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_EMIT, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("RingEmitter", "Particles", "Emitters", "VisualShaderNodeParticleRingEmitter", "", -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_EMIT, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("SphereEmitter", "Particles", "Emitters", "VisualShaderNodeParticleSphereEmitter", "", -1, VisualShaderNode::PORT_TYPE_VECTOR, TYPE_FLAGS_EMIT, Shader::MODE_PARTICLES));
 
@@ -5186,11 +5187,7 @@ EditorPropertyShaderMode::EditorPropertyShaderMode() {
 }
 
 bool EditorInspectorShaderModePlugin::can_handle(Object *p_object) {
-	return true; //can handle everything
-}
-
-void EditorInspectorShaderModePlugin::parse_begin(Object *p_object) {
-	//do none
+	return true; // Can handle everything.
 }
 
 bool EditorInspectorShaderModePlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
@@ -5203,11 +5200,7 @@ bool EditorInspectorShaderModePlugin::parse_property(Object *p_object, const Var
 		return true;
 	}
 
-	return false; //can be overridden, although it will most likely be last anyway
-}
-
-void EditorInspectorShaderModePlugin::parse_end() {
-	//do none
+	return false;
 }
 
 //////////////////////////////////
@@ -5224,7 +5217,9 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	preview_shader.instantiate();
 	preview_shader->set_code(shader_code);
 	for (int i = 0; i < default_textures.size(); i++) {
-		preview_shader->set_default_texture_param(default_textures[i].name, default_textures[i].param);
+		for (int j = 0; j < default_textures[i].params.size(); j++) {
+			preview_shader->set_default_texture_param(default_textures[i].name, default_textures[i].params[j], j);
+		}
 	}
 
 	Ref<ShaderMaterial> material;

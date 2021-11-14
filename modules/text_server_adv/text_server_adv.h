@@ -55,7 +55,7 @@
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>

@@ -36,6 +36,11 @@
 #include "visual_shader_particle_nodes.h"
 #include "visual_shader_sdf_nodes.h"
 
+String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
+	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
+	return p_name + "_" + String(typepf[p_type]) + "_" + itos(p_id);
+}
+
 bool VisualShaderNode::is_simple_decl() const {
 	return simple_decl;
 }
@@ -354,7 +359,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 	}
 	String code = "	{\n";
 	String _code;
-	GDVIRTUAL_CALL(_get_code, input_vars, output_vars, (int)p_mode, (int)p_type, _code);
+	GDVIRTUAL_CALL(_get_code, input_vars, output_vars, p_mode, p_type, _code);
 	bool nend = _code.ends_with("\n");
 	_code = _code.insert(0, "		");
 	_code = _code.replace("\n", "\n		");
@@ -371,7 +376,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 
 String VisualShaderNodeCustom::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String ret;
-	if (GDVIRTUAL_CALL(_get_global_code, (int)p_mode, ret)) {
+	if (GDVIRTUAL_CALL(_get_global_code, p_mode, ret)) {
 		String code = "// " + get_caption() + "\n";
 		code += ret;
 		code += "\n";
@@ -1829,6 +1834,7 @@ void VisualShader::_update_shader() const {
 			code += "	vec3 __vec3_buff2;\n";
 			code += "	float __scalar_buff1;\n";
 			code += "	float __scalar_buff2;\n";
+			code += "	int __scalar_ibuff;\n";
 			code += "	vec3 __ndiff = normalize(__diff);\n\n";
 		}
 		if (has_start) {
@@ -1956,7 +1962,9 @@ void VisualShader::_update_shader() const {
 
 	const_cast<VisualShader *>(this)->set_code(final_code);
 	for (int i = 0; i < default_tex_params.size(); i++) {
-		const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].param);
+		for (int j = 0; j < default_tex_params[i].params.size(); j++) {
+			const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].params[j], j);
+		}
 	}
 	if (previous_code != final_code) {
 		const_cast<VisualShader *>(this)->emit_signal(SNAME("changed"));
@@ -3444,7 +3452,7 @@ void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const Strin
 			count++;
 		}
 
-		inputs.erase(index, count);
+		inputs = inputs.left(index) + inputs.substr(index + count);
 		inputs = inputs.insert(index, itos(i));
 		index += inputs_strings[i].size();
 	}
@@ -3467,7 +3475,7 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 		}
 		index += inputs_strings[i].size();
 	}
-	inputs.erase(index, count);
+	inputs = inputs.left(index) + inputs.substr(index + count);
 
 	inputs_strings = inputs.split(";", false);
 	inputs = inputs.substr(0, index);
@@ -3520,7 +3528,7 @@ void VisualShaderNodeGroupBase::add_output_port(int p_id, int p_type, const Stri
 			count++;
 		}
 
-		outputs.erase(index, count);
+		outputs = outputs.left(index) + outputs.substr(index + count);
 		outputs = outputs.insert(index, itos(i));
 		index += outputs_strings[i].size();
 	}
@@ -3543,7 +3551,7 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 		}
 		index += outputs_strings[i].size();
 	}
-	outputs.erase(index, count);
+	outputs = outputs.left(index) + outputs.substr(index + count);
 
 	outputs_strings = outputs.split(";", false);
 	outputs = outputs.substr(0, index);
@@ -3595,8 +3603,7 @@ void VisualShaderNodeGroupBase::set_input_port_type(int p_id, int p_type) {
 		index += inputs_strings[i].size();
 	}
 
-	inputs.erase(index, count);
-
+	inputs = inputs.left(index) + inputs.substr(index + count);
 	inputs = inputs.insert(index, itos(p_type));
 
 	_apply_port_changes();
@@ -3631,8 +3638,7 @@ void VisualShaderNodeGroupBase::set_input_port_name(int p_id, const String &p_na
 		index += inputs_strings[i].size();
 	}
 
-	inputs.erase(index, count);
-
+	inputs = inputs.left(index) + inputs.substr(index + count);
 	inputs = inputs.insert(index, p_name);
 
 	_apply_port_changes();
@@ -3667,7 +3673,7 @@ void VisualShaderNodeGroupBase::set_output_port_type(int p_id, int p_type) {
 		index += output_strings[i].size();
 	}
 
-	outputs.erase(index, count);
+	outputs = outputs.left(index) + outputs.substr(index + count);
 
 	outputs = outputs.insert(index, itos(p_type));
 
@@ -3703,7 +3709,7 @@ void VisualShaderNodeGroupBase::set_output_port_name(int p_id, const String &p_n
 		index += output_strings[i].size();
 	}
 
-	outputs.erase(index, count);
+	outputs = outputs.left(index) + outputs.substr(index + count);
 
 	outputs = outputs.insert(index, p_name);
 

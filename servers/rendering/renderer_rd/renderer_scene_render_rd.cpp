@@ -2086,7 +2086,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	ERR_FAIL_COND(!rb);
 
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_render_data->environment);
-	//glow (if enabled)
+	// Glow and override exposure (if enabled).
 	CameraEffects *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
@@ -2102,7 +2102,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		EffectsRD::BokehBuffers buffers;
 
-		// textures we use
+		// Textures we use.
 		buffers.base_texture_size = Size2i(rb->width, rb->height);
 		buffers.base_texture = rb->texture;
 		buffers.depth_texture = rb->depth_texture;
@@ -2114,7 +2114,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		if (can_use_storage) {
 			storage->get_effects()->bokeh_dof(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, dof_blur_use_jitter, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
 		} else {
-			// set framebuffers
+			// Set framebuffers.
 			buffers.base_fb = rb->texture_fb;
 			buffers.secondary_fb = rb->weight_buffers[1].fb;
 			buffers.half_fb[0] = rb->weight_buffers[2].fb;
@@ -2124,7 +2124,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			buffers.weight_texture[2] = rb->weight_buffers[2].weight;
 			buffers.weight_texture[3] = rb->weight_buffers[3].weight;
 
-			// set weight buffers
+			// Set weight buffers.
 			buffers.base_weight_fb = rb->base_weight_fb;
 
 			storage->get_effects()->bokeh_dof_raster(buffers, camfx->dof_blur_far_enabled, camfx->dof_blur_far_distance, camfx->dof_blur_far_transition, camfx->dof_blur_near_enabled, camfx->dof_blur_near_distance, camfx->dof_blur_near_transition, bokeh_size, dof_blur_bokeh_shape, dof_blur_quality, p_render_data->z_near, p_render_data->z_far, p_render_data->cam_ortogonal);
@@ -2147,13 +2147,13 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		} else {
 			storage->get_effects()->luminance_reduction_raster(rb->texture, Size2i(rb->width, rb->height), rb->luminance.reduce, rb->luminance.fb, rb->luminance.current, env->min_luminance, env->max_luminance, step, set_immediate);
 		}
-		//swap final reduce with prev luminance
+		// Swap final reduce with prev luminance.
 		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
 		if (!can_use_storage) {
 			SWAP(rb->luminance.current_fb, rb->luminance.fb.write[rb->luminance.fb.size() - 1]);
 		}
 
-		RenderingServerDefault::redraw_request(); //redraw all the time if auto exposure rendering is on
+		RenderingServerDefault::redraw_request(); // Redraw all the time if auto exposure rendering is on.
 		RD::get_singleton()->draw_command_end_label();
 	}
 
@@ -2207,7 +2207,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	{
 		RD::get_singleton()->draw_command_begin_label("Tonemap");
 
-		//tonemap
 		EffectsRD::TonemapSettings tonemap;
 
 		if (can_use_effects && env && env->auto_exposure && rb->luminance.current.is_valid()) {
@@ -2246,6 +2245,10 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.exposure = env->exposure;
 		}
 
+		if (camfx && camfx->override_exposure_enabled) {
+			tonemap.exposure = camfx->override_exposure;
+		}
+
 		tonemap.use_color_correction = false;
 		tonemap.use_1d_color_correction = false;
 		tonemap.color_correction_texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
@@ -2280,6 +2283,8 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	ERR_FAIL_COND(!rb);
 
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_render_data->environment);
+	// Override exposure (if enabled).
+	CameraEffects *camfx = camera_effects_owner.get_or_null(p_render_data->camera_effects);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 
@@ -2291,6 +2296,10 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 		tonemap.tonemap_mode = env->tone_mapper;
 		tonemap.exposure = env->exposure;
 		tonemap.white = env->white;
+	}
+
+	if (camfx && camfx->override_exposure_enabled) {
+		tonemap.exposure = camfx->override_exposure;
 	}
 
 	// We don't support glow or auto exposure here, if they are needed, don't use subpasses!
@@ -3549,11 +3558,20 @@ void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void RendererSceneRenderRD::FogShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+void RendererSceneRenderRD::FogShaderData::set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) {
 	if (!p_texture.is_valid()) {
-		default_texture_params.erase(p_name);
+		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
+			default_texture_params[p_name].erase(p_index);
+
+			if (default_texture_params[p_name].is_empty()) {
+				default_texture_params.erase(p_name);
+			}
+		}
 	} else {
-		default_texture_params[p_name] = p_texture;
+		if (!default_texture_params.has(p_name)) {
+			default_texture_params[p_name] = Map<int, RID>();
+		}
+		default_texture_params[p_name][p_index] = p_texture;
 	}
 }
 

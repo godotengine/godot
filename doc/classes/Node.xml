@@ -228,11 +228,6 @@
 				If [code]include_internal[/code] is [code]false[/code], the returned array won't include internal children (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
-		<method name="get_editor_description" qualifiers="const">
-			<return type="String" />
-			<description>
-			</description>
-		</method>
 		<method name="get_groups" qualifiers="const">
 			<return type="Array" />
 			<description>
@@ -618,12 +613,6 @@
 				Sets the editable children state of [code]node[/code] relative to this node. This method is only intended for use with editor tooling.
 			</description>
 		</method>
-		<method name="set_editor_description">
-			<return type="void" />
-			<argument index="0" name="editor_description" type="String" />
-			<description>
-			</description>
-		</method>
 		<method name="set_multiplayer_authority">
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
@@ -701,6 +690,9 @@
 	<members>
 		<member name="custom_multiplayer" type="MultiplayerAPI" setter="set_custom_multiplayer" getter="get_custom_multiplayer">
 			The override to the default [MultiplayerAPI]. Set to [code]null[/code] to use the default [SceneTree] one.
+		</member>
+		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
+			Add a custom description to a node.
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
 			The [MultiplayerAPI] instance associated with this node. Either the [member custom_multiplayer], or the default SceneTree one (if inside tree).

@@ -170,7 +170,7 @@ private:
 	void _clear_redo();
 	void _create_undo_state();
 
-	int _get_menu_action_accelerator(const String &p_action);
+	Key _get_menu_action_accelerator(const String &p_action);
 
 	void _shape();
 	void _fit_to_width();

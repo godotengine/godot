@@ -33,6 +33,8 @@
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
 
+#include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
+
 #ifdef MODULE_MSDFGEN_ENABLED
 #include "core/ShapeDistanceFinder.h"
 #include "core/contour-combiners.h"
@@ -3265,7 +3267,9 @@ TextServerFallback::TextServerFallback() {
 };
 
 TextServerFallback::~TextServerFallback() {
+#ifdef MODULE_FREETYPE_ENABLED
 	if (library != nullptr) {
 		FT_Done_FreeType(library);
 	}
+#endif
 };

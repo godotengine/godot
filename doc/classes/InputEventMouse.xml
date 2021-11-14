@@ -10,7 +10,7 @@
 		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<members>
-		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" default="0">
+		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" enum="MouseButton" default="0">
 			The mouse button mask identifier, one of or a bitwise combination of the [enum MouseButton] button masks.
 		</member>
 		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position" default="Vector2(0, 0)">

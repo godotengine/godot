@@ -552,7 +552,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
+		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			CodeEdit *tx = shader_editor->get_text_editor();
 
 			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());

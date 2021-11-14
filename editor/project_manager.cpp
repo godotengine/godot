@@ -1735,7 +1735,7 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 	int clicked_index = p_hb->get_index();
 	const Item &clicked_project = _projects[clicked_index];
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_shift_pressed() && _selected_project_keys.size() > 0 && _last_clicked != "" && clicked_project.project_key != _last_clicked) {
 			int anchor_index = -1;
 			for (int i = 0; i < _projects.size(); ++i) {
@@ -1899,7 +1899,7 @@ void ProjectManager::unhandled_key_input(const Ref<InputEvent> &p_ev) {
 		// This is handled by the platform implementation on macOS,
 		// so only define the shortcut on other platforms
 #ifndef OSX_ENABLED
-		if (k->get_keycode_with_modifiers() == (KEY_MASK_CMD | KEY_Q)) {
+		if (k->get_keycode_with_modifiers() == (KeyModifierMask::CMD | Key::Q)) {
 			_dim_window();
 			get_tree()->quit();
 		}
@@ -1912,24 +1912,24 @@ void ProjectManager::unhandled_key_input(const Ref<InputEvent> &p_ev) {
 		bool keycode_handled = true;
 
 		switch (k->get_keycode()) {
-			case KEY_ENTER: {
+			case Key::ENTER: {
 				_open_selected_projects_ask();
 			} break;
-			case KEY_HOME: {
+			case Key::HOME: {
 				if (_project_list->get_project_count() > 0) {
 					_project_list->select_project(0);
 					_update_project_buttons();
 				}
 
 			} break;
-			case KEY_END: {
+			case Key::END: {
 				if (_project_list->get_project_count() > 0) {
 					_project_list->select_project(_project_list->get_project_count() - 1);
 					_update_project_buttons();
 				}
 
 			} break;
-			case KEY_UP: {
+			case Key::UP: {
 				if (k->is_shift_pressed()) {
 					break;
 				}
@@ -1943,7 +1943,7 @@ void ProjectManager::unhandled_key_input(const Ref<InputEvent> &p_ev) {
 
 				break;
 			}
-			case KEY_DOWN: {
+			case Key::DOWN: {
 				if (k->is_shift_pressed()) {
 					break;
 				}
@@ -1956,7 +1956,7 @@ void ProjectManager::unhandled_key_input(const Ref<InputEvent> &p_ev) {
 				}
 
 			} break;
-			case KEY_F: {
+			case Key::F: {
 				if (k->is_command_pressed()) {
 					this->search_box->grab_focus();
 				} else {
@@ -2520,19 +2520,19 @@ ProjectManager::ProjectManager() {
 
 		Button *create = memnew(Button);
 		create->set_text(TTR("New Project"));
-		create->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KEY_MASK_CMD | KEY_N));
+		create->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD | Key::N));
 		create->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
 		tree_vb->add_child(create);
 
 		Button *import = memnew(Button);
 		import->set_text(TTR("Import"));
-		import->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KEY_MASK_CMD | KEY_I));
+		import->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD | Key::I));
 		import->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
 		tree_vb->add_child(import);
 
 		Button *scan = memnew(Button);
 		scan->set_text(TTR("Scan"));
-		scan->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KEY_MASK_CMD | KEY_S));
+		scan->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD | Key::S));
 		scan->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
 		tree_vb->add_child(scan);
 
@@ -2540,25 +2540,26 @@ ProjectManager::ProjectManager() {
 
 		open_btn = memnew(Button);
 		open_btn->set_text(TTR("Edit"));
-		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KEY_MASK_CMD | KEY_E));
+		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD | Key::E));
 		open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 		tree_vb->add_child(open_btn);
 
 		run_btn = memnew(Button);
 		run_btn->set_text(TTR("Run"));
-		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KEY_MASK_CMD | KEY_R));
+		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD | Key::R));
 		run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
 		tree_vb->add_child(run_btn);
 
 		rename_btn = memnew(Button);
 		rename_btn->set_text(TTR("Rename"));
-		rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), KEY_F2));
+		// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
+		rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), Key::F2));
 		rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
 		tree_vb->add_child(rename_btn);
 
 		erase_btn = memnew(Button);
 		erase_btn->set_text(TTR("Remove"));
-		erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), KEY_DELETE));
+		erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), Key::KEY_DELETE));
 		erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
 		tree_vb->add_child(erase_btn);
 

@@ -149,10 +149,10 @@ void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 	if (k.is_valid()) {
 		switch (k->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
 				search_options->gui_input(k);
 			} break;
 			default:

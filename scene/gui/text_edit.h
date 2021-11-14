@@ -280,7 +280,7 @@ private:
 	PopupMenu *menu_ctl = nullptr;
 
 	void _generate_context_menu();
-	int _get_menu_action_accelerator(const String &p_action);
+	Key _get_menu_action_accelerator(const String &p_action);
 
 	/* Versioning */
 	struct TextOperation {

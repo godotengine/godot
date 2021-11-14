@@ -121,6 +121,8 @@ public:
 
 		bool collide_with_bodies = true;
 		bool collide_with_areas = false;
+
+		bool hit_from_inside = false;
 	};
 
 	struct RayResult {
@@ -264,12 +266,15 @@ public:
 	//missing attenuation? missing better override?
 
 	enum AreaParameter {
+		AREA_PARAM_GRAVITY_OVERRIDE_MODE,
 		AREA_PARAM_GRAVITY,
 		AREA_PARAM_GRAVITY_VECTOR,
 		AREA_PARAM_GRAVITY_IS_POINT,
 		AREA_PARAM_GRAVITY_DISTANCE_SCALE,
 		AREA_PARAM_GRAVITY_POINT_ATTENUATION,
+		AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE,
 		AREA_PARAM_LINEAR_DAMP,
+		AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE,
 		AREA_PARAM_ANGULAR_DAMP,
 		AREA_PARAM_PRIORITY
 	};
@@ -286,9 +291,6 @@ public:
 		AREA_SPACE_OVERRIDE_REPLACE,
 		AREA_SPACE_OVERRIDE_REPLACE_COMBINE // Discards all previous calculations, then keeps combining
 	};
-
-	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) = 0;
-	virtual AreaSpaceOverrideMode area_get_space_override_mode(RID p_area) const = 0;
 
 	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) = 0;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) = 0;
@@ -603,6 +605,9 @@ public:
 
 	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
 	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
+
+	void set_hit_from_inside(bool p_enable) { parameters.hit_from_inside = p_enable; }
+	bool is_hit_from_inside_enabled() const { return parameters.hit_from_inside; }
 
 	void set_exclude(const Vector<RID> &p_exclude);
 	Vector<RID> get_exclude() const;

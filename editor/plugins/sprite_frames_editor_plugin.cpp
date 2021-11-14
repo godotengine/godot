@@ -126,7 +126,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		const int idx = _sheet_preview_position_to_frame_index(mb->get_position());
 
 		if (idx != -1) {
@@ -166,12 +166,12 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		frames_toggled_by_mouse_hover.clear();
 	}
 
 	const Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		// Select by holding down the mouse button on frames.
 		const int idx = _sheet_preview_position_to_frame_index(mm->get_position());
 
@@ -200,11 +200,11 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 		// Zoom in/out using Ctrl + mouse wheel. This is done on the ScrollContainer
 		// to allow performing this action anywhere, even if the cursor isn't
 		// hovering the texture in the workspace.
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_sheet_zoom_in();
 			// Don't scroll up after zooming in.
 			accept_event();
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_sheet_zoom_out();
 			// Don't scroll down after zooming out.
 			accept_event();
@@ -746,11 +746,11 @@ void SpriteFramesEditor::_tree_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_zoom_in();
 			// Don't scroll up after zooming in.
 			accept_event();
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed() && mb->is_ctrl_pressed()) {
 			_zoom_out();
 			// Don't scroll down after zooming out.
 			accept_event();
@@ -1006,7 +1006,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		if (Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 			_prepare_sprite_sheet(files[0]);
 		} else {
 			_file_load_request(files, at_pos);

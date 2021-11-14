@@ -36,7 +36,7 @@
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif
@@ -1545,7 +1545,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (b->get_button_index() == MouseButton::LEFT) {
 			if (b->is_pressed() && !b->is_double_click()) {
 				scroll_updated = false;
 				ItemFrame *c_frame = nullptr;
@@ -1636,12 +1636,12 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+		if (b->get_button_index() == MouseButton::WHEEL_UP) {
 			if (scroll_active) {
 				vscroll->set_value(vscroll->get_value() - vscroll->get_page() * b->get_factor() * 0.5 / 8);
 			}
 		}
-		if (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+		if (b->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (scroll_active) {
 				vscroll->set_value(vscroll->get_value() + vscroll->get_page() * b->get_factor() * 0.5 / 8);
 			}
@@ -3801,45 +3801,32 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 		}
 	}
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
+		if (it->type == ITEM_TABLE) {
+			ItemTable *table = static_cast<ItemTable *>(it);
+			for (Item *E : table->subitems) {
+				ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
+				ItemFrame *frame = static_cast<ItemFrame *>(E);
+				for (int i = 0; i < frame->lines.size(); i++) {
+					text += _get_line_text(frame, i, p_selection);
+				}
+			}
+		}
 		if ((p_selection.to_item != nullptr) && (p_selection.to_item->index < l.from->index)) {
-			break;
+			continue;
 		}
 		if ((p_selection.from_item != nullptr) && (p_selection.from_item->index >= end_idx)) {
-			break;
+			continue;
 		}
-		switch (it->type) {
-			case ITEM_NEWLINE: {
-				text += "\n";
-			} break;
-			case ITEM_TEXT: {
-				ItemText *t = (ItemText *)it;
-				text += t->text;
-			} break;
-			case ITEM_IMAGE: {
-				text += " ";
-			} break;
-			case ITEM_TABLE: {
-				ItemTable *table = static_cast<ItemTable *>(it);
-				int idx = 0;
-				int col_count = table->columns.size();
-				for (Item *E : table->subitems) {
-					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
-					ItemFrame *frame = static_cast<ItemFrame *>(E);
-					int column = idx % col_count;
-
-					for (int i = 0; i < frame->lines.size(); i++) {
-						text += _get_line_text(frame, i, p_selection);
-					}
-					if (column == col_count - 1) {
-						text += "\n";
-					} else {
-						text += " ";
-					}
-					idx++;
-				}
-			} break;
-			default:
-				break;
+		if (it->type == ITEM_DROPCAP) {
+			const ItemDropcap *dc = static_cast<ItemDropcap *>(it);
+			text += dc->text;
+		} else if (it->type == ITEM_TEXT) {
+			const ItemText *t = static_cast<ItemText *>(it);
+			text += t->text;
+		} else if (it->type == ITEM_NEWLINE) {
+			text += "\n";
+		} else if (it->type == ITEM_IMAGE) {
+			text += " ";
 		}
 	}
 	if ((l.from != nullptr) && (p_frame == p_selection.to_frame) && (p_selection.to_item != nullptr) && (p_selection.to_item->index >= l.from->index) && (p_selection.to_item->index < end_idx)) {

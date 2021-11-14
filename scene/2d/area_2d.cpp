@@ -33,13 +33,13 @@
 #include "scene/scene_string_names.h"
 #include "servers/audio_server.h"
 
-void Area2D::set_space_override_mode(SpaceOverride p_mode) {
-	space_override = p_mode;
-	PhysicsServer2D::get_singleton()->area_set_space_override_mode(get_rid(), PhysicsServer2D::AreaSpaceOverrideMode(p_mode));
+void Area2D::set_gravity_space_override_mode(SpaceOverride p_mode) {
+	gravity_space_override = p_mode;
+	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_OVERRIDE_MODE, p_mode);
 }
 
-Area2D::SpaceOverride Area2D::get_space_override_mode() const {
-	return space_override;
+Area2D::SpaceOverride Area2D::get_gravity_space_override_mode() const {
+	return gravity_space_override;
 }
 
 void Area2D::set_gravity_is_point(bool p_enabled) {
@@ -51,21 +51,30 @@ bool Area2D::is_gravity_a_point() const {
 	return gravity_is_point;
 }
 
-void Area2D::set_gravity_distance_scale(real_t p_scale) {
+void Area2D::set_gravity_point_distance_scale(real_t p_scale) {
 	gravity_distance_scale = p_scale;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_DISTANCE_SCALE, p_scale);
 }
 
-real_t Area2D::get_gravity_distance_scale() const {
+real_t Area2D::get_gravity_point_distance_scale() const {
 	return gravity_distance_scale;
 }
 
-void Area2D::set_gravity_vector(const Vector2 &p_vec) {
-	gravity_vec = p_vec;
-	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR, p_vec);
+void Area2D::set_gravity_point_center(const Vector2 &p_center) {
+	gravity_vec = p_center;
+	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR, p_center);
 }
 
-Vector2 Area2D::get_gravity_vector() const {
+const Vector2 &Area2D::get_gravity_point_center() const {
+	return gravity_vec;
+}
+
+void Area2D::set_gravity_direction(const Vector2 &p_direction) {
+	gravity_vec = p_direction;
+	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR, p_direction);
+}
+
+const Vector2 &Area2D::get_gravity_direction() const {
 	return gravity_vec;
 }
 
@@ -76,6 +85,24 @@ void Area2D::set_gravity(real_t p_gravity) {
 
 real_t Area2D::get_gravity() const {
 	return gravity;
+}
+
+void Area2D::set_linear_damp_space_override_mode(SpaceOverride p_mode) {
+	linear_damp_space_override = p_mode;
+	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE, p_mode);
+}
+
+Area2D::SpaceOverride Area2D::get_linear_damp_space_override_mode() const {
+	return linear_damp_space_override;
+}
+
+void Area2D::set_angular_damp_space_override_mode(SpaceOverride p_mode) {
+	angular_damp_space_override = p_mode;
+	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE, p_mode);
+}
+
+Area2D::SpaceOverride Area2D::get_angular_damp_space_override_mode() const {
+	return angular_damp_space_override;
 }
 
 void Area2D::set_linear_damp(real_t p_linear_damp) {
@@ -483,24 +510,55 @@ void Area2D::_validate_property(PropertyInfo &property) const {
 		}
 
 		property.hint_string = options;
+	} else if (property.name.begins_with("gravity") && property.name != "gravity_space_override") {
+		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		} else {
+			if (gravity_is_point) {
+				if (property.name == "gravity_direction") {
+					property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+				}
+			} else {
+				if (property.name.begins_with("gravity_point_")) {
+					property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+				}
+			}
+		}
+	} else if (property.name.begins_with("linear_damp") && property.name != "linear_damp_space_override") {
+		if (linear_damp_space_override == SPACE_OVERRIDE_DISABLED) {
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		}
+	} else if (property.name.begins_with("angular_damp") && property.name != "angular_damp_space_override") {
+		if (angular_damp_space_override == SPACE_OVERRIDE_DISABLED) {
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		}
 	}
 }
 
 void Area2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_space_override_mode", "space_override_mode"), &Area2D::set_space_override_mode);
-	ClassDB::bind_method(D_METHOD("get_space_override_mode"), &Area2D::get_space_override_mode);
+	ClassDB::bind_method(D_METHOD("set_gravity_space_override_mode", "space_override_mode"), &Area2D::set_gravity_space_override_mode);
+	ClassDB::bind_method(D_METHOD("get_gravity_space_override_mode"), &Area2D::get_gravity_space_override_mode);
 
 	ClassDB::bind_method(D_METHOD("set_gravity_is_point", "enable"), &Area2D::set_gravity_is_point);
 	ClassDB::bind_method(D_METHOD("is_gravity_a_point"), &Area2D::is_gravity_a_point);
 
-	ClassDB::bind_method(D_METHOD("set_gravity_distance_scale", "distance_scale"), &Area2D::set_gravity_distance_scale);
-	ClassDB::bind_method(D_METHOD("get_gravity_distance_scale"), &Area2D::get_gravity_distance_scale);
+	ClassDB::bind_method(D_METHOD("set_gravity_point_distance_scale", "distance_scale"), &Area2D::set_gravity_point_distance_scale);
+	ClassDB::bind_method(D_METHOD("get_gravity_point_distance_scale"), &Area2D::get_gravity_point_distance_scale);
 
-	ClassDB::bind_method(D_METHOD("set_gravity_vector", "vector"), &Area2D::set_gravity_vector);
-	ClassDB::bind_method(D_METHOD("get_gravity_vector"), &Area2D::get_gravity_vector);
+	ClassDB::bind_method(D_METHOD("set_gravity_point_center", "center"), &Area2D::set_gravity_point_center);
+	ClassDB::bind_method(D_METHOD("get_gravity_point_center"), &Area2D::get_gravity_point_center);
+
+	ClassDB::bind_method(D_METHOD("set_gravity_direction", "direction"), &Area2D::set_gravity_direction);
+	ClassDB::bind_method(D_METHOD("get_gravity_direction"), &Area2D::get_gravity_direction);
 
 	ClassDB::bind_method(D_METHOD("set_gravity", "gravity"), &Area2D::set_gravity);
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Area2D::get_gravity);
+
+	ClassDB::bind_method(D_METHOD("set_linear_damp_space_override_mode", "space_override_mode"), &Area2D::set_linear_damp_space_override_mode);
+	ClassDB::bind_method(D_METHOD("get_linear_damp_space_override_mode"), &Area2D::get_linear_damp_space_override_mode);
+
+	ClassDB::bind_method(D_METHOD("set_angular_damp_space_override_mode", "space_override_mode"), &Area2D::set_angular_damp_space_override_mode);
+	ClassDB::bind_method(D_METHOD("get_angular_damp_space_override_mode"), &Area2D::get_angular_damp_space_override_mode);
 
 	ClassDB::bind_method(D_METHOD("set_linear_damp", "linear_damp"), &Area2D::set_linear_damp);
 	ClassDB::bind_method(D_METHOD("get_linear_damp"), &Area2D::get_linear_damp);
@@ -543,13 +601,20 @@ void Area2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "monitorable"), "set_monitorable", "is_monitorable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,128,1"), "set_priority", "get_priority");
 
-	ADD_GROUP("Physics Overrides", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine"), "set_space_override_mode", "get_space_override_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gravity_point"), "set_gravity_is_point", "is_gravity_a_point");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_distance_scale", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,exp"), "set_gravity_distance_scale", "get_gravity_distance_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity_vec"), "set_gravity_vector", "get_gravity_vector");
+	ADD_GROUP("Gravity", "gravity_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gravity_space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_space_override_mode", "get_gravity_space_override_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gravity_point", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_is_point", "is_gravity_a_point");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_point_distance_scale", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,exp"), "set_gravity_point_distance_scale", "get_gravity_point_distance_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity_point_center"), "set_gravity_point_center", "get_gravity_point_center");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity_direction"), "set_gravity_direction", "get_gravity_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity", PROPERTY_HINT_RANGE, "-4096,4096,0.001,or_lesser,or_greater"), "set_gravity", "get_gravity");
+
+	ADD_GROUP("Linear Damp", "linear_damp_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_linear_damp_space_override_mode", "get_linear_damp_space_override_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
+
+	ADD_GROUP("Angular Damp", "angular_damp_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_angular_damp_space_override_mode", "get_angular_damp_space_override_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 
 	ADD_GROUP("Audio Bus", "audio_bus_");
@@ -566,7 +631,7 @@ void Area2D::_bind_methods() {
 Area2D::Area2D() :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->area_create(), true) {
 	set_gravity(980);
-	set_gravity_vector(Vector2(0, 1));
+	set_gravity_direction(Vector2(0, 1));
 	set_monitoring(true);
 	set_monitorable(true);
 }

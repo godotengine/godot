@@ -128,18 +128,21 @@ void GodotArea3D::set_area_monitor_callback(const Callable &p_callback) {
 	}
 }
 
-void GodotArea3D::set_space_override_mode(PhysicsServer3D::AreaSpaceOverrideMode p_mode) {
-	bool do_override = p_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
-	if (do_override == (space_override_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED)) {
+void GodotArea3D::_set_space_override_mode(PhysicsServer3D::AreaSpaceOverrideMode &r_mode, PhysicsServer3D::AreaSpaceOverrideMode p_new_mode) {
+	bool do_override = p_new_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
+	if (do_override == (r_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED)) {
 		return;
 	}
 	_unregister_shapes();
-	space_override_mode = p_mode;
+	r_mode = p_new_mode;
 	_shape_changed();
 }
 
 void GodotArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value) {
 	switch (p_param) {
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE:
+			_set_space_override_mode(gravity_override_mode, (PhysicsServer3D::AreaSpaceOverrideMode)(int)p_value);
+			break;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY:
 			gravity = p_value;
 			break;
@@ -155,8 +158,14 @@ void GodotArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Varian
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			point_attenuation = p_value;
 			break;
+		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
+			_set_space_override_mode(linear_damping_override_mode, (PhysicsServer3D::AreaSpaceOverrideMode)(int)p_value);
+			break;
 		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
 			linear_damp = p_value;
+			break;
+		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE:
+			_set_space_override_mode(angular_damping_override_mode, (PhysicsServer3D::AreaSpaceOverrideMode)(int)p_value);
 			break;
 		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP:
 			angular_damp = p_value;
@@ -183,6 +192,8 @@ void GodotArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Varian
 
 Variant GodotArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
 	switch (p_param) {
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE:
+			return gravity_override_mode;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY:
 			return gravity;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR:
@@ -193,8 +204,12 @@ Variant GodotArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
 			return gravity_distance_scale;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return point_attenuation;
+		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
+			return linear_damping_override_mode;
 		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
 			return linear_damp;
+		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE:
+			return angular_damping_override_mode;
 		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP:
 			return angular_damp;
 		case PhysicsServer3D::AREA_PARAM_PRIORITY:

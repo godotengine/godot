@@ -147,6 +147,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="from_hsv" qualifiers="static">
+			<return type="Color" />
+			<argument index="0" name="h" type="float" />
+			<argument index="1" name="s" type="float" />
+			<argument index="2" name="v" type="float" />
+			<argument index="3" name="alpha" type="float" default="1.0" />
+			<description>
+				Constructs a color from an [url=https://en.wikipedia.org/wiki/HSL_and_HSV]HSV profile[/url]. [code]h[/code] (hue), [code]s[/code] (saturation), and [code]v[/code] (value) are typically between 0 and 1.
+				[codeblocks]
+				[gdscript]
+				var c = Color.from_hsv(0.58, 0.5, 0.79, 0.8)
+				[/gdscript]
+				[csharp]
+				var c = Color.FromHsv(0.58f, 0.5f, 0.79f, 0.8f);
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="from_rgbe9995" qualifiers="static">
 			<return type="Color" />
 			<argument index="0" name="rgbe" type="int" />

@@ -1440,8 +1440,10 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 		}
 
 		if (shader->data) {
-			for (const KeyValue<StringName, RID> &E : shader->default_texture_parameter) {
-				shader->data->set_default_texture_param(E.key, E.value);
+			for (const KeyValue<StringName, Map<int, RID>> &E : shader->default_texture_parameter) {
+				for (const KeyValue<int, RID> &E2 : E.value) {
+					shader->data->set_default_texture_param(E.key, E2.value, E2.key);
+				}
 			}
 		}
 	}
@@ -1471,17 +1473,26 @@ void RendererStorageRD::shader_get_param_list(RID p_shader, List<PropertyInfo> *
 	}
 }
 
-void RendererStorageRD::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {
+void RendererStorageRD::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND(!shader);
 
 	if (p_texture.is_valid() && texture_owner.owns(p_texture)) {
-		shader->default_texture_parameter[p_name] = p_texture;
+		if (!shader->default_texture_parameter.has(p_name)) {
+			shader->default_texture_parameter[p_name] = Map<int, RID>();
+		}
+		shader->default_texture_parameter[p_name][p_index] = p_texture;
 	} else {
-		shader->default_texture_parameter.erase(p_name);
+		if (shader->default_texture_parameter.has(p_name) && shader->default_texture_parameter[p_name].has(p_index)) {
+			shader->default_texture_parameter[p_name].erase(p_index);
+
+			if (shader->default_texture_parameter[p_name].is_empty()) {
+				shader->default_texture_parameter.erase(p_name);
+			}
+		}
 	}
 	if (shader->data) {
-		shader->data->set_default_texture_param(p_name, p_texture);
+		shader->data->set_default_texture_param(p_name, p_texture, p_index);
 	}
 	for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
 		Material *material = E->get();
@@ -1489,11 +1500,11 @@ void RendererStorageRD::shader_set_default_texture_param(RID p_shader, const Str
 	}
 }
 
-RID RendererStorageRD::shader_get_default_texture_param(RID p_shader, const StringName &p_name) const {
+RID RendererStorageRD::shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, RID());
-	if (shader->default_texture_parameter.has(p_name)) {
-		return shader->default_texture_parameter[p_name];
+	if (shader->default_texture_parameter.has(p_name) && shader->default_texture_parameter[p_name].has(p_index)) {
+		return shader->default_texture_parameter[p_name][p_index];
 	}
 
 	return RID();
@@ -2610,7 +2621,7 @@ RendererStorageRD::MaterialData::~MaterialData() {
 	}
 }
 
-void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
+void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
 	RendererStorageRD *singleton = (RendererStorageRD *)RendererStorage::base_singleton;
 #ifdef TOOLS_ENABLED
 	Texture *roughness_detect_texture = nullptr;
@@ -2673,19 +2684,19 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 
 			if (uniform_array_size > 0) {
 				if (textures.size() < uniform_array_size) {
-					const Map<StringName, RID>::Element *W = p_default_textures.find(uniform_name);
+					const Map<StringName, Map<int, RID>>::Element *W = p_default_textures.find(uniform_name);
 					for (int j = textures.size(); j < uniform_array_size; j++) {
-						if (W) {
-							textures.push_back(W->get());
+						if (W && W->get().has(j)) {
+							textures.push_back(W->get()[j]);
 						} else {
 							textures.push_back(RID());
 						}
 					}
 				}
 			} else if (textures.is_empty()) {
-				const Map<StringName, RID>::Element *W = p_default_textures.find(uniform_name);
-				if (W) {
-					textures.push_back(W->get());
+				const Map<StringName, Map<int, RID>>::Element *W = p_default_textures.find(uniform_name);
+				if (W && W->get().has(0)) {
+					textures.push_back(W->get()[0]);
 				}
 			}
 		}
@@ -2833,7 +2844,7 @@ void RendererStorageRD::MaterialData::free_parameters_uniform_set(RID p_uniform_
 	}
 }
 
-bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, RID> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier) {
+bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, Map<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier) {
 	if ((uint32_t)ubo_data.size() != p_ubo_size) {
 		p_uniform_dirty = true;
 		if (uniform_buffer.is_valid()) {
@@ -5748,11 +5759,20 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void RendererStorageRD::ParticlesShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+void RendererStorageRD::ParticlesShaderData::set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) {
 	if (!p_texture.is_valid()) {
-		default_texture_params.erase(p_name);
+		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
+			default_texture_params[p_name].erase(p_index);
+
+			if (default_texture_params[p_name].is_empty()) {
+				default_texture_params.erase(p_name);
+			}
+		}
 	} else {
-		default_texture_params[p_name] = p_texture;
+		if (!default_texture_params.has(p_name)) {
+			default_texture_params[p_name] = Map<int, RID>();
+		}
+		default_texture_params[p_name][p_index] = p_texture;
 	}
 }
 

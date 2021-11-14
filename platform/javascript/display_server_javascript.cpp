@@ -151,19 +151,19 @@ int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, 
 
 	switch (p_button) {
 		case DOM_BUTTON_LEFT:
-			ev->set_button_index(MOUSE_BUTTON_LEFT);
+			ev->set_button_index(MouseButton::LEFT);
 			break;
 		case DOM_BUTTON_MIDDLE:
-			ev->set_button_index(MOUSE_BUTTON_MIDDLE);
+			ev->set_button_index(MouseButton::MIDDLE);
 			break;
 		case DOM_BUTTON_RIGHT:
-			ev->set_button_index(MOUSE_BUTTON_RIGHT);
+			ev->set_button_index(MouseButton::RIGHT);
 			break;
 		case DOM_BUTTON_XBUTTON1:
-			ev->set_button_index(MOUSE_BUTTON_XBUTTON1);
+			ev->set_button_index(MouseButton::MB_XBUTTON1);
 			break;
 		case DOM_BUTTON_XBUTTON2:
-			ev->set_button_index(MOUSE_BUTTON_XBUTTON2);
+			ev->set_button_index(MouseButton::MB_XBUTTON2);
 			break;
 		default:
 			return false;
@@ -176,7 +176,7 @@ int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, 
 			if (diff < 400 && Point2(ds->last_click_pos).distance_to(ev->get_position()) < 5) {
 				ds->last_click_ms = 0;
 				ds->last_click_pos = Point2(-100, -100);
-				ds->last_click_button_index = -1;
+				ds->last_click_button_index = MouseButton::NONE;
 				ev->set_double_click(true);
 			}
 
@@ -190,11 +190,11 @@ int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, 
 		}
 	}
 
-	int mask = Input::get_singleton()->get_mouse_button_mask();
-	int button_flag = 1 << (ev->get_button_index() - 1);
+	MouseButton mask = Input::get_singleton()->get_mouse_button_mask();
+	MouseButton button_flag = mouse_button_to_mask(ev->get_button_index());
 	if (ev->is_pressed()) {
 		mask |= button_flag;
-	} else if (mask & button_flag) {
+	} else if ((mask & button_flag) != MouseButton::NONE) {
 		mask &= ~button_flag;
 	} else {
 		// Received release event, but press was outside the canvas, so ignore.
@@ -215,11 +215,12 @@ int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, 
 }
 
 void DisplayServerJavaScript::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
-	int input_mask = Input::get_singleton()->get_mouse_button_mask();
+	MouseButton input_mask = Input::get_singleton()->get_mouse_button_mask();
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behaviour.
-	if (!get_singleton()->cursor_inside_canvas && !input_mask)
+	if (!get_singleton()->cursor_inside_canvas && input_mask == MouseButton::NONE) {
 		return;
+	}
 
 	Ref<InputEventMouseMotion> ev;
 	ev.instantiate();
@@ -412,19 +413,19 @@ int DisplayServerJavaScript::mouse_wheel_callback(double p_delta_x, double p_del
 	ev->set_position(input->get_mouse_position());
 	ev->set_global_position(ev->get_position());
 
-	ev->set_shift_pressed(input->is_key_pressed(KEY_SHIFT));
-	ev->set_alt_pressed(input->is_key_pressed(KEY_ALT));
-	ev->set_ctrl_pressed(input->is_key_pressed(KEY_CTRL));
-	ev->set_meta_pressed(input->is_key_pressed(KEY_META));
+	ev->set_shift_pressed(input->is_key_pressed(Key::SHIFT));
+	ev->set_alt_pressed(input->is_key_pressed(Key::ALT));
+	ev->set_ctrl_pressed(input->is_key_pressed(Key::CTRL));
+	ev->set_meta_pressed(input->is_key_pressed(Key::META));
 
 	if (p_delta_y < 0) {
-		ev->set_button_index(MOUSE_BUTTON_WHEEL_UP);
+		ev->set_button_index(MouseButton::WHEEL_UP);
 	} else if (p_delta_y > 0) {
-		ev->set_button_index(MOUSE_BUTTON_WHEEL_DOWN);
+		ev->set_button_index(MouseButton::WHEEL_DOWN);
 	} else if (p_delta_x > 0) {
-		ev->set_button_index(MOUSE_BUTTON_WHEEL_LEFT);
+		ev->set_button_index(MouseButton::WHEEL_LEFT);
 	} else if (p_delta_x < 0) {
-		ev->set_button_index(MOUSE_BUTTON_WHEEL_RIGHT);
+		ev->set_button_index(MouseButton::WHEEL_RIGHT);
 	} else {
 		return false;
 	}
@@ -432,7 +433,7 @@ int DisplayServerJavaScript::mouse_wheel_callback(double p_delta_x, double p_del
 	// Different browsers give wildly different delta values, and we can't
 	// interpret deltaMode, so use default value for wheel events' factor.
 
-	int button_flag = 1 << (ev->get_button_index() - 1);
+	MouseButton button_flag = mouse_button_to_mask(ev->get_button_index());
 
 	ev->set_pressed(true);
 	ev->set_button_mask(input->get_mouse_button_mask() | button_flag);
@@ -509,12 +510,12 @@ void DisplayServerJavaScript::vk_input_text_callback(const char *p_text, int p_c
 		k.instantiate();
 		k->set_pressed(true);
 		k->set_echo(false);
-		k->set_keycode(KEY_RIGHT);
+		k->set_keycode(Key::RIGHT);
 		input->parse_input_event(k);
 		k.instantiate();
 		k->set_pressed(false);
 		k->set_echo(false);
-		k->set_keycode(KEY_RIGHT);
+		k->set_keycode(Key::RIGHT);
 		input->parse_input_event(k);
 	}
 }
@@ -557,12 +558,12 @@ void DisplayServerJavaScript::process_joypads() {
 		for (int b = 0; b < s_btns_num; b++) {
 			float value = s_btns[b];
 			// Buttons 6 and 7 in the standard mapping need to be
-			// axis to be handled as JOY_AXIS_TRIGGER by Godot.
+			// axis to be handled as JoyAxis::TRIGGER by Godot.
 			if (s_standard && (b == 6 || b == 7)) {
 				Input::JoyAxisValue joy_axis;
 				joy_axis.min = 0;
 				joy_axis.value = value;
-				JoyAxis a = b == 6 ? JOY_AXIS_TRIGGER_LEFT : JOY_AXIS_TRIGGER_RIGHT;
+				JoyAxis a = b == 6 ? JoyAxis::TRIGGER_LEFT : JoyAxis::TRIGGER_RIGHT;
 				input->joy_axis(idx, a, joy_axis);
 			} else {
 				input->joy_button(idx, (JoyButton)b, value);

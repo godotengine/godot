@@ -284,7 +284,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (node_ninepatch || obj_styleBox.is_valid()) {
 					edited_margin = -1;
@@ -330,7 +330,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					for (const Rect2 &E : autoslice_cache) {
 						if (E.has_point(point)) {
 							rect = E;
-							if (Input::get_singleton()->is_key_pressed(KEY_CTRL) && !(Input::get_singleton()->is_key_pressed(Key(KEY_SHIFT | KEY_ALT)))) {
+							if (Input::get_singleton()->is_key_pressed(Key::CTRL) && !(Input::get_singleton()->is_key_pressed(Key(Key::SHIFT | Key::ALT)))) {
 								Rect2 r;
 								if (atlas_tex.is_valid()) {
 									r = atlas_tex->get_region();
@@ -446,7 +446,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				creating = false;
 			}
 
-		} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			if (drag) {
 				drag = false;
 				if (edited_margin >= 0) {
@@ -465,9 +465,9 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					drag_index = -1;
 				}
 			}
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed()) {
 			_zoom_on_position(draw_zoom * ((0.95 + (0.05 * mb->get_factor())) / 0.95), mb->get_position());
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed()) {
 			_zoom_on_position(draw_zoom * (1 - (0.05 * mb->get_factor())), mb->get_position());
 		}
 	}
@@ -475,7 +475,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseMotion> mm = p_input;
 
 	if (mm.is_valid()) {
-		if (mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+		if ((mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE || Input::get_singleton()->is_key_pressed(Key::SPACE)) {
 			Vector2 dragged(mm->get_relative().x / draw_zoom, mm->get_relative().y / draw_zoom);
 			hscroll->set_value(hscroll->get_value() - dragged.x);
 			vscroll->set_value(vscroll->get_value() - dragged.y);

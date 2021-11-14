@@ -1429,14 +1429,15 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			bbcode = bbcode.replace("[/gdscript]", "[/codeblock]");
 
 			for (int pos = bbcode.find("[csharp]"); pos != -1; pos = bbcode.find("[csharp]")) {
-				if (bbcode.find("[/csharp]") == -1) {
+				int end_pos = bbcode.find("[/csharp]");
+				if (end_pos == -1) {
 					WARN_PRINT("Unclosed [csharp] block or parse fail in code (search for tag errors)");
 					break;
 				}
 
-				bbcode.erase(pos, bbcode.find("[/csharp]") + 9 - pos);
+				bbcode = bbcode.left(pos) + bbcode.substr(end_pos + 9); // 9 is length of "[/csharp]".
 				while (bbcode[pos] == '\n') {
-					bbcode.erase(pos, 1);
+					bbcode = bbcode.left(pos) + bbcode.substr(pos + 1);
 				}
 			}
 			break;
@@ -1445,14 +1446,15 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			bbcode = bbcode.replace("[/csharp]", "[/codeblock]");
 
 			for (int pos = bbcode.find("[gdscript]"); pos != -1; pos = bbcode.find("[gdscript]")) {
-				if (bbcode.find("[/gdscript]") == -1) {
+				int end_pos = bbcode.find("[/gdscript]");
+				if (end_pos == -1) {
 					WARN_PRINT("Unclosed [gdscript] block or parse fail in code (search for tag errors)");
 					break;
 				}
 
-				bbcode.erase(pos, bbcode.find("[/gdscript]") + 11 - pos);
+				bbcode = bbcode.left(pos) + bbcode.substr(end_pos + 11); // 11 is length of "[/gdscript]".
 				while (bbcode[pos] == '\n') {
-					bbcode.erase(pos, 1);
+					bbcode = bbcode.left(pos) + bbcode.substr(pos + 1);
 				}
 			}
 			break;
@@ -2021,7 +2023,7 @@ void FindBar::unhandled_input(const Ref<InputEvent> &p_event) {
 			bool accepted = true;
 
 			switch (k->get_keycode()) {
-				case KEY_ESCAPE: {
+				case Key::ESCAPE: {
 					_hide_bar();
 				} break;
 				default: {
@@ -2041,7 +2043,7 @@ void FindBar::_search_text_changed(const String &p_text) {
 }
 
 void FindBar::_search_text_submitted(const String &p_text) {
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		search_prev();
 	} else {
 		search_next();

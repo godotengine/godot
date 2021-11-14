@@ -65,7 +65,7 @@
 				Intersects a ray in a given space. Ray position and other parameters are defined through [PhysicsRayQueryParameters3D]. The returned object is a dictionary with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
-				[code]normal[/code]: The object's surface normal at the intersection point.
+				[code]normal[/code]: The object's surface normal at the intersection point, or [code]Vector3(0, 0, 0)[/code] if the ray starts inside the shape and [member PhysicsRayQueryParameters3D.hit_from_inside] is [code]true[/code].
 				[code]position[/code]: The intersection point.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.

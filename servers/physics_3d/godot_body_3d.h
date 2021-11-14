@@ -139,8 +139,6 @@ class GodotBody3D : public GodotCollisionObject3D {
 
 	uint64_t island_step = 0;
 
-	void _compute_area_gravity_and_damping(const GodotArea3D *p_area);
-
 	void _update_transform_dependent();
 
 	friend class GodotPhysicsDirectBodyState3D; // i give up, too many functions to expose

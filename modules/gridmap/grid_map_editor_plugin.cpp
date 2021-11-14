@@ -611,13 +611,13 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && (mb->is_command_pressed() || mb->is_shift_pressed())) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && (mb->is_command_pressed() || mb->is_shift_pressed())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() + mb->get_factor());
 			}
 
 			return EditorPlugin::AFTER_GUI_INPUT_STOP; // Eaten.
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && (mb->is_command_pressed() || mb->is_shift_pressed())) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && (mb->is_command_pressed() || mb->is_shift_pressed())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() - mb->get_factor());
 			}
@@ -628,7 +628,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 			if ((nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA || nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) && mb->is_alt_pressed()) {
 				input_action = INPUT_NONE;
-			} else if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+			} else if (mb->get_button_index() == MouseButton::LEFT) {
 				bool can_edit = (node && node->get_mesh_library().is_valid());
 				if (input_action == INPUT_PASTE) {
 					_do_paste();
@@ -643,7 +643,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 					input_action = INPUT_PAINT;
 					set_items.clear();
 				}
-			} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+			} else if (mb->get_button_index() == MouseButton::RIGHT) {
 				if (input_action == INPUT_PASTE) {
 					_clear_clipboard_data();
 					input_action = INPUT_NONE;
@@ -665,7 +665,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			}
 			return EditorPlugin::AFTER_GUI_INPUT_PASS;
 		} else {
-			if ((mb->get_button_index() == MOUSE_BUTTON_RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_PAINT)) {
+			if ((mb->get_button_index() == MouseButton::RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == MouseButton::LEFT && input_action == INPUT_PAINT)) {
 				if (set_items.size()) {
 					undo_redo->create_action(TTR("GridMap Paint"));
 					for (const SetItem &si : set_items) {
@@ -687,19 +687,19 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				return EditorPlugin::AFTER_GUI_INPUT_PASS;
 			}
 
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action == INPUT_SELECT) {
+			if (mb->get_button_index() == MouseButton::LEFT && input_action == INPUT_SELECT) {
 				undo_redo->create_action(TTR("GridMap Selection"));
 				undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 				undo_redo->add_undo_method(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
 				undo_redo->commit_action();
 			}
 
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT && input_action != INPUT_NONE) {
+			if (mb->get_button_index() == MouseButton::LEFT && input_action != INPUT_NONE) {
 				set_items.clear();
 				input_action = INPUT_NONE;
 				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			}
-			if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_PASTE)) {
+			if (mb->get_button_index() == MouseButton::RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_PASTE)) {
 				input_action = INPUT_NONE;
 				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 			}
@@ -719,7 +719,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 
 	if (k.is_valid()) {
 		if (k->is_pressed()) {
-			if (k->get_keycode() == KEY_ESCAPE) {
+			if (k->get_keycode() == Key::ESCAPE) {
 				if (input_action == INPUT_PASTE) {
 					_clear_clipboard_data();
 					input_action = INPUT_NONE;
@@ -738,12 +738,12 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 			}
 
 			if (k->is_shift_pressed() && selection.active && input_action != INPUT_PASTE) {
-				if (k->get_keycode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL))) {
+				if (k->get_keycode() == (Key)options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL))) {
 					selection.click[edit_axis]--;
 					_validate_selection();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
-				if (k->get_keycode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_NEXT_LEVEL))) {
+				if (k->get_keycode() == (Key)options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_NEXT_LEVEL))) {
 					selection.click[edit_axis]++;
 					_validate_selection();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
@@ -804,7 +804,7 @@ void GridMapEditor::_text_changed(const String &p_text) {
 void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 	const Ref<InputEventKey> k = p_ie;
 
-	if (k.is_valid() && (k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_PAGEUP || k->get_keycode() == KEY_PAGEDOWN)) {
+	if (k.is_valid() && (k->get_keycode() == Key::UP || k->get_keycode() == Key::DOWN || k->get_keycode() == Key::PAGEUP || k->get_keycode() == Key::PAGEDOWN)) {
 		// Forward the key input to the ItemList so it can be scrolled
 		mesh_library_palette->gui_input(k);
 		search_box->accept_event();
@@ -816,11 +816,11 @@ void GridMapEditor::_mesh_library_palette_input(const Ref<InputEvent> &p_ie) {
 
 	// Zoom in/out using Ctrl + mouse wheel
 	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed()) {
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 			size_slider->set_value(size_slider->get_value() + 0.2);
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 			size_slider->set_value(size_slider->get_value() - 0.2);
 		}
 	}
@@ -1097,7 +1097,7 @@ void GridMapEditor::_notification(int p_what) {
 				// Simulate mouse released event to stop drawing when editor focus exists.
 				Ref<InputEventMouseButton> release;
 				release.instantiate();
-				release->set_button_index(MOUSE_BUTTON_LEFT);
+				release->set_button_index(MouseButton::LEFT);
 				forward_spatial_input_event(nullptr, release);
 			}
 		} break;
@@ -1188,33 +1188,33 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	spatial_editor_hb->hide();
 
 	options->set_text(TTR("Grid Map"));
-	options->get_popup()->add_item(TTR("Previous Floor"), MENU_OPTION_PREV_LEVEL, KEY_Q);
-	options->get_popup()->add_item(TTR("Next Floor"), MENU_OPTION_NEXT_LEVEL, KEY_E);
+	options->get_popup()->add_item(TTR("Previous Floor"), MENU_OPTION_PREV_LEVEL, Key::Q);
+	options->get_popup()->add_item(TTR("Next Floor"), MENU_OPTION_NEXT_LEVEL, Key::E);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_radio_check_item(TTR("Clip Disabled"), MENU_OPTION_CLIP_DISABLED);
 	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_CLIP_DISABLED), true);
 	options->get_popup()->add_radio_check_item(TTR("Clip Above"), MENU_OPTION_CLIP_ABOVE);
 	options->get_popup()->add_radio_check_item(TTR("Clip Below"), MENU_OPTION_CLIP_BELOW);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_radio_check_item(TTR("Edit X Axis"), MENU_OPTION_X_AXIS, KEY_Z);
-	options->get_popup()->add_radio_check_item(TTR("Edit Y Axis"), MENU_OPTION_Y_AXIS, KEY_X);
-	options->get_popup()->add_radio_check_item(TTR("Edit Z Axis"), MENU_OPTION_Z_AXIS, KEY_C);
+	options->get_popup()->add_radio_check_item(TTR("Edit X Axis"), MENU_OPTION_X_AXIS, Key::Z);
+	options->get_popup()->add_radio_check_item(TTR("Edit Y Axis"), MENU_OPTION_Y_AXIS, Key::X);
+	options->get_popup()->add_radio_check_item(TTR("Edit Z Axis"), MENU_OPTION_Z_AXIS, Key::C);
 	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_Y_AXIS), true);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Cursor Rotate X"), MENU_OPTION_CURSOR_ROTATE_X, KEY_A);
-	options->get_popup()->add_item(TTR("Cursor Rotate Y"), MENU_OPTION_CURSOR_ROTATE_Y, KEY_S);
-	options->get_popup()->add_item(TTR("Cursor Rotate Z"), MENU_OPTION_CURSOR_ROTATE_Z, KEY_D);
-	options->get_popup()->add_item(TTR("Cursor Back Rotate X"), MENU_OPTION_CURSOR_BACK_ROTATE_X, KEY_MASK_SHIFT + KEY_A);
-	options->get_popup()->add_item(TTR("Cursor Back Rotate Y"), MENU_OPTION_CURSOR_BACK_ROTATE_Y, KEY_MASK_SHIFT + KEY_S);
-	options->get_popup()->add_item(TTR("Cursor Back Rotate Z"), MENU_OPTION_CURSOR_BACK_ROTATE_Z, KEY_MASK_SHIFT + KEY_D);
-	options->get_popup()->add_item(TTR("Cursor Clear Rotation"), MENU_OPTION_CURSOR_CLEAR_ROTATION, KEY_W);
+	options->get_popup()->add_item(TTR("Cursor Rotate X"), MENU_OPTION_CURSOR_ROTATE_X, Key::A);
+	options->get_popup()->add_item(TTR("Cursor Rotate Y"), MENU_OPTION_CURSOR_ROTATE_Y, Key::S);
+	options->get_popup()->add_item(TTR("Cursor Rotate Z"), MENU_OPTION_CURSOR_ROTATE_Z, Key::D);
+	options->get_popup()->add_item(TTR("Cursor Back Rotate X"), MENU_OPTION_CURSOR_BACK_ROTATE_X, KeyModifierMask::SHIFT + Key::A);
+	options->get_popup()->add_item(TTR("Cursor Back Rotate Y"), MENU_OPTION_CURSOR_BACK_ROTATE_Y, KeyModifierMask::SHIFT + Key::S);
+	options->get_popup()->add_item(TTR("Cursor Back Rotate Z"), MENU_OPTION_CURSOR_BACK_ROTATE_Z, KeyModifierMask::SHIFT + Key::D);
+	options->get_popup()->add_item(TTR("Cursor Clear Rotation"), MENU_OPTION_CURSOR_CLEAR_ROTATION, Key::W);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_check_item(TTR("Paste Selects"), MENU_OPTION_PASTE_SELECTS);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Duplicate Selection"), MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_CTRL + KEY_C);
-	options->get_popup()->add_item(TTR("Cut Selection"), MENU_OPTION_SELECTION_CUT, KEY_MASK_CTRL + KEY_X);
-	options->get_popup()->add_item(TTR("Clear Selection"), MENU_OPTION_SELECTION_CLEAR, KEY_DELETE);
-	options->get_popup()->add_item(TTR("Fill Selection"), MENU_OPTION_SELECTION_FILL, KEY_MASK_CTRL + KEY_F);
+	options->get_popup()->add_item(TTR("Duplicate Selection"), MENU_OPTION_SELECTION_DUPLICATE, KeyModifierMask::CTRL + Key::C);
+	options->get_popup()->add_item(TTR("Cut Selection"), MENU_OPTION_SELECTION_CUT, KeyModifierMask::CTRL + Key::X);
+	options->get_popup()->add_item(TTR("Clear Selection"), MENU_OPTION_SELECTION_CLEAR, Key::KEY_DELETE);
+	options->get_popup()->add_item(TTR("Fill Selection"), MENU_OPTION_SELECTION_FILL, KeyModifierMask::CTRL + Key::F);
 
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Settings..."), MENU_OPTION_GRIDMAP_SETTINGS);

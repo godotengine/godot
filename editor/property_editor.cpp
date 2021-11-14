@@ -1343,7 +1343,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 void CustomPropertyEditor::_drag_easing(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		float rel = mm->get_relative().x;
 		if (rel == 0) {
 			return;
@@ -1628,7 +1628,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 }
 
 void CustomPropertyEditor::_emit_changed_whole_or_field() {
-	if (!Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (!Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		emit_signal(SNAME("variant_changed"));
 	} else {
 		emit_signal(SNAME("variant_field_changed"), field_names[focused_value_editor]);

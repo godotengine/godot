@@ -39,7 +39,7 @@
 String PopupMenu::_get_accel_text(const Item &p_item) const {
 	if (p_item.shortcut.is_valid()) {
 		return p_item.shortcut->get_as_text();
-	} else if (p_item.accel) {
+	} else if (p_item.accel != Key::NONE) {
 		return keycode_get_string(p_item.accel);
 	}
 	return String();
@@ -74,7 +74,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		size.width += items[i].text_buf->get_size().x;
 		size.height += vseparation;
 
-		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
+		if (items[i].accel != Key::NONE || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
 			int accel_w = hseparation * 2;
 			accel_w += items[i].accel_text_buf->get_size().x;
 			accel_max_w = MAX(accel_w, accel_max_w);
@@ -358,15 +358,15 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		int button_idx = b->get_button_index();
+		MouseButton button_idx = b->get_button_index();
 		if (!b->is_pressed()) {
 			// Activate the item on release of either the left mouse button or
 			// any mouse button held down when the popup was opened.
 			// This allows for opening the popup and triggering an action in a single mouse click.
-			if (button_idx == MOUSE_BUTTON_LEFT || (initial_button_mask & (1 << (button_idx - 1)))) {
+			if (button_idx == MouseButton::LEFT || (initial_button_mask & mouse_button_to_mask(button_idx)) != MouseButton::NONE) {
 				bool was_during_grabbed_click = during_grabbed_click;
 				during_grabbed_click = false;
-				initial_button_mask = 0;
+				initial_button_mask = MouseButton::NONE;
 
 				// Disable clicks under a time threshold to avoid selection right when opening the popup.
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
@@ -637,7 +637,7 @@ void PopupMenu::_draw_items() {
 		}
 
 		// Accelerator / Shortcut
-		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
+		if (items[i].accel != Key::NONE || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
 			if (rtl) {
 				item_ofs.x = scroll_width + style->get_margin(SIDE_LEFT) + item_end_padding;
 			} else {
@@ -813,7 +813,7 @@ void PopupMenu::_notification(int p_what) {
 	item.id = p_id == -1 ? items.size() : p_id;       \
 	item.accel = p_accel;
 
-void PopupMenu::add_item(const String &p_label, int p_id, uint32_t p_accel) {
+void PopupMenu::add_item(const String &p_label, int p_id, Key p_accel) {
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	items.push_back(item);
@@ -823,7 +823,7 @@ void PopupMenu::add_item(const String &p_label, int p_id, uint32_t p_accel) {
 	notify_property_list_changed();
 }
 
-void PopupMenu::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
+void PopupMenu::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id, Key p_accel) {
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.icon = p_icon;
@@ -834,7 +834,7 @@ void PopupMenu::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_labe
 	notify_property_list_changed();
 }
 
-void PopupMenu::add_check_item(const String &p_label, int p_id, uint32_t p_accel) {
+void PopupMenu::add_check_item(const String &p_label, int p_id, Key p_accel) {
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
@@ -844,7 +844,7 @@ void PopupMenu::add_check_item(const String &p_label, int p_id, uint32_t p_accel
 	child_controls_changed();
 }
 
-void PopupMenu::add_icon_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
+void PopupMenu::add_icon_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id, Key p_accel) {
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.icon = p_icon;
@@ -855,7 +855,7 @@ void PopupMenu::add_icon_check_item(const Ref<Texture2D> &p_icon, const String &
 	child_controls_changed();
 }
 
-void PopupMenu::add_radio_check_item(const String &p_label, int p_id, uint32_t p_accel) {
+void PopupMenu::add_radio_check_item(const String &p_label, int p_id, Key p_accel) {
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
@@ -865,7 +865,7 @@ void PopupMenu::add_radio_check_item(const String &p_label, int p_id, uint32_t p
 	child_controls_changed();
 }
 
-void PopupMenu::add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
+void PopupMenu::add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id, Key p_accel) {
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.icon = p_icon;
@@ -876,7 +876,7 @@ void PopupMenu::add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const St
 	child_controls_changed();
 }
 
-void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int p_default_state, int p_id, uint32_t p_accel) {
+void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int p_default_state, int p_id, Key p_accel) {
 	Item item;
 	ITEM_SETUP_WITH_ACCEL(p_label, p_id, p_accel);
 	item.max_states = p_max_states;
@@ -1045,7 +1045,7 @@ void PopupMenu::set_item_id(int p_idx, int p_id) {
 	child_controls_changed();
 }
 
-void PopupMenu::set_item_accelerator(int p_idx, uint32_t p_accel) {
+void PopupMenu::set_item_accelerator(int p_idx, Key p_accel) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items.write[p_idx].accel = p_accel;
 	items.write[p_idx].dirty = true;
@@ -1121,8 +1121,8 @@ Ref<Texture2D> PopupMenu::get_item_icon(int p_idx) const {
 	return items[p_idx].icon;
 }
 
-uint32_t PopupMenu::get_item_accelerator(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, items.size(), 0);
+Key PopupMenu::get_item_accelerator(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Key::NONE);
 	return items[p_idx].accel;
 }
 
@@ -1286,25 +1286,25 @@ int PopupMenu::get_item_count() const {
 }
 
 bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only) {
-	Key code = KEY_NONE;
+	Key code = Key::NONE;
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
 		code = k->get_keycode();
-		if (code == KEY_NONE) {
+		if (code == Key::NONE) {
 			code = (Key)k->get_unicode();
 		}
 		if (k->is_ctrl_pressed()) {
-			code |= KEY_MASK_CTRL;
+			code |= KeyModifierMask::CTRL;
 		}
 		if (k->is_alt_pressed()) {
-			code |= KEY_MASK_ALT;
+			code |= KeyModifierMask::ALT;
 		}
 		if (k->is_meta_pressed()) {
-			code |= KEY_MASK_META;
+			code |= KeyModifierMask::META;
 		}
 		if (k->is_shift_pressed()) {
-			code |= KEY_MASK_SHIFT;
+			code |= KeyModifierMask::SHIFT;
 		}
 	}
 
@@ -1318,7 +1318,7 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 			return true;
 		}
 
-		if (code != 0 && items[i].accel == code) {
+		if (code != Key::NONE && items[i].accel == code) {
 			activate_item(i);
 			return true;
 		}
@@ -1603,7 +1603,7 @@ bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 			set_item_id(idx, id);
 			set_item_metadata(idx, meta);
 			set_item_as_separator(idx, sep);
-			set_item_accelerator(idx, accel);
+			set_item_accelerator(idx, (Key)accel);
 			set_item_submenu(idx, subm);
 		}
 	}

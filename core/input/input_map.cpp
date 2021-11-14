@@ -381,320 +381,320 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	}
 
 	List<Ref<InputEvent>> inputs;
-	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
-	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
-	inputs.push_back(InputEventKey::create_reference(KEY_SPACE));
+	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
+	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
+	inputs.push_back(InputEventKey::create_reference(Key::SPACE));
 	default_builtin_cache.insert("ui_accept", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventJoypadButton::create_reference(JOY_BUTTON_Y));
-	inputs.push_back(InputEventKey::create_reference(KEY_SPACE));
+	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::Y));
+	inputs.push_back(InputEventKey::create_reference(Key::SPACE));
 	default_builtin_cache.insert("ui_select", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_ESCAPE));
+	inputs.push_back(InputEventKey::create_reference(Key::ESCAPE));
 	default_builtin_cache.insert("ui_cancel", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
+	inputs.push_back(InputEventKey::create_reference(Key::TAB));
 	default_builtin_cache.insert("ui_focus_next", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_TAB | KEY_MASK_SHIFT));
+	inputs.push_back(InputEventKey::create_reference(Key::TAB | KeyModifierMask::SHIFT));
 	default_builtin_cache.insert("ui_focus_prev", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_LEFT));
-	inputs.push_back(InputEventJoypadButton::create_reference(JOY_BUTTON_DPAD_LEFT));
+	inputs.push_back(InputEventKey::create_reference(Key::LEFT));
+	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::DPAD_LEFT));
 	default_builtin_cache.insert("ui_left", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT));
-	inputs.push_back(InputEventJoypadButton::create_reference(JOY_BUTTON_DPAD_RIGHT));
+	inputs.push_back(InputEventKey::create_reference(Key::RIGHT));
+	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::DPAD_RIGHT));
 	default_builtin_cache.insert("ui_right", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_UP));
-	inputs.push_back(InputEventJoypadButton::create_reference(JOY_BUTTON_DPAD_UP));
+	inputs.push_back(InputEventKey::create_reference(Key::UP));
+	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::DPAD_UP));
 	default_builtin_cache.insert("ui_up", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_DOWN));
-	inputs.push_back(InputEventJoypadButton::create_reference(JOY_BUTTON_DPAD_DOWN));
+	inputs.push_back(InputEventKey::create_reference(Key::DOWN));
+	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::DPAD_DOWN));
 	default_builtin_cache.insert("ui_down", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_PAGEUP));
+	inputs.push_back(InputEventKey::create_reference(Key::PAGEUP));
 	default_builtin_cache.insert("ui_page_up", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_PAGEDOWN));
+	inputs.push_back(InputEventKey::create_reference(Key::PAGEDOWN));
 	default_builtin_cache.insert("ui_page_down", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_HOME));
+	inputs.push_back(InputEventKey::create_reference(Key::HOME));
 	default_builtin_cache.insert("ui_home", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_END));
+	inputs.push_back(InputEventKey::create_reference(Key::END));
 	default_builtin_cache.insert("ui_end", inputs);
 
 	// ///// UI basic Shortcuts /////
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_X | KEY_MASK_CMD));
-	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_SHIFT));
+	inputs.push_back(InputEventKey::create_reference(Key::X | KeyModifierMask::CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE | KeyModifierMask::SHIFT));
 	default_builtin_cache.insert("ui_cut", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_C | KEY_MASK_CMD));
-	inputs.push_back(InputEventKey::create_reference(KEY_INSERT | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::C | KeyModifierMask::CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::INSERT | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_copy", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_V | KEY_MASK_CMD));
-	inputs.push_back(InputEventKey::create_reference(KEY_INSERT | KEY_MASK_SHIFT));
+	inputs.push_back(InputEventKey::create_reference(Key::V | KeyModifierMask::CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::INSERT | KeyModifierMask::SHIFT));
 	default_builtin_cache.insert("ui_paste", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_Z | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::Z | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_undo", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_Z | KEY_MASK_CMD | KEY_MASK_SHIFT));
-	inputs.push_back(InputEventKey::create_reference(KEY_Y | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::Z | KeyModifierMask::CMD | KeyModifierMask::SHIFT));
+	inputs.push_back(InputEventKey::create_reference(Key::Y | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_redo", inputs);
 
 	// ///// UI Text Input Shortcuts /////
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_SPACE | KEY_MASK_CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::SPACE | KeyModifierMask::CTRL));
 	default_builtin_cache.insert("ui_text_completion_query", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
-	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
+	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
+	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_completion_accept", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
+	inputs.push_back(InputEventKey::create_reference(Key::TAB));
 	default_builtin_cache.insert("ui_text_completion_replace", inputs);
 
 	// Newlines
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
-	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
+	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
+	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_newline", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 
-	inputs.push_back(InputEventKey::create_reference(KEY_ENTER | KEY_MASK_CMD));
-	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::ENTER | KeyModifierMask::CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_newline_blank", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_ENTER | KEY_MASK_SHIFT | KEY_MASK_CMD));
-	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER | KEY_MASK_SHIFT | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::ENTER | KeyModifierMask::SHIFT | KeyModifierMask::CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER | KeyModifierMask::SHIFT | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_newline_above", inputs);
 
 	// Indentation
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_TAB));
+	inputs.push_back(InputEventKey::create_reference(Key::TAB));
 	default_builtin_cache.insert("ui_text_indent", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_TAB | KEY_MASK_SHIFT));
+	inputs.push_back(InputEventKey::create_reference(Key::TAB | KeyModifierMask::SHIFT));
 	default_builtin_cache.insert("ui_text_dedent", inputs);
 
 	// Text Backspace and Delete
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE));
-	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_SHIFT));
+	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE));
+	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::SHIFT));
 	default_builtin_cache.insert("ui_text_backspace", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_backspace_word", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_ALT));
+	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_backspace_word.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_text_backspace_all_to_left", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_backspace_all_to_left.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_DELETE));
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
 	default_builtin_cache.insert("ui_text_delete", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_delete_word", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_ALT));
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_delete_word.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	default_builtin_cache.insert("ui_text_delete_all_to_right", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_DELETE | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_delete_all_to_right.macos", inputs);
 
 	// Text Caret Movement Left/Right
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_LEFT));
+	inputs.push_back(InputEventKey::create_reference(Key::LEFT));
 	default_builtin_cache.insert("ui_text_caret_left", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_LEFT | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_caret_word_left", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_LEFT | KEY_MASK_ALT));
+	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_caret_word_left.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT));
+	inputs.push_back(InputEventKey::create_reference(Key::RIGHT));
 	default_builtin_cache.insert("ui_text_caret_right", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_caret_word_right", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT | KEY_MASK_ALT));
+	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_caret_word_right.macos", inputs);
 
 	// Text Caret Movement Up/Down
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_UP));
+	inputs.push_back(InputEventKey::create_reference(Key::UP));
 	default_builtin_cache.insert("ui_text_caret_up", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_DOWN));
+	inputs.push_back(InputEventKey::create_reference(Key::DOWN));
 	default_builtin_cache.insert("ui_text_caret_down", inputs);
 
 	// Text Caret Movement Line Start/End
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_HOME));
+	inputs.push_back(InputEventKey::create_reference(Key::HOME));
 	default_builtin_cache.insert("ui_text_caret_line_start", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_A | KEY_MASK_CTRL));
-	inputs.push_back(InputEventKey::create_reference(KEY_LEFT | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::A | KeyModifierMask::CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_caret_line_start.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_END));
+	inputs.push_back(InputEventKey::create_reference(Key::END));
 	default_builtin_cache.insert("ui_text_caret_line_end", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_E | KEY_MASK_CTRL));
-	inputs.push_back(InputEventKey::create_reference(KEY_RIGHT | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::E | KeyModifierMask::CTRL));
+	inputs.push_back(InputEventKey::create_reference(Key::RIGHT | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_caret_line_end.macos", inputs);
 
 	// Text Caret Movement Page Up/Down
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_PAGEUP));
+	inputs.push_back(InputEventKey::create_reference(Key::PAGEUP));
 	default_builtin_cache.insert("ui_text_caret_page_up", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_PAGEDOWN));
+	inputs.push_back(InputEventKey::create_reference(Key::PAGEDOWN));
 	default_builtin_cache.insert("ui_text_caret_page_down", inputs);
 
 	// Text Caret Movement Document Start/End
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_HOME | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::HOME | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_caret_document_start", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_UP | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_caret_document_start.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_END | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::END | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_caret_document_end", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_caret_document_end.macos", inputs);
 
 	// Text Scrolling
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_UP | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_scroll_up", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_UP | KEY_MASK_CMD | KEY_MASK_ALT));
+	inputs.push_back(InputEventKey::create_reference(Key::UP | KeyModifierMask::CMD | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_scroll_up.macos", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_scroll_down", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_DOWN | KEY_MASK_CMD | KEY_MASK_ALT));
+	inputs.push_back(InputEventKey::create_reference(Key::DOWN | KeyModifierMask::CMD | KeyModifierMask::ALT));
 	default_builtin_cache.insert("ui_text_scroll_down.macos", inputs);
 
 	// Text Misc
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_A | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::A | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_select_all", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_D | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::D | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_text_select_word_under_caret", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_INSERT));
+	inputs.push_back(InputEventKey::create_reference(Key::INSERT));
 	default_builtin_cache.insert("ui_text_toggle_insert_mode", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_MENU));
+	inputs.push_back(InputEventKey::create_reference(Key::MENU));
 	default_builtin_cache.insert("ui_menu", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_ENTER));
-	inputs.push_back(InputEventKey::create_reference(KEY_KP_ENTER));
+	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
+	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_submit", inputs);
 
 	// ///// UI Graph Shortcuts /////
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_D | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::D | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_graph_duplicate", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_DELETE));
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
 	default_builtin_cache.insert("ui_graph_delete", inputs);
 
 	// ///// UI File Dialog Shortcuts /////
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_BACKSPACE));
+	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE));
 	default_builtin_cache.insert("ui_filedialog_up_one_level", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_F5));
+	inputs.push_back(InputEventKey::create_reference(Key::F5));
 	default_builtin_cache.insert("ui_filedialog_refresh", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_H));
+	inputs.push_back(InputEventKey::create_reference(Key::H));
 	default_builtin_cache.insert("ui_filedialog_show_hidden", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(KEY_QUOTELEFT | KEY_MASK_CMD));
+	inputs.push_back(InputEventKey::create_reference(Key::QUOTELEFT | KeyModifierMask::CMD));
 	default_builtin_cache.insert("ui_swap_input_direction", inputs);
 
 	return default_builtin_cache;

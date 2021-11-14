@@ -119,7 +119,7 @@ Vector3 GodotWorldBoundaryShape3D::get_support(const Vector3 &p_normal) const {
 	return p_normal * 1e15;
 }
 
-bool GodotWorldBoundaryShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool GodotWorldBoundaryShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	bool inters = plane.intersects_segment(p_begin, p_end, &r_result);
 	if (inters) {
 		r_normal = plane.normal;
@@ -200,7 +200,7 @@ void GodotSeparationRayShape3D::get_supports(const Vector3 &p_normal, int p_max,
 	}
 }
 
-bool GodotSeparationRayShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool GodotSeparationRayShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	return false; //simply not possible
 }
 
@@ -268,7 +268,7 @@ void GodotSphereShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector
 	r_type = FEATURE_POINT;
 }
 
-bool GodotSphereShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool GodotSphereShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	return Geometry3D::segment_intersects_sphere(p_begin, p_end, Vector3(), radius, &r_result, &r_normal);
 }
 
@@ -410,7 +410,7 @@ void GodotBoxShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *
 	r_supports[0] = point;
 }
 
-bool GodotBoxShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool GodotBoxShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	AABB aabb(-half_extents, half_extents * 2.0);
 
 	return aabb.intersects_segment(p_begin, p_end, &r_result, &r_normal);
@@ -546,7 +546,7 @@ void GodotCapsuleShape3D::get_supports(const Vector3 &p_normal, int p_max, Vecto
 	}
 }
 
-bool GodotCapsuleShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool GodotCapsuleShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	Vector3 norm = (p_end - p_begin).normalized();
 	real_t min_d = 1e20;
 
@@ -761,7 +761,7 @@ void GodotCylinderShape3D::get_supports(const Vector3 &p_normal, int p_max, Vect
 	}
 }
 
-bool GodotCylinderShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool GodotCylinderShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	return Geometry3D::segment_intersects_cylinder(p_begin, p_end, height, radius, &r_result, &r_normal, 1);
 }
 
@@ -954,7 +954,7 @@ void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max,
 	r_type = FEATURE_POINT;
 }
 
-bool GodotConvexPolygonShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool GodotConvexPolygonShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
 	int fc = mesh.faces.size();
 
@@ -1188,12 +1188,12 @@ void GodotFaceShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 	r_supports[0] = vertex[vert_support_idx];
 }
 
-bool GodotFaceShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool GodotFaceShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	bool c = Geometry3D::segment_intersects_triangle(p_begin, p_end, vertex[0], vertex[1], vertex[2], &r_result);
 	if (c) {
 		r_normal = Plane(vertex[0], vertex[1], vertex[2]).normal;
 		if (r_normal.dot(p_end - p_begin) > 0) {
-			if (backface_collision) {
+			if (backface_collision && p_hit_back_faces) {
 				r_normal = -r_normal;
 			} else {
 				c = false;
@@ -1304,7 +1304,7 @@ void GodotConcavePolygonShape3D::_cull_segment(int p_idx, _SegmentCullParams *p_
 
 		Vector3 res;
 		Vector3 normal;
-		if (face->intersect_segment(p_params->from, p_params->to, res, normal)) {
+		if (face->intersect_segment(p_params->from, p_params->to, res, normal, true)) {
 			real_t d = p_params->dir.dot(res) - p_params->dir.dot(p_params->from);
 			if ((d > 0) && (d < p_params->min_d)) {
 				p_params->min_d = d;
@@ -1323,7 +1323,7 @@ void GodotConcavePolygonShape3D::_cull_segment(int p_idx, _SegmentCullParams *p_
 	}
 }
 
-bool GodotConcavePolygonShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool GodotConcavePolygonShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	if (faces.size() == 0) {
 		return false;
 	}
@@ -1334,7 +1334,7 @@ bool GodotConcavePolygonShape3D::intersect_segment(const Vector3 &p_begin, const
 	const BVH *br = bvh.ptr();
 
 	GodotFaceShape3D face;
-	face.backface_collision = backface_collision;
+	face.backface_collision = backface_collision && p_hit_back_faces;
 
 	_SegmentCullParams params;
 	params.from = p_begin;
@@ -1675,7 +1675,7 @@ struct _HeightmapGridCullState {
 _FORCE_INLINE_ bool _heightmap_face_cull_segment(_HeightmapSegmentCullParams &p_params) {
 	Vector3 res;
 	Vector3 normal;
-	if (p_params.face->intersect_segment(p_params.from, p_params.to, res, normal)) {
+	if (p_params.face->intersect_segment(p_params.from, p_params.to, res, normal, true)) {
 		p_params.result = res;
 		p_params.normal = normal;
 		return true;
@@ -1881,7 +1881,7 @@ bool GodotHeightMapShape3D::_intersect_grid_segment(ProcessFunction &p_process, 
 	return false;
 }
 
-bool GodotHeightMapShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal) const {
+bool GodotHeightMapShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, bool p_hit_back_faces) const {
 	if (heights.is_empty()) {
 		return false;
 	}
@@ -1899,7 +1899,7 @@ bool GodotHeightMapShape3D::intersect_segment(const Vector3 &p_begin, const Vect
 		// Simple case for rays that don't traverse the grid horizontally.
 		// Just perform a test on the given cell.
 		GodotFaceShape3D face;
-		face.backface_collision = false;
+		face.backface_collision = p_hit_back_faces;
 
 		_HeightmapSegmentCullParams params;
 		params.from = p_begin;

@@ -135,7 +135,7 @@ public:
 
 	struct ShaderData {
 		virtual void set_code(const String &p_Code) = 0;
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture) = 0;
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) = 0;
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
 
 		virtual void get_instance_param_list(List<InstanceShaderParam> *p_param_list) const = 0;
@@ -152,7 +152,7 @@ public:
 
 	struct MaterialData {
 		void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
-		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
+		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
 
 		virtual void set_render_priority(int p_priority) = 0;
 		virtual void set_next_pass(RID p_pass) = 0;
@@ -160,7 +160,7 @@ public:
 		virtual ~MaterialData();
 
 		//to be used internally by update_parameters, in the most common configuration of material parameters
-		bool update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, RID> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
+		bool update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, Map<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
 		void free_parameters_uniform_set(RID p_uniform_set);
 
 	private:
@@ -374,7 +374,7 @@ private:
 		ShaderData *data;
 		String code;
 		ShaderType type;
-		Map<StringName, RID> default_texture_parameter;
+		Map<StringName, Map<int, RID>> default_texture_parameter;
 		Set<Material *> owners;
 	};
 
@@ -883,14 +883,14 @@ private:
 
 		String path;
 		String code;
-		Map<StringName, RID> default_texture_params;
+		Map<StringName, Map<int, RID>> default_texture_params;
 
 		RID pipeline;
 
 		bool uses_time;
 
 		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
 		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
@@ -1414,8 +1414,8 @@ public:
 	String shader_get_code(RID p_shader) const;
 	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture);
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const;
+	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index);
+	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const;
 	Variant shader_get_param_default(RID p_shader, const StringName &p_param) const;
 	void shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function);
 

@@ -758,6 +758,10 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 					instance_count = storage->multimesh_get_instances_to_draw(multimesh);
 
+					if (instance_count == 0) {
+						break;
+					}
+
 					RID uniform_set = storage->multimesh_get_2d_uniform_set(multimesh, shader.default_version_rd_shader, TRANSFORMS_UNIFORM_SET);
 					RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, uniform_set, TRANSFORMS_UNIFORM_SET);
 					push_constant.flags |= 1; //multimesh, trails disabled
@@ -2120,11 +2124,20 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void RendererCanvasRenderRD::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+void RendererCanvasRenderRD::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) {
 	if (!p_texture.is_valid()) {
-		default_texture_params.erase(p_name);
+		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
+			default_texture_params[p_name].erase(p_index);
+
+			if (default_texture_params[p_name].is_empty()) {
+				default_texture_params.erase(p_name);
+			}
+		}
 	} else {
-		default_texture_params[p_name] = p_texture;
+		if (!default_texture_params.has(p_name)) {
+			default_texture_params[p_name] = Map<int, RID>();
+		}
+		default_texture_params[p_name][p_index] = p_texture;
 	}
 }
 

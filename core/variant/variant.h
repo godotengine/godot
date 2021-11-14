@@ -31,6 +31,7 @@
 #ifndef VARIANT_H
 #define VARIANT_H
 
+#include "core/input/input_enums.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -43,6 +44,7 @@
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
 #include "core/object/object_id.h"
+#include "core/os/keyboard.h"
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
@@ -429,6 +431,21 @@ public:
 	Variant(const Vector<Vector2> &p_array); // helper
 
 	Variant(const IPAddress &p_address);
+
+#define VARIANT_ENUM_CLASS_CONSTRUCTOR(m_enum) \
+	Variant(const m_enum &p_value) {           \
+		type = INT;                            \
+		_data._int = (int64_t)p_value;         \
+	}
+
+	// Only enum classes that need to be bound need this to be defined.
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(MIDIMessage)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(MouseButton)
+
+#undef VARIANT_ENUM_CLASS_CONSTRUCTOR
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {

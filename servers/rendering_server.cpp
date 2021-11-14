@@ -1716,8 +1716,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shader_get_param_list", "shader"), &RenderingServer::_shader_get_param_list);
 	ClassDB::bind_method(D_METHOD("shader_get_param_default", "shader", "param"), &RenderingServer::shader_get_param_default);
 
-	ClassDB::bind_method(D_METHOD("shader_set_default_texture_param", "shader", "param", "texture"), &RenderingServer::shader_set_default_texture_param);
-	ClassDB::bind_method(D_METHOD("shader_get_default_texture_param", "shader", "param"), &RenderingServer::shader_get_default_texture_param);
+	ClassDB::bind_method(D_METHOD("shader_set_default_texture_param", "shader", "param", "texture", "index"), &RenderingServer::shader_set_default_texture_param, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("shader_get_default_texture_param", "shader", "param", "index"), &RenderingServer::shader_get_default_texture_param, DEFVAL(0));
 
 	BIND_ENUM_CONSTANT(SHADER_SPATIAL);
 	BIND_ENUM_CONSTANT(SHADER_CANVAS_ITEM);

@@ -133,9 +133,12 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_linear
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer2D::MotionResult *r = nullptr;
+	PhysicsServer2D::MotionResult temp_result;
 	if (r_collision.is_valid()) {
 		// Needs const_cast because method bindings don't support non-const Ref.
 		r = const_cast<PhysicsServer2D::MotionResult *>(&r_collision->result);
+	} else {
+		r = &temp_result;
 	}
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
@@ -143,7 +146,14 @@ bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_linear
 
 	PhysicsServer2D::MotionParameters parameters(p_from, p_linear_velocity * delta, p_margin);
 
-	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+	bool colliding = PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+
+	if (colliding) {
+		// Don't report collision when the whole motion is done.
+		return (r->collision_safe_fraction < 1.0);
+	} else {
+		return false;
+	}
 }
 
 TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
@@ -1101,6 +1111,10 @@ bool CharacterBody2D::move_and_slide() {
 			if (bs) {
 				Vector2 local_position = gt.elements[2] - bs->get_transform().elements[2];
 				current_platform_velocity = bs->get_velocity_at_local_position(local_position);
+			} else {
+				// Body is removed or destroyed, invalidate floor.
+				current_platform_velocity = Vector2();
+				platform_rid = RID();
 			}
 		} else {
 			current_platform_velocity = Vector2();

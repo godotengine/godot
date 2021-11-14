@@ -107,6 +107,39 @@ uint64_t Color::to_rgba64() const {
 	return c;
 }
 
+String _to_hex(float p_val) {
+	int v = Math::round(p_val * 255);
+	v = CLAMP(v, 0, 255);
+	String ret;
+
+	for (int i = 0; i < 2; i++) {
+		char32_t c[2] = { 0, 0 };
+		int lv = v & 0xF;
+		if (lv < 10) {
+			c[0] = '0' + lv;
+		} else {
+			c[0] = 'a' + lv - 10;
+		}
+
+		v >>= 4;
+		String cs = (const char32_t *)c;
+		ret = cs + ret;
+	}
+
+	return ret;
+}
+
+String Color::to_html(bool p_alpha) const {
+	String txt;
+	txt += _to_hex(r);
+	txt += _to_hex(g);
+	txt += _to_hex(b);
+	if (p_alpha) {
+		txt += _to_hex(a);
+	}
+	return txt;
+}
+
 float Color::get_h() const {
 	float min = MIN(r, g);
 	min = MIN(min, b);
@@ -247,20 +280,6 @@ Color Color::hex64(uint64_t p_hex) {
 	float r = (p_hex & 0xFFFF) / 65535.0;
 
 	return Color(r, g, b, a);
-}
-
-Color Color::from_rgbe9995(uint32_t p_rgbe) {
-	float r = p_rgbe & 0x1ff;
-	float g = (p_rgbe >> 9) & 0x1ff;
-	float b = (p_rgbe >> 18) & 0x1ff;
-	float e = (p_rgbe >> 27);
-	float m = Math::pow(2, e - 15.0 - 9.0);
-
-	float rd = r * m;
-	float gd = g * m;
-	float bd = b * m;
-
-	return Color(rd, gd, bd, 1.0f);
 }
 
 static int _parse_col4(const String &p_str, int p_ofs) {
@@ -428,43 +447,24 @@ Color Color::from_string(const String &p_string, const Color &p_default) {
 	}
 }
 
-String _to_hex(float p_val) {
-	int v = Math::round(p_val * 255);
-	v = CLAMP(v, 0, 255);
-	String ret;
-
-	for (int i = 0; i < 2; i++) {
-		char32_t c[2] = { 0, 0 };
-		int lv = v & 0xF;
-		if (lv < 10) {
-			c[0] = '0' + lv;
-		} else {
-			c[0] = 'a' + lv - 10;
-		}
-
-		v >>= 4;
-		String cs = (const char32_t *)c;
-		ret = cs + ret;
-	}
-
-	return ret;
-}
-
-String Color::to_html(bool p_alpha) const {
-	String txt;
-	txt += _to_hex(r);
-	txt += _to_hex(g);
-	txt += _to_hex(b);
-	if (p_alpha) {
-		txt += _to_hex(a);
-	}
-	return txt;
-}
-
-Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) const {
+Color Color::from_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	Color c;
-	c.set_hsv(p_h, p_s, p_v, p_a);
+	c.set_hsv(p_h, p_s, p_v, p_alpha);
 	return c;
+}
+
+Color Color::from_rgbe9995(uint32_t p_rgbe) {
+	float r = p_rgbe & 0x1ff;
+	float g = (p_rgbe >> 9) & 0x1ff;
+	float b = (p_rgbe >> 18) & 0x1ff;
+	float e = (p_rgbe >> 27);
+	float m = Math::pow(2, e - 15.0 - 9.0);
+
+	float rd = r * m;
+	float gd = g * m;
+	float bd = b * m;
+
+	return Color(rd, gd, bd, 1.0f);
 }
 
 Color::operator String() const {

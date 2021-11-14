@@ -818,7 +818,7 @@ public:
 		}
 
 		const Ref<InputEventMouseButton> mb = p_ev;
-		if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
+		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 			if (hovered_index >= 0) {
 				// Toggle the flag.
 				// We base our choice on the hovered flag, so that it always matches the hovered flag.
@@ -1278,11 +1278,11 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 	}
 	const Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
-		if (mb->is_double_click() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->is_double_click() && mb->get_button_index() == MouseButton::LEFT) {
 			_setup_spin();
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 			preset->set_position(easing_draw->get_screen_transform().xform(mb->get_position()));
 			preset->popup();
 
@@ -1291,7 +1291,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 			easing_draw->update();
 		}
 
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			dragging = mb->is_pressed();
 			// Update to display the correct dragging color
 			easing_draw->update();
@@ -1300,7 +1300,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
 	const Ref<InputEventMouseMotion> mm = p_ev;
 
-	if (dragging && mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (dragging && mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		float rel = mm->get_relative().x;
 		if (rel == 0) {
 			return;
@@ -3170,11 +3170,7 @@ EditorPropertyResource::EditorPropertyResource() {
 ////////////// DEFAULT PLUGIN //////////////////////
 
 bool EditorInspectorDefaultPlugin::can_handle(Object *p_object) {
-	return true; //can handle everything
-}
-
-void EditorInspectorDefaultPlugin::parse_begin(Object *p_object) {
-	//do none
+	return true; // Can handle everything.
 }
 
 bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
@@ -3183,10 +3179,6 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 		add_property_editor(p_path, editor);
 	}
 	return false;
-}
-
-void EditorInspectorDefaultPlugin::parse_end() {
-	//do none
 }
 
 struct EditorPropertyRangeHint {

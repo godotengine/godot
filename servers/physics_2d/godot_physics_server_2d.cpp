@@ -289,7 +289,7 @@ RID GodotPhysicsServer2D::area_create() {
 	RID rid = area_owner.make_rid(area);
 	area->set_self(rid);
 	return rid;
-};
+}
 
 void GodotPhysicsServer2D::area_set_space(RID p_area, RID p_space) {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
@@ -307,7 +307,7 @@ void GodotPhysicsServer2D::area_set_space(RID p_area, RID p_space) {
 
 	area->clear_constraints();
 	area->set_space(space);
-};
+}
 
 RID GodotPhysicsServer2D::area_get_space(RID p_area) const {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
@@ -318,20 +318,6 @@ RID GodotPhysicsServer2D::area_get_space(RID p_area) const {
 		return RID();
 	}
 	return space->get_self();
-};
-
-void GodotPhysicsServer2D::area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) {
-	GodotArea2D *area = area_owner.get_or_null(p_area);
-	ERR_FAIL_COND(!area);
-
-	area->set_space_override_mode(p_mode);
-}
-
-PhysicsServer2D::AreaSpaceOverrideMode GodotPhysicsServer2D::area_get_space_override_mode(RID p_area) const {
-	const GodotArea2D *area = area_owner.get_or_null(p_area);
-	ERR_FAIL_COND_V(!area, AREA_SPACE_OVERRIDE_DISABLED);
-
-	return area->get_space_override_mode();
 }
 
 void GodotPhysicsServer2D::area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform, bool p_disabled) {
@@ -963,10 +949,17 @@ bool GodotPhysicsServer2D::body_test_motion(RID p_body, const MotionParameters &
 PhysicsDirectBodyState2D *GodotPhysicsServer2D::body_get_direct_state(RID p_body) {
 	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
+	if (!body_owner.owns(p_body)) {
+		return nullptr;
+	}
+
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
 
-	ERR_FAIL_COND_V(!body->get_space(), nullptr);
+	if (!body->get_space()) {
+		return nullptr;
+	}
+
 	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return body->get_direct_state();

@@ -150,7 +150,7 @@ void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	Ref<InputEventMouseMotion> mm = p_ev;
 
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
 			is_pressing = true;
 
@@ -531,7 +531,7 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 		Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
 		Vector2i port_size = Vector2i(port->get_width(), port->get_height());
 
@@ -678,7 +678,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		}
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && !mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		if (connecting_valid) {
 			if (connecting && connecting_target) {
 				String from = connecting_from;
@@ -1031,7 +1031,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_ev;
-	if (mm.is_valid() && (mm->get_button_mask() & MOUSE_BUTTON_MASK_MIDDLE || (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
+	if (mm.is_valid() && ((mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE || ((mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE && Input::get_singleton()->is_key_pressed(Key::SPACE)))) {
 		Vector2i relative = Input::get_singleton()->warp_mouse_motion(mm, get_global_rect());
 		h_scroll->set_value(h_scroll->get_value() - relative.x);
 		v_scroll->set_value(v_scroll->get_value() - relative.y);
@@ -1052,7 +1052,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
-				if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+				if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 					const int snap = get_snap();
 					pos = pos.snapped(Vector2(snap, snap));
 				}
@@ -1101,7 +1101,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventMouseButton> b = p_ev;
 	if (b.is_valid()) {
-		if (b->get_button_index() == MOUSE_BUTTON_RIGHT && b->is_pressed()) {
+		if (b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
 			if (box_selecting) {
 				box_selecting = false;
 				for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1131,8 +1131,8 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_LEFT && !b->is_pressed() && dragging) {
-			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+		if (b->get_button_index() == MouseButton::LEFT && !b->is_pressed() && dragging) {
+			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 				//deselect current node
 				for (int i = get_child_count() - 1; i >= 0; i--) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -1170,7 +1170,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			connections_layer->update();
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_LEFT && b->is_pressed()) {
+		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
 			GraphNode *gn = nullptr;
 
 			for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1196,7 +1196,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				dragging = true;
 				drag_accum = Vector2();
 				just_selected = !gn->is_selected();
-				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 					for (int i = 0; i < get_child_count(); i++) {
 						GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
 						if (o_gn) {
@@ -1227,7 +1227,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				if (_filter_input(b->get_position())) {
 					return;
 				}
-				if (Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+				if (Input::get_singleton()->is_key_pressed(Key::SPACE)) {
 					return;
 				}
 
@@ -1272,7 +1272,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		if (b->get_button_index() == MOUSE_BUTTON_LEFT && !b->is_pressed() && box_selecting) {
+		if (b->get_button_index() == MouseButton::LEFT && !b->is_pressed() && box_selecting) {
 			box_selecting = false;
 			box_selecting_rect = Rect2();
 			previous_selected.clear();
@@ -1280,7 +1280,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			minimap->update();
 		}
 
-		int scroll_direction = (b->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) - (b->get_button_index() == MOUSE_BUTTON_WHEEL_UP);
+		int scroll_direction = (b->get_button_index() == MouseButton::WHEEL_DOWN) - (b->get_button_index() == MouseButton::WHEEL_UP);
 		if (scroll_direction != 0) {
 			if (b->is_ctrl_pressed()) {
 				if (b->is_shift_pressed()) {

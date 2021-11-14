@@ -125,7 +125,14 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	Color grid_color = EditorSettings::get_singleton()->get("editors/tiles_editor/grid_color");
 	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
 	const Ref<Texture2D> add_handle = get_theme_icon(SNAME("EditorHandleAdd"), SNAME("EditorIcons"));
+	const Ref<StyleBox> focus_stylebox = get_theme_stylebox(SNAME("Focus"), SNAME("EditorStyles"));
 
+	// Draw the focus rectangle.
+	if (base_control->has_focus()) {
+		base_control->draw_style_box(focus_stylebox, Rect2(Vector2(), base_control->get_size()));
+	}
+
+	// Draw tile-related things.
 	Size2 tile_size = tile_set->get_tile_size();
 
 	Transform2D xform;
@@ -240,9 +247,10 @@ void GenericTilePolygonEditor::_zoom_changed() {
 }
 
 void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
+	UndoRedo *undo_redo = use_undo_redo ? editor_undo_redo : memnew(UndoRedo);
 	switch (p_item_pressed) {
 		case RESET_TO_DEFAULT_TILE: {
-			undo_redo->create_action(TTR("Edit Polygons"));
+			undo_redo->create_action(TTR("Reset Polygons"));
 			undo_redo->add_do_method(this, "clear_polygons");
 			Vector<Vector2> polygon = tile_set->get_tile_shape_polygon();
 			for (int i = 0; i < polygon.size(); i++) {
@@ -260,7 +268,7 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			undo_redo->commit_action(true);
 		} break;
 		case CLEAR_TILE: {
-			undo_redo->create_action(TTR("Edit Polygons"));
+			undo_redo->create_action(TTR("Clear Polygons"));
 			undo_redo->add_do_method(this, "clear_polygons");
 			undo_redo->add_do_method(base_control, "update");
 			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
@@ -272,8 +280,49 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
 			undo_redo->commit_action(true);
 		} break;
+		case ROTATE_RIGHT:
+		case ROTATE_LEFT:
+		case FLIP_HORIZONTALLY:
+		case FLIP_VERTICALLY: {
+			undo_redo->create_action(TTR("Rotate Polygons Left"));
+			for (unsigned int i = 0; i < polygons.size(); i++) {
+				Vector<Point2> new_polygon;
+				for (int point_index = 0; point_index < polygons[i].size(); point_index++) {
+					Vector2 point = polygons[i][point_index];
+					switch (p_item_pressed) {
+						case ROTATE_RIGHT: {
+							point = Vector2(-point.y, point.x);
+						} break;
+						case ROTATE_LEFT: {
+							point = Vector2(point.y, -point.x);
+						} break;
+						case FLIP_HORIZONTALLY: {
+							point = Vector2(-point.x, point.y);
+						} break;
+						case FLIP_VERTICALLY: {
+							point = Vector2(point.x, -point.y);
+						} break;
+						default:
+							break;
+					}
+					new_polygon.push_back(point);
+				}
+				undo_redo->add_do_method(this, "set_polygon", i, new_polygon);
+			}
+			undo_redo->add_do_method(base_control, "update");
+			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
+			for (unsigned int i = 0; i < polygons.size(); i++) {
+				undo_redo->add_undo_method(this, "set_polygon", polygons[i]);
+			}
+			undo_redo->add_undo_method(base_control, "update");
+			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
+			undo_redo->commit_action(true);
+		} break;
 		default:
 			break;
+	}
+	if (!use_undo_redo) {
+		memdelete(undo_redo);
 	}
 }
 
@@ -359,6 +408,7 @@ void GenericTilePolygonEditor::_snap_to_half_pixel(Point2 &r_point) {
 }
 
 void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) {
+	UndoRedo *undo_redo = use_undo_redo ? editor_undo_redo : memnew(UndoRedo);
 	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 	hovered_polygon_index = -1;
@@ -399,15 +449,15 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP && mb->is_ctrl_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_ctrl_pressed()) {
 			editor_zoom_widget->set_zoom_by_increments(1);
 			_zoom_changed();
 			accept_event();
-		} else if (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN && mb->is_ctrl_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_ctrl_pressed()) {
 			editor_zoom_widget->set_zoom_by_increments(-1);
 			_zoom_changed();
 			accept_event();
-		} else if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		} else if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (tools_button_group->get_pressed_button() != button_create) {
 					in_creation_polygon.clear();
@@ -504,7 +554,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 				drag_point_index = -1;
 			}
 
-		} else if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			if (mb->is_pressed()) {
 				if (tools_button_group->get_pressed_button() == button_edit) {
 					// Remove point or pan.
@@ -538,7 +588,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 			} else {
 				drag_type = DRAG_TYPE_NONE;
 			}
-		} else if (mb->get_button_index() == MOUSE_BUTTON_MIDDLE) {
+		} else if (mb->get_button_index() == MouseButton::MIDDLE) {
 			if (mb->is_pressed()) {
 				drag_type = DRAG_TYPE_PAN;
 				drag_last_pos = mb->get_position();
@@ -549,21 +599,47 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 	}
 
 	base_control->update();
+
+	if (!use_undo_redo) {
+		memdelete(undo_redo);
+	}
+}
+
+void GenericTilePolygonEditor::set_use_undo_redo(bool p_use_undo_redo) {
+	use_undo_redo = p_use_undo_redo;
 }
 
 void GenericTilePolygonEditor::set_tile_set(Ref<TileSet> p_tile_set) {
-	if (tile_set != p_tile_set) {
-		// Set the default tile shape
-		clear_polygons();
-		if (p_tile_set.is_valid()) {
-			Vector<Vector2> polygon = p_tile_set->get_tile_shape_polygon();
-			for (int i = 0; i < polygon.size(); i++) {
-				polygon.write[i] = polygon[i] * p_tile_set->get_tile_size();
-			}
-			add_polygon(polygon);
-		}
+	ERR_FAIL_COND(!p_tile_set.is_valid());
+	if (tile_set == p_tile_set) {
+		return;
 	}
+
+	// Set the default tile shape
+	clear_polygons();
+	if (p_tile_set.is_valid()) {
+		Vector<Vector2> polygon = p_tile_set->get_tile_shape_polygon();
+		for (int i = 0; i < polygon.size(); i++) {
+			polygon.write[i] = polygon[i] * p_tile_set->get_tile_size();
+		}
+		add_polygon(polygon);
+	}
+
 	tile_set = p_tile_set;
+
+	// Set the default zoom value.
+	int default_control_y_size = 200 * EDSCALE;
+	Vector2 zoomed_tile = editor_zoom_widget->get_zoom() * tile_set->get_tile_size();
+	while (zoomed_tile.y < default_control_y_size) {
+		editor_zoom_widget->set_zoom_by_increments(6, false);
+		zoomed_tile = editor_zoom_widget->get_zoom() * tile_set->get_tile_size();
+	}
+	while (zoomed_tile.y > default_control_y_size) {
+		editor_zoom_widget->set_zoom_by_increments(-6, false);
+		zoomed_tile = editor_zoom_widget->get_zoom() * tile_set->get_tile_size();
+	}
+	editor_zoom_widget->set_zoom_by_increments(-6, false);
+	_zoom_changed();
 }
 
 void GenericTilePolygonEditor::set_background(Ref<Texture2D> p_texture, Rect2 p_region, Vector2 p_offset, bool p_flip_h, bool p_flip_v, bool p_transpose, Color p_modulate) {
@@ -644,6 +720,12 @@ void GenericTilePolygonEditor::_notification(int p_what) {
 			button_center_view->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
 			button_pixel_snap->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
 			button_advanced_menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+
+			PopupMenu *p = button_advanced_menu->get_popup();
+			p->set_item_icon(p->get_item_index(ROTATE_RIGHT), get_theme_icon(SNAME("RotateRight"), SNAME("EditorIcons")));
+			p->set_item_icon(p->get_item_index(ROTATE_LEFT), get_theme_icon(SNAME("RotateLeft"), SNAME("EditorIcons")));
+			p->set_item_icon(p->get_item_index(FLIP_HORIZONTALLY), get_theme_icon(SNAME("MirrorX"), SNAME("EditorIcons")));
+			p->set_item_icon(p->get_item_index(FLIP_VERTICALLY), get_theme_icon(SNAME("MirrorY"), SNAME("EditorIcons")));
 			break;
 	}
 }
@@ -670,18 +752,21 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_create->set_toggle_mode(true);
 	button_create->set_button_group(tools_button_group);
 	button_create->set_pressed(true);
+	button_create->set_tooltip(TTR("Add polygon tool"));
 	toolbar->add_child(button_create);
 
 	button_edit = memnew(Button);
 	button_edit->set_flat(true);
 	button_edit->set_toggle_mode(true);
 	button_edit->set_button_group(tools_button_group);
+	button_edit->set_tooltip(TTR("Edit points tool"));
 	toolbar->add_child(button_edit);
 
 	button_delete = memnew(Button);
 	button_delete->set_flat(true);
 	button_delete->set_toggle_mode(true);
 	button_delete->set_button_group(tools_button_group);
+	button_delete->set_tooltip(TTR("Delete points tool"));
 	toolbar->add_child(button_delete);
 
 	button_advanced_menu = memnew(MenuButton);
@@ -689,7 +774,13 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_advanced_menu->set_toggle_mode(true);
 	button_advanced_menu->get_popup()->add_item(TTR("Reset to default tile shape"), RESET_TO_DEFAULT_TILE);
 	button_advanced_menu->get_popup()->add_item(TTR("Clear"), CLEAR_TILE);
+	button_advanced_menu->get_popup()->add_separator();
+	button_advanced_menu->get_popup()->add_icon_item(get_theme_icon(SNAME("RotateRight"), SNAME("EditorIcons")), TTR("Rotate Right"), ROTATE_RIGHT);
+	button_advanced_menu->get_popup()->add_icon_item(get_theme_icon(SNAME("RotateLeft"), SNAME("EditorIcons")), TTR("Rotate Left"), ROTATE_LEFT);
+	button_advanced_menu->get_popup()->add_icon_item(get_theme_icon(SNAME("MirrorX"), SNAME("EditorIcons")), TTR("Flip Horizontally"), FLIP_HORIZONTALLY);
+	button_advanced_menu->get_popup()->add_icon_item(get_theme_icon(SNAME("MirrorY"), SNAME("EditorIcons")), TTR("Flip Vertically"), FLIP_VERTICALLY);
 	button_advanced_menu->get_popup()->connect("id_pressed", callable_mp(this, &GenericTilePolygonEditor::_advanced_menu_item_pressed));
+	button_advanced_menu->set_focus_mode(FOCUS_ALL);
 	toolbar->add_child(button_advanced_menu);
 
 	toolbar->add_child(memnew(VSeparator));
@@ -698,6 +789,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_pixel_snap->set_flat(true);
 	button_pixel_snap->set_toggle_mode(true);
 	button_pixel_snap->set_pressed(true);
+	button_pixel_snap->set_tooltip(TTR("Snap to half-pixel"));
 	toolbar->add_child(button_pixel_snap);
 
 	Control *root = memnew(Control);
@@ -717,6 +809,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	base_control->connect("draw", callable_mp(this, &GenericTilePolygonEditor::_base_control_draw));
 	base_control->connect("gui_input", callable_mp(this, &GenericTilePolygonEditor::_base_control_gui_input));
 	base_control->set_clip_contents(true);
+	base_control->set_focus_mode(Control::FOCUS_CLICK);
 	root->add_child(base_control);
 
 	editor_zoom_widget = memnew(EditorZoomWidget);
@@ -836,7 +929,7 @@ void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_ti
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (picker_button->is_pressed()) {
 					Vector2i coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position());
@@ -927,7 +1020,7 @@ void TileDataDefaultEditor::forward_painting_alternatives_gui_input(TileAtlasVie
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (picker_button->is_pressed()) {
 					Vector3i tile = p_tile_atlas_view->get_alternative_tile_at_pos(mb->get_position());
@@ -1082,7 +1175,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", KEY_P));
+	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", Key::P));
 	toolbar->add_child(picker_button);
 }
 
@@ -1432,7 +1525,7 @@ TileDataCollisionEditor::TileDataCollisionEditor() {
 	angular_velocity_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
 	angular_velocity_editor->update_property();
 	add_child(angular_velocity_editor);
-	property_editors["angular_velocity"] = linear_velocity_editor;
+	property_editors["angular_velocity"] = angular_velocity_editor;
 
 	_polygons_changed();
 }
@@ -1873,7 +1966,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (picker_button->is_pressed()) {
 					Vector2i coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position());
@@ -2214,7 +2307,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				if (picker_button->is_pressed()) {
 					Vector3i tile = p_tile_atlas_view->get_alternative_tile_at_pos(mb->get_position());
@@ -2385,7 +2478,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", KEY_P));
+	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", Key::P));
 	toolbar->add_child(picker_button);
 
 	// Setup

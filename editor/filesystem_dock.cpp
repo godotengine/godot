@@ -2273,7 +2273,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				}
 			}
 			if (!to_move.is_empty()) {
-				if (Input::get_singleton()->is_key_pressed(KEY_CTRL)) {
+				if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 					for (int i = 0; i < to_move.size(); i++) {
 						String new_path;
 						String new_path_base;
@@ -2794,11 +2794,12 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	editor = p_editor;
 	path = "res://";
 
-	// `KEY_MASK_CMD | KEY_C` conflicts with other editor shortcuts.
-	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
-	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
-	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
-	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), KEY_F2);
+	// `KeyModifierMask::CMD | Key::C` conflicts with other editor shortcuts.
+	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::C);
+	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KeyModifierMask::CMD | Key::D);
+	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), Key::KEY_DELETE);
+	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), Key::F2);
+	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
 	add_child(top_vbc);
