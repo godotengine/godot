@@ -31,11 +31,11 @@
 #ifndef SHADER_PREPROCESSOR_H
 #define SHADER_PREPROCESSOR_H
 
+#include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/map.h"
 #include "core/templates/set.h"
 #include "core/typedefs.h"
-#include "core/string/ustring.h"
 
 #include "core/io/resource_loader.h"
 #include "core/os/os.h"
@@ -51,8 +51,7 @@ struct PreprocessorDefine {
 	String body;
 };
 
-struct SkippedPreprocessorCondition
-{
+struct SkippedPreprocessorCondition {
 	int start_line = -1;
 	int end_line = -1;
 };
@@ -66,14 +65,11 @@ struct PreprocessorState {
 	String current_include = "";
 	String error;
 	int error_line;
-	Map<String, Vector<SkippedPreprocessorCondition*>> skipped_conditions;
+	Map<String, Vector<SkippedPreprocessorCondition *>> skipped_conditions;
 
-	~PreprocessorState()
-	{
-		for (auto& kvp : skipped_conditions)
-		{
-			for (auto& skip_proc : kvp.value)
-			{
+	~PreprocessorState() {
+		for (auto &kvp : skipped_conditions) {
+			for (auto &skip_proc : kvp.value) {
 				delete skip_proc;
 			}
 
@@ -85,7 +81,6 @@ struct PreprocessorState {
 };
 
 class ShaderPreprocessor {
-
 public:
 	~ShaderPreprocessor();
 	ShaderPreprocessor(const String &p_code);
@@ -104,7 +99,7 @@ private:
 
 	void process_if(PreproprocessorTokenizer *);
 	void process_ifdef(PreproprocessorTokenizer *);
-	void process_ifndef(PreproprocessorTokenizer*);
+	void process_ifndef(PreproprocessorTokenizer *);
 	void start_branch_condition(PreproprocessorTokenizer *tokenizer, bool success);
 
 	void process_else(PreproprocessorTokenizer *);
@@ -118,7 +113,7 @@ private:
 	String expand_macros(const String &p_string, int p_line);
 	String expand_macros_once(const String &p_line, int line, int *p_expanded);
 
-	String evaluate_internal_conditions(const String& p_string, int p_line);
+	String evaluate_internal_conditions(const String &p_string, int p_line);
 
 	String next_directive(PreproprocessorTokenizer *tokenizer, const Vector<String> &directives);
 	void add_to_output(const String &p_str);
@@ -140,29 +135,25 @@ struct ShaderDependencyNode {
 
 	String path;
 	Ref<Shader> shader;
-	Set<ShaderDependencyNode*> dependencies;
+	Set<ShaderDependencyNode *> dependencies;
 
 	ShaderDependencyNode() = default;
 	ShaderDependencyNode(Ref<Shader>);
 	ShaderDependencyNode(String code);
 	ShaderDependencyNode(String path, String code);
 
-	int GetContext(int line, ShaderDependencyNode** context);
-	String get_path()
-	{
-		if (shader.is_null())
-		{
+	int GetContext(int line, ShaderDependencyNode **context);
+	String get_path() {
+		if (shader.is_null()) {
 			return path;
 		}
 
 		return shader->get_path();
 	}
 
-	int get_line_count()
-	{
+	int get_line_count() {
 		int total_lines = line_count - 1;
-		for (ShaderDependencyNode* node : dependencies)
-		{
+		for (ShaderDependencyNode *node : dependencies) {
 			total_lines += node->get_line_count();
 		}
 
@@ -179,7 +170,7 @@ class ShaderDependencyGraph {
 public:
 	~ShaderDependencyGraph();
 
-	Set<ShaderDependencyNode*> nodes;
+	Set<ShaderDependencyNode *> nodes;
 
 	void populate(Ref<Shader>);
 	void populate(String code);
@@ -187,14 +178,14 @@ public:
 	void update_shaders();
 
 private:
-	List<ShaderDependencyNode*> cyclic_dep_tracker;
+	List<ShaderDependencyNode *> cyclic_dep_tracker;
 	//List<Ref<Shader>> visited_shaders;
 	List<String> visited_shaders;
 
-	Set<ShaderDependencyNode*>::Element* find(Ref<Shader>);
-	Set<ShaderDependencyNode*>::Element* find(String path);
-	void populate(ShaderDependencyNode*);
-	void update_shaders(ShaderDependencyNode*);
+	Set<ShaderDependencyNode *>::Element *find(Ref<Shader>);
+	Set<ShaderDependencyNode *>::Element *find(String path);
+	void populate(ShaderDependencyNode *);
+	void update_shaders(ShaderDependencyNode *);
 };
 
 #endif

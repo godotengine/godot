@@ -61,13 +61,13 @@ class ShaderTextEditor : public CodeTextEditor {
 	Ref<Shader> shader;
 	String error_shader_path;
 	List<ShaderWarning> warnings;
-	ShaderEditor* shader_editor;
+	ShaderEditor *shader_editor;
 
 	void _check_shader_mode();
 	void _update_warning_panel();
-	void _update_shader_dependency_tree_items(TreeItem* parent_tree_item, ShaderDependencyNode* node);
+	void _update_shader_dependency_tree_items(TreeItem *parent_tree_item, ShaderDependencyNode *node);
 
-	void _clear_tree_item_backgrounds(TreeItem* node);
+	void _clear_tree_item_backgrounds(TreeItem *node);
 
 protected:
 	static void _bind_methods();
@@ -82,10 +82,10 @@ public:
 	void reload_text();
 	void set_warnings_panel(RichTextLabel *p_warnings_panel);
 
-	void set_shader_editor(ShaderEditor* editor);
+	void set_shader_editor(ShaderEditor *editor);
 
 	// TODO even necessary now?
-	void set_shader_dependency_tree(Tree* tree);
+	void set_shader_dependency_tree(Tree *tree);
 	void update_shader_dependency_tree();
 
 	Ref<Shader> get_edited_shader() const;
@@ -156,7 +156,7 @@ class ShaderEditor : public PanelContainer {
 
 	void _tree_activate_shader();
 	void _update_shader_dependency_tree();
-	void _update_shader_dependency_tree_items(TreeItem* parent_tree_item, ShaderDependencyNode* node);
+	void _update_shader_dependency_tree_items(TreeItem *parent_tree_item, ShaderDependencyNode *node);
 
 protected:
 	void _notification(int p_what);

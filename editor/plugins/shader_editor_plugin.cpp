@@ -41,8 +41,8 @@
 #include "editor/project_settings_editor.h"
 #include "editor/property_editor.h"
 #include "servers/display_server.h"
-#include "servers/rendering/shader_types.h"
 #include "servers/rendering/shader_preprocessor.h"
+#include "servers/rendering/shader_types.h"
 
 /*** SHADER SCRIPT EDITOR ****/
 
@@ -59,7 +59,7 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 	set_edited_shader(p_shader, p_shader->get_code());
 }
 
-void ShaderTextEditor::set_edited_shader(const Ref<Shader>& p_shader, String code) {
+void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader, String code) {
 	if (shader == p_shader) {
 		return;
 	}
@@ -100,25 +100,21 @@ void ShaderTextEditor::set_warnings_panel(RichTextLabel *p_warnings_panel) {
 	warnings_panel = p_warnings_panel;
 }
 
-void ShaderTextEditor::set_shader_editor(ShaderEditor* editor)
-{
+void ShaderTextEditor::set_shader_editor(ShaderEditor *editor) {
 	shader_editor = editor;
 }
 
-void ShaderTextEditor::set_shader_dependency_tree(Tree* tree) {
+void ShaderTextEditor::set_shader_dependency_tree(Tree *tree) {
 	shader_dependency_tree = tree;
 }
 
-void ShaderTextEditor::_clear_tree_item_backgrounds(TreeItem* node)
-{
+void ShaderTextEditor::_clear_tree_item_backgrounds(TreeItem *node) {
 	Array tree_children = node->get_children();
-	for (int i = 0; i < tree_children.size(); i++)
-	{
+	for (int i = 0; i < tree_children.size(); i++) {
 		auto child = tree_children[i];
-		if (child.get_type() == Variant::Type::OBJECT)
-		{
-			Object* obj = child.get_validated_object();
-			TreeItem* itemChild = obj->cast_to<TreeItem>(obj);
+		if (child.get_type() == Variant::Type::OBJECT) {
+			Object *obj = child.get_validated_object();
+			TreeItem *itemChild = obj->cast_to<TreeItem>(obj);
 			itemChild->clear_custom_bg_color(0);
 
 			_clear_tree_item_backgrounds(itemChild);
@@ -208,7 +204,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	List<String> preprocessor_keywords;
 	ShaderPreprocessor::get_keyword_list(&preprocessor_keywords);
 
-	for (List<String>::Element* E = preprocessor_keywords.front(); E; E = E->next()) {
+	for (List<String>::Element *E = preprocessor_keywords.front(); E; E = E->next()) {
 		syntax_highlighter->add_keyword_color(E->get(), keyword_color);
 	}
 
@@ -284,7 +280,7 @@ void ShaderTextEditor::_validate_script() {
 	ShaderPreprocessor processor(code);
 	String processed = processor.preprocess();
 
-	PreprocessorState* state = processor.get_state();
+	PreprocessorState *state = processor.get_state();
 	if (!state->error.is_empty()) {
 	}
 
@@ -301,12 +297,12 @@ void ShaderTextEditor::_validate_script() {
 		// create shader preprocessor block here again
 		ShaderDependencyGraph graph;
 		graph.populate(code);
-		ShaderDependencyNode* context;
+		ShaderDependencyNode *context;
 		int adjusted_line = sl.get_error_line();
-		for (ShaderDependencyNode* node : graph.nodes) {
+		for (ShaderDependencyNode *node : graph.nodes) {
 			adjusted_line = node->GetContext(sl.get_error_line(), &context);
 			break;
-		}	
+		}
 
 		bool highlight_error = false;
 		if (context) {
@@ -317,13 +313,10 @@ void ShaderTextEditor::_validate_script() {
 				treeItem->set_custom_bg_color(0, marked_line_color);
 
 				error_shader_path = context->path;
-			}
-			else
-			{
+			} else {
 				highlight_error = true;
 			}
 		}
-
 
 		String error_text = "error(" + itos(adjusted_line) + "): " + sl.get_error_text();
 		set_error(error_text);
@@ -349,22 +342,17 @@ void ShaderTextEditor::_validate_script() {
 		get_text_editor()->set_line_font_color_intensity(i, 1.0f);
 	}
 
-	if (!state->skipped_conditions.is_empty())
-	{
+	if (!state->skipped_conditions.is_empty()) {
 		auto val_elem = state->skipped_conditions.find("");
-		if (val_elem)
-		{
-			for (auto& cond : val_elem->get())
-			{
+		if (val_elem) {
+			for (auto &cond : val_elem->get()) {
 				int end_line = cond->end_line;
-				if (end_line < 0)
-				{
+				if (end_line < 0) {
 					// set to end of file
 					end_line = get_text_editor()->get_line_count() - cond->start_line;
 				}
 
-				for (int i = cond->start_line; i < cond->end_line; i++)
-				{
+				for (int i = cond->start_line; i < cond->end_line; i++) {
 					// TODO expose unevaluated macro conditional block intensity in editor settings
 					get_text_editor()->set_line_font_color_intensity(i, 0.5f);
 				}
@@ -388,8 +376,7 @@ void ShaderTextEditor::_validate_script() {
 	emit_signal(SNAME("script_changed"));
 }
 
-void ShaderTextEditor::goto_error()
-{
+void ShaderTextEditor::goto_error() {
 	if (!error_shader_path.is_empty()) {
 		shader_editor->open_path(error_shader_path);
 
@@ -711,17 +698,14 @@ void ShaderEditor::apply_shaders() {
 		Ref<Shader> currently_edited_shader = shader_editor->get_edited_shader();
 		String editor_code = shader_editor->get_text_editor()->get_text();
 		shader_rolling_code[currently_edited_shader->get_path()] = editor_code;
-		if (currently_edited_shader == shader)
-		{
+		if (currently_edited_shader == shader) {
 			// TODO get cached version of root node shader code to apply. Then set all dep code too. Do this in reverse order up the tree?
 			String shader_code = shader->get_code();
 			if (shader_code != editor_code) {
 				shader->set_code(editor_code);
 				shader->set_edited(true);
 			}
-		}
-		else
-		{
+		} else {
 			currently_edited_shader->set_code(editor_code);
 			currently_edited_shader->set_edited(true);
 		}
@@ -831,22 +815,18 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->popup();
 }
 
-void ShaderEditor::open_path(String path)
-{
+void ShaderEditor::open_path(String path) {
 	// TODO pull from shader dependency graph which can hold cache data, or store directly in tree?
-		// using only to pull code. how to cache data? hash set in editor panel with path lookup?
+	// using only to pull code. how to cache data? hash set in editor panel with path lookup?
 	RES res = ResourceLoader::load(path);
 	if (!res.is_null()) {
-		Shader* shader = Object::cast_to<Shader>(*res);
+		Shader *shader = Object::cast_to<Shader>(*res);
 		if (shader != nullptr) {
 			auto rollingCode = shader_rolling_code.find(shader->get_path());
 
-			if (rollingCode)
-			{
+			if (rollingCode) {
 				shader_editor->set_edited_shader(shader, rollingCode->get());
-			}
-			else
-			{
+			} else {
 				String included = shader->get_code();
 				shader_rolling_code[path] = included;
 				shader_editor->set_edited_shader(shader);
@@ -855,8 +835,7 @@ void ShaderEditor::open_path(String path)
 	}
 }
 
-void ShaderEditor::_tree_activate_shader()
-{
+void ShaderEditor::_tree_activate_shader() {
 	TreeItem *selected = shader_dependency_tree->get_selected();
 	if (selected) {
 		String path = selected->get_metadata(0);
@@ -865,8 +844,7 @@ void ShaderEditor::_tree_activate_shader()
 	}
 }
 
-void ShaderEditor::_update_shader_dependency_tree()
-{
+void ShaderEditor::_update_shader_dependency_tree() {
 	shader_dependency_tree->clear();
 	TreeItem *root = shader_dependency_tree->create_item();
 	root->select(0);
@@ -881,8 +859,7 @@ void ShaderEditor::_update_shader_dependency_tree()
 	}
 }
 
-void ShaderEditor::_update_shader_dependency_tree_items(TreeItem* parent_tree_item, ShaderDependencyNode* node)
-{
+void ShaderEditor::_update_shader_dependency_tree_items(TreeItem *parent_tree_item, ShaderDependencyNode *node) {
 	for (ShaderDependencyNode *child_node : node->dependencies) {
 		TreeItem *shader_child_item = shader_dependency_tree->create_item(parent_tree_item);
 		shader_child_item->set_text(0, TTR(child_node->get_path()));
@@ -924,7 +901,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
 	context_menu->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
-	
+
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	add_child(main_container);
 
@@ -998,7 +975,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
 
 	// split container for code editor and dependency tree
-	HSplitContainer* panel_split = memnew(HSplitContainer);
+	HSplitContainer *panel_split = memnew(HSplitContainer);
 	panel_split->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	panel_split->set_v_size_flags(SIZE_EXPAND_FILL);
 	main_container->add_child(panel_split);
