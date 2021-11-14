@@ -241,7 +241,7 @@ private:
 		const Color get_line_background_color(int p_line) const { return text[p_line].background_color; }
 
 		void set_line_font_color_intensity(int p_line, const float p_color) { text.write[p_line].font_color_intensity = p_color; }
-		const float get_line_font_color_intensity(int p_line) const { return text[p_line].font_color_intensity; }
+		float get_line_font_color_intensity(int p_line) const { return text[p_line].font_color_intensity; }
 	};
 
 	/* Text */
