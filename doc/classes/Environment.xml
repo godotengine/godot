@@ -171,7 +171,8 @@
 		<member name="sdfgi_cascades" type="int" setter="set_sdfgi_cascades" getter="get_sdfgi_cascades" enum="Environment.SDFGICascades" default="1">
 		</member>
 		<member name="sdfgi_enabled" type="bool" setter="set_sdfgi_enabled" getter="is_sdfgi_enabled" default="false">
-			If [code]true[/code], enables signed distance field global illumination.
+			If [code]true[/code], enables signed distance field global illumination for meshes that have their [member GeometryInstance3D.gi_mode] set to [constant GeometryInstance3D.GI_MODE_BAKED]. SDFGI is a real-time global illumination technique that works well with procedurally generated and user-built levels, including in situations where geometry is created during gameplay. The signed distance field is automatically generated around the camera as it moves. Dynamic lights are supported, but dynamic occluders and emissive surfaces are not.
+			[b]Performance:[/b] SDFGI is relatively demanding on the GPU and is not suited to low-end hardware such as integrated graphics (consider [LightmapGI] instead). To improve SDFGI performance, enable [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution] in the Project Settings.
 			[b]Note:[/b] Meshes should have sufficiently thick walls to avoid light leaks (avoid one-sided walls). For interior levels, enclose your level geometry in a sufficiently large box and bridge the loops to close the mesh.
 		</member>
 		<member name="sdfgi_energy" type="float" setter="set_sdfgi_energy" getter="get_sdfgi_energy" default="1.0">

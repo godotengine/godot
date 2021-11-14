@@ -38,8 +38,10 @@
 			The extra distance added to the GeometryInstance3D's bounding box ([AABB]) to increase its cull box.
 		</member>
 		<member name="gi_lightmap_scale" type="int" setter="set_lightmap_scale" getter="get_lightmap_scale" enum="GeometryInstance3D.LightmapScale" default="0">
+			The texel density to use for lightmapping in [LightmapGI]. Greater scale values provide higher resolution in the lightmap, which can result in sharper shadows for lights that have both direct and indirect light baked. However, greater scale values will also increase the space taken by the mesh in the lightmap texture, which increases the memory, storage, and bake time requirements. When using a single mesh at different scales, consider adjusting this value to keep the lightmap texel density consistent across meshes.
 		</member>
 		<member name="gi_mode" type="int" setter="set_gi_mode" getter="get_gi_mode" enum="GeometryInstance3D.GIMode" default="0">
+			The global illumination mode to use for the whole geometry. Use a mode that matches the purpose
 		</member>
 		<member name="ignore_occlusion_culling" type="bool" setter="set_ignore_occlusion_culling" getter="is_ignoring_occlusion_culling" default="false">
 		</member>
@@ -70,7 +72,7 @@
 	</members>
 	<constants>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
-			Will not cast any shadows.
+			Will not cast any shadows. Use this to improve performance for small geometry that is unlikely to cast noticeable shadows (such as debris).
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_ON" value="1" enum="ShadowCastingSetting">
 			Will cast shadows from all visible faces in the GeometryInstance3D.
@@ -85,20 +87,28 @@
 			In other words, the actual mesh will not be visible, only the shadows casted from the mesh will be.
 		</constant>
 		<constant name="GI_MODE_DISABLED" value="0" enum="GIMode">
+			Disabled global illumination mode. Use for dynamic objects that do not contribute to global illumination (such as characters). When using [VoxelGI] and SDFGI, the geometry will [i]receive[/i] indirect lighting and reflections but will not be considered in GI baking. When using [LightmapGI], the object will receive indirect lighting using lightmap probes instead of using the lightmap texture.
 		</constant>
 		<constant name="GI_MODE_BAKED" value="1" enum="GIMode">
+			Baked global illumination mode. Use for static objects that contribute to global illumination (such as level geometry). This GI mode is effective when using [VoxelGI], SDFGI and [LightmapGI].
 		</constant>
 		<constant name="GI_MODE_DYNAMIC" value="2" enum="GIMode">
+			Dynamic global illumination mode. Use for dynamic objects that contribute to global illumination. This GI mode is only effective when using [VoxelGI], but it has a higher performance impact than [constant GI_MODE_BAKED].
 		</constant>
 		<constant name="LIGHTMAP_SCALE_1X" value="0" enum="LightmapScale">
+			The standard texel density for lightmapping with [LightmapGI].
 		</constant>
 		<constant name="LIGHTMAP_SCALE_2X" value="1" enum="LightmapScale">
+			Multiplies texel density by 2× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor between 1.5 and 3.0.
 		</constant>
 		<constant name="LIGHTMAP_SCALE_4X" value="2" enum="LightmapScale">
+			Multiplies texel density by 4× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor between 3.0 and 6.0.
 		</constant>
 		<constant name="LIGHTMAP_SCALE_8X" value="3" enum="LightmapScale">
+			Multiplies texel density by 8× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor greater than 6.0.
 		</constant>
 		<constant name="LIGHTMAP_SCALE_MAX" value="4" enum="LightmapScale">
+			Represents the size of the [enum LightmapScale] enum.
 		</constant>
 		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode">
 			Will not fade itself nor its visibility dependencies, hysteresis will be used instead. See [member visibility_range_begin] and [member Node3D.visibility_parent] for more information.

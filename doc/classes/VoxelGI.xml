@@ -4,9 +4,10 @@
 		Real-time global illumination (GI) probe.
 	</brief_description>
 	<description>
-		[VoxelGI]s are used to provide high-quality real-time indirect light to scenes. They precompute the effect of objects that emit light and the effect of static geometry to simulate the behavior of complex light in real-time. [VoxelGI]s need to be baked before using, however, once baked, dynamic objects will receive light from them. Further, lights can be fully dynamic or baked.
-		Having [VoxelGI]s in a scene can be expensive, the quality of the probe can be turned down in exchange for better performance in the [ProjectSettings] using [member ProjectSettings.rendering/global_illumination/voxel_gi/quality].
-		[b]Note:[/b] Meshes should have sufficiently thick walls to avoid light leaks (avoid one-sided walls). For interior levels, enclose your level geometry in a sufficiently large box and bridge the loops to close the mesh.
+		[VoxelGI]s are used to provide high-quality real-time indirect light and reflections to scenes. They precompute the effect of objects that emit light and the effect of static geometry to simulate the behavior of complex light in real-time. [VoxelGI]s need to be baked before having a visible effect. However, once baked, dynamic objects will receive light from them. Furthermore, lights can be fully dynamic or baked.
+		[b]Procedural generation:[/b] [VoxelGI] can be baked in an exported project, which makes it suitable for procedurally generated or user-built levels as long as all the geometry is generated in advance. For games where geometry is generated at any time during gameplay, SDFGI is more suitable (see [member Environment.sdfgi_enabled]).
+		[b]Performance:[/b] [VoxelGI] is relatively demanding on the GPU and is not suited to low-end hardware such as integrated graphics (consider [LightmapGI] instead). To improve performance, adjust [member ProjectSettings.rendering/global_illumination/voxel_gi/quality] and enable [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution] in the Project Settings. To provide a fallback for low-end hardware, consider adding an option to disable [VoxelGI] in your project's options menus. A [VoxelGI] node can be disabled by hiding it.
+		[b]Note:[/b] Meshes should have sufficiently thick walls to avoid light leaks (avoid one-sided walls). For interior levels, enclose your level geometry in a sufficiently large box and bridge the loops to close the mesh. To further prevent light leaks, you can also strategically place temporary [MeshInstance3D] nodes with their [member GeometryInstance3D.gi_mode] set to [constant GeometryInstance3D.GI_MODE_BAKED]. These temporary nodes can then be hidden after baking the [VoxelGI] node.
 	</description>
 	<tutorials>
 		<link title="GI probes">https://docs.godotengine.org/en/latest/tutorials/3d/gi_probes.html</link>
@@ -19,6 +20,7 @@
 			<argument index="1" name="create_visual_debug" type="bool" default="false" />
 			<description>
 				Bakes the effect from all [GeometryInstance3D]s marked with [constant GeometryInstance3D.GI_MODE_BAKED] and [Light3D]s marked with either [constant Light3D.BAKE_DYNAMIC] or [constant Light3D.BAKE_STATIC]. If [code]create_visual_debug[/code] is [code]true[/code], after baking the light, this will generate a [MultiMesh] that has a cube representing each solid cell with each cube colored to the cell's albedo color. This can be used to visualize the [VoxelGI]'s data and debug any issues that may be occurring.
+				[b]Note:[/b] [method bake] works from the editor and in exported projects. This makes it suitable for procedurally generated or user-built levels. Baking a [VoxelGI] node generally takes from 5 to 20 seconds in most scenes. Reducing [member subdiv] can speed up baking.
 			</description>
 		</method>
 		<method name="debug_bake">
@@ -50,7 +52,7 @@
 			Use 256 subdivisions.
 		</constant>
 		<constant name="SUBDIV_512" value="3" enum="Subdiv">
-			Use 512 subdivisions. This is the highest quality setting, but the slowest. On lower-end hardware this could cause the GPU to stall.
+			Use 512 subdivisions. This is the highest quality setting, but the slowest. On lower-end hardware, this could cause the GPU to stall.
 		</constant>
 		<constant name="SUBDIV_MAX" value="4" enum="Subdiv">
 			Represents the size of the [enum Subdiv] enum.
