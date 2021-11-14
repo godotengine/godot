@@ -671,7 +671,7 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *tokenizer) {
 		set_error("Shader include load failed", line);
 		return;
 	}
-	
+
 	String included = f->get_as_utf8_string(); //f->get_pascal_string(); // shader->get_code();
 	if (included.is_empty()) {
 		set_error("Shader include not found", line);
@@ -1006,7 +1006,6 @@ void ShaderDependencyGraph::populate(ShaderDependencyNode* node) {
 					if (!path.is_empty()) {
 						// RES res = ResourceLoader::load(path);
 						FileAccess* f = FileAccess::open(path, FileAccess::ModeFlags::READ);
-						
 						if (f) //!res.is_null())
 						{
 							// Ref<Shader> shader_reference = Object::cast_to<Shader>(*res);
@@ -1016,7 +1015,6 @@ void ShaderDependencyGraph::populate(ShaderDependencyNode* node) {
 							String shader_path = f->get_path();
 
 							memdelete(f);
-
 							if (/*shader_reference != nullptr &&*/ !visited_shaders.find(shader_path)) {
 								ShaderDependencyNode* new_node = new ShaderDependencyNode(shader_path, included_code);
 								new_node->line = tokenizer.get_line() + 1;

@@ -303,17 +303,14 @@ void ShaderTextEditor::_validate_script() {
 		graph.populate(code);
 		ShaderDependencyNode* context;
 		int adjusted_line = sl.get_error_line();
-		for (ShaderDependencyNode* node : graph.nodes)
-		{
+		for (ShaderDependencyNode* node : graph.nodes) {
 			adjusted_line = node->GetContext(sl.get_error_line(), &context);
 			break;
 		}	
 
 		bool highlight_error = false;
-		if (context)
-		{
-			if (!context->path.is_empty())
-			{
+		if (context) {
+			if (!context->path.is_empty()) {
 				// we have to change files
 				// shader_editor->open_path(context->path);
 				auto treeItem = shader_dependency_tree->get_item_with_text(context->path);
@@ -332,8 +329,7 @@ void ShaderTextEditor::_validate_script() {
 		set_error(error_text);
 		set_error_pos(adjusted_line - 1, 0);
 
-		if (highlight_error)
-		{
+		if (highlight_error) {
 			for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
 				get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 			}
@@ -352,6 +348,7 @@ void ShaderTextEditor::_validate_script() {
 	for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
 		get_text_editor()->set_line_font_color_intensity(i, 1.0f);
 	}
+
 	if (!state->skipped_conditions.is_empty())
 	{
 		auto val_elem = state->skipped_conditions.find("");
@@ -393,8 +390,7 @@ void ShaderTextEditor::_validate_script() {
 
 void ShaderTextEditor::goto_error()
 {
-	if (!error_shader_path.is_empty())
-	{
+	if (!error_shader_path.is_empty()) {
 		shader_editor->open_path(error_shader_path);
 
 		int error_line;
@@ -866,17 +862,6 @@ void ShaderEditor::_tree_activate_shader()
 		String path = selected->get_metadata(0);
 
 		open_path(path);
-
-		/*TreeItem* parent = selected->get_parent();
-		bool is_favorite = parent != nullptr && parent->get_metadata(0) == "Favorites";
-
-		if ((!is_favorite && path.ends_with("/")) || path == "Favorites") {
-			bool collapsed = selected->is_collapsed();
-			selected->set_collapsed(!collapsed);
-		}
-		else {
-			_select_file(path, is_favorite && !path.ends_with("/"));
-		}*/
 	}
 }
 
@@ -939,7 +924,6 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
 	context_menu->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
-
 	
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	add_child(main_container);
