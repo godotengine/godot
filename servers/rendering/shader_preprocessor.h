@@ -186,8 +186,6 @@ public:
 	void populate(String path, String code);
 	void update_shaders();
 
-	
-
 private:
 	List<ShaderDependencyNode*> cyclic_dep_tracker;
 	//List<Ref<Shader>> visited_shaders;

@@ -400,12 +400,10 @@ String ShaderPreprocessor::preprocess(PreprocessorState *p_state) {
 
 	String result = vector_to_string(output);
 
-	
 	//print_line("--------------------------------------");
 	//print_line("Preprocessed shader:");
 	//print_line(result);
-	//print_line("--------------------------------------");
-	
+	//print_line("--------------------------------------");	
 
 	return result;
 }
@@ -551,7 +549,6 @@ void ShaderPreprocessor::process_else(PreproprocessorTokenizer *tokenizer) {
 		}
 	}
 
-
 	if (skip) {
 		Vector<String> ends;
 		ends.push_back("endif");
@@ -674,7 +671,6 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *tokenizer) {
 		set_error("Shader include load failed", line);
 		return;
 	}
-
 	
 	String included = f->get_as_utf8_string(); //f->get_pascal_string(); // shader->get_code();
 	if (included.is_empty()) {
@@ -698,7 +694,6 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *tokenizer) {
 
 	//Mark as included
 	state->includes.insert(real_path);
-	
 
 	state->include_depth++;
 	if (state->include_depth > 25) {

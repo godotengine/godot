@@ -1379,7 +1379,6 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 		}
 		else
 			shader = p_code.split("\n");
-
 		
 		for (int i = 0; i < shader.size(); i++) {
 			if (i + 1 == adjusted_line) {
