@@ -4489,7 +4489,9 @@ void RendererStorageRD::particles_set_emitting(RID p_particles, bool p_emitting)
 }
 
 bool RendererStorageRD::particles_get_emitting(RID p_particles) {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
+	if (RSG::threaded) {
+		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
+	}
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_COND_V(!particles, false);
 
@@ -4814,7 +4816,7 @@ void RendererStorageRD::particles_request_process(RID p_particles) {
 
 AABB RendererStorageRD::particles_get_current_aabb(RID p_particles) {
 	if (RSG::threaded) {
-		WARN_PRINT_ONCE("Calling this function with threaded rendering enabled stalls the renderer, use with care.");
+		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
 	}
 
 	const Particles *particles = particles_owner.get_or_null(p_particles);
@@ -5699,7 +5701,9 @@ void RendererStorageRD::update_particles() {
 }
 
 bool RendererStorageRD::particles_is_inactive(RID p_particles) const {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
+	if (RSG::threaded) {
+		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
+	}
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_COND_V(!particles, false);
 	return !particles->emitting && particles->inactive;
