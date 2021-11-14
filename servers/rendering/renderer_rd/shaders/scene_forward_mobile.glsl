@@ -1345,7 +1345,7 @@ void main() {
 #endif
 			blur_shadow(shadow);
 
-			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0,
+			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -1358,7 +1358,7 @@ void main() {
 #endif
 */
 #ifdef LIGHT_RIM_USED
-					rim, rim_tint, albedo,
+					rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 					clearcoat, clearcoat_gloss,
@@ -1368,9 +1368,6 @@ void main() {
 #endif
 #ifdef USE_SOFT_SHADOW
 					directional_lights.data[i].size,
-#endif
-#ifdef USE_SHADOW_TO_OPACITY
-					alpha,
 #endif
 					diffuse_light,
 					specular_light);
