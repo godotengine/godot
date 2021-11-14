@@ -2035,12 +2035,9 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 		err += TTR("Either Debug Keystore, Debug User AND Debug Password settings must be configured OR none of them.") + "\n";
 	}
 
-	if (!FileAccess::exists(dk)) {
-		dk = EditorSettings::get_singleton()->get("export/android/debug_keystore");
-		if (!FileAccess::exists(dk)) {
-			valid = false;
-			err += TTR("Debug keystore not configured in the Editor Settings nor in the preset.") + "\n";
-		}
+	if (!dk.is_empty() && !FileAccess::exists(dk)) {
+		valid = false;
+		err += TTR("Debug keystore incorrectly configured in the export preset.") + "\n";
 	}
 
 	String rk = p_preset->get("keystore/release");
