@@ -82,7 +82,7 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const PropertyInfo &E : properties) {
-		if (platform->get_option_visibility(E.name, values)) {
+		if (platform->get_export_option_visibility(E.name, values)) {
 			p_list->push_back(E);
 		}
 	}

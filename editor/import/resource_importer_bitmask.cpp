@@ -57,7 +57,7 @@ String ResourceImporterBitMap::get_resource_type() const {
 	return "BitMap";
 }
 
-bool ResourceImporterBitMap::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterBitMap::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -69,7 +69,7 @@ String ResourceImporterBitMap::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterBitMap::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterBitMap::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "create_from", PROPERTY_HINT_ENUM, "Black & White,Alpha"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.5));
 }

@@ -20,6 +20,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_import_options" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_option_visibility" qualifiers="virtual const">
+			<return type="Variant" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="option" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="_import_animation" qualifiers="virtual">
 			<return type="Animation" />
 			<argument index="0" name="path" type="String" />

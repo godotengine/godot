@@ -56,11 +56,11 @@ String ResourceImporterBMFont::get_resource_type() const {
 	return "FontData";
 }
 
-bool ResourceImporterBMFont::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterBMFont::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	return true;
 }
 
-void ResourceImporterBMFont::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterBMFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
 }
 

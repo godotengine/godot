@@ -664,7 +664,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	List<ResourceImporter::ImportOption> options;
 
 	if (scene_import_settings_data->category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
-		ResourceImporterScene::get_singleton()->get_import_options(&options);
+		ResourceImporterScene::get_singleton()->get_import_options(base_path, &options);
 	} else {
 		ResourceImporterScene::get_singleton()->get_internal_import_options(scene_import_settings_data->category, &options);
 	}
