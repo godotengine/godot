@@ -55,6 +55,8 @@ protected:
 	GDVIRTUAL0RC(Vector<String>, _get_extensions)
 	GDVIRTUAL3R(Object *, _import_scene, String, uint32_t, uint32_t)
 	GDVIRTUAL3R(Ref<Animation>, _import_animation, String, uint32_t, uint32_t)
+	GDVIRTUAL1(_get_import_options, String)
+	GDVIRTUAL2RC(Variant, _get_option_visibility, String, String)
 
 public:
 	enum ImportFlags {
@@ -69,6 +71,8 @@ public:
 	virtual void get_extensions(List<String> *r_extensions) const;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
 	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
+	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
+	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options);
 
 	EditorSceneFormatImporter() {}
 };
@@ -115,8 +119,8 @@ protected:
 	GDVIRTUAL2RC(Variant, _get_internal_option_visibility, int, String)
 	GDVIRTUAL2RC(Variant, _get_internal_option_update_view_required, int, String)
 	GDVIRTUAL4(_internal_process, int, Node *, Node *, RES)
-	GDVIRTUAL0(_get_import_options)
-	GDVIRTUAL1RC(Variant, _get_option_visibility, String)
+	GDVIRTUAL1(_get_import_options, String)
+	GDVIRTUAL2RC(Variant, _get_option_visibility, String, String)
 	GDVIRTUAL1(_pre_process, Node *)
 	GDVIRTUAL1(_post_process, Node *)
 
@@ -133,8 +137,8 @@ public:
 
 	virtual void internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, RES p_resource, const Dictionary &p_options);
 
-	virtual void get_import_options(List<ResourceImporter::ImportOption> *r_options);
-	virtual Variant get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
+	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const;
 
 	virtual void pre_process(Node *p_scene, const Map<StringName, Variant> &p_options);
 	virtual void post_process(Node *p_scene, const Map<StringName, Variant> &p_options);
@@ -250,8 +254,8 @@ public:
 	bool get_internal_option_visibility(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
 	bool get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
 
-	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const override;
-	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
+	virtual bool get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const override;
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
 

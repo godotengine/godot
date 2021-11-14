@@ -65,10 +65,10 @@ String ResourceImporterShaderFile::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterShaderFile::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterShaderFile::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 }
 
-bool ResourceImporterShaderFile::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterShaderFile::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	return true;
 }
 

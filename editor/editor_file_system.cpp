@@ -1633,7 +1633,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 		ERR_FAIL_COND_V(!importer.is_valid(), ERR_FILE_CORRUPT);
 		List<ResourceImporter::ImportOption> options;
-		importer->get_import_options(&options);
+		importer->get_import_options(p_files[i], &options);
 		//set default values
 		for (const ResourceImporter::ImportOption &E : options) {
 			source_file_options[p_files[i]][E.option.name] = E.default_value;
@@ -1714,7 +1714,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
 
 		List<ResourceImporter::ImportOption> options;
-		importer->get_import_options(&options);
+		importer->get_import_options(file, &options);
 		//set default values
 		for (const ResourceImporter::ImportOption &F : options) {
 			String base = F.option.name;
@@ -1851,7 +1851,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	//mix with default params, in case a parameter is missing
 
 	List<ResourceImporter::ImportOption> opts;
-	importer->get_import_options(&opts);
+	importer->get_import_options(p_file, &opts);
 	for (const ResourceImporter::ImportOption &E : opts) {
 		if (!params.has(E.option.name)) { //this one is not present
 			params[E.option.name] = E.default_value;

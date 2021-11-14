@@ -91,6 +91,16 @@ Ref<Animation> EditorSceneFormatImporter::import_animation(const String &p_path,
 	ERR_FAIL_V(nullptr);
 }
 
+void EditorSceneFormatImporter::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
+	GDVIRTUAL_CALL(_get_import_options, p_path);
+}
+
+Variant EditorSceneFormatImporter::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) {
+	Variant ret;
+	GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, ret);
+	return ret;
+}
+
 //for documenters, these functions are useful when an importer calls an external conversion helper (like, fbx2gltf),
 //and you want to load the resulting file
 
@@ -110,6 +120,8 @@ void EditorSceneFormatImporter::_bind_methods() {
 	GDVIRTUAL_BIND(_get_extensions);
 	GDVIRTUAL_BIND(_import_scene, "path", "flags", "bake_fps");
 	GDVIRTUAL_BIND(_import_animation, "path", "flags", "bake_fps");
+	GDVIRTUAL_BIND(_get_import_options, "path");
+	GDVIRTUAL_BIND(_get_option_visibility, "path", "option");
 
 	BIND_CONSTANT(IMPORT_SCENE);
 	BIND_CONSTANT(IMPORT_ANIMATION);
@@ -193,15 +205,15 @@ void EditorScenePostImportPlugin::internal_process(InternalImportCategory p_cate
 	current_options_dict = nullptr;
 }
 
-void EditorScenePostImportPlugin::get_import_options(List<ResourceImporter::ImportOption> *r_options) {
+void EditorScenePostImportPlugin::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
 	current_option_list = r_options;
-	GDVIRTUAL_CALL(_get_import_options);
+	GDVIRTUAL_CALL(_get_import_options, p_path);
 	current_option_list = nullptr;
 }
-Variant EditorScenePostImportPlugin::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+Variant EditorScenePostImportPlugin::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	current_options = &p_options;
 	Variant ret;
-	GDVIRTUAL_CALL(_get_option_visibility, p_option, ret);
+	GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, ret);
 	current_options = nullptr;
 	return ret;
 }
@@ -227,8 +239,8 @@ void EditorScenePostImportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_internal_option_visibility, "category", "option");
 	GDVIRTUAL_BIND(_get_internal_option_update_view_required, "category", "option");
 	GDVIRTUAL_BIND(_internal_process, "category", "base_node", "node", "resource");
-	GDVIRTUAL_BIND(_get_import_options);
-	GDVIRTUAL_BIND(_get_option_visibility, "option");
+	GDVIRTUAL_BIND(_get_import_options, "path");
+	GDVIRTUAL_BIND(_get_option_visibility, "path", "option");
 	GDVIRTUAL_BIND(_pre_process, "scene");
 	GDVIRTUAL_BIND(_post_process, "scene");
 
@@ -269,7 +281,7 @@ int ResourceImporterScene::get_format_version() const {
 	return 1;
 }
 
-bool ResourceImporterScene::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterScene::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	if (p_option.begins_with("animation/")) {
 		if (p_option != "animation/import" && !bool(p_options["animation/import"])) {
 			return false;
@@ -281,7 +293,14 @@ bool ResourceImporterScene::get_option_visibility(const String &p_option, const 
 	}
 
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
-		Variant ret = post_importer_plugins.write[i]->get_option_visibility(p_option, p_options);
+		Variant ret = post_importer_plugins.write[i]->get_option_visibility(p_path, p_option, p_options);
+		if (ret.get_type() == Variant::BOOL) {
+			return ret;
+		}
+	}
+
+	for (Ref<EditorSceneFormatImporter> importer : importers) {
+		Variant ret = importer->get_option_visibility(p_path, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
 			return ret;
 		}
@@ -1404,7 +1423,7 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 	return false;
 }
 
-void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterScene::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), "Node3D"));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), "Scene Root"));
 
@@ -1434,7 +1453,11 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Dictionary()));
 
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
-		post_importer_plugins.write[i]->get_import_options(r_options);
+		post_importer_plugins.write[i]->get_import_options(p_path, r_options);
+	}
+
+	for (Ref<EditorSceneFormatImporter> importer : importers) {
+		importer->get_import_options(p_path, r_options);
 	}
 }
 

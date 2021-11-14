@@ -11,6 +11,7 @@
 	<methods>
 		<method name="_get_import_options" qualifiers="virtual">
 			<return type="void" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Override to add general import options. These will appear in the main import dock on the editor. Add options via [method add_import_option] and [method add_import_option_advanced].
 			</description>
@@ -40,7 +41,8 @@
 		</method>
 		<method name="_get_option_visibility" qualifiers="virtual const">
 			<return type="Variant" />
-			<argument index="0" name="option" type="String" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="option" type="String" />
 			<description>
 				Return true or false whether a given option should be visible. Return null to ignore.
 			</description>

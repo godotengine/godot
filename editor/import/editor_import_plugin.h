@@ -44,12 +44,12 @@ protected:
 	GDVIRTUAL0RC(int, _get_preset_count)
 	GDVIRTUAL1RC(String, _get_preset_name, int)
 	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
-	GDVIRTUAL1RC(Array, _get_import_options, int)
+	GDVIRTUAL2RC(Array, _get_import_options, String, int)
 	GDVIRTUAL0RC(String, _get_save_extension)
 	GDVIRTUAL0RC(String, _get_resource_type)
 	GDVIRTUAL0RC(float, _get_priority)
 	GDVIRTUAL0RC(int, _get_import_order)
-	GDVIRTUAL2RC(bool, _get_option_visibility, StringName, Dictionary)
+	GDVIRTUAL3RC(bool, _get_option_visibility, String, StringName, Dictionary)
 	GDVIRTUAL5RC(int, _import, String, String, Dictionary, Array, Array)
 
 public:
@@ -63,8 +63,8 @@ public:
 	virtual String get_resource_type() const override;
 	virtual float get_priority() const override;
 	virtual int get_import_order() const override;
-	virtual void get_import_options(List<ImportOption> *r_options, int p_preset) const override;
-	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const override;
+	virtual bool get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const override;
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata = nullptr) override;
 };
 

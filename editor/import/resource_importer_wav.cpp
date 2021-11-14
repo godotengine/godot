@@ -58,7 +58,7 @@ String ResourceImporterWAV::get_resource_type() const {
 	return "AudioStreamSample";
 }
 
-bool ResourceImporterWAV::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterWAV::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	if (p_option == "force/max_rate_hz" && !bool(p_options["force/max_rate"])) {
 		return false;
 	}
@@ -74,7 +74,7 @@ String ResourceImporterWAV::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterWAV::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterWAV::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/8_bit"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/mono"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/max_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));

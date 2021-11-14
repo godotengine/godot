@@ -116,7 +116,8 @@
 	<methods>
 		<method name="_get_import_options" qualifiers="virtual const">
 			<return type="Array" />
-			<argument index="0" name="preset_index" type="int" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="preset_index" type="int" />
 			<description>
 				Gets the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: [code]name[/code], [code]default_value[/code], [code]property_hint[/code] (optional), [code]hint_string[/code] (optional), [code]usage[/code] (optional).
 			</description>
@@ -135,8 +136,9 @@
 		</method>
 		<method name="_get_option_visibility" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="option_name" type="StringName" />
-			<argument index="1" name="options" type="Dictionary" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="option_name" type="StringName" />
+			<argument index="2" name="options" type="Dictionary" />
 			<description>
 				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled. For example:
 				[codeblocks]
