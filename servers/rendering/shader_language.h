@@ -1057,7 +1057,7 @@ private:
 	String _get_shader_type_list(const Set<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	String _preprocess_shader(const String& p_code, Error* p_error);
+	String _preprocess_shader(const String &p_code, Error *p_error);
 	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Set<String> &p_shader_types);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);

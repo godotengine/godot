@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "shader_language.h"
-#include "shader_preprocessor.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "servers/rendering_server.h"
+#include "shader_preprocessor.h"
 
 #define HAS_WARNING(flag) (warning_flags & flag)
 
@@ -7400,13 +7400,13 @@ Error ShaderLanguage::_validate_datatype(DataType p_type) {
 	return OK;
 }
 
-String ShaderLanguage::_preprocess_shader(const String& p_code, Error* p_error) {
+String ShaderLanguage::_preprocess_shader(const String &p_code, Error *p_error) {
 	*p_error = OK;
 
 	ShaderPreprocessor processor(p_code);
 	String processed = processor.preprocess();
 
-	PreprocessorState* state = processor.get_state();
+	PreprocessorState *state = processor.get_state();
 	if (!state->error.is_empty()) {
 		error_line = state->error_line;
 		error_set = true;
@@ -8986,8 +8986,7 @@ Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_i
 
 	Error err = OK;
 	code = _preprocess_shader(p_code, &err);
-	if (err != OK)
-	{
+	if (err != OK) {
 		return err;
 	}
 

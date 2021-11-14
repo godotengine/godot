@@ -4749,15 +4749,13 @@ Color TextEdit::get_line_background_color(int p_line) const {
 	return text.get_line_background_color(p_line);
 }
 
-void TextEdit::set_line_font_color_intensity(int p_line, const float font_color_intensity)
-{
+void TextEdit::set_line_font_color_intensity(int p_line, const float font_color_intensity) {
 	ERR_FAIL_INDEX(p_line, text.size());
 	text.set_line_font_color_intensity(p_line, font_color_intensity);
 	update();
 }
 
-float TextEdit::get_line_font_color_intensity(int p_line) const
-{
+float TextEdit::get_line_font_color_intensity(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0.0f);
 	return text.get_line_font_color_intensity(p_line);
 }
