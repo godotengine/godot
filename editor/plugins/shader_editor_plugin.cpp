@@ -109,6 +109,23 @@ void ShaderTextEditor::set_shader_dependency_tree(Tree* tree) {
 	shader_dependency_tree = tree;
 }
 
+void ShaderTextEditor::_clear_tree_item_backgrounds(TreeItem* node)
+{
+	Array tree_children = node->get_children();
+	for (int i = 0; i < tree_children.size(); i++)
+	{
+		auto child = tree_children[i];
+		if (child.get_type() == Variant::Type::OBJECT)
+		{
+			Object* obj = child.get_validated_object();
+			TreeItem* itemChild = obj->cast_to<TreeItem>(obj);
+			itemChild->clear_custom_bg_color(0);
+
+			_clear_tree_item_backgrounds(itemChild);
+		}
+	}
+}
+
 void ShaderTextEditor::_load_theme_settings() {
 	CodeEdit *text_editor = get_text_editor();
 	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
@@ -278,6 +295,8 @@ void ShaderTextEditor::_validate_script() {
 
 	Error err = sl.compile(code, info);
 
+	_clear_tree_item_backgrounds(shader_dependency_tree->get_root());
+
 	if (err != OK) {
 		// create shader preprocessor block here again
 		ShaderDependencyGraph graph;
@@ -288,14 +307,23 @@ void ShaderTextEditor::_validate_script() {
 		{
 			adjusted_line = node->GetContext(sl.get_error_line(), &context);
 			break;
-		}
+		}	
 
+		bool highlight_error = false;
 		if (context)
 		{
 			if (!context->path.is_empty())
 			{
 				// we have to change files
-				shader_editor->open_path(context->path);
+				// shader_editor->open_path(context->path);
+				auto treeItem = shader_dependency_tree->get_item_with_text(context->path);
+				treeItem->set_custom_bg_color(0, marked_line_color);
+
+				error_shader_path = context->path;
+			}
+			else
+			{
+				highlight_error = true;
 			}
 		}
 
@@ -303,11 +331,17 @@ void ShaderTextEditor::_validate_script() {
 		String error_text = "error(" + itos(adjusted_line) + "): " + sl.get_error_text();
 		set_error(error_text);
 		set_error_pos(adjusted_line - 1, 0);
-		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
-			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
+
+		if (highlight_error)
+		{
+			for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
+				get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
+			}
+			get_text_editor()->set_line_background_color(adjusted_line - 1, marked_line_color);
 		}
-		get_text_editor()->set_line_background_color(adjusted_line - 1, marked_line_color);
 	} else {
+		error_shader_path = "";
+
 		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
 			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 		}
@@ -355,6 +389,25 @@ void ShaderTextEditor::_validate_script() {
 		set_warning_count(0);
 	}
 	emit_signal(SNAME("script_changed"));
+}
+
+void ShaderTextEditor::goto_error()
+{
+	if (!error_shader_path.is_empty())
+	{
+		shader_editor->open_path(error_shader_path);
+
+		int error_line;
+		int error_column;
+		get_error_pos(error_line, error_column);
+
+		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
+			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
+		}
+		get_text_editor()->set_line_background_color(error_line, marked_line_color);
+	}
+
+	CodeTextEditor::goto_error();
 }
 
 void ShaderTextEditor::_update_warning_panel() {

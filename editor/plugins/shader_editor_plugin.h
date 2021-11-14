@@ -59,12 +59,15 @@ class ShaderTextEditor : public CodeTextEditor {
 	RichTextLabel *warnings_panel = nullptr;
 	Tree *shader_dependency_tree;
 	Ref<Shader> shader;
+	String error_shader_path;
 	List<ShaderWarning> warnings;
 	ShaderEditor* shader_editor;
 
 	void _check_shader_mode();
 	void _update_warning_panel();
 	void _update_shader_dependency_tree_items(TreeItem* parent_tree_item, ShaderDependencyNode* node);
+
+	void _clear_tree_item_backgrounds(TreeItem* node);
 
 protected:
 	static void _bind_methods();
@@ -74,6 +77,7 @@ protected:
 
 public:
 	virtual void _validate_script() override;
+	virtual void goto_error() override;
 
 	void reload_text();
 	void set_warnings_panel(RichTextLabel *p_warnings_panel);

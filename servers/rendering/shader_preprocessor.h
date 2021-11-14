@@ -160,10 +160,10 @@ struct ShaderDependencyNode {
 
 	int get_line_count()
 	{
-		int total_lines = line_count;
+		int total_lines = line_count - 1;
 		for (ShaderDependencyNode* node : dependencies)
 		{
-			total_lines += node->get_line_count() - 1;
+			total_lines += node->get_line_count();
 		}
 
 		return total_lines;

@@ -1546,6 +1546,12 @@ void CodeTextEditor::set_error_pos(int p_line, int p_column) {
 	error_column = p_column;
 }
 
+void CodeTextEditor::get_error_pos(int& p_line, int& p_column)
+{
+	p_line = error_line;
+	p_column = error_column;
+}
+
 void CodeTextEditor::goto_error() {
 	if (!error->get_text().is_empty()) {
 		if (text_editor->get_line_count() != error_line) {

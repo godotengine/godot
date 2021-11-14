@@ -717,6 +717,7 @@ void TextEdit::_notification(int p_what) {
 
 					Dictionary color_map = _get_line_syntax_highlighting(minimap_line);
 
+					float line_font_color_intensity = text.get_line_font_color_intensity(minimap_line);
 					Color line_background_color = text.get_line_background_color(minimap_line);
 					line_background_color.a *= 0.6;
 					Color current_color = font_color;
@@ -773,6 +774,7 @@ void TextEdit::_notification(int p_what) {
 								}
 							}
 							color = current_color;
+							color *= line_font_color_intensity;
 
 							if (j == 0) {
 								previous_color = color;

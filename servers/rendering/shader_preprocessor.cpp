@@ -917,7 +917,12 @@ int ShaderDependencyNode::GetContext(int line, ShaderDependencyNode** context)
 	int include_offset = 0;
 	for (ShaderDependencyNode *include : dependencies)
 	{
-		if (line >= include->line + include_offset && line <= (include->line + include_offset + include->get_line_count()))
+		if (line < include->line + include_offset)
+		{
+			// line shifted by offset is sufficient. break.
+			break;
+		}
+		else if (line >= include->line + include_offset && line <= (include->line + include_offset + include->get_line_count()))
 		{
 			if (include->dependencies.is_empty())
 			{
@@ -926,11 +931,11 @@ int ShaderDependencyNode::GetContext(int line, ShaderDependencyNode** context)
 			}
 			else
 			{
-				return include->GetContext(line - include->line, context);
+				return include->GetContext(line - include->line + 1, context); // plus 1 to be fully inclusive in the skip
 			}
 		}
 
-		include_offset += include->get_line_count() - 1; // subracting 1 because the line count starts on the starting line, which is occupied already. So need to shift by just total lines - 1
+		include_offset += include->get_line_count();
 	}
 
 	*context = this;
@@ -1019,7 +1024,7 @@ void ShaderDependencyGraph::populate(ShaderDependencyNode* node) {
 
 							if (/*shader_reference != nullptr &&*/ !visited_shaders.find(shader_path)) {
 								ShaderDependencyNode* new_node = new ShaderDependencyNode(shader_path, included_code);
-								new_node->line = tokenizer.get_line();
+								new_node->line = tokenizer.get_line() + 1;
 								Vector<String> shader = included_code.split("\n");
 								new_node->line_count = shader.size();
 								visited_shaders.push_back(shader_path);
