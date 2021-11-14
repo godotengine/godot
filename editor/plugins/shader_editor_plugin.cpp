@@ -940,24 +940,9 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	add_child(context_menu);
 	context_menu->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
-	HSplitContainer* panel_split = memnew(HSplitContainer);
-	panel_split->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	panel_split->set_v_size_flags(SIZE_EXPAND_FILL);
-	add_child(panel_split);
-
+	
 	VBoxContainer *main_container = memnew(VBoxContainer);
-	panel_split->add_child(main_container);
-
-	shader_dependency_tree = memnew(Tree);
-	shader_dependency_tree->set_hide_root(true);
-	shader_dependency_tree->set_allow_rmb_select(true);
-	shader_dependency_tree->set_select_mode(Tree::SELECT_SINGLE);
-	// shader_dependency_tree->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
-
-	shader_dependency_tree->connect("item_activated", callable_mp(this, &ShaderEditor::_tree_activate_shader));
-
-	panel_split->add_child(shader_dependency_tree);
-	shader_editor->set_shader_dependency_tree(shader_dependency_tree);
+	add_child(main_container);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
@@ -1028,14 +1013,31 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	hbc->add_child(help_menu);
 	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
 
+	// split container for code editor and dependency tree
+	HSplitContainer* panel_split = memnew(HSplitContainer);
+	panel_split->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	panel_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_container->add_child(panel_split);
+
 	VSplitContainer *editor_box = memnew(VSplitContainer);
-	main_container->add_child(editor_box);
+	panel_split->add_child(editor_box);
 	editor_box->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	editor_box->add_child(shader_editor);
 
+	shader_dependency_tree = memnew(Tree);
+	shader_dependency_tree->set_hide_root(true);
+	shader_dependency_tree->set_allow_rmb_select(true);
+	shader_dependency_tree->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_KEEP_WIDTH);
+	shader_dependency_tree->set_select_mode(Tree::SELECT_SINGLE);
+	shader_dependency_tree->set_custom_minimum_size(Size2(100 * EDSCALE, 30 * EDSCALE));
+	shader_dependency_tree->connect("item_activated", callable_mp(this, &ShaderEditor::_tree_activate_shader));
+	panel_split->add_child(shader_dependency_tree);
+	shader_editor->set_shader_dependency_tree(shader_dependency_tree);
+
 	FindReplaceBar *bar = memnew(FindReplaceBar);
-	main_container->add_child(bar);
+	editor_box->add_child(bar);
+	bar->set_anchors_and_offsets_preset(Control::PRESET_LEFT_WIDE, Control::PRESET_MODE_KEEP_WIDTH);
 	bar->hide();
 	shader_editor->set_find_replace_bar(bar);
 
