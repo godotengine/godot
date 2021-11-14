@@ -235,6 +235,19 @@ int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r
 	return exitcode;
 }
 
+int OS::create_instance(const Vector<String> &p_arguments) {
+	List<String> args;
+	for (int i = 0; i < p_arguments.size(); i++) {
+		args.push_back(p_arguments[i]);
+	}
+	::OS::ProcessID pid = 0;
+	Error err = ::OS::get_singleton()->create_instance(args, &pid);
+	if (err != OK) {
+		return -1;
+	}
+	return pid;
+}
+
 int OS::create_process(const String &p_path, const Vector<String> &p_arguments) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
@@ -489,15 +502,15 @@ String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ::OS::get_singleton()->get_system_dir(::OS::SystemDir(p_dir), p_shared_storage);
 }
 
-String OS::get_keycode_string(uint32_t p_code) const {
+String OS::get_keycode_string(Key p_code) const {
 	return ::keycode_get_string(p_code);
 }
 
-bool OS::is_keycode_unicode(uint32_t p_unicode) const {
-	return ::keycode_has_unicode(p_unicode);
+bool OS::is_keycode_unicode(char32_t p_unicode) const {
+	return ::keycode_has_unicode((Key)p_unicode);
 }
 
-int OS::find_keycode_from_string(const String &p_code) const {
+Key OS::find_keycode_from_string(const String &p_code) const {
 	return find_keycode(p_code);
 }
 
@@ -537,6 +550,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr"), &OS::execute, DEFVAL(Array()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments"), &OS::create_process);
+	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
@@ -603,8 +617,8 @@ void OS::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode_sleep_usec", 6900);
 
-	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES2);
 	BIND_ENUM_CONSTANT(VIDEO_DRIVER_VULKAN);
+	BIND_ENUM_CONSTANT(VIDEO_DRIVER_OPENGL_3);
 
 	BIND_ENUM_CONSTANT(DAY_SUNDAY);
 	BIND_ENUM_CONSTANT(DAY_MONDAY);
@@ -1077,79 +1091,79 @@ bool File::is_open() const {
 }
 
 String File::get_path() const {
-	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use, or is lacking read-write permission.");
 	return f->get_path();
 }
 
 String File::get_path_absolute() const {
-	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use, or is lacking read-write permission.");
 	return f->get_path_absolute();
 }
 
 void File::seek(int64_t p_position) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 	ERR_FAIL_COND_MSG(p_position < 0, "Seek position must be a positive integer.");
 	f->seek(p_position);
 }
 
 void File::seek_end(int64_t p_position) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 	f->seek_end(p_position);
 }
 
 uint64_t File::get_position() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_position();
 }
 
 uint64_t File::get_length() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_length();
 }
 
 bool File::eof_reached() const {
-	ERR_FAIL_COND_V_MSG(!f, false, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, false, "File must be opened before use, or is lacking read-write permission.");
 	return f->eof_reached();
 }
 
 uint8_t File::get_8() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_8();
 }
 
 uint16_t File::get_16() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_16();
 }
 
 uint32_t File::get_32() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_32();
 }
 
 uint64_t File::get_64() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_64();
 }
 
 float File::get_float() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_float();
 }
 
 double File::get_double() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_double();
 }
 
 real_t File::get_real() const {
-	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use, or is lacking read-write permission.");
 	return f->get_real();
 }
 
 Vector<uint8_t> File::get_buffer(int64_t p_length) const {
 	Vector<uint8_t> data;
-	ERR_FAIL_COND_V_MSG(!f, data, "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, data, "File must be opened before use, or is lacking read-write permission.");
 
 	ERR_FAIL_COND_V_MSG(p_length < 0, data, "Length of buffer cannot be smaller than 0.");
 	if (p_length == 0) {
@@ -1170,7 +1184,7 @@ Vector<uint8_t> File::get_buffer(int64_t p_length) const {
 }
 
 String File::get_as_text() const {
-	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use, or is lacking read-write permission.");
 
 	String text;
 	uint64_t original_pos = f->get_position();
@@ -1197,12 +1211,12 @@ String File::get_sha256(const String &p_path) const {
 }
 
 String File::get_line() const {
-	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use, or is lacking read-write permission.");
 	return f->get_line();
 }
 
 Vector<String> File::get_csv_line(const String &p_delim) const {
-	ERR_FAIL_COND_V_MSG(!f, Vector<String>(), "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, Vector<String>(), "File must be opened before use, or is lacking read-write permission.");
 	return f->get_csv_line(p_delim);
 }
 
@@ -1230,77 +1244,77 @@ Error File::get_error() const {
 }
 
 void File::store_8(uint8_t p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_8(p_dest);
 }
 
 void File::store_16(uint16_t p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_16(p_dest);
 }
 
 void File::store_32(uint32_t p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_32(p_dest);
 }
 
 void File::store_64(uint64_t p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_64(p_dest);
 }
 
 void File::store_float(float p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_float(p_dest);
 }
 
 void File::store_double(double p_dest) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_double(p_dest);
 }
 
 void File::store_real(real_t p_real) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_real(p_real);
 }
 
 void File::store_string(const String &p_string) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_string(p_string);
 }
 
 void File::store_pascal_string(const String &p_string) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 
 	f->store_pascal_string(p_string);
 }
 
 String File::get_pascal_string() {
-	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use, or is lacking read-write permission.");
 
 	return f->get_pascal_string();
 }
 
 void File::store_line(const String &p_string) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 	f->store_line(p_string);
 }
 
 void File::store_csv_line(const Vector<String> &p_values, const String &p_delim) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 	f->store_csv_line(p_values, p_delim);
 }
 
 void File::store_buffer(const Vector<uint8_t> &p_buffer) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 
 	uint64_t len = p_buffer.size();
 	if (len == 0) {
@@ -1317,7 +1331,7 @@ bool File::file_exists(const String &p_name) const {
 }
 
 void File::store_var(const Variant &p_var, bool p_full_objects) {
-	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use, or is lacking read-write permission.");
 	int len;
 	Error err = encode_variant(p_var, nullptr, len, p_full_objects);
 	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
@@ -1334,7 +1348,7 @@ void File::store_var(const Variant &p_var, bool p_full_objects) {
 }
 
 Variant File::get_var(bool p_allow_objects) const {
-	ERR_FAIL_COND_V_MSG(!f, Variant(), "File must be opened before use.");
+	ERR_FAIL_COND_V_MSG(!f, Variant(), "File must be opened before use, or is lacking read-write permission.");
 	uint32_t len = get_32();
 	Vector<uint8_t> buff = get_buffer(len);
 	ERR_FAIL_COND_V((uint32_t)buff.size() != len, Variant());

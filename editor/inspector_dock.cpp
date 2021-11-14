@@ -391,7 +391,9 @@ void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Tran
 	if (!s) {
 		return;
 	}
-	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(s, p_sub, p_key);
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_POSITION_3D, p_key.origin);
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_ROTATION_3D, p_key.basis.get_rotation_quaternion());
+	AnimationPlayerEditor::get_singleton()->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_SCALE_3D, p_key.basis.get_scale());
 }
 
 void InspectorDock::_warning_pressed() {

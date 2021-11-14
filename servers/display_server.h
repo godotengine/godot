@@ -114,6 +114,7 @@ public:
 		FEATURE_ORIENTATION,
 		FEATURE_SWAP_BUFFERS,
 		FEATURE_KEEP_SCREEN_ON,
+		FEATURE_CLIPBOARD_PRIMARY,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -161,6 +162,8 @@ public:
 
 	virtual void clipboard_set(const String &p_text);
 	virtual String clipboard_get() const;
+	virtual void clipboard_set_primary(const String &p_text);
+	virtual String clipboard_get_primary() const;
 
 	enum {
 		SCREEN_OF_MAIN_WINDOW = -1
@@ -294,6 +297,9 @@ public:
 
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID);
+
+	// necessary for GL focus, may be able to use one of the existing functions for this, not sure yet
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id);
 
 	virtual Point2i ime_get_selection() const;
 	virtual String ime_get_text() const;

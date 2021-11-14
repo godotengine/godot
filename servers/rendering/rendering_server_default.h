@@ -58,13 +58,7 @@ class RenderingServerDefault : public RenderingServer {
 	static int changes;
 	RID test_cube;
 
-	struct FrameDrawnCallbacks {
-		ObjectID object;
-		StringName method;
-		Variant param;
-	};
-
-	List<FrameDrawnCallbacks> frame_drawn_callbacks;
+	List<Callable> frame_drawn_callbacks;
 
 	static void _changes_changed() {}
 
@@ -229,8 +223,8 @@ public:
 
 	FUNC2SC(shader_get_param_list, RID, List<PropertyInfo> *)
 
-	FUNC3(shader_set_default_texture_param, RID, const StringName &, RID)
-	FUNC2RC(RID, shader_get_default_texture_param, RID, const StringName &)
+	FUNC4(shader_set_default_texture_param, RID, const StringName &, RID, int)
+	FUNC3RC(RID, shader_get_default_texture_param, RID, const StringName &, int)
 	FUNC2RC(Variant, shader_get_param_default, RID, const StringName &)
 
 	FUNC1RC(ShaderNativeSourceCode, shader_get_native_source_code, RID)
@@ -487,6 +481,14 @@ public:
 	FUNC1(particles_collision_height_field_update, RID)
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
 
+	/* FOG VOLUME */
+
+	FUNCRIDSPLIT(fog_volume)
+
+	FUNC2(fog_volume_set_shape, RID, FogVolumeShape)
+	FUNC2(fog_volume_set_extents, RID, const Vector3 &)
+	FUNC2(fog_volume_set_material, RID, RID)
+
 	/* VISIBILITY_NOTIFIER */
 
 	FUNCRIDSPLIT(visibility_notifier)
@@ -629,7 +631,7 @@ public:
 	FUNC7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
 	FUNC9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
-	FUNC10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
+	FUNC13(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float)
 
 	FUNC2(environment_set_volumetric_fog_volume_size, int, int)
 	FUNC1(environment_set_volumetric_fog_filter_active, bool)
@@ -693,6 +695,8 @@ public:
 	FUNC2(instance_set_extra_visibility_margin, RID, real_t)
 	FUNC2(instance_set_visibility_parent, RID, RID)
 
+	FUNC2(instance_set_ignore_culling, RID, bool)
+
 	// don't use these in a game!
 	FUNC2RC(Vector<ObjectID>, instances_cull_aabb, const AABB &, RID)
 	FUNC3RC(Vector<ObjectID>, instances_cull_ray, const Vector3 &, const Vector3 &, RID)
@@ -702,10 +706,10 @@ public:
 	FUNC2(instance_geometry_set_cast_shadows_setting, RID, ShadowCastingSetting)
 	FUNC2(instance_geometry_set_material_override, RID, RID)
 
-	FUNC5(instance_geometry_set_visibility_range, RID, float, float, float, float)
+	FUNC6(instance_geometry_set_visibility_range, RID, float, float, float, float, VisibilityRangeFadeMode)
 	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
 	FUNC2(instance_geometry_set_lod_bias, RID, float)
-
+	FUNC2(instance_geometry_set_transparency, RID, float)
 	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter_default_value, RID, const StringName &)
@@ -870,7 +874,7 @@ public:
 
 	/* EVENT QUEUING */
 
-	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) override;
+	virtual void request_frame_drawn_callback(const Callable &p_callable) override;
 
 	virtual void draw(bool p_swap_buffers, double frame_step) override;
 	virtual void sync() override;

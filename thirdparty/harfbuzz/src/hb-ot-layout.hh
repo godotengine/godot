@@ -187,7 +187,7 @@ _hb_clear_syllables (const hb_ot_shape_plan_t *plan HB_UNUSED,
  * - General_Category: 5 bits.
  * - A bit each for:
  *   * Is it Default_Ignorable(); we have a modified Default_Ignorable().
- *   * Whether it's one of the three Mongolian Free Variation Selectors,
+ *   * Whether it's one of the four Mongolian Free Variation Selectors,
  *     CGJ, or other characters that are hidden but should not be ignored
  *     like most other Default_Ignorable()s do during matching.
  *   * Whether it's a grapheme continuation.
@@ -202,7 +202,7 @@ _hb_clear_syllables (const hb_ot_shape_plan_t *plan HB_UNUSED,
 enum hb_unicode_props_flags_t {
   UPROPS_MASK_GEN_CAT	= 0x001Fu,
   UPROPS_MASK_IGNORABLE	= 0x0020u,
-  UPROPS_MASK_HIDDEN	= 0x0040u, /* MONGOLIAN FREE VARIATION SELECTOR 1..3, or TAG characters */
+  UPROPS_MASK_HIDDEN	= 0x0040u, /* MONGOLIAN FREE VARIATION SELECTOR 1..4, or TAG characters */
   UPROPS_MASK_CONTINUATION=0x0080u,
 
   /* If GEN_CAT=FORMAT, top byte masks: */
@@ -236,7 +236,7 @@ _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
        * FVSes are GC=Mn, we have use a separate bit to remember them.
        * Fixes:
        * https://github.com/harfbuzz/harfbuzz/issues/234 */
-      else if (unlikely (hb_in_range<hb_codepoint_t> (u, 0x180Bu, 0x180Du))) props |= UPROPS_MASK_HIDDEN;
+      else if (unlikely (hb_in_ranges<hb_codepoint_t> (u, 0x180Bu, 0x180Du, 0x180Fu, 0x180Fu))) props |= UPROPS_MASK_HIDDEN;
       /* TAG characters need similar treatment. Fixes:
        * https://github.com/harfbuzz/harfbuzz/issues/463 */
       else if (unlikely (hb_in_range<hb_codepoint_t> (u, 0xE0020u, 0xE007Fu))) props |= UPROPS_MASK_HIDDEN;

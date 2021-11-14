@@ -938,7 +938,7 @@ void Translation::_bind_methods() {
 	GDVIRTUAL_BIND(_get_plural_message, "src_message", "src_plural_message", "n", "context");
 	GDVIRTUAL_BIND(_get_message, "src_message", "context");
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
 }
 
@@ -1563,8 +1563,8 @@ const char32_t *TranslationServer::get_accented_version(char32_t p_character) co
 
 bool TranslationServer::is_placeholder(String &p_message, int p_index) const {
 	return p_message[p_index] == '%' && p_index < p_message.size() - 1 &&
-		   (p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
-				   p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
+			(p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
+					p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
 }
 
 void TranslationServer::_bind_methods() {

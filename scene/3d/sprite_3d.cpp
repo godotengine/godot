@@ -743,6 +743,8 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "frame_coords") {
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	SpriteBase3D::_validate_property(property);
 }
 
 void Sprite3D::_bind_methods() {
@@ -1015,6 +1017,8 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 		}
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
+
+	SpriteBase3D::_validate_property(property);
 }
 
 void AnimatedSprite3D::_notification(int p_what) {

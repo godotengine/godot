@@ -498,11 +498,11 @@ bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package,
 
 bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data) {
 	/*
-     *  By not compressing files with little or not benefit in doing so,
-     *  a performance gain is expected attime. Moreover, if the APK is
-     *  zip-aligned, assets stored as they are can be efficiently read by
-     *  Android by memory-mapping them.
-     */
+	 *  By not compressing files with little or not benefit in doing so,
+	 *  a performance gain is expected attime. Moreover, if the APK is
+	 *  zip-aligned, assets stored as they are can be efficiently read by
+	 *  Android by memory-mapping them.
+	 */
 
 	// -- Unconditional uncompress to mimic AAPT plus some other
 
@@ -851,16 +851,11 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 				int iofs = ofs + 8;
 
 				string_count = decode_uint32(&p_manifest[iofs]);
-				//styles_count = decode_uint32(&p_manifest[iofs + 4]);
+				// iofs + 4 is `styles_count`.
 				string_flags = decode_uint32(&p_manifest[iofs + 8]);
 				string_data_offset = decode_uint32(&p_manifest[iofs + 12]);
-				//styles_offset = decode_uint32(&p_manifest[iofs + 16]);
-				/*
-                printf("string count: %i\n",string_count);
-                printf("flags: %i\n",string_flags);
-                printf("sdata ofs: %i\n",string_data_offset);
-                printf("styles ofs: %i\n",styles_offset);
-                */
+				// iofs + 16 is `styles_offset`.
+
 				uint32_t st_offset = iofs + 20;
 				string_table.resize(string_count);
 				uint32_t string_end = 0;
@@ -1617,11 +1612,11 @@ Vector<String> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExp
 
 void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-	if (driver == "GLES2") {
+	if (driver == "opengl3") {
 		r_features->push_back("etc");
 	}
 	// FIXME: Review what texture formats are used for Vulkan.
-	if (driver == "Vulkan") {
+	if (driver == "vulkan") {
 		r_features->push_back("etc2");
 	}
 
@@ -1672,7 +1667,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_foreground_option, PROPERTY_HINT_FILE, "*.png"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_background_option, PROPERTY_HINT_FILE, "*.png"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/depth_buffer_bits", PROPERTY_HINT_ENUM, "16 bits,24 bits [default],32 bits"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
@@ -2214,9 +2209,10 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 		command_line_strings.push_back("--xr_mode_regular");
 	}
 
-	bool use_32_bit_framebuffer = p_preset->get("graphics/32_bits_framebuffer");
-	if (use_32_bit_framebuffer) {
-		command_line_strings.push_back("--use_depth_32");
+	int depth_buffer_bits_index = p_preset->get("graphics/depth_buffer_bits");
+	if (depth_buffer_bits_index >= 0 && depth_buffer_bits_index <= 2) {
+		int depth_buffer_bits = 16 + depth_buffer_bits_index * 8;
+		command_line_strings.push_back(vformat("--use_depth=%d", depth_buffer_bits));
 	}
 
 	bool immersive = p_preset->get("screen/immersive_mode");

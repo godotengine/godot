@@ -84,7 +84,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 	if (p_preview.is_valid()) {
 		preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_default_margin(SIDE_LEFT) + get_theme_constant(SNAME("hseparation"), SNAME("Button")));
 
-		if (type == "GradientTexture") {
+		if (type == "GradientTexture1D") {
 			preview_rect->set_stretch_mode(TextureRect::STRETCH_SCALE);
 			assign_button->set_custom_minimum_size(Size2(1, 1));
 		} else {
@@ -106,7 +106,7 @@ void EditorResourcePicker::_resource_selected() {
 		return;
 	}
 
-	emit_signal(SNAME("resource_selected"), edited_resource);
+	emit_signal(SNAME("resource_selected"), edited_resource, false);
 }
 
 void EditorResourcePicker::_file_selected(const String &p_path) {
@@ -266,7 +266,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 		case OBJ_MENU_EDIT: {
 			if (edited_resource.is_valid()) {
-				emit_signal(SNAME("resource_selected"), edited_resource);
+				emit_signal(SNAME("resource_selected"), edited_resource, true);
 			}
 		} break;
 
@@ -464,7 +464,7 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 			_update_menu_items();
 
 			Vector2 pos = get_screen_position() + mb->get_position();
@@ -690,7 +690,7 @@ void EditorResourcePicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
-	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::BOOL, "edit")));
 	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 }
 
@@ -934,7 +934,7 @@ bool EditorShaderPicker::handle_menu_selected(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_NEW_SHADER: {
 			if (material.is_valid()) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_shader_dialog(material);
+				EditorNode::get_singleton()->get_scene_tree_dock()->open_shader_dialog(material, preferred_mode);
 				return true;
 			}
 		} break;
@@ -950,6 +950,10 @@ void EditorShaderPicker::set_edited_material(ShaderMaterial *p_material) {
 
 ShaderMaterial *EditorShaderPicker::get_edited_material() const {
 	return edited_material;
+}
+
+void EditorShaderPicker::set_preferred_mode(int p_mode) {
+	preferred_mode = p_mode;
 }
 
 EditorShaderPicker::EditorShaderPicker() {

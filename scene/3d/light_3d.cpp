@@ -197,24 +197,14 @@ bool Light3D::is_editor_only() const {
 
 void Light3D::_validate_property(PropertyInfo &property) const {
 	if (!shadow && (property.name == "shadow_color" || property.name == "shadow_bias" || property.name == "shadow_normal_bias" || property.name == "shadow_reverse_cull_face" || property.name == "shadow_transmittance_bias" || property.name == "shadow_fog_fade" || property.name == "shadow_blur")) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
-	}
-
-	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_size") {
-		property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_specular") {
-		property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_projector") {
-		property.usage = PROPERTY_USAGE_NONE;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	if (get_light_type() != RS::LIGHT_DIRECTIONAL && property.name == "light_angular_distance") {
+		// Angular distance is only used in DirectionalLight3D.
 		property.usage = PROPERTY_USAGE_NONE;
 	}
+	VisualInstance3D::_validate_property(property);
 }
 
 void Light3D::_bind_methods() {
@@ -361,6 +351,7 @@ Light3D::~Light3D() {
 void DirectionalLight3D::set_shadow_mode(ShadowMode p_mode) {
 	shadow_mode = p_mode;
 	RS::get_singleton()->light_directional_set_shadow_mode(light, RS::LightDirectionalShadowMode(p_mode));
+	notify_property_list_changed();
 }
 
 DirectionalLight3D::ShadowMode DirectionalLight3D::get_shadow_mode() const {
@@ -385,6 +376,25 @@ bool DirectionalLight3D::is_sky_only() const {
 	return sky_only;
 }
 
+void DirectionalLight3D::_validate_property(PropertyInfo &property) const {
+	if (shadow_mode == SHADOW_ORTHOGONAL && (property.name == "directional_shadow_split_1" || property.name == "directional_shadow_blend_splits")) {
+		// Split 2 and split blending are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (property.name == "directional_shadow_split_2" || property.name == "directional_shadow_split_3")) {
+		// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (property.name == "light_size" || property.name == "light_projector" || property.name == "light_specular") {
+		// Not implemented in DirectionalLight3D (`light_size` is replaced by `light_angular_distance`).
+		property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	Light3D::_validate_property(property);
+}
+
 void DirectionalLight3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_mode", "mode"), &DirectionalLight3D::set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &DirectionalLight3D::get_shadow_mode);
@@ -400,8 +410,8 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_1", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_1_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_2", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_2_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_3", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_3_OFFSET);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_fade_start", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_FADE_START);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional_shadow_blend_splits"), "set_blend_splits", "is_blend_splits_enabled");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_fade_start", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_FADE_START);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_RANGE, "0,8192,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_pancake_size", PROPERTY_HINT_RANGE, "0,1024,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_PANCAKE_SIZE);
 

@@ -65,18 +65,21 @@ void TextEditor::_load_theme_settings() {
 String TextEditor::get_name() {
 	String name;
 
-	if (text_file->get_path().find("local://") == -1 && text_file->get_path().find("::") == -1) {
-		name = text_file->get_path().get_file();
-		if (is_unsaved()) {
-			if (text_file->get_path().is_empty()) {
-				name = TTR("[unsaved]");
-			}
-			name += "(*)";
+	name = text_file->get_path().get_file();
+	if (name.is_empty()) {
+		// This appears for newly created built-in text_files before saving the scene.
+		name = TTR("[unsaved]");
+	} else if (text_file->is_built_in()) {
+		const String &text_file_name = text_file->get_name();
+		if (text_file_name != "") {
+			// If the built-in text_file has a custom resource name defined,
+			// display the built-in text_file name as follows: `ResourceName (scene_file.tscn)`
+			name = vformat("%s (%s)", text_file_name, name.get_slice("::", 0));
 		}
-	} else if (text_file->get_name() != "") {
-		name = text_file->get_name();
-	} else {
-		name = text_file->get_class() + "(" + itos(text_file->get_instance_id()) + ")";
+	}
+
+	if (is_unsaved()) {
+		name += "(*)";
 	}
 
 	return name;
@@ -422,7 +425,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		if (mb->get_button_index() == MouseButton::RIGHT) {
 			CodeEdit *tx = code_editor->get_text_editor();
 
 			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());

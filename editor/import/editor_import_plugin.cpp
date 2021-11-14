@@ -57,6 +57,7 @@ void EditorImportPlugin::get_recognized_extensions(List<String> *p_extensions) c
 		for (int i = 0; i < extensions.size(); i++) {
 			p_extensions->push_back(extensions[i]);
 		}
+		return;
 	}
 	ERR_FAIL_MSG("Unimplemented _get_recognized_extensions in add-on.");
 }
@@ -139,6 +140,7 @@ void EditorImportPlugin::get_import_options(List<ResourceImporter::ImportOption>
 			ImportOption option(PropertyInfo(default_value.get_type(), name, hint, hint_string, usage), default_value);
 			r_options->push_back(option);
 		}
+		return;
 	}
 
 	ERR_FAIL_MSG("Unimplemented _get_import_options in add-on.");

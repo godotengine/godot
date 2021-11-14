@@ -298,6 +298,6 @@ Transform2D Transform2D::operator*(const real_t p_val) const {
 
 Transform2D::operator String() const {
 	return "[X: " + elements[0].operator String() +
-		   ", Y: " + elements[1].operator String() +
-		   ", O: " + elements[2].operator String() + "]";
+			", Y: " + elements[1].operator String() +
+			", O: " + elements[2].operator String() + "]";
 }

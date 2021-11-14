@@ -549,7 +549,7 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 			}
 		}
 		if (!found) {
-			properties.push_back(PropertyInfo(p_value.get_type(), p_name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE));
+			properties.push_back(PropertyInfo(p_value.get_type(), p_name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE));
 		}
 	}
 

@@ -443,7 +443,7 @@ void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back
 	RD::get_singleton()->compute_list_end();
 }
 
-void EffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength, bool p_high_quality, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
+void EffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength, bool p_high_quality, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute version of the gaussian glow with the mobile renderer.");
 
 	memset(&copy.push_constant, 0, sizeof(CopyPushConstant));
@@ -456,7 +456,7 @@ void EffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const
 
 	copy.push_constant.glow_strength = p_strength;
 	copy.push_constant.glow_bloom = p_bloom;
-	copy.push_constant.glow_hdr_threshold = p_hdr_bleed_treshold;
+	copy.push_constant.glow_hdr_threshold = p_hdr_bleed_threshold;
 	copy.push_constant.glow_hdr_scale = p_hdr_bleed_scale;
 	copy.push_constant.glow_exposure = p_exposure;
 	copy.push_constant.glow_white = 0; //actually unused
@@ -479,7 +479,7 @@ void EffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const
 	RD::get_singleton()->compute_list_end();
 }
 
-void EffectsRD::gaussian_glow_raster(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength, bool p_high_quality, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
+void EffectsRD::gaussian_glow_raster(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength, bool p_high_quality, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
 	ERR_FAIL_COND_MSG(!prefer_raster_effects, "Can't use the raster version of the gaussian glow with the clustered renderer.");
 
 	memset(&blur_raster.push_constant, 0, sizeof(BlurRasterPushConstant));
@@ -492,7 +492,7 @@ void EffectsRD::gaussian_glow_raster(RID p_source_rd_texture, RID p_framebuffer_
 
 	blur_raster.push_constant.glow_strength = p_strength;
 	blur_raster.push_constant.glow_bloom = p_bloom;
-	blur_raster.push_constant.glow_hdr_threshold = p_hdr_bleed_treshold;
+	blur_raster.push_constant.glow_hdr_threshold = p_hdr_bleed_threshold;
 	blur_raster.push_constant.glow_hdr_scale = p_hdr_bleed_scale;
 	blur_raster.push_constant.glow_exposure = p_exposure;
 	blur_raster.push_constant.glow_white = 0; //actually unused

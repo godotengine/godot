@@ -82,7 +82,7 @@
 			<argument index="1" name="pos" type="Vector2" />
 			<argument index="2" name="char" type="int" />
 			<argument index="3" name="next" type="int" default="0" />
-			<argument index="4" name="size" type="int" default="-1" />
+			<argument index="4" name="size" type="int" default="16" />
 			<argument index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<argument index="6" name="outline_size" type="int" default="0" />
 			<argument index="7" name="outline_modulate" type="Color" default="Color(1, 1, 1, 0)" />
@@ -99,7 +99,7 @@
 			<argument index="3" name="align" type="int" enum="HAlign" default="0" />
 			<argument index="4" name="width" type="float" default="-1" />
 			<argument index="5" name="max_lines" type="int" default="-1" />
-			<argument index="6" name="size" type="int" default="-1" />
+			<argument index="6" name="size" type="int" default="16" />
 			<argument index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<argument index="8" name="outline_size" type="int" default="0" />
 			<argument index="9" name="outline_modulate" type="Color" default="Color(1, 1, 1, 0)" />
@@ -116,7 +116,7 @@
 			<argument index="2" name="text" type="String" />
 			<argument index="3" name="align" type="int" enum="HAlign" default="0" />
 			<argument index="4" name="width" type="float" default="-1" />
-			<argument index="5" name="size" type="int" default="-1" />
+			<argument index="5" name="size" type="int" default="16" />
 			<argument index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<argument index="7" name="outline_size" type="int" default="0" />
 			<argument index="8" name="outline_modulate" type="Color" default="Color(1, 1, 1, 0)" />
@@ -128,7 +128,7 @@
 		</method>
 		<method name="get_ascent" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="size" type="int" default="-1" />
+			<argument index="0" name="size" type="int" default="16" />
 			<description>
 				Returns the average font ascent (number of pixels above the baseline).
 				[b]Note:[/b] Real ascent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the ascent of empty line).
@@ -138,7 +138,7 @@
 			<return type="Vector2" />
 			<argument index="0" name="char" type="int" />
 			<argument index="1" name="next" type="int" default="0" />
-			<argument index="2" name="size" type="int" default="-1" />
+			<argument index="2" name="size" type="int" default="16" />
 			<description>
 				Returns the size of a character, optionally taking kerning into account if the next character is provided.
 				[b]Note:[/b] Do not use this function to calculate width of the string character by character, use [method get_string_size] or [TextLine] instead. The height returned is the font height (see also [method get_height]) and has no relation to the glyph height.
@@ -166,7 +166,7 @@
 		</method>
 		<method name="get_descent" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="size" type="int" default="-1" />
+			<argument index="0" name="size" type="int" default="16" />
 			<description>
 				Returns the average font descent (number of pixels below the baseline).
 				[b]Note:[/b] Real descent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the descent of empty line).
@@ -174,7 +174,7 @@
 		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="size" type="int" default="-1" />
+			<argument index="0" name="size" type="int" default="16" />
 			<description>
 				Returns the total average font height (ascent plus descent) in pixels.
 				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the height of empty line).
@@ -184,7 +184,7 @@
 			<return type="Vector2" />
 			<argument index="0" name="text" type="String" />
 			<argument index="1" name="width" type="float" default="-1" />
-			<argument index="2" name="size" type="int" default="-1" />
+			<argument index="2" name="size" type="int" default="16" />
 			<argument index="3" name="flags" type="int" default="96" />
 			<description>
 				Returns the size of a bounding box of a string broken into the lines, taking kerning and advance into account.
@@ -201,7 +201,7 @@
 		<method name="get_string_size" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="text" type="String" />
-			<argument index="1" name="size" type="int" default="-1" />
+			<argument index="1" name="size" type="int" default="16" />
 			<argument index="2" name="align" type="int" enum="HAlign" default="0" />
 			<argument index="3" name="width" type="float" default="-1" />
 			<argument index="4" name="flags" type="int" default="3" />
@@ -220,7 +220,7 @@
 		</method>
 		<method name="get_underline_position" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="size" type="int" default="-1" />
+			<argument index="0" name="size" type="int" default="16" />
 			<description>
 				Return average pixel offset of the underline below the baseline.
 				[b]Note:[/b] Real underline position of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
@@ -228,7 +228,7 @@
 		</method>
 		<method name="get_underline_thickness" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="size" type="int" default="-1" />
+			<argument index="0" name="size" type="int" default="16" />
 			<description>
 				Return average thickness of the underline.
 				[b]Note:[/b] Real underline thickness of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
@@ -272,9 +272,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="base_size" type="int" setter="set_base_size" getter="get_base_size" default="16">
-			Default font size.
-		</member>
 		<member name="spacing_bottom" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra spacing at the bottom of the line in pixels.
 		</member>

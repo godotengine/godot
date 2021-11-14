@@ -58,14 +58,10 @@ public:
 		XR_NONE = 0, /* no capabilities */
 		XR_MONO = 1, /* can be used with mono output */
 		XR_STEREO = 2, /* can be used with stereo output */
-		XR_AR = 4, /* offers a camera feed for AR */
-		XR_EXTERNAL = 8 /* renders to external device */
-	};
-
-	enum Eyes {
-		EYE_MONO, /* my son says we should call this EYE_CYCLOPS */
-		EYE_LEFT,
-		EYE_RIGHT
+		XR_QUAD = 4, /* can be used with quad output (not currently supported) */
+		XR_VR = 8, /* offers VR support */
+		XR_AR = 16, /* offers AR support */
+		XR_EXTERNAL = 32 /* renders to external device */
 	};
 
 	enum TrackingStatus { /* tracking status currently based on AR but we can start doing more with this for VR as well */
@@ -76,7 +72,14 @@ public:
 		XR_NOT_TRACKING
 	};
 
-private:
+	enum PlayAreaMode { /* defines the mode used by the XR interface for tracking */
+		XR_PLAY_AREA_UNKNOWN, /* Area mode not set or not available */
+		XR_PLAY_AREA_3DOF, /* Only support orientation tracking, no positional tracking, area will center around player */
+		XR_PLAY_AREA_SITTING, /* Player is in seated position, limited positional tracking, fixed guardian around player */
+		XR_PLAY_AREA_ROOMSCALE, /* Player is free to move around, full positional tracking */
+		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled */
+	};
+
 protected:
 	_THREAD_SAFE_CLASS_
 
@@ -94,10 +97,18 @@ public:
 	virtual bool initialize() = 0; /* initialize this interface, if this has an HMD it becomes the primary interface */
 	virtual void uninitialize() = 0; /* deinitialize this interface */
 
+	/** input and output **/
+
+	virtual PackedStringArray get_suggested_tracker_names() const; /* return a list of likely/suggested tracker names */
+	virtual PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const; /* return a list of likely/suggested action names for this tracker */
 	virtual TrackingStatus get_tracking_status() const; /* get the status of our current tracking */
+	virtual void trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0); /* trigger a haptic pulse */
 
 	/** specific to VR **/
-	// nothing yet
+	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode); /* query if this interface supports this play area mode */
+	virtual XRInterface::PlayAreaMode get_play_area_mode() const; /* get the current play area mode */
+	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode); /* change the play area mode, note that this should return false if the mode is not available */
+	virtual PackedVector3Array get_play_area() const; /* if available, returns an array of vectors denoting the play area the player can move around in */
 
 	/** specific to AR **/
 	virtual bool get_anchor_detection_is_enabled() const;
@@ -124,7 +135,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(XRInterface::Capabilities);
-VARIANT_ENUM_CAST(XRInterface::Eyes);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
+VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 
 #endif // !XR_INTERFACE_H

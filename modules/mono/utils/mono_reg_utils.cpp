@@ -58,10 +58,10 @@ REGSAM _get_bitness_sam() {
 }
 
 LONG _RegOpenKey(HKEY hKey, LPCWSTR lpSubKey, PHKEY phkResult) {
-	LONG res = RegOpenKeyExW(hKey, lpSubKey, 0, KEY_READ, phkResult);
+	LONG res = RegOpenKeyExW(hKey, lpSubKey, 0, Key::READ, phkResult);
 
 	if (res != ERROR_SUCCESS)
-		res = RegOpenKeyExW(hKey, lpSubKey, 0, KEY_READ | _get_bitness_sam(), phkResult);
+		res = RegOpenKeyExW(hKey, lpSubKey, 0, Key::READ | _get_bitness_sam(), phkResult);
 
 	return res;
 }

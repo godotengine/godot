@@ -51,13 +51,13 @@ static void gdnative_free(void *p_mem) {
 
 // Helper print functions.
 static void gdnative_print_error(const char *p_description, const char *p_function, const char *p_file, int32_t p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_ERROR);
+	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_ERROR);
 }
 static void gdnative_print_warning(const char *p_description, const char *p_function, const char *p_file, int32_t p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_WARNING);
+	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_WARNING);
 }
 static void gdnative_print_script_error(const char *p_description, const char *p_function, const char *p_file, int32_t p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, ERR_HANDLER_SCRIPT);
+	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_SCRIPT);
 }
 
 // Variant functions

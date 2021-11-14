@@ -46,7 +46,7 @@
 #include "editor/find_in_files.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
-#include "modules/visual_script/visual_script_editor.h"
+#include "modules/visual_script/editor/visual_script_editor.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 #include "script_text_editor.h"
@@ -227,12 +227,6 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 }
 
-static bool _is_built_in_script(Script *p_script) {
-	String path = p_script->get_path();
-
-	return path.find("::") != -1;
-}
-
 class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
 	struct Cache {
 		uint64_t time_loaded = 0;
@@ -315,10 +309,7 @@ void ScriptEditorQuickOpen::_text_changed(const String &p_newtext) {
 void ScriptEditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 
-	if (k.is_valid() && (k->get_keycode() == KEY_UP ||
-								k->get_keycode() == KEY_DOWN ||
-								k->get_keycode() == KEY_PAGEUP ||
-								k->get_keycode() == KEY_PAGEDOWN)) {
+	if (k.is_valid() && (k->get_keycode() == Key::UP || k->get_keycode() == Key::DOWN || k->get_keycode() == Key::PAGEUP || k->get_keycode() == Key::PAGEDOWN)) {
 		search_options->gui_input(k);
 		search_box->accept_event();
 	}
@@ -767,7 +758,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		if (p_save && file.is_valid()) {
 			// Do not try to save internal scripts, but prompt to save in-memory
 			// scripts which are not saved to disk yet (have empty path).
-			if (file->get_path().find("local://") == -1 && file->get_path().find("::") == -1) {
+			if (file->is_built_in()) {
 				save_current_script();
 			}
 		}
@@ -913,7 +904,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 
 		RES script = se->get_edited_resource();
 
-		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
+		if (script->is_built_in()) {
 			continue; //internal script, who cares
 		}
 
@@ -954,7 +945,7 @@ void ScriptEditor::_reload_scripts() {
 
 		RES edited_res = se->get_edited_resource();
 
-		if (edited_res->get_path() == "" || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1) {
+		if (edited_res->is_built_in()) {
 			continue; //internal script, who cares
 		}
 
@@ -998,10 +989,6 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 		RES script = se->get_edited_resource();
 
-		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
-			continue; //internal script, who cares
-		}
-
 		if (script == p_res) {
 			se->tag_saved_version();
 		}
@@ -1009,6 +996,31 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 	_update_script_names();
 	_trigger_live_script_reload();
+}
+
+void ScriptEditor::_scene_saved_callback(const String &p_path) {
+	// If scene was saved, mark all built-in scripts from that scene as saved.
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+		if (!se) {
+			continue;
+		}
+
+		RES edited_res = se->get_edited_resource();
+
+		if (!edited_res->is_built_in()) {
+			continue; // External script, who cares.
+		}
+
+		if (edited_res->get_path().get_slice("::", 0) == p_path) {
+			se->tag_saved_version();
+		}
+
+		Ref<Script> scr = edited_res;
+		if (scr.is_valid() && scr->is_tool()) {
+			scr->reload(true);
+		}
+	}
 }
 
 void ScriptEditor::_trigger_live_script_reload() {
@@ -1040,7 +1052,7 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 				continue;
 			}
 
-			if (edited_res->get_path() == "" || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1) {
+			if (edited_res->is_built_in()) {
 				continue; //internal script, who cares
 			}
 
@@ -1534,6 +1546,7 @@ void ScriptEditor::_notification(int p_what) {
 			editor->connect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 			editor->connect("script_add_function_request", callable_mp(this, &ScriptEditor::_add_callback));
 			editor->connect("resource_saved", callable_mp(this, &ScriptEditor::_res_saved_callback));
+			editor->connect("scene_saved", callable_mp(this, &ScriptEditor::_scene_saved_callback));
 			editor->get_filesystem_dock()->connect("files_moved", callable_mp(this, &ScriptEditor::_files_moved));
 			editor->get_filesystem_dock()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
 			script_list->connect("item_selected", callable_mp(this, &ScriptEditor::_script_selected));
@@ -1627,8 +1640,8 @@ void ScriptEditor::close_builtin_scripts_from_scene(const String &p_scene) {
 				continue;
 			}
 
-			if (script->get_path().find("::") != -1 && script->get_path().begins_with(p_scene)) { //is an internal script and belongs to scene being closed
-				_close_tab(i);
+			if (script->is_built_in() && script->get_path().begins_with(p_scene)) { //is an internal script and belongs to scene being closed
+				_close_tab(i, false);
 				i--;
 			}
 		}
@@ -1711,7 +1724,7 @@ void ScriptEditor::_help_overview_selected(int p_idx) {
 }
 
 void ScriptEditor::_script_selected(int p_idx) {
-	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(MOUSE_BUTTON_LEFT); //amazing hack, simply amazing
+	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT); //amazing hack, simply amazing
 
 	_go_to_tab(script_list->get_item_metadata(p_idx));
 	grab_focus_block = false;
@@ -1935,20 +1948,7 @@ void ScriptEditor::_update_script_names() {
 				// to update original path to previously edited resource.
 				se->set_meta("_edit_res_path", path);
 			}
-			bool built_in = !path.is_resource_file();
-			String name;
-
-			if (built_in) {
-				name = path.get_file();
-				const String &resource_name = se->get_edited_resource()->get_name();
-				if (resource_name != "") {
-					// If the built-in script has a custom resource name defined,
-					// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
-					name = vformat("%s (%s)", resource_name, name.substr(0, name.find("::", 0)));
-				}
-			} else {
-				name = se->get_name();
-			}
+			String name = se->get_name();
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
@@ -2183,9 +2183,10 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	Ref<Script> script = p_resource;
 
 	// Don't open dominant script if using an external editor.
-	const bool use_external_editor =
+	bool use_external_editor =
 			EditorSettings::get_singleton()->get("text_editor/external/use_external_editor") ||
 			(script.is_valid() && script->get_language()->overrides_external_editor());
+	use_external_editor = use_external_editor && !(script.is_valid() && script->is_built_in()); // Ignore external editor for built-in scripts.
 	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/behavior/files/open_dominant_script_on_scene_change");
 
 	const bool should_open = (open_dominant && !use_external_editor) || !EditorNode::get_singleton()->is_changing_scene();
@@ -2411,7 +2412,17 @@ void ScriptEditor::save_current_script() {
 		}
 	}
 
-	editor->save_resource(resource);
+	if (resource->is_built_in()) {
+		// If built-in script, save the scene instead.
+		const String scene_path = resource->get_path().get_slice("::", 0);
+		if (!scene_path.is_empty()) {
+			Vector<String> scene_to_save;
+			scene_to_save.push_back(scene_path);
+			editor->save_scene_list(scene_to_save);
+		}
+	} else {
+		editor->save_resource(resource);
+	}
 
 	if (script != nullptr) {
 		const Vector<DocData::ClassDoc> &documentations = script->get_documentation();
@@ -2424,6 +2435,8 @@ void ScriptEditor::save_current_script() {
 }
 
 void ScriptEditor::save_all_scripts() {
+	Vector<String> scenes_to_save;
+
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
 		if (!se) {
@@ -2453,7 +2466,7 @@ void ScriptEditor::save_all_scripts() {
 			se->apply_code();
 		}
 
-		if (edited_res->get_path() != "" && edited_res->get_path().find("local://") == -1 && edited_res->get_path().find("::") == -1) {
+		if (!edited_res->is_built_in()) {
 			Ref<TextFile> text_file = edited_res;
 			Ref<Script> script = edited_res;
 
@@ -2482,7 +2495,17 @@ void ScriptEditor::save_all_scripts() {
 					update_doc(doc.name);
 				}
 			}
+		} else {
+			// For built-in scripts, save their scenes instead.
+			const String scene_path = edited_res->get_path().get_slice("::", 0);
+			if (!scenes_to_save.has(scene_path)) {
+				scenes_to_save.push_back(scene_path);
+			}
 		}
+	}
+
+	if (!scenes_to_save.is_empty()) {
+		editor->save_scene_list(scenes_to_save);
 	}
 
 	_update_script_names();
@@ -2573,7 +2596,7 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 		script_list->select(script_list->find_metadata(i));
 
 		// Save the current script so the changes can be picked up by an external editor.
-		if (!_is_built_in_script(script.ptr())) { // But only if it's not built-in script.
+		if (!script.ptr()->is_built_in()) { // But only if it's not built-in script.
 			save_current_script();
 		}
 
@@ -2928,11 +2951,11 @@ void ScriptEditor::input(const Ref<InputEvent> &p_event) {
 		// This must be hardcoded as the editor shortcuts dialog doesn't allow assigning
 		// more than one shortcut per action.
 		if (mb.is_valid() && mb->is_pressed() && is_visible_in_tree()) {
-			if (mb->get_button_index() == MOUSE_BUTTON_XBUTTON1) {
+			if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
 				_history_back();
 			}
 
-			if (mb->get_button_index() == MOUSE_BUTTON_XBUTTON2) {
+			if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
 				_history_forward();
 			}
 		}
@@ -2973,7 +2996,7 @@ void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
 	if (mb.is_valid() && mb->is_pressed()) {
 		switch (mb->get_button_index()) {
-			case MOUSE_BUTTON_MIDDLE: {
+			case MouseButton::MIDDLE: {
 				// Right-click selects automatically; middle-click does not.
 				int idx = script_list->get_item_at_position(mb->get_position(), true);
 				if (idx >= 0) {
@@ -2983,7 +3006,7 @@ void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
 				}
 			} break;
 
-			case MOUSE_BUTTON_RIGHT: {
+			case MouseButton::RIGHT: {
 				_make_script_list_context_menu();
 			} break;
 			default:
@@ -3253,15 +3276,15 @@ void ScriptEditor::_update_selected_editor_menu() {
 	EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_current_tab_control());
 	script_search_menu->get_popup()->clear();
 	if (eh) {
-		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
-		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
-		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3), HELP_SEARCH_FIND_PREVIOUS);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KeyModifierMask::CMD | Key::F), HELP_SEARCH_FIND);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), Key::F3), HELP_SEARCH_FIND_NEXT);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KeyModifierMask::SHIFT | Key::F3), HELP_SEARCH_FIND_PREVIOUS);
 		script_search_menu->get_popup()->add_separator();
-		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F), SEARCH_IN_FILES);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::F), SEARCH_IN_FILES);
 		script_search_menu->show();
 	} else {
 		if (tab_container->get_child_count() == 0) {
-			script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F), SEARCH_IN_FILES);
+			script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::F), SEARCH_IN_FILES);
 			script_search_menu->show();
 		} else {
 			script_search_menu->hide();
@@ -3349,9 +3372,10 @@ Array ScriptEditor::_get_open_script_editors() const {
 
 void ScriptEditor::set_scene_root_script(Ref<Script> p_script) {
 	// Don't open dominant script if using an external editor.
-	const bool use_external_editor =
+	bool use_external_editor =
 			EditorSettings::get_singleton()->get("text_editor/external/use_external_editor") ||
 			(p_script.is_valid() && p_script->get_language()->overrides_external_editor());
+	use_external_editor = use_external_editor && !(p_script.is_valid() && p_script->is_built_in()); // Ignore external editor for built-in scripts.
 	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/behavior/files/open_dominant_script_on_scene_change");
 
 	if (open_dominant && !use_external_editor && p_script.is_valid()) {
@@ -3440,6 +3464,9 @@ void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_numb
 			shader_editor->edit(res.ptr());
 			shader_editor->make_visible(true);
 			shader_editor->get_shader_editor()->goto_line_selection(line_number - 1, begin, end);
+			return;
+		} else if (fpath.get_extension() == "tscn") {
+			editor->load_scene(fpath);
 			return;
 		} else {
 			Ref<Script> script = res;
@@ -3641,11 +3668,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	find_replace_bar->hide();
 
 	ED_SHORTCUT("script_editor/window_sort", TTR("Sort"));
-	ED_SHORTCUT("script_editor/window_move_up", TTR("Move Up"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP);
-	ED_SHORTCUT("script_editor/window_move_down", TTR("Move Down"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN);
-	// FIXME: These should be `KEY_GREATER` and `KEY_LESS` but those don't work.
-	ED_SHORTCUT("script_editor/next_script", TTR("Next Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_PERIOD);
-	ED_SHORTCUT("script_editor/prev_script", TTR("Previous Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_COMMA);
+	ED_SHORTCUT("script_editor/window_move_up", TTR("Move Up"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::UP);
+	ED_SHORTCUT("script_editor/window_move_down", TTR("Move Down"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::DOWN);
+	// FIXME: These should be `Key::GREATER` and `Key::LESS` but those don't work.
+	ED_SHORTCUT("script_editor/next_script", TTR("Next Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::PERIOD);
+	ED_SHORTCUT("script_editor/prev_script", TTR("Previous Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::COMMA);
 	set_process_input(true);
 	set_process_unhandled_input(true);
 
@@ -3658,7 +3685,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTR("New Script...")), FILE_NEW);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTR("New Text File...")), FILE_NEW_TEXTFILE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTR("Open...")), FILE_OPEN);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T), FILE_REOPEN_CLOSED);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::T), FILE_REOPEN_CLOSED);
 	file_menu->get_popup()->add_submenu_item(TTR("Open Recent"), "RecentScripts", FILE_OPEN_RECENT);
 
 	recent_scripts = memnew(PopupMenu);
@@ -3668,17 +3695,17 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	_update_recent_scripts();
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KEY_MASK_ALT | KEY_MASK_CMD | KEY_S), FILE_SAVE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KeyModifierMask::ALT | KeyModifierMask::CMD | Key::S), FILE_SAVE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::S), FILE_SAVE_ALL);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_R), FILE_TOOL_RELOAD_SOFT);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KeyModifierMask::CMD | KeyModifierMask::ALT | Key::R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/show_in_file_system", TTR("Show in FileSystem")), SHOW_IN_FILE_SYSTEM);
 	file_menu->get_popup()->add_separator();
 
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Previous"), KEY_MASK_ALT | KEY_LEFT), WINDOW_PREV);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KEY_MASK_ALT | KEY_RIGHT), WINDOW_NEXT);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Previous"), KeyModifierMask::ALT | Key::LEFT), WINDOW_PREV);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KeyModifierMask::ALT | Key::RIGHT), WINDOW_NEXT);
 	file_menu->get_popup()->add_separator();
 
 	file_menu->get_popup()->add_submenu_item(TTR("Theme"), "Theme", FILE_THEME);
@@ -3695,16 +3722,16 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As...")), THEME_SAVE_AS);
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KeyModifierMask::CMD | Key::W), FILE_CLOSE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_all", TTR("Close All")), CLOSE_ALL);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_other_tabs", TTR("Close Other Tabs")), CLOSE_OTHER_TABS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_X), FILE_RUN);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::X), FILE_RUN);
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KEY_MASK_CMD | KEY_BACKSLASH), TOGGLE_SCRIPTS_PANEL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KeyModifierMask::CMD | Key::BACKSLASH), TOGGLE_SCRIPTS_PANEL);
 	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 
 	script_search_menu = memnew(MenuButton);
@@ -3861,7 +3888,7 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 		Script *p_script = Object::cast_to<Script>(p_object);
 		String res_path = p_script->get_path().get_slice("::", 0);
 
-		if (_is_built_in_script(p_script)) {
+		if (p_script->is_built_in()) {
 			if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
 				if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
 					EditorNode::get_singleton()->load_scene(res_path);
@@ -3957,7 +3984,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("text_editor/external/exec_flags", "{file}");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "text_editor/external/exec_flags", PROPERTY_HINT_PLACEHOLDER_TEXT, "Call flags with placeholders: {project}, {file}, {col}, {line}."));
 
-	ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T);
+	ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::T);
 	ED_SHORTCUT("script_editor/clear_recent", TTR("Clear Recent Scripts"));
 }
 

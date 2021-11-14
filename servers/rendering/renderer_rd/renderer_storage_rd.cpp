@@ -1034,7 +1034,7 @@ Ref<Image> RendererStorageRD::texture_2d_get(RID p_texture) const {
 	ERR_FAIL_COND_V(!tex, Ref<Image>());
 
 #ifdef TOOLS_ENABLED
-	if (tex->image_cache_2d.is_valid()) {
+	if (tex->image_cache_2d.is_valid() && !tex->is_render_target) {
 		return tex->image_cache_2d;
 	}
 #endif
@@ -1049,7 +1049,7 @@ Ref<Image> RendererStorageRD::texture_2d_get(RID p_texture) const {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint() && !tex->is_render_target) {
 		tex->image_cache_2d = image;
 	}
 #endif
@@ -1399,6 +1399,8 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 		new_type = SHADER_TYPE_3D;
 	} else if (mode_string == "sky") {
 		new_type = SHADER_TYPE_SKY;
+	} else if (mode_string == "fog") {
+		new_type = SHADER_TYPE_FOG;
 	} else {
 		new_type = SHADER_TYPE_MAX;
 	}
@@ -1438,8 +1440,10 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 		}
 
 		if (shader->data) {
-			for (const KeyValue<StringName, RID> &E : shader->default_texture_parameter) {
-				shader->data->set_default_texture_param(E.key, E.value);
+			for (const KeyValue<StringName, Map<int, RID>> &E : shader->default_texture_parameter) {
+				for (const KeyValue<int, RID> &E2 : E.value) {
+					shader->data->set_default_texture_param(E.key, E2.value, E2.key);
+				}
 			}
 		}
 	}
@@ -1469,17 +1473,26 @@ void RendererStorageRD::shader_get_param_list(RID p_shader, List<PropertyInfo> *
 	}
 }
 
-void RendererStorageRD::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {
+void RendererStorageRD::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) {
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND(!shader);
 
 	if (p_texture.is_valid() && texture_owner.owns(p_texture)) {
-		shader->default_texture_parameter[p_name] = p_texture;
+		if (!shader->default_texture_parameter.has(p_name)) {
+			shader->default_texture_parameter[p_name] = Map<int, RID>();
+		}
+		shader->default_texture_parameter[p_name][p_index] = p_texture;
 	} else {
-		shader->default_texture_parameter.erase(p_name);
+		if (shader->default_texture_parameter.has(p_name) && shader->default_texture_parameter[p_name].has(p_index)) {
+			shader->default_texture_parameter[p_name].erase(p_index);
+
+			if (shader->default_texture_parameter[p_name].is_empty()) {
+				shader->default_texture_parameter.erase(p_name);
+			}
+		}
 	}
 	if (shader->data) {
-		shader->data->set_default_texture_param(p_name, p_texture);
+		shader->data->set_default_texture_param(p_name, p_texture, p_index);
 	}
 	for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
 		Material *material = E->get();
@@ -1487,11 +1500,11 @@ void RendererStorageRD::shader_set_default_texture_param(RID p_shader, const Str
 	}
 }
 
-RID RendererStorageRD::shader_get_default_texture_param(RID p_shader, const StringName &p_name) const {
+RID RendererStorageRD::shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, RID());
-	if (shader->default_texture_parameter.has(p_name)) {
-		return shader->default_texture_parameter[p_name];
+	if (shader->default_texture_parameter.has(p_name) && shader->default_texture_parameter[p_name].has(p_index)) {
+		return shader->default_texture_parameter[p_name][p_index];
 	}
 
 	return RID();
@@ -2608,7 +2621,7 @@ RendererStorageRD::MaterialData::~MaterialData() {
 	}
 }
 
-void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
+void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
 	RendererStorageRD *singleton = (RendererStorageRD *)RendererStorage::base_singleton;
 #ifdef TOOLS_ENABLED
 	Texture *roughness_detect_texture = nullptr;
@@ -2671,17 +2684,19 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 
 			if (uniform_array_size > 0) {
 				if (textures.size() < uniform_array_size) {
-					const Map<StringName, RID>::Element *W = p_default_textures.find(uniform_name);
-					if (W) {
-						for (int j = textures.size(); j < uniform_array_size; j++) {
-							textures.push_back(W->get());
+					const Map<StringName, Map<int, RID>>::Element *W = p_default_textures.find(uniform_name);
+					for (int j = textures.size(); j < uniform_array_size; j++) {
+						if (W && W->get().has(j)) {
+							textures.push_back(W->get()[j]);
+						} else {
+							textures.push_back(RID());
 						}
 					}
 				}
 			} else if (textures.is_empty()) {
-				const Map<StringName, RID>::Element *W = p_default_textures.find(uniform_name);
-				if (W) {
-					textures.push_back(W->get());
+				const Map<StringName, Map<int, RID>>::Element *W = p_default_textures.find(uniform_name);
+				if (W && W->get().has(0)) {
+					textures.push_back(W->get()[0]);
 				}
 			}
 		}
@@ -2690,20 +2705,56 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 
 		if (textures.is_empty()) {
 			//check default usage
-			switch (p_texture_uniforms[i].hint) {
-				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
-				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
-					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_BLACK);
+			switch (p_texture_uniforms[i].type) {
+				case ShaderLanguage::TYPE_ISAMPLER2D:
+				case ShaderLanguage::TYPE_USAMPLER2D:
+				case ShaderLanguage::TYPE_SAMPLER2D: {
+					switch (p_texture_uniforms[i].hint) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
+						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
+							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_BLACK);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_NONE: {
+							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
+							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_ANISO);
+						} break;
+						default: {
+							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
+						} break;
+					}
 				} break;
-				case ShaderLanguage::ShaderNode::Uniform::HINT_NONE: {
-					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
+
+				case ShaderLanguage::TYPE_SAMPLERCUBE: {
+					switch (p_texture_uniforms[i].hint) {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
+						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
+							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+						} break;
+						default: {
+							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_CUBEMAP_WHITE);
+						} break;
+					}
 				} break;
-				case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
-					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_ANISO);
+				case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
+					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK);
 				} break;
+
+				case ShaderLanguage::TYPE_ISAMPLER3D:
+				case ShaderLanguage::TYPE_USAMPLER3D:
+				case ShaderLanguage::TYPE_SAMPLER3D: {
+					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_3D_WHITE);
+				} break;
+
+				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
+					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
+				} break;
+
 				default: {
-					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
-				} break;
+				}
 			}
 #ifdef TOOLS_ENABLED
 			if (roughness_detect_texture && normal_detect_texture && normal_detect_texture->path != String()) {
@@ -2793,7 +2844,7 @@ void RendererStorageRD::MaterialData::free_parameters_uniform_set(RID p_uniform_
 	}
 }
 
-bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, RID> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier) {
+bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, Map<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier) {
 	if ((uint32_t)ubo_data.size() != p_ubo_size) {
 		p_uniform_dirty = true;
 		if (uniform_buffer.is_valid()) {
@@ -4379,7 +4430,8 @@ void RendererStorageRD::_update_dirty_multimeshes() {
 						if (multimesh->data_cache_dirty_regions[i]) {
 							uint32_t offset = i * region_size;
 							uint32_t size = multimesh->stride_cache * (uint32_t)multimesh->instances * (uint32_t)sizeof(float);
-							RD::get_singleton()->buffer_update(multimesh->buffer, offset, MIN(region_size, size - offset), &data[i * region_size]);
+							uint32_t region_start_index = multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * i;
+							RD::get_singleton()->buffer_update(multimesh->buffer, offset, MIN(region_size, size - offset), &data[region_start_index]);
 						}
 					}
 				}
@@ -5707,11 +5759,20 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void RendererStorageRD::ParticlesShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+void RendererStorageRD::ParticlesShaderData::set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) {
 	if (!p_texture.is_valid()) {
-		default_texture_params.erase(p_name);
+		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
+			default_texture_params[p_name].erase(p_index);
+
+			if (default_texture_params[p_name].is_empty()) {
+				default_texture_params.erase(p_name);
+			}
+		}
 	} else {
-		default_texture_params[p_name] = p_texture;
+		if (!default_texture_params.has(p_name)) {
+			default_texture_params[p_name] = Map<int, RID>();
+		}
+		default_texture_params[p_name][p_index] = p_texture;
 	}
 }
 
@@ -5998,6 +6059,82 @@ void RendererStorageRD::particles_collision_instance_set_active(RID p_collision_
 	ParticlesCollisionInstance *pci = particles_collision_instance_owner.get_or_null(p_collision_instance);
 	ERR_FAIL_COND(!pci);
 	pci->active = p_active;
+}
+
+/* FOG VOLUMES */
+
+RID RendererStorageRD::fog_volume_allocate() {
+	return fog_volume_owner.allocate_rid();
+}
+void RendererStorageRD::fog_volume_initialize(RID p_rid) {
+	fog_volume_owner.initialize_rid(p_rid, FogVolume());
+}
+
+void RendererStorageRD::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {
+	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
+	ERR_FAIL_COND(!fog_volume);
+
+	if (p_shape == fog_volume->shape) {
+		return;
+	}
+
+	fog_volume->shape = p_shape;
+	fog_volume->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
+}
+
+void RendererStorageRD::fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) {
+	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
+	ERR_FAIL_COND(!fog_volume);
+
+	fog_volume->extents = p_extents;
+	fog_volume->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
+}
+
+void RendererStorageRD::fog_volume_set_material(RID p_fog_volume, RID p_material) {
+	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
+	ERR_FAIL_COND(!fog_volume);
+	fog_volume->material = p_material;
+}
+
+RID RendererStorageRD::fog_volume_get_material(RID p_fog_volume) const {
+	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
+	ERR_FAIL_COND_V(!fog_volume, RID());
+
+	return fog_volume->material;
+}
+
+RS::FogVolumeShape RendererStorageRD::fog_volume_get_shape(RID p_fog_volume) const {
+	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
+	ERR_FAIL_COND_V(!fog_volume, RS::FOG_VOLUME_SHAPE_BOX);
+
+	return fog_volume->shape;
+}
+
+AABB RendererStorageRD::fog_volume_get_aabb(RID p_fog_volume) const {
+	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
+	ERR_FAIL_COND_V(!fog_volume, AABB());
+
+	switch (fog_volume->shape) {
+		case RS::FOG_VOLUME_SHAPE_ELLIPSOID:
+		case RS::FOG_VOLUME_SHAPE_BOX: {
+			AABB aabb;
+			aabb.position = -fog_volume->extents;
+			aabb.size = fog_volume->extents * 2;
+			return aabb;
+		}
+		default: {
+			// Need some size otherwise will get culled
+			return AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
+		}
+	}
+
+	return AABB();
+}
+
+Vector3 RendererStorageRD::fog_volume_get_extents(RID p_fog_volume) const {
+	const FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
+	ERR_FAIL_COND_V(!fog_volume, Vector3());
+	return fog_volume->extents;
 }
 
 /* VISIBILITY NOTIFIER */
@@ -8081,6 +8218,9 @@ void RendererStorageRD::base_update_dependency(RID p_base, DependencyTracker *p_
 	} else if (particles_collision_owner.owns(p_base)) {
 		ParticlesCollision *pc = particles_collision_owner.get_or_null(p_base);
 		p_instance->update_dependency(&pc->dependency);
+	} else if (fog_volume_owner.owns(p_base)) {
+		FogVolume *fv = fog_volume_owner.get_or_null(p_base);
+		p_instance->update_dependency(&fv->dependency);
 	} else if (visibility_notifier_owner.owns(p_base)) {
 		VisibilityNotifier *vn = visibility_notifier_owner.get_or_null(p_base);
 		p_instance->update_dependency(&vn->dependency);
@@ -8121,6 +8261,9 @@ RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
 	}
 	if (particles_collision_owner.owns(p_rid)) {
 		return RS::INSTANCE_PARTICLES_COLLISION;
+	}
+	if (fog_volume_owner.owns(p_rid)) {
+		return RS::INSTANCE_FOG_VOLUME;
 	}
 	if (visibility_notifier_owner.owns(p_rid)) {
 		return RS::INSTANCE_VISIBLITY_NOTIFIER;
@@ -9204,6 +9347,10 @@ bool RendererStorageRD::free(RID p_rid) {
 		visibility_notifier_owner.free(p_rid);
 	} else if (particles_collision_instance_owner.owns(p_rid)) {
 		particles_collision_instance_owner.free(p_rid);
+	} else if (fog_volume_owner.owns(p_rid)) {
+		FogVolume *fog_volume = fog_volume_owner.get_or_null(p_rid);
+		fog_volume->dependency.deleted_notify(p_rid);
+		fog_volume_owner.free(p_rid);
 	} else if (render_target_owner.owns(p_rid)) {
 		RenderTarget *rt = render_target_owner.get_or_null(p_rid);
 
@@ -9495,6 +9642,18 @@ RendererStorageRD::RendererStorageRD() {
 			pv.set(i * 4 + 1, 0);
 			pv.set(i * 4 + 2, 0);
 			pv.set(i * 4 + 3, 0);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_3D_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+		for (int i = 0; i < 64; i++) {
+			pv.set(i * 4 + 0, 255);
+			pv.set(i * 4 + 1, 255);
+			pv.set(i * 4 + 2, 255);
+			pv.set(i * 4 + 3, 255);
 		}
 
 		{

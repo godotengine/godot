@@ -35,16 +35,35 @@
  */
 
 template <typename K, typename V,
-	  K kINVALID = hb_is_pointer (K) ? 0 : hb_is_signed (K) ? hb_int_min (K) : (K) -1,
-	  V vINVALID = hb_is_pointer (V) ? 0 : hb_is_signed (V) ? hb_int_min (V) : (V) -1>
+	  K kINVALID = hb_is_pointer (K) ? 0 : std::is_signed<K>::value ? hb_int_min (K) : (K) -1,
+	  V vINVALID = hb_is_pointer (V) ? 0 : std::is_signed<V>::value ? hb_int_min (V) : (V) -1>
 struct hb_hashmap_t
 {
-  HB_DELETE_COPY_ASSIGN (hb_hashmap_t);
+  static constexpr K INVALID_KEY   = kINVALID;
+  static constexpr V INVALID_VALUE = vINVALID;
+
   hb_hashmap_t ()  { init (); }
   ~hb_hashmap_t () { fini (); }
 
-  static_assert (hb_is_integral (K) || hb_is_pointer (K), "");
-  static_assert (hb_is_integral (V) || hb_is_pointer (V), "");
+  hb_hashmap_t (const hb_hashmap_t& o) : hb_hashmap_t () { hb_copy (o, *this); }
+  hb_hashmap_t (hb_hashmap_t&& o) : hb_hashmap_t () { hb_swap (*this, o); }
+  hb_hashmap_t& operator= (const hb_hashmap_t& o)  { hb_copy (o, *this); return *this; }
+  hb_hashmap_t& operator= (hb_hashmap_t&& o)  { hb_swap (*this, o); return *this; }
+
+  hb_hashmap_t (std::initializer_list<hb_pair_t<K, V>> lst) : hb_hashmap_t ()
+  {
+    for (auto&& item : lst)
+      set (item.first, item.second);
+  }
+  template <typename Iterable,
+	    hb_requires (hb_is_iterable (Iterable))>
+  hb_hashmap_t (const Iterable &o) : hb_hashmap_t ()
+  {
+    hb_copy (o, *this);
+  }
+
+  static_assert (std::is_integral<K>::value || hb_is_pointer (K), "");
+  static_assert (std::is_integral<V>::value || hb_is_pointer (V), "");
 
   struct item_t
   {
@@ -70,6 +89,16 @@ struct hb_hashmap_t
   unsigned int prime;
   item_t *items;
 
+  friend void swap (hb_hashmap_t& a, hb_hashmap_t& b)
+  {
+    if (unlikely (!a.successful || !b.successful))
+      return;
+    hb_swap (a.population, b.population);
+    hb_swap (a.occupancy, b.occupancy);
+    hb_swap (a.mask, b.mask);
+    hb_swap (a.prime, b.prime);
+    hb_swap (a.items, b.items);
+  }
   void init_shallow ()
   {
     successful = true;
@@ -133,17 +162,15 @@ struct hb_hashmap_t
 	if (old_items[i].is_real ())
 	  set_with_hash (old_items[i].key,
 			 old_items[i].hash,
-			 old_items[i].value);
+			 std::move (old_items[i].value));
 
     hb_free (old_items);
 
     return true;
   }
 
-  bool set (K key, V value)
-  {
-    return set_with_hash (key, hb_hash (key), value);
-  }
+  bool set (K key, const V& value) { return set_with_hash (key, hb_hash (key), value); }
+  bool set (K key, V&& value) { return set_with_hash (key, hb_hash (key), std::move (value)); }
 
   V get (K key) const
   {
@@ -213,7 +240,8 @@ struct hb_hashmap_t
 
   protected:
 
-  bool set_with_hash (K key, uint32_t hash, V value)
+  template <typename VV>
+  bool set_with_hash (K key, uint32_t hash, VV&& value)
   {
     if (unlikely (!successful)) return false;
     if (unlikely (key == kINVALID)) return true;
@@ -321,7 +349,22 @@ struct hb_hashmap_t
 struct hb_map_t : hb_hashmap_t<hb_codepoint_t,
 			       hb_codepoint_t,
 			       HB_MAP_VALUE_INVALID,
-			       HB_MAP_VALUE_INVALID> {};
+			       HB_MAP_VALUE_INVALID>
+{
+  using hashmap = hb_hashmap_t<hb_codepoint_t,
+			       hb_codepoint_t,
+			       HB_MAP_VALUE_INVALID,
+			       HB_MAP_VALUE_INVALID>;
 
+  hb_map_t () = default;
+  ~hb_map_t () = default;
+  hb_map_t (hb_map_t& o) = default;
+  hb_map_t& operator= (const hb_map_t& other) = default;
+  hb_map_t& operator= (hb_map_t&& other) = default;
+  hb_map_t (std::initializer_list<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> lst) : hashmap (lst) {}
+  template <typename Iterable,
+	    hb_requires (hb_is_iterable (Iterable))>
+  hb_map_t (const Iterable &o) : hashmap (o) {}
+};
 
 #endif /* HB_MAP_HH */

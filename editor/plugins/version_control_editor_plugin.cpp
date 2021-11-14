@@ -488,7 +488,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->connect("text_changed", callable_mp(this, &VersionControlEditorPlugin::_update_commit_button));
 	commit_message->connect("gui_input", callable_mp(this, &VersionControlEditorPlugin::_commit_message_gui_input));
 	commit_box_vbc->add_child(commit_message);
-	ED_SHORTCUT("version_control/commit", TTR("Commit"), KEY_MASK_CMD | KEY_ENTER);
+	ED_SHORTCUT("version_control/commit", TTR("Commit"), KeyModifierMask::CMD | Key::ENTER);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));

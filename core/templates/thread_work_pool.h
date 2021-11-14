@@ -73,6 +73,7 @@ class ThreadWorkPool {
 
 	ThreadData *threads = nullptr;
 	uint32_t thread_count = 0;
+	uint32_t threads_working = 0;
 	BaseWork *current_work = nullptr;
 
 	static void _thread_function(void *p_user);
@@ -94,7 +95,9 @@ public:
 
 		current_work = w;
 
-		for (uint32_t i = 0; i < thread_count; i++) {
+		threads_working = MIN(p_elements, thread_count);
+
+		for (uint32_t i = 0; i < threads_working; i++) {
 			threads[i].work = w;
 			threads[i].start.post();
 		}
@@ -117,19 +120,32 @@ public:
 
 	void end_work() {
 		ERR_FAIL_COND(current_work == nullptr);
-		for (uint32_t i = 0; i < thread_count; i++) {
+		for (uint32_t i = 0; i < threads_working; i++) {
 			threads[i].completed.wait();
 			threads[i].work = nullptr;
 		}
 
+		threads_working = 0;
 		memdelete(current_work);
 		current_work = nullptr;
 	}
 
 	template <class C, class M, class U>
 	void do_work(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
-		begin_work(p_elements, p_instance, p_method, p_userdata);
-		end_work();
+		switch (p_elements) {
+			case 0:
+				// Nothing to do, so do nothing.
+				break;
+			case 1:
+				// No value in pushing the work to another thread if it's a single job
+				// and we're going to wait for it to finish. Just run it right here.
+				(p_instance->*p_method)(0, p_userdata);
+				break;
+			default:
+				// Multiple jobs to do; commence threaded business.
+				begin_work(p_elements, p_instance, p_method, p_userdata);
+				end_work();
+		}
 	}
 
 	_FORCE_INLINE_ int get_thread_count() const { return thread_count; }

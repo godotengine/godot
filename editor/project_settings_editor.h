@@ -100,8 +100,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
 	void _update_action_map_editor();
 
-	ProjectSettingsEditor();
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

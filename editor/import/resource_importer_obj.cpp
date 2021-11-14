@@ -405,11 +405,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			current_material_library = l.replace("mtllib", "").strip_edges();
 			if (!material_map.has(current_material_library)) {
 				Map<String, Ref<StandardMaterial3D>> lib;
-				Error err = _parse_material_library(current_material_library, lib, r_missing_deps);
-				if (err == ERR_CANT_OPEN) {
-					String dir = p_path.get_base_dir();
-					err = _parse_material_library(dir.plus_file(current_material_library), lib, r_missing_deps);
+				String lib_path = current_material_library;
+				if (lib_path.is_relative_path()) {
+					lib_path = p_path.get_base_dir().plus_file(current_material_library);
 				}
+				Error err = _parse_material_library(lib_path, lib, r_missing_deps);
 				if (err == OK) {
 					material_map[current_material_library] = lib;
 				}
@@ -448,7 +448,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 		ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
 		mi->set_mesh(mesh);
 		mi->set_name(m->get_name());
-		scene->add_child(mi);
+		scene->add_child(mi, true);
 		mi->set_owner(scene);
 	}
 

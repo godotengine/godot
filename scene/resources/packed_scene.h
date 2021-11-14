@@ -69,11 +69,6 @@ class SceneState : public RefCounted {
 		Vector<int> groups;
 	};
 
-	struct PackState {
-		Ref<SceneState> state;
-		int node = -1;
-	};
-
 	Vector<NodeData> nodes;
 
 	struct ConnectionData {
@@ -93,8 +88,6 @@ class SceneState : public RefCounted {
 	String path;
 
 	uint64_t last_modified_time = 0;
-
-	_FORCE_INLINE_ Ref<SceneState> _get_base_scene_state() const;
 
 	static bool disable_placeholders;
 
@@ -117,6 +110,12 @@ public:
 		GEN_EDIT_STATE_DISABLED,
 		GEN_EDIT_STATE_INSTANCE,
 		GEN_EDIT_STATE_MAIN,
+		GEN_EDIT_STATE_MAIN_INHERITED,
+	};
+
+	struct PackState {
+		Ref<SceneState> state;
+		int node = -1;
 	};
 
 	static void set_disable_placeholders(bool p_disable);
@@ -138,6 +137,8 @@ public:
 
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state) const;
+
+	Ref<SceneState> get_base_scene_state() const;
 
 	//unbuild API
 
@@ -207,6 +208,7 @@ public:
 		GEN_EDIT_STATE_DISABLED,
 		GEN_EDIT_STATE_INSTANCE,
 		GEN_EDIT_STATE_MAIN,
+		GEN_EDIT_STATE_MAIN_INHERITED,
 	};
 
 	Error pack(Node *p_scene);

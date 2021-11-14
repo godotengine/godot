@@ -55,8 +55,23 @@ public:
 		SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR,
 		SHADER_VERSION_LIGHTMAP_COLOR_PASS,
 		SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR,
-
 		SHADER_VERSION_MAX
+	};
+
+	enum PipelineVersion {
+		PIPELINE_VERSION_DEPTH_PASS,
+		PIPELINE_VERSION_DEPTH_PASS_DP,
+		PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS,
+		PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI,
+		PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL,
+		PIPELINE_VERSION_DEPTH_PASS_WITH_SDF,
+		PIPELINE_VERSION_OPAQUE_PASS,
+		PIPELINE_VERSION_OPAQUE_PASS_WITH_SEPARATE_SPECULAR,
+		PIPELINE_VERSION_TRANSPARENT_PASS,
+		PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS,
+		PIPELINE_VERSION_LIGHTMAP_OPAQUE_PASS_WITH_SEPARATE_SPECULAR,
+		PIPELINE_VERSION_LIGHTMAP_TRANSPARENT_PASS,
+		PIPELINE_VERSION_MAX
 	};
 
 	enum ShaderSpecializations {
@@ -109,7 +124,7 @@ public:
 		bool valid;
 		RID version;
 		uint32_t vertex_input_mask;
-		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
+		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][PIPELINE_VERSION_MAX];
 
 		String path;
 
@@ -120,7 +135,7 @@ public:
 		uint32_t ubo_size;
 
 		String code;
-		Map<StringName, RID> default_texture_params;
+		Map<StringName, Map<int, RID>> default_texture_params;
 
 		DepthDraw depth_draw;
 		DepthTest depth_test;
@@ -151,7 +166,7 @@ public:
 		uint32_t index = 0;
 
 		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
 		void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
 

@@ -50,7 +50,7 @@ void Logger::set_flush_stdout_on_print(bool value) {
 	_flush_stdout_on_print = value;
 }
 
-void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}
@@ -81,7 +81,11 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 		err_details = p_code;
 	}
 
-	logf_error("%s: %s\n", err_type, err_details);
+	if (p_editor_notify) {
+		logf_error("%s: %s\n", err_type, err_details);
+	} else {
+		logf_error("USER %s: %s\n", err_type, err_details);
+	}
 	logf_error("   at: %s (%s:%i) - %s\n", p_function, p_file, p_line, p_code);
 }
 
@@ -256,7 +260,7 @@ void CompositeLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	}
 }
 
-void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}

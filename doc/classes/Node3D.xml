@@ -264,15 +264,27 @@
 		</method>
 	</methods>
 	<members>
+		<member name="basis" type="Basis" setter="set_basis" getter="get_basis">
+			Direct access to the 3x3 basis of the [Transform3D] property.
+		</member>
 		<member name="global_transform" type="Transform3D" setter="set_global_transform" getter="get_global_transform">
 			World3D space (global) [Transform3D] of this node.
 		</member>
 		<member name="position" type="Vector3" setter="set_position" getter="get_position" default="Vector3(0, 0, 0)">
 			Local position or translation of this node relative to the parent. This is equivalent to [code]transform.origin[/code].
 		</member>
+		<member name="quaternion" type="Quaternion" setter="set_quaternion" getter="get_quaternion">
+			Access to the node rotation as a [Quaternion]. This property is ideal for tweening complex rotations.
+		</member>
 		<member name="rotation" type="Vector3" setter="set_rotation" getter="get_rotation" default="Vector3(0, 0, 0)">
-			Rotation part of the local transformation in radians, specified in terms of YXZ-Euler angles in the format (X angle, Y angle, Z angle).
+			Rotation part of the local transformation in radians, specified in terms of Euler angles. The angles construct a rotaton in the order specified by the [member rotation_order] property.
 			[b]Note:[/b] In the mathematical sense, rotation is a matrix and not a vector. The three Euler angles, which are the three independent parameters of the Euler-angle parametrization of the rotation matrix, are stored in a [Vector3] data structure not because the rotation is a vector, but only because [Vector3] exists as a convenient data-structure to store 3 floating-point numbers. Therefore, applying affine operations on the rotation "vector" is not meaningful.
+		</member>
+		<member name="rotation_edit_mode" type="int" setter="set_rotation_edit_mode" getter="get_rotation_edit_mode" enum="Node3D.RotationEditMode" default="0">
+			Specify how rotation (and scale) will be presented in the editor.
+		</member>
+		<member name="rotation_order" type="int" setter="set_rotation_order" getter="get_rotation_order" enum="Node3D.RotationOrder" default="2">
+			Specify the axis rotation order of the [member rotation] property. The final orientation is constructed by rotating the Euler angles in the order specified by this property.
 		</member>
 		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3(1, 1, 1)">
 			Scale part of the local transformation.
@@ -310,6 +322,24 @@
 		</constant>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43">
 			Node3D nodes receives this notification when their visibility changes.
+		</constant>
+		<constant name="ROTATION_EDIT_MODE_EULER" value="0" enum="RotationEditMode">
+		</constant>
+		<constant name="ROTATION_EDIT_MODE_QUATERNION" value="1" enum="RotationEditMode">
+		</constant>
+		<constant name="ROTATION_EDIT_MODE_BASIS" value="2" enum="RotationEditMode">
+		</constant>
+		<constant name="ROTATION_ORDER_XYZ" value="0" enum="RotationOrder">
+		</constant>
+		<constant name="ROTATION_ORDER_XZY" value="1" enum="RotationOrder">
+		</constant>
+		<constant name="ROTATION_ORDER_YXZ" value="2" enum="RotationOrder">
+		</constant>
+		<constant name="ROTATION_ORDER_YZX" value="3" enum="RotationOrder">
+		</constant>
+		<constant name="ROTATION_ORDER_ZXY" value="4" enum="RotationOrder">
+		</constant>
+		<constant name="ROTATION_ORDER_ZYX" value="5" enum="RotationOrder">
 		</constant>
 	</constants>
 </class>

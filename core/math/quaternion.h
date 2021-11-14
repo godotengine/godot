@@ -72,6 +72,9 @@ public:
 	Quaternion slerpni(const Quaternion &p_to, const real_t &p_weight) const;
 	Quaternion cubic_slerp(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const;
 
+	Vector3 get_axis() const;
+	float get_angle() const;
+
 	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
 		real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
@@ -82,13 +85,6 @@ public:
 
 	void operator*=(const Quaternion &p_q);
 	Quaternion operator*(const Quaternion &p_q) const;
-
-	Quaternion operator*(const Vector3 &v) const {
-		return Quaternion(w * v.x + y * v.z - z * v.y,
-				w * v.y + z * v.x - x * v.z,
-				w * v.z + x * v.y - y * v.x,
-				-x * v.x - y * v.y - z * v.z);
-	}
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &v) const {
 #ifdef MATH_CHECKS

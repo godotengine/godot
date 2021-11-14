@@ -895,7 +895,7 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	if (EngineDebugger::is_active()) {
 		//quit from game window using F8
 		Ref<InputEventKey> k = p_ev;
-		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_F8) {
+		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::F8) {
 			EngineDebugger::get_singleton()->send_message("request_quit", Array());
 		}
 	}

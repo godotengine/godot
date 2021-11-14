@@ -53,7 +53,7 @@
 			<argument index="1" name="pos" type="Vector2" />
 			<argument index="2" name="char" type="String" />
 			<argument index="3" name="next" type="String" default="&quot;&quot;" />
-			<argument index="4" name="size" type="int" default="-1" />
+			<argument index="4" name="size" type="int" default="16" />
 			<argument index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<argument index="6" name="outline_size" type="int" default="0" />
 			<argument index="7" name="outline_modulate" type="Color" default="Color(1, 1, 1, 0)" />
@@ -146,7 +146,7 @@
 			<argument index="3" name="align" type="int" enum="HAlign" default="0" />
 			<argument index="4" name="width" type="float" default="-1" />
 			<argument index="5" name="max_lines" type="int" default="-1" />
-			<argument index="6" name="size" type="int" default="-1" />
+			<argument index="6" name="size" type="int" default="16" />
 			<argument index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<argument index="8" name="outline_size" type="int" default="0" />
 			<argument index="9" name="outline_modulate" type="Color" default="Color(1, 1, 1, 0)" />
@@ -238,7 +238,7 @@
 			<argument index="2" name="text" type="String" />
 			<argument index="3" name="align" type="int" enum="HAlign" default="0" />
 			<argument index="4" name="width" type="float" default="-1" />
-			<argument index="5" name="size" type="int" default="-1" />
+			<argument index="5" name="size" type="int" default="16" />
 			<argument index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<argument index="7" name="outline_size" type="int" default="0" />
 			<argument index="8" name="outline_modulate" type="Color" default="Color(1, 1, 1, 0)" />

@@ -69,7 +69,7 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 	ERR_FAIL_COND(l == nullptr);
 }
 
-void print_line(String p_string) {
+void __print_line(String p_string) {
 	if (!_print_line_enabled) {
 		return;
 	}
@@ -107,4 +107,8 @@ void print_verbose(String p_string) {
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line(p_string);
 	}
+}
+
+String stringify_variants(Variant p_var) {
+	return p_var.operator String();
 }

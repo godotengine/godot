@@ -2163,7 +2163,8 @@ Error EditorFileSystem::_resource_import(const String &p_path) {
 }
 
 bool EditorFileSystem::_should_skip_directory(const String &p_path) {
-	if (p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
+	String project_data_path = ProjectSettings::get_singleton()->get_project_data_path();
+	if (p_path == project_data_path || p_path.begins_with(project_data_path + "/")) {
 		return true;
 	}
 

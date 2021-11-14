@@ -110,6 +110,7 @@ class CustomPropertyEditor : public PopupPanel {
 	int focused_value_editor;
 	Label *value_label[MAX_VALUE_EDITORS];
 	HScrollBar *scroll[4];
+	HBoxContainer *action_hboxes;
 	Button *action_buttons[MAX_ACTION_BUTTONS];
 	MenuButton *type_button;
 	Vector<String> inheritors_array;

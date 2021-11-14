@@ -33,6 +33,8 @@
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
 
+#include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
+
 #ifdef MODULE_MSDFGEN_ENABLED
 #include "core/ShapeDistanceFinder.h"
 #include "core/contour-combiners.h"
@@ -670,6 +672,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontDataFallback *p_font_d
 }
 
 _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontDataFallback *p_font_data, const Vector2i &p_size) const {
+	ERR_FAIL_COND_V(p_size.x <= 0, false);
 	if (p_font_data->cache.has(p_size)) {
 		return true;
 	}
@@ -735,6 +738,23 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontDataFallback 
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
 		if (!p_font_data->face_init) {
+			// Get style flags and name.
+			if (fd->face->family_name != nullptr) {
+				p_font_data->font_name = String::utf8((const char *)fd->face->family_name);
+			}
+			if (fd->face->style_name != nullptr) {
+				p_font_data->style_name = String::utf8((const char *)fd->face->style_name);
+			}
+			p_font_data->style_flags = 0;
+			if (fd->face->style_flags & FT_STYLE_FLAG_BOLD) {
+				p_font_data->style_flags |= FONT_BOLD;
+			}
+			if (fd->face->style_flags & FT_STYLE_FLAG_ITALIC) {
+				p_font_data->style_flags |= FONT_ITALIC;
+			}
+			if (fd->face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) {
+				p_font_data->style_flags |= FONT_FIXED_WIDTH;
+			}
 			// Read OpenType variations.
 			p_font_data->supported_varaitions.clear();
 			if (fd->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
@@ -823,6 +843,66 @@ void TextServerFallback::font_set_data_ptr(RID p_font_rid, const uint8_t *p_data
 	fd->data.clear();
 	fd->data_ptr = p_data_ptr;
 	fd->data_size = p_data_size;
+}
+
+void TextServerFallback::font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->style_flags = p_style;
+}
+
+uint32_t /*FontStyle*/ TextServerFallback::font_get_style(RID p_font_rid) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
+	return fd->style_flags;
+}
+
+void TextServerFallback::font_set_style_name(RID p_font_rid, const String &p_name) {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->style_name = p_name;
+}
+
+String TextServerFallback::font_get_style_name(RID p_font_rid) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, String());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), String());
+	return fd->style_name;
+}
+
+void TextServerFallback::font_set_name(RID p_font_rid, const String &p_name) {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->font_name = p_name;
+}
+
+String TextServerFallback::font_get_name(RID p_font_rid) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, String());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), String());
+	return fd->font_name;
 }
 
 void TextServerFallback::font_set_antialiased(RID p_font_rid, bool p_antialiased) {
@@ -2029,6 +2109,27 @@ TextServer::Direction TextServerFallback::shaped_text_get_direction(RID p_shaped
 	return TextServer::DIRECTION_LTR;
 }
 
+void TextServerFallback::shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) {
+	_THREAD_SAFE_METHOD_
+	ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND(!sd);
+
+	if (sd->custom_punct != p_punct) {
+		if (sd->parent != RID()) {
+			full_copy(sd);
+		}
+		sd->custom_punct = p_punct;
+		invalidate(sd);
+	}
+}
+
+String TextServerFallback::shaped_text_get_custom_punctuation(RID p_shaped) const {
+	_THREAD_SAFE_METHOD_
+	const ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_V(!sd, String());
+	return sd->custom_punct;
+}
+
 void TextServerFallback::shaped_text_set_orientation(RID p_shaped, TextServer::Orientation p_orientation) {
 	ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND(!sd);
@@ -2331,6 +2432,7 @@ RID TextServerFallback::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 
 	new_sd->orientation = sd->orientation;
 	new_sd->direction = sd->direction;
+	new_sd->custom_punct = sd->custom_punct;
 	new_sd->para_direction = sd->para_direction;
 	new_sd->line_breaks_valid = sd->line_breaks_valid;
 	new_sd->justification_ops_valid = sd->justification_ops_valid;
@@ -2614,27 +2716,41 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 	}
 
 	int sd_size = sd->glyphs.size();
+	Glyph *sd_glyphs = sd->glyphs.ptrw();
+
+	int c_punct_size = sd->custom_punct.length();
+	const char32_t *c_punct = sd->custom_punct.ptr();
+
 	for (int i = 0; i < sd_size; i++) {
-		if (sd->glyphs[i].count > 0) {
-			char32_t c = sd->text[sd->glyphs[i].start];
-			if (is_punct(c)) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_PUNCTUATION;
+		if (sd_glyphs[i].count > 0) {
+			char32_t c = sd->text[sd_glyphs[i].start];
+			if (c_punct_size == 0) {
+				if (is_punct(c)) {
+					sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+				}
+			} else {
+				for (int j = 0; j < c_punct_size; j++) {
+					if (c_punct[j] == c) {
+						sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
+						break;
+					}
+				}
 			}
 			if (is_underscore(c)) {
 				sd->glyphs.write[i].flags |= GRAPHEME_IS_UNDERSCORE;
 			}
 			if (is_whitespace(c) && !is_linebreak(c)) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_SPACE;
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_BREAK_SOFT;
+				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
+				sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
 			}
 			if (is_linebreak(c)) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_BREAK_HARD;
+				sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_HARD;
 			}
 			if (c == 0x0009 || c == 0x000b) {
-				sd->glyphs.write[i].flags |= GRAPHEME_IS_TAB;
+				sd_glyphs[i].flags |= GRAPHEME_IS_TAB;
 			}
 
-			i += (sd->glyphs[i].count - 1);
+			i += (sd_glyphs[i].count - 1);
 		}
 	}
 	sd->line_breaks_valid = true;
@@ -2712,10 +2828,10 @@ void TextServerFallback::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 		width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
 
 		if (sd_glyphs[i].count > 0) {
-			bool above_min_char_treshold = (i >= ell_min_characters);
+			bool above_min_char_threshold = (i >= ell_min_characters);
 
-			if (width + (((above_min_char_treshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
-				if (cut_per_word && above_min_char_treshold) {
+			if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
+				if (cut_per_word && above_min_char_threshold) {
 					if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 						last_valid_cut = i;
 						found = true;
@@ -2727,7 +2843,7 @@ void TextServerFallback::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 				if (found) {
 					trim_pos = last_valid_cut;
 
-					if (add_ellipsis && (above_min_char_treshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
+					if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
 						ellipsis_pos = trim_pos;
 					}
 					break;
@@ -3151,7 +3267,9 @@ TextServerFallback::TextServerFallback() {
 };
 
 TextServerFallback::~TextServerFallback() {
+#ifdef MODULE_FREETYPE_ENABLED
 	if (library != nullptr) {
 		FT_Done_FreeType(library);
 	}
+#endif
 };

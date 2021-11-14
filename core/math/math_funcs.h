@@ -159,7 +159,7 @@ public:
 		} ieee754;
 		ieee754.f = p_val;
 		return ((unsigned)(ieee754.u >> 32) & 0x7fffffff) == 0x7ff00000 &&
-			   ((unsigned)ieee754.u == 0);
+				((unsigned)ieee754.u == 0);
 #else
 		return isinf(p_val);
 #endif
@@ -289,6 +289,19 @@ public:
 	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
 		float range = max - min;
 		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+	}
+
+	static _ALWAYS_INLINE_ float fract(float value) {
+		return value - floor(value);
+	}
+	static _ALWAYS_INLINE_ double fract(double value) {
+		return value - floor(value);
+	}
+	static _ALWAYS_INLINE_ float pingpong(float value, float length) {
+		return (length != 0.0f) ? abs(fract((value - length) / (length * 2.0f)) * length * 2.0f - length) : 0.0f;
+	}
+	static _ALWAYS_INLINE_ double pingpong(double value, double length) {
+		return (length != 0.0) ? abs(fract((value - length) / (length * 2.0)) * length * 2.0 - length) : 0.0;
 	}
 
 	// double only, as these functions are mainly used by the editor and not performance-critical,
@@ -461,7 +474,7 @@ public:
 				mantissa = 0;
 			}
 			hf = (((uint16_t)sign) << 15) | (uint16_t)((0x1F << 10)) |
-				 (uint16_t)(mantissa >> 13);
+					(uint16_t)(mantissa >> 13);
 		}
 		// check if exponent is <= -15
 		else if (exp <= 0x38000000) {
@@ -474,8 +487,8 @@ public:
 			hf = 0; //denormals do not work for 3D, convert to zero
 		} else {
 			hf = (((uint16_t)sign) << 15) |
-				 (uint16_t)((exp - 0x38000000) >> 13) |
-				 (uint16_t)(mantissa >> 13);
+					(uint16_t)((exp - 0x38000000) >> 13) |
+					(uint16_t)(mantissa >> 13);
 		}
 
 		return hf;

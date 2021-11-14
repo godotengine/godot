@@ -85,7 +85,7 @@ protected:
 	float cell_size = 0.3f;
 	float cell_height = 0.2f;
 	float agent_height = 2.0f;
-	float agent_radius = 0.6f;
+	float agent_radius = 1.0f;
 	float agent_max_climb = 0.9f;
 	float agent_max_slope = 45.0f;
 	float region_min_size = 8.0f;

@@ -62,11 +62,28 @@ public:
 	GDVIRTUAL0R(bool, _initialize);
 	GDVIRTUAL0(_uninitialize);
 
+	/** input and output **/
+
+	virtual PackedStringArray get_suggested_tracker_names() const override; /* return a list of likely/suggested tracker names */
+	virtual PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const override; /* return a list of likely/suggested action names for this tracker */
 	virtual TrackingStatus get_tracking_status() const override;
+	virtual void trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0) override;
+
+	GDVIRTUAL0RC(PackedStringArray, _get_suggested_tracker_names);
+	GDVIRTUAL1RC(PackedStringArray, _get_suggested_pose_names, const StringName &);
 	GDVIRTUAL0RC(uint32_t, _get_tracking_status);
+	GDVIRTUAL6(_trigger_haptic_pulse, const String &, const StringName &, double, double, double, double);
 
 	/** specific to VR **/
-	// nothing yet
+	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode) override; /* query if this interface supports this play area mode */
+	virtual XRInterface::PlayAreaMode get_play_area_mode() const override; /* get the current play area mode */
+	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override; /* change the play area mode, note that this should return false if the mode is not available */
+	virtual PackedVector3Array get_play_area() const override; /* if available, returns an array of vectors denoting the play area the player can move around in */
+
+	GDVIRTUAL1RC(bool, _supports_play_area_mode, XRInterface::PlayAreaMode);
+	GDVIRTUAL0RC(uint32_t, _get_play_area_mode);
+	GDVIRTUAL1RC(bool, _set_play_area_mode, uint32_t);
+	GDVIRTUAL0RC(PackedVector3Array, _get_play_area);
 
 	/** specific to AR **/
 	virtual bool get_anchor_detection_is_enabled() const override;

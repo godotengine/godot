@@ -118,6 +118,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 		output_image_texture.instantiate();
 		output_image_texture->create_from_image(output_image);
 
+		merged->set_name(p_atlas_sources[0]->get_name());
 		merged->set_texture(output_image_texture);
 		merged->set_texture_region_size(new_texture_region_size);
 	}

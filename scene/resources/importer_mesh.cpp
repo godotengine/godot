@@ -1243,5 +1243,5 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &ImporterMesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &ImporterMesh::get_lightmap_size_hint);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
 }

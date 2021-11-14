@@ -68,46 +68,46 @@ void MIDIDriver::receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_
 	}
 
 	switch (event->get_message()) {
-		case MIDI_MESSAGE_AFTERTOUCH:
+		case MIDIMessage::AFTERTOUCH:
 			if (length >= 2 + param_position) {
 				event->set_pitch(data[param_position]);
 				event->set_pressure(data[param_position + 1]);
 			}
 			break;
 
-		case MIDI_MESSAGE_CONTROL_CHANGE:
+		case MIDIMessage::CONTROL_CHANGE:
 			if (length >= 2 + param_position) {
 				event->set_controller_number(data[param_position]);
 				event->set_controller_value(data[param_position + 1]);
 			}
 			break;
 
-		case MIDI_MESSAGE_NOTE_ON:
-		case MIDI_MESSAGE_NOTE_OFF:
+		case MIDIMessage::NOTE_ON:
+		case MIDIMessage::NOTE_OFF:
 			if (length >= 2 + param_position) {
 				event->set_pitch(data[param_position]);
 				event->set_velocity(data[param_position + 1]);
 
-				if (event->get_message() == MIDI_MESSAGE_NOTE_ON && event->get_velocity() == 0) {
+				if (event->get_message() == MIDIMessage::NOTE_ON && event->get_velocity() == 0) {
 					// https://www.midi.org/forum/228-writing-midi-software-send-note-off,-or-zero-velocity-note-on
-					event->set_message(MIDI_MESSAGE_NOTE_OFF);
+					event->set_message(MIDIMessage::NOTE_OFF);
 				}
 			}
 			break;
 
-		case MIDI_MESSAGE_PITCH_BEND:
+		case MIDIMessage::PITCH_BEND:
 			if (length >= 2 + param_position) {
 				event->set_pitch((data[param_position + 1] << 7) | data[param_position]);
 			}
 			break;
 
-		case MIDI_MESSAGE_PROGRAM_CHANGE:
+		case MIDIMessage::PROGRAM_CHANGE:
 			if (length >= 1 + param_position) {
 				event->set_instrument(data[param_position]);
 			}
 			break;
 
-		case MIDI_MESSAGE_CHANNEL_PRESSURE:
+		case MIDIMessage::CHANNEL_PRESSURE:
 			if (length >= 1 + param_position) {
 				event->set_pressure(data[param_position]);
 			}

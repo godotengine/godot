@@ -36,6 +36,11 @@
 #include "visual_shader_particle_nodes.h"
 #include "visual_shader_sdf_nodes.h"
 
+String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
+	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
+	return p_name + "_" + String(typepf[p_type]) + "_" + itos(p_id);
+}
+
 bool VisualShaderNode::is_simple_decl() const {
 	return simple_decl;
 }
@@ -199,6 +204,10 @@ Vector<StringName> VisualShaderNode::get_editable_properties() const {
 	return Vector<StringName>();
 }
 
+Map<StringName, String> VisualShaderNode::get_editable_properties_names() const {
+	return Map<StringName, String>();
+}
+
 Array VisualShaderNode::get_default_input_values() const {
 	Array ret;
 	for (const KeyValue<int, Variant> &E : default_input_values) {
@@ -246,8 +255,8 @@ void VisualShaderNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_input_values"), &VisualShaderNode::get_default_input_values);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_port_for_preview"), "set_output_port_for_preview", "get_output_port_for_preview");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_default_input_values", "get_default_input_values");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "expanded_output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_output_ports_expanded", "_get_output_ports_expanded");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_default_input_values", "get_default_input_values");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "expanded_output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_output_ports_expanded", "_get_output_ports_expanded");
 	ADD_SIGNAL(MethodInfo("editor_refresh_request"));
 
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR);
@@ -350,7 +359,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 	}
 	String code = "	{\n";
 	String _code;
-	GDVIRTUAL_CALL(_get_code, input_vars, output_vars, (int)p_mode, (int)p_type, _code);
+	GDVIRTUAL_CALL(_get_code, input_vars, output_vars, p_mode, p_type, _code);
 	bool nend = _code.ends_with("\n");
 	_code = _code.insert(0, "		");
 	_code = _code.replace("\n", "\n		");
@@ -367,7 +376,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 
 String VisualShaderNodeCustom::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String ret;
-	if (GDVIRTUAL_CALL(_get_global_code, (int)p_mode, ret)) {
+	if (GDVIRTUAL_CALL(_get_global_code, p_mode, ret)) {
 		String code = "// " + get_caption() + "\n";
 		code += ret;
 		code += "\n";
@@ -431,7 +440,7 @@ void VisualShaderNodeCustom::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_is_initialized"), &VisualShaderNodeCustom::_is_initialized);
 	ClassDB::bind_method(D_METHOD("_set_input_port_default_value", "port", "value"), &VisualShaderNodeCustom::_set_input_port_default_value);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "initialized", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_initialized", "_is_initialized");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "initialized", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_initialized", "_is_initialized");
 }
 
 VisualShaderNodeCustom::VisualShaderNodeCustom() {
@@ -1096,6 +1105,7 @@ static const char *type_string[VisualShader::TYPE_MAX] = {
 	"start_custom",
 	"process_custom",
 	"sky",
+	"fog",
 };
 
 bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
@@ -1245,7 +1255,7 @@ void VisualShader::reset_state() {
 }
 void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	//mode
-	p_list->push_back(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Node3D,CanvasItem,Particles,Sky"));
+	p_list->push_back(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Node3D,CanvasItem,Particles,Sky,Fog"));
 	//render modes
 
 	Map<String, String> blend_mode_enums;
@@ -1290,20 +1300,20 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 			prop_name += "/" + itos(E.key);
 
 			if (E.key != NODE_ID_OUTPUT) {
-				p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
 			}
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 			if (Object::cast_to<VisualShaderNodeGroupBase>(E.value.node.ptr()) != nullptr) {
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/input_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+				p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/input_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 			}
 			if (Object::cast_to<VisualShaderNodeExpression>(E.value.node.ptr()) != nullptr) {
-				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 			}
 		}
-		p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "nodes/" + String(type_string[i]) + "/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "nodes/" + String(type_string[i]) + "/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 }
 
@@ -1636,7 +1646,7 @@ void VisualShader::_update_shader() const {
 	Vector<VisualShader::DefaultTextureParam> default_tex_params;
 	Set<StringName> classes;
 	Map<int, int> insertion_pos;
-	static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles", "sky" };
+	static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles", "sky", "fog" };
 
 	global_code += String() + "shader_type " + shader_mode_str[shader_mode] + ";\n";
 
@@ -1684,7 +1694,7 @@ void VisualShader::_update_shader() const {
 		global_code += "render_mode " + render_mode + ";\n\n";
 	}
 
-	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light", "start", "process", "collide", "start_custom", "process_custom", "sky" };
+	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
 
 	String global_expressions;
 	Set<String> used_uniform_names;
@@ -1755,7 +1765,7 @@ void VisualShader::_update_shader() const {
 		StringBuilder func_code;
 
 		bool is_empty_func = false;
-		if (shader_mode != Shader::MODE_PARTICLES && shader_mode != Shader::MODE_SKY) {
+		if (shader_mode != Shader::MODE_PARTICLES && shader_mode != Shader::MODE_SKY && shader_mode != Shader::MODE_FOG) {
 			is_empty_func = true;
 		}
 
@@ -1824,6 +1834,7 @@ void VisualShader::_update_shader() const {
 			code += "	vec3 __vec3_buff2;\n";
 			code += "	float __scalar_buff1;\n";
 			code += "	float __scalar_buff2;\n";
+			code += "	int __scalar_ibuff;\n";
 			code += "	vec3 __ndiff = normalize(__diff);\n\n";
 		}
 		if (has_start) {
@@ -1921,6 +1932,10 @@ void VisualShader::_update_shader() const {
 		global_compute_code += "	return mat4(vec4(oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s, 0), vec4(oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s, 0), vec4(oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c, 0), vec4(0, 0, 0, 1));\n";
 		global_compute_code += "}\n\n";
 
+		global_compute_code += "vec2 __get_random_unit_vec2(inout uint seed) {\n";
+		global_compute_code += "	return normalize(vec2(__rand_from_seed_m1_p1(seed), __rand_from_seed_m1_p1(seed)));\n";
+		global_compute_code += "}\n\n";
+
 		global_compute_code += "vec3 __get_random_unit_vec3(inout uint seed) {\n";
 		global_compute_code += "	return normalize(vec3(__rand_from_seed_m1_p1(seed), __rand_from_seed_m1_p1(seed), __rand_from_seed_m1_p1(seed)));\n";
 		global_compute_code += "}\n\n";
@@ -1947,7 +1962,9 @@ void VisualShader::_update_shader() const {
 
 	const_cast<VisualShader *>(this)->set_code(final_code);
 	for (int i = 0; i < default_tex_params.size(); i++) {
-		const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].param);
+		for (int j = 0; j < default_tex_params[i].params.size(); j++) {
+			const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].params[j], j);
+		}
 	}
 	if (previous_code != final_code) {
 		const_cast<VisualShader *>(this)->emit_signal(SNAME("changed"));
@@ -2016,8 +2033,8 @@ void VisualShader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_shader"), &VisualShader::_update_shader);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_graph_offset", "get_graph_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "engine_version", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_engine_version", "get_engine_version");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_graph_offset", "get_graph_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "engine_version", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_engine_version", "get_engine_version");
 
 	ADD_PROPERTY_DEFAULT("code", ""); // Inherited from Shader, prevents showing default code as override in docs.
 
@@ -2030,6 +2047,7 @@ void VisualShader::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_START_CUSTOM);
 	BIND_ENUM_CONSTANT(TYPE_PROCESS_CUSTOM);
 	BIND_ENUM_CONSTANT(TYPE_SKY);
+	BIND_ENUM_CONSTANT(TYPE_FOG);
 	BIND_ENUM_CONSTANT(TYPE_MAX);
 
 	BIND_CONSTANT(NODE_ID_INVALID);
@@ -2307,6 +2325,16 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_VECTOR, "sky_coords", "vec3(SKY_COORDS, 0.0)" },
 	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
+	// Fog, Fog
+
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR, "world_position", "WORLD_POSITION" },
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR, "object_position", "OBJECT_POSITION" },
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR, "uvw", "UVW" },
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR, "extents", "EXTENTS" },
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "sdf", "SDF" },
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
+
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
 
@@ -2373,11 +2401,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR, "screen_uv", "vec3(SCREEN_UV, 0.0)" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
-	// Sky
-
-	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_VECTOR, "screen_uv", "vec3(SCREEN_UV, 0.0)" },
-	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
-
 	// Particles
 
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
@@ -2385,6 +2408,15 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COLLIDE, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
+
+	// Sky
+
+	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_VECTOR, "screen_uv", "vec3(SCREEN_UV, 0.0)" },
+	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
+
+	// Fog
+
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
@@ -2834,7 +2866,7 @@ void VisualShaderNodeUniformRef::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_uniform_type"), &VisualShaderNodeUniformRef::_get_uniform_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "uniform_name", PROPERTY_HINT_ENUM, ""), "set_uniform_name", "get_uniform_name");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "uniform_type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_uniform_type", "_get_uniform_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "uniform_type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_uniform_type", "_get_uniform_type");
 }
 
 Vector<StringName> VisualShaderNodeUniformRef::get_editable_properties() const {
@@ -2931,6 +2963,13 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "ALPHA" },
 	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_VECTOR, "fog", "FOG.rgb" },
 	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_SCALAR, "fog_alpha", "FOG.a" },
+
+	////////////////////////////////////////////////////////////////////////
+	// Fog, Fog.
+	////////////////////////////////////////////////////////////////////////
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "density", "DENSITY" },
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR, "albedo", "ALBEDO" },
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR, "emission", "EMISSION" },
 
 	////////////////////////////////////////////////////////////////////////
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
@@ -3413,7 +3452,7 @@ void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const Strin
 			count++;
 		}
 
-		inputs.erase(index, count);
+		inputs = inputs.left(index) + inputs.substr(index + count);
 		inputs = inputs.insert(index, itos(i));
 		index += inputs_strings[i].size();
 	}
@@ -3436,7 +3475,7 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 		}
 		index += inputs_strings[i].size();
 	}
-	inputs.erase(index, count);
+	inputs = inputs.left(index) + inputs.substr(index + count);
 
 	inputs_strings = inputs.split(";", false);
 	inputs = inputs.substr(0, index);
@@ -3489,7 +3528,7 @@ void VisualShaderNodeGroupBase::add_output_port(int p_id, int p_type, const Stri
 			count++;
 		}
 
-		outputs.erase(index, count);
+		outputs = outputs.left(index) + outputs.substr(index + count);
 		outputs = outputs.insert(index, itos(i));
 		index += outputs_strings[i].size();
 	}
@@ -3512,7 +3551,7 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 		}
 		index += outputs_strings[i].size();
 	}
-	outputs.erase(index, count);
+	outputs = outputs.left(index) + outputs.substr(index + count);
 
 	outputs_strings = outputs.split(";", false);
 	outputs = outputs.substr(0, index);
@@ -3564,8 +3603,7 @@ void VisualShaderNodeGroupBase::set_input_port_type(int p_id, int p_type) {
 		index += inputs_strings[i].size();
 	}
 
-	inputs.erase(index, count);
-
+	inputs = inputs.left(index) + inputs.substr(index + count);
 	inputs = inputs.insert(index, itos(p_type));
 
 	_apply_port_changes();
@@ -3600,8 +3638,7 @@ void VisualShaderNodeGroupBase::set_input_port_name(int p_id, const String &p_na
 		index += inputs_strings[i].size();
 	}
 
-	inputs.erase(index, count);
-
+	inputs = inputs.left(index) + inputs.substr(index + count);
 	inputs = inputs.insert(index, p_name);
 
 	_apply_port_changes();
@@ -3636,7 +3673,7 @@ void VisualShaderNodeGroupBase::set_output_port_type(int p_id, int p_type) {
 		index += output_strings[i].size();
 	}
 
-	outputs.erase(index, count);
+	outputs = outputs.left(index) + outputs.substr(index + count);
 
 	outputs = outputs.insert(index, itos(p_type));
 
@@ -3672,7 +3709,7 @@ void VisualShaderNodeGroupBase::set_output_port_name(int p_id, const String &p_n
 		index += output_strings[i].size();
 	}
 
-	outputs.erase(index, count);
+	outputs = outputs.left(index) + outputs.substr(index + count);
 
 	outputs = outputs.insert(index, p_name);
 

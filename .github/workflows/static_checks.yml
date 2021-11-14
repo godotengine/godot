@@ -18,14 +18,16 @@ jobs:
         run: |
           sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
           sudo apt-get update
 
       - name: Install dependencies
         run: |
-          sudo apt-get install -qq dos2unix recode clang-format-11
+          sudo apt-get install -qq dos2unix recode clang-format-13
           sudo update-alternatives --remove-all clang-format
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-11 100
-          sudo pip3 install black==20.8b1 pygments
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
+          sudo pip3 install black==21.10b0 pygments
 
       - name: File formatting checks (file_format.sh)
         run: |
@@ -48,4 +50,4 @@ jobs:
 
       - name: Documentation checks
         run: |
-          doc/tools/makerst.py --dry-run doc/classes modules
+          doc/tools/make_rst.py --dry-run doc/classes modules

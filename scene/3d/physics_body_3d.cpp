@@ -174,9 +174,12 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_linear
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer3D::MotionResult *r = nullptr;
+	PhysicsServer3D::MotionResult temp_result;
 	if (r_collision.is_valid()) {
 		// Needs const_cast because method bindings don't support non-const Ref.
 		r = const_cast<PhysicsServer3D::MotionResult *>(&r_collision->result);
+	} else {
+		r = &temp_result;
 	}
 
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
@@ -184,7 +187,14 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_linear
 
 	PhysicsServer3D::MotionParameters parameters(p_from, p_linear_velocity * delta, p_margin);
 
-	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
+
+	if (colliding) {
+		// Don't report collision when the whole motion is done.
+		return (r->collision_safe_fraction < 1.0);
+	} else {
+		return false;
+	}
 }
 
 void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
@@ -758,8 +768,26 @@ real_t RigidDynamicBody3D::get_gravity_scale() const {
 	return gravity_scale;
 }
 
+void RigidDynamicBody3D::set_linear_damp_mode(DampMode p_mode) {
+	linear_damp_mode = p_mode;
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE, linear_damp_mode);
+}
+
+RigidDynamicBody3D::DampMode RigidDynamicBody3D::get_linear_damp_mode() const {
+	return linear_damp_mode;
+}
+
+void RigidDynamicBody3D::set_angular_damp_mode(DampMode p_mode) {
+	angular_damp_mode = p_mode;
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP_MODE, angular_damp_mode);
+}
+
+RigidDynamicBody3D::DampMode RigidDynamicBody3D::get_angular_damp_mode() const {
+	return angular_damp_mode;
+}
+
 void RigidDynamicBody3D::set_linear_damp(real_t p_linear_damp) {
-	ERR_FAIL_COND(p_linear_damp < -1);
+	ERR_FAIL_COND(p_linear_damp < 0.0);
 	linear_damp = p_linear_damp;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP, linear_damp);
 }
@@ -769,7 +797,7 @@ real_t RigidDynamicBody3D::get_linear_damp() const {
 }
 
 void RigidDynamicBody3D::set_angular_damp(real_t p_angular_damp) {
-	ERR_FAIL_COND(p_angular_damp < -1);
+	ERR_FAIL_COND(p_angular_damp < 0.0);
 	angular_damp = p_angular_damp;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP, angular_damp);
 }
@@ -970,6 +998,12 @@ void RigidDynamicBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &RigidDynamicBody3D::set_gravity_scale);
 	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &RigidDynamicBody3D::get_gravity_scale);
 
+	ClassDB::bind_method(D_METHOD("set_linear_damp_mode", "linear_damp_mode"), &RigidDynamicBody3D::set_linear_damp_mode);
+	ClassDB::bind_method(D_METHOD("get_linear_damp_mode"), &RigidDynamicBody3D::get_linear_damp_mode);
+
+	ClassDB::bind_method(D_METHOD("set_angular_damp_mode", "angular_damp_mode"), &RigidDynamicBody3D::set_angular_damp_mode);
+	ClassDB::bind_method(D_METHOD("get_angular_damp_mode"), &RigidDynamicBody3D::get_angular_damp_mode);
+
 	ClassDB::bind_method(D_METHOD("set_linear_damp", "linear_damp"), &RigidDynamicBody3D::set_linear_damp);
 	ClassDB::bind_method(D_METHOD("get_linear_damp"), &RigidDynamicBody3D::get_linear_damp);
 
@@ -1035,10 +1069,12 @@ void RigidDynamicBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "freeze_mode", PROPERTY_HINT_ENUM, "Static,Kinematic"), "set_freeze_mode", "get_freeze_mode");
 	ADD_GROUP("Linear", "linear_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_linear_damp_mode", "get_linear_damp_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
 	ADD_GROUP("Angular", "angular_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
@@ -1051,14 +1087,18 @@ void RigidDynamicBody3D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(CENTER_OF_MASS_MODE_AUTO);
 	BIND_ENUM_CONSTANT(CENTER_OF_MASS_MODE_CUSTOM);
+
+	BIND_ENUM_CONSTANT(DAMP_MODE_COMBINE);
+	BIND_ENUM_CONSTANT(DAMP_MODE_REPLACE);
 }
 
 void RigidDynamicBody3D::_validate_property(PropertyInfo &property) const {
 	if (center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM) {
 		if (property.name == "center_of_mass") {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
+	PhysicsBody3D::_validate_property(property);
 }
 
 RigidDynamicBody3D::RigidDynamicBody3D() :
@@ -1115,6 +1155,10 @@ bool CharacterBody3D::move_and_slide() {
 			if (bs) {
 				Vector3 local_position = gt.origin - bs->get_transform().origin;
 				current_platform_velocity = bs->get_velocity_at_local_position(local_position);
+			} else {
+				// Body is removed or destroyed, invalidate floor.
+				current_platform_velocity = Vector3();
+				platform_rid = RID();
 			}
 		} else {
 			current_platform_velocity = Vector3();
@@ -1903,8 +1947,8 @@ void CharacterBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_mode", PROPERTY_HINT_ENUM, "Grounded,Free", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_motion_mode", "get_motion_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "up_direction"), "set_up_direction", "get_up_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slide_on_ceiling"), "set_slide_on_ceiling_enabled", "is_slide_on_ceiling_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "motion_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_motion_velocity", "get_motion_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_max_slides", "get_max_slides");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "motion_velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_motion_velocity", "get_motion_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_slides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_max_slides", "get_max_slides");
 	ADD_GROUP("Free Mode", "free_mode_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wall_min_slide_angle", PROPERTY_HINT_RANGE, "0,180,0.1,radians", PROPERTY_USAGE_DEFAULT), "set_wall_min_slide_angle", "get_wall_min_slide_angle");
 	ADD_GROUP("Floor", "floor_");
@@ -1930,9 +1974,10 @@ void CharacterBody3D::_bind_methods() {
 void CharacterBody3D::_validate_property(PropertyInfo &property) const {
 	if (motion_mode == MOTION_MODE_FREE) {
 		if (property.name.begins_with("floor_") || property.name == "up_direction" || property.name == "slide_on_ceiling") {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
+	PhysicsBody3D::_validate_property(property);
 }
 
 CharacterBody3D::CharacterBody3D() :
@@ -2823,6 +2868,12 @@ void PhysicalBone3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &PhysicalBone3D::set_gravity_scale);
 	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &PhysicalBone3D::get_gravity_scale);
 
+	ClassDB::bind_method(D_METHOD("set_linear_damp_mode", "linear_damp_mode"), &PhysicalBone3D::set_linear_damp_mode);
+	ClassDB::bind_method(D_METHOD("get_linear_damp_mode"), &PhysicalBone3D::get_linear_damp_mode);
+
+	ClassDB::bind_method(D_METHOD("set_angular_damp_mode", "angular_damp_mode"), &PhysicalBone3D::set_angular_damp_mode);
+	ClassDB::bind_method(D_METHOD("get_angular_damp_mode"), &PhysicalBone3D::get_angular_damp_mode);
+
 	ClassDB::bind_method(D_METHOD("set_linear_damp", "linear_damp"), &PhysicalBone3D::set_linear_damp);
 	ClassDB::bind_method(D_METHOD("get_linear_damp"), &PhysicalBone3D::get_linear_damp);
 
@@ -2843,9 +2894,14 @@ void PhysicalBone3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_gravity_scale", "get_gravity_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_linear_damp_mode", "get_linear_damp_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
+
+	BIND_ENUM_CONSTANT(DAMP_MODE_COMBINE);
+	BIND_ENUM_CONSTANT(DAMP_MODE_REPLACE);
 
 	BIND_ENUM_CONSTANT(JOINT_TYPE_NONE);
 	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);
@@ -3060,7 +3116,7 @@ void PhysicalBone3D::set_joint_rotation(const Vector3 &p_euler_rad) {
 }
 
 Vector3 PhysicalBone3D::get_joint_rotation() const {
-	return joint_offset.basis.get_rotation();
+	return joint_offset.basis.get_euler_normalized();
 }
 
 const Transform3D &PhysicalBone3D::get_body_offset() const {
@@ -3144,8 +3200,27 @@ real_t PhysicalBone3D::get_gravity_scale() const {
 	return gravity_scale;
 }
 
+void PhysicalBone3D::set_linear_damp_mode(DampMode p_mode) {
+	linear_damp_mode = p_mode;
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE, linear_damp_mode);
+}
+
+PhysicalBone3D::DampMode PhysicalBone3D::get_linear_damp_mode() const {
+	return linear_damp_mode;
+}
+
+void PhysicalBone3D::set_angular_damp_mode(DampMode p_mode) {
+	angular_damp_mode = p_mode;
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP_MODE, angular_damp_mode);
+}
+
+PhysicalBone3D::DampMode PhysicalBone3D::get_angular_damp_mode() const {
+	return angular_damp_mode;
+}
+
 void PhysicalBone3D::set_linear_damp(real_t p_linear_damp) {
-	ERR_FAIL_COND(p_linear_damp < -1);
+	ERR_FAIL_COND(p_linear_damp < 0);
+
 	linear_damp = p_linear_damp;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP, linear_damp);
 }
@@ -3155,7 +3230,8 @@ real_t PhysicalBone3D::get_linear_damp() const {
 }
 
 void PhysicalBone3D::set_angular_damp(real_t p_angular_damp) {
-	ERR_FAIL_COND(p_angular_damp < -1);
+	ERR_FAIL_COND(p_angular_damp < 0);
+
 	angular_damp = p_angular_damp;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP, angular_damp);
 }

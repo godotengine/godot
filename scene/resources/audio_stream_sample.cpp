@@ -299,7 +299,7 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 
 			if (loop_format != AudioStreamSample::LOOP_DISABLED && offset < loop_begin_fp) {
 				/* loopstart reached */
-				if (loop_format == AudioStreamSample::LOOP_PING_PONG) {
+				if (loop_format == AudioStreamSample::LOOP_PINGPONG) {
 					/* bounce ping pong */
 					offset = loop_begin_fp + (loop_begin_fp - offset);
 					increment = -increment;
@@ -320,7 +320,7 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 			if (loop_format != AudioStreamSample::LOOP_DISABLED && offset >= loop_end_fp) {
 				/* loopend reached */
 
-				if (loop_format == AudioStreamSample::LOOP_PING_PONG) {
+				if (loop_format == AudioStreamSample::LOOP_PINGPONG) {
 					/* bounce ping pong */
 					offset = loop_end_fp - (offset - loop_end_fp);
 					increment = -increment;
@@ -636,7 +636,7 @@ void AudioStreamSample::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamSample::save_to_wav);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA-ADPCM"), "set_format", "get_format");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "Disabled,Forward,Ping-Pong,Backward"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_begin"), "set_loop_begin", "get_loop_begin");
@@ -650,7 +650,7 @@ void AudioStreamSample::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(LOOP_DISABLED);
 	BIND_ENUM_CONSTANT(LOOP_FORWARD);
-	BIND_ENUM_CONSTANT(LOOP_PING_PONG);
+	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
 }
 

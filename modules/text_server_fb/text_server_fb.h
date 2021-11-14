@@ -42,7 +42,7 @@
 #include "core/templates/thread_work_pool.h"
 #include "scene/resources/texture.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>
@@ -142,6 +142,10 @@ class TextServerFallback : public TextServer {
 		Dictionary variation_coordinates;
 		float oversampling = 0.f;
 
+		uint32_t style_flags = 0;
+		String font_name;
+		String style_name;
+
 		Map<Vector2i, FontDataForSizeFallback *> cache;
 
 		bool face_init = false;
@@ -233,6 +237,15 @@ public:
 
 	virtual void font_set_data(RID p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(RID p_font_rid, const uint8_t *p_data_ptr, size_t p_data_size) override;
+
+	virtual void font_set_style(RID p_font_rid, uint32_t /*FontStyle*/ p_style) override;
+	virtual uint32_t /*FontStyle*/ font_get_style(RID p_font_rid) const override;
+
+	virtual void font_set_style_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_style_name(RID p_font_rid) const override;
+
+	virtual void font_set_name(RID p_font_rid, const String &p_name) override;
+	virtual String font_get_name(RID p_font_rid) const override;
 
 	virtual void font_set_antialiased(RID p_font_rid, bool p_antialiased) override;
 	virtual bool font_is_antialiased(RID p_font_rid) const override;
@@ -360,6 +373,9 @@ public:
 	virtual Direction shaped_text_get_direction(RID p_shaped) const override;
 
 	virtual void shaped_text_set_bidi_override(RID p_shaped, const Array &p_override) override;
+
+	virtual void shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) override;
+	virtual String shaped_text_get_custom_punctuation(RID p_shaped) const override;
 
 	virtual void shaped_text_set_orientation(RID p_shaped, Orientation p_orientation = ORIENTATION_HORIZONTAL) override;
 	virtual Orientation shaped_text_get_orientation(RID p_shaped) const override;

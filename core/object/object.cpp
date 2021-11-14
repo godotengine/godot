@@ -645,7 +645,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT));
 	}
 	if (!metadata.is_empty()) {
-		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 	if (script_instance && !p_reversed) {
 		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
@@ -1398,7 +1398,7 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
-							   (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
+				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
 		ERR_FAIL_COND_MSG(signal_is_valid, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 	}
 	ERR_FAIL_COND_MSG(!s, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
@@ -1475,7 +1475,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 				return;
 			}
 
-			if (!r->get_path().begins_with("res://") || r->get_path().find("::") == -1) {
+			if (!r->is_built_in()) {
 				return; //not an internal resource
 			}
 

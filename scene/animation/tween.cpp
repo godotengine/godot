@@ -291,7 +291,7 @@ bool Tween::step(float p_delta) {
 			float temp_delta = rem_delta;
 			// Turns to true if any Tweener returns true (i.e. is still not finished).
 			step_active = tweener->step(temp_delta) || step_active;
-			step_delta = MIN(temp_delta, rem_delta);
+			step_delta = MIN(temp_delta, step_delta);
 		}
 
 		rem_delta = step_delta;
@@ -626,7 +626,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parallel"), &Tween::parallel);
 	ClassDB::bind_method(D_METHOD("chain"), &Tween::chain);
 
-	ClassDB::bind_method(D_METHOD("interpolate_value", "trans_type", "ease_type", "elapsed_time", "initial_value", "delta_value", "duration"), &Tween::interpolate_variant);
+	ClassDB::bind_method(D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
 
 	ADD_SIGNAL(MethodInfo("step_finished", PropertyInfo(Variant::INT, "idx")));
 	ADD_SIGNAL(MethodInfo("loop_finished", PropertyInfo(Variant::INT, "loop_count")));

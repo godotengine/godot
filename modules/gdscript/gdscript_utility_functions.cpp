@@ -437,9 +437,13 @@ struct GDScriptUtilityFunctionsDefinitions {
 			str += p_args[i]->operator String();
 		}
 
-		ScriptLanguage *script = GDScriptLanguage::get_singleton();
-		if (script->debug_get_stack_level_count() > 0) {
-			str += "\n   At: " + script->debug_get_stack_level_source(0) + ":" + itos(script->debug_get_stack_level_line(0)) + ":" + script->debug_get_stack_level_function(0) + "()";
+		if (Thread::get_caller_id() == Thread::get_main_id()) {
+			ScriptLanguage *script = GDScriptLanguage::get_singleton();
+			if (script->debug_get_stack_level_count() > 0) {
+				str += "\n   At: " + script->debug_get_stack_level_source(0) + ":" + itos(script->debug_get_stack_level_line(0)) + ":" + script->debug_get_stack_level_function(0) + "()";
+			}
+		} else {
+			str += "\n   At: Cannot retrieve debug info outside the main thread. Thread ID: " + itos(Thread::get_caller_id());
 		}
 
 		print_line(str);
@@ -448,15 +452,24 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 	static inline void print_stack(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(0);
+		if (Thread::get_caller_id() != Thread::get_main_id()) {
+			print_line("Cannot retrieve debug info outside the main thread. Thread ID: " + itos(Thread::get_caller_id()));
+			return;
+		}
 
 		ScriptLanguage *script = GDScriptLanguage::get_singleton();
 		for (int i = 0; i < script->debug_get_stack_level_count(); i++) {
 			print_line("Frame " + itos(i) + " - " + script->debug_get_stack_level_source(i) + ":" + itos(script->debug_get_stack_level_line(i)) + " in function '" + script->debug_get_stack_level_function(i) + "'");
 		};
+		*r_ret = Variant();
 	}
 
 	static inline void get_stack(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(0);
+		if (Thread::get_caller_id() != Thread::get_main_id()) {
+			*r_ret = Array();
+			return;
+		}
 
 		ScriptLanguage *script = GDScriptLanguage::get_singleton();
 		Array ret;

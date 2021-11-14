@@ -17,12 +17,14 @@
 			<return type="ColorPicker" />
 			<description>
 				Returns the [ColorPicker] that this node toggles.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="get_popup">
 			<return type="PopupPanel" />
 			<description>
 				Returns the control's [PopupPanel] which allows you to connect to popup signals. This allows you to handle events when the ColorPicker is shown or hidden.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
 	</methods>
@@ -71,6 +73,9 @@
 		</theme_item>
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.9, 0.9, 0.9, 0.3)">
 			Text [Color] used when the [ColorPickerButton] is disabled.
+		</theme_item>
+		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Text [Color] used when the [ColorPickerButton] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
 		</theme_item>
 		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the [ColorPickerButton] is being hovered.

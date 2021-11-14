@@ -38,6 +38,11 @@ void TextParagraph::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Light-to-right,Right-to-left"), "set_direction", "get_direction");
 
+	ClassDB::bind_method(D_METHOD("set_custom_punctuation", "custom_punctuation"), &TextParagraph::set_custom_punctuation);
+	ClassDB::bind_method(D_METHOD("get_custom_punctuation"), &TextParagraph::get_custom_punctuation);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "custom_punctuation"), "set_custom_punctuation", "get_custom_punctuation");
+
 	ClassDB::bind_method(D_METHOD("set_orientation", "orientation"), &TextParagraph::set_orientation);
 	ClassDB::bind_method(D_METHOD("get_orientation"), &TextParagraph::get_orientation);
 
@@ -84,7 +89,7 @@ void TextParagraph::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width"), "set_width", "get_width");
 
-	ClassDB::bind_method(D_METHOD("get_non_wraped_size"), &TextParagraph::get_non_wraped_size);
+	ClassDB::bind_method(D_METHOD("get_non_wrapped_size"), &TextParagraph::get_non_wrapped_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &TextParagraph::get_size);
 
 	ClassDB::bind_method(D_METHOD("get_rid"), &TextParagraph::get_rid);
@@ -304,6 +309,15 @@ TextServer::Direction TextParagraph::get_direction() const {
 	return TS->shaped_text_get_direction(rid);
 }
 
+void TextParagraph::set_custom_punctuation(const String &p_punct) {
+	TS->shaped_text_set_custom_punctuation(rid, p_punct);
+	lines_dirty = true;
+}
+
+String TextParagraph::get_custom_punctuation() const {
+	return TS->shaped_text_get_custom_punctuation(rid);
+}
+
 void TextParagraph::set_orientation(TextServer::Orientation p_orientation) {
 	TS->shaped_text_set_orientation(rid, p_orientation);
 	TS->shaped_text_set_orientation(dropcap_rid, p_orientation);
@@ -417,7 +431,7 @@ float TextParagraph::get_width() const {
 	return width;
 }
 
-Size2 TextParagraph::get_non_wraped_size() const {
+Size2 TextParagraph::get_non_wrapped_size() const {
 	const_cast<TextParagraph *>(this)->_shape_lines();
 	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
 		return Size2(TS->shaped_text_get_size(rid).x, TS->shaped_text_get_size(rid).y + spacing_top + spacing_bottom);

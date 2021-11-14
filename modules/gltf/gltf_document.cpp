@@ -68,7 +68,7 @@
 #include "scene/resources/multimesh.h"
 #include "scene/resources/surface_tool.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
@@ -120,26 +120,26 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 		return Error::FAILED;
 	}
 
-	/* STEP 7 SERIALIZE IMAGES */
-	err = _serialize_images(state, p_path);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-
-	/* STEP 8 SERIALIZE TEXTURES */
-	err = _serialize_textures(state);
-	if (err != OK) {
-		return Error::FAILED;
-	}
-
-	// /* STEP 9 SERIALIZE ANIMATIONS */
+	/* STEP 7 SERIALIZE ANIMATIONS */
 	err = _serialize_animations(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 10 SERIALIZE ACCESSORS */
+	/* STEP 8 SERIALIZE ACCESSORS */
 	err = _encode_accessors(state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP 9 SERIALIZE IMAGES */
+	err = _serialize_images(state, p_path);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP 10 SERIALIZE TEXTURES */
+	err = _serialize_textures(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -247,7 +247,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> state) {
 	JSON json;
 	err = json.parse(text);
 	if (err != OK) {
-		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), ERR_HANDLER_SCRIPT);
+		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		return err;
 	}
 	state->json = json.get_data();
@@ -282,7 +282,7 @@ Error GLTFDocument::_parse_glb(const String &p_path, Ref<GLTFState> state) {
 	JSON json;
 	err = json.parse(text);
 	if (err != OK) {
-		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), ERR_HANDLER_SCRIPT);
+		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		return err;
 	}
 
@@ -795,6 +795,9 @@ Error GLTFDocument::_encode_buffer_views(Ref<GLTFState> state) {
 		buffers.push_back(d);
 	}
 	print_verbose("glTF: Total buffer views: " + itos(state->buffer_views.size()));
+	if (!buffers.size()) {
+		return OK;
+	}
 	state->json["bufferViews"] = buffers;
 	return OK;
 }
@@ -884,6 +887,9 @@ Error GLTFDocument::_encode_accessors(Ref<GLTFState> state) {
 		accessors.push_back(d);
 	}
 
+	if (!accessors.size()) {
+		return OK;
+	}
 	state->json["accessors"] = accessors;
 	ERR_FAIL_COND_V(!state->json.has("accessors"), ERR_FILE_CORRUPT);
 	print_verbose("glTF: Total accessors: " + itos(state->accessors.size()));
@@ -2112,6 +2118,7 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 		if (import_mesh.is_null()) {
 			continue;
 		}
+		Array instance_materials = state->meshes.write[gltf_mesh_i]->get_instance_materials();
 		Array primitives;
 		Dictionary gltf_mesh;
 		Array target_names;
@@ -2431,7 +2438,14 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 				}
 			}
 
-			Ref<BaseMaterial3D> mat = import_mesh->get_surface_material(surface_i);
+			Variant v;
+			if (surface_i < instance_materials.size()) {
+				v = instance_materials.get(surface_i);
+			}
+			Ref<BaseMaterial3D> mat = v;
+			if (!mat.is_valid()) {
+				mat = import_mesh->get_surface_material(surface_i);
+			}
 			if (mat.is_valid()) {
 				Map<Ref<BaseMaterial3D>, GLTFMaterialIndex>::Element *material_cache_i = state->material_cache.find(mat);
 				if (material_cache_i && material_cache_i->get() != -1) {
@@ -2475,6 +2489,9 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> state) {
 		meshes.push_back(gltf_mesh);
 	}
 
+	if (!meshes.size()) {
+		return OK;
+	}
 	state->json["meshes"] = meshes;
 	print_verbose("glTF: Total meshes: " + itos(meshes.size()));
 
@@ -2498,8 +2515,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		ERR_FAIL_COND_V(!d.has("primitives"), ERR_PARSE_ERROR);
 
 		Array primitives = d["primitives"];
-		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] :
-													   Dictionary();
+		const Dictionary &extras = d.has("extras") ? (Dictionary)d["extras"] : Dictionary();
 		Ref<ImporterMesh> import_mesh;
 		import_mesh.instantiate();
 		String mesh_name = "mesh";
@@ -3455,6 +3471,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 		}
 		materials.push_back(d);
 	}
+	if (!materials.size()) {
+		return OK;
+	}
 	state->json["materials"] = materials;
 	print_verbose("Total materials: " + itos(state->materials.size()));
 
@@ -4369,6 +4388,10 @@ Error GLTFDocument::_serialize_skins(Ref<GLTFState> state) {
 		json_skin["name"] = gltf_skin->get_name();
 		json_skins.push_back(json_skin);
 	}
+	if (!state->skins.size()) {
+		return OK;
+	}
+
 	state->json["skins"] = json_skins;
 	return OK;
 }
@@ -4834,6 +4857,9 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 		}
 	}
 
+	if (!animations.size()) {
+		return OK;
+	}
 	state->json["animations"] = animations;
 
 	print_verbose("glTF: Total animations '" + itos(state->animations.size()) + "'.");
@@ -5054,6 +5080,18 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> state, MeshInst
 	}
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
+	Array instance_materials;
+	for (int32_t surface_i = 0; surface_i < current_mesh->get_surface_count(); surface_i++) {
+		Ref<Material> mat = current_mesh->get_surface_material(surface_i);
+		if (p_mesh_instance->get_surface_override_material(surface_i).is_valid()) {
+			mat = p_mesh_instance->get_surface_override_material(surface_i);
+		}
+		if (p_mesh_instance->get_material_override().is_valid()) {
+			mat = p_mesh_instance->get_material_override();
+		}
+		instance_materials.append(mat);
+	}
+	gltf_mesh->set_instance_materials(instance_materials);
 	gltf_mesh->set_mesh(current_mesh);
 	gltf_mesh->set_blend_weights(blend_weights);
 	GLTFMeshIndex mesh_i = state->meshes.size();
@@ -5443,7 +5481,7 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 			transform = p_multi_mesh_instance->get_transform() * transform;
 		} else if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_3D) {
 			transform = p_multi_mesh_instance->get_transform() *
-						multi_mesh->get_instance_transform(instance_i);
+					multi_mesh->get_instance_transform(instance_i);
 		}
 		Ref<GLTFNode> new_gltf_node;
 		new_gltf_node.instantiate();
@@ -5567,7 +5605,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 		// Bone Attachment - Parent Case
 		BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, gltf_node->parent);
 
-		scene_parent->add_child(bone_attachment);
+		scene_parent->add_child(bone_attachment, true);
 		bone_attachment->set_owner(scene_root);
 
 		// There is no gltf_node that represent this, so just directly create a unique name
@@ -5590,7 +5628,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 		current_node = _generate_spatial(state, scene_parent, node_index);
 	}
 
-	scene_parent->add_child(current_node);
+	scene_parent->add_child(current_node, true);
 	if (current_node != scene_root) {
 		current_node->set_owner(scene_root);
 	}
@@ -5620,7 +5658,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 			// Bone Attachment - Direct Parented Skeleton Case
 			BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, gltf_node->parent);
 
-			scene_parent->add_child(bone_attachment);
+			scene_parent->add_child(bone_attachment, true);
 			bone_attachment->set_owner(scene_root);
 
 			// There is no gltf_node that represent this, so just directly create a unique name
@@ -5634,7 +5672,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 
 		// Add it to the scene if it has not already been added
 		if (skeleton->get_parent() == nullptr) {
-			scene_parent->add_child(skeleton);
+			scene_parent->add_child(skeleton, true);
 			skeleton->set_owner(scene_root);
 		}
 	}
@@ -5648,7 +5686,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 			// Bone Attachment - Same Node Case
 			BoneAttachment3D *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index, node_index);
 
-			scene_parent->add_child(bone_attachment);
+			scene_parent->add_child(bone_attachment, true);
 			bone_attachment->set_owner(scene_root);
 
 			// There is no gltf_node that represent this, so just directly create a unique name
@@ -5668,7 +5706,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 			current_node = _generate_light(state, scene_parent, node_index);
 		}
 
-		scene_parent->add_child(current_node);
+		scene_parent->add_child(current_node, true);
 		if (current_node != scene_root) {
 			current_node->set_owner(scene_root);
 		}
@@ -5818,7 +5856,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 	animation->set_name(name);
 
 	if (anim->get_loop()) {
-		animation->set_loop(true);
+		animation->set_loop_mode(Animation::LOOP_LINEAR);
 	}
 
 	float length = 0.0;
@@ -5991,12 +6029,11 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 			ERR_CONTINUE(mesh.is_null());
 			ERR_CONTINUE(mesh->get_mesh().is_null());
 			ERR_CONTINUE(mesh->get_mesh()->get_mesh().is_null());
-			const String prop = "blend_shapes/" + mesh->get_mesh()->get_blend_shape_name(i);
 
-			const String blend_path = String(node_path) + ":" + prop;
+			const String blend_path = String(node_path) + ":" + String(mesh->get_mesh()->get_blend_shape_name(i));
 
 			const int track_idx = animation->get_track_count();
-			animation->add_track(Animation::TYPE_VALUE);
+			animation->add_track(Animation::TYPE_BLEND_SHAPE);
 			animation->track_set_path(track_idx, blend_path);
 
 			// Only LINEAR and STEP (NEAREST) can be supported out of the box by Godot's Animation,
@@ -6007,7 +6044,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
 					const float t = track.weight_tracks[i].times[j];
 					const float attribs = track.weight_tracks[i].values[j];
-					animation->track_insert_key(track_idx, t, attribs);
+					animation->blend_shape_track_insert_key(track_idx, t, attribs);
 				}
 			} else {
 				// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
@@ -6015,7 +6052,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				double time = 0.0;
 				bool last = false;
 				while (true) {
-					_interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
+					float blend = _interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
+					animation->blend_shape_track_insert_key(track_idx, time, blend);
 					if (last) {
 						break;
 					}
@@ -6182,7 +6220,7 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> state, Node *scene_roo
 			ERR_CONTINUE_MSG(skeleton == nullptr, vformat("Unable to find Skeleton for node %d skin %d", node_i, skin_i));
 
 			mi->get_parent()->remove_child(mi);
-			skeleton->add_child(mi);
+			skeleton->add_child(mi, true);
 			mi->set_owner(skeleton->get_owner());
 
 			mi->set_skin(state->skins.write[skin_i]->godot_skin);
@@ -6459,8 +6497,8 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			if (!tracks.has(mesh_index)) {
 				for (int32_t shape_i = 0; shape_i < mesh->get_blend_shape_count(); shape_i++) {
 					String shape_name = mesh->get_blend_shape_name(shape_i);
-					NodePath shape_path = String(path) + ":blend_shapes/" + shape_name;
-					int32_t shape_track_i = animation->find_track(shape_path);
+					NodePath shape_path = String(path) + ":" + shape_name;
+					int32_t shape_track_i = animation->find_track(shape_path, Animation::TYPE_BLEND_SHAPE);
 					if (shape_track_i == -1) {
 						GLTFAnimation::Channel<float> weight;
 						weight.interpolation = GLTFAnimation::INTERP_LINEAR;
@@ -6756,32 +6794,35 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 		const uint32_t magic = 0x46546C67; // GLTF
 		const int32_t header_size = 12;
 		const int32_t chunk_header_size = 8;
-
-		for (int32_t pad_i = 0; pad_i < (chunk_header_size + json.utf8().length()) % 4; pad_i++) {
-			json += " ";
-		}
 		CharString cs = json.utf8();
-		const uint32_t text_chunk_length = cs.length();
-
+		const uint32_t text_data_length = cs.length();
+		const uint32_t text_chunk_length = ((text_data_length + 3) & (~3));
 		const uint32_t text_chunk_type = 0x4E4F534A; //JSON
-		int32_t binary_data_length = 0;
+
+		uint32_t binary_data_length = 0;
 		if (state->buffers.size()) {
 			binary_data_length = state->buffers[0].size();
 		}
-		const int32_t binary_chunk_length = binary_data_length;
-		const int32_t binary_chunk_type = 0x004E4942; //BIN
+		const uint32_t binary_chunk_length = ((binary_data_length + 3) & (~3));
+		const uint32_t binary_chunk_type = 0x004E4942; //BIN
 
 		f->create(FileAccess::ACCESS_RESOURCES);
 		f->store_32(magic);
 		f->store_32(state->major_version); // version
-		f->store_32(header_size + chunk_header_size + text_chunk_length + chunk_header_size + binary_data_length); // length
+		f->store_32(header_size + chunk_header_size + text_chunk_length + chunk_header_size + binary_chunk_length); // length
 		f->store_32(text_chunk_length);
 		f->store_32(text_chunk_type);
 		f->store_buffer((uint8_t *)&cs[0], cs.length());
+		for (uint32_t pad_i = text_data_length; pad_i < text_chunk_length; pad_i++) {
+			f->store_8(' ');
+		}
 		if (binary_chunk_length) {
 			f->store_32(binary_chunk_length);
 			f->store_32(binary_chunk_type);
 			f->store_buffer(state->buffers[0].ptr(), binary_data_length);
+		}
+		for (uint32_t pad_i = binary_data_length; pad_i < binary_chunk_length; pad_i++) {
+			f->store_8(0);
 		}
 
 		f->close();
@@ -6859,7 +6900,7 @@ Node *GLTFDocument::import_scene_gltf(const String &p_path, uint32_t p_flags, in
 	gltf_document->_process_mesh_instances(r_state, root);
 	if (r_state->animations.size()) {
 		AnimationPlayer *ap = memnew(AnimationPlayer);
-		root->add_child(ap);
+		root->add_child(ap, true);
 		ap->set_owner(root);
 		for (int i = 0; i < r_state->animations.size(); i++) {
 			gltf_document->_import_animation(r_state, ap, i, p_bake_fps);

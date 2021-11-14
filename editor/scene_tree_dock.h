@@ -48,6 +48,8 @@
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
+
 class EditorNode;
 class ShaderCreateDialog;
 
@@ -246,8 +248,6 @@ class SceneTreeDock : public VBoxContainer {
 	void _perform_instantiate_scenes(const Vector<String> &p_files, Node *parent, int p_pos);
 	void _replace_with_branch_scene(const String &p_file, Node *base);
 
-	void _file_selected(String p_file);
-
 	void _remote_tree_selected();
 	void _local_tree_selected();
 
@@ -302,8 +302,8 @@ public:
 	void attach_script_to_selected(bool p_extend);
 	void open_script_dialog(Node *p_for_node, bool p_extend);
 
-	void attach_shader_to_selected();
-	void open_shader_dialog(Ref<ShaderMaterial> &p_for_material);
+	void attach_shader_to_selected(int p_preferred_mode = -1);
+	void open_shader_dialog(Ref<ShaderMaterial> &p_for_material, int p_preferred_mode = -1);
 
 	void open_add_child_dialog();
 	void open_instance_child_dialog();

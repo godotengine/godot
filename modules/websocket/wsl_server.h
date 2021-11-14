@@ -53,7 +53,7 @@ private:
 		Ref<StreamPeer> connection;
 		bool use_ssl = false;
 
-		int time = 0;
+		uint64_t time = 0;
 		uint8_t req_buf[WSL_MAX_HEADER_SIZE] = {};
 		int req_pos = 0;
 		String key;

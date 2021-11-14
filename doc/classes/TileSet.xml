@@ -46,6 +46,14 @@
 				Occlusion layers allow assigning occlusion polygons to atlas tiles.
 			</description>
 		</method>
+		<method name="add_pattern">
+			<return type="int" />
+			<argument index="0" name="pattern" type="TileMapPattern" />
+			<argument index="1" name="index" type="int" default="-1" />
+			<description>
+				Adds a [TileMapPattern] to be stored in the TileSet resouce. If provided, insert it at the given [code]index[/code].
+			</description>
+		</method>
 		<method name="add_physics_layer">
 			<return type="void" />
 			<argument index="0" name="to_position" type="int" default="-1" />
@@ -152,6 +160,19 @@
 			<return type="int" />
 			<description>
 				Returns the occlusion layers count.
+			</description>
+		</method>
+		<method name="get_pattern">
+			<return type="TileMapPattern" />
+			<argument index="0" name="index" type="int" default="-1" />
+			<description>
+				Returns the [TileMapPattern] at the given [code]index[/code].
+			</description>
+		</method>
+		<method name="get_patterns_count">
+			<return type="int" />
+			<description>
+				Returns the number of [TileMapPattern] this tile set handles.
 			</description>
 		</method>
 		<method name="get_physics_layer_collision_layer" qualifiers="const">
@@ -372,6 +393,13 @@
 			<argument index="0" name="layer_index" type="int" />
 			<description>
 				Removes the occlusion layer at index [code]layer_index[/code]. Also updates the atlas tiles accordingly.
+			</description>
+		</method>
+		<method name="remove_pattern">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Remove the [TileMapPattern] at the given index.
 			</description>
 		</method>
 		<method name="remove_physics_layer">

@@ -57,6 +57,8 @@ class OS_OSX : public OS_Unix {
 
 	MainLoop *main_loop;
 
+	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
+
 public:
 	String open_with_filename;
 
@@ -92,6 +94,8 @@ public:
 	String get_locale() const override;
 
 	virtual String get_executable_path() const override;
+	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 
 	virtual String get_unique_id() const override; //++
 

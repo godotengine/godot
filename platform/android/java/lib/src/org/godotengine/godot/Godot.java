@@ -119,7 +119,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private Button mWiFiSettingsButton;
 
 	private XRMode xrMode = XRMode.REGULAR;
-	private boolean use_32_bits = false;
+	private int depth_buffer_bits = 24;
 	private boolean use_immersive = false;
 	private boolean use_debug_opengl = false;
 	private boolean mStatePaused;
@@ -263,10 +263,10 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		GodotLib.setup(command_line);
 
 		final String videoDriver = GodotLib.getGlobal("rendering/driver/driver_name");
-		if (videoDriver.equals("Vulkan")) {
+		if (videoDriver.equals("vulkan")) {
 			mRenderView = new GodotVulkanRenderView(activity, this);
 		} else {
-			mRenderView = new GodotGLRenderView(activity, this, xrMode, use_32_bits,
+			mRenderView = new GodotGLRenderView(activity, this, xrMode, depth_buffer_bits,
 					use_debug_opengl);
 		}
 
@@ -506,8 +506,12 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				xrMode = XRMode.REGULAR;
 			} else if (command_line[i].equals(XRMode.OVR.cmdLineArg)) {
 				xrMode = XRMode.OVR;
-			} else if (command_line[i].equals("--use_depth_32")) {
-				use_32_bits = true;
+			} else if (command_line[i].startsWith("--use_depth=")) {
+				try {
+					depth_buffer_bits = Integer.parseInt(command_line[i].split("=")[1]);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			} else if (command_line[i].equals("--debug_opengl")) {
 				use_debug_opengl = true;
 			} else if (command_line[i].equals("--use_immersive")) {
@@ -578,8 +582,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 			if (!pack_valid) {
 				Intent notifierIntent = new Intent(activity, activity.getClass());
-				notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-										Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
 				PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0,
 						notifierIntent, PendingIntent.FLAG_UPDATE_CURRENT);

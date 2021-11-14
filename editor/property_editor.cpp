@@ -407,11 +407,11 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				return false;
 
 			} else if (hint == PROPERTY_HINT_LAYERS_2D_PHYSICS ||
-					   hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
-					   hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
-					   hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
-					   hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
-					   hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
+					hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
+					hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
+					hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
+					hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
+					hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				String basename;
 				switch (hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -1343,7 +1343,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 void CustomPropertyEditor::_drag_easing(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		float rel = mm->get_relative().x;
 		if (rel == 0) {
 			return;
@@ -1628,7 +1628,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 }
 
 void CustomPropertyEditor::_emit_changed_whole_or_field() {
-	if (!Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (!Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		emit_signal(SNAME("variant_changed"));
 	} else {
 		emit_signal(SNAME("variant_field_changed"), field_names[focused_value_editor]);
@@ -1671,7 +1671,7 @@ void CustomPropertyEditor::_focus_exit() {
 }
 
 void CustomPropertyEditor::config_action_buttons(const List<String> &p_strings) {
-	Ref<StyleBox> sb = action_buttons[0]->get_theme_stylebox(SNAME("panel"));
+	Ref<StyleBox> sb = action_buttons[0]->get_theme_stylebox(SNAME("button"));
 	int margin_top = sb->get_margin(SIDE_TOP);
 	int margin_left = sb->get_margin(SIDE_LEFT);
 	int margin_bottom = sb->get_margin(SIDE_BOTTOM);
@@ -1804,26 +1804,18 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	}
 
 	text_edit = memnew(TextEdit);
-	add_child(text_edit);
+	value_vbox->add_child(text_edit);
 	text_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	text_edit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	text_edit->set_offset(SIDE_BOTTOM, -30);
 
 	text_edit->hide();
 	text_edit->connect("text_changed", callable_mp(this, &CustomPropertyEditor::_text_edit_changed));
 
-	for (int i = 0; i < MAX_ACTION_BUTTONS; i++) {
-		action_buttons[i] = memnew(Button);
-		action_buttons[i]->hide();
-		add_child(action_buttons[i]);
-		Vector<Variant> binds;
-		binds.push_back(i);
-		action_buttons[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), binds);
-	}
-
 	color_picker = nullptr;
 
 	file = memnew(EditorFileDialog);
-	add_child(file);
+	value_vbox->add_child(file);
 	file->hide();
 
 	file->connect("file_selected", callable_mp(this, &CustomPropertyEditor::_file_selected));
@@ -1831,45 +1823,57 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	error = memnew(ConfirmationDialog);
 	error->set_title(TTR("Error!"));
-	add_child(error);
+	value_vbox->add_child(error);
 
 	scene_tree = memnew(SceneTreeDialog);
-	add_child(scene_tree);
+	value_vbox->add_child(scene_tree);
 	scene_tree->connect("selected", callable_mp(this, &CustomPropertyEditor::_node_path_selected));
 	scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 
 	texture_preview = memnew(TextureRect);
-	add_child(texture_preview);
+	value_vbox->add_child(texture_preview);
 	texture_preview->hide();
 
 	easing_draw = memnew(Control);
-	add_child(easing_draw);
+	value_vbox->add_child(easing_draw);
 	easing_draw->hide();
 	easing_draw->connect("draw", callable_mp(this, &CustomPropertyEditor::_draw_easing));
 	easing_draw->connect("gui_input", callable_mp(this, &CustomPropertyEditor::_drag_easing));
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
 
 	type_button = memnew(MenuButton);
-	add_child(type_button);
+	value_vbox->add_child(type_button);
 	type_button->hide();
 	type_button->get_popup()->connect("id_pressed", callable_mp(this, &CustomPropertyEditor::_type_create_selected));
 
 	menu = memnew(PopupMenu);
 	//	menu->set_pass_on_modal_close_click(false);
-	add_child(menu);
+	value_vbox->add_child(menu);
 	menu->connect("id_pressed", callable_mp(this, &CustomPropertyEditor::_menu_option));
 
 	evaluator = nullptr;
 
 	spinbox = memnew(SpinBox);
-	add_child(spinbox);
+	value_vbox->add_child(spinbox);
 	spinbox->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
 	spinbox->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	slider = memnew(HSlider);
-	add_child(slider);
+	value_vbox->add_child(slider);
 	slider->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
 	slider->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
+
+	action_hboxes = memnew(HBoxContainer);
+	action_hboxes->set_alignment(BoxContainer::ALIGN_CENTER);
+	value_vbox->add_child(action_hboxes);
+	for (int i = 0; i < MAX_ACTION_BUTTONS; i++) {
+		action_buttons[i] = memnew(Button);
+		action_buttons[i]->hide();
+		action_hboxes->add_child(action_buttons[i]);
+		Vector<Variant> binds;
+		binds.push_back(i);
+		action_buttons[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), binds);
+	}
 
 	create_dialog = nullptr;
 	property_select = nullptr;

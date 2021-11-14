@@ -8,27 +8,29 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="PackedColorArray" qualifiers="constructor">
+	<constructors>
+		<constructor name="PackedColorArray">
 			<return type="PackedColorArray" />
 			<description>
 				Constructs an empty [PackedColorArray].
 			</description>
-		</method>
-		<method name="PackedColorArray" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedColorArray">
 			<return type="PackedColorArray" />
 			<argument index="0" name="from" type="PackedColorArray" />
 			<description>
 				Constructs a [PackedColorArray] as a copy of the given [PackedColorArray].
 			</description>
-		</method>
-		<method name="PackedColorArray" qualifiers="constructor">
+		</constructor>
+		<constructor name="PackedColorArray">
 			<return type="PackedColorArray" />
 			<argument index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedColorArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="append">
 			<return type="bool" />
 			<argument index="0" name="value" type="Color" />
@@ -84,40 +86,6 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the array is empty.
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedColorArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator +" qualifiers="operator">
-			<return type="PackedColorArray" />
-			<argument index="0" name="right" type="PackedColorArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool" />
-			<argument index="0" name="right" type="PackedColorArray" />
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="Color" />
-			<argument index="0" name="index" type="int" />
-			<description>
 			</description>
 		</method>
 		<method name="push_back">
@@ -180,4 +148,40 @@
 			</description>
 		</method>
 	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedColorArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="PackedColorArray" />
+			<argument index="0" name="right" type="PackedColorArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="PackedColorArray" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="Color" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

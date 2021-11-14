@@ -261,16 +261,8 @@ Size2i OS_Android::get_display_size() const {
 	return display_size;
 }
 
-void OS_Android::set_context_is_16_bits(bool p_is_16) {
-#if defined(OPENGL_ENABLED)
-	//use_16bits_fbo = p_is_16;
-	//if (rasterizer)
-	//	rasterizer->set_force_16_bits_fbo(p_is_16);
-#endif
-}
-
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	ERR_FAIL_COND(!p_gl_extensions);
 	gl_extensions = p_gl_extensions;
 #endif
@@ -322,10 +314,9 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 
 	main_loop = nullptr;
 
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	gl_extensions = nullptr;
 	use_gl2 = false;
-	use_16bits_fbo = false;
 #endif
 
 #if defined(VULKAN_ENABLED)

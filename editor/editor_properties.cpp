@@ -35,6 +35,9 @@
 #include "editor_node.h"
 #include "editor_properties_array_dict.h"
 #include "editor_scale.h"
+#include "scene/2d/gpu_particles_2d.h"
+#include "scene/3d/fog_volume.h"
+#include "scene/3d/gpu_particles_3d.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 
@@ -815,7 +818,7 @@ public:
 		}
 
 		const Ref<InputEventMouseButton> mb = p_ev;
-		if (mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) {
+		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 			if (hovered_index >= 0) {
 				// Toggle the flag.
 				// We base our choice on the hovered flag, so that it always matches the hovered flag.
@@ -884,10 +887,11 @@ public:
 							flag_rects.push_back(rect2);
 
 							Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+							int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 							Vector2 offset;
 							offset.y = rect2.size.y * 0.75;
 
-							draw_string(font, rect2.position + offset, itos(layer_index + 1), HALIGN_CENTER, rect2.size.x, -1, on ? text_color_on : text_color);
+							draw_string(font, rect2.position + offset, itos(layer_index + 1), HALIGN_CENTER, rect2.size.x, font_size, on ? text_color_on : text_color);
 
 							ofs.x += bsize + 1;
 
@@ -1274,11 +1278,11 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 	}
 	const Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
-		if (mb->is_double_click() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->is_double_click() && mb->get_button_index() == MouseButton::LEFT) {
 			_setup_spin();
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 			preset->set_position(easing_draw->get_screen_transform().xform(mb->get_position()));
 			preset->popup();
 
@@ -1287,7 +1291,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 			easing_draw->update();
 		}
 
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			dragging = mb->is_pressed();
 			// Update to display the correct dragging color
 			easing_draw->update();
@@ -1296,7 +1300,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
 	const Ref<InputEventMouseMotion> mm = p_ev;
 
-	if (dragging && mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (dragging && mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		float rel = mm->get_relative().x;
 		if (rel == 0) {
 			return;
@@ -2820,8 +2824,8 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 	resource_picker->set_editable(!p_read_only);
 };
 
-void EditorPropertyResource::_resource_selected(const RES &p_resource) {
-	if (use_sub_inspector) {
+void EditorPropertyResource::_resource_selected(const RES &p_resource, bool p_edit) {
+	if (!p_edit && use_sub_inspector) {
 		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
 		update_property();
@@ -2968,6 +2972,35 @@ void EditorPropertyResource::_update_property_bg() {
 	update();
 }
 
+void EditorPropertyResource::_update_preferred_shader() {
+	Node *parent = get_parent();
+	EditorProperty *parent_property = nullptr;
+
+	while (parent && !parent_property) {
+		parent_property = Object::cast_to<EditorProperty>(parent);
+		parent = parent->get_parent();
+	}
+
+	if (parent_property) {
+		EditorShaderPicker *shader_picker = Object::cast_to<EditorShaderPicker>(resource_picker);
+		Object *object = parent_property->get_edited_object();
+		const StringName &property = parent_property->get_edited_property();
+
+		// Set preferred shader based on edited parent type.
+		if ((Object::cast_to<GPUParticles2D>(object) || Object::cast_to<GPUParticles3D>(object)) && property == SNAME("process_material")) {
+			shader_picker->set_preferred_mode(Shader::MODE_PARTICLES);
+		} else if (Object::cast_to<FogVolume>(object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_FOG);
+		} else if (Object::cast_to<CanvasItem>(object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_CANVAS_ITEM);
+		} else if (Object::cast_to<Node3D>(object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_SPATIAL);
+		} else if (Object::cast_to<Sky>(object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_SKY);
+		}
+	}
+}
+
 void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	Node *to_node = get_node(p_path);
 	if (!Object::cast_to<Viewport>(to_node)) {
@@ -2999,6 +3032,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		EditorShaderPicker *shader_picker = memnew(EditorShaderPicker);
 		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
 		resource_picker = shader_picker;
+		connect(SNAME("ready"), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
 	} else {
 		resource_picker = memnew(EditorResourcePicker);
 	}
@@ -3136,11 +3170,7 @@ EditorPropertyResource::EditorPropertyResource() {
 ////////////// DEFAULT PLUGIN //////////////////////
 
 bool EditorInspectorDefaultPlugin::can_handle(Object *p_object) {
-	return true; //can handle everything
-}
-
-void EditorInspectorDefaultPlugin::parse_begin(Object *p_object) {
-	//do none
+	return true; // Can handle everything.
 }
 
 bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
@@ -3149,10 +3179,6 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 		add_property_editor(p_path, editor);
 	}
 	return false;
-}
-
-void EditorInspectorDefaultPlugin::parse_end() {
-	//do none
 }
 
 struct EditorPropertyRangeHint {
@@ -3236,11 +3262,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 
 			} else if (p_hint == PROPERTY_HINT_LAYERS_2D_PHYSICS ||
-					   p_hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
-					   p_hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
-					   p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
-					   p_hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
-					   p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
+					p_hint == PROPERTY_HINT_LAYERS_2D_RENDER ||
+					p_hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
+					p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
+					p_hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
+					p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
 				EditorPropertyLayers::LayerType lt = EditorPropertyLayers::LAYER_RENDER_2D;
 				switch (p_hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -3335,13 +3361,13 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				}
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_METHOD_OF_VARIANT_TYPE ||
-					   p_hint == PROPERTY_HINT_METHOD_OF_BASE_TYPE ||
-					   p_hint == PROPERTY_HINT_METHOD_OF_INSTANCE ||
-					   p_hint == PROPERTY_HINT_METHOD_OF_SCRIPT ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_BASE_TYPE ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_INSTANCE ||
-					   p_hint == PROPERTY_HINT_PROPERTY_OF_SCRIPT) {
+					p_hint == PROPERTY_HINT_METHOD_OF_BASE_TYPE ||
+					p_hint == PROPERTY_HINT_METHOD_OF_INSTANCE ||
+					p_hint == PROPERTY_HINT_METHOD_OF_SCRIPT ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_BASE_TYPE ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_INSTANCE ||
+					p_hint == PROPERTY_HINT_PROPERTY_OF_SCRIPT) {
 				EditorPropertyMember *editor = memnew(EditorPropertyMember);
 
 				EditorPropertyMember::Type type = EditorPropertyMember::MEMBER_METHOD_OF_BASE_TYPE;

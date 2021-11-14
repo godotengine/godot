@@ -57,6 +57,7 @@ public:
 		TYPE_START_CUSTOM,
 		TYPE_PROCESS_CUSTOM,
 		TYPE_SKY,
+		TYPE_FOG,
 		TYPE_MAX
 	};
 
@@ -69,7 +70,7 @@ public:
 
 	struct DefaultTextureParam {
 		StringName name;
-		Ref<Texture2D> param;
+		List<Ref<Texture2D>> params;
 	};
 
 private:
@@ -271,6 +272,7 @@ public:
 	void set_disabled(bool p_disabled = true);
 
 	virtual Vector<StringName> get_editable_properties() const;
+	virtual Map<StringName, String> get_editable_properties_names() const;
 
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
@@ -326,8 +328,8 @@ protected:
 	GDVIRTUAL0RC(int, _get_output_port_count)
 	GDVIRTUAL1RC(int, _get_output_port_type, int)
 	GDVIRTUAL1RC(String, _get_output_port_name, int)
-	GDVIRTUAL4RC(String, _get_code, Vector<String>, TypedArray<String>, int, int)
-	GDVIRTUAL1RC(String, _get_global_code, int)
+	GDVIRTUAL4RC(String, _get_code, Vector<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
+	GDVIRTUAL1RC(String, _get_global_code, Shader::Mode)
 	GDVIRTUAL0RC(bool, _is_highend)
 
 protected:
@@ -694,5 +696,7 @@ public:
 
 	VisualShaderNodeGlobalExpression();
 };
+
+extern String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name);
 
 #endif // VISUAL_SHADER_H

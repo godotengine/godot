@@ -125,6 +125,7 @@ Ref<SkeletonModification3D> SkeletonModificationStack3D::get_modification(int p_
 }
 
 void SkeletonModificationStack3D::add_modification(Ref<SkeletonModification3D> p_mod) {
+	ERR_FAIL_NULL(p_mod);
 	p_mod->_setup_modification(this);
 	modifications.push_back(p_mod);
 }

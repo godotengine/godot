@@ -57,7 +57,6 @@
 #include "main/performance.h"
 #include "main/splash.gen.h"
 #include "main/splash_editor.gen.h"
-#include "modules/modules_enabled.gen.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
 #include "scene/main/scene_tree.h"
@@ -81,15 +80,15 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
-
 #endif
+
+#include "modules/modules_enabled.gen.h" // For mono.
 
 /* Static members */
 
@@ -128,7 +127,7 @@ static bool _start_success = false;
 
 String tablet_driver = "";
 String text_driver = "";
-
+String rendering_driver = "";
 static int text_driver_idx = -1;
 static int display_driver_idx = -1;
 static int audio_driver_idx = -1;
@@ -376,7 +375,9 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --doctool [<path>]                           Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                                 Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                            Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
+	OS::get_singleton()->print("  --dump-extension-api                         Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
 #ifdef DEBUG_METHODS_ENABLED
+	// TODO: Should be removed together with nativescript eventually.
 	OS::get_singleton()->print("  --gdnative-generate-json-api <path>          Generate JSON dump of the Godot API for GDNative bindings and save it on the file specified in <path>.\n");
 	OS::get_singleton()->print("  --gdnative-generate-json-builtin-api <path>  Generate JSON dump of the Godot API of the builtin Variant types and utility functions for GDNative bindings and save it on the file specified in <path>.\n");
 #endif
@@ -732,7 +733,49 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				N = I->next()->next();
 			} else {
-				OS::get_singleton()->print("Missing video driver argument, aborting.\n");
+				OS::get_singleton()->print("Missing display driver argument, aborting.\n");
+				goto error;
+			}
+		} else if (I->get() == "--rendering-driver") {
+			if (I->next()) {
+				rendering_driver = I->next()->get();
+
+				// as the rendering drivers available may depend on the display driver selected,
+				// we can't do an exhaustive check here, but we can look through all the options in
+				// all the display drivers for a match
+
+				bool found = false;
+				for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+					Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
+
+					for (int d = 0; d < r_drivers.size(); d++) {
+						if (rendering_driver == r_drivers[d]) {
+							found = true;
+							break;
+						}
+					}
+				}
+
+				if (!found) {
+					OS::get_singleton()->print("Unknown rendering driver '%s', aborting.\nValid options are ",
+							rendering_driver.utf8().get_data());
+
+					for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+						Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
+
+						for (int d = 0; d < r_drivers.size(); d++) {
+							OS::get_singleton()->print("'%s', ", r_drivers[d].utf8().get_data());
+						}
+					}
+
+					OS::get_singleton()->print(".\n");
+
+					goto error;
+				}
+
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing rendering driver argument, aborting.\n");
 				goto error;
 			}
 		} else if (I->get() == "-f" || I->get() == "--fullscreen") { // force fullscreen
@@ -901,23 +944,27 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			auto_build_solutions = true;
 			editor = true;
 			cmdline_tool = true;
-
+#ifdef DEBUG_METHODS_ENABLED
 		} else if (I->get() == "--gdnative-generate-json-api" || I->get() == "--gdnative-generate-json-builtin-api") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
 			cmdline_tool = true;
-
-			// We still pass it to the main arguments since the argument handling itself is not done in this function
+			// We still pass it to the main arguments since the argument handling itself is not done in this function,
+			// it's done in nativescript init code.
 			main_args.push_back(I->get());
+#endif
 		} else if (I->get() == "--dump-extension-api") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
 			cmdline_tool = true;
 			dump_extension_api = true;
-			print_line("dump extension?");
+			print_line("Dumping Extension API");
+			// Hack. Not needed but otherwise we end up detecting that this should
+			// run the project instead of a cmdline tool.
+			// Needs full refactoring to fix properly.
 			main_args.push_back(I->get());
 		} else if (I->get() == "--export" || I->get() == "--export-debug" ||
-				   I->get() == "--export-pack") { // Export project
+				I->get() == "--export-pack") { // Export project
 			// Actually handling is done in start().
 			editor = true;
 			cmdline_tool = true;
@@ -1225,15 +1272,29 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
 	register_core_extensions(); //before display
+	// possibly be worth changing the default from vulkan to something lower spec,
+	// for the project manager, depending on how smooth the fallback is.
+	GLOBAL_DEF_RST("rendering/driver/driver_name", "vulkan");
 
-	GLOBAL_DEF("rendering/driver/driver_name", "Vulkan");
+	// this list is hard coded, which makes it more difficult to add new backends.
+	// can potentially be changed to more of a plugin system at a later date.
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/driver/driver_name",
 			PropertyInfo(Variant::STRING,
 					"rendering/driver/driver_name",
-					PROPERTY_HINT_ENUM, "Vulkan"));
-	if (display_driver == "") {
-		display_driver = GLOBAL_GET("rendering/driver/driver_name");
+					PROPERTY_HINT_ENUM, "vulkan,opengl3"));
+
+	// if not set on the command line
+	if (rendering_driver == "") {
+		rendering_driver = GLOBAL_GET("rendering/driver/driver_name");
 	}
+
+	// note this is the desired rendering driver, it doesn't mean we will get it.
+	// TODO - make sure this is updated in the case of fallbacks, so that the user interface
+	// shows the correct driver string.
+	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+
+	// always convert to lower case for consistency in the code
+	rendering_driver = rendering_driver.to_lower();
 
 	GLOBAL_DEF_BASIC("display/window/size/width", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width",
@@ -1302,10 +1363,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
 	}
 
-	/* todo restore
-    OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
-    video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
-*/
+	// FIXME: Restore support.
+#if 0
+	//OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
+	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
+#endif
+
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed
 		OS::get_singleton()->_allow_hidpi = true;
@@ -1330,8 +1393,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	/* Determine audio and video drivers */
 
+	// Display driver, e.g. X11, Wayland.
+	// print_line("requested display driver : " + display_driver);
 	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
-		if (display_driver == DisplayServer::get_create_function_name(i)) {
+		String name = DisplayServer::get_create_function_name(i);
+		// print_line("\t" + itos(i) + " : " + name);
+
+		if (display_driver == name) {
 			display_driver_idx = i;
 			break;
 		}
@@ -1341,8 +1409,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		display_driver_idx = 0;
 	}
 
-	if (audio_driver == "") { // specified in project.godot
-		audio_driver = GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
+	// Store this in a globally accessible place, so we can retrieve the rendering drivers
+	// list from the display driver for the editor UI.
+	OS::get_singleton()->set_display_driver_id(display_driver_idx);
+
+	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
+	if (audio_driver == "") { // Specified in project.godot.
+		audio_driver = GLOBAL_GET("audio/driver/driver");
 	}
 
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
@@ -1496,8 +1569,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	/* Initialize Display Server */
 
 	{
-		String rendering_driver; // temp broken
+		String display_driver = DisplayServer::get_create_function_name(display_driver_idx);
 
+		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
 		if (err != OK || display_server == nullptr) {
@@ -1556,6 +1630,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	rendering_server = memnew(RenderingServerDefault(OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD));
 
 	rendering_server->init();
+	//rendering_server->call_set_use_vsync(OS::get_singleton()->_use_vsync);
 	rendering_server->set_render_loop_enabled(!disable_render_loop);
 
 	if (profile_gpu || (!editor && bool(GLOBAL_GET("debug/settings/stdout/print_gpu_profile")))) {
@@ -1974,9 +2049,7 @@ bool Main::start() {
 		GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
 		GLOBAL_DEF("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
 		GLOBAL_DEF("mono/profiler/enabled", false);
-		GLOBAL_DEF("mono/unhandled_exception_policy", 0);
-		// From editor/csharp_project.cpp.
-		GLOBAL_DEF("mono/project/auto_update_project", true);
+		GLOBAL_DEF("mono/runtime/unhandled_exception_policy", 0);
 #endif
 
 		DocTools doc;
@@ -2065,6 +2138,8 @@ bool Main::start() {
 		if (check_only) {
 			if (!script_res->is_valid()) {
 				OS::get_singleton()->set_exit_code(EXIT_FAILURE);
+			} else {
+				OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
 			}
 			return false;
 		}
@@ -2137,7 +2212,7 @@ bool Main::start() {
 		}
 #endif
 
-		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", false);
+		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
 
 		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows)) {
 			sml->get_root()->set_embed_subwindows_hint(true);
@@ -2522,6 +2597,9 @@ bool Main::iteration() {
 
 	bool exit = false;
 
+	// process all our active interfaces
+	XRServer::get_singleton()->_process();
+
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
 			Input::get_singleton()->flush_buffered_events();
@@ -2608,10 +2686,10 @@ bool Main::iteration() {
 	if (frame > 1000000) {
 		if (editor || project_manager) {
 			if (print_fps) {
-				print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(1)));
+				print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
 			}
 		} else if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
-			print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(1)));
+			print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
 		}
 
 		Engine::get_singleton()->_fps = frames;
@@ -2767,9 +2845,8 @@ void Main::cleanup(bool p_force) {
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
 		//attempt to restart with arguments
-		String exec = OS::get_singleton()->get_executable_path();
 		List<String> args = OS::get_singleton()->get_restart_on_exit_arguments();
-		OS::get_singleton()->create_process(exec, args);
+		OS::get_singleton()->create_instance(args);
 		OS::get_singleton()->set_restart_on_exit(false, List<String>()); //clear list (uses memory)
 	}
 

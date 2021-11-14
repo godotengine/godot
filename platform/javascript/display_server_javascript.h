@@ -67,7 +67,7 @@ private:
 	CursorShape cursor_shape = CURSOR_ARROW;
 	Point2i last_click_pos = Point2(-100, -100); // TODO check this again.
 	uint64_t last_click_ms = 0;
-	int last_click_button_index = -1;
+	MouseButton last_click_button_index = MouseButton::NONE;
 
 	bool swap_cancel_ok = false;
 

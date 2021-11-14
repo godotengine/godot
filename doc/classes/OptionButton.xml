@@ -84,6 +84,7 @@
 			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] contained in this button.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
 		<method name="get_selected_id" qualifiers="const">
@@ -207,6 +208,9 @@
 		</theme_item>
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.9, 0.9, 0.9, 0.2)">
 			Text [Color] used when the [OptionButton] is disabled.
+		</theme_item>
+		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
+			Text [Color] used when the [OptionButton] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
 		</theme_item>
 		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			Text [Color] used when the [OptionButton] is being hovered.

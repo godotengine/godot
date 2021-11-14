@@ -88,7 +88,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				real_t dist_to_p_in = gpoint.distance_to(xform.xform(curve->get_point_position(i) + curve->get_point_in(i)));
 
 				// Check for point movement start (for point + in/out controls).
-				if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+				if (mb->get_button_index() == MouseButton::LEFT) {
 					if (mode == MODE_EDIT && !mb->is_shift_pressed() && dist_to_p < grab_threshold) {
 						// Points can only be moved in edit mode.
 
@@ -118,7 +118,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				// Check for point deletion.
-				if ((mb->get_button_index() == MOUSE_BUTTON_RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && mode == MODE_DELETE)) {
+				if ((mb->get_button_index() == MouseButton::RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == MouseButton::LEFT && mode == MODE_DELETE)) {
 					if (dist_to_p < grab_threshold) {
 						undo_redo->create_action(TTR("Remove Point from Curve"));
 						undo_redo->add_do_method(curve.ptr(), "remove_point", i);
@@ -149,7 +149,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Check for point creation.
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && ((mb->is_command_pressed() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && ((mb->is_command_pressed() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
 			Ref<Curve2D> curve = node->get_curve();
 
 			undo_redo->create_action(TTR("Add Point to Curve"));
@@ -170,7 +170,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Check for segment split.
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mode == MODE_EDIT && on_edge) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && mode == MODE_EDIT && on_edge) {
 			Vector2 gpoint2 = mb->get_position();
 			Ref<Curve2D> curve = node->get_curve();
 
@@ -207,7 +207,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Check for point movement completion.
-		if (!mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && action != ACTION_NONE) {
+		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && action != ACTION_NONE) {
 			Ref<Curve2D> curve = node->get_curve();
 
 			Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
@@ -537,7 +537,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
 	curve_edit->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected), varray(MODE_EDIT));
 	base_hb->add_child(curve_edit);
 	curve_edit_curve = memnew(Button);

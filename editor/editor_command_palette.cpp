@@ -149,10 +149,10 @@ void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 	if (k.is_valid()) {
 		switch (k->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
 				search_options->gui_input(k);
 			} break;
 			default:
@@ -212,6 +212,12 @@ void EditorCommandPalette::_add_command(String p_command_name, String p_key_name
 	command.callable = p_binded_action;
 	command.shortcut = p_shortcut_text;
 
+	// Commands added from plugins don't exist yet when the history is loaded, so we assign the last use time here if it was recorded.
+	Dictionary command_history = EditorSettings::get_singleton()->get_project_metadata("command_palette", "command_history", Dictionary());
+	if (command_history.has(p_key_name)) {
+		command.last_used = command_history[p_key_name];
+	}
+
 	commands[p_key_name] = command;
 }
 
@@ -242,7 +248,9 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 	Array history_entries = command_history.keys();
 	for (int i = 0; i < history_entries.size(); i++) {
 		const String &history_key = history_entries[i];
-		commands[history_key].last_used = command_history[history_key];
+		if (commands.has(history_key)) {
+			commands[history_key].last_used = command_history[history_key];
+		}
 	}
 }
 

@@ -55,7 +55,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				Ref<Texture2D> grabber = get_theme_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
@@ -74,10 +74,10 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				grab.active = false;
 			}
 		} else if (scrollable) {
-			if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 				grab_focus();
 				set_value(get_value() + get_step());
-			} else if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				grab_focus();
 				set_value(get_value() - get_step());
 			}

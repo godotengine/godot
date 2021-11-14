@@ -584,9 +584,9 @@ void Viewport::_process_picking() {
 			physics_last_mouse_state.meta = mb->is_meta_pressed();
 
 			if (mb->is_pressed()) {
-				physics_last_mouse_state.mouse_mask |= (MouseButton)(1 << (mb->get_button_index() - 1));
+				physics_last_mouse_state.mouse_mask |= mouse_button_to_mask(mb->get_button_index());
 			} else {
-				physics_last_mouse_state.mouse_mask &= (MouseButton) ~(1 << (mb->get_button_index() - 1));
+				physics_last_mouse_state.mouse_mask &= ~mouse_button_to_mask(mb->get_button_index());
 
 				// If touch mouse raised, assume we don't know last mouse pos until new events come
 				if (mb->get_device() == InputEvent::DEVICE_ID_TOUCH_MOUSE) {
@@ -638,7 +638,13 @@ void Viewport::_process_picking() {
 
 				Vector2 point = canvas_transform.affine_inverse().xform(pos);
 
-				int rc = ss2d->intersect_point_on_canvas(point, canvas_layer_id, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
+				PhysicsDirectSpaceState2D::PointParameters point_params;
+				point_params.position = point;
+				point_params.canvas_instance_id = canvas_layer_id;
+				point_params.collide_with_areas = true;
+				point_params.pick_point = true;
+
+				int rc = ss2d->intersect_point(point_params, res, 64);
 				for (int i = 0; i < rc; i++) {
 					if (res[i].collider_id.is_valid() && res[i].collider) {
 						CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
@@ -690,7 +696,7 @@ void Viewport::_process_picking() {
 			if (co && camera_3d) {
 				_collision_object_3d_input_event(co, camera_3d, ev, Vector3(), Vector3(), 0);
 				captured = true;
-				if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
+				if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 					physics_object_capture = ObjectID();
 				}
 
@@ -706,7 +712,7 @@ void Viewport::_process_picking() {
 				if (ObjectDB::get_instance(last_id) && last_object) {
 					// Good, exists.
 					_collision_object_3d_input_event(last_object, camera_3d, ev, result.position, result.normal, result.shape);
-					if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+					if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 						physics_object_capture = last_id;
 					}
 				}
@@ -715,10 +721,17 @@ void Viewport::_process_picking() {
 			if (camera_3d) {
 				Vector3 from = camera_3d->project_ray_origin(pos);
 				Vector3 dir = camera_3d->project_ray_normal(pos);
+				real_t far = camera_3d->far;
 
 				PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
 				if (space) {
-					bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
+					PhysicsDirectSpaceState3D::RayParameters ray_params;
+					ray_params.from = from;
+					ray_params.to = from + dir * far;
+					ray_params.collide_with_areas = true;
+					ray_params.pick_ray = true;
+
+					bool col = space->intersect_ray(ray_params, result);
 					ObjectID new_collider;
 					if (col) {
 						CollisionObject3D *co = Object::cast_to<CollisionObject3D>(result.collider);
@@ -727,7 +740,7 @@ void Viewport::_process_picking() {
 							last_object = co;
 							last_id = result.collider_id;
 							new_collider = last_id;
-							if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+							if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 								physics_object_capture = last_id;
 							}
 						}
@@ -1246,10 +1259,10 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 	Ref<InputEventMouseButton> mb = p_input;
 
 	bool cant_stop_me_now = (mb.is_valid() &&
-							 (mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN ||
-									 mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP ||
-									 mb->get_button_index() == MOUSE_BUTTON_WHEEL_LEFT ||
-									 mb->get_button_index() == MOUSE_BUTTON_WHEEL_RIGHT));
+			(mb->get_button_index() == MouseButton::WHEEL_DOWN ||
+					mb->get_button_index() == MouseButton::WHEEL_UP ||
+					mb->get_button_index() == MouseButton::WHEEL_LEFT ||
+					mb->get_button_index() == MouseButton::WHEEL_RIGHT));
 	Ref<InputEventPanGesture> pn = p_input;
 	cant_stop_me_now = pn.is_valid() || cant_stop_me_now;
 
@@ -1432,21 +1445,21 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		gui.last_mouse_pos = mpos;
 		if (mb->is_pressed()) {
 			Size2 pos = mpos;
-			if (gui.mouse_focus_mask) {
+			if (gui.mouse_focus_mask != MouseButton::NONE) {
 				// Do not steal mouse focus and stuff while a focus mask exists.
-				gui.mouse_focus_mask |= 1 << (mb->get_button_index() - 1); // Add the button to the mask.
+				gui.mouse_focus_mask |= mouse_button_to_mask(mb->get_button_index());
 			} else {
 				gui.mouse_focus = gui_find_control(pos);
 				gui.last_mouse_focus = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
-					gui.mouse_focus_mask = 0;
+					gui.mouse_focus_mask = MouseButton::NONE;
 					return;
 				}
 
-				gui.mouse_focus_mask = 1 << (mb->get_button_index() - 1);
+				gui.mouse_focus_mask = mouse_button_to_mask(mb->get_button_index());
 
-				if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+				if (mb->get_button_index() == MouseButton::LEFT) {
 					gui.drag_accum = Vector2();
 					gui.drag_attempted = false;
 				}
@@ -1469,7 +1482,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 #endif
 
-			if (mb->get_button_index() == MOUSE_BUTTON_LEFT) { // Assign focus.
+			if (mb->get_button_index() == MouseButton::LEFT) { // Assign focus.
 				CanvasItem *ci = gui.mouse_focus;
 				while (ci) {
 					Control *control = Object::cast_to<Control>(ci);
@@ -1500,7 +1513,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			set_input_as_handled();
 
-			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == MouseButton::LEFT) {
 				// Alternate drop use (when using force_drag(), as proposed by #5342).
 				if (gui.mouse_focus) {
 					_gui_drop(gui.mouse_focus, pos, false);
@@ -1520,7 +1533,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			_gui_cancel_tooltip();
 		} else {
-			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+			if (gui.drag_data.get_type() != Variant::NIL && mb->get_button_index() == MouseButton::LEFT) {
 				if (gui.drag_mouse_over) {
 					_gui_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos, false);
 				}
@@ -1538,7 +1551,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				// Change mouse accordingly.
 			}
 
-			gui.mouse_focus_mask &= ~(1 << (mb->get_button_index() - 1)); // Remove from mask.
+			gui.mouse_focus_mask &= ~mouse_button_to_mask(mb->get_button_index()); // Remove from mask.
 
 			if (!gui.mouse_focus) {
 				// Release event is only sent if a mouse focus (previously pressed button) exists.
@@ -1557,7 +1570,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			// Disable mouse focus if needed before calling input,
 			// this makes popups on mouse press event work better,
 			// as the release will never be received otherwise.
-			if (gui.mouse_focus_mask == 0) {
+			if (gui.mouse_focus_mask == MouseButton::NONE) {
 				gui.mouse_focus = nullptr;
 				gui.forced_mouse_focus = false;
 			}
@@ -1577,7 +1590,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				over = gui_find_control(mpos);
 			}
 
-			if (gui.mouse_focus_mask == 0 && over != gui.mouse_over) {
+			if (gui.mouse_focus_mask == MouseButton::NONE && over != gui.mouse_over) {
 				if (gui.mouse_over) {
 					_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
 				}
@@ -1605,7 +1618,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Control *over = nullptr;
 
 		// Drag & drop.
-		if (!gui.drag_attempted && gui.mouse_focus && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+		if (!gui.drag_attempted && gui.mouse_focus && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 			gui.drag_accum += mm->get_relative();
 			float len = gui.drag_accum.length();
 			if (len > 10) {
@@ -1619,7 +1632,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							if (gui.drag_data.get_type() != Variant::NIL) {
 								gui.mouse_focus = nullptr;
 								gui.forced_mouse_focus = false;
-								gui.mouse_focus_mask = 0;
+								gui.mouse_focus_mask = MouseButton::NONE;
 								break;
 							} else {
 								Control *drag_preview = _gui_get_drag_preview();
@@ -1688,7 +1701,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			mm->set_speed(speed);
 			mm->set_relative(rel);
 
-			if (mm->get_button_mask() == 0) {
+			if (mm->get_button_mask() == MouseButton::NONE) {
 				// Nothing pressed.
 
 				bool can_tooltip = true;
@@ -1741,7 +1754,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				Control *c = over;
 				Vector2 cpos = pos;
 				while (c) {
-					if (gui.mouse_focus_mask != 0 || c->has_point(cpos)) {
+					if (gui.mouse_focus_mask != MouseButton::NONE || c->has_point(cpos)) {
 						cursor_shape = c->get_cursor_shape(cpos);
 					} else {
 						cursor_shape = Control::CURSOR_ARROW;
@@ -1854,7 +1867,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					Transform2D localizer = gui.drag_mouse_over->get_global_transform_with_canvas().affine_inverse();
 					gui.drag_mouse_over_pos = localizer.xform(viewport_pos);
 
-					if (mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+					if ((mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 						bool can_drop = _gui_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos, true);
 
 						if (!can_drop) {
@@ -2095,7 +2108,7 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.mouse_focus == p_control) {
 		gui.mouse_focus = nullptr;
 		gui.forced_mouse_focus = false;
-		gui.mouse_focus_mask = 0;
+		gui.mouse_focus_mask = MouseButton::NONE;
 	}
 	if (gui.last_mouse_focus == p_control) {
 		gui.last_mouse_focus = nullptr;
@@ -2165,13 +2178,13 @@ void Viewport::_gui_accept_event() {
 
 void Viewport::_drop_mouse_focus() {
 	Control *c = gui.mouse_focus;
-	int mask = gui.mouse_focus_mask;
+	MouseButton mask = gui.mouse_focus_mask;
 	gui.mouse_focus = nullptr;
 	gui.forced_mouse_focus = false;
-	gui.mouse_focus_mask = 0;
+	gui.mouse_focus_mask = MouseButton::NONE;
 
 	for (int i = 0; i < 3; i++) {
-		if (mask & (1 << i)) {
+		if ((int)mask & (1 << i)) {
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
 			mb->set_position(c->get_local_mouse_position());
@@ -2192,7 +2205,10 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 	if (physics_object_over.is_valid()) {
 		CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
 		if (co) {
-			if (!(p_paused_only && co->can_process())) {
+			if (!co->is_inside_tree()) {
+				physics_object_over = ObjectID();
+				physics_object_capture = ObjectID();
+			} else if (!(p_paused_only && co->can_process())) {
 				co->_mouse_exit();
 				physics_object_over = ObjectID();
 				physics_object_capture = ObjectID();
@@ -2213,7 +2229,7 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 		Object *o = ObjectDB::get_instance(E->key());
 		if (o) {
 			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-			if (co) {
+			if (co && co->is_inside_tree()) {
 				if (p_clean_all_frames && p_paused_only && co->can_process()) {
 					continue;
 				}
@@ -2239,7 +2255,7 @@ void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paus
 		Object *o = ObjectDB::get_instance(E->key().first);
 		if (o) {
 			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-			if (co) {
+			if (co && co->is_inside_tree()) {
 				if (p_clean_all_frames && p_paused_only && co->can_process()) {
 					continue;
 				}
@@ -2277,11 +2293,11 @@ void Viewport::_post_gui_grab_click_focus() {
 			return;
 		}
 
-		int mask = gui.mouse_focus_mask;
+		MouseButton mask = gui.mouse_focus_mask;
 		Point2 click = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
 
 		for (int i = 0; i < 3; i++) {
-			if (mask & (1 << i)) {
+			if ((int)mask & (1 << i)) {
 				Ref<InputEventMouseButton> mb;
 				mb.instantiate();
 
@@ -2299,7 +2315,7 @@ void Viewport::_post_gui_grab_click_focus() {
 		click = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
 
 		for (int i = 0; i < 3; i++) {
-			if (mask & (1 << i)) {
+			if ((int)mask & (1 << i)) {
 				Ref<InputEventMouseButton> mb;
 				mb.instantiate();
 
@@ -2396,7 +2412,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 		ERR_FAIL_COND_V(gui.subwindow_focused == nullptr, false);
 
 		Ref<InputEventMouseButton> mb = p_event;
-		if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE) {
 				if (gui.subwindow_drag_close_rect.has_point(mb->get_position())) {
 					// Close window.
@@ -2521,7 +2537,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	// If the event is a mouse button, we need to check whether another window was clicked.
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		bool click_on_window = false;
 		for (int i = gui.sub_windows.size() - 1; i >= 0; i--) {
 			SubWindow &sw = gui.sub_windows.write[i];
@@ -3025,7 +3041,7 @@ void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {
 
 		gui.mouse_focus = nullptr;
 		gui.forced_mouse_focus = false;
-		gui.mouse_focus_mask = 0;
+		gui.mouse_focus_mask = MouseButton::NONE;
 	}
 }
 
@@ -3857,7 +3873,7 @@ void SubViewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_2d_override_stretch"), "set_size_2d_override_stretch", "is_size_2d_override_stretch_enabled");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,Always"), "set_update_mode", "get_update_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,When Parent Visible,Always"), "set_update_mode", "get_update_mode");
 
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(CLEAR_MODE_NEVER);

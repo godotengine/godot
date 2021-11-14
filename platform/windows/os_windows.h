@@ -46,10 +46,6 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
-#if defined(OPENGL_ENABLED)
-#include "context_gl_windows.h"
-#endif
-
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/windows/vulkan_context_win.h"
@@ -122,8 +118,8 @@ public:
 
 	virtual void initialize_joypads() override {}
 
-	virtual Date get_date(bool utc) const override;
-	virtual Time get_time(bool utc) const override;
+	virtual Date get_date(bool p_utc) const override;
+	virtual Time get_time(bool p_utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const override;
 	virtual double get_unix_time() const override;
 

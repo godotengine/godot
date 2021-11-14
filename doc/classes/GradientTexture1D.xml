@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GradientTexture1D" inherits="Texture2D" version="4.0">
+	<brief_description>
+		Gradient-filled texture.
+	</brief_description>
+	<description>
+		GradientTexture1D uses a [Gradient] to fill the texture data. The gradient will be filled from left to right using colors obtained from the gradient. This means the texture does not necessarily represent an exact copy of the gradient, but instead an interpolation of samples obtained from the gradient at fixed steps (see [member width]).
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
+			The [Gradient] that will be used to fill the texture.
+		</member>
+		<member name="use_hdr" type="bool" setter="set_use_hdr" getter="is_using_hdr" default="false">
+			If [code]true[/code], the generated texture will support high dynamic range ([constant Image.FORMAT_RGBAF] format). This allows for glow effects to work if [member Environment.glow_enabled] is [code]true[/code]. If [code]false[/code], the generated texture will use low dynamic range; overbright colors will be clamped ([constant Image.FORMAT_RGBA8] format).
+		</member>
+		<member name="width" type="int" setter="set_width" getter="get_width" default="2048">
+			The number of color samples that will be obtained from the [Gradient].
+		</member>
+	</members>
+</class>

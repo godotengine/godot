@@ -233,6 +233,7 @@ private:
 	bool has_error() const { return !error_stack.is_empty(); }
 	Token pop_error();
 	char32_t _advance();
+	String _get_indent_char_name(char32_t ch);
 	void _skip_whitespace();
 	void check_indent();
 

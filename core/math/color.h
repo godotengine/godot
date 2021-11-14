@@ -51,6 +51,7 @@ struct Color {
 	uint64_t to_rgba64() const;
 	uint64_t to_argb64() const;
 	uint64_t to_abgr64() const;
+	String to_html(bool p_alpha = true) const;
 	float get_h() const;
 	float get_s() const;
 	float get_v() const;
@@ -189,8 +190,7 @@ struct Color {
 	static String get_named_color_name(int p_idx);
 	static Color get_named_color(int p_idx);
 	static Color from_string(const String &p_string, const Color &p_default);
-	String to_html(bool p_alpha = true) const;
-	Color from_hsv(float p_h, float p_s, float p_v, float p_a) const;
+	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0);
 	static Color from_rgbe9995(uint32_t p_rgbe);
 
 	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys

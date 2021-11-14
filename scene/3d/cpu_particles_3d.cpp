@@ -73,6 +73,7 @@ void CPUParticles3D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((12 + 4 + 4) * p_amount);
+	RS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_3D, true, true);
 
 	particle_order.resize(p_amount);
@@ -212,8 +213,7 @@ TypedArray<String> CPUParticles3D::get_configuration_warnings() const {
 		warnings.push_back(TTR("Nothing is visible because no mesh has been assigned."));
 	}
 
-	if (!anim_material_found && (get_param_max(PARAM_ANIM_SPEED) != 0.0 || get_param_max(PARAM_ANIM_OFFSET) != 0.0 ||
-										get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
+	if (!anim_material_found && (get_param_max(PARAM_ANIM_SPEED) != 0.0 || get_param_max(PARAM_ANIM_OFFSET) != 0.0 || get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
 		warnings.push_back(TTR("CPUParticles3D animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\"."));
 	}
 
@@ -531,6 +531,8 @@ void CPUParticles3D::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("scale_curve_") && !split_scale) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
+
+	Node3D::_validate_property(property);
 }
 
 static uint32_t idhash(uint32_t x) {
@@ -1326,7 +1328,7 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 
 	set_color(material->get_color());
 
-	Ref<GradientTexture> gt = material->get_color_ramp();
+	Ref<GradientTexture1D> gt = material->get_color_ramp();
 	if (gt.is_valid()) {
 		set_color_ramp(gt->get_gradient());
 	}

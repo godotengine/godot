@@ -89,7 +89,7 @@
 	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
 	// Create GL ES 2 context
-	if (GLOBAL_GET("rendering/driver/driver_name") == "GLES2") {
+	if (GLOBAL_GET("rendering/driver/driver_name") == "opengl3") {
 		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
 		NSLog(@"Setting up an OpenGL ES 2.0 context.");
 		if (!context) {

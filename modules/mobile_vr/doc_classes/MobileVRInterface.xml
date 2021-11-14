@@ -37,5 +37,6 @@
 		<member name="oversample" type="float" setter="set_oversample" getter="get_oversample" default="1.5">
 			The oversample setting. Because of the lens distortion we have to render our buffers at a higher resolution then the screen can natively handle. A value between 1.5 and 2.0 often provides good results but at the cost of performance.
 		</member>
+		<member name="xr_play_area_mode" type="int" setter="set_play_area_mode" getter="get_play_area_mode" override="true" enum="XRInterface.PlayAreaMode" default="1" />
 	</members>
 </class>

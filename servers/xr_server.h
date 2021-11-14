@@ -60,9 +60,10 @@ class XRServer : public Object {
 
 public:
 	enum TrackerType {
-		TRACKER_CONTROLLER = 0x01, /* tracks a controller */
-		TRACKER_BASESTATION = 0x02, /* tracks location of a base station */
-		TRACKER_ANCHOR = 0x04, /* tracks an anchor point, used in AR to track a real live location */
+		TRACKER_HEAD = 0x01, /* tracks the position of the players head (or in case of handheld AR, location of the phone) */
+		TRACKER_CONTROLLER = 0x02, /* tracks a controller */
+		TRACKER_BASESTATION = 0x04, /* tracks location of a base station */
+		TRACKER_ANCHOR = 0x08, /* tracks an anchor point, used in AR to track a real live location */
 		TRACKER_UNKNOWN = 0x80, /* unknown tracker */
 
 		TRACKER_ANY_KNOWN = 0x7f, /* all except unknown */
@@ -77,7 +78,7 @@ public:
 
 private:
 	Vector<Ref<XRInterface>> interfaces;
-	Vector<Ref<XRPositionalTracker>> trackers;
+	Dictionary trackers;
 
 	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
 
@@ -164,13 +165,17 @@ public:
 		Our trackers are objects that expose the orientation and position of physical devices such as controller, anchor points, etc.
 		They are created and managed by our active AR/VR interfaces.
 	*/
-	bool is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const;
-	int get_free_tracker_id_for_type(TrackerType p_tracker_type);
 	void add_tracker(Ref<XRPositionalTracker> p_tracker);
 	void remove_tracker(Ref<XRPositionalTracker> p_tracker);
-	int get_tracker_count() const;
-	Ref<XRPositionalTracker> get_tracker(int p_index) const;
-	Ref<XRPositionalTracker> find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const;
+	Dictionary get_trackers(int p_tracker_types);
+	Ref<XRPositionalTracker> get_tracker(const StringName &p_name) const;
+
+	/*
+		We don't know which trackers and actions will existing during runtime but we can request suggested names from our interfaces to help our IDE UI.
+	*/
+	PackedStringArray get_suggested_tracker_names() const;
+	PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const;
+	// Q: Should we add get_suggested_input_names and get_suggested_haptic_names even though we don't use them for the IDE?
 
 	uint64_t get_last_process_usec();
 	uint64_t get_last_commit_usec();

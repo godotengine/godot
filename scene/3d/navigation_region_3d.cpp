@@ -162,7 +162,7 @@ void _bake_navigation_mesh(void *p_user_data) {
 }
 
 void NavigationRegion3D::bake_navigation_mesh() {
-	ERR_FAIL_COND(bake_thread.is_started());
+	ERR_FAIL_COND_MSG(bake_thread.is_started(), "Unable to start another bake request. The navigation mesh bake thread is already baking a navigation mesh.");
 
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
 	args->nav_region = this;

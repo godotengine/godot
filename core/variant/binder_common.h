@@ -80,7 +80,7 @@ struct VariantCaster<const T &> {
 		}                                                                    \
 		typedef int64_t EncodeT;                                             \
 		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) { \
-			*(int64_t *)p_ptr = p_val;                                       \
+			*(int64_t *)p_ptr = (int64_t)p_val;                              \
 		}                                                                    \
 	};
 
@@ -88,6 +88,7 @@ struct VariantCaster<const T &> {
 VARIANT_ENUM_CAST(Object::ConnectFlags);
 
 VARIANT_ENUM_CAST(Vector3::Axis);
+VARIANT_ENUM_CAST(Basis::EulerOrder);
 
 VARIANT_ENUM_CAST(Error);
 VARIANT_ENUM_CAST(Side);

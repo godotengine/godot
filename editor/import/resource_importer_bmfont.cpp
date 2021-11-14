@@ -359,6 +359,8 @@ Error ResourceImporterBMFont::import(const String &p_source_file, const String &
 	int height = 0;
 	int ascent = 0;
 	int outline = 0;
+	uint32_t st_flags = 0;
+	String font_name;
 
 	bool packed = false;
 	uint8_t ch[4] = { 0, 0, 0, 0 }; // RGBA
@@ -382,13 +384,23 @@ Error ResourceImporterBMFont::import(const String &p_source_file, const String &
 					base_size = f->get_16();
 					uint8_t flags = f->get_8();
 					ERR_FAIL_COND_V_MSG(flags & 0x02, ERR_CANT_CREATE, TTR("Non-unicode version of BMFont is not supported."));
+					if (flags & (1 << 3)) {
+						st_flags |= TextServer::FONT_BOLD;
+					}
+					if (flags & (1 << 2)) {
+						st_flags |= TextServer::FONT_ITALIC;
+					}
 					f->get_8(); // non-unicode charset, skip
 					f->get_16(); // stretch_h, skip
 					f->get_8(); // aa, skip
 					f->get_32(); // padding, skip
 					f->get_16(); // spacing, skip
 					outline = f->get_8();
-					// font name, skip
+					// font name
+					PackedByteArray name_data;
+					name_data.resize(block_size - 14);
+					f->get_buffer(name_data.ptrw(), block_size - 14);
+					font_name = String::utf8((const char *)name_data.ptr(), block_size - 14);
 					font->set_fixed_size(base_size);
 				} break;
 				case 2: /* common */ {
@@ -601,6 +613,19 @@ Error ResourceImporterBMFont::import(const String &p_source_file, const String &
 				if (keys.has("outline")) {
 					outline = keys["outline"].to_int();
 				}
+				if (keys.has("bold")) {
+					if (keys["bold"].to_int()) {
+						st_flags |= TextServer::FONT_BOLD;
+					}
+				}
+				if (keys.has("italic")) {
+					if (keys["italic"].to_int()) {
+						st_flags |= TextServer::FONT_ITALIC;
+					}
+				}
+				if (keys.has("face")) {
+					font_name = keys["face"];
+				}
 				ERR_FAIL_COND_V_MSG((!keys.has("unicode") || keys["unicode"].to_int() != 1), ERR_CANT_CREATE, TTR("Non-unicode version of BMFont is not supported."));
 			} else if (type == "common") {
 				if (keys.has("lineHeight")) {
@@ -778,6 +803,8 @@ Error ResourceImporterBMFont::import(const String &p_source_file, const String &
 		}
 	}
 
+	font->set_font_name(font_name);
+	font->set_font_style(st_flags);
 	font->set_ascent(0, base_size, ascent);
 	font->set_descent(0, base_size, height - ascent);
 

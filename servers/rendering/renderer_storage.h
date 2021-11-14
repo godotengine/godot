@@ -183,8 +183,8 @@ public:
 	virtual String shader_get_code(RID p_shader) const = 0;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
 
-	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) = 0;
-	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const = 0;
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index) = 0;
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const = 0;
 	virtual Variant shader_get_param_default(RID p_material, const StringName &p_param) const = 0;
 
 	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
@@ -534,6 +534,19 @@ public:
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const = 0;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
 	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const = 0;
+
+	/* FOG VOLUMES */
+
+	virtual RID fog_volume_allocate() = 0;
+	virtual void fog_volume_initialize(RID p_rid) = 0;
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) = 0;
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) = 0;
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) = 0;
+	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const = 0;
+	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const = 0;
+
+	/* VISIBILITY NOTIFIER */
 
 	virtual RID visibility_notifier_allocate() = 0;
 	virtual void visibility_notifier_initialize(RID p_notifier) = 0;

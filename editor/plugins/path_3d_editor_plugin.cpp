@@ -316,7 +316,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 			set_handle_clicked(false);
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->is_ctrl_pressed()))) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->is_ctrl_pressed()))) {
 			//click into curve, break it down
 			Vector<Vector3> v3a = c->tessellate();
 			int idx = 0;
@@ -411,7 +411,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 				//add new at pos
 			}
 
-		} else if (mb->is_pressed() && ((mb->get_button_index() == MOUSE_BUTTON_LEFT && curve_del->is_pressed()) || (mb->get_button_index() == MOUSE_BUTTON_RIGHT && curve_edit->is_pressed()))) {
+		} else if (mb->is_pressed() && ((mb->get_button_index() == MouseButton::LEFT && curve_del->is_pressed()) || (mb->get_button_index() == MouseButton::RIGHT && curve_edit->is_pressed()))) {
 			for (int i = 0; i < c->get_point_count(); i++) {
 				real_t dist_to_p = p_camera->unproject_position(gt.xform(c->get_point_position(i))).distance_to(mbpos);
 				real_t dist_to_p_out = p_camera->unproject_position(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_to(mbpos);
@@ -573,7 +573,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	curve_edit->set_toggle_mode(true);
 	curve_edit->hide();
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit);
 	curve_create = memnew(Button);
 	curve_create->set_flat(true);
@@ -614,15 +614,6 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	menu->connect("id_pressed", callable_mp(this, &Path3DEditorPlugin::_handle_option_pressed));
 
 	curve_edit->set_pressed(true);
-	/*
-    collision_polygon_editor = memnew( PathEditor(p_node) );
-    editor->get_main_control()->add_child(collision_polygon_editor);
-    collision_polygon_editor->set_margin(MARGIN_LEFT,200);
-    collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
-    collision_polygon_editor->set_margin(MARGIN_TOP,0);
-    collision_polygon_editor->set_margin(MARGIN_BOTTOM,10);
-    collision_polygon_editor->hide();
-    */
 }
 
 Path3DEditorPlugin::~Path3DEditorPlugin() {

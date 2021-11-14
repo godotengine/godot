@@ -226,9 +226,10 @@ def configure_msvc(env, manual_msvc_config):
         env.AppendUnique(CCFLAGS=["/MD"])
 
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
-    # Force to use Unicode encoding
-    env.AppendUnique(CCFLAGS=["/utf-8"])
+    env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
+    env.AppendUnique(CCFLAGS=["/bigobj"])  # Allow big objects, no drawbacks.
     env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
+
     if manual_msvc_config:  # should be automatic if SCons found it
         if os.getenv("WindowsSdkDir") is not None:
             env.Prepend(CPPPATH=[os.getenv("WindowsSdkDir") + "/Include"])
@@ -279,7 +280,7 @@ def configure_msvc(env, manual_msvc_config):
     if not env["use_volk"]:
         LIBS += ["vulkan"]
 
-    # env.AppendUnique(CPPDEFINES = ['OPENGL_ENABLED'])
+    env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
     LIBS += ["opengl32"]
 
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
@@ -421,6 +422,7 @@ def configure_mingw(env):
     ## Compile flags
 
     env.Append(CCFLAGS=["-mwindows"])
+    env.Append(CCFLAGS=["-Wa,-mbig-obj"])  # Allow big objects, no drawbacks.
 
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(CPPDEFINES=[("WINVER", env["target_win_version"]), ("_WIN32_WINNT", env["target_win_version"])])
@@ -453,8 +455,7 @@ def configure_mingw(env):
     if not env["use_volk"]:
         env.Append(LIBS=["vulkan"])
 
-    ## TODO !!! Re-enable when OpenGLES Rendering Device is implemented !!!
-    # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
+    env.Append(CPPDEFINES=["GLES3_ENABLED"])
     env.Append(LIBS=["opengl32"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])

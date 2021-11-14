@@ -115,7 +115,7 @@ static void handle_crash(int sig) {
 			int ret;
 			Error err = OS::get_singleton()->execute(String("addr2line"), args, &output, &ret);
 			if (err == OK) {
-				output.erase(output.length() - 1, 1);
+				output = output.substr(0, output.length() - 1);
 			}
 
 			fprintf(stderr, "[%ld] %s (%s)\n", (long int)i, fname, output.utf8().get_data());

@@ -30,12 +30,12 @@
 
 #include "resource_importer_dynamicfont.h"
 
-#include "dynamicfont_import_settings.h"
-
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "dynamicfont_import_settings.h"
 #include "editor/editor_node.h"
-#include "modules/modules_enabled.gen.h"
+
+#include "modules/modules_enabled.gen.h" // For freetype.
 
 String ResourceImporterDynamicFont::get_importer_name() const {
 	return "font_data_dynamic";

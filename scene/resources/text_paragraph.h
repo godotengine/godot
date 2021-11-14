@@ -96,6 +96,9 @@ public:
 
 	void set_bidi_override(const Array &p_override);
 
+	void set_custom_punctuation(const String &p_punct);
+	String get_custom_punctuation() const;
+
 	bool set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");
 	void clear_dropcap();
 
@@ -120,7 +123,7 @@ public:
 	void set_max_lines_visible(int p_lines);
 	int get_max_lines_visible() const;
 
-	Size2 get_non_wraped_size() const;
+	Size2 get_non_wrapped_size() const;
 
 	Size2 get_size() const;
 

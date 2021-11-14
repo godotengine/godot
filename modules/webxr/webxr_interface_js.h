@@ -46,6 +46,7 @@ class WebXRInterfaceJS : public WebXRInterface {
 
 private:
 	bool initialized;
+	Ref<XRPositionalTracker> head_tracker;
 
 	String session_mode;
 	String required_features;
@@ -53,7 +54,9 @@ private:
 	String requested_reference_space_types;
 	String reference_space_type;
 
+	// TODO maybe turn into a vector to support more then 2 controllers...
 	bool controllers_state[2];
+	Ref<XRPositionalTracker> controllers[2];
 	Size2 render_targetsize;
 
 	Transform3D _js_matrix_to_transform(float *p_js_matrix);

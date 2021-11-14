@@ -31,6 +31,7 @@
 #ifndef VARIANT_H
 #define VARIANT_H
 
+#include "core/input/input_enums.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -43,6 +44,7 @@
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
 #include "core/object/object_id.h"
+#include "core/os/keyboard.h"
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid.h"
@@ -430,6 +432,21 @@ public:
 
 	Variant(const IPAddress &p_address);
 
+#define VARIANT_ENUM_CLASS_CONSTRUCTOR(m_enum) \
+	Variant(const m_enum &p_value) {           \
+		type = INT;                            \
+		_data._int = (int64_t)p_value;         \
+	}
+
+	// Only enum classes that need to be bound need this to be defined.
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(MIDIMessage)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(MouseButton)
+
+#undef VARIANT_ENUM_CLASS_CONSTRUCTOR
+
 	// If this changes the table in variant_op must be updated
 	enum Operator {
 		//comparison
@@ -481,7 +498,8 @@ public:
 	static PTROperatorEvaluator get_ptr_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
 
 	void zero();
-	Variant duplicate(bool deep = false) const;
+	Variant duplicate(bool p_deep = false) const;
+	Variant recursive_duplicate(bool p_deep, int recursion_count) const;
 	static void blend(const Variant &a, const Variant &b, float c, Variant &r_dst);
 	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
 
@@ -659,10 +677,11 @@ public:
 	bool operator!=(const Variant &p_variant) const;
 	bool operator<(const Variant &p_variant) const;
 	uint32_t hash() const;
+	uint32_t recursive_hash(int recursion_count) const;
 
-	bool hash_compare(const Variant &p_variant) const;
+	bool hash_compare(const Variant &p_variant, int recursion_count = 0) const;
 	bool booleanize() const;
-	String stringify(List<const void *> &stack) const;
+	String stringify(int recursion_count = 0) const;
 	String to_json_string() const;
 
 	void static_assign(const Variant &p_variant);

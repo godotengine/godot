@@ -269,6 +269,7 @@ private:
 	bool context_menu_enabled = true;
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
+	bool middle_mouse_paste_enabled = true;
 
 	// Overridable actions
 	String cut_copy_line = "";
@@ -279,7 +280,7 @@ private:
 	PopupMenu *menu_ctl = nullptr;
 
 	void _generate_context_menu();
-	int _get_menu_action_accelerator(const String &p_action);
+	Key _get_menu_action_accelerator(const String &p_action);
 
 	/* Versioning */
 	struct TextOperation {
@@ -394,6 +395,7 @@ private:
 	} selection;
 
 	bool selecting_enabled = true;
+	bool deselect_on_focus_loss_enabled = true;
 
 	Color font_selected_color = Color(1, 1, 1);
 	Color selection_color = Color(1, 1, 1);
@@ -586,12 +588,14 @@ protected:
 	virtual void _cut_internal();
 	virtual void _copy_internal();
 	virtual void _paste_internal();
+	virtual void _paste_primary_clipboard_internal();
 
 	GDVIRTUAL1(_handle_unicode_input, int)
 	GDVIRTUAL0(_backspace)
 	GDVIRTUAL0(_cut)
 	GDVIRTUAL0(_copy)
 	GDVIRTUAL0(_paste)
+	GDVIRTUAL0(_paste_primary_clipboard)
 
 public:
 	/* General overrides. */
@@ -640,6 +644,9 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enabled);
 	bool is_virtual_keyboard_enabled() const;
 
+	void set_middle_mouse_paste_enabled(bool p_enabled);
+	bool is_middle_mouse_paste_enabled() const;
+
 	// Text manipulation
 	void clear();
 
@@ -674,6 +681,7 @@ public:
 	void cut();
 	void copy();
 	void paste();
+	void paste_primary_clipboard();
 
 	// Context menu.
 	PopupMenu *get_menu() const;
@@ -745,6 +753,9 @@ public:
 	/* Selection. */
 	void set_selecting_enabled(const bool p_enabled);
 	bool is_selecting_enabled() const;
+
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
 
 	void set_override_selected_font_color(bool p_override_selected_font_color);
 	bool is_overriding_selected_font_color() const;

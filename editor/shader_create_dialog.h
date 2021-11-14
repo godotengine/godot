@@ -108,7 +108,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void config(const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true);
+	void config(const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true, int p_preferred_mode = -1);
 	ShaderCreateDialog();
 };
 

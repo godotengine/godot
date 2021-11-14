@@ -44,7 +44,7 @@ public class GLUtils {
 
 	public static final boolean DEBUG = false;
 
-	public static boolean use_32 = false;
+	public static int depth_buffer_bits; // No need to reiterate the default here
 	public static boolean use_debug_opengl = false;
 
 	private static final String[] ATTRIBUTES_NAMES = new String[] {

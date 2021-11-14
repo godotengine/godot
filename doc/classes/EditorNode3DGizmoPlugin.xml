@@ -4,7 +4,8 @@
 		Used by the editor to define Node3D gizmo types.
 	</brief_description>
 	<description>
-		EditorNode3DGizmoPlugin allows you to define a new type of Gizmo. There are two main ways to do so: extending [EditorNode3DGizmoPlugin] for the simpler gizmos, or creating a new [EditorNode3DGizmo] type. See the tutorial in the documentation for more info.
+		[EditorNode3DGizmoPlugin] allows you to define a new type of Gizmo. There are two main ways to do so: extending [EditorNode3DGizmoPlugin] for the simpler gizmos, or creating a new [EditorNode3DGizmo] type. See the tutorial in the documentation for more info.
+		To use [EditorNode3DGizmoPlugin], register it using the [method EditorPlugin.add_spatial_gizmo_plugin] method first.
 	</description>
 	<tutorials>
 		<link title="Spatial gizmo plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/spatial_gizmos.html</link>

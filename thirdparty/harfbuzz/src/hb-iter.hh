@@ -162,7 +162,7 @@ struct
 {
   template <typename T> hb_iter_type<T>
   operator () (T&& c) const
-  { return hb_deref (hb_forward<T> (c)).iter (); }
+  { return hb_deref (std::forward<T> (c)).iter (); }
 
   /* Specialization for C arrays. */
 
@@ -353,7 +353,7 @@ static inline auto end (Iterable&& iterable) HB_AUTO_RETURN (hb_iter (iterable).
 template <typename Lhs, typename Rhs,
 	  hb_requires (hb_is_iterator (Lhs))>
 static inline auto
-operator | (Lhs&& lhs, Rhs&& rhs) HB_AUTO_RETURN (hb_forward<Rhs> (rhs) (hb_forward<Lhs> (lhs)))
+operator | (Lhs&& lhs, Rhs&& rhs) HB_AUTO_RETURN (std::forward<Rhs> (rhs) (std::forward<Lhs> (lhs)))
 
 /* hb_map(), hb_filter(), hb_reduce() */
 
@@ -674,8 +674,8 @@ struct hb_iota_iter_t :
   template <typename S2 = S>
   auto
   inc (hb_type_identity<S2> s, hb_priority<1>)
-    -> hb_void_t<decltype (hb_invoke (hb_forward<S2> (s), hb_declval<T&> ()))>
-  { v = hb_invoke (hb_forward<S2> (s), v); }
+    -> hb_void_t<decltype (hb_invoke (std::forward<S2> (s), hb_declval<T&> ()))>
+  { v = hb_invoke (std::forward<S2> (s), v); }
 
   void
   inc (S s, hb_priority<0>)
@@ -874,7 +874,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (!hb_match (hb_forward<Pred> (p), hb_get (hb_forward<Proj> (f), *it)))
+      if (!hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
 	return false;
     return true;
   }
@@ -891,7 +891,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (hb_match (hb_forward<Pred> (p), hb_get (hb_forward<Proj> (f), *it)))
+      if (hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
 	return true;
     return false;
   }
@@ -908,7 +908,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (hb_match (hb_forward<Pred> (p), hb_get (hb_forward<Proj> (f), *it)))
+      if (hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
 	return false;
     return true;
   }

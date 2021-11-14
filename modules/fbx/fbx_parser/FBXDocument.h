@@ -706,13 +706,13 @@ public:
 	virtual ~AnimationCurve();
 
 	/** get list of keyframe positions (time).
-     *  Invariant: |GetKeys()| > 0 */
+	 *  Invariant: |GetKeys()| > 0 */
 	const KeyTimeList &GetKeys() const {
 		return keys;
 	}
 
 	/** get list of keyframe values.
-      * Invariant: |GetKeys()| == |GetValues()| && |GetKeys()| > 0*/
+	 * Invariant: |GetKeys()| == |GetValues()| && |GetKeys()| > 0*/
 	const KeyValueList &GetValues() const {
 		return values;
 	}
@@ -750,8 +750,8 @@ typedef std::weak_ptr<AnimationCurveNode> AnimationCurveNodeWeakPtr;
 class AnimationCurveNode : public Object {
 public:
 	/* the optional white list specifies a list of property names for which the caller
-    wants animations for. If the curve node does not match one of these, std::range_error
-    will be thrown. */
+	wants animations for. If the curve node does not match one of these, std::range_error
+	will be thrown. */
 	AnimationCurveNode(uint64_t id, const ElementPtr element, const std::string &name, const Document &doc,
 			const char *const *target_prop_whitelist = nullptr, size_t whitelist_size = 0);
 
@@ -760,8 +760,8 @@ public:
 	const AnimationMap &Curves() const;
 
 	/** Object the curve is assigned to, this can be nullptr if the
-     *  target object has no DOM representation or could not
-     *  be read for other reasons.*/
+	 *  target object has no DOM representation or could not
+	 *  be read for other reasons.*/
 	Object *Target() const {
 		return target;
 	}
@@ -799,8 +799,8 @@ public:
 	virtual ~AnimationLayer();
 
 	/* the optional white list specifies a list of property names for which the caller
-    wants animations for. Curves not matching this list will not be added to the
-    animation layer. */
+	wants animations for. Curves not matching this list will not be added to the
+	animation layer. */
 	const AnimationCurveNodeList Nodes(const char *const *target_prop_whitelist = nullptr, size_t whitelist_size = 0) const;
 
 private:
@@ -891,15 +891,15 @@ public:
 	virtual ~Cluster();
 
 	/** get the list of deformer weights associated with this cluster.
-     *  Use #GetIndices() to get the associated vertices. Both arrays
-     *  have the same size (and may also be empty). */
+	 *  Use #GetIndices() to get the associated vertices. Both arrays
+	 *  have the same size (and may also be empty). */
 	const std::vector<float> &GetWeights() const {
 		return weights;
 	}
 
 	/** get indices into the vertex data of the geometry associated
-     *  with this cluster. Use #GetWeights() to get the associated weights.
-     *  Both arrays have the same size (and may also be empty). */
+	 *  with this cluster. Use #GetWeights() to get the associated weights.
+	 *  Both arrays have the same size (and may also be empty). */
 	const std::vector<unsigned int> &GetIndices() const {
 		return indices;
 	}
@@ -998,7 +998,7 @@ public:
 	LazyObject *LazyDestinationObject() const;
 
 	/** return the name of the property the connection is attached to.
-      * this is an empty string for object to object (OO) connections. */
+	 * this is an empty string for object to object (OO) connections. */
 	const std::string &PropertyName() const {
 		return prop;
 	}

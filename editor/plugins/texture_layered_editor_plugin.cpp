@@ -38,7 +38,7 @@ void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		y_rot += -mm->get_relative().x * 0.01;
 		x_rot += mm->get_relative().y * 0.01;
 		_update_material();
@@ -249,7 +249,7 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
 	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
 	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
-	info->add_theme_constant_override("shadow_as_outline", 1);
+	info->add_theme_constant_override("shadow_outline_size", 1);
 	info->add_theme_constant_override("shadow_offset_x", 2);
 	info->add_theme_constant_override("shadow_offset_y", 2);
 

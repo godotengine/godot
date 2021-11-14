@@ -620,7 +620,7 @@ void EditorAssetLibrary::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> key = p_event;
 
 	if (key.is_valid() && key->is_pressed()) {
-		if (key->get_keycode_with_modifiers() == (KEY_MASK_CMD | KEY_F) && is_visible_in_tree()) {
+		if (key->get_keycode_with_modifiers() == (KeyModifierMask::CMD | Key::F) && is_visible_in_tree()) {
 			filter->grab_focus();
 			filter->select_all();
 			accept_event();

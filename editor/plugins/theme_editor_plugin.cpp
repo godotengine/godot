@@ -1711,13 +1711,13 @@ void ThemeItemEditorDialog::_edit_theme_item_gui_input(const Ref<InputEvent> &p_
 		}
 
 		switch (k->get_keycode()) {
-			case KEY_KP_ENTER:
-			case KEY_ENTER: {
+			case Key::KP_ENTER:
+			case Key::ENTER: {
 				_confirm_edit_theme_item();
 				edit_theme_item_dialog->hide();
 				edit_theme_item_dialog->set_input_as_handled();
 			} break;
-			case KEY_ESCAPE: {
+			case Key::ESCAPE: {
 				edit_theme_item_dialog->hide();
 				edit_theme_item_dialog->set_input_as_handled();
 			} break;
@@ -2848,7 +2848,7 @@ void ThemeTypeEditor::_font_size_item_changed(float p_value, String p_item_name)
 	edited_theme->set_font_size(p_item_name, edited_type, int(p_value));
 }
 
-void ThemeTypeEditor::_edit_resource_item(RES p_resource) {
+void ThemeTypeEditor::_edit_resource_item(RES p_resource, bool p_edit) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
@@ -3204,7 +3204,7 @@ void ThemeEditor::_add_preview_tab(ThemeEditorPreview *p_preview_tab, const Stri
 
 	preview_tabs->add_tab(p_preview_name, p_icon);
 	preview_tabs_content->add_child(p_preview_tab);
-	preview_tabs->set_tab_right_button(preview_tabs->get_tab_count() - 1, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("close"), SNAME("Tabs")));
+	preview_tabs->set_tab_right_button(preview_tabs->get_tab_count() - 1, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("close"), SNAME("TabBar")));
 	p_preview_tab->connect("control_picked", callable_mp(this, &ThemeEditor::_preview_control_picked));
 
 	preview_tabs->set_current_tab(preview_tabs->get_tab_count() - 1);
@@ -3328,8 +3328,8 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs_content->set_draw_behind_parent(true);
 	preview_tabs_vb->add_child(preview_tabs_content);
 
-	preview_tabs = memnew(Tabs);
-	preview_tabs->set_tab_align(Tabs::ALIGN_LEFT);
+	preview_tabs = memnew(TabBar);
+	preview_tabs->set_tab_align(TabBar::ALIGN_LEFT);
 	preview_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_tabbar_hb->add_child(preview_tabs);
 	preview_tabs->connect("tab_changed", callable_mp(this, &ThemeEditor::_change_preview_tab));

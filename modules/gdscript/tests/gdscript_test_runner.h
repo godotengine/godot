@@ -87,7 +87,7 @@ private:
 
 public:
 	static void print_handler(void *p_this, const String &p_message, bool p_error);
-	static void error_handler(void *p_this, const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_explanation, ErrorHandlerType p_type);
+	static void error_handler(void *p_this, const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_explanation, bool p_editor_notify, ErrorHandlerType p_type);
 	TestResult run_test();
 	bool generate_output();
 

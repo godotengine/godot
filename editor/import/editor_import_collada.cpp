@@ -314,7 +314,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 
 	xf = collada.fix_transform(xf) * p_node->post_transform;
 	node->set_transform(xf);
-	p_parent->add_child(node);
+	p_parent->add_child(node, true);
 	node->set_owner(scene);
 
 	if (p_node->empty_draw_type != "") {
@@ -1650,8 +1650,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 
 			Vector3 s = xform.basis.get_scale();
 			bool singular_matrix = Math::is_zero_approx(s.x) || Math::is_zero_approx(s.y) || Math::is_zero_approx(s.z);
-			Quaternion q = singular_matrix ? Quaternion() :
-											   xform.basis.get_rotation_quaternion();
+			Quaternion q = singular_matrix ? Quaternion() : xform.basis.get_rotation_quaternion();
 			Vector3 l = xform.origin;
 
 			if (position_idx >= 0) {
@@ -1710,7 +1709,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 			NodeMap &nm = node_map[at.target];
 			String path = scene->get_path_to(nm.node);
 
-			animation->add_track(Animation::TYPE_VALUE);
+			animation->add_track(Animation::TYPE_BLEND_SHAPE);
 			int track = animation->get_track_count() - 1;
 
 			path = path + ":" + at.param;
@@ -1732,7 +1731,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 					WARN_PRINT("Collada: Unexpected amount of value keys: " + itos(data.size()));
 				}
 
-				animation->track_insert_key(track, time, value);
+				animation->blend_shape_track_insert_key(track, time, value);
 			}
 
 			tracks_found = true;
@@ -1805,7 +1804,7 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 
 			ap->add_animation(name, state.animations[i]);
 		}
-		state.scene->add_child(ap);
+		state.scene->add_child(ap, true);
 		ap->set_owner(state.scene);
 	}
 

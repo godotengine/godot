@@ -50,9 +50,9 @@ public class GodotDownloaderService extends DownloaderService {
 	};
 
 	/**
-     * This public key comes from your Android Market publisher account, and it
-     * used by the LVL to validate responses from Market on your behalf.
-     */
+	 * This public key comes from your Android Market publisher account, and it
+	 * used by the LVL to validate responses from Market on your behalf.
+	 */
 	@Override
 	public String getPublicKey() {
 		SharedPreferences prefs = getApplicationContext().getSharedPreferences("app_data_keys", Context.MODE_PRIVATE);
@@ -63,20 +63,20 @@ public class GodotDownloaderService extends DownloaderService {
 	}
 
 	/**
-     * This is used by the preference obfuscater to make sure that your
-     * obfuscated preferences are different than the ones used by other
-     * applications.
-     */
+	 * This is used by the preference obfuscater to make sure that your
+	 * obfuscated preferences are different than the ones used by other
+	 * applications.
+	 */
 	@Override
 	public byte[] getSALT() {
 		return SALT;
 	}
 
 	/**
-     * Fill this in with the class name for your alarm receiver. We do this
-     * because receivers must be unique across all of Android (it's a good idea
-     * to make sure that your receiver is in your unique package)
-     */
+	 * Fill this in with the class name for your alarm receiver. We do this
+	 * because receivers must be unique across all of Android (it's a good idea
+	 * to make sure that your receiver is in your unique package)
+	 */
 	@Override
 	public String getAlarmReceiverClassName() {
 		Log.d("GODOT", "getAlarmReceiverClassName()");

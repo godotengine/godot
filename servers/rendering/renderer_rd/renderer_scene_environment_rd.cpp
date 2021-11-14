@@ -92,16 +92,19 @@ void RendererSceneEnvironmentRD::set_fog(bool p_enable, const Color &p_light_col
 	fog_aerial_perspective = p_fog_aerial_perspective;
 }
 
-void RendererSceneEnvironmentRD::set_volumetric_fog(bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount) {
+void RendererSceneEnvironmentRD::set_volumetric_fog(bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) {
 	volumetric_fog_enabled = p_enable;
 	volumetric_fog_density = p_density;
-	volumetric_fog_light = p_light;
-	volumetric_fog_light_energy = p_light_energy;
+	volumetric_fog_scattering = p_albedo;
+	volumetric_fog_emission = p_emission;
+	volumetric_fog_emission_energy = p_emission_energy;
+	volumetric_fog_anisotropy = p_anisotropy,
 	volumetric_fog_length = p_length;
 	volumetric_fog_detail_spread = p_detail_spread;
 	volumetric_fog_gi_inject = p_gi_inject;
 	volumetric_fog_temporal_reprojection = p_temporal_reprojection;
 	volumetric_fog_temporal_reprojection_amount = p_temporal_reprojection_amount;
+	volumetric_fog_ambient_inject = p_ambient_inject;
 }
 
 void RendererSceneEnvironmentRD::set_ssr(bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) {

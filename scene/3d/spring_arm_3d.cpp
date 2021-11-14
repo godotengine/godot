@@ -149,10 +149,24 @@ void SpringArm3D::process_spring() {
 			//use camera rotation, but spring arm position
 			Transform3D base_transform = camera->get_global_transform();
 			base_transform.origin = get_global_transform().origin;
-			get_world_3d()->get_direct_space_state()->cast_motion(camera->get_pyramid_shape_rid(), base_transform, motion, 0, motion_delta, motion_delta_unsafe, excluded_objects, mask);
+
+			PhysicsDirectSpaceState3D::ShapeParameters shape_params;
+			shape_params.shape_rid = camera->get_pyramid_shape_rid();
+			shape_params.transform = base_transform;
+			shape_params.motion = motion;
+			shape_params.exclude = excluded_objects;
+			shape_params.collision_mask = mask;
+
+			get_world_3d()->get_direct_space_state()->cast_motion(shape_params, motion_delta, motion_delta_unsafe);
 		} else {
+			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			ray_params.from = get_global_transform().origin;
+			ray_params.to = get_global_transform().origin + motion;
+			ray_params.exclude = excluded_objects;
+			ray_params.collision_mask = mask;
+
 			PhysicsDirectSpaceState3D::RayResult r;
-			bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
+			bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(ray_params, r);
 			if (intersected) {
 				real_t dist = get_global_transform().origin.distance_to(r.position);
 				dist -= margin;
@@ -160,7 +174,14 @@ void SpringArm3D::process_spring() {
 			}
 		}
 	} else {
-		get_world_3d()->get_direct_space_state()->cast_motion(shape->get_rid(), get_global_transform(), motion, 0, motion_delta, motion_delta_unsafe, excluded_objects, mask);
+		PhysicsDirectSpaceState3D::ShapeParameters shape_params;
+		shape_params.shape_rid = shape->get_rid();
+		shape_params.transform = get_global_transform();
+		shape_params.motion = motion;
+		shape_params.exclude = excluded_objects;
+		shape_params.collision_mask = mask;
+
+		get_world_3d()->get_direct_space_state()->cast_motion(shape_params, motion_delta, motion_delta_unsafe);
 	}
 
 	current_spring_length = spring_length * motion_delta;

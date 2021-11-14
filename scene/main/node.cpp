@@ -908,15 +908,10 @@ void Node::set_name(const String &p_name) {
 	}
 }
 
-static bool node_hrcr = false;
 static SafeRefCount node_hrcr_count;
 
 void Node::init_node_hrcr() {
 	node_hrcr_count.init(1);
-}
-
-void Node::set_human_readable_collision_renaming(bool p_enabled) {
-	node_hrcr = p_enabled;
 }
 
 #ifdef TOOLS_ENABLED
@@ -930,9 +925,8 @@ String Node::validate_child_name(Node *p_child) {
 void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 	/* Make sure the name is unique */
 
-	if (node_hrcr || p_force_human_readable) {
+	if (p_force_human_readable) {
 		//this approach to autoset node names is human readable but very slow
-		//it's turned on while running in the editor
 
 		StringName name = p_child->data.name;
 		_generate_serial_child_name(p_child, name);
@@ -1899,6 +1893,56 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	return node;
 }
 
+#ifdef TOOLS_ENABLED
+void Node::set_property_pinned(const String &p_property, bool p_pinned) {
+	bool current_pinned = false;
+	bool has_pinned = has_meta("_edit_pinned_properties_");
+	Array pinned;
+	String psa = get_property_store_alias(p_property);
+	if (has_pinned) {
+		pinned = get_meta("_edit_pinned_properties_");
+		current_pinned = pinned.has(psa);
+	}
+
+	if (current_pinned != p_pinned) {
+		if (p_pinned) {
+			pinned.append(psa);
+			if (!has_pinned) {
+				set_meta("_edit_pinned_properties_", pinned);
+			}
+		} else {
+			pinned.erase(psa);
+			if (pinned.is_empty()) {
+				remove_meta("_edit_pinned_properties_");
+			}
+		}
+	}
+}
+
+bool Node::is_property_pinned(const StringName &p_property) const {
+	if (!has_meta("_edit_pinned_properties_")) {
+		return false;
+	}
+	Array pinned = get_meta("_edit_pinned_properties_");
+	String psa = get_property_store_alias(p_property);
+	return pinned.has(psa);
+}
+
+StringName Node::get_property_store_alias(const StringName &p_property) const {
+	return p_property;
+}
+#endif
+
+void Node::get_storable_properties(Set<StringName> &r_storable_properties) const {
+	List<PropertyInfo> pi;
+	get_property_list(&pi);
+	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
+		if ((E->get().usage & PROPERTY_USAGE_STORAGE)) {
+			r_storable_properties.insert(E->get().name);
+		}
+	}
+}
+
 String Node::to_string() {
 	if (get_script_instance()) {
 		bool valid;
@@ -2750,7 +2794,11 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
+#endif
+
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
 
 	{
 		MethodInfo mi;
@@ -2841,7 +2889,7 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
 
 	ADD_GROUP("Editor Description", "editor_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "set_editor_description", "get_editor_description");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");
 
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_physics_process, "delta");

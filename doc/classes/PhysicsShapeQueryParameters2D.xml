@@ -4,7 +4,7 @@
 		Parameters to be sent to a 2D shape physics query.
 	</brief_description>
 	<description>
-		This class contains the shape and other parameters for 2D intersection/collision queries.
+		This class contains the shape and other parameters for [PhysicsDirectSpaceState2D] intersection/collision queries.
 	</description>
 	<tutorials>
 	</tutorials>

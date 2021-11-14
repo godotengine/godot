@@ -249,7 +249,7 @@ TreeItem *EditorPerformanceProfiler::_create_monitor_item(const StringName &p_mo
 
 void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Vector<StringName> active;
 		for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
 			if (i.value().item->is_checked(0)) {

@@ -201,10 +201,26 @@
 				Sets the value of the key identified by [code]key_idx[/code] to the given value. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
+		<method name="blend_shape_track_insert_key">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="time" type="float" />
+			<argument index="2" name="amount" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
 				Clear the animation (clear all tracks and reset all).
+			</description>
+		</method>
+		<method name="compress">
+			<return type="void" />
+			<argument index="0" name="page_size" type="int" default="8192" />
+			<argument index="1" name="fps" type="int" default="120" />
+			<argument index="2" name="split_tolerance" type="float" default="4.0" />
+			<description>
 			</description>
 		</method>
 		<method name="copy_track">
@@ -218,6 +234,7 @@
 		<method name="find_track" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="path" type="NodePath" />
+			<argument index="1" name="type" type="int" enum="Animation.TrackType" />
 			<description>
 				Returns the index of the specified track. If the track is not found, return -1.
 			</description>
@@ -360,6 +377,12 @@
 			<argument index="3" name="transition" type="float" default="1" />
 			<description>
 				Insert a generic key in a given track.
+			</description>
+		</method>
+		<method name="track_is_compressed" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="track_idx" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="track_is_enabled" qualifiers="const">
@@ -528,8 +551,8 @@
 			The total length of the animation (in seconds).
 			[b]Note:[/b] Length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
 		</member>
-		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
-			A flag indicating that the animation must loop. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
+		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="Animation.LoopMode" default="0">
+			Determines the behavior of both ends of the animation timeline during animation playback. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
 		</member>
 		<member name="step" type="float" setter="set_step" getter="get_step" default="0.1">
 			The animation step value.
@@ -552,16 +575,18 @@
 		</constant>
 		<constant name="TYPE_SCALE_3D" value="3" enum="TrackType">
 		</constant>
-		<constant name="TYPE_METHOD" value="4" enum="TrackType">
+		<constant name="TYPE_BLEND_SHAPE" value="4" enum="TrackType">
+		</constant>
+		<constant name="TYPE_METHOD" value="5" enum="TrackType">
 			Method tracks call functions with given arguments per key.
 		</constant>
-		<constant name="TYPE_BEZIER" value="5" enum="TrackType">
+		<constant name="TYPE_BEZIER" value="6" enum="TrackType">
 			Bezier tracks are used to interpolate a value using custom curves. They can also be used to animate sub-properties of vectors and colors (e.g. alpha value of a [Color]).
 		</constant>
-		<constant name="TYPE_AUDIO" value="6" enum="TrackType">
+		<constant name="TYPE_AUDIO" value="7" enum="TrackType">
 			Audio tracks are used to play an audio stream with either type of [AudioStreamPlayer]. The stream can be trimmed and previewed in the animation.
 		</constant>
-		<constant name="TYPE_ANIMATION" value="7" enum="TrackType">
+		<constant name="TYPE_ANIMATION" value="8" enum="TrackType">
 			Animation tracks play animations in other [AnimationPlayer] nodes.
 		</constant>
 		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">
@@ -584,6 +609,15 @@
 		</constant>
 		<constant name="UPDATE_CAPTURE" value="3" enum="UpdateMode">
 			Same as linear interpolation, but also interpolates from the current value (i.e. dynamically at runtime) if the first key isn't at 0 seconds.
+		</constant>
+		<constant name="LOOP_NONE" value="0" enum="LoopMode">
+			At both ends of the animation, the animation will stop playing.
+		</constant>
+		<constant name="LOOP_LINEAR" value="1" enum="LoopMode">
+			At both ends of the animation, the animation will be repeated without changing the playback direction.
+		</constant>
+		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
+			Repeats playback and reverse playback at both ends of the animation.
 		</constant>
 	</constants>
 </class>

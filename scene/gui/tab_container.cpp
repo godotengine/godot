@@ -78,7 +78,7 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 	Popup *popup = get_popup();
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Point2 pos = mb->get_position();
 		Size2 size = get_size();
 

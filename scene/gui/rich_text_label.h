@@ -278,12 +278,12 @@ private:
 
 		uint64_t offset_random(int index) {
 			return (_current_rng >> (index % 64)) |
-				   (_current_rng << (64 - (index % 64)));
+					(_current_rng << (64 - (index % 64)));
 		}
 
 		uint64_t offset_previous_random(int index) {
 			return (_previous_rng >> (index % 64)) |
-				   (_previous_rng << (64 - (index % 64)));
+					(_previous_rng << (64 - (index % 64)));
 		}
 	};
 
@@ -399,6 +399,7 @@ private:
 	};
 
 	Selection selection;
+	bool deselect_on_focus_loss_enabled = true;
 
 	int visible_characters = -1;
 	float percent_visible = 1.0;
@@ -411,7 +412,7 @@ private:
 
 	void _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, int *r_char_offset);
 	void _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width);
-	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, bool p_shadow_as_outline, const Point2 &shadow_ofs);
+	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs);
 	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr);
 
 	String _roman(int p_num, bool p_capitalize) const;
@@ -551,9 +552,11 @@ public:
 	int get_selection_to() const;
 	String get_selected_text() const;
 	void selection_copy();
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
 
-	Error parse_bbcode(const String &p_bbcode);
-	Error append_text(const String &p_bbcode);
+	void parse_bbcode(const String &p_bbcode);
+	void append_text(const String &p_bbcode);
 
 	void set_use_bbcode(bool p_enable);
 	bool is_using_bbcode() const;

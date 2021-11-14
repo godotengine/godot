@@ -91,8 +91,6 @@ public:
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-	void update_imports();
-
 	virtual bool are_import_settings_valid(const String &p_path) const override;
 	virtual String get_import_settings_string() const override;
 

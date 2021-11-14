@@ -2,7 +2,6 @@ import os
 import platform
 
 if os.name == "nt":
-    import sys
     import winreg
 
 

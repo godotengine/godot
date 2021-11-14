@@ -930,15 +930,15 @@ void main() {
 		const float c4 = 0.886227;
 		const float c5 = 0.247708;
 		ambient_light += (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
-						  c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
-						  c4 * lightmap_captures.data[index].sh[0].rgb -
-						  c5 * lightmap_captures.data[index].sh[6].rgb +
-						  2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
-						  2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
-						  2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
-						  2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
-						  2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
-						  2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
+				c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
+				c4 * lightmap_captures.data[index].sh[0].rgb -
+				c5 * lightmap_captures.data[index].sh[6].rgb +
+				2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
+				2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
+				2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
+				2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
+				2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
+				2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
 
 	} else if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(draw_call.flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
@@ -1046,7 +1046,7 @@ void main() {
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 	if (!sc_disable_directional_lights) { //directional light
-
+#ifndef SHADOWS_DISABLED
 		// Do shadow and lighting in two passes to reduce register pressure
 		uint shadow0 = 0;
 		uint shadow1 = 0;
@@ -1322,6 +1322,8 @@ void main() {
 			}
 		}
 
+#endif // SHADOWS_DISABLED
+
 		for (uint i = 0; i < 8; i++) {
 			if (i >= scene_data.directional_light_count) {
 				break;
@@ -1334,16 +1336,16 @@ void main() {
 			// We're not doing light transmittence
 
 			float shadow = 1.0;
-
+#ifndef SHADOWS_DISABLED
 			if (i < 4) {
 				shadow = float(shadow0 >> (i * 8) & 0xFF) / 255.0;
 			} else {
 				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
 			}
-
+#endif
 			blur_shadow(shadow);
 
-			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0,
+			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -1356,7 +1358,7 @@ void main() {
 #endif
 */
 #ifdef LIGHT_RIM_USED
-					rim, rim_tint, albedo,
+					rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 					clearcoat, clearcoat_gloss,
@@ -1366,9 +1368,6 @@ void main() {
 #endif
 #ifdef USE_SOFT_SHADOW
 					directional_lights.data[i].size,
-#endif
-#ifdef USE_SHADOW_TO_OPACITY
-					alpha,
 #endif
 					diffuse_light,
 					specular_light);
@@ -1393,7 +1392,7 @@ void main() {
 
 			shadow = blur_shadow(shadow);
 
-			light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow,
+			light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -1407,16 +1406,12 @@ void main() {
 #ifdef LIGHT_RIM_USED
 					rim,
 					rim_tint,
-					albedo,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 					clearcoat, clearcoat_gloss,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 					tangent, binormal, anisotropy,
-#endif
-#ifdef USE_SHADOW_TO_OPACITY
-					alpha,
 #endif
 					diffuse_light, specular_light);
 		}
@@ -1441,7 +1436,7 @@ void main() {
 
 			shadow = blur_shadow(shadow);
 
-			light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow,
+			light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -1455,16 +1450,12 @@ void main() {
 #ifdef LIGHT_RIM_USED
 					rim,
 					rim_tint,
-					albedo,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 					clearcoat, clearcoat_gloss,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 					tangent, binormal, anisotropy,
-#endif
-#ifdef USE_SHADOW_TO_OPACITY
-					alpha,
 #endif
 					diffuse_light, specular_light);
 		}

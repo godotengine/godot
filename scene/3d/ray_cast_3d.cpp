@@ -212,9 +212,17 @@ void RayCast3D::_update_raycast_state() {
 		to = Vector3(0, 0.01, 0);
 	}
 
-	PhysicsDirectSpaceState3D::RayResult rr;
+	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	ray_params.from = gt.get_origin();
+	ray_params.to = gt.xform(to);
+	ray_params.exclude = exclude;
+	ray_params.collision_mask = collision_mask;
+	ray_params.collide_with_bodies = collide_with_bodies;
+	ray_params.collide_with_areas = collide_with_areas;
+	ray_params.hit_from_inside = hit_from_inside;
 
-	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
+	PhysicsDirectSpaceState3D::RayResult rr;
+	if (dss->intersect_ray(ray_params, rr)) {
 		collided = true;
 		against = rr.collider_id;
 		collision_point = rr.position;
@@ -261,20 +269,28 @@ void RayCast3D::clear_exceptions() {
 	exclude.clear();
 }
 
-void RayCast3D::set_collide_with_areas(bool p_clip) {
-	collide_with_areas = p_clip;
+void RayCast3D::set_collide_with_areas(bool p_enabled) {
+	collide_with_areas = p_enabled;
 }
 
 bool RayCast3D::is_collide_with_areas_enabled() const {
 	return collide_with_areas;
 }
 
-void RayCast3D::set_collide_with_bodies(bool p_clip) {
-	collide_with_bodies = p_clip;
+void RayCast3D::set_collide_with_bodies(bool p_enabled) {
+	collide_with_bodies = p_enabled;
 }
 
 bool RayCast3D::is_collide_with_bodies_enabled() const {
 	return collide_with_bodies;
+}
+
+void RayCast3D::set_hit_from_inside(bool p_enabled) {
+	hit_from_inside = p_enabled;
+}
+
+bool RayCast3D::is_hit_from_inside_enabled() const {
+	return hit_from_inside;
 }
 
 void RayCast3D::_bind_methods() {
@@ -315,6 +331,9 @@ void RayCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collide_with_bodies", "enable"), &RayCast3D::set_collide_with_bodies);
 	ClassDB::bind_method(D_METHOD("is_collide_with_bodies_enabled"), &RayCast3D::is_collide_with_bodies_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_hit_from_inside", "enable"), &RayCast3D::set_hit_from_inside);
+	ClassDB::bind_method(D_METHOD("is_hit_from_inside_enabled"), &RayCast3D::is_hit_from_inside_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_debug_shape_custom_color", "debug_shape_custom_color"), &RayCast3D::set_debug_shape_custom_color);
 	ClassDB::bind_method(D_METHOD("get_debug_shape_custom_color"), &RayCast3D::get_debug_shape_custom_color);
 
@@ -325,6 +344,7 @@ void RayCast3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_from_inside"), "set_hit_from_inside", "is_hit_from_inside_enabled");
 
 	ADD_GROUP("Collide With", "collide_with");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");

@@ -41,11 +41,28 @@
 				This helper creates a [StaticBody3D] child node with a [ConcavePolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
+		<method name="find_blend_shape_by_name">
+			<return type="int" />
+			<argument index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</method>
 		<method name="get_active_material" qualifiers="const">
 			<return type="Material" />
 			<argument index="0" name="surface" type="int" />
 			<description>
 				Returns the [Material] that will be used by the [Mesh] when drawing. This can return the [member GeometryInstance3D.material_override], the surface override [Material] defined in this [MeshInstance3D], or the surface [Material] defined in the [Mesh]. For example, if [member GeometryInstance3D.material_override] is used, all surfaces will return the override material.
+			</description>
+		</method>
+		<method name="get_blend_shape_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_shape_value" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="blend_shape_idx" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="get_surface_override_material" qualifiers="const">
@@ -59,6 +76,13 @@
 			<return type="int" />
 			<description>
 				Returns the number of surface override materials. This is equivalent to [method Mesh.get_surface_count].
+			</description>
+		</method>
+		<method name="set_blend_shape_value">
+			<return type="void" />
+			<argument index="0" name="blend_shape_idx" type="int" />
+			<argument index="1" name="value" type="float" />
+			<description>
 			</description>
 		</method>
 		<method name="set_surface_override_material">
