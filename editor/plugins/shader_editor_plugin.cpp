@@ -143,10 +143,10 @@ void ShaderTextEditor::_load_theme_settings() {
 		}
 	}
 
-	const Color member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+	const Color user_type_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
 
 	for (const String &E : built_ins) {
-		syntax_highlighter->add_keyword_color(E, member_variable_color);
+		syntax_highlighter->add_keyword_color(E, user_type_color);
 	}
 
 	// Colorize comments.
