@@ -119,7 +119,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private Button mWiFiSettingsButton;
 
 	private XRMode xrMode = XRMode.REGULAR;
-	private int depth_buffer_bits = 24;
 	private boolean use_immersive = false;
 	private boolean use_debug_opengl = false;
 	private boolean mStatePaused;
@@ -266,8 +265,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		if (videoDriver.equals("vulkan")) {
 			mRenderView = new GodotVulkanRenderView(activity, this);
 		} else {
-			mRenderView = new GodotGLRenderView(activity, this, xrMode, depth_buffer_bits,
-					use_debug_opengl);
+			mRenderView = new GodotGLRenderView(activity, this, xrMode, use_debug_opengl);
 		}
 
 		View view = mRenderView.getView();
@@ -506,12 +504,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				xrMode = XRMode.REGULAR;
 			} else if (command_line[i].equals(XRMode.OVR.cmdLineArg)) {
 				xrMode = XRMode.OVR;
-			} else if (command_line[i].startsWith("--use_depth=")) {
-				try {
-					depth_buffer_bits = Integer.parseInt(command_line[i].split("=")[1]);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
 			} else if (command_line[i].equals("--debug_opengl")) {
 				use_debug_opengl = true;
 			} else if (command_line[i].equals("--use_immersive")) {
