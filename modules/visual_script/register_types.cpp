@@ -74,7 +74,6 @@ void register_visual_script_types() {
 	GDREGISTER_CLASS(VisualScriptResourcePath);
 	GDREGISTER_CLASS(VisualScriptSelf);
 	GDREGISTER_CLASS(VisualScriptCustomNode);
-	GDREGISTER_CLASS(VisualScriptSubCall);
 	GDREGISTER_CLASS(VisualScriptComment);
 	GDREGISTER_CLASS(VisualScriptConstructor);
 	GDREGISTER_CLASS(VisualScriptLocalVar);

@@ -501,7 +501,6 @@ public:
 	StringName notification = "_notification";
 	StringName _get_output_port_unsequenced;
 	StringName _step = "_step";
-	StringName _subcall = "_subcall";
 
 	static VisualScriptLanguage *singleton;
 

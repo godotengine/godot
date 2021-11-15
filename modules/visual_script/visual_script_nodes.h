@@ -821,33 +821,6 @@ public:
 
 VARIANT_ENUM_CAST(VisualScriptCustomNode::StartMode);
 
-class VisualScriptSubCall : public VisualScriptNode {
-	GDCLASS(VisualScriptSubCall, VisualScriptNode);
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual int get_output_sequence_port_count() const override;
-	virtual bool has_input_sequence_port() const override;
-
-	virtual String get_output_sequence_port_text(int p_port) const override;
-
-	virtual int get_input_value_port_count() const override;
-	virtual int get_output_value_port_count() const override;
-
-	virtual PropertyInfo get_input_value_port_info(int p_idx) const override;
-	virtual PropertyInfo get_output_value_port_info(int p_idx) const override;
-
-	virtual String get_caption() const override;
-	virtual String get_text() const override;
-	virtual String get_category() const override;
-
-	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
-
-	VisualScriptSubCall();
-};
-
 class VisualScriptComment : public VisualScriptNode {
 	GDCLASS(VisualScriptComment, VisualScriptNode);
 
