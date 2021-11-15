@@ -7,3 +7,4 @@ status = "dev"
 module_config = ""
 year = 2021
 website = "https://godotengine.org"
+docs = "latest"
