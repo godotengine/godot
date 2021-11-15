@@ -111,6 +111,15 @@ void TileMap::_notification(int p_what) {
 			}
 
 		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
+				for (Map<PosKey, Quadrant::Occluder>::Element *F = E->get().occluder_instances.front(); F; F = F->next()) {
+					VS::get_singleton()->canvas_light_occluder_set_enabled(F->get().id, is_visible());
+				}
+			}
+
+		} break;
 	}
 }
 
@@ -675,6 +684,7 @@ void TileMap::update_dirty_quadrants() {
 				VS::get_singleton()->canvas_light_occluder_set_polygon(orid, occluder->get_rid());
 				VS::get_singleton()->canvas_light_occluder_attach_to_canvas(orid, get_canvas());
 				VS::get_singleton()->canvas_light_occluder_set_light_mask(orid, occluder_light_mask);
+				VS::get_singleton()->canvas_light_occluder_set_enabled(orid, is_visible());
 				Quadrant::Occluder oc;
 				oc.xform = xform;
 				oc.id = orid;
