@@ -174,7 +174,7 @@ void Node3D::_notification(int p_what) {
 			}
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
-				get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
 				if (!data.gizmos_disabled) {
 					for (int i = 0; i < data.gizmos.size(); i++) {
 						data.gizmos.write[i]->create();
