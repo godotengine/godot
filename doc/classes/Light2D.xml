@@ -8,7 +8,7 @@
 		[b]Note:[/b] Light2D can also be used as a mask.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/2d/2d_lights_and_shadows.html</link>
+		<link>$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html</link>
 	</tutorials>
 	<methods>
 	</methods>

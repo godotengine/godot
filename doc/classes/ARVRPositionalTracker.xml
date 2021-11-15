@@ -9,7 +9,7 @@
 		The [ARVRController] and [ARVRAnchor] both consume objects of this type and should be used in your project. The positional trackers are just under-the-hood objects that make this all work. These are mostly exposed so that GDNative-based interfaces can interact with them.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/vr/index.html</link>
+		<link>$DOCS_URL/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_hand" qualifiers="const">

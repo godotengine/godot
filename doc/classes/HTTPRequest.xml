@@ -67,8 +67,8 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/networking/http_request_class.html</link>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/networking/ssl_certificates.html</link>
+		<link>$DOCS_URL/tutorials/networking/http_request_class.html</link>
+		<link>$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="cancel_request">

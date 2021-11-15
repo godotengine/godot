@@ -11,7 +11,7 @@
 		RayCast calculates intersection every physics frame (see [Node]), and the result is cached so it can be used later until the next frame. If multiple queries are required between physics frames (or during the same frame), use [method force_raycast_update] after adjusting the raycast.
 	</description>
 	<tutorials>
-		<link title="Ray-casting">https://docs.godotengine.org/en/3.4/tutorials/physics/ray-casting.html</link>
+		<link title="Ray-casting">$DOCS_URL/tutorials/physics/ray-casting.html</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
@@ -117,7 +117,7 @@
 			If [code]true[/code], collision with [PhysicsBody]s will be reported.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected. See [url=https://docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="debug_shape_custom_color" type="Color" setter="set_debug_shape_custom_color" getter="get_debug_shape_custom_color" default="Color( 0, 0, 0, 1 )">
 			The custom color to use to draw the shape in the editor and at run-time if [b]Visible Collision Shapes[/b] is enabled in the [b]Debug[/b] menu. This color will be highlighted at run-time if the [RayCast] is colliding with something.

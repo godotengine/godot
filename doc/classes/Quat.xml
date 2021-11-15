@@ -9,7 +9,7 @@
 		Due to its compactness and the way it is stored in memory, certain operations (obtaining axis-angle and performing SLERP, in particular) are more efficient and robust against floating-point errors.
 	</description>
 	<tutorials>
-		<link title="Using 3D transforms">https://docs.godotengine.org/en/3.4/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
+		<link title="Using 3D transforms">$DOCS_URL/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>

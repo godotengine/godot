@@ -10,7 +10,7 @@
 		You can set the extents of the axis using the [member min_space] and [member max_space].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/animation/animation_tree.html</link>
+		<link>$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_blend_point">

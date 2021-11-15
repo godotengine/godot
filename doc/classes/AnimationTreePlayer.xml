@@ -9,7 +9,7 @@
 		See [AnimationTree] for a more full-featured replacement of this node.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/animation/animation_tree.html</link>
+		<link>$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_node">

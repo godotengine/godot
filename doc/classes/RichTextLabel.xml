@@ -12,7 +12,7 @@
 		[b]Note:[/b] Unicode characters after [code]0xffff[/code] (such as most emoji) are [i]not[/i] supported on Windows. They will display as unknown characters instead. This will be resolved in Godot 4.0.
 	</description>
 	<tutorials>
-		<link title="BBCode in RichTextLabel">https://docs.godotengine.org/en/3.4/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/gui/bbcode_in_richtextlabel.html</link>
 		<link title="GUI Rich Text/BBcode Demo">https://godotengine.org/asset-library/asset/132</link>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>

@@ -12,8 +12,8 @@
 		These effects will only apply when the [Viewport]'s intended usage is "3D" or "3D Without Effects". This can be configured for the root Viewport with [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation], or for specific Viewports via the [member Viewport.usage] property.
 	</description>
 	<tutorials>
-		<link title="Environment and post-processing">https://docs.godotengine.org/en/3.4/tutorials/3d/environment_and_post_processing.html</link>
-		<link title="Light transport in game engines">https://docs.godotengine.org/en/3.4/tutorials/3d/high_dynamic_range.html</link>
+		<link title="Environment and post-processing">$DOCS_URL/tutorials/3d/environment_and_post_processing.html</link>
+		<link title="Light transport in game engines">$DOCS_URL/tutorials/3d/high_dynamic_range.html</link>
 		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/123</link>
 		<link title="2D HDR Demo">https://godotengine.org/asset-library/asset/110</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>

@@ -25,7 +25,7 @@
 			If [code]true[/code], the query will take [PhysicsBody]s into account.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="2147483647">
-			The physics layer(s) the query will take into account (as a bitmask). See [url=https://docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			The physics layer(s) the query will take into account (as a bitmask). See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude" default="[  ]">
 			The list of objects or object [RID]s that will be excluded from collisions.

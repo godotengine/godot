@@ -12,7 +12,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/animation/animation_tree.html</link>
+		<link>$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_current_length" qualifiers="const">

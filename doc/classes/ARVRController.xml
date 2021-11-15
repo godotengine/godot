@@ -9,7 +9,7 @@
 		The position of the controller node is automatically updated by the [ARVRServer]. This makes this node ideal to add child nodes to visualize the controller.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/vr/index.html</link>
+		<link>$DOCS_URL/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_controller_name" qualifiers="const">

@@ -10,7 +10,7 @@
 		[b]Note:[/b] The GLES2 backend will only display two reflection probes at the same time for a single mesh. If possible, split up large meshes that span over multiple reflection probes into smaller ones.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/3d/reflection_probes.html</link>
+		<link>$DOCS_URL/tutorials/3d/reflection_probes.html</link>
 	</tutorials>
 	<methods>
 	</methods>

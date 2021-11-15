@@ -10,7 +10,7 @@
 		[b]Note:[/b] Hiding an [AudioStreamPlayer3D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer3D]'s audio output, set [member unit_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/audio/audio_streams.html</link>
+		<link>$DOCS_URL/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_playback_position">

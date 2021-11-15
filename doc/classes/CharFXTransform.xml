@@ -7,7 +7,7 @@
 		By setting various properties on this object, you can control how individual characters will be displayed in a [RichTextEffect].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link>$DOCS_URL/tutorials/gui/bbcode_in_richtextlabel.html</link>
 		<link>https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<methods>

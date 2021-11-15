@@ -7,7 +7,7 @@
 		Animations are created using a [SpriteFrames] resource, which can be configured in the editor via the SpriteFrames panel.
 	</description>
 	<tutorials>
-		<link title="2D Sprite animation (also applies to 3D)">https://docs.godotengine.org/en/3.4/tutorials/2d/2d_sprite_animation.html</link>
+		<link title="2D Sprite animation (also applies to 3D)">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
 	</tutorials>
 	<methods>
 		<method name="is_playing" qualifiers="const">
