@@ -83,11 +83,9 @@ public class GodotView extends GLSurfaceView {
 	private EGLContextFactory eglContextFactory;
 	private EGLContext eglSecondaryContext;
 
-	public GodotView(Context context, Godot godot, XRMode xrMode, boolean p_use_gl3,
-			boolean p_use_32_bits, boolean p_use_debug_opengl, boolean p_translucent) {
+	public GodotView(Context context, Godot godot, XRMode xrMode, boolean p_use_gl3, boolean p_use_debug_opengl, boolean p_translucent) {
 		super(context);
 		GLUtils.use_gl3 = p_use_gl3;
-		GLUtils.use_32 = p_use_32_bits;
 		GLUtils.use_debug_opengl = p_use_debug_opengl;
 
 		this.godot = godot;
@@ -95,7 +93,7 @@ public class GodotView extends GLSurfaceView {
 		this.detector = new GestureDetector(context, new GodotGestureHandler(this));
 		this.godotRenderer = new GodotRenderer();
 
-		init(xrMode, p_translucent, 16, 0);
+		init(xrMode, p_translucent);
 	}
 
 	public void initInputDevices() {
@@ -125,7 +123,7 @@ public class GodotView extends GLSurfaceView {
 		return inputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
 	}
 
-	private void init(XRMode xrMode, boolean translucent, int depth, int stencil) {
+	private void init(XRMode xrMode, boolean translucent) {
 		setPreserveEGLContextOnPause(true);
 		setFocusableInTouchMode(true);
 		switch (xrMode) {
@@ -163,18 +161,12 @@ public class GodotView extends GLSurfaceView {
 				 * below.
 				 */
 
-				if (GLUtils.use_32) {
-					eglConfigChooser = translucent
-							? new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
-									  new RegularConfigChooser(8, 8, 8, 8, 16, stencil))
-							: new RegularFallbackConfigChooser(8, 8, 8, 8, 24, stencil,
-									  new RegularConfigChooser(5, 6, 5, 0, 16, stencil));
-
-				} else {
-					eglConfigChooser = translucent
-							? new RegularConfigChooser(8, 8, 8, 8, 16, stencil)
-							: new RegularConfigChooser(5, 6, 5, 0, 16, stencil);
-				}
+				eglConfigChooser =
+						new RegularFallbackConfigChooser(8, 8, 8, 8, 24, 0,
+								new RegularFallbackConfigChooser(8, 8, 8, 8, 16, 0,
+										// Let such a desperate fallback be used if under some circumstances that's the best we can get
+										// (the translucency flag would be ignored, but that's better than not running at all)
+										new RegularConfigChooser(5, 6, 5, 0, 16, 0)));
 				break;
 		}
 		setEGLConfigChooser(eglConfigChooser);
