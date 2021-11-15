@@ -21,8 +21,8 @@
 		[b]Note:[/b] Due to a bug, you can't create a "plain" Object using [code]Object.new()[/code]. Instead, use [code]ClassDB.instance("Object")[/code]. This bug only applies to Object itself, not any of its descendents like [Reference].
 	</description>
 	<tutorials>
-		<link title="When and how to avoid using nodes for everything">https://docs.godotengine.org/en/3.4/getting_started/workflow/best_practices/node_alternatives.html</link>
-		<link title="Advanced exports using _get_property_list()">https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/gdscript_exports.html#advanced-exports</link>
+		<link title="When and how to avoid using nodes for everything">$DOCS_URL/getting_started/workflow/best_practices/node_alternatives.html</link>
+		<link title="Advanced exports using _get_property_list()">$DOCS_URL/getting_started/scripting/gdscript/gdscript_exports.html#advanced-exports</link>
 	</tutorials>
 	<methods>
 		<method name="_get" qualifiers="virtual">

@@ -3,7 +3,7 @@ def can_build(env, platform):
         return False
 
     # Depends on Embree library, which only supports x86_64 and aarch64.
-    if env["arch"].startswith("rv"):
+    if env["arch"].startswith("rv") or env["arch"].startswith("ppc"):
         return False
 
     if platform == "android":

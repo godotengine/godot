@@ -10,8 +10,8 @@
 		Since instances may have any behavior, the AABB used for visibility must be provided by the user.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/optimization/using_multimesh.html</link>
+		<link>$DOCS_URL/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
+		<link>$DOCS_URL/tutorials/optimization/using_multimesh.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_aabb" qualifiers="const">

@@ -7,7 +7,7 @@
 		Visual shader graphs consist of various nodes. Each node in the graph is a separate object and they are represented as a rectangular boxes with title and a set of properties. Each node has also connection ports that allow to connect it to another nodes and control the flow of the shader.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/shading/visual_shaders.html</link>
+		<link>$DOCS_URL/tutorials/shading/visual_shaders.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_default_input_values" qualifiers="const">

@@ -8,8 +8,8 @@
 		[b]Note:[/b] Breakpoints won't break on code if it's running in a thread. This is a current limitation of the GDScript debugger.
 	</description>
 	<tutorials>
-		<link title="Using multiple threads">https://docs.godotengine.org/en/3.4/tutorials/threads/using_multiple_threads.html</link>
-		<link title="Thread-safe APIs">https://docs.godotengine.org/en/3.4/tutorials/threads/thread_safe_apis.html</link>
+		<link title="Using multiple threads">$DOCS_URL/tutorials/threads/using_multiple_threads.html</link>
+		<link title="Thread-safe APIs">$DOCS_URL/tutorials/threads/thread_safe_apis.html</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>

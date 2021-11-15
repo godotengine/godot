@@ -1969,9 +1969,10 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	Ref<Script> script = p_resource;
 
 	// Don't open dominant script if using an external editor.
-	const bool use_external_editor =
+	bool use_external_editor =
 			EditorSettings::get_singleton()->get("text_editor/external/use_external_editor") ||
 			(script.is_valid() && script->get_language()->overrides_external_editor());
+	use_external_editor = use_external_editor && !(script.is_valid() && (script->get_path().empty() || script->get_path().find("::") != -1)); // Ignore external editor for built-in scripts.
 	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
 
 	const bool should_open = (open_dominant && !use_external_editor) || !EditorNode::get_singleton()->is_changing_scene();
@@ -2920,9 +2921,10 @@ Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 
 void ScriptEditor::set_scene_root_script(Ref<Script> p_script) {
 	// Don't open dominant script if using an external editor.
-	const bool use_external_editor =
+	bool use_external_editor =
 			EditorSettings::get_singleton()->get("text_editor/external/use_external_editor") ||
 			(p_script.is_valid() && p_script->get_language()->overrides_external_editor());
+	use_external_editor = use_external_editor && !(p_script.is_valid() && (p_script->get_path().empty() || p_script->get_path().find("::") != -1)); // Ignore external editor for built-in scripts.
 	const bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
 
 	if (open_dominant && !use_external_editor && p_script.is_valid()) {
@@ -2997,6 +2999,9 @@ void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_numb
 			shader_editor->edit(res.ptr());
 			shader_editor->make_visible(true);
 			shader_editor->get_shader_editor()->goto_line_selection(line_number - 1, begin, end);
+			return;
+		} else if (fpath.get_extension() == "tscn") {
+			editor->load_scene(fpath);
 			return;
 		} else {
 			Ref<Script> script = res;

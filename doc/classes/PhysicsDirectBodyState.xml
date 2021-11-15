@@ -7,8 +7,8 @@
 		Provides direct access to a physics body in the [PhysicsServer], allowing safe changes to physics properties. This object is passed via the direct state callback of rigid/character bodies, and is intended for changing the direct state of that body. See [method RigidBody._integrate_forces].
 	</description>
 	<tutorials>
-		<link title="Physics introduction">https://docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction.html</link>
-		<link title="Ray-casting">https://docs.godotengine.org/en/3.4/tutorials/physics/ray-casting.html</link>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+		<link title="Ray-casting">$DOCS_URL/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_central_force">

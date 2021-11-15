@@ -8,7 +8,7 @@
 		To play audio positionally, use [AudioStreamPlayer2D] or [AudioStreamPlayer3D] instead of [AudioStreamPlayer].
 	</description>
 	<tutorials>
-		<link title="Audio streams">https://docs.godotengine.org/en/3.4/tutorials/audio/audio_streams.html</link>
+		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="Audio Device Changer Demo">https://godotengine.org/asset-library/asset/525</link>
 		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>

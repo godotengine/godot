@@ -8,7 +8,7 @@
 		[b]Note:[/b] Due to a renderer limitation, emissive [ShaderMaterial]s cannot emit light when used in a [GIProbe]. Only emissive [SpatialMaterial]s can emit light in a [GIProbe].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/shading/index.html</link>
+		<link>$DOCS_URL/tutorials/shading/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_shader_param" qualifiers="const">

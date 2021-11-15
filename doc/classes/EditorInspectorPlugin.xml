@@ -13,7 +13,7 @@
 		On each of these calls, the "add" functions can be called.
 	</description>
 	<tutorials>
-		<link title="Inspector plugins">https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/inspector_plugins.html</link>
+		<link title="Inspector plugins">$DOCS_URL/tutorials/plugins/editor/inspector_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_custom_control">

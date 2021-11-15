@@ -212,9 +212,10 @@ def configure_msvc(env, manual_msvc_config):
         env.AppendUnique(CCFLAGS=["/MD"])
 
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
-    # Force to use Unicode encoding
-    env.AppendUnique(CCFLAGS=["/utf-8"])
+    env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
+    env.AppendUnique(CCFLAGS=["/bigobj"])  # Allow big objects, no drawbacks.
     env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
+
     if manual_msvc_config:  # should be automatic if SCons found it
         if os.getenv("WindowsSdkDir") is not None:
             env.Prepend(CPPPATH=[os.getenv("WindowsSdkDir") + "/Include"])
@@ -392,6 +393,7 @@ def configure_mingw(env):
     ## Compile flags
 
     env.Append(CCFLAGS=["-mwindows"])
+    env.Append(CCFLAGS=["-Wa,-mbig-obj"])  # Allow big objects, no drawbacks.
     env.Append(LINKFLAGS=["-Wl,--nxcompat"])  # DEP protection. Not enabling ASLR for now, Mono crashes.
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "OPENGL_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(CPPDEFINES=[("WINVER", env["target_win_version"]), ("_WIN32_WINNT", env["target_win_version"])])

@@ -42,6 +42,7 @@
 #include "core/translation.h"
 #include "core/ucaps.h"
 #include "core/variant.h"
+#include "core/version_generated.gen.h"
 
 #include <wchar.h>
 #include <cstdint>
@@ -4128,7 +4129,7 @@ String String::property_name_encode() const {
 	// as well as '"', '=' or ' ' (32)
 	const CharType *cstr = c_str();
 	for (int i = 0; cstr[i]; i++) {
-		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] < 33 || cstr[i] > 126) {
+		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] == ';' || cstr[i] == '[' || cstr[i] == ']' || cstr[i] < 33 || cstr[i] > 126) {
 			return "\"" + c_escape_multiline() + "\"";
 		}
 	}
@@ -4498,15 +4499,19 @@ String TTR(const String &p_text) {
 	return p_text;
 }
 
+/* DTR is used for the documentation, handling descriptions extracted from the XML.
+ * It also replaces `$DOCS_URL` with the actual URL to the documentation's branch,
+ * to allow dehardcoding it in the XML and doing proper substitutions everywhere.
+ */
 String DTR(const String &p_text) {
 	// Comes straight from the XML, so remove indentation and any trailing whitespace.
 	const String text = p_text.dedent().strip_edges();
 
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->doc_translate(text);
+		return String(TranslationServer::get_singleton()->doc_translate(text)).replace("$DOCS_URL", VERSION_DOCS_URL);
 	}
 
-	return text;
+	return text.replace("$DOCS_URL", VERSION_DOCS_URL);
 }
 #endif
 

@@ -7,7 +7,7 @@
 		PhysicsBody2D is an abstract base class for implementing a physics body. All *Body2D types inherit from it.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction.html</link>
+		<link>$DOCS_URL/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_collision_exception_with">

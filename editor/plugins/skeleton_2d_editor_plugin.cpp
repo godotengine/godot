@@ -52,22 +52,6 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 	}
 
 	switch (p_option) {
-		case MENU_OPTION_MAKE_REST: {
-			if (node->get_bone_count() == 0) {
-				err_dialog->set_text(TTR("This skeleton has no bones, create some children Bone2D nodes."));
-				err_dialog->popup_centered_minsize();
-				return;
-			}
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-			ur->create_action(TTR("Create Rest Pose from Bones"));
-			for (int i = 0; i < node->get_bone_count(); i++) {
-				Bone2D *bone = node->get_bone(i);
-				ur->add_do_method(bone, "set_rest", bone->get_transform());
-				ur->add_undo_method(bone, "set_rest", bone->get_rest());
-			}
-			ur->commit_action();
-
-		} break;
 		case MENU_OPTION_SET_REST: {
 			if (node->get_bone_count() == 0) {
 				err_dialog->set_text(TTR("This skeleton has no bones, create some children Bone2D nodes."));
@@ -80,6 +64,22 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 				Bone2D *bone = node->get_bone(i);
 				ur->add_do_method(bone, "set_transform", bone->get_rest());
 				ur->add_undo_method(bone, "set_transform", bone->get_transform());
+			}
+			ur->commit_action();
+
+		} break;
+		case MENU_OPTION_MAKE_REST: {
+			if (node->get_bone_count() == 0) {
+				err_dialog->set_text(TTR("This skeleton has no bones, create some children Bone2D nodes."));
+				err_dialog->popup_centered_minsize();
+				return;
+			}
+			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			ur->create_action(TTR("Create Rest Pose from Bones"));
+			for (int i = 0; i < node->get_bone_count(); i++) {
+				Bone2D *bone = node->get_bone(i);
+				ur->add_do_method(bone, "set_rest", bone->get_transform());
+				ur->add_undo_method(bone, "set_rest", bone->get_rest());
 			}
 			ur->commit_action();
 
@@ -99,10 +99,10 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	options->set_text(TTR("Skeleton2D"));
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Skeleton2D", "EditorIcons"));
 
-	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_MAKE_REST);
+	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_SET_REST);
 	options->get_popup()->add_separator();
 	// Use the "Overwrite" word to highlight that this is a destructive operation.
-	options->get_popup()->add_item(TTR("Overwrite Rest Pose"), MENU_OPTION_SET_REST);
+	options->get_popup()->add_item(TTR("Overwrite Rest Pose"), MENU_OPTION_MAKE_REST);
 	options->set_switch_on_hover(true);
 
 	options->get_popup()->connect("id_pressed", this, "_menu_option");

@@ -7,7 +7,7 @@
 		Stores key presses on the keyboard. Supports key presses, key releases and [member echo] events.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/tutorials/inputs/inputevent.html</link>
+		<link>$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_physical_scancode_with_modifiers" qualifiers="const">

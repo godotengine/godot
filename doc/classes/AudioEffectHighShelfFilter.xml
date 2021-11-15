@@ -6,7 +6,7 @@
 	<description>
 	</description>
 	<tutorials>
-		<link title="Audio buses">https://docs.godotengine.org/en/3.4/tutorials/audio/audio_buses.html</link>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<methods>
 	</methods>

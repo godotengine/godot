@@ -8,7 +8,7 @@
 		[b]Note:[/b] The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice.
 	</description>
 	<tutorials>
-		<link title="High-level multiplayer">https://docs.godotengine.org/en/3.4/tutorials/networking/high_level_multiplayer.html</link>
+		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
 		<link title="WebRTC Signaling Demo">https://godotengine.org/asset-library/asset/537</link>
 	</tutorials>
 	<methods>

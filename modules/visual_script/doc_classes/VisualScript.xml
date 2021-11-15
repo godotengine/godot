@@ -9,7 +9,7 @@
 		You are most likely to use this class via the Visual Script editor or when writing plugins for it.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/getting_started/scripting/visual_script/index.html</link>
+		<link>$DOCS_URL/getting_started/scripting/visual_script/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_custom_signal">

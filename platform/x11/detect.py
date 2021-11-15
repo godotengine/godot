@@ -118,8 +118,16 @@ def configure(env):
     if env["bits"] == "default":
         env["bits"] = "64" if is64 else "32"
 
-    if env["arch"] == "" and platform.machine() == "riscv64":
-        env["arch"] = "rv64"
+    machines = {
+        "riscv64": "rv64",
+        "ppc64le": "ppc64",
+        "ppc64": "ppc64",
+        "ppcle": "ppc",
+        "ppc": "ppc",
+    }
+
+    if env["arch"] == "" and platform.machine() in machines:
+        env["arch"] = machines[platform.machine()]
 
     if env["arch"] == "rv64":
         # G = General-purpose extensions, C = Compression extension (very common).
