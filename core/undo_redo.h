@@ -53,17 +53,21 @@ public:
 
 private:
 	struct Operation {
+	public:
 		enum Type {
+			TYPE_INVALID,
 			TYPE_METHOD,
 			TYPE_PROPERTY,
 			TYPE_REFERENCE
 		};
 
-		Type type;
+		Type type = TYPE_INVALID;
 		Ref<Reference> ref;
 		ObjectID object;
 		String name;
 		Variant args[VARIANT_ARG_MAX];
+
+		~Operation();
 	};
 
 	struct Action {
