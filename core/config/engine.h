@@ -63,6 +63,7 @@ private:
 	double _physics_interpolation_fraction = 0.0f;
 	bool abort_on_gpu_errors = false;
 	bool use_validation_layers = false;
+	int32_t gpu_idx = -1;
 
 	uint64_t _process_frames = 0;
 	bool _in_physics = false;
@@ -135,6 +136,7 @@ public:
 
 	bool is_abort_on_gpu_errors_enabled() const;
 	bool is_validation_layers_enabled() const;
+	int32_t get_gpu_index() const;
 
 	Engine();
 	virtual ~Engine() {}
