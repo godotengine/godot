@@ -217,6 +217,11 @@ private:
 	Set<int> valid_left_disconnect_types;
 	Set<int> valid_right_disconnect_types;
 
+	HashMap<StringName, Vector<GraphNode *>> comment_enclosed_nodes;
+	void _update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes);
+	void _set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag);
+	void _set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_pos);
+
 	HBoxContainer *zoom_hb;
 
 	friend class GraphEditFilter;
