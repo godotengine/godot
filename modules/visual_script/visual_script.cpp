@@ -588,22 +588,25 @@ void VisualScript::rename_variable(const StringName &p_name, const StringName &p
 	variables[p_new_name] = variables[p_name];
 	variables.erase(p_name);
 	List<int> ids;
-	get_node_list(&ids);
-	for (int &E : ids) {
-		Ref<VisualScriptVariableGet> nodeget = get_node(E);
-		if (nodeget.is_valid()) {
-			if (nodeget->get_variable() == p_name) {
-				nodeget->set_variable(p_new_name);
-			}
-		} else {
-			Ref<VisualScriptVariableSet> nodeset = get_node(E);
-			if (nodeset.is_valid()) {
-				if (nodeset->get_variable() == p_name) {
-					nodeset->set_variable(p_new_name);
-				}
-			}
-		}
-	}
+
+	//	This code will be neded for proposal #3549
+	// 	   So i will keep it comented
+	//get_node_list(&ids);
+	//for (int &E : ids) {
+	//	Ref<VisualScriptVariableGet> nodeget = get_node(E);
+	//	if (nodeget.is_valid()) {
+	//		if (nodeget->get_variable() == p_name) {
+	//			nodeget->set_variable(p_new_name);
+	//		}
+	//	} else {
+	//		Ref<VisualScriptVariableSet> nodeset = get_node(E);
+	//		if (nodeset.is_valid()) {
+	//			if (nodeset->get_variable() == p_name) {
+	//				nodeset->set_variable(p_new_name);
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 void VisualScript::add_custom_signal(const StringName &p_name) {

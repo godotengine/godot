@@ -59,8 +59,6 @@ void register_visual_script_types() {
 	GDREGISTER_VIRTUAL_CLASS(VisualScriptLists);
 	GDREGISTER_CLASS(VisualScriptComposeArray);
 	GDREGISTER_CLASS(VisualScriptOperator);
-	GDREGISTER_CLASS(VisualScriptVariableSet);
-	GDREGISTER_CLASS(VisualScriptVariableGet);
 	GDREGISTER_CLASS(VisualScriptConstant);
 	GDREGISTER_CLASS(VisualScriptIndexGet);
 	GDREGISTER_CLASS(VisualScriptIndexSet);
