@@ -7,8 +7,8 @@
 		Direct access object to a space in the [PhysicsServer3D]. It's used mainly to do queries against objects and areas residing in a given space.
 	</description>
 	<tutorials>
-		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
-		<link title="Ray-casting">https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+		<link title="Ray-casting">$DOCS_URL/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<methods>
 		<method name="cast_motion">

@@ -13,7 +13,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link title="Visual Shader plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/visual_shader_plugins.html</link>
+		<link title="Visual Shader plugins">$DOCS_URL/tutorials/plugins/editor/visual_shader_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get_category" qualifiers="virtual const">

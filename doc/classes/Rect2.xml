@@ -9,9 +9,9 @@
 		The 3D counterpart to [Rect2] is [AABB].
 	</description>
 	<tutorials>
-		<link title="Math documentation index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
-		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
-		<link title="Advanced vector math">https://docs.godotengine.org/en/latest/tutorials/math/vectors_advanced.html</link>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
+		<link title="Advanced vector math">$DOCS_URL/tutorials/math/vectors_advanced.html</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Rect2">

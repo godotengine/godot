@@ -54,7 +54,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="File system">https://docs.godotengine.org/en/latest/tutorials/scripting/filesystem.html</link>
+		<link title="File system">$DOCS_URL/tutorials/scripting/filesystem.html</link>
 	</tutorials>
 	<methods>
 		<method name="change_dir">

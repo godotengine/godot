@@ -15,8 +15,8 @@
 		[b]Warning:[/b] SSL/TLS certificate revocation and certificate pinning are currently not supported. Revoked certificates are accepted as long as they are otherwise valid. If this is a concern, you may want to use automatically managed certificates with a short validity period.
 	</description>
 	<tutorials>
-		<link title="HTTP client class">https://docs.godotengine.org/en/latest/tutorials/networking/http_client_class.html</link>
-		<link title="SSL certificates">https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
+		<link title="HTTP client class">$DOCS_URL/tutorials/networking/http_client_class.html</link>
+		<link title="SSL certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="close">

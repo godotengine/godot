@@ -13,7 +13,7 @@
 		To use [EditorInspectorPlugin], register it using the [method EditorPlugin.add_inspector_plugin] method first.
 	</description>
 	<tutorials>
-		<link title="Inspector plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/inspector_plugins.html</link>
+		<link title="Inspector plugins">$DOCS_URL/tutorials/plugins/editor/inspector_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="_can_handle" qualifiers="virtual const">

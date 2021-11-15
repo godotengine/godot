@@ -9,7 +9,7 @@
 		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>
-		<link title="High-level multiplayer">https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
+		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
 		<link title="WebRTC Signaling Demo">https://godotengine.org/asset-library/asset/537</link>
 	</tutorials>
 	<methods>

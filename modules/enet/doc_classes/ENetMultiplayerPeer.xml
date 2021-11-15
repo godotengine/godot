@@ -8,7 +8,7 @@
 		[b]Note:[/b] ENet only uses UDP, not TCP. When forwarding the server port to make your server accessible on the public Internet, you only need to forward the server port in UDP. You can use the [UPNP] class to try to forward the server port automatically when starting the server.
 	</description>
 	<tutorials>
-		<link title="High-level multiplayer">https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
+		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
 		<link title="API documentation on the ENet website">http://enet.bespin.org/usergroup0.html</link>
 	</tutorials>
 	<methods>

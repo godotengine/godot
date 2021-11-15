@@ -7,7 +7,7 @@
 		Input event type for gamepad buttons. For gamepad analog sticks and joysticks, see [InputEventJoypadMotion].
 	</description>
 	<tutorials>
-		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
+		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<members>
 		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index" enum="JoyButton" default="0">

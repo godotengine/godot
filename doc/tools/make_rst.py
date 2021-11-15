@@ -11,10 +11,8 @@ from collections import OrderedDict
 # Uncomment to do type checks. I have it commented out so it works below Python 3.5
 # from typing import List, Dict, TextIO, Tuple, Iterable, Optional, DefaultDict, Any, Union
 
-# http(s)://docs.godotengine.org/<langcode>/<tag>/path/to/page.html(#fragment-tag)
-GODOT_DOCS_PATTERN = re.compile(
-    r"^http(?:s)?://docs\.godotengine\.org/(?:[a-zA-Z0-9.\-_]*)/(?:[a-zA-Z0-9.\-_]*)/(.*)\.html(#.*)?$"
-)
+# $DOCS_URL/path/to/page.html(#fragment-tag)
+GODOT_DOCS_PATTERN = re.compile(r"^\$DOCS_URL/(.*)\.html(#.*)?$")
 
 
 def print_error(error, state):  # type: (str, State) -> None
@@ -857,16 +855,11 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
     # Handle [tags]
     inside_code = False
-    inside_url = False
-    url_has_name = False
-    url_link = ""
     pos = 0
     tag_depth = 0
     previous_pos = 0
     while True:
         pos = text.find("[", pos)
-        if inside_url and (pos > previous_pos):
-            url_has_name = True
         if pos == -1:
             break
 
@@ -995,17 +988,23 @@ def rstize_text(text, state):  # type: (str, State) -> str
             elif cmd.find("image=") == 0:
                 tag_text = ""  # '![](' + cmd[6:] + ')'
             elif cmd.find("url=") == 0:
-                url_link = cmd[4:]
-                tag_text = "`"
-                tag_depth += 1
-                inside_url = True
-                url_has_name = False
-            elif cmd == "/url":
-                tag_text = ("" if url_has_name else url_link) + " <" + url_link + ">`__"
-                tag_depth -= 1
-                escape_post = True
-                inside_url = False
-                url_has_name = False
+                # URLs are handled in full here as we need to extract the optional link
+                # title to use `make_link`.
+                link_url = cmd[4:]
+                endurl_pos = text.find("[/url]", endq_pos + 1)
+                if endurl_pos == -1:
+                    print_error(
+                        "Tag depth mismatch for [url]: no closing [/url], file: {}".format(state.current_class), state
+                    )
+                    break
+                link_title = text[endq_pos + 1 : endurl_pos]
+                tag_text = make_link(link_url, link_title)
+
+                pre_text = text[:pos]
+                text = pre_text + tag_text + text[endurl_pos + 6 :]
+                pos = len(pre_text) + len(tag_text)
+                previous_pos = pos
+                continue
             elif cmd == "center":
                 tag_depth += 1
                 tag_text = ""
@@ -1252,21 +1251,22 @@ def make_link(url, title):  # type: (str, str) -> str
         if match.lastindex == 2:
             # Doc reference with fragment identifier: emit direct link to section with reference to page, for example:
             # `#calling-javascript-from-script in Exporting For Web`
-            return "`" + groups[1] + " <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`"
-            # Commented out alternative: Instead just emit:
-            # `Subsection in Exporting For Web`
-            # return "`Subsection <../" + groups[0] + ".html" + groups[1] + ">`__ in :doc:`../" + groups[0] + "`"
+            # Or use the title if provided.
+            if title != "":
+                return "`" + title + " <../" + groups[0] + ".html" + groups[1] + ">`__"
+            return "`" + groups[1] + " <../" + groups[0] + ".html" + groups[1] + ">`__ in :doc:`../" + groups[0] + "`"
         elif match.lastindex == 1:
             # Doc reference, for example:
             # `Math`
+            if title != "":
+                return ":doc:`" + title + " <../" + groups[0] + ">`"
             return ":doc:`../" + groups[0] + "`"
     else:
         # External link, for example:
         # `http://enet.bespin.org/usergroup0.html`
         if title != "":
             return "`" + title + " <" + url + ">`__"
-        else:
-            return "`" + url + " <" + url + ">`__"
+        return "`" + url + " <" + url + ">`__"
 
 
 def sanitize_operator_name(dirty_name, state):  # type: (str, State) -> str

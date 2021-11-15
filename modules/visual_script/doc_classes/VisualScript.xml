@@ -9,7 +9,7 @@
 		You are most likely to use this class via the Visual Script editor or when writing plugins for it.
 	</description>
 	<tutorials>
-		<link title="VisualScript documentation index">https://docs.godotengine.org/en/latest/tutorials/scripting/visual_script/index.html</link>
+		<link title="VisualScript documentation index">$DOCS_URL/tutorials/scripting/visual_script/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_custom_signal">

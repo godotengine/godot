@@ -38,6 +38,7 @@
 #include "core/io/resource_saver.h"
 #include "core/os/os.h"
 #include "core/string/optimized_translation.h"
+#include "core/version_generated.gen.h"
 #include "editor_data.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -456,7 +457,7 @@ void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
 }
 
 void ProjectExportDialog::_open_key_help_link() {
-	OS::get_singleton()->shell_open("https://docs.godotengine.org/en/latest/development/compiling/compiling_with_script_encryption_key.html");
+	OS::get_singleton()->shell_open(vformat("%s/development/compiling/compiling_with_script_encryption_key.html", VERSION_DOCS_URL));
 }
 
 void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {

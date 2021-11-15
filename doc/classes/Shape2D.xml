@@ -7,7 +7,7 @@
 		Base class for all 2D shapes. All 2D shape types inherit from this.
 	</description>
 	<tutorials>
-		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<methods>
 		<method name="collide">

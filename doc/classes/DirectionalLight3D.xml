@@ -7,7 +7,7 @@
 		A directional light is a type of [Light3D] node that models an infinite number of parallel rays covering the entire scene. It is used for lights with strong intensity that are located far away from the scene to model sunlight or moonlight. The worldspace location of the DirectionalLight3D transform (origin) is ignored. Only the basis is used to determine light direction.
 	</description>
 	<tutorials>
-		<link title="Lights and shadows">https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+		<link title="Lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
 	</tutorials>
 	<members>
 		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled" default="false">
