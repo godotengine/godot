@@ -28,7 +28,7 @@
 		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
 	</description>
 	<tutorials>
-		<link title="Animation documentation index">https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
+		<link title="Animation documentation index">$DOCS_URL/tutorials/animation/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_track">

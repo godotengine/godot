@@ -7,7 +7,7 @@
 		Plane represents a normalized plane equation. Basically, "normal" is the normal of the plane (a,b,c normalized), and "d" is the distance from the origin to the plane (in the direction of "normal"). "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
 	</description>
 	<tutorials>
-		<link title="Math documentation index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Plane">

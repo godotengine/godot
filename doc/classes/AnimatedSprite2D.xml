@@ -8,7 +8,7 @@
 		[b]Note:[/b] You can associate a set of normal or specular maps by creating additional [SpriteFrames] resources with a [code]_normal[/code] or [code]_specular[/code] suffix. For example, having 3 [SpriteFrames] resources [code]run[/code], [code]run_normal[/code], and [code]run_specular[/code] will make it so the [code]run[/code] animation uses normal and specular maps.
 	</description>
 	<tutorials>
-		<link title="2D Sprite animation">https://docs.godotengine.org/en/latest/tutorials/2d/2d_sprite_animation.html</link>
+		<link title="2D Sprite animation">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>

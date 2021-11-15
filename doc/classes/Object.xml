@@ -29,7 +29,7 @@
 		[b]Note:[/b] Unlike references to a [RefCounted], references to an Object stored in a variable can become invalid without warning. Therefore, it's recommended to use [RefCounted] for data classes instead of [Object].
 	</description>
 	<tutorials>
-		<link title="When and how to avoid using nodes for everything">https://docs.godotengine.org/en/latest/tutorials/best_practices/node_alternatives.html</link>
+		<link title="When and how to avoid using nodes for everything">$DOCS_URL/tutorials/best_practices/node_alternatives.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get" qualifiers="virtual">
@@ -567,7 +567,7 @@
 			<description>
 				Translates a message using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
 				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] unchanged. See [method set_message_translation].
-				See [url=https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url] for examples of the usage of this method.
+				See [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url] for examples of the usage of this method.
 			</description>
 		</method>
 		<method name="tr_n" qualifiers="const">
@@ -581,7 +581,7 @@
 				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] or [code]plural_message[/code] unchanged. See [method set_message_translation].
 				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
 				[b]Note:[/b] Negative and floating-point values usually represent physical entities for which singular and plural don't clearly apply. In such cases, use [method tr].
-				See [url=https://docs.godotengine.org/en/latest/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url] for examples of the usage of this method.
+				See [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url] for examples of the usage of this method.
 			</description>
 		</method>
 	</methods>

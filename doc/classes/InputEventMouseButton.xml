@@ -7,7 +7,7 @@
 		Contains mouse click information. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="Mouse and input coordinates">https://docs.godotengine.org/en/latest/tutorials/inputs/mouse_and_input_coordinates.html</link>
+		<link title="Mouse and input coordinates">$DOCS_URL/tutorials/inputs/mouse_and_input_coordinates.html</link>
 	</tutorials>
 	<members>
 		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index" enum="MouseButton" default="0">

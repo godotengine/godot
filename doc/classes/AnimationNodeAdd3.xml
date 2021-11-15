@@ -11,7 +11,7 @@
 		- A +add animation to blend with when the blend amount is in the [code][0.0, 1.0][/code] range
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<members>

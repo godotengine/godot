@@ -111,7 +111,7 @@
 		To use [EditorImportPlugin], register it using the [method EditorPlugin.add_import_plugin] method first.
 	</description>
 	<tutorials>
-		<link title="Import plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
+		<link title="Import plugins">$DOCS_URL/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get_import_options" qualifiers="virtual const">

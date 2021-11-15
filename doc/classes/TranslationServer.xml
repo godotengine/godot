@@ -7,8 +7,8 @@
 		Server that manages all translations. Translations can be set to it and removed from it.
 	</description>
 	<tutorials>
-		<link title="Internationalizing games">https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link>
-		<link title="Locales">https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
+		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Locales">$DOCS_URL/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_translation">

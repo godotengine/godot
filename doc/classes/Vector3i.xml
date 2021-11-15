@@ -9,8 +9,8 @@
 		[b]Note:[/b] In a boolean context, a Vector3i will evaluate to [code]false[/code] if it's equal to [code]Vector3i(0, 0, 0)[/code]. Otherwise, a Vector3i will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
-		<link title="Math documentation index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
-		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
 		<link title="3Blue1Brown Essence of Linear Algebra">https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab</link>
 	</tutorials>
 	<constructors>

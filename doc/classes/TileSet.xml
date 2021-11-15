@@ -13,7 +13,7 @@
 		See the functions to add new layers for more information.
 	</description>
 	<tutorials>
-		<link title="Using Tilemaps">https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
+		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
 		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
 		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
 		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>

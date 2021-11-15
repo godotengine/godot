@@ -12,8 +12,8 @@
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
 	</description>
 	<tutorials>
-		<link title="Using Viewports">https://docs.godotengine.org/en/latest/tutorials/rendering/viewports.html</link>
-		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
+		<link title="Using Viewports">$DOCS_URL/tutorials/rendering/viewports.html</link>
+		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
 		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
 		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
 		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>

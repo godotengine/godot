@@ -9,8 +9,8 @@
 		[SceneTree] is the default [MainLoop] implementation used by scenes, and is thus in charge of the game loop.
 	</description>
 	<tutorials>
-		<link title="SceneTree">https://docs.godotengine.org/en/latest/tutorials/scripting/scene_tree.html</link>
-		<link title="Multiple resolutions">https://docs.godotengine.org/en/latest/tutorials/rendering/multiple_resolutions.html</link>
+		<link title="SceneTree">$DOCS_URL/tutorials/scripting/scene_tree.html</link>
+		<link title="Multiple resolutions">$DOCS_URL/tutorials/rendering/multiple_resolutions.html</link>
 	</tutorials>
 	<methods>
 		<method name="call_group" qualifiers="vararg">

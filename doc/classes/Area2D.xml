@@ -7,7 +7,7 @@
 		2D area that detects [CollisionObject2D] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping) and route audio to a custom audio bus.
 	</description>
 	<tutorials>
-		<link title="Using Area2D">https://docs.godotengine.org/en/latest/tutorials/physics/using_area_2d.html</link>
+		<link title="Using Area2D">$DOCS_URL/tutorials/physics/using_area_2d.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/121</link>
 		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
