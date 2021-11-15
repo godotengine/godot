@@ -38,7 +38,7 @@ import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
 
-/* Fallback if 32bit View is not supported*/
+/* Fallback if the requested configuration is not supported */
 public class RegularFallbackConfigChooser extends RegularConfigChooser {
 	private static final String TAG = RegularFallbackConfigChooser.class.getSimpleName();
 
@@ -55,7 +55,6 @@ public class RegularFallbackConfigChooser extends RegularConfigChooser {
 		if (ec == null) {
 			Log.w(TAG, "Trying ConfigChooser fallback");
 			ec = fallback.chooseConfig(egl, display, configs);
-			GLUtils.use_32 = false;
 		}
 		return ec;
 	}
