@@ -88,6 +88,8 @@ def update_version(module_version_string=""):
     f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
     f.write("#define VERSION_YEAR " + str(version.year) + "\n")
     f.write('#define VERSION_WEBSITE "' + str(version.website) + '"\n')
+    f.write('#define VERSION_DOCS_BRANCH "' + str(version.docs) + '"\n')
+    f.write('#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH\n')
     f.close()
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
