@@ -2822,6 +2822,9 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 
+	GLOBAL_DEF("rendering/shadows/update_every_2_frames", false);
+	GLOBAL_DEF("rendering/shadows/update_every_2_frames.mobile", true);
+
 	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
 
 	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/back_end", 0);

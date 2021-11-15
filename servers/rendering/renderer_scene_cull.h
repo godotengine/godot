@@ -61,6 +61,12 @@ public:
 		MAX_UPDATE_SHADOWS = 512
 	};
 
+	enum ShadowMapUpdate {
+		SHADOW_MAP_UPDATE_POINT_AND_DIRECTIONAL, // Update both point and directional light shadows for this frame (default).
+		SHADOW_MAP_UPDATE_POINT, // Update point light shadows only for this frame.
+		SHADOW_MAP_UPDATE_DIRECTIONAL, // Update directional light shadows only for this frame.
+	};
+
 	uint64_t render_pass;
 
 	static RendererSceneCull *singleton;
@@ -921,6 +927,8 @@ public:
 	RendererSceneRender::RenderSDFGIUpdateData sdfgi_update_data;
 
 	uint32_t thread_cull_threshold = 200;
+
+	ShadowMapUpdate shadow_map_update = ShadowMapUpdate::SHADOW_MAP_UPDATE_POINT_AND_DIRECTIONAL;
 
 	RID_Owner<Instance, true> instance_owner;
 

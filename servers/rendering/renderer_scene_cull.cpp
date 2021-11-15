@@ -2910,6 +2910,18 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	Vector<Plane> planes = p_camera_data->main_projection.get_projection_planes(p_camera_data->main_transform);
 	cull.frustum = Frustum(planes);
 
+	if (bool(GLOBAL_GET("rendering/shadows/update_every_2_frames"))) {
+		// Toggle between directional and point light shadow updating every frame.
+		// This update staggering avoids stuttering by splitting CPU/GPU load across frames.
+		if (shadow_map_update == ShadowMapUpdate::SHADOW_MAP_UPDATE_DIRECTIONAL) {
+			shadow_map_update = ShadowMapUpdate::SHADOW_MAP_UPDATE_POINT;
+		} else {
+			shadow_map_update = ShadowMapUpdate::SHADOW_MAP_UPDATE_DIRECTIONAL;
+		}
+	} else {
+		shadow_map_update = ShadowMapUpdate::SHADOW_MAP_UPDATE_POINT_AND_DIRECTIONAL;
+	}
+
 	Vector<RID> directional_lights;
 	// directional lights
 	{
@@ -2939,10 +2951,12 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			}
 		}
 
-		scene_render->set_directional_shadow_count(lights_with_shadow.size());
+		if (shadow_map_update != ShadowMapUpdate::SHADOW_MAP_UPDATE_POINT) {
+			scene_render->set_directional_shadow_count(lights_with_shadow.size());
 
-		for (int i = 0; i < lights_with_shadow.size(); i++) {
-			_light_instance_setup_directional_shadow(i, lights_with_shadow[i], p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_ortogonal, p_camera_data->vaspect);
+			for (int i = 0; i < lights_with_shadow.size(); i++) {
+				_light_instance_setup_directional_shadow(i, lights_with_shadow[i], p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_ortogonal, p_camera_data->vaspect);
+			}
 		}
 	}
 
@@ -3049,100 +3063,102 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			}
 		}
 
-		// Positional Shadowss
-		for (uint32_t i = 0; i < (uint32_t)scene_cull_result.lights.size(); i++) {
-			Instance *ins = scene_cull_result.lights[i];
+		// Positional Shadows
+		if (shadow_map_update != ShadowMapUpdate::SHADOW_MAP_UPDATE_DIRECTIONAL) {
+			for (uint32_t i = 0; i < (uint32_t)scene_cull_result.lights.size(); i++) {
+				Instance *ins = scene_cull_result.lights[i];
 
-			if (!p_shadow_atlas.is_valid() || !RSG::storage->light_has_shadow(ins->base)) {
-				continue;
-			}
+				if (!p_shadow_atlas.is_valid() || !RSG::storage->light_has_shadow(ins->base)) {
+					continue;
+				}
 
-			InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
+				InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
 
-			float coverage = 0.f;
+				float coverage = 0.f;
 
-			{ //compute coverage
+				{ //compute coverage
 
-				Transform3D cam_xf = p_camera_data->main_transform;
-				float zn = p_camera_data->main_projection.get_z_near();
-				Plane p(-cam_xf.basis.get_axis(2), cam_xf.origin + cam_xf.basis.get_axis(2) * -zn); //camera near plane
+					Transform3D cam_xf = p_camera_data->main_transform;
+					float zn = p_camera_data->main_projection.get_z_near();
+					Plane p(-cam_xf.basis.get_axis(2), cam_xf.origin + cam_xf.basis.get_axis(2) * -zn); //camera near plane
 
-				// near plane half width and height
-				Vector2 vp_half_extents = p_camera_data->main_projection.get_viewport_half_extents();
+					// near plane half width and height
+					Vector2 vp_half_extents = p_camera_data->main_projection.get_viewport_half_extents();
 
-				switch (RSG::storage->light_get_type(ins->base)) {
-					case RS::LIGHT_OMNI: {
-						float radius = RSG::storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE);
+					switch (RSG::storage->light_get_type(ins->base)) {
+						case RS::LIGHT_OMNI: {
+							float radius = RSG::storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE);
 
-						//get two points parallel to near plane
-						Vector3 points[2] = {
-							ins->transform.origin,
-							ins->transform.origin + cam_xf.basis.get_axis(0) * radius
-						};
+							//get two points parallel to near plane
+							Vector3 points[2] = {
+								ins->transform.origin,
+								ins->transform.origin + cam_xf.basis.get_axis(0) * radius
+							};
 
-						if (!p_camera_data->is_ortogonal) {
-							//if using perspetive, map them to near plane
-							for (int j = 0; j < 2; j++) {
-								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
+							if (!p_camera_data->is_ortogonal) {
+								//if using perspetive, map them to near plane
+								for (int j = 0; j < 2; j++) {
+									if (p.distance_to(points[j]) < 0) {
+										points[j].z = -zn; //small hack to keep size constant when hitting the screen
+									}
+
+									p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
 								}
-
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
 							}
-						}
 
-						float screen_diameter = points[0].distance_to(points[1]) * 2;
-						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
-					} break;
-					case RS::LIGHT_SPOT: {
-						float radius = RSG::storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE);
-						float angle = RSG::storage->light_get_param(ins->base, RS::LIGHT_PARAM_SPOT_ANGLE);
+							float screen_diameter = points[0].distance_to(points[1]) * 2;
+							coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
+						} break;
+						case RS::LIGHT_SPOT: {
+							float radius = RSG::storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE);
+							float angle = RSG::storage->light_get_param(ins->base, RS::LIGHT_PARAM_SPOT_ANGLE);
 
-						float w = radius * Math::sin(Math::deg2rad(angle));
-						float d = radius * Math::cos(Math::deg2rad(angle));
+							float w = radius * Math::sin(Math::deg2rad(angle));
+							float d = radius * Math::cos(Math::deg2rad(angle));
 
-						Vector3 base = ins->transform.origin - ins->transform.basis.get_axis(2).normalized() * d;
+							Vector3 base = ins->transform.origin - ins->transform.basis.get_axis(2).normalized() * d;
 
-						Vector3 points[2] = {
-							base,
-							base + cam_xf.basis.get_axis(0) * w
-						};
+							Vector3 points[2] = {
+								base,
+								base + cam_xf.basis.get_axis(0) * w
+							};
 
-						if (!p_camera_data->is_ortogonal) {
-							//if using perspetive, map them to near plane
-							for (int j = 0; j < 2; j++) {
-								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
+							if (!p_camera_data->is_ortogonal) {
+								//if using perspetive, map them to near plane
+								for (int j = 0; j < 2; j++) {
+									if (p.distance_to(points[j]) < 0) {
+										points[j].z = -zn; //small hack to keep size constant when hitting the screen
+									}
+
+									p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
 								}
-
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
 							}
+
+							float screen_diameter = points[0].distance_to(points[1]) * 2;
+							coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
+
+						} break;
+						default: {
+							ERR_PRINT("Invalid Light Type");
 						}
-
-						float screen_diameter = points[0].distance_to(points[1]) * 2;
-						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
-
-					} break;
-					default: {
-						ERR_PRINT("Invalid Light Type");
 					}
 				}
-			}
 
-			if (light->shadow_dirty) {
-				light->last_version++;
-				light->shadow_dirty = false;
-			}
+				if (light->shadow_dirty) {
+					light->last_version++;
+					light->shadow_dirty = false;
+				}
 
-			bool redraw = scene_render->shadow_atlas_update_light(p_shadow_atlas, light->instance, coverage, light->last_version);
+				bool redraw = scene_render->shadow_atlas_update_light(p_shadow_atlas, light->instance, coverage, light->last_version);
 
-			if (redraw && max_shadows_used < MAX_UPDATE_SHADOWS) {
-				//must redraw!
-				RENDER_TIMESTAMP(">Rendering Light " + itos(i));
-				light->shadow_dirty = _light_instance_update_shadow(ins, p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_ortogonal, p_camera_data->vaspect, p_shadow_atlas, scenario, p_screen_lod_threshold);
-				RENDER_TIMESTAMP("<Rendering Light " + itos(i));
-			} else {
-				light->shadow_dirty = redraw;
+				if (redraw && max_shadows_used < MAX_UPDATE_SHADOWS) {
+					//must redraw!
+					RENDER_TIMESTAMP(">Rendering Light " + itos(i));
+					light->shadow_dirty = _light_instance_update_shadow(ins, p_camera_data->main_transform, p_camera_data->main_projection, p_camera_data->is_ortogonal, p_camera_data->vaspect, p_shadow_atlas, scenario, p_screen_lod_threshold);
+					RENDER_TIMESTAMP("<Rendering Light " + itos(i));
+				} else {
+					light->shadow_dirty = redraw;
+				}
 			}
 		}
 	}
