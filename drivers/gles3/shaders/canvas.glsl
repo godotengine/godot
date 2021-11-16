@@ -1,22 +1,19 @@
+/* clang-format off */
 #[modes]
 
 mode_quad =
-		mode_ninepatch = #define USE_NINEPATCH
-				mode_primitive = #define USE_PRIMITIVE
-						mode_attributes = #define USE_ATTRIBUTES
+mode_ninepatch = #define USE_NINEPATCH
+mode_primitive = #define USE_PRIMITIVE
+mode_attributes = #define USE_ATTRIBUTES
 
 #[specializations]
 
-								DISABLE_LIGHTING = false
+DISABLE_LIGHTING = false
 
 #[vertex]
 
-#version 450
-
-#VERSION_DEFINES
-
 #ifdef USE_ATTRIBUTES
-		layout(location = 0) in vec2 vertex_attrib;
+layout(location = 0) in vec2 vertex_attrib;
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
@@ -24,14 +21,16 @@ layout(location = 10) in uvec4 bone_attrib;
 layout(location = 11) in vec4 weight_attrib;
 
 #endif
-
+/* clang-format on */
 #include "canvas_uniforms_inc.glsl"
+#include "stdlib_inc.glsl"
 
 uniform sampler2D transforms_texture; //texunit:-1
 
 out vec2 uv_interp;
 out vec4 color_interp;
 out vec2 vertex_interp;
+flat out int draw_data_instance;
 
 #ifdef USE_NINEPATCH
 
@@ -52,6 +51,7 @@ layout(std140) uniform MaterialUniforms{
 
 void main() {
 	vec4 instance_custom = vec4(0.0);
+	draw_data_instance = gl_InstanceID;
 #ifdef USE_PRIMITIVE
 
 	//weird bug,
@@ -60,18 +60,18 @@ void main() {
 	vec2 uv;
 	vec4 color;
 
-	if (gl_VertexIndex == 0) {
-		vertex = draw_data.points[0];
-		uv = draw_data.uvs[0];
-		color = vec4(unpackHalf2x16(draw_data.colors[0]), unpackHalf2x16(draw_data.colors[1]));
-	} else if (gl_VertexIndex == 1) {
-		vertex = draw_data.points[1];
-		uv = draw_data.uvs[1];
-		color = vec4(unpackHalf2x16(draw_data.colors[2]), unpackHalf2x16(draw_data.colors[3]));
+	if (gl_VertexID == 0) {
+		vertex = draw_data[draw_data_instance].point_a;
+		uv = draw_data[draw_data_instance].uv_a;
+		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_a_rg), unpackHalf2x16(draw_data[draw_data_instance].color_a_ba));
+	} else if (gl_VertexID == 1) {
+		vertex = draw_data[draw_data_instance].point_b;
+		uv = draw_data[draw_data_instance].uv_b;
+		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_b_rg), unpackHalf2x16(draw_data[draw_data_instance].color_b_ba));
 	} else {
-		vertex = draw_data.points[2];
-		uv = draw_data.uvs[2];
-		color = vec4(unpackHalf2x16(draw_data.colors[4]), unpackHalf2x16(draw_data.colors[5]));
+		vertex = draw_data[draw_data_instance].point_c;
+		uv = draw_data[draw_data_instance].uv_c;
+		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_c_rg), unpackHalf2x16(draw_data[draw_data_instance].color_c_ba));
 	}
 	uvec4 bones = uvec4(0, 0, 0, 0);
 	vec4 bone_weights = vec4(0.0);
@@ -79,7 +79,7 @@ void main() {
 #elif defined(USE_ATTRIBUTES)
 
 	vec2 vertex = vertex_attrib;
-	vec4 color = color_attrib * draw_data.modulation;
+	vec4 color = color_attrib * draw_data[draw_data_instance].modulation;
 	vec2 uv = uv_attrib;
 
 	uvec4 bones = bone_attrib;
@@ -87,24 +87,22 @@ void main() {
 #else
 
 	vec2 vertex_base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-	vec2 vertex_base = vertex_base_arr[gl_VertexIndex];
+	vec2 vertex_base = vertex_base_arr[gl_VertexID];
 
-	vec2 uv = draw_data.src_rect.xy + abs(draw_data.src_rect.zw) * ((draw_data.flags & FLAGS_TRANSPOSE_RECT) != 0 ? vertex_base.yx : vertex_base.xy);
-	vec4 color = draw_data.modulation;
-	vec2 vertex = draw_data.dst_rect.xy + abs(draw_data.dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data.src_rect.zw, vec2(0.0, 0.0)));
+	vec2 uv = draw_data[draw_data_instance].src_rect.xy + abs(draw_data[draw_data_instance].src_rect.zw) * ((draw_data[draw_data_instance].flags & FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
+	vec4 color = draw_data[draw_data_instance].modulation;
+	vec2 vertex = draw_data[draw_data_instance].dst_rect.xy + abs(draw_data[draw_data_instance].dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data[draw_data_instance].src_rect.zw, vec2(0.0, 0.0)));
 	uvec4 bones = uvec4(0, 0, 0, 0);
 
 #endif
 
-	mat4 world_matrix = mat4(vec4(draw_data.world_x, 0.0, 0.0), vec4(draw_data.world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data.world_ofs, 0.0, 1.0));
+	mat4 world_matrix = mat4(vec4(draw_data[draw_data_instance].world_x, 0.0, 0.0), vec4(draw_data[draw_data_instance].world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data[draw_data_instance].world_ofs, 0.0, 1.0));
 
-#define FLAGS_INSTANCING_MASK 0x7F
-#define FLAGS_INSTANCING_HAS_COLORS (1 << 7)
-#define FLAGS_INSTANCING_HAS_CUSTOM_DATA (1 << 8)
-
-	uint instancing = draw_data.flags & FLAGS_INSTANCING_MASK;
+	// MultiMeshes don't batch, so always read from draw_data[0]
+	uint instancing = draw_data[0].flags & FLAGS_INSTANCING_MASK;
 
 #ifdef USE_ATTRIBUTES
+/*
 	if (instancing > 1) {
 		// trails
 
@@ -112,7 +110,7 @@ void main() {
 
 		uint trail_size = instancing;
 
-		uint offset = trail_size * stride * gl_InstanceIndex;
+		uint offset = trail_size * stride * gl_InstanceID;
 
 		vec4 pcolor;
 		vec2 new_vertex;
@@ -141,31 +139,32 @@ void main() {
 
 		vertex = new_vertex;
 		color *= pcolor;
-	} else
+	} else*/
 #endif // USE_ATTRIBUTES
+/*
 	{
 		if (instancing == 1) {
 			uint stride = 2;
 			{
-				if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_COLORS)) {
+				if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_COLORS)) {
 					stride += 1;
 				}
-				if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
+				if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
 					stride += 1;
 				}
 			}
 
-			uint offset = stride * gl_InstanceIndex;
+			uint offset = stride * gl_InstanceID;
 
 			mat4 matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 			offset += 2;
 
-			if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_COLORS)) {
+			if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_COLORS)) {
 				color *= transforms.data[offset];
 				offset += 1;
 			}
 
-			if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
+			if (bool(draw_data[0].flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
 				instance_custom = transforms.data[offset];
 			}
 
@@ -173,11 +172,11 @@ void main() {
 			world_matrix = world_matrix * matrix;
 		}
 	}
-
+*/
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
-	if (bool(draw_data.flags & FLAGS_USING_PARTICLES)) {
+	if (bool(draw_data[draw_data_instance].flags & FLAGS_USING_PARTICLES)) {
 		//scale by texture size
-		vertex /= draw_data.color_texture_pixel_size;
+		vertex /= draw_data[draw_data_instance].color_texture_pixel_size;
 	}
 #endif
 
@@ -189,7 +188,7 @@ void main() {
 	}
 
 #ifdef USE_NINEPATCH
-	pixel_size_interp = abs(draw_data.dst_rect.zw) * vertex_base;
+	pixel_size_interp = abs(draw_data[draw_data_instance].dst_rect.zw) * vertex_base;
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED)
@@ -198,7 +197,7 @@ void main() {
 
 	color_interp = color;
 
-	if (canvas_data.use_pixel_snap) {
+	if (use_pixel_snap) {
 		vertex = floor(vertex + 0.5);
 		// precision issue on some hardware creates artifacts within texture
 		// offset uv by a small amount to avoid
@@ -207,7 +206,7 @@ void main() {
 
 #ifdef USE_ATTRIBUTES
 #if 0
-	if (bool(draw_data.flags & FLAGS_USE_SKELETON) && bone_weights != vec4(0.0)) { //must be a valid bone
+	if (bool(draw_data[draw_data_instance].flags & FLAGS_USE_SKELETON) && bone_weights != vec4(0.0)) { //must be a valid bone
 		//skeleton transform
 		ivec4 bone_indicesi = ivec4(bone_indices);
 
@@ -247,12 +246,12 @@ void main() {
 #endif
 #endif
 
-	vertex = (canvas_data.canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
+	vertex = (canvas_transform * vec4(vertex, 0.0, 1.0)).xy;
 
 	vertex_interp = vertex;
 	uv_interp = uv;
 
-	gl_Position = canvas_data.screen_transform * vec4(vertex, 0.0, 1.0);
+	gl_Position = screen_transform * vec4(vertex, 0.0, 1.0);
 
 #ifdef USE_POINT_SIZE
 	gl_PointSize = point_size;
@@ -261,11 +260,8 @@ void main() {
 
 #[fragment]
 
-#version 450
-
-#VERSION_DEFINES
-
 #include "canvas_uniforms_inc.glsl"
+#include "stdlib_inc.glsl"
 
 uniform sampler2D atlas_texture; //texunit:-2
 uniform sampler2D shadow_atlas_texture; //texunit:-3
@@ -279,6 +275,7 @@ uniform sampler2D color_texture; //texunit:0
 in vec2 uv_interp;
 in vec4 color_interp;
 in vec2 vertex_interp;
+flat in int draw_data_instance;
 
 #ifdef USE_NINEPATCH
 
@@ -298,27 +295,27 @@ uniform MaterialUniforms{
 #endif
 
 vec2 screen_uv_to_sdf(vec2 p_uv) {
-	return canvas_data.screen_to_sdf * p_uv;
+	return screen_to_sdf * p_uv;
 }
 
 float texture_sdf(vec2 p_sdf) {
-	vec2 uv = p_sdf * canvas_data.sdf_to_tex.xy + canvas_data.sdf_to_tex.zw;
-	float d = texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv).r;
+	vec2 uv = p_sdf * sdf_to_tex.xy + sdf_to_tex.zw;
+	float d = texture(sdf_texture, uv).r;
 	d *= SDF_MAX_LENGTH;
-	return d * canvas_data.tex_to_sdf;
+	return d * tex_to_sdf;
 }
 
 vec2 texture_sdf_normal(vec2 p_sdf) {
-	vec2 uv = p_sdf * canvas_data.sdf_to_tex.xy + canvas_data.sdf_to_tex.zw;
+	vec2 uv = p_sdf * sdf_to_tex.xy + sdf_to_tex.zw;
 
 	const float EPSILON = 0.001;
 	return normalize(vec2(
-			texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv + vec2(EPSILON, 0.0)).r - texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv - vec2(EPSILON, 0.0)).r,
-			texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv + vec2(0.0, EPSILON)).r - texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv - vec2(0.0, EPSILON)).r));
+			texture(sdf_texture, uv + vec2(EPSILON, 0.0)).r - texture(sdf_texture, uv - vec2(EPSILON, 0.0)).r,
+			texture(sdf_texture, uv + vec2(0.0, EPSILON)).r - texture(sdf_texture, uv - vec2(0.0, EPSILON)).r));
 }
 
 vec2 sdf_to_screen_uv(vec2 p_sdf) {
-	return p_sdf * canvas_data.sdf_to_screen;
+	return p_sdf * sdf_to_screen;
 }
 
 #GLOBALS
@@ -355,7 +352,7 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 	} else if (pixel >= draw_size - margin_end) {
 		return (tex_size - (draw_size - pixel)) * tex_pixel_size;
 	} else {
-		if (!bool(draw_data.flags & FLAGS_NINEPACH_DRAW_CENTER)) {
+		if (!bool(draw_data[draw_data_instance].flags & FLAGS_NINEPACH_DRAW_CENTER)) {
 			draw_center--;
 		}
 
@@ -419,39 +416,39 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 #endif
 ) {
 	float shadow;
-	uint shadow_mode = light_array.data[light_base].flags & LIGHT_FLAGS_FILTER_MASK;
+	uint shadow_mode = light_data[light_base].flags & LIGHT_FLAGS_FILTER_MASK;
 
 	if (shadow_mode == LIGHT_FLAGS_SHADOW_NEAREST) {
-		shadow = textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
+		shadow = textureProjLod(shadow_atlas_texture, shadow_uv, 0.0).x;
 	} else if (shadow_mode == LIGHT_FLAGS_SHADOW_PCF5) {
-		vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
+		vec4 shadow_pixel_size = vec4(light_data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
 		shadow = 0.0;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 2.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 2.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv - shadow_pixel_size * 2.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv - shadow_pixel_size, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv + shadow_pixel_size, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv + shadow_pixel_size * 2.0, 0.0).x;
 		shadow /= 5.0;
 	} else { //PCF13
-		vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
+		vec4 shadow_pixel_size = vec4(light_data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
 		shadow = 0.0;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 6.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 5.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 4.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 3.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 2.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 2.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 3.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 4.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 5.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 6.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv - shadow_pixel_size * 6.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv - shadow_pixel_size * 5.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv - shadow_pixel_size * 4.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv - shadow_pixel_size * 3.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv - shadow_pixel_size * 2.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv - shadow_pixel_size, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv + shadow_pixel_size, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv + shadow_pixel_size * 2.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv + shadow_pixel_size * 3.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv + shadow_pixel_size * 4.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv + shadow_pixel_size * 5.0, 0.0).x;
+		shadow += textureProjLod(shadow_atlas_texture, shadow_uv + shadow_pixel_size * 6.0, 0.0).x;
 		shadow /= 13.0;
 	}
 
-	vec4 shadow_color = unpackUnorm4x8(light_array.data[light_base].shadow_color);
+	vec4 shadow_color = unpackUnorm4x8(light_data[light_base].shadow_color);
 #ifdef LIGHT_CODE_USED
 	shadow_color.rgb *= shadow_modulate;
 #endif
@@ -462,7 +459,7 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 }
 
 void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
-	uint blend_mode = light_array.data[light_base].flags & LIGHT_FLAGS_BLEND_MASK;
+	uint blend_mode = light_data[light_base].flags & LIGHT_FLAGS_BLEND_MASK;
 
 	switch (blend_mode) {
 		case LIGHT_FLAGS_BLEND_MODE_ADD: {
@@ -496,31 +493,31 @@ void main() {
 
 	int draw_center = 2;
 	uv = vec2(
-			map_ninepatch_axis(pixel_size_interp.x, abs(draw_data.dst_rect.z), draw_data.color_texture_pixel_size.x, draw_data.ninepatch_margins.x, draw_data.ninepatch_margins.z, int(draw_data.flags >> FLAGS_NINEPATCH_H_MODE_SHIFT) & 0x3, draw_center),
-			map_ninepatch_axis(pixel_size_interp.y, abs(draw_data.dst_rect.w), draw_data.color_texture_pixel_size.y, draw_data.ninepatch_margins.y, draw_data.ninepatch_margins.w, int(draw_data.flags >> FLAGS_NINEPATCH_V_MODE_SHIFT) & 0x3, draw_center));
+			map_ninepatch_axis(pixel_size_interp.x, abs(draw_data[draw_data_instance].dst_rect.z), draw_data[draw_data_instance].color_texture_pixel_size.x, draw_data[draw_data_instance].ninepatch_margins.x, draw_data[draw_data_instance].ninepatch_margins.z, int(draw_data[draw_data_instance].flags >> FLAGS_NINEPATCH_H_MODE_SHIFT) & 0x3, draw_center),
+			map_ninepatch_axis(pixel_size_interp.y, abs(draw_data[draw_data_instance].dst_rect.w), draw_data[draw_data_instance].color_texture_pixel_size.y, draw_data[draw_data_instance].ninepatch_margins.y, draw_data[draw_data_instance].ninepatch_margins.w, int(draw_data[draw_data_instance].flags >> FLAGS_NINEPATCH_V_MODE_SHIFT) & 0x3, draw_center));
 
 	if (draw_center == 0) {
 		color.a = 0.0;
 	}
 
-	uv = uv * draw_data.src_rect.zw + draw_data.src_rect.xy; //apply region if needed
+	uv = uv * draw_data[draw_data_instance].src_rect.zw + draw_data[draw_data_instance].src_rect.xy; //apply region if needed
 
 #endif
-	if (bool(draw_data.flags & FLAGS_CLIP_RECT_UV)) {
-		uv = clamp(uv, draw_data.src_rect.xy, draw_data.src_rect.xy + abs(draw_data.src_rect.zw));
+	if (bool(draw_data[draw_data_instance].flags & FLAGS_CLIP_RECT_UV)) {
+		uv = clamp(uv, draw_data[draw_data_instance].src_rect.xy, draw_data[draw_data_instance].src_rect.xy + abs(draw_data[draw_data_instance].src_rect.zw));
 	}
 
 #endif
 
 #ifndef USE_PRIMITIVE
-	if (bool(draw_data.flags & FLAGS_USE_MSDF)) {
-		float px_range = draw_data.ninepatch_margins.x;
-		float outline_thickness = draw_data.ninepatch_margins.y;
-		//float reserved1 = draw_data.ninepatch_margins.z;
-		//float reserved2 = draw_data.ninepatch_margins.w;
+	if (bool(draw_data[draw_data_instance].flags & FLAGS_USE_MSDF)) {
+		float px_range = draw_data[draw_data_instance].ninepatch_margins.x;
+		float outline_thickness = draw_data[draw_data_instance].ninepatch_margins.y;
+		//float reserved1 = draw_data[draw_data_instance].ninepatch_margins.z;
+		//float reserved2 = draw_data[draw_data_instance].ninepatch_margins.w;
 
-		vec4 msdf_sample = texture(sampler2D(color_texture, texture_sampler), uv);
-		vec2 msdf_size = vec2(textureSize(sampler2D(color_texture, texture_sampler), 0));
+		vec4 msdf_sample = texture(color_texture, uv);
+		vec2 msdf_size = vec2(textureSize(color_texture, 0));
 		vec2 dest_size = vec2(1.0) / fwidth(uv);
 		float px_size = max(0.5 * dot((vec2(px_range) / msdf_size), dest_size), 1.0);
 		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b, msdf_sample.a) - 0.5;
@@ -538,11 +535,11 @@ void main() {
 #else
 	{
 #endif
-		color *= texture(sampler2D(color_texture, texture_sampler), uv);
+		color *= texture(color_texture, uv);
 	}
 
-	uint light_count = (draw_data.flags >> FLAGS_LIGHT_COUNT_SHIFT) & 0xF; //max 16 lights
-	bool using_light = light_count > 0 || canvas_data.directional_light_count > 0;
+	uint light_count = (draw_data[draw_data_instance].flags >> FLAGS_LIGHT_COUNT_SHIFT) & uint(0xF); //max 16 lights
+	bool using_light = light_count > uint(0) || directional_light_count > uint(0);
 
 	vec3 normal;
 
@@ -552,8 +549,8 @@ void main() {
 	bool normal_used = false;
 #endif
 
-	if (normal_used || (using_light && bool(draw_data.flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
-		normal.xy = texture(sampler2D(normal_texture, texture_sampler), uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
+	if (normal_used || (using_light && bool(draw_data[draw_data_instance].flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
+		normal.xy = texture(normal_texture, uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
 		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
 		normal_used = true;
 	} else {
@@ -569,16 +566,16 @@ void main() {
 	bool specular_shininess_used = false;
 #endif
 
-	if (specular_shininess_used || (using_light && normal_used && bool(draw_data.flags & FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
-		specular_shininess = texture(sampler2D(specular_texture, texture_sampler), uv);
-		specular_shininess *= unpackUnorm4x8(draw_data.specular_shininess);
+	if (specular_shininess_used || (using_light && normal_used && bool(draw_data[draw_data_instance].flags & FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
+		specular_shininess = texture(specular_texture, uv);
+		specular_shininess *= unpackUnorm4x8(draw_data[draw_data_instance].specular_shininess);
 		specular_shininess_used = true;
 	} else {
 		specular_shininess = vec4(1.0);
 	}
 
 #if defined(SCREEN_UV_USED)
-	vec2 screen_uv = gl_FragCoord.xy * canvas_data.screen_pixel_size;
+	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
 #else
 	vec2 screen_uv = vec2(0.0);
 #endif
@@ -603,46 +600,46 @@ void main() {
 
 	if (normal_used) {
 		//convert by item transform
-		normal.xy = mat2(normalize(draw_data.world_x), normalize(draw_data.world_y)) * normal.xy;
+		normal.xy = mat2(normalize(draw_data[draw_data_instance].world_x), normalize(draw_data[draw_data_instance].world_y)) * normal.xy;
 		//convert by canvas transform
-		normal = normalize((canvas_data.canvas_normal_transform * vec4(normal, 0.0)).xyz);
+		normal = normalize((canvas_normal_transform * vec4(normal, 0.0)).xyz);
 	}
 
 	vec3 base_color = color.rgb;
-	if (bool(draw_data.flags & FLAGS_USING_LIGHT_MASK)) {
+	if (bool(draw_data[draw_data_instance].flags & FLAGS_USING_LIGHT_MASK)) {
 		color = vec4(0.0); //invisible by default due to using light mask
 	}
 
 #ifdef MODE_LIGHT_ONLY
 	color = vec4(0.0);
 #else
-	color *= canvas_data.canvas_modulation;
+	color *= canvas_modulation;
 #endif
 
 #if !defined(DISABLE_LIGHTING) && !defined(MODE_UNSHADED)
 
-	for (uint i = 0; i < canvas_data.directional_light_count; i++) {
+	for (uint i = uint(0); i < directional_light_count; i++) {
 		uint light_base = i;
 
-		vec2 direction = light_array.data[light_base].position;
-		vec4 light_color = light_array.data[light_base].color;
+		vec2 direction = light_data[light_base].position;
+		vec4 light_color = light_data[light_base].color;
 
 #ifdef LIGHT_CODE_USED
 
 		vec4 shadow_modulate = vec4(1.0);
-		light_color = light_compute(light_vertex, vec3(direction, light_array.data[light_base].height), normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, uv, color, true);
+		light_color = light_compute(light_vertex, vec3(direction, light_data[light_base].height), normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, uv, color, true);
 #else
 
 		if (normal_used) {
-			vec3 light_vec = normalize(mix(vec3(direction, 0.0), vec3(0, 0, 1), light_array.data[light_base].height));
+			vec3 light_vec = normalize(mix(vec3(direction, 0.0), vec3(0, 0, 1), light_data[light_base].height));
 			light_color.rgb = light_normal_compute(light_vec, normal, base_color, light_color.rgb, specular_shininess, specular_shininess_used);
 		}
 #endif
 
-		if (bool(light_array.data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
-			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array.data[light_base].shadow_matrix[0], light_array.data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+		if (bool(light_data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
+			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_data[light_base].shadow_matrix[0], light_data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 
-			vec4 shadow_uv = vec4(shadow_pos.x, light_array.data[light_base].shadow_y_ofs, shadow_pos.y * light_array.data[light_base].shadow_zfar_inv, 1.0);
+			vec4 shadow_uv = vec4(shadow_pos.x, light_data[light_base].shadow_y_ofs, shadow_pos.y * light_data[light_base].shadow_zfar_inv, 1.0);
 
 			light_color = light_shadow_compute(light_base, light_color, shadow_uv
 #ifdef LIGHT_CODE_USED
@@ -657,36 +654,36 @@ void main() {
 
 	// Positional Lights
 
-	for (uint i = 0; i < MAX_LIGHTS_PER_ITEM; i++) {
+	for (uint i = uint(0); i < MAX_LIGHTS_PER_ITEM; i++) {
 		if (i >= light_count) {
 			break;
 		}
 		uint light_base;
-		if (i < 8) {
-			if (i < 4) {
-				light_base = draw_data.lights[0];
+		if (i < uint(8)) {
+			if (i < uint(4)) {
+				light_base = draw_data[draw_data_instance].lights.x;
 			} else {
-				light_base = draw_data.lights[1];
+				light_base = draw_data[draw_data_instance].lights.y;
 			}
 		} else {
-			if (i < 12) {
-				light_base = draw_data.lights[2];
+			if (i < uint(12)) {
+				light_base = draw_data[draw_data_instance].lights.z;
 			} else {
-				light_base = draw_data.lights[3];
+				light_base = draw_data[draw_data_instance].lights.w;
 			}
 		}
-		light_base >>= (i & 3) * 8;
-		light_base &= 0xFF;
+		light_base >>= (i & uint(3)) * uint(8);
+		light_base &= uint(0xFF);
 
-		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array.data[light_base].texture_matrix[0], light_array.data[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
-		vec2 tex_uv_atlas = tex_uv * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;
-		vec4 light_color = textureLod(sampler2D(atlas_texture, texture_sampler), tex_uv_atlas, 0.0);
-		vec4 light_base_color = light_array.data[light_base].color;
+		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_data[light_base].texture_matrix[0], light_data[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+		vec2 tex_uv_atlas = tex_uv * light_data[light_base].atlas_rect.zw + light_data[light_base].atlas_rect.xy;
+		vec4 light_color = textureLod(atlas_texture, tex_uv_atlas, 0.0);
+		vec4 light_base_color = light_data[light_base].color;
 
 #ifdef LIGHT_CODE_USED
 
 		vec4 shadow_modulate = vec4(1.0);
-		vec3 light_position = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
+		vec3 light_position = vec3(light_data[light_base].position, light_data[light_base].height);
 
 		light_color.rgb *= light_base_color.rgb;
 		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, color, false);
@@ -695,7 +692,7 @@ void main() {
 		light_color.rgb *= light_base_color.rgb * light_base_color.a;
 
 		if (normal_used) {
-			vec3 light_pos = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
+			vec3 light_pos = vec3(light_data[light_base].position, light_data[light_base].height);
 			vec3 pos = light_vertex;
 			vec3 light_vec = normalize(light_pos - pos);
 			float cNdotL = max(0.0, dot(normal, light_vec));
@@ -708,8 +705,8 @@ void main() {
 			light_color.a = 0.0;
 		}
 
-		if (bool(light_array.data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
-			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array.data[light_base].shadow_matrix[0], light_array.data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+		if (bool(light_data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
+			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_data[light_base].shadow_matrix[0], light_data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 
 			vec2 pos_norm = normalize(shadow_pos);
 			vec2 pos_abs = abs(pos_norm);
@@ -735,10 +732,10 @@ void main() {
 				}
 			}
 
-			distance *= light_array.data[light_base].shadow_zfar_inv;
+			distance *= light_data[light_base].shadow_zfar_inv;
 
 			//float distance = length(shadow_pos);
-			vec4 shadow_uv = vec4(tex_ofs, light_array.data[light_base].shadow_y_ofs, distance, 1.0);
+			vec4 shadow_uv = vec4(tex_ofs, light_data[light_base].shadow_y_ofs, distance, 1.0);
 
 			light_color = light_shadow_compute(light_base, light_color, shadow_uv
 #ifdef LIGHT_CODE_USED

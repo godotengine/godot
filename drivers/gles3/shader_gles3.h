@@ -40,8 +40,7 @@
 #include "core/variant/variant.h"
 #include "servers/rendering_server.h"
 
-#include "drivers/gles3/rasterizer_platforms.h"
-#ifdef GLES3_BACKEND_ENABLED
+#ifdef GLES3_ENABLED
 
 // This must come first to avoid windows.h mess
 #include "platform_config.h"
@@ -70,13 +69,17 @@ protected:
 
 	struct Specialization {
 		const char *name;
-		bool defalut_value = false;
+		bool default_value = false;
 	};
 
 private:
 	//versions
 	CharString general_defines;
 
+	// A version is a high-level construct which is a combination of built-in and user-defined shader code
+	// Variants use #idefs to toggle behaviour on and off to change behaviour of the shader
+	// Specializations use #ifdefs to toggle behaviour on and off for performance, on supporting hardware, they will compile a version with everything enabled, and then compile more copies to improve performance
+	// Use specializations to enable and disabled advanced features, use variants to toggle behaviour when different data may be used (e.g. using a samplerArray vs a sampler)
 	struct Version {
 		Vector<StringName> texture_uniforms;
 		CharString uniforms;
@@ -172,6 +175,7 @@ private:
 	int variant_count = 0;
 
 	int base_texture_index = 0;
+	Version::Specialization *current_shader = nullptr;
 
 protected:
 	ShaderGLES3();
@@ -209,6 +213,14 @@ protected:
 		ERR_FAIL_COND(!spec->ok); // Should never happen
 
 		glUseProgram(spec->id);
+		current_shader = spec;
+	}
+
+	_FORCE_INLINE_ int _version_get_uniform(int p_which, RID p_version, int p_variant, uint64_t p_specialization) {
+		ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
+		Version *version = version_owner.get_or_null(p_version);
+		ERR_FAIL_COND_V(!version, -1);
+		return version->variants[p_variant].lookup_ptr(p_specialization)->uniform_location[p_which];
 	}
 
 	virtual void _init() = 0;

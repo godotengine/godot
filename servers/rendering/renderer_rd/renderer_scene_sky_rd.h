@@ -111,7 +111,7 @@ private:
 
 		PipelineCacheRD pipelines[SKY_VERSION_MAX];
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
-		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size;
@@ -220,7 +220,7 @@ public:
 
 	struct SkyShader {
 		SkyShaderRD shader;
-		ShaderCompilerRD compiler;
+		ShaderCompiler compiler;
 
 		RID default_shader;
 		RID default_material;

@@ -10,7 +10,7 @@ precision highp float;
 precision highp int;
 #endif
 
-layout(location = 0) highp vec2 vertex;
+layout(location = 0) in highp vec2 vertex;
 /* clang-format on */
 
 uniform vec2 offset;

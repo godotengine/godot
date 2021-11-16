@@ -31,8 +31,7 @@
 #ifndef RASTERIZER_OPENGL_H
 #define RASTERIZER_OPENGL_H
 
-#include "drivers/gles3/rasterizer_platforms.h"
-#ifdef GLES3_BACKEND_ENABLED
+#ifdef GLES3_ENABLED
 
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
@@ -45,14 +44,13 @@ private:
 	float delta = 0;
 
 	double time_total = 0.0;
-	double time_scale = 1.0;
 
 protected:
-	RasterizerCanvasGLES3 canvas;
 	RasterizerStorageGLES3 storage;
+	RasterizerCanvasGLES3 canvas;
 	RasterizerSceneGLES3 scene;
 
-	void _blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect);
+	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect);
 
 public:
 	RendererStorage *get_storage() { return &storage; }
@@ -87,6 +85,6 @@ public:
 	~RasterizerGLES3() {}
 };
 
-#endif // GLES3_BACKEND_ENABLED
+#endif // GLES3_ENABLED
 
 #endif

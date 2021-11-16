@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "texture_loader_gles3.h"
-#ifdef GLES3_BACKEND_ENABLED
+#ifdef GLES3_ENABLED
 
 #include "core/io/file_access.h"
 #include "core/string/print_string.h"

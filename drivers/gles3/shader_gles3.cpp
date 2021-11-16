@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "shader_gles3.h"
-#ifdef GLES3_BACKEND_ENABLED
+#ifdef GLES3_ENABLED
 
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
@@ -111,8 +111,8 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	specialization_count = p_specialization_count;
 	specialization_default_mask = 0;
 	for (int i = 0; i < specialization_count; i++) {
-		if (specializations[i].defalut_value) {
-			specialization_default_mask |= (1 << i);
+		if (specializations[i].default_value) {
+			specialization_default_mask |= (uint64_t(1) << uint64_t(i));
 		}
 	}
 	variant_defines = p_variants;
@@ -150,7 +150,7 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 #endif
 
 	for (int i = 0; i < specialization_count; i++) {
-		if (p_specialization & (1 << uint32_t(i))) {
+		if (p_specialization & (uint64_t(1) << uint64_t(i))) {
 			builder.append("#define " + String(specializations[i].name) + "\n");
 		}
 	}
@@ -232,7 +232,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 				glDeleteProgram(spec.id);
 				spec.id = 0;
 
-				ERR_PRINT("No OpenGL vertex shader compiler log. What the frick?");
+				ERR_PRINT("No OpenGL vertex shader compiler log.");
 			} else {
 				if (iloglen == 0) {
 					iloglen = 4096; // buggy driver (Adreno 220+)
@@ -263,24 +263,24 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		StringBuilder builder;
 		_build_variant_code(builder, p_variant, p_version, stage_templates[STAGE_TYPE_FRAGMENT], p_specialization);
 
-		spec.vert_id = glCreateShader(GL_FRAGMENT_SHADER);
+		spec.frag_id = glCreateShader(GL_FRAGMENT_SHADER);
 		String builder_string = builder.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
-		glShaderSource(spec.vert_id, 1, &cstr, nullptr);
-		glCompileShader(spec.vert_id);
+		glShaderSource(spec.frag_id, 1, &cstr, nullptr);
+		glCompileShader(spec.frag_id);
 
-		glGetShaderiv(spec.vert_id, GL_COMPILE_STATUS, &status);
+		glGetShaderiv(spec.frag_id, GL_COMPILE_STATUS, &status);
 		if (status == GL_FALSE) {
 			GLsizei iloglen;
-			glGetShaderiv(spec.vert_id, GL_INFO_LOG_LENGTH, &iloglen);
+			glGetShaderiv(spec.frag_id, GL_INFO_LOG_LENGTH, &iloglen);
 
 			if (iloglen < 0) {
-				glDeleteShader(spec.vert_id);
+				glDeleteShader(spec.frag_id);
 				glDeleteProgram(spec.id);
 				spec.id = 0;
 
-				ERR_PRINT("No OpenGL vertex shader compiler log. What the frick?");
+				ERR_PRINT("No OpenGL fragment shader compiler log.");
 			} else {
 				if (iloglen == 0) {
 					iloglen = 4096; // buggy driver (Adreno 220+)
@@ -288,7 +288,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 
 				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
 				ilogmem[iloglen] = '\0';
-				glGetShaderInfoLog(spec.vert_id, iloglen, &iloglen, ilogmem);
+				glGetShaderInfoLog(spec.frag_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Fragment shader compilation failed:\n";
 
@@ -297,7 +297,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 				_display_error_with_code(err_string, builder_string);
 
 				Memory::free_static(ilogmem);
-				glDeleteShader(spec.vert_id);
+				glDeleteShader(spec.frag_id);
 				glDeleteProgram(spec.id);
 				spec.id = 0;
 			}
@@ -308,6 +308,10 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 
 	glAttachShader(spec.id, spec.frag_id);
 	glAttachShader(spec.id, spec.vert_id);
+
+	//for (int i = 0; i < attribute_pair_count; i++) {
+	//	glBindAttribLocation(v.id, attribute_pairs[i].index, attribute_pairs[i].name);
+	//}
 
 	glLinkProgram(spec.id);
 
@@ -370,9 +374,9 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 	}
 
 	for (int i = 0; i < ubo_count; i++) {
-		GLint loc = glGetUniformLocation(spec.id, ubo_pairs[i].name);
+		GLint loc = glGetUniformBlockIndex(spec.id, ubo_pairs[i].name);
 		if (loc >= 0) {
-			glUniform1i(loc, ubo_pairs[i].index);
+			glUniformBlockBinding(spec.id, loc, ubo_pairs[i].index);
 		}
 	}
 	// textures
@@ -542,6 +546,11 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 }
 
 void ShaderGLES3::_clear_version(Version *p_version) {
+	// Variants not compiled yet, just return
+	if (p_version->variants.size() == 0) {
+		return;
+	}
+
 	for (int i = 0; i < variant_count; i++) {
 		for (OAHashMap<uint64_t, Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
 			if (it.valid) {
@@ -559,6 +568,8 @@ void ShaderGLES3::_initialize_version(Version *p_version) {
 	ERR_FAIL_COND(p_version->variants.size() > 0);
 	p_version->variants.reserve(variant_count);
 	for (int i = 0; i < variant_count; i++) {
+		OAHashMap<uint64_t, Version::Specialization> variant;
+		p_version->variants.push_back(variant);
 		Version::Specialization spec;
 		_compile_specialization(spec, i, p_version, specialization_default_mask);
 		p_version->variants[i].insert(specialization_default_mask, spec);
