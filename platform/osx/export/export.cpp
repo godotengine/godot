@@ -1098,8 +1098,21 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
 					0);
 
-			Vector<uint8_t> array = FileAccess::get_file_as_array(dir.plus_file(f));
-			zipWriteInFileInZip(p_zip, array.ptr(), array.size());
+			FileAccessRef fa = FileAccess::open(dir.plus_file(f), FileAccess::READ);
+			if (!fa) {
+				ERR_FAIL_MSG("Can't open file to read from path '" + String(dir.plus_file(f)) + "'.");
+			}
+			const int bufsize = 16384;
+			uint8_t buf[bufsize];
+
+			while (true) {
+				uint64_t got = fa->get_buffer(buf, bufsize);
+				if (got == 0) {
+					break;
+				}
+				zipWriteInFileInZip(p_zip, buf, got);
+			}
+
 			zipCloseFileInZip(p_zip);
 		}
 	}

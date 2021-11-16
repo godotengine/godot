@@ -39,7 +39,14 @@
 			<return type="AABB" />
 			<argument index="0" name="to_point" type="Vector3" />
 			<description>
-				Returns this [AABB] expanded to include a given point.
+				Returns a copy of this [AABB] expanded to include a given point.
+				[b]Example:[/b]
+				[codeblock]
+				# position (-3, 2, 0), size (1, 1, 1)
+				var box = AABB(Vector3(-3, 2, 0), Vector3(1, 1, 1))
+				# position (-3, -1, 0), size (3, 4, 2), so we fit both the original AABB and Vector3(0, -1, 2)
+				var box2 = box.expand(Vector3(0, -1, 2))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_area">

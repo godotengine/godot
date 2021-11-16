@@ -471,6 +471,8 @@ void Control::_notification(int p_notification) {
 			_size_changed();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			ERR_FAIL_COND(!get_viewport());
+
 			get_viewport()->_gui_remove_control(this);
 
 		} break;

@@ -1621,7 +1621,7 @@ void EditorNode::_save_all_scenes() {
 				} else {
 					_save_scene_with_preview(scene->get_filename());
 				}
-			} else {
+			} else if (scene->get_filename() != "") {
 				all_saved = false;
 			}
 		}

@@ -44,9 +44,9 @@
 #include "shaders/cubemap_filter.glsl.gen.h"
 #include "shaders/particles.glsl.gen.h"
 
-// WebGL 2.0 has no MapBufferRange/UnmapBuffer, but offers a non-ES style BufferSubData API instead.
+// WebGL 2.0 has no MapBufferRange/UnmapBuffer, but offers a non-ES style BufferSubData API via glGetBufferSubData instead.
 #ifdef __EMSCRIPTEN__
-void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
+#include <webgl/webgl2.h>
 #endif
 
 class RasterizerCanvasGLES3;

@@ -48,7 +48,7 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 #endif
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For csg.
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif
@@ -313,6 +313,7 @@ void RoomManager::_bind_methods() {
 	LIMPL_PROPERTY_RANGE(Variant::INT, portal_depth_limit, set_portal_depth_limit, get_portal_depth_limit, "0,255,1");
 	LIMPL_PROPERTY_RANGE(Variant::REAL, room_simplify, set_room_simplify, get_room_simplify, "0.0,1.0,0.005");
 	LIMPL_PROPERTY_RANGE(Variant::REAL, default_portal_margin, set_default_portal_margin, get_default_portal_margin, "0.0, 10.0, 0.01");
+	LIMPL_PROPERTY_RANGE(Variant::REAL, roaming_expansion_margin, set_roaming_expansion_margin, get_roaming_expansion_margin, "0.0, 3.0, 0.01");
 
 #undef LIMPL_PROPERTY
 #undef LIMPL_PROPERTY_RANGE
@@ -382,7 +383,15 @@ void RoomManager::set_portal_depth_limit(int p_limit) {
 	_settings_portal_depth_limit = p_limit;
 
 	if (is_inside_world() && get_world().is_valid()) {
-		VisualServer::get_singleton()->rooms_set_params(get_world()->get_scenario(), p_limit);
+		VisualServer::get_singleton()->rooms_set_params(get_world()->get_scenario(), p_limit, _settings_roaming_expansion_margin);
+	}
+}
+
+void RoomManager::set_roaming_expansion_margin(real_t p_dist) {
+	_settings_roaming_expansion_margin = p_dist;
+
+	if (is_inside_world() && get_world().is_valid()) {
+		VisualServer::get_singleton()->rooms_set_params(get_world()->get_scenario(), _settings_portal_depth_limit, _settings_roaming_expansion_margin);
 	}
 }
 

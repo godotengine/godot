@@ -107,18 +107,6 @@
 #define glClearDepth glClearDepthf
 #endif
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-
-void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data) {
-	/* clang-format off */
-	EM_ASM({
-	    GLctx.getBufferSubData($0, $1, HEAPU8, $2, $3);
-	}, target, offset, data, size);
-	/* clang-format on */
-}
-#endif
-
 void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type) {
 #ifdef GLES_OVER_GL
 
@@ -3404,7 +3392,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 					// UNLESS tangent exists and is also compressed
 					// then it will be oct16 encoded along with tangent
 					attribs[i].normalized = GL_TRUE;
-					attribs[i].size = 4;
+					attribs[i].size = 2;
 					attribs[i].type = GL_SHORT;
 					attributes_stride += 4;
 				} else {
@@ -3425,6 +3413,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 			case VS::ARRAY_TANGENT: {
 				if (p_format & VS::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
 					attribs[i].enabled = false;
+					attribs[VS::ARRAY_NORMAL].size = 4;
 					if (p_format & VS::ARRAY_COMPRESS_TANGENT && p_format & VS::ARRAY_COMPRESS_NORMAL) {
 						// normal and tangent will each be oct16 (2 bytes each)
 						// pack into single vec4<GL_BYTE> for memory bandwidth
@@ -6126,6 +6115,9 @@ void RasterizerStorageGLES3::particles_set_emitting(RID p_particles, bool p_emit
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
+	if (p_emitting && !particles->emitting) {
+		particles_request_process(p_particles);
+	}
 	particles->emitting = p_emitting;
 }
 

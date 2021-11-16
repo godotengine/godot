@@ -822,20 +822,6 @@ void PortalRenderer::rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, 
 	// from position
 	_rooms_lookup_bsp.create(*this);
 
-	// calculate the roaming expansion margin based on the average room size
-	Vector3 total_size = Vector3(0, 0, 0);
-	for (int n = 0; n < get_num_rooms(); n++) {
-		total_size += get_room(n)._aabb.size;
-	}
-	if (get_num_rooms()) {
-		total_size /= get_num_rooms();
-		AABB temp;
-		temp.size = total_size;
-
-		// longest axis of average room * fudge factor
-		_roaming_expansion_margin = temp.get_longest_axis_size() * 0.08;
-	}
-
 	// calculate PVS
 	if (p_generate_pvs) {
 		PVSBuilder pvs;

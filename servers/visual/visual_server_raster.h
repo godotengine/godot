@@ -598,7 +598,7 @@ public:
 	BIND8(rooms_finalize, RID, bool, bool, bool, bool, String, bool, bool)
 	BIND4(rooms_override_camera, RID, bool, const Vector3 &, const Vector<Plane> *)
 	BIND2(rooms_set_active, RID, bool)
-	BIND2(rooms_set_params, RID, int)
+	BIND3(rooms_set_params, RID, int, real_t)
 	BIND3(rooms_set_debug_feature, RID, RoomsDebugFeature, bool)
 	BIND2(rooms_update_gameplay_monitor, RID, const Vector<Vector3> &)
 

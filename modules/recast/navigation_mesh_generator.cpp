@@ -46,7 +46,7 @@
 #include "scene/resources/shape.h"
 #include "scene/resources/sphere_shape.h"
 
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For csg, gridmap.
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif

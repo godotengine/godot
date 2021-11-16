@@ -40,8 +40,8 @@ class Skeleton2DEditor : public Control {
 	GDCLASS(Skeleton2DEditor, Control);
 
 	enum Menu {
-		MENU_OPTION_MAKE_REST,
 		MENU_OPTION_SET_REST,
+		MENU_OPTION_MAKE_REST,
 	};
 
 	Skeleton2D *node;

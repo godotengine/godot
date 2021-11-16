@@ -191,7 +191,7 @@ Error AudioDriverPulseAudio::init_device() {
 	Error err = detect_channels();
 	if (err != OK) {
 		// This most likely means there are no sinks.
-		ERR_PRINT("PulseAudio: init device failed to detect number of channels");
+		ERR_PRINT("PulseAudio: init device failed to detect number of output channels");
 		return err;
 	}
 
@@ -211,7 +211,7 @@ Error AudioDriverPulseAudio::init_device() {
 			break;
 
 		default:
-			WARN_PRINT("PulseAudio: Unsupported number of channels: " + itos(pa_map.channels));
+			WARN_PRINT("PulseAudio: Unsupported number of output channels: " + itos(pa_map.channels));
 			pa_channel_map_init_stereo(&pa_map);
 			channels = 2;
 			break;
@@ -221,8 +221,8 @@ Error AudioDriverPulseAudio::init_device() {
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
-	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " channels");
-	print_verbose("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
+	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
+	print_verbose("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated output latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	pa_sample_spec spec;
 	spec.format = PA_SAMPLE_S16LE;
@@ -381,16 +381,18 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			ad->lock();
 			ad->start_counting_ticks();
 
+			int16_t *out_ptr = ad->samples_out.ptrw();
+
 			if (!ad->active) {
 				for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
-					ad->samples_out.write[i] = 0;
+					out_ptr[i] = 0;
 				}
 			} else {
 				ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
 
 				if (ad->channels == ad->pa_map.channels) {
 					for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
-						ad->samples_out.write[i] = ad->samples_in[i] >> 16;
+						out_ptr[i] = ad->samples_in[i] >> 16;
 					}
 				} else {
 					// Uneven amount of channels
@@ -399,11 +401,11 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 					for (unsigned int i = 0; i < ad->buffer_frames; i++) {
 						for (int j = 0; j < ad->pa_map.channels - 1; j++) {
-							ad->samples_out.write[out_idx++] = ad->samples_in[in_idx++] >> 16;
+							out_ptr[out_idx++] = ad->samples_in[in_idx++] >> 16;
 						}
 						uint32_t l = ad->samples_in[in_idx++] >> 16;
 						uint32_t r = ad->samples_in[in_idx++] >> 16;
-						ad->samples_out.write[out_idx++] = (l + r) / 2;
+						out_ptr[out_idx++] = (l + r) / 2;
 					}
 				}
 			}
@@ -688,6 +690,8 @@ Error AudioDriverPulseAudio::capture_init_device() {
 			pa_channel_map_init_stereo(&pa_rec_map);
 			break;
 	}
+
+	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
 
 	pa_sample_spec spec;
 
