@@ -33,20 +33,25 @@
 #include "core/os/os.h"
 #include "core/resource.h"
 
-UndoRedo::Operation::~Operation() {
-	if (type == Operation::TYPE_REFERENCE) {
-		if (!ref.is_valid()) {
-			Object *obj = ObjectDB::get_instance(object);
-			if (obj) {
-				memdelete(obj);
-			}
-		}
-	}
-}
-
 void UndoRedo::_discard_redo() {
 	if (current_action == actions.size() - 1) {
 		return;
+	}
+
+	for (int i = current_action + 1; i < actions.size(); i++) {
+		for (List<Operation>::Element *E = actions.write[i].do_ops.front(); E; E = E->next()) {
+			if (E->get().type == Operation::TYPE_REFERENCE) {
+				if (E->get().ref.is_valid()) {
+					E->get().ref.unref();
+				} else {
+					Object *obj = ObjectDB::get_instance(E->get().object);
+					if (obj) {
+						memdelete(obj);
+					}
+				}
+			}
+		}
+		//ERASE do data
 	}
 
 	actions.resize(current_action + 1);
@@ -63,7 +68,21 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 			current_action = actions.size() - 2;
 
 			if (p_mode == MERGE_ENDS) {
-				actions.write[current_action + 1].do_ops.clear();
+				// Clear all do ops from last action, and delete all object references
+				List<Operation>::Element *E = actions.write[current_action + 1].do_ops.front();
+
+				while (E) {
+					if (E->get().type == Operation::TYPE_REFERENCE) {
+						Object *obj = ObjectDB::get_instance(E->get().object);
+
+						if (obj) {
+							memdelete(obj);
+						}
+					}
+
+					E = E->next();
+					actions.write[current_action + 1].do_ops.pop_front();
+				}
 			}
 
 			actions.write[actions.size() - 1].last_tick = ticks;
@@ -204,6 +223,19 @@ void UndoRedo::_pop_history_tail() {
 		return;
 	}
 
+	for (List<Operation>::Element *E = actions.write[0].undo_ops.front(); E; E = E->next()) {
+		if (E->get().type == Operation::TYPE_REFERENCE) {
+			if (E->get().ref.is_valid()) {
+				E->get().ref.unref();
+			} else {
+				Object *obj = ObjectDB::get_instance(E->get().object);
+				if (obj) {
+					memdelete(obj);
+				}
+			}
+		}
+	}
+
 	actions.remove(0);
 	if (current_action >= 0) {
 		current_action--;
@@ -290,10 +322,6 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 			case Operation::TYPE_REFERENCE: {
 				//do nothing
 			} break;
-
-			default: {
-				ERR_PRINT("Invalid enum value of type UndoRedo::Operation::Type. Please report this as bug.");
-			}
 		}
 	}
 }
