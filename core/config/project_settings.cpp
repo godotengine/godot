@@ -1183,10 +1183,14 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");
 
-	GLOBAL_DEF_BASIC("display/window/size/viewport_width", 1024);
+	// The default window size is tuned to:
+	// - Have a 16:9 aspect ratio,
+	// - Have both dimensions divisible by 8 to better play along with video recording,
+	// - Be displayable correctly in windowed mode on a 1366×768 display (tested on Windows 10 with default settings).
+	GLOBAL_DEF_BASIC("display/window/size/viewport_width", 1152);
 	custom_prop_info["display/window/size/viewport_width"] = PropertyInfo(Variant::INT, "display/window/size/viewport_width", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"); // 8K resolution
 
-	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 600);
+	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 648);
 	custom_prop_info["display/window/size/viewport_height"] = PropertyInfo(Variant::INT, "display/window/size/viewport_height", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"); // 8K resolution
 
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
