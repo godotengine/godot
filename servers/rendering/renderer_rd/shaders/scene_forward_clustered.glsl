@@ -6,6 +6,8 @@
 
 #include "scene_forward_clustered_inc.glsl"
 
+#define SHADER_IS_SRGB false
+
 /* INPUT ATTRIBS */
 
 layout(location = 0) in vec3 vertex_attrib;
@@ -357,6 +359,8 @@ void main() {
 #version 450
 
 #VERSION_DEFINES
+
+#define SHADER_IS_SRGB false
 
 /* Specialization Constants (Toggles) */
 
