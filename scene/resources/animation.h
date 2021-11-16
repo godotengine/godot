@@ -72,6 +72,11 @@ public:
 		LOOP_PINGPONG,
 	};
 
+	enum HandleMode {
+		HANDLE_MODE_FREE,
+		HANDLE_MODE_BALANCED,
+	};
+
 private:
 	struct Track {
 		TrackType type = TrackType::TYPE_ANIMATION;
@@ -157,10 +162,10 @@ private:
 	};
 
 	/* BEZIER TRACK */
-
 	struct BezierKey {
 		Vector2 in_handle; //relative (x always <0)
 		Vector2 out_handle; //relative (x always >0)
+		HandleMode handle_mode = HANDLE_MODE_BALANCED;
 		real_t value = 0.0;
 	};
 
@@ -419,11 +424,13 @@ public:
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
-	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
+	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const HandleMode p_handle_mode = HandleMode::HANDLE_MODE_BALANCED);
+	void bezier_track_set_key_handle_mode(int p_track, int p_index, HandleMode p_mode, double p_balanced_value_time_ratio = 1.0);
 	void bezier_track_set_key_value(int p_track, int p_index, real_t p_value);
-	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle);
-	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle);
+	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, double p_balanced_value_time_ratio = 1.0);
+	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle, double p_balanced_value_time_ratio = 1.0);
 	real_t bezier_track_get_key_value(int p_track, int p_index) const;
+	int bezier_track_get_key_handle_mode(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_in_handle(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_out_handle(int p_track, int p_index) const;
 
@@ -478,6 +485,7 @@ public:
 VARIANT_ENUM_CAST(Animation::TrackType);
 VARIANT_ENUM_CAST(Animation::InterpolationType);
 VARIANT_ENUM_CAST(Animation::UpdateMode);
+VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::LoopMode);
 
 #endif

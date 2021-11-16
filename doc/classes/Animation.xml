@@ -130,6 +130,14 @@
 				Sets the stream of the key identified by [code]key_idx[/code] to value [code]stream[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
+		<method name="bezier_track_get_key_handle_mode" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="key_idx" type="int" />
+			<description>
+				Returns the handle mode of the key identified by [code]index[/code]. See [enum HandleMode] for possible values. The [code]track_idx[/code] must be the index of a Bezier Track.
+			</description>
+		</method>
 		<method name="bezier_track_get_key_in_handle" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="track_idx" type="int" />
@@ -161,6 +169,7 @@
 			<argument index="2" name="value" type="float" />
 			<argument index="3" name="in_handle" type="Vector2" default="Vector2(0, 0)" />
 			<argument index="4" name="out_handle" type="Vector2" default="Vector2(0, 0)" />
+			<argument index="5" name="handle_mode" type="int" enum="Animation.HandleMode" default="1" />
 			<description>
 				Inserts a Bezier Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of a Bezier Track.
 				[code]in_handle[/code] is the left-side weight of the added Bezier curve point, [code]out_handle[/code] is the right-side one, while [code]value[/code] is the actual value at this point.
@@ -174,11 +183,22 @@
 				Returns the interpolated value at the given [code]time[/code] (in seconds). The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
+		<method name="bezier_track_set_key_handle_mode">
+			<return type="void" />
+			<argument index="0" name="track_idx" type="int" />
+			<argument index="1" name="key_idx" type="int" />
+			<argument index="2" name="key_handle_mode" type="int" enum="Animation.HandleMode" />
+			<argument index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
+			<description>
+				Changes the handle mode of the keyframe at the given [code]index[/code]. See [enum HandleMode] for possible values. The [code]track_idx[/code] must be the index of a Bezier Track.
+			</description>
+		</method>
 		<method name="bezier_track_set_key_in_handle">
 			<return type="void" />
 			<argument index="0" name="track_idx" type="int" />
 			<argument index="1" name="key_idx" type="int" />
 			<argument index="2" name="in_handle" type="Vector2" />
+			<argument index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
 			<description>
 				Sets the in handle of the key identified by [code]key_idx[/code] to value [code]in_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
@@ -188,6 +208,7 @@
 			<argument index="0" name="track_idx" type="int" />
 			<argument index="1" name="key_idx" type="int" />
 			<argument index="2" name="out_handle" type="Vector2" />
+			<argument index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
 			<description>
 				Sets the out handle of the key identified by [code]key_idx[/code] to value [code]out_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
@@ -618,6 +639,12 @@
 		</constant>
 		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
 			Repeats playback and reverse playback at both ends of the animation.
+		</constant>
+		<constant name="HANDLE_MODE_FREE" value="0" enum="HandleMode">
+			Assigning the free handle mode to a Bezier Track's keyframe allows you to edit the keyframe's left and right handles independently from one another.
+		</constant>
+		<constant name="HANDLE_MODE_BALANCED" value="1" enum="HandleMode">
+			Assigning the balanced handle mode to a Bezier Track's keyframe makes it so the two handles of the keyframe always stay aligned when changing either the keyframe's left or right handle.
 		</constant>
 	</constants>
 </class>
