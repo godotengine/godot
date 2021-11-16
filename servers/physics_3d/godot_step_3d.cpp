@@ -220,6 +220,9 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta, int p_iterations) 
 
 	p_space->set_active_objects(active_count);
 
+	// Update the broadphase to register collision pairs.
+	p_space->update();
+
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(GodotSpace3D::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
@@ -398,7 +401,6 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta, int p_iterations) 
 
 	all_constraints.clear();
 
-	p_space->update();
 	p_space->unlock();
 	_step++;
 }
