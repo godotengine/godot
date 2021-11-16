@@ -1880,7 +1880,10 @@ Object::~Object() {
 		const VMap<Callable, SignalData::Slot>::Pair *slot_list = s->slot_map.get_array();
 
 		for (int i = 0; i < slot_count; i++) {
-			slot_list[i].value.conn.callable.get_object()->connections.erase(slot_list[i].value.cE);
+			//Check to avoid null access
+			if (slot_list[i].value.cE != NULL) {
+				slot_list[i].value.conn.callable.get_object()->connections.erase(slot_list[i].value.cE);
+			}
 		}
 
 		signal_map.erase(*S);
