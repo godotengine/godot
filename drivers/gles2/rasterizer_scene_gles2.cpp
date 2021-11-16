@@ -979,6 +979,27 @@ void RasterizerSceneGLES2::_add_geometry(RasterizerStorageGLES2::Geometry *p_geo
 
 		_add_geometry_with_material(p_geometry, p_instance, p_owner, material, p_depth_pass, p_shadow_pass);
 	}
+
+	// Repeat the "nested chain" logic also for the overlay
+	if (p_instance->material_overlay.is_valid()) {
+		material = storage->material_owner.getornull(p_instance->material_overlay);
+
+		if (!material || !material->shader || !material->shader->valid) {
+			return;
+		}
+
+		_add_geometry_with_material(p_geometry, p_instance, p_owner, material, p_depth_pass, p_shadow_pass);
+
+		while (material->next_pass.is_valid()) {
+			material = storage->material_owner.getornull(material->next_pass);
+
+			if (!material || !material->shader || !material->shader->valid) {
+				break;
+			}
+
+			_add_geometry_with_material(p_geometry, p_instance, p_owner, material, p_depth_pass, p_shadow_pass);
+		}
+	}
 }
 void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES2::GeometryOwner *p_owner, RasterizerStorageGLES2::Material *p_material, bool p_depth_pass, bool p_shadow_pass) {
 	bool has_base_alpha = (p_material->shader->spatial.uses_alpha && !p_material->shader->spatial.uses_alpha_scissor) || p_material->shader->spatial.uses_screen_texture || p_material->shader->spatial.uses_depth_texture;

@@ -175,6 +175,15 @@ Ref<Material> GeometryInstance::get_material_override() const {
 	return material_override;
 }
 
+void GeometryInstance::set_material_overlay(const Ref<Material> &p_material) {
+	material_overlay = p_material;
+	VS::get_singleton()->instance_geometry_set_material_overlay(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+}
+
+Ref<Material> GeometryInstance::get_material_overlay() const {
+	return material_overlay;
+}
+
 void GeometryInstance::set_generate_lightmap(bool p_enabled) {
 	generate_lightmap = p_enabled;
 }
@@ -275,6 +284,9 @@ void GeometryInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material_override", "material"), &GeometryInstance::set_material_override);
 	ClassDB::bind_method(D_METHOD("get_material_override"), &GeometryInstance::get_material_override);
 
+	ClassDB::bind_method(D_METHOD("set_material_overlay", "material"), &GeometryInstance::set_material_overlay);
+	ClassDB::bind_method(D_METHOD("get_material_overlay"), &GeometryInstance::get_material_overlay);
+
 	ClassDB::bind_method(D_METHOD("set_flag", "flag", "value"), &GeometryInstance::set_flag);
 	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &GeometryInstance::get_flag);
 
@@ -308,6 +320,7 @@ void GeometryInstance::_bind_methods() {
 
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"), "set_material_override", "get_material_override");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_overlay", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"), "set_material_overlay", "get_material_overlay");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01"), "set_extra_cull_margin", "get_extra_cull_margin");
 

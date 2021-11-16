@@ -5899,6 +5899,10 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 				ins->material_override = RID();
 			}
 
+			if (ins->material_overlay == p_rid) {
+				ins->material_overlay = RID();
+			}
+
 			for (int i = 0; i < ins->materials.size(); i++) {
 				if (ins->materials[i] == p_rid) {
 					ins->materials.write[i] = RID();

@@ -2222,6 +2222,27 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 		}
 		_add_geometry_with_material(p_geometry, p_instance, p_owner, m, p_depth_pass, p_shadow_pass);
 	}
+
+	// Repeat the "nested chain" logic also for the overlay
+	if (p_instance->material_overlay.is_valid()) {
+		m = storage->material_owner.getornull(p_instance->material_overlay);
+
+		if (!m || !m->shader || !m->shader->valid) {
+			return;
+		}
+
+		_add_geometry_with_material(p_geometry, p_instance, p_owner, m, p_depth_pass, p_shadow_pass);
+
+		while (m->next_pass.is_valid()) {
+			m = storage->material_owner.getornull(m->next_pass);
+
+			if (!m || !m->shader || !m->shader->valid) {
+				break;
+			}
+
+			_add_geometry_with_material(p_geometry, p_instance, p_owner, m, p_depth_pass, p_shadow_pass);
+		}
+	}
 }
 
 void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_shadow_pass) {
