@@ -213,30 +213,36 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Transform2D" />
 			<description>
+				Returns [code]true[/code] if the transforms are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="PackedVector2Array" />
 			<argument index="0" name="right" type="PackedVector2Array" />
 			<description>
+				Transforms (multiplies) each element of the [Vector2] array by the given [Transform2D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Transform2D" />
 			<argument index="0" name="right" type="Transform2D" />
 			<description>
+				Composes these two transformation matrices by multiplying them together. This has the effect of transforming the second transform (the child) by the first transform (the parent).
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Rect2" />
 			<argument index="0" name="right" type="Rect2" />
 			<description>
+				Transforms (multiplies) the [Rect2] by the given [Transform2D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
+				Transforms (multiplies) the [Vector2] by the given [Transform2D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -262,12 +268,15 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Transform2D" />
 			<description>
+				Returns [code]true[/code] if the transforms are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="Vector2" />
 			<argument index="0" name="index" type="int" />
 			<description>
+				Access transform components using their index. [code]t[0][/code] is equivalent to [code]t.x[/code], [code]t[1][/code] is equivalent to [code]t.y[/code], and [code]t[2][/code] is equivalent to [code]t.origin[/code].
 			</description>
 		</operator>
 	</operators>

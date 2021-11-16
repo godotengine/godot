@@ -91,11 +91,11 @@
 			<return type="int" />
 			<argument index="0" name="right" type="int" />
 			<description>
-				Returns the result of the modulo operator for two integers, i.e. the remainder after dividing both numbers.
+				Returns the remainder after dividing two integers. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
 				[codeblock]
 				print(5 % 2) # 1
 				print(12 % 4) # 0
-				print(12 % 2) # 2
+				print(-5 % 3) # -2
 				[/codeblock]
 			</description>
 		</operator>
@@ -121,12 +121,14 @@
 			<return type="Color" />
 			<argument index="0" name="right" type="Color" />
 			<description>
+				Multiplies each component of the [Color] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Quaternion" />
 			<argument index="0" name="right" type="Quaternion" />
 			<description>
+				Multiplies each component of the [Quaternion] by the given [int]. This operation is not meaningful on its own, but it can be used as a part of a larger expression.
 			</description>
 		</operator>
 		<operator name="operator *">

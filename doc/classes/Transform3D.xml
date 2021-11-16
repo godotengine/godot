@@ -147,30 +147,36 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Transform3D" />
 			<description>
+				Returns [code]true[/code] if the transforms are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="PackedVector3Array" />
 			<argument index="0" name="right" type="PackedVector3Array" />
 			<description>
+				Transforms (multiplies) each element of the [Vector3] array by the given [Transform3D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Transform3D" />
 			<argument index="0" name="right" type="Transform3D" />
 			<description>
+				Composes these two transformation matrices by multiplying them together. This has the effect of transforming the second transform (the child) by the first transform (the parent).
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="AABB" />
 			<argument index="0" name="right" type="AABB" />
 			<description>
+				Transforms (multiplies) the [AABB] by the given [Transform3D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector3" />
 			<argument index="0" name="right" type="Vector3" />
 			<description>
+				Transforms (multiplies) the [Vector3] by the given [Transform3D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -196,6 +202,8 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Transform3D" />
 			<description>
+				Returns [code]true[/code] if the transforms are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 	</operators>

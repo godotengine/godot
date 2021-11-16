@@ -180,6 +180,8 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Plane" />
 			<description>
+				Returns [code]true[/code] if the planes are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -191,16 +193,20 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Plane" />
 			<description>
+				Returns [code]true[/code] if the planes are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator unary+">
 			<return type="Plane" />
 			<description>
+				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
 			</description>
 		</operator>
 		<operator name="operator unary-">
 			<return type="Plane" />
 			<description>
+				Returns the negative value of the [Plane]. This is the same as writing [code]Plane(-p.normal, -p.d)[/code]. This operation flips the direction of the normal vector and also flips the distance value, resulting in a Plane that is in the same place, but facing the opposite direction.
 			</description>
 		</operator>
 	</operators>
