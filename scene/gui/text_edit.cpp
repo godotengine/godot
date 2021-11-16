@@ -3396,7 +3396,7 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos) const {
 	int wrap_index = 0;
 
 	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE || _is_hiding_enabled()) {
-		Point2i f_ofs = get_next_visible_line_index_offset_from(first_vis_line, caret.wrap_ofs, rows + (1 * SGN(rows)));
+		Point2i f_ofs = get_next_visible_line_index_offset_from(first_vis_line, caret.wrap_ofs, rows + (1 * SIGN(rows)));
 		wrap_index = f_ofs.y;
 		if (rows < 0) {
 			row = first_vis_line - (f_ofs.x - 1);
@@ -3471,7 +3471,7 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 
 	int row = minimap_line + Math::floor(rows);
 	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE || _is_hiding_enabled()) {
-		int f_ofs = get_next_visible_line_index_offset_from(minimap_line, caret.wrap_ofs, rows + (1 * SGN(rows))).x - 1;
+		int f_ofs = get_next_visible_line_index_offset_from(minimap_line, caret.wrap_ofs, rows + (1 * SIGN(rows))).x - 1;
 		if (rows < 0) {
 			row = minimap_line - f_ofs;
 		} else {
@@ -5762,7 +5762,7 @@ double TextEdit::_get_v_scroll_offset() const {
 }
 
 void TextEdit::_scroll_up(real_t p_delta) {
-	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(-p_delta)) {
+	if (scrolling && smooth_scroll_enabled && SIGN(target_v_scroll - v_scroll->get_value()) != SIGN(-p_delta)) {
 		scrolling = false;
 		minimap_clicked = false;
 	}
@@ -5789,7 +5789,7 @@ void TextEdit::_scroll_up(real_t p_delta) {
 }
 
 void TextEdit::_scroll_down(real_t p_delta) {
-	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(p_delta)) {
+	if (scrolling && smooth_scroll_enabled && SIGN(target_v_scroll - v_scroll->get_value()) != SIGN(p_delta)) {
 		scrolling = false;
 		minimap_clicked = false;
 	}
