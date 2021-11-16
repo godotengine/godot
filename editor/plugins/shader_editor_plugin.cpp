@@ -172,8 +172,10 @@ void ShaderTextEditor::_load_theme_settings() {
 		}
 	}
 
+	const Color user_type_color = EDITOR_GET("text_editor/highlighting/user_type_color");
+
 	for (List<String>::Element *E = built_ins.front(); E; E = E->next()) {
-		get_text_edit()->add_keyword_color(E->get(), member_variable_color);
+		get_text_edit()->add_keyword_color(E->get(), user_type_color);
 	}
 
 	// Colorize comments.
