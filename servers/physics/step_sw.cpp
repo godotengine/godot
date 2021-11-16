@@ -162,6 +162,9 @@ void StepSW::step(SpaceSW *p_space, real_t p_delta, int p_iterations) {
 
 	p_space->set_active_objects(active_count);
 
+	// Update the broadphase to register collision pairs.
+	p_space->update();
+
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(SpaceSW::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
@@ -278,7 +281,6 @@ void StepSW::step(SpaceSW *p_space, real_t p_delta, int p_iterations) {
 		profile_begtime = profile_endtime;
 	}
 
-	p_space->update();
 	p_space->unlock();
 	_step++;
 }
