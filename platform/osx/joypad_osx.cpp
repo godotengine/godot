@@ -66,6 +66,7 @@ void joypad::free() {
 	if (ff_device) {
 		FFDeviceReleaseEffect(ff_device, ff_object);
 		FFReleaseDevice(ff_device);
+		ff_device = nullptr;
 		memfree(ff_axes);
 		memfree(ff_directions);
 	}
@@ -250,7 +251,7 @@ void JoypadOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
 	if (is_joypad(p_device)) {
 		configure_joypad(p_device, &new_joypad);
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-		if (IOHIDDeviceGetService != NULL) {
+		if (IOHIDDeviceGetService) {
 #endif
 			const io_service_t ioservice = IOHIDDeviceGetService(p_device);
 			if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK) && new_joypad.config_force_feedback(ioservice)) {
@@ -355,6 +356,7 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 	{                                   \
 		if (ret != FF_OK) {             \
 			FFReleaseDevice(ff_device); \
+			ff_device = nullptr;        \
 			return false;               \
 		}                               \
 	}
@@ -374,6 +376,7 @@ bool joypad::config_force_feedback(io_service_t p_service) {
 		return true;
 	}
 	FFReleaseDevice(ff_device);
+	ff_device = nullptr;
 	return false;
 }
 #undef FF_ERR
@@ -608,7 +611,7 @@ JoypadOSX::JoypadOSX() {
 
 	if (array) {
 		hid_manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
-		if (hid_manager != NULL) {
+		if (hid_manager) {
 			config_hid_manager(array);
 		}
 		CFRelease(array);
