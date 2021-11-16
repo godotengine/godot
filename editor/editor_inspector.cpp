@@ -31,6 +31,7 @@
 #include "editor_inspector.h"
 
 #include "array_property_edit.h"
+#include "core/os/input.h"
 #include "dictionary_property_edit.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
@@ -970,77 +971,89 @@ void EditorInspectorSection::_test_unfold() {
 }
 
 void EditorInspectorSection::_notification(int p_what) {
-	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-		Ref<Font> font = get_font("font", "Tree");
-		Ref<Texture> arrow;
+	switch (p_what) {
+		case NOTIFICATION_SORT_CHILDREN: {
+			Ref<Font> font = get_font("font", "Tree");
+			Ref<Texture> arrow;
 
-		if (foldable) {
-			if (object->editor_is_section_unfolded(section)) {
-				arrow = get_icon("arrow", "Tree");
-			} else {
-				arrow = get_icon("arrow_collapsed", "Tree");
-			}
-		}
-
-		Size2 size = get_size();
-		Point2 offset;
-		offset.y = font->get_height();
-		if (arrow.is_valid()) {
-			offset.y = MAX(offset.y, arrow->get_height());
-		}
-
-		offset.y += get_constant("vseparation", "Tree");
-		offset.x += get_constant("inspector_margin", "Editor");
-
-		Rect2 rect(offset, size - offset);
-
-		//set children
-		for (int i = 0; i < get_child_count(); i++) {
-			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c) {
-				continue;
-			}
-			if (c->is_set_as_toplevel()) {
-				continue;
-			}
-			if (!c->is_visible_in_tree()) {
-				continue;
+			if (foldable) {
+				if (object->editor_is_section_unfolded(section)) {
+					arrow = get_icon("arrow", "Tree");
+				} else {
+					arrow = get_icon("arrow_collapsed", "Tree");
+				}
 			}
 
-			fit_child_in_rect(c, rect);
-		}
-
-		update(); //need to redraw text
-	}
-
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture> arrow;
-
-		if (foldable) {
-			if (object->editor_is_section_unfolded(section)) {
-				arrow = get_icon("arrow", "Tree");
-			} else {
-				arrow = get_icon("arrow_collapsed", "Tree");
+			Size2 size = get_size();
+			Point2 offset;
+			offset.y = font->get_height();
+			if (arrow.is_valid()) {
+				offset.y = MAX(offset.y, arrow->get_height());
 			}
-		}
 
-		Ref<Font> font = get_font("font", "Tree");
+			offset.y += get_constant("vseparation", "Tree");
+			offset.x += get_constant("inspector_margin", "Editor");
 
-		int h = font->get_height();
-		if (arrow.is_valid()) {
-			h = MAX(h, arrow->get_height());
-		}
-		h += get_constant("vseparation", "Tree");
+			Rect2 rect(offset, size - offset);
 
-		draw_rect(Rect2(Vector2(), Vector2(get_size().width, h)), bg_color);
+			//set children
+			for (int i = 0; i < get_child_count(); i++) {
+				Control *c = Object::cast_to<Control>(get_child(i));
+				if (!c) {
+					continue;
+				}
+				if (c->is_set_as_toplevel()) {
+					continue;
+				}
+				if (!c->is_visible_in_tree()) {
+					continue;
+				}
 
-		const int arrow_margin = 3;
-		Color color = get_color("font_color", "Tree");
-		draw_string(font, Point2(Math::round((16 + arrow_margin) * EDSCALE), font->get_ascent() + (h - font->get_height()) / 2).floor(), label, color, get_size().width);
+				fit_child_in_rect(c, rect);
+			}
 
-		if (arrow.is_valid()) {
-			draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
-		}
+			update(); //need to redraw text
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			Ref<Texture> arrow;
+
+			if (foldable) {
+				if (object->editor_is_section_unfolded(section)) {
+					arrow = get_icon("arrow", "Tree");
+				} else {
+					arrow = get_icon("arrow_collapsed", "Tree");
+				}
+			}
+
+			Ref<Font> font = get_font("font", "Tree");
+
+			int h = font->get_height();
+			if (arrow.is_valid()) {
+				h = MAX(h, arrow->get_height());
+			}
+			h += get_constant("vseparation", "Tree");
+
+			Rect2 header_rect = Rect2(Vector2(), Vector2(get_size().width, h));
+			Color c = bg_color;
+			c.a *= 0.4;
+			if (foldable && header_rect.has_point(get_local_mouse_position())) {
+				c = c.lightened(Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) ? -0.05 : 0.2);
+			}
+			draw_rect(header_rect, c);
+
+			const int arrow_margin = 3;
+			Color color = get_color("font_color", "Tree");
+			draw_string(font, Point2(Math::round((16 + arrow_margin) * EDSCALE), font->get_ascent() + (h - font->get_height()) / 2).floor(), label, color, get_size().width);
+
+			if (arrow.is_valid()) {
+				draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
+			}
+		} break;
+		case NOTIFICATION_MOUSE_ENTER:
+		case NOTIFICATION_MOUSE_EXIT: {
+			update();
+		} break;
 	}
 }
 
@@ -1112,6 +1125,8 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			vbox->hide();
 		}
+	} else if (mb.is_valid() && !mb->is_pressed()) {
+		update();
 	}
 }
 
