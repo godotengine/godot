@@ -1410,7 +1410,7 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	ERR_FAIL_COND_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
 
-	SignalData::Slot *slot = &s->slot_map[p_callable];
+	SignalData::Slot *slot = &s->slot_map[*p_callable.get_base_comparator()];
 
 	if (!p_force) {
 		slot->reference_count--; // by default is zero, if it was not referenced it will go below it
