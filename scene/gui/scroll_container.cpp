@@ -320,7 +320,9 @@ void ScrollContainer::_notification(int p_what) {
 	};
 
 	if (p_what == NOTIFICATION_READY) {
-		get_viewport()->connect("gui_focus_changed", callable_mp(this, &ScrollContainer::_gui_focus_changed));
+		Viewport* viewport = get_viewport();
+		ERR_FAIL_COND(!viewport);
+		viewport->connect("gui_focus_changed", callable_mp(this, &ScrollContainer::_gui_focus_changed));
 		_update_dimensions();
 	}
 
