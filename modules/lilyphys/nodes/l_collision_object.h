@@ -9,14 +9,10 @@
 
 class LCollisionObject : public Spatial {
     GDCLASS(LCollisionObject, Spatial);
-
-    RID rid;
-
 protected:
+    RID rid;
     static void _bind_methods();
-
 public:
-    LCollisionObject();
     RID get_rid();
 };
 

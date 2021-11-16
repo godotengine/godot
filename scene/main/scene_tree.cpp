@@ -48,6 +48,7 @@
 #include "scene/scene_string_names.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
+#include "modules/lilyphys/lilyphys_server.h"
 #include "viewport.h"
 
 #include <stdio.h>
@@ -906,6 +907,7 @@ void SceneTree::set_pause(bool p_enabled) {
 	pause = p_enabled;
 	PhysicsServer::get_singleton()->set_active(!p_enabled);
 	Physics2DServer::get_singleton()->set_active(!p_enabled);
+    LilyphysServer::get_singleton()->set_active(!p_enabled);
 	if (get_root())
 		get_root()->propagate_notification(p_enabled ? Node::NOTIFICATION_PAUSED : Node::NOTIFICATION_UNPAUSED);
 }

@@ -63,6 +63,7 @@
 #include "scene/gui/tool_button.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/physics_2d_server.h"
+#include "modules/lilyphys/lilyphys_server.h"
 
 #include "editor/audio_stream_preview.h"
 #include "editor/dependency_editor.h"
@@ -5813,6 +5814,7 @@ EditorNode::EditorNode() {
 
 	PhysicsServer::get_singleton()->set_active(false); // no physics by default if editor
 	Physics2DServer::get_singleton()->set_active(false); // no physics by default if editor
+	LilyphysServer::get_singleton()->set_active(false); // no physics by default if editor
 	ScriptServer::set_scripting_enabled(false); // no scripting by default if editor
 
 	EditorHelp::generate_doc(); //before any editor classes are created

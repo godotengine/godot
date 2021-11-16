@@ -7,6 +7,8 @@
 #include "_lilyphys_server.h"
 
 #include "nodes/l_collision_object.h"
+#include "nodes/l_physics_body.h"
+#include "nodes/l_rigid_body.h"
 
 static LilyphysServer *lilyphys_server = nullptr;
 static _LilyphysServer *_lilyphys_sever = nullptr;
@@ -20,7 +22,9 @@ void register_lilyphys_types() {
     Engine::get_singleton()->add_singleton(Engine::Singleton("LilyphysServer", _LilyphysServer::get_singleton()));
 
     // Register our nodes.
-    ClassDB::register_class<LCollisionObject>();
+    ClassDB::register_virtual_class<LCollisionObject>();
+    ClassDB::register_virtual_class<LPhysicsBody>();
+    ClassDB::register_class<LRigidBody>();
 }
 
 void unregister_lilyphys_types() {

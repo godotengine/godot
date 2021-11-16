@@ -10,10 +10,6 @@ void LCollisionObject::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_rid"), &LCollisionObject::get_rid);
 }
 
-LCollisionObject::LCollisionObject() {
-    rid = LilyphysServer::get_singleton()->create_collision_object();
-}
-
 RID LCollisionObject::get_rid() {
     return rid;
 }

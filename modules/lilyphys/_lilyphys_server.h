@@ -25,8 +25,7 @@ public:
     ~_LilyphysServer();
     String get_pee_storage();
 
-    RID create_collision_object();
-    Transform get_collision_object_transform(RID p_rid);
+    RID create_physics_body();
 };
 
 #endif //LILYPHYS__LILYPHYS_SERVER_H
