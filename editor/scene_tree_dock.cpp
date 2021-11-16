@@ -2419,7 +2419,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 	Node *copy = base->duplicate_from_editor(duplimap);
 
 	if (copy) {
-		for (int i = 0; i < copy->get_child_count(); i++) {
+		for (int i = 0; i < copy->get_child_count(false); i++) {
 			_set_node_owner_recursive(copy->get_child(i), copy);
 		}
 
