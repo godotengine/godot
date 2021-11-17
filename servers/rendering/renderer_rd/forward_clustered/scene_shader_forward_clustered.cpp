@@ -585,6 +585,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.renames["CUSTOM1"] = "custom1_attrib";
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
+		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 
 		// not implemented but need these just in case code is in the shaders
 		actions.renames["VIEW_INDEX"] = "0";
