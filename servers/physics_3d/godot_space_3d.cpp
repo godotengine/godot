@@ -507,15 +507,17 @@ bool GodotPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_paramete
 	GodotShape3D *shape = GodotPhysicsServer3D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
 	ERR_FAIL_COND_V(!shape, 0);
 
-	real_t min_contact_depth = p_parameters.margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
-
 	AABB aabb = p_parameters.transform.xform(shape->get_aabb());
 	aabb = aabb.grow(p_parameters.margin);
 
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, GodotSpace3D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
 	_RestCallbackData rcd;
-	rcd.min_allowed_depth = min_contact_depth;
+
+	// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
+	real_t motion_length = p_parameters.motion.length();
+	real_t min_contact_depth = p_parameters.margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
+	rcd.min_allowed_depth = MIN(motion_length, min_contact_depth);
 
 	for (int i = 0; i < amount; i++) {
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
