@@ -14,10 +14,10 @@ struct ItemPairs {
 	void clear() {
 		num_pairs = 0;
 		extended_pairs.reset();
-		expanded_aabb = Bounds();
+		expanded_aabb = BOUNDS();
 	}
 
-	Bounds expanded_aabb;
+	BOUNDS expanded_aabb;
 
 	// maybe we can just use the number in the vector TODO
 	int32_t num_pairs;
