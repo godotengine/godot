@@ -723,6 +723,14 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="randfn">
+			<return type="float" />
+			<argument index="0" name="mean" type="float" />
+			<argument index="1" name="deviation" type="float" />
+			<description>
+				Returns a normally-distributed pseudo-random floating point value using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code]. This is also called Gaussian distribution.
+			</description>
+		</method>
 		<method name="randi">
 			<return type="int" />
 			<description>

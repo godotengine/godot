@@ -403,6 +403,10 @@ struct VariantUtilityFunctions {
 		return Math::randf();
 	}
 
+	static inline double randfn(double mean, double deviation) {
+		return Math::randfn(mean, deviation);
+	}
+
 	static inline int64_t randi_range(int64_t from, int64_t to) {
 		return Math::random((int32_t)from, (int32_t)to);
 	}
@@ -1239,6 +1243,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(randf, sarray(), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randi_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randf_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDR(randfn, sarray("mean", "deviation"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBIND(seed, sarray("base"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(rand_from_seed, sarray("seed"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 

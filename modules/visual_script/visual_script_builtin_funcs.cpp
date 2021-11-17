@@ -71,8 +71,9 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"randomize",
 	"randi",
 	"randf",
-	"randf_range",
 	"randi_range",
+	"randf_range",
+	"randfn",
 	"seed",
 	"rand_seed",
 	"deg2rad",
@@ -195,8 +196,9 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_POW:
 		case MATH_EASE:
 		case MATH_SNAPPED:
-		case MATH_RANDF_RANGE:
 		case MATH_RANDI_RANGE:
+		case MATH_RANDF_RANGE:
+		case MATH_RANDFN:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case TYPE_CONVERT:
@@ -353,6 +355,13 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case MATH_RANDI:
 		case MATH_RANDF: {
 		} break;
+		case MATH_RANDI_RANGE: {
+			if (p_idx == 0) {
+				return PropertyInfo(Variant::INT, "from");
+			} else {
+				return PropertyInfo(Variant::INT, "to");
+			}
+		} break;
 		case MATH_RANDF_RANGE: {
 			if (p_idx == 0) {
 				return PropertyInfo(Variant::FLOAT, "from");
@@ -360,11 +369,11 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::FLOAT, "to");
 			}
 		} break;
-		case MATH_RANDI_RANGE: {
+		case MATH_RANDFN: {
 			if (p_idx == 0) {
-				return PropertyInfo(Variant::INT, "from");
+				return PropertyInfo(Variant::FLOAT, "mean");
 			} else {
-				return PropertyInfo(Variant::INT, "to");
+				return PropertyInfo(Variant::FLOAT, "deviation");
 			}
 		} break;
 		case MATH_SEED:
@@ -527,6 +536,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			t = Variant::INT;
 		} break;
 		case MATH_RANDF:
+		case MATH_RANDFN:
 		case MATH_RANDF_RANGE: {
 			t = Variant::FLOAT;
 		} break;
@@ -1211,8 +1221,9 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_RANDOMIZE);
 	BIND_ENUM_CONSTANT(MATH_RANDI);
 	BIND_ENUM_CONSTANT(MATH_RANDF);
-	BIND_ENUM_CONSTANT(MATH_RANDF_RANGE);
 	BIND_ENUM_CONSTANT(MATH_RANDI_RANGE);
+	BIND_ENUM_CONSTANT(MATH_RANDF_RANGE);
+	BIND_ENUM_CONSTANT(MATH_RANDFN);
 	BIND_ENUM_CONSTANT(MATH_SEED);
 	BIND_ENUM_CONSTANT(MATH_RANDSEED);
 	BIND_ENUM_CONSTANT(MATH_DEG2RAD);
@@ -1301,8 +1312,9 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randomize", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDOMIZE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randi", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDI>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randf", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDF>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randf_range", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDF_RANGE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randi_range", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDI_RANGE>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randf_range", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDF_RANGE>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randfn", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDFN>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/seed", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SEED>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randseed", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDSEED>);
