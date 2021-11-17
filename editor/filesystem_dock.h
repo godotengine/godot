@@ -304,6 +304,12 @@ private:
 	void _feature_profile_changed();
 	Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
+private:
+	static FileSystemDock *singleton;
+
+public:
+	static FileSystemDock *get_singleton() { return singleton; }
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

@@ -271,7 +271,7 @@ protected:
 
 		if (String(p_name) == "export") {
 			script->set_variable_export(var, p_value);
-			EditorNode::get_singleton()->get_inspector()->update_tree();
+			InspectorDock::get_inspector_singleton()->update_tree();
 			return true;
 		}
 

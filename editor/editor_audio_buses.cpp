@@ -1163,7 +1163,7 @@ void EditorAudioBuses::_server_save() {
 }
 
 void EditorAudioBuses::_select_layout() {
-	EditorNode::get_singleton()->get_filesystem_dock()->select_file(edited_path);
+	FileSystemDock::get_singleton()->select_file(edited_path);
 }
 
 void EditorAudioBuses::_save_as_layout() {

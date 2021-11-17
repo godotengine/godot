@@ -4967,7 +4967,7 @@ public:
 	}
 
 	void _open_inspector(RES p_resource) {
-		EditorNode::get_singleton()->get_inspector()->edit(p_resource.ptr());
+		InspectorDock::get_inspector_singleton()->edit(p_resource.ptr());
 	}
 
 	bool updating;

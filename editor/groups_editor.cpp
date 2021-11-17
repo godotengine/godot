@@ -144,8 +144,8 @@ void GroupDialog::_add_pressed() {
 	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -173,8 +173,8 @@ void GroupDialog::_removed_pressed() {
 	undo_redo->add_undo_method(this, "emit_signal", "group_edited");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 }
@@ -333,8 +333,8 @@ void GroupDialog::_modify_group_pressed(Object *p_item, int p_column, int p_id) 
 			undo_redo->add_undo_method(this, "emit_signal", "group_edited");
 
 			// To force redraw of scene tree.
-			undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-			undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+			undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+			undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 			undo_redo->commit_action();
 		} break;
@@ -583,8 +583,8 @@ void GroupsEditor::_add_group(const String &p_group) {
 	undo_redo->add_undo_method(this, "update_tree");
 
 	// To force redraw of scene tree.
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 	undo_redo->commit_action();
 
@@ -611,8 +611,8 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id) {
 			undo_redo->add_undo_method(this, "update_tree");
 
 			// To force redraw of scene tree.
-			undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
-			undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+			undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+			undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
 			undo_redo->commit_action();
 		} break;

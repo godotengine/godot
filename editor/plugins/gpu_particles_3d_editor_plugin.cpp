@@ -269,9 +269,9 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
-			ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, cpu_particles, true, false);
+			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);
-			ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", cpu_particles, node, false, false);
+			ur->add_undo_method(SceneTreeDock::get_singleton(), "replace_node", cpu_particles, node, false, false);
 			ur->add_undo_reference(node);
 			ur->commit_action();
 

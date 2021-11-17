@@ -228,7 +228,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 			mesh_library->create_item(mesh_library->get_last_unused_item_id());
 		} break;
 		case MENU_OPTION_REMOVE_ITEM: {
-			String p = editor->get_inspector()->get_selected_path();
+			String p = InspectorDock::get_inspector_singleton()->get_selected_path();
 			if (p.begins_with("/MeshLibrary/item") && p.get_slice_count("/") >= 3) {
 				to_erase = p.get_slice("/", 3).to_int();
 				cd_remove->set_text(vformat(TTR("Remove item %d?"), to_erase));
