@@ -315,13 +315,13 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					node->_set_owner_nocheck(owner);
 				}
 			}
-		}
 
-		// we only want to deal with pinned flag if instancing as pure main (no instance, no inheriting)
-		if (p_edit_state == GEN_EDIT_STATE_MAIN) {
-			_sanitize_node_pinned_properties(node);
-		} else {
-			node->remove_meta("_edit_pinned_properties_");
+			// we only want to deal with pinned flag if instancing as pure main (no instance, no inheriting)
+			if (p_edit_state == GEN_EDIT_STATE_MAIN) {
+				_sanitize_node_pinned_properties(node);
+			} else {
+				node->remove_meta("_edit_pinned_properties_");
+			}
 		}
 
 		ret_nodes[i] = node;
