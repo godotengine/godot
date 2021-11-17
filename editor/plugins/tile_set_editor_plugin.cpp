@@ -3336,9 +3336,10 @@ void TileSetEditor::update_workspace_minsize() {
 		}
 	}
 
-	workspace->set_custom_minimum_size(workspace_min_size + WORKSPACE_MARGIN * 2);
 	workspace_container->set_custom_minimum_size(workspace_min_size * workspace->get_scale() + WORKSPACE_MARGIN * 2);
 	workspace_overlay->set_custom_minimum_size(workspace_min_size * workspace->get_scale() + WORKSPACE_MARGIN * 2);
+	// Make sure workspace size is initialized last (otherwise it might be incorrect).
+	workspace->call_deferred("set_custom_minimum_size", workspace_min_size + WORKSPACE_MARGIN * 2);
 }
 
 void TileSetEditor::update_edited_region(const Vector2 &end_point) {
