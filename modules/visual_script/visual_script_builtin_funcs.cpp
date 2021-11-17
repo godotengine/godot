@@ -837,15 +837,20 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 		case VisualScriptBuiltinFunc::MATH_RANDF: {
 			*r_return = Math::randf();
 		} break;
+		case VisualScriptBuiltinFunc::MATH_RANDI_RANGE: {
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			*r_return = Math::random((int)*p_inputs[0], (int)*p_inputs[1]);
+		} break;
 		case VisualScriptBuiltinFunc::MATH_RANDF_RANGE: {
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::random((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
-		case VisualScriptBuiltinFunc::MATH_RANDI_RANGE: {
+		case VisualScriptBuiltinFunc::MATH_RANDFN: {
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return = Math::random((int)*p_inputs[0], (int)*p_inputs[1]);
+			*r_return = Math::randfn((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_SEED: {
 			VALIDATE_ARG_NUM(0);
