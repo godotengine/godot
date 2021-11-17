@@ -774,13 +774,13 @@ static GDNativeTypePtr gdnative_packed_vector3_array_operator_index_const(const 
 static GDNativeVariantPtr gdnative_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
 	Array *self = (Array *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
-	return (GDNativeTypePtr)&self[p_index];
+	return (GDNativeVariantPtr)&self->operator[](p_index);
 }
 
 static GDNativeVariantPtr gdnative_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
 	const Array *self = (const Array *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
-	return (GDNativeTypePtr)&self[p_index];
+	return (GDNativeVariantPtr)&self->operator[](p_index);
 }
 
 /* OBJECT API */
