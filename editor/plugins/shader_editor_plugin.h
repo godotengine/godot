@@ -170,6 +170,8 @@ protected:
 public:
 	void apply_shaders();
 
+	Ref<Shader> get_shader();
+
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);
 

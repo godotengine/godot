@@ -8990,12 +8990,14 @@ Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_i
 		return err;
 	}
 
+	// clear after preprocessing. Because preprocess uses the resource loader, it means if this instance is held in a singleton, it can have a changed state after.
+	clear();
+
 	global_var_get_type_func = p_info.global_variable_type_func;
 	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
 
-	char_idx = 0; // reset char idx after preprocess because this compiler exists in a singleton and can be overwritten when called recursively.
 	shader = alloc_node<ShaderNode>();
 	err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
 

@@ -1344,13 +1344,14 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_variable_type_func = _get_variable_type;
+	
+	// cheat the context here for now.
+	ShaderDependencyGraph graph;
+	graph.populate(p_code);
 
 	Error err = parser.compile(p_code, info);
 
 	if (err != OK) {
-		// create shader preprocessor block here again
-		ShaderDependencyGraph graph;
-		graph.populate(p_code);
 		ShaderDependencyNode *context;
 		int adjusted_line = parser.get_error_line();
 		for (ShaderDependencyNode *node : graph.nodes) {
