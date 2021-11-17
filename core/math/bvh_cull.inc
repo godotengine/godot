@@ -14,7 +14,7 @@ struct CullParams {
 	uint32_t pairable_type;
 
 	// optional components for different tests
-	Point point;
+	POINT point;
 	BVHABB_CLASS abb;
 	typename BVHABB_CLASS::ConvexHull hull;
 	typename BVHABB_CLASS::Segment segment;

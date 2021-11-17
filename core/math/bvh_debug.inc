@@ -6,12 +6,12 @@ void _debug_recursive_print_tree(int p_tree_id) const {
 }
 
 String _debug_aabb_to_string(const BVHABB_CLASS &aabb) const {
-	Point size = aabb.calculate_size();
+	POINT size = aabb.calculate_size();
 
 	String sz;
 	float vol = 0.0;
 
-	for (int i = 0; i < Point::AXES_COUNT; ++i) {
+	for (int i = 0; i < POINT::AXIS_COUNT; ++i) {
 		sz += "(";
 		sz += itos(aabb.min[i]);
 		sz += " ~ ";
