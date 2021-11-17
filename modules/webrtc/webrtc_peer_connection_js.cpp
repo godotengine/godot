@@ -58,7 +58,7 @@ void WebRTCPeerConnectionJS::_on_error(void *p_obj) {
 
 void WebRTCPeerConnectionJS::_on_data_channel(void *p_obj, int p_id) {
 	WebRTCPeerConnectionJS *peer = static_cast<WebRTCPeerConnectionJS *>(p_obj);
-	peer->emit_signal("data_channel_received", Ref<WebRTCDataChannelJS>(new WebRTCDataChannelJS(p_id)));
+	peer->emit_signal("data_channel_received", Ref<WebRTCDataChannel>(memnew(WebRTCDataChannelJS(p_id))));
 }
 
 void WebRTCPeerConnectionJS::close() {
