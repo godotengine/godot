@@ -52,6 +52,8 @@ extern int godot_js_rtc_pc_datachannel_create(int p_id, const char *p_label, con
 }
 
 class WebRTCPeerConnectionJS : public WebRTCPeerConnection {
+	GDCLASS(WebRTCPeerConnectionJS, WebRTCPeerConnection);
+
 private:
 	int _js_id;
 	ConnectionState _conn_state;
