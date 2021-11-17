@@ -290,6 +290,14 @@
 				Returns the list of keys in the [Dictionary].
 			</description>
 		</method>
+		<method name="set">
+			<return type="void" />
+			<argument index="0" name="key" type="Variant" />
+			<argument index="1" name="value" type="Variant" />
+			<description>
+				Sets the entry in the [Dictionary] at the given key.
+			</description>
+		</method>
 		<method name="size" qualifiers="const">
 			<return type="int" />
 			<description>

@@ -152,6 +152,10 @@ Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
 	return *result;
 }
 
+void Dictionary::set(const Variant &p_key, const Variant &p_value) {
+	this[p_key] = p_value;
+}
+
 int Dictionary::size() const {
 	return _p->variant_map.size();
 }
