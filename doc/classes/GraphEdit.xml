@@ -141,7 +141,7 @@
 			<argument index="3" name="to_port" type="int" />
 			<argument index="4" name="amount" type="float" />
 			<description>
-				Sets the coloration of the connection between [code]from[/code]'s [code]from_port[/code] and [code]to[/code]'s [code]to_port[/code] with the color provided in the [code]activity[/code] theme property.
+				Sets the coloration of the connection between [code]from[/code]'s [code]from_port[/code] and [code]to[/code]'s [code]to_port[/code] with the color provided in the [theme_item activity] theme property.
 			</description>
 		</method>
 		<method name="set_selected">

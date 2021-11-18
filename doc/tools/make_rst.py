@@ -328,7 +328,7 @@ class State:
                     theme_item.text,
                     default_value,
                 )
-                class_def.theme_items[theme_item_id] = theme_item_def
+                class_def.theme_items[theme_item_name] = theme_item_def
 
         tutorials = class_root.find("tutorials")
         if tutorials is not None:
@@ -905,6 +905,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 or cmd.startswith("member")
                 or cmd.startswith("signal")
                 or cmd.startswith("constant")
+                or cmd.startswith("theme_item")
             ):
                 param = tag_text[space_pos + 1 :]
 
@@ -940,6 +941,13 @@ def rstize_text(text, state):  # type: (str, State) -> str
                         if method_param not in class_def.properties:
                             print_error("Unresolved member '{}', file: {}".format(param, state.current_class), state)
                         ref_type = "_property"
+
+                    elif cmd.startswith("theme_item"):
+                        if method_param not in class_def.theme_items:
+                            print_error(
+                                "Unresolved theme item '{}', file: {}".format(param, state.current_class), state
+                            )
+                        ref_type = "_theme_item"
 
                     elif cmd.startswith("signal"):
                         if method_param not in class_def.signals:
