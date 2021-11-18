@@ -9,6 +9,13 @@ BVHHandle item_add(T *p_userdata, bool p_active, const BOUNDS &p_aabb, int32_t p
 	BVHABB_CLASS abb;
 	abb.from(p_aabb);
 
+	// NOTE that we do not expand the AABB for the first create even if
+	// leaf expansion is switched on. This is for two reasons:
+	// (1) We don't know if this object will move in future, in which case a non-expanded
+	// bound would be better...
+	// (2) We don't yet know how many objects will be paired, which is used to modify
+	// the expansion margin.
+
 	// handle to be filled with the new item ref
 	BVHHandle handle;
 
@@ -115,6 +122,15 @@ bool item_move(BVHHandle p_handle, const BOUNDS &p_aabb) {
 	BVHABB_CLASS abb;
 	abb.from(p_aabb);
 
+#ifdef BVH_EXPAND_LEAF_AABBS
+	if (USE_PAIRS) {
+		// scale the pairing expansion by the number of pairs.
+		abb.expand(_pairs[ref_id].scale_expansion_margin(_pairing_expansion));
+	} else {
+		abb.expand(_pairing_expansion);
+	}
+#endif
+
 	BVH_ASSERT(ref.tnode_id != BVHCommon::INVALID);
 	TNode &tnode = _nodes[ref.tnode_id];
 
@@ -129,9 +145,20 @@ bool item_move(BVHHandle p_handle, const BOUNDS &p_aabb) {
 		BVHABB_CLASS &leaf_abb = leaf.get_aabb(ref.item_id);
 
 		// no change?
+#ifdef BVH_EXPAND_LEAF_AABBS
+		BOUNDS leaf_aabb;
+		leaf_abb.to(leaf_aabb);
+
+		// This test should pass in a lot of cases, and by returning false we can avoid
+		// collision pairing checks later, which greatly reduces processing.
+		if (expanded_aabb_encloses_not_shrink(leaf_aabb, p_aabb)) {
+			return false;
+		}
+#else
 		if (leaf_abb == abb) {
 			return false;
 		}
+#endif
 
 #ifdef BVH_VERBOSE_MOVES
 		print_line("item_move " + itos(p_handle.id()) + "(within tnode aabb) : " + _debug_aabb_to_string(abb));
