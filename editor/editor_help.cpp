@@ -109,6 +109,9 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		} else if (tag == "constant") {
 			topic = "class_constant";
 			table = &this->constant_line;
+		} else if (tag == "theme_item") {
+			topic = "theme_item";
+			table = &this->theme_property_line;
 		} else {
 			return;
 		}
@@ -1538,7 +1541,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
 
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ")) {
 			int tag_end = tag.find(" ");
 
 			String link_tag = tag.substr(0, tag_end);

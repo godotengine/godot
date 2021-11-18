@@ -285,10 +285,10 @@
 			No overlay is shown.
 		</constant>
 		<constant name="OVERLAY_BREAKPOINT" value="1" enum="Overlay">
-			Show overlay set in the [code]breakpoint[/code] theme property.
+			Show overlay set in the [theme_item breakpoint] theme property.
 		</constant>
 		<constant name="OVERLAY_POSITION" value="2" enum="Overlay">
-			Show overlay set in the [code]position[/code] theme property.
+			Show overlay set in the [theme_item position] theme property.
 		</constant>
 	</constants>
 	<theme_items>
