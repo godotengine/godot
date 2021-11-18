@@ -198,6 +198,8 @@ def configure_msvc(env, manual_msvc_config):
     elif env["target"] == "debug":
         env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        # Allow big objects. Only needed for debug, see MinGW branch for rationale.
+        env.AppendUnique(CCFLAGS=["/bigobj"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
     if env["debug_symbols"]:
@@ -213,7 +215,6 @@ def configure_msvc(env, manual_msvc_config):
 
     env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
-    env.AppendUnique(CCFLAGS=["/bigobj"])  # Allow big objects, no drawbacks.
     env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
 
     if manual_msvc_config:  # should be automatic if SCons found it
@@ -331,6 +332,10 @@ def configure_mingw(env):
 
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["-g3"])
+        # Allow big objects. It's supposed not to have drawbacks but seems to break
+        # GCC LTO, so enabling for debug builds only (which are not built with LTO
+        # and are the only ones with too big objects).
+        env.Append(CCFLAGS=["-Wa,-mbig-obj"])
 
     ## Compiler configuration
 
@@ -393,7 +398,6 @@ def configure_mingw(env):
     ## Compile flags
 
     env.Append(CCFLAGS=["-mwindows"])
-    env.Append(CCFLAGS=["-Wa,-mbig-obj"])  # Allow big objects, no drawbacks.
     env.Append(LINKFLAGS=["-Wl,--nxcompat"])  # DEP protection. Not enabling ASLR for now, Mono crashes.
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "OPENGL_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(CPPDEFINES=[("WINVER", env["target_win_version"]), ("_WIN32_WINNT", env["target_win_version"])])
