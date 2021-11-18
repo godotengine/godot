@@ -153,6 +153,7 @@ int AreaBullet::find_overlapping_object(CollisionObjectBullet *p_colObj) {
 
 void AreaBullet::set_monitorable(bool p_monitorable) {
 	monitorable = p_monitorable;
+	updated = true;
 }
 
 bool AreaBullet::is_monitoring() const {
@@ -162,6 +163,7 @@ bool AreaBullet::is_monitoring() const {
 void AreaBullet::main_shape_changed() {
 	CRASH_COND(!get_main_shape());
 	btGhost->setCollisionShape(get_main_shape());
+	updated = true;
 }
 
 void AreaBullet::reload_body() {
@@ -192,6 +194,7 @@ void AreaBullet::on_collision_filters_change() {
 	if (space) {
 		space->reload_collision_filters(this);
 	}
+	updated = true;
 }
 
 void AreaBullet::add_overlap(CollisionObjectBullet *p_otherObject) {
@@ -276,6 +279,7 @@ void AreaBullet::set_event_callback(Type p_callbackObjectType, const Callable &p
 		set_godot_object_flags(get_godot_object_flags() | GOF_IS_MONITORING_AREA);
 	} else {
 		set_godot_object_flags(get_godot_object_flags() & (~GOF_IS_MONITORING_AREA));
+		clear_overlaps(true);
 	}
 }
 

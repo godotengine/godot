@@ -700,7 +700,7 @@ void SpaceBullet::check_ghost_overlaps() {
 			RigidCollisionObjectBullet *otherObject = static_cast<RigidCollisionObjectBullet *>(overlapped_bt_co->getUserPointer());
 			btVector3 other_body_scale(otherObject->get_bt_body_scale());
 
-			if (!area->is_transform_changed() && !otherObject->is_transform_changed()) {
+			if (!area->is_updated() && !otherObject->is_updated()) {
 				hasOverlap = -1 != area->find_overlapping_object(otherObject);
 				goto collision_found;
 			}

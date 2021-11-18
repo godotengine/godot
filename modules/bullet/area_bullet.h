@@ -152,7 +152,7 @@ public:
 
 	virtual void on_collision_filters_change();
 	virtual void on_collision_checker_start() {}
-	virtual void on_collision_checker_end() { isTransformChanged = false; }
+	virtual void on_collision_checker_end() { updated = false; }
 
 	void add_overlap(CollisionObjectBullet *p_otherObject);
 	void put_overlap_as_exit(int p_index);
