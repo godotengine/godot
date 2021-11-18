@@ -115,6 +115,16 @@ class VisualShaderNodeParticleMeshEmitter : public VisualShaderNodeParticleEmitt
 
 	Ref<ImageTexture> position_texture;
 	Ref<ImageTexture> normal_texture;
+	Ref<ImageTexture> color_texture;
+	Ref<ImageTexture> uv_texture;
+	Ref<ImageTexture> uv2_texture;
+
+	String _generate_code(VisualShader::Type p_type, int p_id, const String *p_output_vars, int p_index, const String &p_texture_name, bool p_ignore_mode2d = false) const;
+
+	void _update_texture(const Vector<Vector2> &p_array, Ref<ImageTexture> &r_texture);
+	void _update_texture(const Vector<Vector3> &p_array, Ref<ImageTexture> &r_texture);
+	void _update_texture(const Vector<Color> &p_array, Ref<ImageTexture> &r_texture);
+	void _update_textures();
 
 protected:
 	static void _bind_methods();
@@ -130,10 +140,8 @@ public:
 	virtual PortType get_input_port_type(int p_port) const override;
 	virtual String get_input_port_name(int p_port) const override;
 
-	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
-
-	void update_texture();
 
 	void set_mesh(Ref<Mesh> p_mesh);
 	Ref<Mesh> get_mesh() const;

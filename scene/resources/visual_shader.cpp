@@ -1835,6 +1835,7 @@ void VisualShader::_update_shader() const {
 			code += "	float __scalar_buff1;\n";
 			code += "	float __scalar_buff2;\n";
 			code += "	int __scalar_ibuff;\n";
+			code += "	vec4 __vec4_buff;\n";
 			code += "	vec3 __ndiff = normalize(__diff);\n\n";
 		}
 		if (has_start) {
