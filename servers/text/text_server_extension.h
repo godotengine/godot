@@ -428,8 +428,10 @@ public:
 	GDVIRTUAL6C(_shaped_text_draw, RID, RID, const Vector2 &, float, float, const Color &);
 	GDVIRTUAL7C(_shaped_text_draw_outline, RID, RID, const Vector2 &, float, float, int, const Color &);
 
+	virtual Vector2 shaped_text_get_grapheme_bounds(RID p_shaped, int p_pos) const override;
 	virtual int shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) const override;
 	virtual int shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) const override;
+	GDVIRTUAL2RC(Vector2, _shaped_text_get_grapheme_bounds, RID, int);
 	GDVIRTUAL2RC(int, _shaped_text_next_grapheme_pos, RID, int);
 	GDVIRTUAL2RC(int, _shaped_text_prev_grapheme_pos, RID, int);
 

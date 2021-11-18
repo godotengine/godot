@@ -1037,6 +1037,14 @@
 				Copies text glyphs in the visual order, into preallocated array of the size returned by [method _shaped_text_get_glyph_count].
 			</description>
 		</method>
+		<method name="_shaped_text_get_grapheme_bounds" qualifiers="virtual const">
+			<return type="Vector2" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="pos" type="int" />
+			<description>
+				Returns composite character's bounds as offsets from the start of the line.
+			</description>
+		</method>
 		<method name="_shaped_text_get_line_breaks" qualifiers="virtual const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="shaped" type="RID" />
