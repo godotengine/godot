@@ -644,6 +644,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				scene_render->geometry_instance_set_use_dynamic_gi(geom->geometry_instance, instance->dynamic_gi);
 				scene_render->geometry_instance_set_cast_double_sided_shadows(geom->geometry_instance, instance->cast_shadows == RS::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
 				scene_render->geometry_instance_set_use_lightmap(geom->geometry_instance, RID(), instance->lightmap_uv_scale, instance->lightmap_slice_index);
+				scene_render->geometry_instance_set_transparency(geom->geometry_instance, instance->transparency);
 				if (instance->lightmap_sh.size() == 9) {
 					scene_render->geometry_instance_set_lightmap_capture(geom->geometry_instance, instance->lightmap_sh.ptr());
 				}
@@ -838,6 +839,8 @@ void RendererSceneCull::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 void RendererSceneCull::instance_geometry_set_transparency(RID p_instance, float p_transparency) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND(!instance);
+
+	instance->transparency = p_transparency;
 
 	if ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK && instance->base_data) {
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);

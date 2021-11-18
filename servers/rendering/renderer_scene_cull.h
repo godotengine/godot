@@ -439,17 +439,18 @@ public:
 		RID self;
 		//scenario stuff
 		DynamicBVH::ID indexer_id;
-		int32_t array_index;
+		int32_t array_index = -1;
 		int32_t visibility_index = -1;
-		float visibility_range_begin;
-		float visibility_range_end;
-		float visibility_range_begin_margin;
-		float visibility_range_end_margin;
+		float visibility_range_begin = 0.0f;
+		float visibility_range_end = 0.0f;
+		float visibility_range_begin_margin = 0.0f;
+		float visibility_range_end_margin = 0.0f;
 		RS::VisibilityRangeFadeMode visibility_range_fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
 		Instance *visibility_parent = nullptr;
 		Set<Instance *> visibility_dependencies;
-		uint32_t visibility_dependencies_depth;
-		Scenario *scenario;
+		uint32_t visibility_dependencies_depth = 0;
+		float transparency = 0.0f;
+		Scenario *scenario = nullptr;
 		SelfList<Instance> scenario_item;
 
 		//aabb stuff
