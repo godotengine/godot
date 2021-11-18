@@ -150,6 +150,7 @@ class TextServerFallback : public TextServer {
 
 		bool face_init = false;
 		Dictionary supported_varaitions;
+		Dictionary feature_overrides;
 
 		// Language/script support override.
 		Map<String, bool> language_support_overrides;
@@ -356,6 +357,9 @@ public:
 	virtual bool font_get_script_support_override(RID p_font_rid, const String &p_script) override;
 	virtual void font_remove_script_support_override(RID p_font_rid, const String &p_script) override;
 	virtual Vector<String> font_get_script_support_overrides(RID p_font_rid) override;
+
+	virtual void font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) override;
+	virtual Dictionary font_get_opentype_feature_overrides(RID p_font_rid) const override;
 
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const override;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const override;

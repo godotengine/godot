@@ -187,6 +187,7 @@ class TextServerAdvanced : public TextServer {
 		Set<uint32_t> supported_scripts;
 		Dictionary supported_features;
 		Dictionary supported_varaitions;
+		Dictionary feature_overrides;
 
 		// Language/script support override.
 		Map<String, bool> language_support_overrides;
@@ -272,6 +273,7 @@ class TextServerAdvanced : public TextServer {
 	bool _shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int p_start, int p_length) const;
 	void _shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_start, int32_t p_end, hb_script_t p_script, hb_direction_t p_direction, Vector<RID> p_fonts, int p_span, int p_fb_index);
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, RID p_font, int p_font_size);
+	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
 	// HarfBuzz bitmap font interface.
 
@@ -446,6 +448,9 @@ public:
 	virtual bool font_get_script_support_override(RID p_font_rid, const String &p_script) override;
 	virtual void font_remove_script_support_override(RID p_font_rid, const String &p_script) override;
 	virtual Vector<String> font_get_script_support_overrides(RID p_font_rid) override;
+
+	virtual void font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) override;
+	virtual Dictionary font_get_opentype_feature_overrides(RID p_font_rid) const override;
 
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const override;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const override;

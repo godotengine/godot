@@ -1995,6 +1995,24 @@ Vector<String> TextServerFallback::font_get_script_support_overrides(RID p_font_
 	return out;
 }
 
+void TextServerFallback::font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->feature_overrides = p_overrides;
+}
+
+Dictionary TextServerFallback::font_get_opentype_feature_overrides(RID p_font_rid) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+
+	MutexLock lock(fd->mutex);
+	return fd->feature_overrides;
+}
+
 Dictionary TextServerFallback::font_supported_feature_list(RID p_font_rid) const {
 	return Dictionary();
 }

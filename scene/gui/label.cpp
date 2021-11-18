@@ -811,7 +811,7 @@ bool Label::_set(const StringName &p_name, const Variant &p_value) {
 	if (str.begins_with("opentype_features/")) {
 		String name = str.get_slicec('/', 1);
 		int32_t tag = TS->name_to_tag(name);
-		double value = p_value;
+		int value = p_value;
 		if (value == -1) {
 			if (opentype_features.has(tag)) {
 				opentype_features.erase(tag);
@@ -819,7 +819,7 @@ bool Label::_set(const StringName &p_name, const Variant &p_value) {
 				update();
 			}
 		} else {
-			if ((double)opentype_features[tag] != value) {
+			if (!opentype_features.has(tag) || (int)opentype_features[tag] != value) {
 				opentype_features[tag] = value;
 				dirty = true;
 				update();
@@ -851,7 +851,7 @@ bool Label::_get(const StringName &p_name, Variant &r_ret) const {
 void Label::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const Variant *ftr = opentype_features.next(nullptr); ftr != nullptr; ftr = opentype_features.next(ftr)) {
 		String name = TS->tag_to_name(*ftr);
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "opentype_features/" + name));
+		p_list->push_back(PropertyInfo(Variant::INT, "opentype_features/" + name));
 	}
 	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 }
