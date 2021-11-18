@@ -760,7 +760,7 @@ String OS_Windows::get_user_data_dir() const {
 		}
 	}
 
-	return ProjectSettings::get_singleton()->get_resource_path();
+	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
 }
 
 String OS_Windows::get_unique_id() const {
