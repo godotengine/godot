@@ -107,7 +107,7 @@ public:
 	// Returns true to stop the query.
 	typedef bool (*QueryCallback)(void *p_userdata, GodotShape3D *p_convex);
 
-	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const = 0;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const = 0;
 
 	GodotConcaveShape3D() {}
 };
@@ -370,7 +370,7 @@ public:
 	virtual bool intersect_point(const Vector3 &p_point) const override;
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
 
-	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const override;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const override;
 
 	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
 
@@ -433,7 +433,7 @@ public:
 	virtual bool intersect_point(const Vector3 &p_point) const override;
 
 	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
-	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const override;
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const override;
 
 	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
 
@@ -448,6 +448,7 @@ struct GodotFaceShape3D : public GodotShape3D {
 	Vector3 normal; //cache
 	Vector3 vertex[3];
 	bool backface_collision = false;
+	bool invert_backface_collision = false;
 
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_CONCAVE_POLYGON; }
 

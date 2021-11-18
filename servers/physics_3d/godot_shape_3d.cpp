@@ -1401,7 +1401,7 @@ bool GodotConcavePolygonShape3D::_cull(int p_idx, _CullParams *p_params) const {
 	return false;
 }
 
-void GodotConcavePolygonShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
+void GodotConcavePolygonShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const {
 	// make matrix local to concave
 	if (faces.size() == 0) {
 		return;
@@ -1416,6 +1416,7 @@ void GodotConcavePolygonShape3D::cull(const AABB &p_local_aabb, QueryCallback p_
 
 	GodotFaceShape3D face; // use this to send in the callback
 	face.backface_collision = backface_collision;
+	face.invert_backface_collision = p_invert_backface_collision;
 
 	_CullParams params;
 	params.aabb = local_aabb;
@@ -1961,7 +1962,7 @@ void GodotHeightMapShape3D::_get_cell(const Vector3 &p_point, int &r_x, int &r_y
 	r_z = (clamped_point.z < 0.0) ? (clamped_point.z - 0.5) : (clamped_point.z + 0.5);
 }
 
-void GodotHeightMapShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
+void GodotHeightMapShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const {
 	if (heights.is_empty()) {
 		return;
 	}
@@ -1988,7 +1989,8 @@ void GodotHeightMapShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callb
 	int end_z = MIN(depth - 1, aabb_max[2]);
 
 	GodotFaceShape3D face;
-	face.backface_collision = true;
+	face.backface_collision = !p_invert_backface_collision;
+	face.invert_backface_collision = p_invert_backface_collision;
 
 	for (int z = start_z; z < end_z; z++) {
 		for (int x = start_x; x < end_x; x++) {
