@@ -50,7 +50,6 @@ class VisualScriptFunction : public VisualScriptNode {
 	bool stack_less;
 	int stack_size;
 	Multiplayer::RPCMode rpc_mode;
-	bool sequenced;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -83,9 +82,6 @@ public:
 
 	void set_stack_less(bool p_enable);
 	bool is_stack_less() const;
-
-	void set_sequenced(bool p_enable);
-	bool is_sequenced() const;
 
 	void set_stack_size(int p_size);
 	int get_stack_size() const;
@@ -122,8 +118,6 @@ protected:
 	};
 
 	int flags;
-
-	bool sequenced;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -162,9 +156,6 @@ public:
 	void set_output_data_port_type(int p_idx, Variant::Type p_type);
 	void set_output_data_port_name(int p_idx, const String &p_name);
 	void remove_output_data_port(int p_argidx);
-
-	void set_sequenced(bool p_enable);
-	bool is_sequenced() const;
 
 	VisualScriptLists();
 };

@@ -50,6 +50,7 @@ class VisualScriptNode : public Resource {
 
 	Array default_input_values;
 	bool breakpoint = false;
+	bool invert_sequenced;
 
 	void _set_default_input_values(Array p_values);
 	Array _get_default_input_values() const;
@@ -58,13 +59,18 @@ class VisualScriptNode : public Resource {
 
 protected:
 	void ports_changed_notify();
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 public:
 	Ref<VisualScript> get_visual_script() const;
 
 	virtual int get_output_sequence_port_count() const = 0;
+	int get_sequenced_output_port_count() const;
 	virtual bool has_input_sequence_port() const = 0;
+	bool is_sequenced() const;
 
 	virtual String get_output_sequence_port_text(int p_port) const = 0;
 

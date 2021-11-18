@@ -94,12 +94,6 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 		return true;
 	}
 
-	if (p_name == "sequenced/sequenced") {
-		sequenced = p_value;
-		ports_changed_notify();
-		return true;
-	}
-
 	return false;
 }
 
@@ -137,11 +131,6 @@ bool VisualScriptFunction::_get(const StringName &p_name, Variant &r_ret) const 
 		return true;
 	}
 
-	if (p_name == "sequenced/sequenced") {
-		r_ret = sequenced;
-		return true;
-	}
-
 	return false;
 }
 
@@ -156,8 +145,6 @@ void VisualScriptFunction::_get_property_list(List<PropertyInfo> *p_list) const 
 		p_list->push_back(PropertyInfo(Variant::INT, "argument_" + itos(i + 1) + "/type", PROPERTY_HINT_ENUM, argt));
 		p_list->push_back(PropertyInfo(Variant::STRING, "argument_" + itos(i + 1) + "/name"));
 	}
-
-	p_list->push_back(PropertyInfo(Variant::BOOL, "sequenced/sequenced"));
 
 	if (!stack_less) {
 		p_list->push_back(PropertyInfo(Variant::INT, "stack/size", PROPERTY_HINT_RANGE, "1,100000"));
@@ -310,14 +297,12 @@ void VisualScriptFunction::reset_state() {
 	arguments.clear();
 	stack_size = 256;
 	stack_less = false;
-	sequenced = true;
 	rpc_mode = Multiplayer::RPC_MODE_DISABLED;
 }
 
 VisualScriptFunction::VisualScriptFunction() {
 	stack_size = 256;
 	stack_less = false;
-	sequenced = true;
 	rpc_mode = Multiplayer::RPC_MODE_DISABLED;
 }
 
@@ -328,14 +313,6 @@ void VisualScriptFunction::set_stack_less(bool p_enable) {
 
 bool VisualScriptFunction::is_stack_less() const {
 	return stack_less;
-}
-
-void VisualScriptFunction::set_sequenced(bool p_enable) {
-	sequenced = p_enable;
-}
-
-bool VisualScriptFunction::is_sequenced() const {
-	return sequenced;
 }
 
 void VisualScriptFunction::set_stack_size(int p_size) {
@@ -352,14 +329,11 @@ int VisualScriptFunction::get_stack_size() const {
 //////////////////////////////////////////
 
 int VisualScriptLists::get_output_sequence_port_count() const {
-	if (sequenced) {
-		return 1;
-	}
-	return 0;
+	return 1;
 }
 
 bool VisualScriptLists::has_input_sequence_port() const {
-	return sequenced;
+	return true;
 }
 
 String VisualScriptLists::get_output_sequence_port_text(int p_port) const {
@@ -490,12 +464,6 @@ bool VisualScriptLists::_set(const StringName &p_name, const Variant &p_value) {
 		}
 	}
 
-	if (p_name == "sequenced/sequenced") {
-		sequenced = p_value;
-		ports_changed_notify();
-		return true;
-	}
-
 	return false;
 }
 
@@ -536,11 +504,6 @@ bool VisualScriptLists::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 	}
 
-	if (p_name == "sequenced/sequenced") {
-		r_ret = sequenced;
-		return true;
-	}
-
 	return false;
 }
 
@@ -570,7 +533,6 @@ void VisualScriptLists::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::STRING, "output_" + itos(i + 1) + "/name"));
 		}
 	}
-	p_list->push_back(PropertyInfo(Variant::BOOL, "sequenced/sequenced"));
 }
 
 // input data port interaction
@@ -685,29 +647,14 @@ void VisualScriptLists::remove_output_data_port(int p_argidx) {
 	notify_property_list_changed();
 }
 
-// sequences
-void VisualScriptLists::set_sequenced(bool p_enable) {
-	if (sequenced == p_enable) {
-		return;
-	}
-	sequenced = p_enable;
-	ports_changed_notify();
-}
-
-bool VisualScriptLists::is_sequenced() const {
-	return sequenced;
-}
-
 void VisualScriptLists::reset_state() {
 	inputports.clear();
 	outputports.clear();
-	sequenced = false;
 	flags = 0;
 }
 
 VisualScriptLists::VisualScriptLists() {
 	// initialize
-	sequenced = false;
 	flags = 0;
 }
 
@@ -728,14 +675,11 @@ void VisualScriptLists::_bind_methods() {
 //////////////////////////////////////////
 
 int VisualScriptComposeArray::get_output_sequence_port_count() const {
-	if (sequenced) {
-		return 1;
-	}
-	return 0;
+	return 1;
 }
 
 bool VisualScriptComposeArray::has_input_sequence_port() const {
-	return sequenced;
+	return true;
 }
 
 String VisualScriptComposeArray::get_output_sequence_port_text(int p_port) const {
@@ -802,7 +746,6 @@ VisualScriptNodeInstance *VisualScriptComposeArray::instantiate(VisualScriptInst
 
 VisualScriptComposeArray::VisualScriptComposeArray() {
 	// initialize stuff here
-	sequenced = false;
 	flags = INPUT_EDITABLE;
 }
 

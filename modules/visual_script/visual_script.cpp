@@ -49,6 +49,27 @@ void VisualScriptNode::ports_changed_notify() {
 	emit_signal(SNAME("ports_changed"));
 }
 
+bool VisualScriptNode::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "sequenced") {
+		invert_sequenced = !invert_sequenced;
+		ports_changed_notify();
+		return true;
+	}
+	return false;
+}
+
+bool VisualScriptNode::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "sequenced") {
+		r_ret = is_sequenced();
+		return true;
+	}
+	return false;
+}
+
+void VisualScriptNode::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::BOOL, "sequenced"));
+}
+
 void VisualScriptNode::set_default_input_value(int p_port, const Variant &p_value) {
 	ERR_FAIL_INDEX(p_port, default_input_values.size());
 
@@ -134,6 +155,22 @@ VisualScriptNode::TypeGuess VisualScriptNode::guess_output_type(TypeGuess *p_inp
 
 Ref<VisualScript> VisualScriptNode::get_visual_script() const {
 	return script_used;
+}
+
+int VisualScriptNode::get_sequenced_output_port_count() const {
+	if (!is_sequenced()) {
+		return 0;
+	}
+	return get_output_value_port_count();
+}
+
+bool VisualScriptNode::is_sequenced() const {
+	if (get_output_value_port_count() == 0) {
+		return true;
+	} else if (get_output_sequence_port_count() > 1) {
+		return true;
+	}
+	return invert_sequenced ? !has_input_sequence_port() : has_input_sequence_port();
 }
 
 VisualScriptNode::VisualScriptNode() {
@@ -230,10 +267,10 @@ void VisualScript::_node_ports_changed(int p_id) {
 		List<SequenceConnection> to_remove;
 
 		for (Set<SequenceConnection>::Element *E = sequence_connections.front(); E; E = E->next()) {
-			if (E->get().from_node == p_id && E->get().from_output >= vsn->get_output_sequence_port_count()) {
+			if (E->get().from_node == p_id && E->get().from_output >= vsn->get_sequenced_output_port_count()) {
 				to_remove.push_back(E->get());
 			}
-			if (E->get().to_node == p_id && !vsn->has_input_sequence_port()) {
+			if (E->get().to_node == p_id && !vsn->is_sequenced()) {
 				to_remove.push_back(E->get());
 			}
 		}
@@ -915,10 +952,6 @@ MethodInfo VisualScript::get_method_info(const StringName &p_method) const {
 				arg.type = func->get_argument_type(i);
 				mi.arguments.push_back(arg);
 			}
-
-			if (!func->is_sequenced()) {
-				mi.flags |= METHOD_FLAG_CONST;
-			}
 		}
 	}
 
@@ -1275,10 +1308,6 @@ void VisualScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 					arg.type = vsf->get_argument_type(i);
 
 					mi.arguments.push_back(arg);
-				}
-
-				if (!vsf->is_sequenced()) { // Assumed constant if not sequenced.
-					mi.flags |= METHOD_FLAG_CONST;
 				}
 			}
 		}
@@ -1949,7 +1978,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				instance->input_ports = nullptr;
 				instance->output_port_count = node->get_output_value_port_count();
 				instance->output_ports = nullptr;
-				instance->sequence_output_count = node->get_output_sequence_port_count();
+				instance->sequence_output_count = node->get_sequenced_output_port_count();
 				instance->sequence_index = function.node_count++;
 				instance->sequence_outputs = nullptr;
 				instance->pass_idx = -1;

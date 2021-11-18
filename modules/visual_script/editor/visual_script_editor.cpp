@@ -572,11 +572,11 @@ void VisualScriptEditor::_update_graph_connections() {
 		Ref<VisualScriptNode> from_node = script->get_node(dc.from_node);
 		Ref<VisualScriptNode> to_node = script->get_node(dc.to_node);
 
-		if (to_node->has_input_sequence_port()) {
+		if (to_node->is_sequenced()) {
 			dc.to_port++;
 		}
 
-		dc.from_port += from_node->get_output_sequence_port_count();
+		dc.from_port += from_node->get_sequenced_output_port_count();
 
 		graph->connect_node(itos(dc.from_node), dc.from_port, itos(dc.to_node), dc.to_port);
 	}
@@ -752,9 +752,11 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		const Color mono_color = get_theme_color(SNAME("mono_color"), SNAME("Editor"));
 
 		int slot_idx = 0;
-
-		bool single_seq_output = node->get_output_sequence_port_count() == 1 && node->get_output_sequence_port_text(0) == String();
-		if ((node->has_input_sequence_port() || single_seq_output) || has_gnode_text) {
+		int final_sequence_output_count = (Object::cast_to<VisualScriptFunction>(*node)) ? node->get_output_sequence_port_count() : node->get_sequenced_output_port_count();
+		bool single_seq_output = final_sequence_output_count == 1 && node->get_output_sequence_port_text(0) == String();
+		bool final_is_sequenced = (Object::cast_to<VisualScriptFunction>(*node)) ? node->has_input_sequence_port() : node->is_sequenced();
+		final_is_sequenced = (Object::cast_to<VisualScriptComment>(*node)) ? false : final_is_sequenced;
+		if ((final_is_sequenced || single_seq_output) || has_gnode_text) {
 			// IF has_gnode_text is true BUT we have no sequence ports to draw (in here),
 			// we still draw the disabled default ones to shift up the slots by one,
 			// so the slots DON'T start with the content text.
@@ -766,7 +768,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				dummy->set_text(" ");
 				gnode->add_child(dummy);
 			}
-			gnode->set_slot(0, node->has_input_sequence_port(), TYPE_SEQUENCE, mono_color, single_seq_output, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
+			gnode->set_slot(0, final_is_sequenced, TYPE_SEQUENCE, mono_color, single_seq_output, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
 			slot_idx++;
 		}
 
@@ -774,9 +776,9 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 		if (!single_seq_output) {
 			if (node->has_mixed_input_and_sequence_ports()) {
-				mixed_seq_ports = node->get_output_sequence_port_count();
+				mixed_seq_ports = final_sequence_output_count;
 			} else {
-				for (int i = 0; i < node->get_output_sequence_port_count(); i++) {
+				for (int i = 0; i < final_sequence_output_count; i++) {
 					Label *text2 = memnew(Label);
 					text2->set_text(node->get_output_sequence_port_text(i));
 					text2->set_align(Label::ALIGN_RIGHT);
@@ -2832,27 +2834,27 @@ void VisualScriptEditor::_node_selected(Node *p_node) {
 }
 
 static bool _get_out_slot(const Ref<VisualScriptNode> &p_node, int p_slot, int &r_real_slot, bool &r_sequence) {
-	if (p_slot < p_node->get_output_sequence_port_count()) {
+	if (p_slot < p_node->get_sequenced_output_port_count()) {
 		r_sequence = true;
 		r_real_slot = p_slot;
 
 		return true;
 	}
 
-	r_real_slot = p_slot - p_node->get_output_sequence_port_count();
+	r_real_slot = p_slot - p_node->get_sequenced_output_port_count();
 	r_sequence = false;
 
 	return (r_real_slot < p_node->get_output_value_port_count());
 }
 
 static bool _get_in_slot(const Ref<VisualScriptNode> &p_node, int p_slot, int &r_real_slot, bool &r_sequence) {
-	if (p_slot == 0 && p_node->has_input_sequence_port()) {
+	if (p_slot == 0 && p_node->is_sequenced()) {
 		r_sequence = true;
 		r_real_slot = 0;
 		return true;
 	}
 
-	r_real_slot = p_slot - (p_node->has_input_sequence_port() ? 1 : 0);
+	r_real_slot = p_slot - (p_node->is_sequenced() ? 1 : 0);
 	r_sequence = false;
 
 	return r_real_slot < p_node->get_input_value_port_count();
@@ -3097,16 +3099,16 @@ void VisualScriptEditor::_graph_connect_to_empty(const String &p_from, int p_fro
 	if (!vsn.is_valid()) {
 		return;
 	}
-	if (vsn->get_output_value_port_count() || vsn->get_output_sequence_port_count()) {
+	if (vsn->get_output_value_port_count() || vsn->get_sequenced_output_port_count()) {
 		port_action_pos = p_release_pos;
 	}
 
-	if (p_from_slot < vsn->get_output_sequence_port_count()) {
+	if (p_from_slot < vsn->get_sequenced_output_port_count()) {
 		port_action_node = p_from.to_int();
 		port_action_output = p_from_slot;
 		_port_action_menu(CREATE_ACTION);
 	} else {
-		port_action_output = p_from_slot - vsn->get_output_sequence_port_count();
+		port_action_output = p_from_slot - vsn->get_sequenced_output_port_count();
 		port_action_node = p_from.to_int();
 		_port_action_menu(CREATE_CALL_SET_GET);
 	}
@@ -3525,22 +3527,22 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 
 void VisualScriptEditor::connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id) {
 	VisualScriptOperator *vnode_operator = Object::cast_to<VisualScriptOperator>(vnode_new.ptr());
-	if (vnode_operator != nullptr && !vnode_operator->has_input_sequence_port()) {
+	if (vnode_operator != nullptr && !vnode_operator->is_sequenced()) {
 		return;
 	}
 	VisualScriptConstructor *vnode_constructor = Object::cast_to<VisualScriptConstructor>(vnode_new.ptr());
 	if (vnode_constructor != nullptr) {
 		return;
 	}
-	if (vnode_old->get_output_sequence_port_count() <= 0) {
+	if (vnode_old->get_sequenced_output_port_count() <= 0) {
 		return;
 	}
-	if (!vnode_new->has_input_sequence_port()) {
+	if (!vnode_new->is_sequenced()) {
 		return;
 	}
 
 	undo_redo->create_action(TTR("Connect Node Sequence"));
-	int pass_port = -vnode_old->get_output_sequence_port_count() + 1;
+	int pass_port = -vnode_old->get_sequenced_output_port_count() + 1;
 	int return_port = port_action_output - 1;
 	if (vnode_old->get_output_value_port_info(port_action_output).name == String("pass") &&
 			!script->get_output_sequence_ports_connected(port_action_node).has(pass_port)) {
@@ -3551,8 +3553,8 @@ void VisualScriptEditor::connect_seq(Ref<VisualScriptNode> vnode_old, Ref<Visual
 		undo_redo->add_do_method(script.ptr(), "sequence_connect", port_action_node, return_port, new_id);
 		undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", port_action_node, return_port, new_id);
 	} else {
-		for (int port = 0; port < vnode_old->get_output_sequence_port_count(); port++) {
-			int count = vnode_old->get_output_sequence_port_count();
+		for (int port = 0; port < vnode_old->get_sequenced_output_port_count(); port++) {
+			int count = vnode_old->get_sequenced_output_port_count();
 			if (port_action_output < count && !script->get_output_sequence_ports_connected(port_action_node).has(port_action_output)) {
 				undo_redo->add_do_method(script.ptr(), "sequence_connect", port_action_node, port_action_output, new_id);
 				undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", port_action_node, port_action_output, new_id);
@@ -3915,7 +3917,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			Set<int> end_nodes;
 			if (nodes.size() == 1) {
 				Ref<VisualScriptNode> nd = script->get_node(nodes.front()->key());
-				if (nd.is_valid() && nd->has_input_sequence_port()) {
+				if (nd.is_valid() && nd->is_sequenced()) {
 					start_node = nodes.front()->key();
 				} else {
 					EditorNode::get_singleton()->show_warning(TTR("Select at least one node with sequence port."));
@@ -3933,7 +3935,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 					Vector2 top;
 					for (const KeyValue<int, Ref<VisualScriptNode>> &E : nodes) {
 						Ref<VisualScriptNode> nd = script->get_node(E.key);
-						if (nd.is_valid() && nd->has_input_sequence_port()) {
+						if (nd.is_valid() && nd->is_sequenced()) {
 							if (top_nd < 0) {
 								top_nd = E.key;
 								top = script->get_node_position(top_nd);
@@ -3946,7 +3948,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 						}
 					}
 					Ref<VisualScriptNode> nd = script->get_node(top_nd);
-					if (nd.is_valid() && nd->has_input_sequence_port()) {
+					if (nd.is_valid() && nd->is_sequenced()) {
 						start_node = top_nd;
 					} else {
 						EditorNode::get_singleton()->show_warning(TTR("Select at least one node with sequence port."));
