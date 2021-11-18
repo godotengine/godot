@@ -953,6 +953,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<String
 				if (r_struct_name) {
 					*r_struct_name = function->arguments[i].type_str;
 				}
+				if (r_is_const) {
+					*r_is_const = function->arguments[i].is_const;
+				}
 				return true;
 			}
 		}
@@ -3436,11 +3439,13 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							for (int i = 0; i < call_function->arguments.size(); i++) {
 								int argidx = i + 1;
 								if (argidx < func->arguments.size()) {
-									if (call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT) {
+									if (call_function->arguments[i].is_const || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT) {
 										bool error = false;
 										Node *n = func->arguments[argidx];
 										if (n->type == Node::TYPE_CONSTANT || n->type == Node::TYPE_OPERATOR) {
-											error = true;
+											if (!call_function->arguments[i].is_const) {
+												error = true;
+											}
 										} else if (n->type == Node::TYPE_ARRAY) {
 											ArrayNode *an = static_cast<ArrayNode *>(n);
 											if (an->call_expression != nullptr || an->is_const) {
@@ -6482,15 +6487,29 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						break;
 					}
 
+					bool is_const = false;
+					if (tk.type == TK_CONST) {
+						is_const = true;
+						tk = _get_token();
+					}
+
 					ArgumentQualifier qualifier = ARGUMENT_QUALIFIER_IN;
 
 					if (tk.type == TK_ARG_IN) {
 						qualifier = ARGUMENT_QUALIFIER_IN;
 						tk = _get_token();
 					} else if (tk.type == TK_ARG_OUT) {
+						if (is_const) {
+							_set_error("'out' qualifier cannot be used within a function parameter declared with 'const'.");
+							return ERR_PARSE_ERROR;
+						}
 						qualifier = ARGUMENT_QUALIFIER_OUT;
 						tk = _get_token();
 					} else if (tk.type == TK_ARG_INOUT) {
+						if (is_const) {
+							_set_error("'inout' qualifier cannot be used within a function parameter declared with 'const'.");
+							return ERR_PARSE_ERROR;
+						}
 						qualifier = ARGUMENT_QUALIFIER_INOUT;
 						tk = _get_token();
 					}
@@ -6568,6 +6587,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					arg.type_str = param_struct_name;
 					arg.precision = pprecision;
 					arg.qualifier = qualifier;
+					arg.is_const = is_const;
 
 					func_node->arguments.push_back(arg);
 
@@ -6976,6 +6996,10 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 
 						if (j == completion_argument) {
 							calltip += CharType(0xFFFF);
+						}
+
+						if (shader->functions[i].function->arguments[j].is_const) {
+							calltip += "const ";
 						}
 					}
 
