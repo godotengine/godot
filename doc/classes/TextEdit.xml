@@ -137,10 +137,45 @@
 				Returns the text of a specific line.
 			</description>
 		</method>
+		<method name="get_line_column_at_pos" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="position" type="Vector2" />
+			<description>
+				Returns the line and column at the given position. In the returned vector, [code]x[/code] is the column, [code]y[/code] is the line.
+			</description>
+		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the amount of total lines in the text.
+			</description>
+		</method>
+		<method name="get_line_height" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the height of a largest line.
+			</description>
+		</method>
+		<method name="get_line_width" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="wrap_index" type="int" default="-1" />
+			<description>
+				Returns the width in pixels of the [code]wrap_index[/code] on [code]line[/code].
+			</description>
+		</method>
+		<method name="get_line_wrap_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="line" type="int" />
+			<description>
+				Returns the number of times the given line is wrapped.
+			</description>
+		</method>
+		<method name="get_line_wrapped_text" qualifiers="const">
+			<return type="PoolStringArray" />
+			<argument index="0" name="line" type="int" />
+			<description>
+				Returns an array of [String]s representing each wrapped index.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
@@ -148,6 +183,24 @@
 			<description>
 				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+			</description>
+		</method>
+		<method name="get_pos_at_line_column" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="column" type="int" />
+			<description>
+				Returns the local position for the given [code]line[/code] and [code]column[/code]. If [code]x[/code] or [code]y[/code] of the returned vector equal [code]-1[/code], the position is outside of the viewable area of the control.
+				[b]Note:[/b] The Y position corresponds to the bottom side of the line. Use [method get_rect_at_line_column] to get the top side position.
+			</description>
+		</method>
+		<method name="get_rect_at_line_column" qualifiers="const">
+			<return type="Rect2" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="column" type="int" />
+			<description>
+				Returns the local position and size for the grapheme at the given [code]line[/code] and [code]column[/code]. If [code]x[/code] or [code]y[/code] position of the returned rect equal [code]-1[/code], the position is outside of the viewable area of the control.
+				[b]Note:[/b] The Y position of the returned rect corresponds to the top side of the line, unlike [method get_pos_at_line_column] which returns the bottom side.
 			</description>
 		</method>
 		<method name="get_selection_from_column" qualifiers="const">
@@ -178,6 +231,12 @@
 			<return type="int" />
 			<description>
 				Returns the selection end line.
+			</description>
+		</method>
+		<method name="get_total_gutter_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total width of all gutters and internal padding.
 			</description>
 		</method>
 		<method name="get_word_under_cursor" qualifiers="const">
@@ -245,6 +304,13 @@
 			<argument index="0" name="line" type="int" />
 			<description>
 				Returns [code]true[/code] when the specified [code]line[/code] is marked as safe.
+			</description>
+		</method>
+		<method name="is_line_wrapped" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="line" type="int" />
+			<description>
+				Returns if the given line is wrapped.
 			</description>
 		</method>
 		<method name="is_selection_active" qualifiers="const">
