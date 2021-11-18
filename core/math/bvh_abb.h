@@ -104,7 +104,7 @@ struct BVH_ABB {
 		return (get_proximity_to(p_a) < get_proximity_to(p_b) ? 0 : 1);
 	}
 
-	uint32_t find_cutting_planes(const BVH_ABB::ConvexHull &p_hull, uint32_t *p_plane_ids) const {
+	uint32_t find_cutting_planes(const typename BVH_ABB::ConvexHull &p_hull, uint32_t *p_plane_ids) const {
 		uint32_t count = 0;
 
 		for (int n = 0; n < p_hull.num_planes; n++) {
