@@ -232,6 +232,7 @@ class Curve3D : public Resource {
 
 	float bake_interval = 0.2;
 	bool up_vector_enabled = true;
+	bool auto_tilts= true;
 
 	void _bake_segment3d(Map<float, Vector3> &r_bake, float p_begin, float p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, float p_tol) const;
 	Dictionary _get_data() const;
@@ -261,6 +262,8 @@ public:
 	float get_bake_interval() const;
 	void set_up_vector_enabled(bool p_enable);
 	bool is_up_vector_enabled() const;
+	void set_auto_tilts(bool p_auto_tilts);
+	bool is_auto_tilts() const;
 
 	float get_baked_length() const;
 	Vector3 interpolate_baked(float p_offset, bool p_cubic = false) const;
