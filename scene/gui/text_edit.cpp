@@ -2878,6 +2878,16 @@ Point2i TextEdit::get_next_visible_line_index_offset_from(int p_line_from, int p
 			}
 		}
 		wrap_index = get_line_wrap_count(MIN(i, text.size() - 1)) - MAX(0, num_visible - p_visible_amount);
+
+		// If we are a hidden line, then we are the last line as we cannot reach "p_visible_amount".
+		// This means we need to backtrack to get last visible line.
+		// Currently, line 0 cannot be hidden so this should always be valid.
+		int line = (p_line_from + num_total) - 1;
+		if (_is_line_hidden(line)) {
+			Point2i backtrack = get_next_visible_line_index_offset_from(line, 0, -1);
+			num_total = num_total - (backtrack.x - 1);
+			wrap_index = backtrack.y;
+		}
 	} else {
 		p_visible_amount = ABS(p_visible_amount);
 		int i;
@@ -3386,7 +3396,7 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 	return String();
 }
 
-Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos) const {
+Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds) const {
 	float rows = p_pos.y;
 	rows -= style_normal->get_margin(SIDE_TOP);
 	rows /= get_line_height();
@@ -3398,6 +3408,7 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos) const {
 	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE || _is_hiding_enabled()) {
 		Point2i f_ofs = get_next_visible_line_index_offset_from(first_vis_line, caret.wrap_ofs, rows + (1 * SIGN(rows)));
 		wrap_index = f_ofs.y;
+
 		if (rows < 0) {
 			row = first_vis_line - (f_ofs.x - 1);
 		} else {
@@ -3409,33 +3420,39 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos) const {
 		row = 0;
 	}
 
-	int col = 0;
-
 	if (row >= text.size()) {
 		row = text.size() - 1;
-		col = text[row].size();
-	} else {
-		int colx = p_pos.x - (style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding);
-		colx += caret.x_ofs;
-		col = _get_char_pos_for_line(colx, row, wrap_index);
-		if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE && wrap_index < get_line_wrap_count(row)) {
-			// Move back one if we are at the end of the row.
-			Vector<String> rows2 = get_line_wrapped_text(row);
-			int row_end_col = 0;
-			for (int i = 0; i < wrap_index + 1; i++) {
-				row_end_col += rows2[i].length();
-			}
-			if (col >= row_end_col) {
-				col -= 1;
-			}
-		}
-
-		RID text_rid = text.get_line_data(row)->get_line_rid(wrap_index);
-		if (is_layout_rtl()) {
-			colx = TS->shaped_text_get_size(text_rid).x - colx;
-		}
-		col = TS->shaped_text_hit_test_position(text_rid, colx);
 	}
+
+	int visible_lines = get_visible_line_count_in_range(first_vis_line, row);
+	if (rows > visible_lines) {
+		if (!p_allow_out_of_bounds) {
+			return Point2i(-1, -1);
+		}
+		return Point2i(text[row].size(), row);
+	}
+
+	int col = 0;
+	int colx = p_pos.x - (style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding);
+	colx += caret.x_ofs;
+	col = _get_char_pos_for_line(colx, row, wrap_index);
+	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE && wrap_index < get_line_wrap_count(row)) {
+		// Move back one if we are at the end of the row.
+		Vector<String> rows2 = get_line_wrapped_text(row);
+		int row_end_col = 0;
+		for (int i = 0; i < wrap_index + 1; i++) {
+			row_end_col += rows2[i].length();
+		}
+		if (col >= row_end_col) {
+			col -= 1;
+		}
+	}
+
+	RID text_rid = text.get_line_data(row)->get_line_rid(wrap_index);
+	if (is_layout_rtl()) {
+		colx = TS->shaped_text_get_size(text_rid).x - colx;
+	}
+	col = TS->shaped_text_hit_test_position(text_rid, colx);
 
 	return Point2i(col, row);
 }
@@ -4012,15 +4029,7 @@ double TextEdit::get_scroll_pos_for_line(int p_line, int p_wrap_index) const {
 		return p_line;
 	}
 
-	// Count the number of visible lines up to this line.
-	double new_line_scroll_pos = 0.0;
-	int to = CLAMP(p_line, 0, text.size() - 1);
-	for (int i = 0; i < to; i++) {
-		if (!text.is_hidden(i)) {
-			new_line_scroll_pos++;
-			new_line_scroll_pos += get_line_wrap_count(i);
-		}
-	}
+	double new_line_scroll_pos = get_visible_line_count_in_range(0, CLAMP(p_line, 0, text.size() - 1));
 	new_line_scroll_pos += p_wrap_index;
 	return new_line_scroll_pos;
 }
@@ -4077,20 +4086,28 @@ int TextEdit::get_visible_line_count() const {
 	return _get_control_height() / get_line_height();
 }
 
-int TextEdit::get_total_visible_line_count() const {
+int TextEdit::get_visible_line_count_in_range(int p_from_line, int p_to_line) const {
+	ERR_FAIL_INDEX_V(p_from_line, text.size(), 0);
+	ERR_FAIL_INDEX_V(p_to_line, text.size(), 0);
+	ERR_FAIL_COND_V(p_from_line > p_to_line, 0);
+
 	/* Returns the total number of (lines + wrapped - hidden). */
 	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
-		return text.size();
+		return p_to_line - p_from_line;
 	}
 
 	int total_rows = 0;
-	for (int i = 0; i < text.size(); i++) {
+	for (int i = p_from_line; i <= p_to_line; i++) {
 		if (!text.is_hidden(i)) {
 			total_rows++;
 			total_rows += get_line_wrap_count(i);
 		}
 	}
 	return total_rows;
+}
+
+int TextEdit::get_total_visible_line_count() const {
+	return get_visible_line_count_in_range(0, text.size() - 1);
 }
 
 // Auto adjust
@@ -4683,7 +4700,7 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_word_at_pos", "position"), &TextEdit::get_word_at_pos);
 
-	ClassDB::bind_method(D_METHOD("get_line_column_at_pos", "position"), &TextEdit::get_line_column_at_pos);
+	ClassDB::bind_method(D_METHOD("get_line_column_at_pos", "position", "allow_out_of_bounds"), &TextEdit::get_line_column_at_pos, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_minimap_line_at_pos", "position"), &TextEdit::get_minimap_line_at_pos);
 
 	ClassDB::bind_method(D_METHOD("is_dragging_cursor"), &TextEdit::is_dragging_cursor);
@@ -4807,6 +4824,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_last_full_visible_line_wrap_index"), &TextEdit::get_last_full_visible_line_wrap_index);
 
 	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &TextEdit::get_visible_line_count);
+	ClassDB::bind_method(D_METHOD("get_visible_line_count_in_range", "from_line", "to_line"), &TextEdit::get_visible_line_count_in_range);
 	ClassDB::bind_method(D_METHOD("get_total_visible_line_count"), &TextEdit::get_total_visible_line_count);
 
 	// Auto adjust
