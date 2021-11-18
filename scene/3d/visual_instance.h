@@ -129,9 +129,6 @@ public:
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
 
-	void set_bake_cast_shadows(bool p_enabled);
-	bool get_bake_cast_shadows();
-
 	void set_generate_lightmap(bool p_enabled);
 	bool get_generate_lightmap();
 

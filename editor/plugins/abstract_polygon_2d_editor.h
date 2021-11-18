@@ -100,7 +100,6 @@ protected:
 	void _wip_changed();
 	void _wip_close();
 	void _wip_cancel();
-	bool _delete_point(const Vector2 &p_gpoint);
 
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);

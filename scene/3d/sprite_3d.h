@@ -115,12 +115,6 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-	void set_region(bool p_region);
-	bool is_region() const;
-
-	void set_region_rect(const Rect2 &p_region_rect);
-	Rect2 get_region_rect() const;
-
 	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
 

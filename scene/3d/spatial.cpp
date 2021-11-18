@@ -459,15 +459,14 @@ void Spatial::_update_gizmo() {
 #endif
 }
 
-#ifdef TOOLS_ENABLED
 void Spatial::set_disable_gizmo(bool p_enabled) {
+#ifdef TOOLS_ENABLED
 	data.gizmo_disabled = p_enabled;
 	if (!p_enabled && data.gizmo.is_valid()) {
 		data.gizmo = Ref<SpatialGizmo>();
 	}
-}
-
 #endif
+}
 
 void Spatial::set_disable_scale(bool p_enabled) {
 	data.disable_scale = p_enabled;

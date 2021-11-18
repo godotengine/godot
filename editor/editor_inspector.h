@@ -253,8 +253,6 @@ public:
 	void unfold();
 	void fold();
 
-	Object *get_edited_object();
-
 	EditorInspectorSection();
 	~EditorInspectorSection();
 };

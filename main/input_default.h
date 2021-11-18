@@ -201,7 +201,6 @@ private:
 	JoystickList _get_output_axis(String output);
 	void _button_event(int p_device, int p_index, bool p_pressed);
 	void _axis_event(int p_device, int p_axis, float p_value);
-	float _handle_deadzone(int p_device, int p_axis, float p_value);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
@@ -236,7 +235,6 @@ public:
 	virtual float get_joy_vibration_duration(int p_device);
 	virtual uint64_t get_joy_vibration_timestamp(int p_device);
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
-	void parse_joypad_mapping(String p_mapping, bool p_update_existing);
 
 	virtual Vector3 get_gravity() const;
 	virtual Vector3 get_accelerometer() const;

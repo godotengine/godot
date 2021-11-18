@@ -81,9 +81,6 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _tabs_tab_changed(int p_tab);
 	void _focus_current_search_box();
 
-	void _clear_shortcut_search_box();
-	void _clear_search_box();
-
 	void _filter_shortcuts(const String &p_filter);
 
 	void _update_shortcuts();

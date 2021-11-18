@@ -123,7 +123,6 @@ class GroupsEditor : public VBoxContainer {
 	void update_tree();
 	void _add_group(const String &p_group = "");
 	void _modify_group(Object *p_item, int p_column, int p_id);
-	void _close();
 
 	void _show_group_dialog();
 

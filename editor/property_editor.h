@@ -148,7 +148,6 @@ class CustomPropertyEditor : public Popup {
 	void _drag_easing(const Ref<InputEvent> &p_ev);
 
 	void _node_path_selected(NodePath p_path);
-	void show_value_editors(int p_amount);
 	void config_value_editors(int p_amount, int p_columns, int p_label_w, const List<String> &p_strings);
 	void config_action_buttons(const List<String> &p_strings);
 

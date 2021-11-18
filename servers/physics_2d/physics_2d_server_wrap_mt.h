@@ -59,9 +59,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 	bool create_thread;
 
 	Semaphore step_sem;
-	int step_pending;
 	void thread_step(real_t p_delta);
-	void thread_flush();
 
 	void thread_exit();
 

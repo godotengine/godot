@@ -121,11 +121,6 @@ private:
 
 	Windows::System::Display::DisplayRequest ^ display_request;
 
-	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
-
-	void _drag_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	void _touch_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 	ref class ManagedType {
 	public:
 		property bool alert_close_handle;

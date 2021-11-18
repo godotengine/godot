@@ -57,7 +57,6 @@ class FindBar : public HBoxContainer {
 
 	int results_count;
 
-	void _show_search();
 	void _hide_bar();
 
 	void _search_text_changed(const String &p_text);
@@ -65,8 +64,6 @@ class FindBar : public HBoxContainer {
 
 	void _update_results_count();
 	void _update_matches_label();
-
-	void _update_size();
 
 protected:
 	void _notification(int p_what);

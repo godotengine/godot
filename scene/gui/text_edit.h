@@ -467,7 +467,6 @@ private:
 	int get_column_x_offset(int p_char, String p_str) const;
 
 	void adjust_viewport_to_cursor();
-	double get_scroll_line_diff() const;
 	void _scroll_moved(double);
 	void _update_scrollbars();
 	void _v_scroll_input();

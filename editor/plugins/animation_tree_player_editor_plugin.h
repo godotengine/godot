@@ -82,7 +82,6 @@ class AnimationTreePlayerEditor : public Control {
 
 	void _popup_edit_dialog();
 
-	void _setup_edit_dialog(const StringName &p_node);
 	PopupMenu *master_anim_popup;
 	PopupMenu *node_popup;
 	PopupMenu *add_popup;
@@ -143,7 +142,6 @@ class AnimationTreePlayerEditor : public Control {
 	void _edit_dialog_changede(String);
 	void _edit_dialog_changedf(float);
 	void _edit_dialog_changed();
-	void _dialog_changed() const;
 	ClickType _locate_click(const Point2 &p_click, StringName *p_node_id, int *p_slot_index) const;
 	Point2 _get_slot_pos(const StringName &p_node_id, bool p_input, int p_slot);
 

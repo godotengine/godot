@@ -207,7 +207,6 @@ public:
 	void set_explosiveness_ratio(float p_ratio);
 	void set_randomness_ratio(float p_ratio);
 	void set_lifetime_randomness(float p_random);
-	void set_visibility_aabb(const AABB &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
 	void set_speed_scale(float p_scale);
 
@@ -219,7 +218,6 @@ public:
 	float get_explosiveness_ratio() const;
 	float get_randomness_ratio() const;
 	float get_lifetime_randomness() const;
-	AABB get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
 	float get_speed_scale() const;
 
@@ -231,9 +229,6 @@ public:
 
 	void set_draw_order(DrawOrder p_order);
 	DrawOrder get_draw_order() const;
-
-	void set_draw_passes(int p_count);
-	int get_draw_passes() const;
 
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
@@ -273,7 +268,6 @@ public:
 	void set_emission_points(const PoolVector<Vector3> &p_points);
 	void set_emission_normals(const PoolVector<Vector3> &p_normals);
 	void set_emission_colors(const PoolVector<Color> &p_colors);
-	void set_emission_point_count(int p_count);
 	void set_emission_ring_height(float p_height);
 	void set_emission_ring_inner_radius(float p_inner_radius);
 	void set_emission_ring_radius(float p_radius);
@@ -285,7 +279,6 @@ public:
 	PoolVector<Vector3> get_emission_points() const;
 	PoolVector<Vector3> get_emission_normals() const;
 	PoolVector<Color> get_emission_colors() const;
-	int get_emission_point_count() const;
 	float get_emission_ring_height() const;
 	float get_emission_ring_inner_radius() const;
 	float get_emission_ring_radius() const;

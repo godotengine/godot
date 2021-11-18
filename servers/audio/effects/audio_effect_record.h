@@ -61,7 +61,6 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 	void _io_thread_process();
 	void _io_store_buffer();
 	static void _thread_callback(void *_instance);
-	void _init_recording();
 	void _update_buffer();
 	static void _update(void *userdata);
 
@@ -94,7 +93,6 @@ class AudioEffectRecord : public AudioEffect {
 
 protected:
 	static void _bind_methods();
-	static void debug(uint64_t time_diff, int p_frame_count);
 
 public:
 	Ref<AudioEffectInstance> instance();

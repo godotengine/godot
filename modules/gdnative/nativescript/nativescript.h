@@ -269,7 +269,6 @@ private:
 	};
 
 	Map<StringName, ProfileData> profile_data;
-	bool profiling;
 
 public:
 	// These two maps must only be touched on the main thread
@@ -294,8 +293,6 @@ public:
 	inline static NativeScriptLanguage *get_singleton() {
 		return singleton;
 	}
-
-	void _hacky_api_anchor();
 
 	_FORCE_INLINE_ void set_language_index(int p_idx) { lang_idx = p_idx; }
 

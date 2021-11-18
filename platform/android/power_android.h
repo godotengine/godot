@@ -60,16 +60,12 @@ private:
 	OS::PowerState power_state;
 
 	bool GetPowerInfo_Android();
-	bool UpdatePowerInfo();
 
 public:
 	static int s_active;
 
 	PowerAndroid();
 	virtual ~PowerAndroid();
-	static bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder, JNIEnv *env);
-	static struct LocalReferenceHolder LocalReferenceHolder_Setup(const char *func);
-	static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder);
 
 	OS::PowerState get_power_state();
 	int get_power_seconds_left();

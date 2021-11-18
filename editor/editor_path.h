@@ -47,7 +47,6 @@ class EditorPath : public Button {
 	PopupMenu *sub_objects_menu;
 
 	Vector<ObjectID> objects;
-	EditorPath();
 
 	void _show_popup();
 	void _id_pressed(int p_idx);
