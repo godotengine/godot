@@ -127,6 +127,7 @@ BroadPhaseSW *BroadPhaseBVH::_create() {
 
 BroadPhaseBVH::BroadPhaseBVH() {
 	bvh.params_set_thread_safe(GLOBAL_GET("rendering/threads/thread_safe_bvh"));
+	bvh.params_set_pairing_expansion(GLOBAL_GET("physics/3d/godot_physics/bvh_collision_margin"));
 	bvh.set_pair_callback(_pair_callback, this);
 	bvh.set_unpair_callback(_unpair_callback, this);
 	bvh.set_check_pair_callback(_check_pair_callback, this);

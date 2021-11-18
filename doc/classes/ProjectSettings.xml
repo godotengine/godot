@@ -1016,6 +1016,11 @@
 			Size of the hash table used for the broad-phase 2D hash grid algorithm.
 			[b]Note:[/b] Not used if [member ProjectSettings.physics/2d/use_bvh] is enabled.
 		</member>
+		<member name="physics/2d/bvh_collision_margin" type="float" setter="" getter="" default="1.0">
+			Additional expansion applied to object bounds in the 2D physics bounding volume hierarchy. This can reduce BVH processing at the cost of a slightly coarser broadphase, which can stress the physics more in some situations.
+			The default value will work well in most situations. A value of 0.0 will turn this optimization off, and larger values may work better for larger, faster moving objects.
+			[b]Note:[/b] Used only if [member ProjectSettings.physics/2d/use_bvh] is enabled.
+		</member>
 		<member name="physics/2d/cell_size" type="int" setter="" getter="" default="128">
 			Cell size used for the broad-phase 2D hash grid algorithm (in pixels).
 			[b]Note:[/b] Not used if [member ProjectSettings.physics/2d/use_bvh] is enabled.
@@ -1094,6 +1099,11 @@
 		<member name="physics/3d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 3D.
 			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
+		</member>
+		<member name="physics/3d/godot_physics/bvh_collision_margin" type="float" setter="" getter="" default="0.1">
+			Additional expansion applied to object bounds in the 3D physics bounding volume hierarchy. This can reduce BVH processing at the cost of a slightly coarser broadphase, which can stress the physics more in some situations.
+			The default value will work well in most situations. A value of 0.0 will turn this optimization off, and larger values may work better for larger, faster moving objects.
+			[b]Note:[/b] Used only if [member ProjectSettings.physics/3d/godot_physics/use_bvh] is enabled.
 		</member>
 		<member name="physics/3d/godot_physics/use_bvh" type="bool" setter="" getter="" default="true">
 			Enables the use of bounding volume hierarchy instead of octree for 3D physics spatial partitioning. This may give better performance.
@@ -1430,9 +1440,15 @@
 			See also [member rendering/quality/skinning/force_software_skinning].
 			[b]Note:[/b] When the software skinning fallback is triggered, custom vertex shaders will behave in a different way, because the bone transform will be already applied to the modelview matrix.
 		</member>
+		<member name="rendering/quality/spatial_partitioning/bvh_collision_margin" type="float" setter="" getter="" default="0.1">
+			Additional expansion applied to object bounds in the 3D rendering bounding volume hierarchy. This can reduce BVH processing at the cost of a slightly reduced accuracy.
+			The default value will work well in most situations. A value of 0.0 will turn this optimization off, and larger values may work better for larger, faster moving objects.
+			[b]Note:[/b] Used only if [member ProjectSettings.rendering/quality/spatial_partitioning/use_bvh] is enabled.
+		</member>
 		<member name="rendering/quality/spatial_partitioning/render_tree_balance" type="float" setter="" getter="" default="0.0">
 			The rendering octree balance can be changed to favor smaller ([code]0[/code]), or larger ([code]1[/code]) branches.
 			Larger branches can increase performance significantly in some projects.
+			[b]Note:[/b] Not used if [member ProjectSettings.rendering/quality/spatial_partitioning/use_bvh] is enabled.
 		</member>
 		<member name="rendering/quality/spatial_partitioning/use_bvh" type="bool" setter="" getter="" default="true">
 			Enables the use of bounding volume hierarchy instead of octree for rendering spatial partitioning. This may give better performance.
