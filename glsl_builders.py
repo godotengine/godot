@@ -44,8 +44,14 @@ class RDHeaderStruct:
         self.compute_offset = 0
 
 
-def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth: int) -> RDHeaderStruct:
-    fs = open(filename, "r")
+def include_file_in_rd_header(filename, header_data, depth):
+    # This code implicitly assumes it is run in the source root,
+    # and that you can just open files like "thirdparty/foo/bar".
+    import os
+    if os.path.exists(filename):
+        fs = open(filename, "r")
+    else:
+        fs = open(os.path.join(os.getenv("MESON_SOURCE_ROOT"), filename), "r")
     line = fs.readline()
 
     while line:
