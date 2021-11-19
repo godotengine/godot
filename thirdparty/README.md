@@ -279,14 +279,14 @@ on top of the 1.1.1 source (not included in any stable release yet).
 ## libvorbis
 
 - Upstream: https://www.xiph.org/vorbis
-- Version: 1.3.6 (2018)
+- Version: 1.3.7 (0657aee69dec8508a0011f47f3b69d7538e9d262, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- `src/*` except from: `lookups.pl`, `Makefile.*`
-- `include/vorbis/*.h` as vorbis/
-- COPYING
+- `lib/*` except from: `lookups.pl`, `Makefile.*`
+- `include/vorbis/*.h` as `vorbis/`
+- `COPYING`
 
 
 ## libwebp
