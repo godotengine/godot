@@ -3674,112 +3674,121 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AABB.xml:42
-msgid "Returns this [AABB] expanded to include a given point."
-msgstr ""
-
-#: doc/classes/AABB.xml:48
-msgid "Returns the volume of the [AABB]."
+msgid ""
+"Returns a copy of this [AABB] expanded to include a given point.\n"
+"[b]Example:[/b]\n"
+"[codeblock]\n"
+"# position (-3, 2, 0), size (1, 1, 1)\n"
+"var box = AABB(Vector3(-3, 2, 0), Vector3(1, 1, 1))\n"
+"# position (-3, -1, 0), size (3, 4, 2), so we fit both the original AABB and "
+"Vector3(0, -1, 2)\n"
+"var box2 = box.expand(Vector3(0, -1, 2))\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/AABB.xml:55
+msgid "Returns the volume of the [AABB]."
+msgstr ""
+
+#: doc/classes/AABB.xml:62
 msgid "Gets the position of the 8 endpoints of the [AABB] in space."
 msgstr ""
 
-#: doc/classes/AABB.xml:61
+#: doc/classes/AABB.xml:68
 msgid "Returns the normalized longest axis of the [AABB]."
 msgstr ""
 
-#: doc/classes/AABB.xml:67
+#: doc/classes/AABB.xml:74
 msgid ""
 "Returns the index of the longest axis of the [AABB] (according to "
 "[Vector3]'s [code]AXIS_*[/code] constants)."
 msgstr ""
 
-#: doc/classes/AABB.xml:73
+#: doc/classes/AABB.xml:80
 msgid "Returns the scalar length of the longest axis of the [AABB]."
 msgstr ""
 
-#: doc/classes/AABB.xml:79
+#: doc/classes/AABB.xml:86
 msgid "Returns the normalized shortest axis of the [AABB]."
 msgstr ""
 
-#: doc/classes/AABB.xml:85
+#: doc/classes/AABB.xml:92
 msgid ""
 "Returns the index of the shortest axis of the [AABB] (according to "
 "[Vector3]::AXIS* enum)."
 msgstr ""
 
-#: doc/classes/AABB.xml:91
+#: doc/classes/AABB.xml:98
 msgid "Returns the scalar length of the shortest axis of the [AABB]."
 msgstr ""
 
-#: doc/classes/AABB.xml:98
+#: doc/classes/AABB.xml:105
 msgid ""
 "Returns the support point in a given direction. This is useful for collision "
 "detection algorithms."
 msgstr ""
 
-#: doc/classes/AABB.xml:105
+#: doc/classes/AABB.xml:112
 msgid ""
 "Returns a copy of the [AABB] grown a given amount of units towards all the "
 "sides."
 msgstr ""
 
-#: doc/classes/AABB.xml:111
+#: doc/classes/AABB.xml:118
 msgid "Returns [code]true[/code] if the [AABB] is flat or empty."
 msgstr ""
 
-#: doc/classes/AABB.xml:117
+#: doc/classes/AABB.xml:124
 msgid "Returns [code]true[/code] if the [AABB] is empty."
 msgstr ""
 
-#: doc/classes/AABB.xml:124
+#: doc/classes/AABB.xml:131
 msgid "Returns [code]true[/code] if the [AABB] contains a point."
 msgstr ""
 
-#: doc/classes/AABB.xml:131
+#: doc/classes/AABB.xml:138
 msgid ""
 "Returns the intersection between two [AABB]. An empty AABB (size 0,0,0) is "
 "returned on failure."
 msgstr ""
 
-#: doc/classes/AABB.xml:138
+#: doc/classes/AABB.xml:145
 msgid "Returns [code]true[/code] if the [AABB] overlaps with another."
 msgstr ""
 
-#: doc/classes/AABB.xml:145
+#: doc/classes/AABB.xml:152
 msgid "Returns [code]true[/code] if the [AABB] is on both sides of a plane."
 msgstr ""
 
-#: doc/classes/AABB.xml:153
+#: doc/classes/AABB.xml:160
 msgid ""
 "Returns [code]true[/code] if the [AABB] intersects the line segment between "
 "[code]from[/code] and [code]to[/code]."
 msgstr ""
 
-#: doc/classes/AABB.xml:160
+#: doc/classes/AABB.xml:167
 msgid ""
 "Returns [code]true[/code] if this [AABB] and [code]aabb[/code] are "
 "approximately equal, by calling [method @GDScript.is_equal_approx] on each "
 "component."
 msgstr ""
 
-#: doc/classes/AABB.xml:167
+#: doc/classes/AABB.xml:174
 msgid ""
 "Returns a larger [AABB] that contains both this [AABB] and [code]with[/code]."
 msgstr ""
 
-#: doc/classes/AABB.xml:173 doc/classes/Rect2.xml:132
+#: doc/classes/AABB.xml:180 doc/classes/Rect2.xml:140
 msgid ""
 "Ending corner. This is calculated as [code]position + size[/code]. Setting "
 "this value will change the size."
 msgstr ""
 
-#: doc/classes/AABB.xml:176 doc/classes/Rect2.xml:135
+#: doc/classes/AABB.xml:183 doc/classes/Rect2.xml:143
 msgid "Beginning corner. Typically has values lower than [member end]."
 msgstr ""
 
-#: doc/classes/AABB.xml:179 doc/classes/Rect2.xml:138
+#: doc/classes/AABB.xml:186 doc/classes/Rect2.xml:146
 msgid ""
 "Size from [member position] to [member end]. Typically, all components are "
 "positive.\n"
@@ -4858,7 +4867,7 @@ msgstr ""
 #: doc/classes/AnimationPlayer.xml:14 doc/classes/AnimationTree.xml:12
 #: doc/classes/AudioEffectReverb.xml:11 doc/classes/Camera.xml:10
 #: doc/classes/CollisionShape.xml:13 doc/classes/CylinderShape.xml:10
-#: doc/classes/Environment.xml:19 doc/classes/GIProbe.xml:14
+#: doc/classes/Environment.xml:19 doc/classes/GIProbe.xml:16
 #: doc/classes/GIProbeData.xml:8 doc/classes/KinematicBody.xml:16
 #: doc/classes/Light.xml:11 doc/classes/Material.xml:11 doc/classes/Mesh.xml:13
 #: doc/classes/MeshInstance.xml:13 doc/classes/Particles.xml:14
@@ -10258,17 +10267,21 @@ msgid ""
 "lighting to a scene. Unlike the [GIProbe] approach, baked lightmaps work "
 "fine on low-end PCs and mobile devices as they consume almost no resources "
 "in run-time.\n"
+"[b]Procedural generation:[/b] Lightmap baking functionality is only "
+"available in the editor. This means [BakedLightmap] is not suited to "
+"procedurally generated or user-built levels. For procedurally generated or "
+"user-built levels, use [GIProbe] instead.\n"
 "[b]Note:[/b] Due to how lightmaps work, most properties only have a visible "
 "effect once lightmaps are baked again."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:11
+#: doc/classes/BakedLightmap.xml:12
 #, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/baked_lightmaps.html"
 msgstr ""
 "https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html"
 
-#: doc/classes/BakedLightmap.xml:19
+#: doc/classes/BakedLightmap.xml:20
 msgid ""
 "Bakes the lightmap, scanning from the given [code]from_node[/code] root and "
 "saves the resulting [BakedLightmapData] in [code]data_save_path[/code]. If "
@@ -10277,24 +10290,24 @@ msgid ""
 "[member light_data]."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:25
+#: doc/classes/BakedLightmap.xml:26
 msgid ""
 "When enabled, the lightmapper will merge the textures for all meshes into a "
 "single large layered texture. Not supported in GLES2."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:28
+#: doc/classes/BakedLightmap.xml:29
 msgid ""
 "Maximum size of each lightmap layer, only used when [member atlas_generate] "
 "is enabled."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:31
+#: doc/classes/BakedLightmap.xml:32
 msgid ""
 "Raycasting bias used during baking to avoid floating point precision issues."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:34
+#: doc/classes/BakedLightmap.xml:35
 msgid ""
 "The energy multiplier for each bounce. Higher values will make indirect "
 "lighting brighter. A value of [code]1.0[/code] represents physically "
@@ -10308,62 +10321,62 @@ msgid ""
 "bounces] is set to a value greater than or equal to [code]1[/code]."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:38
+#: doc/classes/BakedLightmap.xml:39
 msgid ""
 "Number of light bounces that are taken into account during baking. See also "
 "[member bounce_indirect_energy]."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:41
+#: doc/classes/BakedLightmap.xml:42
 msgid "Grid size used for real-time capture information on dynamic objects."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:44
+#: doc/classes/BakedLightmap.xml:45
 msgid ""
 "When enabled, an octree containing the scene's lighting information will be "
 "computed. This octree will then be used to light dynamic objects in the "
 "scene."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:47
+#: doc/classes/BakedLightmap.xml:48
 msgid ""
 "Bias value to reduce the amount of light proagation in the captured octree."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:50
+#: doc/classes/BakedLightmap.xml:51
 msgid "Bake quality of the capture data."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:53
+#: doc/classes/BakedLightmap.xml:54
 msgid ""
 "If a baked mesh doesn't have a UV2 size hint, this value will be used to "
 "roughly compute a suitable lightmap size."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:56
+#: doc/classes/BakedLightmap.xml:57
 msgid ""
 "The environment color when [member environment_mode] is set to [constant "
 "ENVIRONMENT_MODE_CUSTOM_COLOR]."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:59
+#: doc/classes/BakedLightmap.xml:60
 msgid ""
 "The energy scaling factor when when [member environment_mode] is set to "
 "[constant ENVIRONMENT_MODE_CUSTOM_COLOR] or [constant "
 "ENVIRONMENT_MODE_CUSTOM_SKY]."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:62
+#: doc/classes/BakedLightmap.xml:63
 msgid ""
 "The [Sky] resource to use when [member environment_mode] is set o [constant "
 "ENVIRONMENT_MODE_CUSTOM_SKY]."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:65
+#: doc/classes/BakedLightmap.xml:66
 msgid "The rotation of the baked custom sky."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:68
+#: doc/classes/BakedLightmap.xml:69
 msgid ""
 "Minimum ambient light for all the lightmap texels. This doesn't take into "
 "account any occlusion from the scene's geometry, it simply ensures a minimum "
@@ -10371,35 +10384,35 @@ msgid ""
 "on shadow color."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:71
+#: doc/classes/BakedLightmap.xml:72
 msgid "Decides which environment to use during baking."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:74
+#: doc/classes/BakedLightmap.xml:75
 msgid ""
 "Size of the baked lightmap. Only meshes inside this region will be included "
 "in the baked lightmap, also used as the bounds of the captured region for "
 "dynamic lighting."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:77
+#: doc/classes/BakedLightmap.xml:78
 msgid ""
 "Deprecated, in previous versions it determined the location where lightmaps "
 "were be saved."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:80
+#: doc/classes/BakedLightmap.xml:81
 msgid "The calculated light data."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:83
+#: doc/classes/BakedLightmap.xml:84
 msgid ""
 "Determines the amount of samples per texel used in indrect light baking. The "
 "amount of samples for each quality level can be configured in the project "
 "settings."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:86
+#: doc/classes/BakedLightmap.xml:87
 msgid ""
 "Store full color values in the lightmap textures. When disabled, lightmap "
 "textures will store a single brightness channel. Can be disabled to reduce "
@@ -10407,13 +10420,13 @@ msgid ""
 "color information in indirect lighting."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:89
+#: doc/classes/BakedLightmap.xml:90
 msgid ""
 "When enabled, a lightmap denoiser will be used to reduce the noise inherent "
 "to Monte Carlo based global illumination."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:92
+#: doc/classes/BakedLightmap.xml:93
 msgid ""
 "If [code]true[/code], stores the lightmap textures in a high dynamic range "
 "format (EXR). If [code]false[/code], stores the lightmap texture in a low "
@@ -10425,78 +10438,78 @@ msgid ""
 "ProjectSettings.rendering/quality/depth/hdr] is [code]false[/code]."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:98
+#: doc/classes/BakedLightmap.xml:99
 msgid "The lowest bake quality mode. Fastest to calculate."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:101
+#: doc/classes/BakedLightmap.xml:102
 msgid "The default bake quality mode."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:104
+#: doc/classes/BakedLightmap.xml:105
 msgid "A higher bake quality mode. Takes longer to calculate."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:107
+#: doc/classes/BakedLightmap.xml:108
 msgid "The highest bake quality mode. Takes the longest to calculate."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:110
+#: doc/classes/BakedLightmap.xml:111
 msgid "Baking was successful."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:113
+#: doc/classes/BakedLightmap.xml:114
 msgid ""
 "Returns if no viable save path is found. This can happen where an [member "
 "image_path] is not specified or when the save location is invalid."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:116 doc/classes/SpatialMaterial.xml:622
+#: doc/classes/BakedLightmap.xml:117 doc/classes/SpatialMaterial.xml:622
 msgid "Currently unused."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:119
+#: doc/classes/BakedLightmap.xml:120
 #, fuzzy
 msgid "Returns when the baker cannot save per-mesh textures to file."
 msgstr "يُرجع قيمة ظل الزاوية العكسي للمَعالم."
 
-#: doc/classes/BakedLightmap.xml:122
+#: doc/classes/BakedLightmap.xml:123
 msgid "The size of the generated lightmaps is too large."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:125
+#: doc/classes/BakedLightmap.xml:126
 msgid "Some mesh contains UV2 values outside the [code][0,1][/code] range."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:128
+#: doc/classes/BakedLightmap.xml:129
 msgid "Returns if user cancels baking."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:131
+#: doc/classes/BakedLightmap.xml:132
 msgid ""
 "Returns if lightmapper can't be created. Unless you are using a custom "
 "lightmapper, please report this as bug."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:134
+#: doc/classes/BakedLightmap.xml:135
 msgid ""
 "There is no root node to start baking from. Either provide [code]from_node[/"
 "code] argument or attach this node to a parent that should be used as root."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:137
+#: doc/classes/BakedLightmap.xml:138
 msgid "No environment is used during baking."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:140
+#: doc/classes/BakedLightmap.xml:141
 msgid "The baked environment is automatically picked from the current scene."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:143
+#: doc/classes/BakedLightmap.xml:144
 msgid "A custom sky is used as environment during baking."
 msgstr ""
 
-#: doc/classes/BakedLightmap.xml:146
+#: doc/classes/BakedLightmap.xml:147
 msgid "A custom solid color is used as environment during baking."
 msgstr ""
 
@@ -10952,8 +10965,11 @@ msgstr ""
 
 #: doc/classes/BitMap.xml:51
 msgid ""
-"Applies morphological dilation to the bitmap. The first argument is the "
-"dilation amount, Rect2 is the area where the dilation will be applied."
+"Applies morphological dilation or erosion to the bitmap. If [code]pixels[/"
+"code] is positive, dilation is applied to the bitmap. If [code]pixels[/code] "
+"is negative, erosion is applied to the bitmap. [code]rect[/code] defines the "
+"area where the morphological operation is applied. Pixels located outside "
+"the [code]rect[/code] are unaffected by [method grow_mask]."
 msgstr ""
 
 #: doc/classes/BitMap.xml:66
@@ -24974,21 +24990,32 @@ msgid ""
 "be turned down in exchange for better performance in the [ProjectSettings] "
 "using [member ProjectSettings.rendering/quality/voxel_cone_tracing/"
 "high_quality].\n"
+"[b]Procedural generation:[/b] [GIProbe] can be baked in an exported project, "
+"which makes it suitable for procedurally generated or user-built levels as "
+"long as all the geometry is generated in advance.\n"
+"[b]Performance:[/b] [GIProbe] is relatively demanding on the GPU and is not "
+"suited to low-end hardware such as integrated graphics (consider "
+"[BakedLightmap] instead). To provide a fallback for low-end hardware, "
+"consider adding an option to disable [GIProbe] in your project's options "
+"menus. A [GIProbe] node can be disabled by hiding it.\n"
 "[b]Note:[/b] Meshes should have sufficiently thick walls to avoid light "
 "leaks (avoid one-sided walls). For interior levels, enclose your level "
-"geometry in a sufficiently large box and bridge the loops to close the "
-"mesh.\n"
+"geometry in a sufficiently large box and bridge the loops to close the mesh. "
+"To further prevent light leaks, you can also strategically place temporary "
+"[MeshInstance] nodes with [member GeometryInstance.use_in_baked_light] "
+"enabled. These temporary nodes can then be hidden after baking the [GIProbe] "
+"node.\n"
 "[b]Note:[/b] Due to a renderer limitation, emissive [ShaderMaterial]s cannot "
 "emit light when used in a [GIProbe]. Only emissive [SpatialMaterial]s can "
 "emit light in a [GIProbe]."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:13
+#: doc/classes/GIProbe.xml:15
 #, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/gi_probes.html"
 msgstr "https://docs.godotengine.org/en/latest/tutorials/3d/gi_probes.html"
 
-#: doc/classes/GIProbe.xml:22
+#: doc/classes/GIProbe.xml:24
 msgid ""
 "Bakes the effect from all [GeometryInstance]s marked with [member "
 "GeometryInstance.use_in_baked_light] and [Light]s marked with either "
@@ -24997,14 +25024,18 @@ msgid ""
 "light, this will generate a [MultiMesh] that has a cube representing each "
 "solid cell with each cube colored to the cell's albedo color. This can be "
 "used to visualize the [GIProbe]'s data and debug any issues that may be "
-"occurring."
+"occurring.\n"
+"[b]Note:[/b] [method bake] works from the editor and in exported projects. "
+"This makes it suitable for procedurally generated or user-built levels. "
+"Baking a [GIProbe] generally takes from 5 to 20 seconds in most scenes. "
+"Reducing [member subdiv] can speed up baking."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:28
+#: doc/classes/GIProbe.xml:31
 msgid "Calls [method bake] with [code]create_visual_debug[/code] enabled."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:34
+#: doc/classes/GIProbe.xml:37
 msgid ""
 "Offsets the lookup of the light contribution from the [GIProbe]. This can be "
 "used to avoid self-shadowing, but may introduce light leaking at higher "
@@ -25014,80 +25045,80 @@ msgid ""
 "size of the voxels."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:38
+#: doc/classes/GIProbe.xml:41
 msgid ""
 "[i]Deprecated.[/i] This property has been deprecated due to known bugs and "
 "no longer has any effect when enabled."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:41
+#: doc/classes/GIProbe.xml:44
 msgid "The [GIProbeData] resource that holds the data for this [GIProbe]."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:44
+#: doc/classes/GIProbe.xml:47
 msgid ""
 "The maximum brightness that the [GIProbe] will recognize. Brightness will be "
 "scaled within this range."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:47
+#: doc/classes/GIProbe.xml:50
 msgid ""
 "Energy multiplier. Makes the lighting contribution from the [GIProbe] "
 "brighter."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:50
+#: doc/classes/GIProbe.xml:53
 msgid ""
 "The size of the area covered by the [GIProbe]. If you make the extents "
 "larger without increasing the subdivisions with [member subdiv], the size of "
 "each cell will increase and result in lower detailed lighting."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:53
+#: doc/classes/GIProbe.xml:56
 msgid ""
 "If [code]true[/code], ignores the sky contribution when calculating lighting."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:56
+#: doc/classes/GIProbe.xml:59
 msgid ""
 "Offsets the lookup into the [GIProbe] based on the object's normal "
 "direction. Can be used to reduce some self-shadowing artifacts."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:59
+#: doc/classes/GIProbe.xml:62
 msgid ""
 "How much light propagates through the probe internally. A higher value "
 "allows light to spread further."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:62
+#: doc/classes/GIProbe.xml:65
 msgid ""
 "Number of times to subdivide the grid that the [GIProbe] operates on. A "
 "higher number results in finer detail and thus higher visual quality, while "
 "lower numbers result in better performance."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:67
+#: doc/classes/GIProbe.xml:70
 msgid ""
 "Use 64 subdivisions. This is the lowest quality setting, but the fastest. "
 "Use it if you can, but especially use it on lower-end hardware."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:70
+#: doc/classes/GIProbe.xml:73
 msgid "Use 128 subdivisions. This is the default quality setting."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:73
+#: doc/classes/GIProbe.xml:76
 msgid "Use 256 subdivisions."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:76
+#: doc/classes/GIProbe.xml:79
 msgid ""
 "Use 512 subdivisions. This is the highest quality setting, but the slowest. "
-"On lower-end hardware this could cause the GPU to stall."
+"On lower-end hardware, this could cause the GPU to stall."
 msgstr ""
 
-#: doc/classes/GIProbe.xml:79
+#: doc/classes/GIProbe.xml:82
 msgid "Represents the size of the [enum Subdiv] enum."
 msgstr ""
 
@@ -29306,7 +29337,9 @@ msgid "The drag position."
 msgstr ""
 
 #: doc/classes/InputEventScreenDrag.xml:22
-msgid "The drag position relative to its start position."
+msgid ""
+"The drag position relative to the previous position (position at the last "
+"frame)."
 msgstr ""
 
 #: doc/classes/InputEventScreenDrag.xml:25
@@ -30619,7 +30652,8 @@ msgstr ""
 msgid ""
 "Moves the body along the vector [code]rel_vec[/code]. The body will stop if "
 "it collides. Returns a [KinematicCollision], which contains information "
-"about the collision.\n"
+"about the collision when stopped, or when touching another body along the "
+"motion.\n"
 "If [code]test_only[/code] is [code]true[/code], the body does not move but "
 "the would-be collision information is given."
 msgstr ""
@@ -30684,22 +30718,24 @@ msgid ""
 "Checks for collisions without moving the body. Virtually sets the node's "
 "position, scale and rotation to that of the given [Transform], then tries to "
 "move the body along the vector [code]rel_vec[/code]. Returns [code]true[/"
-"code] if a collision would occur."
+"code] if a collision would stop the body from moving along the whole path.\n"
+"Use [method move_and_collide] instead for detecting collision with touching "
+"bodies."
 msgstr ""
 
-#: doc/classes/KinematicBody.xml:148
+#: doc/classes/KinematicBody.xml:149
 msgid "Lock the body's X axis movement."
 msgstr ""
 
-#: doc/classes/KinematicBody.xml:151
+#: doc/classes/KinematicBody.xml:152
 msgid "Lock the body's Y axis movement."
 msgstr ""
 
-#: doc/classes/KinematicBody.xml:154
+#: doc/classes/KinematicBody.xml:155
 msgid "Lock the body's Z axis movement."
 msgstr ""
 
-#: doc/classes/KinematicBody.xml:157 doc/classes/KinematicBody2D.xml:138
+#: doc/classes/KinematicBody.xml:158 doc/classes/KinematicBody2D.xml:139
 msgid ""
 "Extra margin used for collision recovery in motion functions (see [method "
 "move_and_collide], [method move_and_slide], [method "
@@ -30714,7 +30750,7 @@ msgid ""
 "bodies."
 msgstr ""
 
-#: doc/classes/KinematicBody.xml:163 doc/classes/KinematicBody2D.xml:144
+#: doc/classes/KinematicBody.xml:164 doc/classes/KinematicBody2D.xml:145
 msgid ""
 "If [code]true[/code], the body's movement will be synchronized to the "
 "physics frame. This is useful when animating movement via [AnimationPlayer], "
@@ -30722,19 +30758,19 @@ msgid ""
 "move_and_slide] or [method move_and_collide] functions."
 msgstr ""
 
-#: doc/classes/KinematicBody.xml:166
+#: doc/classes/KinematicBody.xml:167
 msgid ""
 "Lock the body's X axis movement. Deprecated alias for [member "
 "axis_lock_motion_x]."
 msgstr ""
 
-#: doc/classes/KinematicBody.xml:169
+#: doc/classes/KinematicBody.xml:170
 msgid ""
 "Lock the body's Y axis movement. Deprecated alias for [member "
 "axis_lock_motion_y]."
 msgstr ""
 
-#: doc/classes/KinematicBody.xml:172
+#: doc/classes/KinematicBody.xml:173
 msgid ""
 "Lock the body's Z axis movement. Deprecated alias for [member "
 "axis_lock_motion_z]."
@@ -30805,7 +30841,8 @@ msgstr ""
 msgid ""
 "Moves the body along the vector [code]rel_vec[/code]. The body will stop if "
 "it collides. Returns a [KinematicCollision2D], which contains information "
-"about the collision.\n"
+"about the collision when stopped, or when touching another body along the "
+"motion.\n"
 "If [code]test_only[/code] is [code]true[/code], the body does not move but "
 "the would-be collision information is given."
 msgstr ""
@@ -30863,7 +30900,9 @@ msgid ""
 "Checks for collisions without moving the body. Virtually sets the node's "
 "position, scale and rotation to that of the given [Transform2D], then tries "
 "to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/"
-"code] if a collision would occur."
+"code] if a collision would stop the body from moving along the whole path.\n"
+"Use [method move_and_collide] instead for detecting collision with touching "
+"bodies."
 msgstr ""
 
 #: doc/classes/KinematicCollision.xml:4
@@ -34416,7 +34455,7 @@ msgid ""
 "var vertices = PoolVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, "
 "50), Vector2(50, 0)])\n"
 "polygon.set_vertices(vertices)\n"
-"var indices = PoolIntArray(0, 3, 1)\n"
+"var indices = PoolIntArray([0, 1, 2, 3])\n"
 "polygon.add_polygon(indices)\n"
 "$NavigationPolygonInstance.navpoly = polygon\n"
 "[/codeblock]"
@@ -37732,7 +37771,7 @@ msgstr ""
 #: doc/classes/OS.xml:353
 msgid ""
 "Returns the dots per inch density of the specified screen. If [code]screen[/"
-"code] is [/code]-1[/code] (the default value), the current screen will be "
+"code] is [code]-1[/code] (the default value), the current screen will be "
 "used.\n"
 "[b]Note:[/b] On macOS, returned value is inaccurate if fractional display "
 "scaling mode is used.\n"
@@ -37762,14 +37801,14 @@ msgstr ""
 #: doc/classes/OS.xml:379
 msgid ""
 "Returns the position of the specified screen by index. If [code]screen[/"
-"code] is [/code]-1[/code] (the default value), the current screen will be "
+"code] is [code]-1[/code] (the default value), the current screen will be "
 "used."
 msgstr ""
 
 #: doc/classes/OS.xml:386
 msgid ""
 "Return the scale factor of the specified screen by index. If [code]screen[/"
-"code] is [/code]-1[/code] (the default value), the current screen will be "
+"code] is [code]-1[/code] (the default value), the current screen will be "
 "used.\n"
 "[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) "
 "screen, and [code]1.0[/code] for all other cases.\n"
@@ -37779,7 +37818,7 @@ msgstr ""
 #: doc/classes/OS.xml:395
 msgid ""
 "Returns the dimensions in pixels of the specified screen. If [code]screen[/"
-"code] is [/code]-1[/code] (the default value), the current screen will be "
+"code] is [code]-1[/code] (the default value), the current screen will be "
 "used."
 msgstr ""
 
@@ -40280,17 +40319,43 @@ msgid ""
 "Physics2DServer.shape_set_data].\n"
 "[code]rid[/code]: The intersecting object's [RID].\n"
 "[code]shape[/code]: The shape index of the colliding shape.\n"
+"The number of intersections can be limited with the [code]max_results[/code] "
+"parameter, to reduce the processing time.\n"
 "Additionally, the method can take an [code]exclude[/code] array of objects "
 "or [RID]s that are to be excluded from collisions, a [code]collision_mask[/"
 "code] bitmask representing the physics layers to check in, or booleans to "
-"determine if the ray should collide with [PhysicsBody]s or [Area]s, "
+"determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, "
 "respectively.\n"
 "[b]Note:[/b] [ConcavePolygonShape2D]s and [CollisionPolygon2D]s in "
 "[code]Segments[/code] build mode are not solid shapes. Therefore, they will "
 "not be detected."
 msgstr ""
 
-#: doc/classes/Physics2DDirectSpaceState.xml:86
+#: doc/classes/Physics2DDirectSpaceState.xml:76
+msgid ""
+"Checks whether a point is inside any solid shape, in a specific canvas layer "
+"given by [code]canvas_instance_id[/code]. The shapes the point is inside of "
+"are returned in an array containing dictionaries with the following fields:\n"
+"[code]collider[/code]: The colliding object.\n"
+"[code]collider_id[/code]: The colliding object's ID.\n"
+"[code]metadata[/code]: The intersecting shape's metadata. This metadata is "
+"different from [method Object.get_meta], and is set with [method "
+"Physics2DServer.shape_set_data].\n"
+"[code]rid[/code]: The intersecting object's [RID].\n"
+"[code]shape[/code]: The shape index of the colliding shape.\n"
+"The number of intersections can be limited with the [code]max_results[/code] "
+"parameter, to reduce the processing time.\n"
+"Additionally, the method can take an [code]exclude[/code] array of objects "
+"or [RID]s that are to be excluded from collisions, a [code]collision_mask[/"
+"code] bitmask representing the physics layers to check in, or booleans to "
+"determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, "
+"respectively.\n"
+"[b]Note:[/b] [ConcavePolygonShape2D]s and [CollisionPolygon2D]s in "
+"[code]Segments[/code] build mode are not solid shapes. Therefore, they will "
+"not be detected."
+msgstr ""
+
+#: doc/classes/Physics2DDirectSpaceState.xml:96
 msgid ""
 "Intersects a ray in a given space. The returned object is a dictionary with "
 "the following fields:\n"
@@ -40308,11 +40373,11 @@ msgid ""
 "Additionally, the method can take an [code]exclude[/code] array of objects "
 "or [RID]s that are to be excluded from collisions, a [code]collision_mask[/"
 "code] bitmask representing the physics layers to check in, or booleans to "
-"determine if the ray should collide with [PhysicsBody]s or [Area]s, "
+"determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, "
 "respectively."
 msgstr ""
 
-#: doc/classes/Physics2DDirectSpaceState.xml:103
+#: doc/classes/Physics2DDirectSpaceState.xml:113
 msgid ""
 "Checks the intersections of a shape, given through a "
 "[Physics2DShapeQueryParameters] object, against the space.\n"
@@ -40507,7 +40572,9 @@ msgid "Returns the continuous collision detection mode."
 msgstr ""
 
 #: doc/classes/Physics2DServer.xml:351
-msgid "Returns the [Physics2DDirectBodyState] of the body."
+msgid ""
+"Returns the [Physics2DDirectBodyState] of the body. Returns [code]null[/"
+"code] if the body is destroyed or removed from the physics space."
 msgstr ""
 
 #: doc/classes/Physics2DServer.xml:358 doc/classes/PhysicsServer.xml:348
@@ -41310,6 +41377,24 @@ msgstr ""
 
 #: doc/classes/PhysicsDirectSpaceState.xml:55
 msgid ""
+"Checks whether a point is inside any solid shape. The shapes the point is "
+"inside of are returned in an array containing dictionaries with the "
+"following fields:\n"
+"[code]collider[/code]: The colliding object.\n"
+"[code]collider_id[/code]: The colliding object's ID.\n"
+"[code]rid[/code]: The intersecting object's [RID].\n"
+"[code]shape[/code]: The shape index of the colliding shape.\n"
+"The number of intersections can be limited with the [code]max_results[/code] "
+"parameter, to reduce the processing time.\n"
+"Additionally, the method can take an [code]exclude[/code] array of objects "
+"or [RID]s that are to be excluded from collisions, a [code]collision_mask[/"
+"code] bitmask representing the physics layers to check in, or booleans to "
+"determine if the ray should collide with [PhysicsBody]s or [Area]s, "
+"respectively."
+msgstr ""
+
+#: doc/classes/PhysicsDirectSpaceState.xml:73
+msgid ""
 "Intersects a ray in a given space. The returned object is a dictionary with "
 "the following fields:\n"
 "[code]collider[/code]: The colliding object.\n"
@@ -41327,7 +41412,7 @@ msgid ""
 "respectively."
 msgstr ""
 
-#: doc/classes/PhysicsDirectSpaceState.xml:71
+#: doc/classes/PhysicsDirectSpaceState.xml:89
 msgid ""
 "Checks the intersections of a shape, given through a "
 "[PhysicsShapeQueryParameters] object, against the space. The intersected "
@@ -41441,7 +41526,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PhysicsServer.xml:335
-msgid "Returns the [PhysicsDirectBodyState] of the body."
+msgid ""
+"Returns the [PhysicsDirectBodyState] of the body. Returns [code]null[/code] "
+"if the body is destroyed or removed from the physics space."
 msgstr ""
 
 #: doc/classes/PhysicsServer.xml:370
@@ -43986,24 +44073,30 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml:279
 msgid ""
-"Output latency in milliseconds for audio. Lower values will result in lower "
-"audio latency at the cost of increased CPU usage. Low values may result in "
-"audible cracking on slower hardware."
+"Specifies the preferred output latency in milliseconds for audio. Lower "
+"values will result in lower audio latency at the cost of increased CPU "
+"usage. Low values may result in audible cracking on slower hardware.\n"
+"Audio output latency may be constrained by the host operating system and "
+"audio hardware drivers. If the host can not provide the specified audio "
+"output latency then Godot will attempt to use the nearest latency allowed by "
+"the host. As such you should always use [method AudioServer."
+"get_output_latency] to determine the actual audio output latency.\n"
+"[b]Note:[/b] This setting is ignored on Windows."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:282
+#: doc/classes/ProjectSettings.xml:284
 msgid ""
 "Safer override for [member audio/output_latency] in the Web platform, to "
 "avoid audio issues especially on mobile devices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:285
+#: doc/classes/ProjectSettings.xml:287
 msgid ""
 "Setting to hardcode audio delay when playing video. Best to leave this "
 "untouched unless you know what you are doing."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:288
+#: doc/classes/ProjectSettings.xml:290
 msgid ""
 "The default compression level for gzip. Affects compressed scenes and "
 "resources. Higher levels result in smaller files at the cost of compression "
@@ -44013,7 +44106,7 @@ msgid ""
 "updates."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:291
+#: doc/classes/ProjectSettings.xml:293
 msgid ""
 "The default compression level for Zlib. Affects compressed scenes and "
 "resources. Higher levels result in smaller files at the cost of compression "
@@ -44023,27 +44116,27 @@ msgid ""
 "updates."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:294
+#: doc/classes/ProjectSettings.xml:296
 msgid ""
 "The default compression level for Zstandard. Affects compressed scenes and "
 "resources. Higher levels result in smaller files at the cost of compression "
 "speed. Decompression speed is mostly unaffected by the compression level."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:297
+#: doc/classes/ProjectSettings.xml:299
 msgid ""
 "Enables [url=https://github.com/facebook/zstd/releases/tag/v1.3.2]long-"
 "distance matching[/url] in Zstandard."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:300
+#: doc/classes/ProjectSettings.xml:302
 msgid ""
 "Largest size limit (in power of 2) allowed when compressing using long-"
 "distance matching with Zstandard. Higher values can result in better "
 "compression, but will require more memory when compressing and decompressing."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:303
+#: doc/classes/ProjectSettings.xml:305
 msgid ""
 "If [code]true[/code], displays getters and setters in autocompletion results "
 "in the script editor. This setting is meant to be used when porting old "
@@ -44051,81 +44144,81 @@ msgid ""
 "Godot 3 onwards."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:306
+#: doc/classes/ProjectSettings.xml:308
 msgid ""
 "If [code]true[/code], enables warnings when a constant is used as a function."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:309
+#: doc/classes/ProjectSettings.xml:311
 msgid ""
 "If [code]true[/code], enables warnings when deprecated keywords such as "
 "[code]slave[/code] are used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:312
+#: doc/classes/ProjectSettings.xml:314
 msgid ""
 "If [code]true[/code], enables specific GDScript warnings (see [code]debug/"
 "gdscript/warnings/*[/code] settings). If [code]false[/code], disables all "
 "GDScript warnings."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:315
+#: doc/classes/ProjectSettings.xml:317
 msgid ""
 "If [code]true[/code], scripts in the [code]res://addons[/code] folder will "
 "not generate warnings."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:318
+#: doc/classes/ProjectSettings.xml:320
 msgid ""
 "If [code]true[/code], enables warnings when a function is declared with the "
 "same name as a constant."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:321
+#: doc/classes/ProjectSettings.xml:323
 msgid ""
 "If [code]true[/code], enables warnings when a function is declared with the "
 "same name as a variable. This will turn into an error in a future version "
 "when first-class functions become supported in GDScript."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:324
+#: doc/classes/ProjectSettings.xml:326
 msgid ""
 "If [code]true[/code], enables warnings when a function assigned to a "
 "variable may yield and return a function state instead of a value."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:327
+#: doc/classes/ProjectSettings.xml:329
 msgid ""
 "If [code]true[/code], enables warnings when using a function as if it was a "
 "property."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:330
+#: doc/classes/ProjectSettings.xml:332
 msgid ""
 "If [code]true[/code], enables warnings when a ternary operator may emit "
 "values with incompatible types."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:333
+#: doc/classes/ProjectSettings.xml:335
 msgid ""
 "If [code]true[/code], enables warnings when dividing an integer by another "
 "integer (the decimal part will be discarded)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:336
+#: doc/classes/ProjectSettings.xml:338
 msgid ""
 "If [code]true[/code], enables warnings when passing a floating-point value "
 "to a function that expects an integer (it will be converted and lose "
 "precision)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:339
+#: doc/classes/ProjectSettings.xml:341
 msgid ""
 "If [code]true[/code], enables warnings when using a property as if it was a "
 "function."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:342
+#: doc/classes/ProjectSettings.xml:344
 msgid ""
 "If [code]true[/code], enables warnings when calling a function without using "
 "its return value (by assigning it to a variable or using it as a function "
@@ -44133,109 +44226,109 @@ msgid ""
 "using the [enum Error] enum."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:345
+#: doc/classes/ProjectSettings.xml:347
 msgid ""
 "If [code]true[/code], enables warnings when defining a local or subclass "
 "member variable that would shadow a variable at an upper level (such as a "
 "member variable)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:348
+#: doc/classes/ProjectSettings.xml:350
 msgid ""
 "If [code]true[/code], enables warnings when calling an expression that has "
 "no effect on the surrounding code, such as writing [code]2 + 2[/code] as a "
 "statement."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:351
+#: doc/classes/ProjectSettings.xml:353
 msgid ""
 "If [code]true[/code], enables warnings when calling a ternary expression "
 "that has no effect on the surrounding code, such as writing [code]42 if "
 "active else 0[/code] as a statement."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:354
+#: doc/classes/ProjectSettings.xml:356
 msgid ""
 "If [code]true[/code], all warnings will be reported as if they were errors."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:357
+#: doc/classes/ProjectSettings.xml:359
 msgid ""
 "If [code]true[/code], enables warnings when using a variable that wasn't "
 "previously assigned."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:360
+#: doc/classes/ProjectSettings.xml:362
 msgid ""
 "If [code]true[/code], enables warnings when assigning a variable using an "
 "assignment operator like [code]+=[/code] if the variable wasn't previously "
 "assigned."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:363
+#: doc/classes/ProjectSettings.xml:365
 msgid ""
 "If [code]true[/code], enables warnings when unreachable code is detected "
 "(such as after a [code]return[/code] statement that will always be executed)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:366
+#: doc/classes/ProjectSettings.xml:368
 msgid ""
 "If [code]true[/code], enables warnings when using an expression whose type "
 "may not be compatible with the function parameter expected."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:369
+#: doc/classes/ProjectSettings.xml:371
 msgid "If [code]true[/code], enables warnings when performing an unsafe cast."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:372
+#: doc/classes/ProjectSettings.xml:374
 msgid ""
 "If [code]true[/code], enables warnings when calling a method whose presence "
 "is not guaranteed at compile-time in the class."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:375
+#: doc/classes/ProjectSettings.xml:377
 msgid ""
 "If [code]true[/code], enables warnings when accessing a property whose "
 "presence is not guaranteed at compile-time in the class."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:378
+#: doc/classes/ProjectSettings.xml:380
 msgid ""
 "If [code]true[/code], enables warnings when a function parameter is unused."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:381
+#: doc/classes/ProjectSettings.xml:383
 msgid ""
 "If [code]true[/code], enables warnings when a member variable is unused."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:384
+#: doc/classes/ProjectSettings.xml:386
 msgid "If [code]true[/code], enables warnings when a signal is unused."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:387
+#: doc/classes/ProjectSettings.xml:389
 msgid "If [code]true[/code], enables warnings when a local variable is unused."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:390
+#: doc/classes/ProjectSettings.xml:392
 msgid ""
 "If [code]true[/code], enables warnings when a variable is declared with the "
 "same name as a function. This will turn into an error in a future version "
 "when first-class functions become supported in GDScript."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:393
+#: doc/classes/ProjectSettings.xml:395
 msgid ""
 "If [code]true[/code], enables warnings when assigning the result of a "
 "function that returns [code]void[/code] to a variable."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:396
+#: doc/classes/ProjectSettings.xml:398
 msgid "Message to be displayed before the backtrace when the engine crashes."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:399
+#: doc/classes/ProjectSettings.xml:401
 msgid ""
 "Maximum number of frames per second allowed. The actual number of frames per "
 "second may still be below this value if the game is lagging.\n"
@@ -44246,91 +44339,91 @@ msgid ""
 "project under lag conditions."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:404
+#: doc/classes/ProjectSettings.xml:406
 msgid "Maximum call stack allowed for debugging GDScript."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:407
+#: doc/classes/ProjectSettings.xml:409
 msgid "Maximum amount of functions per frame allowed when profiling."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:410
+#: doc/classes/ProjectSettings.xml:412
 msgid "Print frames per second to standard output every second."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:413
+#: doc/classes/ProjectSettings.xml:415
 msgid ""
 "Print more information to standard output when running. It displays "
 "information such as memory leaks, which scenes and resources are being "
 "loaded, etc."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:416
+#: doc/classes/ProjectSettings.xml:418
 msgid "Maximum call stack in visual scripting, to avoid infinite recursion."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:419
+#: doc/classes/ProjectSettings.xml:421
 msgid ""
 "Color of the contact points between collision shapes, visible when \"Visible "
 "Collision Shapes\" is enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:422
+#: doc/classes/ProjectSettings.xml:424
 msgid ""
 "Sets whether 2D physics will display collision outlines in game when "
 "\"Visible Collision Shapes\" is enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:425
+#: doc/classes/ProjectSettings.xml:427
 msgid ""
 "Maximum number of contact points between collision shapes to display when "
 "\"Visible Collision Shapes\" is enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:428
+#: doc/classes/ProjectSettings.xml:430
 msgid ""
 "Color of the collision shapes, visible when \"Visible Collision Shapes\" is "
 "enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:431
+#: doc/classes/ProjectSettings.xml:433
 msgid ""
 "Color of the disabled navigation geometry, visible when \"Visible Navigation"
 "\" is enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:434
+#: doc/classes/ProjectSettings.xml:436
 msgid ""
 "Color of the navigation geometry, visible when \"Visible Navigation\" is "
 "enabled in the Debug menu."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:437
+#: doc/classes/ProjectSettings.xml:439
 msgid "Custom image for the mouse cursor (limited to 256×256)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:440
+#: doc/classes/ProjectSettings.xml:442
 msgid "Hotspot for the custom mouse cursor image."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:443
+#: doc/classes/ProjectSettings.xml:445
 msgid "Position offset for tooltips, relative to the mouse cursor's hotspot."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:446
+#: doc/classes/ProjectSettings.xml:448
 msgid ""
 "If [code]true[/code], allows HiDPI display on Windows, macOS, and the HTML5 "
 "platform. This setting has no effect on desktop Linux, as DPI-awareness "
 "fallbacks are not supported there."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:449
+#: doc/classes/ProjectSettings.xml:451
 msgid ""
 "If [code]true[/code], keeps the screen on (even in case of inactivity), so "
 "the screensaver does not take over. Works on desktop and mobile platforms."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:452
+#: doc/classes/ProjectSettings.xml:454
 msgid ""
 "The default screen orientation to use on mobile devices.\n"
 "[b]Note:[/b] When set to a portrait orientation, this project setting does "
@@ -44339,13 +44432,13 @@ msgid ""
 "window/size/height] accordingly."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:456
+#: doc/classes/ProjectSettings.xml:458
 msgid ""
 "If [code]true[/code], the home indicator is hidden automatically. This only "
 "affects iOS devices without a physical home button."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:459
+#: doc/classes/ProjectSettings.xml:461
 msgid ""
 "If [code]true[/code], allows per-pixel transparency for the window "
 "background. This affects performance, so leave it on [code]false[/code] "
@@ -44355,7 +44448,7 @@ msgid ""
 "and Android."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:464
+#: doc/classes/ProjectSettings.xml:466
 msgid ""
 "Sets the window background to transparent when it starts.\n"
 "See [member OS.window_per_pixel_transparency_enabled] for more details.\n"
@@ -44363,19 +44456,19 @@ msgid ""
 "and Android."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:469
+#: doc/classes/ProjectSettings.xml:471
 msgid ""
 "Forces the main window to be always on top.\n"
 "[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:473
+#: doc/classes/ProjectSettings.xml:475
 msgid ""
 "Forces the main window to be borderless.\n"
 "[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:477
+#: doc/classes/ProjectSettings.xml:479
 msgid ""
 "Sets the main window to full screen when the project starts. Note that this "
 "is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless "
@@ -44389,45 +44482,45 @@ msgid ""
 "[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:482
+#: doc/classes/ProjectSettings.xml:484
 msgid ""
 "Sets the game's main viewport height. On desktop platforms, this is the "
 "default window size. Stretch mode settings also use this as a reference when "
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:485
+#: doc/classes/ProjectSettings.xml:487
 msgid ""
 "Allows the window to be resizable by default.\n"
 "[b]Note:[/b] This setting is ignored on iOS and Android."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:489
+#: doc/classes/ProjectSettings.xml:491
 msgid ""
 "If greater than zero, overrides the window height when running the game. "
 "Useful for testing stretch modes."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:492
+#: doc/classes/ProjectSettings.xml:494
 msgid ""
 "If greater than zero, overrides the window width when running the game. "
 "Useful for testing stretch modes."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:495
+#: doc/classes/ProjectSettings.xml:497
 msgid ""
 "Sets the game's main viewport width. On desktop platforms, this is the "
 "default window size. Stretch mode settings also use this as a reference when "
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:498
+#: doc/classes/ProjectSettings.xml:500
 msgid ""
 "Specifies the tablet driver to use. If left empty, the default driver will "
 "be used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:501
+#: doc/classes/ProjectSettings.xml:503
 msgid ""
 "If [code]true[/code], enables vertical synchronization. This eliminates "
 "tearing that may appear in moving scenes, at the cost of higher input "
@@ -44436,7 +44529,7 @@ msgid ""
 "regardless (such as mobile platforms and HTML5)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:504
+#: doc/classes/ProjectSettings.xml:506
 msgid ""
 "If [code]Use Vsync[/code] is enabled and this setting is [code]true[/code], "
 "enables vertical synchronization via the operating system's window "
@@ -44447,7 +44540,7 @@ msgid ""
 "framerate halving (e.g. from 60 FPS to 30 FPS) when using it."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:508
+#: doc/classes/ProjectSettings.xml:510
 msgid ""
 "The command-line arguments to append to Godot's own command line when "
 "running the project. This doesn't affect the editor itself.\n"
@@ -44463,14 +44556,14 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:516
+#: doc/classes/ProjectSettings.xml:518
 msgid ""
 "Search path for project-specific script templates. Godot will search for "
 "script templates both in the editor-specific path and in this project-"
 "specific path."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:519
+#: doc/classes/ProjectSettings.xml:521
 msgid ""
 "Text-based file extensions to include in the script editor's \"Find in Files"
 "\" feature. You can add e.g. [code]tscn[/code] if you wish to also parse "
@@ -44478,49 +44571,49 @@ msgid ""
 "serialized in the scene files."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:522
+#: doc/classes/ProjectSettings.xml:524
 msgid ""
 "Default value for [member ScrollContainer.scroll_deadzone], which will be "
 "used for all [ScrollContainer]s unless overridden."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:525
+#: doc/classes/ProjectSettings.xml:527
 msgid ""
 "If [code]true[/code], swaps OK and Cancel buttons in dialogs on Windows and "
 "UWP to follow interface conventions."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:530
+#: doc/classes/ProjectSettings.xml:532
 msgid ""
 "Path to a custom [Theme] resource file to use for the project ([code]theme[/"
 "code] or generic [code]tres[/code]/[code]res[/code] extension)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:533
+#: doc/classes/ProjectSettings.xml:535
 msgid ""
 "Path to a custom [Font] resource to use as default for all GUI elements of "
 "the project."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:536
+#: doc/classes/ProjectSettings.xml:538
 msgid "If [code]true[/code], makes sure the theme used works with HiDPI."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:539
+#: doc/classes/ProjectSettings.xml:541
 msgid ""
 "Timer setting for incremental search in [Tree], [ItemList], etc. controls "
 "(in milliseconds)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:542
+#: doc/classes/ProjectSettings.xml:544
 msgid "Timer for detecting idle in [TextEdit] (in seconds)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:545
+#: doc/classes/ProjectSettings.xml:547
 msgid "Default delay for tooltips (in seconds)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:548
+#: doc/classes/ProjectSettings.xml:550
 msgid ""
 "Default [InputEventAction] to confirm a focused button, menu or list item, "
 "or validate input.\n"
@@ -44529,7 +44622,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:552
+#: doc/classes/ProjectSettings.xml:554
 msgid ""
 "Default [InputEventAction] to discard a modal or pending input.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
@@ -44537,7 +44630,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:556
+#: doc/classes/ProjectSettings.xml:558
 msgid ""
 "Default [InputEventAction] to move down in the UI.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
@@ -44545,7 +44638,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:560
+#: doc/classes/ProjectSettings.xml:562
 msgid ""
 "Default [InputEventAction] to go to the end position of a [Control] (e.g. "
 "last item in an [ItemList] or a [Tree]), matching the behavior of [constant "
@@ -44555,7 +44648,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:564
+#: doc/classes/ProjectSettings.xml:566
 msgid ""
 "Default [InputEventAction] to focus the next [Control] in the scene. The "
 "focus behavior can be configured via [member Control.focus_next].\n"
@@ -44564,7 +44657,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:568
+#: doc/classes/ProjectSettings.xml:570
 msgid ""
 "Default [InputEventAction] to focus the previous [Control] in the scene. The "
 "focus behavior can be configured via [member Control.focus_previous].\n"
@@ -44573,7 +44666,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:572
+#: doc/classes/ProjectSettings.xml:574
 msgid ""
 "Default [InputEventAction] to go to the start position of a [Control] (e.g. "
 "first item in an [ItemList] or a [Tree]), matching the behavior of [constant "
@@ -44583,7 +44676,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:576
+#: doc/classes/ProjectSettings.xml:578
 msgid ""
 "Default [InputEventAction] to move left in the UI.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
@@ -44591,7 +44684,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:580
+#: doc/classes/ProjectSettings.xml:582
 msgid ""
 "Default [InputEventAction] to go down a page in a [Control] (e.g. in an "
 "[ItemList] or a [Tree]), matching the behavior of [constant KEY_PAGEDOWN] on "
@@ -44601,7 +44694,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:584
+#: doc/classes/ProjectSettings.xml:586
 msgid ""
 "Default [InputEventAction] to go up a page in a [Control] (e.g. in an "
 "[ItemList] or a [Tree]), matching the behavior of [constant KEY_PAGEUP] on "
@@ -44611,7 +44704,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:588
+#: doc/classes/ProjectSettings.xml:590
 msgid ""
 "Default [InputEventAction] to move right in the UI.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
@@ -44619,7 +44712,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:592
+#: doc/classes/ProjectSettings.xml:594
 msgid ""
 "Default [InputEventAction] to select an item in a [Control] (e.g. in an "
 "[ItemList] or a [Tree]).\n"
@@ -44628,7 +44721,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:596
+#: doc/classes/ProjectSettings.xml:598
 msgid ""
 "Default [InputEventAction] to move up in the UI.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
@@ -44636,7 +44729,7 @@ msgid ""
 "to the action can however be modified."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:600
+#: doc/classes/ProjectSettings.xml:602
 msgid ""
 "If [code]true[/code], key/touch/joystick events will be flushed just before "
 "every idle and physics frame.\n"
@@ -44648,477 +44741,477 @@ msgid ""
 "[b]Note:[/b] Currently implemented only in Android."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:606
+#: doc/classes/ProjectSettings.xml:608
 msgid ""
 "If [code]true[/code], sends mouse input events when tapping or swiping on "
 "the touchscreen."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:609
+#: doc/classes/ProjectSettings.xml:611
 msgid ""
 "If [code]true[/code], sends touch input events when clicking or dragging the "
 "mouse."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:612
+#: doc/classes/ProjectSettings.xml:614
 msgid "Default delay for touch events. This only affects iOS devices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:615
+#: doc/classes/ProjectSettings.xml:617
 msgid "Optional name for the 2D physics layer 1."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:618
+#: doc/classes/ProjectSettings.xml:620
 msgid "Optional name for the 2D physics layer 10."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:621
+#: doc/classes/ProjectSettings.xml:623
 msgid "Optional name for the 2D physics layer 11."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:624
+#: doc/classes/ProjectSettings.xml:626
 msgid "Optional name for the 2D physics layer 12."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:627
+#: doc/classes/ProjectSettings.xml:629
 msgid "Optional name for the 2D physics layer 13."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:630
+#: doc/classes/ProjectSettings.xml:632
 msgid "Optional name for the 2D physics layer 14."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:633
+#: doc/classes/ProjectSettings.xml:635
 msgid "Optional name for the 2D physics layer 15."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:636
+#: doc/classes/ProjectSettings.xml:638
 msgid "Optional name for the 2D physics layer 16."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:639
+#: doc/classes/ProjectSettings.xml:641
 msgid "Optional name for the 2D physics layer 17."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:642
+#: doc/classes/ProjectSettings.xml:644
 msgid "Optional name for the 2D physics layer 18."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:645
+#: doc/classes/ProjectSettings.xml:647
 msgid "Optional name for the 2D physics layer 19."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:648
+#: doc/classes/ProjectSettings.xml:650
 msgid "Optional name for the 2D physics layer 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:651
+#: doc/classes/ProjectSettings.xml:653
 msgid "Optional name for the 2D physics layer 20."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:654
+#: doc/classes/ProjectSettings.xml:656
 msgid "Optional name for the 2D physics layer 21."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:657
+#: doc/classes/ProjectSettings.xml:659
 msgid "Optional name for the 2D physics layer 22."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:660
+#: doc/classes/ProjectSettings.xml:662
 msgid "Optional name for the 2D physics layer 23."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:663
+#: doc/classes/ProjectSettings.xml:665
 msgid "Optional name for the 2D physics layer 24."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:666
+#: doc/classes/ProjectSettings.xml:668
 msgid "Optional name for the 2D physics layer 25."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:669
+#: doc/classes/ProjectSettings.xml:671
 msgid "Optional name for the 2D physics layer 26."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:672
+#: doc/classes/ProjectSettings.xml:674
 msgid "Optional name for the 2D physics layer 27."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:675
+#: doc/classes/ProjectSettings.xml:677
 msgid "Optional name for the 2D physics layer 28."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:678
+#: doc/classes/ProjectSettings.xml:680
 msgid "Optional name for the 2D physics layer 29."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:681
+#: doc/classes/ProjectSettings.xml:683
 msgid "Optional name for the 2D physics layer 3."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:684
+#: doc/classes/ProjectSettings.xml:686
 msgid "Optional name for the 2D physics layer 30."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:687
+#: doc/classes/ProjectSettings.xml:689
 msgid "Optional name for the 2D physics layer 31."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:690
+#: doc/classes/ProjectSettings.xml:692
 msgid "Optional name for the 2D physics layer 32."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:693
+#: doc/classes/ProjectSettings.xml:695
 msgid "Optional name for the 2D physics layer 4."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:696
+#: doc/classes/ProjectSettings.xml:698
 msgid "Optional name for the 2D physics layer 5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:699
+#: doc/classes/ProjectSettings.xml:701
 msgid "Optional name for the 2D physics layer 6."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:702
+#: doc/classes/ProjectSettings.xml:704
 msgid "Optional name for the 2D physics layer 7."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:705
+#: doc/classes/ProjectSettings.xml:707
 msgid "Optional name for the 2D physics layer 8."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:708
+#: doc/classes/ProjectSettings.xml:710
 msgid "Optional name for the 2D physics layer 9."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:711
+#: doc/classes/ProjectSettings.xml:713
 msgid "Optional name for the 2D render layer 1."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:714
+#: doc/classes/ProjectSettings.xml:716
 msgid "Optional name for the 2D render layer 10."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:717
+#: doc/classes/ProjectSettings.xml:719
 msgid "Optional name for the 2D render layer 11."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:720
+#: doc/classes/ProjectSettings.xml:722
 msgid "Optional name for the 2D render layer 12."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:723
+#: doc/classes/ProjectSettings.xml:725
 msgid "Optional name for the 2D render layer 13."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:726
+#: doc/classes/ProjectSettings.xml:728
 msgid "Optional name for the 2D render layer 14."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:729
+#: doc/classes/ProjectSettings.xml:731
 msgid "Optional name for the 2D render layer 15."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:732
+#: doc/classes/ProjectSettings.xml:734
 msgid "Optional name for the 2D render layer 16."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:735
+#: doc/classes/ProjectSettings.xml:737
 msgid "Optional name for the 2D render layer 17."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:738
+#: doc/classes/ProjectSettings.xml:740
 msgid "Optional name for the 2D render layer 18."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:741
+#: doc/classes/ProjectSettings.xml:743
 msgid "Optional name for the 2D render layer 19."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:744
+#: doc/classes/ProjectSettings.xml:746
 msgid "Optional name for the 2D render layer 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:747
+#: doc/classes/ProjectSettings.xml:749
 msgid "Optional name for the 2D render layer 20."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:750
+#: doc/classes/ProjectSettings.xml:752
 msgid "Optional name for the 2D render layer 3."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:753
+#: doc/classes/ProjectSettings.xml:755
 msgid "Optional name for the 2D render layer 4."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:756
+#: doc/classes/ProjectSettings.xml:758
 msgid "Optional name for the 2D render layer 5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:759
+#: doc/classes/ProjectSettings.xml:761
 msgid "Optional name for the 2D render layer 6."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:762
+#: doc/classes/ProjectSettings.xml:764
 msgid "Optional name for the 2D render layer 7."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:765
+#: doc/classes/ProjectSettings.xml:767
 msgid "Optional name for the 2D render layer 8."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:768
+#: doc/classes/ProjectSettings.xml:770
 msgid "Optional name for the 2D render layer 9."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:771
+#: doc/classes/ProjectSettings.xml:773
 msgid "Optional name for the 3D physics layer 1."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:774
+#: doc/classes/ProjectSettings.xml:776
 msgid "Optional name for the 3D physics layer 10."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:777
+#: doc/classes/ProjectSettings.xml:779
 msgid "Optional name for the 3D physics layer 11."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:780
+#: doc/classes/ProjectSettings.xml:782
 msgid "Optional name for the 3D physics layer 12."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:783
+#: doc/classes/ProjectSettings.xml:785
 msgid "Optional name for the 3D physics layer 13."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:786
+#: doc/classes/ProjectSettings.xml:788
 msgid "Optional name for the 3D physics layer 14."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:789
+#: doc/classes/ProjectSettings.xml:791
 msgid "Optional name for the 3D physics layer 15."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:792
+#: doc/classes/ProjectSettings.xml:794
 msgid "Optional name for the 3D physics layer 16."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:795
+#: doc/classes/ProjectSettings.xml:797
 msgid "Optional name for the 3D physics layer 17."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:798
+#: doc/classes/ProjectSettings.xml:800
 msgid "Optional name for the 3D physics layer 18."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:801
+#: doc/classes/ProjectSettings.xml:803
 msgid "Optional name for the 3D physics layer 19."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:804
+#: doc/classes/ProjectSettings.xml:806
 msgid "Optional name for the 3D physics layer 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:807
+#: doc/classes/ProjectSettings.xml:809
 msgid "Optional name for the 3D physics layer 20."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:810
+#: doc/classes/ProjectSettings.xml:812
 msgid "Optional name for the 3D physics layer 21."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:813
+#: doc/classes/ProjectSettings.xml:815
 msgid "Optional name for the 3D physics layer 22."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:816
+#: doc/classes/ProjectSettings.xml:818
 msgid "Optional name for the 3D physics layer 23."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:819
+#: doc/classes/ProjectSettings.xml:821
 msgid "Optional name for the 3D physics layer 24."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:822
+#: doc/classes/ProjectSettings.xml:824
 msgid "Optional name for the 3D physics layer 25."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:825
+#: doc/classes/ProjectSettings.xml:827
 msgid "Optional name for the 3D physics layer 26."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:828
+#: doc/classes/ProjectSettings.xml:830
 msgid "Optional name for the 3D physics layer 27."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:831
+#: doc/classes/ProjectSettings.xml:833
 msgid "Optional name for the 3D physics layer 28."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:834
+#: doc/classes/ProjectSettings.xml:836
 msgid "Optional name for the 3D physics layer 29."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:837
+#: doc/classes/ProjectSettings.xml:839
 msgid "Optional name for the 3D physics layer 3."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:840
+#: doc/classes/ProjectSettings.xml:842
 msgid "Optional name for the 3D physics layer 30."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:843
+#: doc/classes/ProjectSettings.xml:845
 msgid "Optional name for the 3D physics layer 31."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:846
+#: doc/classes/ProjectSettings.xml:848
 msgid "Optional name for the 3D physics layer 32."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:849
+#: doc/classes/ProjectSettings.xml:851
 msgid "Optional name for the 3D physics layer 4."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:852
+#: doc/classes/ProjectSettings.xml:854
 msgid "Optional name for the 3D physics layer 5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:855
+#: doc/classes/ProjectSettings.xml:857
 msgid "Optional name for the 3D physics layer 6."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:858
+#: doc/classes/ProjectSettings.xml:860
 msgid "Optional name for the 3D physics layer 7."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:861
+#: doc/classes/ProjectSettings.xml:863
 msgid "Optional name for the 3D physics layer 8."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:864
+#: doc/classes/ProjectSettings.xml:866
 msgid "Optional name for the 3D physics layer 9."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:867
+#: doc/classes/ProjectSettings.xml:869
 msgid "Optional name for the 3D render layer 1."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:870
+#: doc/classes/ProjectSettings.xml:872
 msgid "Optional name for the 3D render layer 10."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:873
+#: doc/classes/ProjectSettings.xml:875
 msgid "Optional name for the 3D render layer 11."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:876
+#: doc/classes/ProjectSettings.xml:878
 msgid "Optional name for the 3D render layer 12."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:879
+#: doc/classes/ProjectSettings.xml:881
 msgid "Optional name for the 3D render layer 13."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:882
+#: doc/classes/ProjectSettings.xml:884
 msgid "Optional name for the 3D render layer 14"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:885
+#: doc/classes/ProjectSettings.xml:887
 msgid "Optional name for the 3D render layer 15."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:888
+#: doc/classes/ProjectSettings.xml:890
 msgid "Optional name for the 3D render layer 16."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:891
+#: doc/classes/ProjectSettings.xml:893
 msgid "Optional name for the 3D render layer 17."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:894
+#: doc/classes/ProjectSettings.xml:896
 msgid "Optional name for the 3D render layer 18."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:897
+#: doc/classes/ProjectSettings.xml:899
 msgid "Optional name for the 3D render layer 19."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:900
+#: doc/classes/ProjectSettings.xml:902
 msgid "Optional name for the 3D render layer 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:903
+#: doc/classes/ProjectSettings.xml:905
 msgid "Optional name for the 3D render layer 20."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:906
+#: doc/classes/ProjectSettings.xml:908
 msgid "Optional name for the 3D render layer 3."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:909
+#: doc/classes/ProjectSettings.xml:911
 msgid "Optional name for the 3D render layer 4."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:912
+#: doc/classes/ProjectSettings.xml:914
 msgid "Optional name for the 3D render layer 5."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:915
+#: doc/classes/ProjectSettings.xml:917
 msgid "Optional name for the 3D render layer 6."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:918
+#: doc/classes/ProjectSettings.xml:920
 msgid "Optional name for the 3D render layer 7."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:921
+#: doc/classes/ProjectSettings.xml:923
 msgid "Optional name for the 3D render layer 8."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:924
+#: doc/classes/ProjectSettings.xml:926
 msgid "Optional name for the 3D render layer 9."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:927
+#: doc/classes/ProjectSettings.xml:929
 msgid ""
 "The locale to fall back to if a translation isn't available in a given "
 "language. If left empty, [code]en[/code] (English) will be used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:930
+#: doc/classes/ProjectSettings.xml:932
 msgid ""
 "If non-empty, this locale will be used when running the project from the "
 "editor."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:933
+#: doc/classes/ProjectSettings.xml:935
 msgid "If [code]true[/code], logs all output to files."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:936
+#: doc/classes/ProjectSettings.xml:938
 msgid ""
 "Desktop override for [member logging/file_logging/enable_file_logging], as "
 "log files are not readily accessible on mobile/Web platforms."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:939
+#: doc/classes/ProjectSettings.xml:941
 msgid ""
 "Path to logs within the project. Using an [code]user://[/code] path is "
 "recommended."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:942
+#: doc/classes/ProjectSettings.xml:944
 msgid "Specifies the maximum amount of log files allowed (used for rotation)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:947
+#: doc/classes/ProjectSettings.xml:949
 msgid ""
 "Godot uses a message queue to defer some function calls. If you run out of "
 "space on it (you will see an error), you can increase the size here."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:950
+#: doc/classes/ProjectSettings.xml:952
 msgid ""
 "This is used by servers when used in multi-threading mode (servers and "
 "visual). RIDs are preallocated to avoid stalling the server requesting them "
@@ -45126,92 +45219,92 @@ msgid ""
 "thread, increase this number."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:953
+#: doc/classes/ProjectSettings.xml:955
 msgid ""
 "Maximum amount of characters allowed to send as output from the debugger. "
 "Over this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:956
+#: doc/classes/ProjectSettings.xml:958
 msgid ""
 "Maximum number of errors allowed to be sent as output from the debugger. "
 "Over this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:959
+#: doc/classes/ProjectSettings.xml:961
 msgid ""
 "Maximum amount of messages allowed to send as output from the debugger. Over "
 "this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:962
+#: doc/classes/ProjectSettings.xml:964
 msgid ""
 "Maximum number of warnings allowed to be sent as output from the debugger. "
 "Over this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:965
+#: doc/classes/ProjectSettings.xml:967
 msgid ""
 "Default size of packet peer stream for deserializing Godot data (in bytes, "
 "specified as a power of two). The default value [code]16[/code] is equal to "
 "65,536 bytes. Over this size, data is dropped."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:968
+#: doc/classes/ProjectSettings.xml:970
 msgid "Timeout (in seconds) for connection attempts using TCP."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:971
+#: doc/classes/ProjectSettings.xml:973
 msgid "Maximum size (in kiB) for the [WebRTCDataChannel] input buffer."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:974
+#: doc/classes/ProjectSettings.xml:976
 msgid "Maximum size (in kiB) for the [WebSocketClient] input buffer."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:977
+#: doc/classes/ProjectSettings.xml:979
 msgid "Maximum number of concurrent input packets for [WebSocketClient]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:980
+#: doc/classes/ProjectSettings.xml:982
 msgid "Maximum size (in kiB) for the [WebSocketClient] output buffer."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:983
+#: doc/classes/ProjectSettings.xml:985
 msgid "Maximum number of concurrent output packets for [WebSocketClient]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:986
+#: doc/classes/ProjectSettings.xml:988
 msgid "Maximum size (in kiB) for the [WebSocketServer] input buffer."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:989
+#: doc/classes/ProjectSettings.xml:991
 msgid "Maximum number of concurrent input packets for [WebSocketServer]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:992
+#: doc/classes/ProjectSettings.xml:994
 msgid "Maximum size (in kiB) for the [WebSocketServer] output buffer."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:995
+#: doc/classes/ProjectSettings.xml:997
 msgid "Maximum number of concurrent output packets for [WebSocketServer]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:998
+#: doc/classes/ProjectSettings.xml:1000
 msgid ""
 "Amount of read ahead used by remote filesystem. Higher values decrease the "
 "effects of latency at the cost of higher bandwidth usage."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1001
+#: doc/classes/ProjectSettings.xml:1003
 msgid "Page size used by remote filesystem (in bytes)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1004
+#: doc/classes/ProjectSettings.xml:1006
 msgid ""
 "The CA certificates bundle to use for SSL connections. If this is set to a "
 "non-empty value, this will [i]override[/i] Godot's default [url=https://"
@@ -45221,33 +45314,33 @@ msgid ""
 "If in doubt, leave this setting empty."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1008
+#: doc/classes/ProjectSettings.xml:1010
 msgid ""
 "When creating node names automatically, set the type of casing in this "
 "project. This is mostly an editor setting."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1011
+#: doc/classes/ProjectSettings.xml:1013
 msgid ""
 "What to use to separate node name from number. This is mostly an editor "
 "setting."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1014
+#: doc/classes/ProjectSettings.xml:1016
 msgid ""
 "Size of the hash table used for the broad-phase 2D hash grid algorithm.\n"
 "[b]Note:[/b] Not used if [member ProjectSettings.physics/2d/use_bvh] is "
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1018
+#: doc/classes/ProjectSettings.xml:1020
 msgid ""
 "Cell size used for the broad-phase 2D hash grid algorithm (in pixels).\n"
 "[b]Note:[/b] Not used if [member ProjectSettings.physics/2d/use_bvh] is "
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1022
+#: doc/classes/ProjectSettings.xml:1024
 msgid ""
 "The default angular damp in 2D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -45260,7 +45353,7 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1026
+#: doc/classes/ProjectSettings.xml:1028
 msgid ""
 "The default gravity strength in 2D (in pixels per second squared).\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -45272,7 +45365,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1034
+#: doc/classes/ProjectSettings.xml:1036
 msgid ""
 "The default gravity direction in 2D.\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -45284,7 +45377,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1042
+#: doc/classes/ProjectSettings.xml:1044
 msgid ""
 "The default linear damp in 2D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -45297,7 +45390,7 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1046
+#: doc/classes/ProjectSettings.xml:1048
 msgid ""
 "Threshold defining the surface size that constitutes a large object with "
 "regard to cells in the broad-phase 2D hash grid algorithm.\n"
@@ -45305,28 +45398,28 @@ msgid ""
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1050
+#: doc/classes/ProjectSettings.xml:1052
 msgid ""
 "Sets which physics engine to use for 2D physics.\n"
 "\"DEFAULT\" and \"GodotPhysics\" are the same, as there is currently no "
 "alternative 2D physics server implemented."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1054
+#: doc/classes/ProjectSettings.xml:1056
 msgid ""
 "Threshold angular velocity under which a 2D physics body will be considered "
 "inactive. See [constant Physics2DServer."
 "SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1057
+#: doc/classes/ProjectSettings.xml:1059
 msgid ""
 "Threshold linear velocity under which a 2D physics body will be considered "
 "inactive. See [constant Physics2DServer."
 "SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1060
+#: doc/classes/ProjectSettings.xml:1062
 msgid ""
 "Sets whether physics is run on the main thread or a separate one. Running "
 "the server on a thread increases performance, but restricts API access to "
@@ -45336,25 +45429,25 @@ msgid ""
 "give you extra performance and no regressions when using it."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1064
+#: doc/classes/ProjectSettings.xml:1066
 msgid ""
 "Time (in seconds) of inactivity before which a 2D physics body will put to "
 "sleep. See [constant Physics2DServer.SPACE_PARAM_BODY_TIME_TO_SLEEP]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1067
+#: doc/classes/ProjectSettings.xml:1069
 msgid ""
 "Enables the use of bounding volume hierarchy instead of hash grid for 2D "
 "physics spatial partitioning. This may give better performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1070
+#: doc/classes/ProjectSettings.xml:1072
 msgid ""
 "Sets whether the 3D physics world will be created with support for "
 "[SoftBody] physics. Only applies to the Bullet physics engine."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1073
+#: doc/classes/ProjectSettings.xml:1075
 msgid ""
 "The default angular damp in 3D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -45367,7 +45460,7 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1077
+#: doc/classes/ProjectSettings.xml:1079
 msgid ""
 "The default gravity strength in 3D (in meters per second squared).\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -45379,7 +45472,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1085
+#: doc/classes/ProjectSettings.xml:1087
 msgid ""
 "The default gravity direction in 3D.\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -45391,7 +45484,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1093
+#: doc/classes/ProjectSettings.xml:1095
 msgid ""
 "The default linear damp in 3D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -45404,13 +45497,13 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1097
+#: doc/classes/ProjectSettings.xml:1099
 msgid ""
 "Enables the use of bounding volume hierarchy instead of octree for 3D "
 "physics spatial partitioning. This may give better performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1100
+#: doc/classes/ProjectSettings.xml:1102
 msgid ""
 "Sets which physics engine to use for 3D physics.\n"
 "\"DEFAULT\" is currently the [url=https://bulletphysics.org]Bullet[/url] "
@@ -45418,11 +45511,11 @@ msgid ""
 "alternative."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1104
+#: doc/classes/ProjectSettings.xml:1106
 msgid "Enables [member Viewport.physics_object_picking] on the root viewport."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1107
+#: doc/classes/ProjectSettings.xml:1109
 msgid ""
 "If enabled, 2D and 3D physics picking behaves this way in relation to "
 "pause:\n"
@@ -45436,7 +45529,7 @@ msgid ""
 "that queue on resume, against the state of the 2D/3D world at that point."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1113
+#: doc/classes/ProjectSettings.xml:1115
 msgid ""
 "The number of fixed iterations per second. This controls how often physics "
 "simulation and [method Node._physics_process] methods are run.\n"
@@ -45445,7 +45538,7 @@ msgid ""
 "instead."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1117
+#: doc/classes/ProjectSettings.xml:1119
 msgid ""
 "Controls how much physics ticks are synchronized with real time. For 0 or "
 "less, the ticks are synchronized. Such values are recommended for network "
@@ -45461,7 +45554,7 @@ msgid ""
 "the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1122
+#: doc/classes/ProjectSettings.xml:1124
 msgid ""
 "[b]Experimental.[/b] Calls [code]glBufferData[/code] with NULL data prior to "
 "uploading batching data. This may not be necessary but can be used for "
@@ -45471,7 +45564,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1126
+#: doc/classes/ProjectSettings.xml:1128
 msgid ""
 "[b]Experimental.[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag "
 "for batching buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] "
@@ -45481,7 +45574,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1130
+#: doc/classes/ProjectSettings.xml:1132
 msgid ""
 "[b]Experimental.[/b] If set to on, this applies buffer orphaning - "
 "[code]glBufferData[/code] is called with NULL data and the full buffer size "
@@ -45492,7 +45585,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1134
+#: doc/classes/ProjectSettings.xml:1136
 msgid ""
 "[b]Experimental.[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag "
 "for legacy buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] "
@@ -45502,7 +45595,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1138
+#: doc/classes/ProjectSettings.xml:1140
 msgid ""
 "Choose between fixed mode where corner scalings are preserved matching the "
 "artwork, and scaling mode.\n"
@@ -45510,7 +45603,7 @@ msgid ""
 "is off."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1142
+#: doc/classes/ProjectSettings.xml:1144
 msgid ""
 "Some NVIDIA GPU drivers have a bug which produces flickering issues for the "
 "[code]draw_rect[/code] method, especially as used in [TileMap]. Refer to "
@@ -45521,7 +45614,7 @@ msgid ""
 "rendering, but only on desktop platforms."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1146
+#: doc/classes/ProjectSettings.xml:1148
 msgid ""
 "If [code]true[/code], performs 2D skinning on the CPU rather than the GPU. "
 "This provides greater compatibility with a wide range of hardware, and also "
@@ -45536,7 +45629,7 @@ msgid ""
 "skinning."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1152
+#: doc/classes/ProjectSettings.xml:1154
 msgid ""
 "If [code]true[/code], forces snapping of vertices to pixels in 2D rendering. "
 "May help in some pixel art styles.\n"
@@ -45545,13 +45638,13 @@ msgid ""
 "uv_contract] to prevent artifacts."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1157
+#: doc/classes/ProjectSettings.xml:1159
 msgid ""
 "When batching is on, this regularly prints a frame diagnosis log. Note that "
 "this will degrade performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1160
+#: doc/classes/ProjectSettings.xml:1162
 msgid ""
 "[b]Experimental.[/b] For regression testing against the old renderer. If "
 "this is switched on, and [code]use_batching[/code] is set, the renderer will "
@@ -45560,7 +45653,7 @@ msgid ""
 "Performance will be degraded."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1163
+#: doc/classes/ProjectSettings.xml:1165
 msgid ""
 "Lights have the potential to prevent joining items, and break many of the "
 "performance benefits of batching. This setting enables some complex logic to "
@@ -45570,7 +45663,7 @@ msgid ""
 "returns."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1166
+#: doc/classes/ProjectSettings.xml:1168
 msgid ""
 "Sets the proportion of the total screen area (in pixels) that must be saved "
 "by a scissor operation in order to activate light scissoring. This can "
@@ -45582,7 +45675,7 @@ msgid ""
 "a lot of lighting."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1169
+#: doc/classes/ProjectSettings.xml:1171
 msgid ""
 "Enabling this setting uses the legacy method to draw batches containing only "
 "one rect. The legacy method is faster (approx twice as fast), but can cause "
@@ -45592,24 +45685,24 @@ msgid ""
 "this method."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1172
+#: doc/classes/ProjectSettings.xml:1174
 msgid ""
 "Turns 2D batching on and off. Batching increases performance by reducing the "
 "amount of graphics API drawcalls."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1175
+#: doc/classes/ProjectSettings.xml:1177
 msgid "Switches on 2D batching within the editor."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1178
+#: doc/classes/ProjectSettings.xml:1180
 msgid ""
 "Size of buffer reserved for batched vertices. Larger size enables larger "
 "batches, but there are diminishing returns for the memory used. This should "
 "only have a minor effect on performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1181
+#: doc/classes/ProjectSettings.xml:1183
 msgid ""
 "Including color in the vertex format has a cost, however, not including "
 "color prevents batching across color changes. This threshold determines the "
@@ -45618,7 +45711,7 @@ msgid ""
 "0 will always use colored vertices, 1 will never use colored vertices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1184
+#: doc/classes/ProjectSettings.xml:1186
 msgid ""
 "In certain circumstances, the batcher can reorder items in order to better "
 "join them. This may result in better performance. An overlap test is needed "
@@ -45626,7 +45719,7 @@ msgid ""
 "returns. If you are getting no benefit, setting this to 0 will switch it off."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1187
+#: doc/classes/ProjectSettings.xml:1189
 msgid ""
 "Sets the number of commands to lookahead to determine whether to batch "
 "render items. A value of 1 can join items consisting of single commands, 0 "
@@ -45635,7 +45728,7 @@ msgid ""
 "recommended."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1190
+#: doc/classes/ProjectSettings.xml:1192
 msgid ""
 "On some platforms (especially mobile), precision issues in shaders can lead "
 "to reading 1 texel outside of bounds, particularly where rects are scaled. "
@@ -45645,7 +45738,7 @@ msgid ""
 "texels."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1194
+#: doc/classes/ProjectSettings.xml:1196
 msgid ""
 "The amount of UV contraction. This figure is divided by 1000000, and is a "
 "proportion of the total texture dimensions, where the width and height are "
@@ -45653,31 +45746,31 @@ msgid ""
 "Use the default unless correcting for a problem on particular hardware."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1198
+#: doc/classes/ProjectSettings.xml:1200
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_HIGH]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1201
+#: doc/classes/ProjectSettings.xml:1203
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_LOW]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1204
+#: doc/classes/ProjectSettings.xml:1206
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_MEDIUM]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1207
+#: doc/classes/ProjectSettings.xml:1209
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_ULTRA]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1210
+#: doc/classes/ProjectSettings.xml:1212
 msgid ""
 "Default background clear color. Overridable per [Viewport] using its "
 "[Environment]. See [member Environment.background_mode] and [member "
@@ -45685,7 +45778,7 @@ msgid ""
 "programmatically, use [method VisualServer.set_default_clear_color]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1213
+#: doc/classes/ProjectSettings.xml:1215
 msgid ""
 "[Environment] that will be used as a fallback environment in case a scene "
 "does not specify its own environment. The default environment is loaded in "
@@ -45695,21 +45788,21 @@ msgid ""
 "here."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1216
+#: doc/classes/ProjectSettings.xml:1218
 msgid ""
 "The use of half-float vertex compression may be producing rendering errors "
 "on some platforms (especially iOS). These have been seen particularly in "
 "particles. Disabling half-float may resolve these problems."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1219
+#: doc/classes/ProjectSettings.xml:1221
 msgid ""
 "iOS specific override for [member rendering/gles2/compatibility/"
 "disable_half_float], due to poor support for half-float vertex compression "
 "on many devices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1222
+#: doc/classes/ProjectSettings.xml:1224
 msgid ""
 "If [code]true[/code] and available on the target Android device, enables "
 "high floating point precision for all shader computations in GLES2.\n"
@@ -45717,31 +45810,31 @@ msgid ""
 "devices and is often not available at all. Use with caution."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1226
+#: doc/classes/ProjectSettings.xml:1228
 msgid ""
 "Max buffer size for blend shapes. Any blend shape bigger than this will not "
 "work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1229
+#: doc/classes/ProjectSettings.xml:1231
 msgid ""
 "Max buffer size for drawing polygons. Any polygon bigger than this will not "
 "work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1232
+#: doc/classes/ProjectSettings.xml:1234
 msgid ""
 "Max index buffer size for drawing polygons. Any polygon bigger than this "
 "will not work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1235
+#: doc/classes/ProjectSettings.xml:1237
 msgid ""
 "Max buffer size for drawing immediate objects (ImmediateGeometry nodes). "
 "Nodes using more than this size will not work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1238
+#: doc/classes/ProjectSettings.xml:1240
 msgid ""
 "Max number of lights renderable per object. This is further limited by "
 "hardware support. Most devices only support 409 lights, while many devices "
@@ -45749,7 +45842,7 @@ msgid ""
 "memory usage and may decrease shader compile times."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1241
+#: doc/classes/ProjectSettings.xml:1243
 msgid ""
 "Max amount of elements renderable in a frame. If more elements than this are "
 "visible per frame, they will not be drawn. Keep in mind elements refer to "
@@ -45759,7 +45852,7 @@ msgid ""
 "much as possible on web export."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1244
+#: doc/classes/ProjectSettings.xml:1246
 msgid ""
 "Max number of lights renderable in a frame. If more lights than this number "
 "are used, they will be ignored. Setting this low will slightly reduce memory "
@@ -45768,7 +45861,7 @@ msgid ""
 "possible on web export."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1247
+#: doc/classes/ProjectSettings.xml:1249
 msgid ""
 "Max number of reflection probes renderable in a frame. If more reflection "
 "probes than this number are used, they will be ignored. Setting this low "
@@ -45777,20 +45870,20 @@ msgid ""
 "consider lowering as much as possible on web export."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1250
+#: doc/classes/ProjectSettings.xml:1252
 msgid ""
 "Shaders have a time variable that constantly increases. At some point, it "
 "needs to be rolled back to zero to avoid precision errors on shader "
 "animations. This setting specifies when (in seconds)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1253
+#: doc/classes/ProjectSettings.xml:1255
 msgid ""
 "If [code]true[/code], the texture importer will import lossless textures "
 "using the PNG format. Otherwise, it will default to using WebP."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1256
+#: doc/classes/ProjectSettings.xml:1258
 msgid ""
 "The default compression level for lossless WebP. Higher levels result in "
 "smaller files at the cost of compression speed. Decompression speed is "
@@ -45799,7 +45892,7 @@ msgid ""
 "savings."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1259
+#: doc/classes/ProjectSettings.xml:1261
 msgid ""
 "On import, mesh vertex data will be split into two streams within a single "
 "vertex buffer, one for position data and the other for interleaved "
@@ -45807,7 +45900,7 @@ msgid ""
 "Requires manual reimport of meshes after toggling."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1262
+#: doc/classes/ProjectSettings.xml:1264
 msgid ""
 "Determines the maximum number of sphere occluders that will be used at any "
 "one time.\n"
@@ -45816,7 +45909,7 @@ msgid ""
 "to give the best overall performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1266
+#: doc/classes/ProjectSettings.xml:1268
 msgid ""
 "The default convention is for portal normals to point outward (face outward) "
 "from the source room.\n"
@@ -45826,20 +45919,20 @@ msgid ""
 "convertion to [Portal] nodes."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1271
+#: doc/classes/ProjectSettings.xml:1273
 msgid ""
 "Show conversion logs.\n"
 "[b]Note:[/b] This will automatically be disabled in exports."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1275
+#: doc/classes/ProjectSettings.xml:1277
 msgid ""
 "If [code]true[/code], gameplay callbacks will be sent as [code]signals[/"
 "code]. If [code]false[/code], they will be sent as [code]notifications[/"
 "code]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1278
+#: doc/classes/ProjectSettings.xml:1280
 msgid ""
 "If enabled, while merging meshes, the system will also attempt to remove "
 "[Spatial] nodes that no longer have any children.\n"
@@ -45848,13 +45941,13 @@ msgid ""
 "for markers or some other purpose."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1282
+#: doc/classes/ProjectSettings.xml:1284
 msgid ""
 "Show logs during PVS generation.\n"
 "[b]Note:[/b] This will automatically be disabled in exports."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1286
+#: doc/classes/ProjectSettings.xml:1288
 msgid ""
 "Uses a simplified method of generating PVS (potentially visible set) data. "
 "The results may not be accurate where more than one portal join adjacent "
@@ -45864,46 +45957,46 @@ msgid ""
 "default method."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1290
+#: doc/classes/ProjectSettings.xml:1292
 msgid ""
 "If [code]true[/code], allocates the main framebuffer with high dynamic "
 "range. High dynamic range allows the use of [Color] values greater than 1.\n"
 "[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1294
+#: doc/classes/ProjectSettings.xml:1296
 msgid ""
 "Lower-end override for [member rendering/quality/depth/hdr] on mobile "
 "devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1297
+#: doc/classes/ProjectSettings.xml:1299
 msgid ""
 "Disables depth pre-pass for some GPU vendors (usually mobile), as their "
 "architecture already does this."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1300
+#: doc/classes/ProjectSettings.xml:1302
 msgid ""
 "If [code]true[/code], performs a previous depth pass before rendering "
 "materials. This increases performance in scenes with high overdraw, when "
 "complex materials and lighting are used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1303
+#: doc/classes/ProjectSettings.xml:1305
 msgid ""
 "The directional shadow's size in pixels. Higher values will result in "
 "sharper shadows, at the cost of performance. The value will be rounded up to "
 "the nearest power of 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1306
+#: doc/classes/ProjectSettings.xml:1308
 msgid ""
 "Lower-end override for [member rendering/quality/directional_shadow/size] on "
 "mobile devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1309
+#: doc/classes/ProjectSettings.xml:1311
 msgid ""
 "The video driver to use (\"GLES2\" or \"GLES3\").\n"
 "[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--"
@@ -45913,7 +46006,7 @@ msgid ""
 "updated, so use [method OS.get_current_video_driver] to query it at run-time."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1313
+#: doc/classes/ProjectSettings.xml:1315
 msgid ""
 "If [code]true[/code], allows falling back to the GLES2 driver if the GLES3 "
 "driver is not supported.\n"
@@ -45925,7 +46018,7 @@ msgid ""
 "data pack's size."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1317
+#: doc/classes/ProjectSettings.xml:1319
 msgid ""
 "Maximum anisotropic filter level used for textures with anisotropy enabled. "
 "Higher values will result in sharper textures when viewed from oblique "
@@ -45933,7 +46026,7 @@ msgid ""
 "4, 8, 16)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1320
+#: doc/classes/ProjectSettings.xml:1322
 msgid ""
 "Sets the number of MSAA samples to use. MSAA is used to reduce aliasing "
 "around the edges of polygons. A higher MSAA value results in smoother edges "
@@ -45941,7 +46034,7 @@ msgid ""
 "[b]Note:[/b] MSAA is not available on HTML5 export using the GLES2 backend."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1324
+#: doc/classes/ProjectSettings.xml:1326
 msgid ""
 "If set to a value greater than [code]0.0[/code], contrast-adaptive "
 "sharpening will be applied to the 3D viewport. This has a low performance "
@@ -45950,7 +46043,7 @@ msgid ""
 "[member rendering/quality/filters/use_fxaa]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1327
+#: doc/classes/ProjectSettings.xml:1329
 msgid ""
 "If [code]true[/code], uses a fast post-processing filter to make banding "
 "significantly less visible. In some cases, debanding may introduce a "
@@ -45964,7 +46057,7 @@ msgid ""
 "disabled when targeting mobile platforms."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1332
+#: doc/classes/ProjectSettings.xml:1334
 msgid ""
 "Enables FXAA in the root Viewport. FXAA is a popular screen-space "
 "antialiasing method, which is fast but will make the image look blurry, "
@@ -45974,7 +46067,7 @@ msgid ""
 "quality/filters/sharpen_intensity])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1335
+#: doc/classes/ProjectSettings.xml:1337
 msgid ""
 "If [code]true[/code], uses nearest-neighbor mipmap filtering when using "
 "mipmaps (also called \"bilinear filtering\"), which will result in visible "
@@ -45983,7 +46076,7 @@ msgid ""
 "mipmap filtering (also called \"trilinear filtering\") is used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1338
+#: doc/classes/ProjectSettings.xml:1340
 msgid ""
 "Strategy used for framebuffer allocation. The simpler it is, the less "
 "resources it uses (but the less features it supports). If set to \"2D "
@@ -45993,54 +46086,54 @@ msgid ""
 "be available in the [Environment]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1341
+#: doc/classes/ProjectSettings.xml:1343
 msgid ""
 "Lower-end override for [member rendering/quality/intended_usage/"
 "framebuffer_allocation] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1344
+#: doc/classes/ProjectSettings.xml:1346
 msgid ""
 "Enable usage of bicubic sampling in baked lightmaps. This results in "
 "smoother looking lighting at the expense of more bandwidth usage. On GLES2, "
 "changes to this setting will only be applied upon restarting the application."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1347
+#: doc/classes/ProjectSettings.xml:1349
 msgid ""
 "Lower-end override for [member rendering/quality/lightmapping/"
 "use_bicubic_sampling] on mobile devices, in order to reduce bandwidth usage."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1350
+#: doc/classes/ProjectSettings.xml:1352
 msgid ""
 "Size of the atlas used by reflection probes. A larger size can result in "
 "higher visual quality, while a smaller size will be faster and take up less "
 "memory."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1353
+#: doc/classes/ProjectSettings.xml:1355
 msgid ""
 "Number of subdivisions to use for the reflection atlas. A higher number "
 "lowers the quality of each atlas, but allows you to use more."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1356
+#: doc/classes/ProjectSettings.xml:1358
 msgid ""
 "If [code]true[/code], uses a high amount of samples to create blurred "
 "variants of reflection probes and panorama backgrounds (sky). Those blurred "
 "variants are used by rough materials."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1359
+#: doc/classes/ProjectSettings.xml:1361
 msgid ""
 "Lower-end override for [member rendering/quality/reflections/"
 "high_quality_ggx] on mobile devices, due to performance concerns or driver "
 "support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1362
+#: doc/classes/ProjectSettings.xml:1364
 msgid ""
 "Limits the size of the irradiance map which is normally determined by "
 "[member Sky.radiance_size]. A higher size results in a higher quality "
@@ -46051,61 +46144,61 @@ msgid ""
 "maps well and may crash if this is set too high."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1366
+#: doc/classes/ProjectSettings.xml:1368
 msgid ""
 "If [code]true[/code], uses texture arrays instead of mipmaps for reflection "
 "probes and panorama backgrounds (sky). This reduces jitter noise on "
 "reflections, but costs more performance and memory."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1369
+#: doc/classes/ProjectSettings.xml:1371
 msgid ""
 "Lower-end override for [member rendering/quality/reflections/"
 "texture_array_reflections] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1372
+#: doc/classes/ProjectSettings.xml:1374
 msgid ""
 "If [code]true[/code], uses faster but lower-quality Blinn model to generate "
 "blurred reflections instead of the GGX model."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1375
+#: doc/classes/ProjectSettings.xml:1377
 msgid ""
 "Lower-end override for [member rendering/quality/shading/"
 "force_blinn_over_ggx] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1378
+#: doc/classes/ProjectSettings.xml:1380
 msgid ""
 "If [code]true[/code], uses faster but lower-quality Lambert material "
 "lighting model instead of Burley."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1381
+#: doc/classes/ProjectSettings.xml:1383
 msgid ""
 "Lower-end override for [member rendering/quality/shading/"
 "force_lambert_over_burley] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1384
+#: doc/classes/ProjectSettings.xml:1386
 msgid ""
 "If [code]true[/code], forces vertex shading for all rendering. This can "
 "increase performance a lot, but also reduces quality immensely. Can be used "
 "to optimize performance on low-end mobile devices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1387
+#: doc/classes/ProjectSettings.xml:1389
 msgid ""
 "Lower-end override for [member rendering/quality/shading/"
 "force_vertex_shading] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1390
+#: doc/classes/ProjectSettings.xml:1392
 msgid ""
 "If [code]true[/code], enables new physical light attenuation for "
 "[OmniLight]s and [SpotLight]s. This results in more realistic lighting "
@@ -46116,7 +46209,7 @@ msgid ""
 "Changes to this setting will only be applied upon restarting the application."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1394
+#: doc/classes/ProjectSettings.xml:1396
 msgid ""
 "Size for cubemap into which the shadow is rendered before being copied into "
 "the shadow atlas. A higher number can result in higher resolution shadows "
@@ -46125,26 +46218,26 @@ msgid ""
 "size] will not result in a perceptible increase in visual quality."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1397 doc/classes/ProjectSettings.xml:1400
-#: doc/classes/ProjectSettings.xml:1403 doc/classes/ProjectSettings.xml:1406
+#: doc/classes/ProjectSettings.xml:1399 doc/classes/ProjectSettings.xml:1402
+#: doc/classes/ProjectSettings.xml:1405 doc/classes/ProjectSettings.xml:1408
 msgid ""
 "Subdivision quadrant size for shadow mapping. See shadow mapping "
 "documentation."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1409
+#: doc/classes/ProjectSettings.xml:1411
 msgid ""
 "Size for shadow atlas (used for OmniLights and SpotLights). See "
 "documentation."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1412
+#: doc/classes/ProjectSettings.xml:1414
 msgid ""
 "Lower-end override for [member rendering/quality/shadow_atlas/size] on "
 "mobile devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1415
+#: doc/classes/ProjectSettings.xml:1417
 msgid ""
 "Shadow filter mode. Higher-quality settings result in smoother shadows that "
 "flicker less when moving. \"Disabled\" is the fastest option, but also has "
@@ -46155,20 +46248,20 @@ msgid ""
 "shadow appearance similar to the one produced by the GLES3 backend."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1419
+#: doc/classes/ProjectSettings.xml:1421
 msgid ""
 "Lower-end override for [member rendering/quality/shadows/filter_mode] on "
 "mobile devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1422
+#: doc/classes/ProjectSettings.xml:1424
 msgid ""
 "Forces [MeshInstance] to always perform skinning on the CPU (applies to both "
 "GLES2 and GLES3).\n"
 "See also [member rendering/quality/skinning/software_skinning_fallback]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1426
+#: doc/classes/ProjectSettings.xml:1428
 msgid ""
 "Allows [MeshInstance] to perform skinning on the CPU when the hardware "
 "doesn't support the default GPU skinning process with GLES2.\n"
@@ -46180,52 +46273,52 @@ msgid ""
 "already applied to the modelview matrix."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1432
+#: doc/classes/ProjectSettings.xml:1434
 msgid ""
 "The rendering octree balance can be changed to favor smaller ([code]0[/"
 "code]), or larger ([code]1[/code]) branches.\n"
 "Larger branches can increase performance significantly in some projects."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1436
+#: doc/classes/ProjectSettings.xml:1438
 msgid ""
 "Enables the use of bounding volume hierarchy instead of octree for rendering "
 "spatial partitioning. This may give better performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1439
+#: doc/classes/ProjectSettings.xml:1441
 msgid ""
 "Improves quality of subsurface scattering, but cost significantly increases."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1442
+#: doc/classes/ProjectSettings.xml:1444
 msgid "Quality setting for subsurface scattering (samples taken)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1445
+#: doc/classes/ProjectSettings.xml:1447
 msgid "Max radius used for subsurface scattering samples."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1448
+#: doc/classes/ProjectSettings.xml:1450
 msgid ""
 "Weight subsurface scattering samples. Helps to avoid reading samples from "
 "unrelated parts of the screen."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1451
+#: doc/classes/ProjectSettings.xml:1453
 msgid ""
 "Use high-quality voxel cone tracing. This results in better-looking "
 "reflections, but is much more expensive on the GPU."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1454
+#: doc/classes/ProjectSettings.xml:1456
 msgid ""
 "Thread model for rendering. Rendering on a thread can vastly improve "
 "performance, but synchronizing to the main thread can cause a bit more "
 "jitter."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1457
+#: doc/classes/ProjectSettings.xml:1459
 msgid ""
 "If [code]true[/code], a thread safe version of BVH (bounding volume "
 "hierarchy) will be used in rendering and Godot physics.\n"
@@ -46233,7 +46326,7 @@ msgid ""
 "incorrect object visibility)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1461
+#: doc/classes/ProjectSettings.xml:1463
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the BPTC algorithm. This texture compression algorithm is "
@@ -46246,7 +46339,7 @@ msgid ""
 "application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1465
+#: doc/classes/ProjectSettings.xml:1467
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the Ericsson Texture Compression algorithm. This algorithm "
@@ -46258,7 +46351,7 @@ msgid ""
 "application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1469
+#: doc/classes/ProjectSettings.xml:1471
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the Ericsson Texture Compression 2 algorithm. This texture "
@@ -46270,7 +46363,7 @@ msgid ""
 "application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1473
+#: doc/classes/ProjectSettings.xml:1475
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the PowerVR Texture Compression algorithm. This texture "
@@ -46282,7 +46375,7 @@ msgid ""
 "application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1477
+#: doc/classes/ProjectSettings.xml:1479
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the S3 Texture Compression algorithm. This algorithm is only "
@@ -46294,7 +46387,7 @@ msgid ""
 "application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1481
+#: doc/classes/ProjectSettings.xml:1483
 msgid ""
 "Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses (in "
 "pixels)."
@@ -46958,40 +47051,54 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Rect2.xml:59
-msgid "Returns this [Rect2] expanded to include a given point."
-msgstr ""
-
-#: doc/classes/Rect2.xml:65
-msgid "Returns the area of the [Rect2]."
+msgid ""
+"Returns a copy of this [Rect2] expanded to include a given point.\n"
+"[b]Example:[/b]\n"
+"[codeblock]\n"
+"# position (-3, 2), size (1, 1)\n"
+"var rect = Rect2(Vector2(-3, 2), Vector2(1, 1))\n"
+"# position (-3, -1), size (3, 4), so we fit both rect and Vector2(0, -1)\n"
+"var rect2 = rect.expand(Vector2(0, -1))\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/Rect2.xml:72
+msgid "Returns the area of the [Rect2]."
+msgstr ""
+
+#: doc/classes/Rect2.xml:79
 msgid ""
 "Returns a copy of the [Rect2] grown a given amount of units towards all the "
 "sides."
 msgstr ""
 
-#: doc/classes/Rect2.xml:82
+#: doc/classes/Rect2.xml:89
 msgid ""
 "Returns a copy of the [Rect2] grown a given amount of units towards each "
 "direction individually."
 msgstr ""
 
-#: doc/classes/Rect2.xml:90
+#: doc/classes/Rect2.xml:97
 msgid ""
 "Returns a copy of the [Rect2] grown a given amount of units towards the "
 "[enum Margin] direction."
 msgstr ""
 
-#: doc/classes/Rect2.xml:96
+#: doc/classes/Rect2.xml:103
 msgid "Returns [code]true[/code] if the [Rect2] is flat or empty."
 msgstr ""
 
-#: doc/classes/Rect2.xml:103
-msgid "Returns [code]true[/code] if the [Rect2] contains a point."
+#: doc/classes/Rect2.xml:110
+msgid ""
+"Returns [code]true[/code] if the [Rect2] contains a point. By convention, "
+"the right and bottom edges of the [Rect2] are considered exclusive, so "
+"points on these edges are [b]not[/b] included.\n"
+"[b]Note:[/b] This method is not reliable for [Rect2] with a [i]negative "
+"size[/i]. Use [method abs] to get a positive sized equivalent rectangle to "
+"check for contained points."
 msgstr ""
 
-#: doc/classes/Rect2.xml:111
+#: doc/classes/Rect2.xml:119
 msgid ""
 "Returns [code]true[/code] if the [Rect2] overlaps with [code]b[/code] (i.e. "
 "they have at least one point in common).\n"
@@ -46999,14 +47106,14 @@ msgid ""
 "considered overlapping if their borders touch, even without intersection."
 msgstr ""
 
-#: doc/classes/Rect2.xml:119
+#: doc/classes/Rect2.xml:127
 msgid ""
 "Returns [code]true[/code] if this [Rect2] and [code]rect[/code] are "
 "approximately equal, by calling [code]is_equal_approx[/code] on each "
 "component."
 msgstr ""
 
-#: doc/classes/Rect2.xml:126
+#: doc/classes/Rect2.xml:134
 msgid "Returns a larger [Rect2] that contains this [Rect2] and [code]b[/code]."
 msgstr ""
 
@@ -49341,6 +49448,22 @@ msgstr ""
 
 #: doc/classes/RoomManager.xml:79
 msgid ""
+"In order to reduce processing for roaming objects, an expansion is applied "
+"to their AABB as they move. This expanded volume is used to calculate which "
+"rooms the roaming object is within. If the object's exact AABB is still "
+"within this expanded volume on the next move, there is no need to reprocess "
+"the object, which can save considerable CPU.\n"
+"The downside is that if the expansion is too much, the object may end up "
+"unexpectedly sprawling into neighbouring rooms and showing up where it might "
+"otherwise be culled.\n"
+"In order to balance roaming performance against culling accuracy, this "
+"expansion margin can be customized by the user. It will typically depend on "
+"your room and object sizes, and movement speeds. The default value should "
+"work reasonably in most circumstances."
+msgstr ""
+
+#: doc/classes/RoomManager.xml:84
+msgid ""
 "During the conversion process, the geometry of objects within [Room]s, or a "
 "custom specified manual bound, are used to generate a [b]convex hull bound[/"
 "b].\n"
@@ -49358,7 +49481,7 @@ msgid ""
 "The room convex hulls are shown as a wireframe in the editor."
 msgstr ""
 
-#: doc/classes/RoomManager.xml:86
+#: doc/classes/RoomManager.xml:91
 msgid ""
 "For the [Room] conversion process to succeed, you must point the "
 "[RoomManager] to the parent [Node] of your [Room]s and [RoomGroup]s, which "
@@ -49366,11 +49489,11 @@ msgid ""
 "type, it is normally just a [Spatial])."
 msgstr ""
 
-#: doc/classes/RoomManager.xml:89
+#: doc/classes/RoomManager.xml:94
 msgid "Shows the [Portal] margins when the portal gizmo is used in the editor."
 msgstr ""
 
-#: doc/classes/RoomManager.xml:92
+#: doc/classes/RoomManager.xml:97
 msgid ""
 "When receiving gameplay callbacks when objects enter and exit gameplay, the "
 "[b]gameplay area[/b] can be defined by either the primary PVS (potentially "
@@ -49380,19 +49503,19 @@ msgid ""
 "preferable."
 msgstr ""
 
-#: doc/classes/RoomManager.xml:98
+#: doc/classes/RoomManager.xml:103
 msgid ""
 "Use only [Portal]s at runtime to determine visibility. PVS will not be "
 "generated at [Room]s conversion, and gameplay notifications cannot be used."
 msgstr ""
 
-#: doc/classes/RoomManager.xml:101
+#: doc/classes/RoomManager.xml:106
 msgid ""
 "Use a combination of PVS and [Portal]s to determine visibility (this is "
 "usually fastest and most accurate)."
 msgstr ""
 
-#: doc/classes/RoomManager.xml:104
+#: doc/classes/RoomManager.xml:109
 msgid ""
 "Use only the PVS (potentially visible set) of [Room]s to determine "
 "visibility."
@@ -54807,20 +54930,25 @@ msgstr ""
 #: doc/classes/SurfaceTool.xml:115
 msgid ""
 "Append vertices from a given [Mesh] surface onto the current vertex array "
-"with specified [Transform]."
+"with specified [Transform].\n"
+"[b]Note:[/b] Using [method append_from] on a [Thread] is much slower as the "
+"GPU must communicate data back to the CPU, while also causing the main "
+"thread to stall (as OpenGL is not thread-safe). Consider requesting a copy "
+"of the mesh, converting it to an [ArrayMesh] and adding vertices manually "
+"instead."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:122
+#: doc/classes/SurfaceTool.xml:123
 msgid ""
 "Called before adding any vertices. Takes the primitive type as an argument "
 "(e.g. [constant Mesh.PRIMITIVE_TRIANGLES])."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:128
+#: doc/classes/SurfaceTool.xml:129
 msgid "Clear all information passed into the surface tool so far."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:136
+#: doc/classes/SurfaceTool.xml:137
 msgid ""
 "Returns a constructed [ArrayMesh] from current information passed in. If an "
 "existing [ArrayMesh] is passed in as an argument, will add an extra surface "
@@ -54831,28 +54959,28 @@ msgid ""
 "constants in [enum Mesh.ArrayFormat] for other flags."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:143
+#: doc/classes/SurfaceTool.xml:144
 msgid ""
 "Commits the data to the same format used by [method ArrayMesh."
 "add_surface_from_arrays]. This way you can further process the mesh data "
 "using the [ArrayMesh] API."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:151
+#: doc/classes/SurfaceTool.xml:152
 msgid "Creates a vertex array from an existing [Mesh]."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:160
+#: doc/classes/SurfaceTool.xml:161
 msgid ""
 "Creates a vertex array from the specified blend shape of an existing [Mesh]. "
 "This can be used to extract a specific pose from a blend shape."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:166
+#: doc/classes/SurfaceTool.xml:167
 msgid "Removes the index array by expanding the vertex array."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:173
+#: doc/classes/SurfaceTool.xml:174
 msgid ""
 "Generates normals from vertices so you do not have to do it manually. If "
 "[code]flip[/code] is [code]true[/code], the resulting normals will be "
@@ -54864,19 +54992,19 @@ msgid ""
 "be set to [constant Mesh.PRIMITIVE_TRIANGLES]."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:180
+#: doc/classes/SurfaceTool.xml:181
 msgid ""
 "Generates a tangent vector for each vertex. Requires that each vertex have "
 "UVs and normals set already (see [method generate_normals])."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:186
+#: doc/classes/SurfaceTool.xml:187
 msgid ""
 "Shrinks the vertex array by creating an index array. This can improve "
 "performance by avoiding vertex reuse."
 msgstr ""
 
-#: doc/classes/SurfaceTool.xml:193
+#: doc/classes/SurfaceTool.xml:194
 msgid "Sets [Material] to be used by the [Mesh] you are constructing."
 msgstr ""
 
