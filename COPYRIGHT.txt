@@ -400,7 +400,7 @@ License: Expat
 
 Files: ./thirdparty/tinyexr/
 Comment: TinyEXR
-Copyright: 2014-2020, Syoyo Fujita
+Copyright: 2014-2021, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
 License: BSD-3-clause
 
