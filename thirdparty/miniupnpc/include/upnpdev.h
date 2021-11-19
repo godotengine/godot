@@ -1,8 +1,8 @@
-/* $Id: upnpdev.h,v 1.3 2020/05/29 15:57:42 nanard Exp $ */
+/* $Id: upnpdev.h,v 1.4 2021/08/21 09:45:01 nanard Exp $ */
 /* Project : miniupnp
  * Web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas BERNARD
- * copyright (c) 2005-2020 Thomas Bernard
+ * copyright (c) 2005-2021 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENSE file. */
 #ifndef UPNPDEV_H_INCLUDED
@@ -20,7 +20,7 @@ struct UPNPDev {
 	char * st;
 	char * usn;
 	unsigned int scope_id;
-#if defined(__STDC_VERSION) && __STDC_VERSION__ >= 199901L
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 	/* C99 flexible array member */
 	char buffer[];
 #elif defined(__GNUC__)
