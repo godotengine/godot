@@ -174,7 +174,7 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 		setPreserveEGLContextOnPause(true);
 		setFocusableInTouchMode(true);
 		switch (xrMode) {
-			case OVR:
+			case OPENXR:
 				// Replace the default egl config chooser.
 				setEGLConfigChooser(new OvrConfigChooser());
 
