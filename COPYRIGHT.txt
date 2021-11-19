@@ -266,7 +266,7 @@ Copyright: lieff
 License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
-Comment: MiniUPnPc
+Comment: MiniUPnP Project
 Copyright: 2005-2021, Thomas Bernard
 License: BSD-3-clause
 
