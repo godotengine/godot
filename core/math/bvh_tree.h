@@ -48,12 +48,14 @@
 #include "core/print_string.h"
 #include <limits.h>
 
-#define BVHABB_CLASS BVH_ABB<Bounds, Point>
+#define BVHABB_CLASS BVH_ABB<BOUNDS, POINT>
 
 // never do these checks in release
 #if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
 //#define BVH_VERBOSE
 //#define BVH_VERBOSE_TREE
+//#define BVH_VERBOSE_PAIRING
+//#define BVH_VERBOSE_MOVES
 
 //#define BVH_VERBOSE_FRAME
 //#define BVH_CHECKS
@@ -148,7 +150,7 @@ public:
 	}
 };
 
-template <class T, int MAX_CHILDREN, int MAX_ITEMS, bool USE_PAIRS = false, class Bounds = AABB, class Point = Vector3>
+template <class T, int MAX_CHILDREN, int MAX_ITEMS, bool USE_PAIRS = false, class BOUNDS = AABB, class POINT = Vector3>
 class BVH_Tree {
 	friend class BVH;
 
@@ -165,6 +167,11 @@ public:
 		// (as these ids are stored as negative numbers in the node)
 		uint32_t dummy_leaf_id;
 		_leaves.request(dummy_leaf_id);
+
+		// In many cases you may want to change this default in the client code,
+		// or expose this value to the user.
+		// This default may make sense for a typically scaled 3d game, but maybe not for 2d on a pixel scale.
+		params_set_pairing_expansion(0.1);
 	}
 
 private:

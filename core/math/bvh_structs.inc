@@ -29,12 +29,6 @@ struct ItemExtra {
 	T *userdata;
 };
 
-// this is an item OR a child node depending on whether a leaf node
-struct Item {
-	BVHABB_CLASS aabb;
-	uint32_t item_ref_id;
-};
-
 // tree leaf
 struct TLeaf {
 	uint16_t num_items;
@@ -177,4 +171,14 @@ bool _auto_node_expansion = true;
 // larger values gives more 'sticky' pairing, and is less likely to exhibit tunneling
 // we can either use auto mode, where the expansion is based on the root node size, or specify manually
 real_t _pairing_expansion = 0.1;
+
+#ifdef BVH_ALLOW_AUTO_EXPANSION
 bool _auto_pairing_expansion = true;
+#endif
+
+// when using an expanded bound, we must detect the condition where a new AABB
+// is significantly smaller than the expanded bound, as this is a special case where we
+// should override the optimization and create a new expanded bound.
+// This threshold is derived from the _pairing_expansion, and should be recalculated
+// if _pairing_expansion is changed.
+real_t _aabb_shrinkage_threshold = 0.0;
