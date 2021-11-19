@@ -947,7 +947,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                             print_error(
                                 "Unresolved theme item '{}', file: {}".format(param, state.current_class), state
                             )
-                        ref_type = "_theme_item"
+                        ref_type = "_theme_{}".format(class_def.theme_items[method_param].data_name)
 
                     elif cmd.startswith("signal"):
                         if method_param not in class_def.signals:
