@@ -411,11 +411,9 @@ static sljit_u8 get_jump_code(sljit_s32 type)
 		return 0x8e /* jle */;
 
 	case SLJIT_OVERFLOW:
-	case SLJIT_MUL_OVERFLOW:
 		return 0x80 /* jo */;
 
 	case SLJIT_NOT_OVERFLOW:
-	case SLJIT_MUL_NOT_OVERFLOW:
 		return 0x81 /* jno */;
 
 	case SLJIT_UNORDERED_F64:
