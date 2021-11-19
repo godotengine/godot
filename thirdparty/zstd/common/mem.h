@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
+ * Copyright (c) Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -143,9 +143,7 @@ MEM_STATIC size_t MEM_swapST(size_t in);
  * Prefer these methods in priority order (0 > 1 > 2)
  */
 #ifndef MEM_FORCE_MEMORY_ACCESS   /* can be defined externally, on command line for example */
-#  if defined(__GNUC__) && ( defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__) )
-#    define MEM_FORCE_MEMORY_ACCESS 2
-#  elif defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__ICCARM__)
+#  if defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__ICCARM__)
 #    define MEM_FORCE_MEMORY_ACCESS 1
 #  endif
 #endif
@@ -308,7 +306,7 @@ MEM_STATIC void MEM_writeLE16(void* memPtr, U16 val)
 
 MEM_STATIC U32 MEM_readLE24(const void* memPtr)
 {
-    return MEM_readLE16(memPtr) + (((const BYTE*)memPtr)[2] << 16);
+    return (U32)MEM_readLE16(memPtr) + ((U32)(((const BYTE*)memPtr)[2]) << 16);
 }
 
 MEM_STATIC void MEM_writeLE24(void* memPtr, U32 val)

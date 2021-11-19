@@ -1,6 +1,6 @@
 /*
  *  xxHash - Fast Hash algorithm
- *  Copyright (c) 2012-2020, Yann Collet, Facebook, Inc.
+ *  Copyright (c) Yann Collet, Facebook, Inc.
  *
  *  You can contact the author at :
  *  - xxHash homepage: http://www.xxhash.com
@@ -30,9 +30,7 @@
  * Prefer these methods in priority order (0 > 1 > 2)
  */
 #ifndef XXH_FORCE_MEMORY_ACCESS   /* can be defined externally, on command line for example */
-#  if defined(__GNUC__) && ( defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__) )
-#    define XXH_FORCE_MEMORY_ACCESS 2
-#  elif (defined(__INTEL_COMPILER) && !defined(WIN32)) || \
+#  if (defined(__INTEL_COMPILER) && !defined(WIN32)) || \
   (defined(__GNUC__) && ( defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__) )) || \
   defined(__ICCARM__)
 #    define XXH_FORCE_MEMORY_ACCESS 1

@@ -447,7 +447,7 @@ License: Zlib
 
 Files: ./thirdparty/zstd/
 Comment: Zstandard
-Copyright: 2016-2020, Facebook, Inc.
+Copyright: 2016-2021, Facebook, Inc.
 License: BSD-3-clause
 
 
