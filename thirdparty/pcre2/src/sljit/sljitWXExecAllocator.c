@@ -121,14 +121,18 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 	static pthread_mutex_t se_lock = PTHREAD_MUTEX_INITIALIZER;
 #endif
 	static int se_protected = !SLJIT_PROT_WX;
+	int prot = PROT_READ | PROT_WRITE | SLJIT_PROT_WX;
 	sljit_uw* ptr;
 
 	if (SLJIT_UNLIKELY(se_protected < 0))
 		return NULL;
 
+#ifdef PROT_MAX
+	prot |= PROT_MAX(PROT_READ | PROT_WRITE | PROT_EXEC);
+#endif
+
 	size += sizeof(sljit_uw);
-	ptr = (sljit_uw*)mmap(NULL, size, PROT_READ | PROT_WRITE | SLJIT_PROT_WX,
-				MAP_PRIVATE | MAP_ANON, -1, 0);
+	ptr = (sljit_uw*)mmap(NULL, size, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
 
 	if (ptr == MAP_FAILED)
 		return NULL;

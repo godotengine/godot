@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2020 University of Cambridge
+          New API code Copyright (c) 2016-2021 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -490,6 +490,7 @@ switch(c)
   list[2] = (uint32_t)(end - code);
   return end;
   }
+
 return NULL;    /* Opcode not accepted */
 }
 
@@ -1186,12 +1187,16 @@ for (;;)
     c = *repeat_opcode;
     if (c >= OP_CRSTAR && c <= OP_CRMINRANGE)
       {
-      /* end must not be NULL. */
-      end = get_chr_property_list(code, utf, ucp, cb->fcc, list);
+      /* The return from get_chr_property_list() will never be NULL when
+      *code (aka c) is one of the three class opcodes. However, gcc with
+      -fanalyzer notes that a NULL return is possible, and grumbles. Hence we
+      put in a check. */
 
+      end = get_chr_property_list(code, utf, ucp, cb->fcc, list);
       list[1] = (c & 1) == 0;
 
-      if (compare_opcodes(end, utf, ucp, cb, list, end, &rec_limit))
+      if (end != NULL &&
+          compare_opcodes(end, utf, ucp, cb, list, end, &rec_limit))
         {
         switch (c)
           {
