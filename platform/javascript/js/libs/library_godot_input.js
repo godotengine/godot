@@ -104,10 +104,14 @@ const GodotInputGamepads = {
 				}
 			}
 			GodotEventListeners.add(window, 'gamepadconnected', function (evt) {
-				add(evt.gamepad);
+				if (evt.gamepad) {
+					add(evt.gamepad);
+				}
 			}, false);
 			GodotEventListeners.add(window, 'gamepaddisconnected', function (evt) {
-				onchange(evt.gamepad.index, 0);
+				if (evt.gamepad) {
+					onchange(evt.gamepad.index, 0);
+				}
 			}, false);
 		},
 
