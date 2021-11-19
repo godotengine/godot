@@ -32,7 +32,7 @@
 
 #include "upnp.h"
 
-#include <miniupnpc/upnpcommands.h>
+#include <upnpcommands.h>
 
 String UPNPDevice::query_external_address() const {
 	ERR_FAIL_COND_V(!is_valid_gateway(), "");
