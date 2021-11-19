@@ -27,12 +27,13 @@
 # SteamB23 <steamb23@outlook.com>, 2021.
 # Jaemin Park <ppparkje@naver.com>, 2021.
 # 신동규 <rlsl0422@gmail.com>, 2021.
+# Kiroo <elusive1102@naver.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-03 13:15+0000\n"
+"PO-Revision-Date: 2021-11-19 08:43+0000\n"
 "Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -41,7 +42,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2929,7 +2930,7 @@ msgstr "다시 실행"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr "프로젝트 또는 씬 관련 여러가지 도구들."
+msgstr "프로젝트 또는 씬 관련 여러가지 툴."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
@@ -2966,7 +2967,7 @@ msgstr "프로젝트 데이터 폴더 열기"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
-msgstr "도구"
+msgstr "툴"
 
 #: editor/editor_node.cpp
 msgid "Orphan Resource Explorer..."
@@ -3230,7 +3231,7 @@ msgstr "인스펙터"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr "하단 패널 확장"
+msgstr "아래쪽 패널 확장"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -4383,6 +4384,10 @@ msgid ""
 "Selecting another resource in the FileSystem dock without clicking Reimport "
 "first will discard changes made in the Import dock."
 msgstr ""
+"아직 적용되지 않은 보류 중인 변경사항이 있습니다. 가져오기 옵션에 대한 변경사"
+"항을 적용하려면 다시 가져오기를 클릭하세요.\n"
+"다시 가져오기를 먼저 클릭하지 않고 파일시스템 독에서 다른 리소스를 선택하면 "
+"가져오기 독의 변경사항은 버려집니다."
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4939,7 +4944,7 @@ msgstr "노드의 애니메이션 재생 스케일를 전체적으로 조절합�
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
-msgstr "애니메이션 도구"
+msgstr "애니메이션 툴"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation"
@@ -4964,7 +4969,7 @@ msgstr "애니메이션 목록을 표시합니다."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
-msgstr "불러올 시 자동으로 재생"
+msgstr "불러오면 자동 재생"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
@@ -5833,7 +5838,7 @@ msgstr "IK 체인 지우기"
 msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
-msgstr "경고: 컨테이너의 자손 위치와 크기는 부모에 의해 결정됩니다."
+msgstr "경고: 컨테이너의 자식 위치와 크기는 부모에 의해 결정됩니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -5988,12 +5993,12 @@ msgstr "선택된 오브젝트를 잠금에서 풉니다 (움직일 수 있습�
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Makes sure the object's children are not selectable."
-msgstr "오브젝트의 자손을 선택하지 않도록 합니다."
+msgstr "오브젝트의 자식을 선택하지 않도록 합니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
-msgstr "오브젝트의 자손을 선택할 수 있도록 복원합니다."
+msgstr "오브젝트의 자식을 선택할 수 있도록 복원합니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -7691,15 +7696,15 @@ msgstr "셰이더"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
-msgstr "이 스켈레톤에는 본이 없습니다. Bone2D노드를 자손으로 만드세요."
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "본의 대기 자세 만들기"
+msgstr "이 스켈레톤에는 본이 없습니다. Bone2D노드를 자식으로 만드세요."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "본에게 대기 자세 설정"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "본의 대기 자세 만들기"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
@@ -7928,7 +7933,7 @@ msgstr "회전을 뷰에 정렬"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
-msgstr "자손을 인스턴스할 부모가 없습니다."
+msgstr "자식을 인스턴스화할 부모가 없습니다."
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
@@ -8091,11 +8096,11 @@ msgstr "포털 컬링을 위한 룸을 변환합니다."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
-msgstr "하단 뷰"
+msgstr "아래쪽 뷰"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View"
-msgstr "상단 뷰"
+msgstr "위쪽 뷰"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View"
@@ -8114,27 +8119,22 @@ msgid "Right View"
 msgstr "우측 뷰"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Down"
 msgstr "선회 뷰 아래로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Left"
 msgstr "선회 뷰 왼쪽으로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Right"
 msgstr "선회 뷰 오른쪽으로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View Up"
 msgstr "선회 뷰 위로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Orbit View 180"
 msgstr "선회 뷰 180으로"
 
@@ -11468,7 +11468,7 @@ msgstr "단계별 카운터"
 
 #: editor/rename_dialog.cpp
 msgid "If set, the counter restarts for each group of child nodes."
-msgstr "설정하면 각 그룹의 자손 노드의 카운터를 다시 시작합니다."
+msgstr "설정하면 각 그룹의 자식 노드의 카운터를 다시 시작합니다."
 
 #: editor/rename_dialog.cpp
 msgid "Initial value for the counter"
@@ -11598,7 +11598,7 @@ msgstr "가지 씬으로 교체"
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
-msgstr "자손 씬 인스턴스화"
+msgstr "자식 씬 인스턴스화"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't paste root node into the same scene."
@@ -11648,7 +11648,7 @@ msgstr "노드를 루트로 만들기"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes and any children?"
-msgstr "%d 개의 노드와 모든 자손 노드를 삭제할까요?"
+msgstr "%d 개의 노드와 모든 자식 노드를 삭제할까요?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -11660,7 +11660,7 @@ msgstr "루트 노드 \"%s\"을(를) 삭제할까요?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\" and its children?"
-msgstr "노드 \"%s\"와(과) 자손을 삭제할까요?"
+msgstr "노드 \"%s\"와(과) 자식을 삭제할까요?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete node \"%s\"?"
@@ -11717,7 +11717,7 @@ msgid ""
 "Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
 "cause all properties of the node to be reverted to their default."
 msgstr ""
-"\"자리 표시자로 불러오기\"를 활성화하면 \"편집할 수 있는 자손\" 설정이 비활성"
+"\"자리 표시자로 불러오기\"를 활성화하면 \"편집할 수 있는 자식\" 설정이 비활성"
 "화되고, 그러면 그 노드의 모든 속성이 디폴트로 복원됩니다."
 
 #: editor/scene_tree_dock.cpp
@@ -11801,7 +11801,7 @@ msgstr "상속 지우기"
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
-msgstr "편집할 수 있는 자손"
+msgstr "편집할 수 있는 자식"
 
 #: editor/scene_tree_dock.cpp
 msgid "Load As Placeholder"
@@ -11818,7 +11818,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
-msgstr "자손 노드 추가"
+msgstr "자식 노드 추가"
 
 #: editor/scene_tree_dock.cpp
 msgid "Expand/Collapse All"
@@ -11842,7 +11842,7 @@ msgstr "다른 씬에서 병합하기"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Save Branch as Scene"
-msgstr "가지를 씬으로 저장"
+msgstr "가지를 씬으로 저장하기"
 
 #: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Copy Node Path"
@@ -11861,7 +11861,7 @@ msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
-"씬 파일을 노드로 인스턴스합니다. 루트 노드가 없으면 상속된 씬을 만듭니다."
+"씬 파일을 노드로 인스턴스화합니다. 루트 노드가 없으면 상속된 씬을 만듭니다."
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script to the selected node."
@@ -11954,7 +11954,7 @@ msgid ""
 "Children are not selectable.\n"
 "Click to make selectable."
 msgstr ""
-"자손을 선택할 수 없습니다.\n"
+"자식을 선택할 수 없습니다.\n"
 "클릭하면 선택할 수 있습니다."
 
 #: editor/scene_tree_editor.cpp
@@ -12167,7 +12167,7 @@ msgstr "오류"
 
 #: editor/script_editor_debugger.cpp
 msgid "Child process connected."
-msgstr "자손 프로세스 연결됨."
+msgstr "자식 프로세스 연결됨."
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
@@ -13016,7 +13016,7 @@ msgstr "시그널 편집:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Make Tool:"
-msgstr "도구 만들기:"
+msgstr "툴 만들기:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
@@ -13192,7 +13192,7 @@ msgstr "기기에서 실행할 수 없었습니다."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Unable to find the 'apksigner' tool."
-msgstr "'apksigner' 도구를 찾을 수 없습니다."
+msgstr "'apksigner' 툴을 찾을 수 없습니다."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -13596,7 +13596,7 @@ msgid ""
 "define its shape."
 msgstr ""
 "이 노드는 모양이 없습니다, 다른 물체와 충돌하거나 상호 작용할 수 없습니다.\n"
-"CollisionShape2D 또는 CollisionPolygon2D를 자손 노드로 추가하여 모양을 정의하"
+"CollisionShape2D 또는 CollisionPolygon2D를 자식 노드로 추가하여 모양을 정의하"
 "는 것을 고려하세요."
 
 #: scene/2d/collision_polygon_2d.cpp
@@ -13607,7 +13607,7 @@ msgid ""
 msgstr ""
 "CollisionPolygon2D는 CollisionObject2D에 콜리전 모양을 지정하는 용도로만 사용"
 "됩니다. 모양을 정의해야 하는 Area2D, StaticBody2D, RigidBody2D, "
-"KinematicBody2D 등의 자손으로만 사용해주세요."
+"KinematicBody2D 등의 자식으로만 사용해주세요."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
@@ -13629,7 +13629,7 @@ msgid ""
 msgstr ""
 "CollisionShape2D는 CollisionObject2D에 콜리전 모양을 지정하는 용도로만 사용됩"
 "니다. 모양을 정의해야 하는 Area2D, StaticBody2D, RigidBody2D, "
-"KinematicBody2D 등의 자손으로만 사용해주세요."
+"KinematicBody2D 등의 자식으로만 사용해주세요."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -13704,14 +13704,14 @@ msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
-"NavigationPolygonInstance는 Navigation2D 노드의 자손이나 손주에 있어야 합니"
+"NavigationPolygonInstance는 Navigation2D 노드의 자식이나 손주에 있어야 합니"
 "다. 이것은 내비게이션 데이터만을 제공합니다."
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
-"ParallaxLayer는 ParallaxBackground 노드의 자손 노드로 있을 때만 작동합니다."
+"ParallaxLayer는 ParallaxBackground 노드의 자식 노드로 있을 때만 작동합니다."
 
 #: scene/2d/particles_2d.cpp
 msgid ""
@@ -13741,7 +13741,7 @@ msgstr ""
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D는 Path2D 노드의 자손 노드로 있을 때만 작동합니다."
+msgstr "PathFollow2D는 Path2D 노드의 자식 노드로 있을 때만 작동합니다."
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
@@ -13751,7 +13751,7 @@ msgid ""
 msgstr ""
 "(캐릭터나 리지드 모드에서) RigidBody2D의 크기 변경은 물리 엔진이 작동하는 동"
 "안 큰 부담이 됩니다.\n"
-"대신 자손 콜리전 모양의 크기를 변경해보세요."
+"대신 자식 콜리전 모양의 크기를 변경해보세요."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
@@ -13780,7 +13780,7 @@ msgid ""
 msgstr ""
 "Use Parent가 켜진 TileMap은 모양을 주는 부모 CollisionObject2D가 필요합니다. "
 "모양을 주기 위해 Area2D, StaticBody2D, RigidBody2D, KinematicBody2D 등을 자"
-"손 노드로 사용해주세요."
+"식 노드로 사용해주세요."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -13817,7 +13817,7 @@ msgstr "앵커 ID가 0이 되면 앵커가 실제 앵커에 바인딩하지 않�
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node."
-msgstr "ARVROrigin은 자손으로 ARVRCamera 노드가 필요합니다."
+msgstr "ARVROrigin은 자식으로 ARVRCamera 노드가 필요합니다."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Finding meshes and lights"
@@ -13850,7 +13850,7 @@ msgid ""
 "its shape."
 msgstr ""
 "이 노드는 모양이 없습니다. 다른 물체와 충돌하거나 상호 작용할 수 없습니다.\n"
-"CollisionShape 또는 CollisionPolygon을 자손 노드로 추가해서 모양을 정의하는 "
+"CollisionShape 또는 CollisionPolygon을 자식 노드로 추가해서 모양을 정의하는 "
 "것을 고려하세요."
 
 #: scene/3d/collision_polygon.cpp
@@ -13860,7 +13860,7 @@ msgid ""
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
 "CollisionPolygon은 CollisionObject에 콜리전 모양을 지정하는 용도로만 사용됩니"
-"다. Area, StaticBody, RigidBody, KinematicBody 등에 자손 노드로 추가해서 사용"
+"다. Area, StaticBody, RigidBody, KinematicBody 등에 자식 노드로 추가해서 사용"
 "해주세요."
 
 #: scene/3d/collision_polygon.cpp
@@ -13874,7 +13874,7 @@ msgid ""
 "KinematicBody, etc. to give them a shape."
 msgstr ""
 "CollisionShape은 CollisionObject에 콜리전 모양을 지정하는 용도로만 사용됩니"
-"다. Area, StaticBody, RigidBody, KinematicBody 등에 자손 노드로 추가해서 사용"
+"다. Area, StaticBody, RigidBody, KinematicBody 등에 자식 노드로 추가해서 사용"
 "해주세요."
 
 #: scene/3d/collision_shape.cpp
@@ -13952,7 +13952,7 @@ msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
-"NavigationMeshInstance는 Navigation 노드의 자손이나 손주에 있어야 합니다. 이"
+"NavigationMeshInstance는 Navigation 노드의 자식이나 손주에 있어야 합니다. 이"
 "것은 내비게이션 데이터만 제공합니다."
 
 #: scene/3d/occluder.cpp
@@ -13988,7 +13988,7 @@ msgstr ""
 
 #: scene/3d/path.cpp
 msgid "PathFollow only works when set as a child of a Path node."
-msgstr "PathFollow는 Path 노드의 자손으로 있을 때만 작동합니다."
+msgstr "PathFollow는 Path 노드의 자식으로 있을 때만 작동합니다."
 
 #: scene/3d/path.cpp
 msgid ""
@@ -14006,7 +14006,7 @@ msgid ""
 msgstr ""
 "(캐릭터나 리지드 모드에서) RigidBody의 크기 변경은 물리 엔진이 작동하는 동안 "
 "큰 부담이 됩니다.\n"
-"대신 자손 콜리전 모양의 크기를 변경하세요."
+"대신 자식 콜리전 모양의 크기를 변경하세요."
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
@@ -14030,15 +14030,15 @@ msgstr "노드 A와 노드 B는 서로 다른 PhysicsBody여야 합니다"
 
 #: scene/3d/portal.cpp
 msgid "The RoomManager should not be a child or grandchild of a Portal."
-msgstr "RoomManager는 Portal의 자손이나 손주가 아니어야 합니다."
+msgstr "RoomManager는 Portal의 자식이나 손주가 아니어야 합니다."
 
 #: scene/3d/portal.cpp
 msgid "A Room should not be a child or grandchild of a Portal."
-msgstr "Room은 Portal의 자손이나 손주가 아니어야 합니다."
+msgstr "Room은 Portal의 자식이나 손주가 아니어야 합니다."
 
 #: scene/3d/portal.cpp
 msgid "A RoomGroup should not be a child or grandchild of a Portal."
-msgstr "RoomGroup은 Portal의 자손이나 손주가 아니어야 합니다."
+msgstr "RoomGroup은 Portal의 자식이나 손주가 아니어야 합니다."
 
 #: scene/3d/remote_transform.cpp
 msgid ""
@@ -14050,7 +14050,7 @@ msgstr ""
 
 #: scene/3d/room.cpp
 msgid "A Room cannot have another Room as a child or grandchild."
-msgstr "Room은 다른 Room을 자손이나 손주로 가질 수 없습니다."
+msgstr "Room은 다른 Room을 자식이나 손주로 가질 수 없습니다."
 
 #: scene/3d/room.cpp
 msgid "The RoomManager should not be placed inside a Room."
@@ -14165,7 +14165,7 @@ msgid ""
 "it as a child of a VehicleBody."
 msgstr ""
 "VehicleWheel은 VehicleBody로 바퀴 시스템을 제공하는 역할입니다. VehicleBody"
-"의 자손으로 사용해주세요."
+"의 자식으로 사용해주세요."
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -14271,7 +14271,7 @@ msgid ""
 "children placement behavior.\n"
 "If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
-"Container 자체는 자손 배치 작업을 구성하는 스크립트 외에는 목적이 없습니다.\n"
+"Container 자체는 자식 배치 작업을 구성하는 스크립트 외에는 목적이 없습니다.\n"
 "스크립트를 추가하는 의도가 없으면, 순수한 Control 노드를 사용해주세요."
 
 #: scene/gui/control.cpp
@@ -14330,8 +14330,8 @@ msgid ""
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"ScrollContainer는 단일 자손 Control을 작업하기 위한 것입니다.\n"
-"(VBox, HBox 등) 컨테이너를 자손으로 사용하거나, Control을 사용하고 사용자 지"
+"ScrollContainer는 단일 자식 Control을 작업하기 위한 것입니다.\n"
+"(VBox, HBox 등) 컨테이너를 자식으로 사용하거나, Control을 사용하고 사용자 지"
 "정 최소 수치를 수동으로 설정하세요."
 
 #: scene/gui/tree.cpp
@@ -14353,6 +14353,10 @@ msgid ""
 "Consider using a script's process loop instead of relying on a Timer for "
 "very low wait times."
 msgstr ""
+"매우 짧은 타이머 대기 시간(< 0.05초)은 렌더링된 프레임 레이트나 물리 프레임 "
+"레이트에 따라 상당히 다른 방식으로 작동할 수 있습니다.\n"
+"대기 시간이 매우 짧다면 타이머에 의존하는 대신 스크립트의 프로세스 루프를 사"
+"용하는 것이 좋습니다."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -14362,16 +14366,16 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 "뷰포트를 렌더 대상으로 설정하지 않았습니다. 뷰포트의 내용을 화면에 직접 표시"
-"하려면, Control의 자손 노드로 만들어서 크기를 얻어야 합니다. 그렇지 않을 경"
+"하려면, Control의 자식 노드로 만들어서 크기를 얻어야 합니다. 그렇지 않을 경"
 "우, 화면에 표시하기 위해서는 뷰포트를 RenderTarget으로 만들고 내부적인 텍스처"
 "를 다른 노드에 지정해야 합니다."
 
 #: scene/main/viewport.cpp
-#, fuzzy
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
-msgstr "무엇이든 렌더링하려면 뷰포트 크기가 0보다 커야 합니다."
+msgstr ""
+"무엇이든 렌더링하려면 뷰포트 크기가 양쪽 차원에서 2픽셀 이상이어야 합니다."
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"

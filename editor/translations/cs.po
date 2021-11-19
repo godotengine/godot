@@ -7722,12 +7722,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Kostra nemá žádné kosti, vytvoř nějaké potomky Bone2D."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "Vytvořit klidovou pózu z kostí"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "Nastavit kosti podle klidové pózy"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "Vytvořit klidovou pózu z kostí"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"

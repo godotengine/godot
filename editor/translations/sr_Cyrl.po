@@ -6,12 +6,13 @@
 # Александар Урошевић <nicecubedude@gmail.com>, 2017.
 # Младен Габић <cupakabra@protonmail.com>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
+# Алексић Владица <vlajkousk@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-05-22 21:01+0000\n"
-"Last-Translator: Младен Габић <cupakabra@protonmail.com>\n"
+"PO-Revision-Date: 2021-11-07 22:23+0000\n"
+"Last-Translator: Алексић Владица <vlajkousk@gmail.com>\n"
 "Language-Team: Serbian (cyrillic) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/sr_Cyrl/>\n"
 "Language: sr_Cyrl\n"
@@ -19,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -101,7 +102,6 @@ msgid "Balanced"
 msgstr "Балансирано"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
 msgstr "Огледало"
 
@@ -110,14 +110,12 @@ msgid "Time:"
 msgstr "Време:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
 msgstr "Вредност:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Убаци кључ"
+msgstr "Овде Убаците Кључ"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -1024,7 +1022,7 @@ msgstr "Сигурно желиш да уклониш све везе са \"%s\
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "Сигнали"
+msgstr "Знаци"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -2272,9 +2270,8 @@ msgid "Inherited by:"
 msgstr "Наслеђено од:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Опис:"
+msgstr "Опис"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2297,25 +2294,26 @@ msgstr "Уобичајено"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr "Методе"
+msgstr "Поступци"
 
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Theme Properties"
-msgstr "Особине"
+msgstr "Особине Теме"
 
 #: editor/editor_help.cpp
+#, fuzzy
 msgid "Enumerations"
-msgstr "Енумерације"
+msgstr "Пописивање"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
-msgstr "Константе"
+msgstr "Непроменљиве"
 
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Property Descriptions"
-msgstr "Опис особине:"
+msgstr "Описи Особина"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2333,7 +2331,7 @@ msgstr ""
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Method Descriptions"
-msgstr "Опис методе:"
+msgstr "Описи Метода"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -8467,13 +8465,13 @@ msgstr "Овај костур нема кости, креирај му децу 
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Create Rest Pose from Bones"
-msgstr "Направи тачке емисије од мреже"
+msgid "Set Rest Pose to Bones"
+msgstr "Постави Одмор Позу на Коске"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Set Rest Pose to Bones"
-msgstr "Постави Одмор Позу на Коске"
+msgid "Create Rest Pose from Bones"
+msgstr "Направи тачке емисије од мреже"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
