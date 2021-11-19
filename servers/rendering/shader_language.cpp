@@ -4920,7 +4920,9 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 										bool error = false;
 										Node *n = func->arguments[argidx];
 										if (n->type == Node::TYPE_CONSTANT || n->type == Node::TYPE_OPERATOR) {
-											error = true;
+											if (!call_function->arguments[i].is_const) {
+												error = true;
+											}
 										} else if (n->type == Node::TYPE_ARRAY) {
 											ArrayNode *an = static_cast<ArrayNode *>(n);
 											if (an->call_expression != nullptr || an->is_const) {
