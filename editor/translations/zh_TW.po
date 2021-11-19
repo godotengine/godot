@@ -26,13 +26,14 @@
 # BinotaLIU <me@binota.org>, 2020, 2021.
 # MintSoda <lionlxh@qq.com>, 2020.
 # meowmeowmeowcat <meowmeowcat1211@gmail.com>, 2021.
+# anthonychen <anton1554970211@126.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-07-13 06:13+0000\n"
-"Last-Translator: meowmeowmeowcat <meowmeowcat1211@gmail.com>\n"
+"PO-Revision-Date: 2021-11-11 16:02+0000\n"
+"Last-Translator: anthonychen <anton1554970211@126.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -40,7 +41,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.7.2-dev\n"
+"X-Generator: Weblate 4.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -388,13 +389,11 @@ msgstr "插入動畫"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "node '%s'"
-msgstr "無法開啟 \"%s\"。"
+msgstr "無法開啟 \"%s\""
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
 msgstr "動畫"
 
@@ -404,7 +403,6 @@ msgstr "AnimationPlayer 不能播放自己，只可播放其他 Player。"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
 msgstr "屬性「%s」不存在。"
 
@@ -632,7 +630,6 @@ msgid "Use Bezier Curves"
 msgstr "使用貝茲曲線"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create RESET Track(s)"
 msgstr "貼上關鍵畫格"
 
@@ -977,7 +974,7 @@ msgstr "找不到與「%s」相關的結果。"
 
 #: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
-msgstr ""
+msgstr "缺少對%s的可用解釋。"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -7689,12 +7686,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "此骨架未包含骨骼，請建立一些子 Bone2D 節點。"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "自骨骼建立靜止姿勢"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "設定靜止姿勢至骨骼"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "自骨骼建立靜止姿勢"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"

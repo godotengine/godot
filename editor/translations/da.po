@@ -14,7 +14,7 @@
 # Rémi Verschelde <akien@godotengine.org>, 2019.
 # Mads K. Bredager <mbredager@gmail.com>, 2019.
 # Kristoffer Andersen <kjaa@google.com>, 2019.
-# Joe Osborne <reachjoe.o@gmail.com>, 2020.
+# Joe Osborne <reachjoe.o@gmail.com>, 2020, 2021.
 # Autowinto <happymansi@hotmail.com>, 2020, 2021.
 # Mikkel Mouridsen <mikkelmouridsen@me.com>, 2020, 2021.
 # snakatk <snaqii@live.dk>, 2021.
@@ -23,8 +23,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-31 22:17+0000\n"
-"Last-Translator: Kim Nielsen <kimmowich@stofanet.dk>\n"
+"PO-Revision-Date: 2021-11-05 11:56+0000\n"
+"Last-Translator: Joe Osborne <reachjoe.o@gmail.com>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
@@ -232,9 +232,8 @@ msgid "Animation Playback Track"
 msgstr "Animation-afspilningsspor"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Animations længde (i sekunder)"
+msgstr "Animations længde (billeder)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -263,9 +262,8 @@ msgid "Anim Clips:"
 msgstr "Anim klip:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "Ændre Array-Værdi"
+msgstr "Ændre sporsti"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -391,9 +389,8 @@ msgstr "Anim Indsæt"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "node '%s'"
-msgstr "Kan ikke åbne '%s'."
+msgstr "node '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
@@ -630,9 +627,8 @@ msgid "Go to Previous Step"
 msgstr "Gå til Forrige Trin"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Apply Reset"
-msgstr "Nulstil Zoom"
+msgstr "Anvende nulstilling"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -8011,13 +8007,13 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Set Rest Pose to Bones"
+msgstr ""
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
 msgid "Create Rest Pose from Bones"
 msgstr "Spil Brugerdefineret Scene"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Rest Pose to Bones"
-msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy

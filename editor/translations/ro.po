@@ -15,13 +15,14 @@
 # f0roots <f0rootss@gmail.com>, 2020.
 # Gigel2 <mihalacher02@gmail.com>, 2020.
 # R3ktGamerRO <bluegamermc1@gmail.com>, 2021.
+# FlooferLand <yunaflarf@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-03-20 04:18+0000\n"
-"Last-Translator: R3ktGamerRO <bluegamermc1@gmail.com>\n"
+"PO-Revision-Date: 2021-11-11 16:02+0000\n"
+"Last-Translator: FlooferLand <yunaflarf@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.5.2-dev\n"
+"X-Generator: Weblate 4.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -379,15 +380,13 @@ msgstr "Anim Inserați"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "node '%s'"
-msgstr "Mod Snap (%s)"
+msgstr "nodul '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
-msgstr "Animație"
+msgstr "animație"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
@@ -395,9 +394,8 @@ msgstr "AnimationPlayer nu se poate anima singur, doar alți jucători."
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
-msgstr "Proprietate"
+msgstr "proprietatea '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -486,7 +484,7 @@ msgstr "Anim Mutați Cheie"
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Clipboard is empty!"
-msgstr ""
+msgstr "Clipboardul este gol!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -608,9 +606,8 @@ msgid "Go to Previous Step"
 msgstr "Mergeți la Pasul Anterior"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Apply Reset"
-msgstr "Resetați Zoom-area"
+msgstr "Resetați"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -629,9 +626,8 @@ msgid "Use Bezier Curves"
 msgstr "Folosește curbe Bezier"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create RESET Track(s)"
-msgstr "Lipiţi Piste"
+msgstr "Creați o pista RESET"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -973,11 +969,11 @@ msgstr "Creați %s Nou"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Niciun rezultat pentru \"%s\"."
 
 #: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
-msgstr ""
+msgstr "Nu exista o descriere pentru %s."
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -1077,14 +1073,14 @@ msgid "Owners Of:"
 msgstr "Stăpâni La:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
 "Ștergeți fișierele selectate din proiect? (Acțiune ireversibilă)\n"
-"Poți gasi fișierele șterse in coșul de gunoi dacă vrei să le restabilești."
+"Bazat pe configurarea sistemului de fișiere, fișierele vor fi mutate în "
+"coșul de gunoi al sistemului, ori vor fi șterse definitiv."
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -1170,7 +1166,7 @@ msgstr "Mulțumesc din partea comunităţii Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Apasă click sa copiezi."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1268,41 +1264,38 @@ msgid "Licenses"
 msgstr "Licențe"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "Eroare la deschiderea fişierului pachet, nu este în format ZIP."
+msgstr ""
+"Eroare la deschiderea fişierului pachet \"%s\" (nu este în formatul ZIP)."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (already exists)"
-msgstr "%s (Există deja)"
+msgstr "%s (deja există)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr ""
+msgstr "Conținutul pachetului \"%s\" - %d fișiere conflictă cu proiectul tău:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - No files conflict with your project:"
 msgstr ""
+"Conținutul pachetului \"%s\" - Niciun fișier nu conflictă cu proiectul tău:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
 msgstr "Decomprimare Asset-uri"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "Următoarele file au eșuat extragerea din pachet:"
+msgstr "Următoarele fișiere au eșuat extragerea din pachetul \"%s\":"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "(and %s more files)"
-msgstr "și %d alte fișiere."
+msgstr "(și %s alte fișiere)"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset \"%s\" installed successfully!"
-msgstr "Pachet instalat cu succes!"
+msgstr "Pachetul \"%s\" sa instalat cu succes!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1551,13 +1544,12 @@ msgid "Can't add autoload:"
 msgstr "Nu pot adaugă încărcare automata:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "%s is an invalid path. File does not exist."
-msgstr "Fișierul nu există."
+msgstr "%s este o cale invalidă. Fișierul nu există."
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. Not in resource path (res://)."
-msgstr ""
+msgstr "%s este o cale invalida. Nu este în calea resurselor (res://)."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1582,7 +1574,7 @@ msgstr "Nume"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Global Variable"
-msgstr ""
+msgstr "Variabil Global"
 
 #: editor/editor_data.cpp
 msgid "Paste Params"
@@ -1761,7 +1753,7 @@ msgstr "Importă Bară"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
-msgstr ""
+msgstr "Permite vizualizarea și editarea scenelor 3D."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
@@ -1783,7 +1775,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to browse the local file system via a dedicated dock."
-msgstr ""
+msgstr "Permite navigarea sistemului local de fișiere printr-un dock dedicat."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
@@ -1792,17 +1784,16 @@ msgid ""
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(current)"
-msgstr "(Curent)"
+msgstr "(actual)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(none)"
-msgstr ""
+msgstr "(nici unul)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
-msgstr ""
+msgstr "Șterge profilul actual selectat, '%s'? Nu poate fi anulat."
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
@@ -1834,9 +1825,8 @@ msgid "Enable Contextual Editor"
 msgstr "Activează Editorul Contextual"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Properties:"
-msgstr "Reduceți toate proprietățile"
+msgstr "Proprietățile clasei:"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1844,9 +1834,8 @@ msgid "Main Features:"
 msgstr "Caracteristici active:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Nodes and Classes:"
-msgstr "Clase Activate:"
+msgstr "Noduri și Clase:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
@@ -1874,14 +1863,12 @@ msgid "Current Profile:"
 msgstr "Profil Curent:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Create Profile"
-msgstr "Ștergere Profil"
+msgstr "Creează un Profil"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Remove Profile"
-msgstr "Elimină Șablon"
+msgstr "Șterge Profil"
 
 #: editor/editor_feature_profile.cpp
 msgid "Available Profiles:"
@@ -1901,14 +1888,12 @@ msgid "Export"
 msgstr "Exportare"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Configure Selected Profile:"
-msgstr "Profil Curent:"
+msgstr "Configură Profilul Selectat:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Extra Options:"
-msgstr "Opțiuni Clasă:"
+msgstr "Opțiunii Extra:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Create or import a profile to edit available classes and properties."
@@ -1939,9 +1924,8 @@ msgid "Select Current Folder"
 msgstr "Selectaţi directorul curent"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "File exists, overwrite?"
-msgstr "Fișierul există, suprascrieţi?"
+msgstr "Fișierul există, înlocuiți?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select This Folder"
@@ -2259,8 +2243,9 @@ msgstr "Proprietate:"
 
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
+#, fuzzy
 msgid "Set %s"
-msgstr ""
+msgstr "Setați %s"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
@@ -2436,9 +2421,8 @@ msgstr ""
 "putut fi satisfăcute."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "Nu s-a putut porni subprocesul!"
+msgstr "Nu s-au putut salva una sau mai multe scene!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2543,7 +2527,7 @@ msgstr "Nu există nici o scenă definită pentru a execuție."
 
 #: editor/editor_node.cpp
 msgid "Save scene before running..."
-msgstr ""
+msgstr "Salvați scena înainte de a rula..."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -2579,7 +2563,7 @@ msgstr "Salvează schimbările la ’%s’ înainte de ieșire?"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s nu mai există! Vă rugăm să specificați o nouă locație de salvare."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -7879,13 +7863,13 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Set Rest Pose to Bones"
+msgstr ""
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
 msgid "Create Rest Pose from Bones"
 msgstr "Creează Puncte de Emisie Din Mesh"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Set Rest Pose to Bones"
-msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy

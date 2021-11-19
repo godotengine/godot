@@ -7700,12 +7700,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "โครงหลักนี้ยังไม่มีโครงใดๆ สร้างโหนดลูกของ Bone2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "สร้างท่าโพสจากโครง"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "ตั้งท่าโพสจากโครง"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "สร้างท่าโพสจากโครง"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
