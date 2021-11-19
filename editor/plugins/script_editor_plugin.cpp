@@ -962,7 +962,7 @@ void ScriptEditor::_reload_scripts() {
 			ERR_CONTINUE(!rel_script.is_valid());
 			script->set_source_code(rel_script->get_source_code());
 			script->set_last_modified_time(rel_script->get_last_modified_time());
-			script->reload();
+			script->reload(true);
 		}
 
 		Ref<TextFile> text_file = edited_res;
@@ -1366,9 +1366,17 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 			} break;
 
-			case FILE_TOOL_RELOAD:
 			case FILE_TOOL_RELOAD_SOFT: {
-				current->reload(p_option == FILE_TOOL_RELOAD_SOFT);
+				Ref<Script> scr = current->get_edited_resource();
+				if (scr == nullptr || scr.is_null()) {
+					EditorNode::get_singleton()->show_warning(TTR("Can't obtain the script for reloading."));
+					break;
+				}
+				if (!scr->is_tool()) {
+					EditorNode::get_singleton()->show_warning(TTR("Reload only takes effect on tool scripts."));
+					return;
+				}
+				scr->reload(true);
 
 			} break;
 			case FILE_RUN: {
@@ -1377,16 +1385,16 @@ void ScriptEditor::_menu_option(int p_option) {
 					EditorNode::get_singleton()->show_warning(TTR("Can't obtain the script for running."));
 					break;
 				}
+				if (!scr->is_tool()) {
+					EditorNode::get_singleton()->show_warning(TTR("Script is not in tool mode, will not be able to run."));
+					return;
+				}
 
 				current->apply_code();
 				Error err = scr->reload(false); //hard reload script before running always
 
 				if (err != OK) {
 					EditorNode::get_singleton()->show_warning(TTR("Script failed reloading, check console for errors."));
-					return;
-				}
-				if (!scr->is_tool()) {
-					EditorNode::get_singleton()->show_warning(TTR("Script is not in tool mode, will not be able to run."));
 					return;
 				}
 
@@ -3035,8 +3043,8 @@ void ScriptEditor::_make_script_list_context_menu() {
 	if (se) {
 		Ref<Script> scr = se->get_edited_resource();
 		if (scr != nullptr) {
-			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
 			if (!scr.is_null() && scr->is_tool()) {
+				context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
 				context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), FILE_RUN);
 				context_menu->add_separator();
 			}
@@ -3699,7 +3707,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::S), FILE_SAVE_ALL);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KeyModifierMask::CMD | KeyModifierMask::ALT | Key::R), FILE_TOOL_RELOAD_SOFT);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Tool Script"), KeyModifierMask::CMD | KeyModifierMask::ALT | Key::R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/show_in_file_system", TTR("Show in FileSystem")), SHOW_IN_FILE_SYSTEM);
 	file_menu->get_popup()->add_separator();
