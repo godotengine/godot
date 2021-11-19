@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_tool_drawer.h"
 #include "editor/multi_node_edit.h"
 
 void TextControlEditor::_notification(int p_notification) {
@@ -98,9 +99,9 @@ void TextControlEditor::_update_fonts_menu() {
 	}
 
 	if (font_list->get_item_count() > 1) {
-		font_list->show();
+		font_list->set_disabled(false);
 	} else {
-		font_list->hide();
+		font_list->set_disabled(true);
 	}
 }
 
@@ -116,9 +117,9 @@ void TextControlEditor::_update_styles_menu() {
 	}
 
 	if (font_style_list->get_item_count() > 1) {
-		font_style_list->show();
+		font_style_list->set_disabled(false);
 	} else {
-		font_style_list->hide();
+		font_style_list->set_disabled(true);
 	}
 }
 
@@ -574,62 +575,75 @@ bool TextControlEditor::handles(Object *p_object) const {
 }
 
 TextControlEditor::TextControlEditor() {
-	add_child(memnew(VSeparator));
+	// Font resource.
+	EditorToolDrawerItemGroup *font_tool_group = memnew(EditorToolDrawerItemGroup);
+	font_tool_group->set_title(TTR("Font resource"));
+	add_child(font_tool_group);
 
 	font_list = memnew(OptionButton);
-	font_list->set_flat(true);
-	font_list->set_tooltip(TTR("Font"));
-	add_child(font_list);
+	font_list->set_tooltip(TTR("Select the font resource."));
+	font_tool_group->add_child(font_list);
 	font_list->connect("item_selected", callable_mp(this, &TextControlEditor::_font_selected));
 
+	// Font style.
+	EditorToolDrawerItemGroup *font_style_tool_group = memnew(EditorToolDrawerItemGroup);
+	font_style_tool_group->set_title(TTR("Font style"));
+	add_child(font_style_tool_group);
+
+	HBoxContainer *group_hb = memnew(HBoxContainer);
+	font_style_tool_group->add_child(group_hb);
+
 	font_style_list = memnew(OptionButton);
-	font_style_list->set_flat(true);
-	font_style_list->set_tooltip(TTR("Font style"));
+	font_style_list->set_tooltip(TTR("Select the font style."));
 	font_style_list->set_toggle_mode(true);
-	add_child(font_style_list);
+	font_style_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	group_hb->add_child(font_style_list);
 	font_style_list->connect("item_selected", callable_mp(this, &TextControlEditor::_font_style_selected));
 
 	font_size_list = memnew(SpinBox);
-	font_size_list->set_tooltip(TTR("Font Size"));
+	font_size_list->set_tooltip(TTR("Set the size of the text."));
 	font_size_list->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
 	font_size_list->set_min(6);
 	font_size_list->set_step(1);
 	font_size_list->set_max(96);
-	font_size_list->get_line_edit()->set_flat(true);
-	add_child(font_size_list);
+	group_hb->add_child(font_size_list);
 	font_size_list->connect("value_changed", callable_mp(this, &TextControlEditor::_font_size_selected));
 
 	font_color_picker = memnew(ColorPickerButton);
-	font_color_picker->set_custom_minimum_size(Size2(20, 0) * EDSCALE);
-	font_color_picker->set_flat(true);
-	font_color_picker->set_tooltip(TTR("Text Color"));
-	add_child(font_color_picker);
+	font_color_picker->set_custom_minimum_size(Size2(32, 0) * EDSCALE);
+	font_color_picker->set_tooltip(TTR("Select the color of the text."));
+	group_hb->add_child(font_color_picker);
 	font_color_picker->connect("color_changed", callable_mp(this, &TextControlEditor::_font_color_changed));
 
-	add_child(memnew(VSeparator));
+	// Font outline style.
+	EditorToolDrawerItemGroup *outline_style_tool_group = memnew(EditorToolDrawerItemGroup);
+	outline_style_tool_group->set_title(TTR("Outline style"));
+	add_child(outline_style_tool_group);
+
+	group_hb = memnew(HBoxContainer);
+	outline_style_tool_group->add_child(group_hb);
 
 	outline_size_list = memnew(SpinBox);
-	outline_size_list->set_tooltip(TTR("Outline Size"));
+	outline_size_list->set_tooltip(TTR("Set the size of the text outline."));
 	outline_size_list->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
 	outline_size_list->set_min(0);
 	outline_size_list->set_step(1);
 	outline_size_list->set_max(96);
-	outline_size_list->get_line_edit()->set_flat(true);
-	add_child(outline_size_list);
+	group_hb->add_child(outline_size_list);
 	outline_size_list->connect("value_changed", callable_mp(this, &TextControlEditor::_outline_size_selected));
 
 	outline_color_picker = memnew(ColorPickerButton);
-	outline_color_picker->set_custom_minimum_size(Size2(20, 0) * EDSCALE);
-	outline_color_picker->set_flat(true);
-	outline_color_picker->set_tooltip(TTR("Outline Color"));
-	add_child(outline_color_picker);
+	outline_color_picker->set_custom_minimum_size(Size2(32, 0) * EDSCALE);
+	outline_color_picker->set_tooltip(TTR("Select the color of the text outline."));
+	group_hb->add_child(outline_color_picker);
 	outline_color_picker->connect("color_changed", callable_mp(this, &TextControlEditor::_outline_color_changed));
 
-	add_child(memnew(VSeparator));
+	add_child(memnew(HSeparator));
 
 	clear_formatting = memnew(Button);
 	clear_formatting->set_flat(true);
-	clear_formatting->set_tooltip(TTR("Clear Formatting"));
+	clear_formatting->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+	clear_formatting->set_text(TTR("Clear formatting"));
 	add_child(clear_formatting);
 	clear_formatting->connect("pressed", callable_mp(this, &TextControlEditor::_clear_formatting));
 }
@@ -646,16 +660,15 @@ bool TextControlEditorPlugin::handles(Object *p_object) const {
 
 void TextControlEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		text_ctl_editor->show();
+		CanvasItemEditor::get_singleton()->set_tool_drawer_visible(text_ctl_editor, true);
 	} else {
-		text_ctl_editor->hide();
+		CanvasItemEditor::get_singleton()->set_tool_drawer_visible(text_ctl_editor, false);
 		text_ctl_editor->edit(nullptr);
 	}
 }
 
 TextControlEditorPlugin::TextControlEditorPlugin() {
 	text_ctl_editor = memnew(TextControlEditor);
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(text_ctl_editor);
-
-	text_ctl_editor->hide();
+	CanvasItemEditor::get_singleton()->add_tool_drawer(TTR("Text Properties"), EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Label"), SNAME("EditorIcons")), text_ctl_editor);
+	CanvasItemEditor::get_singleton()->set_tool_drawer_visible(text_ctl_editor, false);
 }

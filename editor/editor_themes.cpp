@@ -650,6 +650,75 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "PanelContainer", style_menu);
 	theme->set_stylebox("MenuPanel", "EditorStyles", style_menu);
 
+	// Editor tool drawers.
+	Ref<StyleBoxFlat> style_tool_drawer_bg = make_flat_stylebox(dark_color_1, default_margin_size, default_margin_size, default_margin_size, default_margin_size, corner_width);
+	theme->set_stylebox("drawer_bg", "EditorToolDrawer", style_tool_drawer_bg);
+	Ref<StyleBoxFlat> style_tool_drawer_title = make_flat_stylebox(dark_color_3, default_margin_size, 0, default_margin_size, 0, corner_width);
+	theme->set_stylebox("drawer_title", "EditorToolDrawer", style_tool_drawer_title);
+	Ref<StyleBoxFlat> style_tool_drawer_subtitle = make_flat_stylebox(dark_color_2, default_margin_size, 0, default_margin_size, 0, corner_width);
+	theme->set_stylebox("group_title_bg", "EditorToolDrawer", style_tool_drawer_subtitle);
+	theme->set_color("group_title_color", "EditorToolDrawer", font_disabled_color);
+
+	Ref<StyleBoxFlat> style_tool_drawer_button = style_widget->duplicate();
+	style_tool_drawer_button->set_default_margin(SIDE_LEFT, 8 * EDSCALE);
+	style_tool_drawer_button->set_default_margin(SIDE_TOP, 8 * EDSCALE);
+	style_tool_drawer_button->set_default_margin(SIDE_RIGHT, 8 * EDSCALE);
+	style_tool_drawer_button->set_default_margin(SIDE_BOTTOM, 8 * EDSCALE);
+	style_tool_drawer_button->set_border_color(base_color * Color(1, 1, 1, 0.5));
+	style_tool_drawer_button->set_border_width_all(Math::round(2 * EDSCALE));
+
+	Ref<StyleBoxFlat> style_tool_drawer_button_hover = style_tool_drawer_button->duplicate();
+	style_tool_drawer_button_hover->set_bg_color(dark_color_1 * Color(1, 1, 1, 0.8));
+	style_tool_drawer_button_hover->set_border_color(dark_color_3 * Color(1, 1, 1, 0.75));
+
+	Ref<StyleBoxFlat> style_tool_drawer_button_pressed = style_tool_drawer_button->duplicate();
+	style_tool_drawer_button_pressed->set_bg_color(dark_color_1.darkened(0.125));
+	style_tool_drawer_button_pressed->set_border_color(accent_color.darkened(0.35));
+	style_tool_drawer_button_pressed->set_border_width_all(Math::round(2 * EDSCALE));
+
+	Ref<StyleBoxFlat> style_tool_drawer_button_disabled = style_tool_drawer_button->duplicate();
+	style_tool_drawer_button_disabled->set_border_color(disabled_color);
+	style_tool_drawer_button_disabled->set_bg_color(disabled_bg_color);
+
+	theme->set_stylebox("button_normal", "EditorToolDrawer", style_tool_drawer_button);
+	theme->set_stylebox("button_hover", "EditorToolDrawer", style_tool_drawer_button_hover);
+	theme->set_stylebox("button_pressed", "EditorToolDrawer", style_tool_drawer_button_pressed);
+	theme->set_stylebox("button_disabled", "EditorToolDrawer", style_tool_drawer_button_disabled);
+
+	Color tool_drawer_label_color = dark_color_3;
+	tool_drawer_label_color.a = 0.25;
+	Ref<StyleBoxFlat> style_tool_drawer_label = make_flat_stylebox(tool_drawer_label_color, default_margin_size + 2, 0, default_margin_size + 2, 0, corner_width);
+	theme->set_stylebox("button_label", "EditorToolDrawer", style_tool_drawer_label);
+	theme->set_constant("button_label_offset", "EditorToolDrawer", -10 * EDSCALE);
+	theme->set_color("button_label_shadow_color", "EditorToolDrawer", shadow_color);
+
+	theme->set_constant("base_top_offset", "EditorToolDrawer", 20 * EDSCALE);
+	theme->set_constant("buttons_top_offset", "EditorToolDrawer", 48 * EDSCALE);
+	theme->set_constant("base_right_offset", "EditorToolDrawer", -12 * EDSCALE);
+	theme->set_constant("panel_separation", "EditorToolDrawer", 10 * EDSCALE);
+	theme->set_constant("drawer_separation", "EditorToolDrawer", 8 * EDSCALE);
+
+	Ref<StyleBoxFlat> style_tool_drawer_toggle = style_tool_drawer_button->duplicate();
+	style_tool_drawer_toggle->set_default_margin(SIDE_TOP, 0);
+	style_tool_drawer_toggle->set_default_margin(SIDE_BOTTOM, 0);
+
+	Ref<StyleBoxFlat> style_tool_drawer_toggle_hover = style_tool_drawer_button_hover->duplicate();
+	style_tool_drawer_toggle_hover->set_default_margin(SIDE_TOP, 0);
+	style_tool_drawer_toggle_hover->set_default_margin(SIDE_BOTTOM, 0);
+
+	Ref<StyleBoxFlat> style_tool_drawer_toggle_pressed = style_tool_drawer_button_pressed->duplicate();
+	style_tool_drawer_toggle_pressed->set_default_margin(SIDE_TOP, 0);
+	style_tool_drawer_toggle_pressed->set_default_margin(SIDE_BOTTOM, 0);
+
+	Ref<StyleBoxFlat> style_tool_drawer_toggle_disabled = style_tool_drawer_button_disabled->duplicate();
+	style_tool_drawer_toggle_disabled->set_default_margin(SIDE_TOP, 0);
+	style_tool_drawer_toggle_disabled->set_default_margin(SIDE_BOTTOM, 0);
+
+	theme->set_stylebox("toggle_button_normal", "EditorToolDrawer", style_tool_drawer_toggle);
+	theme->set_stylebox("toggle_button_hover", "EditorToolDrawer", style_tool_drawer_toggle_hover);
+	theme->set_stylebox("toggle_button_pressed", "EditorToolDrawer", style_tool_drawer_toggle_pressed);
+	theme->set_stylebox("toggle_button_disabled", "EditorToolDrawer", style_tool_drawer_toggle_disabled);
+
 	// CanvasItem Editor
 	Ref<StyleBoxFlat> style_canvas_editor_info = make_flat_stylebox(Color(0.0, 0.0, 0.0, 0.2));
 	style_canvas_editor_info->set_expand_margin_size_all(4 * EDSCALE);

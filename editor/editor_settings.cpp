@@ -576,6 +576,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	/* Editors */
 
+	// Common
+	_initial_set("editors/common/always_display_drawers", false);
+	_initial_set("editors/common/display_drawer_labels", true);
+
 	// GridMap
 	_initial_set("editors/grid_map/pick_distance", 5000.0);
 

@@ -43,8 +43,8 @@
 
 /*************************************************************************/
 
-class TextControlEditor : public HBoxContainer {
-	GDCLASS(TextControlEditor, HBoxContainer);
+class TextControlEditor : public VBoxContainer {
+	GDCLASS(TextControlEditor, VBoxContainer);
 
 	enum FontInfoID {
 		FONT_INFO_THEME_DEFAULT = 0,
@@ -55,8 +55,8 @@ class TextControlEditor : public HBoxContainer {
 	Map<String, Map<String, String>> fonts;
 
 	OptionButton *font_list = nullptr;
-	SpinBox *font_size_list = nullptr;
 	OptionButton *font_style_list = nullptr;
+	SpinBox *font_size_list = nullptr;
 	ColorPickerButton *font_color_picker = nullptr;
 	SpinBox *outline_size_list = nullptr;
 	ColorPickerButton *outline_color_picker = nullptr;

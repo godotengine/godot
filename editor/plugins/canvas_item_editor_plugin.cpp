@@ -4820,6 +4820,18 @@ void CanvasItemEditor::remove_control_from_right_panel(Control *p_control) {
 	right_panel_split->remove_child(p_control);
 }
 
+void CanvasItemEditor::add_tool_drawer(const String p_name, const Ref<Texture2D> &p_icon, Control *p_control) {
+	tool_drawer_container->add_drawer(p_name, p_icon, p_control);
+}
+
+void CanvasItemEditor::remove_tool_drawer(Control *p_control) {
+	tool_drawer_container->remove_drawer(p_control);
+}
+
+void CanvasItemEditor::set_tool_drawer_visible(Control *p_control, bool p_visible) {
+	tool_drawer_container->set_drawer_visible(p_control, p_visible);
+}
+
 VSplitContainer *CanvasItemEditor::get_bottom_split() {
 	return bottom_split;
 }
@@ -5137,8 +5149,6 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale"), KeyModifierMask::SHIFT | KeyModifierMask::CMD | Key::P), PREVIEW_CANVAS_SCALE);
 
-	hb->add_child(memnew(VSeparator));
-
 	context_menu_container = memnew(PanelContainer);
 	hbc_context_menu = memnew(HBoxContainer);
 	context_menu_container->add_child(hbc_context_menu);
@@ -5234,6 +5244,12 @@ CanvasItemEditor::CanvasItemEditor() {
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTR("Divide grid step by 2"), Key::KP_DIVIDE);
 
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
+
+	// Tool drawer.
+	tool_drawer_container = memnew(EditorToolDrawerContainer);
+	tool_drawer_container->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
+	tool_drawer_container->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	viewport_scrollable->add_child(tool_drawer_container);
 
 	// Store the singleton instance.
 	singleton = this;

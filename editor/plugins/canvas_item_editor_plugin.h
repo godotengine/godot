@@ -32,6 +32,7 @@
 #define CANVAS_ITEM_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
+#include "editor/editor_tool_drawer.h"
 #include "editor/editor_zoom_widget.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
@@ -188,6 +189,8 @@ private:
 	// (such as MeshInstance's "Mesh" menu).
 	PanelContainer *context_menu_container;
 	HBoxContainer *hbc_context_menu;
+
+	EditorToolDrawerContainer *tool_drawer_container;
 
 	Transform2D transform;
 	bool show_grid = false;
@@ -527,6 +530,10 @@ public:
 
 	void add_control_to_right_panel(Control *p_control);
 	void remove_control_from_right_panel(Control *p_control);
+
+	void add_tool_drawer(const String p_name, const Ref<Texture2D> &p_icon, Control *p_control);
+	void remove_tool_drawer(Control *p_control);
+	void set_tool_drawer_visible(Control *p_control, bool p_visible);
 
 	VSplitContainer *get_bottom_split();
 
