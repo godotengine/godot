@@ -47,7 +47,7 @@ void ThreadWorkPool::_thread_function(void *p_user) {
 void ThreadWorkPool::init(int p_thread_count) {
 	ERR_FAIL_COND(threads != nullptr);
 	if (p_thread_count < 0) {
-		p_thread_count = OS::get_singleton()->get_processor_count();
+		p_thread_count = OS::get_singleton()->get_default_thread_pool_size();
 	}
 
 	thread_count = p_thread_count;
