@@ -51,6 +51,10 @@ private:
 	};
 	JSKeyEvent key_event;
 
+#ifdef GLES3_ENABLED
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE webgl_ctx = 0;
+#endif
+
 	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 	ObjectID window_attached_instance_id = {};
 
@@ -72,8 +76,6 @@ private:
 	bool swap_cancel_ok = false;
 
 	// utilities
-	static void focus_canvas();
-	static bool is_canvas_focused();
 	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod);
 	static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape);
 
@@ -121,6 +123,7 @@ public:
 	// mouse
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual Point2i mouse_get_position() const override;
 
 	// touch
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
