@@ -77,6 +77,8 @@
 #endif
 
 #ifdef SIMD_WASM
+#undef __DEPRECATED
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #include <wasm_simd128.h>
 #endif
 
@@ -1028,7 +1030,7 @@ static unsigned int getCpuFeatures()
 	return cpuinfo[2];
 }
 
-unsigned int cpuid = getCpuFeatures();
+static unsigned int cpuid = getCpuFeatures();
 #endif
 
 } // namespace meshopt
