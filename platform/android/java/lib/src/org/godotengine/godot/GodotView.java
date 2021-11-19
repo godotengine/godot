@@ -122,6 +122,7 @@ public class GodotView extends GLSurfaceView {
 		setFocusableInTouchMode(true);
 		switch (xrMode) {
 			case OVR:
+			case OPENXR:
 				// Replace the default egl config chooser.
 				setEGLConfigChooser(new OvrConfigChooser());
 

@@ -35,7 +35,8 @@ package org.godotengine.godot.xr;
  */
 public enum XRMode {
 	REGULAR(0, "Regular", "--xr_mode_regular", "Default Android Gamepad"), // Regular/flatscreen
-	OVR(1, "Oculus Mobile VR", "--xr_mode_ovr", "");
+	OVR(1, "Oculus Mobile VrApi (Deprecated)", "--xr_mode_ovr", ""),
+	OPENXR(2, "OpenXR", "--xr_mode_openxr", "");
 
 	final int index;
 	final String label;
