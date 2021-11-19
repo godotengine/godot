@@ -213,6 +213,13 @@ static String _prestr(SL::DataPrecision p_pres) {
 	return "";
 }
 
+static String _constr(bool p_is_const) {
+	if (p_is_const) {
+		return "const ";
+	}
+	return "";
+}
+
 static String _qualstr(SL::ArgumentQualifier p_qual) {
 	switch (p_qual) {
 		case SL::ARGUMENT_QUALIFIER_IN:
@@ -373,6 +380,9 @@ void ShaderCompilerGLES3::_dump_function_deps(const SL::ShaderNode *p_node, cons
 			if (i > 0) {
 				header += ", ";
 			}
+
+			header += _constr(fnode->arguments[i].is_const);
+
 			if (fnode->arguments[i].type == SL::TYPE_STRUCT) {
 				header += _qualstr(fnode->arguments[i].qualifier) + _mkid(fnode->arguments[i].type_str) + " " + _mkid(fnode->arguments[i].name);
 			} else {
@@ -562,7 +572,7 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 			for (int i = 0; i < pnode->vconstants.size(); i++) {
 				const SL::ShaderNode::Constant &cnode = pnode->vconstants[i];
 				String gcode;
-				gcode += "const ";
+				gcode += _constr(true);
 				if (pnode->vconstants[i].type == SL::TYPE_STRUCT) {
 					gcode += _mkid(cnode.type_str);
 				} else {
@@ -655,9 +665,7 @@ String ShaderCompilerGLES3::_dump_node_code(const SL::Node *p_node, int p_level,
 			SL::VariableDeclarationNode *vdnode = (SL::VariableDeclarationNode *)p_node;
 
 			String declaration;
-			if (vdnode->is_const) {
-				declaration += "const ";
-			}
+			declaration += _constr(vdnode->is_const);
 			if (vdnode->datatype == SL::TYPE_STRUCT) {
 				declaration += _mkid(vdnode->struct_name);
 			} else {
