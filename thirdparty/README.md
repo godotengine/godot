@@ -292,13 +292,13 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.1.0 (d7844e9762b61c9638c263657bd49e1690184832, 2020)
+- Version: 1.2.1 (9ce5843dbabcfd3f7c39ec7ceba9cbeb213cbfdf, 2021)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- `src/*` except from: .am, .rc and .in files
-- AUTHORS, COPYING, PATENTS
+- `src/*` except from: `.am`, `.rc` and `.in` files
+- `AUTHORS`, `COPYING`, `PATENTS`
 
 Important: The files `utils/bit_reader_utils.{c,h}` have Godot-made
 changes to ensure they build for Javascript/HTML5. Those

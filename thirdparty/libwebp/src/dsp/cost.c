@@ -395,12 +395,12 @@ WEBP_DSP_INIT_FUNC(VP8EncDspCostInit) {
       VP8EncDspCostInitMIPSdspR2();
     }
 #endif
-#if defined(WEBP_USE_SSE2)
+#if defined(WEBP_HAVE_SSE2)
     if (VP8GetCPUInfo(kSSE2)) {
       VP8EncDspCostInitSSE2();
     }
 #endif
-#if defined(WEBP_USE_NEON)
+#if defined(WEBP_HAVE_NEON)
     if (VP8GetCPUInfo(kNEON)) {
       VP8EncDspCostInitNEON();
     }
