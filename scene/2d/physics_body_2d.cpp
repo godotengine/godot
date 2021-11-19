@@ -1317,6 +1317,17 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 	_snap_on_floor(p_was_on_floor, vel_dir_facing_up);
 
+	// Scales the horizontal velocity according to the wall slope.
+	if (is_on_wall_only() && motion_slide_up.dot(motion_results.get(0).collision_normal) < 0) {
+		Vector2 slide_motion = motion_velocity.slide(motion_results.get(0).collision_normal);
+		if (motion_slide_up.dot(slide_motion) < 0) {
+			motion_velocity = up_direction * up_direction.dot(motion_velocity);
+		} else {
+			// Keeps the vertical motion from motion_velocity and add the horizontal motion of the projection.
+			motion_velocity = up_direction * up_direction.dot(motion_velocity) + slide_motion.slide(up_direction);
+		}
+	}
+
 	// Reset the gravity accumulation when touching the ground.
 	if (on_floor && !vel_dir_facing_up) {
 		motion_velocity = motion_velocity.slide(up_direction);
