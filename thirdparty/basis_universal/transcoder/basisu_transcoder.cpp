@@ -10778,8 +10778,6 @@ namespace basist
 			return false;
 		}
 
-		const bool transcode_alpha_data_to_opaque_formats = (decode_flags & cDecodeFlagsTranscodeAlphaDataToOpaqueFormats) != 0;
-
 		if (decode_flags & cDecodeFlagsPVRTCDecodeToNextPow2)
 		{
 			BASISU_DEVEL_ERROR("basisu_transcoder::transcode_image_level: cDecodeFlagsPVRTCDecodeToNextPow2 currently unsupported\n");
@@ -17336,7 +17334,6 @@ namespace basist
 		
 	bool ktx2_transcoder::decompress_level_data(uint32_t level_index, basisu::uint8_vec& uncomp_data)
 	{
-		const uint8_t* pComp_data = m_levels[level_index].m_byte_offset + m_pData;
 		const uint64_t comp_size = m_levels[level_index].m_byte_length;
 		
 		const uint64_t uncomp_size = m_levels[level_index].m_uncompressed_byte_length;
@@ -17361,6 +17358,7 @@ namespace basist
 		if (m_header.m_supercompression_scheme == KTX2_SS_ZSTANDARD)
 		{
 #if BASISD_SUPPORT_KTX2_ZSTD
+			const uint8_t* pComp_data = m_levels[level_index].m_byte_offset + m_pData;
 			size_t actualUncompSize = ZSTD_decompress(uncomp_data.data(), (size_t)uncomp_size, pComp_data, (size_t)comp_size);
 			if (ZSTD_isError(actualUncompSize))
 			{
