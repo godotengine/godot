@@ -61,8 +61,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-30 00:50+0000\n"
-"Last-Translator: HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>\n"
+"PO-Revision-Date: 2021-11-11 08:00+0000\n"
+"Last-Translator: Nabeel20 <nabeelandnizam@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -71,7 +71,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -985,7 +985,6 @@ msgid "Edit..."
 msgstr "تعديل..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go to Method"
 msgstr "إذهب إلى الدالة"
 
@@ -1297,9 +1296,8 @@ msgid "Licenses"
 msgstr "تراخيص"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "حدث خطأ عندفتح ملف الحزمة بسبب أن الملف ليس في صيغة \"ZIP\"."
+msgstr "حدث خطأ عندفتح ملف %s الحزمة بسبب أن الملف ليس في صيغة \"ZIP\"."
 
 #: editor/editor_asset_installer.cpp
 msgid "%s (already exists)"
@@ -1882,14 +1880,12 @@ msgid "Current Profile:"
 msgstr "الملف (النسخة) الحالية:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Create Profile"
-msgstr "مسح الملف"
+msgstr "أصنع حساب"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Remove Profile"
-msgstr "إزالة البلاط"
+msgstr "أمسح الحساب"
 
 #: editor/editor_feature_profile.cpp
 msgid "Available Profiles:"
@@ -1909,9 +1905,8 @@ msgid "Export"
 msgstr "تصدير"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Configure Selected Profile:"
-msgstr "الملف (النسخة) الحالية:"
+msgstr "عدل على الحساب الحالي:"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -2587,7 +2582,7 @@ msgstr "هل تريد حفظ التغييرات إلي'%s' قبل الإغلاق
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s لم يعد موجوداً! من فضلك حدد موقعاً جديداً للحفظ."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2634,11 +2629,11 @@ msgstr "لم يتم حفظ المشهد الحالي. إفتحه علي أية �
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr ""
+msgstr "لا يمكن التراجع أثناء ضغط أزار الفأرة."
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
-msgstr ""
+msgstr "لا شيء للتراجع عنه."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2647,11 +2642,11 @@ msgstr "تراجع"
 
 #: editor/editor_node.cpp
 msgid "Can't redo while mouse buttons are pressed."
-msgstr ""
+msgstr "لا يمكن إعادة العمل أثناء ضغط أزرار الفأرة."
 
 #: editor/editor_node.cpp
 msgid "Nothing to redo."
-msgstr ""
+msgstr "لا شيء لإعادة عمله مجدداً."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3598,7 +3593,7 @@ msgstr ""
 
 #: editor/editor_resource_picker.cpp
 msgid "Quick Load"
-msgstr ""
+msgstr "تحميل سريع"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -7804,12 +7799,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "لا يملك هذا الهكيل أيّة عظام، أنشئ بعض عُقد العظام ثنائية البُعد كأبناء."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "إنشاء وضعية الراحة من العظام"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "تحديد وضعية الراحة على العظام"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "إنشاء وضعية الراحة من العظام"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"

@@ -7716,12 +7716,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Bộ xương không có xương, tạo một số nút Bone2D."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "Tạo tư thế nghỉ từ Xương"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "Đặt tư thế nghỉ cho Xương"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "Tạo tư thế nghỉ từ Xương"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"

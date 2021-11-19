@@ -43,7 +43,7 @@
 # Dario <darlex259@gmail.com>, 2019.
 # Adolfo Jayme Barrientos <fitojb@ubuntu.com>, 2019.
 # Julián Luini <jluini@gmail.com>, 2020.
-# Victor S. <victorstancioiu@gmail.com>, 2020.
+# Victor S. <victorstancioiu@gmail.com>, 2020, 2021.
 # henry rujano herrera <rujhen@gmail.com>, 2020.
 # Megamega53 <Christopher.Morales21@myhunter.cuny.edu>, 2020.
 # Serk Lintur <serk.lintur@gmail.com>, 2020.
@@ -76,8 +76,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-31 22:17+0000\n"
-"Last-Translator: Anderson Guzman Abreu <chicobello1111@gmail.com>\n"
+"PO-Revision-Date: 2021-11-11 16:02+0000\n"
+"Last-Translator: Victor S. <victorstancioiu@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -85,7 +85,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2941,7 +2941,7 @@ msgstr "Añadir nueva escena."
 
 #: editor/editor_node.cpp
 msgid "Scene"
-msgstr "Escenas"
+msgstr "Escena"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -7842,12 +7842,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Este esqueleto no tiene huesos, crea algunos nodos Bone2D hijos."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "Crear Pose de Descanso a partir de los Huesos"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "Establecer Pose de Descanso en los Huesos"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "Crear Pose de Descanso a partir de los Huesos"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
