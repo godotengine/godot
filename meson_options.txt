@@ -18,7 +18,7 @@ option('disable_all_modules', type: 'boolean', value: false, description: 'A boo
 option('use_precise_math_checks', type: 'boolean', value: false, description: 'Math checks use very precise epsilon (debug option)')
 option('disable_3d', type: 'boolean', value: false, description: 'Disable 3D nodes for a smaller executable')
 option('disable_advanced_gui', type: 'boolean', value: false, description: 'Disabled advanced GUI nodes and behaviors')
-option('no_editor_splash', type: 'boolean', value: false, description: 'Don\'t use the custom spash screen for the editor')
+option('no_editor_splash', type: 'boolean', value: true, description: 'Don\'t use the custom spash screen for the editor')
 option('system_certs_path', type: 'string', value: '', description: 'Use this path as SSL certificates default for editor (for package maintainers)')
 option('module_search_paths', type: 'array', value: [], description: 'List of additional subdirectories scan for modules.')
 

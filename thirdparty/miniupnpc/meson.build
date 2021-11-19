@@ -1,18 +1,18 @@
 if get_option('builtin_miniupnpc')
     _builtin_miniupnpc_srcs = files(
-        'miniupnpc/addr_is_reserved.c',
-        'miniupnpc/miniupnpc.c',
-        'miniupnpc/upnpcommands.c',
-        'miniupnpc/miniwget.c',
-        'miniupnpc/upnpdev.c',
-        'miniupnpc/igd_desc_parse.c',
-        'miniupnpc/minissdpc.c',
-        'miniupnpc/minisoap.c',
-        'miniupnpc/minixml.c',
-        'miniupnpc/connecthostport.c',
-        'miniupnpc/receivedata.c',
-        'miniupnpc/portlistingparse.c',
-        'miniupnpc/upnpreplyparse.c',
+        'src/addr_is_reserved.c',
+        'src/miniupnpc.c',
+        'src/upnpcommands.c',
+        'src/miniwget.c',
+        'src/upnpdev.c',
+        'src/igd_desc_parse.c',
+        'src/minissdpc.c',
+        'src/minisoap.c',
+        'src/minixml.c',
+        'src/connecthostport.c',
+        'src/receivedata.c',
+        'src/portlistingparse.c',
+        'src/upnpreplyparse.c',
     )
 
     _builtin_miniupnpc_c_args = ['-DMINIUPNPC_SET_SOCKET_TIMEOUT']
@@ -30,13 +30,13 @@ if get_option('builtin_miniupnpc')
         _builtin_miniupnpc_srcs,
 #        _version_target,
         c_args: [_builtin_miniupnpc_c_args, _builtin_miniupnpc_dep_compile_args],
-        include_directories: '../..',
+        include_directories: ['include', '../..'],
         build_by_default: false
     )
 
     DEP_MINIUPNPC = declare_dependency(link_with: lib_builtin_miniupnpc,
         compile_args: _builtin_miniupnpc_dep_compile_args,
-        include_directories: include_directories('.')
+        include_directories: include_directories('include')
     )
 else
     _dep_miniupnpc = dependency('miniupnpc', required: false)

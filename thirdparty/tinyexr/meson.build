@@ -4,11 +4,12 @@ _builtin_tinyexr_srcs = files([
 
 _builtin_tinyexr_incdirs = include_directories('.')
 
-_builtin_tinyexr_compile_args = ['-DTINYEXR_USE_THREAD']
+_builtin_tinyexr_compile_args = ['-DTINYEXR_USE_THREAD',
+                                 '-DTINYEXR_USE_MINIZ=0']
 
 lib_builtin_tinyexr = static_library('builtin_tinyexr', _builtin_tinyexr_srcs,
-    include_directories: _builtin_tinyexr_incdirs,
     cpp_args: _builtin_tinyexr_compile_args,
+    dependencies: DEP_ZLIB,
     build_by_default: false
 )
 

@@ -54,8 +54,10 @@ version_cdata.set_quoted('VERSION_BUILD', 'custom_build')
 version_cdata.set_quoted('VERSION_MODULE_CONFIG', '')
 version_cdata.set('VERSION_YEAR', 2020)
 version_cdata.set_quoted('VERSION_WEBSITE', 'https://godotengine.org')
+version_cdata.set_quoted('VERSION_DOCS_URL', 'https://docs.godotengine.org/en/')
 configure_file(output: 'version_generated.gen.h',
     configuration: version_cdata)
+
 version_hash_data = configuration_data()
 version_hash_data.set_quoted('VERSION_HASH', '')
 configure_file(output: 'version_hash.gen.h',
