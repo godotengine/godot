@@ -176,14 +176,14 @@ Files extracted from upstream source:
 ## graphite
 
 - Upstream: https://github.com/silnrsi/graphite
-- Version: 1.3.14 (92f59dcc52f73ce747f1cdc831579ed2546884aa, 2020)
+- Version: 1.3.14 (80c52493ef42e6fe605a69dcddd2a691cd8a1380, 2021)
 - License: MPL-2.0
 
 Files extracted from upstream source:
 
 - the `include` folder
-- the `src` folder
-- `COPYING`, `ChangeLog`
+- the `src` folder (minus `CMakeLists.txt` and `files.mk`)
+- `COPYING`
 
 
 ## harfbuzz
@@ -610,7 +610,7 @@ instead of `miniz.h` as an external dependency.
 ## vhacd
 
 - Upstream: https://github.com/kmammou/v-hacd
-- Version: git (b07958e18e01d504e3af80eeaeb9f033226533d7, 2019)
+- Version: git (1a49edf29c69039df15286181f2f27e17ceb9aef, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

@@ -1056,12 +1056,17 @@ float Pass::resolveKern(Segment *seg, Slot *slotFix, GR_MAYBE_UNUSED Slot *start
     ymin = min(by + bbb.bl.y, ymin);
     for (nbor = slotFix->next(); nbor; nbor = nbor->next())
     {
-        if (nbor->isChildOf(base))
-            continue;
         if (!gc.check(nbor->gid()))
             return 0.;
         const Rect &bb = seg->theGlyphBBoxTemporary(nbor->gid());
         SlotCollision *cNbor = seg->collisionInfo(nbor);
+        const float nby = nbor->origin().y + cNbor->shift().y;
+        if (nbor->isChildOf(base))
+        {
+            ymax = max(nby + bb.tr.y, ymax);
+            ymin = min(nby + bb.bl.y, ymin);
+            continue;
+        }
         if ((bb.bl.y == 0.f && bb.tr.y == 0.f) || (cNbor->flags() & SlotCollision::COLL_ISSPACE))
         {
             if (m_kernColls == InWord)
