@@ -335,7 +335,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 						bt->values.write[i].value.in_handle.y = rv[i * 6 + 2];
 						bt->values.write[i].value.out_handle.x = rv[i * 6 + 3];
 						bt->values.write[i].value.out_handle.y = rv[i * 6 + 4];
-						bt->values.write[i].value.handle_mode = (HandleMode)rv[i * 6 + 5];
+						bt->values.write[i].value.handle_mode = static_cast<HandleMode>((int)rv[i * 6 + 5]);
 					}
 				}
 
@@ -1634,7 +1634,7 @@ void Animation::track_insert_key(int p_track, double p_time, const Variant &p_ke
 			k.value.in_handle.y = arr[2];
 			k.value.out_handle.x = arr[3];
 			k.value.out_handle.y = arr[4];
-			k.value.handle_mode = (HandleMode) int(arr[5]);
+			k.value.handle_mode = static_cast<HandleMode>((int)arr[5]);
 			_insert(p_time, bt->values, k);
 
 		} break;
@@ -2155,7 +2155,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			bt->values.write[p_key_idx].value.in_handle.y = arr[2];
 			bt->values.write[p_key_idx].value.out_handle.x = arr[3];
 			bt->values.write[p_key_idx].value.out_handle.y = arr[4];
-			bt->values.write[p_key_idx].value.handle_mode = (HandleMode) int(arr[5]);
+			bt->values.write[p_key_idx].value.handle_mode = static_cast<HandleMode>((int)arr[5]);
 
 		} break;
 		case TYPE_AUDIO: {
