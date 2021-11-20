@@ -706,11 +706,11 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.4.8 (97a3da1df009d4dc67251de0c4b1c9d7fe286fc1, 2020)
+- Version: 1.5.0 (a488ba114ec17ea1054b9057c26a046fc122b3b6, 2021)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- lib/{common/,compress/,decompress/,zstd.h}
-- LICENSE
+- `lib/{common/,compress/,decompress/,zstd.h,zstd_errors.h}`
+- `LICENSE`
 
