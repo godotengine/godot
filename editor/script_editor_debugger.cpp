@@ -645,7 +645,11 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 							Ref<Script> script(var);
 							if (!script.is_null()) {
 								ScriptInstance *script_instance = script->placeholder_instance_create(debugObj);
-								debugObj->set_script_and_instance(var, script_instance);
+
+                                // fix: VisualScript resource
+                                if (script_instance) {
+                                    debugObj->set_script_and_instance(var, script_instance);
+                                }
 							}
 						}
 					}
