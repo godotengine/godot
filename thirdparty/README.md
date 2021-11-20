@@ -670,14 +670,18 @@ Patches in the `patches` directory should be re-applied after updates.
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay
-- Version: 1.1.1 (c9a84aa6df8512584c77c8cd15be9536b89c35aa, 2020)
+- Version: 1.1.1+git (45d22583b488f79d5a4e598cc7675c191c5ab53f, 2021)
 - License: MIT
 
 File extracted from upstream release tarball:
 
-- All `*.c` and `*.h` in `lib/` and `lib/includes/`
-- `wslay.h` has a small Godot addition to fix MSVC build.
-  See `thirdparty/wslay/msvcfix.diff`
+- Run `cmake .` to generate `config.h` and `wslayver.h`.
+  Contents might need tweaking for Godot, review diff.
+- All `*.c` and `*.h` files from `lib/`
+- All `*.h` in `lib/includes/wslay/` as `wslay/`
+- `wslay/wslay.h` has a small Godot addition to fix MSVC build.
+  See `patches/msvcfix.diff`
+- `COPYING`
 
 
 ## xatlas
