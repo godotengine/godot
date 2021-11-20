@@ -312,7 +312,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 	spinbox->hide();
 	slider->hide();
 	menu->clear();
-	menu->set_size(Size2(1, 1) * EDSCALE);
+	menu->reset_size();
 
 	for (int i = 0; i < MAX_VALUE_EDITORS; i++) {
 		if (i < MAX_VALUE_EDITORS / 4) {

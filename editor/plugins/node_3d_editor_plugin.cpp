@@ -860,7 +860,7 @@ void Node3DEditorViewport::_update_name() {
 	}
 
 	view_menu->set_text(name);
-	view_menu->set_size(Vector2(0, 0)); // resets the button size
+	view_menu->reset_size();
 }
 
 void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
@@ -3620,7 +3620,7 @@ void Node3DEditorViewport::_selection_result_pressed(int p_result) {
 void Node3DEditorViewport::_selection_menu_hide() {
 	selection_results.clear();
 	selection_menu->clear();
-	selection_menu->set_size(Vector2(0, 0));
+	selection_menu->reset_size();
 }
 
 void Node3DEditorViewport::set_can_preview(Camera3D *p_preview) {

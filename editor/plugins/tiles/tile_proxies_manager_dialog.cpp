@@ -34,7 +34,7 @@
 
 void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list) {
 	ItemList *item_list = Object::cast_to<ItemList>(p_item_list);
-	popup_menu->set_size(Vector2(1, 1));
+	popup_menu->reset_size();
 	popup_menu->set_position(get_position() + item_list->get_global_mouse_position());
 	popup_menu->popup();
 }

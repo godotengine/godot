@@ -877,7 +877,7 @@ void CanvasItemEditor::_selection_result_pressed(int p_result) {
 void CanvasItemEditor::_selection_menu_hide() {
 	selection_results.clear();
 	selection_menu->clear();
-	selection_menu->set_size(Vector2(0, 0));
+	selection_menu->reset_size();
 }
 
 void CanvasItemEditor::_add_node_pressed(int p_result) {
@@ -2265,7 +2265,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		}
 
 		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
-			add_node_menu->set_size(Vector2(1, 1));
+			add_node_menu->reset_size();
 			add_node_menu->set_position(get_screen_position() + b->get_position());
 			add_node_menu->popup();
 			node_create_position = transform.affine_inverse().xform((get_local_mouse_position()));

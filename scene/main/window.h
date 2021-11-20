@@ -178,6 +178,7 @@ public:
 
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
+	void reset_size();
 
 	Size2i get_real_size() const;
 

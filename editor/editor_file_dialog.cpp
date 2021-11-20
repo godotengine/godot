@@ -576,7 +576,7 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p_pos) {
 	// Right click on specific file(s) or folder(s).
 	item_menu->clear();
-	item_menu->set_size(Size2(1, 1));
+	item_menu->reset_size();
 
 	// Allow specific actions only on one item.
 	bool single_item_selected = item_list->get_selected_items().size() == 1;
@@ -620,7 +620,7 @@ void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	}
 
 	item_menu->clear();
-	item_menu->set_size(Size2(1, 1));
+	item_menu->reset_size();
 
 	if (can_create_dir) {
 		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("folder"), SNAME("FileDialog")), TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KeyModifierMask::CMD | Key::N);
@@ -1117,7 +1117,7 @@ void EditorFileDialog::_delete_items() {
 		}
 	}
 	if (folders.size() + files.size() > 0) {
-		remove_dialog->set_size(Size2(1, 1));
+		remove_dialog->reset_size();
 		remove_dialog->show(folders, files);
 	}
 }

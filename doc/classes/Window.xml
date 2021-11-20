@@ -230,6 +230,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="reset_size">
+			<return type="void" />
+			<description>
+				Resets the size to the minimum size, which is the max of [member min_size] and (if [member wrap_controls] is enabled) [method get_contents_minimum_size]. This is equivalent to calling [code]set_size(Vector2i())[/code] (or any size below the minimum).
+			</description>
+		</method>
 		<method name="set_flag">
 			<return type="void" />
 			<argument index="0" name="flag" type="int" enum="Window.Flags" />

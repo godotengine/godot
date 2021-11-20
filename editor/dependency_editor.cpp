@@ -270,7 +270,7 @@ DependencyEditor::DependencyEditor() {
 /////////////////////////////////////
 void DependencyEditorOwners::_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	file_options->clear();
-	file_options->set_size(Size2(1, 1));
+	file_options->reset_size();
 	if (p_item >= 0) {
 		file_options->add_item(TTR("Open"), FILE_OPEN);
 	}
@@ -464,7 +464,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 	if (removed_deps.is_empty()) {
 		owners->hide();
 		text->set_text(TTR("Remove the selected files from the project? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
-		set_size(Size2());
+		reset_size();
 		popup_centered();
 	} else {
 		_build_removed_dependency_tree(removed_deps);

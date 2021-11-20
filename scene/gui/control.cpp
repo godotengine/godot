@@ -1821,6 +1821,10 @@ Size2 Control::get_size() const {
 	return data.size_cache;
 }
 
+void Control::reset_size() {
+	set_size(Size2());
+}
+
 Rect2 Control::get_global_rect() const {
 	return Rect2(get_global_position(), get_size());
 }
@@ -2841,6 +2845,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position", "keep_offsets"), &Control::set_position, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_set_position", "position"), &Control::_set_position);
 	ClassDB::bind_method(D_METHOD("set_size", "size", "keep_offsets"), &Control::set_size, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("reset_size"), &Control::reset_size);
 	ClassDB::bind_method(D_METHOD("_set_size", "size"), &Control::_set_size);
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_size", "size"), &Control::set_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("set_global_position", "position", "keep_offsets"), &Control::set_global_position, DEFVAL(false));

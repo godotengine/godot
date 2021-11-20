@@ -714,6 +714,12 @@
 				Removes a local override for a theme [StyleBox] with the specified [code]name[/code] previously added by [method add_theme_stylebox_override] or via the Inspector dock.
 			</description>
 		</method>
+		<method name="reset_size">
+			<return type="void" />
+			<description>
+				Resets the size to [method get_combined_minimum_size]. This is equivalent to calling [code]set_size(Vector2())[/code] (or any size below the minimum).
+			</description>
+		</method>
 		<method name="set_anchor">
 			<return type="void" />
 			<argument index="0" name="side" type="int" enum="Side" />

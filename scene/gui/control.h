@@ -400,6 +400,7 @@ public:
 
 	void set_size(const Size2 &p_size, bool p_keep_offsets = false);
 	Size2 get_size() const;
+	void reset_size();
 
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;

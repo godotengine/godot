@@ -1569,7 +1569,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				_generate_context_menu();
 				menu->set_position(get_screen_transform().xform(mpos));
-				menu->set_size(Vector2(1, 1));
+				menu->reset_size();
 				menu->popup();
 				grab_focus();
 			}
@@ -1802,7 +1802,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				_generate_context_menu();
 				adjust_viewport_to_caret();
 				menu->set_position(get_screen_transform().xform(get_caret_draw_pos()));
-				menu->set_size(Vector2(1, 1));
+				menu->reset_size();
 				menu->popup();
 				menu->grab_focus();
 			}
