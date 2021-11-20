@@ -87,8 +87,16 @@ WebPAnimDecoder* WebPAnimDecoderNewInternal(
     int abi_version) {
   WebPAnimDecoderOptions options;
   WebPAnimDecoder* dec = NULL;
+  WebPBitstreamFeatures features;
   if (webp_data == NULL ||
       WEBP_ABI_IS_INCOMPATIBLE(abi_version, WEBP_DEMUX_ABI_VERSION)) {
+    return NULL;
+  }
+
+  // Validate the bitstream before doing expensive allocations. The demuxer may
+  // be more tolerant than the decoder.
+  if (WebPGetFeatures(webp_data->bytes, webp_data->size, &features) !=
+      VP8_STATUS_OK) {
     return NULL;
   }
 
@@ -145,7 +153,7 @@ static int ZeroFillCanvas(uint8_t* buf, uint32_t canvas_width,
                           uint32_t canvas_height) {
   const uint64_t size =
       (uint64_t)canvas_width * canvas_height * NUM_CHANNELS * sizeof(*buf);
-  if (size != (size_t)size) return 0;
+  if (!CheckSizeOverflow(size)) return 0;
   memset(buf, 0, (size_t)size);
   return 1;
 }
@@ -166,7 +174,7 @@ static void ZeroFillFrameRect(uint8_t* buf, int buf_stride, int x_offset,
 static int CopyCanvas(const uint8_t* src, uint8_t* dst,
                       uint32_t width, uint32_t height) {
   const uint64_t size = (uint64_t)width * height * NUM_CHANNELS;
-  if (size != (size_t)size) return 0;
+  if (!CheckSizeOverflow(size)) return 0;
   assert(src != NULL && dst != NULL);
   memcpy(dst, src, (size_t)size);
   return 1;
@@ -346,12 +354,15 @@ int WebPAnimDecoderGetNext(WebPAnimDecoder* dec,
   {
     const uint8_t* in = iter.fragment.bytes;
     const size_t in_size = iter.fragment.size;
-    const size_t out_offset =
-        (iter.y_offset * width + iter.x_offset) * NUM_CHANNELS;
+    const uint32_t stride = width * NUM_CHANNELS;  // at most 25 + 2 bits
+    const uint64_t out_offset = (uint64_t)iter.y_offset * stride +
+                                (uint64_t)iter.x_offset * NUM_CHANNELS;  // 53b
+    const uint64_t size = (uint64_t)iter.height * stride;  // at most 25 + 27b
     WebPDecoderConfig* const config = &dec->config_;
     WebPRGBABuffer* const buf = &config->output.u.RGBA;
-    buf->stride = NUM_CHANNELS * width;
-    buf->size = buf->stride * iter.height;
+    if ((size_t)size != size) goto Error;
+    buf->stride = (int)stride;
+    buf->size = (size_t)size;
     buf->rgba = dec->curr_frame_ + out_offset;
 
     if (WebPDecode(in, in_size, config) != VP8_STATUS_OK) {

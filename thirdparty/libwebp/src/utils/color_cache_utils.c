@@ -20,22 +20,22 @@
 //------------------------------------------------------------------------------
 // VP8LColorCache.
 
-int VP8LColorCacheInit(VP8LColorCache* const cc, int hash_bits) {
+int VP8LColorCacheInit(VP8LColorCache* const color_cache, int hash_bits) {
   const int hash_size = 1 << hash_bits;
-  assert(cc != NULL);
+  assert(color_cache != NULL);
   assert(hash_bits > 0);
-  cc->colors_ = (uint32_t*)WebPSafeCalloc((uint64_t)hash_size,
-                                          sizeof(*cc->colors_));
-  if (cc->colors_ == NULL) return 0;
-  cc->hash_shift_ = 32 - hash_bits;
-  cc->hash_bits_ = hash_bits;
+  color_cache->colors_ = (uint32_t*)WebPSafeCalloc(
+      (uint64_t)hash_size, sizeof(*color_cache->colors_));
+  if (color_cache->colors_ == NULL) return 0;
+  color_cache->hash_shift_ = 32 - hash_bits;
+  color_cache->hash_bits_ = hash_bits;
   return 1;
 }
 
-void VP8LColorCacheClear(VP8LColorCache* const cc) {
-  if (cc != NULL) {
-    WebPSafeFree(cc->colors_);
-    cc->colors_ = NULL;
+void VP8LColorCacheClear(VP8LColorCache* const color_cache) {
+  if (color_cache != NULL) {
+    WebPSafeFree(color_cache->colors_);
+    color_cache->colors_ = NULL;
   }
 }
 
