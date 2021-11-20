@@ -37,7 +37,7 @@ RID ProceduralSkyMaterial::shader;
 
 void ProceduralSkyMaterial::set_sky_top_color(const Color &p_sky_top) {
 	sky_top_color = p_sky_top;
-	RS::get_singleton()->material_set_param(_get_material(), "sky_top_color", sky_top_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "sky_top_color", sky_top_color);
 }
 
 Color ProceduralSkyMaterial::get_sky_top_color() const {
@@ -46,7 +46,7 @@ Color ProceduralSkyMaterial::get_sky_top_color() const {
 
 void ProceduralSkyMaterial::set_sky_horizon_color(const Color &p_sky_horizon) {
 	sky_horizon_color = p_sky_horizon;
-	RS::get_singleton()->material_set_param(_get_material(), "sky_horizon_color", sky_horizon_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "sky_horizon_color", sky_horizon_color);
 }
 
 Color ProceduralSkyMaterial::get_sky_horizon_color() const {
@@ -73,7 +73,7 @@ float ProceduralSkyMaterial::get_sky_energy() const {
 
 void ProceduralSkyMaterial::set_ground_bottom_color(const Color &p_ground_bottom) {
 	ground_bottom_color = p_ground_bottom;
-	RS::get_singleton()->material_set_param(_get_material(), "ground_bottom_color", ground_bottom_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "ground_bottom_color", ground_bottom_color);
 }
 
 Color ProceduralSkyMaterial::get_ground_bottom_color() const {
@@ -82,7 +82,7 @@ Color ProceduralSkyMaterial::get_ground_bottom_color() const {
 
 void ProceduralSkyMaterial::set_ground_horizon_color(const Color &p_ground_horizon) {
 	ground_horizon_color = p_ground_horizon;
-	RS::get_singleton()->material_set_param(_get_material(), "ground_horizon_color", ground_horizon_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "ground_horizon_color", ground_horizon_color);
 }
 
 Color ProceduralSkyMaterial::get_ground_horizon_color() const {
