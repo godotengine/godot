@@ -31,10 +31,15 @@
 // we allow 2k of extra head-room in PARTITION0 limit.
 #define PARTITION0_SIZE_LIMIT ((VP8_MAX_PARTITION0_SIZE - 2048ULL) << 11)
 
+static float Clamp(float v, float min, float max) {
+  return (v < min) ? min : (v > max) ? max : v;
+}
+
 typedef struct {  // struct for organizing convergence in either size or PSNR
   int is_first;
   float dq;
   float q, last_q;
+  float qmin, qmax;
   double value, last_value;   // PSNR or size
   double target;
   int do_size_search;
@@ -47,17 +52,15 @@ static int InitPassStats(const VP8Encoder* const enc, PassStats* const s) {
 
   s->is_first = 1;
   s->dq = 10.f;
-  s->q = s->last_q = enc->config_->quality;
+  s->qmin = 1.f * enc->config_->qmin;
+  s->qmax = 1.f * enc->config_->qmax;
+  s->q = s->last_q = Clamp(enc->config_->quality, s->qmin, s->qmax);
   s->target = do_size_search ? (double)target_size
             : (target_PSNR > 0.) ? target_PSNR
             : 40.;   // default, just in case
   s->value = s->last_value = 0.;
   s->do_size_search = do_size_search;
   return do_size_search;
-}
-
-static float Clamp(float v, float min, float max) {
-  return (v < min) ? min : (v > max) ? max : v;
 }
 
 static float ComputeNextQ(PassStats* const s) {
@@ -75,7 +78,7 @@ static float ComputeNextQ(PassStats* const s) {
   s->dq = Clamp(dq, -30.f, 30.f);
   s->last_q = s->q;
   s->last_value = s->value;
-  s->q = Clamp(s->q + s->dq, 0.f, 100.f);
+  s->q = Clamp(s->q + s->dq, s->qmin, s->qmax);
   return s->q;
 }
 
@@ -848,9 +851,10 @@ int VP8EncTokenLoop(VP8Encoder* const enc) {
     }
 
 #if (DEBUG_SEARCH > 0)
-    printf("#%2d metric:%.1lf -> %.1lf   last_q=%.2lf q=%.2lf dq=%.2lf\n",
+    printf("#%2d metric:%.1lf -> %.1lf   last_q=%.2lf q=%.2lf dq=%.2lf "
+           " range:[%.1f, %.1f]\n",
            num_pass_left, stats.last_value, stats.value,
-           stats.last_q, stats.q, stats.dq);
+           stats.last_q, stats.q, stats.dq, stats.qmin, stats.qmax);
 #endif
     if (enc->max_i4_header_bits_ > 0 && size_p0 > PARTITION0_SIZE_LIMIT) {
       ++num_pass_left;

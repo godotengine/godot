@@ -33,6 +33,8 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 
+#include <zlib.h> // Should come before including tinyexr.
+
 #include "thirdparty/tinyexr/tinyexr.h"
 
 Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {

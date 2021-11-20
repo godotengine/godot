@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
+ * Copyright (c) Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -242,7 +242,7 @@ size_t ZSTD_compressBlock_fast_dictMatchState_generic(
     assert(endIndex - prefixStartIndex <= maxDistance);
     (void)maxDistance; (void)endIndex;   /* these variables are not used when assert() is disabled */
 
-    /* ensure there will be no no underflow
+    /* ensure there will be no underflow
      * when translating a dict index into a local index */
     assert(prefixStartIndex >= (U32)(dictEnd - dictBase));
 
@@ -416,9 +416,9 @@ static size_t ZSTD_compressBlock_fast_extDict_generic(
         const BYTE* const repMatch = repBase + repIndex;
         hashTable[h] = curr;   /* update hash table */
         DEBUGLOG(7, "offset_1 = %u , curr = %u", offset_1, curr);
-        assert(offset_1 <= curr +1);   /* check repIndex */
 
-        if ( (((U32)((prefixStartIndex-1) - repIndex) >= 3) /* intentional underflow */ & (repIndex > dictStartIndex))
+        if ( ( ((U32)((prefixStartIndex-1) - repIndex) >= 3) /* intentional underflow */
+             & (offset_1 < curr+1 - dictStartIndex) ) /* note: we are searching at curr+1 */
            && (MEM_read32(repMatch) == MEM_read32(ip+1)) ) {
             const BYTE* const repMatchEnd = repIndex < prefixStartIndex ? dictEnd : iend;
             size_t const rLength = ZSTD_count_2segments(ip+1 +4, repMatch +4, iend, repMatchEnd, prefixStart) + 4;
@@ -453,7 +453,7 @@ static size_t ZSTD_compressBlock_fast_extDict_generic(
                 U32 const current2 = (U32)(ip-base);
                 U32 const repIndex2 = current2 - offset_2;
                 const BYTE* const repMatch2 = repIndex2 < prefixStartIndex ? dictBase + repIndex2 : base + repIndex2;
-                if ( (((U32)((prefixStartIndex-1) - repIndex2) >= 3) & (repIndex2 > dictStartIndex))  /* intentional overflow */
+                if ( (((U32)((prefixStartIndex-1) - repIndex2) >= 3) & (offset_2 < curr - dictStartIndex))  /* intentional overflow */
                    && (MEM_read32(repMatch2) == MEM_read32(ip)) ) {
                     const BYTE* const repEnd2 = repIndex2 < prefixStartIndex ? dictEnd : iend;
                     size_t const repLength2 = ZSTD_count_2segments(ip+4, repMatch2+4, iend, repEnd2, prefixStart) + 4;

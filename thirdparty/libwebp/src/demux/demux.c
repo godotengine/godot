@@ -24,8 +24,8 @@
 #include "src/webp/format_constants.h"
 
 #define DMUX_MAJ_VERSION 1
-#define DMUX_MIN_VERSION 1
-#define DMUX_REV_VERSION 0
+#define DMUX_MIN_VERSION 2
+#define DMUX_REV_VERSION 1
 
 typedef struct {
   size_t start_;        // start location of the data
@@ -221,12 +221,16 @@ static ParseStatus StoreFrame(int frame_num, uint32_t min_size,
     const size_t chunk_start_offset = mem->start_;
     const uint32_t fourcc = ReadLE32(mem);
     const uint32_t payload_size = ReadLE32(mem);
-    const uint32_t payload_size_padded = payload_size + (payload_size & 1);
-    const size_t payload_available = (payload_size_padded > MemDataSize(mem))
-                                   ? MemDataSize(mem) : payload_size_padded;
-    const size_t chunk_size = CHUNK_HEADER_SIZE + payload_available;
+    uint32_t payload_size_padded;
+    size_t payload_available;
+    size_t chunk_size;
 
     if (payload_size > MAX_CHUNK_PAYLOAD) return PARSE_ERROR;
+
+    payload_size_padded = payload_size + (payload_size & 1);
+    payload_available = (payload_size_padded > MemDataSize(mem))
+                      ? MemDataSize(mem) : payload_size_padded;
+    chunk_size = CHUNK_HEADER_SIZE + payload_available;
     if (SizeIsInvalid(mem, payload_size_padded)) return PARSE_ERROR;
     if (payload_size_padded > MemDataSize(mem)) status = PARSE_NEED_MORE_DATA;
 
@@ -312,6 +316,7 @@ static ParseStatus ParseAnimationFrame(
   int bits;
   MemBuffer* const mem = &dmux->mem_;
   Frame* frame;
+  size_t start_offset;
   ParseStatus status =
       NewFrame(mem, ANMF_CHUNK_SIZE, frame_chunk_size, &frame);
   if (status != PARSE_OK) return status;
@@ -332,7 +337,11 @@ static ParseStatus ParseAnimationFrame(
 
   // Store a frame only if the animation flag is set there is some data for
   // this frame is available.
+  start_offset = mem->start_;
   status = StoreFrame(dmux->num_frames_ + 1, anmf_payload_size, mem, frame);
+  if (status != PARSE_ERROR && mem->start_ - start_offset > anmf_payload_size) {
+    status = PARSE_ERROR;
+  }
   if (status != PARSE_ERROR && is_animation && frame->frame_num_ > 0) {
     added_frame = AddFrame(dmux, frame);
     if (added_frame) {
@@ -446,9 +455,11 @@ static ParseStatus ParseVP8XChunks(WebPDemuxer* const dmux) {
     const size_t chunk_start_offset = mem->start_;
     const uint32_t fourcc = ReadLE32(mem);
     const uint32_t chunk_size = ReadLE32(mem);
-    const uint32_t chunk_size_padded = chunk_size + (chunk_size & 1);
+    uint32_t chunk_size_padded;
 
     if (chunk_size > MAX_CHUNK_PAYLOAD) return PARSE_ERROR;
+
+    chunk_size_padded = chunk_size + (chunk_size & 1);
     if (SizeIsInvalid(mem, chunk_size_padded)) return PARSE_ERROR;
 
     switch (fourcc) {

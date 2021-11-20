@@ -1,8 +1,8 @@
 diff --git a/thirdparty/wslay/includes/wslay/wslay.h b/thirdparty/wslay/includes/wslay/wslay.h
-index 2fde81a4e..9c751b05b 100644
+index 77a4e8253f..ac6873613f 100644
 --- a/thirdparty/wslay/includes/wslay/wslay.h
 +++ b/thirdparty/wslay/includes/wslay/wslay.h
-@@ -33,6 +33,12 @@ extern "C" {
+@@ -33,6 +33,13 @@ extern "C" {
  #include <stdlib.h>
  #include <sys/types.h>
  
@@ -12,6 +12,7 @@ index 2fde81a4e..9c751b05b 100644
 +typedef SSIZE_T ssize_t;
 +#endif
 +/* GODOT END */
- 
++
  /*
   * wslay/wslayver.h is generated from wslay/wslayver.h.in by
+  * configure. The projects which do not use autotools can set

@@ -58,12 +58,6 @@ extern "C" {
 // BITS can be any multiple of 8 from 8 to 56 (inclusive).
 // Pick values that fit natural register size.
 
-// -- GODOT -- start
-#ifdef JAVASCRIPT_ENABLED
-#define BITS 16
-#else
-// -- GODOT -- end
-
 #if defined(__i386__) || defined(_M_IX86)      // x86 32bit
 #define BITS 24
 #elif defined(__x86_64__) || defined(_M_X64)   // x86 64bit
@@ -77,10 +71,6 @@ extern "C" {
 #else                                          // reasonable default
 #define BITS 24
 #endif
-
-// -- GODOT -- start
-#endif
-// -- GODOT -- end
 
 //------------------------------------------------------------------------------
 // Derived types and constants:

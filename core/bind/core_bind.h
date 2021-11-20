@@ -367,6 +367,7 @@ public:
 
 	Error set_thread_name(const String &p_name);
 	Thread::ID get_thread_caller_id() const;
+	Thread::ID get_main_thread_id() const;
 
 	void set_use_vsync(bool p_enable);
 	bool is_vsync_enabled() const;

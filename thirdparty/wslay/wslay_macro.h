@@ -1,7 +1,7 @@
 /*
  * Wslay - The WebSocket Library
  *
- * Copyright (c) 2011, 2012 Tatsuhiro Tsujikawa
+ * Copyright (c) 2020 Tatsuhiro Tsujikawa
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -22,8 +22,8 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef WSLAY_STACK_H
-#define WSLAY_STACK_H
+#ifndef WSLAY_MACRO_H
+#define WSLAY_MACRO_H
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -31,20 +31,9 @@
 
 #include <wslay/wslay.h>
 
-struct wslay_stack_cell {
-  void *data;
-  struct wslay_stack_cell *next;
-};
+#include <stddef.h>
 
-struct wslay_stack {
-  struct wslay_stack_cell *top;
-};
+#define wslay_struct_of(ptr, type, member)                                     \
+  ((type *)(void *)((char *)(ptr)-offsetof(type, member)))
 
-struct wslay_stack* wslay_stack_new();
-void wslay_stack_free(struct wslay_stack *stack);
-int wslay_stack_push(struct wslay_stack *stack, void *data);
-void wslay_stack_pop(struct wslay_stack *stack);
-void* wslay_stack_top(struct wslay_stack *stack);
-int wslay_stack_empty(struct wslay_stack *stack);
-
-#endif /* WSLAY_STACK_H */
+#endif /* WSLAY_MACRO_H */

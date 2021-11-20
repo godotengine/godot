@@ -25,7 +25,7 @@
 #ifndef WSLAY_H
 #define WSLAY_H
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -155,10 +155,10 @@ enum wslay_opcode {
  * These macros assume that rsv is constructed by ((RSV1 << 2) |
  * (RSV2 << 1) | RSV3)
  */
-#define WSLAY_RSV_NONE ((uint8_t) 0)
-#define WSLAY_RSV1_BIT (((uint8_t) 1) << 2)
-#define WSLAY_RSV2_BIT (((uint8_t) 1) << 1)
-#define WSLAY_RSV3_BIT (((uint8_t) 1) << 0)
+#define WSLAY_RSV_NONE ((uint8_t)0)
+#define WSLAY_RSV1_BIT (((uint8_t)1) << 2)
+#define WSLAY_RSV2_BIT (((uint8_t)1) << 1)
+#define WSLAY_RSV3_BIT (((uint8_t)1) << 0)
 
 #define wslay_get_rsv1(rsv) ((rsv >> 2) & 1)
 #define wslay_get_rsv2(rsv) ((rsv >> 1) & 1)
@@ -172,7 +172,7 @@ struct wslay_frame_iocb {
    * RFC6455 requires 0 unless extensions are negotiated.
    */
   uint8_t rsv;
- /* 4 bit opcode */
+  /* 4 bit opcode */
   uint8_t opcode;
   /* payload length [0, 2**63-1] */
   uint64_t payload_length;
@@ -229,6 +229,33 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
                          struct wslay_frame_iocb *iocb);
 
 /*
+ * Write WebSocket frame specified in iocb to buf of length
+ * buflen. ctx must be initialized using wslay_frame_context_init()
+ * function.  iocb->fin must be 1 if this is a fin frame, otherwise 0.
+ * iocb->rsv is reserved bits.  iocb->opcode must be the opcode of
+ * this frame.  iocb->mask must be 1 if this is masked frame,
+ * otherwise 0.  iocb->payload_length is the payload_length of this
+ * frame.  iocb->data must point to the payload data to be
+ * sent. iocb->data_length must be the length of the data.  Unlike
+ * wslay_frame_send, this function does not call send_callback
+ * function.  This function calls gen_mask_callback function if it
+ * needs new mask key.  This function returns the number of bytes
+ * written to a buffer.  Unlike wslay_frame_send, it includes the
+ * number of header bytes.  Instead, the number of payload bytes
+ * written is assigned to *pwpayloadlen if this function succeeds.  If
+ * there is not enough space left in a buffer, it returns 0.  If the
+ * library detects error in iocb, this function returns
+ * WSLAY_ERR_INVALID_ARGUMENT.  If callback functions report a
+ * failure, this function returns WSLAY_ERR_INVALID_CALLBACK.  This
+ * function does not always send all given data in iocb.  If there are
+ * remaining data to be sent, adjust data and data_length in iocb
+ * accordingly and call this function again.
+ */
+ssize_t wslay_frame_write(wslay_frame_context_ptr ctx,
+                          struct wslay_frame_iocb *iocb, uint8_t *buf,
+                          size_t buflen, size_t *pwpayloadlen);
+
+/*
  * Receives WebSocket frame and stores it in iocb.  This function
  * returns the number of payload bytes received.  This does not
  * include header bytes. In this case, iocb will be populated as
@@ -276,9 +303,9 @@ struct wslay_event_on_msg_recv_arg {
  * Callback function invoked by wslay_event_recv() when a message is
  * completely received.
  */
-typedef void (*wslay_event_on_msg_recv_callback)
-(wslay_event_context_ptr ctx,
- const struct wslay_event_on_msg_recv_arg *arg, void *user_data);
+typedef void (*wslay_event_on_msg_recv_callback)(
+    wslay_event_context_ptr ctx, const struct wslay_event_on_msg_recv_arg *arg,
+    void *user_data);
 
 struct wslay_event_on_frame_recv_start_arg {
   /* fin bit; 1 for final frame, or 0. */
@@ -296,9 +323,9 @@ struct wslay_event_on_frame_recv_start_arg {
  * starts to be received. This callback function is only invoked once
  * for each frame.
  */
-typedef void (*wslay_event_on_frame_recv_start_callback)
-(wslay_event_context_ptr ctx,
- const struct wslay_event_on_frame_recv_start_arg *arg, void *user_data);
+typedef void (*wslay_event_on_frame_recv_start_callback)(
+    wslay_event_context_ptr ctx,
+    const struct wslay_event_on_frame_recv_start_arg *arg, void *user_data);
 
 struct wslay_event_on_frame_recv_chunk_arg {
   /* chunk of payload data */
@@ -311,16 +338,16 @@ struct wslay_event_on_frame_recv_chunk_arg {
  * Callback function invoked by wslay_event_recv() when a chunk of
  * frame payload is received.
  */
-typedef void (*wslay_event_on_frame_recv_chunk_callback)
-(wslay_event_context_ptr ctx,
- const struct wslay_event_on_frame_recv_chunk_arg *arg, void *user_data);
+typedef void (*wslay_event_on_frame_recv_chunk_callback)(
+    wslay_event_context_ptr ctx,
+    const struct wslay_event_on_frame_recv_chunk_arg *arg, void *user_data);
 
 /*
  * Callback function invoked by wslay_event_recv() when a frame is
  * completely received.
  */
-typedef void (*wslay_event_on_frame_recv_end_callback)
-(wslay_event_context_ptr ctx, void *user_data);
+typedef void (*wslay_event_on_frame_recv_end_callback)(
+    wslay_event_context_ptr ctx, void *user_data);
 
 /*
  * Callback function invoked by wslay_event_recv() when it wants to
@@ -394,9 +421,9 @@ struct wslay_event_callbacks {
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
-int wslay_event_context_server_init
-(wslay_event_context_ptr *ctx,
- const struct wslay_event_callbacks *callbacks, void *user_data);
+int wslay_event_context_server_init(
+    wslay_event_context_ptr *ctx, const struct wslay_event_callbacks *callbacks,
+    void *user_data);
 
 /*
  * Initializes ctx as WebSocket client. user_data is an arbitrary
@@ -409,9 +436,9 @@ int wslay_event_context_server_init
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
-int wslay_event_context_client_init
-(wslay_event_context_ptr *ctx,
- const struct wslay_event_callbacks *callbacks, void *user_data);
+int wslay_event_context_client_init(
+    wslay_event_context_ptr *ctx, const struct wslay_event_callbacks *callbacks,
+    void *user_data);
 
 /*
  * Releases allocated resources for ctx.
@@ -462,8 +489,8 @@ void wslay_event_config_set_max_recv_msg_length(wslay_event_context_ptr ctx,
  * or wslay_event_context_server_init() or
  * wslay_event_context_client_init() are replaced with callbacks.
  */
-void wslay_event_config_set_callbacks
-(wslay_event_context_ptr ctx, const struct wslay_event_callbacks *callbacks);
+void wslay_event_config_set_callbacks(
+    wslay_event_context_ptr ctx, const struct wslay_event_callbacks *callbacks);
 
 /*
  * Receives messages from peer. When receiving
@@ -538,6 +565,50 @@ int wslay_event_recv(wslay_event_context_ptr ctx);
  */
 int wslay_event_send(wslay_event_context_ptr ctx);
 
+/*
+ * Writes queued messages to a buffer. Unlike wslay_event_send(), this
+ * function writes messages into the given buffer.  It does not use
+ * wslay_event_send_callback function. Single call of
+ * wslay_event_write() writes multiple messages until there is not
+ * enough space left in a buffer.
+ *
+ * If ctx is initialized for WebSocket client use, wslay_event_write()
+ * uses wslay_event_genmask_callback to get new mask key.
+ *
+ * buf is a pointer to buffer and its capacity is given in buflen.  It
+ * should have at least 14 bytes.
+ *
+ * When a message queued using wslay_event_queue_fragmented_msg() is
+ * sent, wslay_event_write() invokes
+ * wslay_event_fragmented_msg_callback for that message.
+ *
+ * After close control frame is sent, this function calls
+ * wslay_event_set_write_enabled() with second argument 0 to disable
+ * further transmission to peer.
+ *
+ * If there are any pending messages, wslay_event_want_write() returns
+ * 1, otherwise returns 0.
+ *
+ * In case of a fatal errror which leads to negative return code, this
+ * function calls wslay_event_set_write_enabled() with second argument
+ * 0 to disable further transmission to peer.
+ *
+ * wslay_event_write() returns the number of bytes written to a buffer
+ * if it succeeds, or one of the following negative error codes:
+ *
+ * WSLAY_ERR_CALLBACK_FAILURE
+ *   User defined callback function is failed.
+ *
+ * WSLAY_ERR_NOMEM
+ *   Out of memory.
+ *
+ * When negative error code is returned, application must not make any
+ * further call of wslay_event_write() and must close WebSocket
+ * connection.
+ */
+ssize_t wslay_event_write(wslay_event_context_ptr ctx, uint8_t *buf,
+                          size_t buflen);
+
 struct wslay_event_msg {
   uint8_t opcode;
   const uint8_t *msg;
@@ -594,10 +665,9 @@ union wslay_event_msg_source {
  * moment, return 0. If there is an error, return -1 and set error
  * code WSLAY_ERR_CALLBACK_FAILURE using wslay_event_set_error().
  */
-typedef ssize_t (*wslay_event_fragmented_msg_callback)
-(wslay_event_context_ptr ctx,
- uint8_t *buf, size_t len, const union wslay_event_msg_source *source,
- int *eof, void *user_data);
+typedef ssize_t (*wslay_event_fragmented_msg_callback)(
+    wslay_event_context_ptr ctx, uint8_t *buf, size_t len,
+    const union wslay_event_msg_source *source, int *eof, void *user_data);
 
 struct wslay_event_fragmented_msg {
   /* opcode */
@@ -631,15 +701,16 @@ struct wslay_event_fragmented_msg {
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
-int wslay_event_queue_fragmented_msg
-(wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg);
+int wslay_event_queue_fragmented_msg(
+    wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg);
 
 /*
  * Extended version of wslay_event_queue_fragmented_msg which allows to set
  * reserved bits.
  */
-int wslay_event_queue_fragmented_msg_ex(wslay_event_context_ptr ctx,
-    const struct wslay_event_fragmented_msg *arg, uint8_t rsv);
+int wslay_event_queue_fragmented_msg_ex(
+    wslay_event_context_ptr ctx, const struct wslay_event_fragmented_msg *arg,
+    uint8_t rsv);
 
 /*
  * Queues close control frame. This function is provided just for
@@ -669,8 +740,7 @@ int wslay_event_queue_fragmented_msg_ex(wslay_event_context_ptr ctx,
  * WSLAY_ERR_NOMEM
  *   Out of memory.
  */
-int wslay_event_queue_close(wslay_event_context_ptr ctx,
-                            uint16_t status_code,
+int wslay_event_queue_close(wslay_event_context_ptr ctx, uint16_t status_code,
                             const uint8_t *reason, size_t reason_length);
 
 /*

@@ -104,10 +104,14 @@ const GodotInputGamepads = {
 				}
 			}
 			GodotEventListeners.add(window, 'gamepadconnected', function (evt) {
-				add(evt.gamepad);
+				if (evt.gamepad) {
+					add(evt.gamepad);
+				}
 			}, false);
 			GodotEventListeners.add(window, 'gamepaddisconnected', function (evt) {
-				onchange(evt.gamepad.index, 0);
+				if (evt.gamepad) {
+					onchange(evt.gamepad.index, 0);
+				}
 			}, false);
 		},
 
@@ -389,6 +393,9 @@ const GodotInput = {
 			const rect = canvas.getBoundingClientRect();
 			const pos = GodotInput.computePosition(evt, rect);
 			const modifiers = GodotInput.getModifiers(evt);
+			if (p_pressed && document.activeElement !== GodotConfig.canvas) {
+				GodotConfig.canvas.focus();
+			}
 			if (func(p_pressed, evt.button, pos[0], pos[1], modifiers)) {
 				evt.preventDefault();
 			}
@@ -405,6 +412,9 @@ const GodotInput = {
 		const func = GodotRuntime.get_func(callback);
 		const canvas = GodotConfig.canvas;
 		function touch_cb(type, evt) {
+			if (type === 0 && document.activeElement !== GodotConfig.canvas) {
+				GodotConfig.canvas.focus();
+			}
 			const rect = canvas.getBoundingClientRect();
 			const touches = evt.changedTouches;
 			for (let i = 0; i < touches.length; i++) {
