@@ -596,12 +596,15 @@ comments and a patch is provided in the squish/ folder.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.0 (e4b7840d9448b7d57a88384ce26143004f3c0c71, 2020)
+- Version: 1.0.1 (67010eae802211202d0797f4df2b809f4ba7442c, 2021)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
 - `tinyexr.{cc,h}`
+
+The `tinyexr.cc` file was modified to include `zlib.h` which we provide,
+instead of `miniz.h` as an external dependency.
 
 
 ## vhacd
