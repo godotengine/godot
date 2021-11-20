@@ -235,14 +235,14 @@ Files extracted from upstream source:
 ## libogg
 
 - Upstream: https://www.xiph.org/ogg
-- Version: git (c8fca6b4a02d695b1ceea39b330d4406001c03ed, 2019)
+- Version: 1.3.5 (e1774cd77f471443541596e09078e78fdc342e4f, 2021)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
 - `src/*.{c,h}`
-- `include/ogg/*.h` in ogg/
-- COPYING
+- `include/ogg/*.h` in `ogg/` (run `configure` to generate `config_types.h`)
+- `COPYING`
 
 
 ## libpng
