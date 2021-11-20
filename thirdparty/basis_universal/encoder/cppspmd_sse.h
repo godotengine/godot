@@ -1327,33 +1327,15 @@ struct spmd_kernel
 	CPPSPMD_FORCE_INLINE float reduce_add(vfloat v)	
 	{ 
 		__m128 k3210 = _mm_castsi128_ps(blendv_mask_epi32(_mm_setzero_si128(), _mm_castps_si128(v.m_value), m_exec.m_mask));
-
-//#if CPPSPMD_SSE2
-#if 1
-		// See https://stackoverflow.com/questions/6996764/fastest-way-to-do-horizontal-sse-vector-sum-or-other-reduction/35270026#35270026
-		__m128 shuf   = _mm_shuffle_ps(k3210, k3210, _MM_SHUFFLE(2, 3, 0, 1));
-		__m128 sums   = _mm_add_ps(k3210, shuf);
-		shuf          = _mm_movehl_ps(shuf, sums);
-		sums          = _mm_add_ss(sums, shuf);
-		return _mm_cvtss_f32(sums);
-#else
-		// This is pretty slow.
-		__m128 a = _mm_hadd_ps(k3210, k3210);
-		__m128 b = _mm_hadd_ps(a, a);
-		return extractf_ps_x(b);
-#endif
+		__m128 temp = _mm_add_ps(_mm_shuffle_ps(k3210, k3210, _MM_SHUFFLE(0, 1, 2, 3)), k3210);
+		return _mm_cvtss_f32(_mm_add_ss(_mm_movehl_ps(temp, temp), temp));
 	}
-
+		
 	CPPSPMD_FORCE_INLINE int reduce_add(vint v)
 	{
 		__m128i k3210 = blendv_mask_epi32(_mm_setzero_si128(), v.m_value, m_exec.m_mask);
-
-		// See https://stackoverflow.com/questions/6996764/fastest-way-to-do-horizontal-sse-vector-sum-or-other-reduction/35270026#35270026
-		__m128i shuf = _mm_shuffle_epi32(k3210, _MM_SHUFFLE(2, 3, 0, 1));
-		__m128i sums = _mm_add_epi32(k3210, shuf);
-		shuf = _mm_castps_si128(_mm_movehl_ps(_mm_castsi128_ps(shuf), _mm_castsi128_ps(sums)));
-		sums = _mm_add_epi32(sums, shuf);
-		return extract_x(sums);
+		__m128i temp = _mm_add_epi32(_mm_shuffle_epi32(k3210, _MM_SHUFFLE(0, 1, 2, 3)), k3210);
+		return extract_x(_mm_add_epi32(_mm_castps_si128(_mm_movehl_ps(_mm_castsi128_ps(temp), _mm_castsi128_ps(temp))), temp));
 	}
 
 	#include "cppspmd_math_declares.h"
@@ -1685,6 +1667,12 @@ CPPSPMD_FORCE_INLINE vint uniform_shift_right_epi16(const vint& a, const vint& b
 
 CPPSPMD_FORCE_INLINE vint undefined_vint() { return vint{ _mm_undefined_si128() }; }
 CPPSPMD_FORCE_INLINE vfloat undefined_vfloat() { return vfloat{ _mm_undefined_ps() }; }
+
+CPPSPMD_FORCE_INLINE vint vint_lane_set(int v0, int v1, int v2, int v3) { return vint{ _mm_set_epi32(v3, v2, v1, v0) }; }
+CPPSPMD_FORCE_INLINE vfloat vfloat_lane_set(float v0, float v1, float v2, float v3) { return vfloat{ _mm_set_ps(v3, v2, v1, v0) }; }
+
+CPPSPMD_FORCE_INLINE vint vint_lane_set_r(int v3, int v2, int v1, int v0) { return vint{ _mm_set_epi32(v3, v2, v1, v0) }; }
+CPPSPMD_FORCE_INLINE vfloat vfloat_lane_set_r(float v3, float v2, float v1, float v0) { return vfloat{ _mm_set_ps(v3, v2, v1, v0) }; }
 
 // control is an 8-bit immediate value containing 4 2-bit indices which shuffles the int32's in each 128-bit lane.
 #define VINT_LANE_SHUFFLE_EPI32(a, control) vint(_mm_shuffle_epi32((a).m_value, control))

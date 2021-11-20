@@ -247,7 +247,7 @@ unsigned char* apg_bmp_read( const char* filename, int* w, int* h, unsigned int*
   }
 
   // allocate memory for the output pixels block. cast to size_t in case width and height are both the max of 65536 and n_dst_chans > 1
-  unsigned char* dst_img_ptr = malloc( (size_t)width * (size_t)height * (size_t)n_dst_chans );
+  unsigned char* dst_img_ptr = (unsigned char*)malloc( (size_t)width * (size_t)height * (size_t)n_dst_chans );
   if ( !dst_img_ptr ) {
     free( record.data );
     return NULL;
@@ -480,7 +480,7 @@ unsigned int apg_bmp_write( const char* filename, unsigned char* pixels_ptr, int
     dib_hdr.bitmask_b = 0x0000FF00;
   }
 
-  uint8_t* dst_pixels_ptr = malloc( dst_pixels_padded_sz );
+  uint8_t* dst_pixels_ptr = (uint8_t*)malloc( dst_pixels_padded_sz );
   if ( !dst_pixels_ptr ) { return 0; }
   {
     size_t dst_byte_idx = 0;

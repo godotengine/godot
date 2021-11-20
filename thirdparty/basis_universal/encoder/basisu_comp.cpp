@@ -467,7 +467,10 @@ namespace basisu
 					return false;
 				}
 
-				printf("Read source image \"%s\", %ux%u\n", pSource_filename, file_image.get_width(), file_image.get_height());
+				if (m_params.m_status_output)
+				{
+					printf("Read source image \"%s\", %ux%u\n", pSource_filename, file_image.get_width(), file_image.get_height());
+				}
 
 				// Optionally load another image and put a grayscale version of it into the alpha channel.
 				if ((source_file_index < m_params.m_source_alpha_filenames.size()) && (m_params.m_source_alpha_filenames[source_file_index].size()))
@@ -1427,7 +1430,10 @@ namespace basisu
 				return false;
 			}
 
-			printf("Wrote output .basis/.ktx2 file \"%s\"\n", output_filename.c_str());
+			if (m_params.m_status_output)
+			{
+				printf("Wrote output .basis/.ktx2 file \"%s\"\n", output_filename.c_str());
+			}
 		}
 
 		size_t comp_size = 0;

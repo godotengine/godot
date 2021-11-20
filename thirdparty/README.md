@@ -8,7 +8,7 @@ readability.
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (ba1c3e40f1d434ebaf9a167b44e9b11d2bf0f765, 2021)
+- Version: git (646a9f826131cb0b9e14b5e4740874808315f83a, 2021)
 - License: Apache 2.0
 
 Files extracted from upstream source:
