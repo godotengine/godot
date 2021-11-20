@@ -170,7 +170,9 @@ public:
 			case Animation::TYPE_ROTATION_3D:
 			case Animation::TYPE_SCALE_3D: {
 				if (name == "position" || name == "rotation" || name == "scale") {
-					Variant old = animation->track_get_key_value(track, key);
+					Dictionary d_old = animation->track_get_key_value(track, key);
+					Dictionary d_new = d_old.duplicate();
+					d_new[name] = p_value;
 					setting = true;
 					String chan;
 					switch (animation->track_get_type(track)) {
@@ -189,7 +191,7 @@ public:
 
 					undo_redo->create_action(vformat(TTR("Anim Change %s"), chan));
 					undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, p_value);
-					undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, old);
+					undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, d_old[name]);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -451,8 +453,10 @@ public:
 			case Animation::TYPE_POSITION_3D:
 			case Animation::TYPE_ROTATION_3D:
 			case Animation::TYPE_SCALE_3D: {
+				Dictionary d = animation->track_get_key_value(track, key);
 				if (name == "position" || name == "rotation" || name == "scale") {
-					r_ret = animation->track_get_key_value(track, key);
+					ERR_FAIL_COND_V(!d.has(name), false);
+					r_ret = d[name];
 					return true;
 				}
 			} break;
@@ -832,7 +836,9 @@ public:
 					case Animation::TYPE_POSITION_3D:
 					case Animation::TYPE_ROTATION_3D:
 					case Animation::TYPE_SCALE_3D: {
-						Variant old = animation->track_get_key_value(track, key);
+						Dictionary d_old = animation->track_get_key_value(track, key);
+						Dictionary d_new = d_old.duplicate();
+						d_new[name] = p_value;
 						if (!setting) {
 							String chan;
 							switch (animation->track_get_type(track)) {
@@ -853,7 +859,7 @@ public:
 							undo_redo->create_action(vformat(TTR("Anim Multi Change %s"), chan));
 						}
 						undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, p_value);
-						undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, old);
+						undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, d_old[name]);
 						update_obj = true;
 					} break;
 					case Animation::TYPE_BLEND_SHAPE:
@@ -1088,8 +1094,10 @@ public:
 					case Animation::TYPE_POSITION_3D:
 					case Animation::TYPE_ROTATION_3D:
 					case Animation::TYPE_SCALE_3D: {
+						Dictionary d = animation->track_get_key_value(track, key);
 						if (name == "position" || name == "rotation" || name == "scale") {
-							r_ret = animation->track_get_key_value(track, key);
+							ERR_FAIL_COND_V(!d.has(name), false);
+							r_ret = d[name];
 							return true;
 						}
 
