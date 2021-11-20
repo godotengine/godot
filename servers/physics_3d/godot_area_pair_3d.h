@@ -63,6 +63,8 @@ class GodotArea2Pair3D : public GodotConstraint3D {
 	bool colliding_b = false;
 	bool process_collision_a = false;
 	bool process_collision_b = false;
+	bool area_a_monitorable;
+	bool area_b_monitorable;
 
 public:
 	virtual bool setup(real_t p_step) override;
