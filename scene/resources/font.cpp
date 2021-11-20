@@ -88,6 +88,9 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_msdf_size", "msdf_size"), &FontData::set_msdf_size);
 	ClassDB::bind_method(D_METHOD("get_msdf_size"), &FontData::get_msdf_size);
 
+	ClassDB::bind_method(D_METHOD("set_fixed_size", "fixed_size"), &FontData::set_fixed_size);
+	ClassDB::bind_method(D_METHOD("get_fixed_size"), &FontData::get_fixed_size);
+
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &FontData::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &FontData::is_force_autohinter);
 
