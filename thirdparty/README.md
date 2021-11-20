@@ -503,7 +503,7 @@ Patch files are provided in `oidn/patches/`.
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.36 (r1288, 2020)
+- Version: 10.39 (35fee4193b852cb504892352bd0155de10809889, 2021)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
