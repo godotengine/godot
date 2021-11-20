@@ -94,10 +94,11 @@ protected:
 	static void (*_load_default_certificates)(String p_path);
 
 public:
+	static bool is_available();
 	static Crypto *create();
 	static void load_default_certificates(String p_path);
 
-	virtual PackedByteArray generate_random_bytes(int p_bytes) = 0;
+	virtual Error random_fill(uint8_t *r_dst, int p_dst_size) = 0;
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes) = 0;
 	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) = 0;
 
@@ -105,6 +106,8 @@ public:
 	virtual bool verify(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Vector<uint8_t> p_signature, Ref<CryptoKey> p_key) = 0;
 	virtual Vector<uint8_t> encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_plaintext) = 0;
 	virtual Vector<uint8_t> decrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_ciphertext) = 0;
+
+	PackedByteArray generate_random_bytes(int p_bytes);
 
 	PackedByteArray hmac_digest(HashingContext::HashType p_hash_type, PackedByteArray p_key, PackedByteArray p_msg);
 

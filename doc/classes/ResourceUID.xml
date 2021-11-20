@@ -14,7 +14,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="create_id" qualifiers="const">
+		<method name="create_id">
 			<return type="int" />
 			<description>
 			</description>

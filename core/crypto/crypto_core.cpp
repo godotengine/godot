@@ -30,6 +30,9 @@
 
 #include "crypto_core.h"
 
+#include "core/crypto/crypto.h"
+#include "core/math/random_number_generator.h"
+
 #include <mbedtls/aes.h>
 #include <mbedtls/base64.h>
 #include <mbedtls/md5.h>
@@ -168,6 +171,45 @@ Error CryptoCore::AESContext::decrypt_cfb(size_t p_length, uint8_t p_iv[16], con
 }
 
 // CryptoCore
+Error CryptoCore::EntropyContext::random_fill(uint8_t *r_dst, int p_dst_size) {
+	ERR_FAIL_COND_V(p_dst_size < 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!ctx, ERR_BUG);
+	if (is_strong) {
+		((Crypto *)ctx)->random_fill(r_dst, p_dst_size);
+		return OK;
+	} else {
+		int ofs = 0;
+		while (ofs < p_dst_size) {
+			int num = ((RandomNumberGenerator *)ctx)->randi();
+			memcpy(&r_dst[ofs], &num, MIN(sizeof(num), uint32_t(p_dst_size - ofs)));
+			ofs += sizeof(num);
+		}
+		return OK;
+	}
+}
+
+CryptoCore::EntropyContext::EntropyContext() {
+	if (Crypto::is_available()) {
+		is_strong = true;
+		ctx = Crypto::create();
+	} else {
+		RandomNumberGenerator *rng = memnew(RandomNumberGenerator);
+		rng->randomize();
+		ctx = rng;
+	}
+}
+
+CryptoCore::EntropyContext::~EntropyContext() {
+	if (!ctx) {
+		return;
+	}
+	if (is_strong) {
+		memdelete((Crypto *)ctx);
+	} else {
+		memdelete((RandomNumberGenerator *)ctx);
+	}
+}
+
 String CryptoCore::b64_encode_str(const uint8_t *p_src, int p_src_len) {
 	int b64len = p_src_len / 3 * 4 + 4 + 1;
 	Vector<uint8_t> b64buff;

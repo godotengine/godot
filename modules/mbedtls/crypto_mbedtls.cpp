@@ -378,11 +378,10 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	return out;
 }
 
-PackedByteArray CryptoMbedTLS::generate_random_bytes(int p_bytes) {
-	PackedByteArray out;
-	out.resize(p_bytes);
-	mbedtls_ctr_drbg_random(&ctr_drbg, out.ptrw(), p_bytes);
-	return out;
+Error CryptoMbedTLS::random_fill(uint8_t *r_dst, int p_dst_size) {
+	int ret = mbedtls_ctr_drbg_random(&ctr_drbg, r_dst, p_dst_size);
+	ERR_FAIL_COND_V_MSG(ret != 0, FAILED, "Failed to generate random bytes: " + itos(ret));
+	return OK;
 }
 
 mbedtls_md_type_t CryptoMbedTLS::md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size) {

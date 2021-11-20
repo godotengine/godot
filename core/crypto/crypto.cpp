@@ -92,10 +92,22 @@ Crypto *Crypto::create() {
 	ERR_FAIL_V_MSG(nullptr, "Crypto is not available when the mbedtls module is disabled.");
 }
 
+bool Crypto::is_available() {
+	return _create != nullptr;
+}
+
 void Crypto::load_default_certificates(String p_path) {
 	if (_load_default_certificates) {
 		_load_default_certificates(p_path);
 	}
+}
+
+PackedByteArray Crypto::generate_random_bytes(int p_bytes) {
+	PackedByteArray out;
+	out.resize(p_bytes);
+	Error err = random_fill(out.ptrw(), out.size());
+	ERR_FAIL_COND_V(err != OK, PackedByteArray());
+	return out;
 }
 
 PackedByteArray Crypto::hmac_digest(HashingContext::HashType p_hash_type, PackedByteArray p_key, PackedByteArray p_msg) {

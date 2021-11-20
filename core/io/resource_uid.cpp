@@ -31,7 +31,7 @@
 #include "resource_uid.h"
 
 #include "core/config/project_settings.h"
-#include "core/crypto/crypto.h"
+#include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
@@ -82,20 +82,20 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 	return ID(uid & 0x7FFFFFFFFFFFFFFF);
 }
 
-ResourceUID::ID ResourceUID::create_id() const {
+ResourceUID::ID ResourceUID::create_id() {
 	mutex.lock();
-	if (crypto.is_null()) {
-		crypto = Ref<Crypto>(Crypto::create());
+	if (!entropy) {
+		entropy = memnew(CryptoCore::EntropyContext);
 	}
 	mutex.unlock();
+	ERR_FAIL_COND_V(!entropy, INVALID_ID);
 	while (true) {
-		PackedByteArray bytes = crypto->generate_random_bytes(8);
-		ERR_FAIL_COND_V(bytes.size() != 8, INVALID_ID);
-		const uint64_t *ptr64 = (const uint64_t *)bytes.ptr();
-		ID id = int64_t((*ptr64) & 0x7FFFFFFFFFFFFFFF);
-		mutex.lock();
+		MutexLock lock(mutex);
+		ID id = INVALID_ID;
+		Error err = ((CryptoCore::EntropyContext *)entropy)->random_fill((uint8_t *)&id, sizeof(id));
+		ERR_FAIL_COND_V(err != OK, INVALID_ID);
+		id &= 0x7FFFFFFFFFFFFFFF;
 		bool exists = unique_ids.has(id);
-		mutex.unlock();
 		if (!exists) {
 			return id;
 		}
@@ -263,4 +263,7 @@ ResourceUID::ResourceUID() {
 	singleton = this;
 }
 ResourceUID::~ResourceUID() {
+	if (entropy) {
+		memdelete((CryptoCore::EntropyContext *)entropy);
+	}
 }

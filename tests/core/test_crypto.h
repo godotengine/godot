@@ -37,7 +37,7 @@
 namespace TestCrypto {
 
 class _MockCrypto : public Crypto {
-	virtual PackedByteArray generate_random_bytes(int p_bytes) { return PackedByteArray(); }
+	virtual Error random_fill(uint8_t *p_dst, int p_dst_size) { return ERR_UNAVAILABLE; }
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes) { return nullptr; }
 	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) { return nullptr; }
 

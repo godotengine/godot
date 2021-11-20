@@ -31,13 +31,25 @@
 #ifndef CRYPTO_CORE_H
 #define CRYPTO_CORE_H
 
-#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
 
 class CryptoCore {
 public:
+	class EntropyContext {
+	private:
+		void *ctx = nullptr;
+		bool is_strong = false;
+
+	public:
+		EntropyContext();
+		~EntropyContext();
+
+		Error random_fill(uint8_t *r_dst, int p_dst_size);
+	};
+
 	class MD5Context {
 	private:
-		void *ctx = nullptr; // To include, or not to include...
+		void *ctx = nullptr;
 
 	public:
 		MD5Context();
@@ -50,7 +62,7 @@ public:
 
 	class SHA1Context {
 	private:
-		void *ctx = nullptr; // To include, or not to include...
+		void *ctx = nullptr;
 
 	public:
 		SHA1Context();
@@ -63,7 +75,7 @@ public:
 
 	class SHA256Context {
 	private:
-		void *ctx = nullptr; // To include, or not to include...
+		void *ctx = nullptr;
 
 	public:
 		SHA256Context();
@@ -76,7 +88,7 @@ public:
 
 	class AESContext {
 	private:
-		void *ctx = nullptr; // To include, or not to include...
+		void *ctx = nullptr;
 
 	public:
 		AESContext();
