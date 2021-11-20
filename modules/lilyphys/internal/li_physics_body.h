@@ -9,6 +9,17 @@
 #include "core/math/transform.h"
 #include "core/object.h"
 
+enum LPhysicsBodyPropertyType {
+    TRANSFORM,
+    INVERSE_MASS,
+    LINEAR_DAMPING,
+    ANGULAR_DAMPING,
+    VELOCITY,
+    ACCELERATION,
+    ROTATION,
+    INV_INERTIA_TENSOR
+};
+
 class LIPhysicsBody : public LICollisionObject {
 private:
     Transform transform;
@@ -34,9 +45,14 @@ public:
     void set_transform(const Transform& p_transform) { transform = p_transform; };
     void set_integration_callback(ObjectID p_id, const StringName& p_method, const Variant& p_user_data);
     void perform_callback();
+    bool has_finite_mass() const;
+    void add_force(const Vector3 &p_force);
+    void integrate(float p_step);
+    void clear_accumulators();
 
     const Transform &get_transform() const;
     real_t get_inverse_mass() const;
+    real_t get_mass() const;
     real_t get_linear_damping() const;
     real_t get_angular_damping() const;
     const Vector3 &get_velocity() const;
@@ -46,6 +62,10 @@ public:
     const Vector3 &get_force_accum() const;
     const Vector3 &get_torque_accum() const;
     const Basis &get_inv_inertia_tensor() const;
+
+    void set_inertia_tensor(const Basis& tensor);
+    void set_mass(const real_t &mass);
+    void set_property(LPhysicsBodyPropertyType type, const Variant& value);
 };
 
 

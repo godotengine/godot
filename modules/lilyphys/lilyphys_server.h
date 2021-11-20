@@ -9,6 +9,8 @@
 #include "core/rid.h"
 #include "_lilyphys_server.h"
 #include "internal/li_physics_body.h"
+#include "internal/li_force_generator.h"
+#include "internal/li_gravity.h"
 
 
 class LilyphysServer : public Object {
@@ -16,7 +18,15 @@ class LilyphysServer : public Object {
     static LilyphysServer *singleton;
     RID_Owner<LIPhysicsBody> body_owner;
     Set<RID> bodies;
+    RID_Owner<LIForceGenerator> generator_owner;
+    Set<RID> generators;
     bool active = true;
+    struct Registration {
+        RID body;
+        RID generator;
+    };
+    List<Registration> registry;
+    RID gravity;
 protected:
     static void _bind_methods();
 public:
@@ -28,6 +38,10 @@ public:
     void step(float p_step);
     RID create_physics_body();
     void set_integration_callback(RID p_body, Object *p_receiver, const StringName& p_method, const Variant& p_user_data = Variant());
+    void register_generator(RID p_body, RID p_generator);
+    void unregister_generator(RID p_body, RID p_generator);
+    void clear_registry();
+    void set_physics_body_parameter(RID rid, LPhysicsBodyPropertyType type, const Variant& value);
 };
 
 

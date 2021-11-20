@@ -14,6 +14,7 @@ private:
     Vector3 angular_velocity;
 protected:
     static void _bind_methods();
+    void _notification(int p_what);
 public:
     LPhysicsBody();
     void _state_changed(Object *p_state);

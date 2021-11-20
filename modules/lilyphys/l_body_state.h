@@ -9,6 +9,7 @@
 #include "internal/li_physics_body.h"
 
 class LBodyState : public Object {
+    GDCLASS(LBodyState, Object);
 public:
     friend LIPhysicsBody;
     static LBodyState* singleton;

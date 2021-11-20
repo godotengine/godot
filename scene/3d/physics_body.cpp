@@ -601,6 +601,7 @@ void RigidBody::set_mass(real_t p_mass) {
 	mass = p_mass;
 	_change_notify("mass");
 	_change_notify("weight");
+	_change_notify("weight");
 	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_MASS, mass);
 }
 real_t RigidBody::get_mass() const {
