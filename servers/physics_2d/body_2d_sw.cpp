@@ -588,10 +588,7 @@ void Body2DSW::wakeup_neighbours() {
 
 void Body2DSW::call_queries() {
 	if (fi_callback) {
-		Physics2DDirectBodyStateSW *dbs = Physics2DDirectBodyStateSW::singleton;
-		dbs->body = this;
-
-		Variant v = dbs;
+		Variant v = direct_access;
 		const Variant *vp[2] = { &v, &fi_callback->callback_udata };
 
 		Object *obj = ObjectDB::get_instance(fi_callback->id);
@@ -677,18 +674,24 @@ Body2DSW::Body2DSW() :
 	continuous_cd_mode = Physics2DServer::CCD_MODE_DISABLED;
 	can_sleep = true;
 	fi_callback = nullptr;
+
+	direct_access = memnew(Physics2DDirectBodyStateSW);
+	direct_access->body = this;
 }
 
 Body2DSW::~Body2DSW() {
+	memdelete(direct_access);
 	if (fi_callback) {
 		memdelete(fi_callback);
 	}
 }
 
-Physics2DDirectBodyStateSW *Physics2DDirectBodyStateSW::singleton = nullptr;
-
 Physics2DDirectSpaceState *Physics2DDirectBodyStateSW::get_space_state() {
 	return body->get_space()->get_direct_state();
+}
+
+real_t Physics2DDirectBodyStateSW::get_step() const {
+	return body->get_space()->get_step();
 }
 
 Variant Physics2DDirectBodyStateSW::get_contact_collider_shape_metadata(int p_contact_idx) const {

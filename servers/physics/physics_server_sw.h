@@ -43,7 +43,6 @@ class PhysicsServerSW : public PhysicsServer {
 	friend class PhysicsDirectSpaceStateSW;
 	bool active;
 	int iterations;
-	real_t last_step;
 
 	int island_count;
 	int active_objects;
@@ -53,8 +52,6 @@ class PhysicsServerSW : public PhysicsServer {
 
 	StepSW *stepper;
 	Set<const SpaceSW *> active_spaces;
-
-	PhysicsDirectBodyStateSW *direct_state;
 
 	mutable RID_Owner<ShapeSW> shape_owner;
 	mutable RID_Owner<SpaceSW> space_owner;
