@@ -93,11 +93,9 @@ CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		type(p_type) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
-	// Remove all overlapping, notify is not required since godot take care of it
-	for (int i = areasOverlapped.size() - 1; 0 <= i; --i) {
-		areasOverlapped[i]->remove_overlap(this, /*Notify*/ false);
+	for (int i = 0; i < areasOverlapped.size(); i++) {
+		areasOverlapped[i]->remove_object_overlaps(this);
 	}
-
 	destroyBulletCollisionObject();
 }
 
@@ -178,7 +176,9 @@ bool CollisionObjectBullet::is_collisions_response_enabled() {
 }
 
 void CollisionObjectBullet::notify_new_overlap(AreaBullet *p_area) {
-	areasOverlapped.push_back(p_area);
+	if (areasOverlapped.find(p_area) == -1) {
+		areasOverlapped.push_back(p_area);
+	}
 }
 
 void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
