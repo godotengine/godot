@@ -31,7 +31,7 @@
 			Texture to display when the node is disabled. See [member BaseButton.disabled].
 		</member>
 		<member name="texture_focused" type="Texture2D" setter="set_focused_texture" getter="get_focused_texture">
-			Texture to display when the node has mouse or keyboard focus.
+			Texture to display when the node has mouse or keyboard focus. [member texture_focused] is displayed [i]over[/i] the base texture, so a partially transparent texture should be used to ensure the base texture remains visible. A texture that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a fully transparent texture of any size. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</member>
 		<member name="texture_hover" type="Texture2D" setter="set_hover_texture" getter="get_hover_texture">
 			Texture to display when the mouse hovers the node.
