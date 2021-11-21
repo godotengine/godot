@@ -20,7 +20,7 @@ public:
     Vector3 get_velocity() const;
     Vector3 get_acceleration() const;
     Vector3 get_last_acceleration() const;
-    Vector3 get_rotation() const;
+    Vector3 get_angular_velocity() const;
     Vector3 get_force_accum() const;
     Vector3 get_torque_accum() const;
     Basis get_inv_inertia_tensor() const;

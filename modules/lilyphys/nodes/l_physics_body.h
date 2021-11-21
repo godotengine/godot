@@ -10,14 +10,38 @@
 class LPhysicsBody : public LCollisionObject {
 GDCLASS(LPhysicsBody, LCollisionObject);
 private:
-    Vector3 linear_velocity;
+    real_t inverse_mass;
+    real_t linear_damping;
+    real_t angular_damping;
+    Vector3 velocity;
+    Vector3 acceleration;
     Vector3 angular_velocity;
+    Basis inverse_inertia_tensor;
+
+    bool ignore_mass = false;
 protected:
     static void _bind_methods();
     void _notification(int p_what);
 public:
     LPhysicsBody();
     void _state_changed(Object *p_state);
+
+    real_t get_inverse_mass() const;
+    void set_inverse_mass(real_t p_inverse_mass);
+    real_t get_linear_damping() const;
+    void set_linear_damping(real_t p_linear_damping);
+    real_t get_angular_damping() const;
+    void set_angular_damping(real_t p_angular_damping);
+    const Vector3 &get_velocity() const;
+    void set_velocity(const Vector3 &p_velocity);
+    const Vector3 &get_acceleration() const;
+    void set_acceleration(const Vector3 &p_acceleration);
+    const Vector3 &get_angular_velocity() const;
+    void set_angular_velocity(const Vector3 &p_angular_velocity);
+    const Basis &get_inverse_inertia_tensor() const;
+    void set_inverse_inertia_tensor(const Basis &p_inverse_inertia_tensor);
+    void set_mass(real_t p_mass);
+    real_t get_mass() const;
 };
 
 

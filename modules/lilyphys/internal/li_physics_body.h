@@ -16,7 +16,7 @@ enum LPhysicsBodyPropertyType {
     ANGULAR_DAMPING,
     VELOCITY,
     ACCELERATION,
-    ROTATION,
+    ANGULAR_VELOCITY,
     INV_INERTIA_TENSOR
 };
 
@@ -29,8 +29,7 @@ private:
     Vector3 velocity;
     Vector3 acceleration;
     Vector3 last_acceleration;
-    // Rotation is the angular velocity, not the orientation.
-    Vector3 rotation;
+    Vector3 angular_velocity;
     Vector3 force_accum;
     Vector3 torque_accum;
     Basis inv_inertia_tensor;
@@ -58,7 +57,7 @@ public:
     const Vector3 &get_velocity() const;
     const Vector3 &get_acceleration() const;
     const Vector3 &get_last_acceleration() const;
-    const Vector3 &get_rotation() const;
+    const Vector3 &get_angular_velocity() const;
     const Vector3 &get_force_accum() const;
     const Vector3 &get_torque_accum() const;
     const Basis &get_inv_inertia_tensor() const;

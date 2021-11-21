@@ -11,6 +11,5 @@ void LIGravity::update_force(LIPhysicsBody* p_body, real_t p_delta) {
     if (!p_body->has_finite_mass()) {
         return;
     }
-
     p_body->add_force(Vector3(ProjectSettings::get_singleton()->get_setting("lilyphys/forces/gravity")) * p_body->get_mass());
 }

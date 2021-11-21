@@ -34,8 +34,8 @@ Vector3 LBodyState::get_last_acceleration() const {
     return body->get_last_acceleration();
 }
 
-Vector3 LBodyState::get_rotation() const {
-    return body->get_rotation();
+Vector3 LBodyState::get_angular_velocity() const {
+    return body->get_angular_velocity();
 }
 
 Vector3 LBodyState::get_force_accum() const {
