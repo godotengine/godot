@@ -2420,6 +2420,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		push_error("Assignment is not allowed inside an expression.");
 		return parse_expression(false); // Return the following expression.
 	}
+	if (p_previous_operand == nullptr) {
+		return parse_expression(false); // Return the following expression.
+	}
 
 #ifdef DEBUG_ENABLED
 	VariableNode *source_variable = nullptr;
