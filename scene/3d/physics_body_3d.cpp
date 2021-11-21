@@ -1299,7 +1299,6 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					// in order to avoid blocking lateral motion along a wall.
 					if (motion_angle < .5 * Math_PI) {
 						apply_default_sliding = false;
-
 						if (p_was_on_floor && !vel_dir_facing_up) {
 							// Cancel the motion.
 							Transform3D gt = get_global_transform();
@@ -1307,14 +1306,18 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 							real_t cancel_dist_max = MIN(0.1, margin * 20);
 							if (travel_total <= margin + CMP_EPSILON) {
 								gt.origin -= result.travel;
+								result.travel = Vector3(); // Cancel for constant speed computation.
 							} else if (travel_total < cancel_dist_max) { // If the movement is large the body can be prevented from reaching the walls.
 								gt.origin -= result.travel.slide(up_direction);
 								// Keep remaining motion in sync with amount canceled.
 								motion = motion.slide(up_direction);
+								result.travel = Vector3();
+							} else {
+								// Travel is too high to be safely cancelled, we take it into account.
+								result.travel = result.travel.slide(up_direction);
+								motion = motion.normalized() * result.travel.length();
 							}
 							set_global_transform(gt);
-							result.travel = Vector3(); // Cancel for constant speed computation.
-
 							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.
 							_snap_on_floor(true, false);
 						} else {
