@@ -3,9 +3,12 @@
 //
 
 #include "lilyphys_server.h"
+
 #include "l_body_state.h"
-#include "core/project_settings.h"
 #include "internal/li_physics_body.h"
+#include "internal/li_spring.h"
+
+#include "core/project_settings.h"
 
 LilyphysServer *LilyphysServer::singleton = nullptr;
 
@@ -77,6 +80,13 @@ RID LilyphysServer::create_physics_body() {
     object->set_self(rid);
     // Automatically register the default gravity force.
     register_generator(rid, gravity);
+    // Spring test code.
+//    if (bodies.size() == 2) {
+//        LISpring* spring_gen = memnew(LISpring(Vector3(0.5f, 0.5f, 0.5f), rid, Vector3(0.5f, 0.5f, 0.5f), 0.1f, 2.0f));
+//        spring = generator_owner.make_rid(spring_gen);
+//        generators.insert(spring);
+//        register_generator(body_owner.get(bodies.front()->get())->get_self(), spring);
+//    }
     return rid;
 }
 
@@ -109,4 +119,15 @@ void LilyphysServer::set_physics_body_parameter(RID rid, LPhysicsBodyPropertyTyp
     LIPhysicsBody *body = body_owner.get(rid);
     ERR_FAIL_COND(!body);
     body->set_property(type, value);
+}
+
+LIPhysicsBody *LilyphysServer::get_physics_body(RID p_rid) {
+    LIPhysicsBody *body = body_owner.get(p_rid);
+    if (body) {
+        return body;
+    }
+    else {
+        print_error("RID does not correspond with valid physics body.");
+        return nullptr;
+    }
 }

@@ -23,9 +23,9 @@ enum LPhysicsBodyPropertyType {
 class LIPhysicsBody : public LICollisionObject {
 private:
     Transform transform;
-    real_t inverse_mass;
-    real_t linear_damping;
-    real_t angular_damping;
+    real_t inverse_mass = 0;
+    real_t linear_damping = 0.8;
+    real_t angular_damping = 0.8;
     Vector3 velocity;
     Vector3 acceleration;
     Vector3 last_acceleration;
@@ -46,8 +46,11 @@ public:
     void perform_callback();
     bool has_finite_mass() const;
     void add_force(const Vector3 &p_force);
+    void add_force_at_point(const Vector3& p_force, const Vector3& p_point);
+    void add_force_at_body_point(const Vector3& p_force, const Vector3& p_point);
     void integrate(float p_step);
     void clear_accumulators();
+    Vector3 to_global(const Vector3& p_vector) const;
 
     const Transform &get_transform() const;
     real_t get_inverse_mass() const;

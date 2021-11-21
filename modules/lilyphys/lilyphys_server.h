@@ -27,6 +27,7 @@ class LilyphysServer : public Object {
     };
     List<Registration> registry;
     RID gravity;
+    RID spring;
 protected:
     static void _bind_methods();
 public:
@@ -42,6 +43,7 @@ public:
     void unregister_generator(RID p_body, RID p_generator);
     void clear_registry();
     void set_physics_body_parameter(RID rid, LPhysicsBodyPropertyType type, const Variant& value);
+    LIPhysicsBody* get_physics_body(RID p_rid);
 };
 
 

@@ -159,3 +159,18 @@ void LIPhysicsBody::set_property(const LPhysicsBodyPropertyType type, const Vari
             velocity = value;
     }
 }
+
+void LIPhysicsBody::add_force_at_point(const Vector3 &p_force, const Vector3 &p_point) {
+    Vector3 point = p_point;
+    point -= transform.origin;
+    force_accum += p_force;
+    torque_accum += point.cross(p_force);
+}
+
+void LIPhysicsBody::add_force_at_body_point(const Vector3 &p_force, const Vector3 &p_point) {
+    add_force_at_point(p_force, to_global(p_point));
+}
+
+Vector3 LIPhysicsBody::to_global(const Vector3 &p_vector) const {
+    return transform.xform(p_vector);
+}
