@@ -409,6 +409,36 @@ Vector3 Node3D::get_scale() const {
 	return data.scale;
 }
 
+void Node3D::set_global_position(const Vector3 &p_position) {
+	Transform3D t = get_global_transform();
+	t.origin = p_position;
+	set_global_transform(t);
+}
+
+void Node3D::set_global_rotation(const Vector3 &p_euler_rad) {
+	Transform3D t = get_global_transform();
+	t.basis = Basis::from_euler(p_euler_rad).scaled(t.basis.get_scale());
+	set_global_transform(t);
+}
+
+void Node3D::set_global_scale(const Vector3 &p_scale) {
+	Transform3D t = get_global_transform();
+	t.basis = Basis::from_scale(p_scale).rotated(t.basis.get_euler_normalized());
+	set_global_transform(t);
+}
+
+Vector3 Node3D::get_global_position() const {
+	return data.global_transform.origin;
+}
+
+Vector3 Node3D::get_global_rotation() const {
+	return data.global_transform.basis.get_euler_normalized(data.rotation_order);
+}
+
+Vector3 Node3D::get_global_scale() const {
+	return data.global_transform.basis.get_scale();
+}
+
 void Node3D::update_gizmos() {
 #ifdef TOOLS_ENABLED
 	if (!is_inside_world()) {
@@ -705,19 +735,19 @@ void Node3D::scale_object_local(const Vector3 &p_scale) {
 	set_transform(t);
 }
 
-void Node3D::global_rotate(const Vector3 &p_axis, real_t p_angle) {
+void Node3D::rotate_object_global(const Vector3 &p_axis, real_t p_angle) {
 	Transform3D t = get_global_transform();
 	t.basis.rotate(p_axis, p_angle);
 	set_global_transform(t);
 }
 
-void Node3D::global_scale(const Vector3 &p_scale) {
+void Node3D::scale_object_global(const Vector3 &p_scale) {
 	Transform3D t = get_global_transform();
 	t.basis.scale(p_scale);
 	set_global_transform(t);
 }
 
-void Node3D::global_translate(const Vector3 &p_offset) {
+void Node3D::translate_object_global(const Vector3 &p_offset) {
 	Transform3D t = get_global_transform();
 	t.origin += p_offset;
 	set_global_transform(t);
@@ -858,6 +888,12 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rotation_edit_mode"), &Node3D::get_rotation_edit_mode);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Node3D::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Node3D::get_scale);
+	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Node3D::set_global_position);
+	ClassDB::bind_method(D_METHOD("get_global_position"), &Node3D::get_global_position);
+	ClassDB::bind_method(D_METHOD("set_global_rotation", "euler"), &Node3D::set_global_rotation);
+	ClassDB::bind_method(D_METHOD("get_global_rotation"), &Node3D::get_global_rotation);
+	ClassDB::bind_method(D_METHOD("set_global_scale", "scale"), &Node3D::set_global_scale);
+	ClassDB::bind_method(D_METHOD("get_global_scale"), &Node3D::get_global_scale);
 	ClassDB::bind_method(D_METHOD("set_quaternion", "quaternion"), &Node3D::set_quaternion);
 	ClassDB::bind_method(D_METHOD("get_quaternion"), &Node3D::get_quaternion);
 	ClassDB::bind_method(D_METHOD("set_basis", "basis"), &Node3D::set_basis);
@@ -897,9 +933,9 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_transform_notification_enabled"), &Node3D::is_transform_notification_enabled);
 
 	ClassDB::bind_method(D_METHOD("rotate", "axis", "angle"), &Node3D::rotate);
-	ClassDB::bind_method(D_METHOD("global_rotate", "axis", "angle"), &Node3D::global_rotate);
-	ClassDB::bind_method(D_METHOD("global_scale", "scale"), &Node3D::global_scale);
-	ClassDB::bind_method(D_METHOD("global_translate", "offset"), &Node3D::global_translate);
+	ClassDB::bind_method(D_METHOD("rotate_object_global", "axis", "angle"), &Node3D::rotate_object_global);
+	ClassDB::bind_method(D_METHOD("scale_object_global", "scale"), &Node3D::scale_object_global);
+	ClassDB::bind_method(D_METHOD("translate_object_global", "offset"), &Node3D::translate_object_global);
 	ClassDB::bind_method(D_METHOD("rotate_object_local", "axis", "angle"), &Node3D::rotate_object_local);
 	ClassDB::bind_method(D_METHOD("scale_object_local", "scale"), &Node3D::scale_object_local);
 	ClassDB::bind_method(D_METHOD("translate_object_local", "offset"), &Node3D::translate_object_local);
@@ -940,6 +976,9 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "quaternion", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_quaternion", "get_quaternion");
 	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "basis", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_basis", "get_basis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_global_rotation", "get_global_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_global_scale", "get_global_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_edit_mode", PROPERTY_HINT_ENUM, "Euler,Quaternion,Basis"), "set_rotation_edit_mode", "get_rotation_edit_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_order", PROPERTY_HINT_ENUM, "XYZ,XZY,YXZ,YZX,ZXY,ZYX"), "set_rotation_order", "get_rotation_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");

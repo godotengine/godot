@@ -165,6 +165,13 @@ public:
 	Vector3 get_rotation() const;
 	Vector3 get_scale() const;
 
+	void set_global_position(const Vector3 &p_position);
+	void set_global_rotation(const Vector3 &p_euler_rad);
+	void set_global_scale(const Vector3 &p_scale);
+	Vector3 get_global_position() const;
+	Vector3 get_global_rotation() const;
+	Vector3 get_global_scale() const;
+
 	void set_transform(const Transform3D &p_transform);
 	void set_basis(const Basis &p_basis);
 	void set_quaternion(const Quaternion &p_quaternion);
@@ -213,9 +220,9 @@ public:
 	void scale_object_local(const Vector3 &p_scale);
 	void translate_object_local(const Vector3 &p_offset);
 
-	void global_rotate(const Vector3 &p_axis, real_t p_angle);
-	void global_scale(const Vector3 &p_scale);
-	void global_translate(const Vector3 &p_offset);
+	void rotate_object_global(const Vector3 &p_axis, real_t p_angle);
+	void scale_object_global(const Vector3 &p_scale);
+	void translate_object_global(const Vector3 &p_offset);
 
 	void look_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
 	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));

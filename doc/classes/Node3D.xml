@@ -56,28 +56,6 @@
 				Returns the current [World3D] resource this [Node3D] node is registered to.
 			</description>
 		</method>
-		<method name="global_rotate">
-			<return type="void" />
-			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="angle" type="float" />
-			<description>
-				Rotates the global (world) transformation around axis, a unit [Vector3], by specified angle in radians. The rotation axis is in global coordinate system.
-			</description>
-		</method>
-		<method name="global_scale">
-			<return type="void" />
-			<argument index="0" name="scale" type="Vector3" />
-			<description>
-				Scales the global (world) transformation by the given [Vector3] scale factors.
-			</description>
-		</method>
-		<method name="global_translate">
-			<return type="void" />
-			<argument index="0" name="offset" type="Vector3" />
-			<description>
-				Moves the global (world) transformation by [Vector3] offset. The offset is in global coordinate system.
-			</description>
-		</method>
 		<method name="hide">
 			<return type="void" />
 			<description>
@@ -142,6 +120,14 @@
 				Rotates the local transformation around axis, a unit [Vector3], by specified angle in radians.
 			</description>
 		</method>
+		<method name="rotate_object_global">
+			<return type="void" />
+			<argument index="0" name="axis" type="Vector3" />
+			<argument index="1" name="angle" type="float" />
+			<description>
+				Rotates the global transformation around axis, a unit [Vector3], by specified angle in radians. The rotation axis is in global coordinate system.
+			</description>
+		</method>
 		<method name="rotate_object_local">
 			<return type="void" />
 			<argument index="0" name="axis" type="Vector3" />
@@ -169,6 +155,13 @@
 			<argument index="0" name="angle" type="float" />
 			<description>
 				Rotates the local transformation around the Z axis by angle in radians.
+			</description>
+		</method>
+		<method name="scale_object_global">
+			<return type="void" />
+			<argument index="0" name="scale" type="Vector3" />
+			<description>
+				Scales the global transformation by given 3D scale factors in global coordinate system.
 			</description>
 		</method>
 		<method name="scale_object_local">
@@ -249,6 +242,13 @@
 				Note that the translation [code]offset[/code] is affected by the node's scale, so if scaled by e.g. [code](10, 1, 1)[/code], a translation by an offset of [code](2, 0, 0)[/code] would actually add 20 ([code]2 * 10[/code]) to the X coordinate.
 			</description>
 		</method>
+		<method name="translate_object_global">
+			<return type="void" />
+			<argument index="0" name="offset" type="Vector3" />
+			<description>
+				Changes the node's position by the given offset [Vector3] in global space.
+			</description>
+		</method>
 		<method name="translate_object_local">
 			<return type="void" />
 			<argument index="0" name="offset" type="Vector3" />
@@ -266,6 +266,15 @@
 	<members>
 		<member name="basis" type="Basis" setter="set_basis" getter="get_basis">
 			Direct access to the 3x3 basis of the [Transform3D] property.
+		</member>
+		<member name="global_position" type="Vector3" setter="set_global_position" getter="get_global_position" default="Vector3(0, 0, 0)">
+			Global position or translation of this node. This is equivalent to [code]global_transform.origin[/code].
+		</member>
+		<member name="global_rotation" type="Vector3" setter="set_global_rotation" getter="get_global_rotation" default="Vector3(0, 0, 0)">
+			Rotation part of the global transformation in radians, specified in terms of Euler angles. The angles construct a rotaton in the order specified by the [member rotation_order] property.
+		</member>
+		<member name="global_scale" type="Vector3" setter="set_global_scale" getter="get_global_scale" default="Vector3(1, 1, 1)">
+			Scale part of the global transformation.
 		</member>
 		<member name="global_transform" type="Transform3D" setter="set_global_transform" getter="get_global_transform">
 			World3D space (global) [Transform3D] of this node.
