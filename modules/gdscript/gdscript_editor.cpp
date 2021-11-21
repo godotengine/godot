@@ -1182,6 +1182,10 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::ExpressionNode *p_expression, GDScriptCompletionIdentifier &r_type) {
 	bool found = false;
 
+	if (p_expression == nullptr) {
+		return false;
+	}
+
 	if (p_expression->is_constant) {
 		// Already has a value, so just use that.
 		r_type = _type_from_variant(p_expression->reduced_value);
