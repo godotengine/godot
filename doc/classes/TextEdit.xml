@@ -384,6 +384,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bookmark_gutter" type="bool" setter="set_bookmark_gutter_enabled" getter="is_bookmark_gutter_enabled" default="false">
+			If [code]true[/code], the bookmark gutter is visible.
+		</member>
 		<member name="breakpoint_gutter" type="bool" setter="set_breakpoint_gutter_enabled" getter="is_breakpoint_gutter_enabled" default="false">
 			If [code]true[/code], the breakpoint gutter is visible.
 		</member>
