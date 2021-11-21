@@ -119,7 +119,9 @@ DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(in
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_COND_V(!godot_io_java, SCREEN_LANDSCAPE);
 
-	return (ScreenOrientation)godot_io_java->get_screen_orientation();
+	const int orientation = godot_io_java->get_screen_orientation();
+	ERR_FAIL_INDEX_V_MSG(orientation, 7, SCREEN_LANDSCAPE, "Unrecognized screen orientation");
+	return (ScreenOrientation)orientation;
 }
 
 int DisplayServerAndroid::get_screen_count() const {
