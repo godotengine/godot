@@ -2392,7 +2392,7 @@ bool SoftDynamicBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo
 VisibleOnScreenNotifier3DGizmoPlugin::VisibleOnScreenNotifier3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/visibility_notifier", Color(0.8, 0.5, 0.7));
 	create_material("visibility_notifier_material", gizmo_color);
-	gizmo_color.a = 0.1;
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("visibility_notifier_solid_material", gizmo_color);
 	create_handle_material("handles");
 }
@@ -2579,7 +2579,7 @@ void CPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 GPUParticles3DGizmoPlugin::GPUParticles3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particles", Color(0.8, 0.7, 0.4));
 	create_material("particles_material", gizmo_color);
-	gizmo_color.a = 0.1;
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("particles_solid_material", gizmo_color);
 	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoGPUParticles3D"), SNAME("EditorIcons")));
 	create_handle_material("handles");
@@ -2744,7 +2744,7 @@ void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 GPUParticlesCollision3DGizmoPlugin::GPUParticlesCollision3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
-	gizmo_color.a = 0.15;
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("shape_material_internal", gizmo_color);
 
 	create_handle_material("handles");
@@ -3004,10 +3004,11 @@ ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 
 	create_material("reflection_probe_material", gizmo_color);
 
-	gizmo_color.a = 0.5;
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.1, 0.0);
 	create_material("reflection_internal_material", gizmo_color);
 
-	gizmo_color.a = 0.1;
+	gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/reflection_probe", Color(0.6, 1, 0.5));
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("reflection_probe_solid_material", gizmo_color);
 
 	create_icon_material("reflection_probe_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoReflectionProbe"), SNAME("EditorIcons")));
@@ -3329,10 +3330,10 @@ VoxelGIGizmoPlugin::VoxelGIGizmoPlugin() {
 	create_material("voxel_gi_material", gizmo_color);
 
 	// This gizmo draws a lot of lines. Use a low opacity to make it not too intrusive.
-	gizmo_color.a = 0.1;
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("voxel_gi_internal_material", gizmo_color);
 
-	gizmo_color.a = 0.05;
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.01, 0.0);
 	create_material("voxel_gi_solid_material", gizmo_color);
 
 	create_icon_material("voxel_gi_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoVoxelGI"), SNAME("EditorIcons")));
@@ -3506,7 +3507,7 @@ void VoxelGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/lightmap_lines", Color(0.5, 0.6, 1));
 
-	gizmo_color.a = 0.1;
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("lightmap_lines", gizmo_color);
 
 	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
@@ -3698,7 +3699,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 LightmapProbeGizmoPlugin::LightmapProbeGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/lightprobe_lines", Color(0.5, 0.6, 1));
 
-	gizmo_color.a = 0.3;
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.03, 0.0);
 	create_material("lightprobe_lines", gizmo_color);
 }
 
@@ -5279,7 +5280,7 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 FogVolumeGizmoPlugin::FogVolumeGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/fog_volume", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
-	gizmo_color.a = 0.15;
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("shape_material_internal", gizmo_color);
 
 	create_handle_material("handles");
