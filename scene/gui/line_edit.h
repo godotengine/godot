@@ -129,6 +129,9 @@ private:
 
 	bool middle_mouse_paste_enabled = true;
 
+	bool drag_action = false;
+	bool drag_caret_force_displayed = false;
+
 	Ref<Texture2D> right_icon;
 	bool flat = false;
 

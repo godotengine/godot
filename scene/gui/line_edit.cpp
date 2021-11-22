@@ -268,7 +268,9 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 
-			shift_selection_check_pre(b->is_shift_pressed());
+			if (b->is_shift_pressed()) {
+				shift_selection_check_pre(true);
+			}
 
 			set_caret_at_pixel_pos(b->get_position().x);
 
@@ -345,6 +347,9 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			selection.creating = false;
 			selection.double_click = false;
+			if (!drag_action) {
+				selection.drag_attempt = false;
+			}
 
 			show_virtual_keyboard();
 		}
@@ -368,6 +373,11 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				set_caret_at_pixel_pos(m->get_position().x);
 				selection_fill_at_caret();
 			}
+		}
+
+		if (drag_action && can_drop_data(m->get_position(), get_viewport()->gui_get_drag_data())) {
+			drag_caret_force_displayed = true;
+			set_caret_at_pixel_pos(m->get_position().x);
 		}
 	}
 
@@ -569,21 +579,44 @@ bool LineEdit::can_drop_data(const Point2 &p_point, const Variant &p_data) const
 		return drop_override;
 	}
 
-	return p_data.get_type() == Variant::STRING;
+	return is_editable() && p_data.get_type() == Variant::STRING;
 }
 
 void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 	Control::drop_data(p_point, p_data);
 
-	if (p_data.get_type() == Variant::STRING) {
+	if (p_data.get_type() == Variant::STRING && is_editable()) {
 		set_caret_at_pixel_pos(p_point.x);
+		int caret_column_tmp = caret_column;
+		if (selection.drag_attempt) {
+			selection.drag_attempt = false;
+			if (caret_column < selection.begin || caret_column > selection.end) {
+				if (caret_column_tmp > selection.end) {
+					caret_column_tmp = caret_column_tmp - (selection.end - selection.begin);
+				}
+				selection_delete();
 
-		text = text.left(selection.begin) + text.substr(selection.end);
-		_shape();
-
-		insert_text_at_caret(p_data);
-		selection.begin = caret_column - (selection.end - selection.begin);
-		selection.end = caret_column;
+				set_caret_column(caret_column_tmp);
+				insert_text_at_caret(p_data);
+			}
+		} else if (selection.enabled && caret_column >= selection.begin && caret_column <= selection.end) {
+			caret_column_tmp = selection.begin;
+			selection_delete();
+			set_caret_column(caret_column_tmp);
+			insert_text_at_caret(p_data);
+			grab_focus();
+		} else {
+			insert_text_at_caret(p_data);
+			grab_focus();
+		}
+		select(caret_column_tmp, caret_column);
+		if (!text_changed_dirty) {
+			if (is_inside_tree()) {
+				MessageQueue::get_singleton()->push_call(this, "_text_changed");
+			}
+			text_changed_dirty = true;
+		}
+		update();
 	}
 }
 
@@ -803,7 +836,7 @@ void LineEdit::_notification(int p_what) {
 
 			// Draw carets.
 			ofs.x = x_ofs + scroll_offset;
-			if (draw_caret) {
+			if (draw_caret || drag_caret_force_displayed) {
 				if (ime_text.length() == 0) {
 					// Normal caret.
 					CaretInfo caret = TS->shaped_text_get_carets(text_rid, caret_column);
@@ -921,7 +954,7 @@ void LineEdit::_notification(int p_what) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
 
-			if (deselect_on_focus_loss_enabled) {
+			if (deselect_on_focus_loss_enabled && !selection.drag_attempt) {
 				deselect();
 			}
 		} break;
@@ -934,6 +967,25 @@ void LineEdit::_notification(int p_what) {
 
 				update();
 			}
+		} break;
+		case Control::NOTIFICATION_DRAG_BEGIN: {
+			drag_action = true;
+		} break;
+		case Control::NOTIFICATION_DRAG_END: {
+			if (is_drag_successful()) {
+				if (selection.drag_attempt) {
+					selection.drag_attempt = false;
+					if (is_editable()) {
+						selection_delete();
+					} else if (deselect_on_focus_loss_enabled) {
+						deselect();
+					}
+				}
+			} else {
+				selection.drag_attempt = false;
+			}
+			drag_action = false;
+			drag_caret_force_displayed = false;
 		} break;
 	}
 }
@@ -999,6 +1051,9 @@ void LineEdit::undo() {
 	} else if (undo_stack_pos == undo_stack.front()) {
 		return;
 	}
+
+	deselect();
+
 	undo_stack_pos = undo_stack_pos->prev();
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
@@ -1020,6 +1075,9 @@ void LineEdit::redo() {
 	if (undo_stack_pos == undo_stack.back()) {
 		return;
 	}
+
+	deselect();
+
 	undo_stack_pos = undo_stack_pos->next();
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
