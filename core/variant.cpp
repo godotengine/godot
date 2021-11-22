@@ -736,7 +736,7 @@ bool Variant::is_zero() const {
 			return *reinterpret_cast<const RID *>(_data._mem) == RID();
 		} break;
 		case OBJECT: {
-			return _UNSAFE_OBJ_PROXY_PTR(*this) == nullptr;
+			return _OBJ_PTR(*this) == nullptr;
 		} break;
 		case NODE_PATH: {
 			return reinterpret_cast<const NodePath *>(_data._mem)->is_empty();
@@ -2616,7 +2616,7 @@ uint32_t Variant::hash() const {
 			return hash_djb2_one_64(reinterpret_cast<const RID *>(_data._mem)->get_id());
 		} break;
 		case OBJECT: {
-			return hash_djb2_one_64(make_uint64_t(_UNSAFE_OBJ_PROXY_PTR(*this)));
+			return hash_djb2_one_64(make_uint64_t(_OBJ_PTR(*this)));
 		} break;
 		case NODE_PATH: {
 			return reinterpret_cast<const NodePath *>(_data._mem)->hash();

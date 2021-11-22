@@ -419,7 +419,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == NIL)
 					_RETURN(true);
 				if (p_b.type == OBJECT)
-					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_b) == nullptr);
+					_RETURN(_OBJ_PTR(p_b) == nullptr);
 
 				_RETURN(false);
 			}
@@ -436,9 +436,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_EQUAL, OBJECT) {
 				if (p_b.type == OBJECT)
-					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) == _UNSAFE_OBJ_PROXY_PTR(p_b));
+					_RETURN(_OBJ_PTR(p_a) == _OBJ_PTR(p_b));
 				if (p_b.type == NIL)
-					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) == nullptr);
+					_RETURN(_OBJ_PTR(p_a) == nullptr);
 
 				_RETURN_FAIL;
 			}
@@ -507,7 +507,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == NIL)
 					_RETURN(false);
 				if (p_b.type == OBJECT)
-					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_b) != nullptr);
+					_RETURN(_OBJ_PTR(p_b) != nullptr);
 
 				_RETURN(true);
 			}
@@ -525,9 +525,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_NOT_EQUAL, OBJECT) {
 				if (p_b.type == OBJECT)
-					_RETURN((_UNSAFE_OBJ_PROXY_PTR(p_a) != _UNSAFE_OBJ_PROXY_PTR(p_b)));
+					_RETURN((_OBJ_PTR(p_a) != _OBJ_PTR(p_b)));
 				if (p_b.type == NIL)
-					_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) != nullptr);
+					_RETURN(_OBJ_PTR(p_a) != nullptr);
 
 				_RETURN_FAIL;
 			}
@@ -610,7 +610,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) < _UNSAFE_OBJ_PROXY_PTR(p_b));
+				_RETURN(_OBJ_PTR(p_a) < _OBJ_PTR(p_b));
 			}
 
 			CASE_TYPE(math, OP_LESS, ARRAY) {
@@ -664,7 +664,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS_EQUAL, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) <= _UNSAFE_OBJ_PROXY_PTR(p_b));
+				_RETURN(_OBJ_PTR(p_a) <= _OBJ_PTR(p_b));
 			}
 
 			DEFAULT_OP_NUM(math, OP_LESS_EQUAL, INT, <=, _int);
@@ -714,7 +714,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) > _UNSAFE_OBJ_PROXY_PTR(p_b));
+				_RETURN(_OBJ_PTR(p_a) > _OBJ_PTR(p_b));
 			}
 
 			CASE_TYPE(math, OP_GREATER, ARRAY) {
@@ -768,7 +768,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER_EQUAL, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN(_UNSAFE_OBJ_PROXY_PTR(p_a) >= _UNSAFE_OBJ_PROXY_PTR(p_b));
+				_RETURN(_OBJ_PTR(p_a) >= _OBJ_PTR(p_b));
 			}
 
 			DEFAULT_OP_NUM(math, OP_GREATER_EQUAL, INT, >=, _int);

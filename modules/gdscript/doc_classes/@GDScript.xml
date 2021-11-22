@@ -457,6 +457,9 @@
 			<argument index="0" name="instance" type="Object" />
 			<description>
 				Returns whether [code]instance[/code] is a valid object (e.g. has not been deleted from memory).
+				Alternatively, you can use either of the following [b]with the exact same meaning[/b]:
+				- Compare the variable with null. E.g.: [code]if some_object != null:[/code]
+				- Treat the variable as a boolean. E.g.: [code]if some_object:[/code]
 			</description>
 		</method>
 		<method name="is_nan">

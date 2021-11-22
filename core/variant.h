@@ -75,10 +75,6 @@ typedef PoolVector<Color> PoolColorArray;
 
 #define _REF_OBJ_PTR(m_variant) (reinterpret_cast<Ref<Reference> *>((m_variant)._get_obj().ref.get_data())->ptr())
 #define _OBJ_PTR(m_variant) ((m_variant)._get_obj().rc ? (m_variant)._get_obj().rc->get_ptr() : _REF_OBJ_PTR(m_variant))
-// _UNSAFE_OBJ_PROXY_PTR is needed for comparing an object Variant against NIL or compare two object Variants.
-// It's guaranteed to be unique per object, in contrast to the pointer stored in the RC structure,
-// which is set to null when the object is destroyed.
-#define _UNSAFE_OBJ_PROXY_PTR(m_variant) ((m_variant)._get_obj().rc ? reinterpret_cast<uint8_t *>((m_variant)._get_obj().rc) : reinterpret_cast<uint8_t *>(_REF_OBJ_PTR(m_variant)))
 
 class Variant {
 public:
