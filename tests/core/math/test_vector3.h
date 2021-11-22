@@ -136,4 +136,6 @@ TEST_CASE("[Vector3] Transpose methods") {
 			zy.y == vector3.y, "Transposed vectors should have the correct values");
 }
 
+} //namespace TestVector3
+
 #endif //GODOT_TEST_VECTOR3_H

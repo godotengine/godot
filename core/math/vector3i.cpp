@@ -68,7 +68,8 @@ Vector3i Vector3i::get_XZY() const {
 }
 
 Vector3i Vector3i::get_YXZ() const {
-	return new Vector3i(y, x, z)}
+	return new Vector3i(y, x, z)
+}
 
 Vector3i Vector3i::get_YZX() const {
 	return new Vector3i(y, z, x)

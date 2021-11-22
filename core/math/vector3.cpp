@@ -133,7 +133,8 @@ Vector3 Vector3::get_XZY() const {
 }
 
 Vector3 Vector3::get_YXZ() const {
-	return new Vector3(y, x, z)}
+	return new Vector3(y, x, z)
+}
 
 Vector3 Vector3::get_YZX() const {
 	return new Vector3(y, z, x)

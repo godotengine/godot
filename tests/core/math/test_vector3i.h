@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-
 #ifndef GODOT_TEST_VECTOR3I_H
 #define GODOT_TEST_VECTOR3I_H
 
@@ -143,5 +142,7 @@ TEST_CASE("[Vector3i] Transpose methods") {
 	CHECK_MESSAGE(
 			zy.y == vector3i.y, "Transposed vectors should have the correct values");
 }
+
+} //namespace TestVector3i
 
 #endif //GODOT_TEST_VECTOR3I_H

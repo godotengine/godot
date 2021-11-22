@@ -62,6 +62,6 @@ TEST_CASE("[Vector2] Transpose methods") {
 			yx.y == vector2.x, "Transposed vectors should have the correct values");
 }
 
-}
+} //namespace TestVector2
 
 #endif //GODOT_TEST_VECTOR2_H
