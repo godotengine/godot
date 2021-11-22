@@ -51,7 +51,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 	// All mono objects created from the managed world (e.g.: 'new Player()')
 	// need to have a CSharpScript in order for their methods to be callable from the unmanaged side
 
-	Reference *ref = Object::cast_to<Reference>(unmanaged);
+	RefCounted *rc = Object::cast_to<RefCounted>(unmanaged);
 
 	GDMonoClass *klass = GDMonoUtils::get_object_class(managed);
 
@@ -73,33 +73,37 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 		script_binding.inited = true;
 		script_binding.type_name = NATIVE_GDMONOCLASS_NAME(klass);
 		script_binding.wrapper_class = klass;
-		script_binding.gchandle = ref ? MonoGCHandleData::new_weak_handle(managed) : MonoGCHandleData::new_strong_handle(managed);
+		script_binding.gchandle = rc ? MonoGCHandleData::new_weak_handle(managed) : MonoGCHandleData::new_strong_handle(managed);
 		script_binding.owner = unmanaged;
 
-		if (ref) {
+		if (rc) {
 			// Unsafe refcount increment. The managed instance also counts as a reference.
 			// This way if the unmanaged world has no references to our owner
 			// but the managed instance is alive, the refcount will be 1 instead of 0.
-			// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
+			// See: godot_icall_RefCounted_Dtor(MonoObject *p_obj, Object *p_ptr)
 
 			// May not me referenced yet, so we must use init_ref() instead of reference()
-			if (ref->init_ref()) {
-				CSharpLanguage::get_singleton()->post_unsafe_reference(ref);
+			if (rc->init_ref()) {
+				CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
 			}
 		}
 
 		// The object was just created, no script instance binding should have been attached
-		CRASH_COND(unmanaged->has_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index()));
+		CRASH_COND(CSharpLanguage::has_instance_binding(unmanaged));
 
-		void *data = (void *)CSharpLanguage::get_singleton()->insert_script_binding(unmanaged, script_binding);
+		void *data;
+		{
+			MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
+			data = (void *)CSharpLanguage::get_singleton()->insert_script_binding(unmanaged, script_binding);
+		}
 
 		// Should be thread safe because the object was just created and nothing else should be referencing it
-		unmanaged->set_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index(), data);
+		CSharpLanguage::set_instance_binding(unmanaged, data);
 
 		return;
 	}
 
-	MonoGCHandleData gchandle = ref ? MonoGCHandleData::new_weak_handle(managed) : MonoGCHandleData::new_strong_handle(managed);
+	MonoGCHandleData gchandle = rc ? MonoGCHandleData::new_weak_handle(managed) : MonoGCHandleData::new_strong_handle(managed);
 
 	Ref<CSharpScript> script = CSharpScript::create_for_managed_type(klass, native);
 

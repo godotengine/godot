@@ -149,9 +149,9 @@ typedef void godot_object;
 
 #include <gdnative/plane.h>
 
-/////// Quat
+/////// Quaternion
 
-#include <gdnative/quat.h>
+#include <gdnative/quaternion.h>
 
 /////// AABB
 
@@ -161,9 +161,9 @@ typedef void godot_object;
 
 #include <gdnative/basis.h>
 
-/////// Transform
+/////// Transform3D
 
-#include <gdnative/transform.h>
+#include <gdnative/transform_3d.h>
 
 /////// Color
 

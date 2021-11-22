@@ -31,10 +31,10 @@
 #include "core/os/keyboard.h"
 
 // See https://w3c.github.io/uievents-code/#code-value-tables
-int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], bool p_physical) {
+Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], bool p_physical) {
 #define DOM2GODOT(p_str, p_godot_code)                                         \
 	if (memcmp((const void *)p_str, (void *)p_code, strlen(p_str) + 1) == 0) { \
-		return KEY_##p_godot_code;                                             \
+		return Key::p_godot_code;                                              \
 	}
 
 	// Numpad section.
@@ -79,7 +79,7 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 			if (b0 > 0x60 && b0 < 0x7B) { // Lowercase ASCII.
 				b0 -= 32;
 			}
-			return b0;
+			return (Key)b0;
 		}
 
 #define _U_2BYTES_MASK 0xE0
@@ -88,11 +88,11 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 		if (b2 == 0 && (b0 & _U_2BYTES_MASK) == _U_2BYTES) { // 2-bytes utf8, only known latin.
 			uint32_t key = ((b0 & ~_U_2BYTES_MASK) << 6) | (b1 & 0x3F);
 			if (key >= 0xA0 && key <= 0xDF) {
-				return key;
+				return (Key)key;
 			}
 			if (key >= 0xE0 && key <= 0xFF) { // Lowercase known latin.
 				key -= 0x20;
-				return key;
+				return (Key)key;
 			}
 		}
 #undef _U_2BYTES_MASK
@@ -105,16 +105,16 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("BracketLeft", BRACKETLEFT);
 	DOM2GODOT("BracketRight", BRACKETRIGHT);
 	DOM2GODOT("Comma", COMMA);
-	DOM2GODOT("Digit0", 0);
-	DOM2GODOT("Digit1", 1);
-	DOM2GODOT("Digit2", 2);
-	DOM2GODOT("Digit3", 3);
-	DOM2GODOT("Digit4", 4);
-	DOM2GODOT("Digit5", 5);
-	DOM2GODOT("Digit6", 6);
-	DOM2GODOT("Digit7", 7);
-	DOM2GODOT("Digit8", 8);
-	DOM2GODOT("Digit9", 9);
+	DOM2GODOT("Digit0", KEY_0);
+	DOM2GODOT("Digit1", KEY_1);
+	DOM2GODOT("Digit2", KEY_2);
+	DOM2GODOT("Digit3", KEY_3);
+	DOM2GODOT("Digit4", KEY_4);
+	DOM2GODOT("Digit5", KEY_5);
+	DOM2GODOT("Digit6", KEY_6);
+	DOM2GODOT("Digit7", KEY_7);
+	DOM2GODOT("Digit8", KEY_8);
+	DOM2GODOT("Digit9", KEY_9);
 	DOM2GODOT("Equal", EQUAL);
 	DOM2GODOT("IntlBackslash", BACKSLASH);
 	//DOM2GODOT("IntlRo", UNKNOWN);
@@ -159,8 +159,8 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("Backspace", BACKSPACE);
 	DOM2GODOT("CapsLock", CAPSLOCK);
 	DOM2GODOT("ContextMenu", MENU);
-	DOM2GODOT("ControlLeft", CONTROL);
-	DOM2GODOT("ControlRight", CONTROL);
+	DOM2GODOT("ControlLeft", CTRL);
+	DOM2GODOT("ControlRight", CTRL);
 	DOM2GODOT("Enter", ENTER);
 	DOM2GODOT("MetaLeft", SUPER_L);
 	DOM2GODOT("MetaRight", SUPER_R);
@@ -170,7 +170,7 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("Tab", TAB);
 
 	// ControlPad section.
-	DOM2GODOT("Delete", DELETE);
+	DOM2GODOT("Delete", KEY_DELETE);
 	DOM2GODOT("End", END);
 	DOM2GODOT("Help", HELP);
 	DOM2GODOT("Home", HOME);
@@ -227,6 +227,6 @@ int dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	DOM2GODOT("AudioVolumeMute", VOLUMEMUTE);
 	DOM2GODOT("AudioVolumeUp", VOLUMEUP);
 	//DOM2GODOT("WakeUp", UNKNOWN);
-	return KEY_UNKNOWN;
+	return Key::UNKNOWN;
 #undef DOM2GODOT
 }

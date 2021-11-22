@@ -98,10 +98,10 @@ MAKE_TYPED_ARRAY(Vector3, Variant::VECTOR3)
 MAKE_TYPED_ARRAY(Vector3i, Variant::VECTOR3I)
 MAKE_TYPED_ARRAY(Transform2D, Variant::TRANSFORM2D)
 MAKE_TYPED_ARRAY(Plane, Variant::PLANE)
-MAKE_TYPED_ARRAY(Quat, Variant::QUAT)
+MAKE_TYPED_ARRAY(Quaternion, Variant::QUATERNION)
 MAKE_TYPED_ARRAY(AABB, Variant::AABB)
 MAKE_TYPED_ARRAY(Basis, Variant::BASIS)
-MAKE_TYPED_ARRAY(Transform, Variant::TRANSFORM)
+MAKE_TYPED_ARRAY(Transform3D, Variant::TRANSFORM3D)
 MAKE_TYPED_ARRAY(Color, Variant::COLOR)
 MAKE_TYPED_ARRAY(StringName, Variant::STRING_NAME)
 MAKE_TYPED_ARRAY(NodePath, Variant::NODE_PATH)
@@ -125,7 +125,7 @@ struct PtrToArg<TypedArray<T>> {
 	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
-
+	typedef Array EncodeT;
 	_FORCE_INLINE_ static void encode(TypedArray<T> p_val, void *p_ptr) {
 		*(Array *)p_ptr = p_val;
 	}
@@ -133,12 +133,12 @@ struct PtrToArg<TypedArray<T>> {
 
 template <class T>
 struct PtrToArg<const TypedArray<T> &> {
-	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
+	typedef Array EncodeT;
+	_FORCE_INLINE_ static TypedArray<T>
+	convert(const void *p_ptr) {
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
 };
-
-#ifdef DEBUG_METHODS_ENABLED
 
 template <class T>
 struct GetTypeInfo<TypedArray<T>> {
@@ -196,10 +196,10 @@ MAKE_TYPED_ARRAY_INFO(Vector3, Variant::VECTOR3)
 MAKE_TYPED_ARRAY_INFO(Vector3i, Variant::VECTOR3I)
 MAKE_TYPED_ARRAY_INFO(Transform2D, Variant::TRANSFORM2D)
 MAKE_TYPED_ARRAY_INFO(Plane, Variant::PLANE)
-MAKE_TYPED_ARRAY_INFO(Quat, Variant::QUAT)
+MAKE_TYPED_ARRAY_INFO(Quaternion, Variant::QUATERNION)
 MAKE_TYPED_ARRAY_INFO(AABB, Variant::AABB)
 MAKE_TYPED_ARRAY_INFO(Basis, Variant::BASIS)
-MAKE_TYPED_ARRAY_INFO(Transform, Variant::TRANSFORM)
+MAKE_TYPED_ARRAY_INFO(Transform3D, Variant::TRANSFORM3D)
 MAKE_TYPED_ARRAY_INFO(Color, Variant::COLOR)
 MAKE_TYPED_ARRAY_INFO(StringName, Variant::STRING_NAME)
 MAKE_TYPED_ARRAY_INFO(NodePath, Variant::NODE_PATH)
@@ -217,7 +217,5 @@ MAKE_TYPED_ARRAY_INFO(Vector<String>, Variant::PACKED_STRING_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Vector2>, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Vector3>, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPED_ARRAY_INFO(Vector<Color>, Variant::PACKED_COLOR_ARRAY)
-
-#endif
 
 #endif // TYPED_ARRAY_H

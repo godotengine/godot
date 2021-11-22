@@ -7,7 +7,7 @@
 		WebXR is an open standard that allows creating VR and AR applications that run in the web browser.
 		As such, this interface is only available when running in an HTML5 export.
 		WebXR supports a wide range of devices, from the very capable (like Valve Index, HTC Vive, Oculus Rift and Quest) down to the much less capable (like Google Cardboard, Oculus Go, GearVR, or plain smartphones).
-		Since WebXR is based on Javascript, it makes extensive use of callbacks, which means that [WebXRInterface] is forced to use signals, where other AR/VR interfaces would instead use functions that return a result immediately. This makes [WebXRInterface] quite a bit more complicated to intialize than other AR/VR interfaces.
+		Since WebXR is based on Javascript, it makes extensive use of callbacks, which means that [WebXRInterface] is forced to use signals, where other AR/VR interfaces would instead use functions that return a result immediately. This makes [WebXRInterface] quite a bit more complicated to initialize than other AR/VR interfaces.
 		Here's the minimum code required to start an immersive VR session:
 		[codeblock]
 		extends Node3D
@@ -87,18 +87,16 @@
 		There are several ways to handle "controller" input:
 		- Using [XRController3D] nodes and their [signal XRController3D.button_pressed] and [signal XRController3D.button_released] signals. This is how controllers are typically handled in AR/VR apps in Godot, however, this will only work with advanced VR controllers like the Oculus Touch or Index controllers, for example. The buttons codes are defined by [url=https://immersive-web.github.io/webxr-gamepads-module/#xr-standard-gamepad-mapping]Section 3.3 of the WebXR Gamepads Module[/url].
 		- Using [method Node._unhandled_input] and [InputEventJoypadButton] or [InputEventJoypadMotion]. This works the same as normal joypads, except the [member InputEvent.device] starts at 100, so the left controller is 100 and the right controller is 101, and the button codes are also defined by [url=https://immersive-web.github.io/webxr-gamepads-module/#xr-standard-gamepad-mapping]Section 3.3 of the WebXR Gamepads Module[/url].
-		- Using the [signal select], [signal squeeze] and related signals. This method will work for both advanced VR controllers, and non-traditional "controllers" like a tap on the screen, a spoken voice command or a button press on the device itself. The [code]controller_id[/code] passed to these signals is the same id as used in [member XRController3D.controller_id].
-		You can use one or all of these methods to allow your game or app to support a wider or narrower set of devices and input methods, or to allow more advanced interations with more advanced devices.
+		- Using the [signal select], [signal squeeze] and related signals. This method will work for both advanced VR controllers, and non-traditional "controllers" like a tap on the screen, a spoken voice command or a button press on the device itself.
+		You can use one or all of these methods to allow your game or app to support a wider or narrower set of devices and input methods, or to allow more advanced interactions with more advanced devices.
 	</description>
 	<tutorials>
 		<link title="How to make a VR game for WebXR with Godot">https://www.snopekgames.com/blog/2020/how-make-vr-game-webxr-godot</link>
 	</tutorials>
 	<methods>
 		<method name="get_controller" qualifiers="const">
-			<return type="XRPositionalTracker">
-			</return>
-			<argument index="0" name="controller_id" type="int">
-			</argument>
+			<return type="XRPositionalTracker" />
+			<argument index="0" name="controller_id" type="int" />
 			<description>
 				Gets an [XRPositionalTracker] for the given [code]controller_id[/code].
 				In the context of WebXR, a "controller" can be an advanced VR controller like the Oculus Touch or Index controllers, or even a tap on the screen, a spoken voice command or a button press on the device itself. When a non-traditional controller is used, interpret the position and orientation of the [XRPositionalTracker] as a ray pointing at the object the user wishes to interact with.
@@ -112,10 +110,8 @@
 			</description>
 		</method>
 		<method name="is_session_supported">
-			<return type="void">
-			</return>
-			<argument index="0" name="session_mode" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="session_mode" type="String" />
 			<description>
 				Checks if the given [code]session_mode[/code] is supported by the user's browser.
 				Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode]WebXR's XRSessionMode[/url], including: [code]"immersive-vr"[/code], [code]"immersive-ar"[/code], and [code]"inline"[/code].
@@ -170,24 +166,21 @@
 			</description>
 		</signal>
 		<signal name="select">
-			<argument index="0" name="controller_id" type="int">
-			</argument>
+			<argument index="0" name="controller_id" type="int" />
 			<description>
 				Emitted after one of the "controllers" has finished its "primary action".
 				Use [method get_controller] to get more information about the controller.
 			</description>
 		</signal>
 		<signal name="selectend">
-			<argument index="0" name="controller_id" type="int">
-			</argument>
+			<argument index="0" name="controller_id" type="int" />
 			<description>
 				Emitted when one of the "controllers" has finished its "primary action".
 				Use [method get_controller] to get more information about the controller.
 			</description>
 		</signal>
 		<signal name="selectstart">
-			<argument index="0" name="controller_id" type="int">
-			</argument>
+			<argument index="0" name="controller_id" type="int" />
 			<description>
 				Emitted when one of the "controllers" has started its "primary action".
 				Use [method get_controller] to get more information about the controller.
@@ -200,8 +193,7 @@
 			</description>
 		</signal>
 		<signal name="session_failed">
-			<argument index="0" name="message" type="String">
-			</argument>
+			<argument index="0" name="message" type="String" />
 			<description>
 				Emitted by [method XRInterface.initialize] if the session fails to start.
 				[code]message[/code] may optionally contain an error message from WebXR, or an empty string if no message is available.
@@ -214,33 +206,28 @@
 			</description>
 		</signal>
 		<signal name="session_supported">
-			<argument index="0" name="session_mode" type="String">
-			</argument>
-			<argument index="1" name="supported" type="bool">
-			</argument>
+			<argument index="0" name="session_mode" type="String" />
+			<argument index="1" name="supported" type="bool" />
 			<description>
 				Emitted by [method is_session_supported] to indicate if the given [code]session_mode[/code] is supported or not.
 			</description>
 		</signal>
 		<signal name="squeeze">
-			<argument index="0" name="controller_id" type="int">
-			</argument>
+			<argument index="0" name="controller_id" type="int" />
 			<description>
 				Emitted after one of the "controllers" has finished its "primary squeeze action".
 				Use [method get_controller] to get more information about the controller.
 			</description>
 		</signal>
 		<signal name="squeezeend">
-			<argument index="0" name="controller_id" type="int">
-			</argument>
+			<argument index="0" name="controller_id" type="int" />
 			<description>
 				Emitted when one of the "controllers" has finished its "primary squeeze action".
 				Use [method get_controller] to get more information about the controller.
 			</description>
 		</signal>
 		<signal name="squeezestart">
-			<argument index="0" name="controller_id" type="int">
-			</argument>
+			<argument index="0" name="controller_id" type="int" />
 			<description>
 				Emitted when one of the "controllers" has started its "primary squeeze action".
 				Use [method get_controller] to get more information about the controller.
@@ -252,6 +239,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

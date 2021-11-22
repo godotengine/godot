@@ -10,110 +10,80 @@
 	</tutorials>
 	<methods>
 		<method name="get_flag_x" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
 			<description>
 			</description>
 		</method>
 		<method name="get_flag_y" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
 			<description>
 			</description>
 		</method>
 		<method name="get_flag_z" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_x" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_y" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_z" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="set_flag_x">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_flag_y">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_flag_z">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
+			<argument index="1" name="value" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param_x">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
+			<argument index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param_y">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
+			<argument index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param_z">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
+			<argument index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>

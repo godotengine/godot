@@ -47,9 +47,9 @@ void Container::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	control->connect("size_flags_changed", callable_mp(this, &Container::queue_sort));
-	control->connect("minimum_size_changed", callable_mp(this, &Container::_child_minsize_changed));
-	control->connect("visibility_changed", callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SNAME("size_flags_changed"), callable_mp(this, &Container::queue_sort));
+	control->connect(SNAME("minimum_size_changed"), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SNAME("visibility_changed"), callable_mp(this, &Container::_child_minsize_changed));
 
 	minimum_size_changed();
 	queue_sort();
@@ -87,6 +87,9 @@ void Container::_sort_children() {
 		return;
 	}
 
+	notification(NOTIFICATION_PRE_SORT_CHILDREN);
+	emit_signal(SceneStringNames::get_singleton()->pre_sort_children);
+
 	notification(NOTIFICATION_SORT_CHILDREN);
 	emit_signal(SceneStringNames::get_singleton()->sort_children);
 	pending_sort = false;
@@ -96,17 +99,18 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	ERR_FAIL_COND(!p_child);
 	ERR_FAIL_COND(p_child->get_parent() != this);
 
+	bool rtl = is_layout_rtl();
 	Size2 minsize = p_child->get_combined_minimum_size();
 	Rect2 r = p_rect;
 
 	if (!(p_child->get_h_size_flags() & SIZE_FILL)) {
 		r.size.x = minsize.width;
 		if (p_child->get_h_size_flags() & SIZE_SHRINK_END) {
-			r.position.x += p_rect.size.width - minsize.width;
+			r.position.x += rtl ? 0 : (p_rect.size.width - minsize.width);
 		} else if (p_child->get_h_size_flags() & SIZE_SHRINK_CENTER) {
 			r.position.x += Math::floor((p_rect.size.x - minsize.width) / 2);
 		} else {
-			r.position.x += 0;
+			r.position.x += rtl ? (p_rect.size.width - minsize.width) : 0;
 		}
 	}
 
@@ -173,7 +177,10 @@ void Container::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
 	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);
 
+	BIND_CONSTANT(NOTIFICATION_PRE_SORT_CHILDREN);
 	BIND_CONSTANT(NOTIFICATION_SORT_CHILDREN);
+
+	ADD_SIGNAL(MethodInfo("pre_sort_children"));
 	ADD_SIGNAL(MethodInfo("sort_children"));
 }
 

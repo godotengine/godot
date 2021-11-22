@@ -11,82 +11,65 @@
 	</tutorials>
 	<methods>
 		<method name="draw" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="canvas_item" type="RID">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="canvas_item" type="RID" />
+			<argument index="1" name="rect" type="Rect2" />
 			<description>
 				Draws this stylebox using a [CanvasItem] with given [RID].
 				You can get a [RID] value using [method Object.get_instance_id] on a [CanvasItem]-derived node.
 			</description>
 		</method>
 		<method name="get_center_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the size of this [StyleBox] without the margins.
 			</description>
 		</method>
 		<method name="get_current_item_drawn" qualifiers="const">
-			<return type="CanvasItem">
-			</return>
+			<return type="CanvasItem" />
 			<description>
 				Returns the [CanvasItem] that handles its [constant CanvasItem.NOTIFICATION_DRAW] or [method CanvasItem._draw] callback at this moment.
 			</description>
 		</method>
 		<method name="get_default_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the default margin of the specified [enum Side].
 			</description>
 		</method>
 		<method name="get_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the content margin offset for the specified [enum Side].
 				Positive values reduce size inwards, unlike [Control]'s margin values.
 			</description>
 		</method>
 		<method name="get_minimum_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the minimum size that this stylebox can be shrunk to.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the "offset" of a stylebox. This helper function returns a value equivalent to [code]Vector2(style.get_margin(MARGIN_LEFT), style.get_margin(MARGIN_TOP))[/code].
 			</description>
 		</method>
 		<method name="set_default_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="offset" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="margin" type="int" enum="Side" />
+			<argument index="1" name="offset" type="float" />
 			<description>
 				Sets the default value of the specified [enum Side] to [code]offset[/code] pixels.
 			</description>
 		</method>
 		<method name="test_mask" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<argument index="1" name="rect" type="Rect2">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="point" type="Vector2" />
+			<argument index="1" name="rect" type="Rect2" />
 			<description>
 				Test a position in a rectangle, return whether it passes the mask test.
 			</description>
@@ -112,6 +95,4 @@
 			Refer to [member content_margin_bottom] for extra considerations.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material used to render the sphere.
@@ -27,6 +25,4 @@
 			If [code]true[/code] the normals of the sphere are set to give a smooth effect making the sphere seem rounded. If [code]false[/code] the sphere will have a flat shaded look.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

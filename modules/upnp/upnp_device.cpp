@@ -32,7 +32,7 @@
 
 #include "upnp.h"
 
-#include <miniupnpc/upnpcommands.h>
+#include <upnpcommands.h>
 
 String UPNPDevice::query_external_address() const {
 	ERR_FAIL_COND_V_MSG(!is_valid_gateway(), "", "The Internet Gateway Device must be valid.");

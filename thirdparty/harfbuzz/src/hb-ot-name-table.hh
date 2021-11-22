@@ -149,7 +149,7 @@ struct NameRecord
   HBUINT16	languageID;	/* Language ID. */
   HBUINT16	nameID;		/* Name ID. */
   HBUINT16	length;		/* String length (in bytes). */
-  NNOffsetTo<UnsizedArrayOf<HBUINT8>>
+  NNOffset16To<UnsizedArrayOf<HBUINT8>>
 		offset;		/* String offset from start of storage area (in bytes). */
   public:
   DEFINE_SIZE_STATIC (12);
@@ -214,7 +214,7 @@ struct name
     this->format = 0;
     this->count = it.len ();
 
-    NameRecord *name_records = (NameRecord *) calloc (it.len (), NameRecord::static_size);
+    NameRecord *name_records = (NameRecord *) hb_calloc (it.len (), NameRecord::static_size);
     if (unlikely (!name_records)) return_trace (false);
 
     hb_array_t<NameRecord> records (name_records, it.len ());
@@ -228,9 +228,10 @@ struct name
     records.qsort ();
 
     c->copy_all (records, src_string_pool);
-    free (records.arrayZ);
+    hb_free (records.arrayZ);
 
-    if (unlikely (c->ran_out_of_room)) return_trace (false);
+
+    if (unlikely (c->ran_out_of_room ())) return_trace (false);
 
     this->stringOffset = c->length ();
 
@@ -248,7 +249,11 @@ struct name
     + nameRecordZ.as_array (count)
     | hb_filter (c->plan->name_ids, &NameRecord::nameID)
     | hb_filter (c->plan->name_languages, &NameRecord::languageID)
-    | hb_filter ([&] (const NameRecord& namerecord) { return c->plan->name_legacy || namerecord.isUnicode (); })
+    | hb_filter ([&] (const NameRecord& namerecord) {
+      return
+          (c->plan->flags & HB_SUBSET_FLAGS_NAME_LEGACY)
+          || namerecord.isUnicode ();
+    })
     ;
 
     name_prime->serialize (c->serializer, it, hb_addressof (this + stringOffset));
@@ -357,7 +362,7 @@ struct name
   /* We only implement format 0 for now. */
   HBUINT16	format;		/* Format selector (=0/1). */
   HBUINT16	count;		/* Number of name records. */
-  NNOffsetTo<UnsizedArrayOf<HBUINT8>>
+  NNOffset16To<UnsizedArrayOf<HBUINT8>>
 		stringOffset;	/* Offset to start of string storage (from start of table). */
   UnsizedArrayOf<NameRecord>
 		nameRecordZ;	/* The name records where count is the number of records. */

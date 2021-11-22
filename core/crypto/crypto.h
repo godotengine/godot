@@ -35,7 +35,7 @@
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 class CryptoKey : public Resource {
 	GDCLASS(CryptoKey, Resource);
@@ -67,8 +67,8 @@ public:
 	virtual Error save(String p_path) = 0;
 };
 
-class HMACContext : public Reference {
-	GDCLASS(HMACContext, Reference);
+class HMACContext : public RefCounted {
+	GDCLASS(HMACContext, RefCounted);
 
 protected:
 	static void _bind_methods();
@@ -82,10 +82,11 @@ public:
 	virtual PackedByteArray finish() = 0;
 
 	HMACContext() {}
+	virtual ~HMACContext() {}
 };
 
-class Crypto : public Reference {
-	GDCLASS(Crypto, Reference);
+class Crypto : public RefCounted {
+	GDCLASS(Crypto, RefCounted);
 
 protected:
 	static void _bind_methods();

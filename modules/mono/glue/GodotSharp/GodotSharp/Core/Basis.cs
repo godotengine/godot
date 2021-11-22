@@ -1,10 +1,10 @@
-using System;
-using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
 #endif
+using System;
+using System.Runtime.InteropServices;
 
 namespace Godot
 {
@@ -31,7 +31,7 @@ namespace Godot
         /// <summary>
         /// The basis matrix's X vector (column 0).
         /// </summary>
-        /// <value>Equivalent to <see cref="Column0"/> and array index `[0]`.</value>
+        /// <value>Equivalent to <see cref="Column0"/> and array index <c>[0]</c>.</value>
         public Vector3 x
         {
             get => Column0;
@@ -41,7 +41,7 @@ namespace Godot
         /// <summary>
         /// The basis matrix's Y vector (column 1).
         /// </summary>
-        /// <value>Equivalent to <see cref="Column1"/> and array index `[1]`.</value>
+        /// <value>Equivalent to <see cref="Column1"/> and array index <c>[1]</c>.</value>
         public Vector3 y
         {
             get => Column1;
@@ -51,7 +51,7 @@ namespace Godot
         /// <summary>
         /// The basis matrix's Z vector (column 2).
         /// </summary>
-        /// <value>Equivalent to <see cref="Column2"/> and array index `[2]`.</value>
+        /// <value>Equivalent to <see cref="Column2"/> and array index <c>[2]</c>.</value>
         public Vector3 z
         {
             get => Column2;
@@ -82,45 +82,45 @@ namespace Godot
         /// <summary>
         /// Column 0 of the basis matrix (the X vector).
         /// </summary>
-        /// <value>Equivalent to <see cref="x"/> and array index `[0]`.</value>
+        /// <value>Equivalent to <see cref="x"/> and array index <c>[0]</c>.</value>
         public Vector3 Column0
         {
             get => new Vector3(Row0.x, Row1.x, Row2.x);
             set
             {
-                this.Row0.x = value.x;
-                this.Row1.x = value.y;
-                this.Row2.x = value.z;
+                Row0.x = value.x;
+                Row1.x = value.y;
+                Row2.x = value.z;
             }
         }
 
         /// <summary>
         /// Column 1 of the basis matrix (the Y vector).
         /// </summary>
-        /// <value>Equivalent to <see cref="y"/> and array index `[1]`.</value>
+        /// <value>Equivalent to <see cref="y"/> and array index <c>[1]</c>.</value>
         public Vector3 Column1
         {
             get => new Vector3(Row0.y, Row1.y, Row2.y);
             set
             {
-                this.Row0.y = value.x;
-                this.Row1.y = value.y;
-                this.Row2.y = value.z;
+                Row0.y = value.x;
+                Row1.y = value.y;
+                Row2.y = value.z;
             }
         }
 
         /// <summary>
         /// Column 2 of the basis matrix (the Z vector).
         /// </summary>
-        /// <value>Equivalent to <see cref="z"/> and array index `[2]`.</value>
+        /// <value>Equivalent to <see cref="z"/> and array index <c>[2]</c>.</value>
         public Vector3 Column2
         {
             get => new Vector3(Row0.z, Row1.z, Row2.z);
             set
             {
-                this.Row0.z = value.x;
-                this.Row1.z = value.y;
-                this.Row2.z = value.z;
+                Row0.z = value.x;
+                Row1.z = value.y;
+                Row2.z = value.z;
             }
         }
 
@@ -150,9 +150,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Access whole columns in the form of Vector3.
+        /// Access whole columns in the form of <see cref="Vector3"/>.
         /// </summary>
         /// <param name="column">Which column vector.</param>
+        /// <value>The basis column.</value>
         public Vector3 this[int column]
         {
             get
@@ -193,6 +194,7 @@ namespace Godot
         /// </summary>
         /// <param name="column">Which column, the matrix horizontal position.</param>
         /// <param name="row">Which row, the matrix vertical position.</param>
+        /// <value>The matrix element.</value>
         public real_t this[int column, int row]
         {
             get
@@ -207,7 +209,14 @@ namespace Godot
             }
         }
 
-        public Quat RotationQuat()
+        /// <summary>
+        /// Returns the <see cref="Basis"/>'s rotation in the form of a
+        /// <see cref="Quaternion"/>. See <see cref="GetEuler"/> if you
+        /// need Euler angles, but keep in mind quaternions should generally
+        /// be preferred to Euler angles.
+        /// </summary>
+        /// <returns>The basis rotation.</returns>
+        public Quaternion GetRotationQuaternion()
         {
             Basis orthonormalizedBasis = Orthonormalized();
             real_t det = orthonormalizedBasis.Determinant();
@@ -218,18 +227,18 @@ namespace Godot
                 orthonormalizedBasis = orthonormalizedBasis.Scaled(-Vector3.One);
             }
 
-            return orthonormalizedBasis.Quat();
+            return orthonormalizedBasis.Quaternion();
         }
 
-        internal void SetQuatScale(Quat quat, Vector3 scale)
+        internal void SetQuaternionScale(Quaternion quaternion, Vector3 scale)
         {
             SetDiagonal(scale);
-            Rotate(quat);
+            Rotate(quaternion);
         }
 
-        private void Rotate(Quat quat)
+        private void Rotate(Quaternion quaternion)
         {
-            this *= new Basis(quat);
+            this *= new Basis(quaternion);
         }
 
         private void SetDiagonal(Vector3 diagonal)
@@ -263,10 +272,10 @@ namespace Godot
         /// The returned vector contains the rotation angles in
         /// the format (X angle, Y angle, Z angle).
         ///
-        /// Consider using the <see cref="Basis.Quat()"/> method instead, which
-        /// returns a <see cref="Godot.Quat"/> quaternion instead of Euler angles.
+        /// Consider using the <see cref="Quaternion()"/> method instead, which
+        /// returns a <see cref="Godot.Quaternion"/> quaternion instead of Euler angles.
         /// </summary>
-        /// <returns>A Vector3 representing the basis rotation in Euler angles.</returns>
+        /// <returns>A <see cref="Vector3"/> representing the basis rotation in Euler angles.</returns>
         public Vector3 GetEuler()
         {
             Basis m = Orthonormalized();
@@ -304,7 +313,10 @@ namespace Godot
         /// but are more efficient for some internal calculations.
         /// </summary>
         /// <param name="index">Which row.</param>
-        /// <returns>One of `Row0`, `Row1`, or `Row2`.</returns>
+        /// <exception cref="IndexOutOfRangeException">
+        /// Thrown when the <paramref name="index"/> is not 0, 1 or 2.
+        /// </exception>
+        /// <returns>One of <c>Row0</c>, <c>Row1</c>, or <c>Row2</c>.</returns>
         public Vector3 GetRow(int index)
         {
             switch (index)
@@ -326,6 +338,9 @@ namespace Godot
         /// </summary>
         /// <param name="index">Which row.</param>
         /// <param name="value">The vector to set the row to.</param>
+        /// <exception cref="IndexOutOfRangeException">
+        /// Thrown when the <paramref name="index"/> is not 0, 1 or 2.
+        /// </exception>
         public void SetRow(int index, Vector3 value)
         {
             switch (index)
@@ -452,8 +467,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Introduce an additional rotation around the given `axis`
-        /// by `phi` (in radians). The axis must be a normalized vector.
+        /// Introduce an additional rotation around the given <paramref name="axis"/>
+        /// by <paramref name="phi"/> (in radians). The axis must be a normalized vector.
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="phi">The angle to rotate, in radians.</param>
@@ -486,8 +501,8 @@ namespace Godot
         /// <returns>The resulting basis matrix of the interpolation.</returns>
         public Basis Slerp(Basis target, real_t weight)
         {
-            Quat from = new Quat(this);
-            Quat to = new Quat(target);
+            Quaternion from = new Quaternion(this);
+            Quaternion to = new Quaternion(target);
 
             Basis b = new Basis(from.Slerp(to, weight));
             b.Row0 *= Mathf.Lerp(Row0.Length(), target.Row0.Length(), weight);
@@ -504,7 +519,7 @@ namespace Godot
         /// <returns>The resulting dot product.</returns>
         public real_t Tdotx(Vector3 with)
         {
-            return this.Row0[0] * with[0] + this.Row1[0] * with[1] + this.Row2[0] * with[2];
+            return Row0[0] * with[0] + Row1[0] * with[1] + Row2[0] * with[2];
         }
 
         /// <summary>
@@ -514,7 +529,7 @@ namespace Godot
         /// <returns>The resulting dot product.</returns>
         public real_t Tdoty(Vector3 with)
         {
-            return this.Row0[1] * with[0] + this.Row1[1] * with[1] + this.Row2[1] * with[2];
+            return Row0[1] * with[0] + Row1[1] * with[1] + Row2[1] * with[2];
         }
 
         /// <summary>
@@ -524,7 +539,7 @@ namespace Godot
         /// <returns>The resulting dot product.</returns>
         public real_t Tdotz(Vector3 with)
         {
-            return this.Row0[2] * with[0] + this.Row1[2] * with[1] + this.Row2[2] * with[2];
+            return Row0[2] * with[0] + Row1[2] * with[1] + Row2[2] * with[2];
         }
 
         /// <summary>
@@ -533,7 +548,7 @@ namespace Godot
         /// <returns>The transposed basis matrix.</returns>
         public Basis Transposed()
         {
-            var tr = this;
+            Basis tr = this;
 
             real_t temp = tr.Row0[1];
             tr.Row0[1] = tr.Row1[0];
@@ -553,15 +568,16 @@ namespace Godot
         /// <summary>
         /// Returns a vector transformed (multiplied) by the basis matrix.
         /// </summary>
+        /// <seealso cref="XformInv(Vector3)"/>
         /// <param name="v">A vector to transform.</param>
         /// <returns>The transformed vector.</returns>
         public Vector3 Xform(Vector3 v)
         {
             return new Vector3
             (
-                this.Row0.Dot(v),
-                this.Row1.Dot(v),
-                this.Row2.Dot(v)
+                Row0.Dot(v),
+                Row1.Dot(v),
+                Row2.Dot(v)
             );
         }
 
@@ -571,15 +587,16 @@ namespace Godot
         /// Note: This results in a multiplication by the inverse of the
         /// basis matrix only if it represents a rotation-reflection.
         /// </summary>
+        /// <seealso cref="Xform(Vector3)"/>
         /// <param name="v">A vector to inversely transform.</param>
         /// <returns>The inversely transformed vector.</returns>
         public Vector3 XformInv(Vector3 v)
         {
             return new Vector3
             (
-                this.Row0[0] * v.x + this.Row1[0] * v.y + this.Row2[0] * v.z,
-                this.Row0[1] * v.x + this.Row1[1] * v.y + this.Row2[1] * v.z,
-                this.Row0[2] * v.x + this.Row1[2] * v.y + this.Row2[2] * v.z
+                Row0[0] * v.x + Row1[0] * v.y + Row2[0] * v.z,
+                Row0[1] * v.x + Row1[1] * v.y + Row2[1] * v.z,
+                Row0[2] * v.x + Row1[2] * v.y + Row2[2] * v.z
             );
         }
 
@@ -588,8 +605,8 @@ namespace Godot
         /// See <see cref="GetEuler()"/> if you need Euler angles, but keep in
         /// mind that quaternions should generally be preferred to Euler angles.
         /// </summary>
-        /// <returns>A <see cref="Godot.Quat"/> representing the basis's rotation.</returns>
-        public Quat Quat()
+        /// <returns>A <see cref="Godot.Quaternion"/> representing the basis's rotation.</returns>
+        public Quaternion Quaternion()
         {
             real_t trace = Row0[0] + Row1[1] + Row2[2];
 
@@ -597,7 +614,7 @@ namespace Godot
             {
                 real_t s = Mathf.Sqrt(trace + 1.0f) * 2f;
                 real_t inv_s = 1f / s;
-                return new Quat(
+                return new Quaternion(
                     (Row2[1] - Row1[2]) * inv_s,
                     (Row0[2] - Row2[0]) * inv_s,
                     (Row1[0] - Row0[1]) * inv_s,
@@ -609,7 +626,7 @@ namespace Godot
             {
                 real_t s = Mathf.Sqrt(Row0[0] - Row1[1] - Row2[2] + 1.0f) * 2f;
                 real_t inv_s = 1f / s;
-                return new Quat(
+                return new Quaternion(
                     s * 0.25f,
                     (Row0[1] + Row1[0]) * inv_s,
                     (Row0[2] + Row2[0]) * inv_s,
@@ -621,7 +638,7 @@ namespace Godot
             {
                 real_t s = Mathf.Sqrt(-Row0[0] + Row1[1] - Row2[2] + 1.0f) * 2f;
                 real_t inv_s = 1f / s;
-                return new Quat(
+                return new Quaternion(
                     (Row0[1] + Row1[0]) * inv_s,
                     s * 0.25f,
                     (Row1[2] + Row2[1]) * inv_s,
@@ -632,7 +649,7 @@ namespace Godot
             {
                 real_t s = Mathf.Sqrt(-Row0[0] - Row1[1] + Row2[2] + 1.0f) * 2f;
                 real_t inv_s = 1f / s;
-                return new Quat(
+                return new Quaternion(
                     (Row0[2] + Row2[0]) * inv_s,
                     (Row1[2] + Row2[1]) * inv_s,
                     s * 0.25f,
@@ -675,47 +692,47 @@ namespace Godot
 
         /// <summary>
         /// The identity basis, with no rotation or scaling applied.
-        /// This is used as a replacement for `Basis()` in GDScript.
-        /// Do not use `new Basis()` with no arguments in C#, because it sets all values to zero.
+        /// This is used as a replacement for <c>Basis()</c> in GDScript.
+        /// Do not use <c>new Basis()</c> with no arguments in C#, because it sets all values to zero.
         /// </summary>
-        /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Up, Vector3.Back)`.</value>
+        /// <value>Equivalent to <c>new Basis(Vector3.Right, Vector3.Up, Vector3.Back)</c>.</value>
         public static Basis Identity { get { return _identity; } }
         /// <summary>
         /// The basis that will flip something along the X axis when used in a transformation.
         /// </summary>
-        /// <value>Equivalent to `new Basis(Vector3.Left, Vector3.Up, Vector3.Back)`.</value>
+        /// <value>Equivalent to <c>new Basis(Vector3.Left, Vector3.Up, Vector3.Back)</c>.</value>
         public static Basis FlipX { get { return _flipX; } }
         /// <summary>
         /// The basis that will flip something along the Y axis when used in a transformation.
         /// </summary>
-        /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Down, Vector3.Back)`.</value>
+        /// <value>Equivalent to <c>new Basis(Vector3.Right, Vector3.Down, Vector3.Back)</c>.</value>
         public static Basis FlipY { get { return _flipY; } }
         /// <summary>
         /// The basis that will flip something along the Z axis when used in a transformation.
         /// </summary>
-        /// <value>Equivalent to `new Basis(Vector3.Right, Vector3.Up, Vector3.Forward)`.</value>
+        /// <value>Equivalent to <c>new Basis(Vector3.Right, Vector3.Up, Vector3.Forward)</c>.</value>
         public static Basis FlipZ { get { return _flipZ; } }
 
         /// <summary>
         /// Constructs a pure rotation basis matrix from the given quaternion.
         /// </summary>
-        /// <param name="quat">The quaternion to create the basis from.</param>
-        public Basis(Quat quat)
+        /// <param name="quaternion">The quaternion to create the basis from.</param>
+        public Basis(Quaternion quaternion)
         {
-            real_t s = 2.0f / quat.LengthSquared;
+            real_t s = 2.0f / quaternion.LengthSquared;
 
-            real_t xs = quat.x * s;
-            real_t ys = quat.y * s;
-            real_t zs = quat.z * s;
-            real_t wx = quat.w * xs;
-            real_t wy = quat.w * ys;
-            real_t wz = quat.w * zs;
-            real_t xx = quat.x * xs;
-            real_t xy = quat.x * ys;
-            real_t xz = quat.x * zs;
-            real_t yy = quat.y * ys;
-            real_t yz = quat.y * zs;
-            real_t zz = quat.z * zs;
+            real_t xs = quaternion.x * s;
+            real_t ys = quaternion.y * s;
+            real_t zs = quaternion.z * s;
+            real_t wx = quaternion.w * xs;
+            real_t wy = quaternion.w * ys;
+            real_t wz = quaternion.w * zs;
+            real_t xx = quaternion.x * xs;
+            real_t xy = quaternion.x * ys;
+            real_t xz = quaternion.x * zs;
+            real_t yy = quaternion.y * ys;
+            real_t yz = quaternion.y * zs;
+            real_t zz = quaternion.z * zs;
 
             Row0 = new Vector3(1.0f - (yy + zz), xy - wz, xz + wy);
             Row1 = new Vector3(xy + wz, 1.0f - (xx + zz), yz - wx);
@@ -727,8 +744,8 @@ namespace Godot
         /// (in the YXZ convention: when *composing*, first Y, then X, and Z last),
         /// given in the vector format as (X angle, Y angle, Z angle).
         ///
-        /// Consider using the <see cref="Basis(Quat)"/> constructor instead, which
-        /// uses a <see cref="Godot.Quat"/> quaternion instead of Euler angles.
+        /// Consider using the <see cref="Basis(Quaternion)"/> constructor instead, which
+        /// uses a <see cref="Godot.Quaternion"/> quaternion instead of Euler angles.
         /// </summary>
         /// <param name="eulerYXZ">The Euler angles to create the basis from.</param>
         public Basis(Vector3 eulerYXZ)
@@ -752,8 +769,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a pure rotation basis matrix, rotated around the given `axis`
-        /// by `phi` (in radians). The axis must be a normalized vector.
+        /// Constructs a pure rotation basis matrix, rotated around the given <paramref name="axis"/>
+        /// by <paramref name="phi"/> (in radians). The axis must be a normalized vector.
         /// </summary>
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="phi">The angle to rotate, in radians.</param>
@@ -810,6 +827,14 @@ namespace Godot
             Row2 = new Vector3(xz, yz, zz);
         }
 
+        /// <summary>
+        /// Composes these two basis matrices by multiplying them
+        /// together. This has the effect of transforming the second basis
+        /// (the child) by the first basis (the parent).
+        /// </summary>
+        /// <param name="left">The parent basis.</param>
+        /// <param name="right">The child basis.</param>
+        /// <returns>The composed basis.</returns>
         public static Basis operator *(Basis left, Basis right)
         {
             return new Basis
@@ -820,16 +845,40 @@ namespace Godot
             );
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the basis matrices are exactly
+        /// equal. Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left basis.</param>
+        /// <param name="right">The right basis.</param>
+        /// <returns>Whether or not the basis matrices are exactly equal.</returns>
         public static bool operator ==(Basis left, Basis right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the basis matrices are not equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left basis.</param>
+        /// <param name="right">The right basis.</param>
+        /// <returns>Whether or not the basis matrices are not equal.</returns>
         public static bool operator !=(Basis left, Basis right)
         {
             return !left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the <see cref="Basis"/> is
+        /// exactly equal to the given object (<see paramref="obj"/>).
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns>Whether or not the basis matrix and the object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Basis)
@@ -840,45 +889,54 @@ namespace Godot
             return false;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the basis matrices are exactly
+        /// equal. Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="other">The other basis.</param>
+        /// <returns>Whether or not the basis matrices are exactly equal.</returns>
         public bool Equals(Basis other)
         {
             return Row0.Equals(other.Row0) && Row1.Equals(other.Row1) && Row2.Equals(other.Row2);
         }
 
         /// <summary>
-        /// Returns true if this basis and `other` are approximately equal, by running
-        /// <see cref="Vector3.IsEqualApprox(Vector3)"/> on each component.
+        /// Returns <see langword="true"/> if this basis and <paramref name="other"/> are approximately equal,
+        /// by running <see cref="Vector3.IsEqualApprox(Vector3)"/> on each component.
         /// </summary>
         /// <param name="other">The other basis to compare.</param>
-        /// <returns>Whether or not the matrices are approximately equal.</returns>
+        /// <returns>Whether or not the bases are approximately equal.</returns>
         public bool IsEqualApprox(Basis other)
         {
             return Row0.IsEqualApprox(other.Row0) && Row1.IsEqualApprox(other.Row1) && Row2.IsEqualApprox(other.Row2);
         }
 
+        /// <summary>
+        /// Serves as the hash function for <see cref="Basis"/>.
+        /// </summary>
+        /// <returns>A hash code for this basis.</returns>
         public override int GetHashCode()
         {
             return Row0.GetHashCode() ^ Row1.GetHashCode() ^ Row2.GetHashCode();
         }
 
+        /// <summary>
+        /// Converts this <see cref="Basis"/> to a string.
+        /// </summary>
+        /// <returns>A string representation of this basis.</returns>
         public override string ToString()
         {
-            return String.Format("({0}, {1}, {2})", new object[]
-            {
-                Row0.ToString(),
-                Row1.ToString(),
-                Row2.ToString()
-            });
+            return $"[X: {x}, Y: {y}, Z: {z}]";
         }
 
+        /// <summary>
+        /// Converts this <see cref="Basis"/> to a string with the given <paramref name="format"/>.
+        /// </summary>
+        /// <returns>A string representation of this basis.</returns>
         public string ToString(string format)
         {
-            return String.Format("({0}, {1}, {2})", new object[]
-            {
-                Row0.ToString(format),
-                Row1.ToString(format),
-                Row2.ToString(format)
-            });
+            return $"[X: {x.ToString(format)}, Y: {y.ToString(format)}, Z: {z.ToString(format)}]";
         }
     }
 }

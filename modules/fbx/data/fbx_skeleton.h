@@ -35,14 +35,14 @@
 #include "fbx_node.h"
 #include "model_abstraction.h"
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "scene/3d/skeleton_3d.h"
 
 struct FBXNode;
 struct ImportState;
 struct FBXBone;
 
-struct FBXSkeleton : Reference {
+struct FBXSkeleton : RefCounted {
 	Ref<FBXNode> fbx_node = Ref<FBXNode>();
 	Vector<Ref<FBXBone>> skeleton_bones = Vector<Ref<FBXBone>>();
 	Skeleton3D *skeleton = nullptr;

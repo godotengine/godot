@@ -36,22 +36,36 @@
 
 /*************************************************************************/
 
-class TextParagraph : public Reference {
-	GDCLASS(TextParagraph, Reference);
+class TextParagraph : public RefCounted {
+	GDCLASS(TextParagraph, RefCounted);
 
+public:
+	enum OverrunBehavior {
+		OVERRUN_NO_TRIMMING,
+		OVERRUN_TRIM_CHAR,
+		OVERRUN_TRIM_WORD,
+		OVERRUN_TRIM_ELLIPSIS,
+		OVERRUN_TRIM_WORD_ELLIPSIS,
+	};
+
+private:
 	RID dropcap_rid;
 	int dropcap_lines = 0;
 	Rect2 dropcap_margins;
 
 	RID rid;
-	Vector<RID> lines;
+	Vector<RID> lines_rid;
 	int spacing_top = 0;
 	int spacing_bottom = 0;
 
-	bool dirty_lines = true;
+	bool lines_dirty = true;
 
 	float width = -1.0;
-	uint8_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
+	int max_lines_visible = -1;
+
+	uint16_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
+	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
+
 	HAlign align = HALIGN_LEFT;
 
 	Vector<float> tab_stops;
@@ -80,27 +94,36 @@ public:
 	void set_preserve_control(bool p_enabled);
 	bool get_preserve_control() const;
 
-	void set_bidi_override(const Vector<Vector2i> &p_override);
+	void set_bidi_override(const Array &p_override);
+
+	void set_custom_punctuation(const String &p_punct);
+	String get_custom_punctuation() const;
 
 	bool set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");
 	void clear_dropcap();
 
 	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");
-	bool add_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER, int p_length = 1);
-	bool resize_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align = VALIGN_CENTER);
+	bool add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1);
+	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER);
 
 	void set_align(HAlign p_align);
 	HAlign get_align() const;
 
 	void tab_align(const Vector<float> &p_tab_stops);
 
-	void set_flags(uint8_t p_flags);
-	uint8_t get_flags() const;
+	void set_flags(uint16_t p_flags);
+	uint16_t get_flags() const;
+
+	void set_text_overrun_behavior(OverrunBehavior p_behavior);
+	OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_width(float p_width);
 	float get_width() const;
 
-	Size2 get_non_wraped_size() const;
+	void set_max_lines_visible(int p_lines);
+	int get_max_lines_visible() const;
+
+	Size2 get_non_wrapped_size() const;
 
 	Size2 get_size() const;
 
@@ -133,11 +156,11 @@ public:
 
 	int hit_test(const Point2 &p_coords) const;
 
-	void _set_bidi_override(const Array &p_override);
-
 	TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
 	TextParagraph();
 	~TextParagraph();
 };
+
+VARIANT_ENUM_CAST(TextParagraph::OverrunBehavior);
 
 #endif // TEXT_PARAGRAPH_H

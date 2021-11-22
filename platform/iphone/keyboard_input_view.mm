@@ -88,13 +88,15 @@
 	self.text = existingString;
 	self.previousText = existingString;
 
+	NSInteger safeStartIndex = MAX(start, 0);
+
 	NSRange textRange;
 
 	// Either a simple cursor or a selection.
 	if (end > 0) {
-		textRange = NSMakeRange(start, end - start);
+		textRange = NSMakeRange(safeStartIndex, end - start);
 	} else {
-		textRange = NSMakeRange(start, 0);
+		textRange = NSMakeRange(safeStartIndex, 0);
 	}
 
 	self.selectedRange = textRange;
@@ -113,8 +115,8 @@
 
 - (void)deleteText:(NSInteger)charactersToDelete {
 	for (int i = 0; i < charactersToDelete; i++) {
-		DisplayServerIPhone::get_singleton()->key(KEY_BACKSPACE, true);
-		DisplayServerIPhone::get_singleton()->key(KEY_BACKSPACE, false);
+		DisplayServerIPhone::get_singleton()->key(Key::BACKSPACE, true);
+		DisplayServerIPhone::get_singleton()->key(Key::BACKSPACE, false);
 	}
 }
 
@@ -127,17 +129,17 @@
 
 		switch (character) {
 			case 10:
-				character = KEY_ENTER;
+				character = (int)Key::ENTER;
 				break;
 			case 8198:
-				character = KEY_SPACE;
+				character = (int)Key::SPACE;
 				break;
 			default:
 				break;
 		}
 
-		DisplayServerIPhone::get_singleton()->key(character, true);
-		DisplayServerIPhone::get_singleton()->key(character, false);
+		DisplayServerIPhone::get_singleton()->key((Key)character, true);
+		DisplayServerIPhone::get_singleton()->key((Key)character, false);
 	}
 }
 

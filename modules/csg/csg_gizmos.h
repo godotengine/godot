@@ -33,22 +33,22 @@
 
 #include "csg_shape.h"
 #include "editor/editor_plugin.h"
-#include "editor/node_3d_editor_gizmos.h"
+#include "editor/plugins/node_3d_editor_gizmos.h"
 
 class CSGShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(CSGShape3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Node3D *p_spatial) override;
-	String get_gizmo_name() const override;
-	int get_priority() const override;
-	bool is_selectable_when_hidden() const override;
-	void redraw(EditorNode3DGizmo *p_gizmo) override;
+	virtual bool has_gizmo(Node3D *p_spatial) override;
+	virtual String get_gizmo_name() const override;
+	virtual int get_priority() const override;
+	virtual bool is_selectable_when_hidden() const override;
+	virtual void redraw(EditorNode3DGizmo *p_gizmo) override;
 
-	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const override;
-	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const override;
-	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) override;
-	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) override;
+	virtual String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
+	virtual Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
+	virtual void set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, Camera3D *p_camera, const Point2 &p_point) override;
+	virtual void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel) override;
 
 	CSGShape3DGizmoPlugin();
 };

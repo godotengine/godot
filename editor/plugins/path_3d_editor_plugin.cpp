@@ -36,20 +36,20 @@
 #include "node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
 
-String Path3DGizmo::get_handle_name(int p_idx) const {
+String Path3DGizmo::get_handle_name(int p_id) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return "";
 	}
 
-	if (p_idx < c->get_point_count()) {
-		return TTR("Curve Point #") + itos(p_idx);
+	if (p_id < c->get_point_count()) {
+		return TTR("Curve Point #") + itos(p_id);
 	}
 
-	p_idx = p_idx - c->get_point_count() + 1;
+	p_id = p_id - c->get_point_count() + 1;
 
-	int idx = p_idx / 2;
-	int t = p_idx % 2;
+	int idx = p_id / 2;
+	int t = p_id % 2;
 	String n = TTR("Curve Point #") + itos(idx);
 	if (t == 0) {
 		n += " In";
@@ -60,21 +60,21 @@ String Path3DGizmo::get_handle_name(int p_idx) const {
 	return n;
 }
 
-Variant Path3DGizmo::get_handle_value(int p_idx) {
+Variant Path3DGizmo::get_handle_value(int p_id) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return Variant();
 	}
 
-	if (p_idx < c->get_point_count()) {
-		original = c->get_point_position(p_idx);
+	if (p_id < c->get_point_count()) {
+		original = c->get_point_position(p_id);
 		return original;
 	}
 
-	p_idx = p_idx - c->get_point_count() + 1;
+	p_id = p_id - c->get_point_count() + 1;
 
-	int idx = p_idx / 2;
-	int t = p_idx % 2;
+	int idx = p_id / 2;
+	int t = p_id % 2;
 
 	Vector3 ofs;
 	if (t == 0) {
@@ -88,20 +88,20 @@ Variant Path3DGizmo::get_handle_value(int p_idx) {
 	return ofs;
 }
 
-void Path3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void Path3DGizmo::set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point) {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return;
 	}
 
-	Transform gt = path->get_global_transform();
-	Transform gi = gt.affine_inverse();
+	Transform3D gt = path->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
 	// Setting curve point positions
-	if (p_idx < c->get_point_count()) {
-		Plane p(gt.xform(original), p_camera->get_transform().basis.get_axis(2));
+	if (p_id < c->get_point_count()) {
+		const Plane p = Plane(p_camera->get_transform().basis.get_axis(2), gt.xform(original));
 
 		Vector3 inters;
 
@@ -112,20 +112,20 @@ void Path3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_poin
 			}
 
 			Vector3 local = gi.xform(inters);
-			c->set_point_position(p_idx, local);
+			c->set_point_position(p_id, local);
 		}
 
 		return;
 	}
 
-	p_idx = p_idx - c->get_point_count() + 1;
+	p_id = p_id - c->get_point_count() + 1;
 
-	int idx = p_idx / 2;
-	int t = p_idx % 2;
+	int idx = p_id / 2;
+	int t = p_id % 2;
 
 	Vector3 base = c->get_point_position(idx);
 
-	Plane p(gt.xform(original), p_camera->get_transform().basis.get_axis(2));
+	Plane p(p_camera->get_transform().basis.get_axis(2), gt.xform(original));
 
 	Vector3 inters;
 
@@ -157,7 +157,7 @@ void Path3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_poin
 	}
 }
 
-void Path3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+void Path3DGizmo::commit_handle(int p_id, const Variant &p_restore, bool p_cancel) {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return;
@@ -165,27 +165,27 @@ void Path3DGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_canc
 
 	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 
-	if (p_idx < c->get_point_count()) {
+	if (p_id < c->get_point_count()) {
 		if (p_cancel) {
-			c->set_point_position(p_idx, p_restore);
+			c->set_point_position(p_id, p_restore);
 			return;
 		}
 		ur->create_action(TTR("Set Curve Point Position"));
-		ur->add_do_method(c.ptr(), "set_point_position", p_idx, c->get_point_position(p_idx));
-		ur->add_undo_method(c.ptr(), "set_point_position", p_idx, p_restore);
+		ur->add_do_method(c.ptr(), "set_point_position", p_id, c->get_point_position(p_id));
+		ur->add_undo_method(c.ptr(), "set_point_position", p_id, p_restore);
 		ur->commit_action();
 
 		return;
 	}
 
-	p_idx = p_idx - c->get_point_count() + 1;
+	p_id = p_id - c->get_point_count() + 1;
 
-	int idx = p_idx / 2;
-	int t = p_idx % 2;
+	int idx = p_id / 2;
+	int t = p_id % 2;
 
 	if (t == 0) {
 		if (p_cancel) {
-			c->set_point_in(p_idx, p_restore);
+			c->set_point_in(p_id, p_restore);
 			return;
 		}
 
@@ -282,7 +282,7 @@ void Path3DGizmo::redraw() {
 			add_handles(handles, handles_material);
 		}
 		if (sec_handles.size()) {
-			add_handles(sec_handles, sec_handles_material, false, true);
+			add_handles(sec_handles, sec_handles_material, Vector<int>(), false, true);
 		}
 	}
 }
@@ -294,16 +294,16 @@ Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 	orig_out_length = 0;
 }
 
-bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!path) {
-		return false;
+		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
-		return false;
+		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
-	Transform gt = path->get_global_transform();
-	Transform it = gt.affine_inverse();
+	Transform3D gt = path->get_global_transform();
+	Transform3D it = gt.affine_inverse();
 
 	static const int click_dist = 10; //should make global
 
@@ -316,7 +316,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 			set_handle_clicked(false);
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->is_ctrl_pressed()))) {
 			//click into curve, break it down
 			Vector<Vector3> v3a = c->tessellate();
 			int idx = 0;
@@ -329,14 +329,14 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 				const Vector3 *r = v3a.ptr();
 
 				if (p_camera->unproject_position(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist) {
-					return false; //nope, existing
+					return EditorPlugin::AFTER_GUI_INPUT_PASS; //nope, existing
 				}
 
 				for (int i = 0; i < c->get_point_count() - 1; i++) {
 					//find the offset and point index of the place to break up
 					int j = idx;
 					if (p_camera->unproject_position(gt.xform(c->get_point_position(i + 1))).distance_to(mbpos) < click_dist) {
-						return false; //nope, existing
+						return EditorPlugin::AFTER_GUI_INPUT_PASS; //nope, existing
 					}
 
 					while (j < rc && c->get_point_position(i + 1) != r[j]) {
@@ -386,16 +386,16 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 				ur->add_do_method(c.ptr(), "add_point", closest_seg_point, Vector3(), Vector3(), closest_seg + 1);
 				ur->add_undo_method(c.ptr(), "remove_point", closest_seg + 1);
 				ur->commit_action();
-				return true;
+				return EditorPlugin::AFTER_GUI_INPUT_STOP;
 
 			} else {
-				Vector3 org;
+				Vector3 origin;
 				if (c->get_point_count() == 0) {
-					org = path->get_transform().get_origin();
+					origin = path->get_transform().get_origin();
 				} else {
-					org = gt.xform(c->get_point_position(c->get_point_count() - 1));
+					origin = gt.xform(c->get_point_position(c->get_point_count() - 1));
 				}
-				Plane p(org, p_camera->get_transform().basis.get_axis(2));
+				Plane p(p_camera->get_transform().basis.get_axis(2), origin);
 				Vector3 ray_from = p_camera->project_ray_origin(mbpos);
 				Vector3 ray_dir = p_camera->project_ray_normal(mbpos);
 
@@ -405,13 +405,13 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 					ur->add_do_method(c.ptr(), "add_point", it.xform(inters), Vector3(), Vector3(), -1);
 					ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());
 					ur->commit_action();
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
 
 				//add new at pos
 			}
 
-		} else if (mb->is_pressed() && ((mb->get_button_index() == MOUSE_BUTTON_LEFT && curve_del->is_pressed()) || (mb->get_button_index() == MOUSE_BUTTON_RIGHT && curve_edit->is_pressed()))) {
+		} else if (mb->is_pressed() && ((mb->get_button_index() == MouseButton::LEFT && curve_del->is_pressed()) || (mb->get_button_index() == MouseButton::RIGHT && curve_edit->is_pressed()))) {
 			for (int i = 0; i < c->get_point_count(); i++) {
 				real_t dist_to_p = p_camera->unproject_position(gt.xform(c->get_point_position(i))).distance_to(mbpos);
 				real_t dist_to_p_out = p_camera->unproject_position(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_to(mbpos);
@@ -425,27 +425,27 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 					ur->add_do_method(c.ptr(), "remove_point", i);
 					ur->add_undo_method(c.ptr(), "add_point", c->get_point_position(i), c->get_point_in(i), c->get_point_out(i), i);
 					ur->commit_action();
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (dist_to_p_out < click_dist) {
 					UndoRedo *ur = editor->get_undo_redo();
 					ur->create_action(TTR("Remove Out-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_out", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_out", i, c->get_point_out(i));
 					ur->commit_action();
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (dist_to_p_in < click_dist) {
 					UndoRedo *ur = editor->get_undo_redo();
 					ur->create_action(TTR("Remove In-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_in", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_in", i, c->get_point_in(i));
 					ur->commit_action();
-					return true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				}
 			}
 		}
 	}
 
-	return false;
+	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }
 
 void Path3DEditorPlugin::edit(Object *p_object) {
@@ -453,14 +453,14 @@ void Path3DEditorPlugin::edit(Object *p_object) {
 		path = Object::cast_to<Path3D>(p_object);
 		if (path) {
 			if (path->get_curve().is_valid()) {
-				path->get_curve()->emit_signal("changed");
+				path->get_curve()->emit_signal(SNAME("changed"));
 			}
 		}
 	} else {
 		Path3D *pre = path;
 		path = nullptr;
 		if (pre) {
-			pre->get_curve()->emit_signal("changed");
+			pre->get_curve()->emit_signal(SNAME("changed"));
 		}
 	}
 	//collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
@@ -490,7 +490,7 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 			Path3D *pre = path;
 			path = nullptr;
 			if (pre && pre->get_curve().is_valid()) {
-				pre->get_curve()->emit_signal("changed");
+				pre->get_curve()->emit_signal(SNAME("changed"));
 			}
 		}
 	}
@@ -510,7 +510,14 @@ void Path3DEditorPlugin::_close_curve() {
 	if (c->get_point_count() < 2) {
 		return;
 	}
-	c->add_point(c->get_point_position(0), c->get_point_in(0), c->get_point_out(0));
+	if (c->get_point_position(0) == c->get_point_position(c->get_point_count() - 1)) {
+		return;
+	}
+	UndoRedo *ur = editor->get_undo_redo();
+	ur->create_action(TTR("Close Curve"));
+	ur->add_do_method(c.ptr(), "add_point", c->get_point_position(0), c->get_point_in(0), c->get_point_out(0), -1);
+	ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());
+	ur->commit_action();
 }
 
 void Path3DEditorPlugin::_handle_option_pressed(int p_option) {
@@ -554,7 +561,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	mirror_handle_length = true;
 
 	Ref<Path3DGizmoPlugin> gizmo_plugin;
-	gizmo_plugin.instance();
+	gizmo_plugin.instantiate();
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 
 	sep = memnew(VSeparator);
@@ -562,15 +569,15 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(sep);
 	curve_edit = memnew(Button);
 	curve_edit->set_flat(true);
-	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveEdit", "EditorIcons"));
+	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->hide();
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit);
 	curve_create = memnew(Button);
 	curve_create->set_flat(true);
-	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveCreate", "EditorIcons"));
+	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 	curve_create->set_toggle_mode(true);
 	curve_create->hide();
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
@@ -578,7 +585,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_create);
 	curve_del = memnew(Button);
 	curve_del->set_flat(true);
-	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveDelete", "EditorIcons"));
+	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 	curve_del->set_toggle_mode(true);
 	curve_del->hide();
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
@@ -586,7 +593,7 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_del);
 	curve_close = memnew(Button);
 	curve_close->set_flat(true);
-	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveClose", "EditorIcons"));
+	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveClose"), SNAME("EditorIcons")));
 	curve_close->hide();
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip(TTR("Close Curve"));
@@ -607,15 +614,6 @@ Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
 	menu->connect("id_pressed", callable_mp(this, &Path3DEditorPlugin::_handle_option_pressed));
 
 	curve_edit->set_pressed(true);
-	/*
-    collision_polygon_editor = memnew( PathEditor(p_node) );
-    editor->get_main_control()->add_child(collision_polygon_editor);
-    collision_polygon_editor->set_margin(MARGIN_LEFT,200);
-    collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
-    collision_polygon_editor->set_margin(MARGIN_TOP,0);
-    collision_polygon_editor->set_margin(MARGIN_BOTTOM,10);
-    collision_polygon_editor->hide();
-    */
 }
 
 Path3DEditorPlugin::~Path3DEditorPlugin() {
@@ -644,6 +642,6 @@ Path3DGizmoPlugin::Path3DGizmoPlugin() {
 	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
 	create_material("path_material", path_color);
 	create_material("path_thin_material", Color(0.5, 0.5, 0.5));
-	create_handle_material("handles", false, Node3DEditor::get_singleton()->get_theme_icon("EditorPathSmoothHandle", "EditorIcons"));
-	create_handle_material("sec_handles", false, Node3DEditor::get_singleton()->get_theme_icon("EditorCurveHandle", "EditorIcons"));
+	create_handle_material("handles", false, Node3DEditor::get_singleton()->get_theme_icon(SNAME("EditorPathSmoothHandle"), SNAME("EditorIcons")));
+	create_handle_material("sec_handles", false, Node3DEditor::get_singleton()->get_theme_icon(SNAME("EditorCurveHandle"), SNAME("EditorIcons")));
 }

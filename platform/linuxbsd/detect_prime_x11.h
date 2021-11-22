@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #ifdef X11_ENABLED
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 
 int detect_prime();
 

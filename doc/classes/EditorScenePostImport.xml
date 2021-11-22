@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorScenePostImport" inherits="Reference" version="4.0">
+<class name="EditorScenePostImport" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Post-processes scenes after import.
 	</brief_description>
 	<description>
 		Imported scenes can be automatically modified right after import by setting their [b]Custom Script[/b] Import property to a [code]tool[/code] script that inherits from this class.
-		The [method post_import] callback receives the imported scene's root node and returns the modified version of the scene. Usage example:
+		The [method _post_import] callback receives the imported scene's root node and returns the modified version of the scene. Usage example:
 		[codeblocks]
 		[gdscript]
 		tool # Needed so it runs in editor.
 		extends EditorScenePostImport
 		# This sample changes all node names.
 		# Called right after the scene is imported and gets the root node.
-		func post_import(scene):
+		func _post_import(scene):
 		    # Change all node names to "modified_[oldnodename]"
 		    iterate(scene)
 		    return scene # Remember to return the imported scene
@@ -52,26 +52,21 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="Importing 3D scenes: Custom script">https://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_scenes.html#custom-script</link>
+		<link title="Importing 3D scenes: Custom script">$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html#custom-script</link>
 	</tutorials>
 	<methods>
-		<method name="get_source_file" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the source file path which got imported (e.g. [code]res://scene.dae[/code]).
-			</description>
-		</method>
-		<method name="post_import" qualifiers="virtual">
-			<return type="Object">
-			</return>
-			<argument index="0" name="scene" type="Object">
-			</argument>
+		<method name="_post_import" qualifiers="virtual">
+			<return type="Object" />
+			<argument index="0" name="scene" type="Node" />
 			<description>
 				Called after the scene was imported. This method must return the modified version of the scene.
 			</description>
 		</method>
+		<method name="get_source_file" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the source file path which got imported (e.g. [code]res://scene.dae[/code]).
+			</description>
+		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

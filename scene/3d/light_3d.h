@@ -32,8 +32,6 @@
 #define LIGHT_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/texture.h"
-#include "servers/rendering_server.h"
 
 class Light3D : public VisualInstance3D {
 	GDCLASS(Light3D, VisualInstance3D);
@@ -71,7 +69,7 @@ public:
 
 private:
 	Color color;
-	float param[PARAM_MAX] = {};
+	real_t param[PARAM_MAX] = {};
 	Color shadow_color;
 	bool shadow = false;
 	bool negative = false;
@@ -88,8 +86,6 @@ private:
 protected:
 	RID light;
 
-	virtual bool _can_gizmo_scale() const;
-
 	static void _bind_methods();
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &property) const override;
@@ -102,8 +98,8 @@ public:
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;
 
-	void set_param(Param p_param, float p_value);
-	float get_param(Param p_param) const;
+	void set_param(Param p_param, real_t p_value);
+	real_t get_param(Param p_param) const;
 
 	void set_shadow(bool p_enable);
 	bool has_shadow() const;
@@ -149,26 +145,18 @@ public:
 		SHADOW_PARALLEL_4_SPLITS,
 	};
 
-	enum ShadowDepthRange {
-		SHADOW_DEPTH_RANGE_STABLE = RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE,
-		SHADOW_DEPTH_RANGE_OPTIMIZED = RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED,
-	};
-
 private:
 	bool blend_splits;
 	ShadowMode shadow_mode;
-	ShadowDepthRange shadow_depth_range;
 	bool sky_only = false;
 
 protected:
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
-
-	void set_shadow_depth_range(ShadowDepthRange p_range);
-	ShadowDepthRange get_shadow_depth_range() const;
 
 	void set_blend_splits(bool p_enable);
 	bool is_blend_splits_enabled() const;
@@ -180,7 +168,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(DirectionalLight3D::ShadowMode)
-VARIANT_ENUM_CAST(DirectionalLight3D::ShadowDepthRange)
 
 class OmniLight3D : public Light3D {
 	GDCLASS(OmniLight3D, Light3D);

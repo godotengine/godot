@@ -98,8 +98,13 @@ private:
 
 	Overlay overlay = OVERLAY_DISABLED;
 
+#ifdef TOOLS_ENABLED
+	void _edit_set_position(const Point2 &p_position) override;
+	void _validate_property(PropertyInfo &property) const override;
+#endif
+
 protected:
-	void _gui_input(const Ref<InputEvent> &p_ev);
+	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -113,11 +118,23 @@ public:
 	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>());
 	void clear_slot(int p_idx);
 	void clear_all_slots();
+
 	bool is_slot_enabled_left(int p_idx) const;
+	void set_slot_enabled_left(int p_idx, bool p_enable_left);
+
+	void set_slot_type_left(int p_idx, int p_type_left);
 	int get_slot_type_left(int p_idx) const;
+
+	void set_slot_color_left(int p_idx, const Color &p_color_left);
 	Color get_slot_color_left(int p_idx) const;
+
 	bool is_slot_enabled_right(int p_idx) const;
+	void set_slot_enabled_right(int p_idx, bool p_enable_right);
+
+	void set_slot_type_right(int p_idx, int p_type_right);
 	int get_slot_type_right(int p_idx) const;
+
+	void set_slot_color_right(int p_idx, const Color &p_color_right);
 	Color get_slot_color_right(int p_idx) const;
 
 	void set_title(const String &p_title);

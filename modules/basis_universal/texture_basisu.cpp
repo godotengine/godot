@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
-#include <basisu_comp.h>
+#include <encoder/basisu_comp.h>
 #endif
 
 #include <transcoder/basisu_transcoder.h>
@@ -130,7 +130,7 @@ void TextureBasisU::set_basisu_data(const Vector<uint8_t>& p_data) {
 	};
 
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	img->create(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
 
 	RenderingServer::get_singleton()->texture_allocate(texture, tex_size.x, tex_size.y, 0, img->get_format(), RS::TEXTURE_TYPE_2D, flags);

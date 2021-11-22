@@ -36,7 +36,6 @@
 #import "godot_view.h"
 #include "ios.h"
 #import "keyboard_input_view.h"
-#import "native_video_view.h"
 #include "os_iphone.h"
 #import "view_controller.h"
 
@@ -49,11 +48,11 @@ DisplayServerIPhone *DisplayServerIPhone::get_singleton() {
 	return (DisplayServerIPhone *)DisplayServer::get_singleton();
 }
 
-DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
-#if defined(OPENGL_ENABLED)
-	// FIXME: Add support for both GLES2 and Vulkan when GLES2 is implemented
+#if defined(GLES3_ENABLED)
+	// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented
 	// again,
 
 	if (rendering_driver == "opengl_es") {
@@ -61,9 +60,9 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 
 		// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
+		if (RasterizerGLES3::is_viable() == OK) {
+			RasterizerGLES3::register_config();
+			RasterizerGLES3::make_current();
 		} else {
 			gl_initialization_error = true;
 		}
@@ -84,7 +83,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 
 		// reset this to what it should be, it will have been set to 0 after
 		// rendering_server->init() is called
-		//    RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+		//    RasterizerStorageGLES3system_fbo = gl_view_base_fb;
 	}
 #endif
 
@@ -109,7 +108,7 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Displ
 		}
 
 		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
-		if (context_vulkan->window_create(MAIN_WINDOW_ID, layer, size.width, size.height) != OK) {
+		if (context_vulkan->window_create(MAIN_WINDOW_ID, p_vsync_mode, layer, size.width, size.height) != OK) {
 			memdelete(context_vulkan);
 			context_vulkan = nullptr;
 			ERR_FAIL_MSG("Failed to create Vulkan window.");
@@ -136,20 +135,20 @@ DisplayServerIPhone::~DisplayServerIPhone() {
 		if (rendering_device_vulkan) {
 			rendering_device_vulkan->finalize();
 			memdelete(rendering_device_vulkan);
-			rendering_device_vulkan = NULL;
+			rendering_device_vulkan = nullptr;
 		}
 
 		if (context_vulkan) {
 			context_vulkan->window_destroy(MAIN_WINDOW_ID);
 			memdelete(context_vulkan);
-			context_vulkan = NULL;
+			context_vulkan = nullptr;
 		}
 	}
 #endif
 }
 
-DisplayServer *DisplayServerIPhone::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerIPhone(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
+DisplayServer *DisplayServerIPhone::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+	return memnew(DisplayServerIPhone(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 }
 
 Vector<String> DisplayServerIPhone::get_rendering_drivers_func() {
@@ -158,7 +157,7 @@ Vector<String> DisplayServerIPhone::get_rendering_drivers_func() {
 #if defined(VULKAN_ENABLED)
 	drivers.push_back("vulkan");
 #endif
-#if defined(OPENGL_ENABLED)
+#if defined(GLES3_ENABLED)
 	drivers.push_back("opengl_es");
 #endif
 
@@ -222,10 +221,10 @@ void DisplayServerIPhone::_window_callback(const Callable &p_callable, const Var
 
 // MARK: Touches
 
-void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick) {
+void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click) {
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		Ref<InputEventScreenTouch> ev;
-		ev.instance();
+		ev.instantiate();
 
 		ev->set_index(p_idx);
 		ev->set_pressed(p_pressed);
@@ -237,7 +236,7 @@ void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_presse
 void DisplayServerIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		Ref<InputEventScreenDrag> ev;
-		ev.instance();
+		ev.instantiate();
 		ev->set_index(p_idx);
 		ev->set_position(Vector2(p_x, p_y));
 		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
@@ -255,14 +254,14 @@ void DisplayServerIPhone::touches_cancelled(int p_idx) {
 
 // MARK: Keyboard
 
-void DisplayServerIPhone::key(uint32_t p_key, bool p_pressed) {
+void DisplayServerIPhone::key(Key p_key, bool p_pressed) {
 	Ref<InputEventKey> ev;
-	ev.instance();
+	ev.instantiate();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
 	ev->set_keycode(p_key);
 	ev->set_physical_keycode(p_key);
-	ev->set_unicode(p_key);
+	ev->set_unicode((char32_t)p_key);
 	perform_event(ev);
 };
 
@@ -305,7 +304,6 @@ bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 		// case FEATURE_MOUSE_WARP:
 		// case FEATURE_NATIVE_DIALOG:
 		// case FEATURE_NATIVE_ICON:
-		// case FEATURE_NATIVE_VIDEO:
 		// case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_KEEP_SCREEN_ON:
@@ -320,12 +318,6 @@ bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 
 String DisplayServerIPhone::get_name() const {
 	return "iPhone";
-}
-
-void DisplayServerIPhone::alert(const String &p_alert, const String &p_title) {
-	const CharString utf8_alert = p_alert.utf8();
-	const CharString utf8_title = p_title.utf8();
-	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
 }
 
 int DisplayServerIPhone::get_screen_count() const {
@@ -569,69 +561,6 @@ bool DisplayServerIPhone::screen_is_kept_on() const {
 	return [UIApplication sharedApplication].idleTimerDisabled;
 }
 
-Error DisplayServerIPhone::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track, int p_screen) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	bool exists = f && f->is_open();
-
-	String user_data_dir = OSIPhone::get_singleton()->get_user_data_dir();
-
-	if (!exists) {
-		return FAILED;
-	}
-
-	String tempFile = OSIPhone::get_singleton()->get_user_data_dir();
-
-	if (p_path.begins_with("res://")) {
-		if (PackedData::get_singleton()->has_path(p_path)) {
-			printf("Unable to play %s using the native player as it resides in a .pck file\n", p_path.utf8().get_data());
-			return ERR_INVALID_PARAMETER;
-		} else {
-			p_path = p_path.replace("res:/", ProjectSettings::get_singleton()->get_resource_path());
-		}
-	} else if (p_path.begins_with("user://")) {
-		p_path = p_path.replace("user:/", user_data_dir);
-	}
-
-	memdelete(f);
-
-	printf("Playing video: %s\n", p_path.utf8().get_data());
-
-	String file_path = ProjectSettings::get_singleton()->globalize_path(p_path);
-
-	NSString *filePath = [[NSString alloc] initWithUTF8String:file_path.utf8().get_data()];
-	NSString *audioTrack = [NSString stringWithUTF8String:p_audio_track.utf8()];
-	NSString *subtitleTrack = [NSString stringWithUTF8String:p_subtitle_track.utf8()];
-
-	if (![AppDelegate.viewController playVideoAtPath:filePath
-											  volume:p_volume
-											   audio:audioTrack
-											subtitle:subtitleTrack]) {
-		return OK;
-	}
-
-	return FAILED;
-}
-
-bool DisplayServerIPhone::native_video_is_playing() const {
-	return [AppDelegate.viewController.videoView isVideoPlaying];
-}
-
-void DisplayServerIPhone::native_video_pause() {
-	if (native_video_is_playing()) {
-		[AppDelegate.viewController.videoView pauseVideo];
-	}
-}
-
-void DisplayServerIPhone::native_video_unpause() {
-	[AppDelegate.viewController.videoView unpauseVideo];
-};
-
-void DisplayServerIPhone::native_video_stop() {
-	if (native_video_is_playing()) {
-		[AppDelegate.viewController.videoView stopVideo];
-	}
-}
-
 void DisplayServerIPhone::resize_window(CGSize viewSize) {
 	Size2i size = Size2i(viewSize.width, viewSize.height) * screen_get_max_scale();
 
@@ -645,4 +574,20 @@ void DisplayServerIPhone::resize_window(CGSize viewSize) {
 
 	Variant resize_rect = Rect2i(Point2i(), size);
 	_window_callback(window_resize_callback, resize_rect);
+}
+
+void DisplayServerIPhone::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+#endif
+}
+
+DisplayServer::VSyncMode DisplayServerIPhone::window_get_vsync_mode(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	return context_vulkan->get_vsync_mode(p_window);
+#else
+	return DisplayServer::VSYNC_ENABLED;
+#endif
 }

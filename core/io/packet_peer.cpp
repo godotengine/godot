@@ -138,6 +138,7 @@ Error PacketPeer::_get_packet_error() const {
 void PacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &PacketPeer::_bnd_get_var, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("put_var", "var", "full_objects"), &PacketPeer::put_var, DEFVAL(false));
+
 	ClassDB::bind_method(D_METHOD("get_packet"), &PacketPeer::_get_packet);
 	ClassDB::bind_method(D_METHOD("put_packet", "buffer"), &PacketPeer::_put_packet);
 	ClassDB::bind_method(D_METHOD("get_packet_error"), &PacketPeer::_get_packet_error);
@@ -147,6 +148,51 @@ void PacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_encode_buffer_max_size", "max_size"), &PacketPeer::set_encode_buffer_max_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "encode_buffer_max_size"), "set_encode_buffer_max_size", "get_encode_buffer_max_size");
+}
+
+/***************/
+
+int PacketPeerExtension::get_available_packet_count() const {
+	int count;
+	if (GDVIRTUAL_CALL(_get_available_packet_count, count)) {
+		return count;
+	}
+	WARN_PRINT_ONCE("PacketPeerExtension::_get_available_packet_count is unimplemented!");
+	return -1;
+}
+
+Error PacketPeerExtension::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
+	int err;
+	if (GDVIRTUAL_CALL(_get_packet, r_buffer, &r_buffer_size, err)) {
+		return (Error)err;
+	}
+	WARN_PRINT_ONCE("PacketPeerExtension::_get_packet_native is unimplemented!");
+	return FAILED;
+}
+
+Error PacketPeerExtension::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
+	int err;
+	if (GDVIRTUAL_CALL(_put_packet, p_buffer, p_buffer_size, err)) {
+		return (Error)err;
+	}
+	WARN_PRINT_ONCE("PacketPeerExtension::_put_packet_native is unimplemented!");
+	return FAILED;
+}
+
+int PacketPeerExtension::get_max_packet_size() const {
+	int size;
+	if (GDVIRTUAL_CALL(_get_max_packet_size, size)) {
+		return size;
+	}
+	WARN_PRINT_ONCE("PacketPeerExtension::_get_max_packet_size is unimplemented!");
+	return 0;
+}
+
+void PacketPeerExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_get_packet, "r_buffer", "r_buffer_size");
+	GDVIRTUAL_BIND(_put_packet, "p_buffer", "p_buffer_size");
+	GDVIRTUAL_BIND(_get_available_packet_count);
+	GDVIRTUAL_BIND(_get_max_packet_size);
 }
 
 /***************/
@@ -161,7 +207,7 @@ void PacketPeerStream::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_buffer_max_size"), "set_input_buffer_max_size", "get_input_buffer_max_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_buffer_max_size"), "set_output_buffer_max_size", "get_output_buffer_max_size");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream_peer", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", 0), "set_stream_peer", "get_stream_peer");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream_peer", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", PROPERTY_USAGE_NONE), "set_stream_peer", "get_stream_peer");
 }
 
 Error PacketPeerStream::_poll_buffer() const {

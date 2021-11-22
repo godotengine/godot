@@ -7,13 +7,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2( 0, 0 )">
+		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
 			The local gesture position relative to the [Viewport]. If used in [method Control._gui_input], the position is relative to the current [Control] that received this gesture.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

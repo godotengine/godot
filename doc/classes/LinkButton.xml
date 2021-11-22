@@ -11,28 +11,22 @@
 	</tutorials>
 	<methods>
 		<method name="clear_opentype_features">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all OpenType features.
 			</description>
 		</method>
 		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="tag" type="String" />
 			<description>
 				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="set_opentype_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tag" type="String" />
+			<argument index="1" name="value" type="int" />
 			<description>
 				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
@@ -47,7 +41,7 @@
 		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.
 		</member>
-		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[  ]">
+		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[]">
 			Set additional options for BiDi override.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
@@ -72,31 +66,34 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="focus" type="StyleBox">
+		<theme_item name="focus" data_type="style" type="StyleBox">
 			[StyleBox] used when the [LinkButton] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
 		</theme_item>
-		<theme_item name="font" type="Font">
+		<theme_item name="font" data_type="font" type="Font">
 			[Font] of the [LinkButton]'s text.
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Default text [Color] of the [LinkButton].
 		</theme_item>
-		<theme_item name="font_hover_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
+			Text [Color] used when the [LinkButton] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
+		</theme_item>
+		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			Text [Color] used when the [LinkButton] is being hovered.
 		</theme_item>
-		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [LinkButton].
 		</theme_item>
-		<theme_item name="font_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the [LinkButton] is being pressed.
 		</theme_item>
-		<theme_item name="font_size" type="int">
+		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the [LinkButton]'s text.
 		</theme_item>
-		<theme_item name="outline_size" type="int" default="0">
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
-		<theme_item name="underline_spacing" type="int" default="2">
+		<theme_item name="underline_spacing" data_type="constant" type="int" default="2">
 			The vertical space between the baseline of text and the underline.
 		</theme_item>
 	</theme_items>

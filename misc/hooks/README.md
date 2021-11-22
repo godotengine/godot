@@ -12,8 +12,8 @@ contributors to make sure they comply with our requirements.
   `PATH`, or if you want to enable colored output with `pygmentize`.
 - Pre-commit hook for `black`: Applies `black` to the staged Python files
   before accepting a commit.
-- Pre-commit hook for `makerst`: Checks the class reference syntax using
-  `makerst.py`.
+- Pre-commit hook for `make_rst`: Checks the class reference syntax using
+  `make_rst.py`.
 
 ## Installation
 
@@ -28,7 +28,7 @@ so they should work out of the box on Linux/macOS.
 #### Windows
 
 ##### clang-format
-- Download LLVM for Windows (version 8 or later) from
+- Download LLVM for Windows (version 13 or later) from
   <https://releases.llvm.org/download.html>
 - Make sure LLVM is added to the `PATH` during installation
 

@@ -10,8 +10,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_author_info" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns engine author information in a Dictionary.
 				[code]lead_developers[/code]    - Array of Strings, lead developer names
@@ -21,8 +20,7 @@
 			</description>
 		</method>
 		<method name="get_copyright_info" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an Array of copyright information Dictionaries.
 				[code]name[/code]    - String, component name
@@ -30,81 +28,86 @@
 			</description>
 		</method>
 		<method name="get_donor_info" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns a Dictionary of Arrays of donor names.
 				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]silver_sponsors[/code], [code]bronze_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
 			</description>
 		</method>
 		<method name="get_frames_drawn">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
-				Returns the total number of frames drawn. If the render loop is disabled with [code]--disable-render-loop[/code] via command line, this returns [code]0[/code]. See also [method get_process_frames].
+				Returns the total number of frames drawn. On headless platforms, or if the render loop is disabled with [code]--disable-render-loop[/code] via command line, [method get_frames_drawn] always returns [code]0[/code]. See [method get_process_frames].
 			</description>
 		</method>
 		<method name="get_frames_per_second" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the frames per second of the running game.
 			</description>
 		</method>
 		<method name="get_license_info" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns Dictionary of licenses used by Godot and included third party components.
 			</description>
 		</method>
 		<method name="get_license_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns Godot license text.
 			</description>
 		</method>
 		<method name="get_main_loop" qualifiers="const">
-			<return type="MainLoop">
-			</return>
+			<return type="MainLoop" />
 			<description>
 				Returns the main loop object (see [MainLoop] and [SceneTree]).
 			</description>
 		</method>
 		<method name="get_physics_frames" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
-				Returns the total number of frames passed since engine initialization which is advanced on each [b]physics frame[/b].
+				Returns the total number of frames passed since engine initialization which is advanced on each [b]physics frame[/b]. See also [method get_process_frames].
+				[method get_physics_frames] can be used to run expensive logic less often without relying on a [Timer]:
+				[codeblock]
+				func _physics_process(_delta):
+				    if Engine.get_physics_frames() % 2 == 0:
+				        pass  # Run expensive logic only once every 2 physics frames here.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_physics_interpolation_fraction" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the fraction through the current physics tick we are at the time of rendering the frame. This can be used to implement fixed timestep interpolation.
 			</description>
 		</method>
 		<method name="get_process_frames" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
-				Returns the total number of frames passed since engine initialization which is advanced on each [b]process frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn].
+				Returns the total number of frames passed since engine initialization which is advanced on each [b]process frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn] and [method get_physics_frames].
+				[method get_process_frames] can be used to run expensive logic less often without relying on a [Timer]:
+				[codeblock]
+				func _process(_delta):
+				    if Engine.get_process_frames() % 2 == 0:
+				        pass  # Run expensive logic only once every 2 process (render) frames here.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_singleton" qualifiers="const">
-			<return type="Object">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="Object" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns a global singleton with given [code]name[/code]. Often used for plugins, e.g. GodotPayments.
 			</description>
 		</method>
+		<method name="get_singleton_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
 		<method name="get_version_info" qualifiers="const">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns the current engine version information in a Dictionary.
 				[code]major[/code]    - Holds the major version number as an int
@@ -138,47 +141,64 @@
 			</description>
 		</method>
 		<method name="has_singleton" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a singleton with given [code]name[/code] exists in global scope.
 			</description>
 		</method>
+		<method name="is_editor_hint" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the script is currently running inside the editor, [code]false[/code] otherwise. This is useful for [code]@tool[/code] scripts to conditionally draw editor helpers, or prevent accidentally running "game" code that would affect the scene state while in the editor:
+				[codeblock]
+				if Engine.is_editor_hint():
+				    draw_gizmos()
+				else:
+				    simulate_physics()
+				[/codeblock]
+				See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]Running code in the editor[/url] in the documentation for more information.
+				[b]Note:[/b] To detect whether the script is run from an editor [i]build[/i] (e.g. when pressing [kbd]F5[/kbd]), use [method OS.has_feature] with the [code]"editor"[/code] argument instead. [code]OS.has_feature("editor")[/code] will evaluate to [code]true[/code] both when the code is running in the editor and when running the project from the editor, but it will evaluate to [code]false[/code] when the code is run from an exported project.
+			</description>
+		</method>
 		<method name="is_in_physics_frame" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the game is inside the fixed process and physics phase of the game loop.
 			</description>
 		</method>
+		<method name="register_singleton">
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="instance" type="Object" />
+			<description>
+			</description>
+		</method>
+		<method name="unregister_singleton">
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="editor_hint" type="bool" setter="set_editor_hint" getter="is_editor_hint" default="true">
-			If [code]true[/code], the script is currently running inside the editor. This is useful for [code]@tool[/code] scripts to conditionally draw editor helpers, or prevent accidentally running "game" code that would affect the scene state while in the editor:
-			[codeblock]
-			if Engine.editor_hint:
-			    draw_gizmos()
-			else:
-			    simulate_physics()
-			[/codeblock]
-			See [url=https://docs.godotengine.org/en/latest/tutorials/plugins/running_code_in_the_editor.html]Running code in the editor[/url] in the documentation for more information.
-			[b]Note:[/b] To detect whether the script is run from an editor [i]build[/i] (e.g. when pressing [kbd]F5[/kbd]), use [method OS.has_feature] with the [code]"editor"[/code] argument instead. [code]OS.has_feature("editor")[/code] will evaluate to [code]true[/code] both when the code is running in the editor and when running the project from the editor, but it will evaluate to [code]false[/code] when the code is run from an exported project.
-		</member>
-		<member name="iterations_per_second" type="int" setter="set_iterations_per_second" getter="get_iterations_per_second" default="60">
-			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. This value should generally always be set to [code]60[/code] or above, as Godot doesn't interpolate the physics step. As a result, values lower than [code]60[/code] will look stuttery. This value can be increased to make input more reactive or work around tunneling issues, but keep in mind doing so will increase CPU usage.
-		</member>
 		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix" default="0.5">
-			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
+			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of the in-game clock and real clock but smooth out framerate jitters. The default value of 0.5 should be fine for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
+			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics_jitter_fix] to [code]0[/code].
+		</member>
+		<member name="physics_ticks_per_second" type="int" setter="set_physics_ticks_per_second" getter="get_physics_ticks_per_second" default="60">
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. This value should generally always be set to [code]60[/code] or above, as Godot doesn't interpolate the physics step. As a result, values lower than [code]60[/code] will look stuttery. This value can be increased to make input more reactive or work around tunneling issues, but keep in mind doing so will increase CPU usage. See also [member target_fps].
+		</member>
+		<member name="print_error_messages" type="bool" setter="set_print_error_messages" getter="is_printing_error_messages" default="true">
+			If [code]false[/code], stops printing error and warning messages to the console and editor Output log. This can be used to hide error and warning messages during unit test suite runs. This property is equivalent to the [member ProjectSettings.application/run/disable_stderr] project setting.
+			[b]Warning:[/b] If you set this to [code]false[/code] anywhere in the project, important error messages may be hidden even if they are emitted from other scripts. If this is set to [code]false[/code] in a [code]@tool[/code] script, this will also impact the editor itself. Do [i]not[/i] report bugs before ensuring error messages are enabled (as they are by default).
+			[b]Note:[/b] This property does not impact the editor's Errors tab when running a project from the editor.
 		</member>
 		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps" default="0">
-			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. A value of 0 means no limit.
+			The desired frames per second. If the hardware cannot keep up, this setting may not be respected. A value of 0 means no limit. See also [member physics_ticks_per_second].
 		</member>
 		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale" default="1.0">
 			Controls how fast or slow the in-game clock ticks versus the real life one. It defaults to 1.0. A value of 2.0 means the game moves twice as fast as real life, whilst a value of 0.5 means the game moves at half the regular speed.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

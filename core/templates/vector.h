@@ -35,12 +35,12 @@
  * @class Vector
  * @author Juan Linietsky
  * Vector container. Regular Vector Container. Use with care and for smaller arrays when possible. Use Vector for large arrays.
-*/
+ */
 
 #include "core/error/error_macros.h"
-#include "core/os/copymem.h"
 #include "core/os/memory.h"
 #include "core/templates/cowdata.h"
+#include "core/templates/search_array.h"
 #include "core/templates/sort_array.h"
 
 template <class T>
@@ -66,6 +66,7 @@ private:
 public:
 	bool push_back(T p_elem);
 	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(p_elem); } //alias
+	void fill(T p_elem);
 
 	void remove(int p_index) { _cowdata.remove(p_index); }
 	void erase(const T &p_val) {
@@ -92,7 +93,7 @@ public:
 
 	void append_array(Vector<T> p_other);
 
-	bool has(const T &p_val) {
+	bool has(const T &p_val) const {
 		return find(p_val, 0) != -1;
 	}
 
@@ -110,6 +111,11 @@ public:
 
 	void sort() {
 		sort_custom<_DefaultComparator<T>>();
+	}
+
+	int bsearch(const T &p_value, bool p_before) {
+		SearchArray<T> search;
+		return search.bisect(ptrw(), size(), p_value, p_before);
 	}
 
 	Vector<T> duplicate() {
@@ -134,7 +140,7 @@ public:
 	Vector<uint8_t> to_byte_array() const {
 		Vector<uint8_t> ret;
 		ret.resize(size() * sizeof(T));
-		copymem(ret.ptrw(), ptr(), sizeof(T) * size());
+		memcpy(ret.ptrw(), ptr(), sizeof(T) * size());
 		return ret;
 	}
 
@@ -187,6 +193,70 @@ public:
 		return false;
 	}
 
+	struct Iterator {
+		_FORCE_INLINE_ T &operator*() const {
+			return *elem_ptr;
+		}
+		_FORCE_INLINE_ T *operator->() const { return elem_ptr; }
+		_FORCE_INLINE_ Iterator &operator++() {
+			elem_ptr++;
+			return *this;
+		}
+		_FORCE_INLINE_ Iterator &operator--() {
+			elem_ptr--;
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return elem_ptr == b.elem_ptr; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return elem_ptr != b.elem_ptr; }
+
+		Iterator(T *p_ptr) { elem_ptr = p_ptr; }
+		Iterator() {}
+		Iterator(const Iterator &p_it) { elem_ptr = p_it.elem_ptr; }
+
+	private:
+		T *elem_ptr = nullptr;
+	};
+
+	struct ConstIterator {
+		_FORCE_INLINE_ const T &operator*() const {
+			return *elem_ptr;
+		}
+		_FORCE_INLINE_ const T *operator->() const { return elem_ptr; }
+		_FORCE_INLINE_ ConstIterator &operator++() {
+			elem_ptr++;
+			return *this;
+		}
+		_FORCE_INLINE_ ConstIterator &operator--() {
+			elem_ptr--;
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return elem_ptr == b.elem_ptr; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return elem_ptr != b.elem_ptr; }
+
+		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
+		ConstIterator() {}
+		ConstIterator(const ConstIterator &p_it) { elem_ptr = p_it.elem_ptr; }
+
+	private:
+		const T *elem_ptr = nullptr;
+	};
+
+	_FORCE_INLINE_ Iterator begin() {
+		return Iterator(ptrw());
+	}
+	_FORCE_INLINE_ Iterator end() {
+		return Iterator(ptrw() + size());
+	}
+
+	_FORCE_INLINE_ ConstIterator begin() const {
+		return ConstIterator(ptr());
+	}
+	_FORCE_INLINE_ ConstIterator end() const {
+		return ConstIterator(ptr() + size());
+	}
+
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
 
@@ -221,6 +291,14 @@ bool Vector<T>::push_back(T p_elem) {
 	set(size() - 1, p_elem);
 
 	return false;
+}
+
+template <class T>
+void Vector<T>::fill(T p_elem) {
+	T *p = ptrw();
+	for (int i = 0; i < size(); i++) {
+		p[i] = p_elem;
+	}
 }
 
 #endif // VECTOR_H

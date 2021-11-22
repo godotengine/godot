@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="audio_stream" type="AudioStream" setter="set_audio_stream" getter="get_audio_stream">
 			The current [AudioStream].
@@ -18,6 +16,4 @@
 			The intensity of random pitch variation.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

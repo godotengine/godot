@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="default_value" type="bool" setter="set_default_value" getter="get_default_value" default="false">
 			A default value to be assigned within the shader.
@@ -18,6 +16,4 @@
 			Enables usage of the [member default_value].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

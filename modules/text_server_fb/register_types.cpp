@@ -33,7 +33,12 @@
 #include "text_server_fb.h"
 
 void preregister_text_server_fb_types() {
-	TextServerFallback::register_server();
+	GDREGISTER_CLASS(TextServerFallback);
+	if (TextServerManager::get_singleton()) {
+		Ref<TextServerFallback> ts;
+		ts.instantiate();
+		TextServerManager::get_singleton()->add_interface(ts);
+	}
 }
 
 void register_text_server_fb_types() {

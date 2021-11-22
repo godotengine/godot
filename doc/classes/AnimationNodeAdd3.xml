@@ -11,16 +11,12 @@
 		- A +add animation to blend with when the blend amount is in the [code][0.0, 1.0][/code] range
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
 			If [code]true[/code], sets the [code]optimization[/code] to [code]false[/code] when calling [method AnimationNode.blend_input], forcing the blended animations to update every frame.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

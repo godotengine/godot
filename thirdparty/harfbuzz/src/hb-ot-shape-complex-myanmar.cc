@@ -41,7 +41,8 @@ myanmar_basic_features[] =
 {
   /*
    * Basic features.
-   * These features are applied in order, one at a time, after reordering.
+   * These features are applied in order, one at a time, after reordering,
+   * constrained to the syllable.
    */
   HB_TAG('r','p','h','f'),
   HB_TAG('p','r','e','f'),
@@ -184,7 +185,7 @@ initial_reordering_consonant_syllable (hb_buffer_t *buffer,
       info[i].myanmar_position() = POS_BASE_C;
       i++;
     }
-    indic_position_t pos = POS_AFTER_MAIN;
+    myanmar_position_t pos = POS_AFTER_MAIN;
     /* The following loop may be ugly, but it implements all of
      * Myanmar reordering! */
     for (; i < end; i++)

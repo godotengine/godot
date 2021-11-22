@@ -109,7 +109,7 @@ hb_set_destroy (hb_set_t *set)
 
   set->fini_shallow ();
 
-  free (set);
+  hb_free (set);
 }
 
 /**
@@ -169,7 +169,25 @@ hb_set_get_user_data (hb_set_t           *set,
 hb_bool_t
 hb_set_allocation_successful (const hb_set_t  *set)
 {
-  return set->successful;
+  return !set->in_error ();
+}
+
+/**
+ * hb_set_copy:
+ * @set: A set
+ *
+ * Allocate a copy of @set.
+ *
+ * Return value: Newly-allocated set.
+ *
+ * Since: 2.8.2
+ **/
+hb_set_t *
+hb_set_copy (const hb_set_t *set)
+{
+  hb_set_t *copy = hb_set_create ();
+  copy->set (*set);
+  return copy;
 }
 
 /**
@@ -183,9 +201,7 @@ hb_set_allocation_successful (const hb_set_t  *set)
 void
 hb_set_clear (hb_set_t *set)
 {
-  if (unlikely (hb_object_is_immutable (set)))
-    return;
-
+  /* Immutible-safe. */
   set->clear ();
 }
 
@@ -236,6 +252,7 @@ void
 hb_set_add (hb_set_t       *set,
 	    hb_codepoint_t  codepoint)
 {
+  /* Immutible-safe. */
   set->add (codepoint);
 }
 
@@ -255,6 +272,7 @@ hb_set_add_range (hb_set_t       *set,
 		  hb_codepoint_t  first,
 		  hb_codepoint_t  last)
 {
+  /* Immutible-safe. */
   set->add_range (first, last);
 }
 
@@ -271,6 +289,7 @@ void
 hb_set_del (hb_set_t       *set,
 	    hb_codepoint_t  codepoint)
 {
+  /* Immutible-safe. */
   set->del (codepoint);
 }
 
@@ -283,6 +302,9 @@ hb_set_del (hb_set_t       *set,
  * Removes all of the elements from @first to @last
  * (inclusive) from @set.
  *
+ * If @last is #HB_SET_VALUE_INVALID, then all values
+ * greater than or equal to @first are removed.
+ *
  * Since: 0.9.7
  **/
 void
@@ -290,6 +312,7 @@ hb_set_del_range (hb_set_t       *set,
 		  hb_codepoint_t  first,
 		  hb_codepoint_t  last)
 {
+  /* Immutible-safe. */
   set->del_range (first, last);
 }
 
@@ -309,7 +332,7 @@ hb_bool_t
 hb_set_is_equal (const hb_set_t *set,
 		 const hb_set_t *other)
 {
-  return set->is_equal (other);
+  return set->is_equal (*other);
 }
 
 /**
@@ -327,7 +350,7 @@ hb_bool_t
 hb_set_is_subset (const hb_set_t *set,
 		  const hb_set_t *larger_set)
 {
-  return set->is_subset (larger_set);
+  return set->is_subset (*larger_set);
 }
 
 /**
@@ -343,7 +366,8 @@ void
 hb_set_set (hb_set_t       *set,
 	    const hb_set_t *other)
 {
-  set->set (other);
+  /* Immutible-safe. */
+  set->set (*other);
 }
 
 /**
@@ -359,7 +383,8 @@ void
 hb_set_union (hb_set_t       *set,
 	      const hb_set_t *other)
 {
-  set->union_ (other);
+  /* Immutible-safe. */
+  set->union_ (*other);
 }
 
 /**
@@ -375,7 +400,8 @@ void
 hb_set_intersect (hb_set_t       *set,
 		  const hb_set_t *other)
 {
-  set->intersect (other);
+  /* Immutible-safe. */
+  set->intersect (*other);
 }
 
 /**
@@ -391,7 +417,8 @@ void
 hb_set_subtract (hb_set_t       *set,
 		 const hb_set_t *other)
 {
-  set->subtract (other);
+  /* Immutible-safe. */
+  set->subtract (*other);
 }
 
 /**
@@ -408,25 +435,24 @@ void
 hb_set_symmetric_difference (hb_set_t       *set,
 			     const hb_set_t *other)
 {
-  set->symmetric_difference (other);
+  /* Immutible-safe. */
+  set->symmetric_difference (*other);
 }
 
-#ifndef HB_DISABLE_DEPRECATED
 /**
  * hb_set_invert:
  * @set: A set
  *
  * Inverts the contents of @set.
  *
- * Since: 0.9.10
- *
- * Deprecated: 1.6.1
+ * Since: 3.0.0
  **/
 void
-hb_set_invert (hb_set_t *set HB_UNUSED)
+hb_set_invert (hb_set_t *set)
 {
+  /* Immutible-safe. */
+  set->invert ();
 }
-#endif
 
 /**
  * hb_set_get_population:

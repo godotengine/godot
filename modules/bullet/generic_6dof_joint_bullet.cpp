@@ -40,7 +40,7 @@
 	@author AndreaCatania
 */
 
-Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB) :
+Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &frameInA, const Transform3D &frameInB) :
 		JointBullet() {
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < PhysicsServer3D::G6DOF_JOINT_FLAG_MAX; j++) {
@@ -48,7 +48,7 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBu
 		}
 	}
 
-	Transform scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
+	Transform3D scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
 
 	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
@@ -56,7 +56,7 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBu
 	G_TO_B(scaled_AFrame, btFrameA);
 
 	if (rbB) {
-		Transform scaled_BFrame(frameInB.scaled(rbB->get_body_scale()));
+		Transform3D scaled_BFrame(frameInB.scaled(rbB->get_body_scale()));
 
 		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 
@@ -71,30 +71,30 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBu
 	setup(sixDOFConstraint);
 }
 
-Transform Generic6DOFJointBullet::getFrameOffsetA() const {
+Transform3D Generic6DOFJointBullet::getFrameOffsetA() const {
 	btTransform btTrs = sixDOFConstraint->getFrameOffsetA();
-	Transform gTrs;
+	Transform3D gTrs;
 	B_TO_G(btTrs, gTrs);
 	return gTrs;
 }
 
-Transform Generic6DOFJointBullet::getFrameOffsetB() const {
+Transform3D Generic6DOFJointBullet::getFrameOffsetB() const {
 	btTransform btTrs = sixDOFConstraint->getFrameOffsetB();
-	Transform gTrs;
+	Transform3D gTrs;
 	B_TO_G(btTrs, gTrs);
 	return gTrs;
 }
 
-Transform Generic6DOFJointBullet::getFrameOffsetA() {
+Transform3D Generic6DOFJointBullet::getFrameOffsetA() {
 	btTransform btTrs = sixDOFConstraint->getFrameOffsetA();
-	Transform gTrs;
+	Transform3D gTrs;
 	B_TO_G(btTrs, gTrs);
 	return gTrs;
 }
 
-Transform Generic6DOFJointBullet::getFrameOffsetB() {
+Transform3D Generic6DOFJointBullet::getFrameOffsetB() {
 	btTransform btTrs = sixDOFConstraint->getFrameOffsetB();
-	Transform gTrs;
+	Transform3D gTrs;
 	B_TO_G(btTrs, gTrs);
 	return gTrs;
 }

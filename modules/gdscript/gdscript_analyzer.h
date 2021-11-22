@@ -32,7 +32,7 @@
 #define GDSCRIPT_ANALYZER_H
 
 #include "core/object/object.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/set.h"
 #include "gdscript_cache.h"
 #include "gdscript_parser.h"
@@ -42,6 +42,13 @@ class GDScriptAnalyzer {
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
 
 	const GDScriptParser::EnumNode *current_enum = nullptr;
+	List<const GDScriptParser::LambdaNode *> lambda_stack;
+
+	// Tests for detecting invalid overloading of script members
+	static _FORCE_INLINE_ bool has_member_name_conflict_in_script_class(const StringName &p_name, const GDScriptParser::ClassNode *p_current_class_node);
+	static _FORCE_INLINE_ bool has_member_name_conflict_in_native_type(const StringName &p_name, const StringName &p_native_type_string);
+	Error check_native_member_name_conflict(const StringName &p_member_name, const GDScriptParser::Node *p_member_node, const StringName &p_native_type_string);
+	Error check_class_member_name_conflict(const GDScriptParser::ClassNode *p_class_node, const StringName &p_member_name, const GDScriptParser::Node *p_member_node);
 
 	Error resolve_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive = true);
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
@@ -71,17 +78,18 @@ class GDScriptAnalyzer {
 	void resolve_return(GDScriptParser::ReturnNode *p_return);
 
 	// Reduction functions.
-	void reduce_expression(GDScriptParser::ExpressionNode *p_expression);
+	void reduce_expression(GDScriptParser::ExpressionNode *p_expression, bool p_is_root = false);
 	void reduce_array(GDScriptParser::ArrayNode *p_array);
 	void reduce_assignment(GDScriptParser::AssignmentNode *p_assignment);
 	void reduce_await(GDScriptParser::AwaitNode *p_await);
 	void reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_op);
-	void reduce_call(GDScriptParser::CallNode *p_call, bool is_await = false);
+	void reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await = false, bool p_is_root = false);
 	void reduce_cast(GDScriptParser::CastNode *p_cast);
 	void reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
 	void reduce_get_node(GDScriptParser::GetNodeNode *p_get_node);
 	void reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin = false);
 	void reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base = nullptr);
+	void reduce_lambda(GDScriptParser::LambdaNode *p_lambda);
 	void reduce_literal(GDScriptParser::LiteralNode *p_literal);
 	void reduce_preload(GDScriptParser::PreloadNode *p_preload);
 	void reduce_self(GDScriptParser::SelfNode *p_self);
@@ -97,7 +105,7 @@ class GDScriptAnalyzer {
 	GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type) const;
 	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property) const;
 	GDScriptParser::DataType make_global_class_meta_type(const StringName &p_class_name, const GDScriptParser::Node *p_source);
-	bool get_function_signature(GDScriptParser::Node *p_source, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
+	bool get_function_signature(GDScriptParser::CallNode *p_source, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
 	bool function_signature_from_info(const MethodInfo &p_info, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
 	bool validate_call_arg(const List<GDScriptParser::DataType> &p_par_types, int p_default_args_count, bool p_is_vararg, const GDScriptParser::CallNode *p_call);
 	bool validate_call_arg(const MethodInfo &p_method, const GDScriptParser::CallNode *p_call);

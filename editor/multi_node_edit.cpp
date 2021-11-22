@@ -49,23 +49,30 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		name = "script";
 	}
 
+	Node *node_path_target = nullptr;
+	if (p_value.get_type() == Variant::NODE_PATH && p_value != NodePath()) {
+		node_path_target = es->get_node(p_value);
+	}
+
 	UndoRedo *ur = EditorNode::get_undo_redo();
 
 	ur->create_action(TTR("MultiNode Set") + " " + String(name), UndoRedo::MERGE_ENDS);
-	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
-		if (!es->has_node(E->get())) {
+	for (const NodePath &E : nodes) {
+		if (!es->has_node(E)) {
 			continue;
 		}
 
-		Node *n = es->get_node(E->get());
+		Node *n = es->get_node(E);
 		if (!n) {
 			continue;
 		}
 
 		if (p_value.get_type() == Variant::NODE_PATH) {
-			Node *tonode = n->get_node(p_value);
-			NodePath p_path = n->get_path_to(tonode);
-			ur->add_do_property(n, name, p_path);
+			NodePath path;
+			if (node_path_target) {
+				path = n->get_path_to(node_path_target);
+			}
+			ur->add_do_property(n, name, path);
 		} else {
 			Variant new_value;
 			if (p_field == "") {
@@ -98,12 +105,12 @@ bool MultiNodeEdit::_get(const StringName &p_name, Variant &r_ret) const {
 		name = "script";
 	}
 
-	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
-		if (!es->has_node(E->get())) {
+	for (const NodePath &E : nodes) {
+		if (!es->has_node(E)) {
 			continue;
 		}
 
-		const Node *n = es->get_node(E->get());
+		const Node *n = es->get_node(E);
 		if (!n) {
 			continue;
 		}
@@ -130,12 +137,12 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	List<PLData *> data_list;
 
-	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
-		if (!es->has_node(E->get())) {
+	for (const NodePath &E : nodes) {
+		if (!es->has_node(E)) {
 			continue;
 		}
 
-		Node *n = es->get_node(E->get());
+		Node *n = es->get_node(E);
 		if (!n) {
 			continue;
 		}
@@ -143,30 +150,30 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<PropertyInfo> plist;
 		n->get_property_list(&plist, true);
 
-		for (List<PropertyInfo>::Element *F = plist.front(); F; F = F->next()) {
-			if (F->get().name == "script") {
+		for (const PropertyInfo &F : plist) {
+			if (F.name == "script") {
 				continue; //added later manually, since this is intercepted before being set (check Variant Object::get() )
 			}
-			if (!usage.has(F->get().name)) {
+			if (!usage.has(F.name)) {
 				PLData pld;
 				pld.uses = 0;
-				pld.info = F->get();
-				usage[F->get().name] = pld;
-				data_list.push_back(usage.getptr(F->get().name));
+				pld.info = F;
+				usage[F.name] = pld;
+				data_list.push_back(usage.getptr(F.name));
 			}
 
 			// Make sure only properties with the same exact PropertyInfo data will appear
-			if (usage[F->get().name].info == F->get()) {
-				usage[F->get().name].uses++;
+			if (usage[F.name].info == F) {
+				usage[F.name].uses++;
 			}
 		}
 
 		nc++;
 	}
 
-	for (List<PLData *>::Element *E = data_list.front(); E; E = E->next()) {
-		if (nc == E->get()->uses) {
-			p_list->push_back(E->get()->info);
+	for (const PLData *E : data_list) {
+		if (nc == E->uses) {
+			p_list->push_back(E->info);
 		}
 	}
 

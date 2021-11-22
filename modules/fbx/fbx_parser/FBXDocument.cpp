@@ -198,7 +198,7 @@ ObjectPtr LazyObject::LoadObject() {
 			object.reset(new ModelLimbNode(id, element, doc, name));
 
 		} else if (strcmp(classtag.c_str(), "IKEffector") && strcmp(classtag.c_str(), "FKEffector")) {
-			// FK and IK effectors are not supporte
+			// FK and IK effectors are not supported.
 			object.reset(new Model(id, element, doc, name));
 		}
 	} else if (!strncmp(obtype, "Material", length)) {
@@ -487,7 +487,7 @@ const std::vector<const AnimationStack *> &Document::AnimationStacks() const {
 		const AnimationStack *stack = lazy->Get<AnimationStack>();
 		ERR_CONTINUE_MSG(!stack, "invalid ptr to AnimationStack - conversion failure");
 
-		// We push back the weak reference :) to keep things simple, as ownership is on the parser side so it wont be cleaned up.
+		// We push back the weak reference :) to keep things simple, as ownership is on the parser side so it won't be cleaned up.
 		animationStacksResolved.push_back(stack);
 	}
 

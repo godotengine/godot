@@ -32,13 +32,18 @@
 #define EDITOR_TRANSLATION_PARSER_H
 
 #include "core/error/error_list.h"
-#include "core/object/reference.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 
-class EditorTranslationParserPlugin : public Reference {
-	GDCLASS(EditorTranslationParserPlugin, Reference);
+class EditorTranslationParserPlugin : public RefCounted {
+	GDCLASS(EditorTranslationParserPlugin, RefCounted);
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL3(_parse_file, String, Array, Array)
+	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
 
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural);

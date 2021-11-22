@@ -12,56 +12,44 @@
 	</tutorials>
 	<methods>
 		<method name="add_point">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="at_position" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="at_position" type="int" default="-1" />
 			<description>
 				Adds a point at the [code]position[/code]. Appends the point at the end of the line.
 				If [code]at_position[/code] is given, the point is inserted before the point number [code]at_position[/code], moving that point (and every point after) after the inserted point. If [code]at_position[/code] is not given, or is an illegal value ([code]at_position &lt; 0[/code] or [code]at_position &gt;= [method get_point_count][/code]), the point will be appended at the end of the point list.
 			</description>
 		</method>
 		<method name="clear_points">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all points from the line.
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the Line2D's amount of points.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="i" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="i" type="int" />
 			<description>
 				Returns point [code]i[/code]'s position.
 			</description>
 		</method>
 		<method name="remove_point">
-			<return type="void">
-			</return>
-			<argument index="0" name="i" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="i" type="int" />
 			<description>
 				Removes the point at index [code]i[/code] from the line.
 			</description>
 		</method>
 		<method name="set_point_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="i" type="int">
-			</argument>
-			<argument index="1" name="position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="i" type="int" />
+			<argument index="1" name="position" type="Vector2" />
 			<description>
 				Overwrites the position in point [code]i[/code] with the supplied [code]position[/code].
 			</description>
@@ -70,11 +58,12 @@
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
 			If [code]true[/code], the line's border will be anti-aliased.
+			[b]Note:[/b] Line2D is not accelerated by batching when being anti-aliased.
 		</member>
 		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="Line2D.LineCapMode" default="0">
 			Controls the style of the line's first point. Use [enum LineCapMode] constants.
 		</member>
-		<member name="default_color" type="Color" setter="set_default_color" getter="get_default_color" default="Color( 1, 1, 1, 1 )">
+		<member name="default_color" type="Color" setter="set_default_color" getter="get_default_color" default="Color(1, 1, 1, 1)">
 			The line's color. Will not be used if a gradient is set.
 		</member>
 		<member name="end_cap_mode" type="int" setter="set_end_cap_mode" getter="get_end_cap_mode" enum="Line2D.LineCapMode" default="0">
@@ -86,7 +75,7 @@
 		<member name="joint_mode" type="int" setter="set_joint_mode" getter="get_joint_mode" enum="Line2D.LineJointMode" default="0">
 			The style for the points between the start and the end.
 		</member>
-		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array(  )">
+		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array()">
 			The points that form the lines. The line is drawn between every point set in this array. Points are interpreted as local vectors.
 		</member>
 		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision" default="8">

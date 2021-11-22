@@ -42,7 +42,7 @@ class ObjectID {
 	uint64_t id = 0;
 
 public:
-	_ALWAYS_INLINE_ bool is_reference() const { return (id & (uint64_t(1) << 63)) != 0; }
+	_ALWAYS_INLINE_ bool is_ref_counted() const { return (id & (uint64_t(1) << 63)) != 0; }
 	_ALWAYS_INLINE_ bool is_valid() const { return id != 0; }
 	_ALWAYS_INLINE_ bool is_null() const { return id == 0; }
 	_ALWAYS_INLINE_ operator uint64_t() const { return id; }

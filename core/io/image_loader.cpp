@@ -35,8 +35,8 @@
 bool ImageFormatLoader::recognize(const String &p_extension) const {
 	List<String> extensions;
 	get_recognized_extensions(&extensions);
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (E->get().nocasecmp_to(p_extension) == 0) {
+	for (const String &E : extensions) {
+		if (E.nocasecmp_to(p_extension) == 0) {
 			return true;
 		}
 	}
@@ -163,7 +163,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_origin
 	}
 
 	Ref<Image> image;
-	image.instance();
+	image.instantiate();
 
 	Error err = ImageLoader::loader[idx]->load_image(image, f, false, 1.0);
 

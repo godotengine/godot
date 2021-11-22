@@ -7,519 +7,373 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="alert">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;">
-			</argument>
+		<method name="clipboard_get" qualifiers="const">
+			<return type="String" />
 			<description>
+				Returns the user's clipboard as a string if possible.
 			</description>
 		</method>
-		<method name="clipboard_get" qualifiers="const">
-			<return type="String">
-			</return>
+		<method name="clipboard_get_primary" qualifiers="const">
+			<return type="String" />
 			<description>
+				Returns the user's primary clipboard as a string if possible.
+				[b]Note:[/b] This method is only implemented on Linux.
 			</description>
 		</method>
 		<method name="clipboard_set">
-			<return type="void">
-			</return>
-			<argument index="0" name="clipboard" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="clipboard" type="String" />
 			<description>
+				Sets the user's clipboard content to the given string.
+			</description>
+		</method>
+		<method name="clipboard_set_primary">
+			<return type="void" />
+			<argument index="0" name="clipboard_primary" type="String" />
+			<description>
+				Sets the user's primary clipboard content to the given string.
+				[b]Note:[/b] This method is only implemented on Linux.
 			</description>
 		</method>
 		<method name="console_set_visible">
-			<return type="void">
-			</return>
-			<argument index="0" name="console_visible" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="console_visible" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="create_sub_window">
-			<return type="int">
-			</return>
-			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode">
-			</argument>
-			<argument index="1" name="flags" type="int">
-			</argument>
-			<argument index="2" name="rect" type="Rect2i" default="Rect2i( 0, 0, 0, 0 )">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode" />
+			<argument index="1" name="vsync_mode" type="int" enum="DisplayServer.VSyncMode" />
+			<argument index="2" name="flags" type="int" />
+			<argument index="3" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
 			<description>
 			</description>
 		</method>
 		<method name="cursor_get_shape" qualifiers="const">
-			<return type="int" enum="DisplayServer.CursorShape">
-			</return>
+			<return type="int" enum="DisplayServer.CursorShape" />
 			<description>
 			</description>
 		</method>
 		<method name="cursor_set_custom_image">
-			<return type="void">
-			</return>
-			<argument index="0" name="cursor" type="Resource">
-			</argument>
-			<argument index="1" name="shape" type="int" enum="DisplayServer.CursorShape" default="0">
-			</argument>
-			<argument index="2" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="cursor" type="Resource" />
+			<argument index="1" name="shape" type="int" enum="DisplayServer.CursorShape" default="0" />
+			<argument index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 			</description>
 		</method>
 		<method name="cursor_set_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="shape" type="int" enum="DisplayServer.CursorShape">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shape" type="int" enum="DisplayServer.CursorShape" />
 			<description>
 			</description>
 		</method>
 		<method name="delete_sub_window">
-			<return type="void">
-			</return>
-			<argument index="0" name="window_id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="window_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="dialog_input_text">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="title" type="String">
-			</argument>
-			<argument index="1" name="description" type="String">
-			</argument>
-			<argument index="2" name="existing_text" type="String">
-			</argument>
-			<argument index="3" name="callback" type="Callable">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="title" type="String" />
+			<argument index="1" name="description" type="String" />
+			<argument index="2" name="existing_text" type="String" />
+			<argument index="3" name="callback" type="Callable" />
 			<description>
 			</description>
 		</method>
 		<method name="dialog_show">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="title" type="String">
-			</argument>
-			<argument index="1" name="description" type="String">
-			</argument>
-			<argument index="2" name="buttons" type="PackedStringArray">
-			</argument>
-			<argument index="3" name="callback" type="Callable">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="title" type="String" />
+			<argument index="1" name="description" type="String" />
+			<argument index="2" name="buttons" type="PackedStringArray" />
+			<argument index="3" name="callback" type="Callable" />
 			<description>
 			</description>
 		</method>
 		<method name="enable_for_stealing_focus">
-			<return type="void">
-			</return>
-			<argument index="0" name="process_id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="process_id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="force_process_and_drop_events">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_swap_cancel_ok">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="get_window_at_screen_position" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="position" type="Vector2i">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="position" type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="get_window_list" qualifiers="const">
-			<return type="PackedInt32Array">
-			</return>
+			<return type="PackedInt32Array" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_add_check_item">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="label" type="String">
-			</argument>
-			<argument index="2" name="callback" type="Callable">
-			</argument>
-			<argument index="3" name="tag" type="Variant" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="label" type="String" />
+			<argument index="2" name="callback" type="Callable" />
+			<argument index="3" name="tag" type="Variant" default="null" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_add_item">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="label" type="String">
-			</argument>
-			<argument index="2" name="callback" type="Callable">
-			</argument>
-			<argument index="3" name="tag" type="Variant" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="label" type="String" />
+			<argument index="2" name="callback" type="Callable" />
+			<argument index="3" name="tag" type="Variant" default="null" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_add_separator">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_add_submenu_item">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="label" type="String">
-			</argument>
-			<argument index="2" name="submenu" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="label" type="String" />
+			<argument index="2" name="submenu" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_clear">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_get_item_callback">
-			<return type="Callable">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="Callable" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_get_item_submenu">
-			<return type="String">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_get_item_tag">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_get_item_text">
-			<return type="String">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_is_item_checkable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_is_item_checked" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_remove_item">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_set_item_callback">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
-			<argument index="2" name="callback" type="Callable">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="callback" type="Callable" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_set_item_checkable">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
-			<argument index="2" name="checkable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="checkable" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_set_item_checked">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
-			<argument index="2" name="checked" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="checked" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_set_item_submenu">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
-			<argument index="2" name="submenu" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="submenu" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_set_item_tag">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
-			<argument index="2" name="tag" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="tag" type="Variant" />
 			<description>
 			</description>
 		</method>
 		<method name="global_menu_set_item_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="menu_root" type="String">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
-			<argument index="2" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="text" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="feature" type="int" enum="DisplayServer.Feature">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="feature" type="int" enum="DisplayServer.Feature" />
 			<description>
 			</description>
 		</method>
 		<method name="ime_get_selection" qualifiers="const">
-			<return type="Vector2i">
-			</return>
+			<return type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="ime_get_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="is_console_visible" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns active keyboard layout index.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="keyboard_get_keycode_from_physical" qualifiers="const">
+			<return type="int" enum="Key" />
+			<argument index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Converts a physical (US QWERTY) [code]keycode[/code] to one in the active keyboard layout.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="keyboard_get_layout_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of keyboard layouts.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_language" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [code]index[/code].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the localized name of the keyboard layout at position [code]index[/code].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_set_current_layout">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Sets active keyboard layout.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="mouse_get_absolute_position" qualifiers="const">
-			<return type="Vector2i">
-			</return>
+			<return type="Vector2i" />
 			<description>
 			</description>
 		</method>
 		<method name="mouse_get_button_state" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" enum="MouseButton" />
 			<description>
 			</description>
 		</method>
 		<method name="mouse_get_mode" qualifiers="const">
-			<return type="int" enum="DisplayServer.MouseMode">
-			</return>
+			<return type="int" enum="DisplayServer.MouseMode" />
 			<description>
 			</description>
 		</method>
 		<method name="mouse_get_position" qualifiers="const">
-			<return type="Vector2i">
-			</return>
+			<return type="Vector2i" />
 			<description>
+				Returns the mouse cursor's current position.
 			</description>
 		</method>
 		<method name="mouse_set_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mouse_mode" type="int" enum="DisplayServer.MouseMode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="mouse_mode" type="int" enum="DisplayServer.MouseMode" />
 			<description>
 			</description>
 		</method>
 		<method name="mouse_warp_to_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2i">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2i" />
 			<description>
-			</description>
-		</method>
-		<method name="native_video_is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="native_video_pause">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="native_video_play">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="volume" type="float">
-			</argument>
-			<argument index="2" name="audio_track" type="String">
-			</argument>
-			<argument index="3" name="subtitle_track" type="String">
-			</argument>
-			<argument index="4" name="screen" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="native_video_stop">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="native_video_unpause">
-			<return type="void">
-			</return>
-			<description>
+				Sets the mouse cursor position to the given [code]position[/code].
 			</description>
 		</method>
 		<method name="process_events">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_get_dpi" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]SCREEN_OF_MAIN_WINDOW[/code] (the default value), a screen with the main window will be used.
 				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
@@ -536,8 +390,7 @@
 			</description>
 		</method>
 		<method name="screen_get_max_scale" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Return the greatest scale factor of all screens.
 				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
@@ -545,26 +398,20 @@
 			</description>
 		</method>
 		<method name="screen_get_orientation" qualifiers="const">
-			<return type="int" enum="DisplayServer.ScreenOrientation">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="int" enum="DisplayServer.ScreenOrientation" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_get_position" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_get_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 				Return the scale factor of the specified screen by index.
 				[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) screen, and [code]1.0[/code] for all other cases.
@@ -572,134 +419,103 @@
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_get_usable_rect" qualifiers="const">
-			<return type="Rect2i">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="Rect2i" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_is_kept_on" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_is_touchscreen" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="screen" type="int" default="-1">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_set_keep_on">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="screen_set_orientation">
-			<return type="void">
-			</return>
-			<argument index="0" name="orientation" type="int" enum="DisplayServer.ScreenOrientation">
-			</argument>
-			<argument index="1" name="screen" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="orientation" type="int" enum="DisplayServer.ScreenOrientation" />
+			<argument index="1" name="screen" type="int" default="-1" />
 			<description>
 			</description>
 		</method>
 		<method name="set_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
 			<description>
 			</description>
 		</method>
 		<method name="set_native_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="filename" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="filename" type="String" />
 			<description>
 			</description>
 		</method>
 		<method name="tablet_get_current_driver" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns current active tablet driver name.
 				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
 		<method name="tablet_get_driver_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of available tablet drivers.
 				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
 		<method name="tablet_get_driver_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the tablet driver name for the given index.
 				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
 		<method name="tablet_set_current_driver">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Set active tablet driver name.
 				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
 		<method name="virtual_keyboard_get_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
 			</description>
 		</method>
 		<method name="virtual_keyboard_hide">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Hides the virtual keyboard if it is shown, does nothing otherwise.
 			</description>
 		</method>
 		<method name="virtual_keyboard_show">
-			<return type="void">
-			</return>
-			<argument index="0" name="existing_text" type="String">
-			</argument>
-			<argument index="1" name="position" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
-			</argument>
-			<argument index="2" name="multiline" type="bool" default="false">
-			</argument>
-			<argument index="3" name="max_length" type="int" default="-1">
-			</argument>
-			<argument index="4" name="cursor_start" type="int" default="-1">
-			</argument>
-			<argument index="5" name="cursor_end" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="existing_text" type="String" />
+			<argument index="1" name="position" type="Rect2" default="Rect2i(0, 0, 0, 0)" />
+			<argument index="2" name="multiline" type="bool" default="false" />
+			<argument index="3" name="max_length" type="int" default="-1" />
+			<argument index="4" name="cursor_start" type="int" default="-1" />
+			<argument index="5" name="cursor_end" type="int" default="-1" />
 			<description>
 				Shows the virtual keyboard if the platform has one.
 				[code]existing_text[/code] parameter is useful for implementing your own [LineEdit] or [TextEdit], as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
@@ -711,251 +527,176 @@
 				[b]Note:[/b] This method is implemented on Android, iOS and UWP.
 			</description>
 		</method>
-		<method name="vsync_is_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="vsync_is_using_via_compositor" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="vsync_set_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="vsync_set_use_via_compositor">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="window_attach_instance_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance_id" type="int">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="instance_id" type="int" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_can_draw" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_get_attached_instance_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_get_current_screen" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_get_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="DisplayServer.WindowFlags">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="DisplayServer.WindowFlags" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Returns the current value of the given window's [code]flag[/code].
 			</description>
 		</method>
 		<method name="window_get_max_size" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_get_min_size" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_get_mode" qualifiers="const">
-			<return type="int" enum="DisplayServer.WindowMode">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="int" enum="DisplayServer.WindowMode" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the mode of the given window.
 			</description>
 		</method>
 		<method name="window_get_position" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
+				Returns the position of the given window to on the screen.
 			</description>
 		</method>
 		<method name="window_get_real_size" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_get_size" qualifiers="const">
-			<return type="Vector2i">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="Vector2i" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
+		<method name="window_get_vsync_mode" qualifiers="const">
+			<return type="int" enum="DisplayServer.VSyncMode" />
+			<argument index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the VSync mode of the given window.
+			</description>
+		</method>
 		<method name="window_move_to_foreground">
-			<return type="void">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_request_attention">
-			<return type="void">
-			</return>
-			<argument index="0" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_set_current_screen">
-			<return type="void">
-			</return>
-			<argument index="0" name="screen" type="int">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="screen" type="int" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_set_drop_files_callback">
-			<return type="void">
-			</return>
-			<argument index="0" name="callback" type="Callable">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="callback" type="Callable" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_set_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="DisplayServer.WindowFlags">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
-			<argument index="2" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="DisplayServer.WindowFlags" />
+			<argument index="1" name="enabled" type="bool" />
+			<argument index="2" name="window_id" type="int" default="0" />
 			<description>
+				Enables or disables the given window's given [code]flag[/code]. See [enum WindowFlags] for possible values and their behavior.
 			</description>
 		</method>
 		<method name="window_set_ime_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="active" type="bool">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="active" type="bool" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_set_ime_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2i">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2i" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_set_input_event_callback">
-			<return type="void">
-			</return>
-			<argument index="0" name="callback" type="Callable">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="callback" type="Callable" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_set_input_text_callback">
-			<return type="void">
-			</return>
-			<argument index="0" name="callback" type="Callable">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="callback" type="Callable" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_set_max_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="max_size" type="Vector2i">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="max_size" type="Vector2i" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_set_min_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="min_size" type="Vector2i">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="min_size" type="Vector2i" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the minimum size for the given window to [code]min_size[/code] (in pixels).
+				[b]Note:[/b] By default, the main window has a minimum size of [code]Vector2i(64, 64)[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
 			</description>
 		</method>
 		<method name="window_set_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets window mode for the given window to [code]mode[/code]. See [enum WindowMode] for possible values and how each mode behaves.
+				[b]Note:[/b] Setting the window to fullscreen forcibly sets the borderless flag to [code]true[/code], so make sure to set it back to [code]false[/code] when not wanted.
 			</description>
 		</method>
 		<method name="window_set_mouse_passthrough">
-			<return type="void">
-			</return>
-			<argument index="0" name="region" type="PackedVector2Array">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="region" type="PackedVector2Array" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
 				Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
@@ -986,62 +727,57 @@
 			</description>
 		</method>
 		<method name="window_set_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2i">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="Vector2i" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the position of the given window to [code]position[/code].
 			</description>
 		</method>
 		<method name="window_set_rect_changed_callback">
-			<return type="void">
-			</return>
-			<argument index="0" name="callback" type="Callable">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="callback" type="Callable" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
 		<method name="window_set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2i">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="Vector2i" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the size of the given window to [code]size[/code].
 			</description>
 		</method>
 		<method name="window_set_title">
-			<return type="void">
-			</return>
-			<argument index="0" name="title" type="String">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="title" type="String" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
+				Sets the title of the given window to [code]title[/code].
 			</description>
 		</method>
 		<method name="window_set_transient">
-			<return type="void">
-			</return>
-			<argument index="0" name="window_id" type="int">
-			</argument>
-			<argument index="1" name="parent_window_id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="window_id" type="int" />
+			<argument index="1" name="parent_window_id" type="int" />
 			<description>
 			</description>
 		</method>
+		<method name="window_set_vsync_mode">
+			<return type="void" />
+			<argument index="0" name="vsync_mode" type="int" enum="DisplayServer.VSyncMode" />
+			<argument index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the VSync mode of the given window.
+				See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
+				Depending on the platform and used renderer, the engine will fall back to [constant VSYNC_ENABLED], if the desired mode is not supported.
+			</description>
+		</method>
 		<method name="window_set_window_event_callback">
-			<return type="void">
-			</return>
-			<argument index="0" name="callback" type="Callable">
-			</argument>
-			<argument index="1" name="window_id" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="callback" type="Callable" />
+			<argument index="1" name="window_id" type="int" default="0" />
 			<description>
 			</description>
 		</method>
@@ -1065,33 +801,41 @@
 		</constant>
 		<constant name="FEATURE_CUSTOM_CURSOR_SHAPE" value="8" enum="Feature">
 		</constant>
-		<constant name="FEATURE_NATIVE_VIDEO" value="9" enum="Feature">
+		<constant name="FEATURE_NATIVE_DIALOG" value="9" enum="Feature">
 		</constant>
-		<constant name="FEATURE_NATIVE_DIALOG" value="10" enum="Feature">
+		<constant name="FEATURE_CONSOLE_WINDOW" value="10" enum="Feature">
 		</constant>
-		<constant name="FEATURE_CONSOLE_WINDOW" value="11" enum="Feature">
+		<constant name="FEATURE_IME" value="11" enum="Feature">
 		</constant>
-		<constant name="FEATURE_IME" value="12" enum="Feature">
+		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="12" enum="Feature">
 		</constant>
-		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="13" enum="Feature">
+		<constant name="FEATURE_HIDPI" value="13" enum="Feature">
 		</constant>
-		<constant name="FEATURE_HIDPI" value="14" enum="Feature">
+		<constant name="FEATURE_ICON" value="14" enum="Feature">
 		</constant>
-		<constant name="FEATURE_ICON" value="15" enum="Feature">
+		<constant name="FEATURE_NATIVE_ICON" value="15" enum="Feature">
 		</constant>
-		<constant name="FEATURE_NATIVE_ICON" value="16" enum="Feature">
+		<constant name="FEATURE_ORIENTATION" value="16" enum="Feature">
 		</constant>
-		<constant name="FEATURE_ORIENTATION" value="17" enum="Feature">
+		<constant name="FEATURE_SWAP_BUFFERS" value="17" enum="Feature">
 		</constant>
-		<constant name="FEATURE_SWAP_BUFFERS" value="18" enum="Feature">
+		<constant name="FEATURE_CLIPBOARD_PRIMARY" value="19" enum="Feature">
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
+			Makes the mouse cursor visible if it is hidden.
 		</constant>
 		<constant name="MOUSE_MODE_HIDDEN" value="1" enum="MouseMode">
+			Makes the mouse cursor hidden if it is visible.
 		</constant>
 		<constant name="MOUSE_MODE_CAPTURED" value="2" enum="MouseMode">
+			Captures the mouse. The mouse will be hidden and its position locked at the center of the screen.
+			[b]Note:[/b] If you want to process the mouse's movement in this mode, you need to use [member InputEventMouseMotion.relative].
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">
+			Confines the mouse cursor to the game window, and make it visible.
+		</constant>
+		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
+			Confines the mouse cursor to the game window, and make it hidden.
 		</constant>
 		<constant name="SCREEN_OF_MAIN_WINDOW" value="-1">
 		</constant>
@@ -1157,7 +901,7 @@
 		</constant>
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
 			Fullscreen window mode. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
-			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=https://docs.godotengine.org/en/latest/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
 		</constant>
@@ -1184,6 +928,19 @@
 		<constant name="WINDOW_EVENT_GO_BACK_REQUEST" value="5" enum="WindowEvent">
 		</constant>
 		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
+		</constant>
+		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
+			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible).
+		</constant>
+		<constant name="VSYNC_ENABLED" value="1" enum="VSyncMode">
+			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible).
+		</constant>
+		<constant name="VSYNC_ADAPTIVE" value="2" enum="VSyncMode">
+			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible), otherwise vertical synchronization is enabled to avoid tearing.
+		</constant>
+		<constant name="VSYNC_MAILBOX" value="3" enum="VSyncMode">
+			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible).
+			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag.
 		</constant>
 	</constants>
 </class>

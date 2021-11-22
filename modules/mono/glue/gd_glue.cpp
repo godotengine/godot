@@ -182,24 +182,28 @@ void godot_icall_GD_printt(MonoArray *p_what) {
 	print_line(str);
 }
 
-float godot_icall_GD_randf() {
-	return Math::randf();
+void godot_icall_GD_randomize() {
+	Math::randomize();
 }
 
 uint32_t godot_icall_GD_randi() {
 	return Math::rand();
 }
 
-void godot_icall_GD_randomize() {
-	Math::randomize();
+float godot_icall_GD_randf() {
+	return Math::randf();
+}
+
+int32_t godot_icall_GD_randi_range(int32_t from, int32_t to) {
+	return Math::random(from, to);
 }
 
 double godot_icall_GD_randf_range(double from, double to) {
 	return Math::random(from, to);
 }
 
-int32_t godot_icall_GD_randi_range(int32_t from, int32_t to) {
-	return Math::random(from, to);
+double godot_icall_GD_randfn(double mean, double deviation) {
+	return Math::randfn(mean, deviation);
 }
 
 uint32_t godot_icall_GD_rand_seed(uint64_t seed, uint64_t *newSeed) {
@@ -300,11 +304,12 @@ void godot_register_gd_icalls() {
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_printraw", godot_icall_GD_printraw);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_prints", godot_icall_GD_prints);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_printt", godot_icall_GD_printt);
-	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randf", godot_icall_GD_randf);
-	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randi", godot_icall_GD_randi);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randomize", godot_icall_GD_randomize);
-	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randf_range", godot_icall_GD_randf_range);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randi", godot_icall_GD_randi);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randf", godot_icall_GD_randf);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randi_range", godot_icall_GD_randi_range);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randf_range", godot_icall_GD_randf_range);
+	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_randfn", godot_icall_GD_randfn);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_rand_seed", godot_icall_GD_rand_seed);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_seed", godot_icall_GD_seed);
 	GDMonoUtils::add_internal_call("Godot.GD::godot_icall_GD_str", godot_icall_GD_str);

@@ -8,11 +8,10 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
 		<member name="close_on_parent_focus" type="bool" setter="set_close_on_parent_focus" getter="get_close_on_parent_focus" default="true">
+			If [code]true[/code], the [Popup] will close when its parent is focused.
 		</member>
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" override="true" default="true" />
 		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
@@ -26,6 +25,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

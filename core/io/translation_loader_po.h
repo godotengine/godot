@@ -31,8 +31,8 @@
 #ifndef TRANSLATION_LOADER_PO_H
 #define TRANSLATION_LOADER_PO_H
 
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/file_access.h"
 #include "core/string/translation.h"
 
 class TranslationLoaderPO : public ResourceFormatLoader {

@@ -30,9 +30,9 @@
 
 #include "resource_importer_shader_file.h"
 
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "editor/editor_node.h"
 #include "editor/plugins/shader_file_editor_plugin.h"
 #include "servers/rendering/rendering_device_binds.h"
@@ -65,10 +65,10 @@ String ResourceImporterShaderFile::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterShaderFile::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterShaderFile::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 }
 
-bool ResourceImporterShaderFile::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterShaderFile::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -78,7 +78,7 @@ static String _include_function(const String &p_path, void *userpointer) {
 	String *base_path = (String *)userpointer;
 
 	String include = p_path;
-	if (include.is_rel_path()) {
+	if (include.is_relative_path()) {
 		include = base_path->plus_file(include);
 	}
 
@@ -99,7 +99,7 @@ Error ResourceImporterShaderFile::import(const String &p_source_file, const Stri
 
 	String file_txt = file->get_as_utf8_string();
 	Ref<RDShaderFile> shader_file;
-	shader_file.instance();
+	shader_file.instantiate();
 	String base_path = p_source_file.get_base_dir();
 	err = shader_file->parse_versions_from_text(file_txt, "", _include_function, &base_path);
 

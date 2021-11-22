@@ -10,10 +10,8 @@
 	</tutorials>
 	<methods>
 		<method name="add_spacer">
-			<return type="Control">
-			</return>
-			<argument index="0" name="begin" type="bool">
-			</argument>
+			<return type="Control" />
+			<argument index="0" name="begin" type="bool" />
 			<description>
 				Adds a [Control] node to the box as a spacer. If [code]begin[/code] is [code]true[/code], it will insert the [Control] node in front of all other children.
 			</description>

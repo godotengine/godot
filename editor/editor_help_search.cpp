@@ -36,11 +36,11 @@
 #include "editor_scale.h"
 
 void EditorHelpSearch::_update_icons() {
-	search_box->set_right_icon(results_tree->get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
-	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon("Search", "EditorIcons"));
-	case_sensitive_button->set_icon(results_tree->get_theme_icon("MatchCase", "EditorIcons"));
-	hierarchy_button->set_icon(results_tree->get_theme_icon("ClassList", "EditorIcons"));
+	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	case_sensitive_button->set_icon(results_tree->get_theme_icon(SNAME("MatchCase"), SNAME("EditorIcons")));
+	hierarchy_button->set_icon(results_tree->get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
 
 	if (is_visible()) {
 		_update_results();
@@ -67,13 +67,15 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid()) {
 		switch (key->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
-				results_tree->call("_gui_input", key);
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
+				results_tree->gui_input(key);
 				search_box->accept_event();
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -95,7 +97,7 @@ void EditorHelpSearch::_confirmed() {
 	// Activate the script editor and emit the signal with the documentation link to display.
 	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 
-	emit_signal("go_to_help", item->get_metadata(0));
+	emit_signal(SNAME("go_to_help"), item->get_metadata(0));
 
 	hide();
 }
@@ -104,7 +106,7 @@ void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				results_tree->call_deferred("clear"); // Wait for the Tree's mouse event propagation.
+				results_tree->call_deferred(SNAME("clear")); // Wait for the Tree's mouse event propagation.
 				get_ok_button()->set_disabled(true);
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
 			}
@@ -224,7 +226,9 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);
 	filter_combo->add_separator();
 	filter_combo->add_item(TTR("Classes Only"), SEARCH_CLASSES);
+	filter_combo->add_item(TTR("Constructors Only"), SEARCH_CONSTRUCTORS);
 	filter_combo->add_item(TTR("Methods Only"), SEARCH_METHODS);
+	filter_combo->add_item(TTR("Operators Only"), SEARCH_OPERATORS);
 	filter_combo->add_item(TTR("Signals Only"), SEARCH_SIGNALS);
 	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
 	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
@@ -237,9 +241,11 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	results_tree->set_columns(2);
 	results_tree->set_column_title(0, TTR("Name"));
+	results_tree->set_column_clip_content(0, true);
 	results_tree->set_column_title(1, TTR("Member Type"));
 	results_tree->set_column_expand(1, false);
-	results_tree->set_column_min_width(1, 150 * EDSCALE);
+	results_tree->set_column_custom_minimum_width(1, 150 * EDSCALE);
+	results_tree->set_column_clip_content(1, true);
 	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
@@ -330,14 +336,36 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 
 		// Match members if the term is long enough.
 		if (term.length() > 1) {
+			if (search_flags & SEARCH_CONSTRUCTORS) {
+				for (int i = 0; i < class_doc.constructors.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.constructors[i].name : class_doc.constructors[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.constructors.push_back(const_cast<DocData::MethodDoc *>(&class_doc.constructors[i]));
+					}
+				}
+			}
 			if (search_flags & SEARCH_METHODS) {
 				for (int i = 0; i < class_doc.methods.size(); i++) {
 					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
 					if (method_name.find(term) > -1 ||
-							(term.begins_with(".") && method_name.begins_with(term.right(1))) ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
 						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
+					}
+				}
+			}
+			if (search_flags & SEARCH_OPERATORS) {
+				for (int i = 0; i < class_doc.operators.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.operators[i].name : class_doc.operators[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.operators.push_back(const_cast<DocData::MethodDoc *>(&class_doc.operators[i]));
 					}
 				}
 			}
@@ -365,7 +393,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 			if (search_flags & SEARCH_THEME_ITEMS) {
 				for (int i = 0; i < class_doc.theme_properties.size(); i++) {
 					if (_match_string(term, class_doc.theme_properties[i].name)) {
-						match.theme_properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.theme_properties[i]));
+						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc.theme_properties[i]));
 					}
 				}
 			}
@@ -504,7 +532,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
 		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
 	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
-		icon = ui_service->get_theme_icon("Object", "EditorIcons");
+		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	}
 	String tooltip = p_doc->brief_description.strip_edges();
 
@@ -569,7 +597,7 @@ TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, co
 	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, p_doc->name, TTRC("Property"), "property", tooltip);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
+TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc) {
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
 	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, p_doc->name, TTRC("Theme Property"), "theme_item", tooltip);
 }
@@ -578,10 +606,10 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 	Ref<Texture2D> icon;
 	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
-		icon = ui_service->get_theme_icon(p_icon, "EditorIcons");
+		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
 		text = p_text;
 	} else {
-		icon = ui_service->get_theme_icon(p_icon, "EditorIcons");
+		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
 		/*// In flat mode, show the class icon.
 if (ui_service->has_icon(p_class_name, "EditorIcons"))
 icon = ui_service->get_icon(p_class_name, "EditorIcons");
@@ -619,6 +647,6 @@ EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, 
 		results_tree(p_results_tree),
 		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.strip_edges().to_lower() : p_term.strip_edges()),
 		search_flags(p_search_flags),
-		empty_icon(ui_service->get_theme_icon("ArrowRight", "EditorIcons")),
-		disabled_color(ui_service->get_theme_color("disabled_font_color", "Editor")) {
+		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))),
+		disabled_color(ui_service->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"))) {
 }

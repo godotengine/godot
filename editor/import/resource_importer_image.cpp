@@ -30,9 +30,9 @@
 
 #include "resource_importer_image.h"
 
+#include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterImage::get_importer_name() const {
@@ -55,7 +55,7 @@ String ResourceImporterImage::get_resource_type() const {
 	return "Image";
 }
 
-bool ResourceImporterImage::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterImage::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -67,7 +67,7 @@ String ResourceImporterImage::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterImage::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterImage::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 }
 
 Error ResourceImporterImage::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -75,7 +75,7 @@ Error ResourceImporterImage::import(const String &p_source_file, const String &p
 
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file from path '" + p_source_file + "'.");
 
-	size_t len = f->get_len();
+	uint64_t len = f->get_length();
 
 	Vector<uint8_t> data;
 	data.resize(len);

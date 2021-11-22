@@ -34,7 +34,6 @@ import android.app.Activity;
 import android.hardware.SensorEvent;
 import android.view.Surface;
 
-import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
@@ -76,9 +75,8 @@ public class GodotLib {
 	/**
 	 * Invoked on the render thread when the underlying Android surface is created or recreated.
 	 * @param p_surface
-	 * @param p_32_bits
 	 */
-	public static native void newcontext(Surface p_surface, boolean p_32_bits);
+	public static native void newcontext(Surface p_surface);
 
 	/**
 	 * Forward {@link Activity#onBackPressed()} event from the main thread to the GL thread.
@@ -173,11 +171,6 @@ public class GodotLib {
 	 * @see androidx.fragment.app.Fragment#onPause()
 	 */
 	public static native void focusout();
-
-	/**
-	 * Invoked when the audio thread is started.
-	 */
-	public static native void audio();
 
 	/**
 	 * Used to access Godot global properties.

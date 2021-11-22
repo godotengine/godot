@@ -28,7 +28,7 @@
 		var polygon = NavigationPolygon.new()
 		var vertices = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
 		polygon.vertices = vertices
-		var indices = PackedInt32Array(0, 3, 1)
+		var indices = PackedInt32Array([0, 1, 2, 3])
 		polygon.add_polygon(indices)
 		$NavigationRegion2D.navpoly = polygon
 		[/gdscript]
@@ -36,7 +36,7 @@
 		var polygon = new NavigationPolygon();
 		var vertices = new Vector2[] { new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0) };
 		polygon.Vertices = vertices;
-		var indices = new int[] { 0, 3, 1 };
+		var indices = new int[] { 0, 1, 2, 3 };
 		polygon.AddPolygon(indices);
 		GetNode&lt;NavigationRegion2D&gt;("NavigationRegion2D").Navpoly = polygon;
 		[/csharp]
@@ -47,124 +47,98 @@
 	</tutorials>
 	<methods>
 		<method name="add_outline">
-			<return type="void">
-			</return>
-			<argument index="0" name="outline" type="PackedVector2Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="outline" type="PackedVector2Array" />
 			<description>
 				Appends a [PackedVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines. You have to call [method make_polygons_from_outlines] in order for this array to be converted to polygons that the engine will use.
 			</description>
 		</method>
 		<method name="add_outline_at_index">
-			<return type="void">
-			</return>
-			<argument index="0" name="outline" type="PackedVector2Array">
-			</argument>
-			<argument index="1" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="outline" type="PackedVector2Array" />
+			<argument index="1" name="index" type="int" />
 			<description>
 				Adds a [PackedVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines at a fixed position. You have to call [method make_polygons_from_outlines] in order for this array to be converted to polygons that the engine will use.
 			</description>
 		</method>
 		<method name="add_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="polygon" type="PackedInt32Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="polygon" type="PackedInt32Array" />
 			<description>
 				Adds a polygon using the indices of the vertices you get when calling [method get_vertices].
 			</description>
 		</method>
 		<method name="clear_outlines">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the array of the outlines, but it doesn't clear the vertices and the polygons that were created by them.
 			</description>
 		</method>
 		<method name="clear_polygons">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the array of polygons, but it doesn't clear the array of outlines and vertices.
 			</description>
 		</method>
 		<method name="get_outline" qualifiers="const">
-			<return type="PackedVector2Array">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="PackedVector2Array" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns a [PackedVector2Array] containing the vertices of an outline that was created in the editor or by script.
 			</description>
 		</method>
 		<method name="get_outline_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of outlines that were created in the editor or by script.
 			</description>
 		</method>
 		<method name="get_polygon">
-			<return type="PackedInt32Array">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="PackedInt32Array" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns a [PackedInt32Array] containing the indices of the vertices of a created polygon.
 			</description>
 		</method>
 		<method name="get_polygon_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the count of all polygons.
 			</description>
 		</method>
 		<method name="get_vertices" qualifiers="const">
-			<return type="PackedVector2Array">
-			</return>
+			<return type="PackedVector2Array" />
 			<description>
 				Returns a [PackedVector2Array] containing all the vertices being used to create the polygons.
 			</description>
 		</method>
 		<method name="make_polygons_from_outlines">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Creates polygons from the outlines added in the editor or by script.
 			</description>
 		</method>
 		<method name="remove_outline">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Removes an outline created in the editor or by script. You have to call [method make_polygons_from_outlines] for the polygons to update.
 			</description>
 		</method>
 		<method name="set_outline">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="outline" type="PackedVector2Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="outline" type="PackedVector2Array" />
 			<description>
 				Changes an outline created in the editor or by script. You have to call [method make_polygons_from_outlines] for the polygons to update.
 			</description>
 		</method>
 		<method name="set_vertices">
-			<return type="void">
-			</return>
-			<argument index="0" name="vertices" type="PackedVector2Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="vertices" type="PackedVector2Array" />
 			<description>
 				Sets the vertices that can be then indexed to create polygons with the [method add_polygon] method.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

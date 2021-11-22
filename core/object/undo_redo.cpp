@@ -32,6 +32,7 @@
 
 #include "core/io/resource.h"
 #include "core/os/os.h"
+#include "core/templates/local_vector.h"
 
 void UndoRedo::_discard_redo() {
 	if (current_action == actions.size() - 1) {
@@ -39,11 +40,15 @@ void UndoRedo::_discard_redo() {
 	}
 
 	for (int i = current_action + 1; i < actions.size(); i++) {
-		for (List<Operation>::Element *E = actions.write[i].do_ops.front(); E; E = E->next()) {
-			if (E->get().type == Operation::TYPE_REFERENCE) {
-				Object *obj = ObjectDB::get_instance(E->get().object);
-				if (obj) {
-					memdelete(obj);
+		for (Operation &E : actions.write[i].do_ops) {
+			if (E.type == Operation::TYPE_REFERENCE) {
+				if (E.ref.is_valid()) {
+					E.ref.unref();
+				} else {
+					Object *obj = ObjectDB::get_instance(E.object);
+					if (obj) {
+						memdelete(obj);
+					}
 				}
 			}
 		}
@@ -65,13 +70,13 @@ bool UndoRedo::_redo(bool p_execute) {
 		_process_operation_list(actions.write[current_action].do_ops.front());
 	}
 	version++;
-	emit_signal("version_changed");
+	emit_signal(SNAME("version_changed"));
 
 	return true;
 }
 
 void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
-	uint32_t ticks = OS::get_singleton()->get_ticks_msec();
+	uint64_t ticks = OS::get_singleton()->get_ticks_msec();
 
 	if (action_level == 0) {
 		_discard_redo();
@@ -81,10 +86,17 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 			current_action = actions.size() - 2;
 
 			if (p_mode == MERGE_ENDS) {
-				// Clear all do ops from last action, and delete all object references
-				List<Operation>::Element *E = actions.write[current_action + 1].do_ops.front();
+				// Clear all do ops from last action if they are not forced kept
+				LocalVector<List<Operation>::Element *> to_remove;
+				for (List<Operation>::Element *E = actions.write[current_action + 1].do_ops.front(); E; E = E->next()) {
+					if (!E->get().force_keep_in_merge_ends) {
+						to_remove.push_back(E);
+					}
+				}
 
-				while (E) {
+				for (unsigned int i = 0; i < to_remove.size(); i++) {
+					List<Operation>::Element *E = to_remove[i];
+					// Delete all object references
 					if (E->get().type == Operation::TYPE_REFERENCE) {
 						Object *obj = ObjectDB::get_instance(E->get().object);
 
@@ -92,9 +104,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 							memdelete(obj);
 						}
 					}
-
-					E = E->next();
-					actions.write[current_action + 1].do_ops.pop_front();
+					E->erase();
 				}
 			}
 
@@ -113,6 +123,8 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 	}
 
 	action_level++;
+
+	force_keep_in_merge_ends = false;
 }
 
 void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIANT_ARG_DECLARE) {
@@ -122,8 +134,8 @@ void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIA
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		do_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	do_op.type = Operation::TYPE_METHOD;
@@ -142,17 +154,18 @@ void UndoRedo::add_undo_method(Object *p_object, const StringName &p_method, VAR
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
 	// No undo if the merge mode is MERGE_ENDS
-	if (merge_mode == MERGE_ENDS) {
+	if (!force_keep_in_merge_ends && merge_mode == MERGE_ENDS) {
 		return;
 	}
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		undo_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	undo_op.type = Operation::TYPE_METHOD;
+	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
 	undo_op.name = p_method;
 
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
@@ -167,8 +180,8 @@ void UndoRedo::add_do_property(Object *p_object, const StringName &p_property, c
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		do_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	do_op.type = Operation::TYPE_PROPERTY;
@@ -183,17 +196,18 @@ void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property,
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
 	// No undo if the merge mode is MERGE_ENDS
-	if (merge_mode == MERGE_ENDS) {
+	if (!force_keep_in_merge_ends && merge_mode == MERGE_ENDS) {
 		return;
 	}
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		undo_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	undo_op.type = Operation::TYPE_PROPERTY;
+	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
 	undo_op.name = p_property;
 	undo_op.args[0] = p_value;
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
@@ -205,8 +219,8 @@ void UndoRedo::add_do_reference(Object *p_object) {
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		do_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		do_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	do_op.type = Operation::TYPE_REFERENCE;
@@ -219,18 +233,33 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
 	// No undo if the merge mode is MERGE_ENDS
-	if (merge_mode == MERGE_ENDS) {
+	if (!force_keep_in_merge_ends && merge_mode == MERGE_ENDS) {
 		return;
 	}
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Reference>(p_object)) {
-		undo_op.ref = Ref<Reference>(Object::cast_to<Reference>(p_object));
+	if (Object::cast_to<RefCounted>(p_object)) {
+		undo_op.ref = Ref<RefCounted>(Object::cast_to<RefCounted>(p_object));
 	}
 
 	undo_op.type = Operation::TYPE_REFERENCE;
+	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
+}
+
+void UndoRedo::start_force_keep_in_merge_ends() {
+	ERR_FAIL_COND(action_level <= 0);
+	ERR_FAIL_COND((current_action + 1) >= actions.size());
+
+	force_keep_in_merge_ends = true;
+}
+
+void UndoRedo::end_force_keep_in_merge_ends() {
+	ERR_FAIL_COND(action_level <= 0);
+	ERR_FAIL_COND((current_action + 1) >= actions.size());
+
+	force_keep_in_merge_ends = false;
 }
 
 void UndoRedo::_pop_history_tail() {
@@ -240,11 +269,15 @@ void UndoRedo::_pop_history_tail() {
 		return;
 	}
 
-	for (List<Operation>::Element *E = actions.write[0].undo_ops.front(); E; E = E->next()) {
-		if (E->get().type == Operation::TYPE_REFERENCE) {
-			Object *obj = ObjectDB::get_instance(E->get().object);
-			if (obj) {
-				memdelete(obj);
+	for (Operation &E : actions.write[0].undo_ops) {
+		if (E.type == Operation::TYPE_REFERENCE) {
+			if (E.ref.is_valid()) {
+				E.ref.unref();
+			} else {
+				Object *obj = ObjectDB::get_instance(E.object);
+				if (obj) {
+					memdelete(obj);
+				}
 			}
 		}
 	}
@@ -352,7 +385,7 @@ bool UndoRedo::undo() {
 	_process_operation_list(actions.write[current_action].undo_ops.front());
 	current_action--;
 	version--;
-	emit_signal("version_changed");
+	emit_signal(SNAME("version_changed"));
 
 	return true;
 }
@@ -385,7 +418,7 @@ void UndoRedo::clear_history(bool p_increase_version) {
 
 	if (p_increase_version) {
 		version++;
-		emit_signal("version_changed");
+		emit_signal(SNAME("version_changed"));
 	}
 }
 
@@ -397,11 +430,11 @@ String UndoRedo::get_current_action_name() const {
 	return actions[current_action].name;
 }
 
-bool UndoRedo::has_undo() {
+bool UndoRedo::has_undo() const {
 	return current_action >= 0;
 }
 
-bool UndoRedo::has_redo() {
+bool UndoRedo::has_redo() const {
 	return (current_action + 1) < actions.size();
 }
 
@@ -460,8 +493,8 @@ Variant UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Callabl
 		v[i] = *p_args[i + 2];
 	}
 
-	static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
-	add_do_method(object, method, v[0], v[1], v[2], v[3], v[4]);
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+	add_do_method(object, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 	return Variant();
 }
 
@@ -497,8 +530,8 @@ Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Calla
 		v[i] = *p_args[i + 2];
 	}
 
-	static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
-	add_undo_method(object, method, v[0], v[1], v[2], v[3], v[4]);
+	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
+	add_undo_method(object, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
 	return Variant();
 }
 
@@ -529,6 +562,9 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_undo_property", "object", "property", "value"), &UndoRedo::add_undo_property);
 	ClassDB::bind_method(D_METHOD("add_do_reference", "object"), &UndoRedo::add_do_reference);
 	ClassDB::bind_method(D_METHOD("add_undo_reference", "object"), &UndoRedo::add_undo_reference);
+
+	ClassDB::bind_method(D_METHOD("start_force_keep_in_merge_ends"), &UndoRedo::start_force_keep_in_merge_ends);
+	ClassDB::bind_method(D_METHOD("end_force_keep_in_merge_ends"), &UndoRedo::end_force_keep_in_merge_ends);
 
 	ClassDB::bind_method(D_METHOD("get_history_count"), &UndoRedo::get_history_count);
 	ClassDB::bind_method(D_METHOD("get_current_action"), &UndoRedo::get_current_action);

@@ -29,13 +29,13 @@
 /*************************************************************************/
 
 #include "mono_reg_utils.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 
 #ifdef WINDOWS_ENABLED
 
 #include "core/os/os.h"
 
-// Here, after os/os.h
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 namespace MonoRegUtils {

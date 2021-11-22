@@ -39,11 +39,8 @@ struct hb_subset_plan_t
 {
   hb_object_header_t header;
 
-  bool successful : 1;
-  bool drop_hints : 1;
-  bool desubroutinize : 1;
-  bool retain_gids : 1;
-  bool name_legacy : 1;
+  bool successful;
+  unsigned flags;
 
   // For each cp that we'd like to retain maps to the corresponding gid.
   hb_set_t *unicodes;
@@ -54,8 +51,14 @@ struct hb_subset_plan_t
   // name_languages we would like to retain
   hb_set_t *name_languages;
 
+  //layout features which will be preserved
+  hb_set_t *layout_features;
+
   //glyph ids requested to retain
   hb_set_t *glyphs_requested;
+
+  // Tables which should not be processed, just pass them through.
+  hb_set_t *no_subset_tables;
 
   // Tables which should be dropped.
   hb_set_t *drop_tables;
@@ -74,14 +77,23 @@ struct hb_subset_plan_t
   unsigned int _num_output_glyphs;
   hb_set_t *_glyphset;
   hb_set_t *_glyphset_gsub;
+  hb_set_t *_glyphset_mathed;
 
   //active lookups we'd like to retain
   hb_map_t *gsub_lookups;
   hb_map_t *gpos_lookups;
 
-  //active features we'd like to retain
+  //active langsys we'd like to retain
+  hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *gsub_langsys;
+  hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *gpos_langsys;
+
+  //active features after removing redundant langsys and prune_features
   hb_map_t *gsub_features;
   hb_map_t *gpos_features;
+
+  //active layers/palettes we'd like to retain
+  hb_map_t *colrv1_layers;
+  hb_map_t *colr_palettes;
 
   //The set of layout item variation store delta set indices to be retained
   hb_set_t *layout_variation_indices;
@@ -189,7 +201,7 @@ typedef struct hb_subset_plan_t hb_subset_plan_t;
 
 HB_INTERNAL hb_subset_plan_t *
 hb_subset_plan_create (hb_face_t           *face,
-		       hb_subset_input_t   *input);
+		       const hb_subset_input_t   *input);
 
 HB_INTERNAL void
 hb_subset_plan_destroy (hb_subset_plan_t *plan);

@@ -107,6 +107,39 @@ uint64_t Color::to_rgba64() const {
 	return c;
 }
 
+String _to_hex(float p_val) {
+	int v = Math::round(p_val * 255);
+	v = CLAMP(v, 0, 255);
+	String ret;
+
+	for (int i = 0; i < 2; i++) {
+		char32_t c[2] = { 0, 0 };
+		int lv = v & 0xF;
+		if (lv < 10) {
+			c[0] = '0' + lv;
+		} else {
+			c[0] = 'a' + lv - 10;
+		}
+
+		v >>= 4;
+		String cs = (const char32_t *)c;
+		ret = cs + ret;
+	}
+
+	return ret;
+}
+
+String Color::to_html(bool p_alpha) const {
+	String txt;
+	txt += _to_hex(r);
+	txt += _to_hex(g);
+	txt += _to_hex(b);
+	if (p_alpha) {
+		txt += _to_hex(a);
+	}
+	return txt;
+}
+
 float Color::get_h() const {
 	float min = MIN(r, g);
 	min = MIN(min, b);
@@ -211,6 +244,14 @@ bool Color::is_equal_approx(const Color &p_color) const {
 	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
 }
 
+Color Color::clamp(const Color &p_min, const Color &p_max) const {
+	return Color(
+			CLAMP(r, p_min.r, p_max.r),
+			CLAMP(g, p_min.g, p_max.g),
+			CLAMP(b, p_min.b, p_max.b),
+			CLAMP(a, p_min.a, p_max.a));
+}
+
 void Color::invert() {
 	r = 1.0 - r;
 	g = 1.0 - g;
@@ -239,20 +280,6 @@ Color Color::hex64(uint64_t p_hex) {
 	float r = (p_hex & 0xFFFF) / 65535.0;
 
 	return Color(r, g, b, a);
-}
-
-Color Color::from_rgbe9995(uint32_t p_rgbe) {
-	float r = p_rgbe & 0x1ff;
-	float g = (p_rgbe >> 9) & 0x1ff;
-	float b = (p_rgbe >> 18) & 0x1ff;
-	float e = (p_rgbe >> 27);
-	float m = Math::pow(2, e - 15.0 - 9.0);
-
-	float rd = r * m;
-	float gd = g * m;
-	float bd = b * m;
-
-	return Color(rd, gd, bd, 1.0f);
 }
 
 static int _parse_col4(const String &p_str, int p_ofs) {
@@ -360,7 +387,7 @@ Color Color::named(const String &p_name) {
 		ERR_FAIL_V_MSG(Color(), "Invalid color name: " + p_name + ".");
 		return Color();
 	}
-	return get_named_color(idx);
+	return named_colors[idx].color;
 }
 
 Color Color::named(const String &p_name, const Color &p_default) {
@@ -368,7 +395,7 @@ Color Color::named(const String &p_name, const Color &p_default) {
 	if (idx == -1) {
 		return p_default;
 	}
-	return get_named_color(idx);
+	return named_colors[idx].color;
 }
 
 int Color::find_named_color(const String &p_name) {
@@ -379,11 +406,11 @@ int Color::find_named_color(const String &p_name) {
 	name = name.replace("_", "");
 	name = name.replace("'", "");
 	name = name.replace(".", "");
-	name = name.to_lower();
+	name = name.to_upper();
 
 	int idx = 0;
 	while (named_colors[idx].name != nullptr) {
-		if (name == named_colors[idx].name) {
+		if (name == String(named_colors[idx].name).replace("_", "")) {
 			return idx;
 		}
 		idx++;
@@ -401,10 +428,12 @@ int Color::get_named_color_count() {
 }
 
 String Color::get_named_color_name(int p_idx) {
+	ERR_FAIL_INDEX_V(p_idx, get_named_color_count(), "");
 	return named_colors[p_idx].name;
 }
 
 Color Color::get_named_color(int p_idx) {
+	ERR_FAIL_INDEX_V(p_idx, get_named_color_count(), Color());
 	return named_colors[p_idx].color;
 }
 
@@ -418,47 +447,28 @@ Color Color::from_string(const String &p_string, const Color &p_default) {
 	}
 }
 
-String _to_hex(float p_val) {
-	int v = Math::round(p_val * 255);
-	v = CLAMP(v, 0, 255);
-	String ret;
-
-	for (int i = 0; i < 2; i++) {
-		char32_t c[2] = { 0, 0 };
-		int lv = v & 0xF;
-		if (lv < 10) {
-			c[0] = '0' + lv;
-		} else {
-			c[0] = 'a' + lv - 10;
-		}
-
-		v >>= 4;
-		String cs = (const char32_t *)c;
-		ret = cs + ret;
-	}
-
-	return ret;
-}
-
-String Color::to_html(bool p_alpha) const {
-	String txt;
-	txt += _to_hex(r);
-	txt += _to_hex(g);
-	txt += _to_hex(b);
-	if (p_alpha) {
-		txt += _to_hex(a);
-	}
-	return txt;
-}
-
-Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) const {
+Color Color::from_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	Color c;
-	c.set_hsv(p_h, p_s, p_v, p_a);
+	c.set_hsv(p_h, p_s, p_v, p_alpha);
 	return c;
 }
 
+Color Color::from_rgbe9995(uint32_t p_rgbe) {
+	float r = p_rgbe & 0x1ff;
+	float g = (p_rgbe >> 9) & 0x1ff;
+	float b = (p_rgbe >> 18) & 0x1ff;
+	float e = (p_rgbe >> 27);
+	float m = Math::pow(2, e - 15.0 - 9.0);
+
+	float rd = r * m;
+	float gd = g * m;
+	float bd = b * m;
+
+	return Color(rd, gd, bd, 1.0f);
+}
+
 Color::operator String() const {
-	return rtos(r) + ", " + rtos(g) + ", " + rtos(b) + ", " + rtos(a);
+	return "(" + String::num(r, 4) + ", " + String::num(g, 4) + ", " + String::num(b, 4) + ", " + String::num(a, 4) + ")";
 }
 
 Color Color::operator+(const Color &p_color) const {

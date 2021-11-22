@@ -42,12 +42,12 @@ protected:
 	static void _bind_methods();
 
 private:
-	Color color;
-	float intensity = 0.0f;
-	String type;
-	float range = 0.0f;
+	Color color = Color(1.0f, 1.0f, 1.0f);
+	float intensity = 1.0f;
+	String light_type;
+	float range = INFINITY;
 	float inner_cone_angle = 0.0f;
-	float outer_cone_angle = 0.0f;
+	float outer_cone_angle = Math_TAU / 8.0f;
 
 public:
 	Color get_color();
@@ -56,8 +56,8 @@ public:
 	float get_intensity();
 	void set_intensity(float p_intensity);
 
-	String get_type();
-	void set_type(String p_type);
+	String get_light_type();
+	void set_light_type(String p_light_type);
 
 	float get_range();
 	void set_range(float p_range);

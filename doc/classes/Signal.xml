@@ -7,123 +7,117 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="Signal" qualifiers="constructor">
-			<return type="Signal">
-			</return>
+	<constructors>
+		<constructor name="Signal">
+			<return type="Signal" />
 			<description>
 				Constructs a null [Signal] with no object nor signal name bound.
 			</description>
-		</method>
-		<method name="Signal" qualifiers="constructor">
-			<return type="Signal">
-			</return>
-			<argument index="0" name="from" type="Signal">
-			</argument>
+		</constructor>
+		<constructor name="Signal">
+			<return type="Signal" />
+			<argument index="0" name="from" type="Signal" />
 			<description>
 				Constructs a [Signal] as a copy of the given [Signal].
 			</description>
-		</method>
-		<method name="Signal" qualifiers="constructor">
-			<return type="Signal">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="signal" type="StringName">
-			</argument>
+		</constructor>
+		<constructor name="Signal">
+			<return type="Signal" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="signal" type="StringName" />
 			<description>
 				Creates a new [Signal] with the name [code]signal[/code] in the specified [code]object[/code].
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="connect">
-			<return type="int">
-			</return>
-			<argument index="0" name="callable" type="Callable">
-			</argument>
-			<argument index="1" name="binds" type="Array" default="[  ]">
-			</argument>
-			<argument index="2" name="flags" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="callable" type="Callable" />
+			<argument index="1" name="flags" type="int" default="0" />
 			<description>
-				Connects this signal to the specified [Callable], optionally providing binds and connection flags.
+				Connects this signal to the specified [Callable], optionally providing connection flags. You can provide additional arguments to the connected method call by using [method Callable.bind].
+				[codeblock]
+				for button in $Buttons.get_children():
+				    button.pressed.connect(on_pressed.bind(button))
+
+				func on_pressed(button):
+				    print(button.name, " was pressed")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="disconnect">
-			<return type="void">
-			</return>
-			<argument index="0" name="callable" type="Callable">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="callable" type="Callable" />
 			<description>
 				Disconnects this signal from the specified [Callable].
 			</description>
 		</method>
 		<method name="emit" qualifiers="vararg const">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Emits this signal to all connected objects.
 			</description>
 		</method>
 		<method name="get_connections" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns the list of [Callable]s connected to this signal.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="StringName">
-			</return>
+			<return type="StringName" />
 			<description>
 				Returns the name of this signal.
 			</description>
 		</method>
 		<method name="get_object" qualifiers="const">
-			<return type="Object">
-			</return>
+			<return type="Object" />
 			<description>
 				Returns the object emitting this signal.
 			</description>
 		</method>
 		<method name="get_object_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the ID of the object emitting this signal (see [method Object.get_instance_id]).
 			</description>
 		</method>
 		<method name="is_connected" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="callable" type="Callable">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="callable" type="Callable" />
 			<description>
 				Returns [code]true[/code] if the specified [Callable] is connected to this signal.
 			</description>
 		</method>
 		<method name="is_null" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Signal">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Signal">
-			</argument>
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Signal" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Signal" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

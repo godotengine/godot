@@ -55,22 +55,25 @@
 #include "audio_server.h"
 #include "camera/camera_feed.h"
 #include "camera_server.h"
+#include "core/extension/native_extension_manager.h"
 #include "display_server.h"
 #include "navigation_server_2d.h"
 #include "navigation_server_3d.h"
-#include "physics_2d/physics_server_2d_sw.h"
-#include "physics_2d/physics_server_2d_wrap_mt.h"
-#include "physics_3d/physics_server_3d_sw.h"
-#include "physics_3d/physics_server_3d_wrap_mt.h"
+#include "physics_2d/godot_physics_server_2d.h"
+#include "physics_3d/godot_physics_server_3d.h"
 #include "physics_server_2d.h"
+#include "physics_server_2d_wrap_mt.h"
 #include "physics_server_3d.h"
+#include "physics_server_3d_wrap_mt.h"
 #include "rendering/renderer_compositor.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
 #include "rendering_server.h"
 #include "servers/rendering/shader_types.h"
+#include "text/text_server_extension.h"
 #include "text_server.h"
 #include "xr/xr_interface.h"
+#include "xr/xr_interface_extension.h"
 #include "xr/xr_positional_tracker.h"
 #include "xr_server.h"
 
@@ -79,7 +82,7 @@ ShaderTypes *shader_types = nullptr;
 PhysicsServer3D *_createGodotPhysics3DCallback() {
 	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
 
-	PhysicsServer3D *physics_server = memnew(PhysicsServer3DSW(using_threads));
+	PhysicsServer3D *physics_server = memnew(GodotPhysicsServer3D(using_threads));
 
 	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
 }
@@ -87,7 +90,7 @@ PhysicsServer3D *_createGodotPhysics3DCallback() {
 PhysicsServer2D *_createGodotPhysics2DCallback() {
 	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
 
-	PhysicsServer2D *physics_server = memnew(PhysicsServer2DSW(using_threads));
+	PhysicsServer2D *physics_server = memnew(GodotPhysicsServer2D(using_threads));
 
 	return memnew(PhysicsServer2DWrapMT(physics_server, using_threads));
 }
@@ -105,119 +108,120 @@ static bool has_server_feature_callback(const String &p_feature) {
 void preregister_server_types() {
 	shader_types = memnew(ShaderTypes);
 
-	GLOBAL_DEF("internationalization/rendering/text_driver", "");
-	String text_driver_options;
-	for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-		if (i > 0) {
-			text_driver_options += ",";
-		}
-		text_driver_options += TextServerManager::get_interface_name(i);
-	}
-	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
+	GDREGISTER_CLASS(TextServerManager);
+	GDREGISTER_VIRTUAL_CLASS(TextServer);
+	GDREGISTER_CLASS(TextServerExtension);
+
+	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
 }
 
 void register_server_types() {
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
-	ClassDB::register_virtual_class<DisplayServer>();
-	ClassDB::register_virtual_class<RenderingServer>();
-	ClassDB::register_class<AudioServer>();
+	GDREGISTER_VIRTUAL_CLASS(DisplayServer);
+	GDREGISTER_VIRTUAL_CLASS(RenderingServer);
+	GDREGISTER_CLASS(AudioServer);
 
-	ClassDB::register_class<TextServerManager>();
-	ClassDB::register_virtual_class<TextServer>();
-	TextServer::initialize_hex_code_box_fonts();
+	GDREGISTER_VIRTUAL_CLASS(PhysicsServer2D);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3D);
+	GDREGISTER_VIRTUAL_CLASS(NavigationServer2D);
+	GDREGISTER_VIRTUAL_CLASS(NavigationServer3D);
+	GDREGISTER_CLASS(XRServer);
+	GDREGISTER_CLASS(CameraServer);
 
-	ClassDB::register_virtual_class<PhysicsServer2D>();
-	ClassDB::register_virtual_class<PhysicsServer3D>();
-	ClassDB::register_virtual_class<NavigationServer2D>();
-	ClassDB::register_virtual_class<NavigationServer3D>();
-	ClassDB::register_class<XRServer>();
-	ClassDB::register_class<CameraServer>();
+	GDREGISTER_VIRTUAL_CLASS(RenderingDevice);
 
-	ClassDB::register_virtual_class<RenderingDevice>();
+	GDREGISTER_VIRTUAL_CLASS(XRInterface);
+	GDREGISTER_CLASS(XRInterfaceExtension); // can't register this as virtual because we need a creation function for our extensions.
+	GDREGISTER_CLASS(XRPose);
+	GDREGISTER_CLASS(XRPositionalTracker);
 
-	ClassDB::register_virtual_class<XRInterface>();
-	ClassDB::register_class<XRPositionalTracker>();
+	GDREGISTER_CLASS(AudioStream);
+	GDREGISTER_CLASS(AudioStreamPlayback);
+	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlaybackResampled);
+	GDREGISTER_CLASS(AudioStreamMicrophone);
+	GDREGISTER_CLASS(AudioStreamRandomPitch);
+	GDREGISTER_VIRTUAL_CLASS(AudioEffect);
+	GDREGISTER_VIRTUAL_CLASS(AudioEffectInstance);
+	GDREGISTER_CLASS(AudioEffectEQ);
+	GDREGISTER_CLASS(AudioEffectFilter);
+	GDREGISTER_CLASS(AudioBusLayout);
 
-	ClassDB::register_virtual_class<AudioStream>();
-	ClassDB::register_virtual_class<AudioStreamPlayback>();
-	ClassDB::register_virtual_class<AudioStreamPlaybackResampled>();
-	ClassDB::register_class<AudioStreamMicrophone>();
-	ClassDB::register_class<AudioStreamRandomPitch>();
-	ClassDB::register_virtual_class<AudioEffect>();
-	ClassDB::register_virtual_class<AudioEffectInstance>();
-	ClassDB::register_class<AudioEffectEQ>();
-	ClassDB::register_class<AudioEffectFilter>();
-	ClassDB::register_class<AudioBusLayout>();
-
-	ClassDB::register_class<AudioStreamGenerator>();
-	ClassDB::register_virtual_class<AudioStreamGeneratorPlayback>();
+	GDREGISTER_CLASS(AudioStreamGenerator);
+	GDREGISTER_VIRTUAL_CLASS(AudioStreamGeneratorPlayback);
 
 	{
 		//audio effects
-		ClassDB::register_class<AudioEffectAmplify>();
+		GDREGISTER_CLASS(AudioEffectAmplify);
 
-		ClassDB::register_class<AudioEffectReverb>();
+		GDREGISTER_CLASS(AudioEffectReverb);
 
-		ClassDB::register_class<AudioEffectLowPassFilter>();
-		ClassDB::register_class<AudioEffectHighPassFilter>();
-		ClassDB::register_class<AudioEffectBandPassFilter>();
-		ClassDB::register_class<AudioEffectNotchFilter>();
-		ClassDB::register_class<AudioEffectBandLimitFilter>();
-		ClassDB::register_class<AudioEffectLowShelfFilter>();
-		ClassDB::register_class<AudioEffectHighShelfFilter>();
+		GDREGISTER_CLASS(AudioEffectLowPassFilter);
+		GDREGISTER_CLASS(AudioEffectHighPassFilter);
+		GDREGISTER_CLASS(AudioEffectBandPassFilter);
+		GDREGISTER_CLASS(AudioEffectNotchFilter);
+		GDREGISTER_CLASS(AudioEffectBandLimitFilter);
+		GDREGISTER_CLASS(AudioEffectLowShelfFilter);
+		GDREGISTER_CLASS(AudioEffectHighShelfFilter);
 
-		ClassDB::register_class<AudioEffectEQ6>();
-		ClassDB::register_class<AudioEffectEQ10>();
-		ClassDB::register_class<AudioEffectEQ21>();
+		GDREGISTER_CLASS(AudioEffectEQ6);
+		GDREGISTER_CLASS(AudioEffectEQ10);
+		GDREGISTER_CLASS(AudioEffectEQ21);
 
-		ClassDB::register_class<AudioEffectDistortion>();
+		GDREGISTER_CLASS(AudioEffectDistortion);
 
-		ClassDB::register_class<AudioEffectStereoEnhance>();
+		GDREGISTER_CLASS(AudioEffectStereoEnhance);
 
-		ClassDB::register_class<AudioEffectPanner>();
-		ClassDB::register_class<AudioEffectChorus>();
-		ClassDB::register_class<AudioEffectDelay>();
-		ClassDB::register_class<AudioEffectCompressor>();
-		ClassDB::register_class<AudioEffectLimiter>();
-		ClassDB::register_class<AudioEffectPitchShift>();
-		ClassDB::register_class<AudioEffectPhaser>();
+		GDREGISTER_CLASS(AudioEffectPanner);
+		GDREGISTER_CLASS(AudioEffectChorus);
+		GDREGISTER_CLASS(AudioEffectDelay);
+		GDREGISTER_CLASS(AudioEffectCompressor);
+		GDREGISTER_CLASS(AudioEffectLimiter);
+		GDREGISTER_CLASS(AudioEffectPitchShift);
+		GDREGISTER_CLASS(AudioEffectPhaser);
 
-		ClassDB::register_class<AudioEffectRecord>();
-		ClassDB::register_class<AudioEffectSpectrumAnalyzer>();
-		ClassDB::register_virtual_class<AudioEffectSpectrumAnalyzerInstance>();
+		GDREGISTER_CLASS(AudioEffectRecord);
+		GDREGISTER_CLASS(AudioEffectSpectrumAnalyzer);
+		GDREGISTER_VIRTUAL_CLASS(AudioEffectSpectrumAnalyzerInstance);
 
-		ClassDB::register_class<AudioEffectCapture>();
+		GDREGISTER_CLASS(AudioEffectCapture);
 	}
 
-	ClassDB::register_virtual_class<RenderingDevice>();
-	ClassDB::register_class<RDTextureFormat>();
-	ClassDB::register_class<RDTextureView>();
-	ClassDB::register_class<RDAttachmentFormat>();
-	ClassDB::register_class<RDSamplerState>();
-	ClassDB::register_class<RDVertexAttribute>();
-	ClassDB::register_class<RDUniform>();
-	ClassDB::register_class<RDPipelineRasterizationState>();
-	ClassDB::register_class<RDPipelineMultisampleState>();
-	ClassDB::register_class<RDPipelineDepthStencilState>();
-	ClassDB::register_class<RDPipelineColorBlendStateAttachment>();
-	ClassDB::register_class<RDPipelineColorBlendState>();
-	ClassDB::register_class<RDShaderSource>();
-	ClassDB::register_class<RDShaderBytecode>();
-	ClassDB::register_class<RDShaderFile>();
+	GDREGISTER_VIRTUAL_CLASS(RenderingDevice);
+	GDREGISTER_CLASS(RDTextureFormat);
+	GDREGISTER_CLASS(RDTextureView);
+	GDREGISTER_CLASS(RDAttachmentFormat);
+	GDREGISTER_CLASS(RDFramebufferPass);
+	GDREGISTER_CLASS(RDSamplerState);
+	GDREGISTER_CLASS(RDVertexAttribute);
+	GDREGISTER_CLASS(RDUniform);
+	GDREGISTER_CLASS(RDPipelineRasterizationState);
+	GDREGISTER_CLASS(RDPipelineMultisampleState);
+	GDREGISTER_CLASS(RDPipelineDepthStencilState);
+	GDREGISTER_CLASS(RDPipelineColorBlendStateAttachment);
+	GDREGISTER_CLASS(RDPipelineColorBlendState);
+	GDREGISTER_CLASS(RDShaderSource);
+	GDREGISTER_CLASS(RDShaderSPIRV);
+	GDREGISTER_CLASS(RDShaderFile);
+	GDREGISTER_CLASS(RDPipelineSpecializationConstant);
 
-	ClassDB::register_class<CameraFeed>();
+	GDREGISTER_CLASS(CameraFeed);
 
-	ClassDB::register_virtual_class<PhysicsDirectBodyState2D>();
-	ClassDB::register_virtual_class<PhysicsDirectSpaceState2D>();
-	ClassDB::register_virtual_class<PhysicsShapeQueryResult2D>();
-	ClassDB::register_class<PhysicsTestMotionResult2D>();
-	ClassDB::register_class<PhysicsShapeQueryParameters2D>();
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState2D);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState2D);
+	GDREGISTER_CLASS(PhysicsRayQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsPointQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
+	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
 
-	ClassDB::register_class<PhysicsShapeQueryParameters3D>();
-	ClassDB::register_virtual_class<PhysicsDirectBodyState3D>();
-	ClassDB::register_virtual_class<PhysicsDirectSpaceState3D>();
-	ClassDB::register_virtual_class<PhysicsShapeQueryResult3D>();
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3D);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3D);
+	GDREGISTER_CLASS(PhysicsRayQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
+	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
 
 	// Physics 2D
 	GLOBAL_DEF(PhysicsServer2DManager::setting_property_name, "DEFAULT");
@@ -232,22 +236,24 @@ void register_server_types() {
 
 	PhysicsServer3DManager::register_server("GodotPhysics3D", &_createGodotPhysics3DCallback);
 	PhysicsServer3DManager::set_default_server("GodotPhysics3D");
+
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 }
 
 void unregister_server_types() {
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
+
 	memdelete(shader_types);
-	TextServer::finish_hex_code_box_fonts();
 }
 
 void register_server_singletons() {
-	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2D", PhysicsServer2D::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton_mut()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton_mut()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton(), "DisplayServer"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton(), "RenderingServer"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton(), "AudioServer"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2D", PhysicsServer2D::get_singleton(), "PhysicsServer2D"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton(), "PhysicsServer3D"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton_mut(), "NavigationServer2D"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton_mut(), "NavigationServer3D"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton(), "XRServer"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton(), "CameraServer"));
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 
 namespace Godot
@@ -25,7 +24,7 @@ namespace Godot
 
             try
             {
-                var stackTrace = new StackTrace(true).ToString();
+                string stackTrace = new StackTrace(true).ToString();
                 GD.PrintErr(stackTrace);
             }
             catch

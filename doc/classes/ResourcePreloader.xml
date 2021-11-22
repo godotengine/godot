@@ -11,62 +11,47 @@
 	</tutorials>
 	<methods>
 		<method name="add_resource">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="resource" type="Resource">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="resource" type="Resource" />
 			<description>
 				Adds a resource to the preloader with the given [code]name[/code]. If a resource with the given [code]name[/code] already exists, the new resource will be renamed to "[code]name[/code] N" where N is an incrementing number starting from 2.
 			</description>
 		</method>
 		<method name="get_resource" qualifiers="const">
-			<return type="Resource">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="Resource" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns the resource associated to [code]name[/code].
 			</description>
 		</method>
 		<method name="get_resource_list" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns the list of resources inside the preloader.
 			</description>
 		</method>
 		<method name="has_resource" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the preloader contains a resource associated to [code]name[/code].
 			</description>
 		</method>
 		<method name="remove_resource">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Removes the resource associated to [code]name[/code] from the preloader.
 			</description>
 		</method>
 		<method name="rename_resource">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="newname" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="newname" type="StringName" />
 			<description>
 				Renames a resource inside the preloader from [code]name[/code] to [code]newname[/code].
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

@@ -1,39 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptFunctionState" inherits="Reference" version="4.0">
+<class name="VisualScriptFunctionState" inherits="RefCounted" version="4.0">
 	<brief_description>
+		A Visual Script node representing a function state.
 	</brief_description>
 	<description>
+		[VisualScriptFunctionState] is returned from [VisualScriptYield] and can be used to resume a paused function call.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="connect_to_signal">
-			<return type="void">
-			</return>
-			<argument index="0" name="obj" type="Object">
-			</argument>
-			<argument index="1" name="signals" type="String">
-			</argument>
-			<argument index="2" name="args" type="Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="obj" type="Object" />
+			<argument index="1" name="signals" type="String" />
+			<argument index="2" name="args" type="Array" />
 			<description>
+				Connects this [VisualScriptFunctionState] to a signal in the given object to automatically resume when it's emitted.
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
+				Returns whether the function state is valid.
 			</description>
 		</method>
 		<method name="resume">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="args" type="Array" default="null">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="args" type="Array" default="[]" />
 			<description>
+				Resumes the function to run from the point it was yielded.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

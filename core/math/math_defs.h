@@ -43,8 +43,6 @@
 #define Math_TAU 6.2831853071795864769252867666
 #define Math_PI 3.1415926535897932384626433833
 #define Math_E 2.7182818284590452353602874714
-#define Math_INF INFINITY
-#define Math_NAN NAN
 
 #ifdef DEBUG_ENABLED
 #define MATH_CHECKS
@@ -83,6 +81,26 @@ enum VAlign {
 	VALIGN_BOTTOM
 };
 
+enum InlineAlign {
+	// Image alignment points.
+	INLINE_ALIGN_TOP_TO = 0b0000,
+	INLINE_ALIGN_CENTER_TO = 0b0001,
+	INLINE_ALIGN_BOTTOM_TO = 0b0010,
+	INLINE_ALIGN_IMAGE_MASK = 0b0011,
+
+	// Text alignment points.
+	INLINE_ALIGN_TO_TOP = 0b0000,
+	INLINE_ALIGN_TO_CENTER = 0b0100,
+	INLINE_ALIGN_TO_BASELINE = 0b1000,
+	INLINE_ALIGN_TO_BOTTOM = 0b1100,
+	INLINE_ALIGN_TEXT_MASK = 0b1100,
+
+	// Presets.
+	INLINE_ALIGN_TOP = INLINE_ALIGN_TOP_TO | INLINE_ALIGN_TO_TOP,
+	INLINE_ALIGN_CENTER = INLINE_ALIGN_CENTER_TO | INLINE_ALIGN_TO_CENTER,
+	INLINE_ALIGN_BOTTOM = INLINE_ALIGN_BOTTOM_TO | INLINE_ALIGN_TO_BOTTOM
+};
+
 enum Side {
 	SIDE_LEFT,
 	SIDE_TOP,
@@ -98,10 +116,10 @@ enum Corner {
 };
 
 /**
-  * The "Real" type is an abstract type used for real numbers, such as 1.5,
-  * in contrast to integer numbers. Precision can be controlled with the
-  * presence or absence of the REAL_T_IS_DOUBLE define.
-  */
+ * The "Real" type is an abstract type used for real numbers, such as 1.5,
+ * in contrast to integer numbers. Precision can be controlled with the
+ * presence or absence of the REAL_T_IS_DOUBLE define.
+ */
 #ifdef REAL_T_IS_DOUBLE
 typedef double real_t;
 #else

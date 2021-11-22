@@ -7,387 +7,298 @@
 		[AudioServer] is a low-level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
 	</description>
 	<tutorials>
-		<link title="Audio buses">https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 		<link title="Audio Device Changer Demo">https://godotengine.org/asset-library/asset/525</link>
 		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
 		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
 	</tutorials>
 	<methods>
 		<method name="add_bus">
-			<return type="void">
-			</return>
-			<argument index="0" name="at_position" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="at_position" type="int" default="-1" />
 			<description>
 				Adds a bus at [code]at_position[/code].
 			</description>
 		</method>
 		<method name="add_bus_effect">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="effect" type="AudioEffect">
-			</argument>
-			<argument index="2" name="at_position" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="effect" type="AudioEffect" />
+			<argument index="2" name="at_position" type="int" default="-1" />
 			<description>
 				Adds an [AudioEffect] effect to the bus [code]bus_idx[/code] at [code]at_position[/code].
 			</description>
 		</method>
 		<method name="capture_get_device">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Name of the current device for audio input (see [method capture_get_device_list]).
 			</description>
 		</method>
 		<method name="capture_get_device_list">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns the names of all audio input devices detected on the system.
 			</description>
 		</method>
 		<method name="capture_set_device">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Sets which audio input device is used for audio capture.
 			</description>
 		</method>
 		<method name="generate_bus_layout" qualifiers="const">
-			<return type="AudioBusLayout">
-			</return>
+			<return type="AudioBusLayout" />
 			<description>
 				Generates an [AudioBusLayout] using the available buses and effects.
 			</description>
 		</method>
 		<method name="get_bus_channels" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the amount of channels of the bus at index [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_effect">
-			<return type="AudioEffect">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="effect_idx" type="int">
-			</argument>
+			<return type="AudioEffect" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="effect_idx" type="int" />
 			<description>
 				Returns the [AudioEffect] at position [code]effect_idx[/code] in bus [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_effect_count">
-			<return type="int">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the number of effects on the bus at [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_effect_instance">
-			<return type="AudioEffectInstance">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="effect_idx" type="int">
-			</argument>
-			<argument index="2" name="channel" type="int" default="0">
-			</argument>
+			<return type="AudioEffectInstance" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="effect_idx" type="int" />
+			<argument index="2" name="channel" type="int" default="0" />
 			<description>
 				Returns the [AudioEffectInstance] assigned to the given bus and effect indices (and optionally channel).
 			</description>
 		</method>
 		<method name="get_bus_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="bus_name" type="StringName">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="bus_name" type="StringName" />
 			<description>
 				Returns the index of the bus with the name [code]bus_name[/code].
 			</description>
 		</method>
 		<method name="get_bus_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the name of the bus with the index [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_peak_volume_left_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="channel" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="channel" type="int" />
 			<description>
 				Returns the peak volume of the left speaker at bus index [code]bus_idx[/code] and channel index [code]channel[/code].
 			</description>
 		</method>
 		<method name="get_bus_peak_volume_right_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="channel" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="channel" type="int" />
 			<description>
 				Returns the peak volume of the right speaker at bus index [code]bus_idx[/code] and channel index [code]channel[/code].
 			</description>
 		</method>
 		<method name="get_bus_send" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the name of the bus that the bus at index [code]bus_idx[/code] sends to.
 			</description>
 		</method>
 		<method name="get_bus_volume_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="bus_idx" type="int" />
 			<description>
 				Returns the volume of the bus at index [code]bus_idx[/code] in dB.
 			</description>
 		</method>
 		<method name="get_device_list">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns the names of all audio devices detected on the system.
 			</description>
 		</method>
 		<method name="get_mix_rate" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the sample rate at the output of the [AudioServer].
 			</description>
 		</method>
 		<method name="get_output_latency" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the audio driver's output latency.
 			</description>
 		</method>
 		<method name="get_speaker_mode" qualifiers="const">
-			<return type="int" enum="AudioServer.SpeakerMode">
-			</return>
+			<return type="int" enum="AudioServer.SpeakerMode" />
 			<description>
 				Returns the speaker configuration.
 			</description>
 		</method>
 		<method name="get_time_since_last_mix" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the relative time since the last mix occurred.
 			</description>
 		</method>
 		<method name="get_time_to_next_mix" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the relative time until the next mix occurs.
 			</description>
 		</method>
 		<method name="is_bus_bypassing_effects" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bus_idx" type="int" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is bypassing effects.
 			</description>
 		</method>
 		<method name="is_bus_effect_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="effect_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="effect_idx" type="int" />
 			<description>
 				If [code]true[/code], the effect at index [code]effect_idx[/code] on the bus at index [code]bus_idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="is_bus_mute" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bus_idx" type="int" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is muted.
 			</description>
 		</method>
 		<method name="is_bus_solo" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="bus_idx" type="int" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is in solo mode.
 			</description>
 		</method>
 		<method name="lock">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Locks the audio driver's main loop.
 				[b]Note:[/b] Remember to unlock it afterwards.
 			</description>
 		</method>
 		<method name="move_bus">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="to_index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="to_index" type="int" />
 			<description>
 				Moves the bus from index [code]index[/code] to index [code]to_index[/code].
 			</description>
 		</method>
 		<method name="remove_bus">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Removes the bus at index [code]index[/code].
 			</description>
 		</method>
 		<method name="remove_bus_effect">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="effect_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="effect_idx" type="int" />
 			<description>
 				Removes the effect at index [code]effect_idx[/code] from the bus at index [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="set_bus_bypass_effects">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is bypassing effects.
 			</description>
 		</method>
 		<method name="set_bus_effect_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="effect_idx" type="int">
-			</argument>
-			<argument index="2" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="effect_idx" type="int" />
+			<argument index="2" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], the effect at index [code]effect_idx[/code] on the bus at index [code]bus_idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="set_bus_layout">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_layout" type="AudioBusLayout">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_layout" type="AudioBusLayout" />
 			<description>
 				Overwrites the currently used [AudioBusLayout].
 			</description>
 		</method>
 		<method name="set_bus_mute">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is muted.
 			</description>
 		</method>
 		<method name="set_bus_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="name" type="String" />
 			<description>
 				Sets the name of the bus at index [code]bus_idx[/code] to [code]name[/code].
 			</description>
 		</method>
 		<method name="set_bus_send">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="send" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="send" type="StringName" />
 			<description>
 				Connects the output of the bus at [code]bus_idx[/code] to the bus named [code]send[/code].
 			</description>
 		</method>
 		<method name="set_bus_solo">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], the bus at index [code]bus_idx[/code] is in solo mode.
 			</description>
 		</method>
 		<method name="set_bus_volume_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="volume_db" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="volume_db" type="float" />
 			<description>
 				Sets the volume of the bus at index [code]bus_idx[/code] to [code]volume_db[/code].
 			</description>
 		</method>
 		<method name="swap_bus_effects">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus_idx" type="int">
-			</argument>
-			<argument index="1" name="effect_idx" type="int">
-			</argument>
-			<argument index="2" name="by_effect_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="bus_idx" type="int" />
+			<argument index="1" name="effect_idx" type="int" />
+			<argument index="2" name="by_effect_idx" type="int" />
 			<description>
 				Swaps the position of two effects in bus [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="unlock">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Unlocks the audio driver's main loop. (After locking it, you should always unlock it.)
 			</description>
@@ -400,8 +311,8 @@
 		<member name="device" type="String" setter="set_device" getter="get_device" default="&quot;Default&quot;">
 			Name of the current device for audio output (see [method get_device_list]).
 		</member>
-		<member name="global_rate_scale" type="float" setter="set_global_rate_scale" getter="get_global_rate_scale" default="1.0">
-			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played twice as fast).
+		<member name="playback_speed_scale" type="float" setter="set_playback_speed_scale" getter="get_playback_speed_scale" default="1.0">
+			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played at half its speed).
 		</member>
 	</members>
 	<signals>

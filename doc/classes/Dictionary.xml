@@ -40,7 +40,7 @@
 		};
 		[/csharp]
 		[/codeblocks]
-		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dir["White"][/code] will return [code]50[/code]. You can also write [code]points_dir.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
+		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dict["White"][/code] will return [code]50[/code]. You can also write [code]points_dict.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
 		[codeblocks]
 		[gdscript]
 		export(string, "White", "Yellow", "Orange") var my_color
@@ -72,7 +72,7 @@
 		my_dict = {"First Array": [1, 2, 3, 4]} # Assigns an Array to a String key.
 		[/gdscript]
 		[csharp]
-		var myDir = new Godot.Collections.Dictionary
+		var myDict = new Godot.Collections.Dictionary
 		{
 		    {"First Array", new Godot.Collections.Array{1, 2, 3, 4}}
 		};
@@ -85,7 +85,7 @@
 		points_dict["Blue"] = 150 # Add "Blue" as a key and assign 150 as its value.
 		[/gdscript]
 		[csharp]
-		var pointsDir = new Godot.Collections.Dictionary
+		var pointsDict = new Godot.Collections.Dictionary
 		{
 		    {"White", 50},
 		    {"Yellow", 75},
@@ -98,7 +98,7 @@
 		[codeblocks]
 		[gdscript]
 		# This is a valid dictionary.
-		# To access the string "Nested value" below, use `my_dir.sub_dir.sub_key` or `my_dir["sub_dir"]["sub_key"]`.
+		# To access the string "Nested value" below, use `my_dict.sub_dict.sub_key` or `my_dict["sub_dict"]["sub_key"]`.
 		# Indexing styles can be mixed and matched depending on your needs.
 		var my_dict = {
 		    "String Key": 5,
@@ -109,8 +109,7 @@
 		[/gdscript]
 		[csharp]
 		// This is a valid dictionary.
-		// To access the string "Nested value" below, use `my_dir.sub_dir.sub_key` or `my_dir["sub_dir"]["sub_key"]`.
-		// Indexing styles can be mixed and matched depending on your needs.
+		// To access the string "Nested value" below, use `((Godot.Collections.Dictionary)myDict["sub_dict"])["sub_key"]`.
 		var myDict = new Godot.Collections.Dictionary {
 		    {"String Key", 5},
 		    {4, new Godot.Collections.Array{1,2,3}},
@@ -178,68 +177,58 @@
 		[b]Note:[/b] When declaring a dictionary with [code]const[/code], the dictionary itself can still be mutated by defining the values of individual keys. Using [code]const[/code] will only prevent assigning the constant with another value after it was initialized.
 	</description>
 	<tutorials>
-		<link title="GDScript basics: Dictionary">https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
+		<link title="GDScript basics: Dictionary">$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#dictionary</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
-	<methods>
-		<method name="Dictionary" qualifiers="constructor">
-			<return type="Dictionary">
-			</return>
+	<constructors>
+		<constructor name="Dictionary">
+			<return type="Dictionary" />
 			<description>
 				Constructs an empty [Dictionary].
 			</description>
-		</method>
-		<method name="Dictionary" qualifiers="constructor">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="from" type="Dictionary">
-			</argument>
+		</constructor>
+		<constructor name="Dictionary">
+			<return type="Dictionary" />
+			<argument index="0" name="from" type="Dictionary" />
 			<description>
 				Constructs a [Dictionary] as a copy of the given [Dictionary].
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clear the dictionary, removing all key/value pairs.
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="deep" type="bool" default="false">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="deep" type="bool" default="false" />
 			<description>
 				Creates a copy of the dictionary, and returns it. The [code]deep[/code] parameter causes inner dictionaries and arrays to be copied recursively, but does not apply to objects.
 			</description>
 		</method>
 		<method name="erase">
-			<return type="bool">
-			</return>
-			<argument index="0" name="key" type="Variant">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="key" type="Variant" />
 			<description>
-				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise. Does not erase elements while iterating over the dictionary.
+				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise.
+				[b]Note:[/b] Don't erase elements while iterating over the dictionary. You can iterate over the [method keys] array instead.
 			</description>
 		</method>
 		<method name="get" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="key" type="Variant">
-			</argument>
-			<argument index="1" name="default" type="Variant" default="null">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="key" type="Variant" />
+			<argument index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or [code]null[/code] if it is omitted.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="key" type="Variant">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="key" type="Variant" />
 			<description>
 				Returns [code]true[/code] if the dictionary has a given key.
 				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
@@ -261,17 +250,14 @@
 			</description>
 		</method>
 		<method name="has_all" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="keys" type="Array">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="keys" type="Array" />
 			<description>
 				Returns [code]true[/code] if the dictionary has all the keys in the given array.
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns a hashed integer value representing the dictionary contents. This can be used to compare dictionaries by value:
 				[codeblocks]
@@ -293,58 +279,58 @@
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the dictionary is empty.
 			</description>
 		</method>
 		<method name="keys" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns the list of keys in the [Dictionary].
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Dictionary">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Dictionary">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="operator []" qualifiers="operator">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="key" type="Variant">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of keys in the dictionary.
 			</description>
 		</method>
 		<method name="values" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns the list of values in the [Dictionary].
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Dictionary" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Dictionary" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="Variant" />
+			<argument index="0" name="key" type="Variant" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

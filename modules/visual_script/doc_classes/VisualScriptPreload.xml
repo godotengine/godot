@@ -12,13 +12,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="resource" type="Resource" setter="set_preload" getter="get_preload">
 			The [Resource] to load.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

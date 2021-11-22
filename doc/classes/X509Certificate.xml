@@ -12,24 +12,18 @@
 	</tutorials>
 	<methods>
 		<method name="load">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Loads a certificate from [code]path[/code] ("*.crt" file).
 			</description>
 		</method>
 		<method name="save">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Saves a certificate to the given [code]path[/code] (should be a "*.crt" file).
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

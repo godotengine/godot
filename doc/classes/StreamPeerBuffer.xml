@@ -8,50 +8,40 @@
 	</tutorials>
 	<methods>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
-			<return type="StreamPeerBuffer">
-			</return>
+			<return type="StreamPeerBuffer" />
 			<description>
 			</description>
 		</method>
 		<method name="get_position" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="resize">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="size" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="seek">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="position" type="int" />
 			<description>
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="data_array" type="PackedByteArray" setter="set_data_array" getter="get_data_array" default="PackedByteArray(  )">
+		<member name="data_array" type="PackedByteArray" setter="set_data_array" getter="get_data_array" default="PackedByteArray()">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -94,14 +94,14 @@ void ReflectionProbe::set_extents(const Vector3 &p_extents) {
 		}
 
 		if (extents[i] - 0.01 < ABS(origin_offset[i])) {
-			origin_offset[i] = SGN(origin_offset[i]) * (extents[i] - 0.01);
+			origin_offset[i] = SIGN(origin_offset[i]) * (extents[i] - 0.01);
 		}
 	}
 
 	RS::get_singleton()->reflection_probe_set_extents(probe, extents);
 	RS::get_singleton()->reflection_probe_set_origin_offset(probe, origin_offset);
 
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 ReflectionProbe::get_extents() const {
@@ -113,13 +113,13 @@ void ReflectionProbe::set_origin_offset(const Vector3 &p_extents) {
 
 	for (int i = 0; i < 3; i++) {
 		if (extents[i] - 0.01 < ABS(origin_offset[i])) {
-			origin_offset[i] = SGN(origin_offset[i]) * (extents[i] - 0.01);
+			origin_offset[i] = SIGN(origin_offset[i]) * (extents[i] - 0.01);
 		}
 	}
 	RS::get_singleton()->reflection_probe_set_extents(probe, extents);
 	RS::get_singleton()->reflection_probe_set_origin_offset(probe, origin_offset);
 
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 ReflectionProbe::get_origin_offset() const {
@@ -185,9 +185,10 @@ Vector<Face3> ReflectionProbe::get_faces(uint32_t p_usage_flags) const {
 void ReflectionProbe::_validate_property(PropertyInfo &property) const {
 	if (property.name == "interior/ambient_color" || property.name == "interior/ambient_color_energy") {
 		if (ambient_mode != AMBIENT_COLOR) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
+	VisualInstance3D::_validate_property(property);
 }
 
 void ReflectionProbe::_bind_methods() {
@@ -230,9 +231,9 @@ void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &ReflectionProbe::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &ReflectionProbe::get_update_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Once,Always"), "set_update_mode", "get_update_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Once (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_intensity", "get_intensity");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_EXP_RANGE, "0,16384,0.1,or_greater"), "set_max_distance", "get_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384,0.1,or_greater,exp"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents"), "set_extents", "get_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "origin_offset"), "set_origin_offset", "get_origin_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "box_projection"), "set_enable_box_projection", "is_box_projection_enabled");
@@ -242,7 +243,7 @@ void ReflectionProbe::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_lod_threshold", "get_lod_threshold");
 
 	ADD_GROUP("Ambient", "ambient_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "ambient_mode", PROPERTY_HINT_ENUM, "Disabled,Environment,ConstantColor"), "set_ambient_mode", "get_ambient_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ambient_mode", PROPERTY_HINT_ENUM, "Disabled,Environment,Constant Color"), "set_ambient_mode", "get_ambient_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ambient_color", "get_ambient_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ambient_color_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_color_energy", "get_ambient_color_energy");
 

@@ -1,42 +1,78 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JSON" inherits="Object" version="4.0">
+<class name="JSON" inherits="RefCounted" version="4.0">
 	<brief_description>
-		Helper class for parsing JSON data.
+		Helper class for creating and parsing JSON data.
 	</brief_description>
 	<description>
-		Helper class for parsing JSON data. For usage example and other important hints, see [JSONParseResult].
+		The [JSON] enables all data types to be converted to and from a JSON string. This useful for serializing data to save to a file or send over the network.
+		[method stringify] is used to convert any data type into a JSON string.
+		[method parse] is used to convert any existing JSON data into a [Variant] that can be used within Godot. If successfully parsed, use [method get_data] to retrieve the [Variant], and use [code]typeof[/code] to check if the Variant's type is what you expect. JSON Objects are converted into a [Dictionary], but JSON data can be used to store [Array]s, numbers, [String]s and even just a boolean.
+		[b]Example[/b]
+		[codeblock]
+		var data_to_send = ["a", "b", "c"]
+		var json = JSON.new()
+		var json_string = json.stringify(data_to_send)
+		# Save data
+		# ...
+		# Retrieve data
+		var error = json.parse(json_string)
+		if error == OK:
+		    var data_received = json.get_data()
+		    if typeof(data_received) == TYPE_ARRAY:
+		        print(data_received) # Prints array
+		    else:
+		        print("Unexpected data")
+		else:
+		    print("JSON Parse Error: ", json.get_error_message(), " in ", json_string, " at line ", json.get_error_line())
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="parse">
-			<return type="JSONParseResult">
-			</return>
-			<argument index="0" name="json" type="String">
-			</argument>
+		<method name="get_data" qualifiers="const">
+			<return type="Variant" />
 			<description>
-				Parses a JSON-encoded string and returns a [JSONParseResult] containing the result.
+				Returns the [Variant] containing the data of a successful [method parse].
+				[b]Note:[/b] It will return [code]Null[/code] if the last call to parse was unsuccessful or [method parse] has not yet been called.
 			</description>
 		</method>
-		<method name="print">
-			<return type="String">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
-			<argument index="1" name="indent" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="2" name="sort_keys" type="bool" default="false">
-			</argument>
+		<method name="get_error_line" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns [code]0[/code] if the last call to [method parse] was successful, or the line number where the parse failed.
+			</description>
+		</method>
+		<method name="get_error_message" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns an empty string if the last call to [method parse] was successful, or the error message if it failed.
+			</description>
+		</method>
+		<method name="parse">
+			<return type="int" enum="Error" />
+			<argument index="0" name="json_string" type="String" />
+			<description>
+				Attempts to parse the [code]json_string[/code] provided.
+				Returns an [enum Error]. If the parse was successful, it returns [code]OK[/code] and the result can be retrieved using [method get_data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
+			</description>
+		</method>
+		<method name="stringify">
+			<return type="String" />
+			<argument index="0" name="data" type="Variant" />
+			<argument index="1" name="indent" type="String" default="&quot;&quot;" />
+			<argument index="2" name="sort_keys" type="bool" default="true" />
+			<argument index="3" name="full_precision" type="bool" default="false" />
 			<description>
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
-				Use [code]indent[/code] parameter to pretty print the output.
+				[b]Note:[/b] If [code]full_precision[/code] is true, when stringifying floats, the unreliable digits are stringified in addition to the reliable digits to guarantee exact decoding.
+				Use [code]indent[/code] parameter to pretty stringify the output.
 				[b]Example output:[/b]
 				[codeblock]
-				## JSON.print(my_dictionary)
+				## JSON.stringify(my_dictionary)
 				{"name":"my_dictionary","version":"1.0.0","entities":[{"name":"entity_0","value":"value_0"},{"name":"entity_1","value":"value_1"}]}
 
-				## JSON.print(my_dictionary, "\t")
+				## JSON.stringify(my_dictionary, "\t")
 				{
 				        "name": "my_dictionary",
 				        "version": "1.0.0",
@@ -55,6 +91,4 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

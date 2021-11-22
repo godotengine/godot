@@ -40,8 +40,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup_menu.h"
 
 class EditorNode;
 
@@ -81,16 +79,24 @@ class InspectorDock : public VBoxContainer {
 	Button *resource_new_button;
 	Button *resource_load_button;
 	MenuButton *resource_save_button;
+	MenuButton *resource_extra_button;
 	MenuButton *history_menu;
 	LineEdit *search;
 
+	Button *open_docs_button;
 	MenuButton *object_menu;
 	EditorPath *editor_path;
 
 	Button *warning;
 	AcceptDialog *warning_dialog;
 
+	int current_option = -1;
+	ConfirmationDialog *unique_resources_confirmation;
+	Tree *unique_resources_list_tree;
+
 	void _menu_option(int p_option);
+	void _menu_confirm_current();
+	void _menu_option_confirm(int p_option, bool p_confirmed);
 
 	void _new_resource();
 	void _load_resource(const String &p_type = "");
@@ -100,6 +106,7 @@ class InspectorDock : public VBoxContainer {
 	void _unref_resource();
 	void _copy_resource();
 	void _paste_resource();
+	void _prepare_resource_extra_popup();
 
 	void _warning_pressed();
 	void _resource_created();
@@ -112,7 +119,7 @@ class InspectorDock : public VBoxContainer {
 	void _prepare_history();
 
 	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
-	void _transform_keyed(Object *sp, const String &p_sub, const Transform &p_key);
+	void _transform_keyed(Object *sp, const String &p_sub, const Transform3D &p_key);
 
 protected:
 	static void _bind_methods();

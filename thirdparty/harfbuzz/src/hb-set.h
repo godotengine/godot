@@ -85,11 +85,17 @@ hb_set_get_user_data (hb_set_t           *set,
 HB_EXTERN hb_bool_t
 hb_set_allocation_successful (const hb_set_t *set);
 
+HB_EXTERN hb_set_t *
+hb_set_copy (const hb_set_t *set);
+
 HB_EXTERN void
 hb_set_clear (hb_set_t *set);
 
 HB_EXTERN hb_bool_t
 hb_set_is_empty (const hb_set_t *set);
+
+HB_EXTERN void
+hb_set_invert (hb_set_t *set);
 
 HB_EXTERN hb_bool_t
 hb_set_has (const hb_set_t *set,

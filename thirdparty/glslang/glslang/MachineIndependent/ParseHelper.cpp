@@ -87,6 +87,10 @@ TParseContext::TParseContext(TSymbolTable& symbolTable, TIntermediate& interm, b
     globalInputDefaults.clear();
     globalOutputDefaults.clear();
 
+    globalSharedDefaults.clear();
+    globalSharedDefaults.layoutMatrix = ElmColumnMajor;
+    globalSharedDefaults.layoutPacking = ElpStd430;
+
 #ifndef GLSLANG_WEB
     // "Shaders in the transform
     // feedback capturing mode have an initial global default of
@@ -221,6 +225,118 @@ void TParseContext::parserError(const char* s)
         error(getCurrentLoc(), "compilation terminated", "", "");
 }
 
+void TParseContext::growGlobalUniformBlock(const TSourceLoc& loc, TType& memberType, const TString& memberName, TTypeList* typeList)
+{
+    bool createBlock = globalUniformBlock == nullptr;
+
+    if (createBlock) {
+        globalUniformBinding = intermediate.getGlobalUniformBinding();
+        globalUniformSet = intermediate.getGlobalUniformSet();
+    }
+
+    // use base class function to create/expand block
+    TParseContextBase::growGlobalUniformBlock(loc, memberType, memberName, typeList);
+
+    if (spvVersion.vulkan > 0 && spvVersion.vulkanRelaxed) {
+        // check for a block storage override
+        TBlockStorageClass storageOverride = intermediate.getBlockStorageOverride(getGlobalUniformBlockName());
+        TQualifier& qualifier = globalUniformBlock->getWritableType().getQualifier();
+        qualifier.defaultBlock = true;
+
+        if (storageOverride != EbsNone) {
+            if (createBlock) {
+                // Remap block storage
+                qualifier.setBlockStorage(storageOverride);
+
+                // check that the change didn't create errors
+                blockQualifierCheck(loc, qualifier, false);
+            }
+
+            // remap meber storage as well
+            memberType.getQualifier().setBlockStorage(storageOverride);
+        }
+    }
+}
+
+void TParseContext::growAtomicCounterBlock(int binding, const TSourceLoc& loc, TType& memberType, const TString& memberName, TTypeList* typeList)
+{
+    bool createBlock = atomicCounterBuffers.find(binding) == atomicCounterBuffers.end();
+
+    if (createBlock) {
+        atomicCounterBlockSet = intermediate.getAtomicCounterBlockSet();
+    }
+
+    // use base class function to create/expand block
+    TParseContextBase::growAtomicCounterBlock(binding, loc, memberType, memberName, typeList);
+    TQualifier& qualifier = atomicCounterBuffers[binding]->getWritableType().getQualifier();
+    qualifier.defaultBlock = true;
+
+    if (spvVersion.vulkan > 0 && spvVersion.vulkanRelaxed) {
+        // check for a Block storage override
+        TBlockStorageClass storageOverride = intermediate.getBlockStorageOverride(getAtomicCounterBlockName());
+
+        if (storageOverride != EbsNone) {
+            if (createBlock) {
+                // Remap block storage
+
+                qualifier.setBlockStorage(storageOverride);
+
+                // check that the change didn't create errors
+                blockQualifierCheck(loc, qualifier, false);
+            }
+
+            // remap meber storage as well
+            memberType.getQualifier().setBlockStorage(storageOverride);
+        }
+    }
+}
+
+const char* TParseContext::getGlobalUniformBlockName() const
+{
+    const char* name = intermediate.getGlobalUniformBlockName();
+    if (std::string(name) == "")
+        return "gl_DefaultUniformBlock";
+    else
+        return name;
+}
+void TParseContext::finalizeGlobalUniformBlockLayout(TVariable&)
+{
+}
+void TParseContext::setUniformBlockDefaults(TType& block) const
+{
+    block.getQualifier().layoutPacking = ElpStd140;
+    block.getQualifier().layoutMatrix = ElmColumnMajor;
+}
+
+
+const char* TParseContext::getAtomicCounterBlockName() const
+{
+    const char* name = intermediate.getAtomicCounterBlockName();
+    if (std::string(name) == "")
+        return "gl_AtomicCounterBlock";
+    else
+        return name;
+}
+void TParseContext::finalizeAtomicCounterBlockLayout(TVariable&)
+{
+}
+
+void TParseContext::setAtomicCounterBlockDefaults(TType& block) const
+{
+    block.getQualifier().layoutPacking = ElpStd430;
+    block.getQualifier().layoutMatrix = ElmRowMajor;
+}
+
+void TParseContext::setInvariant(const TSourceLoc& loc, const char* builtin) {
+    TSymbol* symbol = symbolTable.find(builtin);
+    if (symbol && symbol->getType().getQualifier().isPipeOutput()) {
+        if (intermediate.inIoAccessed(builtin))
+            warn(loc, "changing qualification after use", "invariant", builtin);
+        TSymbol* csymbol = symbolTable.copyUp(symbol);
+        csymbol->getWritableType().getQualifier().invariant = true;
+    }
+}
+
 void TParseContext::handlePragma(const TSourceLoc& loc, const TVector<TString>& tokens)
 {
 #ifndef GLSLANG_WEB
@@ -298,8 +414,33 @@ void TParseContext::handlePragma(const TSourceLoc& loc, const TVector<TString>& 
         intermediate.setUseVariablePointers();
     } else if (tokens[0].compare("once") == 0) {
         warn(loc, "not implemented", "#pragma once", "");
-    } else if (tokens[0].compare("glslang_binary_double_output") == 0)
+    } else if (tokens[0].compare("glslang_binary_double_output") == 0) {
         intermediate.setBinaryDoubleOutput();
+    } else if (spvVersion.spv > 0 && tokens[0].compare("STDGL") == 0 &&
+               tokens[1].compare("invariant") == 0 && tokens[3].compare("all") == 0) {
+        intermediate.setInvariantAll();
+        // Set all builtin out variables invariant if declared
+        setInvariant(loc, "gl_Position");
+        setInvariant(loc, "gl_PointSize");
+        setInvariant(loc, "gl_ClipDistance");
+        setInvariant(loc, "gl_CullDistance");
+        setInvariant(loc, "gl_TessLevelOuter");
+        setInvariant(loc, "gl_TessLevelInner");
+        setInvariant(loc, "gl_PrimitiveID");
+        setInvariant(loc, "gl_Layer");
+        setInvariant(loc, "gl_ViewportIndex");
+        setInvariant(loc, "gl_FragDepth");
+        setInvariant(loc, "gl_SampleMask");
+        setInvariant(loc, "gl_ClipVertex");
+        setInvariant(loc, "gl_FrontColor");
+        setInvariant(loc, "gl_BackColor");
+        setInvariant(loc, "gl_FrontSecondaryColor");
+        setInvariant(loc, "gl_BackSecondaryColor");
+        setInvariant(loc, "gl_TexCoord");
+        setInvariant(loc, "gl_FogFragCoord");
+        setInvariant(loc, "gl_FragColor");
+        setInvariant(loc, "gl_FragData");
+    }
 #endif
 }
 
@@ -986,12 +1127,31 @@ TFunction* TParseContext::handleFunctionDeclarator(const TSourceLoc& loc, TFunct
     TSymbol* symbol = symbolTable.find(function.getMangledName(), &builtIn);
     if (symbol && symbol->getAsFunction() && builtIn)
         requireProfile(loc, ~EEsProfile, "redefinition of built-in function");
+#ifndef GLSLANG_WEB
+    // Check the validity of using spirv_literal qualifier
+    for (int i = 0; i < function.getParamCount(); ++i) {
+        if (function[i].type->getQualifier().isSpirvLiteral() && function.getBuiltInOp() != EOpSpirvInst)
+            error(loc, "'spirv_literal' can only be used on functions defined with 'spirv_instruction' for argument",
+                  function.getName().c_str(), "%d", i + 1);
+    }
+
+    // For function declaration with SPIR-V instruction qualifier, always ignore the built-in function and
+    // respect this redeclared one.
+    if (symbol && builtIn && function.getBuiltInOp() == EOpSpirvInst)
+        symbol = nullptr;
+#endif
     const TFunction* prevDec = symbol ? symbol->getAsFunction() : 0;
     if (prevDec) {
         if (prevDec->isPrototyped() && prototype)
             profileRequires(loc, EEsProfile, 300, nullptr, "multiple prototypes for same function");
         if (prevDec->getType() != function.getType())
             error(loc, "overloaded functions must have the same return type", function.getName().c_str(), "");
+#ifndef GLSLANG_WEB
+        if (prevDec->getSpirvInstruction() != function.getSpirvInstruction()) {
+            error(loc, "overloaded functions must have the same qualifiers", function.getName().c_str(),
+                  "spirv_instruction");
+        }
+#endif
         for (int i = 0; i < prevDec->getParamCount(); ++i) {
             if ((*prevDec)[i].type->getQualifier().storage != function[i].type->getQualifier().storage)
                 error(loc, "overloaded functions must have the same parameter storage qualifiers for argument", function[i].type->getStorageQualifierString(), "%d", i+1);
@@ -1131,6 +1291,14 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
 {
     TIntermTyped* result = nullptr;
 
+    if (spvVersion.vulkan != 0 && spvVersion.vulkanRelaxed) {
+        // allow calls that are invalid in Vulkan Semantics to be invisibily
+        // remapped to equivalent valid functions
+        result = vkRelaxedRemapFunctionCall(loc, function, arguments);
+        if (result)
+            return result;
+    }
+
     if (function->getBuiltInOp() == EOpArrayLength)
         result = handleLengthMethod(loc, function, arguments);
     else if (function->getBuiltInOp() != EOpNull) {
@@ -1185,6 +1353,15 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
                         if (lValueErrorCheck(arguments->getLoc(), "assign", arg->getAsTyped()))
                             error(arguments->getLoc(), "Non-L-value cannot be passed for 'out' or 'inout' parameters.", "out", "");
                     }
+#ifndef GLSLANG_WEB
+                    if (formalQualifier.isSpirvLiteral()) {
+                        if (!arg->getAsTyped()->getQualifier().isFrontEndConstant()) {
+                            error(arguments->getLoc(),
+                                  "Non front-end constant expressions cannot be passed for 'spirv_literal' parameters.",
+                                  "spirv_literal", "");
+                        }
+                    }
+#endif
                     const TType& argType = arg->getAsTyped()->getType();
                     const TQualifier& argQualifier = argType.getQualifier();
                     if (argQualifier.isMemory() && (argType.containsOpaque() || argType.isReference())) {
@@ -1239,6 +1416,11 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
             if (builtIn && fnCandidate->getBuiltInOp() != EOpNull) {
                 // A function call mapped to a built-in operation.
                 result = handleBuiltInFunctionCall(loc, arguments, *fnCandidate);
+#ifndef GLSLANG_WEB
+            } else if (fnCandidate->getBuiltInOp() == EOpSpirvInst) {
+                // When SPIR-V instruction qualifier is specified, the function call is still mapped to a built-in operation.
+                result = handleBuiltInFunctionCall(loc, arguments, *fnCandidate);
+#endif
             } else {
                 // This is a function call not mapped to built-in operator.
                 // It could still be a built-in function, but only if PureOperatorBuiltins == false.
@@ -1315,6 +1497,35 @@ TIntermTyped* TParseContext::handleBuiltInFunctionCall(TSourceLoc loc, TIntermNo
                                       static_cast<TIntermTyped*>(arguments)->getCompleteString().c_str());
     } else if (result->getAsOperator())
         builtInOpCheck(loc, function, *result->getAsOperator());
+
+#ifndef GLSLANG_WEB
+    // Special handling for function call with SPIR-V instruction qualifier specified
+    if (function.getBuiltInOp() == EOpSpirvInst) {
+        if (auto agg = result->getAsAggregate()) {
+            // Propogate spirv_by_reference/spirv_literal from parameters to arguments
+            auto& sequence = agg->getSequence();
+            for (unsigned i = 0; i < sequence.size(); ++i) {
+                if (function[i].type->getQualifier().isSpirvByReference())
+                    sequence[i]->getAsTyped()->getQualifier().setSpirvByReference();
+                if (function[i].type->getQualifier().isSpirvLiteral())
+                    sequence[i]->getAsTyped()->getQualifier().setSpirvLiteral();
+            }
+
+            // Attach the function call to SPIR-V intruction
+            agg->setSpirvInstruction(function.getSpirvInstruction());
+        } else if (auto unaryNode = result->getAsUnaryNode()) {
+            // Propogate spirv_by_reference/spirv_literal from parameters to arguments
+            if (function[0].type->getQualifier().isSpirvByReference())
+                unaryNode->getOperand()->getQualifier().setSpirvByReference();
+            if (function[0].type->getQualifier().isSpirvLiteral())
+                unaryNode->getOperand()->getQualifier().setSpirvLiteral();
+
+            // Attach the function call to SPIR-V intruction
+            unaryNode->setSpirvInstruction(function.getSpirvInstruction());
+        } else
+            assert(0);
+    }
+#endif
 
     return result;
 }
@@ -1723,6 +1934,7 @@ void TParseContext::memorySemanticsCheck(const TSourceLoc& loc, const TFunction&
     // Grab the semantics and storage class semantics from the operands, based on opcode
     switch (callNode.getOp()) {
     case EOpAtomicAdd:
+    case EOpAtomicSubtract:
     case EOpAtomicMin:
     case EOpAtomicMax:
     case EOpAtomicAnd:
@@ -1981,7 +2193,13 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             profileRequires(loc, ~EEsProfile, 450, nullptr, feature);
             requireExtensions(loc, 1, &E_GL_AMD_texture_gather_bias_lod, feature);
         }
-
+        // As per GL_ARB_sparse_texture2 extension "Offsets" parameter must be constant integral expression
+        // for sparseTextureGatherOffsetsARB just as textureGatherOffsets
+        if (callNode.getOp() == EOpSparseTextureGatherOffsets) {
+            int offsetsArg = arg0->getType().getSampler().shadow ? 3 : 2;
+            if (!(*argp)[offsetsArg]->getAsConstantUnion())
+                error(loc, "argument must be compile-time constant", "offsets", "");
+        }
         break;
     }
 
@@ -2070,6 +2288,16 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
                               "[gl_MinProgramTexelOffset, gl_MaxProgramTexelOffset]");
                 }
             }
+
+            if (callNode.getOp() == EOpTextureOffset) {
+                TSampler s = arg0->getType().getSampler();
+                if (s.is2D() && s.isArrayed() && s.isShadow()) {
+                    if (isEsProfile())
+                        error(loc, "TextureOffset does not support sampler2DArrayShadow : ", "sampler", "ES Profile");
+                    else if (version <= 420)
+                        error(loc, "TextureOffset does not support sampler2DArrayShadow : ", "sampler", "version <= 420");
+                }
+            }
         }
 
         break;
@@ -2078,6 +2306,10 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
 #ifndef GLSLANG_WEB
     case EOpTraceNV:
         if (!(*argp)[10]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "payload number", "a");
+        break;
+    case EOpTraceRayMotionNV:
+        if (!(*argp)[11]->getAsConstantUnion())
             error(loc, "argument must be compile-time constant", "payload number", "a");
         break;
     case EOpTraceKHR:
@@ -2148,18 +2380,23 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
                 error(loc, "only supported on image with format r64i", fnCandidate.getName().c_str(), "");
             else if (callNode.getType().getBasicType() == EbtUint64 && imageType.getQualifier().getFormat() != ElfR64ui)
                 error(loc, "only supported on image with format r64ui", fnCandidate.getName().c_str(), "");
-        } else {
-            bool isImageAtomicOnFloatAllowed = ((fnCandidate.getName().compare(0, 14, "imageAtomicAdd") == 0) ||
-                (fnCandidate.getName().compare(0, 15, "imageAtomicLoad") == 0) ||
-                (fnCandidate.getName().compare(0, 16, "imageAtomicStore") == 0) ||
-                (fnCandidate.getName().compare(0, 19, "imageAtomicExchange") == 0));
-            if (imageType.getSampler().type == EbtFloat && isImageAtomicOnFloatAllowed &&
-                (fnCandidate.getName().compare(0, 19, "imageAtomicExchange") != 0)) // imageAtomicExchange doesn't require GL_EXT_shader_atomic_float
+        } else if (imageType.getSampler().type == EbtFloat) {
+            if (fnCandidate.getName().compare(0, 19, "imageAtomicExchange") == 0) {
+                // imageAtomicExchange doesn't require an extension
+            } else if ((fnCandidate.getName().compare(0, 14, "imageAtomicAdd") == 0) ||
+                       (fnCandidate.getName().compare(0, 15, "imageAtomicLoad") == 0) ||
+                       (fnCandidate.getName().compare(0, 16, "imageAtomicStore") == 0)) {
                 requireExtensions(loc, 1, &E_GL_EXT_shader_atomic_float, fnCandidate.getName().c_str());
-            if (!isImageAtomicOnFloatAllowed)
+            } else if ((fnCandidate.getName().compare(0, 14, "imageAtomicMin") == 0) ||
+                       (fnCandidate.getName().compare(0, 14, "imageAtomicMax") == 0)) {
+                requireExtensions(loc, 1, &E_GL_EXT_shader_atomic_float2, fnCandidate.getName().c_str());
+            } else {
                 error(loc, "only supported on integer images", fnCandidate.getName().c_str(), "");
-            else if (imageType.getQualifier().getFormat() != ElfR32f && isEsProfile())
+            }
+            if (imageType.getQualifier().getFormat() != ElfR32f && isEsProfile())
                 error(loc, "only supported on image with format r32f", fnCandidate.getName().c_str(), "");
+        } else {
+            error(loc, "not supported on this image type", fnCandidate.getName().c_str(), "");
         }
 
         const size_t maxArgs = imageType.getSampler().isMultiSample() ? 5 : 4;
@@ -2172,6 +2409,7 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
     }
 
     case EOpAtomicAdd:
+    case EOpAtomicSubtract:
     case EOpAtomicMin:
     case EOpAtomicMax:
     case EOpAtomicAnd:
@@ -2187,17 +2425,37 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             memorySemanticsCheck(loc, fnCandidate, callNode);
             if ((callNode.getOp() == EOpAtomicAdd || callNode.getOp() == EOpAtomicExchange ||
                 callNode.getOp() == EOpAtomicLoad || callNode.getOp() == EOpAtomicStore) &&
-                (arg0->getType().isFloatingDomain())) {
+                (arg0->getType().getBasicType() == EbtFloat ||
+                 arg0->getType().getBasicType() == EbtDouble)) {
                 requireExtensions(loc, 1, &E_GL_EXT_shader_atomic_float, fnCandidate.getName().c_str());
+            } else if ((callNode.getOp() == EOpAtomicAdd || callNode.getOp() == EOpAtomicExchange ||
+                        callNode.getOp() == EOpAtomicLoad || callNode.getOp() == EOpAtomicStore ||
+                        callNode.getOp() == EOpAtomicMin || callNode.getOp() == EOpAtomicMax) &&
+                       arg0->getType().isFloatingDomain()) {
+                requireExtensions(loc, 1, &E_GL_EXT_shader_atomic_float2, fnCandidate.getName().c_str());
             }
         } else if (arg0->getType().getBasicType() == EbtInt64 || arg0->getType().getBasicType() == EbtUint64) {
             const char* const extensions[2] = { E_GL_NV_shader_atomic_int64,
                                                 E_GL_EXT_shader_atomic_int64 };
             requireExtensions(loc, 2, extensions, fnCandidate.getName().c_str());
         } else if ((callNode.getOp() == EOpAtomicAdd || callNode.getOp() == EOpAtomicExchange) &&
-                   (arg0->getType().isFloatingDomain())) {
+                   (arg0->getType().getBasicType() == EbtFloat ||
+                    arg0->getType().getBasicType() == EbtDouble)) {
             requireExtensions(loc, 1, &E_GL_EXT_shader_atomic_float, fnCandidate.getName().c_str());
+        } else if ((callNode.getOp() == EOpAtomicAdd || callNode.getOp() == EOpAtomicExchange ||
+                    callNode.getOp() == EOpAtomicLoad || callNode.getOp() == EOpAtomicStore ||
+                    callNode.getOp() == EOpAtomicMin || callNode.getOp() == EOpAtomicMax) &&
+                   arg0->getType().isFloatingDomain()) {
+            requireExtensions(loc, 1, &E_GL_EXT_shader_atomic_float2, fnCandidate.getName().c_str());
         }
+
+        const TIntermTyped* base = TIntermediate::findLValueBase(arg0, true , true);
+        const TType* refType = (base->getType().isReference()) ? base->getType().getReferentType() : nullptr;
+        const TQualifier& qualifier = (refType != nullptr) ? refType->getQualifier() : base->getType().getQualifier();
+        if (qualifier.storage != EvqShared && qualifier.storage != EvqBuffer)
+            error(loc,"Atomic memory function can only be used for shader storage block member or shared variable.",
+            fnCandidate.getName().c_str(), "");
+
         break;
     }
 
@@ -2752,6 +3010,11 @@ void TParseContext::rValueErrorCheck(const TSourceLoc& loc, const char* op, TInt
     if (!(symNode && symNode->getQualifier().isWriteOnly())) // base class checks
         if (symNode && symNode->getQualifier().isExplicitInterpolation())
             error(loc, "can't read from explicitly-interpolated object: ", op, symNode->getName().c_str());
+
+    // local_size_{xyz} must be assigned or specialized before gl_WorkGroupSize can be assigned. 
+    if(node->getQualifier().builtIn == EbvWorkGroupSize &&
+       !(intermediate.isLocalSizeSet() || intermediate.isLocalSizeSpecialized()))
+        error(loc, "can't read from gl_WorkGroupSize before a fixed workgroup size has been declared", op, "");
 }
 
 //
@@ -2794,7 +3057,8 @@ void TParseContext::reservedErrorCheck(const TSourceLoc& loc, const TString& ide
     // "Identifiers starting with "gl_" are reserved for use by OpenGL, and may not be
     // declared in a shader; this results in a compile-time error."
     if (! symbolTable.atBuiltInLevel()) {
-        if (builtInName(identifier))
+        if (builtInName(identifier) && !extensionTurnedOn(E_GL_EXT_spirv_intrinsics))
+            // The extension GL_EXT_spirv_intrinsics allows us to declare identifiers starting with "gl_".
             error(loc, "identifiers starting with \"gl_\" are reserved", identifier.c_str(), "");
 
         // "__" are not supposed to be an error.  ES 300 (and desktop) added the clarification:
@@ -2802,7 +3066,8 @@ void TParseContext::reservedErrorCheck(const TSourceLoc& loc, const TString& ide
         // reserved; using such a name does not itself result in an error, but may result
         // in undefined behavior."
         // however, before that, ES tests required an error.
-        if (identifier.find("__") != TString::npos) {
+        if (identifier.find("__") != TString::npos && !extensionTurnedOn(E_GL_EXT_spirv_intrinsics)) {
+            // The extension GL_EXT_spirv_intrinsics allows us to declare identifiers starting with "__".
             if (isEsProfile() && version < 300)
                 error(loc, "identifiers containing consecutive underscores (\"__\") are reserved, and an error if version < 300", identifier.c_str(), "");
             else
@@ -2823,14 +3088,16 @@ void TParseContext::reservedPpErrorCheck(const TSourceLoc& loc, const char* iden
     // single underscore) are also reserved, and defining such a name results in a
     // compile-time error."
     // however, before that, ES tests required an error.
-    if (strncmp(identifier, "GL_", 3) == 0)
+    if (strncmp(identifier, "GL_", 3) == 0 && !extensionTurnedOn(E_GL_EXT_spirv_intrinsics))
+        // The extension GL_EXT_spirv_intrinsics allows us to declare macros prefixed with "GL_".
         ppError(loc, "names beginning with \"GL_\" can't be (un)defined:", op,  identifier);
     else if (strncmp(identifier, "defined", 8) == 0)
         if (relaxedErrors())
             ppWarn(loc, "\"defined\" is (un)defined:", op,  identifier);
         else
             ppError(loc, "\"defined\" can't be (un)defined:", op,  identifier);
-    else if (strstr(identifier, "__") != 0) {
+    else if (strstr(identifier, "__") != 0 && !extensionTurnedOn(E_GL_EXT_spirv_intrinsics)) {
+        // The extension GL_EXT_spirv_intrinsics allows us to declare macros prefixed with "__".
         if (isEsProfile() && version >= 300 &&
             (strcmp(identifier, "__LINE__") == 0 ||
              strcmp(identifier, "__FILE__") == 0 ||
@@ -2978,6 +3245,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     bool matrixInMatrix = false;
     bool arrayArg = false;
     bool floatArgument = false;
+    bool intArgument = false;
     for (int arg = 0; arg < function.getParamCount(); ++arg) {
         if (function[arg].type->isArray()) {
             if (function[arg].type->isUnsizedArray()) {
@@ -3008,6 +3276,8 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             specConstType = true;
         if (function[arg].type->isFloatingDomain())
             floatArgument = true;
+        if (function[arg].type->isIntegerDomain())
+            intArgument = true;
         if (type.isStruct()) {
             if (function[arg].type->contains16BitFloat()) {
                 requireFloat16Arithmetic(loc, "constructor", "can't construct structure containing 16-bit type");
@@ -3113,6 +3383,15 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
                 // and aren't making an array.
                 makeSpecConst = ! floatArgument && ! type.isArray();
                 break;
+
+            case EOpConstructVec2:
+            case EOpConstructVec3:
+            case EOpConstructVec4:
+                // This was the list of valid ones, if they aren't converting from int
+                // and aren't making an array.
+                makeSpecConst = ! intArgument && !type.isArray();
+                break;
+
             default:
                 // anything else wasn't white-listed in the spec as a conversion
                 makeSpecConst = false;
@@ -3379,7 +3658,7 @@ void TParseContext::transparentOpaqueCheck(const TSourceLoc& loc, const TType& t
 
     if (type.containsNonOpaque()) {
         // Vulkan doesn't allow transparent uniforms outside of blocks
-        if (spvVersion.vulkan > 0)
+        if (spvVersion.vulkan > 0 && !spvVersion.vulkanRelaxed)
             vulkanRemoved(loc, "non-opaque uniforms outside a block");
         // OpenGL wants locations on these (unless they are getting automapped)
         if (spvVersion.openGl > 0 && !type.getQualifier().hasLocation() && !intermediate.getAutoMapLocations())
@@ -3419,6 +3698,8 @@ void TParseContext::globalQualifierFixCheck(const TSourceLoc& loc, TQualifier& q
         profileRequires(loc, ENoProfile, 130, nullptr, "out for stage outputs");
         profileRequires(loc, EEsProfile, 300, nullptr, "out for stage outputs");
         qualifier.storage = EvqVaryingOut;
+        if (intermediate.isInvariantAll())
+            qualifier.invariant = true;
         break;
     case EvqInOut:
         qualifier.storage = EvqVaryingIn;
@@ -3435,7 +3716,7 @@ void TParseContext::globalQualifierFixCheck(const TSourceLoc& loc, TQualifier& q
         if (blockName == nullptr &&
             qualifier.layoutPacking == ElpStd430)
         {
-            error(loc, "it is invalid to declare std430 qualifier on uniform", "", "");
+            requireExtensions(loc, 1, &E_GL_EXT_scalar_block_layout, "default std430 layout for uniform");
         }
         break;
     default:
@@ -3444,6 +3725,14 @@ void TParseContext::globalQualifierFixCheck(const TSourceLoc& loc, TQualifier& q
 
     if (!nonuniformOkay && qualifier.isNonUniform())
         error(loc, "for non-parameter, can only apply to 'in' or no storage qualifier", "nonuniformEXT", "");
+
+#ifndef GLSLANG_WEB
+    if (qualifier.isSpirvByReference())
+        error(loc, "can only apply to parameter", "spirv_by_reference", "");
+
+    if (qualifier.isSpirvLiteral())
+        error(loc, "can only apply to parameter", "spirv_literal", "");
+#endif
 
     // Storage qualifier isn't ready for memberQualifierCheck, we should skip invariantCheck for it.
     if (!isMemberCheck || structNestingLevel > 0)
@@ -3704,6 +3993,41 @@ void TParseContext::mergeQualifiers(const TSourceLoc& loc, TQualifier& dst, cons
     MERGE_SINGLETON(readonly);
     MERGE_SINGLETON(writeonly);
     MERGE_SINGLETON(nonUniform);
+#endif
+
+#ifndef GLSLANG_WEB
+    // SPIR-V storage class qualifier (GL_EXT_spirv_intrinsics)
+    dst.spirvStorageClass = src.spirvStorageClass;
+
+    // SPIR-V decorate qualifiers (GL_EXT_spirv_intrinsics)
+    if (src.hasSprivDecorate()) {
+        if (dst.hasSprivDecorate()) {
+            const TSpirvDecorate& srcSpirvDecorate = src.getSpirvDecorate();
+            TSpirvDecorate& dstSpirvDecorate = dst.getSpirvDecorate();
+            for (auto& decorate : srcSpirvDecorate.decorates) {
+                if (dstSpirvDecorate.decorates.find(decorate.first) != dstSpirvDecorate.decorates.end())
+                    error(loc, "too many SPIR-V decorate qualifiers", "spirv_decorate", "(decoration=%u)", decorate.first);
+                else
+                    dstSpirvDecorate.decorates.insert(decorate);
+            }
+
+            for (auto& decorateId : srcSpirvDecorate.decorateIds) {
+                if (dstSpirvDecorate.decorateIds.find(decorateId.first) != dstSpirvDecorate.decorateIds.end())
+                    error(loc, "too many SPIR-V decorate qualifiers", "spirv_decorate_id", "(decoration=%u)", decorateId.first);
+                else
+                    dstSpirvDecorate.decorateIds.insert(decorateId);
+            }
+
+            for (auto& decorateString : srcSpirvDecorate.decorateStrings) {
+                if (dstSpirvDecorate.decorates.find(decorateString.first) != dstSpirvDecorate.decorates.end())
+                    error(loc, "too many SPIR-V decorate qualifiers", "spirv_decorate_string", "(decoration=%u)", decorateString.first);
+                else
+                    dstSpirvDecorate.decorates.insert(decorateString);
+            }
+        } else {
+            dst.spirvDecorate = src.spirvDecorate;
+        }
+    }
 #endif
 
     if (repeated)
@@ -4292,8 +4616,10 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
         // If it wasn't at a built-in level, then it's already been redeclared;
         // that is, this is a redeclaration of a redeclaration; reuse that initial
         // redeclaration.  Otherwise, make the new one.
-        if (builtIn)
+        if (builtIn) {
             makeEditable(symbol);
+            symbolTable.amendSymbolIdLevel(*symbol);
+        }
 
         // Now, modify the type of the copy, as per the type of the current redeclaration.
 
@@ -4667,6 +4993,17 @@ void TParseContext::paramCheckFix(const TSourceLoc& loc, const TQualifier& quali
     }
     if (qualifier.isNonUniform())
         type.getQualifier().nonUniform = qualifier.nonUniform;
+#ifndef GLSLANG_WEB
+    if (qualifier.isSpirvByReference())
+        type.getQualifier().setSpirvByReference();
+    if (qualifier.isSpirvLiteral()) {
+        if (type.getBasicType() == EbtFloat || type.getBasicType() == EbtInt || type.getBasicType() == EbtUint ||
+            type.getBasicType() == EbtBool)
+            type.getQualifier().setSpirvLiteral();
+        else
+            error(loc, "cannot use spirv_literal qualifier", type.getBasicTypeString().c_str(), "");
+#endif
+    }
 
     paramCheckFixStorage(loc, qualifier.storage, type);
 }
@@ -4822,7 +5159,7 @@ void TParseContext::inductiveLoopCheck(const TSourceLoc& loc, TIntermNode* init,
     }
 
     // get the unique id of the loop index
-    int loopIndex = binaryInit->getLeft()->getAsSymbolNode()->getId();
+    long long loopIndex = binaryInit->getLeft()->getAsSymbolNode()->getId();
     inductiveLoopIds.insert(loopIndex);
 
     // condition's form must be "loop-index relational-operator constant-expression"
@@ -5008,14 +5345,22 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         return;
     }
     if (id == TQualifier::getLayoutPackingString(ElpPacked)) {
-        if (spvVersion.spv != 0)
-            spvRemoved(loc, "packed");
+        if (spvVersion.spv != 0) {
+            if (spvVersion.vulkanRelaxed)
+                return; // silently ignore qualifier
+            else
+                spvRemoved(loc, "packed");
+        }
         publicType.qualifier.layoutPacking = ElpPacked;
         return;
     }
     if (id == TQualifier::getLayoutPackingString(ElpShared)) {
-        if (spvVersion.spv != 0)
-            spvRemoved(loc, "shared");
+        if (spvVersion.spv != 0) {
+            if (spvVersion.vulkanRelaxed)
+                return; // silently ignore qualifier
+            else
+                spvRemoved(loc, "shared");
+        }
         publicType.qualifier.layoutPacking = ElpShared;
         return;
     }
@@ -5465,7 +5810,7 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         if (! IsPow2(value))
             error(loc, "must be a power of 2", "buffer_reference_align", "");
         else
-            publicType.qualifier.layoutBufferReferenceAlign = (unsigned int)std::log2(value);
+            publicType.qualifier.layoutBufferReferenceAlign = IntLog2(value);
         if (nonLiteral)
             error(loc, "needs a literal integer", "buffer_reference_align", "");
         return;
@@ -5726,6 +6071,9 @@ void TParseContext::layoutObjectCheck(const TSourceLoc& loc, const TSymbol& symb
         case EvqVaryingIn:
         case EvqVaryingOut:
             if (!type.getQualifier().isTaskMemory() &&
+#ifndef GLSLANG_WEB
+                !type.getQualifier().hasSprivDecorate() &&
+#endif
                 (type.getBasicType() != EbtBlock ||
                  (!(*type.getStruct())[0].type->getQualifier().hasLocation() &&
                    (*type.getStruct())[0].type->getQualifier().builtIn == EbvNone)))
@@ -5756,6 +6104,8 @@ void TParseContext::layoutObjectCheck(const TSourceLoc& loc, const TSymbol& symb
                     error(loc, "can only specify on a uniform block", "push_constant", "");
                 if (qualifier.isShaderRecord())
                     error(loc, "can only specify on a buffer block", "shaderRecordNV", "");
+                if (qualifier.hasLocation() && type.isAtomic())
+                    error(loc, "cannot specify on atomic counter", "location", "");
             }
             break;
         default:
@@ -5785,6 +6135,11 @@ void TParseContext::layoutMemberLocationArrayCheck(const TSourceLoc& loc, bool m
 // Do layout error checking with respect to a type.
 void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
 {
+#ifndef GLSLANG_WEB
+    if (extensionTurnedOn(E_GL_EXT_spirv_intrinsics))
+        return; // Skip any check if GL_EXT_spirv_intrinsics is turned on
+#endif
+
     const TQualifier& qualifier = type.getQualifier();
 
     // first, intra-layout qualifier-only error checking
@@ -5893,16 +6248,12 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         if (type.getBasicType() == EbtSampler) {
             int lastBinding = qualifier.layoutBinding;
             if (type.isArray()) {
-                if (spvVersion.vulkan > 0)
-                    lastBinding += 1;
-                else {
+                if (spvVersion.vulkan == 0) {
                     if (type.isSizedArray())
-                        lastBinding += type.getCumulativeArraySize();
+                        lastBinding += (type.getCumulativeArraySize() - 1);
                     else {
-                        lastBinding += 1;
 #ifndef GLSLANG_WEB
-                        if (spvVersion.vulkan == 0)
-                            warn(loc, "assuming binding count of one for compile-time checking of binding numbers for unsized array", "[]", "");
+                        warn(loc, "assuming binding count of one for compile-time checking of binding numbers for unsized array", "[]", "");
 #endif
                     }
                 }
@@ -5912,7 +6263,7 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
                 error(loc, "sampler binding not less than gl_MaxCombinedTextureImageUnits", "binding", type.isArray() ? "(using array)" : "");
 #endif
         }
-        if (type.isAtomic()) {
+        if (type.isAtomic() && !spvVersion.vulkanRelaxed) {
             if (qualifier.layoutBinding >= (unsigned int)resources.maxAtomicCounterBindings) {
                 error(loc, "atomic_uint binding is too large; see gl_MaxAtomicCounterBindings", "binding", "");
                 return;
@@ -6026,12 +6377,28 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
     }
 }
 
+static bool storageCanHaveLayoutInBlock(const enum TStorageQualifier storage)
+{
+    switch (storage) {
+    case EvqUniform:
+    case EvqBuffer:
+    case EvqShared:
+        return true;
+    default:
+        return false;
+    }
+}
+
 // Do layout error checking that can be done within a layout qualifier proper, not needing to know
 // if there are blocks, atomic counters, variables, etc.
 void TParseContext::layoutQualifierCheck(const TSourceLoc& loc, const TQualifier& qualifier)
 {
-    if (qualifier.storage == EvqShared && qualifier.hasLayout())
-        error(loc, "cannot apply layout qualifiers to a shared variable", "shared", "");
+    if (qualifier.storage == EvqShared && qualifier.hasLayout()) {
+        if (spvVersion.spv > 0 && spvVersion.spv < EShTargetSpv_1_4) {
+            error(loc, "shared block requires at least SPIR-V 1.4", "shared block", "");
+        }
+        profileRequires(loc, EEsProfile | ECoreProfile | ECompatibilityProfile, 0, E_GL_EXT_shared_memory_block, "shared block");
+    }
 
     // "It is a compile-time error to use *component* without also specifying the location qualifier (order does not matter)."
     if (qualifier.hasComponent() && ! qualifier.hasLocation())
@@ -6114,7 +6481,7 @@ void TParseContext::layoutQualifierCheck(const TSourceLoc& loc, const TQualifier
             error(loc, "can only be used on an output", "xfb layout qualifier", "");
     }
     if (qualifier.hasUniformLayout()) {
-        if (! qualifier.isUniformOrBuffer() && !qualifier.isTaskMemory()) {
+        if (!storageCanHaveLayoutInBlock(qualifier.storage) && !qualifier.isTaskMemory()) {
             if (qualifier.hasMatrix() || qualifier.hasPacking())
                 error(loc, "matrix or packing qualifiers can only be used on a uniform or buffer", "layout", "");
             if (qualifier.hasOffset() || qualifier.hasAlign())
@@ -6273,8 +6640,11 @@ const TFunction* TParseContext::findFunction(const TSourceLoc& loc, const TFunct
                                 extensionTurnedOn(E_GL_EXT_shader_explicit_arithmetic_types_float64);
 
     if (isEsProfile())
-        function = (extensionTurnedOn(E_GL_EXT_shader_implicit_conversions) && version >= 310) ?
-                    findFunction120(loc, call, builtIn) : findFunctionExact(loc, call, builtIn);
+        function = (explicitTypesEnabled && version >= 310)
+                   ? findFunctionExplicitTypes(loc, call, builtIn)
+                   : ((extensionTurnedOn(E_GL_EXT_shader_implicit_conversions) && version >= 310)
+                      ? findFunction120(loc, call, builtIn)
+                      : findFunctionExact(loc, call, builtIn));
     else if (version < 120)
         function = findFunctionExact(loc, call, builtIn);
     else if (version < 400)
@@ -6566,6 +6936,68 @@ const TFunction* TParseContext::findFunctionExplicitTypes(const TSourceLoc& loc,
     return bestMatch;
 }
 
+//
+// Adjust function calls that aren't declared in Vulkan to a
+// calls with equivalent effects
+//
+TIntermTyped* TParseContext::vkRelaxedRemapFunctionCall(const TSourceLoc& loc, TFunction* function, TIntermNode* arguments)
+{
+    TIntermTyped* result = nullptr;
+
+#ifndef GLSLANG_WEB
+    if (function->getBuiltInOp() != EOpNull) {
+        return nullptr;
+    }
+
+    if (function->getName() == "atomicCounterIncrement") {
+        // change atomicCounterIncrement into an atomicAdd of 1
+        TString name("atomicAdd");
+        TType uintType(EbtUint);
+
+        TFunction realFunc(&name, function->getType());
+
+        for (int i = 0; i < function->getParamCount(); ++i) {
+            realFunc.addParameter((*function)[i]);
+        }
+
+        TParameter tmpP = { 0, &uintType };
+        realFunc.addParameter(tmpP);
+        arguments = intermediate.growAggregate(arguments, intermediate.addConstantUnion(1, loc, true));
+
+        result = handleFunctionCall(loc, &realFunc, arguments);
+    } else if (function->getName() == "atomicCounterDecrement") {
+        // change atomicCounterDecrement into an atomicAdd with -1
+        // and subtract 1 from result, to return post-decrement value
+        TString name("atomicAdd");
+        TType uintType(EbtUint);
+
+        TFunction realFunc(&name, function->getType());
+
+        for (int i = 0; i < function->getParamCount(); ++i) {
+            realFunc.addParameter((*function)[i]);
+        }
+
+        TParameter tmpP = { 0, &uintType };
+        realFunc.addParameter(tmpP);
+        arguments = intermediate.growAggregate(arguments, intermediate.addConstantUnion(-1, loc, true));
+
+        result = handleFunctionCall(loc, &realFunc, arguments);
+
+        // post decrement, so that it matches AtomicCounterDecrement semantics
+        if (result) {
+            result = handleBinaryMath(loc, "-", EOpSub, result, intermediate.addConstantUnion(1, loc, true));
+        }
+    } else if (function->getName() == "atomicCounter") {
+        // change atomicCounter into a direct read of the variable
+        if (arguments->getAsTyped()) {
+            result = arguments->getAsTyped();
+        }
+    }
+#endif
+
+    return result;
+}
+
 // When a declaration includes a type, but not a variable name, it can be used
 // to establish defaults.
 void TParseContext::declareTypeDefaults(const TSourceLoc& loc, const TPublicType& publicType)
@@ -6588,6 +7020,91 @@ void TParseContext::declareTypeDefaults(const TSourceLoc& loc, const TPublicType
     if (publicType.qualifier.hasLayout() && !publicType.qualifier.hasBufferReference())
         warn(loc, "useless application of layout qualifier", "layout", "");
 #endif
+}
+
+bool TParseContext::vkRelaxedRemapUniformVariable(const TSourceLoc& loc, TString& identifier, const TPublicType&,
+    TArraySizes*, TIntermTyped* initializer, TType& type)
+{
+    if (parsingBuiltins || symbolTable.atBuiltInLevel() || !symbolTable.atGlobalLevel() ||
+        type.getQualifier().storage != EvqUniform ||
+        !(type.containsNonOpaque()
+#ifndef GLSLANG_WEB
+            || type.getBasicType() == EbtAtomicUint
+#endif
+        )) {
+        return false;
+    }
+
+    if (type.getQualifier().hasLocation()) {
+        warn(loc, "ignoring layout qualifier for uniform", identifier.c_str(), "location");
+        type.getQualifier().layoutLocation = TQualifier::layoutLocationEnd;
+    }
+
+    if (initializer) {
+        warn(loc, "Ignoring initializer for uniform", identifier.c_str(), "");
+        initializer = nullptr;
+    }
+
+    if (type.isArray()) {
+        // do array size checks here
+        arraySizesCheck(loc, type.getQualifier(), type.getArraySizes(), initializer, false);
+
+        if (arrayQualifierError(loc, type.getQualifier()) || arrayError(loc, type)) {
+            error(loc, "array param error", identifier.c_str(), "");
+        }
+    }
+
+    // do some checking on the type as it was declared
+    layoutTypeCheck(loc, type);
+
+    int bufferBinding = TQualifier::layoutBindingEnd;
+    TVariable* updatedBlock = nullptr;
+
+#ifndef GLSLANG_WEB
+    // Convert atomic_uint into members of a buffer block
+    if (type.isAtomic()) {
+        type.setBasicType(EbtUint);
+        type.getQualifier().storage = EvqBuffer;
+
+        type.getQualifier().volatil = true;
+        type.getQualifier().coherent = true;
+
+        // xxTODO: use logic from fixOffset() to apply explicit member offset
+        bufferBinding = type.getQualifier().layoutBinding;
+        type.getQualifier().layoutBinding = TQualifier::layoutBindingEnd;
+        type.getQualifier().explicitOffset = false;
+        growAtomicCounterBlock(bufferBinding, loc, type, identifier, nullptr);
+        updatedBlock = atomicCounterBuffers[bufferBinding];
+    }
+#endif
+
+    if (!updatedBlock) {
+        growGlobalUniformBlock(loc, type, identifier, nullptr);
+        updatedBlock = globalUniformBlock;
+    }
+
+    //
+    //      don't assign explicit member offsets here
+    //      if any are assigned, need to be updated here and in the merge/link step
+    // fixBlockUniformOffsets(updatedBlock->getWritableType().getQualifier(), *updatedBlock->getWritableType().getWritableStruct());
+
+    // checks on update buffer object
+    layoutObjectCheck(loc, *updatedBlock);
+
+    TSymbol* symbol = symbolTable.find(identifier);
+
+    if (!symbol) {
+        if (updatedBlock == globalUniformBlock)
+            error(loc, "error adding uniform to default uniform block", identifier.c_str(), "");
+        else
+            error(loc, "error adding atomic counter to atomic counter block", identifier.c_str(), "");
+        return false;
+    }
+
+    // merge qualifiers
+    mergeObjectLayoutQualifiers(updatedBlock->getWritableType().getQualifier(), type.getQualifier(), true);
+
+    return true;
 }
 
 //
@@ -6701,6 +7218,14 @@ TIntermNode* TParseContext::declareVariable(const TSourceLoc& loc, TString& iden
     if (symbol == nullptr)
         reservedErrorCheck(loc, identifier);
 
+    if (symbol == nullptr && spvVersion.vulkan > 0 && spvVersion.vulkanRelaxed) {
+        bool remapped = vkRelaxedRemapUniformVariable(loc, identifier, publicType, arraySizes, initializer, type);
+
+        if (remapped) {
+            return nullptr;
+        }
+    }
+
     inheritGlobalDefaults(type.getQualifier());
 
     // Declare the variable
@@ -6808,6 +7333,11 @@ TVariable* TParseContext::declareNonArray(const TSourceLoc& loc, const TString& 
 //
 TIntermNode* TParseContext::executeInitializer(const TSourceLoc& loc, TIntermTyped* initializer, TVariable* variable)
 {
+    // A null initializer is an aggregate that hasn't had an op assigned yet
+    // (still EOpNull, no relation to nullInit), and has no children.
+    bool nullInit = initializer->getAsAggregate() && initializer->getAsAggregate()->getOp() == EOpNull &&
+        initializer->getAsAggregate()->getSequence().size() == 0;
+
     //
     // Identifier must be of type constant, a global, or a temporary, and
     // starting at version 120, desktop allows uniforms to have initializers.
@@ -6815,9 +7345,36 @@ TIntermNode* TParseContext::executeInitializer(const TSourceLoc& loc, TIntermTyp
     TStorageQualifier qualifier = variable->getType().getQualifier().storage;
     if (! (qualifier == EvqTemporary || qualifier == EvqGlobal || qualifier == EvqConst ||
            (qualifier == EvqUniform && !isEsProfile() && version >= 120))) {
-        error(loc, " cannot initialize this type of qualifier ", variable->getType().getStorageQualifierString(), "");
+        if (qualifier == EvqShared) {
+            // GL_EXT_null_initializer allows this for shared, if it's a null initializer
+            if (nullInit) {
+                const char* feature = "initialization with shared qualifier";
+                profileRequires(loc, EEsProfile, 0, E_GL_EXT_null_initializer, feature);
+                profileRequires(loc, ~EEsProfile, 0, E_GL_EXT_null_initializer, feature);
+            } else {
+                error(loc, "initializer can only be a null initializer ('{}')", "shared", "");
+            }
+        } else {
+            error(loc, " cannot initialize this type of qualifier ",
+                  variable->getType().getStorageQualifierString(), "");
+            return nullptr;
+        }
+    }
+
+    if (nullInit) {
+        // only some types can be null initialized
+        if (variable->getType().containsUnsizedArray()) {
+            error(loc, "null initializers can't size unsized arrays", "{}", "");
+            return nullptr;
+        }
+        if (variable->getType().containsOpaque()) {
+            error(loc, "null initializers can't be used on opaque values", "{}", "");
+            return nullptr;
+        }
+        variable->getWritableType().getQualifier().setNullInit();
         return nullptr;
     }
+
     arrayObjectCheck(loc, variable->getType(), "array initializer");
 
     //
@@ -6861,13 +7418,15 @@ TIntermNode* TParseContext::executeInitializer(const TSourceLoc& loc, TIntermTyp
 
     // Uniforms require a compile-time constant initializer
     if (qualifier == EvqUniform && ! initializer->getType().getQualifier().isFrontEndConstant()) {
-        error(loc, "uniform initializers must be constant", "=", "'%s'", variable->getType().getCompleteString().c_str());
+        error(loc, "uniform initializers must be constant", "=", "'%s'",
+              variable->getType().getCompleteString().c_str());
         variable->getWritableType().getQualifier().makeTemporary();
         return nullptr;
     }
     // Global consts require a constant initializer (specialization constant is okay)
     if (qualifier == EvqConst && symbolTable.atGlobalLevel() && ! initializer->getType().getQualifier().isConstant()) {
-        error(loc, "global const initializers must be constant", "=", "'%s'", variable->getType().getCompleteString().c_str());
+        error(loc, "global const initializers must be constant", "=", "'%s'",
+              variable->getType().getCompleteString().c_str());
         variable->getWritableType().getQualifier().makeTemporary();
         return nullptr;
     }
@@ -6887,7 +7446,8 @@ TIntermNode* TParseContext::executeInitializer(const TSourceLoc& loc, TIntermTyp
         // "In declarations of global variables with no storage qualifier or with a const
         // qualifier any initializer must be a constant expression."
         if (symbolTable.atGlobalLevel() && ! initializer->getType().getQualifier().isConstant()) {
-            const char* initFeature = "non-constant global initializer (needs GL_EXT_shader_non_constant_global_initializers)";
+            const char* initFeature =
+                "non-constant global initializer (needs GL_EXT_shader_non_constant_global_initializers)";
             if (isEsProfile()) {
                 if (relaxedErrors() && ! extensionTurnedOn(E_GL_EXT_shader_non_constant_global_initializers))
                     warn(loc, "not allowed in this version", initFeature, "");
@@ -6901,7 +7461,8 @@ TIntermNode* TParseContext::executeInitializer(const TSourceLoc& loc, TIntermTyp
         // Compile-time tagging of the variable with its constant value...
 
         initializer = intermediate.addConversion(EOpAssign, variable->getType(), initializer);
-        if (! initializer || ! initializer->getType().getQualifier().isConstant() || variable->getType() != initializer->getType()) {
+        if (! initializer || ! initializer->getType().getQualifier().isConstant() ||
+            variable->getType() != initializer->getType()) {
             error(loc, "non-matching or non-convertible constant type for const initializer",
                   variable->getType().getStorageQualifierString(), "");
             variable->getWritableType().getQualifier().makeTemporary();
@@ -7557,6 +8118,8 @@ void TParseContext::inheritMemoryQualifiers(const TQualifier& from, TQualifier& 
 void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, const TString* instanceName,
     TArraySizes* arraySizes)
 {
+    if (spvVersion.vulkan > 0 && spvVersion.vulkanRelaxed)
+        blockStorageRemap(loc, blockName, currentBlockQualifier);
     blockStageIoCheck(loc, currentBlockQualifier);
     blockQualifierCheck(loc, currentBlockQualifier, instanceName != nullptr);
     if (arraySizes != nullptr) {
@@ -7583,6 +8146,10 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
             memberQualifier.perViewNV = currentBlockQualifier.perViewNV;
         if (currentBlockQualifier.perTaskNV)
             memberQualifier.perTaskNV = currentBlockQualifier.perTaskNV;
+        if (memberQualifier.storage == EvqSpirvStorageClass)
+            error(memberLoc, "member cannot have a spirv_storage_class qualifier", memberType.getFieldName().c_str(), "");
+        if (memberQualifier.hasSprivDecorate() && !memberQualifier.getSpirvDecorate().decorateIds.empty())
+            error(memberLoc, "member cannot have a spirv_decorate_id qualifier", memberType.getFieldName().c_str(), "");
 #endif
         if ((currentBlockQualifier.storage == EvqUniform || currentBlockQualifier.storage == EvqBuffer) && (memberQualifier.isInterpolation() || memberQualifier.isAuxiliary()))
             error(memberLoc, "member of uniform or buffer block cannot have an auxiliary or interpolation qualifier", memberType.getFieldName().c_str(), "");
@@ -7624,6 +8191,7 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
     case EvqBuffer:     defaultQualification = globalBufferDefaults;     break;
     case EvqVaryingIn:  defaultQualification = globalInputDefaults;      break;
     case EvqVaryingOut: defaultQualification = globalOutputDefaults;     break;
+    case EvqShared:     defaultQualification = globalSharedDefaults;     break;
     default:            defaultQualification.clear();                    break;
     }
 
@@ -7845,6 +8413,17 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
     trackLinkage(variable);
 }
 
+//
+// allow storage type of block to be remapped at compile time
+//
+void TParseContext::blockStorageRemap(const TSourceLoc&, const TString* instanceName, TQualifier& qualifier)
+{
+    TBlockStorageClass type = intermediate.getBlockStorageOverride(instanceName->c_str());
+    if (type != EbsNone) {
+        qualifier.setBlockStorage(type);
+    }
+}
+
 // Do all block-declaration checking regarding the combination of in/out/uniform/buffer
 // with a particular stage.
 void TParseContext::blockStageIoCheck(const TSourceLoc& loc, const TQualifier& qualifier)
@@ -7886,6 +8465,12 @@ void TParseContext::blockStageIoCheck(const TSourceLoc& loc, const TQualifier& q
         } else if (language == EShLangTaskNV && ! qualifier.isTaskMemory()) {
             error(loc, "output blocks cannot be used in a task shader", "out", "");
         }
+        break;
+    case EvqShared:
+        if (spvVersion.spv > 0 && spvVersion.spv < EShTargetSpv_1_4) {
+            error(loc, "shared block requires at least SPIR-V 1.4", "shared block", "");
+        }
+        profileRequires(loc, EEsProfile | ECoreProfile | ECompatibilityProfile, 0, E_GL_EXT_shared_memory_block, "shared block");
         break;
 #ifndef GLSLANG_WEB
     case EvqPayload:
@@ -8045,7 +8630,7 @@ void TParseContext::fixXfbOffsets(TQualifier& qualifier, TTypeList& typeList)
 //
 void TParseContext::fixBlockUniformOffsets(TQualifier& qualifier, TTypeList& typeList)
 {
-    if (!qualifier.isUniformOrBuffer() && !qualifier.isTaskMemory())
+    if (!storageCanHaveLayoutInBlock(qualifier.storage) && !qualifier.isTaskMemory())
         return;
     if (qualifier.layoutPacking != ElpStd140 && qualifier.layoutPacking != ElpStd430 && qualifier.layoutPacking != ElpScalar)
         return;
@@ -8155,8 +8740,8 @@ void TParseContext::fixBlockUniformLayoutMatrix(TQualifier& qualifier, TTypeList
 }
 
 //
-// Spread LayoutPacking to block member, if a  block member is a struct, we need spread LayoutPacking to
-// this struct member too. and keep this rule for recursive.
+// Spread LayoutPacking to matrix or aggregate block members. If a block member is a struct or
+// array of struct, spread LayoutPacking recursively to its matrix or aggregate members.
 //
 void TParseContext::fixBlockUniformLayoutPacking(TQualifier& qualifier, TTypeList* originTypeList,
                                                  TTypeList* tmpTypeList)
@@ -8165,11 +8750,13 @@ void TParseContext::fixBlockUniformLayoutPacking(TQualifier& qualifier, TTypeLis
     for (unsigned int member = 0; member < originTypeList->size(); ++member) {
         if (qualifier.layoutPacking != ElpNone) {
             if (tmpTypeList == nullptr) {
-                if ((*originTypeList)[member].type->getQualifier().layoutPacking == ElpNone) {
+                if ((*originTypeList)[member].type->getQualifier().layoutPacking == ElpNone &&
+                    !(*originTypeList)[member].type->isScalarOrVector()) {
                     (*originTypeList)[member].type->getQualifier().layoutPacking = qualifier.layoutPacking;
                 }
             } else {
-                if ((*tmpTypeList)[member].type->getQualifier().layoutPacking == ElpNone) {
+                if ((*tmpTypeList)[member].type->getQualifier().layoutPacking == ElpNone &&
+                    !(*tmpTypeList)[member].type->isScalarOrVector()) {
                     (*tmpTypeList)[member].type->getQualifier().layoutPacking = qualifier.layoutPacking;
                 }
             }
@@ -8559,8 +9146,14 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
         }
 #endif
         break;
+    case EvqShared:
+        if (qualifier.hasMatrix())
+            globalSharedDefaults.layoutMatrix = qualifier.layoutMatrix;
+        if (qualifier.hasPacking())
+            globalSharedDefaults.layoutPacking = qualifier.layoutPacking;
+        break;
     default:
-        error(loc, "default qualifier requires 'uniform', 'buffer', 'in', or 'out' storage qualification", "", "");
+        error(loc, "default qualifier requires 'uniform', 'buffer', 'in', 'out' or 'shared' storage qualification", "", "");
         return;
     }
 

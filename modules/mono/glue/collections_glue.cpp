@@ -230,6 +230,19 @@ int32_t godot_icall_Dictionary_Count(Dictionary *ptr) {
 	return ptr->size();
 }
 
+int32_t godot_icall_Dictionary_KeyValuePairs(Dictionary *ptr, Array **keys, Array **values) {
+	*keys = godot_icall_Dictionary_Keys(ptr);
+	*values = godot_icall_Dictionary_Values(ptr);
+	return godot_icall_Dictionary_Count(ptr);
+}
+
+void godot_icall_Dictionary_KeyValuePairAt(Dictionary *ptr, int index, MonoObject **key, MonoObject **value) {
+	Array *keys = godot_icall_Dictionary_Keys(ptr);
+	Array *values = godot_icall_Dictionary_Values(ptr);
+	*key = GDMonoMarshal::variant_to_mono_object(keys->get(index));
+	*value = GDMonoMarshal::variant_to_mono_object(values->get(index));
+}
+
 void godot_icall_Dictionary_Add(Dictionary *ptr, MonoObject *key, MonoObject *value) {
 	Variant varKey = GDMonoMarshal::mono_object_to_variant(key);
 	Variant *ret = ptr->getptr(varKey);
@@ -338,6 +351,8 @@ void godot_register_collections_icalls() {
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Keys", godot_icall_Dictionary_Keys);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Values", godot_icall_Dictionary_Values);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Count", godot_icall_Dictionary_Count);
+	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_KeyValuePairs", godot_icall_Dictionary_KeyValuePairs);
+	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_KeyValuePairAt", godot_icall_Dictionary_KeyValuePairAt);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Add", godot_icall_Dictionary_Add);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Clear", godot_icall_Dictionary_Clear);
 	GDMonoUtils::add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Contains", godot_icall_Dictionary_Contains);

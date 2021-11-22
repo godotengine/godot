@@ -151,8 +151,8 @@ Face3::Side Face3::get_side_of(const Face3 &p_face, ClockDirection p_clock_dir) 
 }
 
 Vector3 Face3::get_random_point_inside() const {
-	real_t a = Math::random(0, 1);
-	real_t b = Math::random(0, 1);
+	real_t a = Math::random(0.0, 1.0);
+	real_t b = Math::random(0.0, 1.0);
 	if (a > b) {
 		SWAP(a, b);
 	}
@@ -169,7 +169,7 @@ Vector3 Face3::get_median_point() const {
 }
 
 real_t Face3::get_area() const {
-	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length();
+	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length() * 0.5;
 }
 
 ClockDirection Face3::get_clock_dir() const {
@@ -229,8 +229,8 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 			axis.normalize();
 
 			real_t minA, maxA, minB, maxB;
-			p_aabb.project_range_in_plane(Plane(axis, 0), minA, maxA);
-			project_range(axis, Transform(), minB, maxB);
+			p_aabb.project_range_in_plane(Plane(axis), minA, maxA);
+			project_range(axis, Transform3D(), minB, maxB);
 
 			if (maxA < minB || maxB < minA) {
 				return false;
@@ -244,7 +244,7 @@ Face3::operator String() const {
 	return String() + vertex[0] + ", " + vertex[1] + ", " + vertex[2];
 }
 
-void Face3::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void Face3::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	for (int i = 0; i < 3; i++) {
 		Vector3 v = p_transform.xform(vertex[i]);
 		real_t d = p_normal.dot(v);
@@ -259,7 +259,7 @@ void Face3::project_range(const Vector3 &p_normal, const Transform &p_transform,
 	}
 }
 
-void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, Vector3 *p_vertices, int *p_count, int p_max) const {
+void Face3::get_support(const Vector3 &p_normal, const Transform3D &p_transform, Vector3 *p_vertices, int *p_count, int p_max) const {
 #define _FACE_IS_VALID_SUPPORT_THRESHOLD 0.98
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.05
 

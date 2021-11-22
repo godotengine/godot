@@ -51,8 +51,8 @@
 	ClassDB::bind_method(D_METHOD("get_" _MKSTR(m_sub) "_" _MKSTR(m_member)), &m_class::get_##m_sub##_##m_member);                      \
 	ADD_PROPERTY(PropertyInfo(m_variant_type, _MKSTR(m_sub) "_" _MKSTR(m_member)), "set_" _MKSTR(m_sub) "_" _MKSTR(m_member), "get_" _MKSTR(m_sub) "_" _MKSTR(m_member))
 
-class RDTextureFormat : public Reference {
-	GDCLASS(RDTextureFormat, Reference)
+class RDTextureFormat : public RefCounted {
+	GDCLASS(RDTextureFormat, RefCounted)
 	friend class RenderingDevice;
 
 	RD::TextureFormat base;
@@ -87,8 +87,8 @@ protected:
 	}
 };
 
-class RDTextureView : public Reference {
-	GDCLASS(RDTextureView, Reference)
+class RDTextureView : public RefCounted {
+	GDCLASS(RDTextureView, RefCounted)
 
 	friend class RenderingDevice;
 
@@ -110,8 +110,8 @@ protected:
 	}
 };
 
-class RDAttachmentFormat : public Reference {
-	GDCLASS(RDAttachmentFormat, Reference)
+class RDAttachmentFormat : public RefCounted {
+	GDCLASS(RDAttachmentFormat, RefCounted)
 	friend class RenderingDevice;
 
 	RD::AttachmentFormat base;
@@ -128,8 +128,36 @@ protected:
 	}
 };
 
-class RDSamplerState : public Reference {
-	GDCLASS(RDSamplerState, Reference)
+class RDFramebufferPass : public RefCounted {
+	GDCLASS(RDFramebufferPass, RefCounted)
+	friend class RenderingDevice;
+
+	RD::FramebufferPass base;
+
+public:
+	RD_SETGET(PackedInt32Array, color_attachments)
+	RD_SETGET(PackedInt32Array, input_attachments)
+	RD_SETGET(PackedInt32Array, resolve_attachments)
+	RD_SETGET(PackedInt32Array, preserve_attachments)
+	RD_SETGET(int32_t, depth_attachment)
+protected:
+	enum {
+		ATTACHMENT_UNUSED = -1
+	};
+
+	static void _bind_methods() {
+		RD_BIND(Variant::PACKED_INT32_ARRAY, RDFramebufferPass, color_attachments);
+		RD_BIND(Variant::PACKED_INT32_ARRAY, RDFramebufferPass, input_attachments);
+		RD_BIND(Variant::PACKED_INT32_ARRAY, RDFramebufferPass, resolve_attachments);
+		RD_BIND(Variant::PACKED_INT32_ARRAY, RDFramebufferPass, preserve_attachments);
+		RD_BIND(Variant::INT, RDFramebufferPass, depth_attachment);
+
+		BIND_CONSTANT(ATTACHMENT_UNUSED);
+	}
+};
+
+class RDSamplerState : public RefCounted {
+	GDCLASS(RDSamplerState, RefCounted)
 	friend class RenderingDevice;
 
 	RD::SamplerState base;
@@ -171,8 +199,8 @@ protected:
 	}
 };
 
-class RDVertexAttribute : public Reference {
-	GDCLASS(RDVertexAttribute, Reference)
+class RDVertexAttribute : public RefCounted {
+	GDCLASS(RDVertexAttribute, RefCounted)
 	friend class RenderingDevice;
 	RD::VertexAttribute base;
 
@@ -192,8 +220,8 @@ protected:
 		RD_BIND(Variant::INT, RDVertexAttribute, frequency);
 	}
 };
-class RDShaderSource : public Reference {
-	GDCLASS(RDShaderSource, Reference)
+class RDShaderSource : public RefCounted {
+	GDCLASS(RDShaderSource, RefCounted)
 	String source[RD::SHADER_STAGE_MAX];
 	RD::ShaderLanguage language = RD::SHADER_LANGUAGE_GLSL;
 
@@ -235,8 +263,8 @@ protected:
 	}
 };
 
-class RDShaderBytecode : public Resource {
-	GDCLASS(RDShaderBytecode, Resource)
+class RDShaderSPIRV : public Resource {
+	GDCLASS(RDShaderSPIRV, Resource)
 
 	Vector<uint8_t> bytecode[RD::SHADER_STAGE_MAX];
 	String compile_error[RD::SHADER_STAGE_MAX];
@@ -252,6 +280,19 @@ public:
 		return bytecode[p_stage];
 	}
 
+	Vector<RD::ShaderStageSPIRVData> get_stages() const {
+		Vector<RD::ShaderStageSPIRVData> stages;
+		for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
+			if (bytecode[i].size()) {
+				RD::ShaderStageSPIRVData stage;
+				stage.shader_stage = RD::ShaderStage(i);
+				stage.spir_v = bytecode[i];
+				stages.push_back(stage);
+			}
+		}
+		return stages;
+	}
+
 	void set_stage_compile_error(RD::ShaderStage p_stage, const String &p_compile_error) {
 		ERR_FAIL_INDEX(p_stage, RD::SHADER_STAGE_MAX);
 		compile_error[p_stage] = p_compile_error;
@@ -264,11 +305,11 @@ public:
 
 protected:
 	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("set_stage_bytecode", "stage", "bytecode"), &RDShaderBytecode::set_stage_bytecode);
-		ClassDB::bind_method(D_METHOD("get_stage_bytecode", "stage"), &RDShaderBytecode::get_stage_bytecode);
+		ClassDB::bind_method(D_METHOD("set_stage_bytecode", "stage", "bytecode"), &RDShaderSPIRV::set_stage_bytecode);
+		ClassDB::bind_method(D_METHOD("get_stage_bytecode", "stage"), &RDShaderSPIRV::get_stage_bytecode);
 
-		ClassDB::bind_method(D_METHOD("set_stage_compile_error", "stage", "compile_error"), &RDShaderBytecode::set_stage_compile_error);
-		ClassDB::bind_method(D_METHOD("get_stage_compile_error", "stage"), &RDShaderBytecode::get_stage_compile_error);
+		ClassDB::bind_method(D_METHOD("set_stage_compile_error", "stage", "compile_error"), &RDShaderSPIRV::set_stage_compile_error);
+		ClassDB::bind_method(D_METHOD("get_stage_compile_error", "stage"), &RDShaderSPIRV::get_stage_compile_error);
 
 		ADD_GROUP("Bytecode", "bytecode_");
 		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_vertex"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_VERTEX);
@@ -288,25 +329,30 @@ protected:
 class RDShaderFile : public Resource {
 	GDCLASS(RDShaderFile, Resource)
 
-	Map<StringName, Ref<RDShaderBytecode>> versions;
+	Map<StringName, Ref<RDShaderSPIRV>> versions;
 	String base_error;
 
 public:
-	void set_bytecode(const Ref<RDShaderBytecode> &p_bytecode, const StringName &p_version = StringName()) {
+	void set_bytecode(const Ref<RDShaderSPIRV> &p_bytecode, const StringName &p_version = StringName()) {
 		ERR_FAIL_COND(p_bytecode.is_null());
 		versions[p_version] = p_bytecode;
 		emit_changed();
 	}
 
-	Ref<RDShaderBytecode> get_bytecode(const StringName &p_version = StringName()) const {
-		ERR_FAIL_COND_V(!versions.has(p_version), Ref<RDShaderBytecode>());
+	Ref<RDShaderSPIRV> get_spirv(const StringName &p_version = StringName()) const {
+		ERR_FAIL_COND_V(!versions.has(p_version), Ref<RDShaderSPIRV>());
 		return versions[p_version];
+	}
+
+	Vector<RD::ShaderStageSPIRVData> get_spirv_stages(const StringName &p_version = StringName()) const {
+		ERR_FAIL_COND_V(!versions.has(p_version), Vector<RD::ShaderStageSPIRVData>());
+		return versions[p_version]->get_stages();
 	}
 
 	Vector<StringName> get_version_list() const {
 		Vector<StringName> vnames;
-		for (Map<StringName, Ref<RDShaderBytecode>>::Element *E = versions.front(); E; E = E->next()) {
-			vnames.push_back(E->key());
+		for (const KeyValue<StringName, Ref<RDShaderSPIRV>> &E : versions) {
+			vnames.push_back(E.key);
 		}
 		vnames.sort_custom<StringName::AlphCompare>();
 		return vnames;
@@ -325,9 +371,9 @@ public:
 		if (base_error != "") {
 			ERR_PRINT("Error parsing shader '" + p_file + "':\n\n" + base_error);
 		} else {
-			for (Map<StringName, Ref<RDShaderBytecode>>::Element *E = versions.front(); E; E = E->next()) {
+			for (KeyValue<StringName, Ref<RDShaderSPIRV>> &E : versions) {
 				for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
-					String error = E->get()->get_stage_compile_error(RD::ShaderStage(i));
+					String error = E.value->get_stage_compile_error(RD::ShaderStage(i));
 					if (error != String()) {
 						static const char *stage_str[RD::SHADER_STAGE_MAX] = {
 							"vertex",
@@ -337,7 +383,7 @@ public:
 							"compute"
 						};
 
-						ERR_PRINT("Error parsing shader '" + p_file + "', version '" + String(E->key()) + "', stage '" + stage_str[i] + "':\n\n" + error);
+						ERR_PRINT("Error parsing shader '" + p_file + "', version '" + String(E.key) + "', stage '" + stage_str[i] + "':\n\n" + error);
 					}
 				}
 			}
@@ -360,9 +406,9 @@ protected:
 		versions.clear();
 		List<Variant> keys;
 		p_versions.get_key_list(&keys);
-		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			StringName name = E->get();
-			Ref<RDShaderBytecode> bc = p_versions[E->get()];
+		for (const Variant &E : keys) {
+			StringName name = E;
+			Ref<RDShaderSPIRV> bc = p_versions[E];
 			ERR_CONTINUE(bc.is_null());
 			versions[name] = bc;
 		}
@@ -372,7 +418,7 @@ protected:
 
 	static void _bind_methods() {
 		ClassDB::bind_method(D_METHOD("set_bytecode", "bytecode", "version"), &RDShaderFile::set_bytecode, DEFVAL(StringName()));
-		ClassDB::bind_method(D_METHOD("get_bytecode", "version"), &RDShaderFile::get_bytecode, DEFVAL(StringName()));
+		ClassDB::bind_method(D_METHOD("get_spirv", "version"), &RDShaderFile::get_spirv, DEFVAL(StringName()));
 		ClassDB::bind_method(D_METHOD("get_version_list"), &RDShaderFile::get_version_list);
 
 		ClassDB::bind_method(D_METHOD("set_base_error", "error"), &RDShaderFile::set_base_error);
@@ -381,13 +427,13 @@ protected:
 		ClassDB::bind_method(D_METHOD("_set_versions", "versions"), &RDShaderFile::_set_versions);
 		ClassDB::bind_method(D_METHOD("_get_versions"), &RDShaderFile::_get_versions);
 
-		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_versions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_versions", "_get_versions");
+		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_versions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_versions", "_get_versions");
 		ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_error"), "set_base_error", "get_base_error");
 	}
 };
 
-class RDUniform : public Reference {
-	GDCLASS(RDUniform, Reference)
+class RDUniform : public RefCounted {
+	GDCLASS(RDUniform, RefCounted)
 	friend class RenderingDevice;
 	RD::Uniform base;
 
@@ -424,8 +470,43 @@ protected:
 		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_ids", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_ids", "get_ids");
 	}
 };
-class RDPipelineRasterizationState : public Reference {
-	GDCLASS(RDPipelineRasterizationState, Reference)
+
+class RDPipelineSpecializationConstant : public RefCounted {
+	GDCLASS(RDPipelineSpecializationConstant, RefCounted)
+	friend class RenderingDevice;
+
+	Variant value = false;
+	uint32_t constant_id = 0;
+
+public:
+	void set_value(const Variant &p_value) {
+		ERR_FAIL_COND(p_value.get_type() != Variant::BOOL && p_value.get_type() != Variant::INT && p_value.get_type() != Variant::FLOAT);
+		value = p_value;
+	}
+	Variant get_value() const { return value; }
+
+	void set_constant_id(uint32_t p_id) {
+		constant_id = p_id;
+	}
+	uint32_t get_constant_id() const {
+		return constant_id;
+	}
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_value", "value"), &RDPipelineSpecializationConstant::set_value);
+		ClassDB::bind_method(D_METHOD("get_value"), &RDPipelineSpecializationConstant::get_value);
+
+		ClassDB::bind_method(D_METHOD("set_constant_id", "constant_id"), &RDPipelineSpecializationConstant::set_constant_id);
+		ClassDB::bind_method(D_METHOD("get_constant_id"), &RDPipelineSpecializationConstant::get_constant_id);
+
+		ADD_PROPERTY(PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), "set_value", "get_value");
+		ADD_PROPERTY(PropertyInfo(Variant::INT, "constant_id", PROPERTY_HINT_RANGE, "0,65535,0"), "set_constant_id", "get_constant_id");
+	}
+};
+
+class RDPipelineRasterizationState : public RefCounted {
+	GDCLASS(RDPipelineRasterizationState, RefCounted)
 	friend class RenderingDevice;
 
 	RD::PipelineRasterizationState base;
@@ -459,8 +540,8 @@ protected:
 	}
 };
 
-class RDPipelineMultisampleState : public Reference {
-	GDCLASS(RDPipelineMultisampleState, Reference)
+class RDPipelineMultisampleState : public RefCounted {
+	GDCLASS(RDPipelineMultisampleState, RefCounted)
 	friend class RenderingDevice;
 
 	RD::PipelineMultisampleState base;
@@ -490,8 +571,8 @@ protected:
 	}
 };
 
-class RDPipelineDepthStencilState : public Reference {
-	GDCLASS(RDPipelineDepthStencilState, Reference)
+class RDPipelineDepthStencilState : public RefCounted {
+	GDCLASS(RDPipelineDepthStencilState, RefCounted)
 	friend class RenderingDevice;
 
 	RD::PipelineDepthStencilState base;
@@ -549,8 +630,8 @@ protected:
 	}
 };
 
-class RDPipelineColorBlendStateAttachment : public Reference {
-	GDCLASS(RDPipelineColorBlendStateAttachment, Reference)
+class RDPipelineColorBlendStateAttachment : public RefCounted {
+	GDCLASS(RDPipelineColorBlendStateAttachment, RefCounted)
 	friend class RenderingDevice;
 	RD::PipelineColorBlendState::Attachment base;
 
@@ -594,8 +675,8 @@ protected:
 	}
 };
 
-class RDPipelineColorBlendState : public Reference {
-	GDCLASS(RDPipelineColorBlendState, Reference)
+class RDPipelineColorBlendState : public RefCounted {
+	GDCLASS(RDPipelineColorBlendState, RefCounted)
 	friend class RenderingDevice;
 	RD::PipelineColorBlendState base;
 

@@ -117,7 +117,7 @@ void main() {
 	uint cluster_thread_group_index;
 
 	if (!gl_HelperInvocation) {
-		//http://advances.realtimerendering.com/s2017/2017_Sig_Improved_Culling_final.pdf
+		//https://advances.realtimerendering.com/s2017/2017_Sig_Improved_Culling_final.pdf
 
 		uvec4 mask;
 

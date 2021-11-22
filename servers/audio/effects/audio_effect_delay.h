@@ -126,7 +126,7 @@ public:
 	void set_feedback_lowpass(float p_lowpass);
 	float get_feedback_lowpass() const;
 
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 
 	AudioEffectDelay();
 };

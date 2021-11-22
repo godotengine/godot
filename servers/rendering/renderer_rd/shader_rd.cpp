@@ -30,8 +30,12 @@
 
 #include "shader_rd.h"
 
+#include "core/io/compression.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/rendering_device.h"
+#include "thirdparty/misc/smolv.h"
 
 void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 	Vector<String> lines = String(p_code).split("\n");
@@ -97,6 +101,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 
 void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name) {
 	name = p_name;
+
 	if (p_compute_code) {
 		_add_stage(p_compute_code, STAGE_TYPE_COMPUTE);
 		is_compute = true;
@@ -109,6 +114,20 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 			_add_stage(p_fragment_code, STAGE_TYPE_FRAGMENT);
 		}
 	}
+
+	StringBuilder tohash;
+	tohash.append("[SpirvCacheKey]");
+	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
+	tohash.append("[BinaryCacheKey]");
+	tohash.append(RenderingDevice::get_singleton()->shader_get_binary_cache_key());
+	tohash.append("[Vertex]");
+	tohash.append(p_vertex_code ? p_vertex_code : "");
+	tohash.append("[Fragment]");
+	tohash.append(p_fragment_code ? p_fragment_code : "");
+	tohash.append("[Compute]");
+	tohash.append(p_compute_code ? p_compute_code : "");
+
+	base_sha256 = tohash.as_string().sha256_text();
 }
 
 RID ShaderRD::version_create() {
@@ -127,10 +146,15 @@ void ShaderRD::_clear_version(Version *p_version) {
 	//clear versions if they exist
 	if (p_version->variants) {
 		for (int i = 0; i < variant_defines.size(); i++) {
-			RD::get_singleton()->free(p_version->variants[i]);
+			if (variants_enabled[i]) {
+				RD::get_singleton()->free(p_version->variants[i]);
+			}
 		}
 
 		memdelete_arr(p_version->variants);
+		if (p_version->variant_data) {
+			memdelete_arr(p_version->variant_data);
+		}
 		p_version->variants = nullptr;
 	}
 }
@@ -150,8 +174,8 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 				if (p_version->uniforms.size()) {
 					builder.append("#define MATERIAL_UNIFORMS_USED\n");
 				}
-				for (Map<StringName, CharString>::Element *E = p_version->code_sections.front(); E; E = E->next()) {
-					builder.append(String("#define ") + String(E->key()) + "_CODE_USED\n");
+				for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
+					builder.append(String("#define ") + String(E.key) + "_CODE_USED\n");
 				}
 			} break;
 			case StageTemplate::Chunk::TYPE_MATERIAL_UNIFORMS: {
@@ -183,7 +207,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		return; //variant is disabled, return
 	}
 
-	Vector<RD::ShaderStageData> stages;
+	Vector<RD::ShaderStageSPIRVData> stages;
 
 	String error;
 	String current_source;
@@ -197,8 +221,8 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		_build_variant_code(builder, p_variant, p_version, stage_templates[STAGE_TYPE_VERTEX]);
 
 		current_source = builder.as_string();
-		RD::ShaderStageData stage;
-		stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_VERTEX, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
+		RD::ShaderStageSPIRVData stage;
+		stage.spir_v = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_VERTEX, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
 		if (stage.spir_v.size() == 0) {
 			build_ok = false;
 		} else {
@@ -215,8 +239,8 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		_build_variant_code(builder, p_variant, p_version, stage_templates[STAGE_TYPE_FRAGMENT]);
 
 		current_source = builder.as_string();
-		RD::ShaderStageData stage;
-		stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_FRAGMENT, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
+		RD::ShaderStageSPIRVData stage;
+		stage.spir_v = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_FRAGMENT, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
 		if (stage.spir_v.size() == 0) {
 			build_ok = false;
 		} else {
@@ -234,8 +258,8 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 
 		current_source = builder.as_string();
 
-		RD::ShaderStageData stage;
-		stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_COMPUTE, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
+		RD::ShaderStageSPIRVData stage;
+		stage.spir_v = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_COMPUTE, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
 		if (stage.spir_v.size() == 0) {
 			build_ok = false;
 		} else {
@@ -255,15 +279,20 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		return;
 	}
 
-	RID shader = RD::get_singleton()->shader_create(stages);
+	Vector<uint8_t> shader_data = RD::get_singleton()->shader_compile_binary_from_spirv(stages, name + ":" + itos(p_variant));
+
+	ERR_FAIL_COND(shader_data.size() == 0);
+
+	RID shader = RD::get_singleton()->shader_create_from_bytecode(shader_data);
 	{
 		MutexLock lock(variant_set_mutex);
 		p_version->variants[p_variant] = shader;
+		p_version->variant_data[p_variant] = shader_data;
 	}
 }
 
 RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	RS::ShaderNativeSourceCode source_code;
 	ERR_FAIL_COND_V(!version, source_code);
 
@@ -313,6 +342,121 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 	return source_code;
 }
 
+String ShaderRD::_version_get_sha1(Version *p_version) const {
+	StringBuilder hash_build;
+
+	hash_build.append("[uniforms]");
+	hash_build.append(p_version->uniforms.get_data());
+	hash_build.append("[vertex_globals]");
+	hash_build.append(p_version->vertex_globals.get_data());
+	hash_build.append("[fragment_globals]");
+	hash_build.append(p_version->fragment_globals.get_data());
+	hash_build.append("[compute_globals]");
+	hash_build.append(p_version->compute_globals.get_data());
+
+	Vector<StringName> code_sections;
+	for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
+		code_sections.push_back(E.key);
+	}
+	code_sections.sort_custom<StringName::AlphCompare>();
+
+	for (int i = 0; i < code_sections.size(); i++) {
+		hash_build.append(String("[code:") + String(code_sections[i]) + "]");
+		hash_build.append(p_version->code_sections[code_sections[i]].get_data());
+	}
+	for (int i = 0; i < p_version->custom_defines.size(); i++) {
+		hash_build.append("[custom_defines:" + itos(i) + "]");
+		hash_build.append(p_version->custom_defines[i].get_data());
+	}
+
+	return hash_build.as_string().sha1_text();
+}
+
+static const char *shader_file_header = "GDSC";
+static const uint32_t cache_file_version = 2;
+
+bool ShaderRD::_load_from_cache(Version *p_version) {
+	String sha1 = _version_get_sha1(p_version);
+	String path = shader_cache_dir.plus_file(name).plus_file(base_sha256).plus_file(sha1) + ".cache";
+
+	FileAccessRef f = FileAccess::open(path, FileAccess::READ);
+	if (!f) {
+		return false;
+	}
+
+	char header[5] = { 0, 0, 0, 0, 0 };
+	f->get_buffer((uint8_t *)header, 4);
+	ERR_FAIL_COND_V(header != String(shader_file_header), false);
+
+	uint32_t file_version = f->get_32();
+	if (file_version != cache_file_version) {
+		return false; // wrong version
+	}
+
+	uint32_t variant_count = f->get_32();
+
+	ERR_FAIL_COND_V(variant_count != (uint32_t)variant_defines.size(), false); //should not happen but check
+
+	for (uint32_t i = 0; i < variant_count; i++) {
+		uint32_t variant_size = f->get_32();
+		ERR_FAIL_COND_V(variant_size == 0 && variants_enabled[i], false);
+		if (!variants_enabled[i]) {
+			continue;
+		}
+		Vector<uint8_t> variant_bytes;
+		variant_bytes.resize(variant_size);
+
+		uint32_t br = f->get_buffer(variant_bytes.ptrw(), variant_size);
+
+		ERR_FAIL_COND_V(br != variant_size, false);
+
+		p_version->variant_data[i] = variant_bytes;
+	}
+
+	for (uint32_t i = 0; i < variant_count; i++) {
+		if (!variants_enabled[i]) {
+			MutexLock lock(variant_set_mutex);
+			p_version->variants[i] = RID();
+			continue;
+		}
+		RID shader = RD::get_singleton()->shader_create_from_bytecode(p_version->variant_data[i]);
+		if (shader.is_null()) {
+			for (uint32_t j = 0; j < i; j++) {
+				RD::get_singleton()->free(p_version->variants[i]);
+			}
+			ERR_FAIL_COND_V(shader.is_null(), false);
+		}
+		{
+			MutexLock lock(variant_set_mutex);
+			p_version->variants[i] = shader;
+		}
+	}
+
+	memdelete_arr(p_version->variant_data); //clear stages
+	p_version->variant_data = nullptr;
+	p_version->valid = true;
+	return true;
+}
+
+void ShaderRD::_save_to_cache(Version *p_version) {
+	String sha1 = _version_get_sha1(p_version);
+	String path = shader_cache_dir.plus_file(name).plus_file(base_sha256).plus_file(sha1) + ".cache";
+
+	FileAccessRef f = FileAccess::open(path, FileAccess::WRITE);
+	ERR_FAIL_COND(!f);
+	f->store_buffer((const uint8_t *)shader_file_header, 4);
+	f->store_32(cache_file_version); //file version
+	uint32_t variant_count = variant_defines.size();
+	f->store_32(variant_count); //variant count
+
+	for (uint32_t i = 0; i < variant_count; i++) {
+		f->store_32(p_version->variant_data[i].size()); //stage count
+		f->store_buffer(p_version->variant_data[i].ptr(), p_version->variant_data[i].size());
+	}
+
+	f->close();
+}
+
 void ShaderRD::_compile_version(Version *p_version) {
 	_clear_version(p_version);
 
@@ -320,6 +464,15 @@ void ShaderRD::_compile_version(Version *p_version) {
 	p_version->dirty = false;
 
 	p_version->variants = memnew_arr(RID, variant_defines.size());
+	typedef Vector<uint8_t> ShaderStageData;
+	p_version->variant_data = memnew_arr(ShaderStageData, variant_defines.size());
+
+	if (shader_cache_dir_valid) {
+		if (_load_from_cache(p_version)) {
+			return;
+		}
+	}
+
 #if 1
 
 	RendererThreadPool::singleton->thread_work_pool.do_work(variant_defines.size(), this, &ShaderRD::_compile_variant, p_version);
@@ -351,9 +504,19 @@ void ShaderRD::_compile_version(Version *p_version) {
 			}
 		}
 		memdelete_arr(p_version->variants);
+		if (p_version->variant_data) {
+			memdelete_arr(p_version->variant_data);
+		}
 		p_version->variants = nullptr;
+		p_version->variant_data = nullptr;
 		return;
+	} else if (shader_cache_dir_valid) {
+		//save shader cache
+		_save_to_cache(p_version);
 	}
+
+	memdelete_arr(p_version->variant_data); //clear stages
+	p_version->variant_data = nullptr;
 
 	p_version->valid = true;
 }
@@ -361,14 +524,14 @@ void ShaderRD::_compile_version(Version *p_version) {
 void ShaderRD::version_set_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines) {
 	ERR_FAIL_COND(is_compute);
 
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND(!version);
 	version->vertex_globals = p_vertex_globals.utf8();
 	version->fragment_globals = p_fragment_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
 	version->code_sections.clear();
-	for (Map<String, String>::Element *E = p_code.front(); E; E = E->next()) {
-		version->code_sections[StringName(E->key().to_upper())] = E->get().utf8();
+	for (const KeyValue<String, String> &E : p_code) {
+		version->code_sections[StringName(E.key.to_upper())] = E.value.utf8();
 	}
 
 	version->custom_defines.clear();
@@ -386,15 +549,15 @@ void ShaderRD::version_set_code(RID p_version, const Map<String, String> &p_code
 void ShaderRD::version_set_compute_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_compute_globals, const Vector<String> &p_custom_defines) {
 	ERR_FAIL_COND(!is_compute);
 
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND(!version);
 
 	version->compute_globals = p_compute_globals.utf8();
 	version->uniforms = p_uniforms.utf8();
 
 	version->code_sections.clear();
-	for (Map<String, String>::Element *E = p_code.front(); E; E = E->next()) {
-		version->code_sections[StringName(E->key().to_upper())] = E->get().utf8();
+	for (const KeyValue<String, String> &E : p_code) {
+		version->code_sections[StringName(E.key.to_upper())] = E.value.utf8();
 	}
 
 	version->custom_defines.clear();
@@ -410,7 +573,7 @@ void ShaderRD::version_set_compute_code(RID p_version, const Map<String, String>
 }
 
 bool ShaderRD::version_is_valid(RID p_version) {
-	Version *version = version_owner.getornull(p_version);
+	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_COND_V(!version, false);
 
 	if (version->dirty) {
@@ -422,7 +585,7 @@ bool ShaderRD::version_is_valid(RID p_version) {
 
 bool ShaderRD::version_free(RID p_version) {
 	if (version_owner.owns(p_version)) {
-		Version *version = version_owner.getornull(p_version);
+		Version *version = version_owner.get_or_null(p_version);
 		_clear_version(version);
 		version_owner.free(p_version);
 	} else {
@@ -442,6 +605,8 @@ bool ShaderRD::is_variant_enabled(int p_variant) const {
 	ERR_FAIL_INDEX_V(p_variant, variants_enabled.size(), false);
 	return variants_enabled[p_variant];
 }
+
+bool ShaderRD::shader_cache_cleanup_on_start = false;
 
 ShaderRD::ShaderRD() {
 	// Do not feel forced to use this, in most cases it makes little to no difference.
@@ -469,7 +634,63 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 		variant_defines.push_back(p_variant_defines[i].utf8());
 		variants_enabled.push_back(true);
 	}
+
+	if (shader_cache_dir != String()) {
+		StringBuilder hash_build;
+
+		hash_build.append("[base_hash]");
+		hash_build.append(base_sha256);
+		hash_build.append("[general_defines]");
+		hash_build.append(general_defines.get_data());
+		for (int i = 0; i < variant_defines.size(); i++) {
+			hash_build.append("[variant_defines:" + itos(i) + "]");
+			hash_build.append(variant_defines[i].get_data());
+		}
+
+		base_sha256 = hash_build.as_string().sha256_text();
+
+		DirAccessRef d = DirAccess::open(shader_cache_dir);
+		ERR_FAIL_COND(!d);
+		if (d->change_dir(name) != OK) {
+			Error err = d->make_dir(name);
+			ERR_FAIL_COND(err != OK);
+			d->change_dir(name);
+		}
+
+		//erase other versions?
+		if (shader_cache_cleanup_on_start) {
+		}
+		//
+		if (d->change_dir(base_sha256) != OK) {
+			Error err = d->make_dir(base_sha256);
+			ERR_FAIL_COND(err != OK);
+		}
+		shader_cache_dir_valid = true;
+
+		print_verbose("Shader '" + name + "' SHA256: " + base_sha256);
+	}
 }
+
+void ShaderRD::set_shader_cache_dir(const String &p_dir) {
+	shader_cache_dir = p_dir;
+}
+
+void ShaderRD::set_shader_cache_save_compressed(bool p_enable) {
+	shader_cache_save_compressed = p_enable;
+}
+
+void ShaderRD::set_shader_cache_save_compressed_zstd(bool p_enable) {
+	shader_cache_save_compressed_zstd = p_enable;
+}
+
+void ShaderRD::set_shader_cache_save_debug(bool p_enable) {
+	shader_cache_save_debug = p_enable;
+}
+
+String ShaderRD::shader_cache_dir;
+bool ShaderRD::shader_cache_save_compressed = true;
+bool ShaderRD::shader_cache_save_compressed_zstd = true;
+bool ShaderRD::shader_cache_save_debug = true;
 
 ShaderRD::~ShaderRD() {
 	List<RID> remaining;

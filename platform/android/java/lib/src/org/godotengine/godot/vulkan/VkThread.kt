@@ -61,6 +61,7 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 	private var rendererInitialized = false
 	private var rendererResumed = false
 	private var resumed = false
+	private var surfaceChanged = false
 	private var hasSurface = false
 	private var width = 0
 	private var height = 0
@@ -141,8 +142,10 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 	fun onSurfaceChanged(width: Int, height: Int) {
 		lock.withLock {
 			hasSurface = true
+			surfaceChanged = true;
 			this.width = width
 			this.height = height
+
 			lockCondition.signalAll()
 		}
 	}
@@ -188,8 +191,11 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 									rendererInitialized = true
 									vkRenderer.onVkSurfaceCreated(vkSurfaceView.holder.surface)
 								}
+							}
 
+							if (surfaceChanged) {
 								vkRenderer.onVkSurfaceChanged(vkSurfaceView.holder.surface, width, height)
+								surfaceChanged = false
 							}
 
 							// Break out of the loop so drawing can occur without holding onto the lock.

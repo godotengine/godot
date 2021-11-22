@@ -32,10 +32,10 @@
 #include "core/os/keyboard.h"
 
 Size2 Slider::get_minimum_size() const {
-	Ref<StyleBox> style = get_theme_stylebox("slider");
+	Ref<StyleBox> style = get_theme_stylebox(SNAME("slider"));
 	Size2i ss = style->get_minimum_size() + style->get_center_size();
 
-	Ref<Texture2D> grabber = get_theme_icon("grabber");
+	Ref<Texture2D> grabber = get_theme_icon(SNAME("grabber"));
 	Size2i rs = grabber->get_size();
 
 	if (orientation == HORIZONTAL) {
@@ -45,7 +45,7 @@ Size2 Slider::get_minimum_size() const {
 	}
 }
 
-void Slider::_gui_input(Ref<InputEvent> p_event) {
+void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!editable) {
@@ -55,7 +55,7 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				Ref<Texture2D> grabber = get_theme_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
@@ -74,10 +74,10 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 				grab.active = false;
 			}
 		} else if (scrollable) {
-			if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_UP) {
+			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 				grab_focus();
 				set_value(get_value() + get_step());
-			} else if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_WHEEL_DOWN) {
+			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				grab_focus();
 				set_value(get_value() - get_step());
 			}
@@ -89,7 +89,7 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 	if (mm.is_valid()) {
 		if (grab.active) {
 			Size2i size = get_size();
-			Ref<Texture2D> grabber = get_theme_icon("grabber");
+			Ref<Texture2D> grabber = get_theme_icon(SNAME("grabber"));
 			float motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
 				motion = -motion;
@@ -161,18 +161,18 @@ void Slider::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			Size2i size = get_size();
-			Ref<StyleBox> style = get_theme_stylebox("slider");
+			Ref<StyleBox> style = get_theme_stylebox(SNAME("slider"));
 			bool highlighted = mouse_inside || has_focus();
 			Ref<StyleBox> grabber_area = get_theme_stylebox(highlighted ? "grabber_area_highlight" : "grabber_area");
 			Ref<Texture2D> grabber = get_theme_icon(editable ? (highlighted ? "grabber_highlight" : "grabber") : "grabber_disabled");
-			Ref<Texture2D> tick = get_theme_icon("tick");
+			Ref<Texture2D> tick = get_theme_icon(SNAME("tick"));
 			double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
 
 			if (orientation == VERTICAL) {
 				int widget_width = style->get_minimum_size().width + style->get_center_size().width;
 				float areasize = size.height - grabber->get_size().height;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_size().height / 2), Size2i(widget_width, areasize * ratio + grabber->get_size().width / 2)));
+				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_size().height / 2), Size2i(widget_width, areasize * ratio + grabber->get_size().height / 2)));
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_size().height / 2 - tick->get_height() / 2);
@@ -253,7 +253,6 @@ bool Slider::is_scrollable() const {
 }
 
 void Slider::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &Slider::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_ticks", "count"), &Slider::set_ticks);
 	ClassDB::bind_method(D_METHOD("get_ticks"), &Slider::get_ticks);
 

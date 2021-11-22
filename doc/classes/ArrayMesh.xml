@@ -43,178 +43,153 @@
 		[/csharp]
 		[/codeblocks]
 		The [MeshInstance3D] is ready to be added to the [SceneTree] to be shown.
-		See also [ImmediateGeometry3D], [MeshDataTool] and [SurfaceTool] for procedural geometry generation.
+		See also [ImmediateMesh], [MeshDataTool] and [SurfaceTool] for procedural geometry generation.
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>
-		<link title="Procedural geometry using the ArrayMesh">https://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/arraymesh.html</link>
+		<link title="Procedural geometry using the ArrayMesh">$DOCS_URL/tutorials/3d/procedural_geometry/arraymesh.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_blend_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Adds name for a blend shape that will be added with [method add_surface_from_arrays]. Must be called before surface is added.
 			</description>
 		</method>
 		<method name="add_surface_from_arrays">
-			<return type="void">
-			</return>
-			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
-			</argument>
-			<argument index="1" name="arrays" type="Array">
-			</argument>
-			<argument index="2" name="blend_shapes" type="Array" default="[  ]">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
+			<argument index="1" name="arrays" type="Array" />
+			<argument index="2" name="blend_shapes" type="Array" default="[]" />
 			<argument index="3" name="lods" type="Dictionary" default="{
-}">
-			</argument>
-			<argument index="4" name="compress_flags" type="int" default="0">
-			</argument>
+}" />
+			<argument index="4" name="compress_flags" type="int" default="0" />
 			<description>
 				Creates a new surface.
-				Surfaces are created to be rendered using a [code]primitive[/code], which may be any of the types defined in [enum Mesh.PrimitiveType]. (As a note, when using indices, it is recommended to only use points, lines or triangles.) [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
+				Surfaces are created to be rendered using a [code]primitive[/code], which may be any of the types defined in [enum Mesh.PrimitiveType]. (As a note, when using indices, it is recommended to only use points, lines, or triangles.) [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
 				The [code]arrays[/code] argument is an array of arrays. See [enum Mesh.ArrayType] for the values used in this array. For example, [code]arrays[0][/code] is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array or be empty, except for [constant Mesh.ARRAY_INDEX] if it is used.
-				Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data, and the index array defines the order of the vertices.
 			</description>
 		</method>
 		<method name="clear_blend_shapes">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all blend shapes from this [ArrayMesh].
 			</description>
 		</method>
 		<method name="clear_surfaces">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all surfaces from this [ArrayMesh].
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of blend shapes that the [ArrayMesh] holds.
 			</description>
 		</method>
 		<method name="get_blend_shape_name" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the name of the blend shape at this index.
 			</description>
 		</method>
 		<method name="lightmap_unwrap">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="transform" type="Transform">
-			</argument>
-			<argument index="1" name="texel_size" type="float">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="transform" type="Transform3D" />
+			<argument index="1" name="texel_size" type="float" />
 			<description>
 				Will perform a UV unwrap on the [ArrayMesh] to prepare the mesh for lightmapping.
 			</description>
 		</method>
 		<method name="regen_normal_maps">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Will regenerate normal maps for the [ArrayMesh].
 			</description>
 		</method>
 		<method name="set_blend_shape_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="name" type="StringName" />
 			<description>
+				Sets the name of the blend shape at this index.
 			</description>
 		</method>
 		<method name="surface_find_by_name" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Returns the index of the first surface with this name held within this [ArrayMesh]. If none are found, -1 is returned.
 			</description>
 		</method>
 		<method name="surface_get_array_index_len" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="surf_idx" type="int" />
 			<description>
 				Returns the length in indices of the index array in the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_get_array_len" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="surf_idx" type="int" />
 			<description>
 				Returns the length in vertices of the vertex array in the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_get_format" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="surf_idx" type="int" />
 			<description>
 				Returns the format mask of the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_get_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="surf_idx" type="int" />
 			<description>
 				Gets the name assigned to this surface.
 			</description>
 		</method>
 		<method name="surface_get_primitive_type" qualifiers="const">
-			<return type="int" enum="Mesh.PrimitiveType">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
+			<return type="int" enum="Mesh.PrimitiveType" />
+			<argument index="0" name="surf_idx" type="int" />
 			<description>
 				Returns the primitive type of the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_set_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
-			<argument index="1" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="surf_idx" type="int" />
+			<argument index="1" name="name" type="String" />
 			<description>
 				Sets a name for a given surface.
 			</description>
 		</method>
-		<method name="surface_update_region">
-			<return type="void">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
-			<argument index="1" name="offset" type="int">
-			</argument>
-			<argument index="2" name="data" type="PackedByteArray">
-			</argument>
+		<method name="surface_update_attribute_region">
+			<return type="void" />
+			<argument index="0" name="surf_idx" type="int" />
+			<argument index="1" name="offset" type="int" />
+			<argument index="2" name="data" type="PackedByteArray" />
 			<description>
-				Updates a specified region of mesh arrays on the GPU.
-				[b]Warning:[/b] Only use if you know what you are doing. You can easily cause crashes by calling this function with improper arguments.
+			</description>
+		</method>
+		<method name="surface_update_skin_region">
+			<return type="void" />
+			<argument index="0" name="surf_idx" type="int" />
+			<argument index="1" name="offset" type="int" />
+			<argument index="2" name="data" type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="surface_update_vertex_region">
+			<return type="void" />
+			<argument index="0" name="surf_idx" type="int" />
+			<argument index="1" name="offset" type="int" />
+			<argument index="2" name="data" type="PackedByteArray" />
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -222,12 +197,10 @@
 		<member name="blend_shape_mode" type="int" setter="set_blend_shape_mode" getter="get_blend_shape_mode" enum="Mesh.BlendShapeMode" default="1">
 			Sets the blend shape mode to one of [enum Mesh.BlendShapeMode].
 		</member>
-		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB( 0, 0, 0, 0, 0, 0 )">
+		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
 			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unexpected culling when using a shader to offset vertices.
 		</member>
 		<member name="shadow_mesh" type="ArrayMesh" setter="set_shadow_mesh" getter="get_shadow_mesh">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -10,74 +10,57 @@
 		You can set the extents of the axis using the [member min_space] and [member max_space].
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_blend_point">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="AnimationRootNode">
-			</argument>
-			<argument index="1" name="pos" type="float">
-			</argument>
-			<argument index="2" name="at_index" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="node" type="AnimationRootNode" />
+			<argument index="1" name="pos" type="float" />
+			<argument index="2" name="at_index" type="int" default="-1" />
 			<description>
 				Adds a new point that represents a [code]node[/code] on the virtual axis at a given position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code], the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="get_blend_point_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of points on the blend axis.
 			</description>
 		</method>
 		<method name="get_blend_point_node" qualifiers="const">
-			<return type="AnimationRootNode">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
+			<return type="AnimationRootNode" />
+			<argument index="0" name="point" type="int" />
 			<description>
 				Returns the [AnimationNode] referenced by the point at index [code]point[/code].
 			</description>
 		</method>
 		<method name="get_blend_point_position" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="point" type="int" />
 			<description>
 				Returns the position of the point at index [code]point[/code].
 			</description>
 		</method>
 		<method name="remove_blend_point">
-			<return type="void">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="point" type="int" />
 			<description>
 				Removes the point at index [code]point[/code] from the blend axis.
 			</description>
 		</method>
 		<method name="set_blend_point_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
-			<argument index="1" name="node" type="AnimationRootNode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="point" type="int" />
+			<argument index="1" name="node" type="AnimationRootNode" />
 			<description>
 				Changes the [AnimationNode] referenced by the point at index [code]point[/code].
 			</description>
 		</method>
 		<method name="set_blend_point_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
-			<argument index="1" name="pos" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="point" type="int" />
+			<argument index="1" name="pos" type="float" />
 			<description>
 				Updates the position of the point at index [code]point[/code] on the blend axis.
 			</description>
@@ -97,6 +80,4 @@
 			Label of the virtual axis of the blend space.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

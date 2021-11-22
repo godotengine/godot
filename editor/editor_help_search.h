@@ -43,12 +43,14 @@ class EditorHelpSearch : public ConfirmationDialog {
 
 	enum SearchFlags {
 		SEARCH_CLASSES = 1 << 0,
-		SEARCH_METHODS = 1 << 1,
-		SEARCH_SIGNALS = 1 << 2,
-		SEARCH_CONSTANTS = 1 << 3,
-		SEARCH_PROPERTIES = 1 << 4,
-		SEARCH_THEME_ITEMS = 1 << 5,
-		SEARCH_ALL = SEARCH_CLASSES | SEARCH_METHODS | SEARCH_SIGNALS | SEARCH_CONSTANTS | SEARCH_PROPERTIES | SEARCH_THEME_ITEMS,
+		SEARCH_CONSTRUCTORS = 1 << 1,
+		SEARCH_METHODS = 1 << 2,
+		SEARCH_OPERATORS = 1 << 3,
+		SEARCH_SIGNALS = 1 << 4,
+		SEARCH_CONSTANTS = 1 << 5,
+		SEARCH_PROPERTIES = 1 << 6,
+		SEARCH_THEME_ITEMS = 1 << 7,
+		SEARCH_ALL = SEARCH_CLASSES | SEARCH_CONSTRUCTORS | SEARCH_METHODS | SEARCH_OPERATORS | SEARCH_SIGNALS | SEARCH_CONSTANTS | SEARCH_PROPERTIES | SEARCH_THEME_ITEMS,
 		SEARCH_CASE_SENSITIVE = 1 << 29,
 		SEARCH_SHOW_HIERARCHY = 1 << 30
 	};
@@ -83,7 +85,7 @@ public:
 	EditorHelpSearch();
 };
 
-class EditorHelpSearch::Runner : public Reference {
+class EditorHelpSearch::Runner : public RefCounted {
 	enum Phase {
 		PHASE_MATCH_CLASSES_INIT,
 		PHASE_MATCH_CLASSES,
@@ -99,11 +101,13 @@ class EditorHelpSearch::Runner : public Reference {
 	struct ClassMatch {
 		DocData::ClassDoc *doc;
 		bool name = false;
+		Vector<DocData::MethodDoc *> constructors;
 		Vector<DocData::MethodDoc *> methods;
+		Vector<DocData::MethodDoc *> operators;
 		Vector<DocData::MethodDoc *> signals;
 		Vector<DocData::ConstantDoc *> constants;
 		Vector<DocData::PropertyDoc *> properties;
-		Vector<DocData::PropertyDoc *> theme_properties;
+		Vector<DocData::ThemeItemDoc *> theme_properties;
 
 		bool required() {
 			return name || methods.size() || signals.size() || constants.size() || properties.size() || theme_properties.size();
@@ -145,7 +149,7 @@ class EditorHelpSearch::Runner : public Reference {
 	TreeItem *_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc);
 	TreeItem *_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc);
 	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
-	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
+	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc);
 	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip);
 
 public:

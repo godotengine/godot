@@ -31,12 +31,12 @@
 #ifndef PCK_PACKER_H
 #define PCK_PACKER_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 class FileAccess;
 
-class PCKPacker : public Reference {
-	GDCLASS(PCKPacker, Reference);
+class PCKPacker : public RefCounted {
+	GDCLASS(PCKPacker, RefCounted);
 
 	FileAccess *file = nullptr;
 	int alignment = 0;
@@ -58,7 +58,7 @@ class PCKPacker : public Reference {
 	Vector<File> files;
 
 public:
-	Error pck_start(const String &p_file, int p_alignment = 0, const String &p_key = String(), bool p_encrypt_directory = false);
+	Error pck_start(const String &p_file, int p_alignment = 32, const String &p_key = "0000000000000000000000000000000000000000000000000000000000000000", bool p_encrypt_directory = false);
 	Error add_file(const String &p_file, const String &p_src, bool p_encrypt = false);
 	Error flush(bool p_verbose = false);
 

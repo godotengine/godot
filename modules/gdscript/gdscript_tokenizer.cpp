@@ -242,6 +242,16 @@ void GDScriptTokenizer::set_multiline_mode(bool p_state) {
 	multiline_mode = p_state;
 }
 
+void GDScriptTokenizer::push_expression_indented_block() {
+	indent_stack_stack.push_back(indent_stack);
+}
+
+void GDScriptTokenizer::pop_expression_indented_block() {
+	ERR_FAIL_COND(indent_stack_stack.size() == 0);
+	indent_stack = indent_stack_stack.back()->get();
+	indent_stack_stack.pop_back();
+}
+
 int GDScriptTokenizer::get_cursor_line() const {
 	return cursor_line;
 }
@@ -633,6 +643,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 				push_error(error);
 			}
 			previous_was_underscore = true;
+		} else {
+			previous_was_underscore = false;
 		}
 		_advance();
 	}
@@ -704,6 +716,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 						push_error(error);
 					}
 					previous_was_underscore = true;
+				} else {
+					previous_was_underscore = false;
 				}
 				_advance();
 			}
@@ -780,6 +794,15 @@ GDScriptTokenizer::Token GDScriptTokenizer::string() {
 		}
 
 		char32_t ch = _peek();
+
+		if (ch == 0x200E || ch == 0x200F || (ch >= 0x202A && ch <= 0x202E) || (ch >= 0x2066 && ch <= 0x2069)) {
+			Token error = make_error("Invisible text direction control character present in the string, escape it (\"\\u" + String::num_int64(ch, 16) + "\") to avoid confusion.");
+			error.start_column = column;
+			error.leftmost_column = error.start_column;
+			error.end_column = column + 1;
+			error.rightmost_column = error.end_column;
+			push_error(error);
+		}
 
 		if (ch == '\\') {
 			// Escape pattern.
@@ -1050,7 +1073,8 @@ void GDScriptTokenizer::check_indent() {
 			// First time indenting, choose character now.
 			indent_char = current_indent_char;
 		} else if (current_indent_char != indent_char) {
-			Token error = make_error(vformat("Used \"%s\" for indentation instead \"%s\" as used before in the file.", String(&current_indent_char, 1).c_escape(), String(&indent_char, 1).c_escape()));
+			Token error = make_error(vformat("Used %s character for indentation instead of %s as used before in the file.",
+					_get_indent_char_name(current_indent_char), _get_indent_char_name(indent_char)));
 			error.start_line = line;
 			error.start_column = 1;
 			error.leftmost_column = 1;
@@ -1098,6 +1122,12 @@ void GDScriptTokenizer::check_indent() {
 		}
 		break; // Get out of the loop in any case.
 	}
+}
+
+String GDScriptTokenizer::_get_indent_char_name(char32_t ch) {
+	ERR_FAIL_COND_V(ch != ' ' && ch != '\t', String(&ch, 1).c_escape());
+
+	return ch == ' ' ? "space" : "tab";
 }
 
 void GDScriptTokenizer::_skip_whitespace() {
@@ -1426,7 +1456,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 GDScriptTokenizer::GDScriptTokenizer() {
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
-		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/indent/size");
+		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
 	}
 #endif // TOOLS_ENABLED
 }

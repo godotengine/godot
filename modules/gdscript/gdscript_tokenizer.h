@@ -217,6 +217,7 @@ private:
 	Token last_newline;
 	int pending_indents = 0;
 	List<int> indent_stack;
+	List<List<int>> indent_stack_stack; // For lambdas, which require manipulating the indentation point.
 	List<char32_t> paren_stack;
 	char32_t indent_char = '\0';
 	int position = 0;
@@ -232,6 +233,7 @@ private:
 	bool has_error() const { return !error_stack.is_empty(); }
 	Token pop_error();
 	char32_t _advance();
+	String _get_indent_char_name(char32_t ch);
 	void _skip_whitespace();
 	void check_indent();
 
@@ -263,6 +265,8 @@ public:
 	void set_multiline_mode(bool p_state);
 	bool is_past_cursor() const;
 	static String get_token_name(Token::Type p_token_type);
+	void push_expression_indented_block(); // For lambdas, or blocks inside expressions.
+	void pop_expression_indented_block(); // For lambdas, or blocks inside expressions.
 
 	GDScriptTokenizer();
 };

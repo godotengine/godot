@@ -94,7 +94,7 @@ Property::~Property() {
 namespace {
 
 // ------------------------------------------------------------------------------------------------
-// read a typed property out of a FBX element. The return value is NULL if the property cannot be read.
+// read a typed property out of a FBX element. The return value is nullptr if the property cannot be read.
 PropertyPtr ReadTypedProperty(const ElementPtr element) {
 	//ai_assert(element.KeyToken().StringContents() == "P");
 
@@ -114,12 +114,12 @@ PropertyPtr ReadTypedProperty(const ElementPtr element) {
 	} else if (!strcmp(cs, "KTime")) {
 		return new TypedProperty<int64_t>(ParseTokenAsInt64(tok[4]));
 	} else if (!strcmp(cs, "Vector3D") ||
-			   !strcmp(cs, "ColorRGB") ||
-			   !strcmp(cs, "Vector") ||
-			   !strcmp(cs, "Color") ||
-			   !strcmp(cs, "Lcl Translation") ||
-			   !strcmp(cs, "Lcl Rotation") ||
-			   !strcmp(cs, "Lcl Scaling")) {
+			!strcmp(cs, "ColorRGB") ||
+			!strcmp(cs, "Vector") ||
+			!strcmp(cs, "Color") ||
+			!strcmp(cs, "Lcl Translation") ||
+			!strcmp(cs, "Lcl Rotation") ||
+			!strcmp(cs, "Lcl Scaling")) {
 		return new TypedProperty<Vector3>(Vector3(
 				ParseTokenAsFloat(tok[4]),
 				ParseTokenAsFloat(tok[5]),

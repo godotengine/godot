@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeDeterminant" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
-		Calculates the determinant of a [Transform] within the visual shader graph.
+		Calculates the determinant of a [Transform3D] within the visual shader graph.
 	</brief_description>
 	<description>
 		Translates to [code]determinant(x)[/code] in the shader language.
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
 </class>

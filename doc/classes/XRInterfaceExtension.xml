@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRInterfaceExtension" inherits="XRInterface" version="4.0">
+	<brief_description>
+		Base class for XR interface extensions (plugins).
+	</brief_description>
+	<description>
+		External XR interface plugins should inherit from this class.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_commit_views" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="render_target" type="RID" />
+			<argument index="1" name="screen_rect" type="Rect2" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_anchor_detection_is_enabled" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_camera_feed_id" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_camera_transform" qualifiers="virtual">
+			<return type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_capabilities" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_play_area" qualifiers="virtual const">
+			<return type="PackedVector3Array" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_play_area_mode" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_projection_for_view" qualifiers="virtual">
+			<return type="PackedFloat64Array" />
+			<argument index="0" name="view" type="int" />
+			<argument index="1" name="aspect" type="float" />
+			<argument index="2" name="z_near" type="float" />
+			<argument index="3" name="z_far" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_render_target_size" qualifiers="virtual">
+			<return type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_suggested_pose_names" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<argument index="0" name="tracker_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_suggested_tracker_names" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_tracking_status" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_transform_for_view" qualifiers="virtual">
+			<return type="Transform3D" />
+			<argument index="0" name="view" type="int" />
+			<argument index="1" name="cam_transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_view_count" qualifiers="virtual">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_initialize" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_initialized" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_notification" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="what" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_process" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_anchor_detection_is_enabled" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_play_area_mode" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="mode" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_supports_play_area_mode" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
+			<description>
+			</description>
+		</method>
+		<method name="_trigger_haptic_pulse" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="action_name" type="String" />
+			<argument index="1" name="tracker_name" type="StringName" />
+			<argument index="2" name="frequency" type="float" />
+			<argument index="3" name="amplitude" type="float" />
+			<argument index="4" name="duration_sec" type="float" />
+			<argument index="5" name="delay_sec" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_uninitialize" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="add_blit">
+			<return type="void" />
+			<argument index="0" name="render_target" type="RID" />
+			<argument index="1" name="src_rect" type="Rect2" />
+			<argument index="2" name="dst_rect" type="Rect2i" />
+			<argument index="3" name="use_layer" type="bool" />
+			<argument index="4" name="layer" type="int" />
+			<argument index="5" name="apply_lens_distortion" type="bool" />
+			<argument index="6" name="eye_center" type="Vector2" />
+			<argument index="7" name="k1" type="float" />
+			<argument index="8" name="k2" type="float" />
+			<argument index="9" name="upscale" type="float" />
+			<argument index="10" name="aspect_ratio" type="float" />
+			<description>
+				Blits our render results to screen optionally applying lens distortion. This can only be called while processing [code]_commit_views[/code].
+			</description>
+		</method>
+		<method name="get_render_target_texture">
+			<return type="RID" />
+			<argument index="0" name="render_target" type="RID" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

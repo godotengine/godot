@@ -106,7 +106,8 @@ indic_features[] =
 {
   /*
    * Basic features.
-   * These features are applied in order, one at a time, after initial_reordering.
+   * These features are applied in order, one at a time, after initial_reordering,
+   * constrained to the syllable.
    */
   {HB_TAG('n','u','k','t'), F_GLOBAL_MANUAL_JOINERS},
   {HB_TAG('a','k','h','n'), F_GLOBAL_MANUAL_JOINERS},
@@ -121,8 +122,8 @@ indic_features[] =
   {HB_TAG('c','j','c','t'), F_GLOBAL_MANUAL_JOINERS},
   /*
    * Other features.
-   * These features are applied all at once, after final_reordering
-   * but before clearing syllables.
+   * These features are applied all at once, after final_reordering, constrained
+   * to the syllable.
    * Default Bengali font in Windows for example has intermixed
    * lookups for init,pres,abvs,blws features.
    */
@@ -201,9 +202,6 @@ collect_features_indic (hb_ot_shape_planner_t *plan)
   for (; i < INDIC_NUM_FEATURES; i++)
     map->add_feature (indic_features[i]);
 
-  map->enable_feature (HB_TAG('c','a','l','t'));
-  map->enable_feature (HB_TAG('c','l','i','g'));
-
   map->add_gsub_pause (_hb_clear_syllables);
 }
 
@@ -257,7 +255,7 @@ struct indic_shape_plan_t
 static void *
 data_create_indic (const hb_ot_shape_plan_t *plan)
 {
-  indic_shape_plan_t *indic_plan = (indic_shape_plan_t *) calloc (1, sizeof (indic_shape_plan_t));
+  indic_shape_plan_t *indic_plan = (indic_shape_plan_t *) hb_calloc (1, sizeof (indic_shape_plan_t));
   if (unlikely (!indic_plan))
     return nullptr;
 
@@ -300,7 +298,7 @@ data_create_indic (const hb_ot_shape_plan_t *plan)
 static void
 data_destroy_indic (void *data)
 {
-  free (data);
+  hb_free (data);
 }
 
 static indic_position_t
@@ -960,7 +958,8 @@ initial_reordering_indic (const hb_ot_shape_plan_t *plan,
   hb_syllabic_insert_dotted_circles (font, buffer,
 				     indic_broken_cluster,
 				     OT_DOTTEDCIRCLE,
-				     OT_Repha);
+				     OT_Repha,
+				     POS_END);
 
   foreach_syllable (buffer, start, end)
     initial_reordering_syllable_indic (plan, font->face, buffer, start, end);

@@ -57,7 +57,7 @@ public:
 
 	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) = 0;
 	virtual void disconnect_from_host(int p_code = 1000, String p_reason = "") = 0;
-	virtual IP_Address get_connected_host() const = 0;
+	virtual IPAddress get_connected_host() const = 0;
 	virtual uint16_t get_connected_port() const = 0;
 
 	virtual bool is_server() const override;

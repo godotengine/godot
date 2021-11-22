@@ -12,13 +12,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="node_path" type="NodePath" setter="set_node_path" getter="get_node_path" default="NodePath(&quot;.&quot;)">
 			The node's path in the scene tree.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

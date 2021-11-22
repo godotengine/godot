@@ -32,20 +32,20 @@
 
 #include "editor/debugger/script_editor_debugger.h"
 
-void EditorDebuggerPlugin::_breaked(bool p_really_did, bool p_can_debug) {
+void EditorDebuggerPlugin::_breaked(bool p_really_did, bool p_can_debug, String p_message, bool p_has_stackdump) {
 	if (p_really_did) {
-		emit_signal("breaked", p_can_debug);
+		emit_signal(SNAME("breaked"), p_can_debug);
 	} else {
-		emit_signal("continued");
+		emit_signal(SNAME("continued"));
 	}
 }
 
 void EditorDebuggerPlugin::_started() {
-	emit_signal("started");
+	emit_signal(SNAME("started"));
 }
 
 void EditorDebuggerPlugin::_stopped() {
-	emit_signal("stopped");
+	emit_signal(SNAME("stopped"));
 }
 
 void EditorDebuggerPlugin::_bind_methods() {

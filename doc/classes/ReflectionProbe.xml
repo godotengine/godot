@@ -5,15 +5,13 @@
 	</brief_description>
 	<description>
 		Captures its surroundings as a cubemap, and stores versions of it with increasing levels of blur to simulate different material roughnesses.
-		The [ReflectionProbe] is used to create high-quality reflections at the cost of performance. It can be combined with [GIProbe]s and Screen Space Reflections to achieve high quality reflections. [ReflectionProbe]s render all objects within their [member cull_mask], so updating them can be quite expensive. It is best to update them once with the important static objects and then leave them.
+		The [ReflectionProbe] is used to create high-quality reflections at the cost of performance. It can be combined with [VoxelGI]s and Screen Space Reflections to achieve high quality reflections. [ReflectionProbe]s render all objects within their [member cull_mask], so updating them can be quite expensive. It is best to update them once with the important static objects and then leave them.
 	</description>
 	<tutorials>
-		<link title="Reflection probes">https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html</link>
+		<link title="Reflection probes">$DOCS_URL/tutorials/3d/reflection_probes.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="ambient_color" type="Color" setter="set_ambient_color" getter="get_ambient_color" default="Color( 0, 0, 0, 1 )">
+		<member name="ambient_color" type="Color" setter="set_ambient_color" getter="get_ambient_color" default="Color(0, 0, 0, 1)">
 		</member>
 		<member name="ambient_color_energy" type="float" setter="set_ambient_color_energy" getter="get_ambient_color_energy" default="1.0">
 		</member>
@@ -28,8 +26,8 @@
 		<member name="enable_shadows" type="bool" setter="set_enable_shadows" getter="are_shadows_enabled" default="false">
 			If [code]true[/code], computes shadows in the reflection probe. This makes the reflection probe slower to render; you may want to disable this if using the [constant UPDATE_ALWAYS] [member update_mode].
 		</member>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 1, 1, 1 )">
-			The size of the reflection probe. The larger the extents the more space covered by the probe which will lower the perceived resolution. It is best to keep the extents only as large as you need them.
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(10, 10, 10)">
+			The size of the reflection probe. The larger the extents, the more space covered by the probe, which will lower the perceived resolution. It is best to keep the extents only as large as you need them.
 		</member>
 		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="1.0">
 			Defines the reflection intensity. Intensity modulates the strength of the reflection.
@@ -42,7 +40,7 @@
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
 			Sets the max distance away from the probe an object can be before it is culled.
 		</member>
-		<member name="origin_offset" type="Vector3" setter="set_origin_offset" getter="get_origin_offset" default="Vector3( 0, 0, 0 )">
+		<member name="origin_offset" type="Vector3" setter="set_origin_offset" getter="get_origin_offset" default="Vector3(0, 0, 0)">
 			Sets the origin offset to be used when this reflection probe is in box project mode.
 		</member>
 		<member name="update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="ReflectionProbe.UpdateMode" default="0">

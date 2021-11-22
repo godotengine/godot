@@ -45,6 +45,7 @@ public:
 		CANVAS_RECT_TRANSPOSE = 16,
 		CANVAS_RECT_CLIP_UV = 32,
 		CANVAS_RECT_IS_GROUP = 64,
+		CANVAS_RECT_MSDF = 128,
 	};
 
 	struct Light {
@@ -180,6 +181,7 @@ public:
 				TYPE_PARTICLES,
 				TYPE_TRANSFORM,
 				TYPE_CLIP_IGNORE,
+				TYPE_ANIMATION_SLICE,
 			};
 
 			Command *next;
@@ -192,11 +194,15 @@ public:
 			Color modulate;
 			Rect2 source;
 			uint8_t flags;
+			float outline;
+			float px_range;
 
 			RID texture;
 
 			CommandRect() {
 				flags = 0;
+				outline = 0;
+				px_range = 1;
 				type = TYPE_RECT;
 			}
 		};
@@ -246,10 +252,16 @@ public:
 			RID mesh;
 			Transform2D transform;
 			Color modulate;
+			RID mesh_instance;
 
 			RID texture;
 
 			CommandMesh() { type = TYPE_MESH; }
+			~CommandMesh() {
+				if (mesh_instance.is_valid()) {
+					RendererStorage::base_singleton->free(mesh_instance);
+				}
+			}
 		};
 
 		struct CommandMultiMesh : public Command {
@@ -262,7 +274,6 @@ public:
 
 		struct CommandParticles : public Command {
 			RID particles;
-
 			RID texture;
 
 			CommandParticles() { type = TYPE_PARTICLES; }
@@ -278,6 +289,17 @@ public:
 			CommandClipIgnore() {
 				type = TYPE_CLIP_IGNORE;
 				ignore = false;
+			}
+		};
+
+		struct CommandAnimationSlice : public Command {
+			double animation_length = 0;
+			double slice_begin = 0;
+			double slice_end = 0;
+			double offset = 0;
+
+			CommandAnimationSlice() {
+				type = TYPE_ANIMATION_SLICE;
 			}
 		};
 
@@ -415,7 +437,6 @@ public:
 
 				if (found_xform) {
 					r = xf.xform(r);
-					found_xform = false;
 				}
 
 				if (first) {
@@ -591,8 +612,6 @@ public:
 	virtual void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) = 0;
 	virtual void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) = 0;
 	virtual void set_shadow_texture_size(int p_size) = 0;
-
-	virtual void draw_window_margins(int *p_margins, RID *p_margin_textures) = 0;
 
 	virtual bool free(RID p_rid) = 0;
 	virtual void update() = 0;

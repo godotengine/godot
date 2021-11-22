@@ -73,7 +73,6 @@ doc_classes/*                       @godotengine/documentation
 /modules/minimp3/                   @godotengine/audio
 /modules/ogg/                       @godotengine/audio
 /modules/opus/                      @godotengine/audio
-/modules/stb_vorbis/                @godotengine/audio
 /modules/theora/                    @godotengine/audio
 /modules/vorbis/                    @godotengine/audio
 /modules/webm/                      @godotengine/audio

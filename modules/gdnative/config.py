@@ -8,17 +8,11 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "XRInterfaceGDNative",
         "GDNative",
         "GDNativeLibrary",
-        "MultiplayerPeerGDNative",
         "NativeScript",
-        "PacketPeerGDNative",
         "PluginScript",
-        "StreamPeerGDNative",
         "VideoStreamGDNative",
-        "WebRTCPeerConnectionGDNative",
-        "WebRTCDataChannelGDNative",
     ]
 
 

@@ -33,9 +33,10 @@
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
+#include "core/templates/pair.h"
 
 // based on the very nice implementation of rb-trees by:
-// https://web.archive.org/web/20120507164830/http://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
+// https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
 template <class K, class V, class C = Comparator<K>, class A = DefaultAllocator>
 class Map {
@@ -55,11 +56,12 @@ public:
 		Element *parent = nullptr;
 		Element *_next = nullptr;
 		Element *_prev = nullptr;
-		K _key;
-		V _value;
-		//_Data *data;
+		KeyValue<K, V> _data;
 
 	public:
+		KeyValue<K, V> &key_value() { return _data; }
+		const KeyValue<K, V> &key_value() const { return _data; }
+
 		const Element *next() const {
 			return _next;
 		}
@@ -73,23 +75,106 @@ public:
 			return _prev;
 		}
 		const K &key() const {
-			return _key;
+			return _data.key;
 		}
 		V &value() {
-			return _value;
+			return _data.value;
 		}
 		const V &value() const {
-			return _value;
+			return _data.value;
 		}
 		V &get() {
-			return _value;
+			return _data.value;
 		}
 		const V &get() const {
-			return _value;
+			return _data.value;
 		}
-		Element() {}
+		Element(const KeyValue<K, V> &p_data) :
+				_data(p_data) {}
 	};
 
+	typedef KeyValue<K, V> ValueType;
+
+	struct Iterator {
+		_FORCE_INLINE_ KeyValue<K, V> &operator*() const {
+			return E->key_value();
+		}
+		_FORCE_INLINE_ KeyValue<K, V> *operator->() const { return &E->key_value(); }
+		_FORCE_INLINE_ Iterator &operator++() {
+			E = E->next();
+			return *this;
+		}
+		_FORCE_INLINE_ Iterator &operator--() {
+			E = E->prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+
+		Iterator(Element *p_E) { E = p_E; }
+		Iterator() {}
+		Iterator(const Iterator &p_it) { E = p_it.E; }
+
+	private:
+		Element *E = nullptr;
+	};
+
+	struct ConstIterator {
+		_FORCE_INLINE_ const KeyValue<K, V> &operator*() const {
+			return E->key_value();
+		}
+		_FORCE_INLINE_ const KeyValue<K, V> *operator->() const { return &E->key_value(); }
+		_FORCE_INLINE_ ConstIterator &operator++() {
+			E = E->next();
+			return *this;
+		}
+		_FORCE_INLINE_ ConstIterator &operator--() {
+			E = E->prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+
+		ConstIterator(const Element *p_E) { E = p_E; }
+		ConstIterator() {}
+		ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+
+	private:
+		const Element *E = nullptr;
+	};
+
+	_FORCE_INLINE_ Iterator begin() {
+		return Iterator(front());
+	}
+	_FORCE_INLINE_ Iterator end() {
+		return Iterator(nullptr);
+	}
+
+#if 0
+	//to use when replacing find()
+	_FORCE_INLINE_ Iterator find(const K &p_key) {
+		return Iterator(find(p_key));
+	}
+#endif
+	_FORCE_INLINE_ void remove(const Iterator &p_iter) {
+		return erase(p_iter.E);
+	}
+
+	_FORCE_INLINE_ ConstIterator begin() const {
+		return ConstIterator(front());
+	}
+	_FORCE_INLINE_ ConstIterator end() const {
+		return ConstIterator(nullptr);
+	}
+
+#if 0
+	//to use when replacing find()
+	_FORCE_INLINE_ ConstIterator find(const K &p_key) const {
+		return ConstIterator(find(p_key));
+	}
+#endif
 private:
 	struct _Data {
 		Element *_root = nullptr;
@@ -107,7 +192,7 @@ private:
 		}
 
 		void _create_root() {
-			_root = memnew_allocator(Element, A);
+			_root = memnew_allocator(Element(KeyValue<K, V>(K(), V())), A);
 			_root->parent = _root->left = _root->right = _nil;
 			_root->color = BLACK;
 		}
@@ -216,9 +301,9 @@ private:
 		C less;
 
 		while (node != _data._nil) {
-			if (less(p_key, node->_key)) {
+			if (less(p_key, node->_data.key)) {
 				node = node->left;
-			} else if (less(node->_key, p_key)) {
+			} else if (less(node->_data.key, p_key)) {
 				node = node->right;
 			} else {
 				return node; // found
@@ -236,9 +321,9 @@ private:
 		while (node != _data._nil) {
 			prev = node;
 
-			if (less(p_key, node->_key)) {
+			if (less(p_key, node->_data.key)) {
 				node = node->left;
-			} else if (less(node->_key, p_key)) {
+			} else if (less(node->_data.key, p_key)) {
 				node = node->right;
 			} else {
 				return node; // found
@@ -249,7 +334,7 @@ private:
 			return nullptr; // tree empty
 		}
 
-		if (less(p_key, prev->_key)) {
+		if (less(p_key, prev->_data.key)) {
 			prev = prev->_prev;
 		}
 
@@ -312,25 +397,25 @@ private:
 		while (node != _data._nil) {
 			new_parent = node;
 
-			if (less(p_key, node->_key)) {
+			if (less(p_key, node->_data.key)) {
 				node = node->left;
-			} else if (less(node->_key, p_key)) {
+			} else if (less(node->_data.key, p_key)) {
 				node = node->right;
 			} else {
-				node->_value = p_value;
+				node->_data.value = p_value;
 				return node; // Return existing node with new value
 			}
 		}
 
-		Element *new_node = memnew_allocator(Element, A);
+		typedef KeyValue<K, V> KV;
+		Element *new_node = memnew_allocator(Element(KV(p_key, p_value)), A);
 		new_node->parent = new_parent;
 		new_node->right = _data._nil;
 		new_node->left = _data._nil;
-		new_node->_key = p_key;
-		new_node->_value = p_value;
+
 		//new_node->data=_data;
 
-		if (new_parent == _data._root || less(p_key, new_parent->_key)) {
+		if (new_parent == _data._root || less(p_key, new_parent->_data.key)) {
 			new_parent->left = new_node;
 		} else {
 			new_parent->right = new_node;
@@ -575,7 +660,7 @@ public:
 		CRASH_COND(!_data._root);
 		const Element *e = find(p_key);
 		CRASH_COND(!e);
-		return e->_value;
+		return e->_data.value;
 	}
 
 	V &operator[](const K &p_key) {
@@ -588,7 +673,7 @@ public:
 			e = insert(p_key, V());
 		}
 
-		return e->_value;
+		return e->_data.value;
 	}
 
 	Element *front() const {

@@ -31,6 +31,8 @@
 #include "image_saver_tinyexr.h"
 #include "core/math/math_funcs.h"
 
+#include <zlib.h> // Should come before including tinyexr.
+
 #include "thirdparty/tinyexr/tinyexr.h"
 
 static bool is_supported_format(Image::Format p_format) {
@@ -169,7 +171,7 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 		{ 0 }, // R
 		{ 1, 0 }, // GR
 		{ 2, 1, 0 }, // BGR
-		{ 2, 1, 0, 3 } // BGRA
+		{ 3, 2, 1, 0 } // ABGR
 	};
 
 	int channel_count = get_channel_count(format);

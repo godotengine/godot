@@ -8,14 +8,10 @@
 	</tutorials>
 	<methods>
 		<method name="get_magnitude_for_frequency_range" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="from_hz" type="float">
-			</argument>
-			<argument index="1" name="to_hz" type="float">
-			</argument>
-			<argument index="2" name="mode" type="int" enum="AudioEffectSpectrumAnalyzerInstance.MagnitudeMode" default="1">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="from_hz" type="float" />
+			<argument index="1" name="to_hz" type="float" />
+			<argument index="2" name="mode" type="int" enum="AudioEffectSpectrumAnalyzerInstance.MagnitudeMode" default="1" />
 			<description>
 			</description>
 		</method>

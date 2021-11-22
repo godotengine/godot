@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="inner_radius" type="float" setter="set_inner_radius" getter="get_inner_radius" default="2.0">
 			The inner radius of the torus.
@@ -30,6 +28,4 @@
 			If [code]true[/code] the normals of the torus are set to give a smooth effect making the torus seem rounded. If [code]false[/code] the torus will have a flat shaded look.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

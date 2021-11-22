@@ -29,7 +29,7 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
-        ("initial_memory", "Initial WASM memory (in MiB)", 16),
+        ("initial_memory", "Initial WASM memory (in MiB)", 32),
         BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
         BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("use_ubsan", "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
@@ -38,7 +38,7 @@ def get_opts():
         BoolVariable("use_safe_heap", "Use Emscripten SAFE_HEAP sanitizer", False),
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
-        BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", False),
+        BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", True),
         BoolVariable("gdnative_enabled", "Enable WebAssembly GDNative support (produces bigger binaries)", False),
         BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
     ]
@@ -53,6 +53,7 @@ def get_flags():
         # in this platform. For the available networking methods, the browser
         # manages TLS.
         ("module_mbedtls_enabled", False),
+        ("vulkan", False),
     ]
 
 
@@ -76,11 +77,9 @@ def configure(env):
             env.Append(LINKFLAGS=["-Os"])
 
         if env["target"] == "release_debug":
-            env.Append(CPPDEFINES=["DEBUG_ENABLED"])
             # Retain function names for backtraces at the cost of file size.
             env.Append(LINKFLAGS=["--profiling-funcs"])
     else:  # "debug"
-        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(CCFLAGS=["-O1", "-g"])
         env.Append(LINKFLAGS=["-O1", "-g"])
         env["use_assertions"] = True
@@ -129,7 +128,6 @@ def configure(env):
         env.Append(CCFLAGS=["-fsanitize=leak"])
         env.Append(LINKFLAGS=["-fsanitize=leak"])
     if env["use_safe_heap"]:
-        env.Append(CCFLAGS=["-s", "SAFE_HEAP=1"])
         env.Append(LINKFLAGS=["-s", "SAFE_HEAP=1"])
 
     # Closure compiler
@@ -175,12 +173,19 @@ def configure(env):
     # Program() output consists of multiple files, so specify suffixes manually at builder.
     env["PROGSUFFIX"] = ""
     env["LIBPREFIX"] = "lib"
-    env["LIBSUFFIX"] = ".bc"
+    env["LIBSUFFIX"] = ".a"
     env["LIBPREFIXES"] = ["$LIBPREFIX"]
     env["LIBSUFFIXES"] = ["$LIBSUFFIX"]
 
     env.Prepend(CPPPATH=["#platform/javascript"])
     env.Append(CPPDEFINES=["JAVASCRIPT_ENABLED", "UNIX_ENABLED"])
+
+    if env["opengl3"]:
+        env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
+        # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
+        env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
+        # Allow use to take control of swapping WebGL buffers.
+        env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
 
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
@@ -220,25 +225,11 @@ def configure(env):
     # us since we don't know requirements at compile-time.
     env.Append(LINKFLAGS=["-s", "ALLOW_MEMORY_GROWTH=1"])
 
-    # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
-    env.Append(LINKFLAGS=["-s", "USE_WEBGL2=1"])
-
     # Do not call main immediately when the support code is ready.
     env.Append(LINKFLAGS=["-s", "INVOKE_RUN=0"])
 
-    # Allow use to take control of swapping WebGL buffers.
-    env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
-
-    # callMain for manual start.
-    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
+    # callMain for manual start, cwrap for the mono version.
+    env.Append(LINKFLAGS=["-s", "EXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
-
-    # TODO remove once we have GLES support back (temporary fix undefined symbols due to dead code elimination).
-    env.Append(
-        LINKFLAGS=[
-            "-s",
-            "EXPORTED_FUNCTIONS=['_main', '_emscripten_webgl_get_current_context', '_emscripten_webgl_commit_frame', '_emscripten_webgl_create_context']",
-        ]
-    )

@@ -31,10 +31,10 @@
 #ifndef DELAUNAY_3D_H
 #define DELAUNAY_3D_H
 
+#include "core/io/file_access.h"
 #include "core/math/aabb.h"
 #include "core/math/camera_matrix.h"
 #include "core/math/vector3.h"
-#include "core/os/file_access.h"
 #include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
@@ -375,8 +375,7 @@ public:
 		OutputSimplex *ret_simplicesw = ret_simplices.ptrw();
 		uint32_t simplices_written = 0;
 
-		for (List<Simplex *>::Element *E = simplex_list.front(); E; E = E->next()) {
-			Simplex *simplex = E->get();
+		for (Simplex *simplex : simplex_list) {
 			bool invalid = false;
 			for (int j = 0; j < 4; j++) {
 				if (simplex->points[j] >= point_count) {

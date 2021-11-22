@@ -30,6 +30,9 @@
 
 #include "rename_dialog.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+
 #include "core/string/print_string.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -385,11 +388,11 @@ void RenameDialog::_update_preview(String new_text) {
 
 		if (new_name == preview_node->get_name()) {
 			// New name is identical to the old one. Don't color it as much to avoid distracting the user.
-			const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color("accent_color", "Editor");
-			const Color text_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color("default_color", "RichTextLabel");
+			const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			const Color text_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("default_color"), SNAME("RichTextLabel"));
 			lbl_preview->add_theme_color_override("font_color", accent_color.lerp(text_color, 0.5));
 		} else {
-			lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("success_color", "Editor"));
+			lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("success_color"), SNAME("Editor")));
 		}
 	}
 
@@ -457,9 +460,9 @@ String RenameDialog::_substitute(const String &subject, const Node *node, int co
 	return result;
 }
 
-void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
+void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	RenameDialog *self = (RenameDialog *)p_self;
-	String source_file(p_file);
+	String source_file = String::utf8(p_file);
 
 	// Only show first error that is related to "regex"
 	if (self->has_errors || source_file.find("regex") < 0) {
@@ -468,14 +471,14 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
-		err_str = p_errorexp;
+		err_str = String::utf8(p_errorexp);
 	} else {
-		err_str = p_error;
+		err_str = String::utf8(p_error);
 	}
 
 	self->has_errors = true;
 	self->lbl_preview_title->set_text(TTR("Regular Expression Error:"));
-	self->lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
+	self->lbl_preview->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	self->lbl_preview->set_text(vformat(TTR("At character %s"), err_str));
 }
 
@@ -588,7 +591,7 @@ void RenameDialog::rename() {
 				continue;
 			}
 
-			scene_tree_editor->emit_signal("node_prerename", n, new_name);
+			scene_tree_editor->emit_signal(SNAME("node_prerename"), n, new_name);
 			undo_redo->add_do_method(scene_tree_editor, "_rename_node", n->get_instance_id(), new_name);
 			undo_redo->add_undo_method(scene_tree_editor, "_rename_node", n->get_instance_id(), n->get_name());
 		}
@@ -624,7 +627,7 @@ void RenameDialog::reset() {
 
 bool RenameDialog::_is_main_field(LineEdit *line_edit) {
 	return line_edit &&
-		   (line_edit == lne_search || line_edit == lne_replace || line_edit == lne_prefix || line_edit == lne_suffix);
+			(line_edit == lne_search || line_edit == lne_replace || line_edit == lne_prefix || line_edit == lne_suffix);
 }
 
 void RenameDialog::_insert_text(String text) {
@@ -649,3 +652,5 @@ void RenameDialog::_features_toggled(bool pressed) {
 	size.y = 0;
 	set_size(size);
 }
+
+#endif // MODULE_REGEX_ENABLED

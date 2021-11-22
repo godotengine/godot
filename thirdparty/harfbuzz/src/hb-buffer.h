@@ -383,6 +383,13 @@ hb_buffer_set_invisible_glyph (hb_buffer_t    *buffer,
 HB_EXTERN hb_codepoint_t
 hb_buffer_get_invisible_glyph (hb_buffer_t    *buffer);
 
+HB_EXTERN void
+hb_buffer_set_not_found_glyph (hb_buffer_t    *buffer,
+			       hb_codepoint_t  not_found);
+
+HB_EXTERN hb_codepoint_t
+hb_buffer_get_not_found_glyph (hb_buffer_t    *buffer);
+
 
 HB_EXTERN void
 hb_buffer_reset (hb_buffer_t *buffer);

@@ -31,7 +31,7 @@
 #ifndef PRINT_STRING_H
 #define PRINT_STRING_H
 
-#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 extern void (*_print_func)(String);
 
@@ -46,13 +46,21 @@ struct PrintHandlerList {
 	PrintHandlerList() {}
 };
 
+String stringify_variants(Variant p_var);
+
+template <typename... Args>
+String stringify_variants(Variant p_var, Args... p_args) {
+	return p_var.operator String() + " " + stringify_variants(p_args...);
+}
+
 void add_print_handler(PrintHandlerList *p_handler);
 void remove_print_handler(PrintHandlerList *p_handler);
 
 extern bool _print_line_enabled;
 extern bool _print_error_enabled;
-extern void print_line(String p_string);
+extern void __print_line(String p_string);
 extern void print_error(String p_string);
 extern void print_verbose(String p_string);
+#define print_line(...) __print_line(stringify_variants(__VA_ARGS__))
 
 #endif // PRINT_STRING_H

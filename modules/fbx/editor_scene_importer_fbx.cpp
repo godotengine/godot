@@ -40,9 +40,9 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/import/resource_importer_scene.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/main/node.h"
 #include "scene/resources/material.h"
@@ -56,7 +56,7 @@
 
 #include <string>
 
-void EditorSceneImporterFBX::get_extensions(List<String> *r_extensions) const {
+void EditorSceneFormatImporterFBX::get_extensions(List<String> *r_extensions) const {
 	// register FBX as the one and only format for FBX importing
 	const String import_setting_string = "filesystem/import/fbx/";
 	const String fbx_str = "fbx";
@@ -65,7 +65,7 @@ void EditorSceneImporterFBX::get_extensions(List<String> *r_extensions) const {
 	_register_project_setting_import(fbx_str, import_setting_string, exts, r_extensions, true);
 }
 
-void EditorSceneImporterFBX::_register_project_setting_import(const String generic,
+void EditorSceneFormatImporterFBX::_register_project_setting_import(const String generic,
 		const String import_setting_string,
 		const Vector<String> &exts,
 		List<String> *r_extensions,
@@ -79,11 +79,11 @@ void EditorSceneImporterFBX::_register_project_setting_import(const String gener
 	}
 }
 
-uint32_t EditorSceneImporterFBX::get_import_flags() const {
+uint32_t EditorSceneFormatImporterFBX::get_import_flags() const {
 	return IMPORT_SCENE;
 }
 
-Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps,
+Node3D *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
 	// done for performance when re-importing lots of files when testing importer in verbose only!
 	if (OS::get_singleton()->is_stdout_verbose()) {
@@ -102,9 +102,9 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 		FBXDocParser::TokenList tokens;
 
 		bool is_binary = false;
-		data.resize(f->get_len());
+		data.resize(f->get_length());
 
-		ERR_FAIL_COND_V(data.size() < 64, NULL);
+		ERR_FAIL_COND_V(data.size() < 64, nullptr);
 
 		f->get_buffer(data.ptrw(), data.size());
 		PackedByteArray fbx_header;
@@ -232,7 +232,7 @@ Node3D *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_fl
 }
 
 template <class T>
-struct EditorSceneImporterAssetImportInterpolate {
+struct EditorSceneFormatImporterAssetImportInterpolate {
 	T lerp(const T &a, const T &b, float c) const {
 		return a + (b - a) * c;
 	}
@@ -258,31 +258,31 @@ struct EditorSceneImporterAssetImportInterpolate {
 
 //thank you for existing, partial specialization
 template <>
-struct EditorSceneImporterAssetImportInterpolate<Quat> {
-	Quat lerp(const Quat &a, const Quat &b, float c) const {
-		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
+struct EditorSceneFormatImporterAssetImportInterpolate<Quaternion> {
+	Quaternion lerp(const Quaternion &a, const Quaternion &b, float c) const {
+		ERR_FAIL_COND_V(!a.is_normalized(), Quaternion());
+		ERR_FAIL_COND_V(!b.is_normalized(), Quaternion());
 
 		return a.slerp(b, c).normalized();
 	}
 
-	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, float c) {
-		ERR_FAIL_COND_V(!p1.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!p2.is_normalized(), Quat());
+	Quaternion catmull_rom(const Quaternion &p0, const Quaternion &p1, const Quaternion &p2, const Quaternion &p3, float c) {
+		ERR_FAIL_COND_V(!p1.is_normalized(), Quaternion());
+		ERR_FAIL_COND_V(!p2.is_normalized(), Quaternion());
 
 		return p1.slerp(p2, c).normalized();
 	}
 
-	Quat bezier(Quat start, Quat control_1, Quat control_2, Quat end, float t) {
-		ERR_FAIL_COND_V(!start.is_normalized(), Quat());
-		ERR_FAIL_COND_V(!end.is_normalized(), Quat());
+	Quaternion bezier(Quaternion start, Quaternion control_1, Quaternion control_2, Quaternion end, float t) {
+		ERR_FAIL_COND_V(!start.is_normalized(), Quaternion());
+		ERR_FAIL_COND_V(!end.is_normalized(), Quaternion());
 
 		return start.slerp(end, t).normalized();
 	}
 };
 
 template <class T>
-T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time,
+T EditorSceneFormatImporterFBX::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time,
 		AssetImportAnimation::Interpolation p_interp) {
 	//could use binary search, worth it?
 	int idx = -1;
@@ -293,7 +293,7 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 		idx++;
 	}
 
-	EditorSceneImporterAssetImportInterpolate<T> interp;
+	EditorSceneFormatImporterAssetImportInterpolate<T> interp;
 
 	switch (p_interp) {
 		case AssetImportAnimation::INTERP_LINEAR: {
@@ -352,7 +352,7 @@ T EditorSceneImporterFBX::_interpolate_track(const Vector<float> &p_times, const
 	ERR_FAIL_V(p_values[0]);
 }
 
-Node3D *EditorSceneImporterFBX::_generate_scene(
+Node3D *EditorSceneFormatImporterFBX::_generate_scene(
 		const String &p_path,
 		const FBXDocParser::Document *p_document,
 		const uint32_t p_flags,
@@ -373,7 +373,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	scene_root->add_child(state.root);
 	state.root->set_owner(scene_root);
 
-	state.fbx_root_node.instance();
+	state.fbx_root_node.instantiate();
 	state.fbx_root_node->godot_node = state.root;
 
 	// Size relative to cm.
@@ -389,11 +389,11 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	// Enabled by default.
 	state.enable_animation_import = true;
 	Ref<FBXNode> root_node;
-	root_node.instance();
+	root_node.instantiate();
 
 	// make sure fake noFBXDocParser::PropertyPtr ptrde always has a transform too ;)
 	Ref<PivotTransform> pivot_transform;
-	pivot_transform.instance();
+	pivot_transform.instantiate();
 	root_node->pivot_transform = pivot_transform;
 	root_node->node_name = "root node";
 	root_node->current_node_id = 0;
@@ -479,7 +479,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 			if (state.renderer_mesh_data.has(mesh_id)) {
 				mesh_vertex_data = state.renderer_mesh_data[mesh_id];
 			} else {
-				mesh_vertex_data.instance();
+				mesh_vertex_data.instantiate();
 				state.renderer_mesh_data.insert(mesh_id, mesh_vertex_data);
 			}
 
@@ -535,7 +535,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 			ERR_CONTINUE_MSG(!mat, "Could not convert fbx material by id: " + itos(material_id));
 
 			Ref<FBXMaterial> material;
-			material.instance();
+			material.instantiate();
 			material->set_imported_material(mat);
 
 			Ref<StandardMaterial3D> godot_material = material->import_material(state);
@@ -567,15 +567,15 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		// this means that the nodes from maya kLocators will be preserved as bones
 		// in the same rig without having to match this across skeletons and merge by detection
 		// we can just merge and undo any parent transforms
-		for (Map<uint64_t, Ref<FBXBone>>::Element *bone_element = state.fbx_bone_map.front(); bone_element; bone_element = bone_element->next()) {
-			Ref<FBXBone> bone = bone_element->value();
+		for (KeyValue<uint64_t, Ref<FBXBone>> &bone_element : state.fbx_bone_map) {
+			Ref<FBXBone> bone = bone_element.value;
 			Ref<FBXSkeleton> fbx_skeleton_inst;
 
 			uint64_t armature_id = bone->armature_id;
 			if (state.skeleton_map.has(armature_id)) {
 				fbx_skeleton_inst = state.skeleton_map[armature_id];
 			} else {
-				fbx_skeleton_inst.instance();
+				fbx_skeleton_inst.instantiate();
 				state.skeleton_map.insert(armature_id, fbx_skeleton_inst);
 			}
 
@@ -609,8 +609,8 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		}
 
 		// setup skeleton instances if required :)
-		for (Map<uint64_t, Ref<FBXSkeleton>>::Element *skeleton_node = state.skeleton_map.front(); skeleton_node; skeleton_node = skeleton_node->next()) {
-			Ref<FBXSkeleton> &skeleton = skeleton_node->value();
+		for (KeyValue<uint64_t, Ref<FBXSkeleton>> &skeleton_node : state.skeleton_map) {
+			Ref<FBXSkeleton> &skeleton = skeleton_node.value;
 			skeleton->init_skeleton(state);
 
 			ERR_CONTINUE_MSG(skeleton->fbx_node.is_null(), "invalid fbx target map, missing skeleton");
@@ -627,7 +627,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 				node_element;
 				node_element = node_element->next()) {
 			Ref<FBXNode> fbx_node = node_element->get();
-			EditorSceneImporterMeshNode3D *mesh_node = nullptr;
+			ImporterMeshInstance3D *mesh_node = nullptr;
 			Ref<FBXMeshData> mesh_data_precached;
 
 			// check for valid geometry
@@ -650,7 +650,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						if (state.renderer_mesh_data.has(mesh_id)) {
 							mesh_data_precached = state.renderer_mesh_data[mesh_id];
 						} else {
-							mesh_data_precached.instance();
+							mesh_data_precached.instantiate();
 							state.renderer_mesh_data.insert(mesh_id, mesh_data_precached);
 						}
 
@@ -699,9 +699,9 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		}
 	}
 
-	for (Map<uint64_t, Ref<FBXMeshData>>::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next()) {
-		const uint64_t mesh_id = mesh_data->key();
-		Ref<FBXMeshData> mesh = mesh_data->value();
+	for (KeyValue<uint64_t, Ref<FBXMeshData>> &mesh_data : state.renderer_mesh_data) {
+		const uint64_t mesh_id = mesh_data.key;
+		Ref<FBXMeshData> mesh = mesh_data.value;
 
 		const FBXDocParser::MeshGeometry *mesh_geometry = p_document->GetObject(mesh_id)->Get<FBXDocParser::MeshGeometry>();
 
@@ -735,7 +735,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 		Ref<Skin> skin;
 		if (!state.MeshSkins.has(mesh_id)) {
 			print_verbose("Created new skin");
-			skin.instance();
+			skin.instantiate();
 			state.MeshSkins.insert(mesh_id, skin);
 		} else {
 			print_verbose("Grabbed skin");
@@ -765,10 +765,10 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	}
 
 	// mesh data iteration for populating skeleton mapping
-	for (Map<uint64_t, Ref<FBXMeshData>>::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next()) {
-		Ref<FBXMeshData> mesh = mesh_data->value();
-		const uint64_t mesh_id = mesh_data->key();
-		EditorSceneImporterMeshNode3D *mesh_instance = mesh->godot_mesh_instance;
+	for (KeyValue<uint64_t, Ref<FBXMeshData>> &mesh_data : state.renderer_mesh_data) {
+		Ref<FBXMeshData> mesh = mesh_data.value;
+		const uint64_t mesh_id = mesh_data.key;
+		ImporterMeshInstance3D *mesh_instance = mesh->godot_mesh_instance;
 		const int mesh_weights = mesh->max_weight_count;
 		Ref<FBXSkeleton> skeleton;
 		const bool valid_armature = mesh->valid_armature_id;
@@ -843,12 +843,12 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 				if (state.animation_player == nullptr) {
 					print_verbose("Creating animation player");
 					state.animation_player = memnew(AnimationPlayer);
-					state.root->add_child(state.animation_player);
+					state.root->add_child(state.animation_player, true);
 					state.animation_player->set_owner(state.root_owner);
 				}
 
 				Ref<Animation> animation;
-				animation.instance();
+				animation.instantiate();
 				animation->set_name(animation_name);
 				animation->set_length(duration);
 
@@ -888,7 +888,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 					// we need to know what object the curves are for.
 					// we need the target ID and the target name for the track reduction.
 
-					FBXDocParser::Model::RotOrder quat_rotation_order = FBXDocParser::Model::RotOrder_EulerXYZ;
+					FBXDocParser::Model::RotOrder quaternion_rotation_order = FBXDocParser::Model::RotOrder_EulerXYZ;
 
 					// T:: R:: S:: Visible:: Custom::
 					for (const FBXDocParser::AnimationCurveNode *curve_node : node_list) {
@@ -910,7 +910,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 							continue;
 						} else {
 							//print_verbose("[doc] applied rotation order: " + itos(target->RotationOrder()));
-							quat_rotation_order = target->RotationOrder();
+							quaternion_rotation_order = target->RotationOrder();
 						}
 
 						uint64_t target_id = target->ID();
@@ -1004,17 +1004,14 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 
 					// target id, [ track name, [time index, vector] ]
 					//std::map<uint64_t, std::map<StringName, FBXTrack > > AnimCurveNodes;
-					for (Map<uint64_t, Map<StringName, FBXTrack>>::Element *track = AnimCurveNodes.front(); track; track = track->next()) {
+					for (KeyValue<uint64_t, Map<StringName, FBXTrack>> &track : AnimCurveNodes) {
 						// 5 tracks
 						// current track index
 						// track count is 5
 						// track count is 5.
 						// next track id is 5.
-						const uint64_t target_id = track->key();
-						int track_idx = animation->add_track(Animation::TYPE_TRANSFORM);
+						const uint64_t target_id = track.key;
 
-						// animation->track_set_path(track_idx, node_path);
-						// animation->track_set_path(track_idx, node_path);
 						Ref<FBXBone> bone;
 
 						// note we must not run the below code if the entry doesn't exist, it will create dummy entries which is very bad.
@@ -1024,7 +1021,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 							bone = state.fbx_bone_map[target_id];
 						}
 
-						Transform target_transform;
+						Transform3D target_transform;
 
 						if (state.fbx_target_map.has(target_id)) {
 							Ref<FBXNode> node_ref = state.fbx_target_map[target_id];
@@ -1038,26 +1035,25 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 
 						// if this is a skeleton mapped track we can just set the path for the track.
 						// todo: implement node paths here at some
+						NodePath track_path;
 						if (state.fbx_bone_map.size() > 0 && state.fbx_bone_map.has(target_id)) {
 							if (bone->fbx_skeleton.is_valid() && bone.is_valid()) {
 								Ref<FBXSkeleton> fbx_skeleton = bone->fbx_skeleton;
 								String bone_path = state.root->get_path_to(fbx_skeleton->skeleton);
 								bone_path += ":" + fbx_skeleton->skeleton->get_bone_name(bone->godot_bone_id);
 								print_verbose("[doc] track bone path: " + bone_path);
-								NodePath path = bone_path;
-								animation->track_set_path(track_idx, path);
+								track_path = bone_path;
 							}
 						} else if (state.fbx_target_map.has(target_id)) {
 							//print_verbose("[doc] we have a valid target for a node animation");
 							Ref<FBXNode> target_node = state.fbx_target_map[target_id];
 							if (target_node.is_valid() && target_node->godot_node != nullptr) {
 								String node_path = state.root->get_path_to(target_node->godot_node);
-								NodePath path = node_path;
-								animation->track_set_path(track_idx, path);
+								track_path = node_path;
 								//print_verbose("[doc] node animation path: " + node_path);
 							}
 						} else {
-							// note: this could actually be unsafe this means we should be careful about continuing here, if we see bizzare effects later we should disable this.
+							// note: this could actually be unsafe this means we should be careful about continuing here, if we see bizarre effects later we should disable this.
 							// I am not sure if this is unsafe or not, testing will tell us this.
 							print_error("[doc] invalid fbx target detected for this track");
 							continue;
@@ -1073,7 +1069,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						const FBXDocParser::Model *model = target_node->fbx_model;
 						const FBXDocParser::PropertyTable *props = dynamic_cast<const FBXDocParser::PropertyTable *>(model);
 
-						Map<StringName, FBXTrack> &track_data = track->value();
+						Map<StringName, FBXTrack> &track_data = track.value;
 						FBXTrack &translation_keys = track_data[StringName("T")];
 						FBXTrack &rotation_keys = track_data[StringName("R")];
 						FBXTrack &scale_keys = track_data[StringName("S")];
@@ -1087,7 +1083,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						Vector<float> pos_times;
 						Vector<Vector3> scale_values;
 						Vector<float> scale_times;
-						Vector<Quat> rot_values;
+						Vector<Quaternion> rot_values;
 						Vector<float> rot_times;
 
 						double max_duration = 0;
@@ -1123,8 +1119,8 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						bool got_pre = false;
 						bool got_post = false;
 
-						Quat post_rotation;
-						Quat pre_rotation;
+						Quaternion post_rotation;
+						Quaternion pre_rotation;
 
 						// Rotation matrix
 						const Vector3 &PreRotation = FBXDocParser::PropertyGet<Vector3>(props, "PreRotation", got_pre);
@@ -1138,24 +1134,24 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 							post_rotation = ImportUtils::EulerToQuaternion(rot_order, ImportUtils::deg2rad(PostRotation));
 						}
 
-						Quat lastQuat = Quat();
+						Quaternion lastQuaternion = Quaternion();
 
 						for (std::pair<int64_t, Vector3> rotation_key : rotation_keys.keyframes) {
 							double animation_track_time = CONVERT_FBX_TIME(rotation_key.first);
 
 							//print_verbose("euler rotation key: " + rotation_key.second);
-							Quat rot_key_value = ImportUtils::EulerToQuaternion(quat_rotation_order, ImportUtils::deg2rad(rotation_key.second));
+							Quaternion rot_key_value = ImportUtils::EulerToQuaternion(quaternion_rotation_order, ImportUtils::deg2rad(rotation_key.second));
 
-							if (lastQuat != Quat() && rot_key_value.dot(lastQuat) < 0) {
+							if (lastQuaternion != Quaternion() && rot_key_value.dot(lastQuaternion) < 0) {
 								rot_key_value.x = -rot_key_value.x;
 								rot_key_value.y = -rot_key_value.y;
 								rot_key_value.z = -rot_key_value.z;
 								rot_key_value.w = -rot_key_value.w;
 							}
 							// pre_post rotation possibly could fix orientation
-							Quat final_rotation = pre_rotation * rot_key_value * post_rotation;
+							Quaternion final_rotation = pre_rotation * rot_key_value * post_rotation;
 
-							lastQuat = final_rotation;
+							lastQuaternion = final_rotation;
 
 							if (animation_track_time > max_duration) {
 								max_duration = animation_track_time;
@@ -1166,7 +1162,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						}
 
 						bool valid_rest = false;
-						Transform bone_rest;
+						Transform3D bone_rest;
 						int skeleton_bone = -1;
 						if (state.fbx_bone_map.has(target_id)) {
 							if (bone.is_valid() && bone->fbx_skeleton.is_valid()) {
@@ -1183,13 +1179,37 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 						}
 
 						const Vector3 def_pos = translation_keys.has_default ? (translation_keys.default_value * state.scale) : bone_rest.origin;
-						const Quat def_rot = rotation_keys.has_default ? ImportUtils::EulerToQuaternion(quat_rotation_order, ImportUtils::deg2rad(rotation_keys.default_value)) : bone_rest.basis.get_rotation_quat();
+						const Quaternion def_rot = rotation_keys.has_default ? ImportUtils::EulerToQuaternion(quaternion_rotation_order, ImportUtils::deg2rad(rotation_keys.default_value)) : bone_rest.basis.get_rotation_quaternion();
 						const Vector3 def_scale = scale_keys.has_default ? scale_keys.default_value : bone_rest.basis.get_scale();
 						print_verbose("track defaults: p(" + def_pos + ") s(" + def_scale + ") r(" + def_rot + ")");
 
+						int position_idx = -1;
+						if (pos_values.size()) {
+							position_idx = animation->get_track_count();
+							animation->add_track(Animation::TYPE_POSITION_3D);
+							animation->track_set_path(position_idx, track_path);
+							animation->track_set_imported(position_idx, true);
+						}
+
+						int rotation_idx = -1;
+						if (pos_values.size()) {
+							rotation_idx = animation->get_track_count();
+							animation->add_track(Animation::TYPE_ROTATION_3D);
+							animation->track_set_path(rotation_idx, track_path);
+							animation->track_set_imported(rotation_idx, true);
+						}
+
+						int scale_idx = -1;
+						if (pos_values.size()) {
+							scale_idx = animation->get_track_count();
+							animation->add_track(Animation::TYPE_SCALE_3D);
+							animation->track_set_path(scale_idx, track_path);
+							animation->track_set_imported(scale_idx, true);
+						}
+
 						while (true) {
 							Vector3 pos = def_pos;
-							Quat rot = def_rot;
+							Quaternion rot = def_rot;
 							Vector3 scale = def_scale;
 
 							if (pos_values.size()) {
@@ -1198,7 +1218,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 							}
 
 							if (rot_values.size()) {
-								rot = _interpolate_track<Quat>(rot_times, rot_values, time,
+								rot = _interpolate_track<Quaternion>(rot_times, rot_values, time,
 										AssetImportAnimation::INTERP_LINEAR);
 							}
 
@@ -1207,21 +1227,15 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 										AssetImportAnimation::INTERP_LINEAR);
 							}
 
-							// node animations must also include pivots
-							if (skeleton_bone >= 0) {
-								Transform xform = Transform();
-								xform.basis.set_quat_scale(rot, scale);
-								xform.origin = pos;
-								const Transform t = bone_rest.affine_inverse() * xform;
-
-								// populate	this again
-								rot = t.basis.get_rotation_quat();
-								rot.normalize();
-								scale = t.basis.get_scale();
-								pos = t.origin;
+							if (position_idx >= 0) {
+								animation->position_track_insert_key(position_idx, time, pos);
 							}
-
-							animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
+							if (rotation_idx >= 0) {
+								animation->rotation_track_insert_key(rotation_idx, time, rot);
+							}
+							if (scale_idx >= 0) {
+								animation->scale_track_insert_key(scale_idx, time, scale);
+							}
 
 							if (last) {
 								break;
@@ -1260,15 +1274,15 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	state.fbx_target_map.clear();
 	state.fbx_node_list.clear();
 
-	for (Map<uint64_t, Ref<FBXBone>>::Element *element = state.fbx_bone_map.front(); element; element = element->next()) {
-		Ref<FBXBone> bone = element->value();
+	for (KeyValue<uint64_t, Ref<FBXBone>> &element : state.fbx_bone_map) {
+		Ref<FBXBone> bone = element.value;
 		bone->parent_bone.unref();
 		bone->node.unref();
 		bone->fbx_skeleton.unref();
 	}
 
-	for (Map<uint64_t, Ref<FBXSkeleton>>::Element *element = state.skeleton_map.front(); element; element = element->next()) {
-		Ref<FBXSkeleton> skel = element->value();
+	for (KeyValue<uint64_t, Ref<FBXSkeleton>> &element : state.skeleton_map) {
+		Ref<FBXSkeleton> skel = element.value;
 		skel->fbx_node.unref();
 		skel->skeleton_bones.clear();
 	}
@@ -1280,7 +1294,7 @@ Node3D *EditorSceneImporterFBX::_generate_scene(
 	return scene_root;
 }
 
-void EditorSceneImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
+void EditorSceneFormatImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
 		ImportState &state, const FBXDocParser::Document *p_doc,
 		uint64_t p_id) {
 	const std::vector<const FBXDocParser::Connection *> &conns = p_doc->GetConnectionsByDestinationSequenced(p_id, "Model");
@@ -1313,7 +1327,7 @@ void EditorSceneImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
 
 		// declare our bone element reference (invalid, unless we create a bone in this step)
 		// this lets us pass valid armature information into children objects and this is why we moved this up here
-		// previously this was created .instanced() on the same line.
+		// previously this was created .instantiated() on the same line.
 		Ref<FBXBone> bone_element;
 
 		if (model != nullptr) {
@@ -1325,7 +1339,7 @@ void EditorSceneImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
 				ERR_FAIL_COND_MSG(state.fbx_bone_map.has(limb_node->ID()), "[serious] duplicate LimbNode detected");
 
 				bool parent_is_bone = state.fbx_bone_map.find(p_id);
-				bone_element.instance();
+				bone_element.instantiate();
 
 				// used to build the bone hierarchy in the skeleton
 				bone_element->parent_bone_id = parent_is_bone ? p_id : 0;
@@ -1369,7 +1383,7 @@ void EditorSceneImporterFBX::BuildDocumentBones(Ref<FBXBone> p_parent_bone,
 	}
 }
 
-void EditorSceneImporterFBX::BuildDocumentNodes(
+void EditorSceneFormatImporterFBX::BuildDocumentNodes(
 		Ref<PivotTransform> parent_transform,
 		ImportState &state,
 		const FBXDocParser::Document *p_doc,
@@ -1405,12 +1419,12 @@ void EditorSceneImporterFBX::BuildDocumentNodes(
 			uint64_t current_node_id = model->ID();
 
 			Ref<FBXNode> new_node;
-			new_node.instance();
+			new_node.instantiate();
 			new_node->current_node_id = current_node_id;
 			new_node->node_name = ImportUtils::FBXNodeToName(model->Name());
 
 			Ref<PivotTransform> fbx_transform;
-			fbx_transform.instance();
+			fbx_transform.instantiate();
 			fbx_transform->set_parent(parent_transform);
 			fbx_transform->set_model(model);
 			fbx_transform->debug_pivot_xform("name: " + new_node->node_name);

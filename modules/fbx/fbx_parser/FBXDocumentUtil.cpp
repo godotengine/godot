@@ -95,14 +95,14 @@ void DOMError(const std::string &message, const std::shared_ptr<Token> token) {
 	print_error("[FBX-DOM]" + String(message.c_str()) + ";" + String(token->StringContents().c_str()));
 }
 
-void DOMError(const std::string &message, const Element *element /*= NULL*/) {
+void DOMError(const std::string &message, const Element *element /*= nullptr*/) {
 	if (element) {
 		DOMError(message, element->KeyToken());
 	}
 	print_error("[FBX-DOM] " + String(message.c_str()));
 }
 
-void DOMError(const std::string &message, const std::shared_ptr<Element> element /*= NULL*/) {
+void DOMError(const std::string &message, const std::shared_ptr<Element> element /*= nullptr*/) {
 	if (element) {
 		DOMError(message, element->KeyToken());
 	}
@@ -117,7 +117,7 @@ void DOMWarning(const std::string &message, const Token *token) {
 	print_verbose("[FBX-DOM] warning:" + String(message.c_str()) + ";" + String(token->StringContents().c_str()));
 }
 
-void DOMWarning(const std::string &message, const Element *element /*= NULL*/) {
+void DOMWarning(const std::string &message, const Element *element /*= nullptr*/) {
 	if (element) {
 		DOMWarning(message, element->KeyToken());
 		return;
@@ -129,7 +129,7 @@ void DOMWarning(const std::string &message, const std::shared_ptr<Token> token) 
 	print_verbose("[FBX-DOM] warning:" + String(message.c_str()) + ";" + String(token->StringContents().c_str()));
 }
 
-void DOMWarning(const std::string &message, const std::shared_ptr<Element> element /*= NULL*/) {
+void DOMWarning(const std::string &message, const std::shared_ptr<Element> element /*= nullptr*/) {
 	if (element) {
 		DOMWarning(message, element->KeyToken());
 		return;

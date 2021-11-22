@@ -32,11 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
-#include "servers/audio_server.h"
 
 #include <stdarg.h>
 
@@ -47,37 +46,8 @@ OS *OS::get_singleton() {
 	return singleton;
 }
 
-uint32_t OS::get_ticks_msec() const {
-	return get_ticks_usec() / 1000;
-}
-
-String OS::get_iso_date_time(bool local) const {
-	OS::Date date = get_date(local);
-	OS::Time time = get_time(local);
-
-	String timezone;
-	if (!local) {
-		TimeZoneInfo zone = get_time_zone_info();
-		if (zone.bias >= 0) {
-			timezone = "+";
-		}
-		timezone = timezone + itos(zone.bias / 60).pad_zeros(2) + itos(zone.bias % 60).pad_zeros(2);
-	} else {
-		timezone = "Z";
-	}
-
-	return itos(date.year).pad_zeros(2) +
-		   "-" +
-		   itos(date.month).pad_zeros(2) +
-		   "-" +
-		   itos(date.day).pad_zeros(2) +
-		   "T" +
-		   itos(time.hour).pad_zeros(2) +
-		   ":" +
-		   itos(time.min).pad_zeros(2) +
-		   ":" +
-		   itos(time.sec).pad_zeros(2) +
-		   timezone;
+uint64_t OS::get_ticks_msec() const {
+	return get_ticks_usec() / 1000ULL;
 }
 
 double OS::get_unix_time() const {
@@ -105,12 +75,12 @@ void OS::add_logger(Logger *p_logger) {
 	}
 }
 
-void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
+void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) {
 	if (!_stderr_enabled) {
 		return;
 	}
 
-	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
 }
 
 void OS::print(const char *p_format, ...) {
@@ -137,6 +107,10 @@ void OS::printerr(const char *p_format, ...) {
 	_logger->logv(p_format, argp, true);
 
 	va_end(argp);
+}
+
+void OS::alert(const String &p_alert, const String &p_title) {
+	fprintf(stderr, "%s: %s\n", p_title.utf8().get_data(), p_alert.utf8().get_data());
 }
 
 void OS::set_low_processor_usage_mode(bool p_enabled) {
@@ -171,6 +145,10 @@ bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
+bool OS::is_single_window() const {
+	return _single_window;
+}
+
 bool OS::is_stdout_debug_enabled() const {
 	return _debug_stdout;
 }
@@ -203,7 +181,7 @@ static void _OS_printres(Object *p_obj) {
 		return;
 	}
 
-	String str = itos(res->get_instance_id()) + String(res->get_class()) + ":" + String(res->get_name()) + " - " + res->get_path();
+	String str = vformat("%s - %s - %s", res->to_string(), res->get_name(), res->get_path());
 	if (_OSPRF) {
 		_OSPRF->store_line(str);
 	} else {
@@ -240,14 +218,6 @@ void OS::dump_resources_to_file(const char *p_file) {
 	ResourceCache::dump(p_file);
 }
 
-void OS::set_no_window_mode(bool p_enable) {
-	_no_window = p_enable;
-}
-
-bool OS::is_no_window_mode_enabled() const {
-	return _no_window;
-}
-
 int OS::get_exit_code() const {
 	return _exit_code;
 }
@@ -258,6 +228,12 @@ void OS::set_exit_code(int p_code) {
 
 String OS::get_locale() const {
 	return "en";
+}
+
+// Non-virtual helper to extract the 2 or 3-letter language code from
+// `get_locale()` in a way that's consistent for all platforms.
+String OS::get_locale_language() const {
+	return get_locale().left(3).replace("_", "");
 }
 
 // Helper function to ensure that a dir name/path will be valid on the OS
@@ -305,6 +281,11 @@ String OS::get_bundle_resource_dir() const {
 	return ".";
 }
 
+// Path to macOS .app bundle embedded icon
+String OS::get_bundle_icon_path() const {
+	return String();
+}
+
 // OS specific path for user://
 String OS::get_user_data_dir() const {
 	return ".";
@@ -316,7 +297,7 @@ String OS::get_resource_dir() const {
 }
 
 // Access system-specific dirs like Documents, Downloads, etc.
-String OS::get_system_dir(SystemDir p_dir) const {
+String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
 }
 
@@ -390,9 +371,17 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 }
 
 bool OS::has_feature(const String &p_feature) {
-	if (p_feature == get_name()) {
+	// Feature tags are always lowercase for consistency.
+	if (p_feature == get_name().to_lower()) {
 		return true;
 	}
+
+	// Catch-all `linuxbsd` feature tag that matches on both Linux and BSD.
+	// This is the one exposed in the project settings dialog.
+	if (p_feature == "linuxbsd" && (get_name() == "Linux" || get_name() == "FreeBSD" || get_name() == "NetBSD" || get_name() == "OpenBSD" || get_name() == "BSD")) {
+		return true;
+	}
+
 #ifdef DEBUG_ENABLED
 	if (p_feature == "debug") {
 		return true;
@@ -440,6 +429,24 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 	if (p_feature == "arm") {
+		return true;
+	}
+#elif defined(__riscv)
+#if __riscv_xlen == 8
+	if (p_feature == "rv64") {
+		return true;
+	}
+#endif
+	if (p_feature == "riscv") {
+		return true;
+	}
+#elif defined(__powerpc__)
+#if defined(__powerpc64__)
+	if (p_feature == "ppc64") {
+		return true;
+	}
+#endif
+	if (p_feature == "ppc") {
 		return true;
 	}
 #endif

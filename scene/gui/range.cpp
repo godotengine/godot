@@ -42,7 +42,7 @@ TypedArray<String> Range::get_configuration_warnings() const {
 
 void Range::_value_changed_notify() {
 	_value_changed(shared->val);
-	emit_signal("value_changed", shared->val);
+	emit_signal(SNAME("value_changed"), shared->val);
 	update();
 }
 
@@ -57,8 +57,13 @@ void Range::Shared::emit_value_changed() {
 }
 
 void Range::_changed_notify(const char *p_what) {
-	emit_signal("changed");
+	emit_signal(SNAME("changed"));
 	update();
+}
+
+void Range::_validate_values() {
+	shared->max = MAX(shared->max, shared->min);
+	shared->page = CLAMP(shared->page, 0, shared->max - shared->min);
 }
 
 void Range::Shared::emit_changed(const char *p_what) {
@@ -100,6 +105,7 @@ void Range::set_value(double p_val) {
 void Range::set_min(double p_min) {
 	shared->min = p_min;
 	set_value(shared->val);
+	_validate_values();
 
 	shared->emit_changed("min");
 
@@ -109,6 +115,7 @@ void Range::set_min(double p_min) {
 void Range::set_max(double p_max) {
 	shared->max = p_max;
 	set_value(shared->val);
+	_validate_values();
 
 	shared->emit_changed("max");
 }
@@ -121,6 +128,7 @@ void Range::set_step(double p_step) {
 void Range::set_page(double p_page) {
 	shared->page = p_page;
 	set_value(shared->val);
+	_validate_values();
 
 	shared->emit_changed("page");
 }
@@ -265,11 +273,17 @@ void Range::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step"), "set_step", "get_step");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "page"), "set_page", "get_page");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "value"), "set_value", "get_value");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", 0), "set_as_ratio", "get_as_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_NONE), "set_as_ratio", "get_as_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exp_edit"), "set_exp_ratio", "is_ratio_exp");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
+
+	ADD_LINKED_PROPERTY("min_value", "value");
+	ADD_LINKED_PROPERTY("min_value", "max_value");
+	ADD_LINKED_PROPERTY("min_value", "page");
+	ADD_LINKED_PROPERTY("max_value", "value");
+	ADD_LINKED_PROPERTY("max_value", "page");
 }
 
 void Range::set_use_rounded_values(bool p_enable) {

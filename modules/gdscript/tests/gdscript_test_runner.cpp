@@ -37,8 +37,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
-#include "core/os/dir_access.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "scene/resources/packed_scene.h"
@@ -48,11 +48,11 @@
 namespace GDScriptTests {
 
 void init_autoloads() {
-	Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+	OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 	// First pass, add the constants so they exist before any script is loaded.
-	for (Map<StringName, ProjectSettings::AutoloadInfo>::Element *E = autoloads.front(); E; E = E->next()) {
-		const ProjectSettings::AutoloadInfo &info = E->get();
+	for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
+		const ProjectSettings::AutoloadInfo &info = E.get();
 
 		if (info.is_singleton) {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -62,8 +62,8 @@ void init_autoloads() {
 	}
 
 	// Second pass, load into global constants.
-	for (Map<StringName, ProjectSettings::AutoloadInfo>::Element *E = autoloads.front(); E; E = E->next()) {
-		const ProjectSettings::AutoloadInfo &info = E->get();
+	for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
+		const ProjectSettings::AutoloadInfo &info = E.get();
 
 		if (!info.is_singleton) {
 			// Skip non-singletons since we don't have a scene tree here anyway.
@@ -75,14 +75,14 @@ void init_autoloads() {
 		Node *n = nullptr;
 		if (res->is_class("PackedScene")) {
 			Ref<PackedScene> ps = res;
-			n = ps->instance();
+			n = ps->instantiate();
 		} else if (res->is_class("Script")) {
 			Ref<Script> script_res = res;
 			StringName ibt = script_res->get_instance_base_type();
 			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 			ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
 
-			Object *obj = ClassDB::instance(ibt);
+			Object *obj = ClassDB::instantiate(ibt);
 
 			ERR_CONTINUE_MSG(obj == nullptr,
 					"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
@@ -133,13 +133,12 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 
 	if (do_init_languages) {
 		init_language(p_source_dir);
-
-		// Enable all warnings for GDScript, so we can test them.
-		ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
-		for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
-			String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
-			ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/" + warning, true);
-		}
+	}
+	// Enable all warnings for GDScript, so we can test them.
+	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
+	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
+		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
+		ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/" + warning, true);
 	}
 
 	// Enable printing to show results
@@ -257,6 +256,7 @@ bool GDScriptTestRunner::make_tests() {
 
 	ERR_FAIL_COND_V_MSG(err != OK, false, "Could not open specified test directory.");
 
+	source_dir = dir->get_current_dir() + "/"; // Make it absolute path.
 	return make_tests_for_dir(dir->get_current_dir());
 }
 
@@ -294,7 +294,7 @@ void GDScriptTestRunner::handle_cmdline() {
 	String test_cmd = "--gdscript-test";
 	String gen_cmd = "--gdscript-generate-tests";
 
-	for (List<String>::Element *E = cmdline_args.front(); E != nullptr; E = E->next()) {
+	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
 		String &cmd = E->get();
 		if (cmd == test_cmd || cmd == gen_cmd) {
 			if (E->next() == nullptr) {
@@ -334,7 +334,7 @@ void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_e
 	result->output += p_message + "\n";
 }
 
-void GDScriptTest::error_handler(void *p_this, const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_explanation, ErrorHandlerType p_type) {
+void GDScriptTest::error_handler(void *p_this, const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_explanation, bool p_editor_notify, ErrorHandlerType p_type) {
 	ErrorHandlerData *data = (ErrorHandlerData *)p_this;
 	GDScriptTest *self = data->self;
 	TestResult *result = data->result;
@@ -361,11 +361,9 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 			break;
 	}
 
-	builder.append("\n>> ");
+	builder.append("\n>> on function: ");
 	builder.append(p_function);
-	builder.append("\n>> ");
-	builder.append(p_function);
-	builder.append("\n>> ");
+	builder.append("()\n>> ");
 	builder.append(String(p_file).trim_prefix(self->base_dir));
 	builder.append("\n>> ");
 	builder.append(itos(p_line));
@@ -416,12 +414,13 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	TestResult result;
 	result.status = GDTEST_OK;
 	result.output = String();
+	result.passed = false;
 
 	Error err = OK;
 
 	// Create script.
 	Ref<GDScript> script;
-	script.instance();
+	script.instantiate();
 	script->set_path(source_file);
 	script->set_script_path(source_file);
 	err = script->load_source_code(source_file);
@@ -441,8 +440,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.output = get_text_for_status(result.status) + "\n";
 
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (auto *E = errors.front(); E; E = E->next()) {
-			result.output += E->get().message + "\n"; // TODO: line, column?
+		for (const GDScriptParser::ParserError &E : errors) {
+			result.output += E.message + "\n"; // TODO: line, column?
 			break; // Only the first error since the following might be cascading.
 		}
 		if (!p_is_generating) {
@@ -460,8 +459,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.output = get_text_for_status(result.status) + "\n";
 
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (auto *E = errors.front(); E; E = E->next()) {
-			result.output += E->get().message + "\n"; // TODO: line, column?
+		for (const GDScriptParser::ParserError &E : errors) {
+			result.output += E.message + "\n"; // TODO: line, column?
 			break; // Only the first error since the following might be cascading.
 		}
 		if (!p_is_generating) {
@@ -471,8 +470,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 
 	StringBuilder warning_string;
-	for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E != nullptr; E = E->next()) {
-		const GDScriptWarning warning = E->get();
+	for (const GDScriptWarning &E : parser.get_warnings()) {
+		const GDScriptWarning warning = E;
 		warning_string.append(">> WARNING");
 		warning_string.append("\n>> Line: ");
 		warning_string.append(itos(warning.start_line));
@@ -497,7 +496,12 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		}
 		return result;
 	}
-
+	// Script files matching this pattern are allowed to not contain a test() function.
+	if (source_file.match("*.notest.gd")) {
+		enable_stdout();
+		result.passed = check_output(result.output);
+		return result;
+	}
 	// Test running.
 	const Map<StringName, GDScriptFunction *>::Element *test_function_element = script->get_member_functions().find(GDScriptTestRunner::test_function_name);
 	if (test_function_element == nullptr) {
@@ -511,10 +515,10 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	script->reload();
 
 	// Create object instance for test.
-	Object *obj = ClassDB::instance(script->get_native()->get_name());
-	Ref<Reference> obj_ref;
-	if (obj->is_reference()) {
-		obj_ref = Ref<Reference>(Object::cast_to<Reference>(obj));
+	Object *obj = ClassDB::instantiate(script->get_native()->get_name());
+	Ref<RefCounted> obj_ref;
+	if (obj->is_ref_counted()) {
+		obj_ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
 	}
 	obj->set_script(script);
 	GDScriptInstance *instance = static_cast<GDScriptInstance *>(obj->get_script_instance());

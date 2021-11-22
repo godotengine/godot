@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeColorOp.Operator" default="0">
 			An operator to be applied to the inputs. See [enum Operator] for options.
@@ -93,6 +91,9 @@
 			    }
 			}
 			[/codeblock]
+		</constant>
+		<constant name="OP_MAX" value="9" enum="Operator">
+			Represents the size of the [enum Operator] enum.
 		</constant>
 	</constants>
 </class>

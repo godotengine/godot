@@ -17,7 +17,7 @@ doxygen:
 rst:
 	rm -rf $(OUTPUTDIR)/rst
 	mkdir -p $(OUTPUTDIR)/rst
-	python3 $(TOOLSDIR)/makerst.py -o $(OUTPUTDIR)/rst $(CLASSES)
+	python3 $(TOOLSDIR)/make_rst.py -o $(OUTPUTDIR)/rst $(CLASSES)
 
 rstjs:
 	rm -rf $(OUTPUTDIR)/rstjs

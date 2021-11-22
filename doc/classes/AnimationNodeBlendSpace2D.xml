@@ -9,117 +9,89 @@
 		You can add vertices to the blend space with [method add_blend_point] and automatically triangulate it by setting [member auto_triangles] to [code]true[/code]. Otherwise, use [method add_triangle] and [method remove_triangle] to create up the blend space by hand.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="add_blend_point">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="AnimationRootNode">
-			</argument>
-			<argument index="1" name="pos" type="Vector2">
-			</argument>
-			<argument index="2" name="at_index" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="node" type="AnimationRootNode" />
+			<argument index="1" name="pos" type="Vector2" />
+			<argument index="2" name="at_index" type="int" default="-1" />
 			<description>
 				Adds a new point that represents a [code]node[/code] at the position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code], the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="add_triangle">
-			<return type="void">
-			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
-			<argument index="2" name="z" type="int">
-			</argument>
-			<argument index="3" name="at_index" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="x" type="int" />
+			<argument index="1" name="y" type="int" />
+			<argument index="2" name="z" type="int" />
+			<argument index="3" name="at_index" type="int" default="-1" />
 			<description>
 				Creates a new triangle using three points [code]x[/code], [code]y[/code], and [code]z[/code]. Triangles can overlap. You can insert the triangle at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code], the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="get_blend_point_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of points in the blend space.
 			</description>
 		</method>
 		<method name="get_blend_point_node" qualifiers="const">
-			<return type="AnimationRootNode">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
+			<return type="AnimationRootNode" />
+			<argument index="0" name="point" type="int" />
 			<description>
 				Returns the [AnimationRootNode] referenced by the point at index [code]point[/code].
 			</description>
 		</method>
 		<method name="get_blend_point_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
+			<return type="Vector2" />
+			<argument index="0" name="point" type="int" />
 			<description>
 				Returns the position of the point at index [code]point[/code].
 			</description>
 		</method>
 		<method name="get_triangle_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of triangles in the blend space.
 			</description>
 		</method>
 		<method name="get_triangle_point">
-			<return type="int">
-			</return>
-			<argument index="0" name="triangle" type="int">
-			</argument>
-			<argument index="1" name="point" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="triangle" type="int" />
+			<argument index="1" name="point" type="int" />
 			<description>
 				Returns the position of the point at index [code]point[/code] in the triangle of index [code]triangle[/code].
 			</description>
 		</method>
 		<method name="remove_blend_point">
-			<return type="void">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="point" type="int" />
 			<description>
 				Removes the point at index [code]point[/code] from the blend space.
 			</description>
 		</method>
 		<method name="remove_triangle">
-			<return type="void">
-			</return>
-			<argument index="0" name="triangle" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="triangle" type="int" />
 			<description>
 				Removes the triangle at index [code]triangle[/code] from the blend space.
 			</description>
 		</method>
 		<method name="set_blend_point_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
-			<argument index="1" name="node" type="AnimationRootNode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="point" type="int" />
+			<argument index="1" name="node" type="AnimationRootNode" />
 			<description>
 				Changes the [AnimationNode] referenced by the point at index [code]point[/code].
 			</description>
 		</method>
 		<method name="set_blend_point_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="point" type="int">
-			</argument>
-			<argument index="1" name="pos" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="point" type="int" />
+			<argument index="1" name="pos" type="Vector2" />
 			<description>
 				Updates the position of the point at index [code]point[/code] on the blend axis.
 			</description>
@@ -132,13 +104,13 @@
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="AnimationNodeBlendSpace2D.BlendMode" default="0">
 			Controls the interpolation between animations. See [enum BlendMode] constants.
 		</member>
-		<member name="max_space" type="Vector2" setter="set_max_space" getter="get_max_space" default="Vector2( 1, 1 )">
+		<member name="max_space" type="Vector2" setter="set_max_space" getter="get_max_space" default="Vector2(1, 1)">
 			The blend space's X and Y axes' upper limit for the points' position. See [method add_blend_point].
 		</member>
-		<member name="min_space" type="Vector2" setter="set_min_space" getter="get_min_space" default="Vector2( -1, -1 )">
+		<member name="min_space" type="Vector2" setter="set_min_space" getter="get_min_space" default="Vector2(-1, -1)">
 			The blend space's X and Y axes' lower limit for the points' position. See [method add_blend_point].
 		</member>
-		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2( 0.1, 0.1 )">
+		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2(0.1, 0.1)">
 			Position increment to snap to when moving a point.
 		</member>
 		<member name="x_label" type="String" setter="set_x_label" getter="get_x_label" default="&quot;x&quot;">

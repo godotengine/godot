@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+Import("env")
+
+if env["platform"] in ["haiku", "osx", "windows", "linuxbsd"]:
+    # Thirdparty source files
+    thirdparty_dir = "#thirdparty/glad/"
+    thirdparty_sources = [
+        "glad.c",
+    ]
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env.Prepend(CPPPATH=[thirdparty_dir])
+
+    env.Append(CPPDEFINES=["GLAD_ENABLED"])
+    env.Append(CPPDEFINES=["GLES_OVER_GL"])
+
+    env_thirdparty = env.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.drivers_sources, thirdparty_sources)
+
+# Godot source files
+env.add_source_files(env.drivers_sources, "*.cpp")

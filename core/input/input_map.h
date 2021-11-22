@@ -41,8 +41,8 @@ class InputMap : public Object {
 
 public:
 	/**
-	* A special value used to signify that a given Action can be triggered by any device
-	*/
+	 * A special value used to signify that a given Action can be triggered by any device
+	 */
 	static int ALL_DEVICES;
 
 	struct Action {
@@ -56,12 +56,12 @@ private:
 
 	mutable OrderedHashMap<StringName, Action> input_map;
 	OrderedHashMap<String, List<Ref<InputEvent>>> default_builtin_cache;
+	OrderedHashMap<String, List<Ref<InputEvent>>> default_builtin_with_overrides_cache;
 
 	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = false, bool *p_pressed = nullptr, float *p_strength = nullptr, float *p_raw_strength = nullptr) const;
 
 	Array _action_get_events(const StringName &p_action);
 	Array _get_actions();
-	String _suggest_actions(const StringName &p_action) const;
 
 protected:
 	static void _bind_methods();
@@ -89,11 +89,15 @@ public:
 	void load_from_project_settings();
 	void load_default();
 
+	String suggest_actions(const StringName &p_action) const;
+
 	String get_builtin_display_name(const String &p_name) const;
 	// Use an Ordered Map so insertion order is preserved. We want the elements to be 'grouped' somewhat.
 	const OrderedHashMap<String, List<Ref<InputEvent>>> &get_builtins();
+	const OrderedHashMap<String, List<Ref<InputEvent>>> &get_builtins_with_feature_overrides_applied();
 
 	InputMap();
+	~InputMap();
 };
 
 #endif // INPUT_MAP_H

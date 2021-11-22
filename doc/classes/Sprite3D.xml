@@ -8,22 +8,19 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
 			Current frame to display from sprite sheet. [member hframes] or [member vframes] must be greater than 1.
 		</member>
-		<member name="frame_coords" type="Vector2" setter="set_frame_coords" getter="get_frame_coords" default="Vector2( 0, 0 )">
+		<member name="frame_coords" type="Vector2i" setter="set_frame_coords" getter="get_frame_coords" default="Vector2i(0, 0)">
 			Coordinates of the frame to display from sprite sheet. This is as an alias for the [member frame] property. [member hframes] or [member vframes] must be greater than 1.
 		</member>
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" default="1">
 			The number of columns in the sprite sheet.
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region_enabled" getter="is_region_enabled" default="false">
-			If [code]true[/code], texture will be cut from a larger atlas texture. See [member region_rect].
 		</member>
-		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2( 0, 0, 0, 0 )">
+		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2(0, 0, 0, 0)">
 			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
@@ -40,6 +37,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

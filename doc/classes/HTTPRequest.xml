@@ -6,6 +6,8 @@
 	<description>
 		A node with the ability to send HTTP requests. Uses [HTTPClient] internally.
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
+		[b]Warning:[/b] See the notes and warnings on [HTTPClient] for limitations, especially regarding SSL security.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 		[b]Example of contacting a REST API and printing one of its returned fields:[/b]
 		[codeblocks]
 		[gdscript]
@@ -148,77 +150,59 @@
 		}
 		[/csharp]
 		[/codeblocks]
-
 		[b]Gzipped response bodies[/b]: HTTPRequest will automatically handle decompression of response bodies. A [code]Accept-Encoding[/code] header will be automatically added to each of your requests, unless one is already specified. Any response with a [code]Content-Encoding: gzip[/code] header will automatically be decompressed and delivered to you as uncompressed bytes.
-		[b]Note:[/b] When performing HTTP requests from a project exported to HTML5, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.
-		[b]Note:[/b] SSL/TLS support is currently limited to TLS 1.0, TLS 1.1, and TLS 1.2. Attempting to connect to a TLS 1.3-only server will return an error.
 	</description>
 	<tutorials>
-		<link title="Making HTTP requests">https://docs.godotengine.org/en/latest/tutorials/networking/http_request_class.html</link>
-		<link title="SSL certificates">https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
+		<link title="Making HTTP requests">$DOCS_URL/tutorials/networking/http_request_class.html</link>
+		<link title="SSL certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="cancel_request">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Cancels the current request.
 			</description>
 		</method>
 		<method name="get_body_size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the response body length.
 				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_downloaded_bytes" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of bytes this HTTPRequest downloaded.
 			</description>
 		</method>
 		<method name="get_http_client_status" qualifiers="const">
-			<return type="int" enum="HTTPClient.Status">
-			</return>
+			<return type="int" enum="HTTPClient.Status" />
 			<description>
 				Returns the current status of the underlying [HTTPClient]. See [enum HTTPClient.Status].
 			</description>
 		</method>
 		<method name="request">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="url" type="String">
-			</argument>
-			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray(  )">
-			</argument>
-			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
-			</argument>
-			<argument index="3" name="method" type="int" enum="HTTPClient.Method" default="0">
-			</argument>
-			<argument index="4" name="request_data" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="url" type="String" />
+			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
+			<argument index="2" name="ssl_validate_domain" type="bool" default="true" />
+			<argument index="3" name="method" type="int" enum="HTTPClient.Method" default="0" />
+			<argument index="4" name="request_data" type="String" default="&quot;&quot;" />
 			<description>
 				Creates request on the underlying [HTTPClient]. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
 				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
-				[b]Note:[/b] The [code]request_data[/code] parameter is ignored if [code]method[/code] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.uri_encode] for an example.
+				[b]Note:[/b] When [code]method[/code] is [constant HTTPClient.METHOD_GET], the payload sent via [code]request_data[/code] might be ignored by the server or even cause the server to reject the request (check [url=https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.1]RFC 7231 section 4.3.1[/url] for more details). As a workaround, you can send data as a query string in the URL (see [method String.uri_encode] for an example).
+				[b]Note:[/b] It's recommended to use transport encryption (SSL/TLS) and to avoid sending sensitive information (such as login credentials) in HTTP GET URL parameters. Consider using HTTP POST requests or HTTP headers for such information instead.
 			</description>
 		</method>
 		<method name="request_raw">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="url" type="String">
-			</argument>
-			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray(  )">
-			</argument>
-			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
-			</argument>
-			<argument index="3" name="method" type="int" enum="HTTPClient.Method" default="0">
-			</argument>
-			<argument index="4" name="request_data_raw" type="PackedByteArray" default="PackedByteArray(  )">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="url" type="String" />
+			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
+			<argument index="2" name="ssl_validate_domain" type="bool" default="true" />
+			<argument index="3" name="method" type="int" enum="HTTPClient.Method" default="0" />
+			<argument index="4" name="request_data_raw" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
 				Creates request on the underlying [HTTPClient] using a raw array of bytes for the request body. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
 				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
@@ -253,14 +237,10 @@
 	</members>
 	<signals>
 		<signal name="request_completed">
-			<argument index="0" name="result" type="int">
-			</argument>
-			<argument index="1" name="response_code" type="int">
-			</argument>
-			<argument index="2" name="headers" type="PackedStringArray">
-			</argument>
-			<argument index="3" name="body" type="PackedByteArray">
-			</argument>
+			<argument index="0" name="result" type="int" />
+			<argument index="1" name="response_code" type="int" />
+			<argument index="2" name="headers" type="PackedStringArray" />
+			<argument index="3" name="body" type="PackedByteArray" />
 			<description>
 				Emitted when a request is completed.
 			</description>

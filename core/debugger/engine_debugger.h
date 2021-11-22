@@ -44,7 +44,7 @@ class ScriptDebugger;
 class EngineDebugger {
 public:
 	typedef void (*ProfilingToggle)(void *p_user, bool p_enable, const Array &p_opts);
-	typedef void (*ProfilingTick)(void *p_user, float p_frame_time, float p_process_time, float p_physics_time, float p_physics_frame_time);
+	typedef void (*ProfilingTick)(void *p_user, double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time);
 	typedef void (*ProfilingAdd)(void *p_user, const Array &p_arr);
 
 	typedef Error (*CaptureFunc)(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
@@ -85,10 +85,10 @@ public:
 	};
 
 private:
-	float frame_time = 0.0;
-	float process_time = 0.0;
-	float physics_time = 0.0;
-	float physics_frame_time = 0.0;
+	double frame_time = 0.0;
+	double process_time = 0.0;
+	double physics_time = 0.0;
+	double physics_frame_time = 0.0;
 
 	uint32_t poll_every = 0;
 
@@ -120,7 +120,7 @@ public:
 
 	static void register_uri_handler(const String &p_protocol, CreatePeerFunc p_func);
 
-	void iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, float p_physics_frame_time);
+	void iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time);
 	void profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts = Array());
 	Error capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args, bool &r_captured);
 
@@ -128,7 +128,7 @@ public:
 
 	virtual void poll_events(bool p_is_idle) {}
 	virtual void send_message(const String &p_msg, const Array &p_data) = 0;
-	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type) = 0;
+	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) = 0;
 	virtual void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
 
 	virtual ~EngineDebugger();

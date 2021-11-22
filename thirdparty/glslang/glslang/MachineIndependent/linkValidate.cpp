@@ -48,6 +48,7 @@
 
 #include "localintermediate.h"
 #include "../Include/InfoSink.h"
+#include "SymbolTable.h"
 
 namespace glslang {
 
@@ -87,6 +88,56 @@ void TIntermediate::merge(TInfoSink& infoSink, TIntermediate& unit)
     mergeModes(infoSink, unit);
     mergeTrees(infoSink, unit);
 #endif
+}
+
+//
+// check that link objects between stages
+//
+void TIntermediate::mergeUniformObjects(TInfoSink& infoSink, TIntermediate& unit) {
+    if (unit.treeRoot == nullptr || treeRoot == nullptr)
+        return;
+
+    // Get the linker-object lists
+    TIntermSequence& linkerObjects = findLinkerObjects()->getSequence();
+    TIntermSequence unitLinkerObjects = unit.findLinkerObjects()->getSequence();
+
+    // filter unitLinkerObjects to only contain uniforms
+    auto end = std::remove_if(unitLinkerObjects.begin(), unitLinkerObjects.end(),
+        [](TIntermNode* node) {return node->getAsSymbolNode()->getQualifier().storage != EvqUniform &&
+                                      node->getAsSymbolNode()->getQualifier().storage != EvqBuffer; });
+    unitLinkerObjects.resize(end - unitLinkerObjects.begin());
+
+    // merge uniforms and do error checking
+    bool mergeExistingOnly = false;
+    mergeGlobalUniformBlocks(infoSink, unit, mergeExistingOnly);
+    mergeLinkerObjects(infoSink, linkerObjects, unitLinkerObjects, unit.getStage());
+}
+
+//
+// do error checking on the shader boundary in / out vars 
+//
+void TIntermediate::checkStageIO(TInfoSink& infoSink, TIntermediate& unit) {
+    if (unit.treeRoot == nullptr || treeRoot == nullptr)
+        return;
+
+    // Get copies of the linker-object lists
+    TIntermSequence linkerObjects = findLinkerObjects()->getSequence();
+    TIntermSequence unitLinkerObjects = unit.findLinkerObjects()->getSequence();
+
+    // filter linkerObjects to only contain out variables
+    auto end = std::remove_if(linkerObjects.begin(), linkerObjects.end(),
+        [](TIntermNode* node) {return node->getAsSymbolNode()->getQualifier().storage != EvqVaryingOut; });
+    linkerObjects.resize(end - linkerObjects.begin());
+
+    // filter unitLinkerObjects to only contain in variables
+    auto unitEnd = std::remove_if(unitLinkerObjects.begin(), unitLinkerObjects.end(),
+        [](TIntermNode* node) {return node->getAsSymbolNode()->getQualifier().storage != EvqVaryingIn; });
+    unitLinkerObjects.resize(unitEnd - unitLinkerObjects.begin());
+
+    // do matching and error checking
+    mergeLinkerObjects(infoSink, linkerObjects, unitLinkerObjects, unit.getStage());
+
+    // TODO: final check; make sure that any statically used `in` have matching `out` written to
 }
 
 void TIntermediate::mergeCallGraphs(TInfoSink& infoSink, TIntermediate& unit)
@@ -136,6 +187,7 @@ void TIntermediate::mergeModes(TInfoSink& infoSink, TIntermediate& unit)
     MERGE_MAX(spvVersion.vulkanGlsl);
     MERGE_MAX(spvVersion.vulkan);
     MERGE_MAX(spvVersion.openGl);
+    MERGE_TRUE(spvVersion.vulkanRelaxed);
 
     numErrors += unit.getNumErrors();
     // Only one push_constant is allowed, mergeLinkerObjects() will ensure the push_constant
@@ -264,6 +316,7 @@ void TIntermediate::mergeModes(TInfoSink& infoSink, TIntermediate& unit)
     MERGE_TRUE(useUnknownFormat);
     MERGE_TRUE(hlslOffsets);
     MERGE_TRUE(useStorageBuffer);
+    MERGE_TRUE(invariantAll);
     MERGE_TRUE(hlslIoMapping);
 
     // TODO: sourceFile
@@ -306,12 +359,14 @@ void TIntermediate::mergeTrees(TInfoSink& infoSink, TIntermediate& unit)
     // Map by global name to unique ID to rationalize the same object having
     // differing IDs in different trees.
     TIdMaps idMaps;
-    int maxId;
-    seedIdMap(idMaps, maxId);
-    remapIds(idMaps, maxId + 1, unit);
+    long long idShift;
+    seedIdMap(idMaps, idShift);
+    remapIds(idMaps, idShift + 1, unit);
 
     mergeBodies(infoSink, globals, unitGlobals);
-    mergeLinkerObjects(infoSink, linkerObjects, unitLinkerObjects);
+    bool mergeExistingOnly = false;
+    mergeGlobalUniformBlocks(infoSink, unit, mergeExistingOnly);
+    mergeLinkerObjects(infoSink, linkerObjects, unitLinkerObjects, unit.getStage());
     ioAccessed.insert(unit.ioAccessed.begin(), unit.ioAccessed.end());
 }
 
@@ -329,14 +384,14 @@ static const TString& getNameForIdMap(TIntermSymbol* symbol)
 
 
 // Traverser that seeds an ID map with all built-ins, and tracks the
-// maximum ID used.
+// maximum ID used, currently using (maximum ID + 1) as new symbol id shift seed.
+// Level id will keep same after shifting.
 // (It would be nice to put this in a function, but that causes warnings
 // on having no bodies for the copy-constructor/operator=.)
 class TBuiltInIdTraverser : public TIntermTraverser {
 public:
-    TBuiltInIdTraverser(TIdMaps& idMaps) : idMaps(idMaps), maxId(0) { }
+    TBuiltInIdTraverser(TIdMaps& idMaps) : idMaps(idMaps), idShift(0) { }
     // If it's a built in, add it to the map.
-    // Track the max ID.
     virtual void visitSymbol(TIntermSymbol* symbol)
     {
         const TQualifier& qualifier = symbol->getType().getQualifier();
@@ -344,14 +399,16 @@ public:
             TShaderInterface si = symbol->getType().getShaderInterface();
             idMaps[si][getNameForIdMap(symbol)] = symbol->getId();
         }
-        maxId = std::max(maxId, symbol->getId());
+        idShift = (symbol->getId() & ~TSymbolTable::uniqueIdMask) |
+                std::max(idShift & TSymbolTable::uniqueIdMask,
+                         symbol->getId() & TSymbolTable::uniqueIdMask);
     }
-    int getMaxId() const { return maxId; }
+    long long getIdShift() const { return idShift; }
 protected:
     TBuiltInIdTraverser(TBuiltInIdTraverser&);
     TBuiltInIdTraverser& operator=(TBuiltInIdTraverser&);
     TIdMaps& idMaps;
-    int maxId;
+    long long idShift;
 };
 
 // Traverser that seeds an ID map with non-builtins.
@@ -377,12 +434,12 @@ protected:
 };
 
 // Initialize the the ID map with what we know of 'this' AST.
-void TIntermediate::seedIdMap(TIdMaps& idMaps, int& maxId)
+void TIntermediate::seedIdMap(TIdMaps& idMaps, long long& idShift)
 {
     // all built-ins everywhere need to align on IDs and contribute to the max ID
     TBuiltInIdTraverser builtInIdTraverser(idMaps);
     treeRoot->traverse(&builtInIdTraverser);
-    maxId = builtInIdTraverser.getMaxId();
+    idShift = builtInIdTraverser.getIdShift() & TSymbolTable::uniqueIdMask;
 
     // user variables in the linker object list need to align on ids
     TUserIdTraverser userIdTraverser(idMaps);
@@ -394,7 +451,7 @@ void TIntermediate::seedIdMap(TIdMaps& idMaps, int& maxId)
 // on having no bodies for the copy-constructor/operator=.)
 class TRemapIdTraverser : public TIntermTraverser {
 public:
-    TRemapIdTraverser(const TIdMaps& idMaps, int idShift) : idMaps(idMaps), idShift(idShift) { }
+    TRemapIdTraverser(const TIdMaps& idMaps, long long idShift) : idMaps(idMaps), idShift(idShift) { }
     // Do the mapping:
     //  - if the same symbol, adopt the 'this' ID
     //  - otherwise, ensure a unique ID by shifting to a new space
@@ -406,7 +463,9 @@ public:
             TShaderInterface si = symbol->getType().getShaderInterface();
             auto it = idMaps[si].find(getNameForIdMap(symbol));
             if (it != idMaps[si].end()) {
-                symbol->changeId(it->second);
+                uint64_t id = (symbol->getId() & ~TSymbolTable::uniqueIdMask) |
+                    (it->second & TSymbolTable::uniqueIdMask);
+                symbol->changeId(id);
                 remapped = true;
             }
         }
@@ -417,10 +476,10 @@ protected:
     TRemapIdTraverser(TRemapIdTraverser&);
     TRemapIdTraverser& operator=(TRemapIdTraverser&);
     const TIdMaps& idMaps;
-    int idShift;
+    long long idShift;
 };
 
-void TIntermediate::remapIds(const TIdMaps& idMaps, int idShift, TIntermediate& unit)
+void TIntermediate::remapIds(const TIdMaps& idMaps, long long idShift, TIntermediate& unit)
 {
     // Remap all IDs to either share or be unique, as dictated by the idMap and idShift.
     TRemapIdTraverser idTraverser(idMaps, idShift);
@@ -451,11 +510,193 @@ void TIntermediate::mergeBodies(TInfoSink& infoSink, TIntermSequence& globals, c
     globals.insert(globals.end() - 1, unitGlobals.begin(), unitGlobals.end() - 1);
 }
 
+static inline bool isSameInterface(TIntermSymbol* symbol, EShLanguage stage, TIntermSymbol* unitSymbol, EShLanguage unitStage) {
+    return // 1) same stage and same shader interface
+        (stage == unitStage && symbol->getType().getShaderInterface() == unitSymbol->getType().getShaderInterface()) ||
+        // 2) accross stages and both are uniform or buffer
+        (symbol->getQualifier().storage == EvqUniform  && unitSymbol->getQualifier().storage == EvqUniform) ||
+        (symbol->getQualifier().storage == EvqBuffer   && unitSymbol->getQualifier().storage == EvqBuffer) ||
+        // 3) in/out matched across stage boundary
+        (stage < unitStage && symbol->getQualifier().storage == EvqVaryingOut  && unitSymbol->getQualifier().storage == EvqVaryingIn) ||
+        (unitStage < stage && symbol->getQualifier().storage == EvqVaryingIn && unitSymbol->getQualifier().storage == EvqVaryingOut);
+}
+
+//
+// Global Unfiform block stores any default uniforms (i.e. uniforms without a block)
+// If two linked stages declare the same member, they are meant to be the same uniform
+// and need to be in the same block
+// merge the members of different stages to allow them to be linked properly
+// as a single block
+//
+void TIntermediate::mergeGlobalUniformBlocks(TInfoSink& infoSink, TIntermediate& unit, bool mergeExistingOnly)
+{
+    TIntermSequence& linkerObjects = findLinkerObjects()->getSequence();
+    TIntermSequence& unitLinkerObjects = unit.findLinkerObjects()->getSequence();
+
+    // build lists of default blocks from the intermediates
+    TIntermSequence defaultBlocks;
+    TIntermSequence unitDefaultBlocks;
+
+    auto filter = [](TIntermSequence& list, TIntermNode* node) {
+        if (node->getAsSymbolNode()->getQualifier().defaultBlock) {
+            list.push_back(node);
+        }
+    };
+
+    std::for_each(linkerObjects.begin(), linkerObjects.end(),
+        [&defaultBlocks, &filter](TIntermNode* node) {
+            filter(defaultBlocks, node);
+        });
+    std::for_each(unitLinkerObjects.begin(), unitLinkerObjects.end(),
+        [&unitDefaultBlocks, &filter](TIntermNode* node) {
+            filter(unitDefaultBlocks, node);
+    });
+
+    auto itUnitBlock = unitDefaultBlocks.begin();
+    for (; itUnitBlock != unitDefaultBlocks.end(); itUnitBlock++) {
+
+        bool add = !mergeExistingOnly;
+        auto itBlock = defaultBlocks.begin();
+
+        for (; itBlock != defaultBlocks.end(); itBlock++) {
+            TIntermSymbol* block = (*itBlock)->getAsSymbolNode();
+            TIntermSymbol* unitBlock = (*itUnitBlock)->getAsSymbolNode();
+
+            assert(block && unitBlock);
+
+            // if the two default blocks match, then merge their definitions
+            if (block->getType().getTypeName() == unitBlock->getType().getTypeName() &&
+                block->getQualifier().storage == unitBlock->getQualifier().storage) {
+                add = false;
+                mergeBlockDefinitions(infoSink, block, unitBlock, &unit);
+            }
+        }
+        if (add) {
+            // push back on original list; won't change the size of the list we're iterating over
+            linkerObjects.push_back(*itUnitBlock);
+        }
+    }
+}
+
+void TIntermediate::mergeBlockDefinitions(TInfoSink& infoSink, TIntermSymbol* block, TIntermSymbol* unitBlock, TIntermediate* unit) {
+    if (block->getType() == unitBlock->getType()) {
+        return;
+    }
+
+    if (block->getType().getTypeName() != unitBlock->getType().getTypeName() ||
+        block->getType().getBasicType() != unitBlock->getType().getBasicType() ||
+        block->getQualifier().storage != unitBlock->getQualifier().storage ||
+        block->getQualifier().layoutSet != unitBlock->getQualifier().layoutSet) {
+        // different block names likely means different blocks
+        return;
+    }
+
+    // merge the struct
+    // order of declarations doesn't matter and they matched based on member name
+    TTypeList* memberList = block->getType().getWritableStruct();
+    TTypeList* unitMemberList = unitBlock->getType().getWritableStruct();
+
+    // keep track of which members have changed position
+    // so we don't have to search the array again
+    std::map<unsigned int, unsigned int> memberIndexUpdates;
+
+    size_t memberListStartSize = memberList->size();
+    for (unsigned int i = 0; i < unitMemberList->size(); ++i) {
+        bool merge = true;
+        for (unsigned int j = 0; j < memberListStartSize; ++j) {
+            if ((*memberList)[j].type->getFieldName() == (*unitMemberList)[i].type->getFieldName()) {
+                merge = false;
+                const TType* memberType = (*memberList)[j].type;
+                const TType* unitMemberType = (*unitMemberList)[i].type;
+
+                // compare types
+                // don't need as many checks as when merging symbols, since
+                // initializers and most qualifiers are stripped when the member is moved into the block
+                if ((*memberType) != (*unitMemberType)) {
+                    error(infoSink, "Types must match:");
+                    infoSink.info << "    " << memberType->getFieldName() << ": ";
+                    infoSink.info << "\"" << memberType->getCompleteString() << "\" versus ";
+                    infoSink.info << "\"" << unitMemberType->getCompleteString() << "\"\n";
+                }
+
+                memberIndexUpdates[i] = j;
+            }
+        }
+        if (merge) {
+            memberList->push_back((*unitMemberList)[i]);
+            memberIndexUpdates[i] = (unsigned int)memberList->size() - 1;
+        }
+    }
+
+    TType unitType;
+    unitType.shallowCopy(unitBlock->getType());
+
+    // update symbol node in unit tree,
+    // and other nodes that may reference it
+    class TMergeBlockTraverser : public TIntermTraverser {
+    public:
+        TMergeBlockTraverser(const glslang::TType &type, const glslang::TType& unitType,
+                             glslang::TIntermediate& unit,
+                             const std::map<unsigned int, unsigned int>& memberIdxUpdates) :
+            newType(type), unitType(unitType), unit(unit), memberIndexUpdates(memberIdxUpdates)
+        { }
+        virtual ~TMergeBlockTraverser() { }
+
+        const glslang::TType& newType;          // type with modifications
+        const glslang::TType& unitType;         // copy of original type
+        glslang::TIntermediate& unit;           // intermediate that is being updated
+        const std::map<unsigned int, unsigned int>& memberIndexUpdates;
+
+        virtual void visitSymbol(TIntermSymbol* symbol)
+        {
+            glslang::TType& symType = symbol->getWritableType();
+
+            if (symType == unitType) {
+                // each symbol node has a local copy of the unitType
+                //  if merging involves changing properties that aren't shared objects
+                //  they should be updated in all instances
+
+                // e.g. the struct list is a ptr to an object, so it can be updated
+                // once, outside the traverser
+                //*symType.getWritableStruct() = *newType.getStruct();
+            }
+
+        }
+
+        virtual bool visitBinary(TVisit, glslang::TIntermBinary* node)
+        {
+            if (node->getOp() == EOpIndexDirectStruct && node->getLeft()->getType() == unitType) {
+                // this is a dereference to a member of the block since the
+                // member list changed, need to update this to point to the
+                // right index
+                assert(node->getRight()->getAsConstantUnion());
+
+                glslang::TIntermConstantUnion* constNode = node->getRight()->getAsConstantUnion();
+                unsigned int memberIdx = constNode->getConstArray()[0].getUConst();
+                unsigned int newIdx = memberIndexUpdates.at(memberIdx);
+                TIntermTyped* newConstNode = unit.addConstantUnion(newIdx, node->getRight()->getLoc());
+
+                node->setRight(newConstNode);
+                delete constNode;
+
+                return true;
+            }
+            return true;
+        }
+    } finalLinkTraverser(block->getType(), unitType, *unit, memberIndexUpdates);
+
+    // update the tree to use the new type
+    unit->getTreeRoot()->traverse(&finalLinkTraverser);
+
+    // update the member list
+    (*unitMemberList) = (*memberList);
+}
+
 //
 // Merge the linker objects from unitLinkerObjects into linkerObjects.
 // Duplication is expected and filtered out, but contradictions are an error.
 //
-void TIntermediate::mergeLinkerObjects(TInfoSink& infoSink, TIntermSequence& linkerObjects, const TIntermSequence& unitLinkerObjects)
+void TIntermediate::mergeLinkerObjects(TInfoSink& infoSink, TIntermSequence& linkerObjects, const TIntermSequence& unitLinkerObjects, EShLanguage unitStage)
 {
     // Error check and merge the linker objects (duplicates should not be created)
     std::size_t initialNumLinkerObjects = linkerObjects.size();
@@ -470,7 +711,7 @@ void TIntermediate::mergeLinkerObjects(TInfoSink& infoSink, TIntermSequence& lin
             // If they are both blocks in the same shader interface,
             // match by the block-name, not the identifier name.
             if (symbol->getType().getBasicType() == EbtBlock && unitSymbol->getType().getBasicType() == EbtBlock) {
-                if (symbol->getType().getShaderInterface() == unitSymbol->getType().getShaderInterface()) {
+                if (isSameInterface(symbol, getStage(), unitSymbol, unitStage)) {
                     isSameSymbol = symbol->getType().getTypeName() == unitSymbol->getType().getTypeName();
                 }
             }
@@ -490,18 +731,54 @@ void TIntermediate::mergeLinkerObjects(TInfoSink& infoSink, TIntermSequence& lin
                 if (! symbol->getQualifier().hasBinding() && unitSymbol->getQualifier().hasBinding())
                     symbol->getQualifier().layoutBinding = unitSymbol->getQualifier().layoutBinding;
 
+                // Similarly for location
+                if (!symbol->getQualifier().hasLocation() && unitSymbol->getQualifier().hasLocation()) {
+                    symbol->getQualifier().layoutLocation = unitSymbol->getQualifier().layoutLocation;
+                }
+
                 // Update implicit array sizes
                 mergeImplicitArraySizes(symbol->getWritableType(), unitSymbol->getType());
 
                 // Check for consistent types/qualification/initializers etc.
-                mergeErrorCheck(infoSink, *symbol, *unitSymbol, false);
+                mergeErrorCheck(infoSink, *symbol, *unitSymbol, unitStage);
             }
             // If different symbols, verify they arn't push_constant since there can only be one per stage
-            else if (symbol->getQualifier().isPushConstant() && unitSymbol->getQualifier().isPushConstant())
+            else if (symbol->getQualifier().isPushConstant() && unitSymbol->getQualifier().isPushConstant() && getStage() == unitStage)
                 error(infoSink, "Only one push_constant block is allowed per stage");
         }
-        if (merge)
+        if (merge) {
             linkerObjects.push_back(unitLinkerObjects[unitLinkObj]);
+
+            // for anonymous blocks, check that their members don't conflict with other names
+            if (unitLinkerObjects[unitLinkObj]->getAsSymbolNode()->getBasicType() == EbtBlock &&
+                IsAnonymous(unitLinkerObjects[unitLinkObj]->getAsSymbolNode()->getName())) {
+                for (std::size_t linkObj = 0; linkObj < initialNumLinkerObjects; ++linkObj) {
+                    TIntermSymbol* symbol = linkerObjects[linkObj]->getAsSymbolNode();
+                    TIntermSymbol* unitSymbol = unitLinkerObjects[unitLinkObj]->getAsSymbolNode();
+                    assert(symbol && unitSymbol);
+
+                    auto checkName = [this, unitSymbol, &infoSink](const TString& name) {
+                        for (unsigned int i = 0; i < unitSymbol->getType().getStruct()->size(); ++i) {
+                            if (name == (*unitSymbol->getType().getStruct())[i].type->getFieldName()) {
+                                error(infoSink, "Anonymous member name used for global variable or other anonymous member: ");
+                                infoSink.info << (*unitSymbol->getType().getStruct())[i].type->getCompleteString() << "\n";
+                            }
+                        }
+                    };
+
+                    if (isSameInterface(symbol, getStage(), unitSymbol, unitStage)) {
+                        checkName(symbol->getName());
+
+                        // check members of other anonymous blocks
+                        if (symbol->getBasicType() == EbtBlock && IsAnonymous(symbol->getName())) {
+                            for (unsigned int i = 0; i < symbol->getType().getStruct()->size(); ++i) {
+                                checkName((*symbol->getType().getStruct())[i].type->getFieldName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -533,26 +810,75 @@ void TIntermediate::mergeImplicitArraySizes(TType& type, const TType& unitType)
 //
 // This function only does one of intra- or cross-stage matching per call.
 //
-void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& symbol, const TIntermSymbol& unitSymbol, bool crossStage)
+void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& symbol, const TIntermSymbol& unitSymbol, EShLanguage unitStage)
 {
 #if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+    bool crossStage = getStage() != unitStage;
     bool writeTypeComparison = false;
 
     // Types have to match
-    if (symbol.getType() != unitSymbol.getType()) {
+    {
         // but, we make an exception if one is an implicit array and the other is sized
-        if (! (symbol.getType().isArray() && unitSymbol.getType().isArray() &&
-                symbol.getType().sameElementType(unitSymbol.getType()) &&
-                (symbol.getType().isUnsizedArray() || unitSymbol.getType().isUnsizedArray()))) {
-            error(infoSink, "Types must match:");
+        // or if the array sizes differ because of the extra array dimension on some in/out boundaries
+        bool arraysMatch = false;
+        if (isIoResizeArray(symbol.getType(), getStage()) || isIoResizeArray(unitSymbol.getType(), unitStage)) {
+            // if the arrays have an extra dimension because of the stage.
+            // compare dimensions while ignoring the outer dimension
+            unsigned int firstDim = isIoResizeArray(symbol.getType(), getStage()) ? 1 : 0;
+            unsigned int numDim = symbol.getArraySizes()
+                ? symbol.getArraySizes()->getNumDims() : 0;
+            unsigned int unitFirstDim = isIoResizeArray(unitSymbol.getType(), unitStage) ? 1 : 0;
+            unsigned int unitNumDim = unitSymbol.getArraySizes()
+                ? unitSymbol.getArraySizes()->getNumDims() : 0;
+            arraysMatch = (numDim - firstDim) == (unitNumDim - unitFirstDim);
+            // check that array sizes match as well
+            for (unsigned int i = 0; i < (numDim - firstDim) && arraysMatch; i++) {
+                if (symbol.getArraySizes()->getDimSize(firstDim + i) !=
+                    unitSymbol.getArraySizes()->getDimSize(unitFirstDim + i)) {
+                    arraysMatch = false;
+                    break;
+                }
+            }
+        }
+        else {
+            arraysMatch = symbol.getType().sameArrayness(unitSymbol.getType()) ||
+                (symbol.getType().isArray() && unitSymbol.getType().isArray() &&
+                (symbol.getType().isUnsizedArray() || unitSymbol.getType().isUnsizedArray()));
+        }
+
+        if (!symbol.getType().sameElementType(unitSymbol.getType()) ||
+            !symbol.getType().sameTypeParameters(unitSymbol.getType()) ||
+            !arraysMatch ) {
             writeTypeComparison = true;
+            error(infoSink, "Types must match:");
         }
     }
 
-    // Qualifiers have to (almost) match
+    // Interface block  member-wise layout qualifiers have to match
+    if (symbol.getType().getBasicType() == EbtBlock && unitSymbol.getType().getBasicType() == EbtBlock &&
+        symbol.getType().getStruct() && unitSymbol.getType().getStruct() &&
+        symbol.getType().sameStructType(unitSymbol.getType())) {
+        for (unsigned int i = 0; i < symbol.getType().getStruct()->size(); ++i) {
+            const TQualifier& qualifier = (*symbol.getType().getStruct())[i].type->getQualifier();
+            const TQualifier& unitQualifier = (*unitSymbol.getType().getStruct())[i].type->getQualifier();
+            if (qualifier.layoutMatrix     != unitQualifier.layoutMatrix ||
+                qualifier.layoutOffset     != unitQualifier.layoutOffset ||
+                qualifier.layoutAlign      != unitQualifier.layoutAlign ||
+                qualifier.layoutLocation   != unitQualifier.layoutLocation ||
+                qualifier.layoutComponent  != unitQualifier.layoutComponent) {
+                error(infoSink, "Interface block member layout qualifiers must match:");
+                writeTypeComparison = true;
+            }
+        }
+    }
 
+    bool isInOut = crossStage &&
+                   ((symbol.getQualifier().storage == EvqVaryingIn && unitSymbol.getQualifier().storage == EvqVaryingOut) ||
+                   (symbol.getQualifier().storage == EvqVaryingOut && unitSymbol.getQualifier().storage == EvqVaryingIn));
+
+    // Qualifiers have to (almost) match
     // Storage...
-    if (symbol.getQualifier().storage != unitSymbol.getQualifier().storage) {
+    if (!isInOut && symbol.getQualifier().storage != unitSymbol.getQualifier().storage) {
         error(infoSink, "Storage qualifiers must match:");
         writeTypeComparison = true;
     }
@@ -574,7 +900,7 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
     }
 
     // Precision...
-    if (symbol.getQualifier().precision != unitSymbol.getQualifier().precision) {
+    if (!isInOut && symbol.getQualifier().precision != unitSymbol.getQualifier().precision) {
         error(infoSink, "Precision qualifiers must match:");
         writeTypeComparison = true;
     }
@@ -592,12 +918,16 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
     }
 
     // Auxiliary and interpolation...
-    if (symbol.getQualifier().centroid  != unitSymbol.getQualifier().centroid ||
+    // "interpolation qualification (e.g., flat) and auxiliary qualification (e.g. centroid) may differ.  
+    //  These mismatches are allowed between any pair of stages ...
+    //  those provided in the fragment shader supersede those provided in previous stages."
+    if (!crossStage &&
+        (symbol.getQualifier().centroid  != unitSymbol.getQualifier().centroid ||
         symbol.getQualifier().smooth    != unitSymbol.getQualifier().smooth ||
         symbol.getQualifier().flat      != unitSymbol.getQualifier().flat ||
         symbol.getQualifier().isSample()!= unitSymbol.getQualifier().isSample() ||
         symbol.getQualifier().isPatch() != unitSymbol.getQualifier().isPatch() ||
-        symbol.getQualifier().isNonPerspective() != unitSymbol.getQualifier().isNonPerspective()) {
+        symbol.getQualifier().isNonPerspective() != unitSymbol.getQualifier().isNonPerspective())) {
         error(infoSink, "Interpolation and auxiliary storage qualifiers must match:");
         writeTypeComparison = true;
     }
@@ -651,6 +981,25 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
         infoSink.info << "\"" << unitSymbol.getType().getCompleteString() << "\"\n";
     }
 #endif
+}
+
+void TIntermediate::sharedBlockCheck(TInfoSink& infoSink)
+{
+    bool has_shared_block = false;
+    bool has_shared_non_block = false;
+    TIntermSequence& linkObjects = findLinkerObjects()->getSequence();
+    for (size_t i = 0; i < linkObjects.size(); ++i) {
+        const TType& type = linkObjects[i]->getAsTyped()->getType();
+        const TQualifier& qualifier = type.getQualifier();
+        if (qualifier.storage == glslang::EvqShared) {
+            if (type.getBasicType() == glslang::EbtBlock)
+                has_shared_block = true;
+            else
+                has_shared_non_block = true;
+        }
+    }
+    if (has_shared_block && has_shared_non_block)
+        error(infoSink, "cannot mix use of shared variables inside and outside blocks");
 }
 
 //
@@ -778,6 +1127,7 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
             error(infoSink, "post_depth_coverage requires early_fragment_tests");
         break;
     case EShLangCompute:
+        sharedBlockCheck(infoSink);
         break;
     case EShLangRayGen:
     case EShLangIntersect:
@@ -810,6 +1160,7 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
     case EShLangTaskNV:
         if (numTaskNVBlocks > 1)
             error(infoSink, "Only one taskNV interface block is allowed per shader");
+        sharedBlockCheck(infoSink);
         break;
     default:
         error(infoSink, "Unknown Stage.");
@@ -1803,5 +2154,18 @@ int TIntermediate::computeBufferReferenceTypeSize(const TType& type)
 
     return size;
 }
+
+#ifndef GLSLANG_WEB
+bool TIntermediate::isIoResizeArray(const TType& type, EShLanguage language) {
+    return type.isArray() &&
+            ((language == EShLangGeometry    && type.getQualifier().storage == EvqVaryingIn) ||
+            (language == EShLangTessControl && type.getQualifier().storage == EvqVaryingOut &&
+                ! type.getQualifier().patch) ||
+            (language == EShLangFragment && type.getQualifier().storage == EvqVaryingIn &&
+                type.getQualifier().pervertexNV) ||
+            (language == EShLangMeshNV && type.getQualifier().storage == EvqVaryingOut &&
+                !type.getQualifier().perTaskNV));
+}
+#endif // not GLSLANG_WEB
 
 } // end namespace glslang

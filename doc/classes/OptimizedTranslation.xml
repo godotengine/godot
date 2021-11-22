@@ -10,15 +10,11 @@
 	</tutorials>
 	<methods>
 		<method name="generate">
-			<return type="void">
-			</return>
-			<argument index="0" name="from" type="Translation">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="from" type="Translation" />
 			<description>
 				Generates and sets an optimized translation from the given [Translation] resource.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

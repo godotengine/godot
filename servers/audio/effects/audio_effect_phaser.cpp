@@ -78,9 +78,9 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 	}
 }
 
-Ref<AudioEffectInstance> AudioEffectPhaser::instance() {
+Ref<AudioEffectInstance> AudioEffectPhaser::instantiate() {
 	Ref<AudioEffectPhaserInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectPhaser>(this);
 	ins->phase = 0;
 	ins->h = AudioFrame(0, 0);

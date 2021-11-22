@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDUniform" inherits="Reference" version="4.0">
+<class name="RDUniform" inherits="RefCounted" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -8,22 +8,18 @@
 	</tutorials>
 	<methods>
 		<method name="add_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="id" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="clear_ids">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 			</description>
 		</method>
 		<method name="get_ids" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 			</description>
 		</method>
@@ -34,6 +30,4 @@
 		<member name="uniform_type" type="int" setter="set_uniform_type" getter="get_uniform_type" enum="RenderingDevice.UniformType" default="3">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

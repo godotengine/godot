@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HashingContext" inherits="Reference" version="4.0">
+<class name="HashingContext" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Context to compute cryptographic hashes over multiple iterations.
 	</brief_description>
@@ -63,26 +63,21 @@
 	</tutorials>
 	<methods>
 		<method name="finish">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 				Closes the current context, and return the computed hash.
 			</description>
 		</method>
 		<method name="start">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="type" type="int" enum="HashingContext.HashType">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="type" type="int" enum="HashingContext.HashType" />
 			<description>
 				Starts a new hash computation of the given [code]type[/code] (e.g. [constant HASH_SHA256] to start computation of a SHA-256).
 			</description>
 		</method>
 		<method name="update">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="chunk" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="chunk" type="PackedByteArray" />
 			<description>
 				Updates the computation with the given [code]chunk[/code] of data.
 			</description>

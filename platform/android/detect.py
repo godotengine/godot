@@ -27,8 +27,7 @@ def get_opts():
         ("ANDROID_NDK_ROOT", "Path to the Android NDK", get_android_ndk_root()),
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_android_sdk_root()),
         ("ndk_platform", 'Target platform (android-<api>, e.g. "android-24")', "android-24"),
-        EnumVariable("android_arch", "Target architecture", "armv7", ("armv7", "arm64v8", "x86", "x86_64")),
-        BoolVariable("android_neon", "Enable NEON support (armv7 only)", True),
+        EnumVariable("android_arch", "Target architecture", "arm64v8", ("armv7", "arm64v8", "x86", "x86_64")),
     ]
 
 
@@ -93,7 +92,7 @@ def configure(env):
     install_ndk_if_needed(env)
 
     # Workaround for MinGW. See:
-    # http://www.scons.org/wiki/LongCmdLinesOnWin32
+    # https://www.scons.org/wiki/LongCmdLinesOnWin32
     if os.name == "nt":
 
         import subprocess
@@ -143,10 +142,7 @@ def configure(env):
     if env["android_arch"] not in ["armv7", "arm64v8", "x86", "x86_64"]:
         env["android_arch"] = "armv7"
 
-    neon_text = ""
-    if env["android_arch"] == "armv7" and env["android_neon"]:
-        neon_text = " (with NEON)"
-    print("Building for Android, platform " + env["ndk_platform"] + " (" + env["android_arch"] + ")" + neon_text)
+    print("Building for Android, platform " + env["ndk_platform"] + " (" + env["android_arch"] + ")")
 
     can_vectorize = True
     if env["android_arch"] == "x86":
@@ -174,10 +170,7 @@ def configure(env):
         target_subpath = "arm-linux-androideabi-4.9"
         abi_subpath = "arm-linux-androideabi"
         arch_subpath = "armeabi-v7a"
-        if env["android_neon"]:
-            env.extra_suffix = ".armv7.neon" + env.extra_suffix
-        else:
-            env.extra_suffix = ".armv7" + env.extra_suffix
+        env.extra_suffix = ".armv7" + env.extra_suffix
     elif env["android_arch"] == "arm64v8":
         if get_platform(env["ndk_platform"]) < 21:
             print(
@@ -204,12 +197,10 @@ def configure(env):
         env.Append(CPPDEFINES=["NDEBUG"])
         if can_vectorize:
             env.Append(CCFLAGS=["-ftree-vectorize"])
-        if env["target"] == "release_debug":
-            env.Append(CPPDEFINES=["DEBUG_ENABLED"])
     elif env["target"] == "debug":
         env.Append(LINKFLAGS=["-O0"])
         env.Append(CCFLAGS=["-O0", "-g", "-fno-limit-debug-info"])
-        env.Append(CPPDEFINES=["_DEBUG", "DEBUG_ENABLED"])
+        env.Append(CPPDEFINES=["_DEBUG"])
         env.Append(CPPFLAGS=["-UNDEBUG"])
 
     # Compiler configuration
@@ -250,7 +241,7 @@ def configure(env):
     env["RANLIB"] = tools_path + "/ranlib"
     env["AS"] = tools_path + "/as"
 
-    common_opts = ["-fno-integrated-as", "-gcc-toolchain", gcc_toolchain_path]
+    common_opts = ["-gcc-toolchain", gcc_toolchain_path]
 
     # Compile flags
 
@@ -285,7 +276,9 @@ def configure(env):
     )
     env.Append(CPPDEFINES=["NO_STATVFS", "GLES_ENABLED"])
 
-    env["neon_enabled"] = False
+    if get_platform(env["ndk_platform"]) >= 24:
+        env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
+
     if env["android_arch"] == "x86":
         target_opts = ["-target", "i686-none-linux-android"]
         # The NDK adds this if targeting API < 21, so we can drop it when Godot targets it at least
@@ -298,12 +291,9 @@ def configure(env):
         target_opts = ["-target", "armv7-none-linux-androideabi"]
         env.Append(CCFLAGS="-march=armv7-a -mfloat-abi=softfp".split())
         env.Append(CPPDEFINES=["__ARM_ARCH_7__", "__ARM_ARCH_7A__"])
-        if env["android_neon"]:
-            env["neon_enabled"] = True
-            env.Append(CCFLAGS=["-mfpu=neon"])
-            env.Append(CPPDEFINES=["__ARM_NEON__"])
-        else:
-            env.Append(CCFLAGS=["-mfpu=vfpv3-d16"])
+        # Enable ARM NEON instructions to compile more optimized code.
+        env.Append(CCFLAGS=["-mfpu=neon"])
+        env.Append(CPPDEFINES=["__ARM_NEON__"])
 
     elif env["android_arch"] == "arm64v8":
         target_opts = ["-target", "aarch64-none-linux-android"]
@@ -364,8 +354,13 @@ def configure(env):
     )
 
     env.Prepend(CPPPATH=["#platform/android"])
-    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED", "VULKAN_ENABLED", "NO_FCNTL"])
-    env.Append(LIBS=["OpenSLES", "EGL", "GLESv2", "vulkan", "android", "log", "z", "dl"])
+    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED", "NO_FCNTL"])
+    env.Append(LIBS=["OpenSLES", "EGL", "GLESv2", "android", "log", "z", "dl"])
+
+    if env["vulkan"]:
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        if not env["use_volk"]:
+            env.Append(LIBS=["vulkan"])
 
 
 # Return the project NDK version.

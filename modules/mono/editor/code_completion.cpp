@@ -109,9 +109,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			List<PropertyInfo> project_props;
 			ProjectSettings::get_singleton()->get_property_list(&project_props);
 
-			for (List<PropertyInfo>::Element *E = project_props.front(); E; E = E->next()) {
-				const PropertyInfo &prop = E->get();
-
+			for (const PropertyInfo &prop : project_props) {
 				if (!prop.name.begins_with("input/")) {
 					continue;
 				}
@@ -123,10 +121,10 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 		case CompletionKind::NODE_PATHS: {
 			{
 				// AutoLoads
-				Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
-				for (Map<StringName, ProjectSettings::AutoloadInfo>::Element *E = autoloads.front(); E; E = E->next()) {
-					const ProjectSettings::AutoloadInfo &info = E->value();
+				for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
+					const ProjectSettings::AutoloadInfo &info = E.value();
 					suggestions.push_back(quoted("/root/" + String(info.name)));
 				}
 			}
@@ -187,8 +185,8 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				ClassDB::get_signal_list(native, &signals, /* p_no_inheritance: */ false);
 			}
 
-			for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-				const String &signal = E->get().name;
+			for (const MethodInfo &E : signals) {
+				const String &signal = E.name;
 				suggestions.push_back(quoted(signal));
 			}
 		} break;
@@ -199,8 +197,8 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				List<StringName> sn;
 				Theme::get_default()->get_color_list(base->get_class(), &sn);
 
-				for (List<StringName>::Element *E = sn.front(); E; E = E->next()) {
-					suggestions.push_back(quoted(E->get()));
+				for (const StringName &E : sn) {
+					suggestions.push_back(quoted(E));
 				}
 			}
 		} break;
@@ -211,8 +209,8 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				List<StringName> sn;
 				Theme::get_default()->get_constant_list(base->get_class(), &sn);
 
-				for (List<StringName>::Element *E = sn.front(); E; E = E->next()) {
-					suggestions.push_back(quoted(E->get()));
+				for (const StringName &E : sn) {
+					suggestions.push_back(quoted(E));
 				}
 			}
 		} break;
@@ -223,8 +221,8 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				List<StringName> sn;
 				Theme::get_default()->get_font_list(base->get_class(), &sn);
 
-				for (List<StringName>::Element *E = sn.front(); E; E = E->next()) {
-					suggestions.push_back(quoted(E->get()));
+				for (const StringName &E : sn) {
+					suggestions.push_back(quoted(E));
 				}
 			}
 		} break;
@@ -235,8 +233,8 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				List<StringName> sn;
 				Theme::get_default()->get_font_size_list(base->get_class(), &sn);
 
-				for (List<StringName>::Element *E = sn.front(); E; E = E->next()) {
-					suggestions.push_back(quoted(E->get()));
+				for (const StringName &E : sn) {
+					suggestions.push_back(quoted(E));
 				}
 			}
 		} break;
@@ -247,8 +245,8 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				List<StringName> sn;
 				Theme::get_default()->get_stylebox_list(base->get_class(), &sn);
 
-				for (List<StringName>::Element *E = sn.front(); E; E = E->next()) {
-					suggestions.push_back(quoted(E->get()));
+				for (const StringName &E : sn) {
+					suggestions.push_back(quoted(E));
 				}
 			}
 		} break;

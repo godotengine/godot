@@ -31,7 +31,6 @@
 #include "sprite_2d.h"
 
 #include "core/core_string_names.h"
-#include "core/os/os.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
@@ -153,7 +152,7 @@ void Sprite2D::set_texture(const Ref<Texture2D> &p_texture) {
 	}
 
 	update();
-	emit_signal("texture_changed");
+	emit_signal(SceneStringNames::get_singleton()->texture_changed);
 	item_rect_changed();
 }
 
@@ -254,15 +253,15 @@ int Sprite2D::get_frame() const {
 	return frame;
 }
 
-void Sprite2D::set_frame_coords(const Vector2 &p_coord) {
-	ERR_FAIL_INDEX(int(p_coord.x), hframes);
-	ERR_FAIL_INDEX(int(p_coord.y), vframes);
+void Sprite2D::set_frame_coords(const Vector2i &p_coord) {
+	ERR_FAIL_INDEX(p_coord.x, hframes);
+	ERR_FAIL_INDEX(p_coord.y, vframes);
 
-	set_frame(int(p_coord.y) * hframes + int(p_coord.x));
+	set_frame(p_coord.y * hframes + p_coord.x);
 }
 
-Vector2 Sprite2D::get_frame_coords() const {
-	return Vector2(frame % hframes, frame / hframes);
+Vector2i Sprite2D::get_frame_coords() const {
+	return Vector2i(frame % hframes, frame / hframes);
 }
 
 void Sprite2D::set_vframes(int p_amount) {
@@ -386,7 +385,7 @@ void Sprite2D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (!region_enabled && (property.name == "region_rect" || property.name == "region_filter_clip")) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -452,7 +451,7 @@ void Sprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 
 	ADD_GROUP("Region", "region_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");

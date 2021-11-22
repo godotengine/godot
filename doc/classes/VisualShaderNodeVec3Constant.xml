@@ -8,13 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="constant" type="Vector3" setter="set_constant" getter="get_constant" default="Vector3( 0, 0, 0 )">
+		<member name="constant" type="Vector3" setter="set_constant" getter="get_constant" default="Vector3(0, 0, 0)">
 			A [Vector3] constant which represents the state of this node.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

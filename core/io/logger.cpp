@@ -31,8 +31,9 @@
 #include "logger.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/os.h"
+#include "core/os/time.h"
 #include "core/string/print_string.h"
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
@@ -49,7 +50,7 @@ void Logger::set_flush_stdout_on_print(bool value) {
 	_flush_stdout_on_print = value;
 }
 
-void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}
@@ -80,7 +81,11 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 		err_details = p_code;
 	}
 
-	logf_error("%s: %s\n", err_type, err_details);
+	if (p_editor_notify) {
+		logf_error("%s: %s\n", err_type, err_details);
+	} else {
+		logf_error("USER %s: %s\n", err_type, err_details);
+	}
 	logf_error("   at: %s (%s:%i) - %s\n", p_function, p_file, p_line, p_code);
 }
 
@@ -156,11 +161,7 @@ void RotatedFileLogger::rotate_file() {
 
 	if (FileAccess::exists(base_path)) {
 		if (max_files > 1) {
-			char timestamp[21];
-			OS::Date date = OS::get_singleton()->get_date();
-			OS::Time time = OS::get_singleton()->get_time();
-			sprintf(timestamp, "_%04d-%02d-%02d_%02d.%02d.%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
-
+			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace(":", ".");
 			String backup_name = base_path.get_basename() + timestamp;
 			if (base_path.get_extension() != String()) {
 				backup_name += "." + base_path.get_extension();
@@ -259,7 +260,7 @@ void CompositeLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	}
 }
 
-void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}

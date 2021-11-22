@@ -7,14 +7,12 @@
 		Contains a generic action which can be targeted from several types of inputs. Actions can be created from the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b] menu. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent: Actions">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#actions</link>
+		<link title="InputEvent: Actions">$DOCS_URL/tutorials/inputs/inputevent.html#actions</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="action" type="StringName" setter="set_action" getter="get_action" default="@&quot;&quot;">
+		<member name="action" type="StringName" setter="set_action" getter="get_action" default="&amp;&quot;&quot;">
 			The action's name. Actions are accessed via this [String].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
@@ -24,6 +22,4 @@
 			The action's strength between 0 and 1. This value is considered as equal to 0 if pressed is [code]false[/code]. The event strength allows faking analog joypad motion events, by specifying how strongly the joypad axis is bent or pressed.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

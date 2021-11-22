@@ -30,8 +30,8 @@
 
 #include "audio_stream_sample.h"
 
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
-#include "core/os/file_access.h"
 
 void AudioStreamPlaybackSample::start(float p_from_pos) {
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM) {
@@ -221,12 +221,12 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 	}
 }
 
-void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (!base->data || !active) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
-		return;
+		return 0;
 	}
 
 	int len = base->data_bytes;
@@ -261,11 +261,11 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 		sign = -1;
 	}
 
-	float global_rate_scale = AudioServer::get_singleton()->get_global_rate_scale();
-	float base_rate = AudioServer::get_singleton()->get_mix_rate() * global_rate_scale;
+	float base_rate = AudioServer::get_singleton()->get_mix_rate();
 	float srate = base->mix_rate;
 	srate *= p_rate_scale;
-	float fincrement = srate / base_rate;
+	float playback_speed_scale = AudioServer::get_singleton()->get_playback_speed_scale();
+	float fincrement = (srate * playback_speed_scale) / base_rate;
 	int32_t increment = int32_t(MAX(fincrement * MIX_FRAC_LEN, 1));
 	increment *= sign;
 
@@ -299,7 +299,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 
 			if (loop_format != AudioStreamSample::LOOP_DISABLED && offset < loop_begin_fp) {
 				/* loopstart reached */
-				if (loop_format == AudioStreamSample::LOOP_PING_PONG) {
+				if (loop_format == AudioStreamSample::LOOP_PINGPONG) {
 					/* bounce ping pong */
 					offset = loop_begin_fp + (loop_begin_fp - offset);
 					increment = -increment;
@@ -320,7 +320,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 			if (loop_format != AudioStreamSample::LOOP_DISABLED && offset >= loop_end_fp) {
 				/* loopend reached */
 
-				if (loop_format == AudioStreamSample::LOOP_PING_PONG) {
+				if (loop_format == AudioStreamSample::LOOP_PINGPONG) {
 					/* bounce ping pong */
 					offset = loop_end_fp - (offset - loop_end_fp);
 					increment = -increment;
@@ -395,12 +395,15 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	}
 
 	if (todo) {
+		int mixed_frames = p_frames - todo;
 		//bit was missing from mix
 		int todo_ofs = p_frames - todo;
 		for (int i = todo_ofs; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
 		}
+		return mixed_frames;
 	}
+	return p_frames;
 }
 
 AudioStreamPlaybackSample::AudioStreamPlaybackSample() {}
@@ -477,6 +480,10 @@ float AudioStreamSample::get_length() const {
 	return float(len) / mix_rate;
 }
 
+bool AudioStreamSample::is_monophonic() const {
+	return false;
+}
+
 void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 	AudioServer::get_singleton()->lock();
 	if (data) {
@@ -490,9 +497,9 @@ void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 		const uint8_t *r = p_data.ptr();
 		int alloc_len = datalen + DATA_PAD * 2;
 		data = memalloc(alloc_len); //alloc with some padding for interpolation
-		zeromem(data, alloc_len);
+		memset(data, 0, alloc_len);
 		uint8_t *dataptr = (uint8_t *)data;
-		copymem(dataptr + DATA_PAD, r, datalen);
+		memcpy(dataptr + DATA_PAD, r, datalen);
 		data_bytes = datalen;
 	}
 
@@ -507,7 +514,7 @@ Vector<uint8_t> AudioStreamSample::get_data() const {
 		{
 			uint8_t *w = pv.ptrw();
 			uint8_t *dataptr = (uint8_t *)data;
-			copymem(w, dataptr + DATA_PAD, data_bytes);
+			memcpy(w, dataptr + DATA_PAD, data_bytes);
 		}
 	}
 
@@ -596,7 +603,7 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 
 Ref<AudioStreamPlayback> AudioStreamSample::instance_playback() {
 	Ref<AudioStreamPlaybackSample> sample;
-	sample.instance();
+	sample.instantiate();
 	sample->base = Ref<AudioStreamSample>(this);
 	return sample;
 }
@@ -629,7 +636,7 @@ void AudioStreamSample::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamSample::save_to_wav);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "format", PROPERTY_HINT_ENUM, "8-Bit,16-Bit,IMA-ADPCM"), "set_format", "get_format");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "Disabled,Forward,Ping-Pong,Backward"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_begin"), "set_loop_begin", "get_loop_begin");
@@ -643,7 +650,7 @@ void AudioStreamSample::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(LOOP_DISABLED);
 	BIND_ENUM_CONSTANT(LOOP_FORWARD);
-	BIND_ENUM_CONSTANT(LOOP_PING_PONG);
+	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
 }
 

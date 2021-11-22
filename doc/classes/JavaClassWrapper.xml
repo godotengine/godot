@@ -8,14 +8,10 @@
 	</tutorials>
 	<methods>
 		<method name="wrap">
-			<return type="JavaClass">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="JavaClass" />
+			<argument index="0" name="name" type="String" />
 			<description>
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

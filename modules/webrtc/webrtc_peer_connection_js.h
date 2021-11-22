@@ -63,9 +63,6 @@ private:
 	static void _on_error(void *p_obj);
 
 public:
-	static WebRTCPeerConnection *_create() { return memnew(WebRTCPeerConnectionJS); }
-	static void make_default() { WebRTCPeerConnection::_create = WebRTCPeerConnectionJS::_create; }
-
 	virtual ConnectionState get_connection_state() const;
 
 	virtual Error initialize(Dictionary configuration = Dictionary());

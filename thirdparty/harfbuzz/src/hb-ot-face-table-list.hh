@@ -40,7 +40,7 @@
 
 /* This lists font tables that the hb_face_t will contain and lazily
  * load.  Don't add a table unless it's used though.  This is not
- * exactly free. */
+ * exactly zero-cost. */
 
 /* v--- Add new tables in the right place here. */
 

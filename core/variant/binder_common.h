@@ -31,7 +31,9 @@
 #ifndef BINDER_COMMON_H
 #define BINDER_COMMON_H
 
+#include "core/input/input_enums.h"
 #include "core/object/object.h"
+#include "core/os/keyboard.h"
 #include "core/templates/list.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"
@@ -68,16 +70,17 @@ struct VariantCaster<const T &> {
 	template <>                                                              \
 	struct VariantCaster<m_enum> {                                           \
 		static _FORCE_INLINE_ m_enum cast(const Variant &p_variant) {        \
-			return (m_enum)p_variant.operator int();                         \
+			return (m_enum)p_variant.operator int64_t();                     \
 		}                                                                    \
 	};                                                                       \
 	template <>                                                              \
 	struct PtrToArg<m_enum> {                                                \
 		_FORCE_INLINE_ static m_enum convert(const void *p_ptr) {            \
-			return m_enum(*reinterpret_cast<const int *>(p_ptr));            \
+			return m_enum(*reinterpret_cast<const int64_t *>(p_ptr));        \
 		}                                                                    \
+		typedef int64_t EncodeT;                                             \
 		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) { \
-			*(int *)p_ptr = p_val;                                           \
+			*(int64_t *)p_ptr = (int64_t)p_val;                              \
 		}                                                                    \
 	};
 
@@ -85,14 +88,24 @@ struct VariantCaster<const T &> {
 VARIANT_ENUM_CAST(Object::ConnectFlags);
 
 VARIANT_ENUM_CAST(Vector3::Axis);
+VARIANT_ENUM_CAST(Basis::EulerOrder);
 
 VARIANT_ENUM_CAST(Error);
 VARIANT_ENUM_CAST(Side);
 VARIANT_ENUM_CAST(ClockDirection);
 VARIANT_ENUM_CAST(Corner);
+VARIANT_ENUM_CAST(HatDir);
+VARIANT_ENUM_CAST(HatMask);
+VARIANT_ENUM_CAST(JoyAxis);
+VARIANT_ENUM_CAST(JoyButton);
+VARIANT_ENUM_CAST(Key);
+VARIANT_ENUM_CAST(KeyModifierMask);
+VARIANT_ENUM_CAST(MIDIMessage);
+VARIANT_ENUM_CAST(MouseButton);
 VARIANT_ENUM_CAST(Orientation);
 VARIANT_ENUM_CAST(HAlign);
 VARIANT_ENUM_CAST(VAlign);
+VARIANT_ENUM_CAST(InlineAlign);
 VARIANT_ENUM_CAST(PropertyHint);
 VARIANT_ENUM_CAST(PropertyUsageFlags);
 VARIANT_ENUM_CAST(Variant::Type);
@@ -110,6 +123,7 @@ struct PtrToArg<char32_t> {
 	_FORCE_INLINE_ static char32_t convert(const void *p_ptr) {
 		return char32_t(*reinterpret_cast<const int *>(p_ptr));
 	}
+	typedef int64_t EncodeT;
 	_FORCE_INLINE_ static void encode(char32_t p_val, const void *p_ptr) {
 		*(int *)p_ptr = p_val;
 	}
@@ -119,6 +133,18 @@ template <typename T>
 struct VariantObjectClassChecker {
 	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
 		return true;
+	}
+};
+
+template <typename T>
+class Ref;
+
+template <typename T>
+struct VariantObjectClassChecker<const Ref<T> &> {
+	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
+		Object *obj = p_variant;
+		const Ref<T> node = p_variant;
+		return node.ptr() || !obj;
 	}
 };
 
@@ -538,12 +564,10 @@ void call_with_validated_variant_args_static_method_ret(R (*p_method)(P...), con
 
 // GCC raises "parameter 'p_args' set but not used" when P = {},
 // it's not clever enough to treat other P values as making this branch valid.
-#if defined(DEBUG_METHODS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-parameter"
 #endif
-
-#ifdef DEBUG_METHODS_ENABLED
 
 template <class Q>
 void call_get_argument_type_helper(int p_arg, int &index, Variant::Type &type) {
@@ -583,6 +607,7 @@ void call_get_argument_type_info(int p_arg, PropertyInfo &info) {
 	(void)index; // Suppress GCC warning.
 }
 
+#ifdef DEBUG_METHODS_ENABLED
 template <class Q>
 void call_get_argument_metadata_helper(int p_arg, int &index, GodotTypeInfo::Metadata &md) {
 	if (p_arg == index) {
@@ -602,13 +627,6 @@ GodotTypeInfo::Metadata call_get_argument_metadata(int p_arg) {
 	(void)a; // Suppress (valid, but unavoidable) -Wunused-variable warning.
 	(void)index;
 	return md;
-}
-
-#else
-
-template <class... P>
-Variant::Type call_get_argument_type(int p_arg) {
-	return Variant::NIL;
 }
 
 #endif // DEBUG_METHODS_ENABLED
@@ -890,7 +908,7 @@ void call_with_variant_args_static_dv(void (*p_method)(P...), const Variant **p_
 	call_with_variant_args_static(p_method, args, r_error, BuildIndexSequence<sizeof...(P)>{});
 }
 
-#if defined(DEBUG_METHODS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 

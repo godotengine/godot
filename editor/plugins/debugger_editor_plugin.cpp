@@ -34,16 +34,17 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/fileserver/editor_file_server.h"
 #include "scene/gui/menu_button.h"
 
 DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_debug_menu) {
 	EditorDebuggerServer::initialize();
 
-	ED_SHORTCUT("debugger/step_into", TTR("Step Into"), KEY_F11);
-	ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10);
+	ED_SHORTCUT("debugger/step_into", TTR("Step Into"), Key::F11);
+	ED_SHORTCUT("debugger/step_over", TTR("Step Over"), Key::F10);
 	ED_SHORTCUT("debugger/break", TTR("Break"));
-	ED_SHORTCUT("debugger/continue", TTR("Continue"), KEY_F12);
+	ED_SHORTCUT("debugger/continue", TTR("Continue"), Key::F12);
 	ED_SHORTCUT("debugger/keep_debugger_open", TTR("Keep Debugger Open"));
 	ED_SHORTCUT("debugger/debug_with_external_editor", TTR("Debug with External Editor"));
 
@@ -52,6 +53,8 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(EditorNode *p_editor, MenuButton *p_d
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
 	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
+	// Add separation for the warning/error icon that is displayed later.
+	db->add_theme_constant_override("hseparation", 6 * EDSCALE);
 	debugger->set_tool_button(db);
 
 	// Main editor debug menu.

@@ -9,8 +9,6 @@
 	<tutorials>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="expand" type="bool" setter="set_expand" getter="has_expand" default="false">
 			If [code]true[/code], the texture scales to fit its bounding rectangle.

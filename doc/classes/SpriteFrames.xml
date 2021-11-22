@@ -11,159 +11,120 @@
 	</tutorials>
 	<methods>
 		<method name="add_animation">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" />
 			<description>
 				Adds a new animation to the library.
 			</description>
 		</method>
 		<method name="add_frame">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
-			<argument index="1" name="frame" type="Texture2D">
-			</argument>
-			<argument index="2" name="at_position" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" />
+			<argument index="1" name="frame" type="Texture2D" />
+			<argument index="2" name="at_position" type="int" default="-1" />
 			<description>
 				Adds a frame to the given animation.
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" />
 			<description>
 				Removes all frames from the given animation.
 			</description>
 		</method>
 		<method name="clear_all">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all animations. A "default" animation will be created.
 			</description>
 		</method>
 		<method name="get_animation_loop" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="anim" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given animation is configured to loop when it finishes playing. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="get_animation_names" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns an array containing the names associated to each animation. Values are placed in alphabetical order.
 			</description>
 		</method>
 		<method name="get_animation_speed" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="anim" type="StringName" />
 			<description>
 				The animation's speed in frames per second.
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="anim" type="StringName" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 				Returns the animation's selected frame.
 			</description>
 		</method>
 		<method name="get_frame_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="anim" type="StringName" />
 			<description>
 				Returns the number of frames in the animation.
 			</description>
 		</method>
 		<method name="has_animation" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="anim" type="StringName" />
 			<description>
 				If [code]true[/code], the named animation exists.
 			</description>
 		</method>
 		<method name="remove_animation">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" />
 			<description>
 				Removes the given animation.
 			</description>
 		</method>
 		<method name="remove_frame">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" />
+			<argument index="1" name="idx" type="int" />
 			<description>
 				Removes the animation's selected frame.
 			</description>
 		</method>
 		<method name="rename_animation">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
-			<argument index="1" name="newname" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" />
+			<argument index="1" name="newname" type="StringName" />
 			<description>
 				Changes the animation's name to [code]newname[/code].
 			</description>
 		</method>
 		<method name="set_animation_loop">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
-			<argument index="1" name="loop" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" />
+			<argument index="1" name="loop" type="bool" />
 			<description>
 				If [code]true[/code], the animation will loop.
 			</description>
 		</method>
 		<method name="set_animation_speed">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
-			<argument index="1" name="speed" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" />
+			<argument index="1" name="speed" type="float" />
 			<description>
 				The animation's speed in frames per second.
 			</description>
 		</method>
 		<method name="set_frame">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName">
-			</argument>
-			<argument index="1" name="idx" type="int">
-			</argument>
-			<argument index="2" name="txt" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" />
+			<argument index="1" name="idx" type="int" />
+			<argument index="2" name="txt" type="Texture2D" />
 			<description>
 				Sets the texture of the given frame.
 			</description>
@@ -174,6 +135,4 @@
 			Compatibility property, always equals to an empty array.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -7,105 +7,102 @@
 		Server that manages all translations. Translations can be set to it and removed from it.
 	</description>
 	<tutorials>
-		<link title="Internationalizing games">https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link>
-		<link title="Locales">https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
+		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Locales">$DOCS_URL/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_translation">
-			<return type="void">
-			</return>
-			<argument index="0" name="translation" type="Translation">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="translation" type="Translation" />
 			<description>
 				Adds a [Translation] resource.
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the server from all translations.
 			</description>
 		</method>
 		<method name="get_loaded_locales" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
-				Returns an Array of all loaded locales of the game.
+				Returns an array of all loaded locales of the project.
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
-				Returns the current locale of the game.
+				Returns the current locale of the project.
+				See also [method OS.get_locale] and [method OS.get_locale_language] to query the locale of the user system.
 			</description>
 		</method>
 		<method name="get_locale_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="locale" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="locale" type="String" />
 			<description>
 				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
 			</description>
 		</method>
 		<method name="get_translation_object">
-			<return type="Translation">
-			</return>
-			<argument index="0" name="locale" type="String">
-			</argument>
+			<return type="Translation" />
+			<argument index="0" name="locale" type="String" />
 			<description>
 				Returns the [Translation] instance based on the [code]locale[/code] passed in.
 				It will return a [code]nullptr[/code] if there is no [Translation] instance that matches the [code]locale[/code].
 			</description>
 		</method>
+		<method name="pseudolocalize" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="message" type="StringName" />
+			<description>
+				Returns the pseudolocalized string based on the [code]p_message[/code] passed in.
+			</description>
+		</method>
+		<method name="reload_pseudolocalization">
+			<return type="void" />
+			<description>
+				Reparses the pseudolocalization options and reloads the translation.
+			</description>
+		</method>
 		<method name="remove_translation">
-			<return type="void">
-			</return>
-			<argument index="0" name="translation" type="Translation">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="translation" type="Translation" />
 			<description>
 				Removes the given translation from the server.
 			</description>
 		</method>
 		<method name="set_locale">
-			<return type="void">
-			</return>
-			<argument index="0" name="locale" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="locale" type="String" />
 			<description>
-				Sets the locale of the game.
+				Sets the locale of the project. The [code]locale[/code] string will be standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
+				If translations have been loaded beforehand for the new locale, they will be applied.
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="message" type="StringName">
-			</argument>
-			<argument index="1" name="context" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="message" type="StringName" />
+			<argument index="1" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns the current locale's translation for the given message (key) and context.
 			</description>
 		</method>
 		<method name="translate_plural" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="message" type="StringName">
-			</argument>
-			<argument index="1" name="plural_message" type="StringName">
-			</argument>
-			<argument index="2" name="n" type="int">
-			</argument>
-			<argument index="3" name="context" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="message" type="StringName" />
+			<argument index="1" name="plural_message" type="StringName" />
+			<argument index="2" name="n" type="int" />
+			<argument index="3" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns the current locale's translation for the given message (key), plural_message and context.
 				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
+	<members>
+		<member name="pseudolocalization_enabled" type="bool" setter="set_pseudolocalization_enabled" getter="is_pseudolocalization_enabled" default="false">
+			If [code]true[/code], enables the use of pseudolocalization. See [member ProjectSettings.internationalization/pseudolocalization/use_pseudolocalization] for details.
+		</member>
+	</members>
 </class>

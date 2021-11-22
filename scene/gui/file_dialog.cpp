@@ -49,28 +49,34 @@ VBoxContainer *FileDialog::get_vbox() {
 }
 
 void FileDialog::_theme_changed() {
-	Color font_color = vbox->get_theme_color("font_color", "Button");
-	Color font_hover_color = vbox->get_theme_color("font_hover_color", "Button");
-	Color font_pressed_color = vbox->get_theme_color("font_pressed_color", "Button");
+	Color font_color = vbox->get_theme_color(SNAME("font_color"), SNAME("Button"));
+	Color font_hover_color = vbox->get_theme_color(SNAME("font_hover_color"), SNAME("Button"));
+	Color font_focus_color = vbox->get_theme_color(SNAME("font_focus_color"), SNAME("Button"));
+	Color font_pressed_color = vbox->get_theme_color(SNAME("font_pressed_color"), SNAME("Button"));
 
 	dir_up->add_theme_color_override("icon_normal_color", font_color);
 	dir_up->add_theme_color_override("icon_hover_color", font_hover_color);
+	dir_up->add_theme_color_override("icon_focus_color", font_focus_color);
 	dir_up->add_theme_color_override("icon_pressed_color", font_pressed_color);
 
 	dir_prev->add_theme_color_override("icon_color_normal", font_color);
 	dir_prev->add_theme_color_override("icon_color_hover", font_hover_color);
+	dir_prev->add_theme_color_override("icon_focus_color", font_focus_color);
 	dir_prev->add_theme_color_override("icon_color_pressed", font_pressed_color);
 
 	dir_next->add_theme_color_override("icon_color_normal", font_color);
 	dir_next->add_theme_color_override("icon_color_hover", font_hover_color);
+	dir_next->add_theme_color_override("icon_focus_color", font_focus_color);
 	dir_next->add_theme_color_override("icon_color_pressed", font_pressed_color);
 
 	refresh->add_theme_color_override("icon_normal_color", font_color);
 	refresh->add_theme_color_override("icon_hover_color", font_hover_color);
+	refresh->add_theme_color_override("icon_focus_color", font_focus_color);
 	refresh->add_theme_color_override("icon_pressed_color", font_pressed_color);
 
 	show_hidden->add_theme_color_override("icon_normal_color", font_color);
 	show_hidden->add_theme_color_override("icon_hover_color", font_hover_color);
+	show_hidden->add_theme_color_override("icon_focus_color", font_focus_color);
 	show_hidden->add_theme_color_override("icon_pressed_color", font_pressed_color);
 }
 
@@ -81,21 +87,21 @@ void FileDialog::_notification(int p_what) {
 		}
 	}
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		dir_up->set_icon(vbox->get_theme_icon("parent_folder", "FileDialog"));
+		dir_up->set_icon(vbox->get_theme_icon(SNAME("parent_folder"), SNAME("FileDialog")));
 		if (vbox->is_layout_rtl()) {
-			dir_prev->set_icon(vbox->get_theme_icon("forward_folder", "FileDialog"));
-			dir_next->set_icon(vbox->get_theme_icon("back_folder", "FileDialog"));
+			dir_prev->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
+			dir_next->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
 		} else {
-			dir_prev->set_icon(vbox->get_theme_icon("back_folder", "FileDialog"));
-			dir_next->set_icon(vbox->get_theme_icon("forward_folder", "FileDialog"));
+			dir_prev->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
+			dir_next->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
 		}
-		refresh->set_icon(vbox->get_theme_icon("reload", "FileDialog"));
-		show_hidden->set_icon(vbox->get_theme_icon("toggle_hidden", "FileDialog"));
+		refresh->set_icon(vbox->get_theme_icon(SNAME("reload"), SNAME("FileDialog")));
+		show_hidden->set_icon(vbox->get_theme_icon(SNAME("toggle_hidden"), SNAME("FileDialog")));
 		_theme_changed();
 	}
 }
 
-void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
+void FileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -104,19 +110,19 @@ void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 			bool handled = true;
 
 			switch (k->get_keycode()) {
-				case KEY_H: {
-					if (k->get_command()) {
+				case Key::H: {
+					if (k->is_command_pressed()) {
 						set_show_hidden_files(!show_hidden_files);
 					} else {
 						handled = false;
 					}
 
 				} break;
-				case KEY_F5: {
+				case Key::F5: {
 					invalidate();
 				} break;
-				case KEY_BACKSPACE: {
-					_dir_entered("..");
+				case Key::BACKSPACE: {
+					_dir_submitted("..");
 				} break;
 				default: {
 					handled = false;
@@ -156,7 +162,7 @@ void FileDialog::update_dir() {
 	deselect_all();
 }
 
-void FileDialog::_dir_entered(String p_dir) {
+void FileDialog::_dir_submitted(String p_dir) {
 	dir_access->change_dir(p_dir);
 	file->set_text("");
 	invalidate();
@@ -164,13 +170,13 @@ void FileDialog::_dir_entered(String p_dir) {
 	_push_history();
 }
 
-void FileDialog::_file_entered(const String &p_file) {
+void FileDialog::_file_submitted(const String &p_file) {
 	_action_pressed();
 }
 
 void FileDialog::_save_confirm_pressed() {
 	String f = dir_access->get_current_dir().plus_file(file->get_text());
-	emit_signal("file_selected", f);
+	emit_signal(SNAME("file_selected"), f);
 	hide();
 }
 
@@ -224,7 +230,7 @@ void FileDialog::_action_pressed() {
 		}
 
 		if (files.size()) {
-			emit_signal("files_selected", files);
+			emit_signal(SNAME("files_selected"), files);
 			hide();
 		}
 
@@ -234,7 +240,7 @@ void FileDialog::_action_pressed() {
 	String f = dir_access->get_current_dir().plus_file(file->get_text());
 
 	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
-		emit_signal("file_selected", f);
+		emit_signal(SNAME("file_selected"), f);
 		hide();
 	} else if (mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_DIR) {
 		String path = dir_access->get_current_dir();
@@ -248,7 +254,7 @@ void FileDialog::_action_pressed() {
 			}
 		}
 
-		emit_signal("dir_selected", path);
+		emit_signal(SNAME("dir_selected"), path);
 		hide();
 	}
 
@@ -308,7 +314,7 @@ void FileDialog::_action_pressed() {
 			confirm_save->set_text(TTRC("File exists, overwrite?"));
 			confirm_save->popup_centered(Size2(200, 80));
 		} else {
-			emit_signal("file_selected", f);
+			emit_signal(SNAME("file_selected"), f);
 			hide();
 		}
 	}
@@ -342,7 +348,7 @@ bool FileDialog::_is_open_should_be_disabled() {
 
 	// Opening a file, but selected a folder? Forbidden.
 	return ((mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES) && d["dir"]) || // Flipped case, also forbidden.
-		   (mode == FILE_MODE_OPEN_DIR && !d["dir"]);
+			(mode == FILE_MODE_OPEN_DIR && !d["dir"]);
 }
 
 void FileDialog::_go_up() {
@@ -437,8 +443,8 @@ void FileDialog::_tree_item_activated() {
 		if (mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES || mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
 			file->set_text("");
 		}
-		call_deferred("_update_file_list");
-		call_deferred("_update_dir");
+		call_deferred(SNAME("_update_file_list"));
+		call_deferred(SNAME("_update_dir"));
 		_push_history();
 	} else {
 		_action_pressed();
@@ -468,10 +474,10 @@ void FileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	TreeItem *root = tree->create_item();
-	Ref<Texture2D> folder = vbox->get_theme_icon("folder", "FileDialog");
-	Ref<Texture2D> file_icon = vbox->get_theme_icon("file", "FileDialog");
-	const Color folder_color = vbox->get_theme_color("folder_icon_modulate", "FileDialog");
-	const Color file_color = vbox->get_theme_color("file_icon_modulate", "FileDialog");
+	Ref<Texture2D> folder = vbox->get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
+	Ref<Texture2D> file_icon = vbox->get_theme_icon(SNAME("file"), SNAME("FileDialog"));
+	const Color folder_color = vbox->get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"));
+	const Color file_color = vbox->get_theme_color(SNAME("file_icon_modulate"), SNAME("FileDialog"));
 	List<String> files;
 	List<String> dirs;
 
@@ -552,9 +558,9 @@ void FileDialog::update_file_list() {
 		bool match = patterns.is_empty();
 		String match_str;
 
-		for (List<String>::Element *E = patterns.front(); E; E = E->next()) {
-			if (files.front()->get().matchn(E->get())) {
-				match_str = E->get();
+		for (const String &E : patterns) {
+			if (files.front()->get().matchn(E)) {
+				match_str = E;
 				match = true;
 				break;
 			}
@@ -573,7 +579,7 @@ void FileDialog::update_file_list() {
 			ti->set_icon_modulate(0, file_color);
 
 			if (mode == FILE_MODE_OPEN_DIR) {
-				ti->set_custom_color(0, vbox->get_theme_color("files_disabled", "FileDialog"));
+				ti->set_custom_color(0, vbox->get_theme_color(SNAME("files_disabled"), SNAME("FileDialog")));
 				ti->set_selectable(0, false);
 			}
 			Dictionary d;
@@ -589,8 +595,8 @@ void FileDialog::update_file_list() {
 		files.pop_front();
 	}
 
-	if (tree->get_root() && tree->get_root()->get_children() && tree->get_selected() == nullptr) {
-		tree->get_root()->get_children()->select(0);
+	if (tree->get_root() && tree->get_root()->get_first_child() && tree->get_selected() == nullptr) {
+		tree->get_root()->get_first_child()->select(0);
 	}
 }
 
@@ -854,8 +860,6 @@ void FileDialog::_update_drives() {
 bool FileDialog::default_show_hidden_files = false;
 
 void FileDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_input"), &FileDialog::_unhandled_input);
-
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &FileDialog::_cancel_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &FileDialog::clear_filters);
@@ -926,7 +930,7 @@ FileDialog::FileDialog() {
 	show_hidden_files = default_show_hidden_files;
 
 	vbox = memnew(VBoxContainer);
-	add_child(vbox);
+	add_child(vbox, false, INTERNAL_MODE_FRONT);
 	vbox->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
 
 	mode = FILE_MODE_SAVE_FILE;
@@ -1020,13 +1024,12 @@ FileDialog::FileDialog() {
 	tree->connect("cell_selected", callable_mp(this, &FileDialog::_tree_selected), varray(), CONNECT_DEFERRED);
 	tree->connect("item_activated", callable_mp(this, &FileDialog::_tree_item_activated), varray());
 	tree->connect("nothing_selected", callable_mp(this, &FileDialog::deselect_all));
-	dir->connect("text_entered", callable_mp(this, &FileDialog::_dir_entered));
-	file->connect("text_entered", callable_mp(this, &FileDialog::_file_entered));
+	dir->connect("text_submitted", callable_mp(this, &FileDialog::_dir_submitted));
+	file->connect("text_submitted", callable_mp(this, &FileDialog::_file_submitted));
 	filter->connect("item_selected", callable_mp(this, &FileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
-	//	confirm_save->set_as_top_level(true);
-	add_child(confirm_save);
+	add_child(confirm_save, false, INTERNAL_MODE_FRONT);
 
 	confirm_save->connect("confirmed", callable_mp(this, &FileDialog::_save_confirm_pressed));
 
@@ -1038,16 +1041,16 @@ FileDialog::FileDialog() {
 	makedirname = memnew(LineEdit);
 	makedirname->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	makevb->add_margin_child(TTRC("Name:"), makedirname);
-	add_child(makedialog);
+	add_child(makedialog, false, INTERNAL_MODE_FRONT);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed", callable_mp(this, &FileDialog::_make_dir_confirm));
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(TTRC("Could not create folder."));
-	add_child(mkdirerr);
+	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
 
 	exterr = memnew(AcceptDialog);
 	exterr->set_text(TTRC("Must use a valid extension."));
-	add_child(exterr);
+	add_child(exterr, false, INTERNAL_MODE_FRONT);
 
 	update_filters();
 	update_dir();

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineSpecializationConstant" inherits="RefCounted" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="constant_id" type="int" setter="set_constant_id" getter="get_constant_id" default="0">
+		</member>
+		<member name="value" type="Variant" setter="set_value" getter="get_value">
+		</member>
+	</members>
+</class>

@@ -16,11 +16,8 @@ env_gdnative.Prepend(CPPPATH=["#modules/gdnative/include/"])
 
 Export("env_gdnative")
 
-SConscript("net/SCsub")
-SConscript("xr/SCsub")
 SConscript("pluginscript/SCsub")
 SConscript("videodecoder/SCsub")
-SConscript("text/SCsub")
 
 
 import gdnative_builders

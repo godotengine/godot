@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="cube_map" type="Cubemap" setter="set_cube_map" getter="get_cube_map">
 			The [Cubemap] texture to sample when using [constant SOURCE_TEXTURE] as [member source].
@@ -28,6 +26,9 @@
 		<constant name="SOURCE_PORT" value="1" enum="Source">
 			Use the [Cubemap] sampler reference passed via the [code]samplerCube[/code] port. If this is set to [member source], the [member cube_map] texture is ignored.
 		</constant>
+		<constant name="SOURCE_MAX" value="2" enum="Source">
+			Represents the size of the [enum Source] enum.
+		</constant>
 		<constant name="TYPE_DATA" value="0" enum="TextureType">
 			No hints are added to the uniform declaration.
 		</constant>
@@ -36,6 +37,9 @@
 		</constant>
 		<constant name="TYPE_NORMAL_MAP" value="2" enum="TextureType">
 			Adds [code]hint_normal[/code] as hint to the uniform declaration, which internally converts the texture for proper usage as normal map.
+		</constant>
+		<constant name="TYPE_MAX" value="3" enum="TextureType">
+			Represents the size of the [enum TextureType] enum.
 		</constant>
 	</constants>
 </class>

@@ -30,7 +30,7 @@
 
 #include "translation_loader_po.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/string/translation.h"
 #include "core/string/translation_po.h"
 

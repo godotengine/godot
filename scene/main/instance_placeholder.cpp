@@ -42,9 +42,9 @@ bool InstancePlaceholder::_set(const StringName &p_name, const Variant &p_value)
 }
 
 bool InstancePlaceholder::_get(const StringName &p_name, Variant &r_ret) const {
-	for (const List<PropSet>::Element *E = stored_values.front(); E; E = E->next()) {
-		if (E->get().name == p_name) {
-			r_ret = E->get().value;
+	for (const PropSet &E : stored_values) {
+		if (E.name == p_name) {
+			r_ret = E.value;
 			return true;
 		}
 	}
@@ -52,10 +52,10 @@ bool InstancePlaceholder::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void InstancePlaceholder::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const List<PropSet>::Element *E = stored_values.front(); E; E = E->next()) {
+	for (const PropSet &E : stored_values) {
 		PropertyInfo pi;
-		pi.name = E->get().name;
-		pi.type = E->get().value.get_type();
+		pi.name = E.name;
+		pi.type = E.value.get_type();
 		pi.usage = PROPERTY_USAGE_STORAGE;
 
 		p_list->push_back(pi);
@@ -88,15 +88,15 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 	if (!ps.is_valid()) {
 		return nullptr;
 	}
-	Node *scene = ps->instance();
+	Node *scene = ps->instantiate();
 	if (!scene) {
 		return nullptr;
 	}
 	scene->set_name(get_name());
 	int pos = get_index();
 
-	for (List<PropSet>::Element *E = stored_values.front(); E; E = E->next()) {
-		scene->set(E->get().name, E->get().value);
+	for (const PropSet &E : stored_values) {
+		scene->set(E.name, E.value);
 	}
 
 	if (p_replace) {
@@ -114,10 +114,10 @@ Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 	Dictionary ret;
 	PackedStringArray order;
 
-	for (List<PropSet>::Element *E = stored_values.front(); E; E = E->next()) {
-		ret[E->get().name] = E->get().value;
+	for (const PropSet &E : stored_values) {
+		ret[E.name] = E.value;
 		if (p_with_order) {
-			order.push_back(E->get().name);
+			order.push_back(E.name);
 		}
 	};
 

@@ -112,7 +112,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		}
 	}
 
-	//fourth vertex is the one  most further away from the plane
+	//fourth vertex is the one most further away from the plane
 
 	{
 		real_t maxd = 0;
@@ -192,9 +192,9 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 			continue;
 		}
 
-		for (List<Face>::Element *E = faces.front(); E; E = E->next()) {
-			if (E->get().plane.distance_to(p_points[i]) > over_tolerance) {
-				E->get().points_over.push_back(i);
+		for (Face &E : faces) {
+			if (E.plane.distance_to(p_points[i]) > over_tolerance) {
+				E.points_over.push_back(i);
 				break;
 			}
 		}
@@ -265,8 +265,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		//create new faces from horizon edges
 		List<List<Face>::Element *> new_faces; //new faces
 
-		for (Map<Edge, FaceConnect>::Element *E = lit_edges.front(); E; E = E->next()) {
-			FaceConnect &fc = E->get();
+		for (KeyValue<Edge, FaceConnect> &E : lit_edges) {
+			FaceConnect &fc = E.value;
 			if (fc.left && fc.right) {
 				continue; //edge is uninteresting, not on horizon
 			}
@@ -275,8 +275,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 			Face face;
 			face.vertices[0] = f.points_over[next];
-			face.vertices[1] = E->key().vertices[0];
-			face.vertices[2] = E->key().vertices[1];
+			face.vertices[1] = E.key.vertices[0];
+			face.vertices[2] = E.key.vertices[1];
 
 			Plane p(p_points[face.vertices[0]], p_points[face.vertices[1]], p_points[face.vertices[2]]);
 
@@ -292,8 +292,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 		//distribute points into new faces
 
-		for (List<List<Face>::Element *>::Element *F = lit_faces.front(); F; F = F->next()) {
-			Face &lf = F->get()->get();
+		for (List<Face>::Element *&F : lit_faces) {
+			Face &lf = F->get();
 
 			for (int i = 0; i < lf.points_over.size(); i++) {
 				if (lf.points_over[i] == f.points_over[next]) { //do not add current one
@@ -301,8 +301,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 				}
 
 				Vector3 p = p_points[lf.points_over[i]];
-				for (List<List<Face>::Element *>::Element *E = new_faces.front(); E; E = E->next()) {
-					Face &f2 = E->get()->get();
+				for (List<Face>::Element *&E : new_faces) {
+					Face &f2 = E->get();
 					if (f2.plane.distance_to(p) > over_tolerance) {
 						f2.points_over.push_back(lf.points_over[i]);
 						break;
@@ -320,10 +320,10 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 		//put faces that contain no points on the front
 
-		for (List<List<Face>::Element *>::Element *E = new_faces.front(); E; E = E->next()) {
-			Face &f2 = E->get()->get();
+		for (List<Face>::Element *&E : new_faces) {
+			Face &f2 = E->get();
 			if (f2.points_over.size() == 0) {
-				faces.move_to_front(E->get());
+				faces.move_to_front(E);
 			}
 		}
 
@@ -336,19 +336,19 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	Map<Edge, RetFaceConnect> ret_edges;
 	List<Geometry3D::MeshData::Face> ret_faces;
 
-	for (List<Face>::Element *E = faces.front(); E; E = E->next()) {
+	for (const Face &E : faces) {
 		Geometry3D::MeshData::Face f;
-		f.plane = E->get().plane;
+		f.plane = E.plane;
 
 		for (int i = 0; i < 3; i++) {
-			f.indices.push_back(E->get().vertices[i]);
+			f.indices.push_back(E.vertices[i]);
 		}
 
 		List<Geometry3D::MeshData::Face>::Element *F = ret_faces.push_back(f);
 
 		for (int i = 0; i < 3; i++) {
-			uint32_t a = E->get().vertices[i];
-			uint32_t b = E->get().vertices[(i + 1) % 3];
+			uint32_t a = E.vertices[i];
+			uint32_t b = E.vertices[(i + 1) % 3];
 			Edge e(a, b);
 
 			Map<Edge, RetFaceConnect>::Element *G = ret_edges.find(e);
@@ -418,13 +418,13 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 				}
 
 				// remove all edge connections to this face
-				for (Map<Edge, RetFaceConnect>::Element *G = ret_edges.front(); G; G = G->next()) {
-					if (G->get().left == O) {
-						G->get().left = nullptr;
+				for (KeyValue<Edge, RetFaceConnect> &G : ret_edges) {
+					if (G.value.left == O) {
+						G.value.left = nullptr;
 					}
 
-					if (G->get().right == O) {
-						G->get().right = nullptr;
+					if (G.value.right == O) {
+						G.value.right = nullptr;
 					}
 				}
 
@@ -439,15 +439,15 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	r_mesh.faces.resize(ret_faces.size());
 
 	int idx = 0;
-	for (List<Geometry3D::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
-		r_mesh.faces.write[idx++] = E->get();
+	for (const Geometry3D::MeshData::Face &E : ret_faces) {
+		r_mesh.faces.write[idx++] = E;
 	}
 	r_mesh.edges.resize(ret_edges.size());
 	idx = 0;
-	for (Map<Edge, RetFaceConnect>::Element *E = ret_edges.front(); E; E = E->next()) {
+	for (const KeyValue<Edge, RetFaceConnect> &E : ret_edges) {
 		Geometry3D::MeshData::Edge e;
-		e.a = E->key().vertices[0];
-		e.b = E->key().vertices[1];
+		e.a = E.key.vertices[0];
+		e.b = E.key.vertices[1];
 		r_mesh.edges.write[idx++] = e;
 	}
 

@@ -30,6 +30,8 @@
 
 #include "rendering_server_globals.h"
 
+bool RenderingServerGlobals::threaded = false;
+
 RendererStorage *RenderingServerGlobals::storage = nullptr;
 RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
 RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;

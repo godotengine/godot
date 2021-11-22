@@ -22,6 +22,11 @@ if env_tests["platform"] == "windows":
 if env_tests.msvc:
     env_tests.Append(CCFLAGS=["/bigobj"])
 
+env_tests.add_source_files(env.tests_sources, "core/*.cpp")
+env_tests.add_source_files(env.tests_sources, "core/math/*.cpp")
+env_tests.add_source_files(env.tests_sources, "core/templates/*.cpp")
+env_tests.add_source_files(env.tests_sources, "scene/*.cpp")
+env_tests.add_source_files(env.tests_sources, "servers/*.cpp")
 env_tests.add_source_files(env.tests_sources, "*.cpp")
 
 lib = env_tests.add_library("tests", env.tests_sources)

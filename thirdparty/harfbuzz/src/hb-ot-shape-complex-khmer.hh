@@ -49,13 +49,15 @@ enum khmer_category_t
   //OT_VPst = 29,
 };
 
+using khmer_position_t = indic_position_t;
+
 static inline void
 set_khmer_properties (hb_glyph_info_t &info)
 {
   hb_codepoint_t u = info.codepoint;
   unsigned int type = hb_indic_get_categories (u);
   khmer_category_t cat = (khmer_category_t) (type & 0xFFu);
-  indic_position_t pos = (indic_position_t) (type >> 8);
+  khmer_position_t pos = (khmer_position_t) (type >> 8);
 
 
   /*

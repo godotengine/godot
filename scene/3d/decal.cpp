@@ -33,7 +33,7 @@
 void Decal::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	RS::get_singleton()->decal_set_extents(decal, p_extents);
-	update_gizmo();
+	update_gizmos();
 }
 
 Vector3 Decal::get_extents() const {
@@ -45,6 +45,7 @@ void Decal::set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture) {
 	textures[p_type] = p_texture;
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RS::get_singleton()->decal_set_texture(decal, RS::DecalTexture(p_type), texture_rid);
+	update_configuration_warnings();
 }
 
 Ref<Texture2D> Decal::get_texture(DecalTexture p_type) const {
@@ -52,48 +53,48 @@ Ref<Texture2D> Decal::get_texture(DecalTexture p_type) const {
 	return textures[p_type];
 }
 
-void Decal::set_emission_energy(float p_energy) {
+void Decal::set_emission_energy(real_t p_energy) {
 	emission_energy = p_energy;
 	RS::get_singleton()->decal_set_emission_energy(decal, emission_energy);
 }
 
-float Decal::get_emission_energy() const {
+real_t Decal::get_emission_energy() const {
 	return emission_energy;
 }
 
-void Decal::set_albedo_mix(float p_mix) {
+void Decal::set_albedo_mix(real_t p_mix) {
 	albedo_mix = p_mix;
 	RS::get_singleton()->decal_set_albedo_mix(decal, albedo_mix);
 }
 
-float Decal::get_albedo_mix() const {
+real_t Decal::get_albedo_mix() const {
 	return albedo_mix;
 }
 
-void Decal::set_upper_fade(float p_fade) {
+void Decal::set_upper_fade(real_t p_fade) {
 	upper_fade = p_fade;
 	RS::get_singleton()->decal_set_fade(decal, upper_fade, lower_fade);
 }
 
-float Decal::get_upper_fade() const {
+real_t Decal::get_upper_fade() const {
 	return upper_fade;
 }
 
-void Decal::set_lower_fade(float p_fade) {
+void Decal::set_lower_fade(real_t p_fade) {
 	lower_fade = p_fade;
 	RS::get_singleton()->decal_set_fade(decal, upper_fade, lower_fade);
 }
 
-float Decal::get_lower_fade() const {
+real_t Decal::get_lower_fade() const {
 	return lower_fade;
 }
 
-void Decal::set_normal_fade(float p_fade) {
+void Decal::set_normal_fade(real_t p_fade) {
 	normal_fade = p_fade;
 	RS::get_singleton()->decal_set_normal_fade(decal, normal_fade);
 }
 
-float Decal::get_normal_fade() const {
+real_t Decal::get_normal_fade() const {
 	return normal_fade;
 }
 
@@ -116,27 +117,28 @@ bool Decal::is_distance_fade_enabled() const {
 	return distance_fade_enabled;
 }
 
-void Decal::set_distance_fade_begin(float p_distance) {
+void Decal::set_distance_fade_begin(real_t p_distance) {
 	distance_fade_begin = p_distance;
 	RS::get_singleton()->decal_set_distance_fade(decal, distance_fade_enabled, distance_fade_begin, distance_fade_length);
 }
 
-float Decal::get_distance_fade_begin() const {
+real_t Decal::get_distance_fade_begin() const {
 	return distance_fade_begin;
 }
 
-void Decal::set_distance_fade_length(float p_length) {
+void Decal::set_distance_fade_length(real_t p_length) {
 	distance_fade_length = p_length;
 	RS::get_singleton()->decal_set_distance_fade(decal, distance_fade_enabled, distance_fade_begin, distance_fade_length);
 }
 
-float Decal::get_distance_fade_length() const {
+real_t Decal::get_distance_fade_length() const {
 	return distance_fade_length;
 }
 
 void Decal::set_cull_mask(uint32_t p_layers) {
 	cull_mask = p_layers;
 	RS::get_singleton()->decal_set_cull_mask(decal, cull_mask);
+	update_configuration_warnings();
 }
 
 uint32_t Decal::get_cull_mask() const {
@@ -156,8 +158,27 @@ Vector<Face3> Decal::get_faces(uint32_t p_usage_flags) const {
 
 void Decal::_validate_property(PropertyInfo &property) const {
 	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_length")) {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
+	VisualInstance3D::_validate_property(property);
+}
+
+TypedArray<String> Decal::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (textures[TEXTURE_ALBEDO].is_null() && textures[TEXTURE_NORMAL].is_null() && textures[TEXTURE_ORM].is_null() && textures[TEXTURE_EMISSION].is_null()) {
+		warnings.push_back(TTR("The decal has no textures loaded into any of its texture properties, and will therefore not be visible."));
+	}
+
+	if ((textures[TEXTURE_NORMAL].is_valid() || textures[TEXTURE_ORM].is_valid()) && textures[TEXTURE_ALBEDO].is_null()) {
+		warnings.push_back(TTR("The decal has a Normal and/or ORM texture, but no Albedo texture is set.\nAn Albedo texture with an alpha channel is required to blend the normal/ORM maps onto the underlying surface.\nIf you don't want the Albedo texture to be visible, set Albedo Mix to 0."));
+	}
+
+	if (cull_mask == 0) {
+		warnings.push_back(TTR("The decal's Cull Mask has no bits enabled, which means the decal will not paint objects on any layer.\nTo resolve this, enable at least one bit in the Cull Mask property."));
+	}
+
+	return warnings;
 }
 
 void Decal::_bind_methods() {
@@ -207,7 +228,9 @@ void Decal::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "albedo_mix", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_albedo_mix", "get_albedo_mix");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_fade", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_normal_fade", "get_normal_fade");
+	// A Normal Fade of 1.0 causes the decal to be invisible even if fully perpendicular to a surface.
+	// Due to this, limit Normal Fade to 0.999.
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "normal_fade", PROPERTY_HINT_RANGE, "0,0.999,0.001"), "set_normal_fade", "get_normal_fade");
 	ADD_GROUP("Vertical Fade", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "upper_fade", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_upper_fade", "get_upper_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lower_fade", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_lower_fade", "get_lower_fade");

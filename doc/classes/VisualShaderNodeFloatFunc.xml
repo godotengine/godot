@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeFloatFunc.Function" default="13">
 			A function to be applied to the scalar. See [enum Function] for options.
@@ -111,6 +109,9 @@
 		</constant>
 		<constant name="FUNC_ONEMINUS" value="31" enum="Function">
 			Subtracts scalar [code]x[/code] from 1 (i.e. [code]1 - x[/code]).
+		</constant>
+		<constant name="FUNC_MAX" value="32" enum="Function">
+			Represents the size of the [enum Function] enum.
 		</constant>
 	</constants>
 </class>

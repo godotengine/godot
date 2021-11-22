@@ -30,6 +30,7 @@
 
 #include "animation_blend_tree.h"
 
+#include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
 
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
@@ -43,7 +44,7 @@ StringName AnimationNodeAnimation::get_animation() const {
 Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = nullptr;
 
 void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", 0));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
@@ -63,11 +64,11 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-float AnimationNodeAnimation::process(float p_time, bool p_seek) {
+double AnimationNodeAnimation::process(double p_time, bool p_seek) {
 	AnimationPlayer *ap = state->player;
 	ERR_FAIL_COND_V(!ap, 0);
 
-	float time = get_parameter(this->time);
+	double time = get_parameter(this->time);
 
 	if (!ap->has_animation(animation)) {
 		AnimationNodeBlendTree *tree = Object::cast_to<AnimationNodeBlendTree>(parent);
@@ -83,30 +84,55 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 	}
 
 	Ref<Animation> anim = ap->get_animation(animation);
-
-	float step;
+	double anim_size = (double)anim->get_length();
+	double step = 0.0;
+	double prev_time = time;
+	int pingponged = 0;
+	bool current_backward = signbit(p_time);
 
 	if (p_seek) {
+		step = p_time - time;
 		time = p_time;
-		step = 0;
 	} else {
-		time = MAX(0, time + p_time);
-		step = p_time;
-	}
-
-	float anim_size = anim->get_length();
-
-	if (anim->has_loop()) {
-		if (anim_size) {
-			time = Math::fposmod(time, anim_size);
+		p_time *= backward ? -1.0 : 1.0;
+		if (!(time == anim_size && !current_backward) && !(time == 0 && current_backward)) {
+			time = time + p_time;
+			step = p_time;
 		}
-
-	} else if (time > anim_size) {
-		time = anim_size;
 	}
 
-	blend_animation(animation, time, step, p_seek, 1.0);
+	if (anim->get_loop_mode() == Animation::LoopMode::LOOP_PINGPONG) {
+		if (anim_size) {
+			if ((int)Math::floor(abs(time - prev_time) / anim_size) % 2 == 0) {
+				if (prev_time > 0 && time <= 0) {
+					backward = !backward;
+					pingponged = -1;
+				}
+				if (prev_time < anim_size && time >= anim_size) {
+					backward = !backward;
+					pingponged = 1;
+				}
+			}
+			time = Math::pingpong(time, anim_size);
+		}
+	} else {
+		if (anim->get_loop_mode() == Animation::LoopMode::LOOP_LINEAR) {
+			if (anim_size) {
+				time = Math::fposmod(time, anim_size);
+			}
+		} else if (time < 0) {
+			time = 0;
+		} else if (time > anim_size) {
+			time = anim_size;
+		}
+		backward = false;
+	}
 
+	if (play_mode == PLAY_MODE_FORWARD) {
+		blend_animation(animation, time, step, p_seek, 1.0, pingponged);
+	} else {
+		blend_animation(animation, anim_size - time, -step, p_seek, 1.0, pingponged);
+	}
 	set_parameter(this->time, time);
 
 	return anim_size - time;
@@ -116,11 +142,34 @@ String AnimationNodeAnimation::get_caption() const {
 	return "Animation";
 }
 
+void AnimationNodeAnimation::set_play_mode(PlayMode p_play_mode) {
+	play_mode = p_play_mode;
+}
+
+AnimationNodeAnimation::PlayMode AnimationNodeAnimation::get_play_mode() const {
+	return play_mode;
+}
+
+void AnimationNodeAnimation::set_backward(bool p_backward) {
+	backward = p_backward;
+}
+
+bool AnimationNodeAnimation::is_backward() const {
+	return backward;
+}
+
 void AnimationNodeAnimation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation", "name"), &AnimationNodeAnimation::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimationNodeAnimation::get_animation);
 
+	ClassDB::bind_method(D_METHOD("set_play_mode", "mode"), &AnimationNodeAnimation::set_play_mode);
+	ClassDB::bind_method(D_METHOD("get_play_mode"), &AnimationNodeAnimation::get_play_mode);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "play_mode", PROPERTY_HINT_ENUM, "Forward,Backward"), "set_play_mode", "get_play_mode");
+
+	BIND_ENUM_CONSTANT(PLAY_MODE_FORWARD);
+	BIND_ENUM_CONSTANT(PLAY_MODE_BACKWARD);
 }
 
 AnimationNodeAnimation::AnimationNodeAnimation() {
@@ -130,10 +179,10 @@ AnimationNodeAnimation::AnimationNodeAnimation() {
 
 void AnimationNodeOneShot::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::BOOL, active));
-	r_list->push_back(PropertyInfo(Variant::BOOL, prev_active, PROPERTY_HINT_NONE, "", 0));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", 0));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, remaining, PROPERTY_HINT_NONE, "", 0));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time_to_restart, PROPERTY_HINT_NONE, "", 0));
+	r_list->push_back(PropertyInfo(Variant::BOOL, prev_active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, time_to_restart, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 Variant AnimationNodeOneShot::get_parameter_default_value(const StringName &p_parameter) const {
@@ -202,12 +251,12 @@ bool AnimationNodeOneShot::has_filter() const {
 	return true;
 }
 
-float AnimationNodeOneShot::process(float p_time, bool p_seek) {
+double AnimationNodeOneShot::process(double p_time, bool p_seek) {
 	bool active = get_parameter(this->active);
 	bool prev_active = get_parameter(this->prev_active);
-	float time = get_parameter(this->time);
-	float remaining = get_parameter(this->remaining);
-	float time_to_restart = get_parameter(this->time_to_restart);
+	double time = get_parameter(this->time);
+	double remaining = get_parameter(this->remaining);
+	double time_to_restart = get_parameter(this->time_to_restart);
 
 	if (!active) {
 		//make it as if this node doesn't exist, pass input 0 by.
@@ -248,27 +297,26 @@ float AnimationNodeOneShot::process(float p_time, bool p_seek) {
 		if (fade_in > 0) {
 			blend = time / fade_in;
 		} else {
-			blend = 0; //wtf
+			blend = 0;
 		}
-
-	} else if (!do_start && remaining < fade_out) {
-		if (fade_out) {
+	} else if (!do_start && remaining <= fade_out) {
+		if (fade_out > 0) {
 			blend = (remaining / fade_out);
 		} else {
-			blend = 1.0;
+			blend = 0;
 		}
 	} else {
 		blend = 1.0;
 	}
 
-	float main_rem;
+	double main_rem;
 	if (mix == MIX_MODE_ADD) {
 		main_rem = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
 	} else {
 		main_rem = blend_input(0, p_time, p_seek, 1.0 - blend, FILTER_BLEND, !sync);
 	}
 
-	float os_rem = blend_input(1, os_seek ? time : p_time, os_seek, blend, FILTER_PASS, false);
+	double os_rem = blend_input(1, os_seek ? time : p_time, os_seek, blend, FILTER_PASS, false);
 
 	if (do_start) {
 		remaining = os_rem;
@@ -370,9 +418,9 @@ bool AnimationNodeAdd2::has_filter() const {
 	return true;
 }
 
-float AnimationNodeAdd2::process(float p_time, bool p_seek) {
-	float amount = get_parameter(add_amount);
-	float rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
+double AnimationNodeAdd2::process(double p_time, bool p_seek) {
+	double amount = get_parameter(add_amount);
+	double rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
 	blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
 
 	return rem0;
@@ -416,10 +464,10 @@ bool AnimationNodeAdd3::has_filter() const {
 	return true;
 }
 
-float AnimationNodeAdd3::process(float p_time, bool p_seek) {
-	float amount = get_parameter(add_amount);
+double AnimationNodeAdd3::process(double p_time, bool p_seek) {
+	double amount = get_parameter(add_amount);
 	blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_PASS, !sync);
-	float rem0 = blend_input(1, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
+	double rem0 = blend_input(1, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
 	blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_PASS, !sync);
 
 	return rem0;
@@ -452,11 +500,11 @@ String AnimationNodeBlend2::get_caption() const {
 	return "Blend2";
 }
 
-float AnimationNodeBlend2::process(float p_time, bool p_seek) {
-	float amount = get_parameter(blend_amount);
+double AnimationNodeBlend2::process(double p_time, bool p_seek) {
+	double amount = get_parameter(blend_amount);
 
-	float rem0 = blend_input(0, p_time, p_seek, 1.0 - amount, FILTER_BLEND, !sync);
-	float rem1 = blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
+	double rem0 = blend_input(0, p_time, p_seek, 1.0 - amount, FILTER_BLEND, !sync);
+	double rem1 = blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
 
 	return amount > 0.5 ? rem1 : rem0; //hacky but good enough
 }
@@ -507,11 +555,11 @@ bool AnimationNodeBlend3::is_using_sync() const {
 	return sync;
 }
 
-float AnimationNodeBlend3::process(float p_time, bool p_seek) {
-	float amount = get_parameter(blend_amount);
-	float rem0 = blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_IGNORE, !sync);
-	float rem1 = blend_input(1, p_time, p_seek, 1.0 - ABS(amount), FILTER_IGNORE, !sync);
-	float rem2 = blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_IGNORE, !sync);
+double AnimationNodeBlend3::process(double p_time, bool p_seek) {
+	double amount = get_parameter(blend_amount);
+	double rem0 = blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_IGNORE, !sync);
+	double rem1 = blend_input(1, p_time, p_seek, 1.0 - ABS(amount), FILTER_IGNORE, !sync);
+	double rem2 = blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_IGNORE, !sync);
 
 	return amount > 0.5 ? rem2 : (amount < -0.5 ? rem0 : rem1); //hacky but good enough
 }
@@ -534,7 +582,7 @@ AnimationNodeBlend3::AnimationNodeBlend3() {
 /////////////////////////////////
 
 void AnimationNodeTimeScale::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "0,32,0.01,or_greater"));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_lesser,or_greater"));
 }
 
 Variant AnimationNodeTimeScale::get_parameter_default_value(const StringName &p_parameter) const {
@@ -545,8 +593,8 @@ String AnimationNodeTimeScale::get_caption() const {
 	return "TimeScale";
 }
 
-float AnimationNodeTimeScale::process(float p_time, bool p_seek) {
-	float scale = get_parameter(this->scale);
+double AnimationNodeTimeScale::process(double p_time, bool p_seek) {
+	double scale = get_parameter(this->scale);
 	if (p_seek) {
 		return blend_input(0, p_time, true, 1.0, FILTER_IGNORE, false);
 	} else {
@@ -575,12 +623,12 @@ String AnimationNodeTimeSeek::get_caption() const {
 	return "Seek";
 }
 
-float AnimationNodeTimeSeek::process(float p_time, bool p_seek) {
-	float seek_pos = get_parameter(this->seek_pos);
+double AnimationNodeTimeSeek::process(double p_time, bool p_seek) {
+	double seek_pos = get_parameter(this->seek_pos);
 	if (p_seek) {
 		return blend_input(0, p_time, true, 1.0, FILTER_IGNORE, false);
 	} else if (seek_pos >= 0) {
-		float ret = blend_input(0, seek_pos, true, 1.0, FILTER_IGNORE, false);
+		double ret = blend_input(0, seek_pos, true, 1.0, FILTER_IGNORE, false);
 		set_parameter(this->seek_pos, -1.0); //reset
 		return ret;
 	} else {
@@ -607,10 +655,10 @@ void AnimationNodeTransition::get_parameter_list(List<PropertyInfo> *r_list) con
 	}
 
 	r_list->push_back(PropertyInfo(Variant::INT, current, PROPERTY_HINT_ENUM, anims));
-	r_list->push_back(PropertyInfo(Variant::INT, prev_current, PROPERTY_HINT_NONE, "", 0));
-	r_list->push_back(PropertyInfo(Variant::INT, prev, PROPERTY_HINT_NONE, "", 0));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", 0));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, prev_xfading, PROPERTY_HINT_NONE, "", 0));
+	r_list->push_back(PropertyInfo(Variant::INT, prev_current, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::INT, prev, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, prev_xfading, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 Variant AnimationNodeTransition::get_parameter_default_value(const StringName &p_parameter) const {
@@ -676,13 +724,13 @@ float AnimationNodeTransition::get_cross_fade_time() const {
 	return xfade;
 }
 
-float AnimationNodeTransition::process(float p_time, bool p_seek) {
+double AnimationNodeTransition::process(double p_time, bool p_seek) {
 	int current = get_parameter(this->current);
 	int prev = get_parameter(this->prev);
 	int prev_current = get_parameter(this->prev_current);
 
-	float time = get_parameter(this->time);
-	float prev_xfading = get_parameter(this->prev_xfading);
+	double time = get_parameter(this->time);
+	double prev_xfading = get_parameter(this->prev_xfading);
 
 	bool switched = current != prev_current;
 
@@ -718,7 +766,7 @@ float AnimationNodeTransition::process(float p_time, bool p_seek) {
 
 	} else { // cross-fading from prev to current
 
-		float blend = xfade ? (prev_xfading / xfade) : 1;
+		float blend = xfade == 0 ? 0 : (prev_xfading / xfade);
 
 		if (!p_seek && switched) { //just switched, seek to start of current
 
@@ -752,7 +800,7 @@ void AnimationNodeTransition::_validate_property(PropertyInfo &property) const {
 		if (n != "count") {
 			int idx = n.to_int();
 			if (idx >= enabled_inputs) {
-				property.usage = 0;
+				property.usage = PROPERTY_USAGE_NONE;
 			}
 		}
 	}
@@ -794,7 +842,7 @@ String AnimationNodeOutput::get_caption() const {
 	return "Output";
 }
 
-float AnimationNodeOutput::process(float p_time, bool p_seek) {
+double AnimationNodeOutput::process(double p_time, bool p_seek) {
 	return blend_input(0, p_time, p_seek, 1.0);
 }
 
@@ -816,7 +864,7 @@ void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNod
 	nodes[p_name] = n;
 
 	emit_changed();
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 
 	p_node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendTree::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
 	p_node->connect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed), varray(p_name), CONNECT_REFERENCE_COUNTED);
@@ -829,9 +877,9 @@ Ref<AnimationNode> AnimationNodeBlendTree::get_node(const StringName &p_name) co
 }
 
 StringName AnimationNodeBlendTree::get_node_name(const Ref<AnimationNode> &p_node) const {
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
-		if (E->get().node == p_node) {
-			return E->key();
+	for (const KeyValue<StringName, Node> &E : nodes) {
+		if (E.value.node == p_node) {
+			return E.key;
 		}
 	}
 
@@ -851,8 +899,8 @@ Vector2 AnimationNodeBlendTree::get_node_position(const StringName &p_node) cons
 void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	Vector<StringName> ns;
 
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
-		ns.push_back(E->key());
+	for (const KeyValue<StringName, Node> &E : nodes) {
+		ns.push_back(E.key);
 	}
 
 	ns.sort_custom<StringName::AlphCompare>();
@@ -887,16 +935,16 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 	nodes.erase(p_name);
 
 	//erase connections to name
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().connections.size(); i++) {
-			if (E->get().connections[i] == p_name) {
-				E->get().connections.write[i] = StringName();
+	for (KeyValue<StringName, Node> &E : nodes) {
+		for (int i = 0; i < E.value.connections.size(); i++) {
+			if (E.value.connections[i] == p_name) {
+				E.value.connections.write[i] = StringName();
 			}
 		}
 	}
 
 	emit_changed();
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringName &p_new_name) {
@@ -911,17 +959,17 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 	nodes.erase(p_name);
 
 	//rename connections
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().connections.size(); i++) {
-			if (E->get().connections[i] == p_name) {
-				E->get().connections.write[i] = p_new_name;
+	for (KeyValue<StringName, Node> &E : nodes) {
+		for (int i = 0; i < E.value.connections.size(); i++) {
+			if (E.value.connections[i] == p_name) {
+				E.value.connections.write[i] = p_new_name;
 			}
 		}
 	}
 	//connection must be done with new name
 	nodes[p_new_name].node->connect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed), varray(p_new_name), CONNECT_REFERENCE_COUNTED);
 
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendTree::connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node) {
@@ -933,9 +981,9 @@ void AnimationNodeBlendTree::connect_node(const StringName &p_input_node, int p_
 	Ref<AnimationNode> input = nodes[p_input_node].node;
 	ERR_FAIL_INDEX(p_input_index, nodes[p_input_node].connections.size());
 
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().connections.size(); i++) {
-			StringName output = E->get().connections[i];
+	for (KeyValue<StringName, Node> &E : nodes) {
+		for (int i = 0; i < E.value.connections.size(); i++) {
+			StringName output = E.value.connections[i];
 			ERR_FAIL_COND(output == p_output_node);
 		}
 	}
@@ -977,9 +1025,9 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 		return CONNECTION_ERROR_CONNECTION_EXISTS;
 	}
 
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().connections.size(); i++) {
-			StringName output = E->get().connections[i];
+	for (const KeyValue<StringName, Node> &E : nodes) {
+		for (int i = 0; i < E.value.connections.size(); i++) {
+			const StringName output = E.value.connections[i];
 			if (output == p_output_node) {
 				return CONNECTION_ERROR_CONNECTION_EXISTS;
 			}
@@ -989,12 +1037,12 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 }
 
 void AnimationNodeBlendTree::get_node_connections(List<NodeConnection> *r_connections) const {
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
-		for (int i = 0; i < E->get().connections.size(); i++) {
-			StringName output = E->get().connections[i];
+	for (const KeyValue<StringName, Node> &E : nodes) {
+		for (int i = 0; i < E.value.connections.size(); i++) {
+			const StringName output = E.value.connections[i];
 			if (output != StringName()) {
 				NodeConnection nc;
-				nc.input_node = E->key();
+				nc.input_node = E.key;
 				nc.input_index = i;
 				nc.output_node = output;
 				r_connections->push_back(nc);
@@ -1007,14 +1055,14 @@ String AnimationNodeBlendTree::get_caption() const {
 	return "BlendTree";
 }
 
-float AnimationNodeBlendTree::process(float p_time, bool p_seek) {
+double AnimationNodeBlendTree::process(double p_time, bool p_seek) {
 	Ref<AnimationNodeOutput> output = nodes[SceneStringNames::get_singleton()->output].node;
 	return _blend_node("output", nodes[SceneStringNames::get_singleton()->output].connections, this, output, p_time, p_seek, 1.0);
 }
 
 void AnimationNodeBlendTree::get_node_list(List<StringName> *r_list) {
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
-		r_list->push_back(E->key());
+	for (const KeyValue<StringName, Node> &E : nodes) {
+		r_list->push_back(E.key);
 	}
 }
 
@@ -1089,10 +1137,10 @@ bool AnimationNodeBlendTree::_get(const StringName &p_name, Variant &r_ret) cons
 		conns.resize(nc.size() * 3);
 
 		int idx = 0;
-		for (List<NodeConnection>::Element *E = nc.front(); E; E = E->next()) {
-			conns[idx * 3 + 0] = E->get().input_node;
-			conns[idx * 3 + 1] = E->get().input_index;
-			conns[idx * 3 + 2] = E->get().output_node;
+		for (const NodeConnection &E : nc) {
+			conns[idx * 3 + 0] = E.input_node;
+			conns[idx * 3 + 1] = E.input_index;
+			conns[idx * 3 + 2] = E.output_node;
 			idx++;
 		}
 
@@ -1105,31 +1153,32 @@ bool AnimationNodeBlendTree::_get(const StringName &p_name, Variant &r_ret) cons
 
 void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<StringName> names;
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
-		names.push_back(E->key());
+	for (const KeyValue<StringName, Node> &E : nodes) {
+		names.push_back(E.key);
 	}
 	names.sort_custom<StringName::AlphCompare>();
 
-	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-		String name = E->get();
+	for (const StringName &E : names) {
+		String name = E;
 		if (name != "output") {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "nodes/" + name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "nodes/" + name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
 		}
-		p_list->push_back(PropertyInfo(Variant::VECTOR2, "nodes/" + name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "nodes/" + name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "node_connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "node_connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 }
 
 void AnimationNodeBlendTree::reset_state() {
 	graph_offset = Vector2();
 	nodes.clear();
+	_initialize_node_tree();
 	emit_changed();
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendTree::_tree_changed() {
-	emit_signal("tree_changed");
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeBlendTree::_node_changed(const StringName &p_node) {
@@ -1152,7 +1201,7 @@ void AnimationNodeBlendTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &AnimationNodeBlendTree::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &AnimationNodeBlendTree::get_graph_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_graph_offset", "get_graph_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_graph_offset", "get_graph_offset");
 
 	BIND_CONSTANT(CONNECTION_OK);
 	BIND_CONSTANT(CONNECTION_ERROR_NO_INPUT);
@@ -1162,14 +1211,18 @@ void AnimationNodeBlendTree::_bind_methods() {
 	BIND_CONSTANT(CONNECTION_ERROR_CONNECTION_EXISTS);
 }
 
-AnimationNodeBlendTree::AnimationNodeBlendTree() {
+void AnimationNodeBlendTree::_initialize_node_tree() {
 	Ref<AnimationNodeOutput> output;
-	output.instance();
+	output.instantiate();
 	Node n;
 	n.node = output;
 	n.position = Vector2(300, 150);
 	n.connections.resize(1);
 	nodes["output"] = n;
+}
+
+AnimationNodeBlendTree::AnimationNodeBlendTree() {
+	_initialize_node_tree();
 }
 
 AnimationNodeBlendTree::~AnimationNodeBlendTree() {

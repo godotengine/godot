@@ -10,13 +10,9 @@
 		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/121</link>
 		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 20, 20 )">
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(20, 20)">
 			The rectangle's width and height.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -57,7 +57,6 @@ private:
 	bool menu_hovered = false;
 	int highlight_arrow = -1;
 	TabAlign align = ALIGN_CENTER;
-	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
 	mutable ObjectID popup_obj_id;
 	bool drag_to_rearrange_enabled = false;
@@ -77,7 +76,7 @@ private:
 
 protected:
 	void _child_renamed_callback();
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;

@@ -49,7 +49,7 @@
 
 CollisionObjectBullet::ShapeWrapper::~ShapeWrapper() {}
 
-void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform &p_transform) {
+void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform3D &p_transform) {
 	G_TO_B(p_transform.get_basis().get_scale_abs(), scale);
 	G_TO_B(p_transform, transform);
 	UNSCALE_BT_BASIS(transform);
@@ -93,11 +93,9 @@ CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		type(p_type) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
-	// Remove all overlapping, notify is not required since godot take care of it
-	for (int i = areasOverlapped.size() - 1; 0 <= i; --i) {
-		areasOverlapped[i]->remove_overlap(this, /*Notify*/ false);
+	for (int i = 0; i < areasOverlapped.size(); i++) {
+		areasOverlapped[i]->remove_object_overlaps(this);
 	}
-
 	destroyBulletCollisionObject();
 }
 
@@ -178,7 +176,9 @@ bool CollisionObjectBullet::is_collisions_response_enabled() {
 }
 
 void CollisionObjectBullet::notify_new_overlap(AreaBullet *p_area) {
-	areasOverlapped.push_back(p_area);
+	if (areasOverlapped.find(p_area) == -1) {
+		areasOverlapped.push_back(p_area);
+	}
 }
 
 void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
@@ -187,13 +187,14 @@ void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
 
 void CollisionObjectBullet::set_godot_object_flags(int flags) {
 	bt_collision_object->setUserIndex2(flags);
+	updated = true;
 }
 
 int CollisionObjectBullet::get_godot_object_flags() const {
 	return bt_collision_object->getUserIndex2();
 }
 
-void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
+void CollisionObjectBullet::set_transform(const Transform3D &p_global_transform) {
 	set_body_scale(p_global_transform.basis.get_scale_abs());
 
 	btTransform bt_transform;
@@ -203,8 +204,8 @@ void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
 	set_transform__bullet(bt_transform);
 }
 
-Transform CollisionObjectBullet::get_transform() const {
-	Transform t;
+Transform3D CollisionObjectBullet::get_transform() const {
+	Transform3D t;
 	B_TO_G(get_transform__bullet(), t);
 	t.basis.scale(body_scale);
 	return t;
@@ -220,7 +221,7 @@ const btTransform &CollisionObjectBullet::get_transform__bullet() const {
 }
 
 void CollisionObjectBullet::notify_transform_changed() {
-	isTransformChanged = true;
+	updated = true;
 }
 
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
@@ -230,7 +231,7 @@ RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
 	}
 }
 
-void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform &p_transform, bool p_disabled) {
+void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform3D &p_transform, bool p_disabled) {
 	shapes.push_back(ShapeWrapper(p_shape, p_transform, !p_disabled));
 	p_shape->add_owner(this);
 	reload_shapes();
@@ -296,7 +297,7 @@ void RigidCollisionObjectBullet::remove_all_shapes(bool p_permanentlyFromThisBod
 	}
 }
 
-void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform &p_transform) {
+void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform3D &p_transform) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
 	shapes.write[p_index].set_transform(p_transform);
@@ -307,8 +308,8 @@ const btTransform &RigidCollisionObjectBullet::get_bt_shape_transform(int p_inde
 	return shapes[p_index].transform;
 }
 
-Transform RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
-	Transform trs;
+Transform3D RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
+	Transform3D trs;
 	B_TO_G(shapes[p_index].transform, trs);
 	return trs;
 }

@@ -136,7 +136,7 @@ public abstract class GodotPlugin {
 		nativeRegisterSingleton(pluginName, pluginObject);
 
 		Set<Method> filteredMethods = new HashSet<>();
-		Class clazz = pluginObject.getClass();
+		Class<?> clazz = pluginObject.getClass();
 
 		Method[] methods = clazz.getDeclaredMethods();
 		for (Method method : methods) {
@@ -157,8 +157,8 @@ public abstract class GodotPlugin {
 		for (Method method : filteredMethods) {
 			List<String> ptr = new ArrayList<>();
 
-			Class[] paramTypes = method.getParameterTypes();
-			for (Class c : paramTypes) {
+			Class<?>[] paramTypes = method.getParameterTypes();
+			for (Class<?> c : paramTypes) {
 				ptr.add(c.getName());
 			}
 
@@ -190,6 +190,9 @@ public abstract class GodotPlugin {
 	 * <p>
 	 * The plugin can return a non-null {@link View} layout in order to add it to the Godot view
 	 * hierarchy.
+	 *
+	 * Use shouldBeOnTop() to set whether the plugin's {@link View} should be added on top or behind
+	 * the main Godot view.
 	 *
 	 * @see Activity#onCreate(Bundle)
 	 * @return the plugin's view to be included; null if no views should be included.
@@ -308,6 +311,17 @@ public abstract class GodotPlugin {
 	@NonNull
 	protected Set<String> getPluginGDNativeLibrariesPaths() {
 		return Collections.emptySet();
+	}
+
+	/**
+	 * Returns whether the plugin's {@link View} returned in onMainCreate() should be placed on
+	 * top of the main Godot view.
+	 *
+	 * Returning false causes the plugin's {@link View} to be placed behind, which can be useful
+	 * when used with transparency in order to let the Godot view handle inputs.
+	 */
+	public boolean shouldBeOnTop() {
+		return true;
 	}
 
 	/**

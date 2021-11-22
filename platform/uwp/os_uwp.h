@@ -45,6 +45,7 @@
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 class OS_UWP : public OS {
@@ -58,7 +59,7 @@ public:
 		bool alt = false, shift = false, control = false;
 		MessageType type = KEY_EVENT_MESSAGE;
 		bool pressed = false;
-		unsigned int keycode = 0;
+		Key keycode = Key::NONE;
 		unsigned int physical_keycode = 0;
 		unsigned int unicode = 0;
 		bool echo = false;
@@ -106,7 +107,7 @@ private:
 	bool control_mem;
 	bool meta_mem;
 	bool force_quit;
-	uint32_t last_button_state;
+	MouseButton last_button_state = MouseButton::NONE;
 
 	CursorShape cursor_shape;
 
@@ -115,11 +116,6 @@ private:
 	JoypadUWP ^ joypad;
 
 	Windows::System::Display::DisplayRequest ^ display_request;
-
-	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
-
-	void _drag_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	void _touch_event(int idx, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	ref class ManagedType {
 	public:
@@ -173,7 +169,7 @@ public:
 	MouseMode get_mouse_mode() const;
 
 	virtual Point2 get_mouse_position() const;
-	virtual int get_mouse_button_state() const;
+	virtual MouseButton get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
@@ -189,8 +185,8 @@ public:
 
 	virtual String get_name() const;
 
-	virtual Date get_date(bool utc) const;
-	virtual Time get_time(bool utc) const;
+	virtual Date get_date(bool p_utc) const;
+	virtual Time get_time(bool p_utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
 

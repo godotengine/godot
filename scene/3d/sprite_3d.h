@@ -72,12 +72,13 @@ private:
 	float opacity = 1.0;
 
 	Vector3::Axis axis = Vector3::AXIS_Z;
-	float pixel_size = 0.01;
+	real_t pixel_size = 0.01;
 	AABB aabb;
 
-	RID immediate;
+	RID mesh;
+	RID material;
 
-	bool flags[FLAG_MAX];
+	bool flags[FLAG_MAX] = {};
 	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
 	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
 	bool pending_update = false;
@@ -91,7 +92,17 @@ protected:
 	static void _bind_methods();
 	virtual void _draw() = 0;
 	_FORCE_INLINE_ void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
-	_FORCE_INLINE_ RID &get_immediate() { return immediate; }
+	_FORCE_INLINE_ RID &get_mesh() { return mesh; }
+	_FORCE_INLINE_ RID &get_material() { return material; }
+
+	uint32_t mesh_surface_offsets[RS::ARRAY_MAX];
+	PackedByteArray vertex_buffer;
+	PackedByteArray attribute_buffer;
+	uint32_t vertex_stride;
+	uint32_t attrib_stride;
+	uint32_t skin_stride;
+	uint32_t mesh_surface_format;
+
 	void _queue_update();
 
 public:
@@ -107,20 +118,14 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-	void set_region_enabled(bool p_region_enabled);
-	bool is_region_enabled() const;
-
-	void set_region_rect(const Rect2 &p_region_rect);
-	Rect2 get_region_rect() const;
-
 	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
 
 	void set_opacity(float p_amount);
 	float get_opacity() const;
 
-	void set_pixel_size(float p_amount);
-	float get_pixel_size() const;
+	void set_pixel_size(real_t p_amount);
+	real_t get_pixel_size() const;
 
 	void set_axis(Vector3::Axis p_axis);
 	Vector3::Axis get_axis() const;
@@ -147,15 +152,16 @@ class Sprite3D : public SpriteBase3D {
 	GDCLASS(Sprite3D, SpriteBase3D);
 	Ref<Texture2D> texture;
 
-	bool region_enabled;
+	bool region = false;
 	Rect2 region_rect;
 
-	int frame;
+	int frame = 0;
 
-	int vframes;
-	int hframes;
+	int vframes = 1;
+	int hframes = 1;
 
-	void _texture_changed();
+	RID last_shader;
+	RID last_texture;
 
 protected:
 	virtual void _draw() override;
@@ -167,7 +173,7 @@ public:
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
 
-	void set_region_enabled(bool p_region_enabled);
+	void set_region_enabled(bool p_region);
 	bool is_region_enabled() const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
@@ -176,8 +182,8 @@ public:
 	void set_frame(int p_frame);
 	int get_frame() const;
 
-	void set_frame_coords(const Vector2 &p_coord);
-	Vector2 get_frame_coords() const;
+	void set_frame_coords(const Vector2i &p_coord);
+	Vector2i get_frame_coords() const;
 
 	void set_vframes(int p_amount);
 	int get_vframes() const;
@@ -199,20 +205,18 @@ class AnimatedSprite3D : public SpriteBase3D {
 	StringName animation = "default";
 	int frame = 0;
 
-	bool centered = true;
+	bool centered = false;
 
-	float timeout = 0.0;
-
-	bool hflip = true;
-	bool vflip = true;
-
-	Color modulate;
+	double timeout = 0.0;
 
 	void _res_changed();
 
 	void _reset_timeout();
 	void _set_playing(bool p_playing);
 	bool _is_playing() const;
+
+	RID last_shader;
+	RID last_texture;
 
 protected:
 	virtual void _draw() override;
@@ -236,10 +240,11 @@ public:
 
 	virtual Rect2 get_item_rect() const override;
 
-	TypedArray<String> get_configuration_warnings() const override;
+	virtual TypedArray<String> get_configuration_warnings() const override;
 	AnimatedSprite3D();
 };
 
 VARIANT_ENUM_CAST(SpriteBase3D::DrawFlags);
 VARIANT_ENUM_CAST(SpriteBase3D::AlphaCutMode);
+
 #endif // SPRITE_3D_H

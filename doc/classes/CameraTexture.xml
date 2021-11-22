@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="camera_feed_id" type="int" setter="set_camera_feed_id" getter="get_camera_feed_id" default="0">
 			The ID of the [CameraFeed] for which we want to display the image.
@@ -22,6 +20,4 @@
 			Which image within the [CameraFeed] we want access to, important if the camera image is split in a Y and CbCr component.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

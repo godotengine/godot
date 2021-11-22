@@ -54,13 +54,12 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *move_up;
 	Button *move_down;
 	Button *zoom_out;
-	Button *zoom_1;
+	Button *zoom_reset;
 	Button *zoom_in;
 	ItemList *tree;
 	bool loading_scene;
 	int sel;
 
-	HSplitContainer *split;
 	Button *new_anim;
 	Button *remove_anim;
 
@@ -79,15 +78,16 @@ class SpriteFramesEditor : public HSplitContainer {
 	ConfirmationDialog *delete_dialog;
 
 	ConfirmationDialog *split_sheet_dialog;
-	ScrollContainer *splite_sheet_scroll;
+	ScrollContainer *split_sheet_scroll;
 	TextureRect *split_sheet_preview;
 	SpinBox *split_sheet_h;
 	SpinBox *split_sheet_v;
 	Button *split_sheet_zoom_out;
-	Button *split_sheet_zoom_1;
+	Button *split_sheet_zoom_reset;
 	Button *split_sheet_zoom_in;
 	EditorFileDialog *file_split_sheet;
 	Set<int> frames_selected;
+	Set<int> frames_toggled_by_mouse_hover;
 	int last_frame_selected;
 
 	float scale_ratio;
@@ -100,7 +100,6 @@ class SpriteFramesEditor : public HSplitContainer {
 	float min_sheet_zoom;
 
 	void _load_pressed();
-	void _load_scene_pressed();
 	void _file_load_request(const Vector<String> &p_path, int p_at_pos = -1);
 	void _copy_pressed();
 	void _paste_pressed();
@@ -128,13 +127,13 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	UndoRedo *undo_redo;
 
-	bool _is_drop_valid(const Dictionary &p_drag_data, const Dictionary &p_item_data) const;
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _open_sprite_sheet();
 	void _prepare_sprite_sheet(const String &p_file);
+	int _sheet_preview_position_to_frame_index(const Vector2 &p_position);
 	void _sheet_preview_draw();
 	void _sheet_spin_changed(double);
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
@@ -147,7 +146,7 @@ class SpriteFramesEditor : public HSplitContainer {
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 
 public:

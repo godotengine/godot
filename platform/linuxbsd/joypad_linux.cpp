@@ -59,7 +59,7 @@ JoypadLinux::Joypad::~Joypad() {
 }
 
 void JoypadLinux::Joypad::reset() {
-	dpad = 0;
+	dpad = HatMask::CENTER;
 	fd = -1;
 
 	Input::JoyAxisValue jx;
@@ -475,7 +475,7 @@ void JoypadLinux::process_joypads() {
 
 				switch (ev.type) {
 					case EV_KEY:
-						input->joy_button(i, joy->key_map[ev.code], ev.value);
+						input->joy_button(i, (JoyButton)joy->key_map[ev.code], ev.value);
 						break;
 
 					case EV_ABS:
@@ -484,29 +484,29 @@ void JoypadLinux::process_joypads() {
 							case ABS_HAT0X:
 								if (ev.value != 0) {
 									if (ev.value < 0) {
-										joy->dpad = (joy->dpad | Input::HAT_MASK_LEFT) & ~Input::HAT_MASK_RIGHT;
+										joy->dpad = (HatMask)((joy->dpad | HatMask::LEFT) & ~HatMask::RIGHT);
 									} else {
-										joy->dpad = (joy->dpad | Input::HAT_MASK_RIGHT) & ~Input::HAT_MASK_LEFT;
+										joy->dpad = (HatMask)((joy->dpad | HatMask::RIGHT) & ~HatMask::LEFT);
 									}
 								} else {
-									joy->dpad &= ~(Input::HAT_MASK_LEFT | Input::HAT_MASK_RIGHT);
+									joy->dpad &= ~(HatMask::LEFT | HatMask::RIGHT);
 								}
 
-								input->joy_hat(i, joy->dpad);
+								input->joy_hat(i, (HatMask)joy->dpad);
 								break;
 
 							case ABS_HAT0Y:
 								if (ev.value != 0) {
 									if (ev.value < 0) {
-										joy->dpad = (joy->dpad | Input::HAT_MASK_UP) & ~Input::HAT_MASK_DOWN;
+										joy->dpad = (HatMask)((joy->dpad | HatMask::UP) & ~HatMask::DOWN);
 									} else {
-										joy->dpad = (joy->dpad | Input::HAT_MASK_DOWN) & ~Input::HAT_MASK_UP;
+										joy->dpad = (HatMask)((joy->dpad | HatMask::DOWN) & ~HatMask::UP);
 									}
 								} else {
-									joy->dpad &= ~(Input::HAT_MASK_UP | Input::HAT_MASK_DOWN);
+									joy->dpad &= ~(HatMask::UP | HatMask::DOWN);
 								}
 
-								input->joy_hat(i, joy->dpad);
+								input->joy_hat(i, (HatMask)joy->dpad);
 								break;
 
 							default:
@@ -526,7 +526,7 @@ void JoypadLinux::process_joypads() {
 		for (int j = 0; j < MAX_ABS; j++) {
 			int index = joy->abs_map[j];
 			if (index != -1) {
-				input->joy_axis(i, index, joy->curr_axis[index]);
+				input->joy_axis(i, (JoyAxis)index, joy->curr_axis[index]);
 			}
 		}
 		if (len == 0 || (len < 0 && errno != EAGAIN)) {

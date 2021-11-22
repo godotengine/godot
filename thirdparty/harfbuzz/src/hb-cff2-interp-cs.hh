@@ -136,8 +136,8 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<blend_arg_t, CFF2Subrs>
 	if (unlikely (!scalars.resize (region_count)))
 	  set_error ();
 	else
-	  varStore->varStore.get_scalars (get_ivs (), coords, num_coords,
-					  &scalars[0], region_count);
+	  varStore->varStore.get_region_scalars (get_ivs (), coords, num_coords,
+						 &scalars[0], region_count);
       }
       seen_blend = true;
     }

@@ -29,25 +29,29 @@
 /*************************************************************************/
 
 #include "vulkan_context_iphone.h"
-#include <vulkan/vulkan_ios.h>
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 
 const char *VulkanContextIPhone::_get_platform_surface_extension() const {
 	return VK_MVK_IOS_SURFACE_EXTENSION_NAME;
 }
 
-Error VulkanContextIPhone::window_create(DisplayServer::WindowID p_window_id, CALayer *p_metal_layer, int p_width, int p_height) {
+Error VulkanContextIPhone::window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, CALayer *p_metal_layer, int p_width, int p_height) {
 	VkIOSSurfaceCreateInfoMVK createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK;
-	createInfo.pNext = NULL;
+	createInfo.pNext = nullptr;
 	createInfo.flags = 0;
 	createInfo.pView = (__bridge const void *)p_metal_layer;
 
 	VkSurfaceKHR surface;
 	VkResult err =
-			vkCreateIOSSurfaceMVK(_get_instance(), &createInfo, NULL, &surface);
+			vkCreateIOSSurfaceMVK(get_instance(), &createInfo, nullptr, &surface);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-	return _window_create(p_window_id, surface, p_width, p_height);
+	return _window_create(p_window_id, p_vsync_mode, surface, p_width, p_height);
 }
 
 VulkanContextIPhone::VulkanContextIPhone() {}

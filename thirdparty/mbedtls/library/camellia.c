@@ -973,9 +973,11 @@ int mbedtls_camellia_self_test( int verbose )
     unsigned char nonce_counter[16];
     unsigned char stream_block[16];
 #endif
+    int ret = 1;
 
     mbedtls_camellia_context ctx;
 
+    mbedtls_camellia_init( &ctx );
     memset( key, 0, 32 );
 
     for( j = 0; j < 6; j++ ) {
@@ -1005,8 +1007,7 @@ int mbedtls_camellia_self_test( int verbose )
         {
             if( verbose != 0 )
                 mbedtls_printf( "failed\n" );
-
-            return( 1 );
+            goto exit;
         }
     }
 
@@ -1058,8 +1059,7 @@ int mbedtls_camellia_self_test( int verbose )
             {
                 if( verbose != 0 )
                     mbedtls_printf( "failed\n" );
-
-                return( 1 );
+                goto exit;
             }
         }
 
@@ -1102,8 +1102,7 @@ int mbedtls_camellia_self_test( int verbose )
             {
                 if( verbose != 0 )
                     mbedtls_printf( "failed\n" );
-
-                return( 1 );
+                goto exit;
             }
         }
         else
@@ -1118,8 +1117,7 @@ int mbedtls_camellia_self_test( int verbose )
             {
                 if( verbose != 0 )
                     mbedtls_printf( "failed\n" );
-
-                return( 1 );
+                goto exit;
             }
         }
 
@@ -1131,7 +1129,11 @@ int mbedtls_camellia_self_test( int verbose )
         mbedtls_printf( "\n" );
 #endif /* MBEDTLS_CIPHER_MODE_CTR */
 
-    return( 0 );
+    ret = 0;
+
+exit:
+    mbedtls_camellia_free( &ctx );
+    return( ret );
 }
 
 #endif /* MBEDTLS_SELF_TEST */

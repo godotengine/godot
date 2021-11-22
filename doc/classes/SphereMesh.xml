@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
 			Full height of the sphere.
@@ -28,6 +26,4 @@
 			Number of segments along the height of the sphere.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

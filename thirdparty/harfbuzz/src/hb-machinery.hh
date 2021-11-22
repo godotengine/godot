@@ -242,14 +242,14 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
   static const Stored* get_null () { return &Null (Stored); }
   static Stored *create (Data *data)
   {
-    Stored *p = (Stored *) calloc (1, sizeof (Stored));
+    Stored *p = (Stored *) hb_calloc (1, sizeof (Stored));
     if (likely (p))
       p->init (data);
     return p;
   }
   static Stored *create ()
   {
-    Stored *p = (Stored *) calloc (1, sizeof (Stored));
+    Stored *p = (Stored *) hb_calloc (1, sizeof (Stored));
     if (likely (p))
       p->init ();
     return p;
@@ -257,7 +257,7 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
   static void destroy (Stored *p)
   {
     p->fini ();
-    free (p);
+    hb_free (p);
   }
 
 //  private:

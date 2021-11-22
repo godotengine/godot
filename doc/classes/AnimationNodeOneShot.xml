@@ -7,21 +7,18 @@
 		A resource to add to an [AnimationNodeBlendTree]. This node will execute a sub-animation and return once it finishes. Blend times for fading in and out can be customized, as well as filters.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="get_mix_mode" qualifiers="const">
-			<return type="int" enum="AnimationNodeOneShot.MixMode">
-			</return>
+			<return type="int" enum="AnimationNodeOneShot.MixMode" />
 			<description>
 			</description>
 		</method>
 		<method name="set_mix_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="AnimationNodeOneShot.MixMode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="mode" type="int" enum="AnimationNodeOneShot.MixMode" />
 			<description>
 			</description>
 		</method>

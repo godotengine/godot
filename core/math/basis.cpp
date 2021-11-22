@@ -31,7 +31,6 @@
 #include "basis.h"
 
 #include "core/math/math_funcs.h"
-#include "core/os/copymem.h"
 #include "core/string/print_string.h"
 
 #define cofac(row1, col1, row2, col2) \
@@ -59,8 +58,8 @@ void Basis::invert() {
 		cofac(1, 1, 2, 2), cofac(1, 2, 2, 0), cofac(1, 0, 2, 1)
 	};
 	real_t det = elements[0][0] * co[0] +
-				 elements[0][1] * co[1] +
-				 elements[0][2] * co[2];
+			elements[0][1] * co[1] +
+			elements[0][2] * co[2];
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
 #endif
@@ -110,7 +109,7 @@ bool Basis::is_diagonal() const {
 }
 
 bool Basis::is_rotation() const {
-	return Math::is_equal_approx(determinant(), 1, UNIT_EPSILON) && is_orthogonal();
+	return Math::is_equal_approx(determinant(), 1, (real_t)UNIT_EPSILON) && is_orthogonal();
 }
 
 #ifdef MATH_CHECKS
@@ -208,6 +207,10 @@ Basis Basis::transposed() const {
 	return tr;
 }
 
+Basis Basis::from_scale(const Vector3 &p_scale) {
+	return Basis(p_scale.x, 0, 0, 0, p_scale.y, 0, 0, 0, p_scale.z);
+}
+
 // Multiplies the matrix from left by the scaling matrix: M -> S.M
 // See the comment for Basis::rotated for further explanation.
 void Basis::scale(const Vector3 &p_scale) {
@@ -247,10 +250,7 @@ void Basis::make_scale_uniform() {
 }
 
 Basis Basis::scaled_local(const Vector3 &p_scale) const {
-	Basis b;
-	b.set_diagonal(p_scale);
-
-	return (*this) * b;
+	return (*this) * Basis::from_scale(p_scale);
 }
 
 Vector3 Basis::get_scale_abs() const {
@@ -261,7 +261,7 @@ Vector3 Basis::get_scale_abs() const {
 }
 
 Vector3 Basis::get_scale_local() const {
-	real_t det_sign = SGN(determinant());
+	real_t det_sign = SIGN(determinant());
 	return det_sign * Vector3(elements[0].length(), elements[1].length(), elements[2].length());
 }
 
@@ -287,11 +287,8 @@ Vector3 Basis::get_scale() const {
 	// matrix elements.
 	//
 	// The rotation part of this decomposition is returned by get_rotation* functions.
-	real_t det_sign = SGN(determinant());
-	return det_sign * Vector3(
-							  Vector3(elements[0][0], elements[1][0], elements[2][0]).length(),
-							  Vector3(elements[0][1], elements[1][1], elements[2][1]).length(),
-							  Vector3(elements[0][2], elements[1][2], elements[2][2]).length());
+	real_t det_sign = SIGN(determinant());
+	return det_sign * get_scale_abs();
 }
 
 // Decomposes a Basis into a rotation-reflection matrix (an element of the group O(3)) and a positive scaling matrix as B = O.S.
@@ -346,15 +343,15 @@ void Basis::rotate(const Vector3 &p_euler) {
 	*this = rotated(p_euler);
 }
 
-Basis Basis::rotated(const Quat &p_quat) const {
-	return Basis(p_quat) * (*this);
+Basis Basis::rotated(const Quaternion &p_quaternion) const {
+	return Basis(p_quaternion) * (*this);
 }
 
-void Basis::rotate(const Quat &p_quat) {
-	*this = rotated(p_quat);
+void Basis::rotate(const Quaternion &p_quaternion) {
+	*this = rotated(p_quaternion);
 }
 
-Vector3 Basis::get_rotation_euler() const {
+Vector3 Basis::get_euler_normalized(EulerOrder p_order) const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
 	// See the comment in get_scale() for further information.
@@ -365,10 +362,10 @@ Vector3 Basis::get_rotation_euler() const {
 		m.scale(Vector3(-1, -1, -1));
 	}
 
-	return m.get_euler();
+	return m.get_euler(p_order);
 }
 
-Quat Basis::get_rotation_quat() const {
+Quaternion Basis::get_rotation_quaternion() const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
 	// See the comment in get_scale() for further information.
@@ -379,7 +376,19 @@ Quat Basis::get_rotation_quat() const {
 		m.scale(Vector3(-1, -1, -1));
 	}
 
-	return m.get_quat();
+	return m.get_quaternion();
+}
+
+void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) {
+	// Takes two vectors and rotates the basis from the first vector to the second vector.
+	// Adopted from: https://gist.github.com/kevinmoran/b45980723e53edeb8a5a43c49f134724
+	const Vector3 axis = p_start_direction.cross(p_end_direction).normalized();
+	if (axis.length_squared() != 0) {
+		real_t dot = p_start_direction.dot(p_end_direction);
+		dot = CLAMP(dot, -1.0, 1.0);
+		const real_t angle_rads = Math::acos(dot);
+		set_axis_angle(axis, angle_rads);
+	}
 }
 
 void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
@@ -412,57 +421,203 @@ void Basis::get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) cons
 	p_angle = -p_angle;
 }
 
-// get_euler_xyz returns a vector containing the Euler angles in the format
-// (a1,a2,a3), where a3 is the angle of the first rotation, and a1 is the last
-// (following the convention they are commonly defined in the literature).
-//
-// The current implementation uses XYZ convention (Z is the first rotation),
-// so euler.z is the angle of the (first) rotation around Z axis and so on,
-//
-// And thus, assuming the matrix is a rotation matrix, this function returns
-// the angles in the decomposition R = X(a1).Y(a2).Z(a3) where Z(a) rotates
-// around the z-axis by a and so on.
-Vector3 Basis::get_euler_xyz() const {
-	// Euler angles in XYZ convention.
-	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
-	//
-	// rot =  cy*cz          -cy*sz           sy
-	//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
-	//       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
+Vector3 Basis::get_euler(EulerOrder p_order) const {
+	switch (p_order) {
+		case EULER_ORDER_XYZ: {
+			// Euler angles in XYZ convention.
+			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+			//
+			// rot =  cy*cz          -cy*sz           sy
+			//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
+			//       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
 
-	Vector3 euler;
-	real_t sy = elements[0][2];
-	if (sy < (1.0 - CMP_EPSILON)) {
-		if (sy > -(1.0 - CMP_EPSILON)) {
-			// is this a pure Y rotation?
-			if (elements[1][0] == 0.0 && elements[0][1] == 0.0 && elements[1][2] == 0 && elements[2][1] == 0 && elements[1][1] == 1) {
-				// return the simplest form (human friendlier in editor and scripts)
+			Vector3 euler;
+			real_t sy = elements[0][2];
+			if (sy < (1.0 - CMP_EPSILON)) {
+				if (sy > -(1.0 - CMP_EPSILON)) {
+					// is this a pure Y rotation?
+					if (elements[1][0] == 0.0 && elements[0][1] == 0.0 && elements[1][2] == 0 && elements[2][1] == 0 && elements[1][1] == 1) {
+						// return the simplest form (human friendlier in editor and scripts)
+						euler.x = 0;
+						euler.y = atan2(elements[0][2], elements[0][0]);
+						euler.z = 0;
+					} else {
+						euler.x = Math::atan2(-elements[1][2], elements[2][2]);
+						euler.y = Math::asin(sy);
+						euler.z = Math::atan2(-elements[0][1], elements[0][0]);
+					}
+				} else {
+					euler.x = Math::atan2(elements[2][1], elements[1][1]);
+					euler.y = -Math_PI / 2.0;
+					euler.z = 0.0;
+				}
+			} else {
+				euler.x = Math::atan2(elements[2][1], elements[1][1]);
+				euler.y = Math_PI / 2.0;
+				euler.z = 0.0;
+			}
+			return euler;
+		} break;
+		case EULER_ORDER_XZY: {
+			// Euler angles in XZY convention.
+			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+			//
+			// rot =  cz*cy             -sz             cz*sy
+			//        sx*sy+cx*cy*sz    cx*cz           cx*sz*sy-cy*sx
+			//        cy*sx*sz          cz*sx           cx*cy+sx*sz*sy
+
+			Vector3 euler;
+			real_t sz = elements[0][1];
+			if (sz < (1.0 - CMP_EPSILON)) {
+				if (sz > -(1.0 - CMP_EPSILON)) {
+					euler.x = Math::atan2(elements[2][1], elements[1][1]);
+					euler.y = Math::atan2(elements[0][2], elements[0][0]);
+					euler.z = Math::asin(-sz);
+				} else {
+					// It's -1
+					euler.x = -Math::atan2(elements[1][2], elements[2][2]);
+					euler.y = 0.0;
+					euler.z = Math_PI / 2.0;
+				}
+			} else {
+				// It's 1
+				euler.x = -Math::atan2(elements[1][2], elements[2][2]);
+				euler.y = 0.0;
+				euler.z = -Math_PI / 2.0;
+			}
+			return euler;
+		} break;
+		case EULER_ORDER_YXZ: {
+			// Euler angles in YXZ convention.
+			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+			//
+			// rot =  cy*cz+sy*sx*sz    cz*sy*sx-cy*sz        cx*sy
+			//        cx*sz             cx*cz                 -sx
+			//        cy*sx*sz-cz*sy    cy*cz*sx+sy*sz        cy*cx
+
+			Vector3 euler;
+
+			real_t m12 = elements[1][2];
+
+			if (m12 < (1 - CMP_EPSILON)) {
+				if (m12 > -(1 - CMP_EPSILON)) {
+					// is this a pure X rotation?
+					if (elements[1][0] == 0 && elements[0][1] == 0 && elements[0][2] == 0 && elements[2][0] == 0 && elements[0][0] == 1) {
+						// return the simplest form (human friendlier in editor and scripts)
+						euler.x = atan2(-m12, elements[1][1]);
+						euler.y = 0;
+						euler.z = 0;
+					} else {
+						euler.x = asin(-m12);
+						euler.y = atan2(elements[0][2], elements[2][2]);
+						euler.z = atan2(elements[1][0], elements[1][1]);
+					}
+				} else { // m12 == -1
+					euler.x = Math_PI * 0.5;
+					euler.y = atan2(elements[0][1], elements[0][0]);
+					euler.z = 0;
+				}
+			} else { // m12 == 1
+				euler.x = -Math_PI * 0.5;
+				euler.y = -atan2(elements[0][1], elements[0][0]);
+				euler.z = 0;
+			}
+
+			return euler;
+		} break;
+		case EULER_ORDER_YZX: {
+			// Euler angles in YZX convention.
+			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+			//
+			// rot =  cy*cz             sy*sx-cy*cx*sz     cx*sy+cy*sz*sx
+			//        sz                cz*cx              -cz*sx
+			//        -cz*sy            cy*sx+cx*sy*sz     cy*cx-sy*sz*sx
+
+			Vector3 euler;
+			real_t sz = elements[1][0];
+			if (sz < (1.0 - CMP_EPSILON)) {
+				if (sz > -(1.0 - CMP_EPSILON)) {
+					euler.x = Math::atan2(-elements[1][2], elements[1][1]);
+					euler.y = Math::atan2(-elements[2][0], elements[0][0]);
+					euler.z = Math::asin(sz);
+				} else {
+					// It's -1
+					euler.x = Math::atan2(elements[2][1], elements[2][2]);
+					euler.y = 0.0;
+					euler.z = -Math_PI / 2.0;
+				}
+			} else {
+				// It's 1
+				euler.x = Math::atan2(elements[2][1], elements[2][2]);
+				euler.y = 0.0;
+				euler.z = Math_PI / 2.0;
+			}
+			return euler;
+		} break;
+		case EULER_ORDER_ZXY: {
+			// Euler angles in ZXY convention.
+			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+			//
+			// rot =  cz*cy-sz*sx*sy    -cx*sz                cz*sy+cy*sz*sx
+			//        cy*sz+cz*sx*sy    cz*cx                 sz*sy-cz*cy*sx
+			//        -cx*sy            sx                    cx*cy
+			Vector3 euler;
+			real_t sx = elements[2][1];
+			if (sx < (1.0 - CMP_EPSILON)) {
+				if (sx > -(1.0 - CMP_EPSILON)) {
+					euler.x = Math::asin(sx);
+					euler.y = Math::atan2(-elements[2][0], elements[2][2]);
+					euler.z = Math::atan2(-elements[0][1], elements[1][1]);
+				} else {
+					// It's -1
+					euler.x = -Math_PI / 2.0;
+					euler.y = Math::atan2(elements[0][2], elements[0][0]);
+					euler.z = 0;
+				}
+			} else {
+				// It's 1
+				euler.x = Math_PI / 2.0;
+				euler.y = Math::atan2(elements[0][2], elements[0][0]);
+				euler.z = 0;
+			}
+			return euler;
+		} break;
+		case EULER_ORDER_ZYX: {
+			// Euler angles in ZYX convention.
+			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+			//
+			// rot =  cz*cy             cz*sy*sx-cx*sz        sz*sx+cz*cx*cy
+			//        cy*sz             cz*cx+sz*sy*sx        cx*sz*sy-cz*sx
+			//        -sy               cy*sx                 cy*cx
+			Vector3 euler;
+			real_t sy = elements[2][0];
+			if (sy < (1.0 - CMP_EPSILON)) {
+				if (sy > -(1.0 - CMP_EPSILON)) {
+					euler.x = Math::atan2(elements[2][1], elements[2][2]);
+					euler.y = Math::asin(-sy);
+					euler.z = Math::atan2(elements[1][0], elements[0][0]);
+				} else {
+					// It's -1
+					euler.x = 0;
+					euler.y = Math_PI / 2.0;
+					euler.z = -Math::atan2(elements[0][1], elements[1][1]);
+				}
+			} else {
+				// It's 1
 				euler.x = 0;
-				euler.y = atan2(elements[0][2], elements[0][0]);
-				euler.z = 0;
-			} else {
-				euler.x = Math::atan2(-elements[1][2], elements[2][2]);
-				euler.y = Math::asin(sy);
-				euler.z = Math::atan2(-elements[0][1], elements[0][0]);
+				euler.y = -Math_PI / 2.0;
+				euler.z = -Math::atan2(elements[0][1], elements[1][1]);
 			}
-		} else {
-			euler.x = Math::atan2(elements[2][1], elements[1][1]);
-			euler.y = -Math_PI / 2.0;
-			euler.z = 0.0;
+			return euler;
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(Vector3(), "Invalid parameter for get_euler(order)");
 		}
-	} else {
-		euler.x = Math::atan2(elements[2][1], elements[1][1]);
-		euler.y = Math_PI / 2.0;
-		euler.z = 0.0;
 	}
-	return euler;
+	return Vector3();
 }
 
-// set_euler_xyz expects a vector containing the Euler angles in the format
-// (ax,ay,az), where ax is the angle of rotation around x axis,
-// and similar for other axes.
-// The current implementation uses XYZ convention (Z is the first rotation).
-void Basis::set_euler_xyz(const Vector3 &p_euler) {
+void Basis::set_euler(const Vector3 &p_euler, EulerOrder p_order) {
 	real_t c, s;
 
 	c = Math::cos(p_euler.x);
@@ -477,263 +632,29 @@ void Basis::set_euler_xyz(const Vector3 &p_euler) {
 	s = Math::sin(p_euler.z);
 	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
 
-	//optimizer will optimize away all this anyway
-	*this = xmat * (ymat * zmat);
-}
-
-Vector3 Basis::get_euler_xzy() const {
-	// Euler angles in XZY convention.
-	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
-	//
-	// rot =  cz*cy             -sz             cz*sy
-	//        sx*sy+cx*cy*sz    cx*cz           cx*sz*sy-cy*sx
-	//        cy*sx*sz          cz*sx           cx*cy+sx*sz*sy
-
-	Vector3 euler;
-	real_t sz = elements[0][1];
-	if (sz < (1.0 - CMP_EPSILON)) {
-		if (sz > -(1.0 - CMP_EPSILON)) {
-			euler.x = Math::atan2(elements[2][1], elements[1][1]);
-			euler.y = Math::atan2(elements[0][2], elements[0][0]);
-			euler.z = Math::asin(-sz);
-		} else {
-			// It's -1
-			euler.x = -Math::atan2(elements[1][2], elements[2][2]);
-			euler.y = 0.0;
-			euler.z = Math_PI / 2.0;
+	switch (p_order) {
+		case EULER_ORDER_XYZ: {
+			*this = xmat * (ymat * zmat);
+		} break;
+		case EULER_ORDER_XZY: {
+			*this = xmat * zmat * ymat;
+		} break;
+		case EULER_ORDER_YXZ: {
+			*this = ymat * xmat * zmat;
+		} break;
+		case EULER_ORDER_YZX: {
+			*this = ymat * zmat * xmat;
+		} break;
+		case EULER_ORDER_ZXY: {
+			*this = zmat * xmat * ymat;
+		} break;
+		case EULER_ORDER_ZYX: {
+			*this = zmat * ymat * xmat;
+		} break;
+		default: {
+			ERR_FAIL_MSG("Invalid order parameter for set_euler(vec3,order)");
 		}
-	} else {
-		// It's 1
-		euler.x = -Math::atan2(elements[1][2], elements[2][2]);
-		euler.y = 0.0;
-		euler.z = -Math_PI / 2.0;
 	}
-	return euler;
-}
-
-void Basis::set_euler_xzy(const Vector3 &p_euler) {
-	real_t c, s;
-
-	c = Math::cos(p_euler.x);
-	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
-
-	c = Math::cos(p_euler.y);
-	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
-
-	c = Math::cos(p_euler.z);
-	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
-
-	*this = xmat * zmat * ymat;
-}
-
-Vector3 Basis::get_euler_yzx() const {
-	// Euler angles in YZX convention.
-	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
-	//
-	// rot =  cy*cz             sy*sx-cy*cx*sz     cx*sy+cy*sz*sx
-	//        sz                cz*cx              -cz*sx
-	//        -cz*sy            cy*sx+cx*sy*sz     cy*cx-sy*sz*sx
-
-	Vector3 euler;
-	real_t sz = elements[1][0];
-	if (sz < (1.0 - CMP_EPSILON)) {
-		if (sz > -(1.0 - CMP_EPSILON)) {
-			euler.x = Math::atan2(-elements[1][2], elements[1][1]);
-			euler.y = Math::atan2(-elements[2][0], elements[0][0]);
-			euler.z = Math::asin(sz);
-		} else {
-			// It's -1
-			euler.x = Math::atan2(elements[2][1], elements[2][2]);
-			euler.y = 0.0;
-			euler.z = -Math_PI / 2.0;
-		}
-	} else {
-		// It's 1
-		euler.x = Math::atan2(elements[2][1], elements[2][2]);
-		euler.y = 0.0;
-		euler.z = Math_PI / 2.0;
-	}
-	return euler;
-}
-
-void Basis::set_euler_yzx(const Vector3 &p_euler) {
-	real_t c, s;
-
-	c = Math::cos(p_euler.x);
-	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
-
-	c = Math::cos(p_euler.y);
-	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
-
-	c = Math::cos(p_euler.z);
-	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
-
-	*this = ymat * zmat * xmat;
-}
-
-// get_euler_yxz returns a vector containing the Euler angles in the YXZ convention,
-// as in first-Z, then-X, last-Y. The angles for X, Y, and Z rotations are returned
-// as the x, y, and z components of a Vector3 respectively.
-Vector3 Basis::get_euler_yxz() const {
-	// Euler angles in YXZ convention.
-	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
-	//
-	// rot =  cy*cz+sy*sx*sz    cz*sy*sx-cy*sz        cx*sy
-	//        cx*sz             cx*cz                 -sx
-	//        cy*sx*sz-cz*sy    cy*cz*sx+sy*sz        cy*cx
-
-	Vector3 euler;
-
-	real_t m12 = elements[1][2];
-
-	if (m12 < (1 - CMP_EPSILON)) {
-		if (m12 > -(1 - CMP_EPSILON)) {
-			// is this a pure X rotation?
-			if (elements[1][0] == 0 && elements[0][1] == 0 && elements[0][2] == 0 && elements[2][0] == 0 && elements[0][0] == 1) {
-				// return the simplest form (human friendlier in editor and scripts)
-				euler.x = atan2(-m12, elements[1][1]);
-				euler.y = 0;
-				euler.z = 0;
-			} else {
-				euler.x = asin(-m12);
-				euler.y = atan2(elements[0][2], elements[2][2]);
-				euler.z = atan2(elements[1][0], elements[1][1]);
-			}
-		} else { // m12 == -1
-			euler.x = Math_PI * 0.5;
-			euler.y = atan2(elements[0][1], elements[0][0]);
-			euler.z = 0;
-		}
-	} else { // m12 == 1
-		euler.x = -Math_PI * 0.5;
-		euler.y = -atan2(elements[0][1], elements[0][0]);
-		euler.z = 0;
-	}
-
-	return euler;
-}
-
-// set_euler_yxz expects a vector containing the Euler angles in the format
-// (ax,ay,az), where ax is the angle of rotation around x axis,
-// and similar for other axes.
-// The current implementation uses YXZ convention (Z is the first rotation).
-void Basis::set_euler_yxz(const Vector3 &p_euler) {
-	real_t c, s;
-
-	c = Math::cos(p_euler.x);
-	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
-
-	c = Math::cos(p_euler.y);
-	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
-
-	c = Math::cos(p_euler.z);
-	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
-
-	//optimizer will optimize away all this anyway
-	*this = ymat * xmat * zmat;
-}
-
-Vector3 Basis::get_euler_zxy() const {
-	// Euler angles in ZXY convention.
-	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
-	//
-	// rot =  cz*cy-sz*sx*sy    -cx*sz                cz*sy+cy*sz*sx
-	//        cy*sz+cz*sx*sy    cz*cx                 sz*sy-cz*cy*sx
-	//        -cx*sy            sx                    cx*cy
-	Vector3 euler;
-	real_t sx = elements[2][1];
-	if (sx < (1.0 - CMP_EPSILON)) {
-		if (sx > -(1.0 - CMP_EPSILON)) {
-			euler.x = Math::asin(sx);
-			euler.y = Math::atan2(-elements[2][0], elements[2][2]);
-			euler.z = Math::atan2(-elements[0][1], elements[1][1]);
-		} else {
-			// It's -1
-			euler.x = -Math_PI / 2.0;
-			euler.y = Math::atan2(elements[0][2], elements[0][0]);
-			euler.z = 0;
-		}
-	} else {
-		// It's 1
-		euler.x = Math_PI / 2.0;
-		euler.y = Math::atan2(elements[0][2], elements[0][0]);
-		euler.z = 0;
-	}
-	return euler;
-}
-
-void Basis::set_euler_zxy(const Vector3 &p_euler) {
-	real_t c, s;
-
-	c = Math::cos(p_euler.x);
-	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
-
-	c = Math::cos(p_euler.y);
-	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
-
-	c = Math::cos(p_euler.z);
-	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
-
-	*this = zmat * xmat * ymat;
-}
-
-Vector3 Basis::get_euler_zyx() const {
-	// Euler angles in ZYX convention.
-	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
-	//
-	// rot =  cz*cy             cz*sy*sx-cx*sz        sz*sx+cz*cx*cy
-	//        cy*sz             cz*cx+sz*sy*sx        cx*sz*sy-cz*sx
-	//        -sy               cy*sx                 cy*cx
-	Vector3 euler;
-	real_t sy = elements[2][0];
-	if (sy < (1.0 - CMP_EPSILON)) {
-		if (sy > -(1.0 - CMP_EPSILON)) {
-			euler.x = Math::atan2(elements[2][1], elements[2][2]);
-			euler.y = Math::asin(-sy);
-			euler.z = Math::atan2(elements[1][0], elements[0][0]);
-		} else {
-			// It's -1
-			euler.x = 0;
-			euler.y = Math_PI / 2.0;
-			euler.z = -Math::atan2(elements[0][1], elements[1][1]);
-		}
-	} else {
-		// It's 1
-		euler.x = 0;
-		euler.y = -Math_PI / 2.0;
-		euler.z = -Math::atan2(elements[0][1], elements[1][1]);
-	}
-	return euler;
-}
-
-void Basis::set_euler_zyx(const Vector3 &p_euler) {
-	real_t c, s;
-
-	c = Math::cos(p_euler.x);
-	s = Math::sin(p_euler.x);
-	Basis xmat(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
-
-	c = Math::cos(p_euler.y);
-	s = Math::sin(p_euler.y);
-	Basis ymat(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
-
-	c = Math::cos(p_euler.z);
-	s = Math::sin(p_euler.z);
-	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
-
-	*this = zmat * ymat * xmat;
 }
 
 bool Basis::is_equal_approx(const Basis &p_basis) const {
@@ -757,23 +678,14 @@ bool Basis::operator!=(const Basis &p_matrix) const {
 }
 
 Basis::operator String() const {
-	String mtx;
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (i != 0 || j != 0) {
-				mtx += ", ";
-			}
-
-			mtx += rtos(elements[j][i]); //matrix is stored transposed for performance, so print it transposed
-		}
-	}
-
-	return mtx;
+	return "[X: " + get_axis(0).operator String() +
+			", Y: " + get_axis(1).operator String() +
+			", Z: " + get_axis(2).operator String() + "]";
 }
 
-Quat Basis::get_quat() const {
+Quaternion Basis::get_quaternion() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_rotation(), Quat(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quat() or call orthonormalized() instead.");
+	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() if the Basis contains linearly independent vectors.");
 #endif
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;
@@ -789,9 +701,9 @@ Quat Basis::get_quat() const {
 		temp[1] = ((m.elements[0][2] - m.elements[2][0]) * s);
 		temp[2] = ((m.elements[1][0] - m.elements[0][1]) * s);
 	} else {
-		int i = m.elements[0][0] < m.elements[1][1] ?
-						  (m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
-						  (m.elements[0][0] < m.elements[2][2] ? 2 : 0);
+		int i = m.elements[0][0] < m.elements[1][1]
+				? (m.elements[1][1] < m.elements[2][2] ? 2 : 1)
+				: (m.elements[0][0] < m.elements[2][2] ? 2 : 0);
 		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
 
@@ -804,7 +716,7 @@ Quat Basis::get_quat() const {
 		temp[k] = (m.elements[k][i] + m.elements[i][k]) * s;
 	}
 
-	return Quat(temp[0], temp[1], temp[2], temp[3]);
+	return Quaternion(temp[0], temp[1], temp[2], temp[3]);
 }
 
 static const Basis _ortho_bases[24] = {
@@ -946,13 +858,13 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	r_angle = angle;
 }
 
-void Basis::set_quat(const Quat &p_quat) {
-	real_t d = p_quat.length_squared();
+void Basis::set_quaternion(const Quaternion &p_quaternion) {
+	real_t d = p_quaternion.length_squared();
 	real_t s = 2.0 / d;
-	real_t xs = p_quat.x * s, ys = p_quat.y * s, zs = p_quat.z * s;
-	real_t wx = p_quat.w * xs, wy = p_quat.w * ys, wz = p_quat.w * zs;
-	real_t xx = p_quat.x * xs, xy = p_quat.x * ys, xz = p_quat.x * zs;
-	real_t yy = p_quat.y * ys, yz = p_quat.y * zs, zz = p_quat.z * zs;
+	real_t xs = p_quaternion.x * s, ys = p_quaternion.y * s, zs = p_quaternion.z * s;
+	real_t wx = p_quaternion.w * xs, wy = p_quaternion.w * ys, wz = p_quaternion.w * zs;
+	real_t xx = p_quaternion.x * xs, xy = p_quaternion.x * ys, xz = p_quaternion.x * zs;
+	real_t yy = p_quaternion.y * ys, yz = p_quaternion.y * zs, zz = p_quaternion.z * zs;
 	set(1.0 - (yy + zz), xy - wz, xz + wy,
 			xy + wz, 1.0 - (xx + zz), yz - wx,
 			xz - wy, yz + wx, 1.0 - (xx + yy));
@@ -989,21 +901,23 @@ void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
 }
 
 void Basis::set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) {
-	set_diagonal(p_scale);
+	_set_diagonal(p_scale);
 	rotate(p_axis, p_phi);
 }
 
 void Basis::set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale) {
-	set_diagonal(p_scale);
+	_set_diagonal(p_scale);
 	rotate(p_euler);
 }
 
-void Basis::set_quat_scale(const Quat &p_quat, const Vector3 &p_scale) {
-	set_diagonal(p_scale);
-	rotate(p_quat);
+void Basis::set_quaternion_scale(const Quaternion &p_quaternion, const Vector3 &p_scale) {
+	_set_diagonal(p_scale);
+	rotate(p_quaternion);
 }
 
-void Basis::set_diagonal(const Vector3 &p_diag) {
+// This also sets the non-diagonal elements to 0, which is misleading from the
+// name, so we want this method to be private. Use `from_scale` externally.
+void Basis::_set_diagonal(const Vector3 &p_diag) {
 	elements[0][0] = p_diag.x;
 	elements[0][1] = 0;
 	elements[0][2] = 0;
@@ -1019,8 +933,8 @@ void Basis::set_diagonal(const Vector3 &p_diag) {
 
 Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {
 	//consider scale
-	Quat from(*this);
-	Quat to(p_to);
+	Quaternion from(*this);
+	Quaternion to(p_to);
 
 	Basis b(from.slerp(to, p_weight));
 	b.elements[0] *= Math::lerp(elements[0].length(), p_to.elements[0].length(), p_weight);
@@ -1138,4 +1052,22 @@ void Basis::rotate_sh(real_t *p_values) {
 	p_values[6] = d2 * s_scale_dst2;
 	p_values[7] = -d3;
 	p_values[8] = d4 * s_scale_dst4;
+}
+
+Basis Basis::looking_at(const Vector3 &p_target, const Vector3 &p_up) {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(p_target.is_equal_approx(Vector3()), Basis(), "The target vector can't be zero.");
+	ERR_FAIL_COND_V_MSG(p_up.is_equal_approx(Vector3()), Basis(), "The up vector can't be zero.");
+#endif
+	Vector3 v_z = -p_target.normalized();
+	Vector3 v_x = p_up.cross(v_z);
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(v_x.is_equal_approx(Vector3()), Basis(), "The target vector and up vector can't be parallel to each other.");
+#endif
+	v_x.normalize();
+	Vector3 v_y = v_z.cross(v_x);
+
+	Basis basis;
+	basis.set(v_x, v_y, v_z);
+	return basis;
 }

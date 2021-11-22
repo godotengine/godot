@@ -4,71 +4,59 @@
 		A base class to implement debugger plugins.
 	</brief_description>
 	<description>
-		All debugger plugin scripts must extend [EditorDebuggerPlugin]. It provides functions related to editor side of debugger.
-		You don't need to instantiate this class. That is handled by the debugger itself. [Control] nodes can be added as child nodes to provide a GUI front-end for the plugin.
-		Do not queue_free/reparent it's instance otherwise the instance becomes unusable.
+		[EditorDebuggerPlugin] provides functions related to the editor side of the debugger.
+		You don't need to instantiate this class; that is automatically handled by the debugger. [Control] nodes can be added as child nodes to provide a GUI for the plugin.
+		Do not free or reparent this node, otherwise it becomes unusable.
+		To use [EditorDebuggerPlugin], register it using the [method EditorPlugin.add_debugger_plugin] method first.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="has_capture">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a message capture with given name is present otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="is_breaked">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the game is in break state otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="is_debuggable">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the game can be debugged otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="is_session_active">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if there is an instance of  the game running with the attached debugger otherwise [code]false[/code].
+				Returns [code]true[/code] if there is an instance of the game running with the attached debugger otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="register_message_capture">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="callable" type="Callable">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="callable" type="Callable" />
 			<description>
 				Registers a message capture with given [code]name[/code]. If [code]name[/code] is "my_message" then messages starting with "my_message:" will be called with the given callable.
 				Callable must accept a message string and a data array as argument. If the message and data are valid then callable must return [code]true[/code] otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="send_message">
-			<return type="void">
-			</return>
-			<argument index="0" name="message" type="String">
-			</argument>
-			<argument index="1" name="data" type="Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="message" type="String" />
+			<argument index="1" name="data" type="Array" />
 			<description>
 				Sends a message with given [code]message[/code] and [code]data[/code] array.
 			</description>
 		</method>
 		<method name="unregister_message_capture">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Unregisters the message capture with given name.
 			</description>
@@ -76,8 +64,7 @@
 	</methods>
 	<signals>
 		<signal name="breaked">
-			<argument index="0" name="can_debug" type="bool">
-			</argument>
+			<argument index="0" name="can_debug" type="bool" />
 			<description>
 				Emitted when the game enters a break state.
 			</description>
@@ -98,6 +85,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

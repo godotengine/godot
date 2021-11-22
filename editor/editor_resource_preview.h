@@ -37,11 +37,17 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
-class EditorResourcePreviewGenerator : public Reference {
-	GDCLASS(EditorResourcePreviewGenerator, Reference);
+class EditorResourcePreviewGenerator : public RefCounted {
+	GDCLASS(EditorResourcePreviewGenerator, RefCounted);
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL1RC(bool, _handles, String)
+	GDVIRTUAL2RC(Ref<Texture2D>, _generate, RES, Vector2i)
+	GDVIRTUAL2RC(Ref<Texture2D>, _generate_from_path, String, Vector2i)
+	GDVIRTUAL0RC(bool, _generate_small_preview_automatically)
+	GDVIRTUAL0RC(bool, _can_generate_small_preview)
 
 public:
 	virtual bool handles(const String &p_type) const;
@@ -75,6 +81,11 @@ class EditorResourcePreview : public Node {
 	SafeFlag exit;
 	SafeFlag exited;
 
+	// when running from GLES, we want to run the previews
+	// in the main thread using an update, rather than create
+	// a separate thread
+	bool _mainthread_only = false;
+
 	struct Item {
 		Ref<Texture2D> preview;
 		Ref<Texture2D> small_preview;
@@ -92,6 +103,7 @@ class EditorResourcePreview : public Node {
 
 	static void _thread_func(void *ud);
 	void _thread();
+	void _iterate();
 
 	Vector<Ref<EditorResourcePreviewGenerator>> preview_generators;
 
@@ -101,7 +113,8 @@ protected:
 public:
 	static EditorResourcePreview *get_singleton();
 
-	//callback function is callback(String p_path,Ref<Texture2D> preview,Variant udata) preview null if could not load
+	// p_receiver_func callback has signature (String p_path, Ref<Texture2D> p_preview, Ref<Texture2D> p_preview_small, Variant p_userdata)
+	// p_preview will be null if there was an error
 	void queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 	void queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 
@@ -111,6 +124,9 @@ public:
 
 	void start();
 	void stop();
+
+	// for single threaded mode
+	void update();
 
 	EditorResourcePreview();
 	~EditorResourcePreview();

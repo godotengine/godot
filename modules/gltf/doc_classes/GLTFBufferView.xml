@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="buffer" type="int" setter="set_buffer" getter="get_buffer" default="-1">
 		</member>
@@ -20,6 +18,4 @@
 		<member name="indices" type="bool" setter="set_indices" getter="get_indices" default="false">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

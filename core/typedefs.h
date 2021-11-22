@@ -62,9 +62,9 @@
 #endif
 #endif
 
-// Should always inline, except in debug builds because it makes debugging harder.
+// Should always inline, except in dev builds because it makes debugging harder.
 #ifndef _FORCE_INLINE_
-#ifdef DISABLE_FORCED_INLINE
+#ifdef DEV_ENABLED
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
@@ -91,8 +91,8 @@
 #define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
 #endif
 
-#ifndef SGN
-#define SGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
+#ifndef SIGN
+#define SIGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
 #endif
 
 #ifndef MIN
@@ -277,8 +277,18 @@ struct BuildIndexSequence : BuildIndexSequence<N - 1, N - 1, Is...> {};
 template <size_t... Is>
 struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 
+// Limit the depth of recursive algorithms when dealing with Array/Dictionary
+#define MAX_RECURSION 100
+
 #ifdef DEBUG_ENABLED
 #define DEBUG_METHODS_ENABLED
 #endif
+
+// Macro GD_IS_DEFINED() allows to check if a macro is defined. It needs to be defined to anything (say 1) to work.
+#define __GDARG_PLACEHOLDER_1 0,
+#define __gd_take_second_arg(__ignored, val, ...) val
+#define ____gd_is_defined(arg1_or_junk) __gd_take_second_arg(arg1_or_junk 1, 0)
+#define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
+#define GD_IS_DEFINED(x) ___gd_is_defined(x)
 
 #endif // TYPEDEFS_H

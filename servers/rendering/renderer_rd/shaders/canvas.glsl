@@ -65,7 +65,7 @@ void main() {
 #elif defined(USE_ATTRIBUTES)
 
 	vec2 vertex = vertex_attrib;
-	vec4 color = color_attrib;
+	vec4 color = color_attrib * draw_data.modulation;
 	vec2 uv = uv_attrib;
 
 	uvec4 bones = bone_attrib;
@@ -84,40 +84,81 @@ void main() {
 
 	mat4 world_matrix = mat4(vec4(draw_data.world_x, 0.0, 0.0), vec4(draw_data.world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data.world_ofs, 0.0, 1.0));
 
-#if 0
-	if (draw_data.flags & FLAGS_INSTANCING_ENABLED) {
-		uint offset = draw_data.flags & FLAGS_INSTANCING_STRIDE_MASK;
-		offset *= gl_InstanceIndex;
-		mat4 instance_xform = mat4(
-				vec4(texelFetch(instancing_buffer, offset + 0), texelFetch(instancing_buffer, offset + 1), 0.0, texelFetch(instancing_buffer, offset + 3)),
-				vec4(texelFetch(instancing_buffer, offset + 4), texelFetch(instancing_buffer, offset + 5), 0.0, texelFetch(instancing_buffer, offset + 7)),
-				vec4(0.0, 0.0, 1.0, 0.0),
-				vec4(0.0, 0.0, 0.0, 1.0));
-		offset += 8;
-		if (draw_data.flags & FLAGS_INSTANCING_HAS_COLORS) {
-			vec4 instance_color;
-			if (draw_data.flags & FLAGS_INSTANCING_COLOR_8_BIT) {
-				uint bits = floatBitsToUint(texelFetch(instancing_buffer, offset));
-				instance_color = unpackUnorm4x8(bits);
-				offset += 1;
-			} else {
-				instance_color = vec4(texelFetch(instancing_buffer, offset + 0), texelFetch(instancing_buffer, offset + 1), texelFetch(instancing_buffer, offset + 2), texelFetch(instancing_buffer, offset + 3));
-				offset += 4;
+#define FLAGS_INSTANCING_MASK 0x7F
+#define FLAGS_INSTANCING_HAS_COLORS (1 << 7)
+#define FLAGS_INSTANCING_HAS_CUSTOM_DATA (1 << 8)
+
+	uint instancing = draw_data.flags & FLAGS_INSTANCING_MASK;
+
+#ifdef USE_ATTRIBUTES
+	if (instancing > 1) {
+		// trails
+
+		uint stride = 2 + 1 + 1; //particles always uses this format
+
+		uint trail_size = instancing;
+
+		uint offset = trail_size * stride * gl_InstanceIndex;
+
+		vec4 pcolor;
+		vec2 new_vertex;
+		{
+			uint boffset = offset + bone_attrib.x * stride;
+			new_vertex = (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.x;
+			pcolor = transforms.data[boffset + 2] * weight_attrib.x;
+		}
+		if (weight_attrib.y > 0.001) {
+			uint boffset = offset + bone_attrib.y * stride;
+			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.y;
+			pcolor += transforms.data[boffset + 2] * weight_attrib.y;
+		}
+		if (weight_attrib.z > 0.001) {
+			uint boffset = offset + bone_attrib.z * stride;
+			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.z;
+			pcolor += transforms.data[boffset + 2] * weight_attrib.z;
+		}
+		if (weight_attrib.w > 0.001) {
+			uint boffset = offset + bone_attrib.w * stride;
+			new_vertex += (vec4(vertex, 0.0, 1.0) * mat4(transforms.data[boffset + 0], transforms.data[boffset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy * weight_attrib.w;
+			pcolor += transforms.data[boffset + 2] * weight_attrib.w;
+		}
+
+		instance_custom = transforms.data[offset + 3];
+
+		vertex = new_vertex;
+		color *= pcolor;
+	} else
+#endif // USE_ATTRIBUTES
+	{
+		if (instancing == 1) {
+			uint stride = 2;
+			{
+				if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_COLORS)) {
+					stride += 1;
+				}
+				if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
+					stride += 1;
+				}
 			}
 
-			color *= instance_color;
-		}
-		if (draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA) {
-			if (draw_data.flags & FLAGS_INSTANCING_CUSTOM_DATA_8_BIT) {
-				uint bits = floatBitsToUint(texelFetch(instancing_buffer, offset));
-				instance_custom = unpackUnorm4x8(bits);
-			} else {
-				instance_custom = vec4(texelFetch(instancing_buffer, offset + 0), texelFetch(instancing_buffer, offset + 1), texelFetch(instancing_buffer, offset + 2), texelFetch(instancing_buffer, offset + 3));
+			uint offset = stride * gl_InstanceIndex;
+
+			mat4 matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+			offset += 2;
+
+			if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_COLORS)) {
+				color *= transforms.data[offset];
+				offset += 1;
 			}
+
+			if (bool(draw_data.flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
+				instance_custom = transforms.data[offset];
+			}
+
+			matrix = transpose(matrix);
+			world_matrix = world_matrix * matrix;
 		}
 	}
-
-#endif
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 	if (bool(draw_data.flags & FLAGS_USING_PARTICLES)) {
@@ -239,7 +280,7 @@ vec2 screen_uv_to_sdf(vec2 p_uv) {
 float texture_sdf(vec2 p_sdf) {
 	vec2 uv = p_sdf * canvas_data.sdf_to_tex.xy + canvas_data.sdf_to_tex.zw;
 	float d = texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv).r;
-	d = d * SDF_MAX_LENGTH - 1.0;
+	d *= SDF_MAX_LENGTH;
 	return d * canvas_data.tex_to_sdf;
 }
 
@@ -416,6 +457,14 @@ void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
 
 #endif
 
+float msdf_median(float r, float g, float b, float a) {
+	return min(max(min(r, g), min(max(r, g), b)), a);
+}
+
+vec2 msdf_map(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
+	return out_min + (out_max - out_min) * (value - in_min) / (in_max - in_min);
+}
+
 void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
@@ -443,7 +492,34 @@ void main() {
 
 #endif
 
-	color *= texture(sampler2D(color_texture, texture_sampler), uv);
+#ifndef USE_PRIMITIVE
+	if (bool(draw_data.flags & FLAGS_USE_MSDF)) {
+		float px_range = draw_data.ninepatch_margins.x;
+		float outline_thickness = draw_data.ninepatch_margins.y;
+		//float reserved1 = draw_data.ninepatch_margins.z;
+		//float reserved2 = draw_data.ninepatch_margins.w;
+
+		vec4 msdf_sample = texture(sampler2D(color_texture, texture_sampler), uv);
+		vec2 msdf_size = vec2(textureSize(sampler2D(color_texture, texture_sampler), 0));
+		vec2 dest_size = vec2(1.0) / fwidth(uv);
+		float px_size = max(0.5 * dot((vec2(px_range) / msdf_size), dest_size), 1.0);
+		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b, msdf_sample.a) - 0.5;
+
+		if (outline_thickness > 0) {
+			float cr = clamp(outline_thickness, 0.0, px_range / 2) / px_range;
+			float a = clamp((d + cr) * px_size, 0.0, 1.0);
+			color.a = a * color.a;
+		} else {
+			float a = clamp(d * px_size + 0.5, 0.0, 1.0);
+			color.a = a * color.a;
+		}
+
+	} else {
+#else
+	{
+#endif
+		color *= texture(sampler2D(color_texture, texture_sampler), uv);
+	}
 
 	uint light_count = (draw_data.flags >> FLAGS_LIGHT_COUNT_SHIFT) & 0xF; //max 16 lights
 	bool using_light = light_count > 0 || canvas_data.directional_light_count > 0;

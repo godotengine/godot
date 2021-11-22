@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 const GodotFetch = {
-	$GodotFetch__deps: ['$GodotRuntime'],
+	$GodotFetch__deps: ['$IDHandler', '$GodotRuntime'],
 	$GodotFetch: {
 
 		onread: function (id, result) {
@@ -126,7 +126,7 @@ const GodotFetch = {
 		},
 	},
 
-	godot_js_fetch_create__sig: 'iii',
+	godot_js_fetch_create__sig: 'iiiiiii',
 	godot_js_fetch_create: function (p_method, p_url, p_headers, p_headers_size, p_body, p_body_size) {
 		const method = GodotRuntime.parseString(p_method);
 		const url = GodotRuntime.parseString(p_url);
@@ -176,7 +176,7 @@ const GodotFetch = {
 		return obj.status;
 	},
 
-	godot_js_fetch_read_headers__sig: 'iii',
+	godot_js_fetch_read_headers__sig: 'iiii',
 	godot_js_fetch_read_headers: function (p_id, p_parse_cb, p_ref) {
 		const obj = IDHandler.get(p_id);
 		if (!obj || !obj.response) {
@@ -193,7 +193,7 @@ const GodotFetch = {
 		return 0;
 	},
 
-	godot_js_fetch_read_chunk__sig: 'ii',
+	godot_js_fetch_read_chunk__sig: 'iiii',
 	godot_js_fetch_read_chunk: function (p_id, p_buf, p_buf_size) {
 		const obj = IDHandler.get(p_id);
 		if (!obj || !obj.response) {

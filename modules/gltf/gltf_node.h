@@ -37,23 +37,21 @@
 class GLTFNode : public Resource {
 	GDCLASS(GLTFNode, Resource);
 	friend class GLTFDocument;
-	friend class PackedSceneGLTF;
 
 private:
 	// matrices need to be transformed to this
 	GLTFNodeIndex parent = -1;
 	int height = -1;
-	Transform xform;
+	Transform3D xform;
 	GLTFMeshIndex mesh = -1;
 	GLTFCameraIndex camera = -1;
 	GLTFSkinIndex skin = -1;
 	GLTFSkeletonIndex skeleton = -1;
 	bool joint = false;
-	Vector3 translation;
-	Quat rotation;
+	Vector3 position;
+	Quaternion rotation;
 	Vector3 scale = Vector3(1, 1, 1);
 	Vector<int> children;
-	GLTFNodeIndex fake_joint_parent = -1;
 	GLTFLightIndex light = -1;
 
 protected:
@@ -66,8 +64,8 @@ public:
 	int get_height();
 	void set_height(int p_height);
 
-	Transform get_xform();
-	void set_xform(Transform p_xform);
+	Transform3D get_xform();
+	void set_xform(Transform3D p_xform);
 
 	GLTFMeshIndex get_mesh();
 	void set_mesh(GLTFMeshIndex p_mesh);
@@ -84,20 +82,17 @@ public:
 	bool get_joint();
 	void set_joint(bool p_joint);
 
-	Vector3 get_translation();
-	void set_translation(Vector3 p_translation);
+	Vector3 get_position();
+	void set_position(Vector3 p_position);
 
-	Quat get_rotation();
-	void set_rotation(Quat p_rotation);
+	Quaternion get_rotation();
+	void set_rotation(Quaternion p_rotation);
 
 	Vector3 get_scale();
 	void set_scale(Vector3 p_scale);
 
 	Vector<int> get_children();
 	void set_children(Vector<int> p_children);
-
-	GLTFNodeIndex get_fake_joint_parent();
-	void set_fake_joint_parent(GLTFNodeIndex p_fake_joint_parent);
 
 	GLTFLightIndex get_light();
 	void set_light(GLTFLightIndex p_light);

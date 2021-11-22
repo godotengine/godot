@@ -32,7 +32,6 @@
 
 #import <UIKit/UIKit.h>
 #include <stdio.h>
-#include <vulkan/vulkan.h>
 
 int gargc;
 char **gargv;

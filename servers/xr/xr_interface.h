@@ -35,10 +35,13 @@
 #include "core/os/thread_safe.h"
 #include "servers/xr_server.h"
 
+// forward declaration
+struct BlitToScreen;
+
 /**
 	@author Bastiaan Olij <mux213@gmail.com>
 
-	The XR interface is a template class ontop of which we build interface to different AR, VR and tracking SDKs.
+	The XR interface is a template class on top of which we build interface to different AR, VR and tracking SDKs.
 	The idea is that we subclass this class, implement the logic, and then instantiate a singleton of each interface
 	when Godot starts. These instances do not initialize themselves but register themselves with the AR/VR server.
 
@@ -47,25 +50,21 @@
 	Note that we may make this into a fully instantiable class for GDNative support.
 */
 
-class XRInterface : public Reference {
-	GDCLASS(XRInterface, Reference);
+class XRInterface : public RefCounted {
+	GDCLASS(XRInterface, RefCounted);
 
 public:
 	enum Capabilities { /* purely meta data, provides some info about what this interface supports */
 		XR_NONE = 0, /* no capabilities */
 		XR_MONO = 1, /* can be used with mono output */
 		XR_STEREO = 2, /* can be used with stereo output */
-		XR_AR = 4, /* offers a camera feed for AR */
-		XR_EXTERNAL = 8 /* renders to external device */
+		XR_QUAD = 4, /* can be used with quad output (not currently supported) */
+		XR_VR = 8, /* offers VR support */
+		XR_AR = 16, /* offers AR support */
+		XR_EXTERNAL = 32 /* renders to external device */
 	};
 
-	enum Eyes {
-		EYE_MONO, /* my son says we should call this EYE_CYCLOPS */
-		EYE_LEFT,
-		EYE_RIGHT
-	};
-
-	enum Tracking_status { /* tracking status currently based on AR but we can start doing more with this for VR as well */
+	enum TrackingStatus { /* tracking status currently based on AR but we can start doing more with this for VR as well */
 		XR_NORMAL_TRACKING,
 		XR_EXCESSIVE_MOTION,
 		XR_INSUFFICIENT_FEATURES,
@@ -73,29 +72,43 @@ public:
 		XR_NOT_TRACKING
 	};
 
+	enum PlayAreaMode { /* defines the mode used by the XR interface for tracking */
+		XR_PLAY_AREA_UNKNOWN, /* Area mode not set or not available */
+		XR_PLAY_AREA_3DOF, /* Only support orientation tracking, no positional tracking, area will center around player */
+		XR_PLAY_AREA_SITTING, /* Player is in seated position, limited positional tracking, fixed guardian around player */
+		XR_PLAY_AREA_ROOMSCALE, /* Player is free to move around, full positional tracking */
+		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled */
+	};
+
 protected:
 	_THREAD_SAFE_CLASS_
 
-	Tracking_status tracking_state;
 	static void _bind_methods();
 
 public:
 	/** general interface information **/
-	virtual StringName get_name() const;
-	virtual int get_capabilities() const = 0;
+	virtual StringName get_name() const = 0;
+	virtual uint32_t get_capabilities() const = 0;
 
 	bool is_primary();
-	void set_is_primary(bool p_is_primary);
+	void set_primary(bool p_is_primary);
 
 	virtual bool is_initialized() const = 0; /* returns true if we've initialized this interface */
-	void set_is_initialized(bool p_initialized); /* helper function, will call initialize or uninitialize */
 	virtual bool initialize() = 0; /* initialize this interface, if this has an HMD it becomes the primary interface */
 	virtual void uninitialize() = 0; /* deinitialize this interface */
 
-	Tracking_status get_tracking_status() const; /* get the status of our current tracking */
+	/** input and output **/
+
+	virtual PackedStringArray get_suggested_tracker_names() const; /* return a list of likely/suggested tracker names */
+	virtual PackedStringArray get_suggested_pose_names(const StringName &p_tracker_name) const; /* return a list of likely/suggested action names for this tracker */
+	virtual TrackingStatus get_tracking_status() const; /* get the status of our current tracking */
+	virtual void trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0); /* trigger a haptic pulse */
 
 	/** specific to VR **/
-	// nothing yet
+	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode); /* query if this interface supports this play area mode */
+	virtual XRInterface::PlayAreaMode get_play_area_mode() const; /* get the current play area mode */
+	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode); /* change the play area mode, note that this should return false if the mode is not available */
+	virtual PackedVector3Array get_play_area() const; /* if available, returns an array of vectors denoting the play area the player can move around in */
 
 	/** specific to AR **/
 	virtual bool get_anchor_detection_is_enabled() const;
@@ -104,22 +117,25 @@ public:
 
 	/** rendering and internal **/
 
-	virtual Size2 get_render_targetsize() = 0; /* returns the recommended render target size per eye for this device */
-	virtual bool is_stereo() = 0; /* returns true if this interface requires stereo rendering (for VR HMDs) or mono rendering (for mobile AR) */
-	virtual Transform get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) = 0; /* get each eyes camera transform, also implement EYE_MONO */
-	virtual CameraMatrix get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) = 0; /* get each eyes projection matrix */
-	virtual unsigned int get_external_texture_for_eye(XRInterface::Eyes p_eye); /* if applicable return external texture to render to */
-	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) = 0; /* output the left or right eye */
+	virtual Size2 get_render_target_size() = 0; /* returns the recommended render target size per eye for this device */
+	virtual uint32_t get_view_count() = 0; /* returns the view count we need (1 is monoscopic, 2 is stereoscopic but can be more) */
+	virtual Transform3D get_camera_transform() = 0; /* returns the position of our camera for updating our camera node. For monoscopic this is equal to the views transform, for stereoscopic this should be an average */
+	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
+	virtual CameraMatrix get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
+
+	// note, external color/depth/vrs texture support will be added here soon.
+
+	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* commit rendered views to the XR interface */
 
 	virtual void process() = 0;
-	virtual void notification(int p_what) = 0;
+	virtual void notification(int p_what);
 
 	XRInterface();
 	~XRInterface();
 };
 
 VARIANT_ENUM_CAST(XRInterface::Capabilities);
-VARIANT_ENUM_CAST(XRInterface::Eyes);
-VARIANT_ENUM_CAST(XRInterface::Tracking_status);
+VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
+VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 
-#endif
+#endif // !XR_INTERFACE_H

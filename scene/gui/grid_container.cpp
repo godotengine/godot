@@ -33,13 +33,13 @@
 void GridContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
-			Map<int, int> col_minw; // Max of min_width  of all controls in each col (indexed by col).
+			Map<int, int> col_minw; // Max of min_width of all controls in each col (indexed by col).
 			Map<int, int> row_minh; // Max of min_height of all controls in each row (indexed by row).
 			Set<int> col_expanded; // Columns which have the SIZE_EXPAND flag set.
 			Set<int> row_expanded; // Rows which have the SIZE_EXPAND flag set.
 
-			int hsep = get_theme_constant("hseparation");
-			int vsep = get_theme_constant("vseparation");
+			int hsep = get_theme_constant(SNAME("hseparation"));
+			int vsep = get_theme_constant(SNAME("vseparation"));
 			int max_col = MIN(get_child_count(), columns);
 			int max_row = ceil((float)get_child_count() / (float)columns);
 
@@ -82,15 +82,15 @@ void GridContainer::_notification(int p_what) {
 
 			// Evaluate the remaining space for expanded columns/rows.
 			Size2 remaining_space = get_size();
-			for (Map<int, int>::Element *E = col_minw.front(); E; E = E->next()) {
-				if (!col_expanded.has(E->key())) {
-					remaining_space.width -= E->get();
+			for (const KeyValue<int, int> &E : col_minw) {
+				if (!col_expanded.has(E.key)) {
+					remaining_space.width -= E.value;
 				}
 			}
 
-			for (Map<int, int>::Element *E = row_minh.front(); E; E = E->next()) {
-				if (!row_expanded.has(E->key())) {
-					remaining_space.height -= E->get();
+			for (const KeyValue<int, int> &E : row_minh) {
+				if (!row_expanded.has(E.key)) {
+					remaining_space.height -= E.value;
 				}
 			}
 			remaining_space.height -= vsep * MAX(max_row - 1, 0);
@@ -213,8 +213,8 @@ Size2 GridContainer::get_minimum_size() const {
 	Map<int, int> col_minw;
 	Map<int, int> row_minh;
 
-	int hsep = get_theme_constant("hseparation");
-	int vsep = get_theme_constant("vseparation");
+	int hsep = get_theme_constant(SNAME("hseparation"));
+	int vsep = get_theme_constant(SNAME("vseparation"));
 
 	int max_row = 0;
 	int max_col = 0;
@@ -247,12 +247,12 @@ Size2 GridContainer::get_minimum_size() const {
 
 	Size2 ms;
 
-	for (Map<int, int>::Element *E = col_minw.front(); E; E = E->next()) {
-		ms.width += E->get();
+	for (const KeyValue<int, int> &E : col_minw) {
+		ms.width += E.value;
 	}
 
-	for (Map<int, int>::Element *E = row_minh.front(); E; E = E->next()) {
-		ms.height += E->get();
+	for (const KeyValue<int, int> &E : row_minh) {
+		ms.height += E.value;
 	}
 
 	ms.height += vsep * max_row;

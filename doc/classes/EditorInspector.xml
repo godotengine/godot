@@ -9,62 +9,51 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" override="true" default="false" />
 	</members>
 	<signals>
 		<signal name="object_id_selected">
-			<argument index="0" name="id" type="int">
-			</argument>
+			<argument index="0" name="id" type="int" />
 			<description>
 				Emitted when the Edit button of an [Object] has been pressed in the inspector. This is mainly used in the remote scene tree inspector.
 			</description>
 		</signal>
 		<signal name="property_deleted">
-			<argument index="0" name="property" type="String">
-			</argument>
+			<argument index="0" name="property" type="String" />
 			<description>
 				Emitted when a property is removed from the inspector.
 			</description>
 		</signal>
 		<signal name="property_edited">
-			<argument index="0" name="property" type="String">
-			</argument>
+			<argument index="0" name="property" type="String" />
 			<description>
 				Emitted when a property is edited in the inspector.
 			</description>
 		</signal>
 		<signal name="property_keyed">
-			<argument index="0" name="property" type="String">
-			</argument>
+			<argument index="0" name="property" type="String" />
 			<description>
 				Emitted when a property is keyed in the inspector. Properties can be keyed by clicking the "key" icon next to a property when the Animation panel is toggled.
 			</description>
 		</signal>
 		<signal name="property_selected">
-			<argument index="0" name="property" type="String">
-			</argument>
+			<argument index="0" name="property" type="String" />
 			<description>
 				Emitted when a property is selected in the inspector.
 			</description>
 		</signal>
 		<signal name="property_toggled">
-			<argument index="0" name="property" type="String">
-			</argument>
-			<argument index="1" name="checked" type="bool">
-			</argument>
+			<argument index="0" name="property" type="String" />
+			<argument index="1" name="checked" type="bool" />
 			<description>
 				Emitted when a boolean property is toggled in the inspector.
 				[b]Note:[/b] This signal is never emitted if the internal [code]autoclear[/code] property enabled. Since this property is always enabled in the editor inspector, this signal is never emitted by the editor itself.
 			</description>
 		</signal>
 		<signal name="resource_selected">
-			<argument index="0" name="res" type="Object">
-			</argument>
-			<argument index="1" name="prop" type="String">
-			</argument>
+			<argument index="0" name="res" type="Object" />
+			<argument index="1" name="prop" type="String" />
 			<description>
 				Emitted when a resource is selected in the inspector.
 			</description>
@@ -75,6 +64,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

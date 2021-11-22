@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_DEBUGGER_WEBSOCKET_H
-#define SCRIPT_DEBUGGER_WEBSOCKET_H
+#ifndef REMOTE_DEBUGGER_PEER_WEBSOCKET_H
+#define REMOTE_DEBUGGER_PEER_WEBSOCKET_H
 
 #ifdef JAVASCRIPT_ENABLED
 #include "modules/websocket/emws_client.h"
@@ -62,4 +62,4 @@ public:
 	RemoteDebuggerPeerWebSocket(Ref<WebSocketPeer> p_peer = Ref<WebSocketPeer>());
 };
 
-#endif // SCRIPT_DEBUGGER_WEBSOCKET_H
+#endif // REMOTE_DEBUGGER_PEER_WEBSOCKET_H

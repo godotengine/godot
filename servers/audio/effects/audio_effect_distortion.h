@@ -68,7 +68,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;

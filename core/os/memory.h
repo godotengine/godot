@@ -35,13 +35,13 @@
 #include "core/templates/safe_refcount.h"
 
 #include <stddef.h>
+#include <new>
 
 #ifndef PAD_ALIGN
 #define PAD_ALIGN 16 //must always be greater than this at much
 #endif
 
 class Memory {
-	Memory();
 #ifdef DEBUG_ENABLED
 	static SafeNumeric<uint64_t> mem_usage;
 	static SafeNumeric<uint64_t> max_usage;
@@ -80,7 +80,7 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 
 #define memalloc(m_size) Memory::alloc_static(m_size)
 #define memrealloc(m_mem, m_size) Memory::realloc_static(m_mem, m_size)
-#define memfree(m_size) Memory::free_static(m_size)
+#define memfree(m_mem) Memory::free_static(m_mem)
 
 _ALWAYS_INLINE_ void postinitialize_handler(void *) {}
 
@@ -92,15 +92,8 @@ _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 
 #define memnew(m_class) _post_initialize(new ("") m_class)
 
-_ALWAYS_INLINE_ void *operator new(size_t p_size, void *p_pointer, size_t check, const char *p_description) {
-	//void *failptr=0;
-	//ERR_FAIL_COND_V( check < p_size , failptr); /** bug, or strange compiler, most likely */
-
-	return p_pointer;
-}
-
 #define memnew_allocator(m_class, m_allocator) _post_initialize(new (m_allocator::alloc) m_class)
-#define memnew_placement(m_placement, m_class) _post_initialize(new (m_placement, sizeof(m_class), "") m_class)
+#define memnew_placement(m_placement, m_class) _post_initialize(new (m_placement) m_class)
 
 _ALWAYS_INLINE_ bool predelete_handler(void *) {
 	return true;
@@ -140,7 +133,7 @@ void memdelete_allocator(T *p_class) {
 #define memnew_arr(m_class, m_count) memnew_arr_template<m_class>(m_count)
 
 template <typename T>
-T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
+T *memnew_arr_template(size_t p_elements) {
 	if (p_elements == 0) {
 		return nullptr;
 	}
@@ -158,7 +151,7 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 
 		/* call operator new */
 		for (size_t i = 0; i < p_elements; i++) {
-			new (&elems[i], sizeof(T), p_descr) T;
+			new (&elems[i]) T;
 		}
 	}
 

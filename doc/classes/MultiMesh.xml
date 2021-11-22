@@ -6,106 +6,85 @@
 	<description>
 		MultiMesh provides low-level mesh instancing. Drawing thousands of [MeshInstance3D] nodes can be slow, since each object is submitted to the GPU then drawn individually.
 		MultiMesh is much faster as it can draw thousands of instances with a single draw call, resulting in less API overhead.
-		As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always render (they are spatially indexed as one, for the whole object).
+		As a drawback, if the instances are too far away from each other, performance may be reduced as every single instance will always render (they are spatially indexed as one, for the whole object).
 		Since instances may have any behavior, the AABB used for visibility must be provided by the user.
 	</description>
 	<tutorials>
-		<link title="Animating thousands of fish with MultiMeshInstance">https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
-		<link title="Optimization using MultiMeshes">https://docs.godotengine.org/en/latest/tutorials/optimization/using_multimesh.html</link>
+		<link title="Animating thousands of fish with MultiMeshInstance">$DOCS_URL/tutorials/performance/vertex_animation/animating_thousands_of_fish.html</link>
+		<link title="Optimization using MultiMeshes">$DOCS_URL/tutorials/performance/using_multimesh.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
-			<return type="AABB">
-			</return>
+			<return type="AABB" />
 			<description>
 				Returns the visibility axis-aligned bounding box in local space. See also [method VisualInstance3D.get_transformed_aabb].
 			</description>
 		</method>
 		<method name="get_instance_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="instance" type="int" />
 			<description>
 				Gets a specific instance's color.
 			</description>
 		</method>
 		<method name="get_instance_custom_data" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
+			<return type="Color" />
+			<argument index="0" name="instance" type="int" />
 			<description>
 				Returns the custom data that has been set for a specific instance.
 			</description>
 		</method>
 		<method name="get_instance_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
+			<return type="Transform3D" />
+			<argument index="0" name="instance" type="int" />
 			<description>
-				Returns the [Transform] of a specific instance.
+				Returns the [Transform3D] of a specific instance.
 			</description>
 		</method>
 		<method name="get_instance_transform_2d" qualifiers="const">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="instance" type="int" />
 			<description>
 				Returns the [Transform2D] of a specific instance.
 			</description>
 		</method>
 		<method name="set_instance_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="instance" type="int" />
+			<argument index="1" name="color" type="Color" />
 			<description>
 				Sets the color of a specific instance by [i]multiplying[/i] the mesh's existing vertex colors.
 				For the color to take effect, ensure that [member use_colors] is [code]true[/code] on the [MultiMesh] and [member BaseMaterial3D.vertex_color_use_as_albedo] is [code]true[/code] on the material.
 			</description>
 		</method>
 		<method name="set_instance_custom_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
-			<argument index="1" name="custom_data" type="Color">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="instance" type="int" />
+			<argument index="1" name="custom_data" type="Color" />
 			<description>
 				Sets custom data for a specific instance. Although [Color] is used, it is just a container for 4 floating point numbers.
 				For the custom data to be used, ensure that [member use_custom_data] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_instance_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
-			<argument index="1" name="transform" type="Transform">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="instance" type="int" />
+			<argument index="1" name="transform" type="Transform3D" />
 			<description>
-				Sets the [Transform] for a specific instance.
+				Sets the [Transform3D] for a specific instance.
 			</description>
 		</method>
 		<method name="set_instance_transform_2d">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="int">
-			</argument>
-			<argument index="1" name="transform" type="Transform2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="instance" type="int" />
+			<argument index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets the [Transform2D] for a specific instance.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="buffer" type="PackedFloat32Array" setter="set_buffer" getter="get_buffer" default="PackedFloat32Array(  )">
+		<member name="buffer" type="PackedFloat32Array" setter="set_buffer" getter="get_buffer" default="PackedFloat32Array()">
 		</member>
 		<member name="color_array" type="PackedColorArray" setter="_set_color_array" getter="_get_color_array">
 		</member>

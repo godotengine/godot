@@ -32,10 +32,10 @@
 #define AES_CONTEXT_H
 
 #include "core/crypto/crypto_core.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class AESContext : public Reference {
-	GDCLASS(AESContext, Reference);
+class AESContext : public RefCounted {
+	GDCLASS(AESContext, RefCounted);
 
 public:
 	enum Mode {

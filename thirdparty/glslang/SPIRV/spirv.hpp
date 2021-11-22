@@ -150,6 +150,7 @@ enum ExecutionMode {
     ExecutionModeSubgroupsPerWorkgroupId = 37,
     ExecutionModeLocalSizeId = 38,
     ExecutionModeLocalSizeHintId = 39,
+    ExecutionModeSubgroupUniformControlFlowKHR = 4421,
     ExecutionModePostDepthCoverage = 4446,
     ExecutionModeDenormPreserve = 4459,
     ExecutionModeDenormFlushToZero = 4460,
@@ -168,10 +169,16 @@ enum ExecutionMode {
     ExecutionModeSampleInterlockUnorderedEXT = 5369,
     ExecutionModeShadingRateInterlockOrderedEXT = 5370,
     ExecutionModeShadingRateInterlockUnorderedEXT = 5371,
+    ExecutionModeSharedLocalMemorySizeINTEL = 5618,
+    ExecutionModeRoundingModeRTPINTEL = 5620,
+    ExecutionModeRoundingModeRTNINTEL = 5621,
+    ExecutionModeFloatingPointModeALTINTEL = 5622,
+    ExecutionModeFloatingPointModeIEEEINTEL = 5623,
     ExecutionModeMaxWorkgroupSizeINTEL = 5893,
     ExecutionModeMaxWorkDimINTEL = 5894,
     ExecutionModeNoGlobalOffsetINTEL = 5895,
     ExecutionModeNumSIMDWorkitemsINTEL = 5896,
+    ExecutionModeSchedulerTargetFmaxMhzINTEL = 5903,
     ExecutionModeMax = 0x7fffffff,
 };
 
@@ -204,6 +211,8 @@ enum StorageClass {
     StorageClassPhysicalStorageBuffer = 5349,
     StorageClassPhysicalStorageBufferEXT = 5349,
     StorageClassCodeSectionINTEL = 5605,
+    StorageClassDeviceOnlyINTEL = 5936,
+    StorageClassHostOnlyINTEL = 5937,
     StorageClassMax = 0x7fffffff,
 };
 
@@ -374,6 +383,8 @@ enum FPFastMathModeShift {
     FPFastMathModeNSZShift = 2,
     FPFastMathModeAllowRecipShift = 3,
     FPFastMathModeFastShift = 4,
+    FPFastMathModeAllowContractFastINTELShift = 16,
+    FPFastMathModeAllowReassocINTELShift = 17,
     FPFastMathModeMax = 0x7fffffff,
 };
 
@@ -384,6 +395,8 @@ enum FPFastMathModeMask {
     FPFastMathModeNSZMask = 0x00000004,
     FPFastMathModeAllowRecipMask = 0x00000008,
     FPFastMathModeFastMask = 0x00000010,
+    FPFastMathModeAllowContractFastINTELMask = 0x00010000,
+    FPFastMathModeAllowReassocINTELMask = 0x00020000,
 };
 
 enum FPRoundingMode {
@@ -397,6 +410,7 @@ enum FPRoundingMode {
 enum LinkageType {
     LinkageTypeExport = 0,
     LinkageTypeImport = 1,
+    LinkageTypeLinkOnceODR = 2,
     LinkageTypeMax = 0x7fffffff,
 };
 
@@ -484,12 +498,22 @@ enum Decoration {
     DecorationRestrictPointerEXT = 5355,
     DecorationAliasedPointer = 5356,
     DecorationAliasedPointerEXT = 5356,
+    DecorationSIMTCallINTEL = 5599,
     DecorationReferencedIndirectlyINTEL = 5602,
+    DecorationClobberINTEL = 5607,
+    DecorationSideEffectsINTEL = 5608,
+    DecorationVectorComputeVariableINTEL = 5624,
+    DecorationFuncParamIOKindINTEL = 5625,
+    DecorationVectorComputeFunctionINTEL = 5626,
+    DecorationStackCallINTEL = 5627,
+    DecorationGlobalVariableOffsetINTEL = 5628,
     DecorationCounterBuffer = 5634,
     DecorationHlslCounterBufferGOOGLE = 5634,
     DecorationHlslSemanticGOOGLE = 5635,
     DecorationUserSemantic = 5635,
     DecorationUserTypeGOOGLE = 5636,
+    DecorationFunctionRoundingModeINTEL = 5822,
+    DecorationFunctionDenormModeINTEL = 5823,
     DecorationRegisterINTEL = 5825,
     DecorationMemoryINTEL = 5826,
     DecorationNumbanksINTEL = 5827,
@@ -502,6 +526,17 @@ enum Decoration {
     DecorationMergeINTEL = 5834,
     DecorationBankBitsINTEL = 5835,
     DecorationForcePow2DepthINTEL = 5836,
+    DecorationBurstCoalesceINTEL = 5899,
+    DecorationCacheSizeINTEL = 5900,
+    DecorationDontStaticallyCoalesceINTEL = 5901,
+    DecorationPrefetchINTEL = 5902,
+    DecorationStallEnableINTEL = 5905,
+    DecorationFuseLoopsInFunctionINTEL = 5907,
+    DecorationBufferLocationINTEL = 5921,
+    DecorationIOPipeStorageINTEL = 5944,
+    DecorationFunctionFloatingPointModeINTEL = 6080,
+    DecorationSingleElementVectorINTEL = 6085,
+    DecorationVectorComputeCallableFunctionINTEL = 6087,
     DecorationMax = 0x7fffffff,
 };
 
@@ -617,6 +652,7 @@ enum BuiltIn {
     BuiltInHitTNV = 5332,
     BuiltInHitKindKHR = 5333,
     BuiltInHitKindNV = 5333,
+    BuiltInCurrentRayTimeNV = 5334,
     BuiltInIncomingRayFlagsKHR = 5351,
     BuiltInIncomingRayFlagsNV = 5351,
     BuiltInRayGeometryIndexKHR = 5352,
@@ -656,6 +692,7 @@ enum LoopControlShift {
     LoopControlLoopCoalesceINTELShift = 20,
     LoopControlMaxInterleavingINTELShift = 21,
     LoopControlSpeculatedIterationsINTELShift = 22,
+    LoopControlNoFusionINTELShift = 23,
     LoopControlMax = 0x7fffffff,
 };
 
@@ -677,6 +714,7 @@ enum LoopControlMask {
     LoopControlLoopCoalesceINTELMask = 0x00100000,
     LoopControlMaxInterleavingINTELMask = 0x00200000,
     LoopControlSpeculatedIterationsINTELMask = 0x00400000,
+    LoopControlNoFusionINTELMask = 0x00800000,
 };
 
 enum FunctionControlShift {
@@ -876,6 +914,9 @@ enum Capability {
     CapabilityFragmentShadingRateKHR = 4422,
     CapabilitySubgroupBallotKHR = 4423,
     CapabilityDrawParameters = 4427,
+    CapabilityWorkgroupMemoryExplicitLayoutKHR = 4428,
+    CapabilityWorkgroupMemoryExplicitLayout8BitAccessKHR = 4429,
+    CapabilityWorkgroupMemoryExplicitLayout16BitAccessKHR = 4430,
     CapabilitySubgroupVoteKHR = 4431,
     CapabilityStorageBuffer16BitAccess = 4433,
     CapabilityStorageUniformBufferBlock16 = 4433,
@@ -948,6 +989,7 @@ enum Capability {
     CapabilityStorageTexelBufferArrayNonUniformIndexing = 5312,
     CapabilityStorageTexelBufferArrayNonUniformIndexingEXT = 5312,
     CapabilityRayTracingNV = 5340,
+    CapabilityRayTracingMotionBlurNV = 5341,
     CapabilityVulkanMemoryModel = 5345,
     CapabilityVulkanMemoryModelKHR = 5345,
     CapabilityVulkanMemoryModelDeviceScope = 5346,
@@ -966,21 +1008,42 @@ enum Capability {
     CapabilitySubgroupBufferBlockIOINTEL = 5569,
     CapabilitySubgroupImageBlockIOINTEL = 5570,
     CapabilitySubgroupImageMediaBlockIOINTEL = 5579,
+    CapabilityRoundToInfinityINTEL = 5582,
+    CapabilityFloatingPointModeINTEL = 5583,
     CapabilityIntegerFunctions2INTEL = 5584,
     CapabilityFunctionPointersINTEL = 5603,
     CapabilityIndirectReferencesINTEL = 5604,
+    CapabilityAsmINTEL = 5606,
+    CapabilityAtomicFloat32MinMaxEXT = 5612,
+    CapabilityAtomicFloat64MinMaxEXT = 5613,
+    CapabilityAtomicFloat16MinMaxEXT = 5616,
+    CapabilityVectorComputeINTEL = 5617,
+    CapabilityVectorAnyINTEL = 5619,
+    CapabilityExpectAssumeKHR = 5629,
     CapabilitySubgroupAvcMotionEstimationINTEL = 5696,
     CapabilitySubgroupAvcMotionEstimationIntraINTEL = 5697,
     CapabilitySubgroupAvcMotionEstimationChromaINTEL = 5698,
+    CapabilityVariableLengthArrayINTEL = 5817,
+    CapabilityFunctionFloatControlINTEL = 5821,
     CapabilityFPGAMemoryAttributesINTEL = 5824,
+    CapabilityFPFastMathModeINTEL = 5837,
+    CapabilityArbitraryPrecisionIntegersINTEL = 5844,
     CapabilityUnstructuredLoopControlsINTEL = 5886,
     CapabilityFPGALoopControlsINTEL = 5888,
     CapabilityKernelAttributesINTEL = 5892,
     CapabilityFPGAKernelAttributesINTEL = 5897,
+    CapabilityFPGAMemoryAccessesINTEL = 5898,
+    CapabilityFPGAClusterAttributesINTEL = 5904,
+    CapabilityLoopFuseINTEL = 5906,
+    CapabilityFPGABufferLocationINTEL = 5920,
+    CapabilityUSMStorageClassesINTEL = 5935,
+    CapabilityIOPipesINTEL = 5943,
     CapabilityBlockingPipesINTEL = 5945,
     CapabilityFPGARegINTEL = 5948,
     CapabilityAtomicFloat32AddEXT = 6033,
     CapabilityAtomicFloat64AddEXT = 6034,
+    CapabilityLongConstantCompositeINTEL = 6089,
+    CapabilityAtomicFloat16AddEXT = 6095,
     CapabilityMax = 0x7fffffff,
 };
 
@@ -1045,6 +1108,18 @@ enum FragmentShadingRateMask {
     FragmentShadingRateVertical4PixelsMask = 0x00000002,
     FragmentShadingRateHorizontal2PixelsMask = 0x00000004,
     FragmentShadingRateHorizontal4PixelsMask = 0x00000008,
+};
+
+enum FPDenormMode {
+    FPDenormModePreserve = 0,
+    FPDenormModeFlushToZero = 1,
+    FPDenormModeMax = 0x7fffffff,
+};
+
+enum FPOperationMode {
+    FPOperationModeIEEE = 0,
+    FPOperationModeALT = 1,
+    FPOperationModeMax = 0x7fffffff,
 };
 
 enum Op {
@@ -1430,6 +1505,8 @@ enum Op {
     OpIgnoreIntersectionNV = 5335,
     OpTerminateRayNV = 5336,
     OpTraceNV = 5337,
+    OpTraceMotionNV = 5338,
+    OpTraceRayMotionNV = 5339,
     OpTypeAccelerationStructureKHR = 5341,
     OpTypeAccelerationStructureNV = 5341,
     OpExecuteCallableNV = 5344,
@@ -1466,8 +1543,15 @@ enum Op {
     OpUSubSatINTEL = 5596,
     OpIMul32x16INTEL = 5597,
     OpUMul32x16INTEL = 5598,
-    OpFunctionPointerINTEL = 5600,
+    OpConstFunctionPointerINTEL = 5600,
     OpFunctionPointerCallINTEL = 5601,
+    OpAsmTargetINTEL = 5609,
+    OpAsmINTEL = 5610,
+    OpAsmCallINTEL = 5611,
+    OpAtomicFMinEXT = 5614,
+    OpAtomicFMaxEXT = 5615,
+    OpAssumeTrueKHR = 5630,
+    OpExpectKHR = 5631,
     OpDecorateString = 5632,
     OpDecorateStringGOOGLE = 5632,
     OpMemberDecorateString = 5633,
@@ -1590,7 +1674,12 @@ enum Op {
     OpSubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL = 5814,
     OpSubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL = 5815,
     OpSubgroupAvcSicGetInterRawSadsINTEL = 5816,
+    OpVariableLengthArrayINTEL = 5818,
+    OpSaveMemoryINTEL = 5819,
+    OpRestoreMemoryINTEL = 5820,
     OpLoopControlINTEL = 5887,
+    OpPtrCastToCrossWorkgroupINTEL = 5934,
+    OpCrossWorkgroupCastToPtrINTEL = 5938,
     OpReadPipeBlockingINTEL = 5946,
     OpWritePipeBlockingINTEL = 5947,
     OpFPGARegINTEL = 5949,
@@ -1612,6 +1701,10 @@ enum Op {
     OpRayQueryGetIntersectionObjectToWorldKHR = 6031,
     OpRayQueryGetIntersectionWorldToObjectKHR = 6032,
     OpAtomicFAddEXT = 6035,
+    OpTypeBufferSurfaceINTEL = 6086,
+    OpTypeStructContinuedINTEL = 6090,
+    OpConstantCompositeContinuedINTEL = 6091,
+    OpSpecConstantCompositeContinuedINTEL = 6092,
     OpMax = 0x7fffffff,
 };
 
@@ -2001,6 +2094,8 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpIgnoreIntersectionNV: *hasResult = false; *hasResultType = false; break;
     case OpTerminateRayNV: *hasResult = false; *hasResultType = false; break;
     case OpTraceNV: *hasResult = false; *hasResultType = false; break;
+    case OpTraceMotionNV: *hasResult = false; *hasResultType = false; break;
+    case OpTraceRayMotionNV: *hasResult = false; *hasResultType = false; break;
     case OpTypeAccelerationStructureNV: *hasResult = true; *hasResultType = false; break;
     case OpExecuteCallableNV: *hasResult = false; *hasResultType = false; break;
     case OpTypeCooperativeMatrixNV: *hasResult = true; *hasResultType = false; break;
@@ -2036,8 +2131,15 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpUSubSatINTEL: *hasResult = true; *hasResultType = true; break;
     case OpIMul32x16INTEL: *hasResult = true; *hasResultType = true; break;
     case OpUMul32x16INTEL: *hasResult = true; *hasResultType = true; break;
-    case OpFunctionPointerINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpConstFunctionPointerINTEL: *hasResult = true; *hasResultType = true; break;
     case OpFunctionPointerCallINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpAsmTargetINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpAsmINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpAsmCallINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpAtomicFMinEXT: *hasResult = true; *hasResultType = true; break;
+    case OpAtomicFMaxEXT: *hasResult = true; *hasResultType = true; break;
+    case OpAssumeTrueKHR: *hasResult = false; *hasResultType = false; break;
+    case OpExpectKHR: *hasResult = true; *hasResultType = true; break;
     case OpDecorateString: *hasResult = false; *hasResultType = false; break;
     case OpMemberDecorateString: *hasResult = false; *hasResultType = false; break;
     case OpVmeImageINTEL: *hasResult = true; *hasResultType = true; break;
@@ -2158,7 +2260,12 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpSubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL: *hasResult = true; *hasResultType = true; break;
     case OpSubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL: *hasResult = true; *hasResultType = true; break;
     case OpSubgroupAvcSicGetInterRawSadsINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpVariableLengthArrayINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpSaveMemoryINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpRestoreMemoryINTEL: *hasResult = false; *hasResultType = false; break;
     case OpLoopControlINTEL: *hasResult = false; *hasResultType = false; break;
+    case OpPtrCastToCrossWorkgroupINTEL: *hasResult = true; *hasResultType = true; break;
+    case OpCrossWorkgroupCastToPtrINTEL: *hasResult = true; *hasResultType = true; break;
     case OpReadPipeBlockingINTEL: *hasResult = true; *hasResultType = true; break;
     case OpWritePipeBlockingINTEL: *hasResult = true; *hasResultType = true; break;
     case OpFPGARegINTEL: *hasResult = true; *hasResultType = true; break;
@@ -2180,6 +2287,10 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpRayQueryGetIntersectionObjectToWorldKHR: *hasResult = true; *hasResultType = true; break;
     case OpRayQueryGetIntersectionWorldToObjectKHR: *hasResult = true; *hasResultType = true; break;
     case OpAtomicFAddEXT: *hasResult = true; *hasResultType = true; break;
+    case OpTypeBufferSurfaceINTEL: *hasResult = true; *hasResultType = false; break;
+    case OpTypeStructContinuedINTEL: *hasResult = false; *hasResultType = false; break;
+    case OpConstantCompositeContinuedINTEL: *hasResult = false; *hasResultType = false; break;
+    case OpSpecConstantCompositeContinuedINTEL: *hasResult = false; *hasResultType = false; break;
     }
 }
 #endif /* SPV_ENABLE_UTILITY_CODE */

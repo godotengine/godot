@@ -49,7 +49,7 @@ private:
 	DispatchMode dispatch_mode = MODE_PROXY;
 	Vector3 grid_radius = Vector3(1, 1, 1);
 
-	float cell_size = 1.0;
+	real_t cell_size = 1.0;
 	uint32_t group_version = 0;
 
 	void _clear_groups();

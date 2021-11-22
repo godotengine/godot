@@ -38,6 +38,8 @@
 	</array>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.12</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
@@ -82,7 +84,7 @@
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>Godot Scene</string>
+			<string>Godot Engine scene</string>
 			<key>UTTypeIconFile</key>
 			<string>Scene.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -95,6 +97,7 @@
 				<array>
 					<string>scn</string>
 					<string>tscn</string>
+					<string>escn</string>
 				</array>
 				<key>public.mime-type</key>
 				<string>application/x-godot-scene</string>
@@ -106,7 +109,7 @@
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>Godot Script</string>
+			<string>GDScript script</string>
 			<key>UTTypeIconFile</key>
 			<string>GDScript.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -120,7 +123,7 @@
 					<string>gd</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>text/x-gdscript</string>
+				<string>application/x-gdscript</string>
 			</dict>
 		</dict>
 		<dict>
@@ -129,7 +132,7 @@
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>Godot Resource</string>
+			<string>Godot Engine resource</string>
 			<key>UTTypeIconFile</key>
 			<string>Resource.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -149,11 +152,34 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
+			<string>public.gdshader</string>
+			<key>UTTypeReferenceURL</key>
+			<string></string>
+			<key>UTTypeDescription</key>
+			<string>Godot Engine shader</string>
+			<key>UTTypeIconFile</key>
+			<string>Shader.icns</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.script</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>gdshader</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/x-godot-shader</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
 			<string>public.godot</string>
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>Godot Project</string>
+			<string>Godot Engine project</string>
 			<key>UTTypeIconFile</key>
 			<string>Project.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -167,7 +193,7 @@
 					<string>godot</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>text/x-godot-project</string>
+				<string>application/x-godot-project</string>
 			</dict>
 		</dict>
 	</array>

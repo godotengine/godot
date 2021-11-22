@@ -34,6 +34,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_node.h"
+#include "scene/gui/label.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
@@ -61,8 +62,6 @@ class GraphEditMinimap : public Control {
 	GraphEdit *ge;
 
 protected:
-	static void _bind_methods();
-
 public:
 	GraphEditMinimap(GraphEdit *p_edit);
 
@@ -87,7 +86,7 @@ private:
 	Vector2 _convert_from_graph_position(const Vector2 &p_position);
 	Vector2 _convert_to_graph_position(const Vector2 &p_position);
 
-	void _gui_input(const Ref<InputEvent> &p_ev);
+	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
 	void _adjust_graph_scroll(const Vector2 &p_offset);
 };
@@ -105,6 +104,7 @@ public:
 	};
 
 private:
+	Label *zoom_label;
 	Button *zoom_minus;
 	Button *zoom_reset;
 	Button *zoom_plus;
@@ -114,9 +114,7 @@ private:
 
 	Button *minimap_button;
 
-	void _zoom_minus();
-	void _zoom_reset();
-	void _zoom_plus();
+	Button *layout_button;
 
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
@@ -144,6 +142,14 @@ private:
 	Vector2 drag_accum;
 
 	float zoom = 1.0;
+	float zoom_step = 1.2;
+	float zoom_min;
+	float zoom_max;
+
+	void _zoom_minus();
+	void _zoom_reset();
+	void _zoom_plus();
+	void _update_zoom_label();
 
 	bool box_selecting = false;
 	bool box_selection_mode_additive = false;
@@ -161,9 +167,8 @@ private:
 	float lines_thickness = 2.0f;
 	bool lines_antialiased = true;
 
-	void _bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const;
-
-	void _draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_bezier_ratio);
+	PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
+	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom);
 
 	void _graph_node_raised(Node *p_gn);
 	void _graph_node_moved(Node *p_gn);
@@ -171,14 +176,14 @@ private:
 
 	void _update_scroll();
 	void _scroll_moved(double);
-	void _gui_input(const Ref<InputEvent> &p_ev);
+	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 
 	Control *connections_layer;
 	GraphEditFilter *top_layer;
 	GraphEditMinimap *minimap;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
-	bool is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos);
+	bool is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
 
 	void _top_layer_draw();
 	void _connections_layer_draw();
@@ -212,6 +217,11 @@ private:
 	Set<int> valid_left_disconnect_types;
 	Set<int> valid_right_disconnect_types;
 
+	HashMap<StringName, Vector<GraphNode *>> comment_enclosed_nodes;
+	void _update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes);
+	void _set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag);
+	void _set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_pos);
+
 	HBoxContainer *zoom_hb;
 
 	friend class GraphEditFilter;
@@ -224,12 +234,31 @@ private:
 
 	bool _check_clickable_control(Control *p_control, const Vector2 &pos);
 
+	bool arranging_graph = false;
+
+	enum SET_OPERATIONS {
+		IS_EQUAL,
+		IS_SUBSET,
+		DIFFERENCE,
+		UNION,
+	};
+
+	int _set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u, const Set<StringName> &r_v);
+	HashMap<int, Vector<StringName>> _layering(const Set<StringName> &r_selected_nodes, const HashMap<StringName, Set<StringName>> &r_upper_neighbours);
+	Vector<StringName> _split(const Vector<StringName> &r_layer, const HashMap<StringName, Dictionary> &r_crossings);
+	void _horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, Set<StringName>> &r_upper_neighbours, const Set<StringName> &r_selected_nodes);
+	void _crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, Set<StringName>> &r_upper_neighbours);
+	void _calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_node_names, const Dictionary &r_align, const Set<StringName> &r_block_heads, const HashMap<StringName, Pair<int, int>> &r_port_info);
+	float _calculate_threshold(StringName p_v, StringName p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions);
+	void _place_block(StringName p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions);
+
 protected:
 	static void _bind_methods();
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 	void _notification(int p_what);
-	virtual bool clips_input() const override;
+
+	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
 
 public:
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
@@ -246,6 +275,18 @@ public:
 	void set_zoom(float p_zoom);
 	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
 	float get_zoom() const;
+
+	void set_zoom_min(float p_zoom_min);
+	float get_zoom_min() const;
+
+	void set_zoom_max(float p_zoom_max);
+	float get_zoom_max() const;
+
+	void set_zoom_step(float p_zoom_step);
+	float get_zoom_step() const;
+
+	void set_show_zoom_label(bool p_enable);
+	bool is_showing_zoom_label() const;
 
 	void set_minimap_size(Vector2 p_size);
 	Vector2 get_minimap_size() const;
@@ -286,6 +327,8 @@ public:
 	bool is_connection_lines_antialiased() const;
 
 	HBoxContainer *get_zoom_hbox();
+
+	void arrange_nodes();
 
 	GraphEdit();
 };

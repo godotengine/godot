@@ -31,7 +31,7 @@
 #ifndef POT_GENERATOR_H
 #define POT_GENERATOR_H
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/templates/ordered_hash_map.h"
 #include "core/templates/set.h"
 

@@ -30,12 +30,12 @@
 
 #include "resource_importer_obj.h"
 
+#include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
-#include "editor/import/scene_importer_mesh.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -57,7 +57,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 			//vertex
 
 			current_name = l.replace("newmtl", "").strip_edges();
-			current.instance();
+			current.instantiate();
 			current->set_name(current_name);
 			material_map[current_name] = current;
 		} else if (l.begins_with("Ka ")) {
@@ -126,7 +126,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 
 			String p = l.replace("map_Kd", "").replace("\\", "/").strip_edges();
 			String path;
-			if (p.is_abs_path()) {
+			if (p.is_absolute_path()) {
 				path = p;
 			} else {
 				path = base_path.plus_file(p);
@@ -146,7 +146,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 
 			String p = l.replace("map_Ks", "").replace("\\", "/").strip_edges();
 			String path;
-			if (p.is_abs_path()) {
+			if (p.is_absolute_path()) {
 				path = p;
 			} else {
 				path = base_path.plus_file(p);
@@ -166,7 +166,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 
 			String p = l.replace("map_Ns", "").replace("\\", "/").strip_edges();
 			String path;
-			if (p.is_abs_path()) {
+			if (p.is_absolute_path()) {
 				path = p;
 			} else {
 				path = base_path.plus_file(p);
@@ -207,7 +207,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
 
 	Ref<ArrayMesh> mesh;
-	mesh.instance();
+	mesh.instantiate();
 
 	bool generate_tangents = p_generate_tangents;
 	Vector3 scale_mesh = p_scale_mesh;
@@ -378,7 +378,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				if (!p_single_mesh) {
 					mesh->set_name(name);
 					r_meshes.push_back(mesh);
-					mesh.instance();
+					mesh.instantiate();
 					current_group = "";
 					current_material = "";
 				}
@@ -405,11 +405,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			current_material_library = l.replace("mtllib", "").strip_edges();
 			if (!material_map.has(current_material_library)) {
 				Map<String, Ref<StandardMaterial3D>> lib;
-				Error err = _parse_material_library(current_material_library, lib, r_missing_deps);
-				if (err == ERR_CANT_OPEN) {
-					String dir = p_path.get_base_dir();
-					err = _parse_material_library(dir.plus_file(current_material_library), lib, r_missing_deps);
+				String lib_path = current_material_library;
+				if (lib_path.is_relative_path()) {
+					lib_path = p_path.get_base_dir().plus_file(current_material_library);
 				}
+				Error err = _parse_material_library(lib_path, lib, r_missing_deps);
 				if (err == OK) {
 					material_map[current_material_library] = lib;
 				}
@@ -438,18 +438,17 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 
 	Node3D *scene = memnew(Node3D);
 
-	for (List<Ref<Mesh>>::Element *E = meshes.front(); E; E = E->next()) {
-		Ref<EditorSceneImporterMesh> mesh;
-		mesh.instance();
-		Ref<Mesh> m = E->get();
+	for (const Ref<Mesh> &m : meshes) {
+		Ref<ImporterMesh> mesh;
+		mesh.instantiate();
 		for (int i = 0; i < m->get_surface_count(); i++) {
 			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
 		}
 
-		EditorSceneImporterMeshNode3D *mi = memnew(EditorSceneImporterMeshNode3D);
+		ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
 		mi->set_mesh(mesh);
-		mi->set_name(E->get()->get_name());
-		scene->add_child(mi);
+		mi->set_name(m->get_name());
+		scene->add_child(mi, true);
 		mi->set_owner(scene);
 	}
 
@@ -505,14 +504,14 @@ String ResourceImporterOBJ::get_preset_name(int p_idx) const {
 	return "";
 }
 
-void ResourceImporterOBJ::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterOBJ::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "scale_mesh"), Vector3(1, 1, 1)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "offset_mesh"), Vector3(0, 0, 0)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimize_mesh"), true));
 }
 
-bool ResourceImporterOBJ::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterOBJ::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	return true;
 }
 

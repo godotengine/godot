@@ -8,20 +8,18 @@
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
-		<link title="Particle systems (2D)">https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html</link>
+		<link title="Particle systems (2D)">$DOCS_URL/tutorials/2d/particle_systems_2d.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
 		<method name="capture_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns a rectangle containing the positions of all existing particles.
 			</description>
 		</method>
 		<method name="restart">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Restarts all the existing particles.
 			</description>
@@ -31,7 +29,9 @@
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
 			Number of particles emitted in one emission cycle.
 		</member>
-		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="GPUParticles2D.DrawOrder" default="0">
+		<member name="collision_base_size" type="float" setter="set_collision_base_size" getter="get_collision_base_size" default="1.0">
+		</member>
+		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="GPUParticles2D.DrawOrder" default="1">
 			Particle draw order. Uses [enum DrawOrder] values.
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
@@ -40,7 +40,7 @@
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
 			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins.
 		</member>
-		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="0">
+		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="30">
 			The particle system's frame rate is fixed to a value. For instance, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
@@ -70,7 +70,15 @@
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Particle texture. If [code]null[/code], particles will be squares.
 		</member>
-		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect" default="Rect2( -100, -100, 200, 200 )">
+		<member name="trail_enabled" type="bool" setter="set_trail_enabled" getter="is_trail_enabled" default="false">
+		</member>
+		<member name="trail_length_secs" type="float" setter="set_trail_length" getter="get_trail_length" default="0.3">
+		</member>
+		<member name="trail_section_subdivisions" type="int" setter="set_trail_section_subdivisions" getter="get_trail_section_subdivisions" default="4">
+		</member>
+		<member name="trail_sections" type="int" setter="set_trail_sections" getter="get_trail_sections" default="8">
+		</member>
+		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect" default="Rect2(-100, -100, 200, 200)">
 			The [Rect2] that determines the node's region which needs to be visible on screen for the particle system to be active.
 			Grow the rect if particles suddenly appear/disappear when the node enters/exits the screen. The [Rect2] can be grown via code or with the [b]Particles → Generate Visibility Rect[/b] editor tool.
 		</member>
@@ -81,6 +89,8 @@
 		</constant>
 		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
 			Particles are drawn in order of remaining lifetime.
+		</constant>
+		<constant name="DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="DrawOrder">
 		</constant>
 	</constants>
 </class>

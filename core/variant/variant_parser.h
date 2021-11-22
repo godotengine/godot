@@ -31,8 +31,8 @@
 #ifndef VARIANT_PARSER_H
 #define VARIANT_PARSER_H
 
+#include "core/io/file_access.h"
 #include "core/io/resource.h"
-#include "core/os/file_access.h"
 #include "core/variant/variant.h"
 
 class VariantParser {
@@ -73,9 +73,9 @@ public:
 
 	struct ResourceParser {
 		void *userdata = nullptr;
-		ParseResourceFunc func;
-		ParseResourceFunc ext_func;
-		ParseResourceFunc sub_func;
+		ParseResourceFunc func = nullptr;
+		ParseResourceFunc ext_func = nullptr;
+		ParseResourceFunc sub_func = nullptr;
 	};
 
 	enum TokenType {
@@ -140,7 +140,7 @@ public:
 	typedef Error (*StoreStringFunc)(void *ud, const String &p_string);
 	typedef String (*EncodeResourceFunc)(void *ud, const RES &p_resource);
 
-	static Error write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud);
+	static Error write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int recursion_count = 0);
 	static Error write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func = nullptr, void *p_encode_res_ud = nullptr);
 };
 

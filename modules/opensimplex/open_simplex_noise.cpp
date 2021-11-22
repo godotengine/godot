@@ -96,7 +96,7 @@ void OpenSimplexNoise::set_lacunarity(float p_lacunarity) {
 	emit_changed();
 }
 
-Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) const {
+Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height, const Vector2 &p_noise_offset) const {
 	Vector<uint8_t> data;
 	data.resize(p_width * p_height);
 
@@ -104,7 +104,7 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) const {
 
 	for (int i = 0; i < p_height; i++) {
 		for (int j = 0; j < p_width; j++) {
-			float v = get_noise_2d(j, i);
+			float v = get_noise_2d(float(j) + p_noise_offset.x, float(i) + p_noise_offset.y);
 			v = v * 0.5 + 0.5; // Normalize [0..1]
 			wd8[(i * p_width + j)] = uint8_t(CLAMP(v * 255.0, 0, 255));
 		}
@@ -161,7 +161,7 @@ void OpenSimplexNoise::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lacunarity", "lacunarity"), &OpenSimplexNoise::set_lacunarity);
 	ClassDB::bind_method(D_METHOD("get_lacunarity"), &OpenSimplexNoise::get_lacunarity);
 
-	ClassDB::bind_method(D_METHOD("get_image", "width", "height"), &OpenSimplexNoise::get_image);
+	ClassDB::bind_method(D_METHOD("get_image", "width", "height", "noise_offset"), &OpenSimplexNoise::get_image, DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("get_seamless_image", "size"), &OpenSimplexNoise::get_seamless_image);
 
 	ClassDB::bind_method(D_METHOD("get_noise_1d", "x"), &OpenSimplexNoise::get_noise_1d);

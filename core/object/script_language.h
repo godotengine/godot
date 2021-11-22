@@ -32,29 +32,14 @@
 #define SCRIPT_LANGUAGE_H
 
 #include "core/doc_data.h"
-#include "core/io/multiplayer_api.h"
 #include "core/io/resource.h"
+#include "core/multiplayer/multiplayer.h"
 #include "core/templates/map.h"
 #include "core/templates/pair.h"
 
 class ScriptLanguage;
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
-
-struct ScriptNetData {
-	StringName name;
-	MultiplayerAPI::RPCMode mode;
-	bool operator==(ScriptNetData const &p_other) const {
-		return name == p_other.name;
-	}
-};
-
-struct SortNetData {
-	StringName::AlphCompare compare;
-	bool operator()(const ScriptNetData &p_a, const ScriptNetData &p_b) const {
-		return compare(p_a.name, p_b.name);
-	}
-};
 
 class ScriptServer {
 	enum {
@@ -130,7 +115,7 @@ protected:
 	Dictionary _get_script_constant_map();
 
 public:
-	virtual bool can_instance() const = 0;
+	virtual bool can_instantiate() const = 0;
 
 	virtual Ref<Script> get_base_script() const = 0; //for script inheritance
 
@@ -174,17 +159,7 @@ public:
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const = 0;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const = 0;
-	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const = 0;
-
-	virtual Vector<ScriptNetData> get_rset_properties() const = 0;
-	virtual uint16_t get_rset_property_id(const StringName &p_property) const = 0;
-	virtual StringName get_rset_property(const uint16_t p_rset_property_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_rpc_method_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const = 0;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const = 0;
 
 	Script() {}
 };
@@ -225,23 +200,15 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const = 0;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const = 0;
-	virtual StringName get_rpc_method(uint16_t p_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const = 0;
-
-	virtual Vector<ScriptNetData> get_rset_properties() const = 0;
-	virtual uint16_t get_rset_property_id(const StringName &p_variable) const = 0;
-	virtual StringName get_rset_property(uint16_t p_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const = 0;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const = 0;
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const = 0;
 
 	virtual ScriptLanguage *get_language() = 0;
 	virtual ~ScriptInstance();
 };
 
 struct ScriptCodeCompletionOption {
+	/* Keep enum in Sync with:                               */
+	/* /scene/gui/code_edit.h - CodeEdit::CodeCompletionKind */
 	enum Kind {
 		KIND_CLASS,
 		KIND_FUNCTION,
@@ -301,14 +268,21 @@ public:
 		String message;
 	};
 
+	struct ScriptError {
+		int line = -1;
+		int column = -1;
+		String message;
+	};
+
 	void get_core_type_words(List<String> *p_core_type_words) const;
 	virtual void get_reserved_words(List<String> *p_words) const = 0;
+	virtual bool is_control_flow_keyword(String p_string) const = 0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const = 0;
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {}
 	virtual bool is_using_templates() { return false; }
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = nullptr, List<Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const = 0;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
@@ -336,6 +310,7 @@ public:
 		Ref<Script> script;
 		String class_name;
 		String class_member;
+		String class_path;
 		int location;
 	};
 
@@ -444,17 +419,7 @@ public:
 	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
 	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = nullptr);
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const { return Vector<ScriptNetData>(); }
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
-	virtual StringName get_rpc_method(uint16_t p_id) const { return StringName(); }
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
-
-	virtual Vector<ScriptNetData> get_rset_properties() const { return Vector<ScriptNetData>(); }
-	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
-	virtual StringName get_rset_property(uint16_t p_id) const { return StringName(); }
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
+	virtual const Vector<Multiplayer::RPCConfig> get_rpc_methods() const { return Vector<Multiplayer::RPCConfig>(); }
 
 	PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner);
 	~PlaceHolderScriptInstance();

@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="pan_pullout" type="float" setter="set_pan_pullout" getter="get_pan_pullout" default="1.0">
 		</member>
@@ -16,6 +14,4 @@
 		<member name="time_pullout_ms" type="float" setter="set_time_pullout" getter="get_time_pullout" default="0.0">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

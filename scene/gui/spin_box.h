@@ -40,13 +40,16 @@ class SpinBox : public Range {
 
 	LineEdit *line_edit;
 	int last_w = 0;
+	bool update_on_text_changed = false;
 
 	Timer *range_click_timer;
 	void _range_click_timeout();
 	void _release_mouse();
 
-	void _text_entered(const String &p_string);
+	void _text_submitted(const String &p_string);
 	virtual void _value_changed(double) override;
+	void _text_changed(const String &p_string);
+
 	String prefix;
 	String suffix;
 
@@ -65,7 +68,7 @@ class SpinBox : public Range {
 	inline void _adjust_width_for_icon(const Ref<Texture2D> &icon);
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	void _notification(int p_what);
 
@@ -79,7 +82,7 @@ public:
 	void set_align(LineEdit::Align p_align);
 	LineEdit::Align get_align() const;
 
-	void set_editable(bool p_editable);
+	void set_editable(bool p_enabled);
 	bool is_editable() const;
 
 	void set_suffix(const String &p_suffix);
@@ -87,6 +90,9 @@ public:
 
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
+
+	void set_update_on_text_changed(bool p_enabled);
+	bool get_update_on_text_changed() const;
 
 	void apply();
 

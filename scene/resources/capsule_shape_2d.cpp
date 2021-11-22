@@ -38,11 +38,11 @@ Vector<Vector2> CapsuleShape2D::_get_points() const {
 	Vector<Vector2> points;
 	const real_t turn_step = Math_TAU / 24.0;
 	for (int i = 0; i < 24; i++) {
-		Vector2 ofs = Vector2(0, (i > 6 && i <= 18) ? -get_height() * 0.5 : get_height() * 0.5);
+		Vector2 ofs = Vector2(0, (i > 6 && i <= 18) ? -height * 0.5 + radius : height * 0.5 - radius);
 
-		points.push_back(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * get_radius() + ofs);
+		points.push_back(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * radius + ofs);
 		if (i == 6 || i == 18) {
-			points.push_back(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * get_radius() - ofs);
+			points.push_back(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * radius - ofs);
 		}
 	}
 
@@ -60,6 +60,9 @@ void CapsuleShape2D::_update_shape() {
 
 void CapsuleShape2D::set_radius(real_t p_radius) {
 	radius = p_radius;
+	if (radius > height * 0.5) {
+		height = radius * 2.0;
+	}
 	_update_shape();
 }
 
@@ -69,10 +72,9 @@ real_t CapsuleShape2D::get_radius() const {
 
 void CapsuleShape2D::set_height(real_t p_height) {
 	height = p_height;
-	if (height < 0) {
-		height = 0;
+	if (radius > height * 0.5) {
+		radius = height * 0.5;
 	}
-
 	_update_shape();
 }
 
@@ -93,15 +95,11 @@ void CapsuleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 }
 
 Rect2 CapsuleShape2D::get_rect() const {
-	Vector2 he = Point2(get_radius(), get_radius() + get_height() * 0.5);
-	Rect2 rect;
-	rect.position = -he;
-	rect.size = he * 2.0;
-	return rect;
+	return Rect2(0, 0, radius, height);
 }
 
 real_t CapsuleShape2D::get_enclosing_radius() const {
-	return radius + height * 0.5;
+	return height * 0.5;
 }
 
 void CapsuleShape2D::_bind_methods() {
@@ -113,6 +111,8 @@ void CapsuleShape2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height"), "set_height", "get_height");
+	ADD_LINKED_PROPERTY("radius", "height");
+	ADD_LINKED_PROPERTY("height", "radius");
 }
 
 CapsuleShape2D::CapsuleShape2D() :

@@ -135,6 +135,83 @@ public:
 		_FORCE_INLINE_ Element() {}
 	};
 
+	typedef T ValueType;
+
+	struct Iterator {
+		_FORCE_INLINE_ T &operator*() const {
+			return E->get();
+		}
+		_FORCE_INLINE_ T *operator->() const { return &E->get(); }
+		_FORCE_INLINE_ Iterator &operator++() {
+			E = E->next();
+			return *this;
+		}
+		_FORCE_INLINE_ Iterator &operator--() {
+			E = E->prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+
+		Iterator(Element *p_E) { E = p_E; }
+		Iterator() {}
+		Iterator(const Iterator &p_it) { E = p_it.E; }
+
+	private:
+		Element *E = nullptr;
+	};
+
+	struct ConstIterator {
+		_FORCE_INLINE_ const T &operator*() const {
+			return E->get();
+		}
+		_FORCE_INLINE_ const T *operator->() const { return &E->get(); }
+		_FORCE_INLINE_ ConstIterator &operator++() {
+			E = E->next();
+			return *this;
+		}
+		_FORCE_INLINE_ ConstIterator &operator--() {
+			E = E->prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+
+		_FORCE_INLINE_ ConstIterator(const Element *p_E) { E = p_E; }
+		_FORCE_INLINE_ ConstIterator() {}
+		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+
+	private:
+		const Element *E = nullptr;
+	};
+
+	_FORCE_INLINE_ Iterator begin() {
+		return Iterator(front());
+	}
+	_FORCE_INLINE_ Iterator end() {
+		return Iterator(nullptr);
+	}
+
+#if 0
+	//to use when replacing find()
+	_FORCE_INLINE_ Iterator find(const K &p_key) {
+		return Iterator(find(p_key));
+	}
+#endif
+	_FORCE_INLINE_ ConstIterator begin() const {
+		return ConstIterator(front());
+	}
+	_FORCE_INLINE_ ConstIterator end() const {
+		return ConstIterator(nullptr);
+	}
+#if 0
+	//to use when replacing find()
+	_FORCE_INLINE_ ConstIterator find(const K &p_key) const {
+		return ConstIterator(find(p_key));
+	}
+#endif
 private:
 	struct _Data {
 		Element *first = nullptr;
@@ -172,29 +249,29 @@ private:
 
 public:
 	/**
-	* return a const iterator to the beginning of the list.
-	*/
+	 * return a const iterator to the beginning of the list.
+	 */
 	_FORCE_INLINE_ const Element *front() const {
 		return _data ? _data->first : nullptr;
 	}
 
 	/**
-	* return an iterator to the beginning of the list.
-	*/
+	 * return an iterator to the beginning of the list.
+	 */
 	_FORCE_INLINE_ Element *front() {
 		return _data ? _data->first : nullptr;
 	}
 
 	/**
- 	* return a const iterator to the last member of the list.
-	*/
+	 * return a const iterator to the last member of the list.
+	 */
 	_FORCE_INLINE_ const Element *back() const {
 		return _data ? _data->last : nullptr;
 	}
 
 	/**
- 	* return an iterator to the last member of the list.
-	*/
+	 * return an iterator to the last member of the list.
+	 */
 	_FORCE_INLINE_ Element *back() {
 		return _data ? _data->last : nullptr;
 	}

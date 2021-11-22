@@ -1,86 +1,67 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlugin" inherits="Reference" version="4.0">
+<class name="EditorExportPlugin" inherits="RefCounted" version="4.0">
 	<brief_description>
 		A script that is executed when exporting the project.
 	</brief_description>
 	<description>
-		Editor export plugins are automatically activated whenever the user exports the project. Their most common use is to determine what files are being included in the exported project. For each plugin, [method _export_begin] is called at the beginning of the export process and then [method _export_file] is called for each exported file.
+		[EditorExportPlugin]s are automatically invoked whenever the user exports the project. Their most common use is to determine what files are being included in the exported project. For each plugin, [method _export_begin] is called at the beginning of the export process and then [method _export_file] is called for each exported file.
+		To use [EditorExportPlugin], register it using the [method EditorPlugin.add_export_plugin] method first.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="_export_begin" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="features" type="PackedStringArray">
-			</argument>
-			<argument index="1" name="is_debug" type="bool">
-			</argument>
-			<argument index="2" name="path" type="String">
-			</argument>
-			<argument index="3" name="flags" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="features" type="PackedStringArray" />
+			<argument index="1" name="is_debug" type="bool" />
+			<argument index="2" name="path" type="String" />
+			<argument index="3" name="flags" type="int" />
 			<description>
 				Virtual method to be overridden by the user. It is called when the export starts and provides all information about the export. [code]features[/code] is the list of features for the export, [code]is_debug[/code] is [code]true[/code] for debug builds, [code]path[/code] is the target path for the exported project. [code]flags[/code] is only used when running a runnable profile, e.g. when using native run on Android.
 			</description>
 		</method>
 		<method name="_export_end" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Virtual method to be overridden by the user. Called when the export is finished.
 			</description>
 		</method>
 		<method name="_export_file" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="type" type="String">
-			</argument>
-			<argument index="2" name="features" type="PackedStringArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="type" type="String" />
+			<argument index="2" name="features" type="PackedStringArray" />
 			<description>
 				Virtual method to be overridden by the user. Called for each exported file, providing arguments that can be used to identify the file. [code]path[/code] is the path of the file, [code]type[/code] is the [Resource] represented by the file (e.g. [PackedScene]) and [code]features[/code] is the list of features for the export.
 				Calling [method skip] inside this callback will make the file not included in the export.
 			</description>
 		</method>
 		<method name="add_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="file" type="PackedByteArray">
-			</argument>
-			<argument index="2" name="remap" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="file" type="PackedByteArray" />
+			<argument index="2" name="remap" type="bool" />
 			<description>
 				Adds a custom file to be exported. [code]path[/code] is the virtual path that can be used to load the file, [code]file[/code] is the binary data of the file. If [code]remap[/code] is [code]true[/code], file will not be exported, but instead remapped to the given [code]path[/code].
 			</description>
 		</method>
 		<method name="add_ios_bundle_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Adds an iOS bundle file from the given [code]path[/code] to the exported project.
 			</description>
 		</method>
 		<method name="add_ios_cpp_code">
-			<return type="void">
-			</return>
-			<argument index="0" name="code" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="code" type="String" />
 			<description>
 				Adds a C++ code to the iOS export. The final code is created from the code appended by each active export plugin.
 			</description>
 		</method>
 		<method name="add_ios_embedded_framework">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Adds a dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project and embeds it into resulting binary.
 				[b]Note:[/b] For static libraries (*.a) works in same way as [code]add_ios_framework[/code].
@@ -88,60 +69,46 @@
 			</description>
 		</method>
 		<method name="add_ios_framework">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Adds a static library (*.a) or dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project.
 			</description>
 		</method>
 		<method name="add_ios_linker_flags">
-			<return type="void">
-			</return>
-			<argument index="0" name="flags" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flags" type="String" />
 			<description>
 				Adds linker flags for the iOS export.
 			</description>
 		</method>
 		<method name="add_ios_plist_content">
-			<return type="void">
-			</return>
-			<argument index="0" name="plist_content" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="plist_content" type="String" />
 			<description>
 				Adds content for iOS Property List files.
 			</description>
 		</method>
 		<method name="add_ios_project_static_lib">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Adds a static lib from the given [code]path[/code] to the iOS project.
 			</description>
 		</method>
 		<method name="add_shared_object">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="tags" type="PackedStringArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="tags" type="PackedStringArray" />
 			<description>
 				Adds a shared object with the given [code]tags[/code] and destination [code]path[/code].
 			</description>
 		</method>
 		<method name="skip">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				To be called inside [method _export_file]. Skips the current file, so it's not included in the export.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

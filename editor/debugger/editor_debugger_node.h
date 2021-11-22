@@ -35,6 +35,7 @@
 #include "scene/gui/margin_container.h"
 
 class Button;
+class DebugAdapterParser;
 class EditorDebuggerTree;
 class EditorDebuggerRemoteObject;
 class MenuButton;
@@ -109,6 +110,7 @@ private:
 	EditorDebuggerRemoteObject *get_inspected_remote_object();
 
 	friend class DebuggerEditorPlugin;
+	friend class DebugAdapterParser;
 	static EditorDebuggerNode *singleton;
 	EditorDebuggerNode();
 
@@ -123,13 +125,13 @@ protected:
 	void _save_node_requested(ObjectID p_id, const String &p_file, int p_debugger);
 
 	void _clear_execution(REF p_script) {
-		emit_signal("clear_execution", p_script);
+		emit_signal(SNAME("clear_execution"), p_script);
 	}
 
 	void _text_editor_stack_goto(const ScriptEditorDebugger *p_debugger);
 	void _stack_frame_selected(int p_debugger);
 	void _error_selected(const String &p_file, int p_line, int p_debugger);
-	void _breaked(bool p_breaked, bool p_can_debug, int p_debugger);
+	void _breaked(bool p_breaked, bool p_can_debug, String p_message, bool p_has_stackdump, int p_debugger);
 	void _paused();
 	void _break_state_changed();
 	void _menu_option(int p_id);
@@ -164,6 +166,7 @@ public:
 
 	bool is_skip_breakpoints() const;
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
+	void set_breakpoints(const String &p_path, Array p_lines);
 	void reload_scripts();
 
 	// Remote inspector/edit.
@@ -182,11 +185,10 @@ public:
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
 
-	// Camera
-	void set_camera_override(CameraOverride p_override) { camera_override = p_override; }
-	CameraOverride get_camera_override() { return camera_override; }
+	void set_camera_override(CameraOverride p_override);
+	CameraOverride get_camera_override();
 
-	Error start(const String &p_protocol = "tcp://");
+	Error start(const String &p_uri = "tcp://");
 
 	void stop();
 

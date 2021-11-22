@@ -82,7 +82,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FBXParser.h"
 #include "FBXTokenizer.h"
 #include "core/math/math_defs.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
 #include "core/string/print_string.h"
 
@@ -575,7 +575,7 @@ void ReadBinaryDataArray(char type, uint32_t count, const char *&data, const cha
 		std::copy(data, end, buff.begin());
 	} else if (encmode == 1) {
 		// zlib/deflate, next comes ZIP head (0x78 0x01)
-		// see http://www.ietf.org/rfc/rfc1950.txt
+		// see https://www.ietf.org/rfc/rfc1950.txt
 
 		z_stream zstream;
 		zstream.opaque = Z_NULL;
@@ -660,13 +660,6 @@ void ParseVectorDataArray(std::vector<Vector3> &out, const ElementPtr el) {
 						static_cast<real_t>(d[1]),
 						static_cast<real_t>(d[2])));
 			}
-			// for debugging
-			/*for ( size_t i = 0; i < out.size(); i++ ) {
-                aiVector3D vec3( out[ i ] );
-                std::stringstream stream;
-                stream << " vec3.x = " << vec3.x << " vec3.y = " << vec3.y << " vec3.z = " << vec3.z << std::endl;
-                DefaultLogger::get()->info( stream.str() );
-            }*/
 		} else if (type == 'f') {
 			const float *f = reinterpret_cast<const float *>(&buff[0]);
 			for (unsigned int i = 0; i < count3; ++i, f += 3) {
@@ -1157,7 +1150,7 @@ void ParseVectorDataArray(std::vector<int64_t> &out, const ElementPtr el) {
 }
 
 // ------------------------------------------------------------------------------------------------
-Transform ReadMatrix(const ElementPtr element) {
+Transform3D ReadMatrix(const ElementPtr element) {
 	std::vector<float> values;
 	ParseVectorDataArray(values, element);
 
@@ -1167,12 +1160,12 @@ Transform ReadMatrix(const ElementPtr element) {
 
 	// clean values to prevent any IBM damage on inverse() / affine_inverse()
 	for (float &value : values) {
-		if (::Math::is_equal_approx(0, value)) {
+		if (::Math::is_zero_approx(value)) {
 			value = 0;
 		}
 	}
 
-	Transform xform;
+	Transform3D xform;
 	Basis basis;
 
 	basis.set(
@@ -1206,7 +1199,7 @@ std::string ParseTokenAsString(const TokenPtr t) {
 
 // ------------------------------------------------------------------------------------------------
 // extract a required element from a scope, abort if the element cannot be found
-ElementPtr GetRequiredElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= NULL*/) {
+ElementPtr GetRequiredElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= nullptr*/) {
 	const ElementPtr el = sc->GetElement(index);
 	TokenPtr token = el->KeyToken();
 	ERR_FAIL_COND_V(!token, nullptr);
@@ -1227,7 +1220,7 @@ bool HasElement(const ScopePtr sc, const std::string &index) {
 
 // ------------------------------------------------------------------------------------------------
 // extract a required element from a scope, abort if the element cannot be found
-ElementPtr GetOptionalElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= NULL*/) {
+ElementPtr GetOptionalElement(const ScopePtr sc, const std::string &index, const ElementPtr element /*= nullptr*/) {
 	const ElementPtr el = sc->GetElement(index);
 	return el;
 }

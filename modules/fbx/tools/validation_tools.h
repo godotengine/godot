@@ -33,9 +33,8 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/io/json.h"
-#include "core/os/file_access.h"
-#include "core/string/ustring.h"
+#include "core/io/file_access.h"
+#include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/map.h"
 
@@ -54,9 +53,9 @@ protected:
 			String csv_header = "file_path, error message, extra data\n";
 			massive_log_file += csv_header;
 
-			for (Map<String, LocalVector<String>>::Element *element = validation_entries.front(); element; element = element->next()) {
-				for (unsigned int x = 0; x < element->value().size(); x++) {
-					const String &line_entry = element->key() + ", " + element->value()[x].c_escape() + "\n";
+			for (const KeyValue<String, LocalVector<String>> &element : validation_entries) {
+				for (unsigned int x = 0; x < element.value.size(); x++) {
+					const String &line_entry = element.key + ", " + element.value[x].c_escape() + "\n";
 					massive_log_file += line_entry;
 				}
 			}

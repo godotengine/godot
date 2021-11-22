@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTreeTimer" inherits="Reference" version="4.0">
+<class name="SceneTreeTimer" inherits="RefCounted" version="4.0">
 	<brief_description>
 		One-shot timer.
 	</brief_description>
@@ -10,7 +10,7 @@
 		[gdscript]
 		func some_function():
 		    print("Timer started.")
-		    yield(get_tree().create_timer(1.0), "timeout")
+		    await get_tree().create_timer(1.0).timeout
 		    print("Timer ended.")
 		[/gdscript]
 		[csharp]
@@ -25,8 +25,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="time_left" type="float" setter="set_time_left" getter="get_time_left">
 			The time remaining.
@@ -39,6 +37,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

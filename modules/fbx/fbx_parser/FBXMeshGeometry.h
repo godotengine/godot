@@ -96,7 +96,7 @@ public:
 	Geometry(uint64_t id, const ElementPtr element, const std::string &name, const Document &doc);
 	virtual ~Geometry();
 
-	/** Get the Skin attached to this geometry or NULL */
+	/** Get the Skin attached to this geometry or nullptr */
 	const Skin *DeformerSkin() const;
 
 	const std::vector<const BlendShape *> &get_blend_shapes() const;
@@ -122,7 +122,7 @@ typedef std::vector<int> MatIndexArray;
 /// ## Map Type:
 /// 	* None The mapping is undetermined.
 /// 	* ByVertex There will be one mapping coordinate for each surface control point/vertex (ControlPoint is a vertex).
-/// 		* If you have direct reference type verticies[x]
+/// 		* If you have direct reference type vertices[x]
 /// 		* If you have IndexToDirect reference type the UV
 /// 	* ByPolygonVertex There will be one mapping coordinate for each vertex, for every polygon of which it is a part. This means that a vertex will have as many mapping coordinates as polygons of which it is a part. (Sorted by polygon, referencing vertex)
 /// 	* ByPolygon There can be only one mapping coordinate for the whole polygon.
@@ -186,7 +186,7 @@ public:
 	/// Returns -1 if the vertices doesn't form an edge. Vertex order, doesn't
 	// matter.
 	static int get_edge_id(const std::vector<Edge> &p_map, int p_vertex_a, int p_vertex_b);
-	// Retuns the edge point bu that ID, or the edge with -1 vertices if the
+	// Returns the edge point bu that ID, or the edge with -1 vertices if the
 	// id is not valid.
 	static Edge get_edge(const std::vector<Edge> &p_map, int p_id);
 
@@ -226,7 +226,7 @@ public:
 	const std::vector<Vector3> &GetVertices() const;
 
 	/** Get a list of all vertex normals or an empty array if
-    *  no normals are specified. */
+	 *  no normals are specified. */
 	const std::vector<Vector3> &GetNormals() const;
 
 	/** Return list of vertex indices. */
@@ -238,8 +238,8 @@ private:
 	std::vector<unsigned int> m_indices;
 };
 /**
-*  DOM class for FBX geometry of type "Line"
-*/
+ *  DOM class for FBX geometry of type "Line"
+ */
 class LineGeometry : public Geometry {
 public:
 	/** The class constructor */

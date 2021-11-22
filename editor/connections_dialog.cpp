@@ -66,8 +66,8 @@ public:
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		String name = p_name;
 
-		if (name.begins_with("bind/")) {
-			int which = name.get_slice("/", 1).to_int() - 1;
+		if (name.begins_with("bind/argument_")) {
+			int which = name.get_slice("_", 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(which, params.size(), false);
 			params.write[which] = p_value;
 		} else {
@@ -80,8 +80,8 @@ public:
 	bool _get(const StringName &p_name, Variant &r_ret) const {
 		String name = p_name;
 
-		if (name.begins_with("bind/")) {
-			int which = name.get_slice("/", 1).to_int() - 1;
+		if (name.begins_with("bind/argument_")) {
+			int which = name.get_slice("_", 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(which, params.size(), false);
 			r_ret = params[which];
 		} else {
@@ -93,7 +93,7 @@ public:
 
 	void _get_property_list(List<PropertyInfo> *p_list) const {
 		for (int i = 0; i < params.size(); i++) {
-			p_list->push_back(PropertyInfo(params[i].get_type(), "bind/" + itos(i + 1)));
+			p_list->push_back(PropertyInfo(params[i].get_type(), "bind/argument_" + itos(i + 1)));
 		}
 	}
 
@@ -134,7 +134,7 @@ void ConnectDialog::ok_pressed() {
 			return;
 		}
 	}
-	emit_signal("connected");
+	emit_signal(SNAME("connected"));
 	hide();
 }
 
@@ -146,7 +146,7 @@ void ConnectDialog::_item_activated() {
 	_ok_pressed(); // From AcceptDialog.
 }
 
-void ConnectDialog::_text_entered(const String &p_text) {
+void ConnectDialog::_text_submitted(const String &p_text) {
 	_ok_pressed(); // From AcceptDialog.
 }
 
@@ -203,8 +203,8 @@ void ConnectDialog::_add_bind() {
 		case Variant::PLANE:
 			value = Plane();
 			break;
-		case Variant::QUAT:
-			value = Quat();
+		case Variant::QUATERNION:
+			value = Quaternion();
 			break;
 		case Variant::AABB:
 			value = AABB();
@@ -212,8 +212,8 @@ void ConnectDialog::_add_bind() {
 		case Variant::BASIS:
 			value = Basis();
 			break;
-		case Variant::TRANSFORM:
-			value = Transform();
+		case Variant::TRANSFORM3D:
+			value = Transform3D();
 			break;
 		case Variant::COLOR:
 			value = Color();
@@ -360,7 +360,7 @@ void ConnectDialog::init(ConnectionData c, bool bEdit) {
 
 void ConnectDialog::popup_dialog(const String &p_for_signal) {
 	from_signal->set_text(p_for_signal);
-	error_label->add_theme_color_override("font_color", error_label->get_theme_color("error_color", "Editor"));
+	error_label->add_theme_color_override("font_color", error_label->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	if (!advanced->is_pressed()) {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
@@ -443,10 +443,10 @@ ConnectDialog::ConnectDialog() {
 	type_list->add_item("Rect2", Variant::RECT2);
 	type_list->add_item("Vector3", Variant::VECTOR3);
 	type_list->add_item("Plane", Variant::PLANE);
-	type_list->add_item("Quat", Variant::QUAT);
+	type_list->add_item("Quaternion", Variant::QUATERNION);
 	type_list->add_item("AABB", Variant::AABB);
 	type_list->add_item("Basis", Variant::BASIS);
-	type_list->add_item("Transform", Variant::TRANSFORM);
+	type_list->add_item("Transform3D", Variant::TRANSFORM3D);
 	type_list->add_item("Color", Variant::COLOR);
 	type_list->select(0);
 
@@ -471,7 +471,7 @@ ConnectDialog::ConnectDialog() {
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	dst_method->connect("text_entered", callable_mp(this, &ConnectDialog::_text_entered));
+	dst_method->connect("text_submitted", callable_mp(this, &ConnectDialog::_text_submitted));
 	dstm_hb->add_child(dst_method);
 
 	advanced = memnew(CheckButton);
@@ -509,13 +509,13 @@ ConnectDialog::~ConnectDialog() {
 // Originally copied and adapted from EditorProperty, try to keep style in sync.
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
+	help_bit->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel")));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
 	String text = TTR("Signal:") + " [u][b]" + p_text.get_slice("::", 0) + "[/b][/u]";
 	text += p_text.get_slice("::", 1).strip_edges() + "\n";
 	text += p_text.get_slice("::", 2).strip_edges();
-	help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+	help_bit->call_deferred(SNAME("set_text"), text); //hack so it uses proper theme once inside scene
 	return help_bit;
 }
 
@@ -591,7 +591,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	it = nullptr;
 
 	if (add_script_function) {
-		editor->emit_signal("script_add_function_request", target, cToMake.method, script_function_args);
+		editor->emit_signal(SNAME("script_add_function_request"), target, cToMake.method, script_function_args);
 		hide();
 	}
 
@@ -655,7 +655,7 @@ void ConnectionsDock::_disconnect_all() {
 		return;
 	}
 
-	TreeItem *child = item->get_children();
+	TreeItem *child = item->get_first_child();
 	String signalName = item->get_metadata(0).operator Dictionary()["name"];
 	undo_redo->create_action(vformat(TTR("Disconnect all from signal: '%s'"), signalName));
 
@@ -921,14 +921,14 @@ void ConnectionsDock::update_tree() {
 			}
 		} else {
 			ClassDB::get_signal_list(base, &node_signals2, true);
-			if (has_theme_icon(base, "EditorIcons")) {
-				icon = get_theme_icon(base, "EditorIcons");
+			if (has_theme_icon(base, SNAME("EditorIcons"))) {
+				icon = get_theme_icon(base, SNAME("EditorIcons"));
 			}
 			name = base;
 		}
 
 		if (!icon.is_valid()) {
-			icon = get_theme_icon("Object", "EditorIcons");
+			icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 		}
 
 		TreeItem *section_item = nullptr;
@@ -940,13 +940,11 @@ void ConnectionsDock::update_tree() {
 			section_item->set_icon(0, icon);
 			section_item->set_selectable(0, false);
 			section_item->set_editable(0, false);
-			section_item->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
+			section_item->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 			node_signals2.sort();
 		}
 
-		for (List<MethodInfo>::Element *E = node_signals2.front(); E; E = E->next()) {
-			MethodInfo &mi = E->get();
-
+		for (MethodInfo &mi : node_signals2) {
 			StringName signal_name = mi.name;
 			String signaldesc = "(";
 			PackedStringArray argnames;
@@ -982,7 +980,7 @@ void ConnectionsDock::update_tree() {
 			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
 			signal_item->set_metadata(0, sinfo);
-			signal_item->set_icon(0, get_theme_icon("Signal", "EditorIcons"));
+			signal_item->set_icon(0, get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")));
 
 			// Set tooltip with the signal's documentation.
 			{
@@ -1025,8 +1023,8 @@ void ConnectionsDock::update_tree() {
 			List<Object::Connection> connections;
 			selectedNode->get_signal_connection_list(signal_name, &connections);
 
-			for (List<Object::Connection>::Element *F = connections.front(); F; F = F->next()) {
-				Connection cn = F->get();
+			for (const Object::Connection &F : connections) {
+				Connection cn = F;
 				if (!(cn.flags & CONNECT_PERSIST)) {
 					continue;
 				}
@@ -1059,7 +1057,7 @@ void ConnectionsDock::update_tree() {
 				connection_item->set_text(0, path);
 				Connection cd = c;
 				connection_item->set_metadata(0, cd);
-				connection_item->set_icon(0, get_theme_icon("Slot", "EditorIcons"));
+				connection_item->set_icon(0, get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
 			}
 		}
 
@@ -1083,7 +1081,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter signals"));
-	search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
 	search_box->connect("text_changed", callable_mp(this, &ConnectionsDock::_filter_changed));
 	vbc->add_child(search_box);
@@ -1121,7 +1119,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	add_child(slot_menu);
 	slot_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_slot_menu_option));
 	slot_menu->add_item(TTR("Edit..."), EDIT);
-	slot_menu->add_item(TTR("Go To Method"), GO_TO_SCRIPT);
+	slot_menu->add_item(TTR("Go to Method"), GO_TO_SCRIPT);
 	slot_menu->add_item(TTR("Disconnect"), DISCONNECT);
 
 	connect_dialog->connect("connected", callable_mp(this, &ConnectionsDock::_make_or_edit_connection));

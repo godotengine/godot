@@ -31,10 +31,10 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+#include "core/io/file_access.h"
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/math/rect2.h"
-#include "core/os/file_access.h"
 #include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
 #include "core/os/thread_safe.h"
@@ -98,8 +98,6 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	void _reload_hook(const RID &p_hook);
-	virtual void _resource_path_changed() override;
 	static void _bind_methods();
 
 public:
@@ -107,7 +105,7 @@ public:
 
 	Image::Format get_format() const;
 
-	void update(const Ref<Image> &p_image, bool p_immediate = false);
+	void update(const Ref<Image> &p_image);
 	Ref<Image> get_image() const override;
 
 	int get_width() const override;
@@ -136,8 +134,8 @@ class StreamTexture2D : public Texture2D {
 public:
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
-		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
@@ -146,9 +144,6 @@ public:
 	};
 
 	enum FormatBits {
-		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
-		FORMAT_BIT_LOSSLESS = 1 << 20,
-		FORMAT_BIT_LOSSY = 1 << 21,
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 		FORMAT_BIT_DETECT_3D = 1 << 24,
@@ -158,7 +153,7 @@ public:
 	};
 
 private:
-	Error _load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
+	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
 	Image::Format format = Image::FORMAT_MAX;
@@ -255,6 +250,8 @@ public:
 
 	bool is_pixel_opaque(int p_x, int p_y) const override;
 
+	virtual Ref<Image> get_image() const override;
+
 	AtlasTexture();
 };
 
@@ -295,51 +292,6 @@ public:
 	bool is_pixel_opaque(int p_x, int p_y) const override;
 
 	MeshTexture();
-};
-
-class LargeTexture : public Texture2D {
-	GDCLASS(LargeTexture, Texture2D);
-	RES_BASE_EXTENSION("largetex");
-
-protected:
-	struct Piece {
-		Point2 offset;
-		Ref<Texture2D> texture;
-	};
-
-	Vector<Piece> pieces;
-	Size2i size;
-
-	Array _get_data() const;
-	void _set_data(const Array &p_array);
-	static void _bind_methods();
-
-public:
-	virtual int get_width() const override;
-	virtual int get_height() const override;
-	virtual RID get_rid() const override;
-
-	virtual bool has_alpha() const override;
-
-	int add_piece(const Point2 &p_offset, const Ref<Texture2D> &p_texture);
-	void set_piece_offset(int p_idx, const Point2 &p_offset);
-	void set_piece_texture(int p_idx, const Ref<Texture2D> &p_texture);
-
-	void set_size(const Size2 &p_size);
-	void clear();
-
-	int get_piece_count() const;
-	Vector2 get_piece_offset(int p_idx) const;
-	Ref<Texture2D> get_piece_texture(int p_idx) const;
-	Ref<Image> to_image() const;
-
-	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
-	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
-	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
-
-	bool is_pixel_opaque(int p_x, int p_y) const override;
-
-	LargeTexture();
 };
 
 class TextureLayered : public Texture {
@@ -434,8 +386,8 @@ class StreamTextureLayered : public TextureLayered {
 public:
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
-		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
@@ -444,9 +396,6 @@ public:
 	};
 
 	enum FormatBits {
-		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
-		FORMAT_BIT_LOSSLESS = 1 << 20,
-		FORMAT_BIT_LOSSY = 1 << 21,
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 	};
@@ -577,8 +526,8 @@ class StreamTexture3D : public Texture3D {
 public:
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
-		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_PNG,
+		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
@@ -587,9 +536,6 @@ public:
 	};
 
 	enum FormatBits {
-		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
-		FORMAT_BIT_LOSSLESS = 1 << 20,
-		FORMAT_BIT_LOSSY = 1 << 21,
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 	};
@@ -640,11 +586,19 @@ public:
 class CurveTexture : public Texture2D {
 	GDCLASS(CurveTexture, Texture2D);
 	RES_BASE_EXTENSION("curvetex")
+public:
+	enum TextureMode {
+		TEXTURE_MODE_RGB,
+		TEXTURE_MODE_RED,
+	};
 
 private:
 	mutable RID _texture;
 	Ref<Curve> _curve;
 	int _width = 2048;
+	int _current_width = 0;
+	TextureMode texture_mode = TEXTURE_MODE_RGB;
+	TextureMode _current_texture_mode = TEXTURE_MODE_RGB;
 
 	void _update();
 
@@ -654,6 +608,9 @@ protected:
 public:
 	void set_width(int p_width);
 	int get_width() const override;
+
+	void set_texture_mode(TextureMode p_mode);
+	TextureMode get_texture_mode() const;
 
 	void ensure_default_setup(float p_min = 0, float p_max = 1);
 
@@ -668,21 +625,52 @@ public:
 	CurveTexture();
 	~CurveTexture();
 };
-/*
-	enum CubeMapSide {
-		CUBEMAP_LEFT,
-		CUBEMAP_RIGHT,
-		CUBEMAP_BOTTOM,
-		CUBEMAP_TOP,
-		CUBEMAP_FRONT,
-		CUBEMAP_BACK,
-	};
 
-*/
-//VARIANT_ENUM_CAST( Texture::CubeMapSide );
+VARIANT_ENUM_CAST(CurveTexture::TextureMode)
 
-class GradientTexture : public Texture2D {
-	GDCLASS(GradientTexture, Texture2D);
+class CurveXYZTexture : public Texture2D {
+	GDCLASS(CurveXYZTexture, Texture2D);
+	RES_BASE_EXTENSION("curvetex")
+
+private:
+	mutable RID _texture;
+	Ref<Curve> _curve_x;
+	Ref<Curve> _curve_y;
+	Ref<Curve> _curve_z;
+	int _width = 2048;
+	int _current_width = 0;
+
+	void _update();
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_width(int p_width);
+	int get_width() const override;
+
+	void ensure_default_setup(float p_min = 0, float p_max = 1);
+
+	void set_curve_x(Ref<Curve> p_curve);
+	Ref<Curve> get_curve_x() const;
+
+	void set_curve_y(Ref<Curve> p_curve);
+	Ref<Curve> get_curve_y() const;
+
+	void set_curve_z(Ref<Curve> p_curve);
+	Ref<Curve> get_curve_z() const;
+
+	virtual RID get_rid() const override;
+
+	virtual int get_height() const override { return 1; }
+	virtual bool has_alpha() const override { return false; }
+
+	CurveXYZTexture();
+	~CurveXYZTexture();
+};
+
+class GradientTexture1D : public Texture2D {
+	GDCLASS(GradientTexture1D, Texture2D);
 
 public:
 	struct Point {
@@ -698,6 +686,7 @@ private:
 	bool update_pending = false;
 	RID texture;
 	int width = 2048;
+	bool use_hdr = false;
 
 	void _queue_update();
 	void _update();
@@ -712,15 +701,89 @@ public:
 	void set_width(int p_width);
 	int get_width() const override;
 
+	void set_use_hdr(bool p_enabled);
+	bool is_using_hdr() const;
+
 	virtual RID get_rid() const override { return texture; }
 	virtual int get_height() const override { return 1; }
 	virtual bool has_alpha() const override { return true; }
 
 	virtual Ref<Image> get_image() const override;
 
-	GradientTexture();
-	virtual ~GradientTexture();
+	GradientTexture1D();
+	virtual ~GradientTexture1D();
 };
+
+class GradientTexture2D : public Texture2D {
+	GDCLASS(GradientTexture2D, Texture2D);
+
+public:
+	enum Fill {
+		FILL_LINEAR,
+		FILL_RADIAL,
+	};
+	enum Repeat {
+		REPEAT_NONE,
+		REPEAT,
+		REPEAT_MIRROR,
+	};
+
+private:
+	Ref<Gradient> gradient;
+	mutable RID texture;
+
+	int width = 64;
+	int height = 64;
+
+	bool use_hdr = false;
+
+	Vector2 fill_from;
+	Vector2 fill_to = Vector2(1, 0);
+
+	Fill fill = FILL_LINEAR;
+	Repeat repeat = REPEAT_NONE;
+
+	float _get_gradient_offset_at(int x, int y) const;
+
+	bool update_pending = false;
+	void _queue_update();
+	void _update();
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_gradient(Ref<Gradient> p_gradient);
+	Ref<Gradient> get_gradient() const;
+
+	void set_width(int p_width);
+	virtual int get_width() const override;
+	void set_height(int p_height);
+	virtual int get_height() const override;
+
+	void set_use_hdr(bool p_enabled);
+	bool is_using_hdr() const;
+
+	void set_fill(Fill p_fill);
+	Fill get_fill() const;
+	void set_fill_from(Vector2 p_fill_from);
+	Vector2 get_fill_from() const;
+	void set_fill_to(Vector2 p_fill_to);
+	Vector2 get_fill_to() const;
+
+	void set_repeat(Repeat p_repeat);
+	Repeat get_repeat() const;
+
+	virtual RID get_rid() const override;
+	virtual bool has_alpha() const override { return true; }
+	virtual Ref<Image> get_image() const override;
+
+	GradientTexture2D();
+	virtual ~GradientTexture2D();
+};
+
+VARIANT_ENUM_CAST(GradientTexture2D::Fill);
+VARIANT_ENUM_CAST(GradientTexture2D::Repeat);
 
 class ProxyTexture : public Texture2D {
 	GDCLASS(ProxyTexture, Texture2D);
@@ -824,6 +887,7 @@ class CameraTexture : public Texture2D {
 	GDCLASS(CameraTexture, Texture2D);
 
 private:
+	mutable RID _texture;
 	int camera_feed_id = 0;
 	CameraServer::FeedImage which_feed = CameraServer::FEED_RGBA_IMAGE;
 
@@ -835,9 +899,6 @@ public:
 	virtual int get_height() const override;
 	virtual RID get_rid() const override;
 	virtual bool has_alpha() const override;
-
-	virtual void set_flags(uint32_t p_flags);
-	virtual uint32_t get_flags() const;
 
 	virtual Ref<Image> get_image() const override;
 

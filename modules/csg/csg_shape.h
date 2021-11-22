@@ -34,6 +34,7 @@
 #define CSGJS_HEADER_ONLY
 
 #include "csg.h"
+#include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "thirdparty/misc/mikktspace.h"
@@ -83,14 +84,14 @@ private:
 		Vector<Vector3> vertices;
 		Vector<Vector3> normals;
 		Vector<Vector2> uvs;
-		Vector<float> tans;
+		Vector<real_t> tans;
 		Ref<Material> material;
 		int last_added = 0;
 
 		Vector3 *verticesw = nullptr;
 		Vector3 *normalsw = nullptr;
 		Vector2 *uvsw = nullptr;
-		float *tansw = nullptr;
+		real_t *tansw = nullptr;
 	};
 
 	//mikktspace callbacks
@@ -136,11 +137,11 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
+	void set_collision_layer_value(int p_layer_number, bool p_value);
+	bool get_collision_layer_value(int p_layer_number) const;
 
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
+	void set_collision_mask_value(int p_layer_number, bool p_value);
+	bool get_collision_mask_value(int p_layer_number) const;
 
 	void set_snap(float p_snap);
 	float get_snap() const;
@@ -168,10 +169,8 @@ public:
 class CSGPrimitive3D : public CSGShape3D {
 	GDCLASS(CSGPrimitive3D, CSGShape3D);
 
-private:
-	bool invert_faces;
-
 protected:
+	bool invert_faces;
 	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
 	static void _bind_methods();
 
@@ -337,6 +336,11 @@ public:
 		MODE_PATH
 	};
 
+	enum PathIntervalType {
+		PATH_INTERVAL_DISTANCE,
+		PATH_INTERVAL_SUBDIVIDE
+	};
+
 	enum PathRotation {
 		PATH_ROTATION_POLYGON,
 		PATH_ROTATION_PATH,
@@ -357,14 +361,17 @@ private:
 	int spin_sides;
 
 	NodePath path_node;
+	PathIntervalType path_interval_type;
 	float path_interval;
+	float path_simplify_angle;
 	PathRotation path_rotation;
 	bool path_local;
 
-	Node *path_cache;
+	Path3D *path;
 
 	bool smooth_faces;
 	bool path_continuous_u;
+	real_t path_u_distance;
 	bool path_joined;
 
 	bool _is_editable_3d_polygon() const;
@@ -397,8 +404,14 @@ public:
 	void set_path_node(const NodePath &p_path);
 	NodePath get_path_node() const;
 
+	void set_path_interval_type(PathIntervalType p_interval_type);
+	PathIntervalType get_path_interval_type() const;
+
 	void set_path_interval(float p_interval);
 	float get_path_interval() const;
+
+	void set_path_simplify_angle(float p_angle);
+	float get_path_simplify_angle() const;
 
 	void set_path_rotation(PathRotation p_rotation);
 	PathRotation get_path_rotation() const;
@@ -408,6 +421,9 @@ public:
 
 	void set_path_continuous_u(bool p_enable);
 	bool is_path_continuous_u() const;
+
+	void set_path_u_distance(real_t p_path_u_distance);
+	real_t get_path_u_distance() const;
 
 	void set_path_joined(bool p_enable);
 	bool is_path_joined() const;
@@ -423,5 +439,6 @@ public:
 
 VARIANT_ENUM_CAST(CSGPolygon3D::Mode)
 VARIANT_ENUM_CAST(CSGPolygon3D::PathRotation)
+VARIANT_ENUM_CAST(CSGPolygon3D::PathIntervalType)
 
 #endif // CSG_SHAPE_H

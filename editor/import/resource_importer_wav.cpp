@@ -30,9 +30,9 @@
 
 #include "resource_importer_wav.h"
 
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
 #include "scene/resources/audio_stream_sample.h"
 
 const float TRIM_DB_LIMIT = -50;
@@ -58,7 +58,7 @@ String ResourceImporterWAV::get_resource_type() const {
 	return "AudioStreamSample";
 }
 
-bool ResourceImporterWAV::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterWAV::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	if (p_option == "force/max_rate_hz" && !bool(p_options["force/max_rate"])) {
 		return false;
 	}
@@ -74,11 +74,11 @@ String ResourceImporterWAV::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterWAV::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterWAV::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/8_bit"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/mono"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/max_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "force/max_rate_hz", PROPERTY_HINT_EXP_RANGE, "11025,192000,1"), 44100));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "force/max_rate_hz", PROPERTY_HINT_RANGE, "11025,192000,1,exp"), 44100));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/trim"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/normalize"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/loop"), false));
@@ -252,13 +252,13 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			//loop point info!
 
 			/**
-			*	Consider exploring next document:
-			*		http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
-			*	Especially on page:
-			*		16 - 17
-			*	Timestamp:
-			*		22:38 06.07.2017 GMT
-			**/
+			 *	Consider exploring next document:
+			 *		http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
+			 *	Especially on page:
+			 *		16 - 17
+			 *	Timestamp:
+			 *		22:38 06.07.2017 GMT
+			 **/
 
 			for (int i = 0; i < 10; i++) {
 				file->get_32(); // i wish to know why should i do this... no doc!
@@ -272,7 +272,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				if (loop_type == 0x00) {
 					loop = AudioStreamSample::LOOP_FORWARD;
 				} else if (loop_type == 0x01) {
-					loop = AudioStreamSample::LOOP_PING_PONG;
+					loop = AudioStreamSample::LOOP_PINGPONG;
 				} else if (loop_type == 0x02) {
 					loop = AudioStreamSample::LOOP_BACKWARD;
 				}
@@ -508,7 +508,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	}
 
 	Ref<AudioStreamSample> sample;
-	sample.instance();
+	sample.instantiate();
 	sample->set_data(dst_data);
 	sample->set_format(dst_format);
 	sample->set_mix_rate(rate);

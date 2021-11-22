@@ -47,32 +47,29 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skeleton", "skeleton"), &GLTFNode::set_skeleton);
 	ClassDB::bind_method(D_METHOD("get_joint"), &GLTFNode::get_joint);
 	ClassDB::bind_method(D_METHOD("set_joint", "joint"), &GLTFNode::set_joint);
-	ClassDB::bind_method(D_METHOD("get_translation"), &GLTFNode::get_translation);
-	ClassDB::bind_method(D_METHOD("set_translation", "translation"), &GLTFNode::set_translation);
+	ClassDB::bind_method(D_METHOD("get_position"), &GLTFNode::get_position);
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &GLTFNode::set_position);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &GLTFNode::get_rotation);
 	ClassDB::bind_method(D_METHOD("set_rotation", "rotation"), &GLTFNode::set_rotation);
 	ClassDB::bind_method(D_METHOD("get_scale"), &GLTFNode::get_scale);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &GLTFNode::set_scale);
 	ClassDB::bind_method(D_METHOD("get_children"), &GLTFNode::get_children);
 	ClassDB::bind_method(D_METHOD("set_children", "children"), &GLTFNode::set_children);
-	ClassDB::bind_method(D_METHOD("get_fake_joint_parent"), &GLTFNode::get_fake_joint_parent);
-	ClassDB::bind_method(D_METHOD("set_fake_joint_parent", "fake_joint_parent"), &GLTFNode::set_fake_joint_parent);
 	ClassDB::bind_method(D_METHOD("get_light"), &GLTFNode::get_light);
 	ClassDB::bind_method(D_METHOD("set_light", "light"), &GLTFNode::set_light);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parent"), "set_parent", "get_parent"); // GLTFNodeIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height"), "set_height", "get_height"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "xform"), "set_xform", "get_xform"); // Transform
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "xform"), "set_xform", "get_xform"); // Transform3D
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mesh"), "set_mesh", "get_mesh"); // GLTFMeshIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "camera"), "set_camera", "get_camera"); // GLTFCameraIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skin"), "set_skin", "get_skin"); // GLTFSkinIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skeleton"), "set_skeleton", "get_skeleton"); // GLTFSkeletonIndex
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "joint"), "set_joint", "get_joint"); // bool
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "translation"), "set_translation", "get_translation"); // Vector3
-	ADD_PROPERTY(PropertyInfo(Variant::QUAT, "rotation"), "set_rotation", "get_rotation"); // Quat
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "set_position", "get_position"); // Vector3
+	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "rotation"), "set_rotation", "get_rotation"); // Quaternion
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "children"), "set_children", "get_children"); // Vector<int>
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fake_joint_parent"), "set_fake_joint_parent", "get_fake_joint_parent"); // GLTFNodeIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light"), "set_light", "get_light"); // GLTFLightIndex
 }
 
@@ -92,11 +89,11 @@ void GLTFNode::set_height(int p_height) {
 	height = p_height;
 }
 
-Transform GLTFNode::get_xform() {
+Transform3D GLTFNode::get_xform() {
 	return xform;
 }
 
-void GLTFNode::set_xform(Transform p_xform) {
+void GLTFNode::set_xform(Transform3D p_xform) {
 	xform = p_xform;
 }
 
@@ -140,19 +137,19 @@ void GLTFNode::set_joint(bool p_joint) {
 	joint = p_joint;
 }
 
-Vector3 GLTFNode::get_translation() {
-	return translation;
+Vector3 GLTFNode::get_position() {
+	return position;
 }
 
-void GLTFNode::set_translation(Vector3 p_translation) {
-	translation = p_translation;
+void GLTFNode::set_position(Vector3 p_position) {
+	position = p_position;
 }
 
-Quat GLTFNode::get_rotation() {
+Quaternion GLTFNode::get_rotation() {
 	return rotation;
 }
 
-void GLTFNode::set_rotation(Quat p_rotation) {
+void GLTFNode::set_rotation(Quaternion p_rotation) {
 	rotation = p_rotation;
 }
 
@@ -170,14 +167,6 @@ Vector<int> GLTFNode::get_children() {
 
 void GLTFNode::set_children(Vector<int> p_children) {
 	children = p_children;
-}
-
-GLTFNodeIndex GLTFNode::get_fake_joint_parent() {
-	return fake_joint_parent;
-}
-
-void GLTFNode::set_fake_joint_parent(GLTFNodeIndex p_fake_joint_parent) {
-	fake_joint_parent = p_fake_joint_parent;
 }
 
 GLTFLightIndex GLTFNode::get_light() {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedDataContainerRef" inherits="Reference" version="4.0">
+<class name="PackedDataContainerRef" inherits="RefCounted" version="4.0">
 	<brief_description>
-		Reference version of [PackedDataContainer].
+		Reference-counted version of [PackedDataContainer].
 	</brief_description>
 	<description>
 	</description>
@@ -9,12 +9,9 @@
 	</tutorials>
 	<methods>
 		<method name="size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

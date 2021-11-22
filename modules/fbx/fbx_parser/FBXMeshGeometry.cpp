@@ -125,7 +125,7 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 
 	ScopePtr sc = element->Compound();
 	ERR_FAIL_COND_MSG(sc == nullptr, "failed to read geometry, prevented crash");
-	ERR_FAIL_COND_MSG(!HasElement(sc, "Vertices"), "Detected mesh with no vertexes, didn't populate the mesh");
+	ERR_FAIL_COND_MSG(!HasElement(sc, "Vertices"), "Detected mesh with no vertices, didn't populate the mesh");
 
 	// must have Mesh elements:
 	const ElementPtr Vertices = GetRequiredElement(sc, "Vertices", element);
@@ -140,7 +140,7 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 	ParseVectorDataArray(m_vertices, Vertices);
 	ParseVectorDataArray(m_face_indices, PolygonVertexIndex);
 
-	ERR_FAIL_COND_MSG(m_vertices.empty(), "mesh with no vertexes in FBX file, did you mean to delete it?");
+	ERR_FAIL_COND_MSG(m_vertices.empty(), "mesh with no vertices in FBX file, did you mean to delete it?");
 	ERR_FAIL_COND_MSG(m_face_indices.empty(), "mesh has no faces, was this intended?");
 
 	// Retrieve layer elements, for all of the mesh
@@ -278,7 +278,7 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 				}
 			}
 			// As the algorithm above, this check is useless. Because the first
-			// ever vertex is always considered the begining of a polygon.
+			// ever vertex is always considered the beginning of a polygon.
 			ERR_FAIL_COND_MSG(found_it == false, "Was not possible to find the first vertex of this polygon. FBX file is corrupted.");
 
 		} else {
@@ -418,7 +418,7 @@ MeshGeometry::MappingData<T> MeshGeometry::resolve_vertex_data_array(
 	// parse data into array
 	ParseVectorDataArray(tempData.data, GetRequiredElement(source, dataElementName));
 
-	// index array wont always exist
+	// index array won't always exist
 	const ElementPtr element = GetOptionalElement(source, indexDataElementName);
 	if (element) {
 		ParseVectorDataArray(tempData.index, element);

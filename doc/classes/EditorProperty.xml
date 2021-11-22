@@ -9,65 +9,57 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_update_property" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				When this virtual function is called, you must update your editor.
+			</description>
+		</method>
 		<method name="add_focusable">
-			<return type="void">
-			</return>
-			<argument index="0" name="control" type="Control">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="control" type="Control" />
 			<description>
 				If any of the controls added can gain keyboard focus, add it here. This ensures that focus will be restored if the inspector is refreshed.
 			</description>
 		</method>
 		<method name="emit_changed">
-			<return type="void">
-			</return>
-			<argument index="0" name="property" type="StringName">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
-			<argument index="2" name="field" type="StringName" default="@&quot;&quot;">
-			</argument>
-			<argument index="3" name="changing" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="property" type="StringName" />
+			<argument index="1" name="value" type="Variant" />
+			<argument index="2" name="field" type="StringName" default="&amp;&quot;&quot;" />
+			<argument index="3" name="changing" type="bool" default="false" />
 			<description>
 				If one or several properties have changed, this must be called. [code]field[/code] is used in case your editor can modify fields separately (as an example, Vector3.x). The [code]changing[/code] argument avoids the editor requesting this property to be refreshed (leave as [code]false[/code] if unsure).
 			</description>
 		</method>
 		<method name="get_edited_object">
-			<return type="Object">
-			</return>
+			<return type="Object" />
 			<description>
 				Gets the edited object.
 			</description>
 		</method>
 		<method name="get_edited_property">
-			<return type="StringName">
-			</return>
+			<return type="StringName" />
 			<description>
-				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin.parse_property]), then this will return the property.
+				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin._parse_property]), then this will return the property.
 			</description>
 		</method>
 		<method name="get_tooltip_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
-				Override if you want to allow a custom tooltip over your property.
+				Must be implemented to provide a custom tooltip to the property editor.
 			</description>
 		</method>
 		<method name="set_bottom_editor">
-			<return type="void">
-			</return>
-			<argument index="0" name="editor" type="Control">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="editor" type="Control" />
 			<description>
-				Adds controls with this function if you want them on the bottom (below the label).
+				Puts the [code]editor[/code] control below the property label. The control must be previously added using [method Node.add_child].
 			</description>
 		</method>
-		<method name="update_property" qualifiers="virtual">
-			<return type="void">
-			</return>
+		<method name="update_property">
+			<return type="void" />
 			<description>
-				When this virtual function is called, you must update your editor.
 			</description>
 		</method>
 	</methods>
@@ -81,8 +73,8 @@
 		<member name="deletable" type="bool" setter="set_deletable" getter="is_deletable" default="false">
 			Used by the inspector, set to [code]true[/code] when the property can be deleted by the user.
 		</member>
-		<member name="draw_red" type="bool" setter="set_draw_red" getter="is_draw_red" default="false">
-			Used by the inspector, set to [code]true[/code] when the property must draw with error color. This is used for editable children's properties.
+		<member name="draw_warning" type="bool" setter="set_draw_warning" getter="is_draw_warning" default="false">
+			Used by the inspector, set to [code]true[/code] when the property is drawn with the editor theme's warning color. This is used for editable children's properties.
 		</member>
 		<member name="keying" type="bool" setter="set_keying" getter="is_keying" default="false">
 			Used by the inspector, set to [code]true[/code] when the property can add keys for animation.
@@ -96,83 +88,73 @@
 	</members>
 	<signals>
 		<signal name="multiple_properties_changed">
-			<argument index="0" name="properties" type="PackedStringArray">
-			</argument>
-			<argument index="1" name="value" type="Array">
-			</argument>
+			<argument index="0" name="properties" type="PackedStringArray" />
+			<argument index="1" name="value" type="Array" />
 			<description>
-				Emit it if you want multiple properties modified at the same time. Do not use if added via [method EditorInspectorPlugin.parse_property].
+				Emit it if you want multiple properties modified at the same time. Do not use if added via [method EditorInspectorPlugin._parse_property].
 			</description>
 		</signal>
 		<signal name="object_id_selected">
-			<argument index="0" name="property" type="StringName">
-			</argument>
-			<argument index="1" name="id" type="int">
-			</argument>
+			<argument index="0" name="property" type="StringName" />
+			<argument index="1" name="id" type="int" />
 			<description>
 				Used by sub-inspectors. Emit it if what was selected was an Object ID.
 			</description>
 		</signal>
 		<signal name="property_changed">
-			<argument index="0" name="property" type="StringName">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<argument index="0" name="property" type="StringName" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 				Do not emit this manually, use the [method emit_changed] method instead.
 			</description>
 		</signal>
 		<signal name="property_checked">
-			<argument index="0" name="property" type="StringName">
-			</argument>
-			<argument index="1" name="bool" type="String">
-			</argument>
+			<argument index="0" name="property" type="StringName" />
+			<argument index="1" name="checked" type="bool" />
 			<description>
 				Emitted when a property was checked. Used internally.
 			</description>
 		</signal>
 		<signal name="property_deleted">
-			<argument index="0" name="property" type="StringName">
-			</argument>
+			<argument index="0" name="property" type="StringName" />
 			<description>
 				Emitted when a property was deleted. Used internally.
 			</description>
 		</signal>
 		<signal name="property_keyed">
-			<argument index="0" name="property" type="StringName">
-			</argument>
+			<argument index="0" name="property" type="StringName" />
 			<description>
 				Emit it if you want to add this value as an animation key (check for keying being enabled first).
 			</description>
 		</signal>
 		<signal name="property_keyed_with_value">
-			<argument index="0" name="property" type="StringName">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<argument index="0" name="property" type="StringName" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 				Emit it if you want to key a property with a single value.
 			</description>
 		</signal>
+		<signal name="property_pinned">
+			<argument index="0" name="property" type="StringName" />
+			<argument index="1" name="pinned" type="bool" />
+			<description>
+				Emit it if you want to mark (or unmark) the value of a property for being saved regardless of being equal to the default value.
+				The default value is the one the property will get when the node is just instantiated and can come from an ancestor scene in the inheritance/instancing chain, a script or a builtin class.
+			</description>
+		</signal>
 		<signal name="resource_selected">
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="resource" type="Resource">
-			</argument>
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="resource" type="Resource" />
 			<description>
 				If you want a sub-resource to be edited, emit this signal with the resource.
 			</description>
 		</signal>
 		<signal name="selected">
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="focusable_idx" type="int">
-			</argument>
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="focusable_idx" type="int" />
 			<description>
 				Emitted when selected. Used internally.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

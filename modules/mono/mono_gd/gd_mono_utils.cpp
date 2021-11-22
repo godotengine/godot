@@ -35,8 +35,8 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/object/reference.h"
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
+#include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 
@@ -68,22 +68,10 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 
 	// If the owner does not have a CSharpInstance...
 
-	void *data = unmanaged->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
-
+	void *data = CSharpLanguage::get_instance_binding(unmanaged);
 	ERR_FAIL_NULL_V(data, nullptr);
-
 	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
-
-	if (!script_binding.inited) {
-		MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
-
-		if (!script_binding.inited) { // Other thread may have set it up
-			// Already had a binding that needs to be setup
-			CSharpLanguage::get_singleton()->setup_csharp_script_binding(script_binding, unmanaged);
-
-			ERR_FAIL_COND_V(!script_binding.inited, nullptr);
-		}
-	}
+	ERR_FAIL_COND_V(!script_binding.inited, nullptr);
 
 	MonoGCHandleData &gchandle = script_binding.gchandle;
 
@@ -108,15 +96,15 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 	gchandle = MonoGCHandleData::new_strong_handle(mono_object);
 
 	// Tie managed to unmanaged
-	Reference *ref = Object::cast_to<Reference>(unmanaged);
+	RefCounted *rc = Object::cast_to<RefCounted>(unmanaged);
 
-	if (ref) {
+	if (rc) {
 		// Unsafe refcount increment. The managed instance also counts as a reference.
 		// This way if the unmanaged world has no references to our owner
 		// but the managed instance is alive, the refcount will be 1 instead of 0.
-		// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
-		ref->reference();
-		CSharpLanguage::get_singleton()->post_unsafe_reference(ref);
+		// See: godot_icall_RefCounted_Dtor(MonoObject *p_obj, Object *p_ptr)
+		rc->reference();
+		CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
 	}
 
 	return mono_object;
@@ -238,7 +226,7 @@ GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringName &p_native, Object *p_object) {
 	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), p_native);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, nullptr,
-			"Type inherits from native type '" + p_native + "', so it can't be instanced in object of type: '" + p_object->get_class() + "'.");
+			"Type inherits from native type '" + p_native + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
 
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, nullptr);
@@ -462,7 +450,7 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 	int line = si.size() ? si[0].line : __LINE__;
 	String error_msg = "Unhandled exception";
 
-	EngineDebugger::get_script_debugger()->send_error(func, file, line, error_msg, exc_msg, ERR_HANDLER_ERROR, si);
+	EngineDebugger::get_script_debugger()->send_error(func, file, line, error_msg, exc_msg, true, ERR_HANDLER_ERROR, si);
 #endif
 }
 

@@ -31,9 +31,9 @@
 #include "pck_packer.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/file_access.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
-#include "core/os/file_access.h"
 #include "core/version.h"
 
 static int _get_pad(int p_alignment, int p_n) {
@@ -47,13 +47,14 @@ static int _get_pad(int p_alignment, int p_n) {
 }
 
 void PCKPacker::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("pck_start", "pck_name", "alignment", "key", "encrypt_directory"), &PCKPacker::pck_start, DEFVAL(0), DEFVAL(String()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("pck_start", "pck_name", "alignment", "key", "encrypt_directory"), &PCKPacker::pck_start, DEFVAL(32), DEFVAL("0000000000000000000000000000000000000000000000000000000000000000"), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_file", "pck_path", "source_path", "encrypt"), &PCKPacker::add_file, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("flush", "verbose"), &PCKPacker::flush, DEFVAL(false));
 }
 
 Error PCKPacker::pck_start(const String &p_file, int p_alignment, const String &p_key, bool p_encrypt_directory) {
 	ERR_FAIL_COND_V_MSG((p_key.is_empty() || !p_key.is_valid_hex_number(false) || p_key.length() != 64), ERR_CANT_CREATE, "Invalid Encryption Key (must be 64 characters long).");
+	ERR_FAIL_COND_V_MSG(p_alignment <= 0, ERR_CANT_CREATE, "Invalid alignment, must be greater then 0.");
 
 	String _key = p_key.to_lower();
 	key.resize(32);
@@ -120,7 +121,7 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 	pf.path = p_file;
 	pf.src_path = p_src;
 	pf.ofs = ofs;
-	pf.size = f->get_len();
+	pf.size = f->get_length();
 
 	Vector<uint8_t> data = FileAccess::get_file_as_array(p_src);
 	{
@@ -236,7 +237,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		}
 
 		while (to_write > 0) {
-			int read = src->get_buffer(buf, MIN(to_write, buf_max));
+			uint64_t read = src->get_buffer(buf, MIN(to_write, buf_max));
 			ftmp->store_buffer(buf, read);
 			to_write -= read;
 		}

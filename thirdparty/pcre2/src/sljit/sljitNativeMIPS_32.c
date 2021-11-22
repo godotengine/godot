@@ -367,7 +367,7 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 	case SLJIT_MUL:
 		SLJIT_ASSERT(!(flags & SRC2_IMM));
 
-		if (GET_FLAG_TYPE(op) != SLJIT_MUL_OVERFLOW) {
+		if (GET_FLAG_TYPE(op) != SLJIT_OVERFLOW) {
 #if (defined SLJIT_MIPS_REV && SLJIT_MIPS_REV >= 1)
 			return push_inst(compiler, MUL | S(src1) | T(src2) | D(dst), DR(dst));
 #else /* SLJIT_MIPS_REV < 1 */

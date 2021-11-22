@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventShortcut" inherits="InputEvent" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="shortcut" type="Shortcut" setter="set_shortcut" getter="get_shortcut">
+		</member>
+	</members>
+</class>

@@ -46,6 +46,7 @@ void WebRTCDataChannel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_retransmits"), &WebRTCDataChannel::get_max_retransmits);
 	ClassDB::bind_method(D_METHOD("get_protocol"), &WebRTCDataChannel::get_protocol);
 	ClassDB::bind_method(D_METHOD("is_negotiated"), &WebRTCDataChannel::is_negotiated);
+	ClassDB::bind_method(D_METHOD("get_buffered_amount"), &WebRTCDataChannel::get_buffered_amount);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "write_mode", PROPERTY_HINT_ENUM), "set_write_mode", "get_write_mode");
 

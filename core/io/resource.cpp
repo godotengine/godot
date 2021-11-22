@@ -31,9 +31,10 @@
 #include "resource.h"
 
 #include "core/core_string_names.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/math/math_funcs.h"
 #include "core/object/script_language.h"
-#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "scene/main/node.h" //only so casting works
 
@@ -94,20 +95,58 @@ String Resource::get_path() const {
 	return path_cache;
 }
 
-void Resource::set_subindex(int p_sub_index) {
-	subindex = p_sub_index;
+String Resource::generate_scene_unique_id() {
+	// Generate a unique enough hash, but still user-readable.
+	// If it's not unique it does not matter because the saver will try again.
+	OS::Date date = OS::get_singleton()->get_date();
+	OS::Time time = OS::get_singleton()->get_time();
+	uint32_t hash = hash_djb2_one_32(OS::get_singleton()->get_ticks_usec());
+	hash = hash_djb2_one_32(date.year, hash);
+	hash = hash_djb2_one_32(date.month, hash);
+	hash = hash_djb2_one_32(date.day, hash);
+	hash = hash_djb2_one_32(time.hour, hash);
+	hash = hash_djb2_one_32(time.minute, hash);
+	hash = hash_djb2_one_32(time.second, hash);
+	hash = hash_djb2_one_32(Math::rand(), hash);
+
+	static constexpr uint32_t characters = 5;
+	static constexpr uint32_t char_count = ('z' - 'a');
+	static constexpr uint32_t base = char_count + ('9' - '0');
+	String id;
+	for (uint32_t i = 0; i < characters; i++) {
+		uint32_t c = hash % base;
+		if (c < char_count) {
+			id += String::chr('a' + c);
+		} else {
+			id += String::chr('0' + (c - char_count));
+		}
+		hash /= base;
+	}
+
+	return id;
 }
 
-int Resource::get_subindex() const {
-	return subindex;
+void Resource::set_scene_unique_id(const String &p_id) {
+	scene_unique_id = p_id;
+}
+
+String Resource::get_scene_unique_id() const {
+	return scene_unique_id;
 }
 
 void Resource::set_name(const String &p_name) {
 	name = p_name;
+	emit_changed();
 }
 
 String Resource::get_name() const {
 	return name;
+}
+
+void Resource::update_configuration_warning() {
+	if (_update_configuration_warning) {
+		_update_configuration_warning();
+	}
 }
 
 bool Resource::editor_can_reload_from_file() {
@@ -127,15 +166,15 @@ Error Resource::copy_from(const Ref<Resource> &p_resource) {
 	List<PropertyInfo> pi;
 	p_resource->get_property_list(&pi);
 
-	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+	for (const PropertyInfo &E : pi) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
-		if (E->get().name == "resource_path") {
+		if (E.name == "resource_path") {
 			continue; //do not change path
 		}
 
-		set(E->get().name, p_resource->get(E->get().name));
+		set(E.name, p_resource->get(E.name));
 	}
 	return OK;
 }
@@ -158,16 +197,16 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Ref<Resource> r = Object::cast_to<Resource>(ClassDB::instance(get_class()));
+	Ref<Resource> r = Object::cast_to<Resource>(ClassDB::instantiate(get_class()));
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
 	r->local_scene = p_for_scene;
 
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+	for (const PropertyInfo &E : plist) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
-		Variant p = get(E->get().name);
+		Variant p = get(E.name);
 		if (p.get_type() == Variant::OBJECT) {
 			RES sr = p;
 			if (sr.is_valid()) {
@@ -183,7 +222,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 			}
 		}
 
-		r->set(E->get().name, p);
+		r->set(E.name, p);
 	}
 
 	return r;
@@ -195,11 +234,11 @@ void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, R
 
 	local_scene = p_for_scene;
 
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+	for (const PropertyInfo &E : plist) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
-		Variant p = get(E->get().name);
+		Variant p = get(E.name);
 		if (p.get_type() == Variant::OBJECT) {
 			RES sr = p;
 			if (sr.is_valid()) {
@@ -218,24 +257,24 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Ref<Resource> r = (Resource *)ClassDB::instance(get_class());
+	Ref<Resource> r = (Resource *)ClassDB::instantiate(get_class());
 	ERR_FAIL_COND_V(r.is_null(), Ref<Resource>());
 
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+	for (const PropertyInfo &E : plist) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
-		Variant p = get(E->get().name);
+		Variant p = get(E.name);
 
 		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
-			r->set(E->get().name, p.duplicate(p_subresources));
-		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
+			r->set(E.name, p.duplicate(p_subresources));
+		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E.usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
 			RES sr = p;
 			if (sr.is_valid()) {
-				r->set(E->get().name, sr->duplicate(p_subresources));
+				r->set(E.name, sr->duplicate(p_subresources));
 			}
 		} else {
-			r->set(E->get().name, p);
+			r->set(E.name, p);
 		}
 	}
 
@@ -279,9 +318,9 @@ uint32_t Resource::hash_edited_version() const {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (E->get().usage & PROPERTY_USAGE_STORAGE && E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE) {
-			RES res = get(E->get().name);
+	for (const PropertyInfo &E : plist) {
+		if (E.usage & PROPERTY_USAGE_STORAGE && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+			RES res = get(E.name);
 			if (res.is_valid()) {
 				hash = hash_djb2_one_32(res->hash_edited_version(), hash);
 			}
@@ -314,12 +353,12 @@ Node *Resource::get_local_scene() const {
 }
 
 void Resource::setup_local_to_scene() {
-	if (get_script_instance()) {
-		get_script_instance()->call("_setup_local_to_scene");
-	}
+	// Can't use GDVIRTUAL in Resource, so this will have to be done with a signal
+	emit_signal(SNAME("setup_local_to_scene_requested"));
 }
 
 Node *(*Resource::_get_local_scene_func)() = nullptr;
+void (*Resource::_update_configuration_warning)() = nullptr;
 
 void Resource::set_as_translation_remapped(bool p_remapped) {
 	if (remapped_list.in_list() == p_remapped) {
@@ -343,8 +382,8 @@ bool Resource::is_translation_remapped() const {
 
 #ifdef TOOLS_ENABLED
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
-void Resource::set_id_for_path(const String &p_path, int p_id) {
-	if (p_id == -1) {
+void Resource::set_id_for_path(const String &p_path, const String &p_id) {
+	if (p_id == "") {
 		ResourceCache::path_cache_lock.write_lock();
 		ResourceCache::resource_path_cache[p_path].erase(get_path());
 		ResourceCache::path_cache_lock.write_unlock();
@@ -355,15 +394,15 @@ void Resource::set_id_for_path(const String &p_path, int p_id) {
 	}
 }
 
-int Resource::get_id_for_path(const String &p_path) const {
+String Resource::get_id_for_path(const String &p_path) const {
 	ResourceCache::path_cache_lock.read_lock();
 	if (ResourceCache::resource_path_cache[p_path].has(get_path())) {
-		int result = ResourceCache::resource_path_cache[p_path][get_path()];
+		String result = ResourceCache::resource_path_cache[p_path][get_path()];
 		ResourceCache::path_cache_lock.read_unlock();
 		return result;
 	} else {
 		ResourceCache::path_cache_lock.read_unlock();
-		return -1;
+		return "";
 	}
 }
 #endif
@@ -383,12 +422,12 @@ void Resource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &Resource::duplicate, DEFVAL(false));
 	ADD_SIGNAL(MethodInfo("changed"));
+	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));
+
 	ADD_GROUP("Resource", "resource_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "resource_name"), "set_name", "get_name");
-
-	BIND_VMETHOD(MethodInfo("_setup_local_to_scene"));
 }
 
 Resource::Resource() :
@@ -407,7 +446,7 @@ Resource::~Resource() {
 
 HashMap<String, Resource *> ResourceCache::resources;
 #ifdef TOOLS_ENABLED
-HashMap<String, HashMap<String, int>> ResourceCache::resource_path_cache;
+HashMap<String, HashMap<String, String>> ResourceCache::resource_path_cache;
 #endif
 
 RWLock ResourceCache::lock;
@@ -502,9 +541,9 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 		}
 	}
 
-	for (Map<String, int>::Element *E = type_count.front(); E; E = E->next()) {
+	for (const KeyValue<String, int> &E : type_count) {
 		if (f) {
-			f->store_line(E->key() + " count: " + itos(E->get()));
+			f->store_line(E.key + " count: " + itos(E.value));
 		}
 	}
 	if (f) {
@@ -513,5 +552,7 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 	}
 
 	lock.read_unlock();
+#else
+	WARN_PRINT("ResourceCache::dump only with in debug builds.");
 #endif
 }

@@ -53,11 +53,11 @@ void TextLine::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "preserve_control"), "set_preserve_control", "get_preserve_control");
 
-	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextLine::_set_bidi_override);
+	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextLine::set_bidi_override);
 
 	ClassDB::bind_method(D_METHOD("add_string", "text", "fonts", "size", "opentype_features", "language"), &TextLine::add_string, DEFVAL(Dictionary()), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextLine::add_object, DEFVAL(VALIGN_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextLine::resize_object, DEFVAL(VALIGN_CENTER));
+	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextLine::add_object, DEFVAL(INLINE_ALIGN_CENTER), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextLine::resize_object, DEFVAL(INLINE_ALIGN_CENTER));
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &TextLine::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &TextLine::get_width);
@@ -74,7 +74,12 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &TextLine::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &TextLine::get_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida justification,Word justification,Trim edge spaces after justification,Justification only after last tab"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justify,Word Justify,Trim Edge Spaces After Justify,Justify Only After Last Tab"), "set_flags", "get_flags");
+
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextLine::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextLine::get_text_overrun_behavior);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 
 	ClassDB::bind_method(D_METHOD("get_objects"), &TextLine::get_objects);
 	ClassDB::bind_method(D_METHOD("get_object_rect", "key"), &TextLine::get_object_rect);
@@ -93,6 +98,12 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color"), &TextLine::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextLine::hit_test);
+
+	BIND_ENUM_CONSTANT(OVERRUN_NO_TRIMMING);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_CHAR);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_ELLIPSIS);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ELLIPSIS);
 }
 
 void TextLine::_shape() {
@@ -100,7 +111,38 @@ void TextLine::_shape() {
 		if (!tab_stops.is_empty()) {
 			TS->shaped_text_tab_align(rid, tab_stops);
 		}
-		if (align == HALIGN_FILL) {
+
+		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
+		if (overrun_behavior != OVERRUN_NO_TRIMMING) {
+			switch (overrun_behavior) {
+				case OVERRUN_TRIM_WORD_ELLIPSIS:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
+					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+					break;
+				case OVERRUN_TRIM_ELLIPSIS:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+					break;
+				case OVERRUN_TRIM_WORD:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
+					break;
+				case OVERRUN_TRIM_CHAR:
+					overrun_flags |= TextServer::OVERRUN_TRIM;
+					break;
+				case OVERRUN_NO_TRIMMING:
+					break;
+			}
+
+			if (align == HALIGN_FILL) {
+				TS->shaped_text_fit_to_width(rid, width, flags);
+				overrun_flags |= TextServer::OVERRUN_JUSTIFICATION_AWARE;
+				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
+			} else {
+				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
+			}
+		} else if (align == HALIGN_FILL) {
 			TS->shaped_text_fit_to_width(rid, width, flags);
 		}
 		dirty = false;
@@ -153,15 +195,7 @@ TextServer::Orientation TextLine::get_orientation() const {
 	return TS->shaped_text_get_orientation(rid);
 }
 
-void TextLine::_set_bidi_override(const Array &p_override) {
-	Vector<Vector2i> overrides;
-	for (int i = 0; i < p_override.size(); i++) {
-		overrides.push_back(p_override[i]);
-	}
-	set_bidi_override(overrides);
-}
-
-void TextLine::set_bidi_override(const Vector<Vector2i> &p_override) {
+void TextLine::set_bidi_override(const Array &p_override) {
 	TS->shaped_text_set_bidi_override(rid, p_override);
 	dirty = true;
 }
@@ -169,19 +203,19 @@ void TextLine::set_bidi_override(const Vector<Vector2i> &p_override) {
 bool TextLine::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language) {
 	ERR_FAIL_COND_V(p_fonts.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
-	spacing_top = p_fonts->get_spacing(Font::SPACING_TOP);
-	spacing_bottom = p_fonts->get_spacing(Font::SPACING_BOTTOM);
+	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
+	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
 	dirty = true;
 	return res;
 }
 
-bool TextLine::add_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align, int p_length) {
+bool TextLine::add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align, int p_length) {
 	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length);
 	dirty = true;
 	return res;
 }
 
-bool TextLine::resize_object(Variant p_key, const Size2 &p_size, VAlign p_inline_align) {
+bool TextLine::resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
 	const_cast<TextLine *>(this)->_shape();
 	return TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align);
 }
@@ -214,20 +248,31 @@ void TextLine::tab_align(const Vector<float> &p_tab_stops) {
 	dirty = true;
 }
 
-void TextLine::set_flags(uint8_t p_flags) {
+void TextLine::set_flags(uint16_t p_flags) {
 	if (flags != p_flags) {
 		flags = p_flags;
 		dirty = true;
 	}
 }
 
-uint8_t TextLine::get_flags() const {
+uint16_t TextLine::get_flags() const {
 	return flags;
+}
+
+void TextLine::set_text_overrun_behavior(TextLine::OverrunBehavior p_behavior) {
+	if (overrun_behavior != p_behavior) {
+		overrun_behavior = p_behavior;
+		dirty = true;
+	}
+}
+
+TextLine::OverrunBehavior TextLine::get_text_overrun_behavior() const {
+	return overrun_behavior;
 }
 
 void TextLine::set_width(float p_width) {
 	width = p_width;
-	if (align == HALIGN_FILL) {
+	if (align == HALIGN_FILL || overrun_behavior != OVERRUN_NO_TRIMMING) {
 		dirty = true;
 	}
 }
@@ -356,8 +401,8 @@ int TextLine::hit_test(float p_coords) const {
 
 TextLine::TextLine(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	rid = TS->create_shaped_text(p_direction, p_orientation);
-	spacing_top = p_fonts->get_spacing(Font::SPACING_TOP);
-	spacing_bottom = p_fonts->get_spacing(Font::SPACING_BOTTOM);
+	spacing_top = p_fonts->get_spacing(TextServer::SPACING_TOP);
+	spacing_bottom = p_fonts->get_spacing(TextServer::SPACING_BOTTOM);
 	TS->shaped_text_add_string(rid, p_text, p_fonts->get_rids(), p_size, p_opentype_features, p_language);
 }
 

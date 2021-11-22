@@ -4,39 +4,31 @@
 		Placeholder for the root [Node] of a [PackedScene].
 	</brief_description>
 	<description>
-		Turning on the option [b]Load As Placeholder[/b] for an instanced scene in the editor causes it to be replaced by an [InstancePlaceholder] when running the game. This makes it possible to delay actually loading the scene until calling [method create_instance]. This is useful to avoid loading large scenes all at once by loading parts of it selectively.
+		Turning on the option [b]Load As Placeholder[/b] for an instantiated scene in the editor causes it to be replaced by an [InstancePlaceholder] when running the game. This makes it possible to delay actually loading the scene until calling [method create_instance]. This is useful to avoid loading large scenes all at once by loading parts of it selectively.
 		The [InstancePlaceholder] does not have a transform. This causes any child nodes to be positioned relatively to the [Viewport] from point (0,0), rather than their parent as displayed in the editor. Replacing the placeholder with a scene with a transform will transform children relatively to their parent again.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="create_instance">
-			<return type="Node">
-			</return>
-			<argument index="0" name="replace" type="bool" default="false">
-			</argument>
-			<argument index="1" name="custom_scene" type="PackedScene" default="null">
-			</argument>
+			<return type="Node" />
+			<argument index="0" name="replace" type="bool" default="false" />
+			<argument index="1" name="custom_scene" type="PackedScene" default="null" />
 			<description>
 				Not thread-safe. Use [method Object.call_deferred] if calling from a thread.
 			</description>
 		</method>
 		<method name="get_instance_path" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Gets the path to the [PackedScene] resource file that is loaded by default when calling [method create_instance]. Not thread-safe. Use [method Object.call_deferred] if calling from a thread.
 			</description>
 		</method>
 		<method name="get_stored_values">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="with_order" type="bool" default="false">
-			</argument>
+			<return type="Dictionary" />
+			<argument index="0" name="with_order" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

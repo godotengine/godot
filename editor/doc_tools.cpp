@@ -34,18 +34,18 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/io/compression.h"
+#include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
-#include "core/os/dir_access.h"
 #include "core/version.h"
 #include "scene/resources/theme.h"
 
 // Used for a hack preserving Mono properties on non-Mono builds.
-#include "modules/modules_enabled.gen.h"
+#include "modules/modules_enabled.gen.h" // For mono.
 
 void DocTools::merge_from(const DocTools &p_data) {
-	for (Map<String, DocData::ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
-		DocData::ClassDoc &c = E->get();
+	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
+		DocData::ClassDoc &c = E.value;
 
 		if (!p_data.class_list.has(c.name)) {
 			continue;
@@ -57,41 +57,59 @@ void DocTools::merge_from(const DocTools &p_data) {
 		c.brief_description = cf.brief_description;
 		c.tutorials = cf.tutorials;
 
+		for (int i = 0; i < c.constructors.size(); i++) {
+			DocData::MethodDoc &m = c.constructors.write[i];
+
+			for (int j = 0; j < cf.constructors.size(); j++) {
+				if (cf.constructors[j].name != m.name) {
+					continue;
+				}
+
+				{
+					// Since constructors can repeat, we need to check the type of
+					// the arguments so we make sure they are different.
+					if (cf.constructors[j].arguments.size() != m.arguments.size()) {
+						continue;
+					}
+					int arg_count = cf.constructors[j].arguments.size();
+					Vector<bool> arg_used;
+					arg_used.resize(arg_count);
+					for (int l = 0; l < arg_count; ++l) {
+						arg_used.write[l] = false;
+					}
+					// also there is no guarantee that argument ordering will match, so we
+					// have to check one by one so we make sure we have an exact match
+					for (int k = 0; k < arg_count; ++k) {
+						for (int l = 0; l < arg_count; ++l) {
+							if (cf.constructors[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
+								arg_used.write[l] = true;
+								break;
+							}
+						}
+					}
+					bool not_the_same = false;
+					for (int l = 0; l < arg_count; ++l) {
+						if (!arg_used[l]) { // at least one of the arguments was different
+							not_the_same = true;
+						}
+					}
+					if (not_the_same) {
+						continue;
+					}
+				}
+
+				const DocData::MethodDoc &mf = cf.constructors[j];
+
+				m.description = mf.description;
+				break;
+			}
+		}
+
 		for (int i = 0; i < c.methods.size(); i++) {
 			DocData::MethodDoc &m = c.methods.write[i];
 
 			for (int j = 0; j < cf.methods.size(); j++) {
 				if (cf.methods[j].name != m.name) {
-					continue;
-				}
-				if (cf.methods[j].arguments.size() != m.arguments.size()) {
-					continue;
-				}
-				// since polymorphic functions are allowed we need to check the type of
-				// the arguments so we make sure they are different.
-				int arg_count = cf.methods[j].arguments.size();
-				Vector<bool> arg_used;
-				arg_used.resize(arg_count);
-				for (int l = 0; l < arg_count; ++l) {
-					arg_used.write[l] = false;
-				}
-				// also there is no guarantee that argument ordering will match, so we
-				// have to check one by one so we make sure we have an exact match
-				for (int k = 0; k < arg_count; ++k) {
-					for (int l = 0; l < arg_count; ++l) {
-						if (cf.methods[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
-							arg_used.write[l] = true;
-							break;
-						}
-					}
-				}
-				bool not_the_same = false;
-				for (int l = 0; l < arg_count; ++l) {
-					if (!arg_used[l]) { // at least one of the arguments was different
-						not_the_same = true;
-					}
-				}
-				if (not_the_same) {
 					continue;
 				}
 
@@ -145,15 +163,63 @@ void DocTools::merge_from(const DocTools &p_data) {
 		}
 
 		for (int i = 0; i < c.theme_properties.size(); i++) {
-			DocData::PropertyDoc &p = c.theme_properties.write[i];
+			DocData::ThemeItemDoc &ti = c.theme_properties.write[i];
 
 			for (int j = 0; j < cf.theme_properties.size(); j++) {
-				if (cf.theme_properties[j].name != p.name) {
+				if (cf.theme_properties[j].name != ti.name || cf.theme_properties[j].data_type != ti.data_type) {
 					continue;
 				}
-				const DocData::PropertyDoc &pf = cf.theme_properties[j];
+				const DocData::ThemeItemDoc &pf = cf.theme_properties[j];
 
-				p.description = pf.description;
+				ti.description = pf.description;
+				break;
+			}
+		}
+
+		for (int i = 0; i < c.operators.size(); i++) {
+			DocData::MethodDoc &m = c.operators.write[i];
+
+			for (int j = 0; j < cf.operators.size(); j++) {
+				if (cf.operators[j].name != m.name) {
+					continue;
+				}
+
+				{
+					// Since operators can repeat, we need to check the type of
+					// the arguments so we make sure they are different.
+					if (cf.operators[j].arguments.size() != m.arguments.size()) {
+						continue;
+					}
+					int arg_count = cf.operators[j].arguments.size();
+					Vector<bool> arg_used;
+					arg_used.resize(arg_count);
+					for (int l = 0; l < arg_count; ++l) {
+						arg_used.write[l] = false;
+					}
+					// also there is no guarantee that argument ordering will match, so we
+					// have to check one by one so we make sure we have an exact match
+					for (int k = 0; k < arg_count; ++k) {
+						for (int l = 0; l < arg_count; ++l) {
+							if (cf.operators[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
+								arg_used.write[l] = true;
+								break;
+							}
+						}
+					}
+					bool not_the_same = false;
+					for (int l = 0; l < arg_count; ++l) {
+						if (!arg_used[l]) { // at least one of the arguments was different
+							not_the_same = true;
+						}
+					}
+					if (not_the_same) {
+						continue;
+					}
+				}
+
+				const DocData::MethodDoc &mf = cf.operators[j];
+
+				m.description = mf.description;
 				break;
 			}
 		}
@@ -178,9 +244,9 @@ void DocTools::merge_from(const DocTools &p_data) {
 }
 
 void DocTools::remove_from(const DocTools &p_data) {
-	for (Map<String, DocData::ClassDoc>::Element *E = p_data.class_list.front(); E; E = E->next()) {
-		if (class_list.has(E->key())) {
-			class_list.erase(E->key());
+	for (const KeyValue<String, DocData::ClassDoc> &E : p_data.class_list) {
+		if (class_list.has(E.key)) {
+			class_list.erase(E.key);
 		}
 	}
 }
@@ -206,14 +272,14 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	Variant default_value = Variant();
 	r_default_value_valid = false;
 
-	if (ClassDB::can_instance(p_class_name)) {
+	if (ClassDB::can_instantiate(p_class_name)) {
 		default_value = ClassDB::class_get_default_property_value(p_class_name, p_property_name, &r_default_value_valid);
 	} else {
-		// Cannot get default value of classes that can't be instanced
+		// Cannot get default value of classes that can't be instantiated
 		List<StringName> inheriting_classes;
 		ClassDB::get_direct_inheriters_from_class(p_class_name, &inheriting_classes);
 		for (List<StringName>::Element *E2 = inheriting_classes.front(); E2; E2 = E2->next()) {
-			if (ClassDB::can_instance(E2->get())) {
+			if (ClassDB::can_instantiate(E2->get())) {
 				default_value = ClassDB::class_get_default_property_value(E2->get(), p_property_name, &r_default_value_valid);
 				if (r_default_value_valid) {
 					break;
@@ -245,9 +311,6 @@ void DocTools::generate(bool p_basic_types) {
 		}
 
 		String cname = name;
-		if (cname.begins_with("_")) { //proxy class
-			cname = cname.substr(1, name.length());
-		}
 
 		class_list[cname] = DocData::ClassDoc();
 		DocData::ClassDoc &c = class_list[cname];
@@ -266,20 +329,20 @@ void DocTools::generate(bool p_basic_types) {
 		}
 
 		List<PropertyInfo>::Element *EO = own_properties.front();
-		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+		for (const PropertyInfo &E : properties) {
 			bool inherited = EO == nullptr;
-			if (EO && EO->get() == E->get()) {
+			if (EO && EO->get() == E) {
 				inherited = false;
 				EO = EO->next();
 			}
 
-			if (E->get().usage & PROPERTY_USAGE_GROUP || E->get().usage & PROPERTY_USAGE_SUBGROUP || E->get().usage & PROPERTY_USAGE_CATEGORY || E->get().usage & PROPERTY_USAGE_INTERNAL) {
+			if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || (E.type == Variant::NIL && E.usage & PROPERTY_USAGE_ARRAY)) {
 				continue;
 			}
 
 			DocData::PropertyDoc prop;
 
-			prop.name = E->get().name;
+			prop.name = E.name;
 
 			prop.overridden = inherited;
 
@@ -288,20 +351,20 @@ void DocTools::generate(bool p_basic_types) {
 
 			if (name == "ProjectSettings") {
 				// Special case for project settings, so that settings are not taken from the current project's settings
-				if (E->get().name == "script" || !ProjectSettings::get_singleton()->is_builtin_setting(E->get().name)) {
+				if (E.name == "script" || !ProjectSettings::get_singleton()->is_builtin_setting(E.name)) {
 					continue;
 				}
-				if (E->get().usage & PROPERTY_USAGE_EDITOR) {
-					if (!ProjectSettings::get_singleton()->get_ignore_value_in_docs(E->get().name)) {
-						default_value = ProjectSettings::get_singleton()->property_get_revert(E->get().name);
+				if (E.usage & PROPERTY_USAGE_EDITOR) {
+					if (!ProjectSettings::get_singleton()->get_ignore_value_in_docs(E.name)) {
+						default_value = ProjectSettings::get_singleton()->property_get_revert(E.name);
 						default_value_valid = true;
 					}
 				}
 			} else {
-				default_value = get_documentation_default_value(name, E->get().name, default_value_valid);
+				default_value = get_documentation_default_value(name, E.name, default_value_valid);
 				if (inherited) {
 					bool base_default_value_valid = false;
-					Variant base_default_value = get_documentation_default_value(ClassDB::get_parent_class(name), E->get().name, base_default_value_valid);
+					Variant base_default_value = get_documentation_default_value(ClassDB::get_parent_class(name), E.name, base_default_value_valid);
 					if (!default_value_valid || !base_default_value_valid || default_value == base_default_value) {
 						continue;
 					}
@@ -309,13 +372,13 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			//used to track uninitialized values using valgrind
-			//print_line("getting default value for " + String(name) + "." + String(E->get().name));
+			//print_line("getting default value for " + String(name) + "." + String(E.name));
 			if (default_value_valid && default_value.get_type() != Variant::OBJECT) {
 				prop.default_value = default_value.get_construct_string().replace("\n", "");
 			}
 
-			StringName setter = ClassDB::get_property_setter(name, E->get().name);
-			StringName getter = ClassDB::get_property_getter(name, E->get().name);
+			StringName setter = ClassDB::get_property_setter(name, E.name);
+			StringName getter = ClassDB::get_property_getter(name, E.name);
 
 			prop.setter = setter;
 			prop.getter = getter;
@@ -353,10 +416,10 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			if (!found_type) {
-				if (E->get().type == Variant::OBJECT && E->get().hint == PROPERTY_HINT_RESOURCE_TYPE) {
-					prop.type = E->get().hint_string;
+				if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+					prop.type = E.hint_string;
 				} else {
-					prop.type = Variant::get_type_name(E->get().type);
+					prop.type = Variant::get_type_name(E.type);
 				}
 			}
 
@@ -367,66 +430,78 @@ void DocTools::generate(bool p_basic_types) {
 		ClassDB::get_method_list(name, &method_list, true);
 		method_list.sort();
 
-		for (List<MethodInfo>::Element *E = method_list.front(); E; E = E->next()) {
-			if (E->get().name == "" || (E->get().name[0] == '_' && !(E->get().flags & METHOD_FLAG_VIRTUAL))) {
+		for (const MethodInfo &E : method_list) {
+			if (E.name == "" || (E.name[0] == '_' && !(E.flags & METHOD_FLAG_VIRTUAL))) {
 				continue; //hidden, don't count
 			}
 
-			if (skip_setter_getter_methods && setters_getters.has(E->get().name)) {
+			if (skip_setter_getter_methods && setters_getters.has(E.name)) {
 				// Don't skip parametric setters and getters, i.e. method which require
 				// one or more parameters to define what property should be set or retrieved.
 				// E.g. CPUParticles3D::set_param(Parameter param, float value).
-				if (E->get().arguments.size() == 0 /* getter */ || (E->get().arguments.size() == 1 && E->get().return_val.type == Variant::NIL /* setter */)) {
+				if (E.arguments.size() == 0 /* getter */ || (E.arguments.size() == 1 && E.return_val.type == Variant::NIL /* setter */)) {
 					continue;
 				}
 			}
 
 			DocData::MethodDoc method;
 
-			method.name = E->get().name;
+			method.name = E.name;
 
-			if (E->get().flags & METHOD_FLAG_VIRTUAL) {
+			if (E.flags & METHOD_FLAG_VIRTUAL) {
 				method.qualifiers = "virtual";
 			}
 
-			if (E->get().flags & METHOD_FLAG_CONST) {
+			if (E.flags & METHOD_FLAG_CONST) {
 				if (method.qualifiers != "") {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "const";
 			}
 
-			if (E->get().flags & METHOD_FLAG_VARARG) {
+			if (E.flags & METHOD_FLAG_VARARG) {
 				if (method.qualifiers != "") {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "vararg";
 			}
 
-			if (E->get().flags & METHOD_FLAG_STATIC) {
+			if (E.flags & METHOD_FLAG_STATIC) {
 				if (method.qualifiers != "") {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "static";
 			}
 
-			for (int i = -1; i < E->get().arguments.size(); i++) {
+			for (int i = -1; i < E.arguments.size(); i++) {
 				if (i == -1) {
 #ifdef DEBUG_METHODS_ENABLED
-					DocData::return_doc_from_retinfo(method, E->get().return_val);
+					DocData::return_doc_from_retinfo(method, E.return_val);
 #endif
 				} else {
-					const PropertyInfo &arginfo = E->get().arguments[i];
+					const PropertyInfo &arginfo = E.arguments[i];
 					DocData::ArgumentDoc argument;
 					DocData::argument_doc_from_arginfo(argument, arginfo);
 
-					int darg_idx = i - (E->get().arguments.size() - E->get().default_arguments.size());
+					int darg_idx = i - (E.arguments.size() - E.default_arguments.size());
 					if (darg_idx >= 0) {
-						Variant default_arg = E->get().default_arguments[darg_idx];
+						Variant default_arg = E.default_arguments[darg_idx];
 						argument.default_value = default_arg.get_construct_string();
 					}
 
 					method.arguments.push_back(argument);
+				}
+			}
+
+			Vector<Error> errs = ClassDB::get_method_error_return_values(name, E.name);
+			if (errs.size()) {
+				if (errs.find(OK) == -1) {
+					errs.insert(0, OK);
+				}
+				for (int i = 0; i < errs.size(); i++) {
+					if (method.errors_returned.find(errs[i]) == -1) {
+						method.errors_returned.push_back(errs[i]);
+					}
 				}
 			}
 
@@ -455,69 +530,78 @@ void DocTools::generate(bool p_basic_types) {
 		List<String> constant_list;
 		ClassDB::get_integer_constant_list(name, &constant_list, true);
 
-		for (List<String>::Element *E = constant_list.front(); E; E = E->next()) {
+		for (const String &E : constant_list) {
 			DocData::ConstantDoc constant;
-			constant.name = E->get();
-			constant.value = itos(ClassDB::get_integer_constant(name, E->get()));
+			constant.name = E;
+			constant.value = itos(ClassDB::get_integer_constant(name, E));
 			constant.is_value_valid = true;
-			constant.enumeration = ClassDB::get_integer_constant_enum(name, E->get());
+			constant.enumeration = ClassDB::get_integer_constant_enum(name, E);
 			c.constants.push_back(constant);
 		}
 
-		//theme stuff
-
+		// Theme items.
 		{
 			List<StringName> l;
-			Theme::get_default()->get_constant_list(cname, &l);
-			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				DocData::PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "int";
-				pd.default_value = itos(Theme::get_default()->get_constant(E->get(), cname));
-				c.theme_properties.push_back(pd);
+
+			Theme::get_default()->get_color_list(cname, &l);
+			for (const StringName &E : l) {
+				DocData::ThemeItemDoc tid;
+				tid.name = E;
+				tid.type = "Color";
+				tid.data_type = "color";
+				tid.default_value = Variant(Theme::get_default()->get_color(E, cname)).get_construct_string();
+				c.theme_properties.push_back(tid);
 			}
 
 			l.clear();
-			Theme::get_default()->get_color_list(cname, &l);
-			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				DocData::PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "Color";
-				pd.default_value = Variant(Theme::get_default()->get_color(E->get(), cname)).get_construct_string();
-				c.theme_properties.push_back(pd);
+			Theme::get_default()->get_constant_list(cname, &l);
+			for (const StringName &E : l) {
+				DocData::ThemeItemDoc tid;
+				tid.name = E;
+				tid.type = "int";
+				tid.data_type = "constant";
+				tid.default_value = itos(Theme::get_default()->get_constant(E, cname));
+				c.theme_properties.push_back(tid);
+			}
+
+			l.clear();
+			Theme::get_default()->get_font_list(cname, &l);
+			for (const StringName &E : l) {
+				DocData::ThemeItemDoc tid;
+				tid.name = E;
+				tid.type = "Font";
+				tid.data_type = "font";
+				c.theme_properties.push_back(tid);
+			}
+
+			l.clear();
+			Theme::get_default()->get_font_size_list(cname, &l);
+			for (const StringName &E : l) {
+				DocData::ThemeItemDoc tid;
+				tid.name = E;
+				tid.type = "int";
+				tid.data_type = "font_size";
+				c.theme_properties.push_back(tid);
 			}
 
 			l.clear();
 			Theme::get_default()->get_icon_list(cname, &l);
-			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				DocData::PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "Texture2D";
-				c.theme_properties.push_back(pd);
+			for (const StringName &E : l) {
+				DocData::ThemeItemDoc tid;
+				tid.name = E;
+				tid.type = "Texture2D";
+				tid.data_type = "icon";
+				c.theme_properties.push_back(tid);
 			}
-			l.clear();
-			Theme::get_default()->get_font_list(cname, &l);
-			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				DocData::PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "Font";
-				c.theme_properties.push_back(pd);
-			}
-			l.clear();
-			Theme::get_default()->get_font_size_list(cname, &l);
-			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				DocData::PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "int";
-				c.theme_properties.push_back(pd);
-			}
+
 			l.clear();
 			Theme::get_default()->get_stylebox_list(cname, &l);
-			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
-				DocData::PropertyDoc pd;
-				pd.name = E->get();
-				pd.type = "StyleBox";
-				c.theme_properties.push_back(pd);
+			for (const StringName &E : l) {
+				DocData::ThemeItemDoc tid;
+				tid.name = E;
+				tid.type = "StyleBox";
+				tid.data_type = "style";
+				c.theme_properties.push_back(tid);
 			}
 		}
 
@@ -621,16 +705,10 @@ void DocTools::generate(bool p_basic_types) {
 			method_list.push_back(mi);
 		}
 
-		for (List<MethodInfo>::Element *E = method_list.front(); E; E = E->next()) {
-			MethodInfo &mi = E->get();
+		for (const MethodInfo &mi : method_list) {
 			DocData::MethodDoc method;
 
 			method.name = mi.name;
-			if (method.name == cname) {
-				method.qualifiers = "constructor";
-			} else if (method.name.begins_with("operator")) {
-				method.qualifiers = "operator";
-			}
 
 			for (int j = 0; j < mi.arguments.size(); j++) {
 				PropertyInfo arginfo = mi.arguments[j];
@@ -670,13 +748,18 @@ void DocTools::generate(bool p_basic_types) {
 				method.qualifiers += "static";
 			}
 
-			c.methods.push_back(method);
+			if (method.name == cname) {
+				c.constructors.push_back(method);
+			} else if (method.name.begins_with("operator")) {
+				c.operators.push_back(method);
+			} else {
+				c.methods.push_back(method);
+			}
 		}
 
 		List<PropertyInfo> properties;
 		v.get_property_list(&properties);
-		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			PropertyInfo pi = E->get();
+		for (const PropertyInfo &pi : properties) {
 			DocData::PropertyDoc property;
 			property.name = pi.name;
 			property.type = Variant::get_type_name(pi.type);
@@ -688,10 +771,10 @@ void DocTools::generate(bool p_basic_types) {
 		List<StringName> constants;
 		Variant::get_constants_for_type(Variant::Type(i), &constants);
 
-		for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+		for (const StringName &E : constants) {
 			DocData::ConstantDoc constant;
-			constant.name = E->get();
-			Variant value = Variant::get_constant_value(Variant::Type(i), E->get());
+			constant.name = E;
+			Variant value = Variant::get_constant_value(Variant::Type(i), E);
 			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string();
 			constant.is_value_valid = true;
 			c.constants.push_back(constant);
@@ -723,9 +806,8 @@ void DocTools::generate(bool p_basic_types) {
 		Engine::get_singleton()->get_singletons(&singletons);
 
 		//servers (this is kind of hackish)
-		for (List<Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
+		for (const Engine::Singleton &s : singletons) {
 			DocData::PropertyDoc pd;
-			Engine::Singleton &s = E->get();
 			if (!s.ptr) {
 				continue;
 			}
@@ -734,22 +816,19 @@ void DocTools::generate(bool p_basic_types) {
 			while (String(ClassDB::get_parent_class(pd.type)) != "Object") {
 				pd.type = ClassDB::get_parent_class(pd.type);
 			}
-			if (pd.type.begins_with("_")) {
-				pd.type = pd.type.substr(1, pd.type.length());
-			}
 			c.properties.push_back(pd);
 		}
 
 		List<StringName> utility_functions;
 		Variant::get_utility_function_list(&utility_functions);
 		utility_functions.sort_custom<StringName::AlphCompare>();
-		for (List<StringName>::Element *E = utility_functions.front(); E; E = E->next()) {
+		for (const StringName &E : utility_functions) {
 			DocData::MethodDoc md;
-			md.name = E->get();
+			md.name = E;
 			//return
-			if (Variant::has_utility_function_return_value(E->get())) {
+			if (Variant::has_utility_function_return_value(E)) {
 				PropertyInfo pi;
-				pi.type = Variant::get_utility_function_return_type(E->get());
+				pi.type = Variant::get_utility_function_return_type(E);
 				if (pi.type == Variant::NIL) {
 					pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
 				}
@@ -758,13 +837,13 @@ void DocTools::generate(bool p_basic_types) {
 				md.return_type = ad.type;
 			}
 
-			if (Variant::is_utility_function_vararg(E->get())) {
+			if (Variant::is_utility_function_vararg(E)) {
 				md.qualifiers = "vararg";
 			} else {
-				for (int i = 0; i < Variant::get_utility_function_argument_count(E->get()); i++) {
+				for (int i = 0; i < Variant::get_utility_function_argument_count(E); i++) {
 					PropertyInfo pi;
-					pi.type = Variant::get_utility_function_argument_type(E->get(), i);
-					pi.name = Variant::get_utility_function_argument_name(E->get(), i);
+					pi.type = Variant::get_utility_function_argument_type(E, i);
+					pi.name = Variant::get_utility_function_argument_name(E, i);
 					if (pi.type == Variant::NIL) {
 						pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
 					}
@@ -793,8 +872,7 @@ void DocTools::generate(bool p_basic_types) {
 			List<MethodInfo> minfo;
 			lang->get_public_functions(&minfo);
 
-			for (List<MethodInfo>::Element *E = minfo.front(); E; E = E->next()) {
-				MethodInfo &mi = E->get();
+			for (const MethodInfo &mi : minfo) {
 				DocData::MethodDoc md;
 				md.name = mi.name;
 
@@ -813,7 +891,7 @@ void DocTools::generate(bool p_basic_types) {
 
 					int darg_idx = j - (mi.arguments.size() - mi.default_arguments.size());
 					if (darg_idx >= 0) {
-						Variant default_arg = E->get().default_arguments[darg_idx];
+						Variant default_arg = mi.default_arguments[darg_idx];
 						ad.default_value = default_arg.get_construct_string();
 					}
 
@@ -827,10 +905,10 @@ void DocTools::generate(bool p_basic_types) {
 			List<Pair<String, Variant>> cinfo;
 			lang->get_public_constants(&cinfo);
 
-			for (List<Pair<String, Variant>>::Element *E = cinfo.front(); E; E = E->next()) {
+			for (const Pair<String, Variant> &E : cinfo) {
 				DocData::ConstantDoc cd;
-				cd.name = E->get().first;
-				cd.value = E->get().second;
+				cd.name = E.first;
+				cd.value = E.second;
 				cd.is_value_valid = true;
 				c.constants.push_back(cd);
 			}
@@ -868,6 +946,9 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 							if (parser->has_attribute("enum")) {
 								method.return_enum = parser->get_attribute_value("enum");
 							}
+						} else if (name == "returns_error") {
+							ERR_FAIL_COND_V(!parser->has_attribute("number"), ERR_FILE_CORRUPT);
+							method.errors_returned.push_back(parser->get_attribute_value("number").to_int());
 						} else if (name == "argument") {
 							DocData::ArgumentDoc argument;
 							ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
@@ -895,7 +976,7 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 				methods.push_back(method);
 
 			} else {
-				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + parser->get_node_name() + ".");
+				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + parser->get_node_name() + ", expected " + element + ".");
 			}
 
 		} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == section) {
@@ -1023,10 +1104,15 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 							break; // End of <tutorials>.
 						}
 					}
+				} else if (name2 == "constructors") {
+					Error err2 = _parse_methods(parser, c.constructors);
+					ERR_FAIL_COND_V(err2, err2);
 				} else if (name2 == "methods") {
 					Error err2 = _parse_methods(parser, c.methods);
 					ERR_FAIL_COND_V(err2, err2);
-
+				} else if (name2 == "operators") {
+					Error err2 = _parse_methods(parser, c.operators);
+					ERR_FAIL_COND_V(err2, err2);
 				} else if (name2 == "signals") {
 					Error err2 = _parse_methods(parser, c.signals);
 					ERR_FAIL_COND_V(err2, err2);
@@ -1073,12 +1159,14 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 							String name3 = parser->get_node_name();
 
 							if (name3 == "theme_item") {
-								DocData::PropertyDoc prop2;
+								DocData::ThemeItemDoc prop2;
 
 								ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
 								prop2.name = parser->get_attribute_value("name");
 								ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
 								prop2.type = parser->get_attribute_value("type");
+								ERR_FAIL_COND_V(!parser->has_attribute("data_type"), ERR_FILE_CORRUPT);
+								prop2.data_type = parser->get_attribute_value("data_type");
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -1150,9 +1238,62 @@ static void _write_string(FileAccess *f, int p_tablevel, const String &p_string)
 	f->store_string(tab + p_string + "\n");
 }
 
+static void _write_method_doc(FileAccess *f, const String &p_name, Vector<DocData::MethodDoc> &p_method_docs) {
+	if (!p_method_docs.is_empty()) {
+		p_method_docs.sort();
+		_write_string(f, 1, "<" + p_name + "s>");
+		for (int i = 0; i < p_method_docs.size(); i++) {
+			const DocData::MethodDoc &m = p_method_docs[i];
+
+			String qualifiers;
+			if (m.qualifiers != "") {
+				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
+			}
+
+			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
+
+			if (m.return_type != "") {
+				String enum_text;
+				if (m.return_enum != String()) {
+					enum_text = " enum=\"" + m.return_enum + "\"";
+				}
+				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
+			}
+			if (m.errors_returned.size() > 0) {
+				for (int j = 0; j < m.errors_returned.size(); j++) {
+					_write_string(f, 3, "<returns_error number=\"" + itos(m.errors_returned[j]) + "\"/>");
+				}
+			}
+
+			for (int j = 0; j < m.arguments.size(); j++) {
+				const DocData::ArgumentDoc &a = m.arguments[j];
+
+				String enum_text;
+				if (a.enumeration != String()) {
+					enum_text = " enum=\"" + a.enumeration + "\"";
+				}
+
+				if (a.default_value != "") {
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
+				} else {
+					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
+				}
+			}
+
+			_write_string(f, 3, "<description>");
+			_write_string(f, 4, m.description.strip_edges().xml_escape());
+			_write_string(f, 3, "</description>");
+
+			_write_string(f, 2, "</" + p_name + ">");
+		}
+
+		_write_string(f, 1, "</" + p_name + "s>");
+	}
+}
+
 Error DocTools::save_classes(const String &p_default_path, const Map<String, String> &p_class_path) {
-	for (Map<String, DocData::ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
-		DocData::ClassDoc &c = E->get();
+	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
+		DocData::ClassDoc &c = E.value;
 
 		String save_path;
 		if (p_class_path.has(c.name)) {
@@ -1193,56 +1334,11 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 		}
 		_write_string(f, 1, "</tutorials>");
 
-		_write_string(f, 1, "<methods>");
+		_write_method_doc(f, "constructor", c.constructors);
 
-		c.methods.sort();
+		_write_method_doc(f, "method", c.methods);
 
-		for (int i = 0; i < c.methods.size(); i++) {
-			const DocData::MethodDoc &m = c.methods[i];
-
-			String qualifiers;
-			if (m.qualifiers != "") {
-				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
-			}
-
-			_write_string(f, 2, "<method name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
-
-			if (m.return_type != "") {
-				String enum_text;
-				if (m.return_enum != String()) {
-					enum_text = " enum=\"" + m.return_enum + "\"";
-				}
-				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + ">");
-				_write_string(f, 3, "</return>");
-			}
-
-			for (int j = 0; j < m.arguments.size(); j++) {
-				const DocData::ArgumentDoc &a = m.arguments[j];
-
-				String enum_text;
-				if (a.enumeration != String()) {
-					enum_text = " enum=\"" + a.enumeration + "\"";
-				}
-
-				if (a.default_value != "") {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\">");
-				} else {
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + ">");
-				}
-
-				_write_string(f, 3, "</argument>");
-			}
-
-			_write_string(f, 3, "<description>");
-			_write_string(f, 4, m.description.strip_edges().xml_escape());
-			_write_string(f, 3, "</description>");
-
-			_write_string(f, 2, "</method>");
-		}
-
-		_write_string(f, 1, "</methods>");
-
-		if (c.properties.size()) {
+		if (!c.properties.is_empty()) {
 			_write_string(f, 1, "<members>");
 
 			c.properties.sort();
@@ -1269,71 +1365,53 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 			_write_string(f, 1, "</members>");
 		}
 
-		if (c.signals.size()) {
-			c.signals.sort();
+		_write_method_doc(f, "signal", c.signals);
 
-			_write_string(f, 1, "<signals>");
-			for (int i = 0; i < c.signals.size(); i++) {
-				const DocData::MethodDoc &m = c.signals[i];
-				_write_string(f, 2, "<signal name=\"" + m.name + "\">");
-				for (int j = 0; j < m.arguments.size(); j++) {
-					const DocData::ArgumentDoc &a = m.arguments[j];
-					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\">");
-					_write_string(f, 3, "</argument>");
+		if (!c.constants.is_empty()) {
+			_write_string(f, 1, "<constants>");
+			for (int i = 0; i < c.constants.size(); i++) {
+				const DocData::ConstantDoc &k = c.constants[i];
+				if (k.is_value_valid) {
+					if (k.enumeration != String()) {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+					} else {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
+					}
+				} else {
+					if (k.enumeration != String()) {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
+					} else {
+						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
+					}
 				}
-
-				_write_string(f, 3, "<description>");
-				_write_string(f, 4, m.description.strip_edges().xml_escape());
-				_write_string(f, 3, "</description>");
-
-				_write_string(f, 2, "</signal>");
+				_write_string(f, 3, k.description.strip_edges().xml_escape());
+				_write_string(f, 2, "</constant>");
 			}
 
-			_write_string(f, 1, "</signals>");
+			_write_string(f, 1, "</constants>");
 		}
 
-		_write_string(f, 1, "<constants>");
-
-		for (int i = 0; i < c.constants.size(); i++) {
-			const DocData::ConstantDoc &k = c.constants[i];
-			if (k.is_value_valid) {
-				if (k.enumeration != String()) {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
-				} else {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
-				}
-			} else {
-				if (k.enumeration != String()) {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
-				} else {
-					_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
-				}
-			}
-			_write_string(f, 3, k.description.strip_edges().xml_escape());
-			_write_string(f, 2, "</constant>");
-		}
-
-		_write_string(f, 1, "</constants>");
-
-		if (c.theme_properties.size()) {
+		if (!c.theme_properties.is_empty()) {
 			c.theme_properties.sort();
 
 			_write_string(f, 1, "<theme_items>");
 			for (int i = 0; i < c.theme_properties.size(); i++) {
-				const DocData::PropertyDoc &p = c.theme_properties[i];
+				const DocData::ThemeItemDoc &ti = c.theme_properties[i];
 
-				if (p.default_value != "") {
-					_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\" default=\"" + p.default_value.xml_escape(true) + "\">");
+				if (ti.default_value != "") {
+					_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\" default=\"" + ti.default_value.xml_escape(true) + "\">");
 				} else {
-					_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\">");
+					_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\">");
 				}
 
-				_write_string(f, 3, p.description.strip_edges().xml_escape());
+				_write_string(f, 3, ti.description.strip_edges().xml_escape());
 
 				_write_string(f, 2, "</theme_item>");
 			}
 			_write_string(f, 1, "</theme_items>");
 		}
+
+		_write_method_doc(f, "operator", c.operators);
 
 		_write_string(f, 0, "</class>");
 	}

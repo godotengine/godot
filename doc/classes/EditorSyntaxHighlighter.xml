@@ -10,28 +10,17 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_name" qualifiers="virtual">
-			<return type="String">
-			</return>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="String" />
 			<description>
 				Virtual method which can be overridden to return the syntax highlighter name.
 			</description>
 		</method>
-		<method name="_get_supported_extentions" qualifiers="virtual">
-			<return type="Array">
-			</return>
-			<description>
-				Virtual method which can be overridden to return the supported file extensions.
-			</description>
-		</method>
-		<method name="_get_supported_languages" qualifiers="virtual">
-			<return type="Array">
-			</return>
+		<method name="_get_supported_languages" qualifiers="virtual const">
+			<return type="Array" />
 			<description>
 				Virtual method which can be overridden to return the supported language names.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

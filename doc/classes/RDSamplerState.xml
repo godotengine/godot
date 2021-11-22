@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDSamplerState" inherits="Reference" version="4.0">
+<class name="RDSamplerState" inherits="RefCounted" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="anisotropy_max" type="float" setter="set_anisotropy_max" getter="get_anisotropy_max" default="1.0">
 		</member>
@@ -40,6 +38,4 @@
 		<member name="use_anisotropy" type="bool" setter="set_use_anisotropy" getter="get_use_anisotropy" default="false">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

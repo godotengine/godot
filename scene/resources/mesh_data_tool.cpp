@@ -107,9 +107,9 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		bo = arrays[Mesh::ARRAY_BONES].operator Vector<int>().ptr();
 	}
 
-	const real_t *we = nullptr;
+	const float *we = nullptr;
 	if (arrays[Mesh::ARRAY_WEIGHTS].get_type() != Variant::NIL) {
-		we = arrays[Mesh::ARRAY_WEIGHTS].operator Vector<real_t>().ptr();
+		we = arrays[Mesh::ARRAY_WEIGHTS].operator Vector<float>().ptr();
 	}
 
 	vertices.resize(vcount);
@@ -421,6 +421,7 @@ Vector<int> MeshDataTool::get_vertex_bones(int p_idx) const {
 
 void MeshDataTool::set_vertex_bones(int p_idx, const Vector<int> &p_bones) {
 	ERR_FAIL_INDEX(p_idx, vertices.size());
+	ERR_FAIL_COND(p_bones.size() != 4);
 	vertices.write[p_idx].bones = p_bones;
 	format |= Mesh::ARRAY_FORMAT_BONES;
 }
@@ -432,6 +433,7 @@ Vector<float> MeshDataTool::get_vertex_weights(int p_idx) const {
 
 void MeshDataTool::set_vertex_weights(int p_idx, const Vector<float> &p_weights) {
 	ERR_FAIL_INDEX(p_idx, vertices.size());
+	ERR_FAIL_COND(p_weights.size() != 4);
 	vertices.write[p_idx].weights = p_weights;
 	format |= Mesh::ARRAY_FORMAT_WEIGHTS;
 }

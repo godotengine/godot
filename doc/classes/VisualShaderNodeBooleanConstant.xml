@@ -9,13 +9,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="constant" type="bool" setter="set_constant" getter="get_constant" default="false">
 			A boolean constant which represents a state of this node.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

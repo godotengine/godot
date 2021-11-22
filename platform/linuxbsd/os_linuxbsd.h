@@ -84,11 +84,13 @@ public:
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;
 
-	virtual String get_system_dir(SystemDir p_dir) const override;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
 	virtual Error shell_open(String p_uri) override;
 
 	virtual String get_unique_id() const override;
+
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 

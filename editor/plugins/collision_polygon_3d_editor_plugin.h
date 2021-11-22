@@ -34,8 +34,8 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/collision_polygon_3d.h"
-#include "scene/3d/immediate_geometry_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/resources/immediate_mesh.h"
 
 class CanvasItemEditor;
 
@@ -60,7 +60,8 @@ class CollisionPolygon3DEditor : public HBoxContainer {
 	EditorNode *editor;
 	Panel *panel;
 	Node3D *node;
-	ImmediateGeometry3D *imgeom;
+	Ref<ImmediateMesh> imesh;
+	MeshInstance3D *imgeom;
 	MeshInstance3D *pointsm;
 	Ref<ArrayMesh> m;
 
@@ -87,7 +88,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
+	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 	void edit(Node *p_collision_polygon);
 	CollisionPolygon3DEditor(EditorNode *p_editor);
 	~CollisionPolygon3DEditor();
@@ -100,7 +101,7 @@ class Polygon3DEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return collision_polygon_editor->forward_spatial_gui_input(p_camera, p_event); }
+	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return collision_polygon_editor->forward_spatial_gui_input(p_camera, p_event); }
 
 	virtual String get_name() const override { return "Polygon3DEditor"; }
 	bool has_main_screen() const override { return false; }

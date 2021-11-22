@@ -109,7 +109,7 @@ hb_map_destroy (hb_map_t *map)
 
   map->fini_shallow ();
 
-  free (map);
+  hb_free (map);
 }
 
 /**
@@ -188,6 +188,7 @@ hb_map_set (hb_map_t       *map,
 	    hb_codepoint_t  key,
 	    hb_codepoint_t  value)
 {
+  /* Immutable-safe. */
   map->set (key, value);
 }
 
@@ -220,6 +221,7 @@ void
 hb_map_del (hb_map_t       *map,
 	    hb_codepoint_t  key)
 {
+  /* Immutable-safe. */
   map->del (key);
 }
 
@@ -253,9 +255,6 @@ hb_map_has (const hb_map_t *map,
 void
 hb_map_clear (hb_map_t *map)
 {
-  if (unlikely (hb_object_is_immutable (map)))
-    return;
-
   return map->clear ();
 }
 

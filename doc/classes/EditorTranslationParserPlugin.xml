@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorTranslationParserPlugin" inherits="Reference" version="4.0">
+<class name="EditorTranslationParserPlugin" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Plugin for adding custom parsers to extract strings that are to be translated from custom files (.csv, .json etc.).
 	</brief_description>
 	<description>
-		Plugins are registered via [method EditorPlugin.add_translation_parser_plugin] method. To define the parsing and string extraction logic, override the [method parse_file] method in script.
+		[EditorTranslationParserPlugin] is invoked when a file is being parsed to extract strings that require translation. To define the parsing and string extraction logic, override the [method _parse_file] method in script.
 		Add the extracted strings to argument [code]msgids[/code] or [code]msgids_context_plural[/code] if context or plural is used.
 		When adding to [code]msgids_context_plural[/code], you must add the data using the format [code]["A", "B", "C"][/code], where [code]A[/code] represents the extracted string, [code]B[/code] represents the context, and [code]C[/code] represents the plural version of the extracted string. If you want to add only context but not plural, put [code]""[/code] for the plural slot. The idea is the same if you only want to add plural but not context. See the code below for concrete examples.
 		The extracted strings will be written into a POT file selected by user under "POT Generation" in "Localization" tab in "Project Settings" menu.
@@ -14,7 +14,7 @@
 		tool
 		extends EditorTranslationParserPlugin
 
-		func parse_file(path, msgids, msgids_context_plural):
+		func _parse_file(path, msgids, msgids_context_plural):
 		    var file = File.new()
 		    file.open(path, File.READ)
 		    var text = file.get_as_text()
@@ -23,7 +23,7 @@
 		        msgids.append(s)
 		        #print("Extracted string: " + s)
 
-		func get_recognized_extensions():
+		func _get_recognized_extensions():
 		    return ["csv"]
 		[/gdscript]
 		[csharp]
@@ -76,12 +76,12 @@
 		For example:
 		[codeblocks]
 		[gdscript]
-		func parse_file(path, msgids, msgids_context_plural):
+		func _parse_file(path, msgids, msgids_context_plural):
 		    var res = ResourceLoader.load(path, "Script")
 		    var text = res.source_code
 		    # Parsing logic.
 
-		func get_recognized_extensions():
+		func _get_recognized_extensions():
 		    return ["gd"]
 		[/gdscript]
 		[csharp]
@@ -98,31 +98,25 @@
 		}
 		[/csharp]
 		[/codeblocks]
+		To use [EditorTranslationParserPlugin], register it using the [method EditorPlugin.add_translation_parser_plugin] method first.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_recognized_extensions" qualifiers="virtual">
-			<return type="Array">
-			</return>
+		<method name="_get_recognized_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
 			<description>
 				Gets the list of file extensions to associate with this parser, e.g. [code]["csv"][/code].
 			</description>
 		</method>
-		<method name="parse_file" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="msgids" type="Array">
-			</argument>
-			<argument index="2" name="msgids_context_plural" type="Array">
-			</argument>
+		<method name="_parse_file" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="msgids" type="Array" />
+			<argument index="2" name="msgids_context_plural" type="Array" />
 			<description>
 				Override this method to define a custom parsing logic to extract the translatable strings.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

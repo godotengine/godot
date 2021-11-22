@@ -332,6 +332,44 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
     return nullptr;
   }
 
+  if (font->coords)
+  {
+    CFMutableDictionaryRef variations =
+      CFDictionaryCreateMutable (kCFAllocatorDefault,
+				 font->num_coords,
+				 &kCFTypeDictionaryKeyCallBacks,
+				 &kCFTypeDictionaryValueCallBacks);
+
+    for (unsigned i = 0; i < font->num_coords; i++)
+    {
+      if (font->coords[i] == 0.) continue;
+
+      hb_ot_var_axis_info_t info;
+      unsigned int c = 1;
+      hb_ot_var_get_axis_infos (font->face, i, &c, &info);
+      CFDictionarySetValue (variations,
+	CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &info.tag),
+	CFNumberCreate (kCFAllocatorDefault, kCFNumberFloatType, &font->design_coords[i])
+      );
+    }
+
+    CFDictionaryRef attributes =
+      CFDictionaryCreate (kCFAllocatorDefault,
+			  (const void **) &kCTFontVariationAttribute,
+			  (const void **) &variations,
+			  1,
+			  &kCFTypeDictionaryKeyCallBacks,
+			  &kCFTypeDictionaryValueCallBacks);
+
+    CTFontDescriptorRef varDesc = CTFontDescriptorCreateWithAttributes (attributes);
+    CTFontRef new_ct_font = CTFontCreateCopyWithAttributes (ct_font, 0, nullptr, varDesc);
+
+    CFRelease (ct_font);
+    CFRelease (attributes);
+    CFRelease (variations);
+    ct_font = new_ct_font;
+  }
+
   return (hb_coretext_font_data_t *) ct_font;
 }
 
@@ -1061,7 +1099,7 @@ resize_and_retry:
 	hb_glyph_info_t *info = run_info;
 	if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction))
 	{
-	  hb_position_t x_offset = (positions[0].x - advances_so_far) * x_mult;
+	  hb_position_t x_offset = round ((positions[0].x - advances_so_far) * x_mult);
 	  for (unsigned int j = 0; j < num_glyphs; j++)
 	  {
 	    CGFloat advance;
@@ -1069,15 +1107,15 @@ resize_and_retry:
 	      advance = positions[j + 1].x - positions[j].x;
 	    else /* last glyph */
 	      advance = run_advance - (positions[j].x - positions[0].x);
-	    info->mask = advance * x_mult;
+	    info->mask = round (advance * x_mult);
 	    info->var1.i32 = x_offset;
-	    info->var2.i32 = positions[j].y * y_mult;
+	    info->var2.i32 = round (positions[j].y * y_mult);
 	    info++;
 	  }
 	}
 	else
 	{
-	  hb_position_t y_offset = (positions[0].y - advances_so_far) * y_mult;
+	  hb_position_t y_offset = round ((positions[0].y - advances_so_far) * y_mult);
 	  for (unsigned int j = 0; j < num_glyphs; j++)
 	  {
 	    CGFloat advance;
@@ -1085,8 +1123,8 @@ resize_and_retry:
 	      advance = positions[j + 1].y - positions[j].y;
 	    else /* last glyph */
 	      advance = run_advance - (positions[j].y - positions[0].y);
-	    info->mask = advance * y_mult;
-	    info->var1.i32 = positions[j].x * x_mult;
+	    info->mask = round (advance * y_mult);
+	    info->var1.i32 = round (positions[j].x * x_mult);
 	    info->var2.i32 = y_offset;
 	    info++;
 	  }

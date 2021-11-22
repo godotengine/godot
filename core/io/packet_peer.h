@@ -35,8 +35,12 @@
 #include "core/object/class_db.h"
 #include "core/templates/ring_buffer.h"
 
-class PacketPeer : public Reference {
-	GDCLASS(PacketPeer, Reference);
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
+
+class PacketPeer : public RefCounted {
+	GDCLASS(PacketPeer, RefCounted);
 
 	Variant _bnd_get_var(bool p_allow_objects = false);
 
@@ -71,6 +75,25 @@ public:
 
 	PacketPeer() {}
 	~PacketPeer() {}
+};
+
+class PacketPeerExtension : public PacketPeer {
+	GDCLASS(PacketPeerExtension, PacketPeer);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual int get_available_packet_count() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
+	virtual int get_max_packet_size() const override;
+
+	/* GDExtension */
+	GDVIRTUAL0RC(int, _get_available_packet_count);
+	GDVIRTUAL2R(int, _get_packet, GDNativeConstPtr<const uint8_t *>, GDNativePtr<int>);
+	GDVIRTUAL2R(int, _put_packet, GDNativeConstPtr<const uint8_t>, int);
+	GDVIRTUAL0RC(int, _get_max_packet_size);
 };
 
 class PacketPeerStream : public PacketPeer {

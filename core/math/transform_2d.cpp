@@ -63,25 +63,25 @@ Transform2D Transform2D::affine_inverse() const {
 	return inv;
 }
 
-void Transform2D::rotate(real_t p_phi) {
+void Transform2D::rotate(const real_t p_phi) {
 	*this = Transform2D(p_phi, Vector2()) * (*this);
 }
 
 real_t Transform2D::get_skew() const {
 	real_t det = basis_determinant();
-	return Math::acos(elements[0].normalized().dot(SGN(det) * elements[1].normalized())) - Math_PI * 0.5;
+	return Math::acos(elements[0].normalized().dot(SIGN(det) * elements[1].normalized())) - Math_PI * 0.5;
 }
 
-void Transform2D::set_skew(float p_angle) {
+void Transform2D::set_skew(const real_t p_angle) {
 	real_t det = basis_determinant();
-	elements[1] = SGN(det) * elements[0].rotated((Math_PI * 0.5 + p_angle)).normalized() * elements[1].length();
+	elements[1] = SIGN(det) * elements[0].rotated((Math_PI * 0.5 + p_angle)).normalized() * elements[1].length();
 }
 
 real_t Transform2D::get_rotation() const {
 	return Math::atan2(elements[0].y, elements[0].x);
 }
 
-void Transform2D::set_rotation(real_t p_rot) {
+void Transform2D::set_rotation(const real_t p_rot) {
 	Size2 scale = get_scale();
 	real_t cr = Math::cos(p_rot);
 	real_t sr = Math::sin(p_rot);
@@ -92,7 +92,7 @@ void Transform2D::set_rotation(real_t p_rot) {
 	set_scale(scale);
 }
 
-Transform2D::Transform2D(real_t p_rot, const Vector2 &p_pos) {
+Transform2D::Transform2D(const real_t p_rot, const Vector2 &p_pos) {
 	real_t cr = Math::cos(p_rot);
 	real_t sr = Math::sin(p_rot);
 	elements[0][0] = cr;
@@ -102,8 +102,16 @@ Transform2D::Transform2D(real_t p_rot, const Vector2 &p_pos) {
 	elements[2] = p_pos;
 }
 
+Transform2D::Transform2D(const real_t p_rot, const Size2 &p_scale, const real_t p_skew, const Vector2 &p_pos) {
+	elements[0][0] = Math::cos(p_rot) * p_scale.x;
+	elements[1][1] = Math::cos(p_rot + p_skew) * p_scale.y;
+	elements[1][0] = -Math::sin(p_rot + p_skew) * p_scale.y;
+	elements[0][1] = Math::sin(p_rot) * p_scale.x;
+	elements[2] = p_pos;
+}
+
 Size2 Transform2D::get_scale() const {
-	real_t det_sign = SGN(basis_determinant());
+	real_t det_sign = SIGN(basis_determinant());
 	return Size2(elements[0].length(), det_sign * elements[1].length());
 }
 
@@ -126,7 +134,7 @@ void Transform2D::scale_basis(const Size2 &p_scale) {
 	elements[1][1] *= p_scale.y;
 }
 
-void Transform2D::translate(real_t p_tx, real_t p_ty) {
+void Transform2D::translate(const real_t p_tx, const real_t p_ty) {
 	translate(Vector2(p_tx, p_ty));
 }
 
@@ -156,6 +164,13 @@ Transform2D Transform2D::orthonormalized() const {
 
 bool Transform2D::is_equal_approx(const Transform2D &p_transform) const {
 	return elements[0].is_equal_approx(p_transform.elements[0]) && elements[1].is_equal_approx(p_transform.elements[1]) && elements[2].is_equal_approx(p_transform.elements[2]);
+}
+
+Transform2D Transform2D::looking_at(const Vector2 &p_target) const {
+	Transform2D return_trans = Transform2D(get_rotation(), get_origin());
+	Vector2 target_position = affine_inverse().xform(p_target);
+	return_trans.set_rotation(return_trans.get_rotation() + (target_position * get_scale()).angle());
+	return return_trans;
 }
 
 bool Transform2D::operator==(const Transform2D &p_transform) const {
@@ -224,7 +239,7 @@ Transform2D Transform2D::translated(const Vector2 &p_offset) const {
 	return copy;
 }
 
-Transform2D Transform2D::rotated(real_t p_phi) const {
+Transform2D Transform2D::rotated(const real_t p_phi) const {
 	Transform2D copy = *this;
 	copy.rotate(p_phi);
 	return copy;
@@ -234,7 +249,7 @@ real_t Transform2D::basis_determinant() const {
 	return elements[0].x * elements[1].y - elements[0].y * elements[1].x;
 }
 
-Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t p_c) const {
+Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, const real_t p_c) const {
 	//extract parameters
 	Vector2 p1 = get_origin();
 	Vector2 p2 = p_transform.get_origin();
@@ -264,11 +279,25 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t
 	}
 
 	//construct matrix
-	Transform2D res(Math::atan2(v.y, v.x), p1.lerp(p2, p_c));
+	Transform2D res(v.angle(), p1.lerp(p2, p_c));
 	res.scale_basis(s1.lerp(s2, p_c));
 	return res;
 }
 
+void Transform2D::operator*=(const real_t p_val) {
+	elements[0] *= p_val;
+	elements[1] *= p_val;
+	elements[2] *= p_val;
+}
+
+Transform2D Transform2D::operator*(const real_t p_val) const {
+	Transform2D ret(*this);
+	ret *= p_val;
+	return ret;
+}
+
 Transform2D::operator String() const {
-	return String(String() + elements[0] + ", " + elements[1] + ", " + elements[2]);
+	return "[X: " + elements[0].operator String() +
+			", Y: " + elements[1].operator String() +
+			", O: " + elements[2].operator String() + "]";
 }

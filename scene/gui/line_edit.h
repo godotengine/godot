@@ -97,6 +97,7 @@ private:
 	float full_width = 0.0;
 
 	bool selecting_enabled = true;
+	bool deselect_on_focus_loss_enabled = true;
 
 	bool context_menu_enabled = true;
 	PopupMenu *menu = nullptr;
@@ -126,7 +127,10 @@ private:
 
 	bool virtual_keyboard_enabled = true;
 
+	bool middle_mouse_paste_enabled = true;
+
 	Ref<Texture2D> right_icon;
+	bool flat = false;
 
 	struct Selection {
 		int begin = 0;
@@ -134,9 +138,8 @@ private:
 		int start_column = 0;
 		bool enabled = false;
 		bool creating = false;
-		bool doubleclick = false;
+		bool double_click = false;
 		bool drag_attempt = false;
-		uint64_t last_dblclk = 0;
 	} selection;
 
 	struct TextOperation {
@@ -153,6 +156,9 @@ private:
 		bool pressing_inside = false;
 	} clear_button_status;
 
+	uint64_t last_dblclk = 0;
+	Vector2 last_dblclk_pos;
+
 	bool caret_blink_enabled = false;
 	bool caret_force_displayed = false;
 	bool draw_caret = true;
@@ -164,8 +170,7 @@ private:
 	void _clear_redo();
 	void _create_undo_state();
 
-	int _get_menu_action_accelerator(const String &p_action);
-	void _generate_context_menu();
+	Key _get_menu_action_accelerator(const String &p_action);
 
 	void _shape();
 	void _fit_to_width();
@@ -186,7 +191,6 @@ private:
 	void _toggle_draw_caret();
 
 	void clear_internal();
-	void changed_internal();
 
 	void _editor_settings_changed();
 
@@ -198,10 +202,12 @@ private:
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 
+	void _ensure_menu();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -222,11 +228,15 @@ public:
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
 	PopupMenu *get_menu() const;
+	bool is_menu_visible() const;
 
 	void select(int p_from = 0, int p_to = -1);
 	void select_all();
 	void selection_delete();
 	void deselect();
+	bool has_selection() const;
+	int get_selection_from_column() const;
+	int get_selection_to_column() const;
 
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
@@ -283,6 +293,8 @@ public:
 	void copy_text();
 	void cut_text();
 	void paste_text();
+	bool has_undo() const;
+	bool has_redo() const;
 	void undo();
 	void redo();
 
@@ -309,11 +321,20 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
 
+	void set_middle_mouse_paste_enabled(bool p_enabled);
+	bool is_middle_mouse_paste_enabled() const;
+
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
 
+	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
+	bool is_deselect_on_focus_loss_enabled() const;
+
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
+
+	void set_flat(bool p_enabled);
+	bool is_flat() const;
 
 	virtual bool is_text_field() const override;
 

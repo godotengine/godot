@@ -32,9 +32,6 @@
 #define REFLECTIONPROBE_H
 
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/sky.h"
-#include "scene/resources/texture.h"
-#include "servers/rendering_server.h"
 
 class ReflectionProbe : public VisualInstance3D {
 	GDCLASS(ReflectionProbe, VisualInstance3D);
@@ -55,7 +52,7 @@ private:
 	RID probe;
 	float intensity = 1.0;
 	float max_distance = 0.0;
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 extents = Vector3(10, 10, 10);
 	Vector3 origin_offset = Vector3(0, 0, 0);
 	bool box_projection = false;
 	bool enable_shadows = false;

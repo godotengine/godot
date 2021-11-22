@@ -55,16 +55,23 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 		_build_search_cache(p_efsd->get_subdir(i));
 	}
 
+	Vector<String> base_types = String(base_type).split(String(","));
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		String file_type = p_efsd->get_file_type(i);
-		if (ClassDB::is_parent_class(file_type, base_type)) {
-			String file = p_efsd->get_file_path(i);
-			files.push_back(file.substr(6, file.length()));
+		// Iterate all possible base types.
+		for (String &parent_type : base_types) {
+			if (ClassDB::is_parent_class(file_type, parent_type)) {
+				String file = p_efsd->get_file_path(i);
+				files.push_back(file.substr(6, file.length()));
 
-			// Store refs to used icons.
-			String ext = file.get_extension();
-			if (!icons.has(ext)) {
-				icons.insert(ext, get_theme_icon((has_theme_icon(file_type, "EditorIcons") ? file_type : "Object"), "EditorIcons"));
+				// Store refs to used icons.
+				String ext = file.get_extension();
+				if (!icons.has(ext)) {
+					icons.insert(ext, get_theme_icon((has_theme_icon(file_type, SNAME("EditorIcons")) ? file_type : String("Object")), SNAME("EditorIcons")));
+				}
+
+				// Stop testing base types as soon as we got a match.
+				break;
 			}
 		}
 	}
@@ -102,7 +109,7 @@ void EditorQuickOpen::_update_search() {
 			ti->set_icon(0, *icons.lookup_ptr(entries[i].path.get_extension()));
 		}
 
-		TreeItem *to_select = root->get_children();
+		TreeItem *to_select = root->get_first_child();
 		to_select->select(0);
 		to_select->set_as_cursor(0);
 		search_options->scroll_to_item(to_select);
@@ -118,6 +125,11 @@ void EditorQuickOpen::_update_search() {
 float EditorQuickOpen::_score_path(const String &p_search, const String &p_path) {
 	float score = 0.9f + .1f * (p_search.length() / (float)p_path.length());
 
+	// Exact match.
+	if (p_search == p_path) {
+		return 1.2f;
+	}
+
 	// Positive bias for matches close to the beginning of the file name.
 	String file = p_path.get_file();
 	int pos = file.findn(p_search);
@@ -125,14 +137,8 @@ float EditorQuickOpen::_score_path(const String &p_search, const String &p_path)
 		return score * (1.0f - 0.1f * (float(pos) / file.length()));
 	}
 
-	// Positive bias for matches close to the end of the path.
-	pos = p_path.rfindn(p_search);
-	if (pos != -1) {
-		return score * (0.8f - 0.1f * (float(p_path.length() - pos) / p_path.length()));
-	}
-
-	// Remaining results belong to the same class of results.
-	return score * 0.69f;
+	// Similarity
+	return p_path.to_lower().similarity(p_search.to_lower());
 }
 
 void EditorQuickOpen::_confirmed() {
@@ -140,7 +146,7 @@ void EditorQuickOpen::_confirmed() {
 		return;
 	}
 	_cleanup();
-	emit_signal("quick_open");
+	emit_signal(SNAME("quick_open"));
 	hide();
 }
 
@@ -161,16 +167,16 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 	if (k.is_valid()) {
 		switch (k->get_keycode()) {
-			case KEY_UP:
-			case KEY_DOWN:
-			case KEY_PAGEUP:
-			case KEY_PAGEDOWN: {
-				search_options->call("_gui_input", k);
+			case Key::UP:
+			case Key::DOWN:
+			case Key::PAGEUP:
+			case Key::PAGEDOWN: {
+				search_options->gui_input(k);
 				search_box->accept_event();
 
 				if (allow_multi_select) {
 					TreeItem *root = search_options->get_root();
-					if (!root->get_children()) {
+					if (!root->get_first_child()) {
 						break;
 					}
 
@@ -185,6 +191,8 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 					current->set_as_cursor(0);
 				}
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -228,7 +236,7 @@ void EditorQuickOpen::_notification(int p_what) {
 }
 
 void EditorQuickOpen::_theme_changed() {
-	search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 }
 
 void EditorQuickOpen::_bind_methods() {

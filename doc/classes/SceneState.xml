@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneState" inherits="Reference" version="4.0">
+<class name="SceneState" inherits="RefCounted" version="4.0">
 	<brief_description>
 		A script interface to a scene file's data.
 	</brief_description>
@@ -11,187 +11,146 @@
 	</tutorials>
 	<methods>
 		<method name="get_connection_binds" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the list of bound parameters for the signal at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of signal connections in the scene.
 				The [code]idx[/code] argument used to query connection metadata in other [code]get_connection_*[/code] methods in the interval [code][0, get_connection_count() - 1][/code].
 			</description>
 		</method>
 		<method name="get_connection_flags" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the connection flags for the signal at [code]idx[/code]. See [enum Object.ConnectFlags] constants.
 			</description>
 		</method>
 		<method name="get_connection_method" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the method connected to the signal at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_signal" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the name of the signal at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_source" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="NodePath" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the path to the node that owns the signal at [code]idx[/code], relative to the root node.
 			</description>
 		</method>
 		<method name="get_connection_target" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="NodePath" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the path to the node that owns the method connected to the signal at [code]idx[/code], relative to the root node.
 			</description>
 		</method>
 		<method name="get_node_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of nodes in the scene.
 				The [code]idx[/code] argument used to query node data in other [code]get_node_*[/code] methods in the interval [code][0, get_node_count() - 1][/code].
 			</description>
 		</method>
 		<method name="get_node_groups" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="PackedStringArray" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the list of group names associated with the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_node_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
-				Returns the node's index, which is its position relative to its siblings. This is only relevant and saved in scenes for cases where new nodes are added to an instanced or inherited scene among siblings from the base scene. Despite the name, this index is not related to the [code]idx[/code] argument used here and in other methods.
+				Returns the node's index, which is its position relative to its siblings. This is only relevant and saved in scenes for cases where new nodes are added to an instantiated or inherited scene among siblings from the base scene. Despite the name, this index is not related to the [code]idx[/code] argument used here and in other methods.
 			</description>
 		</method>
 		<method name="get_node_instance" qualifiers="const">
-			<return type="PackedScene">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="PackedScene" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns a [PackedScene] for the node at [code]idx[/code] (i.e. the whole branch starting at this node, with its child nodes and resources), or [code]null[/code] if the node is not an instance.
 			</description>
 		</method>
 		<method name="get_node_instance_placeholder" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the path to the represented scene file if the node at [code]idx[/code] is an [InstancePlaceholder].
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the name of the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_node_owner_path" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="NodePath" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the path to the owner of the node at [code]idx[/code], relative to the root node.
 			</description>
 		</method>
 		<method name="get_node_path" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="for_parent" type="bool" default="false">
-			</argument>
+			<return type="NodePath" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="for_parent" type="bool" default="false" />
 			<description>
 				Returns the path to the node at [code]idx[/code].
 				If [code]for_parent[/code] is [code]true[/code], returns the path of the [code]idx[/code] node's parent instead.
 			</description>
 		</method>
 		<method name="get_node_property_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the number of exported or overridden properties for the node at [code]idx[/code].
 				The [code]prop_idx[/code] argument used to query node property data in other [code]get_node_property_*[/code] methods in the interval [code][0, get_node_property_count() - 1][/code].
 			</description>
 		</method>
 		<method name="get_node_property_name" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="prop_idx" type="int">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="prop_idx" type="int" />
 			<description>
 				Returns the name of the property at [code]prop_idx[/code] for the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_node_property_value" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="prop_idx" type="int">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="prop_idx" type="int" />
 			<description>
 				Returns the value of the property at [code]prop_idx[/code] for the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_node_type" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the type of the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="is_node_instance_placeholder" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the node at [code]idx[/code] is an [InstancePlaceholder].
 			</description>
@@ -199,14 +158,18 @@
 	</methods>
 	<constants>
 		<constant name="GEN_EDIT_STATE_DISABLED" value="0" enum="GenEditState">
-			If passed to [method PackedScene.instance], blocks edits to the scene state.
+			If passed to [method PackedScene.instantiate], blocks edits to the scene state.
 		</constant>
 		<constant name="GEN_EDIT_STATE_INSTANCE" value="1" enum="GenEditState">
-			If passed to [method PackedScene.instance], provides inherited scene resources to the local scene.
+			If passed to [method PackedScene.instantiate], provides inherited scene resources to the local scene.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
 		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
-			If passed to [method PackedScene.instance], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+			If passed to [method PackedScene.instantiate], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+			[b]Note:[/b] Only available in editor builds.
+		</constant>
+		<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3" enum="GenEditState">
+			If passed to [method PackedScene.instantiate], it's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
 	</constants>

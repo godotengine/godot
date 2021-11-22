@@ -7,20 +7,18 @@
 		Stores key presses on the keyboard. Supports key presses, key releases and [member echo] events.
 	</description>
 	<tutorials>
-		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
+		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_keycode_with_modifiers" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" enum="Key" />
 			<description>
 				Returns the keycode combined with modifier keys such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See also [InputEventWithModifiers].
 				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_keycode_string(event.get_keycode_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].
 			</description>
 		</method>
 		<method name="get_physical_keycode_with_modifiers" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" enum="Key" />
 			<description>
 				Returns the physical keycode combined with modifier keys such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See also [InputEventWithModifiers].
 				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_keycode_string(event.get_physical_keycode_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].
@@ -31,11 +29,11 @@
 		<member name="echo" type="bool" setter="set_echo" getter="is_echo" default="false">
 			If [code]true[/code], the key was already pressed before this event. It means the user is holding the key down.
 		</member>
-		<member name="keycode" type="int" setter="set_keycode" getter="get_keycode" default="0">
+		<member name="keycode" type="int" setter="set_keycode" getter="get_keycode" enum="Key" default="0">
 			The key keycode, which corresponds to one of the [enum Key] constants. Represent key in the current keyboard layout.
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.keycode)[/code] where [code]event[/code] is the [InputEventKey].
 		</member>
-		<member name="physical_keycode" type="int" setter="set_physical_keycode" getter="get_physical_keycode" default="0">
+		<member name="physical_keycode" type="int" setter="set_physical_keycode" getter="get_physical_keycode" enum="Key" default="0">
 			Key physical keycode, which corresponds to one of the [enum Key] constants. Represent the physical location of a key on the 101/102-key US QWERTY keyboard.
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.keycode)[/code] where [code]event[/code] is the [InputEventKey].
 		</member>
@@ -46,6 +44,4 @@
 			The key Unicode identifier (when relevant). Unicode identifiers for the composite characters and complex scripts may not be available unless IME input mode is active. See [method Window.set_ime_active] for more information.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

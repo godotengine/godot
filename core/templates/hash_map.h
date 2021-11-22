@@ -53,7 +53,7 @@
  * @param RELATIONSHIP Relationship at which the hash table is resized. if amount of elements is RELATIONSHIP
  * times bigger than the hash table, table is resized to solve this condition. if RELATIONSHIP is zero, table is always MIN_HASH_TABLE_POWER.
  *
-*/
+ */
 
 template <class TKey, class TData, class Hasher = HashMapHasherDefault, class Comparator = HashMapComparatorDefault<TKey>, uint8_t MIN_HASH_TABLE_POWER = 3, uint8_t RELATIONSHIP = 8>
 class HashMap {
@@ -62,7 +62,9 @@ public:
 		TKey key;
 		TData data;
 
-		Pair() {}
+		Pair(const TKey &p_key) :
+				key(p_key),
+				data() {}
 		Pair(const TKey &p_key, const TData &p_data) :
 				key(p_key),
 				data(p_data) {
@@ -90,6 +92,12 @@ public:
 		const TData &value() const {
 			return pair.value();
 		}
+
+		Element(const TKey &p_key) :
+				pair(p_key) {}
+		Element(const Element &p_other) :
+				hash(p_other.hash),
+				pair(p_other.pair.key, p_other.pair.data) {}
 	};
 
 private:
@@ -192,14 +200,12 @@ private:
 
 	Element *create_element(const TKey &p_key) {
 		/* if element doesn't exist, create it */
-		Element *e = memnew(Element);
+		Element *e = memnew(Element(p_key));
 		ERR_FAIL_COND_V_MSG(!e, nullptr, "Out of memory.");
 		uint32_t hash = Hasher::hash(p_key);
 		uint32_t index = hash & ((1 << hash_table_power) - 1);
 		e->next = hash_table[index];
 		e->hash = hash;
-		e->pair.key = p_key;
-		e->pair.data = TData();
 
 		hash_table[index] = e;
 		elements++;
@@ -228,9 +234,7 @@ private:
 			const Element *e = p_t.hash_table[i];
 
 			while (e) {
-				Element *le = memnew(Element); /* local element */
-
-				*le = *e; /* copy data */
+				Element *le = memnew(Element(*e)); /* local element */
 
 				/* add to list and reassign pointers */
 				le->next = hash_table[i];
@@ -291,7 +295,7 @@ public:
 	}
 
 	/**
-	 * Same as get, except it can return nullptr  when item was not found.
+	 * Same as get, except it can return nullptr when item was not found.
 	 * This is mainly used for speed purposes.
 	 */
 
@@ -324,7 +328,7 @@ public:
 	}
 
 	/**
-	 * Same as get, except it can return nullptr  when item was not found.
+	 * Same as get, except it can return nullptr when item was not found.
 	 * This version is custom, will take a hash and a custom key (that should support operator==()
 	 */
 
@@ -443,7 +447,7 @@ public:
 
 	/**
 	 * Get the next key to p_key, and the first key if p_key is null.
-	 * Returns a pointer to the next key if found, nullptr  otherwise.
+	 * Returns a pointer to the next key if found, nullptr otherwise.
 	 * Adding/Removing elements while iterating will, of course, have unexpected results, don't do it.
 	 *
 	 * Example:
@@ -454,8 +458,8 @@ public:
 	 *
 	 * 		print( *k );
 	 * 	}
-         *
-	*/
+	 *
+	 */
 	const TKey *next(const TKey *p_key) const {
 		if (unlikely(!hash_table)) {
 			return nullptr;

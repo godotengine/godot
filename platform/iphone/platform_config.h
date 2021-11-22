@@ -30,6 +30,8 @@
 
 #include <alloca.h>
 
+#define OPENGL_INCLUDE_H <ES3/gl.h>
+
 #define PLATFORM_REFCOUNT
 
 #define PTHREAD_RENAME_SELF

@@ -30,6 +30,7 @@
 
 #include "world_environment.h"
 
+#include "scene/3d/node_3d.h"
 #include "scene/main/window.h"
 
 void WorldEnvironment::_notification(int p_what) {
@@ -145,7 +146,7 @@ TypedArray<String> WorldEnvironment::get_configuration_warnings() const {
 	}
 
 	if (camera_effects.is_valid() && get_viewport()->find_world_3d()->get_camera_effects() != camera_effects) {
-		warnings.push_back(TTR("Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."));
+		warnings.push_back(TTR("Only one WorldEnvironment is allowed per scene (or set of instantiated scenes)."));
 	}
 
 	return warnings;

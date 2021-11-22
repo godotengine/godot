@@ -10,35 +10,28 @@
 	</tutorials>
 	<methods>
 		<method name="generate_triangle_mesh" qualifiers="const">
-			<return type="TriangleMesh">
-			</return>
+			<return type="TriangleMesh" />
 			<description>
 				Returns a [TriangleMesh] with the sprite's vertices following its current configuration (such as its [member axis] and [member pixel_size]).
 			</description>
 		</method>
 		<method name="get_draw_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
 			<description>
 				Returns the value of the specified flag.
 			</description>
 		</method>
 		<method name="get_item_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
 				Returns the rectangle representing this sprite.
 			</description>
 		</method>
 		<method name="set_draw_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
+			<argument index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], the specified flag will be enabled. See [enum SpriteBase3D.DrawFlags] for a list of flags.
 			</description>
@@ -66,10 +59,10 @@
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
 			If [code]true[/code], texture is flipped vertically.
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
 			A color value that gets multiplied on, could be used for mood-coloring or to simulate the color of light.
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
 		</member>
 		<member name="opacity" type="float" setter="set_opacity" getter="get_opacity" default="1.0">

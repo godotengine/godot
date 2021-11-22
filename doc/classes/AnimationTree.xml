@@ -4,36 +4,31 @@
 		A node to be used for advanced animation transitions in an [AnimationPlayer].
 	</brief_description>
 	<description>
-		Note: When linked with an [AnimationPlayer], several properties and methods of the corresponding [AnimationPlayer] will not function as expected. Playback and transitions should be handled using only the [AnimationTree] and its constituent [AnimationNode](s). The [AnimationPlayer] node should be used solely for adding, deleting, and editing animations.
+		A node to be used for advanced animation transitions in an [AnimationPlayer].
+		[b]Note:[/b] When linked with an [AnimationPlayer], several properties and methods of the corresponding [AnimationPlayer] will not function as expected. Playback and transitions should be handled using only the [AnimationTree] and its constituent [AnimationNode](s). The [AnimationPlayer] node should be used solely for adding, deleting, and editing animations.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="advance">
-			<return type="void">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="delta" type="float" />
 			<description>
 				Manually advance the animations by the specified time (in seconds).
 			</description>
 		</method>
 		<method name="get_root_motion_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
+			<return type="Transform3D" />
 			<description>
-				Retrieve the motion of the [member root_motion_track] as a [Transform] that can be used elsewhere. If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_TRANSFORM], returns an identity transformation.
+				Retrieve the motion of the [member root_motion_track] as a [Transform3D] that can be used elsewhere. If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_SCALE_3D] or [constant Animation.TYPE_ROTATION_3D], returns an identity transformation. See also [member root_motion_track] and [RootMotionView].
 			</description>
 		</method>
 		<method name="rename_parameter">
-			<return type="void">
-			</return>
-			<argument index="0" name="old_name" type="String">
-			</argument>
-			<argument index="1" name="new_name" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="old_name" type="String" />
+			<argument index="1" name="new_name" type="String" />
 			<description>
 			</description>
 		</method>
@@ -50,7 +45,7 @@
 		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
 			The path to the Animation track used for root motion. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. To specify a track that controls properties or bones, append its name after the path, separated by [code]":"[/code]. For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
-			If the track has type [constant Animation.TYPE_TRANSFORM], the transformation will be cancelled visually, and the animation will appear to stay in place.
+			If the track has type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_ROTATION_3D] or [constant Animation.TYPE_SCALE_3D] the transformation will be cancelled visually, and the animation will appear to stay in place. See also [method get_root_motion_transform] and [RootMotionView].
 		</member>
 		<member name="tree_root" type="AnimationNode" setter="set_tree_root" getter="get_tree_root">
 			The root animation node of this [AnimationTree]. See [AnimationNode].

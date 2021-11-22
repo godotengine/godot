@@ -32,21 +32,33 @@
 #define RESOURCE_LOADER_H
 
 #include "core/io/resource.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
-class ResourceFormatLoader : public Reference {
-	GDCLASS(ResourceFormatLoader, Reference);
+class ResourceFormatLoader : public RefCounted {
+	GDCLASS(ResourceFormatLoader, RefCounted);
 
 public:
 	enum CacheMode {
-		CACHE_MODE_IGNORE, //resource and subresources do not use path cache, no path is set into resource.
-		CACHE_MODE_REUSE, //resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available
-		CACHE_MODE_REPLACE, //resource and and subresource use path cache, but replace existing loaded resources when available with information from disk
+		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
+		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
+		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
 	};
 
 protected:
 	static void _bind_methods();
+
+	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL1RC(bool, _handles_type, StringName)
+	GDVIRTUAL1RC(String, _get_resource_type, String)
+	GDVIRTUAL1RC(ResourceUID::ID, _get_resource_uid, String)
+	GDVIRTUAL2RC(Vector<String>, _get_dependencies, String, bool)
+	GDVIRTUAL2RC(int64_t, _rename_dependencies, String, Dictionary)
+	GDVIRTUAL1RC(bool, _exists, String)
+
+	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)
 
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
@@ -56,6 +68,7 @@ public:
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
+	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
 	virtual bool is_import_valid(const String &p_path) const { return true; }
@@ -107,7 +120,7 @@ private:
 
 	friend class ResourceFormatImporter;
 	friend class ResourceInteractiveLoader;
-	//internal load function
+	// Internal load function.
 	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
 	static ResourceLoadedCallback _loaded_callback;
@@ -157,6 +170,7 @@ public:
 	static void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front = false);
 	static void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
 	static String get_resource_type(const String &p_path);
+	static ResourceUID::ID get_resource_uid(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
 	static bool is_import_valid(const String &p_path);

@@ -31,7 +31,7 @@
 #ifndef EDITORFILEDIALOG_H
 #define EDITORFILEDIALOG_H
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -167,8 +167,8 @@ private:
 	void _item_menu_id_pressed(int p_option);
 
 	void _select_drive(int p_idx);
-	void _dir_entered(String p_dir);
-	void _file_entered(const String &p_file);
+	void _dir_submitted(String p_dir);
+	void _file_submitted(const String &p_file);
 	void _action_pressed();
 	void _save_confirm_pressed();
 	void _cancel_pressed();
@@ -193,7 +193,7 @@ private:
 	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 	void _request_single_thumbnail(const String &p_path);
 
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	bool _is_open_should_be_disabled();
 

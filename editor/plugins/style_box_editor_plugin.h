@@ -61,8 +61,6 @@ class EditorInspectorPluginStyleBox : public EditorInspectorPlugin {
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
-	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide = false) override;
-	virtual void parse_end() override;
 };
 
 class StyleBoxEditorPlugin : public EditorPlugin {

@@ -91,11 +91,13 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		// the data width in case of 8/4/1 bit images
 		const uint32_t w = bits_per_pixel >= 24 ? width : width_bytes;
 		const uint8_t *line = p_buffer + (line_width * (height - 1));
+		const uint8_t *end_buffer = p_buffer + p_header.bmp_file_header.bmp_file_size - p_header.bmp_file_header.bmp_file_offset;
 
 		for (uint64_t i = 0; i < height; i++) {
 			const uint8_t *line_ptr = line;
 
 			for (unsigned int j = 0; j < w; j++) {
+				ERR_FAIL_COND_V(line_ptr >= end_buffer, ERR_FILE_CORRUPT);
 				switch (bits_per_pixel) {
 					case 1: {
 						uint8_t color_index = *line_ptr;
@@ -130,23 +132,19 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 						line_ptr += 1;
 					} break;
 					case 24: {
-						uint32_t color = *((uint32_t *)line_ptr);
-
-						write_buffer[index + 2] = color & 0xff;
-						write_buffer[index + 1] = (color >> 8) & 0xff;
-						write_buffer[index + 0] = (color >> 16) & 0xff;
+						write_buffer[index + 2] = line_ptr[0];
+						write_buffer[index + 1] = line_ptr[1];
+						write_buffer[index + 0] = line_ptr[2];
 						write_buffer[index + 3] = 0xff;
 
 						index += 4;
 						line_ptr += 3;
 					} break;
 					case 32: {
-						uint32_t color = *((uint32_t *)line_ptr);
-
-						write_buffer[index + 2] = color & 0xff;
-						write_buffer[index + 1] = (color >> 8) & 0xff;
-						write_buffer[index + 0] = (color >> 16) & 0xff;
-						write_buffer[index + 3] = color >> 24;
+						write_buffer[index + 2] = line_ptr[0];
+						write_buffer[index + 1] = line_ptr[1];
+						write_buffer[index + 0] = line_ptr[2];
+						write_buffer[index + 3] = line_ptr[3];
 
 						index += 4;
 						line_ptr += 4;
@@ -172,11 +170,9 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			const uint8_t *cb = p_color_buffer;
 
 			for (unsigned int i = 0; i < color_table_size; ++i) {
-				uint32_t color = *((uint32_t *)cb);
-
-				pal[i * 4 + 0] = (color >> 16) & 0xff;
-				pal[i * 4 + 1] = (color >> 8) & 0xff;
-				pal[i * 4 + 2] = (color)&0xff;
+				pal[i * 4 + 0] = cb[2];
+				pal[i * 4 + 1] = cb[1];
+				pal[i * 4 + 2] = cb[0];
 				pal[i * 4 + 3] = 0xff;
 
 				cb += 4;
@@ -211,7 +207,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 
 	// A valid bmp file should always at least have a
 	// file header and a minimal info header
-	if (f->get_len() > BITMAP_FILE_HEADER_SIZE + BITMAP_INFO_HEADER_MIN_SIZE) {
+	if (f->get_length() > BITMAP_FILE_HEADER_SIZE + BITMAP_INFO_HEADER_MIN_SIZE) {
 		// File Header
 		bmp_header.bmp_file_header.bmp_signature = f->get_16();
 		if (bmp_header.bmp_file_header.bmp_signature == BITMAP_SIGNATURE) {
@@ -252,8 +248,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 			}
 			// Don't rely on sizeof(bmp_file_header) as structure padding
 			// adds 2 bytes offset leading to misaligned color table reading
-			uint32_t ct_offset = BITMAP_FILE_HEADER_SIZE +
-								 bmp_header.bmp_info_header.bmp_header_size;
+			uint32_t ct_offset = BITMAP_FILE_HEADER_SIZE + bmp_header.bmp_info_header.bmp_header_size;
 			f->seek(ct_offset);
 
 			uint32_t color_table_size = 0;
@@ -275,8 +270,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 
 			f->seek(bmp_header.bmp_file_header.bmp_file_offset);
 
-			uint32_t bmp_buffer_size = (bmp_header.bmp_file_header.bmp_file_size -
-										bmp_header.bmp_file_header.bmp_file_offset);
+			uint32_t bmp_buffer_size = (bmp_header.bmp_file_header.bmp_file_size - bmp_header.bmp_file_header.bmp_file_offset);
 
 			Vector<uint8_t> bmp_buffer;
 			err = bmp_buffer.resize(bmp_buffer_size);
@@ -304,7 +298,7 @@ static Ref<Image> _bmp_mem_loader_func(const uint8_t *p_bmp, int p_size) {
 	Error open_memfile_error = memfile.open_custom(p_bmp, p_size);
 	ERR_FAIL_COND_V_MSG(open_memfile_error, Ref<Image>(), "Could not create memfile for BMP image buffer.");
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	Error load_error = ImageLoaderBMP().load_image(img, &memfile, false, 1.0f);
 	ERR_FAIL_COND_V_MSG(load_error, Ref<Image>(), "Failed to load BMP image.");
 	return img;

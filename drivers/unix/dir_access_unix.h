@@ -33,7 +33,7 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 
 #include <dirent.h>
 #include <sys/stat.h>
@@ -79,7 +79,11 @@ public:
 	virtual Error rename(String p_path, String p_new_path);
 	virtual Error remove(String p_path);
 
-	virtual size_t get_space_left();
+	virtual bool is_link(String p_file);
+	virtual String read_link(String p_file);
+	virtual Error create_link(String p_source, String p_target);
+
+	virtual uint64_t get_space_left();
 
 	virtual String get_filesystem_type() const;
 

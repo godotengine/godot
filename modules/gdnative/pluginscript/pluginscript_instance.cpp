@@ -100,44 +100,8 @@ String PluginScriptInstance::to_string(bool *r_valid) {
 	return str_ret;
 }
 
-Vector<ScriptNetData> PluginScriptInstance::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> PluginScriptInstance::get_rpc_methods() const {
 	return _script->get_rpc_methods();
-}
-
-uint16_t PluginScriptInstance::get_rpc_method_id(const StringName &p_variable) const {
-	return _script->get_rpc_method_id(p_variable);
-}
-
-StringName PluginScriptInstance::get_rpc_method(uint16_t p_id) const {
-	return _script->get_rpc_method(p_id);
-}
-
-MultiplayerAPI::RPCMode PluginScriptInstance::get_rpc_mode_by_id(uint16_t p_id) const {
-	return _script->get_rpc_mode_by_id(p_id);
-}
-
-MultiplayerAPI::RPCMode PluginScriptInstance::get_rpc_mode(const StringName &p_method) const {
-	return _script->get_rpc_mode(p_method);
-}
-
-Vector<ScriptNetData> PluginScriptInstance::get_rset_properties() const {
-	return _script->get_rset_properties();
-}
-
-uint16_t PluginScriptInstance::get_rset_property_id(const StringName &p_variable) const {
-	return _script->get_rset_property_id(p_variable);
-}
-
-StringName PluginScriptInstance::get_rset_property(uint16_t p_id) const {
-	return _script->get_rset_property(p_id);
-}
-
-MultiplayerAPI::RPCMode PluginScriptInstance::get_rset_mode_by_id(uint16_t p_id) const {
-	return _script->get_rset_mode_by_id(p_id);
-}
-
-MultiplayerAPI::RPCMode PluginScriptInstance::get_rset_mode(const StringName &p_variable) const {
-	return _script->get_rset_mode(p_variable);
 }
 
 void PluginScriptInstance::refcount_incremented() {

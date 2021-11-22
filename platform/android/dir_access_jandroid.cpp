@@ -161,7 +161,7 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 	if (current_dir == "")
 		sd = p_dir;
 	else {
-		if (p_dir.is_rel_path())
+		if (p_dir.is_relative_path())
 			sd = current_dir.plus_file(p_dir);
 		else
 			sd = fix_path(p_dir);
@@ -201,8 +201,7 @@ String DirAccessJAndroid::get_filesystem_type() const {
 	return "APK";
 }
 
-//FileType get_file_type() const;
-size_t DirAccessJAndroid::get_space_left() {
+uint64_t DirAccessJAndroid::get_space_left() {
 	return 0;
 }
 

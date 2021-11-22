@@ -73,7 +73,7 @@ public:
 	virtual float get_playback_position() const override;
 	virtual void seek(float p_time) override;
 
-	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
+	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	AudioStreamPlaybackSample();
 };
@@ -92,7 +92,7 @@ public:
 	enum LoopMode {
 		LOOP_DISABLED,
 		LOOP_FORWARD,
-		LOOP_PING_PONG,
+		LOOP_PINGPONG,
 		LOOP_BACKWARD
 	};
 
@@ -135,6 +135,8 @@ public:
 	bool is_stereo() const;
 
 	virtual float get_length() const override; //if supported, otherwise return 0
+
+	virtual bool is_monophonic() const override;
 
 	void set_data(const Vector<uint8_t> &p_data);
 	Vector<uint8_t> get_data() const;

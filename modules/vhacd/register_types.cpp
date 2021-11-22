@@ -32,44 +32,55 @@
 #include "scene/resources/mesh.h"
 #include "thirdparty/vhacd/public/VHACD.h"
 
-static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces) {
-	Vector<float> vertices;
-	vertices.resize(p_faces.size() * 9);
-	Vector<uint32_t> indices;
-	indices.resize(p_faces.size() * 3);
-
-	for (int i = 0; i < p_faces.size(); i++) {
-		for (int j = 0; j < 3; j++) {
-			vertices.write[i * 9 + j * 3 + 0] = p_faces[i].vertex[j].x;
-			vertices.write[i * 9 + j * 3 + 1] = p_faces[i].vertex[j].y;
-			vertices.write[i * 9 + j * 3 + 2] = p_faces[i].vertex[j].z;
-			indices.write[i * 3 + j] = i * 3 + j;
-		}
-	}
+static Vector<Vector<Vector3>> convex_decompose(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const Mesh::ConvexDecompositionSettings &p_settings, Vector<Vector<uint32_t>> *r_convex_indices) {
+	VHACD::IVHACD::Parameters params;
+	params.m_concavity = p_settings.max_concavity;
+	params.m_alpha = p_settings.symmetry_planes_clipping_bias;
+	params.m_beta = p_settings.revolution_axes_clipping_bias;
+	params.m_minVolumePerCH = p_settings.min_volume_per_convex_hull;
+	params.m_resolution = p_settings.resolution;
+	params.m_maxNumVerticesPerCH = p_settings.max_num_vertices_per_convex_hull;
+	params.m_planeDownsampling = p_settings.plane_downsampling;
+	params.m_convexhullDownsampling = p_settings.convexhull_downsampling;
+	params.m_pca = p_settings.normalize_mesh;
+	params.m_mode = p_settings.mode;
+	params.m_convexhullApproximation = p_settings.convexhull_approximation;
+	params.m_oclAcceleration = true;
+	params.m_maxConvexHulls = p_settings.max_convex_hulls;
+	params.m_projectHullVertices = p_settings.project_hull_vertices;
 
 	VHACD::IVHACD *decomposer = VHACD::CreateVHACD();
-	VHACD::IVHACD::Parameters params;
-	decomposer->Compute(vertices.ptr(), vertices.size() / 3, indices.ptr(), indices.size() / 3, params);
+	decomposer->Compute(p_vertices, p_vertex_count, p_triangles, p_triangle_count, params);
 
 	int hull_count = decomposer->GetNConvexHulls();
 
-	Vector<Vector<Face3>> ret;
+	Vector<Vector<Vector3>> ret;
+	ret.resize(hull_count);
+
+	if (r_convex_indices) {
+		r_convex_indices->resize(hull_count);
+	}
 
 	for (int i = 0; i < hull_count; i++) {
-		Vector<Face3> triangles;
 		VHACD::IVHACD::ConvexHull hull;
 		decomposer->GetConvexHull(i, hull);
-		triangles.resize(hull.m_nTriangles);
-		for (uint32_t j = 0; j < hull.m_nTriangles; j++) {
-			Face3 f;
+
+		Vector<Vector3> &points = ret.write[i];
+		points.resize(hull.m_nPoints);
+
+		Vector3 *w = points.ptrw();
+		for (uint32_t j = 0; j < hull.m_nPoints; ++j) {
 			for (int k = 0; k < 3; k++) {
-				for (int l = 0; l < 3; l++) {
-					f.vertex[k][l] = hull.m_points[hull.m_triangles[j * 3 + k] * 3 + l];
-				}
+				w[j][k] = hull.m_points[j * 3 + k];
 			}
-			triangles.write[j] = f;
 		}
-		ret.push_back(triangles);
+
+		if (r_convex_indices) {
+			Vector<uint32_t> &indices = r_convex_indices->write[i];
+			indices.resize(hull.m_nTriangles * 3);
+
+			memcpy(indices.ptrw(), hull.m_triangles, hull.m_nTriangles * 3 * sizeof(uint32_t));
+		}
 	}
 
 	decomposer->Clean();
@@ -79,9 +90,9 @@ static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces) {
 }
 
 void register_vhacd_types() {
-	Mesh::convex_composition_function = convex_decompose;
+	Mesh::convex_decomposition_function = convex_decompose;
 }
 
 void unregister_vhacd_types() {
-	Mesh::convex_composition_function = nullptr;
+	Mesh::convex_decomposition_function = nullptr;
 }

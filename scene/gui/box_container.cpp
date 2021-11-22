@@ -43,7 +43,7 @@ void BoxContainer::_resort() {
 
 	Size2i new_size = get_size();
 
-	int sep = get_theme_constant("separation"); //,vertical?"VBoxContainer":"HBoxContainer");
+	int sep = get_theme_constant(SNAME("separation")); //,vertical?"VBoxContainer":"HBoxContainer");
 	bool rtl = is_layout_rtl();
 
 	bool first = true;
@@ -247,7 +247,7 @@ Size2 BoxContainer::get_minimum_size() const {
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
-	int sep = get_theme_constant("separation"); //,vertical?"VBoxContainer":"HBoxContainer");
+	int sep = get_theme_constant(SNAME("separation")); //,vertical?"VBoxContainer":"HBoxContainer");
 
 	bool first = true;
 
@@ -349,12 +349,13 @@ void BoxContainer::_bind_methods() {
 
 MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {
 	Label *l = memnew(Label);
+	l->set_theme_type_variation("HeaderSmall");
 	l->set_text(p_label);
-	add_child(l);
+	add_child(l, false, INTERNAL_MODE_FRONT);
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->add_theme_constant_override("margin_left", 0);
-	mc->add_child(p_control);
-	add_child(mc);
+	mc->add_child(p_control, true);
+	add_child(mc, false, INTERNAL_MODE_FRONT);
 	if (p_expand) {
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	}

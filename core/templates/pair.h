@@ -31,6 +31,8 @@
 #ifndef PAIR_H
 #define PAIR_H
 
+#include "core/typedefs.h"
+
 template <class F, class S>
 struct Pair {
 	F first;
@@ -60,7 +62,43 @@ bool operator!=(const Pair<F, S> &pair, const Pair<F, S> &other) {
 template <class F, class S>
 struct PairSort {
 	bool operator()(const Pair<F, S> &A, const Pair<F, S> &B) const {
-		return A.first < B.first;
+		if (A.first != B.first) {
+			return A.first < B.first;
+		}
+		return A.second < B.second;
+	}
+};
+
+template <class K, class V>
+struct KeyValue {
+	const K key;
+	V value;
+
+	void operator=(const KeyValue &p_kv) = delete;
+	_FORCE_INLINE_ KeyValue(const KeyValue &p_kv) :
+			key(p_kv.key),
+			value(p_kv.value) {
+	}
+	_FORCE_INLINE_ KeyValue(const K &p_key, const V &p_value) :
+			key(p_key),
+			value(p_value) {
+	}
+};
+
+template <class K, class V>
+bool operator==(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
+	return (pair.key == other.key) && (pair.value == other.value);
+}
+
+template <class K, class V>
+bool operator!=(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
+	return (pair.key != other.key) || (pair.value != other.value);
+}
+
+template <class K, class V>
+struct KeyValueSort {
+	bool operator()(const KeyValue<K, V> &A, const KeyValue<K, V> &B) const {
+		return A.key < B.key;
 	}
 };
 

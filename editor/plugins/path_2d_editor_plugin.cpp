@@ -31,7 +31,7 @@
 #include "path_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -70,14 +70,14 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		return false;
 	}
 
-	real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
+	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 		Vector2 gpoint = mb->get_position();
-		Vector2 cpoint = node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
+		Vector2 cpoint = node->to_local(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
 
 		if (mb->is_pressed() && action == ACTION_NONE) {
 			Ref<Curve2D> curve = node->get_curve();
@@ -88,8 +88,8 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				real_t dist_to_p_in = gpoint.distance_to(xform.xform(curve->get_point_position(i) + curve->get_point_in(i)));
 
 				// Check for point movement start (for point + in/out controls).
-				if (mb->get_button_index() == MOUSE_BUTTON_LEFT) {
-					if (mode == MODE_EDIT && !mb->get_shift() && dist_to_p < grab_threshold) {
+				if (mb->get_button_index() == MouseButton::LEFT) {
+					if (mode == MODE_EDIT && !mb->is_shift_pressed() && dist_to_p < grab_threshold) {
 						// Points can only be moved in edit mode.
 
 						action = ACTION_MOVING_POINT;
@@ -118,7 +118,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				// Check for point deletion.
-				if ((mb->get_button_index() == MOUSE_BUTTON_RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == MOUSE_BUTTON_LEFT && mode == MODE_DELETE)) {
+				if ((mb->get_button_index() == MouseButton::RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == MouseButton::LEFT && mode == MODE_DELETE)) {
 					if (dist_to_p < grab_threshold) {
 						undo_redo->create_action(TTR("Remove Point from Curve"));
 						undo_redo->add_do_method(curve.ptr(), "remove_point", i);
@@ -149,7 +149,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Check for point creation.
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && ((mb->get_command() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && ((mb->is_command_pressed() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
 			Ref<Curve2D> curve = node->get_curve();
 
 			undo_redo->create_action(TTR("Add Point to Curve"));
@@ -170,7 +170,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Check for segment split.
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mode == MODE_EDIT && on_edge) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && mode == MODE_EDIT && on_edge) {
 			Vector2 gpoint2 = mb->get_position();
 			Ref<Curve2D> curve = node->get_curve();
 
@@ -207,7 +207,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Check for point movement completion.
-		if (!mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && action != ACTION_NONE) {
+		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && action != ACTION_NONE) {
 			Ref<Curve2D> curve = node->get_curve();
 
 			Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
@@ -364,12 +364,12 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-	const Ref<Texture2D> path_sharp_handle = get_theme_icon("EditorPathSharpHandle", "EditorIcons");
-	const Ref<Texture2D> path_smooth_handle = get_theme_icon("EditorPathSmoothHandle", "EditorIcons");
+	const Ref<Texture2D> path_sharp_handle = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
+	const Ref<Texture2D> path_smooth_handle = get_theme_icon(SNAME("EditorPathSmoothHandle"), SNAME("EditorIcons"));
 	// Both handle icons must be of the same size
 	const Size2 handle_size = path_sharp_handle->get_size();
 
-	const Ref<Texture2D> curve_handle = get_theme_icon("EditorCurveHandle", "EditorIcons");
+	const Ref<Texture2D> curve_handle = get_theme_icon(SNAME("EditorCurveHandle"), SNAME("EditorIcons"));
 	const Size2 curve_handle_size = curve_handle->get_size();
 
 	Ref<Curve2D> curve = node->get_curve();
@@ -411,7 +411,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 
 	if (on_edge) {
-		Ref<Texture2D> add_handle = get_theme_icon("EditorHandleAdd", "EditorIcons");
+		Ref<Texture2D> add_handle = get_theme_icon(SNAME("EditorHandleAdd"), SNAME("EditorIcons"));
 		p_overlay->draw_texture(add_handle, edge_point - add_handle->get_size() * 0.5);
 	}
 }
@@ -481,7 +481,7 @@ void Path2DEditor::_mode_selected(int p_mode) {
 
 		Vector2 begin = node->get_curve()->get_point_position(0);
 		Vector2 end = node->get_curve()->get_point_position(node->get_curve()->get_point_count() - 1);
-		if (begin.distance_to(end) < CMP_EPSILON) {
+		if (begin.is_equal_approx(end)) {
 			return;
 		}
 
@@ -534,15 +534,15 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	base_hb->add_child(sep);
 	curve_edit = memnew(Button);
 	curve_edit->set_flat(true);
-	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveEdit", "EditorIcons"));
+	curve_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
 	curve_edit->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected), varray(MODE_EDIT));
 	base_hb->add_child(curve_edit);
 	curve_edit_curve = memnew(Button);
 	curve_edit_curve->set_flat(true);
-	curve_edit_curve->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveCurve", "EditorIcons"));
+	curve_edit_curve->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveCurve"), SNAME("EditorIcons")));
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip(TTR("Select Control Points (Shift+Drag)"));
@@ -550,7 +550,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	base_hb->add_child(curve_edit_curve);
 	curve_create = memnew(Button);
 	curve_create->set_flat(true);
-	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveCreate", "EditorIcons"));
+	curve_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip(TTR("Add Point (in empty space)"));
@@ -558,7 +558,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	base_hb->add_child(curve_create);
 	curve_del = memnew(Button);
 	curve_del->set_flat(true);
-	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveDelete", "EditorIcons"));
+	curve_del->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip(TTR("Delete Point"));
@@ -566,7 +566,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	base_hb->add_child(curve_del);
 	curve_close = memnew(Button);
 	curve_close->set_flat(true);
-	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("CurveClose", "EditorIcons"));
+	curve_close->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("CurveClose"), SNAME("EditorIcons")));
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip(TTR("Close Curve"));
 	curve_close->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected), varray(ACTION_CLOSE));

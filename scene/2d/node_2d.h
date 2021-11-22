@@ -42,6 +42,7 @@ class Node2D : public CanvasItem {
 	real_t skew = 0.0;
 	int z_index = 0;
 	bool z_relative = true;
+	bool y_sort_enabled = false;
 
 	Transform2D _mat;
 
@@ -74,9 +75,7 @@ public:
 
 	void set_position(const Point2 &p_pos);
 	void set_rotation(real_t p_radians);
-	void set_rotation_degrees(real_t p_degrees);
 	void set_skew(real_t p_radians);
-	void set_skew_degrees(real_t p_radians);
 	void set_scale(const Size2 &p_scale);
 
 	void rotate(real_t p_radians);
@@ -89,20 +88,16 @@ public:
 	Point2 get_position() const;
 	real_t get_rotation() const;
 	real_t get_skew() const;
-	real_t get_rotation_degrees() const;
-	real_t get_skew_degrees() const;
 	Size2 get_scale() const;
 
 	Point2 get_global_position() const;
 	real_t get_global_rotation() const;
-	real_t get_global_rotation_degrees() const;
 	Size2 get_global_scale() const;
 
 	void set_transform(const Transform2D &p_transform);
 	void set_global_transform(const Transform2D &p_transform);
 	void set_global_position(const Point2 &p_pos);
 	void set_global_rotation(real_t p_radians);
-	void set_global_rotation_degrees(real_t p_degrees);
 	void set_global_scale(const Size2 &p_scale);
 
 	void set_z_index(int p_z);
@@ -116,6 +111,9 @@ public:
 
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;
+
+	virtual void set_y_sort_enabled(bool p_enabled);
+	virtual bool is_y_sort_enabled() const;
 
 	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
 

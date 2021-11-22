@@ -10,35 +10,28 @@
 	</tutorials>
 	<methods>
 		<method name="get_default_input_value" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="port_idx" type="int">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="port_idx" type="int" />
 			<description>
 				Returns the default value of a given port. The default value is used when nothing is connected to the port.
 			</description>
 		</method>
 		<method name="get_visual_script" qualifiers="const">
-			<return type="VisualScript">
-			</return>
+			<return type="VisualScript" />
 			<description>
 				Returns the [VisualScript] instance the node is bound to.
 			</description>
 		</method>
 		<method name="ports_changed_notify">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Notify that the node's ports have changed. Usually used in conjunction with [VisualScriptCustomNode] .
 			</description>
 		</method>
 		<method name="set_default_input_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="port_idx" type="int">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="port_idx" type="int" />
+			<argument index="1" name="value" type="Variant" />
 			<description>
 				Change the default value of a given port.
 			</description>
@@ -51,6 +44,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

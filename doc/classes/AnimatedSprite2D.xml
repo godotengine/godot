@@ -8,38 +8,33 @@
 		[b]Note:[/b] You can associate a set of normal or specular maps by creating additional [SpriteFrames] resources with a [code]_normal[/code] or [code]_specular[/code] suffix. For example, having 3 [SpriteFrames] resources [code]run[/code], [code]run_normal[/code], and [code]run_specular[/code] will make it so the [code]run[/code] animation uses normal and specular maps.
 	</description>
 	<tutorials>
-		<link title="2D Sprite animation">https://docs.godotengine.org/en/latest/tutorials/2d/2d_sprite_animation.html</link>
+		<link title="2D Sprite animation">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
 		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if an animation is currently being played.
 			</description>
 		</method>
 		<method name="play">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName" default="@&quot;&quot;">
-			</argument>
-			<argument index="1" name="backwards" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
+			<argument index="1" name="backwards" type="bool" default="false" />
 			<description>
 				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played. If [code]backwards[/code] is [code]true[/code], the animation will be played in reverse.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the current animation (does not reset the frame counter).
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="@&quot;default&quot;">
+		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="&amp;&quot;default&quot;">
 			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
@@ -57,7 +52,7 @@
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
 			The [SpriteFrames] resource containing the animation(s).
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
@@ -79,6 +74,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

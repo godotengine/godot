@@ -1,4 +1,6 @@
 def can_build(env, platform):
+    if env["arch"].startswith("rv"):
+        return False
     return env.module_check_dependencies("theora", ["ogg", "vorbis"])
 
 

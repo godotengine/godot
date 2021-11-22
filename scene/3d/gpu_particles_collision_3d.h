@@ -32,9 +32,7 @@
 #define GPU_PARTICLES_COLLISION_3D_H
 
 #include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/material.h"
 
 class GPUParticlesCollision3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesCollision3D, VisualInstance3D);
@@ -60,14 +58,14 @@ public:
 class GPUParticlesCollisionSphere : public GPUParticlesCollision3D {
 	GDCLASS(GPUParticlesCollisionSphere, GPUParticlesCollision3D);
 
-	float radius = 1.0;
+	real_t radius = 1.0;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_radius(float p_radius);
-	float get_radius() const;
+	void set_radius(real_t p_radius);
+	real_t get_radius() const;
 
 	virtual AABB get_aabb() const override;
 
@@ -119,7 +117,7 @@ private:
 
 	struct PlotMesh {
 		Ref<Mesh> mesh;
-		Transform local_xform;
+		Transform3D local_xform;
 	};
 
 	void _find_meshes(const AABB &p_aabb, Node *p_at_node, List<PlotMesh> &plot_meshes);
@@ -253,9 +251,9 @@ class GPUParticlesAttractor3D : public VisualInstance3D {
 
 	uint32_t cull_mask = 0xFFFFFFFF;
 	RID collision;
-	float strength = 1.0;
-	float attenuation = 1.0;
-	float directionality = 0.0;
+	real_t strength = 1.0;
+	real_t attenuation = 1.0;
+	real_t directionality = 0.0;
 
 protected:
 	_FORCE_INLINE_ RID _get_collision() { return collision; }
@@ -267,14 +265,14 @@ public:
 	void set_cull_mask(uint32_t p_cull_mask);
 	uint32_t get_cull_mask() const;
 
-	void set_strength(float p_strength);
-	float get_strength() const;
+	void set_strength(real_t p_strength);
+	real_t get_strength() const;
 
-	void set_attenuation(float p_attenuation);
-	float get_attenuation() const;
+	void set_attenuation(real_t p_attenuation);
+	real_t get_attenuation() const;
 
-	void set_directionality(float p_directionality);
-	float get_directionality() const;
+	void set_directionality(real_t p_directionality);
+	real_t get_directionality() const;
 
 	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
 
@@ -284,14 +282,14 @@ public:
 class GPUParticlesAttractorSphere : public GPUParticlesAttractor3D {
 	GDCLASS(GPUParticlesAttractorSphere, GPUParticlesAttractor3D);
 
-	float radius = 1.0;
+	real_t radius = 1.0;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_radius(float p_radius);
-	float get_radius() const;
+	void set_radius(real_t p_radius);
+	real_t get_radius() const;
 
 	virtual AABB get_aabb() const override;
 

@@ -31,7 +31,7 @@
 #ifndef EDITOR_FILE_SYSTEM_H
 #define EDITOR_FILE_SYSTEM_H
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/safe_refcount.h"
@@ -55,6 +55,7 @@ class EditorFileSystemDirectory : public Object {
 	struct FileInfo {
 		String file;
 		StringName type;
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
 		uint64_t modified_time = 0;
 		uint64_t import_modified_time = 0;
 		bool import_valid = false;
@@ -102,6 +103,8 @@ public:
 	int find_file_index(const String &p_file) const;
 	int find_dir_index(const String &p_dir) const;
 
+	void force_update();
+
 	EditorFileSystemDirectory();
 	~EditorFileSystemDirectory();
 };
@@ -146,7 +149,6 @@ class EditorFileSystem : public Node {
 
 	void _scan_filesystem();
 
-	Set<String> late_added_files; //keep track of files that were added, these will be re-scanned
 	Set<String> late_update_files;
 
 	void _save_late_updated_files();
@@ -158,6 +160,7 @@ class EditorFileSystem : public Node {
 	/* Used for reading the filesystem cache file */
 	struct FileCache {
 		String type;
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
 		uint64_t modification_time = 0;
 		uint64_t import_modification_time = 0;
 		Vector<String> deps;
@@ -187,6 +190,7 @@ class EditorFileSystem : public Node {
 
 	void _delete_internal_files(String p_file);
 
+	Set<String> textfile_extensions;
 	Set<String> valid_extensions;
 	Set<String> import_extensions;
 
@@ -249,6 +253,10 @@ class EditorFileSystem : public Node {
 	};
 
 	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);
+
+	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
+
+	bool _scan_extensions();
 
 protected:
 	void _notification(int p_what);

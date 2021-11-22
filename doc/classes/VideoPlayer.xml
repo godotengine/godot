@@ -5,45 +5,40 @@
 	</brief_description>
 	<description>
 		Control node for playing video streams using [VideoStream] resources.
-		Supported video formats are [url=https://www.webmproject.org/]WebM[/url] ([code].webm[/code], [VideoStreamWebm]), [url=https://www.theora.org/]Ogg Theora[/url] ([code].ogv[/code], [VideoStreamTheora]), and any format exposed via a GDNative plugin using [VideoStreamGDNative].
+		Supported video formats are [url=https://www.theora.org/]Ogg Theora[/url] ([code].ogv[/code], [VideoStreamTheora]) and any format exposed via a GDNative plugin using [VideoStreamGDNative].
 		[b]Note:[/b] Due to a bug, VideoPlayer does not support localization remapping yet.
-		[b]Warning:[/b] On HTML5, video playback [i]will[/i] perform poorly due to missing architecture-specific assembly optimizations, especially for VP8/VP9.
+		[b]Warning:[/b] On HTML5, video playback [i]will[/i] perform poorly due to missing architecture-specific assembly optimizations.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_stream_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the video stream's name, or [code]"&lt;No Stream&gt;"[/code] if no video stream is assigned.
 			</description>
 		</method>
 		<method name="get_video_texture" qualifiers="const">
-			<return type="Texture2D">
-			</return>
+			<return type="Texture2D" />
 			<description>
 				Returns the current frame as a [Texture2D].
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the video is playing.
 				[b]Note:[/b] The video is still considered playing if paused during playback.
 			</description>
 		</method>
 		<method name="play">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Starts the video playback from the beginning. If the video is paused, this will not unpause the video.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the video playback and sets the stream position to 0.
 				[b]Note:[/b] Although the stream position will be set to 0, the first frame of the video stream won't become the current frame.
@@ -60,7 +55,7 @@
 		<member name="buffering_msec" type="int" setter="set_buffering_msec" getter="get_buffering_msec" default="500">
 			Amount of time in milliseconds to store in buffer while playing.
 		</member>
-		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="@&quot;Master&quot;">
+		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="&amp;&quot;Master&quot;">
 			Audio bus to use for sound playback.
 		</member>
 		<member name="expand" type="bool" setter="set_expand" getter="has_expand" default="true">
@@ -90,6 +85,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

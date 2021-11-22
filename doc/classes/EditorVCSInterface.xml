@@ -10,19 +10,15 @@
 	</tutorials>
 	<methods>
 		<method name="commit">
-			<return type="void">
-			</return>
-			<argument index="0" name="msg" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="msg" type="String" />
 			<description>
 				Creates a version commit if the addon is initialized, else returns without doing anything. Uses the files which have been staged previously, with the commit message set to a value as provided as in the argument.
 			</description>
 		</method>
 		<method name="get_file_diff">
-			<return type="Array">
-			</return>
-			<argument index="0" name="file_path" type="String">
-			</argument>
+			<return type="Array" />
+			<argument index="0" name="file_path" type="String" />
 			<description>
 				Returns an [Array] of [Dictionary] objects containing the diff output from the VCS in use, if a VCS addon is initialized, else returns an empty [Array] object. The diff contents also consist of some contextual lines which provide context to the observed line change in the file.
 				Each [Dictionary] object has the line diff contents under the keys:
@@ -35,8 +31,7 @@
 			</description>
 		</method>
 		<method name="get_modified_files_data">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns a [Dictionary] containing the path of the detected file change mapped to an integer signifying what kind of change the corresponding file has experienced.
 				The following integer values are being used to signify that the detected file is:
@@ -48,68 +43,55 @@
 			</description>
 		</method>
 		<method name="get_project_name">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the project name of the VCS working directory.
 			</description>
 		</method>
 		<method name="get_vcs_name">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the name of the VCS if the VCS has been initialized, else return an empty string.
 			</description>
 		</method>
 		<method name="initialize">
-			<return type="bool">
-			</return>
-			<argument index="0" name="project_root_path" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="project_root_path" type="String" />
 			<description>
 				Initializes the VCS addon if not already. Uses the argument value as the path to the working directory of the project. Creates the initial commit if required. Returns [code]true[/code] if no failure occurs, else returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_addon_ready">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the addon is ready to respond to function calls, else returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_vcs_initialized">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the VCS addon has been initialized, else returns [code]false[/code].
 			</description>
 		</method>
 		<method name="shut_down">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Shuts down the VCS addon to allow cleanup code to run on call. Returns [code]true[/code] is no failure occurs, else returns [code]false[/code].
 			</description>
 		</method>
 		<method name="stage_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file_path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file_path" type="String" />
 			<description>
 				Stages the file which should be committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
 			</description>
 		</method>
 		<method name="unstage_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file_path" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file_path" type="String" />
 			<description>
 				Unstages the file which was staged previously to be committed, so that it is no longer committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

@@ -31,27 +31,29 @@
 #ifndef GLTF_STATE_H
 #define GLTF_STATE_H
 
-#include "core/io/resource.h"
-#include "core/templates/vector.h"
-#include "editor_scene_importer_gltf.h"
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
 #include "gltf_buffer_view.h"
 #include "gltf_camera.h"
 #include "gltf_document.h"
+#include "gltf_document_extension.h"
 #include "gltf_light.h"
 #include "gltf_mesh.h"
 #include "gltf_node.h"
 #include "gltf_skeleton.h"
 #include "gltf_skin.h"
 #include "gltf_texture.h"
+
+#include "core/io/resource.h"
+#include "core/templates/map.h"
+#include "core/templates/pair.h"
+#include "core/templates/vector.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/texture.h"
 
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
-	friend class PackedSceneGLTF;
 
 	String filename;
 	Dictionary json;
@@ -87,6 +89,9 @@ class GLTFState : public Resource {
 	Map<GLTFSkeletonIndex, GLTFNodeIndex> skeleton_to_node;
 	Vector<Ref<GLTFAnimation>> animations;
 	Map<GLTFNodeIndex, Node *> scene_nodes;
+
+	Map<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
+	Map<ObjectID, Map<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
 
 protected:
 	static void _bind_methods();

@@ -89,7 +89,7 @@ private:
 	PrintHandlerList phl;
 	static void _print_handler(void *p_this, const String &p_string, bool p_error);
 	ErrorHandlerList eh;
-	static void _err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type);
+	static void _err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, bool p_editor_notify, ErrorHandlerType p_type);
 
 	ErrorMessage _create_overflow_error(const String &p_what, const String &p_descr);
 	Error _put_msg(String p_message, Array p_data);
@@ -111,7 +111,7 @@ public:
 	// Overrides
 	void poll_events(bool p_is_idle);
 	void send_message(const String &p_message, const Array &p_args);
-	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type);
+	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type);
 	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
 
 	RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer);

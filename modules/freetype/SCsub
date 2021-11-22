@@ -80,6 +80,7 @@ if env["builtin_freetype"]:
         # Forcibly undefine this macro so SIMD is not used in this file,
         # since currently unsupported in WASM
         tmp_env = env_freetype.Clone()
+        tmp_env.disable_warnings()
         tmp_env.Append(CPPFLAGS=["-U__OPTIMIZE__"])
         sfnt = tmp_env.Object(sfnt)
     thirdparty_sources += [sfnt]

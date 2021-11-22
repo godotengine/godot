@@ -7,35 +7,31 @@
 		Animations are created using a [SpriteFrames] resource, which can be configured in the editor via the SpriteFrames panel.
 	</description>
 	<tutorials>
-		<link title="2D Sprite animation (also applies to 3D)">https://docs.godotengine.org/en/latest/tutorials/2d/2d_sprite_animation.html</link>
+		<link title="2D Sprite animation (also applies to 3D)">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
 	</tutorials>
 	<methods>
 		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if an animation is currently being played.
 			</description>
 		</method>
 		<method name="play">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="StringName" default="@&quot;&quot;">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the current animation (does not reset the frame counter).
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="@&quot;default&quot;">
+		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="&amp;&quot;default&quot;">
 			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
@@ -60,6 +56,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

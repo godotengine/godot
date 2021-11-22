@@ -45,27 +45,27 @@ Basis ImportUtils::EulerToBasis(FBXDocParser::Model::RotOrder mode, const Vector
 	// by simply invert its order: https://www.cs.utexas.edu/~theshark/courses/cs354/lectures/cs354-14.pdf
 	switch (mode) {
 		case FBXDocParser::Model::RotOrder_EulerXYZ:
-			ret.set_euler_zyx(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_XYZ);
 			break;
 
 		case FBXDocParser::Model::RotOrder_EulerXZY:
-			ret.set_euler_yzx(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_XZY);
 			break;
 
 		case FBXDocParser::Model::RotOrder_EulerYZX:
-			ret.set_euler_xzy(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_YZX);
 			break;
 
 		case FBXDocParser::Model::RotOrder_EulerYXZ:
-			ret.set_euler_zxy(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_YXZ);
 			break;
 
 		case FBXDocParser::Model::RotOrder_EulerZXY:
-			ret.set_euler_yxz(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_ZXY);
 			break;
 
 		case FBXDocParser::Model::RotOrder_EulerZYX:
-			ret.set_euler_xyz(p_rotation);
+			ret.set_euler(p_rotation, Basis::EULER_ORDER_ZYX);
 			break;
 
 		case FBXDocParser::Model::RotOrder_SphericXYZ:
@@ -80,7 +80,7 @@ Basis ImportUtils::EulerToBasis(FBXDocParser::Model::RotOrder mode, const Vector
 	return ret;
 }
 
-Quat ImportUtils::EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation) {
+Quaternion ImportUtils::EulerToQuaternion(FBXDocParser::Model::RotOrder mode, const Vector3 &p_rotation) {
 	return ImportUtils::EulerToBasis(mode, p_rotation);
 }
 
@@ -89,22 +89,22 @@ Vector3 ImportUtils::BasisToEuler(FBXDocParser::Model::RotOrder mode, const Basi
 	// by simply invert its order: https://www.cs.utexas.edu/~theshark/courses/cs354/lectures/cs354-14.pdf
 	switch (mode) {
 		case FBXDocParser::Model::RotOrder_EulerXYZ:
-			return p_rotation.get_euler_zyx();
+			return p_rotation.get_euler(Basis::EULER_ORDER_XYZ);
 
 		case FBXDocParser::Model::RotOrder_EulerXZY:
-			return p_rotation.get_euler_yzx();
+			return p_rotation.get_euler(Basis::EULER_ORDER_XZY);
 
 		case FBXDocParser::Model::RotOrder_EulerYZX:
-			return p_rotation.get_euler_xzy();
+			return p_rotation.get_euler(Basis::EULER_ORDER_YZX);
 
 		case FBXDocParser::Model::RotOrder_EulerYXZ:
-			return p_rotation.get_euler_zxy();
+			return p_rotation.get_euler(Basis::EULER_ORDER_YXZ);
 
 		case FBXDocParser::Model::RotOrder_EulerZXY:
-			return p_rotation.get_euler_yxz();
+			return p_rotation.get_euler(Basis::EULER_ORDER_ZXY);
 
 		case FBXDocParser::Model::RotOrder_EulerZYX:
-			return p_rotation.get_euler_xyz();
+			return p_rotation.get_euler(Basis::EULER_ORDER_ZYX);
 
 		case FBXDocParser::Model::RotOrder_SphericXYZ:
 			// TODO
@@ -117,18 +117,18 @@ Vector3 ImportUtils::BasisToEuler(FBXDocParser::Model::RotOrder mode, const Basi
 	}
 }
 
-Vector3 ImportUtils::QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quat &p_rotation) {
+Vector3 ImportUtils::QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quaternion &p_rotation) {
 	return BasisToEuler(mode, p_rotation);
 }
 
-Transform get_unscaled_transform(const Transform &p_initial, real_t p_scale) {
-	Transform unscaled = Transform(p_initial.basis, p_initial.origin * p_scale);
-	ERR_FAIL_COND_V_MSG(unscaled.basis.determinant() == 0, Transform(), "det is zero unscaled?");
+Transform3D get_unscaled_transform(const Transform3D &p_initial, real_t p_scale) {
+	Transform3D unscaled = Transform3D(p_initial.basis, p_initial.origin * p_scale);
+	ERR_FAIL_COND_V_MSG(unscaled.basis.determinant() == 0, Transform3D(), "det is zero unscaled?");
 	return unscaled;
 }
 
 Vector3 get_poly_normal(const std::vector<Vector3> &p_vertices) {
-	ERR_FAIL_COND_V_MSG(p_vertices.size() < 3, Vector3(0, 0, 0), "At least 3 vertices are necesary");
+	ERR_FAIL_COND_V_MSG(p_vertices.size() < 3, Vector3(0, 0, 0), "At least 3 vertices are necessary");
 	// Using long double to make sure that normal is computed for even really tiny objects.
 	typedef long double ldouble;
 	ldouble x = 0.0;

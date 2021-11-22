@@ -37,7 +37,7 @@
 #include "FBXCommon.h"
 #include "FBXParser.h"
 #include "FBXProperties.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
 #include "core/string/print_string.h"
@@ -242,13 +242,13 @@ public:
 		return target_id;
 	}
 
-	Transform GetBindPose() const {
+	Transform3D GetBindPose() const {
 		return transform;
 	}
 
 private:
 	uint64_t target_id = 0;
-	Transform transform;
+	Transform3D transform;
 };
 
 /** DOM base class for FBX cameras attached to a node */
@@ -699,20 +699,20 @@ private:
 typedef std::vector<int64_t> KeyTimeList;
 typedef std::vector<float> KeyValueList;
 
-/** Represents a FBX animation curve (i.e. a 1-dimensional set of keyframes and values therefor) */
+/** Represents a FBX animation curve (i.e. a 1-dimensional set of keyframes and values therefore) */
 class AnimationCurve : public Object {
 public:
 	AnimationCurve(uint64_t id, const ElementPtr element, const std::string &name, const Document &doc);
 	virtual ~AnimationCurve();
 
 	/** get list of keyframe positions (time).
-     *  Invariant: |GetKeys()| > 0 */
+	 *  Invariant: |GetKeys()| > 0 */
 	const KeyTimeList &GetKeys() const {
 		return keys;
 	}
 
 	/** get list of keyframe values.
-      * Invariant: |GetKeys()| == |GetValues()| && |GetKeys()| > 0*/
+	 * Invariant: |GetKeys()| == |GetValues()| && |GetKeys()| > 0*/
 	const KeyValueList &GetValues() const {
 		return values;
 	}
@@ -750,8 +750,8 @@ typedef std::weak_ptr<AnimationCurveNode> AnimationCurveNodeWeakPtr;
 class AnimationCurveNode : public Object {
 public:
 	/* the optional white list specifies a list of property names for which the caller
-    wants animations for. If the curve node does not match one of these, std::range_error
-    will be thrown. */
+	wants animations for. If the curve node does not match one of these, std::range_error
+	will be thrown. */
 	AnimationCurveNode(uint64_t id, const ElementPtr element, const std::string &name, const Document &doc,
 			const char *const *target_prop_whitelist = nullptr, size_t whitelist_size = 0);
 
@@ -759,9 +759,9 @@ public:
 
 	const AnimationMap &Curves() const;
 
-	/** Object the curve is assigned to, this can be NULL if the
-     *  target object has no DOM representation or could not
-     *  be read for other reasons.*/
+	/** Object the curve is assigned to, this can be nullptr if the
+	 *  target object has no DOM representation or could not
+	 *  be read for other reasons.*/
 	Object *Target() const {
 		return target;
 	}
@@ -799,8 +799,8 @@ public:
 	virtual ~AnimationLayer();
 
 	/* the optional white list specifies a list of property names for which the caller
-    wants animations for. Curves not matching this list will not be added to the
-    animation layer. */
+	wants animations for. Curves not matching this list will not be added to the
+	animation layer. */
 	const AnimationCurveNodeList Nodes(const char *const *target_prop_whitelist = nullptr, size_t whitelist_size = 0) const;
 
 private:
@@ -891,25 +891,25 @@ public:
 	virtual ~Cluster();
 
 	/** get the list of deformer weights associated with this cluster.
-     *  Use #GetIndices() to get the associated vertices. Both arrays
-     *  have the same size (and may also be empty). */
+	 *  Use #GetIndices() to get the associated vertices. Both arrays
+	 *  have the same size (and may also be empty). */
 	const std::vector<float> &GetWeights() const {
 		return weights;
 	}
 
 	/** get indices into the vertex data of the geometry associated
-     *  with this cluster. Use #GetWeights() to get the associated weights.
-     *  Both arrays have the same size (and may also be empty). */
+	 *  with this cluster. Use #GetWeights() to get the associated weights.
+	 *  Both arrays have the same size (and may also be empty). */
 	const std::vector<unsigned int> &GetIndices() const {
 		return indices;
 	}
 
 	/** */
-	const Transform &GetTransform() const {
+	const Transform3D &GetTransform() const {
 		return transform;
 	}
 
-	const Transform &TransformLink() const {
+	const Transform3D &TransformLink() const {
 		return transformLink;
 	}
 
@@ -917,7 +917,7 @@ public:
 		return node;
 	}
 
-	const Transform &TransformAssociateModel() const {
+	const Transform3D &TransformAssociateModel() const {
 		return transformAssociateModel;
 	}
 
@@ -941,9 +941,9 @@ private:
 	std::vector<float> weights;
 	std::vector<unsigned int> indices;
 
-	Transform transform;
-	Transform transformLink;
-	Transform transformAssociateModel;
+	Transform3D transform;
+	Transform3D transformLink;
+	Transform3D transformAssociateModel;
 	SkinLinkMode link_mode;
 	bool valid_transformAssociateModel = false;
 	const Model *node = nullptr;
@@ -989,7 +989,7 @@ public:
 
 	// note: a connection ensures that the source and dest objects exist, but
 	// not that they have DOM representations, so the return value of one of
-	// these functions can still be NULL.
+	// these functions can still be nullptr.
 	Object *SourceObject() const;
 	Object *DestinationObject() const;
 
@@ -998,7 +998,7 @@ public:
 	LazyObject *LazyDestinationObject() const;
 
 	/** return the name of the property the connection is attached to.
-      * this is an empty string for object to object (OO) connections. */
+	 * this is an empty string for object to object (OO) connections. */
 	const std::string &PropertyName() const {
 		return prop;
 	}

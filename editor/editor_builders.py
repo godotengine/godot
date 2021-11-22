@@ -26,7 +26,9 @@ def make_doc_header(target, source, env):
     decomp_size = len(buf)
     import zlib
 
-    buf = zlib.compress(buf)
+    # Use maximum zlib compression level to further reduce file size
+    # (at the cost of initial build times).
+    buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _DOC_DATA_RAW_H\n")
@@ -53,7 +55,7 @@ def make_fonts_header(target, source, env):
     g.write("#ifndef _EDITOR_FONTS_H\n")
     g.write("#define _EDITOR_FONTS_H\n")
 
-    # saving uncompressed, since freetype will reference from memory pointer
+    # Saving uncompressed, since FreeType will reference from memory pointer.
     for i in range(len(source)):
         with open(source[i], "rb") as f:
             buf = f.read()
@@ -92,7 +94,9 @@ def make_translations_header(target, source, env, category):
         with open(sorted_paths[i], "rb") as f:
             buf = f.read()
         decomp_size = len(buf)
-        buf = zlib.compress(buf)
+        # Use maximum zlib compression level to further reduce file size
+        # (at the cost of initial build times).
+        buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
         name = os.path.splitext(os.path.basename(sorted_paths[i]))[0]
 
         g.write("static const unsigned char _{}_translation_{}_compressed[] = {{\n".format(category, name))

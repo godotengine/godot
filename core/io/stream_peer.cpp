@@ -108,8 +108,8 @@ Array StreamPeer::_get_partial_data(int p_bytes) {
 	return ret;
 }
 
-void StreamPeer::set_big_endian(bool p_enable) {
-	big_endian = p_enable;
+void StreamPeer::set_big_endian(bool p_big_endian) {
+	big_endian = p_big_endian;
 }
 
 bool StreamPeer::is_big_endian_enabled() const {
@@ -410,6 +410,63 @@ void StreamPeer::_bind_methods() {
 
 ////////////////////////////////
 
+int StreamPeerExtension::get_available_bytes() const {
+	int count;
+	if (GDVIRTUAL_CALL(_get_available_bytes, count)) {
+		return count;
+	}
+	WARN_PRINT_ONCE("StreamPeerExtension::_get_available_bytes is unimplemented!");
+	return -1;
+}
+
+Error StreamPeerExtension::get_data(uint8_t *r_buffer, int p_bytes) {
+	int err;
+	int received = 0;
+	if (GDVIRTUAL_CALL(_get_data, r_buffer, p_bytes, &received, err)) {
+		return (Error)err;
+	}
+	WARN_PRINT_ONCE("StreamPeerExtension::_get_data is unimplemented!");
+	return FAILED;
+}
+
+Error StreamPeerExtension::get_partial_data(uint8_t *r_buffer, int p_bytes, int &r_received) {
+	int err;
+	if (GDVIRTUAL_CALL(_get_partial_data, r_buffer, p_bytes, &r_received, err)) {
+		return (Error)err;
+	}
+	WARN_PRINT_ONCE("StreamPeerExtension::_get_partial_data is unimplemented!");
+	return FAILED;
+}
+
+Error StreamPeerExtension::put_data(const uint8_t *p_data, int p_bytes) {
+	int err;
+	int sent = 0;
+	if (GDVIRTUAL_CALL(_put_data, p_data, p_bytes, &sent, err)) {
+		return (Error)err;
+	}
+	WARN_PRINT_ONCE("StreamPeerExtension::_put_data is unimplemented!");
+	return FAILED;
+}
+
+Error StreamPeerExtension::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
+	int err;
+	if (GDVIRTUAL_CALL(_put_data, p_data, p_bytes, &r_sent, err)) {
+		return (Error)err;
+	}
+	WARN_PRINT_ONCE("StreamPeerExtension::_put_partial_data is unimplemented!");
+	return FAILED;
+}
+
+void StreamPeerExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_get_data, "r_buffer", "r_bytes", "r_received");
+	GDVIRTUAL_BIND(_get_partial_data, "r_buffer", "r_bytes", "r_received");
+	GDVIRTUAL_BIND(_put_data, "p_data", "p_bytes", "r_sent");
+	GDVIRTUAL_BIND(_put_partial_data, "p_data", "p_bytes", "r_sent");
+	GDVIRTUAL_BIND(_get_available_bytes);
+}
+
+////////////////////////////////
+
 void StreamPeerBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("seek", "position"), &StreamPeerBuffer::seek);
 	ClassDB::bind_method(D_METHOD("get_size"), &StreamPeerBuffer::get_size);
@@ -433,7 +490,7 @@ Error StreamPeerBuffer::put_data(const uint8_t *p_data, int p_bytes) {
 	}
 
 	uint8_t *w = data.ptrw();
-	copymem(&w[pointer], p_data, p_bytes);
+	memcpy(&w[pointer], p_data, p_bytes);
 
 	pointer += p_bytes;
 	return OK;
@@ -466,7 +523,7 @@ Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_
 	}
 
 	const uint8_t *r = data.ptr();
-	copymem(p_buffer, r + pointer, r_received);
+	memcpy(p_buffer, r + pointer, r_received);
 
 	pointer += r_received;
 	// FIXME: return what? OK or ERR_*
@@ -512,7 +569,7 @@ void StreamPeerBuffer::clear() {
 
 Ref<StreamPeerBuffer> StreamPeerBuffer::duplicate() const {
 	Ref<StreamPeerBuffer> spb;
-	spb.instance();
+	spb.instantiate();
 	spb->data = data;
 	return spb;
 }

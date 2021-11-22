@@ -10,86 +10,64 @@
 	</tutorials>
 	<methods>
 		<method name="has_capture">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a capture with the given name is present otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="has_profiler">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a profiler with the given name is present otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="is_active">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the debugger is active otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="is_profiling">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a profiler with the given name is present and active otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="profiler_add_frame_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="data" type="Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="data" type="Array" />
 			<description>
 				Calls the [code]add[/code] callable of the profiler with given [code]name[/code] and [code]data[/code].
 			</description>
 		</method>
 		<method name="profiler_enable">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<argument index="2" name="arguments" type="Array" default="[  ]">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="enable" type="bool" />
+			<argument index="2" name="arguments" type="Array" default="[]" />
 			<description>
 				Calls the [code]toggle[/code] callable of the profiler with given [code]name[/code] and [code]arguments[/code]. Enables/Disables the same profiler depending on [code]enable[/code] argument.
 			</description>
 		</method>
 		<method name="register_message_capture">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="callable" type="Callable">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="callable" type="Callable" />
 			<description>
 				Registers a message capture with given [code]name[/code]. If [code]name[/code] is "my_message" then messages starting with "my_message:" will be called with the given callable.
 				Callable must accept a message string and a data array as argument. If the message and data are valid then callable must return [code]true[/code] otherwise [code]false[/code].
 			</description>
 		</method>
 		<method name="register_profiler">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="toggle" type="Callable">
-			</argument>
-			<argument index="2" name="add" type="Callable">
-			</argument>
-			<argument index="3" name="tick" type="Callable">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="toggle" type="Callable" />
+			<argument index="2" name="add" type="Callable" />
+			<argument index="3" name="tick" type="Callable" />
 			<description>
 				Registers a profiler with the given [code]name[/code].
 				[code]toggle[/code] callable is called when the profiler is enabled/disabled. It must take an argument array as an argument.
@@ -98,35 +76,26 @@
 			</description>
 		</method>
 		<method name="send_message">
-			<return type="void">
-			</return>
-			<argument index="0" name="message" type="String">
-			</argument>
-			<argument index="1" name="data" type="Array">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="message" type="String" />
+			<argument index="1" name="data" type="Array" />
 			<description>
 				Sends a message with given [code]message[/code] and [code]data[/code] array.
 			</description>
 		</method>
 		<method name="unregister_message_capture">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Unregisters the message capture with given [code]name[/code].
 			</description>
 		</method>
 		<method name="unregister_profiler">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 				Unregisters a profiler with given [code]name[/code].
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

@@ -46,18 +46,20 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		switch (k->get_keycode()) {
-			case KEY_KP_ENTER:
-			case KEY_ENTER: {
+			case Key::KP_ENTER:
+			case Key::ENTER: {
 				if (get_hide_on_ok()) {
 					hide();
 				}
 				ok_pressed();
 				set_input_as_handled();
 			} break;
-			case KEY_ESCAPE: {
+			case Key::ESCAPE: {
 				hide();
 				set_input_as_handled();
 			} break;
+			default:
+				break;
 		}
 	}
 }
@@ -70,10 +72,10 @@ void EditorLayoutsDialog::ok_pressed() {
 	if (layout_names->is_anything_selected()) {
 		Vector<int> const selected_items = layout_names->get_selected_items();
 		for (int i = 0; i < selected_items.size(); ++i) {
-			emit_signal("name_confirmed", layout_names->get_item_text(selected_items[i]));
+			emit_signal(SNAME("name_confirmed"), layout_names->get_item_text(selected_items[i]));
 		}
 	} else if (name->is_visible() && name->get_text() != "") {
-		emit_signal("name_confirmed", name->get_text());
+		emit_signal(SNAME("name_confirmed"), name->get_text());
 	}
 }
 
@@ -83,7 +85,7 @@ void EditorLayoutsDialog::_post_popup() {
 	layout_names->clear();
 
 	Ref<ConfigFile> config;
-	config.instance();
+	config.instantiate();
 	Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
 	if (err != OK) {
 		return;
@@ -92,8 +94,8 @@ void EditorLayoutsDialog::_post_popup() {
 	List<String> layouts;
 	config.ptr()->get_sections(&layouts);
 
-	for (List<String>::Element *E = layouts.front(); E; E = E->next()) {
-		layout_names->add_item(**E);
+	for (const String &E : layouts) {
+		layout_names->add_item(E);
 	}
 }
 

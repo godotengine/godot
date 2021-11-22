@@ -33,7 +33,7 @@
 
 #ifdef JAVASCRIPT_ENABLED
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "emws_peer.h"
 #include "websocket_server.h"
 
@@ -47,7 +47,7 @@ public:
 	bool is_listening() const;
 	bool has_peer(int p_id) const;
 	Ref<WebSocketPeer> get_peer(int p_id) const;
-	IP_Address get_peer_address(int p_peer_id) const;
+	IPAddress get_peer_address(int p_peer_id) const;
 	int get_peer_port(int p_peer_id) const;
 	void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "");
 	int get_max_packet_size() const;

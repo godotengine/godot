@@ -1,109 +1,94 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInspectorPlugin" inherits="Reference" version="4.0">
+<class name="EditorInspectorPlugin" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Plugin for adding custom property editors on inspector.
 	</brief_description>
 	<description>
-		These plugins allow adding custom property editors to [EditorInspector].
-		Plugins are registered via [method EditorPlugin.add_inspector_plugin].
-		When an object is edited, the [method can_handle] function is called and must return [code]true[/code] if the object type is supported.
-		If supported, the function [method parse_begin] will be called, allowing to place custom controls at the beginning of the class.
-		Subsequently, the [method parse_category] and [method parse_property] are called for every category and property. They offer the ability to add custom controls to the inspector too.
-		Finally, [method parse_end] will be called.
+		[EditorInspectorPlugin] allows adding custom property editors to [EditorInspector].
+		When an object is edited, the [method _can_handle] function is called and must return [code]true[/code] if the object type is supported.
+		If supported, the function [method _parse_begin] will be called, allowing to place custom controls at the beginning of the class.
+		Subsequently, the [method _parse_category] and [method _parse_property] are called for every category and property. They offer the ability to add custom controls to the inspector too.
+		Finally, [method _parse_end] will be called.
 		On each of these calls, the "add" functions can be called.
+		To use [EditorInspectorPlugin], register it using the [method EditorPlugin.add_inspector_plugin] method first.
 	</description>
 	<tutorials>
+		<link title="Inspector plugins">$DOCS_URL/tutorials/plugins/editor/inspector_plugins.html</link>
 	</tutorials>
 	<methods>
-		<method name="add_custom_control">
-			<return type="void">
-			</return>
-			<argument index="0" name="control" type="Control">
-			</argument>
-			<description>
-				Adds a custom control, not necessarily a property editor.
-			</description>
-		</method>
-		<method name="add_property_editor">
-			<return type="void">
-			</return>
-			<argument index="0" name="property" type="String">
-			</argument>
-			<argument index="1" name="editor" type="Control">
-			</argument>
-			<description>
-				Adds a property editor, this must inherit [EditorProperty].
-			</description>
-		</method>
-		<method name="add_property_editor_for_multiple_properties">
-			<return type="void">
-			</return>
-			<argument index="0" name="label" type="String">
-			</argument>
-			<argument index="1" name="properties" type="PackedStringArray">
-			</argument>
-			<argument index="2" name="editor" type="Control">
-			</argument>
-			<description>
-				Adds an editor that allows modifying multiple properties, this must inherit [EditorProperty].
-			</description>
-		</method>
-		<method name="can_handle" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
+		<method name="_can_handle" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="object" type="Variant" />
 			<description>
 				Returns [code]true[/code] if this object can be handled by this plugin.
 			</description>
 		</method>
-		<method name="parse_begin" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
+		<method name="_parse_begin" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
 			<description>
-				Called to allow adding controls at the beginning of the list.
+				Called to allow adding controls at the beginning of the property list for [code]object[/code].
 			</description>
 		</method>
-		<method name="parse_category" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="category" type="String">
-			</argument>
+		<method name="_parse_category" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="category" type="String" />
 			<description>
-				Called to allow adding controls at the beginning of the category.
+				Called to allow adding controls at the beginning of a category in the property list for [code]object[/code].
 			</description>
 		</method>
-		<method name="parse_end" qualifiers="virtual">
-			<return type="void">
-			</return>
+		<method name="_parse_end" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
 			<description>
-				Called to allow adding controls at the end of the list.
+				Called to allow adding controls at the end of the property list for [code]object[/code].
 			</description>
 		</method>
-		<method name="parse_property" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="type" type="int">
-			</argument>
-			<argument index="2" name="path" type="String">
-			</argument>
-			<argument index="3" name="hint" type="int">
-			</argument>
-			<argument index="4" name="hint_text" type="String">
-			</argument>
-			<argument index="5" name="usage" type="int">
-			</argument>
+		<method name="_parse_group" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="group" type="String" />
 			<description>
-				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty]. Returning [code]true[/code] removes the built-in editor for this property, otherwise allows to insert a custom editor before the built-in one.
+				Called to allow adding controls at the beginning of a group or a sub-group in the property list for [code]object[/code].
+			</description>
+		</method>
+		<method name="_parse_property" qualifiers="virtual">
+			<return type="bool" />
+			<argument index="0" name="object" type="Object" />
+			<argument index="1" name="type" type="int" />
+			<argument index="2" name="name" type="String" />
+			<argument index="3" name="hint_type" type="int" />
+			<argument index="4" name="hint_string" type="String" />
+			<argument index="5" name="usage_flags" type="int" />
+			<argument index="6" name="wide" type="bool" />
+			<description>
+				Called to allow adding property-specific editors to the property list for [code]object[/code]. The added editor control must extend [EditorProperty]. Returning [code]true[/code] removes the built-in editor for this property, otherwise allows to insert a custom editor before the built-in one.
+			</description>
+		</method>
+		<method name="add_custom_control">
+			<return type="void" />
+			<argument index="0" name="control" type="Control" />
+			<description>
+				Adds a custom control, which is not necessarily a property editor.
+			</description>
+		</method>
+		<method name="add_property_editor">
+			<return type="void" />
+			<argument index="0" name="property" type="String" />
+			<argument index="1" name="editor" type="Control" />
+			<description>
+				Adds a property editor for an individual property. The [code]editor[/code] control must extend [EditorProperty].
+			</description>
+		</method>
+		<method name="add_property_editor_for_multiple_properties">
+			<return type="void" />
+			<argument index="0" name="label" type="String" />
+			<argument index="1" name="properties" type="PackedStringArray" />
+			<argument index="2" name="editor" type="Control" />
+			<description>
+				Adds an editor that allows modifying multiple properties. The [code]editor[/code] control must extend [EditorProperty].
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

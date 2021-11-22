@@ -42,15 +42,19 @@ class MenuButton : public Button {
 	bool disable_shortcuts = false;
 	PopupMenu *popup;
 
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
+	Vector2i mouse_pos_adjusted;
 
-	void _gui_input(Ref<InputEvent> p_event) override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	void _popup_visibility_changed(bool p_visible);
 
 protected:
 	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
-	virtual void _unhandled_key_input(Ref<InputEvent> p_event) override;
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	virtual void pressed() override;
@@ -59,6 +63,9 @@ public:
 	void set_switch_on_hover(bool p_enabled);
 	bool is_switch_on_hover();
 	void set_disable_shortcuts(bool p_disabled);
+
+	void set_item_count(int p_count);
+	int get_item_count() const;
 
 	MenuButton();
 	~MenuButton();

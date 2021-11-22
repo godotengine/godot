@@ -5,15 +5,14 @@
 	</brief_description>
 	<description>
 		[MainLoop] is the abstract base class for a Godot project's game loop. It is inherited by [SceneTree], which is the default game loop implementation used in Godot projects, though it is also possible to write and use one's own [MainLoop] subclass instead of the scene tree.
-		Upon the application start, a [MainLoop] implementation must be provided to the OS; otherwise, the application will exit. This happens automatically (and a [SceneTree] is created) unless a main [Script] is provided from the command line (with e.g. [code]godot -s my_loop.gd[/code], which should then be a [MainLoop] implementation.
+		Upon the application start, a [MainLoop] implementation must be provided to the OS; otherwise, the application will exit. This happens automatically (and a [SceneTree] is created) unless a [MainLoop] [Script] is provided from the command line (with e.g. [code]godot -s my_loop.gd[/code] or the "Main Loop Type" project setting is overwritten.
 		Here is an example script implementing a simple [MainLoop]:
-		[b]FIXME:[/b] No longer valid after DisplayServer split and Input refactoring.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
+		class_name CustomMainLoop
 		extends MainLoop
 
 		var time_elapsed = 0
-		var keys_typed = []
-		var quit = false
 
 		func _initialize():
 		    print("Initialized:")
@@ -22,57 +21,68 @@
 		func _process(delta):
 		    time_elapsed += delta
 		    # Return true to end the main loop.
-		    return quit
-
-		func _input_event(event):
-		    # Record keys.
-		    if event is InputEventKey and event.pressed and !event.echo:
-		        keys_typed.append(OS.get_keycode_string(event.keycode))
-		        # Quit on Escape press.
-		        if event.keycode == KEY_ESCAPE:
-		            quit = true
-		    # Quit on any mouse click.
-		    if event is InputEventMouseButton:
-		        quit = true
+		    return Input.get_mouse_button_mask() != 0 || Input.is_key_pressed(KEY_ESCAPE)
 
 		func _finalize():
 		    print("Finalized:")
 		    print("  End time: %s" % str(time_elapsed))
-		    print("  Keys typed: %s" % var2str(keys_typed))
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		using Godot;
+		using System;
+
+		public class CustomMainLoop : MainLoop
+		{
+		    public float TimeElapsed = 0;
+
+		    public override void _Initialize()
+		    {
+		        GD.Print("Initialized:");
+		        GD.Print($"  Starting Time: {TimeElapsed}");
+		    }
+
+		    public override bool _Process(float delta)
+		    {
+		        TimeElapsed += delta;
+		        // Return true to end the main loop.
+		        return Input.GetMouseButtonMask() != 0 || Input.IsKeyPressed((int)KeyList.Escape);
+		    }
+
+		    private void _Finalize()
+		    {
+		        GD.Print("Finalized:");
+		        GD.Print($"  End Time: {TimeElapsed}");
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="_finalize" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Called before the program exits.
 			</description>
 		</method>
 		<method name="_initialize" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Called once during initialization.
 			</description>
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="delta" type="float" />
 			<description>
 				Called each physics frame with the time since the last physics frame as argument ([code]delta[/code], in seconds). Equivalent to [method Node._physics_process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="delta" type="float" />
 			<description>
 				Called each process (idle) frame with the time since the last process frame as argument (in seconds). Equivalent to [method Node._process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
@@ -81,10 +91,8 @@
 	</methods>
 	<signals>
 		<signal name="on_request_permissions_result">
-			<argument index="0" name="permission" type="String">
-			</argument>
-			<argument index="1" name="granted" type="bool">
-			</argument>
+			<argument index="0" name="permission" type="String" />
+			<argument index="1" name="granted" type="bool" />
 			<description>
 				Emitted when a user responds to a permission request.
 			</description>

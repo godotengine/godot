@@ -32,11 +32,11 @@
 
 #include "editor/editor_scale.h"
 
-void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
+void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		rot_x -= mm->get_relative().y * 0.01;
 		rot_y -= mm->get_relative().x * 0.01;
 		if (rot_x < -Math_PI / 2) {
@@ -55,17 +55,17 @@ void MeshEditor::_notification(int p_what) {
 		if (first_enter) {
 			//it's in propertyeditor so. could be moved around
 
-			light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
-			light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
-			light_2_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight2", "EditorIcons"));
-			light_2_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight2Off", "EditorIcons"));
+			light_1_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons")));
+			light_1_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons")));
+			light_2_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons")));
+			light_2_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons")));
 			first_enter = false;
 		}
 	}
 }
 
 void MeshEditor::_update_rotation() {
-	Transform t;
+	Transform3D t;
 	t.basis.rotate(Vector3(0, 1, 0), -rot_y);
 	t.basis.rotate(Vector3(1, 0, 0), -rot_x);
 	rotation->set_transform(t);
@@ -80,12 +80,12 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 	_update_rotation();
 
 	AABB aabb = mesh->get_aabb();
-	Vector3 ofs = aabb.position + aabb.size * 0.5;
+	Vector3 ofs = aabb.get_center();
 	float m = aabb.get_longest_axis_size();
 	if (m != 0) {
 		m = 1.0 / m;
 		m *= 0.5;
-		Transform xform;
+		Transform3D xform;
 		xform.basis.scale(Vector3(m, m, m));
 		xform.origin = -xform.basis.xform(ofs); //-ofs*m;
 		//xform.origin.z -= aabb.get_longest_axis_size() * 2;
@@ -103,30 +103,26 @@ void MeshEditor::_button_pressed(Node *p_button) {
 	}
 }
 
-void MeshEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &MeshEditor::_gui_input);
-}
-
 MeshEditor::MeshEditor() {
 	viewport = memnew(SubViewport);
 	Ref<World3D> world_3d;
-	world_3d.instance();
+	world_3d.instantiate();
 	viewport->set_world_3d(world_3d); //use own world
 	add_child(viewport);
 	viewport->set_disable_input(true);
 	viewport->set_msaa(Viewport::MSAA_2X);
 	set_stretch(true);
 	camera = memnew(Camera3D);
-	camera->set_transform(Transform(Basis(), Vector3(0, 0, 1.1)));
+	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 1.1)));
 	camera->set_perspective(45, 0.1, 10);
 	viewport->add_child(camera);
 
 	light1 = memnew(DirectionalLight3D);
-	light1->set_transform(Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
+	light1->set_transform(Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 	viewport->add_child(light1);
 
 	light2 = memnew(DirectionalLight3D);
-	light2->set_transform(Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
+	light2->set_transform(Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 	light2->set_color(Color(0.7, 0.7, 0.7));
 	viewport->add_child(light2);
 
@@ -182,6 +178,6 @@ void EditorInspectorPluginMesh::parse_begin(Object *p_object) {
 
 MeshEditorPlugin::MeshEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginMesh> plugin;
-	plugin.instance();
+	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }

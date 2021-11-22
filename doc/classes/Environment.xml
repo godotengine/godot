@@ -11,29 +11,24 @@
 		- Adjustments
 	</description>
 	<tutorials>
-		<link title="Environment and post-processing">https://docs.godotengine.org/en/latest/tutorials/3d/environment_and_post_processing.html</link>
-		<link title="Light transport in game engines">https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html</link>
+		<link title="Environment and post-processing">$DOCS_URL/tutorials/3d/environment_and_post_processing.html</link>
+		<link title="Light transport in game engines">$DOCS_URL/tutorials/3d/high_dynamic_range.html</link>
 		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/123</link>
 		<link title="2D HDR Demo">https://godotengine.org/asset-library/asset/110</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="get_glow_level" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the intensity of the glow level [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_glow_level">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="intensity" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="intensity" type="float" />
 			<description>
 				Sets the intensity of the glow level [code]idx[/code]. A value above [code]0.0[/code] enables the level. Each level relies on the previous level. This means that enabling higher glow levels will slow down the glow effect rendering, even if previous levels aren't enabled.
 			</description>
@@ -44,7 +39,7 @@
 			The global brightness value of the rendered scene. Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
 		<member name="adjustment_color_correction" type="Texture" setter="set_adjustment_color_correction" getter="get_adjustment_color_correction">
-			The [Texture2D] or [Texture3D] lookup table (LUT) to use for the built-in post-process color grading. Can use a [GradientTexture] for a 1-dimensional LUT, or a [Texture3D] for a more complex LUT. Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
+			The [Texture2D] or [Texture3D] lookup table (LUT) to use for the built-in post-process color grading. Can use a [GradientTexture1D] for a 1-dimensional LUT, or a [Texture3D] for a more complex LUT. Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
 		<member name="adjustment_contrast" type="float" setter="set_adjustment_contrast" getter="get_adjustment_contrast" default="1.0">
 			The global contrast value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
@@ -55,13 +50,11 @@
 		<member name="adjustment_saturation" type="float" setter="set_adjustment_saturation" getter="get_adjustment_saturation" default="1.0">
 			The global color saturation value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
-		<member name="ambient_light_color" type="Color" setter="set_ambient_light_color" getter="get_ambient_light_color" default="Color( 0, 0, 0, 1 )">
+		<member name="ambient_light_color" type="Color" setter="set_ambient_light_color" getter="get_ambient_light_color" default="Color(0, 0, 0, 1)">
 			The ambient light's [Color].
 		</member>
 		<member name="ambient_light_energy" type="float" setter="set_ambient_light_energy" getter="get_ambient_light_energy" default="1.0">
 			The ambient light's energy. The higher the value, the stronger the light.
-		</member>
-		<member name="ambient_light_occlusion_color" type="Color" setter="set_ao_color" getter="get_ao_color" default="Color( 0, 0, 0, 1 )">
 		</member>
 		<member name="ambient_light_sky_contribution" type="float" setter="set_ambient_light_sky_contribution" getter="get_ambient_light_sky_contribution" default="1.0">
 			Defines the amount of light that the sky brings on the scene. A value of 0 means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of 1 means that all the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
@@ -89,7 +82,7 @@
 		<member name="background_canvas_max_layer" type="int" setter="set_canvas_max_layer" getter="get_canvas_max_layer" default="0">
 			The maximum layer ID to display. Only effective when using the [constant BG_CANVAS] background mode.
 		</member>
-		<member name="background_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color( 0, 0, 0, 1 )">
+		<member name="background_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color(0, 0, 0, 1)">
 			The [Color] displayed for clear areas of the scene. Only effective when using the [constant BG_COLOR] background mode.
 		</member>
 		<member name="background_energy" type="float" setter="set_bg_energy" getter="get_bg_energy" default="1.0">
@@ -108,10 +101,12 @@
 			If [code]true[/code], fog effects are enabled.
 		</member>
 		<member name="fog_height" type="float" setter="set_fog_height" getter="get_fog_height" default="0.0">
+			The height at which the height fog effect begins.
 		</member>
 		<member name="fog_height_density" type="float" setter="set_fog_height_density" getter="get_fog_height_density" default="0.0">
+			The density used to increase fog as height decreases. To make fog increase as height increases, use a negative value.
 		</member>
-		<member name="fog_light_color" type="Color" setter="set_fog_light_color" getter="get_fog_light_color" default="Color( 0.5, 0.6, 0.7, 1 )">
+		<member name="fog_light_color" type="Color" setter="set_fog_light_color" getter="get_fog_light_color" default="Color(0.5, 0.6, 0.7, 1)">
 		</member>
 		<member name="fog_light_energy" type="float" setter="set_fog_light_energy" getter="get_fog_light_energy" default="1.0">
 		</member>
@@ -133,10 +128,10 @@
 			The bleed scale of the HDR glow.
 		</member>
 		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" default="1.0">
-			The lower threshold of the HDR glow. When using the GLES2 renderer (which doesn't support HDR), this needs to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case.
+			The lower threshold of the HDR glow. When using the OpenGL renderer (which doesn't support HDR), this needs to be below [code]1.0[/code] for glow to be visible. A value of [code]0.9[/code] works well in this case.
 		</member>
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
-			The overall brightness multiplier of the glow effect. When using the GLES2 renderer, this should be increased to 1.5 to compensate for the lack of HDR rendering.
+			The overall brightness multiplier of the glow effect. When using the OpenGL renderer, this should be increased to 1.5 to compensate for the lack of HDR rendering.
 		</member>
 		<member name="glow_levels/1" type="float" setter="set_glow_level" getter="get_glow_level" default="0.0">
 			The intensity of the 1st level of glow. This is the most "local" level (least blurry).
@@ -165,7 +160,7 @@
 			If [code]true[/code], glow levels will be normalized so that summed together their intensities equal [code]1.0[/code].
 		</member>
 		<member name="glow_strength" type="float" setter="set_glow_strength" getter="get_glow_strength" default="1.0">
-			The strength of the glow effect. This applies as the glow is blurred across the screen and increases the distance and intensity of the blur. When using the GLES2 renderer, this should be increased to 1.3 to compensate for the lack of HDR rendering.
+			The strength of the glow effect. This applies as the glow is blurred across the screen and increases the distance and intensity of the blur. When using the OpenGL renderer, this should be increased to 1.3 to compensate for the lack of HDR rendering.
 		</member>
 		<member name="reflected_light_source" type="int" setter="set_reflection_source" getter="get_reflection_source" enum="Environment.ReflectionSource" default="0">
 		</member>
@@ -176,7 +171,8 @@
 		<member name="sdfgi_cascades" type="int" setter="set_sdfgi_cascades" getter="get_sdfgi_cascades" enum="Environment.SDFGICascades" default="1">
 		</member>
 		<member name="sdfgi_enabled" type="bool" setter="set_sdfgi_enabled" getter="is_sdfgi_enabled" default="false">
-			If [code]true[/code], enables signed distance field global illumination.
+			If [code]true[/code], enables signed distance field global illumination for meshes that have their [member GeometryInstance3D.gi_mode] set to [constant GeometryInstance3D.GI_MODE_BAKED]. SDFGI is a real-time global illumination technique that works well with procedurally generated and user-built levels, including in situations where geometry is created during gameplay. The signed distance field is automatically generated around the camera as it moves. Dynamic lights are supported, but dynamic occluders and emissive surfaces are not.
+			[b]Performance:[/b] SDFGI is relatively demanding on the GPU and is not suited to low-end hardware such as integrated graphics (consider [LightmapGI] instead). To improve SDFGI performance, enable [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution] in the Project Settings.
 			[b]Note:[/b] Meshes should have sufficiently thick walls to avoid light leaks (avoid one-sided walls). For interior levels, enclose your level geometry in a sufficiently large box and bridge the loops to close the mesh.
 		</member>
 		<member name="sdfgi_energy" type="float" setter="set_sdfgi_energy" getter="get_sdfgi_energy" default="1.0">
@@ -200,19 +196,19 @@
 		</member>
 		<member name="sky_custom_fov" type="float" setter="set_sky_custom_fov" getter="get_sky_custom_fov" default="0.0">
 		</member>
-		<member name="sky_rotation" type="Vector3" setter="set_sky_rotation" getter="get_sky_rotation" default="Vector3( 0, 0, 0 )">
+		<member name="sky_rotation" type="Vector3" setter="set_sky_rotation" getter="get_sky_rotation" default="Vector3(0, 0, 0)">
 		</member>
 		<member name="ss_reflections_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.2">
 			The depth tolerance for screen-space reflections.
 		</member>
 		<member name="ss_reflections_enabled" type="bool" setter="set_ssr_enabled" getter="is_ssr_enabled" default="false">
-			If [code]true[/code], screen-space reflections are enabled. Screen-space reflections are more accurate than reflections from [GIProbe]s or [ReflectionProbe]s, but are slower and can't reflect surfaces occluded by others.
+			If [code]true[/code], screen-space reflections are enabled. Screen-space reflections are more accurate than reflections from [VoxelGI]s or [ReflectionProbe]s, but are slower and can't reflect surfaces occluded by others.
 		</member>
 		<member name="ss_reflections_fade_in" type="float" setter="set_ssr_fade_in" getter="get_ssr_fade_in" default="0.15">
-			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection).
+			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection). Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
 		</member>
 		<member name="ss_reflections_fade_out" type="float" setter="set_ssr_fade_out" getter="get_ssr_fade_out" default="2.0">
-			The fade-out distance for screen-space reflections. Affects the area from the screen-space reflection to the "global" reflection.
+			The fade-out distance for screen-space reflections. Affects the area from the screen-space reflection to the "global" reflection. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
 		</member>
 		<member name="ss_reflections_max_steps" type="int" setter="set_ssr_max_steps" getter="get_ssr_max_steps" default="64">
 			The maximum number of steps for screen-space reflections. Higher values are slower.
@@ -253,23 +249,41 @@
 		<member name="tonemap_white" type="float" setter="set_tonemap_white" getter="get_tonemap_white" default="1.0">
 			The white reference value for tonemapping. Only effective if the [member tonemap_mode] isn't set to [constant TONE_MAPPER_LINEAR].
 		</member>
-		<member name="volumetric_fog_density" type="float" setter="set_volumetric_fog_density" getter="get_volumetric_fog_density" default="0.01">
+		<member name="volumetric_fog_albedo" type="Color" setter="set_volumetric_fog_albedo" getter="get_volumetric_fog_albedo" default="Color(1, 1, 1, 1)">
+			The [Color] of the volumetric fog when interacting with lights. Mist and fog have an albedo close to [code]Color(1, 1, 1, 1)[/code] while smoke has a darker albedo.
+		</member>
+		<member name="volumetric_fog_ambient_inject" type="float" setter="set_volumetric_fog_ambient_inject" getter="get_volumetric_fog_ambient_inject" default="0.0">
+			Scales the strength of ambient light used in the volumetric fog. A value of [code]0[/code] means that ambient light will not impact the volumetric fog.
+		</member>
+		<member name="volumetric_fog_anisotropy" type="float" setter="set_volumetric_fog_anisotropy" getter="get_volumetric_fog_anisotropy" default="0.2">
+			The direction of scattered light as it goes through the volumetric fog. A value close [code]1[/code] means almost all light is scattered forward. A value close to [code]0[/code] means light is scattered equally in all directions. A value close to [code]-1[/code] means light is scattered mostly backward. Fog and mist scatter light slightly forward, while smoke scatters light equally in all directions.
+		</member>
+		<member name="volumetric_fog_density" type="float" setter="set_volumetric_fog_density" getter="get_volumetric_fog_density" default="0.05">
+			The base density of the volumetric fog. Set this to the lowest density you want to have globally.
 		</member>
 		<member name="volumetric_fog_detail_spread" type="float" setter="set_volumetric_fog_detail_spread" getter="get_volumetric_fog_detail_spread" default="2.0">
+			The distribution of size down the length of the froxel buffer. A higher value compresses the froxels closer to the camera and places more detail closer to the camera.
+		</member>
+		<member name="volumetric_fog_emission" type="Color" setter="set_volumetric_fog_emission" getter="get_volumetric_fog_emission" default="Color(0, 0, 0, 1)">
+			The emitted light from the volumetric fog. Even with emission, volumetric fog will not cast light onto other surfaces. Emission is useful to establish an ambient color. As the volumetric fog effect uses single-scattering only, fog tends to need a little bit of emission to soften the harsh shadows.
+		</member>
+		<member name="volumetric_fog_emission_energy" type="float" setter="set_volumetric_fog_emission_energy" getter="get_volumetric_fog_emission_energy" default="1.0">
+			The brightness of the emitted light from the volumetric fog.
 		</member>
 		<member name="volumetric_fog_enabled" type="bool" setter="set_volumetric_fog_enabled" getter="is_volumetric_fog_enabled" default="false">
+			Enables the volumetric fog effect. Volumetric fog uses a screen-aligned froxel buffer to calculate accurate volumetric scattering in the short to medium range. Volumetric fog interacts with [FogVolume]s and lights to calculate localized and global fog. Volumetric fog uses a PBR single-scattering model based on extinction, scattering, and emission which it exposes to users as density, albedo, and emission.
 		</member>
 		<member name="volumetric_fog_gi_inject" type="float" setter="set_volumetric_fog_gi_inject" getter="get_volumetric_fog_gi_inject" default="0.0">
+			Scales the strength of Global Illumination used in the volumetric fog. A value of [code]0[/code] means that Global Illumination will not impact the volumetric fog.
 		</member>
 		<member name="volumetric_fog_length" type="float" setter="set_volumetric_fog_length" getter="get_volumetric_fog_length" default="64.0">
-		</member>
-		<member name="volumetric_fog_light" type="Color" setter="set_volumetric_fog_light" getter="get_volumetric_fog_light" default="Color( 0, 0, 0, 1 )">
-		</member>
-		<member name="volumetric_fog_light_energy" type="float" setter="set_volumetric_fog_light_energy" getter="get_volumetric_fog_light_energy" default="1.0">
+			The distance over which the volumetric fog is computed. Increase to compute fog over a greater range, decrease to add more detail when a long range is not needed. For best quality fog, keep this as low as possible.
 		</member>
 		<member name="volumetric_fog_temporal_reprojection_amount" type="float" setter="set_volumetric_fog_temporal_reprojection_amount" getter="get_volumetric_fog_temporal_reprojection_amount" default="0.9">
+			The amount by which to blend the last frame with the current frame. A higher number results in smoother volumetric fog, but makes "ghosting" much worse. A lower value reduces ghosting but can result in the per-frame temporal jitter becoming visible.
 		</member>
 		<member name="volumetric_fog_temporal_reprojection_enabled" type="bool" setter="set_volumetric_fog_temporal_reprojection_enabled" getter="is_volumetric_fog_temporal_reprojection_enabled" default="true">
+			Enables temporal reprojection in the volumetric fog. Temporal reprojection blends the current frame's volumetric fog with the last frame's volumetric fog to smooth out jagged edges. The performance cost is minimal, however it does lead to moving [FogVolume]s and [Light3D]s "ghosting" and leaving a trail behind them. When temporal reprojection is enabled, try to avoid moving [FogVolume]s or [Light3D]s too fast.
 		</member>
 	</members>
 	<constants>
@@ -353,14 +367,6 @@
 		<constant name="SDFGI_Y_SCALE_75_PERCENT" value="1" enum="SDFGIYScale">
 		</constant>
 		<constant name="SDFGI_Y_SCALE_50_PERCENT" value="2" enum="SDFGIYScale">
-		</constant>
-		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_DISABLED" value="0" enum="VolumetricFogShadowFilter">
-		</constant>
-		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_LOW" value="1" enum="VolumetricFogShadowFilter">
-		</constant>
-		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_MEDIUM" value="2" enum="VolumetricFogShadowFilter">
-		</constant>
-		<constant name="VOLUMETRIC_FOG_SHADOW_FILTER_HIGH" value="3" enum="VolumetricFogShadowFilter">
 		</constant>
 	</constants>
 </class>

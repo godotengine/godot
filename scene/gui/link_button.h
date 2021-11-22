@@ -47,6 +47,7 @@ public:
 
 private:
 	String text;
+	String xl_text;
 	Ref<TextLine> text_buf;
 	UnderlineMode underline_mode = UNDERLINE_MODE_ALWAYS;
 

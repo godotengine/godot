@@ -15,6 +15,7 @@ module.exports = {
 		"IDBFS": true,
 		"GodotOS": true,
 		"GodotConfig": true,
+		"GodotEventListeners": true,
 		"GodotRuntime": true,
 		"GodotFS": true,
 		"IDHandler": true,

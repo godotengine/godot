@@ -5,16 +5,14 @@
 	</brief_description>
 	<description>
 		AudioStreamSample stores sound samples loaded from WAV files. To play the stored sound, use an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio). The sound can be looped.
-		This class can also be used to store dynamically-generated PCM audio data.
+		This class can also be used to store dynamically-generated PCM audio data. See also [AudioStreamGenerator] for procedural audio generation.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="save_to_wav">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Saves the AudioStreamSample as a WAV file to [code]path[/code]. Samples with IMA ADPCM format can't be saved.
 				[b]Note:[/b] A [code].wav[/code] extension is automatically appended to [code]path[/code] if it is missing.
@@ -22,7 +20,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray(  )">
+		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contains the audio data in bytes.
 			[b]Note:[/b] This property expects signed PCM8 data. To convert unsigned PCM8 to signed PCM8, subtract 128 from each byte.
 		</member>
@@ -39,7 +37,9 @@
 			The loop mode. This information will be imported automatically from the WAV file if present. See [enum LoopMode] constants for values.
 		</member>
 		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" default="44100">
-			The sample rate for mixing this audio.
+			The sample rate for mixing this audio. Higher values require more storage space, but result in better quality.
+			In games, common sample rates in use are [code]11025[/code], [code]16000[/code], [code]22050[/code], [code]32000[/code], [code]44100[/code], and [code]48000[/code].
+			According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are using lower-pitched sounds such as voices, lower sample rates such as [code]32000[/code] or [code]22050[/code] may be usable with no loss in quality.
 		</member>
 		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo" default="false">
 			If [code]true[/code], audio is stereo.
@@ -61,7 +61,7 @@
 		<constant name="LOOP_FORWARD" value="1" enum="LoopMode">
 			Audio loops the data between [member loop_begin] and [member loop_end], playing forward only.
 		</constant>
-		<constant name="LOOP_PING_PONG" value="2" enum="LoopMode">
+		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
 			Audio loops the data between [member loop_begin] and [member loop_end], playing back and forth.
 		</constant>
 		<constant name="LOOP_BACKWARD" value="3" enum="LoopMode">

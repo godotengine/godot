@@ -68,22 +68,21 @@ public:
 		MATH_INVERSE_LERP,
 		MATH_RANGE_LERP,
 		MATH_MOVE_TOWARD,
-		MATH_DECTIME,
 		MATH_RANDOMIZE,
 		MATH_RANDI,
 		MATH_RANDF,
-		MATH_RANDF_RANGE,
 		MATH_RANDI_RANGE,
+		MATH_RANDF_RANGE,
+		MATH_RANDFN,
 		MATH_SEED,
 		MATH_RANDSEED,
 		MATH_DEG2RAD,
 		MATH_RAD2DEG,
 		MATH_LINEAR2DB,
 		MATH_DB2LINEAR,
-		MATH_POLAR2CARTESIAN,
-		MATH_CARTESIAN2POLAR,
 		MATH_WRAP,
 		MATH_WRAPF,
+		MATH_PINGPONG,
 		LOGIC_MAX,
 		LOGIC_MIN,
 		LOGIC_CLAMP,
@@ -97,6 +96,7 @@ public:
 		TEXT_PRINT,
 		TEXT_PRINTERR,
 		TEXT_PRINTRAW,
+		TEXT_PRINT_VERBOSE,
 		VAR_TO_STR,
 		STR_TO_VAR,
 		VAR_TO_BYTES,
@@ -139,7 +139,7 @@ public:
 	void set_func(BuiltinFunc p_which);
 	BuiltinFunc get_func();
 
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) override;
+	virtual VisualScriptNodeInstance *instantiate(VisualScriptInstance *p_instance) override;
 
 	VisualScriptBuiltinFunc(VisualScriptBuiltinFunc::BuiltinFunc func);
 	VisualScriptBuiltinFunc();

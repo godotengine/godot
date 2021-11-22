@@ -36,6 +36,7 @@ void godot_register_collections_icalls();
 void godot_register_gd_icalls();
 void godot_register_string_name_icalls();
 void godot_register_nodepath_icalls();
+void godot_register_callable_icalls();
 void godot_register_object_icalls();
 void godot_register_rid_icalls();
 void godot_register_string_icalls();
@@ -50,6 +51,7 @@ void godot_register_glue_header_icalls() {
 	godot_register_gd_icalls();
 	godot_register_string_name_icalls();
 	godot_register_nodepath_icalls();
+	godot_register_callable_icalls();
 	godot_register_object_icalls();
 	godot_register_rid_icalls();
 	godot_register_string_icalls();
@@ -61,7 +63,7 @@ void godot_register_glue_header_icalls() {
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"

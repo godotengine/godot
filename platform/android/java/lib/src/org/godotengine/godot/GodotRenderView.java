@@ -35,16 +35,18 @@ import org.godotengine.godot.input.GodotInputHandler;
 import android.view.SurfaceView;
 
 public interface GodotRenderView {
-	abstract public SurfaceView getView();
+	SurfaceView getView();
 
-	abstract public void initInputDevices();
+	void initInputDevices();
 
-	abstract public void queueOnRenderThread(Runnable event);
+	void queueOnRenderThread(Runnable event);
 
-	abstract public void onActivityPaused();
-	abstract public void onActivityResumed();
+	void onActivityPaused();
+	void onActivityResumed();
 
-	abstract public void onBackPressed();
+	void onBackPressed();
 
-	abstract public GodotInputHandler getInputHandler();
+	GodotInputHandler getInputHandler();
+
+	void setPointerIcon(int pointerType);
 }

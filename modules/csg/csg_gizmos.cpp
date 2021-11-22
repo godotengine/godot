@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "csg_gizmos.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/camera_3d.h"
 
 ///////////
 
@@ -48,7 +50,7 @@ CSGShape3DGizmoPlugin::CSGShape3DGizmoPlugin() {
 	create_handle_material("handles");
 }
 
-String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id) const {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
@@ -60,17 +62,17 @@ String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, 
 	}
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
-		return p_idx == 0 ? "Radius" : "Height";
+		return p_id == 0 ? "Radius" : "Height";
 	}
 
 	if (Object::cast_to<CSGTorus3D>(cs)) {
-		return p_idx == 0 ? "InnerRadius" : "OuterRadius";
+		return p_id == 0 ? "InnerRadius" : "OuterRadius";
 	}
 
 	return "";
 }
 
-Variant CSGShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant CSGShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id) const {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
@@ -85,23 +87,23 @@ Variant CSGShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int 
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
 		CSGCylinder3D *s = Object::cast_to<CSGCylinder3D>(cs);
-		return p_idx == 0 ? s->get_radius() : s->get_height();
+		return p_id == 0 ? s->get_radius() : s->get_height();
 	}
 
 	if (Object::cast_to<CSGTorus3D>(cs)) {
 		CSGTorus3D *s = Object::cast_to<CSGTorus3D>(cs);
-		return p_idx == 0 ? s->get_inner_radius() : s->get_outer_radius();
+		return p_id == 0 ? s->get_inner_radius() : s->get_outer_radius();
 	}
 
 	return Variant();
 }
 
-void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+void CSGShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, Camera3D *p_camera, const Point2 &p_point) {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
-	Transform gt = cs->get_global_transform();
+	Transform3D gt = cs->get_global_transform();
 	//gt.orthonormalize();
-	Transform gi = gt.affine_inverse();
+	Transform3D gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
@@ -129,10 +131,16 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 		CSGBox3D *s = Object::cast_to<CSGBox3D>(cs);
 
 		Vector3 axis;
-		axis[p_idx] = 1.0;
+		axis[p_id] = 1.0;
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
-		float d = ra[p_idx];
+		float d = ra[p_id];
+
+		if (Math::is_nan(d)) {
+			// The handle is perpendicular to the camera.
+			return;
+		}
+
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -142,7 +150,7 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 		}
 
 		Vector3 h = s->get_size();
-		h[p_idx] = d * 2;
+		h[p_id] = d * 2;
 		s->set_size(h);
 	}
 
@@ -150,7 +158,7 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 		CSGCylinder3D *s = Object::cast_to<CSGCylinder3D>(cs);
 
 		Vector3 axis;
-		axis[p_idx == 0 ? 0 : 1] = 1.0;
+		axis[p_id == 0 ? 0 : 1] = 1.0;
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
@@ -162,9 +170,9 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 			d = 0.001;
 		}
 
-		if (p_idx == 0) {
+		if (p_id == 0) {
 			s->set_radius(d);
-		} else if (p_idx == 1) {
+		} else if (p_id == 1) {
 			s->set_height(d * 2.0);
 		}
 	}
@@ -185,15 +193,15 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 			d = 0.001;
 		}
 
-		if (p_idx == 0) {
+		if (p_id == 0) {
 			s->set_inner_radius(d);
-		} else if (p_idx == 1) {
+		} else if (p_id == 1) {
 			s->set_outer_radius(d);
 		}
 	}
 }
 
-void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+void CSGShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, const Variant &p_restore, bool p_cancel) {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {
@@ -227,7 +235,7 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
 		CSGCylinder3D *s = Object::cast_to<CSGCylinder3D>(cs);
 		if (p_cancel) {
-			if (p_idx == 0) {
+			if (p_id == 0) {
 				s->set_radius(p_restore);
 			} else {
 				s->set_height(p_restore);
@@ -236,7 +244,7 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 		}
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
-		if (p_idx == 0) {
+		if (p_id == 0) {
 			ur->create_action(TTR("Change Cylinder Radius"));
 			ur->add_do_method(s, "set_radius", s->get_radius());
 			ur->add_undo_method(s, "set_radius", p_restore);
@@ -252,7 +260,7 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 	if (Object::cast_to<CSGTorus3D>(cs)) {
 		CSGTorus3D *s = Object::cast_to<CSGTorus3D>(cs);
 		if (p_cancel) {
-			if (p_idx == 0) {
+			if (p_id == 0) {
 				s->set_inner_radius(p_restore);
 			} else {
 				s->set_outer_radius(p_restore);
@@ -261,7 +269,7 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 		}
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
-		if (p_idx == 0) {
+		if (p_id == 0) {
 			ur->create_action(TTR("Change Torus Inner Radius"));
 			ur->add_do_method(s, "set_inner_radius", s->get_inner_radius());
 			ur->add_undo_method(s, "set_inner_radius", p_restore);
@@ -356,7 +364,7 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				break;
 		}
 
-		p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), solid_material);
+		p_gizmo->add_mesh(mesh, solid_material);
 	}
 
 	if (Object::cast_to<CSGSphere3D>(cs)) {

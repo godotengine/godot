@@ -63,8 +63,8 @@ btCollisionShape *ShapeBullet::prepare(btCollisionShape *p_btShape) const {
 }
 
 void ShapeBullet::notifyShapeChanged() {
-	for (Map<ShapeOwnerBullet *, int>::Element *E = owners.front(); E; E = E->next()) {
-		ShapeOwnerBullet *owner = static_cast<ShapeOwnerBullet *>(E->key());
+	for (const KeyValue<ShapeOwnerBullet *, int> &E : owners) {
+		ShapeOwnerBullet *owner = static_cast<ShapeOwnerBullet *>(E.key);
 		owner->shape_changed(owner->find_shape(this));
 	}
 }
@@ -110,7 +110,7 @@ btEmptyShape *ShapeBullet::create_shape_empty() {
 	return bulletnew(btEmptyShape);
 }
 
-btStaticPlaneShape *ShapeBullet::create_shape_plane(const btVector3 &planeNormal, btScalar planeConstant) {
+btStaticPlaneShape *ShapeBullet::create_shape_world_boundary(const btVector3 &planeNormal, btScalar planeConstant) {
 	return bulletnew(btStaticPlaneShape(planeNormal, planeConstant));
 }
 
@@ -164,32 +164,32 @@ btRayShape *ShapeBullet::create_shape_ray(real_t p_length, bool p_slips_on_slope
 	return r;
 }
 
-/* PLANE */
+/* World boundary */
 
-PlaneShapeBullet::PlaneShapeBullet() :
+WorldBoundaryShapeBullet::WorldBoundaryShapeBullet() :
 		ShapeBullet() {}
 
-void PlaneShapeBullet::set_data(const Variant &p_data) {
+void WorldBoundaryShapeBullet::set_data(const Variant &p_data) {
 	setup(p_data);
 }
 
-Variant PlaneShapeBullet::get_data() const {
+Variant WorldBoundaryShapeBullet::get_data() const {
 	return plane;
 }
 
-PhysicsServer3D::ShapeType PlaneShapeBullet::get_type() const {
-	return PhysicsServer3D::SHAPE_PLANE;
+PhysicsServer3D::ShapeType WorldBoundaryShapeBullet::get_type() const {
+	return PhysicsServer3D::SHAPE_WORLD_BOUNDARY;
 }
 
-void PlaneShapeBullet::setup(const Plane &p_plane) {
+void WorldBoundaryShapeBullet::setup(const Plane &p_plane) {
 	plane = p_plane;
 	notifyShapeChanged();
 }
 
-btCollisionShape *PlaneShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
+btCollisionShape *WorldBoundaryShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
 	btVector3 btPlaneNormal;
 	G_TO_B(plane.normal, btPlaneNormal);
-	return prepare(PlaneShapeBullet::create_shape_plane(btPlaneNormal, plane.d));
+	return prepare(WorldBoundaryShapeBullet::create_shape_world_boundary(btPlaneNormal, plane.d));
 }
 
 /* Sphere */

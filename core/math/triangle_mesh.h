@@ -32,16 +32,18 @@
 #define TRIANGLE_MESH_H
 
 #include "core/math/face3.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class TriangleMesh : public Reference {
-	GDCLASS(TriangleMesh, Reference);
+class TriangleMesh : public RefCounted {
+	GDCLASS(TriangleMesh, RefCounted);
 
+public:
 	struct Triangle {
 		Vector3 normal;
 		int indices[3];
 	};
 
+private:
 	Vector<Triangle> triangles;
 	Vector<Vector3> vertices;
 
@@ -86,8 +88,8 @@ public:
 	Vector3 get_area_normal(const AABB &p_aabb) const;
 	Vector<Face3> get_faces() const;
 
-	Vector<Triangle> get_triangles() const { return triangles; }
-	Vector<Vector3> get_vertices() const { return vertices; }
+	const Vector<Triangle> &get_triangles() const { return triangles; }
+	const Vector<Vector3> &get_vertices() const { return vertices; }
 	void get_indices(Vector<int> *r_triangles_indices) const;
 
 	void create(const Vector<Vector3> &p_faces);

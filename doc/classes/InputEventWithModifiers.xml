@@ -7,31 +7,27 @@
 		Contains keys events information with modifiers support like [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
+		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="alt" type="bool" setter="set_alt" getter="get_alt" default="false">
+		<member name="alt_pressed" type="bool" setter="set_alt_pressed" getter="is_alt_pressed" default="false">
 			State of the [kbd]Alt[/kbd] modifier.
 		</member>
-		<member name="command" type="bool" setter="set_command" getter="get_command" default="false">
+		<member name="command_pressed" type="bool" setter="set_command_pressed" getter="is_command_pressed" default="false">
 			State of the [kbd]Cmd[/kbd] modifier.
 		</member>
-		<member name="control" type="bool" setter="set_control" getter="get_control" default="false">
+		<member name="ctrl_pressed" type="bool" setter="set_ctrl_pressed" getter="is_ctrl_pressed" default="false">
 			State of the [kbd]Ctrl[/kbd] modifier.
 		</member>
-		<member name="meta" type="bool" setter="set_metakey" getter="get_metakey" default="false">
+		<member name="meta_pressed" type="bool" setter="set_meta_pressed" getter="is_meta_pressed" default="false">
 			State of the [kbd]Meta[/kbd] modifier.
 		</member>
-		<member name="shift" type="bool" setter="set_shift" getter="get_shift" default="false">
+		<member name="shift_pressed" type="bool" setter="set_shift_pressed" getter="is_shift_pressed" default="false">
 			State of the [kbd]Shift[/kbd] modifier.
 		</member>
 		<member name="store_command" type="bool" setter="set_store_command" getter="is_storing_command" default="true">
-			If [code]true[/code], pressing [kbd]Cmd[/kbd] on macOS or [kbd]Ctrl[/kbd] on all other platforms will both be serialized as [member command]. If [code]false[/code], those same keys will be serialized as [member meta] on macOS and [member control] on all other platforms.
+			If [code]true[/code], pressing [kbd]Cmd[/kbd] on macOS or [kbd]Ctrl[/kbd] on all other platforms will both be serialized as [member command_pressed]. If [code]false[/code], those same keys will be serialized as [member meta_pressed] on macOS and [member ctrl_pressed] on all other platforms.
 			This aids with cross-platform compatibility when developing e.g. on Windows for macOS, or vice-versa.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -38,15 +38,15 @@
 #include "servers/rendering/renderer_rd/effects_rd.h"
 #include "servers/rendering/renderer_rd/shader_compiler_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/giprobe_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/skeleton.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/voxel_gi_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 class RendererStorageRD : public RendererStorage {
 public:
-	static _FORCE_INLINE_ void store_transform(const Transform &p_mtx, float *p_array) {
+	static _FORCE_INLINE_ void store_transform(const Transform3D &p_mtx, float *p_array) {
 		p_array[0] = p_mtx.basis.elements[0][0];
 		p_array[1] = p_mtx.basis.elements[1][0];
 		p_array[2] = p_mtx.basis.elements[2][0];
@@ -95,7 +95,7 @@ public:
 		p_array[11] = 0;
 	}
 
-	static _FORCE_INLINE_ void store_transform_transposed_3x4(const Transform &p_mtx, float *p_array) {
+	static _FORCE_INLINE_ void store_transform_transposed_3x4(const Transform3D &p_mtx, float *p_array) {
 		p_array[0] = p_mtx.basis.elements[0][0];
 		p_array[1] = p_mtx.basis.elements[0][1];
 		p_array[2] = p_mtx.basis.elements[0][2];
@@ -129,12 +129,13 @@ public:
 		SHADER_TYPE_3D,
 		SHADER_TYPE_PARTICLES,
 		SHADER_TYPE_SKY,
+		SHADER_TYPE_FOG,
 		SHADER_TYPE_MAX
 	};
 
 	struct ShaderData {
 		virtual void set_code(const String &p_Code) = 0;
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture) = 0;
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) = 0;
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
 
 		virtual void get_instance_param_list(List<InstanceShaderParam> *p_param_list) const = 0;
@@ -151,12 +152,16 @@ public:
 
 	struct MaterialData {
 		void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
-		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
+		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
 
 		virtual void set_render_priority(int p_priority) = 0;
 		virtual void set_next_pass(RID p_pass) = 0;
-		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
+		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
 		virtual ~MaterialData();
+
+		//to be used internally by update_parameters, in the most common configuration of material parameters
+		bool update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, Map<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
+		void free_parameters_uniform_set(RID p_uniform_set);
 
 	private:
 		friend class RendererStorageRD;
@@ -165,8 +170,14 @@ public:
 		List<RID>::Element *global_texture_E = nullptr;
 		uint64_t global_textures_pass = 0;
 		Map<StringName, uint64_t> used_global_textures;
+
+		//internally by update_parameters_uniform_set
+		Vector<uint8_t> ubo_data;
+		RID uniform_buffer;
+		Vector<RID> texture_cache;
 	};
 	typedef MaterialData *(*MaterialDataRequestFunction)(ShaderData *);
+	static void _material_uniform_set_erased(const RID &p_set, void *p_material);
 
 	enum DefaultRDTexture {
 		DEFAULT_RD_TEXTURE_WHITE,
@@ -178,6 +189,7 @@ public:
 		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
 		DEFAULT_RD_TEXTURE_CUBEMAP_WHITE,
 		DEFAULT_RD_TEXTURE_3D_WHITE,
+		DEFAULT_RD_TEXTURE_3D_BLACK,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
 		DEFAULT_RD_TEXTURE_2D_UINT,
 		DEFAULT_RD_TEXTURE_MAX
@@ -221,7 +233,7 @@ private:
 		~CanvasTexture();
 	};
 
-	RID_PtrOwner<CanvasTexture, true> canvas_texture_owner;
+	RID_Owner<CanvasTexture, true> canvas_texture_owner;
 
 	/* TEXTURE API */
 	struct Texture {
@@ -362,7 +374,7 @@ private:
 		ShaderData *data;
 		String code;
 		ShaderType type;
-		Map<StringName, RID> default_texture_parameter;
+		Map<StringName, Map<int, RID>> default_texture_parameter;
 		Set<Material *> owners;
 	};
 
@@ -373,25 +385,28 @@ private:
 
 	struct Material {
 		RID self;
-		MaterialData *data;
-		Shader *shader;
+		MaterialData *data = nullptr;
+		Shader *shader = nullptr;
 		//shortcut to shader data and type
-		ShaderType shader_type;
+		ShaderType shader_type = SHADER_TYPE_MAX;
 		uint32_t shader_id = 0;
-		bool update_requested;
-		bool uniform_dirty;
-		bool texture_dirty;
-		Material *update_next;
+		bool uniform_dirty = false;
+		bool texture_dirty = false;
 		Map<StringName, Variant> params;
-		int32_t priority;
+		int32_t priority = 0;
 		RID next_pass;
+		SelfList<Material> update_element;
+
 		Dependency dependency;
+
+		Material() :
+				update_element(this) {}
 	};
 
 	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX];
 	mutable RID_Owner<Material, true> material_owner;
 
-	Material *material_update_list;
+	SelfList<Material>::List material_update_list;
 	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
 	void _update_queued_materials();
 
@@ -434,6 +449,7 @@ private:
 
 			struct LOD {
 				float edge_length = 0.0;
+				uint32_t index_count = 0;
 				RID index_buffer;
 				RID index_array;
 			};
@@ -513,7 +529,7 @@ private:
 	void _mesh_instance_clear(MeshInstance *mi);
 	void _mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface);
 
-	mutable RID_PtrOwner<MeshInstance> mesh_instance_owner;
+	mutable RID_Owner<MeshInstance> mesh_instance_owner;
 
 	SelfList<MeshInstance>::List dirty_mesh_instance_weights;
 	SelfList<MeshInstance>::List dirty_mesh_instance_arrays;
@@ -580,6 +596,7 @@ private:
 
 		RID buffer; //storage buffer
 		RID uniform_set_3d;
+		RID uniform_set_2d;
 
 		bool dirty = false;
 		MultiMesh *dirty_list = nullptr;
@@ -606,7 +623,6 @@ private:
 		float color[4];
 		float custom[3];
 		float lifetime;
-		uint32_t pad[3];
 	};
 
 	struct ParticlesFrameParams {
@@ -637,7 +653,9 @@ private:
 			COLLISION_TYPE_SPHERE,
 			COLLISION_TYPE_BOX,
 			COLLISION_TYPE_SDF,
-			COLLISION_TYPE_HEIGHT_FIELD
+			COLLISION_TYPE_HEIGHT_FIELD,
+			COLLISION_TYPE_2D_SDF,
+
 		};
 
 		struct Collider {
@@ -646,7 +664,7 @@ private:
 			uint32_t type;
 
 			uint32_t texture_index; //texture index for vector field
-			float scale;
+			real_t scale;
 			uint32_t pad[2];
 		};
 
@@ -655,10 +673,15 @@ private:
 		float prev_system_phase;
 		uint32_t cycle;
 
-		float explosiveness;
-		float randomness;
+		real_t explosiveness;
+		real_t randomness;
 		float time;
 		float delta;
+
+		uint32_t frame;
+		uint32_t pad0;
+		uint32_t pad1;
+		uint32_t pad2;
 
 		uint32_t random_seed;
 		uint32_t attractor_count;
@@ -691,23 +714,37 @@ private:
 	};
 
 	struct Particles {
+		RS::ParticlesMode mode = RS::PARTICLES_MODE_3D;
 		bool inactive = true;
-		float inactive_time = 0.0;
+		double inactive_time = 0.0;
 		bool emitting = false;
 		bool one_shot = false;
 		int amount = 0;
-		float lifetime = 1.0;
-		float pre_process_time = 0.0;
-		float explosiveness = 0.0;
-		float randomness = 0.0;
+		double lifetime = 1.0;
+		double pre_process_time = 0.0;
+		real_t explosiveness = 0.0;
+		real_t randomness = 0.0;
 		bool restart_request = false;
 		AABB custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
 		bool use_local_coords = true;
+		bool has_collision_cache = false;
+
+		bool has_sdf_collision = false;
+		Transform2D sdf_collision_transform;
+		Rect2 sdf_collision_to_screen;
+		RID sdf_collision_texture;
+
 		RID process_material;
+		uint32_t frame_counter = 0;
+		RS::ParticlesTransformAlign transform_align = RS::PARTICLES_TRANSFORM_ALIGN_DISABLED;
 
 		RS::ParticlesDrawOrder draw_order = RS::PARTICLES_DRAW_ORDER_INDEX;
 
 		Vector<RID> draw_passes;
+		Vector<Transform3D> trail_bind_poses;
+		bool trail_bind_poses_dirty = false;
+		RID trail_bind_pose_buffer;
+		RID trail_bind_pose_uniform_set;
 
 		RID particle_buffer;
 		RID particle_instance_buffer;
@@ -730,25 +767,26 @@ private:
 
 		RID sub_emitter;
 
-		float phase = 0.0;
-		float prev_phase = 0.0;
+		double phase = 0.0;
+		double prev_phase = 0.0;
 		uint64_t prev_ticks = 0;
 		uint32_t random_seed = 0;
 
 		uint32_t cycle_number = 0;
 
-		float speed_scale = 1.0;
+		double speed_scale = 1.0;
 
-		int fixed_fps = 0;
+		int fixed_fps = 30;
+		bool interpolate = true;
 		bool fractional_delta = false;
-		float frame_remainder = 0;
-		float collision_base_size = 0.01;
+		double frame_remainder = 0;
+		real_t collision_base_size = 0.01;
 
 		bool clear = true;
 
 		bool force_sub_emit = false;
 
-		Transform emission_transform;
+		Transform3D emission_transform;
 
 		Vector<uint8_t> emission_buffer_data;
 
@@ -759,12 +797,19 @@ private:
 
 		Dependency dependency;
 
-		ParticlesFrameParams frame_params;
+		double trail_length = 1.0;
+		bool trails_enabled = false;
+		LocalVector<ParticlesFrameParams> frame_history;
+		LocalVector<ParticlesFrameParams> trail_params;
+
+		Particles() {
+		}
 	};
 
-	void _particles_process(Particles *p_particles, float p_delta);
+	void _particles_process(Particles *p_particles, double p_delta);
 	void _particles_allocate_emission_buffer(Particles *particles);
 	void _particles_free_data(Particles *particles);
+	void _particles_update_buffers(Particles *particles);
 
 	struct ParticlesShader {
 		struct PushConstant {
@@ -776,7 +821,7 @@ private:
 			uint32_t use_fractional_delta;
 			uint32_t sub_emitter_mode;
 			uint32_t can_emit;
-			uint32_t pad;
+			uint32_t trail_pass;
 		};
 
 		ParticlesShaderRD shader;
@@ -791,10 +836,24 @@ private:
 		struct CopyPushConstant {
 			float sort_direction[3];
 			uint32_t total_particles;
+
+			uint32_t trail_size;
+			uint32_t trail_total;
+			float frame_delta;
+			float frame_remainder;
+
+			float align_up[3];
+			uint32_t align_mode;
+
+			uint32_t order_by_lifetime;
+			uint32_t lifetime_split;
+			uint32_t lifetime_reverse;
+			uint32_t pad;
 		};
 
 		enum {
 			COPY_MODE_FILL_INSTANCES,
+			COPY_MODE_FILL_INSTANCES_2D,
 			COPY_MODE_FILL_SORT_BUFFER,
 			COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER,
 			COPY_MODE_MAX,
@@ -804,6 +863,8 @@ private:
 		RID copy_shader_version;
 		RID copy_pipelines[COPY_MODE_MAX];
 
+		LocalVector<float> pose_update_buffer;
+
 	} particles_shader;
 
 	Particles *particle_update_list = nullptr;
@@ -811,6 +872,7 @@ private:
 	struct ParticlesShaderData : public ShaderData {
 		bool valid;
 		RID version;
+		bool uses_collision = false;
 
 		//PipelineCacheRD pipelines[SKY_VERSION_MAX];
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
@@ -821,14 +883,14 @@ private:
 
 		String path;
 		String code;
-		Map<StringName, RID> default_texture_params;
+		Map<StringName, Map<int, RID>> default_texture_params;
 
 		RID pipeline;
 
 		bool uses_time;
 
 		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
 		virtual void get_instance_param_list(List<RendererStorage::InstanceShaderParam> *p_param_list) const;
 		virtual bool is_param_texture(const StringName &p_param) const;
@@ -847,17 +909,14 @@ private:
 	}
 
 	struct ParticlesMaterialData : public MaterialData {
-		uint64_t last_frame;
-		ParticlesShaderData *shader_data;
-		RID uniform_buffer;
+		uint64_t last_frame = 0;
+		ParticlesShaderData *shader_data = nullptr;
 		RID uniform_set;
-		Vector<RID> texture_cache;
-		Vector<uint8_t> ubo_data;
-		bool uniform_set_updated;
+		bool uniform_set_updated = false;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
-		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~ParticlesMaterialData();
 	};
 
@@ -894,11 +953,35 @@ private:
 
 	struct ParticlesCollisionInstance {
 		RID collision;
-		Transform transform;
+		Transform3D transform;
 		bool active = false;
 	};
 
 	mutable RID_Owner<ParticlesCollisionInstance> particles_collision_instance_owner;
+
+	/* FOG VOLUMES */
+
+	struct FogVolume {
+		RID material;
+		Vector3 extents = Vector3(1, 1, 1);
+
+		RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
+
+		Dependency dependency;
+	};
+
+	mutable RID_Owner<FogVolume, true> fog_volume_owner;
+
+	/* visibility_notifier */
+
+	struct VisibilityNotifier {
+		AABB aabb;
+		Callable enter_callback;
+		Callable exit_callback;
+		Dependency dependency;
+	};
+
+	mutable RID_Owner<VisibilityNotifier> visibility_notifier_owner;
 
 	/* Skeleton */
 
@@ -944,7 +1027,6 @@ private:
 		uint32_t cull_mask = 0xFFFFFFFF;
 		RS::LightOmniShadowMode omni_shadow_mode = RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
 		RS::LightDirectionalShadowMode directional_shadow_mode = RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
-		RS::LightDirectionalShadowDepthRangeMode directional_range_mode = RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE;
 		bool directional_blend_splits = false;
 		bool directional_sky_only = false;
 		uint64_t version = 0;
@@ -998,9 +1080,9 @@ private:
 
 	mutable RID_Owner<Decal, true> decal_owner;
 
-	/* GI PROBE */
+	/* VOXEL GI */
 
-	struct GIProbe {
+	struct VoxelGI {
 		RID octree_buffer;
 		RID data_buffer;
 		RID sdf_texture;
@@ -1012,14 +1094,12 @@ private:
 
 		int cell_count = 0;
 
-		Transform to_cell_xform;
+		Transform3D to_cell_xform;
 		AABB bounds;
 		Vector3i octree_size;
 
 		float dynamic_range = 4.0;
 		float energy = 1.0;
-		float ao = 0.0;
-		float ao_size = 0.5;
 		float bias = 1.4;
 		float normal_bias = 0.0;
 		float propagation = 0.7;
@@ -1034,12 +1114,7 @@ private:
 		Dependency dependency;
 	};
 
-	GiprobeSdfShaderRD giprobe_sdf_shader;
-	RID giprobe_sdf_shader_version;
-	RID giprobe_sdf_shader_version_shader;
-	RID giprobe_sdf_shader_pipeline;
-
-	mutable RID_Owner<GIProbe, true> gi_probe_owner;
+	mutable RID_Owner<VoxelGI, true> voxel_gi_owner;
 
 	/* REFLECTION PROBE */
 
@@ -1078,6 +1153,7 @@ private:
 
 	struct RenderTarget {
 		Size2i size;
+		uint32_t view_count;
 		RID framebuffer;
 		RID color;
 
@@ -1087,6 +1163,8 @@ private:
 		Image::Format image_format = Image::FORMAT_L8;
 
 		bool flags[RENDER_TARGET_FLAG_MAX];
+
+		bool sdf_enabled = false;
 
 		RID backbuffer; //used for effects
 		RID backbuffer_fb;
@@ -1221,7 +1299,7 @@ private:
 	void _update_global_variables();
 	/* EFFECTS */
 
-	EffectsRD effects;
+	EffectsRD *effects = nullptr;
 
 public:
 	virtual bool can_create_resources_async() const;
@@ -1237,7 +1315,6 @@ public:
 
 	virtual void _texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate);
 
-	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0); //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data);
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to);
@@ -1288,7 +1365,7 @@ public:
 		if (p_texture.is_null()) {
 			return RID();
 		}
-		Texture *tex = texture_owner.getornull(p_texture);
+		Texture *tex = texture_owner.get_or_null(p_texture);
 
 		if (!tex) {
 			return RID();
@@ -1300,7 +1377,7 @@ public:
 		if (p_texture.is_null()) {
 			return Size2i();
 		}
-		Texture *tex = texture_owner.getornull(p_texture);
+		Texture *tex = texture_owner.get_or_null(p_texture);
 
 		if (!tex) {
 			return Size2i();
@@ -1337,8 +1414,8 @@ public:
 	String shader_get_code(RID p_shader) const;
 	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture);
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const;
+	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index);
+	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const;
 	Variant shader_get_param_default(RID p_shader, const StringName &p_param) const;
 	void shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function);
 
@@ -1368,12 +1445,12 @@ public:
 	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
 
 	_FORCE_INLINE_ uint32_t material_get_shader_id(RID p_material) {
-		Material *material = material_owner.getornull(p_material);
+		Material *material = material_owner.get_or_null(p_material);
 		return material->shader_id;
 	}
 
 	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, ShaderType p_shader_type) {
-		Material *material = material_owner.getornull(p_material);
+		Material *material = material_owner.get_or_null(p_material);
 		if (!material || material->shader_type != p_shader_type) {
 			return nullptr;
 		} else {
@@ -1396,7 +1473,9 @@ public:
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode);
 	virtual RS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
 
-	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
+	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
+	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
+	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data);
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const;
@@ -1424,7 +1503,7 @@ public:
 	virtual void update_mesh_instances();
 
 	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_COND_V(!mesh, nullptr);
 		r_surface_count = mesh->surface_count;
 		if (r_surface_count == 0) {
@@ -1441,7 +1520,7 @@ public:
 	}
 
 	_FORCE_INLINE_ void *mesh_get_surface(RID p_mesh, uint32_t p_surface_index) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_COND_V(!mesh, nullptr);
 		ERR_FAIL_UNSIGNED_INDEX_V(p_surface_index, mesh->surface_count, nullptr);
 
@@ -1449,7 +1528,7 @@ public:
 	}
 
 	_FORCE_INLINE_ RID mesh_get_shadow_mesh(RID p_mesh) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_COND_V(!mesh, RID());
 
 		return mesh->shadow_mesh;
@@ -1465,10 +1544,18 @@ public:
 		return s->lod_count > 0;
 	}
 
-	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold) const {
+	_FORCE_INLINE_ uint32_t mesh_surface_get_vertices_drawn_count(void *p_surface) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		return s->index_count ? s->index_count : s->vertex_count;
+	}
+
+	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold, uint32_t *r_index_count = nullptr) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		int32_t current_lod = -1;
+		if (r_index_count) {
+			*r_index_count = s->index_count;
+		}
 		for (uint32_t i = 0; i < s->lod_count; i++) {
 			float screen_size = s->lods[i].edge_length * p_model_scale / p_distance_threshold;
 			if (screen_size > p_lod_threshold) {
@@ -1479,6 +1566,9 @@ public:
 		if (current_lod == -1) {
 			return 0;
 		} else {
+			if (r_index_count) {
+				*r_index_count = s->lods[current_lod].index_count;
+			}
 			return current_lod + 1;
 		}
 	}
@@ -1524,7 +1614,7 @@ public:
 	}
 
 	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, RID &r_vertex_array_rd, RD::VertexFormatID &r_vertex_format) {
-		MeshInstance *mi = mesh_instance_owner.getornull(p_mesh_instance);
+		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
 		ERR_FAIL_COND(!mi);
 		Mesh *mesh = mi->mesh;
 		ERR_FAIL_UNSIGNED_INDEX(p_surface_index, mesh->surface_count);
@@ -1565,7 +1655,7 @@ public:
 	}
 
 	_FORCE_INLINE_ uint32_t mesh_surface_get_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
 
 		if (s->render_pass != p_render_pass) {
@@ -1578,7 +1668,7 @@ public:
 	}
 
 	_FORCE_INLINE_ uint32_t mesh_surface_get_multimesh_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
 
 		if (s->multimesh_render_pass != p_render_pass) {
@@ -1591,7 +1681,7 @@ public:
 	}
 
 	_FORCE_INLINE_ uint32_t mesh_surface_get_particles_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
-		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
 
 		if (s->particles_render_pass != p_render_pass) {
@@ -1612,14 +1702,14 @@ public:
 	int multimesh_get_instance_count(RID p_multimesh) const;
 
 	void multimesh_set_mesh(RID p_multimesh, RID p_mesh);
-	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform);
+	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform);
 	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
 	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
 	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color);
 
 	RID multimesh_get_mesh(RID p_multimesh) const;
 
-	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
+	Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
 	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const;
 	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
 	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
@@ -1633,22 +1723,22 @@ public:
 	AABB multimesh_get_aabb(RID p_multimesh) const;
 
 	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		return multimesh->xform_format;
 	}
 
 	_FORCE_INLINE_ bool multimesh_uses_colors(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		return multimesh->uses_colors;
 	}
 
 	_FORCE_INLINE_ bool multimesh_uses_custom_data(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		return multimesh->uses_custom_data;
 	}
 
 	_FORCE_INLINE_ uint32_t multimesh_get_instances_to_draw(RID p_multimesh) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		if (multimesh->visible_instances >= 0) {
 			return multimesh->visible_instances;
 		}
@@ -1656,7 +1746,7 @@ public:
 	}
 
 	_FORCE_INLINE_ RID multimesh_get_3d_uniform_set(RID p_multimesh, RID p_shader, uint32_t p_set) const {
-		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 		if (!multimesh->uniform_set_3d.is_valid()) {
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
@@ -1670,23 +1760,20 @@ public:
 		return multimesh->uniform_set_3d;
 	}
 
-	/* IMMEDIATE API */
+	_FORCE_INLINE_ RID multimesh_get_2d_uniform_set(RID p_multimesh, RID p_shader, uint32_t p_set) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		if (!multimesh->uniform_set_2d.is_valid()) {
+			Vector<RD::Uniform> uniforms;
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 0;
+			u.ids.push_back(multimesh->buffer);
+			uniforms.push_back(u);
+			multimesh->uniform_set_2d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
+		}
 
-	RID immediate_allocate() { return RID(); }
-	void immediate_initialize(RID p_immediate) {}
-
-	virtual void immediate_begin(RID p_immediate, RS::PrimitiveType p_rimitive, RID p_texture = RID()) {}
-	virtual void immediate_vertex(RID p_immediate, const Vector3 &p_vertex) {}
-	virtual void immediate_normal(RID p_immediate, const Vector3 &p_normal) {}
-	virtual void immediate_tangent(RID p_immediate, const Plane &p_tangent) {}
-	virtual void immediate_color(RID p_immediate, const Color &p_color) {}
-	virtual void immediate_uv(RID p_immediate, const Vector2 &tex_uv) {}
-	virtual void immediate_uv2(RID p_immediate, const Vector2 &tex_uv) {}
-	virtual void immediate_end(RID p_immediate) {}
-	virtual void immediate_clear(RID p_immediate) {}
-	virtual void immediate_set_material(RID p_immediate, RID p_material) {}
-	virtual RID immediate_get_material(RID p_immediate) const { return RID(); }
-	virtual AABB immediate_get_aabb(RID p_immediate) const { return AABB(); }
+		return multimesh->uniform_set_2d;
+	}
 
 	/* SKELETON API */
 
@@ -1695,19 +1782,19 @@ public:
 
 	void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false);
 	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
-	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform);
+	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform3D &p_world_transform);
 	int skeleton_get_bone_count(RID p_skeleton) const;
-	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform);
-	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const;
+	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform);
+	Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const;
 	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform);
 	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 
 	_FORCE_INLINE_ bool skeleton_is_valid(RID p_skeleton) {
-		return skeleton_owner.getornull(p_skeleton) != nullptr;
+		return skeleton_owner.get_or_null(p_skeleton) != nullptr;
 	}
 
 	_FORCE_INLINE_ RID skeleton_get_3d_uniform_set(RID p_skeleton, RID p_shader, uint32_t p_set) const {
-		Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+		Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 		ERR_FAIL_COND_V(!skeleton, RID());
 		ERR_FAIL_COND_V(skeleton->size == 0, RID());
 		if (skeleton->use_2d) {
@@ -1756,14 +1843,12 @@ public:
 	bool light_directional_get_blend_splits(RID p_light) const;
 	void light_directional_set_sky_only(RID p_light, bool p_sky_only);
 	bool light_directional_is_sky_only(RID p_light) const;
-	void light_directional_set_shadow_depth_range_mode(RID p_light, RS::LightDirectionalShadowDepthRangeMode p_range_mode);
-	RS::LightDirectionalShadowDepthRangeMode light_directional_get_shadow_depth_range_mode(RID p_light) const;
 
 	RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light);
 	RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light);
 
 	_FORCE_INLINE_ RS::LightType light_get_type(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
 		return light->type;
@@ -1771,63 +1856,70 @@ public:
 	AABB light_get_aabb(RID p_light) const;
 
 	_FORCE_INLINE_ float light_get_param(RID p_light, RS::LightParam p_param) {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, 0);
 
 		return light->param[p_param];
 	}
 
 	_FORCE_INLINE_ RID light_get_projector(RID p_light) {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, RID());
 
 		return light->projector;
 	}
 
 	_FORCE_INLINE_ Color light_get_color(RID p_light) {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, Color());
 
 		return light->color;
 	}
 
 	_FORCE_INLINE_ Color light_get_shadow_color(RID p_light) {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, Color());
 
 		return light->shadow_color;
 	}
 
 	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, 0);
 
 		return light->cull_mask;
 	}
 
 	_FORCE_INLINE_ bool light_has_shadow(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
 		return light->shadow;
 	}
 
+	_FORCE_INLINE_ bool light_has_projector(RID p_light) const {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
+
+		return texture_owner.owns(light->projector);
+	}
+
 	_FORCE_INLINE_ bool light_is_negative(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
 		return light->negative;
 	}
 
 	_FORCE_INLINE_ float light_get_transmittance_bias(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, 0.0);
 
 		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
 	}
 
 	_FORCE_INLINE_ float light_get_shadow_volumetric_fog_fade(RID p_light) const {
-		const Light *light = light_owner.getornull(p_light);
+		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_COND_V(!light, 0.0);
 
 		return light->param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE];
@@ -1894,120 +1986,114 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade);
 
 	_FORCE_INLINE_ Vector3 decal_get_extents(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->extents;
 	}
 
 	_FORCE_INLINE_ RID decal_get_texture(RID p_decal, RS::DecalTexture p_texture) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->textures[p_texture];
 	}
 
 	_FORCE_INLINE_ Color decal_get_modulate(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->modulate;
 	}
 
 	_FORCE_INLINE_ float decal_get_emission_energy(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->emission_energy;
 	}
 
 	_FORCE_INLINE_ float decal_get_albedo_mix(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->albedo_mix;
 	}
 
 	_FORCE_INLINE_ uint32_t decal_get_cull_mask(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->cull_mask;
 	}
 
 	_FORCE_INLINE_ float decal_get_upper_fade(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->upper_fade;
 	}
 
 	_FORCE_INLINE_ float decal_get_lower_fade(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->lower_fade;
 	}
 
 	_FORCE_INLINE_ float decal_get_normal_fade(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->normal_fade;
 	}
 
 	_FORCE_INLINE_ bool decal_is_distance_fade_enabled(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->distance_fade;
 	}
 
 	_FORCE_INLINE_ float decal_get_distance_fade_begin(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->distance_fade_begin;
 	}
 
 	_FORCE_INLINE_ float decal_get_distance_fade_length(RID p_decal) {
-		const Decal *decal = decal_owner.getornull(p_decal);
+		const Decal *decal = decal_owner.get_or_null(p_decal);
 		return decal->distance_fade_length;
 	}
 
 	virtual AABB decal_get_aabb(RID p_decal) const;
 
-	/* GI PROBE API */
+	/* VOXEL GI API */
 
-	RID gi_probe_allocate();
-	void gi_probe_initialize(RID p_gi_probe);
+	RID voxel_gi_allocate();
+	void voxel_gi_initialize(RID p_voxel_gi);
 
-	void gi_probe_allocate_data(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
+	void voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
 
-	AABB gi_probe_get_bounds(RID p_gi_probe) const;
-	Vector3i gi_probe_get_octree_size(RID p_gi_probe) const;
-	Vector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const;
-	Vector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const;
-	Vector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const;
+	AABB voxel_gi_get_bounds(RID p_voxel_gi) const;
+	Vector3i voxel_gi_get_octree_size(RID p_voxel_gi) const;
+	Vector<uint8_t> voxel_gi_get_octree_cells(RID p_voxel_gi) const;
+	Vector<uint8_t> voxel_gi_get_data_cells(RID p_voxel_gi) const;
+	Vector<uint8_t> voxel_gi_get_distance_field(RID p_voxel_gi) const;
 
-	Vector<int> gi_probe_get_level_counts(RID p_gi_probe) const;
-	Transform gi_probe_get_to_cell_xform(RID p_gi_probe) const;
+	Vector<int> voxel_gi_get_level_counts(RID p_voxel_gi) const;
+	Transform3D voxel_gi_get_to_cell_xform(RID p_voxel_gi) const;
 
-	void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range);
-	float gi_probe_get_dynamic_range(RID p_gi_probe) const;
+	void voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range);
+	float voxel_gi_get_dynamic_range(RID p_voxel_gi) const;
 
-	void gi_probe_set_propagation(RID p_gi_probe, float p_range);
-	float gi_probe_get_propagation(RID p_gi_probe) const;
+	void voxel_gi_set_propagation(RID p_voxel_gi, float p_range);
+	float voxel_gi_get_propagation(RID p_voxel_gi) const;
 
-	void gi_probe_set_energy(RID p_gi_probe, float p_energy);
-	float gi_probe_get_energy(RID p_gi_probe) const;
+	void voxel_gi_set_energy(RID p_voxel_gi, float p_energy);
+	float voxel_gi_get_energy(RID p_voxel_gi) const;
 
-	void gi_probe_set_ao(RID p_gi_probe, float p_ao);
-	float gi_probe_get_ao(RID p_gi_probe) const;
+	void voxel_gi_set_bias(RID p_voxel_gi, float p_bias);
+	float voxel_gi_get_bias(RID p_voxel_gi) const;
 
-	void gi_probe_set_ao_size(RID p_gi_probe, float p_strength);
-	float gi_probe_get_ao_size(RID p_gi_probe) const;
+	void voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range);
+	float voxel_gi_get_normal_bias(RID p_voxel_gi) const;
 
-	void gi_probe_set_bias(RID p_gi_probe, float p_bias);
-	float gi_probe_get_bias(RID p_gi_probe) const;
+	void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable);
+	bool voxel_gi_is_interior(RID p_voxel_gi) const;
 
-	void gi_probe_set_normal_bias(RID p_gi_probe, float p_range);
-	float gi_probe_get_normal_bias(RID p_gi_probe) const;
+	void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable);
+	bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const;
 
-	void gi_probe_set_interior(RID p_gi_probe, bool p_enable);
-	bool gi_probe_is_interior(RID p_gi_probe) const;
+	void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength);
+	float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const;
 
-	void gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable);
-	bool gi_probe_is_using_two_bounces(RID p_gi_probe) const;
+	uint32_t voxel_gi_get_version(RID p_probe);
+	uint32_t voxel_gi_get_data_version(RID p_probe);
 
-	void gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength);
-	float gi_probe_get_anisotropy_strength(RID p_gi_probe) const;
+	RID voxel_gi_get_octree_buffer(RID p_voxel_gi) const;
+	RID voxel_gi_get_data_buffer(RID p_voxel_gi) const;
 
-	uint32_t gi_probe_get_version(RID p_probe);
-	uint32_t gi_probe_get_data_version(RID p_probe);
-
-	RID gi_probe_get_octree_buffer(RID p_gi_probe) const;
-	RID gi_probe_get_data_buffer(RID p_gi_probe) const;
-
-	RID gi_probe_get_sdf_texture(RID p_gi_probe);
+	RID voxel_gi_get_sdf_texture(RID p_voxel_gi);
 
 	/* LIGHTMAP CAPTURE */
 
@@ -2030,18 +2116,18 @@ public:
 		return lightmap_probe_capture_update_speed;
 	}
 	_FORCE_INLINE_ RID lightmap_get_texture(RID p_lightmap) const {
-		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		ERR_FAIL_COND_V(!lm, RID());
 		return lm->light_texture;
 	}
 	_FORCE_INLINE_ int32_t lightmap_get_array_index(RID p_lightmap) const {
 		ERR_FAIL_COND_V(!using_lightmap_array, -1); //only for arrays
-		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		return lm->array_index;
 	}
 	_FORCE_INLINE_ bool lightmap_uses_spherical_harmonics(RID p_lightmap) const {
 		ERR_FAIL_COND_V(!using_lightmap_array, false); //only for arrays
-		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		return lm->uses_spherical_harmonics;
 	}
 	_FORCE_INLINE_ uint64_t lightmap_array_get_version() const {
@@ -2064,22 +2150,30 @@ public:
 	RID particles_allocate();
 	void particles_initialize(RID p_particles_collision);
 
+	void particles_set_mode(RID p_particles, RS::ParticlesMode p_mode);
 	void particles_set_emitting(RID p_particles, bool p_emitting);
 	void particles_set_amount(RID p_particles, int p_amount);
-	void particles_set_lifetime(RID p_particles, float p_lifetime);
+	void particles_set_lifetime(RID p_particles, double p_lifetime);
 	void particles_set_one_shot(RID p_particles, bool p_one_shot);
-	void particles_set_pre_process_time(RID p_particles, float p_time);
-	void particles_set_explosiveness_ratio(RID p_particles, float p_ratio);
-	void particles_set_randomness_ratio(RID p_particles, float p_ratio);
+	void particles_set_pre_process_time(RID p_particles, double p_time);
+	void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio);
+	void particles_set_randomness_ratio(RID p_particles, real_t p_ratio);
 	void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb);
-	void particles_set_speed_scale(RID p_particles, float p_scale);
+	void particles_set_speed_scale(RID p_particles, double p_scale);
 	void particles_set_use_local_coordinates(RID p_particles, bool p_enable);
 	void particles_set_process_material(RID p_particles, RID p_material);
 	void particles_set_fixed_fps(RID p_particles, int p_fps);
+	void particles_set_interpolate(RID p_particles, bool p_enable);
 	void particles_set_fractional_delta(RID p_particles, bool p_enable);
-	void particles_set_collision_base_size(RID p_particles, float p_size);
+	void particles_set_collision_base_size(RID p_particles, real_t p_size);
+	void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align);
+
+	void particles_set_trails(RID p_particles, bool p_enable, double p_length);
+	void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses);
+
 	void particles_restart(RID p_particles);
-	void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
+	void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
+
 	void particles_set_subemitter(RID p_particles, RID p_subemitter_particles);
 
 	void particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order);
@@ -2091,34 +2185,55 @@ public:
 	AABB particles_get_current_aabb(RID p_particles);
 	AABB particles_get_aabb(RID p_particles) const;
 
-	void particles_set_emission_transform(RID p_particles, const Transform &p_transform);
+	void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform);
 
 	bool particles_get_emitting(RID p_particles);
 	int particles_get_draw_passes(RID p_particles) const;
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const;
 
-	void particles_set_view_axis(RID p_particles, const Vector3 &p_axis);
+	void particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis);
 
 	virtual bool particles_is_inactive(RID p_particles) const;
 
-	_FORCE_INLINE_ uint32_t particles_get_amount(RID p_particles) {
-		Particles *particles = particles_owner.getornull(p_particles);
+	_FORCE_INLINE_ RS::ParticlesMode particles_get_mode(RID p_particles) {
+		Particles *particles = particles_owner.get_or_null(p_particles);
+		ERR_FAIL_COND_V(!particles, RS::PARTICLES_MODE_2D);
+		return particles->mode;
+	}
+
+	_FORCE_INLINE_ uint32_t particles_get_amount(RID p_particles, uint32_t &r_trail_divisor) {
+		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, 0);
 
-		return particles->amount;
+		if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+			r_trail_divisor = particles->trail_bind_poses.size();
+		} else {
+			r_trail_divisor = 1;
+		}
+
+		return particles->amount * r_trail_divisor;
+	}
+
+	_FORCE_INLINE_ bool particles_has_collision(RID p_particles) {
+		Particles *particles = particles_owner.get_or_null(p_particles);
+		ERR_FAIL_COND_V(!particles, 0);
+
+		return particles->has_collision_cache;
 	}
 
 	_FORCE_INLINE_ uint32_t particles_is_using_local_coords(RID p_particles) {
-		Particles *particles = particles_owner.getornull(p_particles);
+		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, false);
 
 		return particles->use_local_coords;
 	}
 
 	_FORCE_INLINE_ RID particles_get_instance_buffer_uniform_set(RID p_particles, RID p_shader, uint32_t p_set) {
-		Particles *particles = particles_owner.getornull(p_particles);
+		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, RID());
 		if (particles->particles_transforms_buffer_uniform_set.is_null()) {
+			_particles_update_buffers(particles);
+
 			Vector<RD::Uniform> uniforms;
 
 			{
@@ -2137,6 +2252,7 @@ public:
 
 	virtual void particles_add_collision(RID p_particles, RID p_particles_collision_instance);
 	virtual void particles_remove_collision(RID p_particles, RID p_particles_collision_instance);
+	virtual void particles_set_canvas_sdf_collision(RID p_particles, bool p_enable, const Transform2D &p_xform, const Rect2 &p_to_screen, RID p_texture);
 
 	/* PARTICLES COLLISION */
 
@@ -2145,11 +2261,11 @@ public:
 
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type);
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask);
-	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius); //for spheres
+	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius); //for spheres
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents); //for non-spheres
-	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength);
-	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality);
-	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve);
+	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength);
+	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality);
+	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve);
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture); //for SDF and vector field, heightfield is dynamic
 	virtual void particles_collision_height_field_update(RID p_particles_collision); //for SDF and vector field
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution); //for SDF and vector field
@@ -2158,9 +2274,32 @@ public:
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const;
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
 
+	/* FOG VOLUMES */
+
+	virtual RID fog_volume_allocate();
+	virtual void fog_volume_initialize(RID p_rid);
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape);
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents);
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material);
+	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const;
+	virtual RID fog_volume_get_material(RID p_fog_volume) const;
+	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const;
+	virtual Vector3 fog_volume_get_extents(RID p_fog_volume) const;
+
+	/* VISIBILITY NOTIFIER */
+
+	virtual RID visibility_notifier_allocate();
+	virtual void visibility_notifier_initialize(RID p_notifier);
+	virtual void visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb);
+	virtual void visibility_notifier_set_callbacks(RID p_notifier, const Callable &p_enter_callbable, const Callable &p_exit_callable);
+
+	virtual AABB visibility_notifier_get_aabb(RID p_notifier) const;
+	virtual void visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred);
+
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision);
-	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform);
+	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform);
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active);
 
 	/* GLOBAL VARIABLES API */
@@ -2188,7 +2327,7 @@ public:
 
 	RID render_target_create();
 	void render_target_set_position(RID p_render_target, int p_x, int p_y);
-	void render_target_set_size(RID p_render_target, int p_width, int p_height);
+	void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count);
 	RID render_target_get_texture(RID p_render_target);
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
@@ -2211,6 +2350,8 @@ public:
 	RID render_target_get_sdf_framebuffer(RID p_render_target);
 	void render_target_sdf_process(RID p_render_target);
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const;
+	void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled);
+	bool render_target_is_sdf_enabled(RID p_render_target) const;
 
 	Size2 render_target_get_size(RID p_render_target);
 	RID render_target_get_rd_framebuffer(RID p_render_target);
@@ -2234,13 +2375,16 @@ public:
 
 	void set_debug_generate_wireframes(bool p_generate) {}
 
-	void render_info_begin_capture() {}
-	void render_info_end_capture() {}
-	int get_captured_render_info(RS::RenderInfo p_info) { return 0; }
+	//keep cached since it can be called form any thread
+	uint64_t texture_mem_cache = 0;
+	uint64_t buffer_mem_cache = 0;
+	uint64_t total_mem_cache = 0;
 
-	uint64_t get_render_info(RS::RenderInfo p_info) { return 0; }
-	String get_video_adapter_name() const { return String(); }
-	String get_video_adapter_vendor() const { return String(); }
+	virtual void update_memory_info();
+	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info);
+
+	String get_video_adapter_name() const;
+	String get_video_adapter_vendor() const;
 
 	virtual void capture_timestamps_begin();
 	virtual void capture_timestamp(const String &p_name);
@@ -2254,6 +2398,7 @@ public:
 
 	static RendererStorageRD *base_singleton;
 
+	void init_effects(bool p_prefer_raster_effects);
 	EffectsRD *get_effects();
 
 	RendererStorageRD();

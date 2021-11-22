@@ -32,7 +32,7 @@
 #define CAMERA_MATRIX_H
 
 #include "core/math/rect2.h"
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 
 struct CameraMatrix {
 	enum Planes {
@@ -71,9 +71,9 @@ struct CameraMatrix {
 	real_t get_fov() const;
 	bool is_orthogonal() const;
 
-	Vector<Plane> get_projection_planes(const Transform &p_transform) const;
+	Vector<Plane> get_projection_planes(const Transform3D &p_transform) const;
 
-	bool get_endpoints(const Transform &p_transform, Vector3 *p_8points) const;
+	bool get_endpoints(const Transform3D &p_transform, Vector3 *p_8points) const;
 	Vector2 get_viewport_half_extents() const;
 	Vector2 get_far_plane_half_extents() const;
 
@@ -90,7 +90,7 @@ struct CameraMatrix {
 	void scale_translate_to_fit(const AABB &p_aabb);
 	void make_scale(const Vector3 &p_scale);
 	int get_pixels_per_meter(int p_for_pixel_width) const;
-	operator Transform() const;
+	operator Transform3D() const;
 
 	void flip_y();
 
@@ -112,7 +112,7 @@ struct CameraMatrix {
 	float get_lod_multiplier() const;
 
 	CameraMatrix();
-	CameraMatrix(const Transform &p_transform);
+	CameraMatrix(const Transform3D &p_transform);
 	~CameraMatrix();
 };
 

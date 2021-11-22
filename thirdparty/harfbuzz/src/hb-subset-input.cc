@@ -30,35 +30,37 @@
 /**
  * hb_subset_input_create_or_fail:
  *
- * Return value: New subset input.
+ * Creates a new subset input object.
+ *
+ * Return value: (transfer full): New subset input, or %NULL if failed. Destroy
+ * with hb_subset_input_destroy().
  *
  * Since: 1.8.0
  **/
 hb_subset_input_t *
-hb_subset_input_create_or_fail ()
+hb_subset_input_create_or_fail (void)
 {
   hb_subset_input_t *input = hb_object_create<hb_subset_input_t>();
 
   if (unlikely (!input))
     return nullptr;
 
-  input->unicodes = hb_set_create ();
-  input->glyphs = hb_set_create ();
-  input->name_ids = hb_set_create ();
-  hb_set_add_range (input->name_ids, 0, 6);
-  input->name_languages = hb_set_create ();
-  hb_set_add (input->name_languages, 0x0409);
-  input->drop_tables = hb_set_create ();
-  input->drop_hints = false;
-  input->desubroutinize = false;
-  input->retain_gids = false;
-  input->name_legacy = false;
+  for (auto& set : input->sets_iter ())
+    set = hb_set_create ();
+
+  if (input->in_error ())
+  {
+    hb_subset_input_destroy (input);
+    return nullptr;
+  }
+
+  input->flags = HB_SUBSET_FLAGS_DEFAULT;
+
+  hb_set_add_range (input->sets.name_ids, 0, 6);
+  hb_set_add (input->sets.name_languages, 0x0409);
 
   hb_tag_t default_drop_tables[] = {
     // Layout disabled by default
-    HB_TAG ('G', 'S', 'U', 'B'),
-    HB_TAG ('G', 'P', 'O', 'S'),
-    HB_TAG ('G', 'D', 'E', 'F'),
     HB_TAG ('m', 'o', 'r', 'x'),
     HB_TAG ('m', 'o', 'r', 't'),
     HB_TAG ('k', 'e', 'r', 'x'),
@@ -81,149 +83,281 @@ hb_subset_input_create_or_fail ()
     HB_TAG ('S', 'i', 'l', 'f'),
     HB_TAG ('S', 'i', 'l', 'l'),
   };
+  input->sets.drop_tables->add_array (default_drop_tables, ARRAY_LENGTH (default_drop_tables));
 
-  input->drop_tables->add_array (default_drop_tables, ARRAY_LENGTH (default_drop_tables));
+  hb_tag_t default_no_subset_tables[] = {
+    HB_TAG ('a', 'v', 'a', 'r'),
+    HB_TAG ('f', 'v', 'a', 'r'),
+    HB_TAG ('g', 'a', 's', 'p'),
+    HB_TAG ('c', 'v', 't', ' '),
+    HB_TAG ('f', 'p', 'g', 'm'),
+    HB_TAG ('p', 'r', 'e', 'p'),
+    HB_TAG ('V', 'D', 'M', 'X'),
+    HB_TAG ('D', 'S', 'I', 'G'),
+    HB_TAG ('M', 'V', 'A', 'R'),
+    HB_TAG ('c', 'v', 'a', 'r'),
+    HB_TAG ('S', 'T', 'A', 'T'),
+  };
+  input->sets.no_subset_tables->add_array (default_no_subset_tables,
+                                         ARRAY_LENGTH (default_no_subset_tables));
 
+  //copied from _layout_features_groups in fonttools
+  hb_tag_t default_layout_features[] = {
+    // default shaper
+    // common
+    HB_TAG ('r', 'v', 'r', 'n'),
+    HB_TAG ('c', 'c', 'm', 'p'),
+    HB_TAG ('l', 'i', 'g', 'a'),
+    HB_TAG ('l', 'o', 'c', 'l'),
+    HB_TAG ('m', 'a', 'r', 'k'),
+    HB_TAG ('m', 'k', 'm', 'k'),
+    HB_TAG ('r', 'l', 'i', 'g'),
+
+    //fractions
+    HB_TAG ('f', 'r', 'a', 'c'),
+    HB_TAG ('n', 'u', 'm', 'r'),
+    HB_TAG ('d', 'n', 'o', 'm'),
+
+    //horizontal
+    HB_TAG ('c', 'a', 'l', 't'),
+    HB_TAG ('c', 'l', 'i', 'g'),
+    HB_TAG ('c', 'u', 'r', 's'),
+    HB_TAG ('k', 'e', 'r', 'n'),
+    HB_TAG ('r', 'c', 'l', 't'),
+
+    //vertical
+    HB_TAG ('v', 'a', 'l', 't'),
+    HB_TAG ('v', 'e', 'r', 't'),
+    HB_TAG ('v', 'k', 'r', 'n'),
+    HB_TAG ('v', 'p', 'a', 'l'),
+    HB_TAG ('v', 'r', 't', '2'),
+
+    //ltr
+    HB_TAG ('l', 't', 'r', 'a'),
+    HB_TAG ('l', 't', 'r', 'm'),
+
+    //rtl
+    HB_TAG ('r', 't', 'l', 'a'),
+    HB_TAG ('r', 't', 'l', 'm'),
+
+    //Complex shapers
+    //arabic
+    HB_TAG ('i', 'n', 'i', 't'),
+    HB_TAG ('m', 'e', 'd', 'i'),
+    HB_TAG ('f', 'i', 'n', 'a'),
+    HB_TAG ('i', 's', 'o', 'l'),
+    HB_TAG ('m', 'e', 'd', '2'),
+    HB_TAG ('f', 'i', 'n', '2'),
+    HB_TAG ('f', 'i', 'n', '3'),
+    HB_TAG ('c', 's', 'w', 'h'),
+    HB_TAG ('m', 's', 'e', 't'),
+    HB_TAG ('s', 't', 'c', 'h'),
+
+    //hangul
+    HB_TAG ('l', 'j', 'm', 'o'),
+    HB_TAG ('v', 'j', 'm', 'o'),
+    HB_TAG ('t', 'j', 'm', 'o'),
+
+    //tibetan
+    HB_TAG ('a', 'b', 'v', 's'),
+    HB_TAG ('b', 'l', 'w', 's'),
+    HB_TAG ('a', 'b', 'v', 'm'),
+    HB_TAG ('b', 'l', 'w', 'm'),
+
+    //indic
+    HB_TAG ('n', 'u', 'k', 't'),
+    HB_TAG ('a', 'k', 'h', 'n'),
+    HB_TAG ('r', 'p', 'h', 'f'),
+    HB_TAG ('r', 'k', 'r', 'f'),
+    HB_TAG ('p', 'r', 'e', 'f'),
+    HB_TAG ('b', 'l', 'w', 'f'),
+    HB_TAG ('h', 'a', 'l', 'f'),
+    HB_TAG ('a', 'b', 'v', 'f'),
+    HB_TAG ('p', 's', 't', 'f'),
+    HB_TAG ('c', 'f', 'a', 'r'),
+    HB_TAG ('v', 'a', 't', 'u'),
+    HB_TAG ('c', 'j', 'c', 't'),
+    HB_TAG ('i', 'n', 'i', 't'),
+    HB_TAG ('p', 'r', 'e', 's'),
+    HB_TAG ('a', 'b', 'v', 's'),
+    HB_TAG ('b', 'l', 'w', 's'),
+    HB_TAG ('p', 's', 't', 's'),
+    HB_TAG ('h', 'a', 'l', 'n'),
+    HB_TAG ('d', 'i', 's', 't'),
+    HB_TAG ('a', 'b', 'v', 'm'),
+    HB_TAG ('b', 'l', 'w', 'm'),
+  };
+
+  input->sets.layout_features->add_array (default_layout_features, ARRAY_LENGTH (default_layout_features));
+
+  if (input->in_error ())
+  {
+    hb_subset_input_destroy (input);
+    return nullptr;
+  }
   return input;
 }
 
 /**
  * hb_subset_input_reference: (skip)
- * @subset_input: a subset_input.
+ * @input: a #hb_subset_input_t object.
  *
+ * Increases the reference count on @input.
  *
- *
- * Return value:
+ * Return value: @input.
  *
  * Since: 1.8.0
  **/
 hb_subset_input_t *
-hb_subset_input_reference (hb_subset_input_t *subset_input)
+hb_subset_input_reference (hb_subset_input_t *input)
 {
-  return hb_object_reference (subset_input);
+  return hb_object_reference (input);
 }
 
 /**
  * hb_subset_input_destroy:
- * @subset_input: a subset_input.
+ * @input: a #hb_subset_input_t object.
+ *
+ * Decreases the reference count on @input, and if it reaches zero, destroys
+ * @input, freeing all memory.
  *
  * Since: 1.8.0
  **/
 void
-hb_subset_input_destroy (hb_subset_input_t *subset_input)
+hb_subset_input_destroy (hb_subset_input_t *input)
 {
-  if (!hb_object_destroy (subset_input)) return;
+  if (!hb_object_destroy (input)) return;
 
-  hb_set_destroy (subset_input->unicodes);
-  hb_set_destroy (subset_input->glyphs);
-  hb_set_destroy (subset_input->name_ids);
-  hb_set_destroy (subset_input->name_languages);
-  hb_set_destroy (subset_input->drop_tables);
+  for (hb_set_t* set : input->sets_iter ())
+    hb_set_destroy (set);
 
-  free (subset_input);
+  hb_free (input);
 }
 
 /**
  * hb_subset_input_unicode_set:
- * @subset_input: a subset_input.
+ * @input: a #hb_subset_input_t object.
+ *
+ * Gets the set of Unicode code points to retain, the caller should modify the
+ * set as needed.
+ *
+ * Return value: (transfer none): pointer to the #hb_set_t of Unicode code
+ * points.
  *
  * Since: 1.8.0
  **/
 HB_EXTERN hb_set_t *
-hb_subset_input_unicode_set (hb_subset_input_t *subset_input)
+hb_subset_input_unicode_set (hb_subset_input_t *input)
 {
-  return subset_input->unicodes;
+  return input->sets.unicodes;
 }
 
 /**
  * hb_subset_input_glyph_set:
- * @subset_input: a subset_input.
+ * @input: a #hb_subset_input_t object.
+ *
+ * Gets the set of glyph IDs to retain, the caller should modify the set as
+ * needed.
+ *
+ * Return value: (transfer none): pointer to the #hb_set_t of glyph IDs.
  *
  * Since: 1.8.0
  **/
 HB_EXTERN hb_set_t *
-hb_subset_input_glyph_set (hb_subset_input_t *subset_input)
+hb_subset_input_glyph_set (hb_subset_input_t *input)
 {
-  return subset_input->glyphs;
-}
-
-HB_EXTERN hb_set_t *
-hb_subset_input_nameid_set (hb_subset_input_t *subset_input)
-{
-  return subset_input->name_ids;
-}
-
-HB_EXTERN hb_set_t *
-hb_subset_input_namelangid_set (hb_subset_input_t *subset_input)
-{
-  return subset_input->name_languages;
-}
-
-HB_EXTERN hb_set_t *
-hb_subset_input_drop_tables_set (hb_subset_input_t *subset_input)
-{
-  return subset_input->drop_tables;
-}
-
-HB_EXTERN void
-hb_subset_input_set_drop_hints (hb_subset_input_t *subset_input,
-				hb_bool_t drop_hints)
-{
-  subset_input->drop_hints = drop_hints;
-}
-
-HB_EXTERN hb_bool_t
-hb_subset_input_get_drop_hints (hb_subset_input_t *subset_input)
-{
-  return subset_input->drop_hints;
-}
-
-HB_EXTERN void
-hb_subset_input_set_desubroutinize (hb_subset_input_t *subset_input,
-				    hb_bool_t desubroutinize)
-{
-  subset_input->desubroutinize = desubroutinize;
-}
-
-HB_EXTERN hb_bool_t
-hb_subset_input_get_desubroutinize (hb_subset_input_t *subset_input)
-{
-  return subset_input->desubroutinize;
+  return input->sets.glyphs;
 }
 
 /**
- * hb_subset_input_set_retain_gids:
- * @subset_input: a subset_input.
- * @retain_gids: If true the subsetter will not renumber glyph ids.
- * Since: 2.4.0
+ * hb_subset_input_set:
+ * @input: a #hb_subset_input_t object.
+ * @set_type: a #hb_subset_sets_t set type.
+ *
+ * Gets the set of the specified type.
+ *
+ * Return value: (transfer none): pointer to the #hb_set_t of the specified type.
+ *
+ * Since: 2.9.1
  **/
-HB_EXTERN void
-hb_subset_input_set_retain_gids (hb_subset_input_t *subset_input,
-				 hb_bool_t retain_gids)
+HB_EXTERN hb_set_t *
+hb_subset_input_set (hb_subset_input_t *input, hb_subset_sets_t set_type)
 {
-  subset_input->retain_gids = retain_gids;
+  return input->sets_iter () [set_type];
 }
 
 /**
- * hb_subset_input_get_retain_gids:
- * Returns: value of retain_gids.
- * Since: 2.4.0
+ * hb_subset_input_get_flags:
+ * @input: a #hb_subset_input_t object.
+ *
+ * Gets all of the subsetting flags in the input object.
+ *
+ * Return value: the subsetting flags bit field.
+ *
+ * Since: 2.9.0
  **/
-HB_EXTERN hb_bool_t
-hb_subset_input_get_retain_gids (hb_subset_input_t *subset_input)
+HB_EXTERN hb_subset_flags_t
+hb_subset_input_get_flags (hb_subset_input_t *input)
 {
-  return subset_input->retain_gids;
+  return (hb_subset_flags_t) input->flags;
 }
 
+/**
+ * hb_subset_input_set_flags:
+ * @input: a #hb_subset_input_t object.
+ * @value: bit field of flags
+ *
+ * Sets all of the flags in the input object to the values specified by the bit
+ * field.
+ *
+ * Since: 2.9.0
+ **/
 HB_EXTERN void
-hb_subset_input_set_name_legacy (hb_subset_input_t *subset_input,
-				 hb_bool_t name_legacy)
+hb_subset_input_set_flags (hb_subset_input_t *input,
+			   unsigned value)
 {
-  subset_input->name_legacy = name_legacy;
+  input->flags = (hb_subset_flags_t) value;
 }
 
-HB_EXTERN hb_bool_t
-hb_subset_input_get_name_legacy (hb_subset_input_t *subset_input)
+/**
+ * hb_subset_input_set_user_data: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @key: The user-data key to set
+ * @data: A pointer to the user data
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
+ * @replace: Whether to replace an existing data with the same key
+ *
+ * Attaches a user-data key/data pair to the given subset input object.
+ *
+ * Return value: %true if success, %false otherwise
+ *
+ * Since: 2.9.0
+ **/
+hb_bool_t
+hb_subset_input_set_user_data (hb_subset_input_t  *input,
+			       hb_user_data_key_t *key,
+			       void *		   data,
+			       hb_destroy_func_t   destroy,
+			       hb_bool_t	   replace)
 {
-  return subset_input->name_legacy;
+  return hb_object_set_user_data (input, key, data, destroy, replace);
+}
+
+/**
+ * hb_subset_input_get_user_data: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @key: The user-data key to query
+ *
+ * Fetches the user data associated with the specified key,
+ * attached to the specified subset input object.
+ *
+ * Return value: (transfer none): A pointer to the user data
+ *
+ * Since: 2.9.0
+ **/
+void *
+hb_subset_input_get_user_data (const hb_subset_input_t *input,
+			       hb_user_data_key_t     *key)
+{
+  return hb_object_get_user_data (input, key);
 }

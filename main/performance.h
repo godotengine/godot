@@ -43,10 +43,10 @@ class Performance : public Object {
 	static Performance *singleton;
 	static void _bind_methods();
 
-	float _get_node_count() const;
+	int _get_node_count() const;
 
-	float _process_time;
-	float _physics_process_time;
+	double _process_time;
+	double _physics_process_time;
 
 	class MonitorCall {
 		Callable _callable;
@@ -73,16 +73,12 @@ public:
 		OBJECT_RESOURCE_COUNT,
 		OBJECT_NODE_COUNT,
 		OBJECT_ORPHAN_NODE_COUNT,
-		RENDER_OBJECTS_IN_FRAME,
-		RENDER_VERTICES_IN_FRAME,
-		RENDER_MATERIAL_CHANGES_IN_FRAME,
-		RENDER_SHADER_CHANGES_IN_FRAME,
-		RENDER_SURFACE_CHANGES_IN_FRAME,
-		RENDER_DRAW_CALLS_IN_FRAME,
+		RENDER_TOTAL_OBJECTS_IN_FRAME,
+		RENDER_TOTAL_PRIMITIVES_IN_FRAME,
+		RENDER_TOTAL_DRAW_CALLS_IN_FRAME,
 		RENDER_VIDEO_MEM_USED,
 		RENDER_TEXTURE_MEM_USED,
-		RENDER_VERTEX_MEM_USED,
-		RENDER_USAGE_VIDEO_MEM_TOTAL,
+		RENDER_BUFFER_MEM_USED,
 		PHYSICS_2D_ACTIVE_OBJECTS,
 		PHYSICS_2D_COLLISION_PAIRS,
 		PHYSICS_2D_ISLAND_COUNT,
@@ -100,13 +96,13 @@ public:
 		MONITOR_TYPE_TIME
 	};
 
-	float get_monitor(Monitor p_monitor) const;
+	double get_monitor(Monitor p_monitor) const;
 	String get_monitor_name(Monitor p_monitor) const;
 
 	MonitorType get_monitor_type(Monitor p_monitor) const;
 
-	void set_process_time(float p_pt);
-	void set_physics_process_time(float p_pt);
+	void set_process_time(double p_pt);
+	void set_physics_process_time(double p_pt);
 
 	void add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args);
 	void remove_custom_monitor(const StringName &p_id);

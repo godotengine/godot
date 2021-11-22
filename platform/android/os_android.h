@@ -31,7 +31,6 @@
 #ifndef OS_ANDROID_H
 #define OS_ANDROID_H
 
-#include "audio_driver_jandroid.h"
 #include "audio_driver_opensl.h"
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
@@ -48,8 +47,7 @@ private:
 
 	bool use_apk_expansion;
 
-#if defined(OPENGL_ENABLED)
-	bool use_16bits_fbo;
+#if defined(GLES3_ENABLED)
 	const char *gl_extensions;
 #endif
 
@@ -58,8 +56,8 @@ private:
 #endif
 
 	mutable String data_dir_cache;
+	mutable String cache_dir_cache;
 
-	//AudioDriverAndroid audio_driver_android;
 	AudioDriverOpenSL audio_driver_android;
 
 	MainLoop *main_loop;
@@ -88,6 +86,8 @@ public:
 	virtual bool request_permissions() override;
 	virtual Vector<String> get_granted_permissions() const override;
 
+	virtual void alert(const String &p_alert, const String &p_title) override;
+
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
 
 	virtual String get_name() const override;
@@ -95,7 +95,6 @@ public:
 
 	void main_loop_begin();
 	bool main_loop_iterate();
-	void main_loop_request_go_back();
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();
@@ -103,7 +102,6 @@ public:
 	void set_display_size(const Size2i &p_size);
 	Size2i get_display_size() const;
 
-	void set_context_is_16_bits(bool p_is_16);
 	void set_opengl_extensions(const char *p_gl_extensions);
 
 	void set_native_window(ANativeWindow *p_native_window);
@@ -111,13 +109,15 @@ public:
 
 	virtual Error shell_open(String p_uri) override;
 	virtual String get_user_data_dir() const override;
+	virtual String get_data_path() const override;
+	virtual String get_cache_path() const override;
 	virtual String get_resource_dir() const override;
 	virtual String get_locale() const override;
 	virtual String get_model_name() const override;
 
 	virtual String get_unique_id() const override;
 
-	virtual String get_system_dir(SystemDir p_dir) const override;
+	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
 	void vibrate_handheld(int p_duration_ms) override;
 

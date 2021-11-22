@@ -43,8 +43,8 @@
 	camera feeds that can be used as the background for our environment.
 **/
 
-class CameraFeed : public Reference {
-	GDCLASS(CameraFeed, Reference);
+class CameraFeed : public RefCounted {
+	GDCLASS(CameraFeed, RefCounted);
 
 public:
 	enum FeedDataType {
@@ -103,10 +103,6 @@ public:
 	void set_RGB_img(const Ref<Image> &p_rgb_img);
 	void set_YCbCr_img(const Ref<Image> &p_ycbcr_img);
 	void set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_cbcr_img);
-// FIXME: Disabled during Vulkan refactoring, should be ported.
-#if 0
-	void allocate_texture(int p_width, int p_height, Image::Format p_format, RenderingServer::TextureType p_texture_type, FeedDataType p_data_type);
-#endif
 
 	virtual bool activate_feed();
 	virtual void deactivate_feed();

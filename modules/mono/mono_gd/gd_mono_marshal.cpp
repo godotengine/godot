@@ -104,12 +104,12 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 				return Variant::BASIS;
 			}
 
-			if (vtclass == CACHED_CLASS(Quat)) {
-				return Variant::QUAT;
+			if (vtclass == CACHED_CLASS(Quaternion)) {
+				return Variant::QUATERNION;
 			}
 
-			if (vtclass == CACHED_CLASS(Transform)) {
-				return Variant::TRANSFORM;
+			if (vtclass == CACHED_CLASS(Transform3D)) {
+				return Variant::TRANSFORM3D;
 			}
 
 			if (vtclass == CACHED_CLASS(AABB)) {
@@ -139,49 +139,65 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
-			MonoArrayType *array_type = mono_type_get_array_type(p_type.type_class->get_mono_type());
+			MonoClass *elem_class = mono_class_get_element_class(p_type.type_class->get_mono_ptr());
 
-			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject)) {
+			if (elem_class == CACHED_CLASS_RAW(MonoObject)) {
 				return Variant::ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(uint8_t)) {
+			if (elem_class == CACHED_CLASS_RAW(uint8_t)) {
 				return Variant::PACKED_BYTE_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(int32_t)) {
+			if (elem_class == CACHED_CLASS_RAW(int32_t)) {
 				return Variant::PACKED_INT32_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(int64_t)) {
+			if (elem_class == CACHED_CLASS_RAW(int64_t)) {
 				return Variant::PACKED_INT64_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(float)) {
+			if (elem_class == CACHED_CLASS_RAW(float)) {
 				return Variant::PACKED_FLOAT32_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(double)) {
+			if (elem_class == CACHED_CLASS_RAW(double)) {
 				return Variant::PACKED_FLOAT64_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(String)) {
+			if (elem_class == CACHED_CLASS_RAW(String)) {
 				return Variant::PACKED_STRING_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Vector2)) {
+			if (elem_class == CACHED_CLASS_RAW(Vector2)) {
 				return Variant::PACKED_VECTOR2_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Vector3)) {
+			if (elem_class == CACHED_CLASS_RAW(Vector3)) {
 				return Variant::PACKED_VECTOR3_ARRAY;
 			}
 
-			if (array_type->eklass == CACHED_CLASS_RAW(Color)) {
+			if (elem_class == CACHED_CLASS_RAW(Color)) {
 				return Variant::PACKED_COLOR_ARRAY;
 			}
 
-			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
+			if (elem_class == CACHED_CLASS_RAW(StringName)) {
+				return Variant::ARRAY;
+			}
+
+			if (elem_class == CACHED_CLASS_RAW(NodePath)) {
+				return Variant::ARRAY;
+			}
+
+			if (elem_class == CACHED_CLASS_RAW(RID)) {
+				return Variant::ARRAY;
+			}
+
+			if (mono_class_is_enum(elem_class)) {
+				return Variant::ARRAY;
+			}
+
+			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(elem_class);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
 				return Variant::ARRAY;
 			}
@@ -266,6 +282,12 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 			if (GDMonoUtils::Marshal::type_is_generic_icollection(reftype) || GDMonoUtils::Marshal::type_is_generic_ienumerable(reftype)) {
 				return Variant::ARRAY;
 			}
+
+			// GodotObject
+			GDMonoClass *type_class = p_type.type_class;
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
+				return Variant::OBJECT;
+			}
 		} break;
 
 		default: {
@@ -284,9 +306,8 @@ bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_
 	switch (p_array_type.type_encoding) {
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
-			MonoArrayType *array_type = mono_type_get_array_type(p_array_type.type_class->get_mono_type());
-			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
-			r_elem_type = ManagedType::from_class(array_type_class);
+			MonoClass *elem_class = mono_class_get_element_class(p_array_type.type_class->get_mono_ptr());
+			r_elem_type = ManagedType::from_class(elem_class);
 			return true;
 		} break;
 		case MONO_TYPE_GENERICINST: {
@@ -361,12 +382,23 @@ MonoArray *variant_to_mono_array(const Variant &p_var, GDMonoClass *p_type_class
 		return PackedColorArray_to_mono_array(p_var.operator PackedColorArray());
 	}
 
+	if (array_type->eklass == CACHED_CLASS_RAW(StringName)) {
+		return Array_to_mono_array(p_var.operator Array());
+	}
+
+	if (array_type->eklass == CACHED_CLASS_RAW(NodePath)) {
+		return Array_to_mono_array(p_var.operator Array());
+	}
+
+	if (array_type->eklass == CACHED_CLASS_RAW(RID)) {
+		return Array_to_mono_array(p_var.operator Array());
+	}
+
 	if (mono_class_is_assignable_from(CACHED_CLASS(GodotObject)->get_mono_ptr(), array_type->eklass)) {
 		return Array_to_mono_array(p_var.operator ::Array(), array_type->eklass);
 	}
 
-	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to array of unsupported element type:" +
-									GDMonoClass::get_full_name(array_type->eklass) + "'.");
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to array of unsupported element type:" + GDMonoClass::get_full_name(array_type->eklass) + "'.");
 }
 
 MonoObject *variant_to_mono_object_of_class(const Variant &p_var, GDMonoClass *p_type_class) {
@@ -399,8 +431,7 @@ MonoObject *variant_to_mono_object_of_class(const Variant &p_var, GDMonoClass *p
 		return GDMonoUtils::create_managed_from(p_var.operator Array(), CACHED_CLASS(Array));
 	}
 
-	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type: '" +
-									p_type_class->get_full_name() + "'.");
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type: '" + p_type_class->get_full_name() + "'.");
 }
 
 MonoObject *variant_to_mono_object_of_genericinst(const Variant &p_var, GDMonoClass *p_type_class) {
@@ -450,8 +481,12 @@ MonoObject *variant_to_mono_object_of_genericinst(const Variant &p_var, GDMonoCl
 		return GDMonoUtils::create_managed_from(p_var.operator Array(), godot_array_class);
 	}
 
-	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported generic type: '" +
-									p_type_class->get_full_name() + "'.");
+	// GodotObject
+	if (CACHED_CLASS(GodotObject)->is_assignable_from(p_type_class)) {
+		return GDMonoUtils::unmanaged_get_managed(p_var.operator Object *());
+	}
+
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported generic type: '" + p_type_class->get_full_name() + "'.");
 }
 
 MonoObject *variant_to_mono_object(const Variant &p_var) {
@@ -508,9 +543,9 @@ MonoObject *variant_to_mono_object(const Variant &p_var) {
 			GDMonoMarshal::M_Plane from = MARSHALLED_OUT(Plane, p_var.operator ::Plane());
 			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Plane), &from);
 		}
-		case Variant::QUAT: {
-			GDMonoMarshal::M_Quat from = MARSHALLED_OUT(Quat, p_var.operator ::Quat());
-			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Quat), &from);
+		case Variant::QUATERNION: {
+			GDMonoMarshal::M_Quaternion from = MARSHALLED_OUT(Quaternion, p_var.operator ::Quaternion());
+			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Quaternion), &from);
 		}
 		case Variant::AABB: {
 			GDMonoMarshal::M_AABB from = MARSHALLED_OUT(AABB, p_var.operator ::AABB());
@@ -520,9 +555,9 @@ MonoObject *variant_to_mono_object(const Variant &p_var) {
 			GDMonoMarshal::M_Basis from = MARSHALLED_OUT(Basis, p_var.operator ::Basis());
 			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Basis), &from);
 		}
-		case Variant::TRANSFORM: {
-			GDMonoMarshal::M_Transform from = MARSHALLED_OUT(Transform, p_var.operator ::Transform());
-			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform), &from);
+		case Variant::TRANSFORM3D: {
+			GDMonoMarshal::M_Transform3D from = MARSHALLED_OUT(Transform3D, p_var.operator ::Transform3D());
+			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform3D), &from);
 		}
 		case Variant::COLOR: {
 			GDMonoMarshal::M_Color from = MARSHALLED_OUT(Color, p_var.operator ::Color());
@@ -619,8 +654,8 @@ size_t variant_get_managed_unboxed_size(const ManagedType &p_type) {
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
 			RETURN_CHECK_FOR_STRUCT(Basis);
-			RETURN_CHECK_FOR_STRUCT(Quat);
-			RETURN_CHECK_FOR_STRUCT(Transform);
+			RETURN_CHECK_FOR_STRUCT(Quaternion);
+			RETURN_CHECK_FOR_STRUCT(Transform3D);
 			RETURN_CHECK_FOR_STRUCT(AABB);
 			RETURN_CHECK_FOR_STRUCT(Color);
 			RETURN_CHECK_FOR_STRUCT(Plane);
@@ -724,8 +759,8 @@ void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
 			RETURN_CHECK_FOR_STRUCT(Basis);
-			RETURN_CHECK_FOR_STRUCT(Quat);
-			RETURN_CHECK_FOR_STRUCT(Transform);
+			RETURN_CHECK_FOR_STRUCT(Quaternion);
+			RETURN_CHECK_FOR_STRUCT(Transform3D);
 			RETURN_CHECK_FOR_STRUCT(AABB);
 			RETURN_CHECK_FOR_STRUCT(Color);
 			RETURN_CHECK_FOR_STRUCT(Plane);
@@ -786,14 +821,12 @@ void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type
 						RETURN_TYPE_VAL(uint64_t, val);
 					}
 					default: {
-						ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to enum value of unsupported base type: '" +
-														GDMonoClass::get_full_name(mono_class_from_mono_type(enum_basetype)) + "'.");
+						ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to enum value of unsupported base type: '" + GDMonoClass::get_full_name(mono_class_from_mono_type(enum_basetype)) + "'.");
 					}
 				}
 			}
 
-			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported value type: '" +
-											p_type.type_class->get_full_name() + "'.");
+			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported value type: '" + p_type.type_class->get_full_name() + "'.");
 		} break;
 #undef RETURN_TYPE_VAL
 		case MONO_TYPE_STRING:
@@ -809,8 +842,7 @@ void *variant_to_managed_unboxed(const Variant &p_var, const ManagedType &p_type
 			return variant_to_mono_object(p_var);
 	}
 
-	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type with encoding: " +
-									itos(p_type.type_encoding) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type with encoding: " + itos(p_type.type_encoding) + ".");
 }
 
 MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_type) {
@@ -880,8 +912,8 @@ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_ty
 			RETURN_CHECK_FOR_STRUCT(Vector3);
 			RETURN_CHECK_FOR_STRUCT(Vector3i);
 			RETURN_CHECK_FOR_STRUCT(Basis);
-			RETURN_CHECK_FOR_STRUCT(Quat);
-			RETURN_CHECK_FOR_STRUCT(Transform);
+			RETURN_CHECK_FOR_STRUCT(Quaternion);
+			RETURN_CHECK_FOR_STRUCT(Transform3D);
 			RETURN_CHECK_FOR_STRUCT(AABB);
 			RETURN_CHECK_FOR_STRUCT(Color);
 			RETURN_CHECK_FOR_STRUCT(Plane);
@@ -943,14 +975,12 @@ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_ty
 						return BOX_ENUM(enum_baseclass, val);
 					}
 					default: {
-						ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to enum value of unsupported base type: '" +
-														GDMonoClass::get_full_name(enum_baseclass) + "'.");
+						ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to enum value of unsupported base type: '" + GDMonoClass::get_full_name(enum_baseclass) + "'.");
 					}
 				}
 			}
 
-			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported value type: '" +
-											p_type.type_class->get_full_name() + "'.");
+			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported value type: '" + p_type.type_class->get_full_name() + "'.");
 		} break;
 		case MONO_TYPE_STRING:
 			return (MonoObject *)variant_to_mono_string(p_var);
@@ -965,8 +995,7 @@ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_ty
 			return variant_to_mono_object(p_var);
 	}
 
-	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type with encoding: " +
-									itos(p_type.type_encoding) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to unsupported type with encoding: " + itos(p_type.type_encoding) + ".");
 }
 
 Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type, bool p_fail_with_err = true) {
@@ -1036,12 +1065,12 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				return MARSHALLED_IN(Basis, unbox_addr<GDMonoMarshal::M_Basis>(p_obj));
 			}
 
-			if (vtclass == CACHED_CLASS(Quat)) {
-				return MARSHALLED_IN(Quat, unbox_addr<GDMonoMarshal::M_Quat>(p_obj));
+			if (vtclass == CACHED_CLASS(Quaternion)) {
+				return MARSHALLED_IN(Quaternion, unbox_addr<GDMonoMarshal::M_Quaternion>(p_obj));
 			}
 
-			if (vtclass == CACHED_CLASS(Transform)) {
-				return MARSHALLED_IN(Transform, unbox_addr<GDMonoMarshal::M_Transform>(p_obj));
+			if (vtclass == CACHED_CLASS(Transform3D)) {
+				return MARSHALLED_IN(Transform3D, unbox_addr<GDMonoMarshal::M_Transform3D>(p_obj));
 			}
 
 			if (vtclass == CACHED_CLASS(AABB)) {
@@ -1118,6 +1147,18 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				return mono_array_to_PackedColorArray((MonoArray *)p_obj);
 			}
 
+			if (array_type->eklass == CACHED_CLASS_RAW(StringName)) {
+				return mono_array_to_Array((MonoArray *)p_obj);
+			}
+
+			if (array_type->eklass == CACHED_CLASS_RAW(NodePath)) {
+				return mono_array_to_Array((MonoArray *)p_obj);
+			}
+
+			if (array_type->eklass == CACHED_CLASS_RAW(RID)) {
+				return mono_array_to_Array((MonoArray *)p_obj);
+			}
+
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
 				return mono_array_to_Array((MonoArray *)p_obj);
@@ -1136,8 +1177,8 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
 				Object *ptr = unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_obj));
 				if (ptr != nullptr) {
-					Reference *ref = Object::cast_to<Reference>(ptr);
-					return ref ? Variant(Ref<Reference>(ref)) : Variant(ptr);
+					RefCounted *rc = Object::cast_to<RefCounted>(ptr);
+					return rc ? Variant(Ref<RefCounted>(rc)) : Variant(ptr);
 				}
 				return Variant();
 			}
@@ -1206,12 +1247,22 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				GDMonoUtils::Marshal::array_get_element_type(reftype, &elem_reftype);
 				return system_generic_list_to_Array_variant(p_obj, p_type.type_class, elem_reftype);
 			}
+
+			// GodotObject
+			GDMonoClass *type_class = p_type.type_class;
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
+				Object *ptr = unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_obj));
+				if (ptr != nullptr) {
+					RefCounted *rc = Object::cast_to<RefCounted>(ptr);
+					return rc ? Variant(Ref<RefCounted>(rc)) : Variant(ptr);
+				}
+				return Variant();
+			}
 		} break;
 	}
 
 	if (p_fail_with_err) {
-		ERR_FAIL_V_MSG(Variant(), "Attempted to convert an unmarshallable managed type to Variant. Name: '" +
-										  p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
+		ERR_FAIL_V_MSG(Variant(), "Attempted to convert an unmarshallable managed type to Variant. Name: '" + p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
 	} else {
 		return Variant();
 	}
@@ -1271,7 +1322,7 @@ String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc) {
 
 MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype) {
 	String ctor_desc = ":.ctor(System.Collections.Generic.IDictionary`2<" + GDMonoUtils::get_type_desc(p_key_reftype) +
-					   ", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
+			", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
 	GDMonoMethod *ctor = p_class->get_method_with_desc(ctor_desc, true);
 	CRASH_COND(ctor == nullptr);
 
@@ -1293,7 +1344,7 @@ MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoCl
 Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, [[maybe_unused]] GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype) {
 	GDMonoClass *godot_dict_class = GDMonoUtils::Marshal::make_generic_dictionary_type(p_key_reftype, p_value_reftype);
 	String ctor_desc = ":.ctor(System.Collections.Generic.IDictionary`2<" + GDMonoUtils::get_type_desc(p_key_reftype) +
-					   ", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
+			", " + GDMonoUtils::get_type_desc(p_value_reftype) + ">)";
 	GDMonoMethod *godot_dict_ctor = godot_dict_class->get_method_with_desc(ctor_desc, true);
 	CRASH_COND(godot_dict_ctor == nullptr);
 
@@ -1315,7 +1366,6 @@ Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, [[maybe_unused]]
 
 MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype) {
 	MonoType *elem_type = mono_reflection_type_get_type(p_elem_reftype);
-	MonoClass *elem_class = mono_class_from_mono_type(elem_type);
 
 	String ctor_desc = ":.ctor(System.Collections.Generic.IEnumerable`1<" + GDMonoUtils::get_type_desc(elem_type) + ">)";
 	GDMonoMethod *ctor = p_class->get_method_with_desc(ctor_desc, true);
@@ -1324,7 +1374,10 @@ MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_cl
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, nullptr);
 
-	void *ctor_args[1] = { Array_to_mono_array(p_array, elem_class) };
+	GDMonoClass *godot_array_class = GDMonoUtils::Marshal::make_generic_array_type(p_elem_reftype);
+	MonoObject *godot_array = GDMonoUtils::create_managed_from(p_array, godot_array_class);
+
+	void *ctor_args[1] = { godot_array };
 
 	MonoException *exc = nullptr;
 	ctor->invoke_raw(mono_object, ctor_args, &exc);
@@ -1683,10 +1736,12 @@ Callable managed_to_callable(const M_Callable &p_managed_callable) {
 		CallableCustom *managed_callable = memnew(ManagedCallable(p_managed_callable.delegate));
 		return Callable(managed_callable);
 	} else {
-		Object *target = p_managed_callable.target ?
-								   unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_callable.target)) :
-								   nullptr;
-		StringName *method_ptr = unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_callable.method_string_name));
+		Object *target = p_managed_callable.target
+				? unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_callable.target))
+				: nullptr;
+		StringName *method_ptr = p_managed_callable.method_string_name
+				? unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_callable.method_string_name))
+				: nullptr;
 		StringName method = method_ptr ? *method_ptr : StringName();
 		return Callable(target, method);
 	}
@@ -1729,10 +1784,12 @@ M_Callable callable_to_managed(const Callable &p_callable) {
 }
 
 Signal managed_to_signal_info(const M_SignalInfo &p_managed_signal) {
-	Object *owner = p_managed_signal.owner ?
-							  unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_signal.owner)) :
-							  nullptr;
-	StringName *name_ptr = unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_signal.name_string_name));
+	Object *owner = p_managed_signal.owner
+			? unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_managed_signal.owner))
+			: nullptr;
+	StringName *name_ptr = p_managed_signal.name_string_name
+			? unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(p_managed_signal.name_string_name))
+			: nullptr;
 	StringName name = name_ptr ? *name_ptr : StringName();
 	return Signal(owner, name);
 }

@@ -35,7 +35,6 @@
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
 #include "main/main.h"
 #endif
 
@@ -84,6 +83,7 @@ static const char *locale_list[] = {
 	"ast_ES", //  Asturian (Spain)
 	"ayc_PE", //  Southern Aymara (Peru)
 	"ay_PE", //  Aymara (Peru)
+	"az", //  Azerbaijani
 	"az_AZ", //  Azerbaijani (Azerbaijan)
 	"be", //  Belarusian
 	"be_BY", //  Belarusian (Belarus)
@@ -240,6 +240,7 @@ static const char *locale_list[] = {
 	"ka_GE", //  Georgian (Georgia)
 	"kk_KZ", //  Kazakh (Kazakhstan)
 	"kl_GL", //  Kalaallisut (Greenland)
+	"km", //  Central Khmer
 	"km_KH", //  Central Khmer (Cambodia)
 	"kn_IN", //  Kannada (India)
 	"kok_IN", //  Konkani (India)
@@ -390,6 +391,7 @@ static const char *locale_list[] = {
 	"tr_CY", //  Turkish (Cyprus)
 	"tr_TR", //  Turkish (Turkey)
 	"ts_ZA", //  Tsonga (South Africa)
+	"tt", //  Tatar
 	"tt_RU", //  Tatar (Russia)
 	"tzm", // Central Atlas Tamazight
 	"tzm_MA", // Central Atlas Tamazight (Marrocos)
@@ -458,6 +460,7 @@ static const char *locale_names[] = {
 	"Asturian (Spain)",
 	"Southern Aymara (Peru)",
 	"Aymara (Peru)",
+	"Azerbaijani",
 	"Azerbaijani (Azerbaijan)",
 	"Belarusian",
 	"Belarusian (Belarus)",
@@ -614,6 +617,7 @@ static const char *locale_names[] = {
 	"Georgian (Georgia)",
 	"Kazakh (Kazakhstan)",
 	"Kalaallisut (Greenland)",
+	"Central Khmer",
 	"Central Khmer (Cambodia)",
 	"Kannada (India)",
 	"Konkani (India)",
@@ -764,6 +768,7 @@ static const char *locale_names[] = {
 	"Turkish (Cyprus)",
 	"Turkish (Turkey)",
 	"Tsonga (South Africa)",
+	"Tatar",
 	"Tatar (Russia)",
 	"Central Atlas Tamazight",
 	"Central Atlas Tamazight (Marrocos)",
@@ -804,9 +809,12 @@ static const char *locale_names[] = {
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/ms693062(v=vs.85).aspx
 
 static const char *locale_renames[][2] = {
-	{ "in", "id" }, //  Indonesian
-	{ "iw", "he" }, //  Hebrew
-	{ "no", "nb" }, //  Norwegian Bokmål
+	{ "in", "id" }, // Indonesian
+	{ "iw", "he" }, // Hebrew
+	{ "no", "nb" }, // Norwegian Bokmål
+	{ "C", "en" }, // "C" is the simple/default/untranslated Computer locale.
+	// ASCII-only, English, no currency symbols. Godot treats this as "en".
+	// See https://unix.stackexchange.com/a/87763/164141 "The C locale is"...
 	{ nullptr, nullptr }
 };
 
@@ -814,8 +822,8 @@ static const char *locale_renames[][2] = {
 
 Dictionary Translation::_get_messages() const {
 	Dictionary d;
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		d[E->key()] = E->value();
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		d[E.key] = E.value;
 	}
 	return d;
 }
@@ -824,8 +832,8 @@ Vector<String> Translation::_get_message_list() const {
 	Vector<String> msgs;
 	msgs.resize(translation_map.size());
 	int idx = 0;
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		msgs.set(idx, E->key());
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		msgs.set(idx, E.key);
 		idx += 1;
 	}
 
@@ -835,8 +843,8 @@ Vector<String> Translation::_get_message_list() const {
 void Translation::_set_messages(const Dictionary &p_messages) {
 	List<Variant> keys;
 	p_messages.get_key_list(&keys);
-	for (auto E = keys.front(); E; E = E->next()) {
-		translation_map[E->get()] = p_messages[E->get()];
+	for (const Variant &E : keys) {
+		translation_map[E] = p_messages[E];
 	}
 }
 
@@ -869,6 +877,11 @@ void Translation::add_plural_message(const StringName &p_src_text, const Vector<
 }
 
 StringName Translation::get_message(const StringName &p_src_text, const StringName &p_context) const {
+	StringName ret;
+	if (GDVIRTUAL_CALL(_get_message, p_src_text, p_context, ret)) {
+		return ret;
+	}
+
 	if (p_context != StringName()) {
 		WARN_PRINT("Translation class doesn't handle context. Using context in get_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles context, such as TranslationPO class");
 	}
@@ -882,6 +895,11 @@ StringName Translation::get_message(const StringName &p_src_text, const StringNa
 }
 
 StringName Translation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
+	StringName ret;
+	if (GDVIRTUAL_CALL(_get_plural_message, p_src_text, p_plural_text, p_n, p_context, ret)) {
+		return ret;
+	}
+
 	WARN_PRINT("Translation class doesn't handle plural messages. Calling get_plural_message() on a Translation instance is probably a mistake. \nUse a derived Translation class that handles plurals, such as TranslationPO class");
 	return get_message(p_src_text);
 }
@@ -895,8 +913,8 @@ void Translation::erase_message(const StringName &p_src_text, const StringName &
 }
 
 void Translation::get_message_list(List<StringName> *r_messages) const {
-	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
-		r_messages->push_back(E->key());
+	for (const KeyValue<StringName, StringName> &E : translation_map) {
+		r_messages->push_back(E.key);
 	}
 }
 
@@ -917,11 +935,74 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
+	GDVIRTUAL_BIND(_get_plural_message, "src_message", "src_plural_message", "n", "context");
+	GDVIRTUAL_BIND(_get_message, "src_message", "context");
+
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
 }
 
 ///////////////////////////////////////////////
+
+struct _character_accent_pair {
+	const char32_t character;
+	const char32_t *accented_character;
+};
+
+static _character_accent_pair _character_to_accented[] = {
+	{ 'A', U"Å" },
+	{ 'B', U"ß" },
+	{ 'C', U"Ç" },
+	{ 'D', U"Ð" },
+	{ 'E', U"É" },
+	{ 'F', U"F́" },
+	{ 'G', U"Ĝ" },
+	{ 'H', U"Ĥ" },
+	{ 'I', U"Ĩ" },
+	{ 'J', U"Ĵ" },
+	{ 'K', U"ĸ" },
+	{ 'L', U"Ł" },
+	{ 'M', U"Ḿ" },
+	{ 'N', U"й" },
+	{ 'O', U"Ö" },
+	{ 'P', U"Ṕ" },
+	{ 'Q', U"Q́" },
+	{ 'R', U"Ř" },
+	{ 'S', U"Ŝ" },
+	{ 'T', U"Ŧ" },
+	{ 'U', U"Ũ" },
+	{ 'V', U"Ṽ" },
+	{ 'W', U"Ŵ" },
+	{ 'X', U"X́" },
+	{ 'Y', U"Ÿ" },
+	{ 'Z', U"Ž" },
+	{ 'a', U"á" },
+	{ 'b', U"ḅ" },
+	{ 'c', U"ć" },
+	{ 'd', U"d́" },
+	{ 'e', U"é" },
+	{ 'f', U"f́" },
+	{ 'g', U"ǵ" },
+	{ 'h', U"h̀" },
+	{ 'i', U"í" },
+	{ 'j', U"ǰ" },
+	{ 'k', U"ḱ" },
+	{ 'l', U"ł" },
+	{ 'm', U"m̀" },
+	{ 'n', U"ή" },
+	{ 'o', U"ô" },
+	{ 'p', U"ṕ" },
+	{ 'q', U"q́" },
+	{ 'r', U"ŕ" },
+	{ 's', U"š" },
+	{ 't', U"ŧ" },
+	{ 'u', U"ü" },
+	{ 'v', U"ṽ" },
+	{ 'w', U"ŵ" },
+	{ 'x', U"x́" },
+	{ 'y', U"ý" },
+	{ 'z', U"ź" },
+};
 
 bool TranslationServer::is_locale_valid(const String &p_locale) {
 	const char **ptr = locale_list;
@@ -1095,10 +1176,10 @@ StringName TranslationServer::translate(const StringName &p_message, const Strin
 	}
 
 	if (!res) {
-		return p_message;
+		return pseudolocalization_enabled ? pseudolocalize(p_message) : p_message;
 	}
 
-	return res;
+	return pseudolocalization_enabled ? pseudolocalize(res) : res;
 }
 
 StringName TranslationServer::translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
@@ -1211,7 +1292,18 @@ void TranslationServer::setup() {
 	} else {
 		set_locale(OS::get_singleton()->get_locale());
 	}
+
 	fallback = GLOBAL_DEF("internationalization/locale/fallback", "en");
+	pseudolocalization_enabled = GLOBAL_DEF("internationalization/pseudolocalization/use_pseudolocalization", false);
+	pseudolocalization_accents_enabled = GLOBAL_DEF("internationalization/pseudolocalization/replace_with_accents", true);
+	pseudolocalization_double_vowels_enabled = GLOBAL_DEF("internationalization/pseudolocalization/double_vowels", false);
+	pseudolocalization_fake_bidi_enabled = GLOBAL_DEF("internationalization/pseudolocalization/fake_bidi", false);
+	pseudolocalization_override_enabled = GLOBAL_DEF("internationalization/pseudolocalization/override", false);
+	expansion_ratio = GLOBAL_DEF("internationalization/pseudolocalization/expansion_ratio", 0.0);
+	pseudolocalization_prefix = GLOBAL_DEF("internationalization/pseudolocalization/prefix", "[");
+	pseudolocalization_suffix = GLOBAL_DEF("internationalization/pseudolocalization/suffix", "]");
+	pseudolocalization_skip_placeholders_enabled = GLOBAL_DEF("internationalization/pseudolocalization/skip_placeholders", true);
+
 #ifdef TOOLS_ENABLED
 	{
 		String options = "";
@@ -1252,10 +1344,10 @@ StringName TranslationServer::tool_translate(const StringName &p_message, const 
 	if (tool_translation.is_valid()) {
 		StringName r = tool_translation->get_message(p_message, p_context);
 		if (r) {
-			return r;
+			return editor_pseudolocalization ? tool_pseudolocalize(r) : r;
 		}
 	}
-	return p_message;
+	return editor_pseudolocalization ? tool_pseudolocalize(p_message) : p_message;
 }
 
 StringName TranslationServer::tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
@@ -1300,6 +1392,181 @@ StringName TranslationServer::doc_translate_plural(const StringName &p_message, 
 	return p_message_plural;
 }
 
+bool TranslationServer::is_pseudolocalization_enabled() const {
+	return pseudolocalization_enabled;
+}
+
+void TranslationServer::set_pseudolocalization_enabled(bool p_enabled) {
+	pseudolocalization_enabled = p_enabled;
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+	ResourceLoader::reload_translation_remaps();
+}
+
+void TranslationServer::set_editor_pseudolocalization(bool p_enabled) {
+	editor_pseudolocalization = p_enabled;
+}
+
+void TranslationServer::reload_pseudolocalization() {
+	pseudolocalization_accents_enabled = GLOBAL_GET("internationalization/pseudolocalization/replace_with_accents");
+	pseudolocalization_double_vowels_enabled = GLOBAL_GET("internationalization/pseudolocalization/double_vowels");
+	pseudolocalization_fake_bidi_enabled = GLOBAL_GET("internationalization/pseudolocalization/fake_bidi");
+	pseudolocalization_override_enabled = GLOBAL_GET("internationalization/pseudolocalization/override");
+	expansion_ratio = GLOBAL_GET("internationalization/pseudolocalization/expansion_ratio");
+	pseudolocalization_prefix = GLOBAL_GET("internationalization/pseudolocalization/prefix");
+	pseudolocalization_suffix = GLOBAL_GET("internationalization/pseudolocalization/suffix");
+	pseudolocalization_skip_placeholders_enabled = GLOBAL_GET("internationalization/pseudolocalization/skip_placeholders");
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
+	ResourceLoader::reload_translation_remaps();
+}
+
+StringName TranslationServer::pseudolocalize(const StringName &p_message) const {
+	String message = p_message;
+	int length = message.length();
+	if (pseudolocalization_override_enabled) {
+		message = get_override_string(message);
+	}
+
+	if (pseudolocalization_double_vowels_enabled) {
+		message = double_vowels(message);
+	}
+
+	if (pseudolocalization_accents_enabled) {
+		message = replace_with_accented_string(message);
+	}
+
+	if (pseudolocalization_fake_bidi_enabled) {
+		message = wrap_with_fakebidi_characters(message);
+	}
+
+	StringName res = add_padding(message, length);
+	return res;
+}
+
+StringName TranslationServer::tool_pseudolocalize(const StringName &p_message) const {
+	String message = p_message;
+	message = double_vowels(message);
+	message = replace_with_accented_string(message);
+	StringName res = "[!!! " + message + " !!!]";
+	return res;
+}
+
+String TranslationServer::get_override_string(String &p_message) const {
+	String res;
+	for (int i = 0; i < p_message.size(); i++) {
+		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
+			res += p_message[i];
+			res += p_message[i + 1];
+			i++;
+			continue;
+		}
+		res += '*';
+	}
+	return res;
+}
+
+String TranslationServer::double_vowels(String &p_message) const {
+	String res;
+	for (int i = 0; i < p_message.size(); i++) {
+		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
+			res += p_message[i];
+			res += p_message[i + 1];
+			i++;
+			continue;
+		}
+		res += p_message[i];
+		if (p_message[i] == 'a' || p_message[i] == 'e' || p_message[i] == 'i' || p_message[i] == 'o' || p_message[i] == 'u' ||
+				p_message[i] == 'A' || p_message[i] == 'E' || p_message[i] == 'I' || p_message[i] == 'O' || p_message[i] == 'U') {
+			res += p_message[i];
+		}
+	}
+	return res;
+};
+
+String TranslationServer::replace_with_accented_string(String &p_message) const {
+	String res;
+	for (int i = 0; i < p_message.size(); i++) {
+		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
+			res += p_message[i];
+			res += p_message[i + 1];
+			i++;
+			continue;
+		}
+		const char32_t *accented = get_accented_version(p_message[i]);
+		if (accented) {
+			res += accented;
+		} else {
+			res += p_message[i];
+		}
+	}
+	return res;
+}
+
+String TranslationServer::wrap_with_fakebidi_characters(String &p_message) const {
+	String res;
+	char32_t fakebidiprefix = U'\u202e';
+	char32_t fakebidisuffix = U'\u202c';
+	res += fakebidiprefix;
+	// The fake bidi unicode gets popped at every newline so pushing it back at every newline.
+	for (int i = 0; i < p_message.size(); i++) {
+		if (p_message[i] == '\n') {
+			res += fakebidisuffix;
+			res += p_message[i];
+			res += fakebidiprefix;
+		} else if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
+			res += fakebidisuffix;
+			res += p_message[i];
+			res += p_message[i + 1];
+			res += fakebidiprefix;
+			i++;
+		} else {
+			res += p_message[i];
+		}
+	}
+	res += fakebidisuffix;
+	return res;
+}
+
+String TranslationServer::add_padding(String &p_message, int p_length) const {
+	String res;
+	String prefix = pseudolocalization_prefix;
+	String suffix;
+	for (int i = 0; i < p_length * expansion_ratio / 2; i++) {
+		prefix += "_";
+		suffix += "_";
+	}
+	suffix += pseudolocalization_suffix;
+	res += prefix;
+	res += p_message;
+	res += suffix;
+	return res;
+}
+
+const char32_t *TranslationServer::get_accented_version(char32_t p_character) const {
+	if (!((p_character >= 'a' && p_character <= 'z') || (p_character >= 'A' && p_character <= 'Z'))) {
+		return nullptr;
+	}
+
+	for (unsigned int i = 0; i < sizeof(_character_to_accented) / sizeof(_character_to_accented[0]); i++) {
+		if (_character_to_accented[i].character == p_character) {
+			return _character_to_accented[i].accented_character;
+		}
+	}
+
+	return nullptr;
+}
+
+bool TranslationServer::is_placeholder(String &p_message, int p_index) const {
+	return p_message[p_index] == '%' && p_index < p_message.size() - 1 &&
+			(p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
+					p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
+}
+
 void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &TranslationServer::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &TranslationServer::get_locale);
@@ -1316,6 +1583,12 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
 
 	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
+
+	ClassDB::bind_method(D_METHOD("is_pseudolocalization_enabled"), &TranslationServer::is_pseudolocalization_enabled);
+	ClassDB::bind_method(D_METHOD("set_pseudolocalization_enabled", "enabled"), &TranslationServer::set_pseudolocalization_enabled);
+	ClassDB::bind_method(D_METHOD("reload_pseudolocalization"), &TranslationServer::reload_pseudolocalization);
+	ClassDB::bind_method(D_METHOD("pseudolocalize", "message"), &TranslationServer::pseudolocalize);
+	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "pseudolocalization_enabled"), "set_pseudolocalization_enabled", "is_pseudolocalization_enabled");
 }
 
 void TranslationServer::load_translations() {

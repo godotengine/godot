@@ -11,9 +11,10 @@ namespace GodotTools.Build
     {
         public BuildOutputView BuildOutputView { get; private set; }
 
-        private Button errorsBtn;
-        private Button warningsBtn;
-        private Button viewLogBtn;
+        private MenuButton _buildMenuBtn;
+        private Button _errorsBtn;
+        private Button _warningsBtn;
+        private Button _viewLogBtn;
 
         private void WarningsToggled(bool pressed)
         {
@@ -72,7 +73,7 @@ namespace GodotTools.Build
                 GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
             }
 
-            if (!BuildManager.BuildProjectBlocking("Debug", targets: new[] {"Rebuild"}))
+            if (!BuildManager.BuildProjectBlocking("Debug", targets: new[] { "Rebuild" }))
                 return; // Build failed
 
             // Notify running game for hot-reload
@@ -91,7 +92,7 @@ namespace GodotTools.Build
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return; // No solution to build
 
-            BuildManager.BuildProjectBlocking("Debug", targets: new[] {"Clean"});
+            BuildManager.BuildProjectBlocking("Debug", targets: new[] { "Clean" });
         }
 
         private void ViewLogToggled(bool pressed) => BuildOutputView.LogVisible = pressed;
@@ -128,19 +129,19 @@ namespace GodotTools.Build
             RectMinSize = new Vector2(0, 228) * EditorScale;
             SizeFlagsVertical = (int)SizeFlags.ExpandFill;
 
-            var toolBarHBox = new HBoxContainer {SizeFlagsHorizontal = (int)SizeFlags.ExpandFill};
+            var toolBarHBox = new HBoxContainer { SizeFlagsHorizontal = (int)SizeFlags.ExpandFill };
             AddChild(toolBarHBox);
 
-            var buildMenuBtn = new MenuButton {Text = "Build", Icon = GetThemeIcon("Play", "EditorIcons")};
-            toolBarHBox.AddChild(buildMenuBtn);
+            _buildMenuBtn = new MenuButton { Text = "Build", Icon = GetThemeIcon("Play", "EditorIcons") };
+            toolBarHBox.AddChild(_buildMenuBtn);
 
-            var buildMenu = buildMenuBtn.GetPopup();
+            var buildMenu = _buildMenuBtn.GetPopup();
             buildMenu.AddItem("Build Solution".TTR(), (int)BuildMenuOptions.BuildSolution);
             buildMenu.AddItem("Rebuild Solution".TTR(), (int)BuildMenuOptions.RebuildSolution);
             buildMenu.AddItem("Clean Solution".TTR(), (int)BuildMenuOptions.CleanSolution);
             buildMenu.IdPressed += BuildMenuOptionPressed;
 
-            errorsBtn = new Button
+            _errorsBtn = new Button
             {
                 HintTooltip = "Show Errors".TTR(),
                 Icon = GetThemeIcon("StatusError", "EditorIcons"),
@@ -149,10 +150,10 @@ namespace GodotTools.Build
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            errorsBtn.Toggled += ErrorsToggled;
-            toolBarHBox.AddChild(errorsBtn);
+            _errorsBtn.Toggled += ErrorsToggled;
+            toolBarHBox.AddChild(_errorsBtn);
 
-            warningsBtn = new Button
+            _warningsBtn = new Button
             {
                 HintTooltip = "Show Warnings".TTR(),
                 Icon = GetThemeIcon("NodeWarning", "EditorIcons"),
@@ -161,21 +162,36 @@ namespace GodotTools.Build
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            warningsBtn.Toggled += WarningsToggled;
-            toolBarHBox.AddChild(warningsBtn);
+            _warningsBtn.Toggled += WarningsToggled;
+            toolBarHBox.AddChild(_warningsBtn);
 
-            viewLogBtn = new Button
+            _viewLogBtn = new Button
             {
                 Text = "Show Output".TTR(),
                 ToggleMode = true,
                 Pressed = true,
                 FocusMode = FocusModeEnum.None
             };
-            viewLogBtn.Toggled += ViewLogToggled;
-            toolBarHBox.AddChild(viewLogBtn);
+            _viewLogBtn.Toggled += ViewLogToggled;
+            toolBarHBox.AddChild(_viewLogBtn);
 
             BuildOutputView = new BuildOutputView();
             AddChild(BuildOutputView);
+        }
+
+        public override void _Notification(int what)
+        {
+            base._Notification(what);
+
+            if (what == NotificationThemeChanged)
+            {
+                if (_buildMenuBtn != null)
+                    _buildMenuBtn.Icon = GetThemeIcon("Play", "EditorIcons");
+                if (_errorsBtn != null)
+                    _errorsBtn.Icon = GetThemeIcon("StatusError", "EditorIcons");
+                if (_warningsBtn != null)
+                    _warningsBtn.Icon = GetThemeIcon("NodeWarning", "EditorIcons");
+            }
         }
     }
 }

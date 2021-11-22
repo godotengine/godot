@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCRIPT_EDITOR_DEBUGGER_WEBSOCKET_H
-#define SCRIPT_EDITOR_DEBUGGER_WEBSOCKET_H
-
-#include "modules/websocket/websocket_server.h"
+#ifndef EDITOR_DEBUGGER_SERVER_WEBSOCKET_H
+#define EDITOR_DEBUGGER_SERVER_WEBSOCKET_H
 
 #include "editor/debugger/editor_debugger_server.h"
+#include "modules/websocket/websocket_server.h"
 
 class EditorDebuggerServerWebSocket : public EditorDebuggerServer {
 	GDCLASS(EditorDebuggerServerWebSocket, EditorDebuggerServer);
@@ -49,7 +48,7 @@ public:
 	void _peer_disconnected(int p_peer, bool p_was_clean);
 
 	void poll() override;
-	Error start() override;
+	Error start(const String &p_uri) override;
 	void stop() override;
 	bool is_active() const override;
 	bool is_connection_available() const override;
@@ -59,4 +58,4 @@ public:
 	~EditorDebuggerServerWebSocket();
 };
 
-#endif // SCRIPT_EDITOR_DEBUGGER_WEBSOCKET_H
+#endif // EDITOR_DEBUGGER_SERVER_WEBSOCKET_H

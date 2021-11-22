@@ -30,55 +30,49 @@
 
 #include "resource_saver.h"
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
-#include "core/os/file_access.h"
 
 Ref<ResourceFormatSaver> ResourceSaver::saver[MAX_SAVERS];
 
 int ResourceSaver::saver_count = 0;
 bool ResourceSaver::timestamp_on_save = false;
 ResourceSavedCallback ResourceSaver::save_callback = nullptr;
+ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
 Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
-	if (get_script_instance() && get_script_instance()->has_method("save")) {
-		return (Error)get_script_instance()->call("save", p_path, p_resource, p_flags).operator int64_t();
+	int64_t res;
+	if (GDVIRTUAL_CALL(_save, p_path, p_resource, p_flags, res)) {
+		return (Error)res;
 	}
 
 	return ERR_METHOD_NOT_FOUND;
 }
 
 bool ResourceFormatSaver::recognize(const RES &p_resource) const {
-	if (get_script_instance() && get_script_instance()->has_method("recognize")) {
-		return get_script_instance()->call("recognize", p_resource);
+	bool success;
+	if (GDVIRTUAL_CALL(_recognize, p_resource, success)) {
+		return success;
 	}
 
 	return false;
 }
 
 void ResourceFormatSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-	if (get_script_instance() && get_script_instance()->has_method("get_recognized_extensions")) {
-		PackedStringArray exts = get_script_instance()->call("get_recognized_extensions", p_resource);
-
-		{
-			const String *r = exts.ptr();
-			for (int i = 0; i < exts.size(); ++i) {
-				p_extensions->push_back(r[i]);
-			}
+	PackedStringArray exts;
+	if (GDVIRTUAL_CALL(_get_recognized_extensions, p_resource, exts)) {
+		const String *r = exts.ptr();
+		for (int i = 0; i < exts.size(); ++i) {
+			p_extensions->push_back(r[i]);
 		}
 	}
 }
 
 void ResourceFormatSaver::_bind_methods() {
-	{
-		PropertyInfo arg0 = PropertyInfo(Variant::STRING, "path");
-		PropertyInfo arg1 = PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource");
-		PropertyInfo arg2 = PropertyInfo(Variant::INT, "flags");
-		ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "save", arg0, arg1, arg2));
-	}
-
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::PACKED_STRING_ARRAY, "get_recognized_extensions", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "recognize", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	GDVIRTUAL_BIND(_save, "path", "resource", "flags");
+	GDVIRTUAL_BIND(_recognize, "resource");
+	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
 }
 
 Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
@@ -94,8 +88,8 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 		bool recognized = false;
 		saver[i]->get_recognized_extensions(p_resource, &extensions);
 
-		for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-			if (E->get().nocasecmp_to(extension) == 0) {
+		for (const String &E : extensions) {
+			if (E.nocasecmp_to(extension) == 0) {
 				recognized = true;
 			}
 		}
@@ -210,7 +204,7 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatSaver");
 	ERR_FAIL_COND_V_MSG(!valid_type, false, "Script does not inherit a CustomResourceSaver: " + script_path + ".");
 
-	Object *obj = ClassDB::instance(ibt);
+	Object *obj = ClassDB::instantiate(ibt);
 
 	ERR_FAIL_COND_V_MSG(obj == nullptr, false, "Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt) + ".");
 
@@ -236,8 +230,7 @@ void ResourceSaver::add_custom_savers() {
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
 
-	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
-		StringName class_name = E->get();
+	for (const StringName &class_name : global_classes) {
 		StringName base_class = ScriptServer::get_global_class_native_base(class_name);
 
 		if (base_class == custom_saver_base_class) {
@@ -258,4 +251,15 @@ void ResourceSaver::remove_custom_savers() {
 	for (int i = 0; i < custom_savers.size(); ++i) {
 		remove_resource_format_saver(custom_savers[i]);
 	}
+}
+
+ResourceUID::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bool p_generate) {
+	if (save_get_id_for_path) {
+		return save_get_id_for_path(p_path, p_generate);
+	}
+	return ResourceUID::INVALID_ID;
+}
+
+void ResourceSaver::set_get_resource_id_for_path(ResourceSaverGetResourceIDForPath p_callback) {
+	save_get_id_for_path = p_callback;
 }

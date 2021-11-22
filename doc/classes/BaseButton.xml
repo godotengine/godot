@@ -10,33 +10,36 @@
 	</tutorials>
 	<methods>
 		<method name="_pressed" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Called when the button is pressed. If you need to know the button's pressed state (and [member toggle_mode] is active), use [method _toggled] instead.
 			</description>
 		</method>
 		<method name="_toggled" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="button_pressed" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="button_pressed" type="bool" />
 			<description>
 				Called when the button is toggled (only if [member toggle_mode] is active).
 			</description>
 		</method>
 		<method name="get_draw_mode" qualifiers="const">
-			<return type="int" enum="BaseButton.DrawMode">
-			</return>
+			<return type="int" enum="BaseButton.DrawMode" />
 			<description>
 				Returns the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the [enum DrawMode] enum.
 			</description>
 		</method>
 		<method name="is_hovered" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the mouse has entered the button and has not left it yet.
+			</description>
+		</method>
+		<method name="set_pressed_no_signal">
+			<return type="void" />
+			<argument index="0" name="pressed" type="bool" />
+			<description>
+				Changes the [member pressed] state of the button, without emitting [signal toggled]. Use when you just want to change the state of the button without sending the pressed event (e.g. when initializing scene). Only works if [member toggle_mode] is [code]true[/code].
+				[b]Note:[/b] This method doesn't unpress other buttons in [member button_group].
 			</description>
 		</method>
 	</methods>
@@ -47,7 +50,7 @@
 		<member name="button_group" type="ButtonGroup" setter="set_button_group" getter="get_button_group">
 			The [ButtonGroup] associated with the button. Not to be confused with node groups.
 		</member>
-		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" default="1">
+		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" enum="MouseButton" default="1">
 			Binary mask to choose which mouse buttons this button will respond to.
 			To allow both left-click and right-click, use [code]MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT[/code].
 		</member>
@@ -60,7 +63,8 @@
 			[b]Note:[/b] This property only affects the button's visual appearance. Signals will be emitted at the same moment regardless of this property's value.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
-			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active).
+			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active). Only works if [member toggle_mode] is [code]true[/code].
+			[b]Note:[/b] Setting [member pressed] will result in [signal toggled] to be emitted. If you want to change the pressed state without emitting that signal, use [method set_pressed_no_signal].
 		</member>
 		<member name="shortcut" type="Shortcut" setter="set_shortcut" getter="get_shortcut">
 			[Shortcut] associated to the button.
@@ -93,8 +97,7 @@
 			</description>
 		</signal>
 		<signal name="toggled">
-			<argument index="0" name="button_pressed" type="bool">
-			</argument>
+			<argument index="0" name="button_pressed" type="bool" />
 			<description>
 				Emitted when the button was just toggled between pressed and normal states (only if [member toggle_mode] is active). The new state is contained in the [code]button_pressed[/code] argument.
 			</description>

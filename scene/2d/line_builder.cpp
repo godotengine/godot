@@ -62,14 +62,6 @@ static SegmentIntersectionResult segment_intersection(
 	return SEGMENT_PARALLEL;
 }
 
-// TODO I'm pretty sure there is an even faster way to swap things
-template <typename T>
-static inline void swap(T &a, T &b) {
-	T tmp = a;
-	a = b;
-	b = tmp;
-}
-
 static float calculate_total_distance(const Vector<Vector2> &points) {
 	float d = 0.f;
 	for (int i = 1; i < points.size(); ++i) {
@@ -136,9 +128,9 @@ void LineBuilder::build() {
 	_interpolate_color = gradient != nullptr;
 	bool retrieve_curve = curve != nullptr;
 	bool distance_required = _interpolate_color ||
-							 retrieve_curve ||
-							 texture_mode == Line2D::LINE_TEXTURE_TILE ||
-							 texture_mode == Line2D::LINE_TEXTURE_STRETCH;
+			retrieve_curve ||
+			texture_mode == Line2D::LINE_TEXTURE_TILE ||
+			texture_mode == Line2D::LINE_TEXTURE_STRETCH;
 	if (distance_required) {
 		total_distance = calculate_total_distance(points);
 		//Adjust totalDistance.

@@ -32,13 +32,14 @@
 #define ANIMATION_PLAYER_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
 
 #ifdef TOOLS_ENABLED
-class AnimatedValuesBackup : public Reference {
-	GDCLASS(AnimatedValuesBackup, Reference);
+class AnimatedValuesBackup : public RefCounted {
+	GDCLASS(AnimatedValuesBackup, RefCounted);
 
 	struct Entry {
 		Object *object = nullptr;
@@ -88,20 +89,31 @@ private:
 		SP_NODE2D_SCALE,
 	};
 
+	uint32_t setup_pass = 1;
+
 	struct TrackNodeCache {
 		NodePath path;
 		uint32_t id = 0;
 		RES resource;
 		Node *node = nullptr;
-		Node3D *spatial = nullptr;
 		Node2D *node_2d = nullptr;
+#ifndef _3D_DISABLED
+		Node3D *node_3d = nullptr;
 		Skeleton3D *skeleton = nullptr;
+		MeshInstance3D *node_blend_shape = nullptr;
+		int blend_shape_idx = -1;
+#endif // _3D_DISABLED
 		int bone_idx = -1;
 		// accumulated transforms
 
+		bool loc_used = false;
+		bool rot_used = false;
+		bool scale_used = false;
+
 		Vector3 loc_accum;
-		Quat rot_accum;
+		Quaternion rot_accum;
 		Vector3 scale_accum;
+		float blend_shape_accum = 0;
 		uint64_t accum_pass = 0;
 
 		bool audio_playing = false;
@@ -132,16 +144,22 @@ private:
 
 		Map<StringName, BezierAnim> bezier_anim;
 
+		uint32_t last_setup_pass = 0;
 		TrackNodeCache() {}
 	};
 
 	struct TrackNodeCacheKey {
 		ObjectID id;
 		int bone_idx = -1;
+		int blend_shape_idx = -1;
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
 			if (id == p_right.id) {
-				return bone_idx < p_right.bone_idx;
+				if (blend_shape_idx == p_right.blend_shape_idx) {
+					return bone_idx < p_right.bone_idx;
+				} else {
+					return blend_shape_idx < p_right.blend_shape_idx;
+				}
 			} else {
 				return id < p_right.id;
 			}
@@ -213,13 +231,13 @@ private:
 
 	NodePath root;
 
-	void _animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false);
+	void _animation_process_animation(AnimationData *p_anim, double p_time, double p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false, int p_pingponged = 0);
 
 	void _ensure_node_caches(AnimationData *p_anim, Node *p_root_override = nullptr);
-	void _animation_process_data(PlaybackData &cd, float p_delta, float p_blend, bool p_seeked, bool p_started);
-	void _animation_process2(float p_delta, bool p_started);
+	void _animation_process_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started);
+	void _animation_process2(double p_delta, bool p_started);
 	void _animation_update_transforms();
-	void _animation_process(float p_delta);
+	void _animation_process(double p_delta);
 
 	void _node_removed(Node *p_node);
 	void _stop_playing_caches();
@@ -283,7 +301,6 @@ public:
 	void set_current_animation(const String &p_anim);
 	String get_assigned_animation() const;
 	void set_assigned_animation(const String &p_anim);
-	void stop_all();
 	void set_active(bool p_active);
 	bool is_active() const;
 	bool is_valid() const;
@@ -304,8 +321,8 @@ public:
 	void set_method_call_mode(AnimationMethodCallMode p_mode);
 	AnimationMethodCallMode get_method_call_mode() const;
 
-	void seek(float p_time, bool p_update = false);
-	void seek_delta(float p_time, float p_delta);
+	void seek(double p_time, bool p_update = false);
+	void seek_delta(double p_time, float p_delta);
 	float get_current_animation_position() const;
 	float get_current_animation_length() const;
 

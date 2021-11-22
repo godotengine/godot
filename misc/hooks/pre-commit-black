@@ -14,7 +14,7 @@ DELETE_OLD_PATCHES=false
 
 # File types to parse.
 FILE_NAMES="SConstruct SCsub"
-FILE_EXTS="py"
+FILE_EXTS=".py"
 
 # Use pygmentize instead of cat to parse diff with highlighting.
 # Install it with `pip install pygments` (Linux) or `easy_install Pygments` (Mac)

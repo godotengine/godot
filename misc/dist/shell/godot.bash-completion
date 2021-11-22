@@ -53,9 +53,7 @@ _complete_godot_options() {
 --resolution
 --position
 --low-dpi
---no-window
---enable-vsync-via-compositor
---disable-vsync-via-compositor
+--headless
 --debug
 --breakpoints
 --profiling

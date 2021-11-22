@@ -46,8 +46,8 @@ public:
 	Vector3 position;
 	Vector3 size;
 
-	real_t get_area() const; /// get area
-	_FORCE_INLINE_ bool has_no_area() const {
+	real_t get_volume() const;
+	_FORCE_INLINE_ bool has_no_volume() const {
 		return (size.x <= 0 || size.y <= 0 || size.z <= 0);
 	}
 
@@ -116,6 +116,10 @@ public:
 
 	_FORCE_INLINE_ Vector3 get_end() const {
 		return position + size;
+	}
+
+	_FORCE_INLINE_ Vector3 get_center() const {
+		return position + (size * 0.5);
 	}
 
 	operator String() const;
@@ -196,7 +200,7 @@ Vector3 AABB::get_support(const Vector3 &p_normal) const {
 				   (p_normal.x > 0) ? half_extents.x : -half_extents.x,
 				   (p_normal.y > 0) ? half_extents.y : -half_extents.y,
 				   (p_normal.z > 0) ? half_extents.z : -half_extents.z) +
-		   ofs;
+			ofs;
 }
 
 Vector3 AABB::get_endpoint(int p_point) const {

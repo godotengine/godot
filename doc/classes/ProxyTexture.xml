@@ -6,12 +6,8 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="base" type="Texture2D" setter="set_base" getter="get_base">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

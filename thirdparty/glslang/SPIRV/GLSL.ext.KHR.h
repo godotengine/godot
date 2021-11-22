@@ -50,5 +50,7 @@ static const char* const E_SPV_KHR_ray_tracing                  = "SPV_KHR_ray_t
 static const char* const E_SPV_KHR_ray_query                    = "SPV_KHR_ray_query";
 static const char* const E_SPV_KHR_fragment_shading_rate        = "SPV_KHR_fragment_shading_rate";
 static const char* const E_SPV_KHR_terminate_invocation         = "SPV_KHR_terminate_invocation";
+static const char* const E_SPV_KHR_workgroup_memory_explicit_layout = "SPV_KHR_workgroup_memory_explicit_layout";
+static const char* const E_SPV_KHR_subgroup_uniform_control_flow = "SPV_KHR_subgroup_uniform_control_flow";
 
 #endif  // #ifndef GLSLextKHR_H

@@ -34,12 +34,17 @@
 #include "core/math/audio_frame.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/templates/safe_list.h"
 #include "core/variant/variant.h"
 #include "servers/audio/audio_effect.h"
+#include "servers/audio/audio_filter_sw.h"
+
+#include <atomic>
 
 class AudioDriverDummy;
 class AudioStream;
 class AudioStreamSample;
+class AudioStreamPlayback;
 
 class AudioDriver {
 	static AudioDriver *singleton;
@@ -155,7 +160,10 @@ public:
 	};
 
 	enum {
-		AUDIO_DATA_INVALID_ID = -1
+		AUDIO_DATA_INVALID_ID = -1,
+		MAX_CHANNELS_PER_BUS = 4,
+		MAX_BUSES_PER_PLAYBACK = 6,
+		LOOKAHEAD_BUFFER_SIZE = 64,
 	};
 
 	typedef void (*AudioCallback)(void *p_userdata);
@@ -177,7 +185,7 @@ private:
 	int channel_count;
 	int to_mix;
 
-	float global_rate_scale;
+	float playback_speed_scale;
 
 	struct Bus {
 		StringName name;
@@ -219,7 +227,46 @@ private:
 		int index_cache;
 	};
 
+	struct AudioStreamPlaybackBusDetails {
+		bool bus_active[MAX_BUSES_PER_PLAYBACK] = { false, false, false, false, false, false };
+		StringName bus[MAX_BUSES_PER_PLAYBACK];
+		AudioFrame volume[MAX_BUSES_PER_PLAYBACK][MAX_CHANNELS_PER_BUS];
+	};
+
+	struct AudioStreamPlaybackListNode {
+		enum PlaybackState {
+			PAUSED = 0, // Paused. Keep this stream playback around though so it can be restarted.
+			PLAYING = 1, // Playing. Fading may still be necessary if volume changes!
+			FADE_OUT_TO_PAUSE = 2, // About to pause.
+			FADE_OUT_TO_DELETION = 3, // About to stop.
+			AWAITING_DELETION = 4,
+		};
+		// If zero or positive, a place in the stream to seek to during the next mix.
+		SafeNumeric<float> setseek;
+		SafeNumeric<float> pitch_scale;
+		SafeNumeric<float> highshelf_gain;
+		SafeNumeric<float> attenuation_filter_cutoff_hz; // This isn't used unless highshelf_gain is nonzero.
+		AudioFilterSW::Processor filter_process[8];
+		// Updating this ref after the list node is created breaks consistency guarantees, don't do it!
+		Ref<AudioStreamPlayback> stream_playback;
+		// Playback state determines the fate of a particular AudioStreamListNode during the mix step. Must be atomically replaced.
+		std::atomic<PlaybackState> state = AWAITING_DELETION;
+		// This data should only ever be modified by an atomic replacement of the pointer.
+		std::atomic<AudioStreamPlaybackBusDetails *> bus_details = nullptr;
+		// Previous bus details should only be accessed on the audio thread.
+		AudioStreamPlaybackBusDetails *prev_bus_details = nullptr;
+		// The next few samples are stored here so we have some time to fade audio out if it ends abruptly at the beginning of the next mix.
+		AudioFrame lookahead[LOOKAHEAD_BUFFER_SIZE];
+	};
+
+	SafeList<AudioStreamPlaybackListNode *> playback_list;
+	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard;
+
+	// TODO document if this is necessary.
+	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard_frame_old;
+
 	Vector<Vector<AudioFrame>> temp_buffer; //temp_buffer for each level
+	Vector<AudioFrame> mix_buffer;
 	Vector<Bus *> buses;
 	Map<StringName, Bus *> bus_map;
 
@@ -230,18 +277,19 @@ private:
 	void init_channels_and_buffers();
 
 	void _mix_step();
+	void _mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_source_buf, AudioFrame p_vol_start, AudioFrame p_vol_final, float p_attenuation_filter_cutoff_hz, float p_highshelf_gain, AudioFilterSW::Processor *p_processor_l, AudioFilterSW::Processor *p_processor_r);
+
+	// Should only be called on the main thread.
+	AudioStreamPlaybackListNode *_find_playback_list_node(Ref<AudioStreamPlayback> p_playback);
 
 	struct CallbackItem {
 		AudioCallback callback;
 		void *userdata;
-
-		bool operator<(const CallbackItem &p_item) const {
-			return (callback == p_item.callback ? userdata < p_item.userdata : callback < p_item.callback);
-		}
 	};
 
-	Set<CallbackItem> callbacks;
-	Set<CallbackItem> update_callbacks;
+	SafeList<CallbackItem *> update_callback_list;
+	SafeList<CallbackItem *> mix_callback_list;
+	SafeList<CallbackItem *> listener_changed_callback_list;
 
 	friend class AudioDriver;
 	void _driver_process(int p_frames, int32_t *p_buffer);
@@ -316,8 +364,29 @@ public:
 
 	bool is_bus_channel_active(int p_bus, int p_channel) const;
 
-	void set_global_rate_scale(float p_scale);
-	float get_global_rate_scale() const;
+	void set_playback_speed_scale(float p_scale);
+	float get_playback_speed_scale() const;
+
+	// Convenience method.
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time = 0, float p_pitch_scale = 1);
+	// Expose all parameters.
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, Map<StringName, Vector<AudioFrame>> p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0);
+	void stop_playback_stream(Ref<AudioStreamPlayback> p_playback);
+
+	void set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volumes);
+	void set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Map<StringName, Vector<AudioFrame>> p_bus_volumes);
+	void set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Vector<AudioFrame> p_volumes);
+	void set_playback_pitch_scale(Ref<AudioStreamPlayback> p_playback, float p_pitch_scale);
+	void set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool p_paused);
+	void set_playback_highshelf_params(Ref<AudioStreamPlayback> p_playback, float p_gain, float p_attenuation_cutoff_hz);
+
+	bool is_playback_active(Ref<AudioStreamPlayback> p_playback);
+	float get_playback_position(Ref<AudioStreamPlayback> p_playback);
+	bool is_playback_paused(Ref<AudioStreamPlayback> p_playback);
+
+	uint64_t get_mix_count() const;
+
+	void notify_listener_changed();
 
 	virtual void init();
 	virtual void finish();
@@ -340,11 +409,14 @@ public:
 	virtual double get_time_to_next_mix() const;
 	virtual double get_time_since_last_mix() const;
 
-	void add_callback(AudioCallback p_callback, void *p_userdata);
-	void remove_callback(AudioCallback p_callback, void *p_userdata);
+	void add_listener_changed_callback(AudioCallback p_callback, void *p_userdata);
+	void remove_listener_changed_callback(AudioCallback p_callback, void *p_userdata);
 
 	void add_update_callback(AudioCallback p_callback, void *p_userdata);
 	void remove_update_callback(AudioCallback p_callback, void *p_userdata);
+
+	void add_mix_callback(AudioCallback p_callback, void *p_userdata);
+	void remove_mix_callback(AudioCallback p_callback, void *p_userdata);
 
 	void set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout);
 	Ref<AudioBusLayout> generate_bus_layout() const;

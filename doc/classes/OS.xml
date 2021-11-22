@@ -10,30 +10,42 @@
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
+		<method name="alert">
+			<return type="void" />
+			<argument index="0" name="text" type="String" />
+			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;" />
+			<description>
+				Displays a modal dialog box using the host OS' facilities. Execution is blocked until the dialog is closed.
+			</description>
+		</method>
 		<method name="can_use_threads" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the current host platform is using multiple threads.
 			</description>
 		</method>
 		<method name="close_midi_inputs">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Shuts down system MIDI driver.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
-		<method name="create_process">
-			<return type="int">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="arguments" type="PackedStringArray">
-			</argument>
+		<method name="create_instance">
+			<return type="int" />
+			<argument index="0" name="arguments" type="PackedStringArray" />
 			<description>
-				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The file specified in [code]path[/code] must exist and be executable. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space.
+				Creates a new instance of Godot that runs independently. The [code]arguments[/code] are used in the given order and separated by a space.
+				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="create_process">
+			<return type="int" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="arguments" type="PackedStringArray" />
+			<description>
+				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The path specified in [code]path[/code] must exist and be executable file or macOS .app bundle. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space.
 				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
 				For example, running another instance of the project:
 				[codeblocks]
@@ -46,41 +58,38 @@
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="msec" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="msec" type="int" />
 			<description>
-				Delay execution of the current thread by [code]msec[/code] milliseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
+				Delays execution of the current thread by [code]msec[/code] milliseconds. [code]msec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
+				[b]Note:[/b] [method delay_msec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
+				[b]Note:[/b] When [method delay_msec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_msec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
 		</method>
 		<method name="delay_usec" qualifiers="const">
-			<return type="void">
-			</return>
-			<argument index="0" name="usec" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="usec" type="int" />
 			<description>
-				Delay execution of the current thread by [code]usec[/code] microseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
+				Delays execution of the current thread by [code]usec[/code] microseconds. [code]usec[/code] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
+				[b]Note:[/b] [method delay_usec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
+				[b]Note:[/b] When [method delay_usec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_usec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
 		</method>
 		<method name="dump_memory_to_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				Dumps the memory allocation ringlist to a file (only works in debug).
 				Entry format per line: "Address - Size - Description".
 			</description>
 		</method>
 		<method name="dump_resources_to_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="file" type="String" />
 			<description>
 				Dumps all used resources to file (only works in debug).
 				Entry format per line: "Resource Type : Resource Location".
@@ -88,16 +97,11 @@
 			</description>
 		</method>
 		<method name="execute">
-			<return type="int">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="arguments" type="PackedStringArray">
-			</argument>
-			<argument index="2" name="output" type="Array" default="[  ]">
-			</argument>
-			<argument index="3" name="read_stderr" type="bool" default="false">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="arguments" type="PackedStringArray" />
+			<argument index="2" name="output" type="Array" default="[]" />
+			<argument index="3" name="read_stderr" type="bool" default="false" />
 			<description>
 				Executes a command. The file specified in [code]path[/code] must exist and be executable. Platform path resolution will be used. The [code]arguments[/code] are used in the given order and separated by a space. If an [code]output[/code] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [code]output[/code]. If [code]read_stderr[/code] is [code]true[/code], the output to the standard error stream will be included too.
 				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
@@ -125,25 +129,30 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="string" type="String">
-			</argument>
+			<return type="int" enum="Key" />
+			<argument index="0" name="string" type="String" />
 			<description>
 				Returns the keycode of the given string (e.g. "Escape").
 			</description>
 		</method>
+		<method name="get_cache_dir" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the [i]global[/i] cache data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
+				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
+			</description>
+		</method>
 		<method name="get_cmdline_args">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns the command-line arguments passed to the engine.
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
 				You can also incorporate environment variables using the [method get_environment] method.
-				You can set [code]editor/main_run_args[/code] in the Project Settings to define command-line arguments to be passed by the editor when running the project.
+				You can set [member ProjectSettings.editor/run/main_run_args] to define command-line arguments to be passed by the editor when running the project.
 				Here's a minimal example on how to parse command-line arguments into a dictionary using the [code]--key=value[/code] form for arguments:
 				[codeblocks]
 				[gdscript]
@@ -167,244 +176,175 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="get_config_dir" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
+				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
+			</description>
+		</method>
 		<method name="get_connected_midi_inputs">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns an array of MIDI device names.
 				The returned array will be empty if the system MIDI driver has not previously been initialised with [method open_midi_inputs].
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
-		<method name="get_date" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="utc" type="bool" default="false">
-			</argument>
+		<method name="get_data_dir" qualifiers="const">
+			<return type="String" />
 			<description>
-				Returns current date as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]dst[/code] (Daylight Savings Time).
-			</description>
-		</method>
-		<method name="get_datetime" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="utc" type="bool" default="false">
-			</argument>
-			<description>
-				Returns current datetime as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]dst[/code] (Daylight Savings Time), [code]hour[/code], [code]minute[/code], [code]second[/code].
-			</description>
-		</method>
-		<method name="get_datetime_from_unix_time" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="unix_time_val" type="int">
-			</argument>
-			<description>
-				Gets a dictionary of time values corresponding to the given UNIX epoch time (in seconds).
-				The returned Dictionary's values will be the same as [method get_datetime], with the exception of Daylight Savings Time as it cannot be determined from the epoch.
+				Returns the [i]global[/i] user data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
+				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
 		<method name="get_environment" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="variable" type="String">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="variable" type="String" />
 			<description>
 				Returns the value of an environment variable. Returns an empty string if the environment variable doesn't exist.
 				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the path to the current engine executable.
+				[b]Note:[/b] On macOS, always use [method create_instance] instead of relying on executable path.
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
-				With this function you can get the list of dangerous permissions that have been granted to the Android application.
+				With this function, you can get the list of dangerous permissions that have been granted to the Android application.
 				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="code" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="code" type="int" enum="Key" />
 			<description>
 				Returns the given keycode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
 				See also [member InputEventKey.keycode] and [method InputEventKey.get_keycode_with_modifiers].
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
-				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code].
+				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code]. If you want only the language code and not the fully specified locale from the OS, you can use [method get_locale_language].
 				[code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
 				[code]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
 				[code]COUNTRY[/code] - optional, 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
-				[code]VARIANT[/code] - optional, language variant, region and sort order. Variant can have any number of underscored key words.
+				[code]VARIANT[/code] - optional, language variant, region and sort order. Variant can have any number of underscored keywords.
 				[code]extra[/code] - optional, semicolon separated list of additional key words. Currency, calendar, sort order and numbering system information.
 			</description>
 		</method>
+		<method name="get_locale_language" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the host OS locale's 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url] as a string which should be consistent on all platforms. This is equivalent to extracting the [code]language[/code] part of the [method get_locale] string.
+				This can be used to narrow down fully specified locale strings to only the "common" language code, when you don't need the additional information about country code or variants. For example, for a French Canadian user with [code]fr_CA[/code] locale, this would return [code]fr[/code].
+			</description>
+		</method>
+		<method name="get_main_thread_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of the main thread. See [method get_thread_caller_id].
+				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
+			</description>
+		</method>
 		<method name="get_model_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the model name of the current device.
 				[b]Note:[/b] This method is implemented on Android and iOS. Returns [code]"GenericDevice"[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
-				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
+				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"macOS"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the project's process ID.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_processor_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of threads available on the host machine.
 			</description>
 		</method>
 		<method name="get_static_memory_peak_usage" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the maximum amount of static memory used (only works in debug).
 			</description>
 		</method>
 		<method name="get_static_memory_usage" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the amount of static memory being used by the program in bytes.
 			</description>
 		</method>
 		<method name="get_system_dir" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="dir" type="int" enum="OS.SystemDir">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="dir" type="int" enum="OS.SystemDir" />
+			<argument index="1" name="shared_storage" type="bool" default="true" />
 			<description>
 				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum SystemDir].
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] Shared storage is implemented on Android and allows to differentiate between app specific and shared directories. Shared directories have additional restrictions on Android.
 			</description>
 		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the ID of the current thread. This can be used in logs to ease debugging of multi-threaded applications.
 				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
 			</description>
 		</method>
-		<method name="get_ticks_msec" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the amount of time passed in milliseconds since the engine started.
-			</description>
-		</method>
-		<method name="get_ticks_usec" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the amount of time passed in microseconds since the engine started.
-			</description>
-		</method>
-		<method name="get_time" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="utc" type="bool" default="false">
-			</argument>
-			<description>
-				Returns current time as a dictionary of keys: hour, minute, second.
-			</description>
-		</method>
-		<method name="get_time_zone_info" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<description>
-				Returns the current time zone as a dictionary with the keys: bias and name.
-			</description>
-		</method>
 		<method name="get_unique_id" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a string that is unique to the device.
+				[b]Note:[/b] This string may change without notice if the user reinstalls/upgrades their operating system or changes their hardware. This means it should generally not be used to encrypt persistent data as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by [method get_unique_id] for security purposes.
 				[b]Note:[/b] Returns an empty string on HTML5 and UWP, as this method isn't implemented on those platforms yet.
 			</description>
 		</method>
-		<method name="get_unix_time" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the current UNIX epoch timestamp in seconds.
-				[b]Important:[/b] This is the system clock that the user can manully set. [b]Never use[/b] this method for precise time calculation since its results are also subject to automatic adjustments by the operating system. [b]Always use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time calculation instead, since they are guaranteed to be monotonic (i.e. never decrease).
-			</description>
-		</method>
-		<method name="get_unix_time_from_datetime" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="datetime" type="Dictionary">
-			</argument>
-			<description>
-				Gets an epoch time value from a dictionary of time values.
-				[code]datetime[/code] must be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], [code]second[/code].
-				If the dictionary is empty [code]0[/code] is returned.
-				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight Savings Time ([code]dst[/code]), if present, is ignored.
-			</description>
-		</method>
 		<method name="get_user_data_dir" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the absolute directory path where user data is written ([code]user://[/code]).
 				On Linux, this is [code]~/.local/share/godot/app_userdata/[project_name][/code], or [code]~/.local/share/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				On Windows, this is [code]%APPDATA%\Godot\app_userdata\[project_name][/code], or [code]%APPDATA%\[custom_name][/code] if [code]use_custom_user_dir[/code] is set. [code]%APPDATA%[/code] expands to [code]%USERPROFILE%\AppData\Roaming[/code].
 				If the project name is empty, [code]user://[/code] falls back to [code]res://[/code].
+				Not to be confused with [method get_data_dir], which returns the [i]global[/i] (non-project-specific) user data directory.
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="variable" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="variable" type="String" />
 			<description>
 				Returns [code]true[/code] if the environment variable with the name [code]variable[/code] exists.
 				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="tag_name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="tag_name" type="String" />
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
 			</description>
 		</method>
 		<method name="is_debug_build" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the Godot binary used to run the project is a [i]debug[/i] export template, or when running in the editor.
 				Returns [code]false[/code] if the Godot binary used to run the project is a [i]release[/i] export template.
@@ -412,33 +352,27 @@
 			</description>
 		</method>
 		<method name="is_keycode_unicode" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="code" type="int">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="code" type="int" />
 			<description>
 				Returns [code]true[/code] if the input keycode corresponds to a Unicode character.
 			</description>
 		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the engine was executed with [code]-v[/code] (verbose stdout).
+				Returns [code]true[/code] if the engine was executed with the [code]--verbose[/code] or [code]-v[/code] command line argument, or if [member ProjectSettings.debug/settings/stdout/verbose_stdout] is [code]true[/code]. See also [method @GlobalScope.print_verbose].
 			</description>
 		</method>
 		<method name="is_userfs_persistent" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If [code]true[/code], the [code]user://[/code] file system is persistent, so that its state is the same after a player quits and starts the game again. Relevant to the HTML5 platform, where this persistence may be unavailable.
 			</description>
 		</method>
 		<method name="kill">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="pid" type="int">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="pid" type="int" />
 			<description>
 				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode.
 				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the game.
@@ -446,99 +380,79 @@
 			</description>
 		</method>
 		<method name="open_midi_inputs">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Initialises the singleton for the system MIDI driver.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="print_all_resources">
-			<return type="void">
-			</return>
-			<argument index="0" name="tofile" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="tofile" type="String" default="&quot;&quot;" />
 			<description>
 				Shows all resources in the game. Optionally, the list can be written to a file by specifying a file path in [code]tofile[/code].
 			</description>
 		</method>
 		<method name="print_all_textures_by_size">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Shows the list of loaded textures sorted by size in memory.
 			</description>
 		</method>
 		<method name="print_resources_by_type">
-			<return type="void">
-			</return>
-			<argument index="0" name="types" type="PackedStringArray">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="types" type="PackedStringArray" />
 			<description>
 				Shows the number of resources loaded by the game of the given types.
 			</description>
 		</method>
 		<method name="print_resources_in_use">
-			<return type="void">
-			</return>
-			<argument index="0" name="short" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="short" type="bool" default="false" />
 			<description>
 				Shows all resources currently used by the game.
 			</description>
 		</method>
 		<method name="request_permission">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				At the moment this function is only used by [code]AudioDriverOpenSL[/code] to request permission for [code]RECORD_AUDIO[/code] on Android.
 			</description>
 		</method>
 		<method name="request_permissions">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
-				With this function you can request dangerous permissions since normal permissions are automatically granted at install time in Android application.
+				With this function, you can request dangerous permissions since normal permissions are automatically granted at install time in Android applications.
 				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="variable" type="String">
-			</argument>
-			<argument index="1" name="value" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="variable" type="String" />
+			<argument index="1" name="value" type="String" />
 			<description>
 				Sets the value of the environment variable [code]variable[/code] to [code]value[/code]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
 				[b]Note:[/b] Double-check the casing of [code]variable[/code]. Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 		<method name="set_thread_name">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="name" type="String" />
 			<description>
 				Sets the name of the current thread.
 			</description>
 		</method>
 		<method name="set_use_file_access_save_and_swap">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
 			<description>
 				Enables backup saves if [code]enabled[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="shell_open">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="uri" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="uri" type="String" />
 			<description>
 				Requests the OS to open a resource with the most appropriate program. For example:
 				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
@@ -558,11 +472,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="VIDEO_DRIVER_GLES2" value="0" enum="VideoDriver">
-			The GLES2 rendering backend. It uses OpenGL ES 2.0 on mobile devices, OpenGL 2.1 on desktop platforms and WebGL 1.0 on the web.
+		<constant name="VIDEO_DRIVER_VULKAN" value="0" enum="VideoDriver">
+			The Vulkan rendering backend. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
 		</constant>
-		<constant name="VIDEO_DRIVER_VULKAN" value="1" enum="VideoDriver">
-			The Vulkan rendering backend.
+		<constant name="VIDEO_DRIVER_OPENGL_3" value="1" enum="VideoDriver">
+			The OpenGL 3 rendering backend. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on HTML5.
 		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.

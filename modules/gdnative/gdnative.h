@@ -138,8 +138,8 @@ struct GDNativeCallRegistry {
 	Vector<StringName> get_native_call_types();
 };
 
-class GDNative : public Reference {
-	GDCLASS(GDNative, Reference);
+class GDNative : public RefCounted {
+	GDCLASS(GDNative, RefCounted);
 
 	Ref<GDNativeLibrary> library;
 

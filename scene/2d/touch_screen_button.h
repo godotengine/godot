@@ -61,7 +61,7 @@ private:
 
 	VisibilityMode visibility = VISIBILITY_ALWAYS;
 
-	void _input(const Ref<InputEvent> &p_event);
+	virtual void input(const Ref<InputEvent> &p_event) override;
 
 	bool _is_point_inside(const Point2 &p_point);
 

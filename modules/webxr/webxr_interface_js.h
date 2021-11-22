@@ -46,6 +46,7 @@ class WebXRInterfaceJS : public WebXRInterface {
 
 private:
 	bool initialized;
+	Ref<XRPositionalTracker> head_tracker;
 
 	String session_mode;
 	String required_features;
@@ -53,10 +54,12 @@ private:
 	String requested_reference_space_types;
 	String reference_space_type;
 
+	// TODO maybe turn into a vector to support more then 2 controllers...
 	bool controllers_state[2];
+	Ref<XRPositionalTracker> controllers[2];
 	Size2 render_targetsize;
 
-	Transform _js_matrix_to_transform(float *p_js_matrix);
+	Transform3D _js_matrix_to_transform(float *p_js_matrix);
 	void _update_tracker(int p_controller_id);
 
 public:
@@ -76,21 +79,20 @@ public:
 	virtual PackedVector3Array get_bounds_geometry() const override;
 
 	virtual StringName get_name() const override;
-	virtual int get_capabilities() const override;
+	virtual uint32_t get_capabilities() const override;
 
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
 
-	virtual Size2 get_render_targetsize() override;
-	virtual bool is_stereo() override;
-	virtual Transform get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) override;
-	virtual CameraMatrix get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
-	virtual unsigned int get_external_texture_for_eye(XRInterface::Eyes p_eye) override;
-	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Size2 get_render_target_size() override;
+	virtual uint32_t get_view_count() override;
+	virtual Transform3D get_camera_transform() override;
+	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
+	virtual CameraMatrix get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual Vector<BlitToScreen> commit_views(RID p_render_target, const Rect2 &p_screen_rect) override;
 
 	virtual void process() override;
-	virtual void notification(int p_what) override;
 
 	void _on_controller_changed();
 

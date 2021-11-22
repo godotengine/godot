@@ -89,9 +89,7 @@ public:
 	float get_wet() const;
 	float get_hpf() const;
 
-	Ref<AudioEffectInstance> instance() override;
-	void set_volume_db(float p_volume);
-	float get_volume_db() const;
+	Ref<AudioEffectInstance> instantiate() override;
 
 	AudioEffectReverb();
 };

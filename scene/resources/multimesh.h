@@ -92,9 +92,9 @@ public:
 	void set_visible_instance_count(int p_count);
 	int get_visible_instance_count() const;
 
-	void set_instance_transform(int p_instance, const Transform &p_transform);
+	void set_instance_transform(int p_instance, const Transform3D &p_transform);
 	void set_instance_transform_2d(int p_instance, const Transform2D &p_transform);
-	Transform get_instance_transform(int p_instance) const;
+	Transform3D get_instance_transform(int p_instance) const;
 	Transform2D get_instance_transform_2d(int p_instance) const;
 
 	void set_instance_color(int p_instance, const Color &p_color);

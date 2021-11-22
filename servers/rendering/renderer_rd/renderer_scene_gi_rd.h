@@ -38,26 +38,27 @@
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/gi.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/giprobe.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/giprobe_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/sdfgi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/sdfgi_debug_probes.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/sdfgi_direct_light.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/sdfgi_integrate.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/sdfgi_preprocess.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/voxel_gi.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/voxel_gi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 
-// Forward declare RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
+// Forward declare RenderDataRD and RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
+struct RenderDataRD;
 class RendererSceneRenderRD;
 
 class RendererSceneGIRD {
 private:
 	RendererStorageRD *storage;
 
-	/* GIPROBE INSTANCE */
+	/* VOXEL_GI INSTANCE */
 
-	struct GIProbeLight {
+	struct VoxelGILight {
 		uint32_t type;
 		float energy;
 		float radius;
@@ -73,7 +74,7 @@ private:
 		uint32_t has_shadow;
 	};
 
-	struct GIProbePushConstant {
+	struct VoxelGIPushConstant {
 		int32_t limits[3];
 		uint32_t stack_size;
 
@@ -88,7 +89,7 @@ private:
 		uint32_t pad;
 	};
 
-	struct GIProbeDynamicPushConstant {
+	struct VoxelGIDynamicPushConstant {
 		int32_t limits[3];
 		uint32_t light_count;
 		int32_t x_dir[3];
@@ -109,36 +110,36 @@ private:
 		float pad[3];
 	};
 
-	GIProbeLight *gi_probe_lights;
-	uint32_t gi_probe_max_lights;
-	RID gi_probe_lights_uniform;
+	VoxelGILight *voxel_gi_lights = nullptr;
+	uint32_t voxel_gi_max_lights = 32;
+	RID voxel_gi_lights_uniform;
 
 	enum {
-		GI_PROBE_SHADER_VERSION_COMPUTE_LIGHT,
-		GI_PROBE_SHADER_VERSION_COMPUTE_SECOND_BOUNCE,
-		GI_PROBE_SHADER_VERSION_COMPUTE_MIPMAP,
-		GI_PROBE_SHADER_VERSION_WRITE_TEXTURE,
-		GI_PROBE_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING,
-		GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE,
-		GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_PLOT,
-		GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE_PLOT,
-		GI_PROBE_SHADER_VERSION_MAX
+		VOXEL_GI_SHADER_VERSION_COMPUTE_LIGHT,
+		VOXEL_GI_SHADER_VERSION_COMPUTE_SECOND_BOUNCE,
+		VOXEL_GI_SHADER_VERSION_COMPUTE_MIPMAP,
+		VOXEL_GI_SHADER_VERSION_WRITE_TEXTURE,
+		VOXEL_GI_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING,
+		VOXEL_GI_SHADER_VERSION_DYNAMIC_SHRINK_WRITE,
+		VOXEL_GI_SHADER_VERSION_DYNAMIC_SHRINK_PLOT,
+		VOXEL_GI_SHADER_VERSION_DYNAMIC_SHRINK_WRITE_PLOT,
+		VOXEL_GI_SHADER_VERSION_MAX
 	};
 
-	GiprobeShaderRD giprobe_shader;
-	RID giprobe_lighting_shader_version;
-	RID giprobe_lighting_shader_version_shaders[GI_PROBE_SHADER_VERSION_MAX];
-	RID giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_MAX];
+	VoxelGiShaderRD voxel_gi_shader;
+	RID voxel_gi_lighting_shader_version;
+	RID voxel_gi_lighting_shader_version_shaders[VOXEL_GI_SHADER_VERSION_MAX];
+	RID voxel_gi_lighting_shader_version_pipelines[VOXEL_GI_SHADER_VERSION_MAX];
 
 	enum {
-		GI_PROBE_DEBUG_COLOR,
-		GI_PROBE_DEBUG_LIGHT,
-		GI_PROBE_DEBUG_EMISSION,
-		GI_PROBE_DEBUG_LIGHT_FULL,
-		GI_PROBE_DEBUG_MAX
+		VOXEL_GI_DEBUG_COLOR,
+		VOXEL_GI_DEBUG_LIGHT,
+		VOXEL_GI_DEBUG_EMISSION,
+		VOXEL_GI_DEBUG_LIGHT_FULL,
+		VOXEL_GI_DEBUG_MAX
 	};
 
-	struct GIProbeDebugPushConstant {
+	struct VoxelGIDebugPushConstant {
 		float projection[16];
 		uint32_t cell_offset;
 		float dynamic_range;
@@ -148,11 +149,11 @@ private:
 		uint32_t pad;
 	};
 
-	GiprobeDebugShaderRD giprobe_debug_shader;
-	RID giprobe_debug_shader_version;
-	RID giprobe_debug_shader_version_shaders[GI_PROBE_DEBUG_MAX];
-	PipelineCacheRD giprobe_debug_shader_version_pipelines[GI_PROBE_DEBUG_MAX];
-	RID giprobe_debug_uniform_set;
+	VoxelGiDebugShaderRD voxel_gi_debug_shader;
+	RID voxel_gi_debug_shader_version;
+	RID voxel_gi_debug_shader_version_shaders[VOXEL_GI_DEBUG_MAX];
+	PipelineCacheRD voxel_gi_debug_shader_version_pipelines[VOXEL_GI_DEBUG_MAX];
+	RID voxel_gi_debug_uniform_set;
 
 	/* SDFGI */
 
@@ -325,11 +326,11 @@ private:
 	} sdfgi_shader;
 
 public:
-	/* GIPROBE INSTANCE */
+	/* VOXEL_GI INSTANCE */
 
-	//@TODO GIProbeInstance is still directly used in the render code, we'll address this when we refactor the render code itself.
+	//@TODO VoxelGIInstance is still directly used in the render code, we'll address this when we refactor the render code itself.
 
-	struct GIProbeInstance {
+	struct VoxelGIInstance {
 		// access to our containers
 		RendererStorageRD *storage;
 		RendererSceneGIRD *gi;
@@ -373,25 +374,25 @@ public:
 
 		bool has_dynamic_object_data = false;
 
-		Transform transform;
+		Transform3D transform;
 
 		void update(bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render);
 		void debug(RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
 	};
 
-	mutable RID_Owner<GIProbeInstance> gi_probe_instance_owner;
+	mutable RID_Owner<VoxelGIInstance> voxel_gi_instance_owner;
 
-	_FORCE_INLINE_ GIProbeInstance *get_probe_instance(RID p_probe) const {
-		return gi_probe_instance_owner.getornull(p_probe);
+	_FORCE_INLINE_ VoxelGIInstance *get_probe_instance(RID p_probe) const {
+		return voxel_gi_instance_owner.get_or_null(p_probe);
 	};
 
-	_FORCE_INLINE_ RID gi_probe_instance_get_texture(RID p_probe) {
-		GIProbeInstance *gi_probe = get_probe_instance(p_probe);
-		ERR_FAIL_COND_V(!gi_probe, RID());
-		return gi_probe->texture;
+	_FORCE_INLINE_ RID voxel_gi_instance_get_texture(RID p_probe) {
+		VoxelGIInstance *voxel_gi = get_probe_instance(p_probe);
+		ERR_FAIL_COND_V(!voxel_gi, RID());
+		return voxel_gi->texture;
 	};
 
-	RS::GIProbeQuality gi_probe_quality = RS::GI_PROBE_QUALITY_HIGH;
+	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_HIGH;
 
 	/* SDFGI */
 
@@ -526,10 +527,10 @@ public:
 		int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds) const;
 		void update_cascades();
 
-		void debug_draw(const CameraMatrix &p_projection, const Transform &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture);
+		void debug_draw(const CameraMatrix &p_projection, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture);
 		void debug_probes(RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform);
 
-		void pre_process_gi(const Transform &p_transform, RendererSceneRenderRD *p_scene_render);
+		void pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data, RendererSceneRenderRD *p_scene_render);
 		void render_region(RID p_render_buffers, int p_region, const PagedArray<RendererSceneRender::GeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render);
 		void render_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result, RendererSceneRenderRD *p_scene_render);
 	};
@@ -550,13 +551,13 @@ public:
 
 	/* GI */
 	enum {
-		MAX_GIPROBES = 8
+		MAX_VOXEL_GI_INSTANCES = 8
 	};
 
 	// Struct for use in render buffer
 	struct RenderBuffersGI {
-		RID giprobe_textures[MAX_GIPROBES];
-		RID giprobe_buffer;
+		RID voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
+		RID voxel_gi_buffer;
 
 		RID full_buffer;
 		RID full_dispatch;
@@ -600,7 +601,7 @@ public:
 		ProbeCascadeData cascades[SDFGI::MAX_CASCADES];
 	};
 
-	struct GIProbeData {
+	struct VoxelGIData {
 		float xform[16];
 		float bounds[3];
 		float dynamic_range;
@@ -610,9 +611,9 @@ public:
 		uint32_t blend_ambient;
 		uint32_t texture_slot;
 
-		float anisotropy_strength;
-		float ao;
-		float ao_size;
+		uint32_t pad0;
+		uint32_t pad1;
+		uint32_t pad2;
 		uint32_t mipmaps;
 	};
 
@@ -622,28 +623,27 @@ public:
 		float z_far;
 
 		float proj_info[4];
-		float ao_color[3];
-		uint32_t max_giprobes;
 
+		uint32_t max_voxel_gi_instances;
 		uint32_t high_quality_vct;
 		uint32_t orthogonal;
-		uint32_t pad[2];
+		uint32_t pad;
 
 		float cam_rotation[12];
 	};
 
 	RID sdfgi_ubo;
 	enum Mode {
-		MODE_GIPROBE,
+		MODE_VOXEL_GI,
 		MODE_SDFGI,
 		MODE_COMBINED,
-		MODE_HALF_RES_GIPROBE,
+		MODE_HALF_RES_VOXEL_GI,
 		MODE_HALF_RES_SDFGI,
 		MODE_HALF_RES_COMBINED,
 		MODE_MAX
 	};
 
-	RID default_giprobe_buffer;
+	RID default_voxel_gi_buffer;
 
 	bool half_resolution = false;
 	GiShaderRD shader;
@@ -658,14 +658,14 @@ public:
 
 	SDFGI *create_sdfgi(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
 
-	void setup_giprobes(RID p_render_buffers, const Transform &p_transform, const PagedArray<RID> &p_gi_probes, uint32_t &r_gi_probes_used, RendererSceneRenderRD *p_scene_render);
-	void process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, const PagedArray<RID> &p_gi_probes, RendererSceneRenderRD *p_scene_render);
+	void setup_voxel_gi_instances(RID p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used, RendererSceneRenderRD *p_scene_render);
+	void process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render);
 
-	RID gi_probe_instance_create(RID p_base);
-	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform);
-	bool gi_probe_needs_update(RID p_probe) const;
-	void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render);
-	void debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
+	RID voxel_gi_instance_create(RID p_base);
+	void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform);
+	bool voxel_gi_needs_update(RID p_probe) const;
+	void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render);
+	void debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
 };
 
 #endif /* !RENDERING_SERVER_SCENE_GI_RD_H */

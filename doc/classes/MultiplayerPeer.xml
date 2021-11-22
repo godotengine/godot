@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MultiplayerPeer" inherits="PacketPeer" version="4.0">
+	<brief_description>
+		A high-level network interface to simplify multiplayer interactions.
+	</brief_description>
+	<description>
+		Manages the connection to multiplayer peers. Assigns unique IDs to each client connected to the server. See also [MultiplayerAPI].
+		[b]Note:[/b] The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+	</description>
+	<tutorials>
+		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
+		<link title="WebRTC Signaling Demo">https://godotengine.org/asset-library/asset/537</link>
+	</tutorials>
+	<methods>
+		<method name="generate_unique_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns a randomly generated integer that can be used as a network unique ID.
+			</description>
+		</method>
+		<method name="get_connection_status" qualifiers="const">
+			<return type="int" enum="MultiplayerPeer.ConnectionStatus" />
+			<description>
+				Returns the current state of the connection. See [enum ConnectionStatus].
+			</description>
+		</method>
+		<method name="get_packet_peer" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of the [MultiplayerPeer] who sent the most recent packet.
+			</description>
+		</method>
+		<method name="get_unique_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of this [MultiplayerPeer].
+			</description>
+		</method>
+		<method name="poll">
+			<return type="void" />
+			<description>
+				Waits up to 1 second to receive a new network event.
+			</description>
+		</method>
+		<method name="set_target_peer">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<description>
+				Sets the peer to which packets will be sent.
+				The [code]id[/code] can be one of: [constant TARGET_PEER_BROADCAST] to send to all connected peers, [constant TARGET_PEER_SERVER] to send to the peer acting as server, a valid peer ID to send to that specific peer, a negative peer ID to send to all peers except that one. By default, the target peer is [constant TARGET_PEER_BROADCAST].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" default="false">
+			If [code]true[/code], this [MultiplayerPeer] refuses new connections.
+		</member>
+		<member name="transfer_channel" type="int" setter="set_transfer_channel" getter="get_transfer_channel" default="0">
+			The channel to use to send packets. Many network APIs such as ENet and WebRTC allow the creation of multiple independent channels which behaves, in a way, like separate connections. This means that reliable data will only block delivery of other packets on that channel, and ordering will only be in respect to the channel the packet is being sent on. Using different channels to send [b]different and independent[/b] state updates is a common way to optimize network usage and decrease latency in fast-paced games.
+			[b]Note:[/b] The default channel ([code]0[/code]) actually works as 3 separate channels (one for each [enum TransferMode]) so that [constant TRANSFER_MODE_RELIABLE] and [constant TRANSFER_MODE_UNRELIABLE_ORDERED] does not interact with each other by default. Refer to the specific network API documentation (e.g. ENet or WebRTC) to learn how to set up channels correctly.
+		</member>
+		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" enum="TransferMode" default="2">
+			The manner in which to send packets to the [code]target_peer[/code]. See [enum TransferMode].
+		</member>
+	</members>
+	<signals>
+		<signal name="connection_failed">
+			<description>
+				Emitted when a connection attempt fails.
+			</description>
+		</signal>
+		<signal name="connection_succeeded">
+			<description>
+				Emitted when a connection attempt succeeds.
+			</description>
+		</signal>
+		<signal name="peer_connected">
+			<argument index="0" name="id" type="int" />
+			<description>
+				Emitted by the server when a client connects.
+			</description>
+		</signal>
+		<signal name="peer_disconnected">
+			<argument index="0" name="id" type="int" />
+			<description>
+				Emitted by the server when a client disconnects.
+			</description>
+		</signal>
+		<signal name="server_disconnected">
+			<description>
+				Emitted by clients when the server disconnects.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="CONNECTION_DISCONNECTED" value="0" enum="ConnectionStatus">
+			The ongoing connection disconnected.
+		</constant>
+		<constant name="CONNECTION_CONNECTING" value="1" enum="ConnectionStatus">
+			A connection attempt is ongoing.
+		</constant>
+		<constant name="CONNECTION_CONNECTED" value="2" enum="ConnectionStatus">
+			The connection attempt succeeded.
+		</constant>
+		<constant name="TARGET_PEER_BROADCAST" value="0">
+			Packets are sent to the server and then redistributed to other peers.
+		</constant>
+		<constant name="TARGET_PEER_SERVER" value="1">
+			Packets are sent to the server alone.
+		</constant>
+	</constants>
+</class>

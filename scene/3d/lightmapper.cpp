@@ -39,6 +39,15 @@ Ref<LightmapDenoiser> LightmapDenoiser::create() {
 	return Ref<LightmapDenoiser>();
 }
 
+LightmapRaycaster *(*LightmapRaycaster::create_function)() = nullptr;
+
+Ref<LightmapRaycaster> LightmapRaycaster::create() {
+	if (create_function) {
+		return Ref<LightmapRaycaster>(create_function());
+	}
+	return Ref<LightmapRaycaster>();
+}
+
 Lightmapper::CreateFunc Lightmapper::create_custom = nullptr;
 Lightmapper::CreateFunc Lightmapper::create_gpu = nullptr;
 Lightmapper::CreateFunc Lightmapper::create_cpu = nullptr;

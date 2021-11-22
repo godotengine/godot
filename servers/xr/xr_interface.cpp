@@ -29,31 +29,41 @@
 /*************************************************************************/
 
 #include "xr_interface.h"
+// #include "servers/rendering/renderer_compositor.h"
 
 void XRInterface::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(Variant::INT, "mode")));
+
 	ClassDB::bind_method(D_METHOD("get_name"), &XRInterface::get_name);
 	ClassDB::bind_method(D_METHOD("get_capabilities"), &XRInterface::get_capabilities);
 
 	ClassDB::bind_method(D_METHOD("is_primary"), &XRInterface::is_primary);
-	ClassDB::bind_method(D_METHOD("set_is_primary", "enable"), &XRInterface::set_is_primary);
+	ClassDB::bind_method(D_METHOD("set_primary", "primary"), &XRInterface::set_primary);
 
 	ClassDB::bind_method(D_METHOD("is_initialized"), &XRInterface::is_initialized);
-	ClassDB::bind_method(D_METHOD("set_is_initialized", "initialized"), &XRInterface::set_is_initialized);
 	ClassDB::bind_method(D_METHOD("initialize"), &XRInterface::initialize);
 	ClassDB::bind_method(D_METHOD("uninitialize"), &XRInterface::uninitialize);
 
 	ClassDB::bind_method(D_METHOD("get_tracking_status"), &XRInterface::get_tracking_status);
 
-	ClassDB::bind_method(D_METHOD("get_render_targetsize"), &XRInterface::get_render_targetsize);
-	ClassDB::bind_method(D_METHOD("is_stereo"), &XRInterface::is_stereo);
+	ClassDB::bind_method(D_METHOD("get_render_target_size"), &XRInterface::get_render_target_size);
+	ClassDB::bind_method(D_METHOD("get_view_count"), &XRInterface::get_view_count);
+
+	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "tracker_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRInterface::trigger_haptic_pulse);
 
 	ADD_GROUP("Interface", "interface_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_is_primary", "is_primary");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_initialized"), "set_is_initialized", "is_initialized");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_primary", "is_primary");
 
-	// we don't have any properties specific to VR yet....
+	// methods and properties specific to VR...
+	ClassDB::bind_method(D_METHOD("supports_play_area_mode", "mode"), &XRInterface::supports_play_area_mode);
+	ClassDB::bind_method(D_METHOD("get_play_area_mode"), &XRInterface::get_play_area_mode);
+	ClassDB::bind_method(D_METHOD("set_play_area_mode", "mode"), &XRInterface::set_play_area_mode);
+	ClassDB::bind_method(D_METHOD("get_play_area"), &XRInterface::get_play_area);
 
-	// but we do have properties specific to AR....
+	ADD_GROUP("XR", "xr_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "xr_play_area_mode", PROPERTY_HINT_ENUM, "Unknown,3DOF,Sitting,Roomscale,Stage"), "set_play_area_mode", "get_play_area_mode");
+
+	// methods and properties specific to AR....
 	ClassDB::bind_method(D_METHOD("get_anchor_detection_is_enabled"), &XRInterface::get_anchor_detection_is_enabled);
 	ClassDB::bind_method(D_METHOD("set_anchor_detection_is_enabled", "enable"), &XRInterface::set_anchor_detection_is_enabled);
 	ClassDB::bind_method(D_METHOD("get_camera_feed_id"), &XRInterface::get_camera_feed_id);
@@ -64,22 +74,22 @@ void XRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(XR_NONE);
 	BIND_ENUM_CONSTANT(XR_MONO);
 	BIND_ENUM_CONSTANT(XR_STEREO);
+	BIND_ENUM_CONSTANT(XR_QUAD);
+	BIND_ENUM_CONSTANT(XR_VR);
 	BIND_ENUM_CONSTANT(XR_AR);
 	BIND_ENUM_CONSTANT(XR_EXTERNAL);
-
-	BIND_ENUM_CONSTANT(EYE_MONO);
-	BIND_ENUM_CONSTANT(EYE_LEFT);
-	BIND_ENUM_CONSTANT(EYE_RIGHT);
 
 	BIND_ENUM_CONSTANT(XR_NORMAL_TRACKING);
 	BIND_ENUM_CONSTANT(XR_EXCESSIVE_MOTION);
 	BIND_ENUM_CONSTANT(XR_INSUFFICIENT_FEATURES);
 	BIND_ENUM_CONSTANT(XR_UNKNOWN_TRACKING);
 	BIND_ENUM_CONSTANT(XR_NOT_TRACKING);
-};
 
-StringName XRInterface::get_name() const {
-	return "Unknown";
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_UNKNOWN);
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_3DOF);
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_SITTING);
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_ROOMSCALE);
+	BIND_ENUM_CONSTANT(XR_PLAY_AREA_STAGE);
 };
 
 bool XRInterface::is_primary() {
@@ -87,59 +97,79 @@ bool XRInterface::is_primary() {
 	ERR_FAIL_NULL_V(xr_server, false);
 
 	return xr_server->get_primary_interface() == this;
-};
+}
 
-void XRInterface::set_is_primary(bool p_is_primary) {
+void XRInterface::set_primary(bool p_primary) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	if (p_is_primary) {
+	if (p_primary) {
 		ERR_FAIL_COND(!is_initialized());
 
 		xr_server->set_primary_interface(this);
-	} else {
-		xr_server->clear_primary_interface_if(this);
-	};
-};
+	} else if (xr_server->get_primary_interface() == this) {
+		xr_server->set_primary_interface(nullptr);
+	}
+}
 
-void XRInterface::set_is_initialized(bool p_initialized) {
-	if (p_initialized) {
-		if (!is_initialized()) {
-			initialize();
-		};
-	} else {
-		if (is_initialized()) {
-			uninitialize();
-		};
-	};
-};
-
-XRInterface::Tracking_status XRInterface::get_tracking_status() const {
-	return tracking_state;
-};
-
-XRInterface::XRInterface() {
-	tracking_state = XR_UNKNOWN_TRACKING;
-};
+XRInterface::XRInterface() {}
 
 XRInterface::~XRInterface() {}
 
-// optional render to external texture which enhances performance on those platforms that require us to submit our end result into special textures.
-unsigned int XRInterface::get_external_texture_for_eye(XRInterface::Eyes p_eye) {
-	return 0;
+// query if this interface supports this play area mode
+bool XRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+	return p_mode == XR_PLAY_AREA_UNKNOWN;
+}
+
+// get the current play area mode
+XRInterface::PlayAreaMode XRInterface::get_play_area_mode() const {
+	return XR_PLAY_AREA_UNKNOWN;
+}
+
+// change the play area mode, note that this should return false if the mode is not available
+bool XRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
+	return p_mode == XR_PLAY_AREA_UNKNOWN;
+}
+
+// if available, returns an array of vectors denoting the play area the player can move around in
+PackedVector3Array XRInterface::get_play_area() const {
+	// Return an empty array by default.
+	// Note implementation is responsible for applying our reference frame and world scale to the raw data.
+	// `play_area_changed` should be emitted if play area data is available and either the reference frame or world scale changes.
+	return PackedVector3Array();
 };
 
 /** these will only be implemented on AR interfaces, so we want dummies for VR **/
 bool XRInterface::get_anchor_detection_is_enabled() const {
 	return false;
-};
+}
 
 void XRInterface::set_anchor_detection_is_enabled(bool p_enable) {
-	// don't do anything here, this needs to be implemented on AR interface to enable/disable things like plane detection etc.
 }
 
 int XRInterface::get_camera_feed_id() {
-	// don't do anything here, this needs to be implemented on AR interface to enable/disable things like plane detection etc.
-
 	return 0;
-};
+}
+
+/** these are optional, so we want dummies **/
+PackedStringArray XRInterface::get_suggested_tracker_names() const {
+	PackedStringArray arr;
+
+	return arr;
+}
+
+PackedStringArray XRInterface::get_suggested_pose_names(const StringName &p_tracker_name) const {
+	PackedStringArray arr;
+
+	return arr;
+}
+
+XRInterface::TrackingStatus XRInterface::get_tracking_status() const {
+	return XR_UNKNOWN_TRACKING;
+}
+
+void XRInterface::notification(int p_what) {
+}
+
+void XRInterface::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
+}

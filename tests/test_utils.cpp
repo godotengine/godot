@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_utils.h"
+#include "tests/test_utils.h"
 
 #include "core/os/os.h"
 

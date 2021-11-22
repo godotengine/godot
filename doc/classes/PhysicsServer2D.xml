@@ -10,197 +10,136 @@
 	</tutorials>
 	<methods>
 		<method name="area_add_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="shape" type="RID">
-			</argument>
-			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
-			</argument>
-			<argument index="3" name="disabled" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="shape" type="RID" />
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
+			<argument index="3" name="disabled" type="bool" default="false" />
 			<description>
 				Adds a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
 		</method>
 		<method name="area_attach_canvas_instance_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="area_attach_object_instance_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="id" type="int" />
 			<description>
 				Assigns the area to a descendant of [Object], so it can exist in the node tree.
 			</description>
 		</method>
 		<method name="area_clear_shapes">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
 			<description>
 				Removes all shapes from an area. It does not delete the shapes, so they can be reassigned later.
 			</description>
 		</method>
 		<method name="area_create">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Creates an [Area2D]. After creating an [Area2D] with this method, assign it to a space using [method area_set_space] to use the created [Area2D] in the physics world.
 			</description>
 		</method>
 		<method name="area_get_canvas_instance_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="area" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="area_get_object_instance_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="area" type="RID" />
 			<description>
 				Gets the instance ID of the object the area is assigned to.
 			</description>
 		</method>
 		<method name="area_get_param" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.AreaParameter">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.AreaParameter" />
 			<description>
 				Returns an area parameter value. See [enum AreaParameter] for a list of available parameters.
 			</description>
 		</method>
 		<method name="area_get_shape" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
 			<description>
 				Returns the [RID] of the nth shape of an area.
 			</description>
 		</method>
 		<method name="area_get_shape_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="area" type="RID" />
 			<description>
 				Returns the number of shapes assigned to an area.
 			</description>
 		</method>
 		<method name="area_get_shape_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
 			<description>
 				Returns the transform matrix of a shape within an area.
 			</description>
 		</method>
 		<method name="area_get_space" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="area" type="RID" />
 			<description>
 				Returns the space assigned to the area.
 			</description>
 		</method>
-		<method name="area_get_space_override_mode" qualifiers="const">
-			<return type="int" enum="PhysicsServer2D.AreaSpaceOverrideMode">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<description>
-				Returns the space override mode for the area.
-			</description>
-		</method>
 		<method name="area_get_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="area" type="RID" />
 			<description>
 				Returns the transform matrix for an area.
 			</description>
 		</method>
 		<method name="area_remove_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
 			<description>
 				Removes a shape from an area. It does not delete the shape, so it can be reassigned later.
 			</description>
 		</method>
 		<method name="area_set_area_monitor_callback">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="receiver" type="Object">
-			</argument>
-			<argument index="2" name="method" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="callback" type="Callable" />
 			<description>
 			</description>
 		</method>
 		<method name="area_set_collision_layer">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="layer" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="layer" type="int" />
 			<description>
 				Assigns the area to one or many physics layers.
 			</description>
 		</method>
 		<method name="area_set_collision_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="mask" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="mask" type="int" />
 			<description>
 				Sets which physics layers the area will monitor.
 			</description>
 		</method>
 		<method name="area_set_monitor_callback">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="receiver" type="Object">
-			</argument>
-			<argument index="2" name="method" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="callback" type="Callable" />
 			<description>
 				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
 				1: [constant AREA_BODY_ADDED] or [constant AREA_BODY_REMOVED], depending on whether the object entered or exited the area.
@@ -211,900 +150,644 @@
 			</description>
 		</method>
 		<method name="area_set_monitorable">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="monitorable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="monitorable" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="area_set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.AreaParameter">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.AreaParameter" />
+			<argument index="2" name="value" type="Variant" />
 			<description>
 				Sets the value for an area parameter. See [enum AreaParameter] for a list of available parameters.
 			</description>
 		</method>
 		<method name="area_set_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
-			<argument index="2" name="shape" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
+			<argument index="2" name="shape" type="RID" />
 			<description>
 				Substitutes a given area shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
 		<method name="area_set_shape_disabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
-			<argument index="2" name="disabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
+			<argument index="2" name="disabled" type="bool" />
 			<description>
 				Disables a given shape in an area.
 			</description>
 		</method>
 		<method name="area_set_shape_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
-			<argument index="2" name="transform" type="Transform2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
+			<argument index="2" name="transform" type="Transform2D" />
 			<description>
 				Sets the transform matrix for an area shape.
 			</description>
 		</method>
 		<method name="area_set_space">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="space" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="space" type="RID" />
 			<description>
 				Assigns a space to the area.
 			</description>
 		</method>
-		<method name="area_set_space_override_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="mode" type="int" enum="PhysicsServer2D.AreaSpaceOverrideMode">
-			</argument>
-			<description>
-				Sets the space override mode for the area. See [enum AreaSpaceOverrideMode] for a list of available modes.
-			</description>
-		</method>
 		<method name="area_set_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="area" type="RID">
-			</argument>
-			<argument index="1" name="transform" type="Transform2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="area" type="RID" />
+			<argument index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets the transform matrix for an area.
 			</description>
 		</method>
 		<method name="body_add_central_force">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="force" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="force" type="Vector2" />
 			<description>
 			</description>
 		</method>
 		<method name="body_add_collision_exception">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="excepted_body" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="excepted_body" type="RID" />
 			<description>
 				Adds a body to the list of bodies exempt from collisions.
 			</description>
 		</method>
 		<method name="body_add_force">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="force" type="Vector2">
-			</argument>
-			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="force" type="Vector2" />
+			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Adds a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates. A force differs from an impulse in that, while the two are forces, the impulse clears itself after being applied.
 			</description>
 		</method>
 		<method name="body_add_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape" type="RID">
-			</argument>
-			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
-			</argument>
-			<argument index="3" name="disabled" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="shape" type="RID" />
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
+			<argument index="3" name="disabled" type="bool" default="false" />
 			<description>
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
 		</method>
 		<method name="body_add_torque">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="torque" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="torque" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="body_apply_central_impulse">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="impulse" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="impulse" type="Vector2" />
 			<description>
 			</description>
 		</method>
 		<method name="body_apply_impulse">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="impulse" type="Vector2">
-			</argument>
-			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="impulse" type="Vector2" />
+			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Adds a positioned impulse to the applied force and torque. Both the force and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="body_apply_torque_impulse">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="impulse" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="impulse" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="body_attach_canvas_instance_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="id" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="body_attach_object_instance_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="id" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="id" type="int" />
 			<description>
 				Assigns the area to a descendant of [Object], so it can exist in the node tree.
 			</description>
 		</method>
 		<method name="body_clear_shapes">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 				Removes all shapes from a body.
 			</description>
 		</method>
 		<method name="body_create">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Creates a physics body.
 			</description>
 		</method>
 		<method name="body_get_canvas_instance_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the physics layer or layers a body belongs to.
 			</description>
 		</method>
 		<method name="body_get_collision_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the physics layer or layers a body can collide with.
 			</description>
 		</method>
 		<method name="body_get_continuous_collision_detection_mode" qualifiers="const">
-			<return type="int" enum="PhysicsServer2D.CCDMode">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="int" enum="PhysicsServer2D.CCDMode" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the continuous collision detection mode.
 			</description>
 		</method>
 		<method name="body_get_direct_state">
-			<return type="PhysicsDirectBodyState2D">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="PhysicsDirectBodyState2D" />
+			<argument index="0" name="body" type="RID" />
 			<description>
-				Returns the [PhysicsDirectBodyState2D] of the body.
+				Returns the [PhysicsDirectBodyState2D] of the body. Returns [code]null[/code] if the body is destroyed or removed from the physics space.
 			</description>
 		</method>
 		<method name="body_get_max_contacts_reported" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the maximum contacts that can be reported. See [method body_set_max_contacts_reported].
 			</description>
 		</method>
 		<method name="body_get_mode" qualifiers="const">
-			<return type="int" enum="PhysicsServer2D.BodyMode">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="int" enum="PhysicsServer2D.BodyMode" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the body mode.
 			</description>
 		</method>
 		<method name="body_get_object_instance_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 				Gets the instance ID of the object the area is assigned to.
 			</description>
 		</method>
 		<method name="body_get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
 			<description>
 				Returns the value of a body parameter. See [enum BodyParameter] for a list of available parameters.
 			</description>
 		</method>
 		<method name="body_get_shape" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
 			<description>
 				Returns the [RID] of the nth shape of a body.
 			</description>
 		</method>
 		<method name="body_get_shape_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the number of shapes assigned to a body.
 			</description>
 		</method>
-		<method name="body_get_shape_metadata" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
-			<description>
-				Returns the metadata of a shape of a body.
-			</description>
-		</method>
 		<method name="body_get_shape_transform" qualifiers="const">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
+			<return type="Transform2D" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
 			<description>
 				Returns the transform matrix of a body shape.
 			</description>
 		</method>
 		<method name="body_get_space" qualifiers="const">
-			<return type="RID">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="RID" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the [RID] of the space assigned to a body.
 			</description>
 		</method>
 		<method name="body_get_state" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="state" type="int" enum="PhysicsServer2D.BodyState">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="state" type="int" enum="PhysicsServer2D.BodyState" />
 			<description>
 				Returns a body state.
 			</description>
 		</method>
 		<method name="body_is_omitting_force_integration" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="excepted_body" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="excepted_body" type="RID" />
 			<description>
 				Removes a body from the list of bodies exempt from collisions.
 			</description>
 		</method>
 		<method name="body_remove_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
 			<description>
 				Removes a shape from a body. The shape is not deleted, so it can be reused afterwards.
 			</description>
 		</method>
+		<method name="body_reset_mass_properties">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<description>
+				Restores the default inertia and center of mass based on shapes to cancel any custom values previously set using [method body_set_param].
+			</description>
+		</method>
 		<method name="body_set_axis_velocity">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="axis_velocity" type="Vector2">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="axis_velocity" type="Vector2" />
 			<description>
 				Sets an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
 		<method name="body_set_collision_layer">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="layer" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="layer" type="int" />
 			<description>
 				Sets the physics layer or layers a body belongs to.
 			</description>
 		</method>
 		<method name="body_set_collision_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="mask" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="mask" type="int" />
 			<description>
 				Sets the physics layer or layers a body can collide with.
 			</description>
 		</method>
 		<method name="body_set_continuous_collision_detection_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="mode" type="int" enum="PhysicsServer2D.CCDMode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="mode" type="int" enum="PhysicsServer2D.CCDMode" />
 			<description>
 				Sets the continuous collision detection mode using one of the [enum CCDMode] constants.
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
 		<method name="body_set_force_integration_callback">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="callable" type="Callable">
-			</argument>
-			<argument index="2" name="userdata" type="Variant" default="null">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="callable" type="Callable" />
+			<argument index="2" name="userdata" type="Variant" default="null" />
 			<description>
 				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
+				The force integration function takes 2 arguments:
+				[code]state:[/code] [PhysicsDirectBodyState2D] used to retrieve and modify the body's state.
+				[code]userdata:[/code] Optional user data, if it was passed when calling [code]body_set_force_integration_callback[/code].
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="amount" type="int">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="amount" type="int" />
 			<description>
 				Sets the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
 			</description>
 		</method>
 		<method name="body_set_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="mode" type="int" enum="PhysicsServer2D.BodyMode">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="mode" type="int" enum="PhysicsServer2D.BodyMode" />
 			<description>
 				Sets the body mode using one of the [enum BodyMode] constants.
 			</description>
 		</method>
 		<method name="body_set_omit_force_integration">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="enable" type="bool" />
 			<description>
 				Sets whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
 			</description>
 		</method>
 		<method name="body_set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter">
-			</argument>
-			<argument index="2" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.BodyParameter" />
+			<argument index="2" name="value" type="Variant" />
 			<description>
 				Sets a body parameter. See [enum BodyParameter] for a list of available parameters.
 			</description>
 		</method>
 		<method name="body_set_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
-			<argument index="2" name="shape" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
+			<argument index="2" name="shape" type="RID" />
 			<description>
 				Substitutes a given body shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
 		<method name="body_set_shape_as_one_way_collision">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
-			<argument index="2" name="enable" type="bool">
-			</argument>
-			<argument index="3" name="margin" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
+			<argument index="2" name="enable" type="bool" />
+			<argument index="3" name="margin" type="float" />
 			<description>
 				Enables one way collision on body if [code]enable[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="body_set_shape_disabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
-			<argument index="2" name="disabled" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
+			<argument index="2" name="disabled" type="bool" />
 			<description>
 				Disables shape in body if [code]disable[/code] is [code]true[/code].
 			</description>
 		</method>
-		<method name="body_set_shape_metadata">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
-			<argument index="2" name="metadata" type="Variant">
-			</argument>
-			<description>
-				Sets metadata of a shape within a body. This metadata is different from [method Object.set_meta], and can be retrieved on shape queries.
-			</description>
-		</method>
 		<method name="body_set_shape_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="shape_idx" type="int">
-			</argument>
-			<argument index="2" name="transform" type="Transform2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="shape_idx" type="int" />
+			<argument index="2" name="transform" type="Transform2D" />
 			<description>
 				Sets the transform matrix for a body shape.
 			</description>
 		</method>
 		<method name="body_set_space">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="space" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="space" type="RID" />
 			<description>
 				Assigns a space to the body (see [method space_create]).
 			</description>
 		</method>
 		<method name="body_set_state">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="state" type="int" enum="PhysicsServer2D.BodyState">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="state" type="int" enum="PhysicsServer2D.BodyState" />
+			<argument index="2" name="value" type="Variant" />
 			<description>
 				Sets a body state using one of the [enum BodyState] constants.
 				Note that the method doesn't take effect immediately. The state will change on the next physics frame.
 			</description>
 		</method>
 		<method name="body_test_motion">
-			<return type="bool">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="from" type="Transform2D">
-			</argument>
-			<argument index="2" name="motion" type="Vector2">
-			</argument>
-			<argument index="3" name="infinite_inertia" type="bool">
-			</argument>
-			<argument index="4" name="margin" type="float" default="0.08">
-			</argument>
-			<argument index="5" name="result" type="PhysicsTestMotionResult2D" default="null">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="parameters" type="PhysicsTestMotionParameters2D" />
+			<argument index="2" name="result" type="PhysicsTestMotionResult2D" default="null" />
 			<description>
-				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. Margin increases the size of the shapes involved in the collision detection. [PhysicsTestMotionResult2D] can be passed to return additional information in.
+				Returns [code]true[/code] if a collision would result from moving along a motion vector from a given point in space. [PhysicsTestMotionParameters2D] is passed to set motion parameters. [PhysicsTestMotionResult2D] can be passed to return additional information.
 			</description>
 		</method>
 		<method name="capsule_shape_create">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="circle_shape_create">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="concave_polygon_shape_create">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="convex_polygon_shape_create">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="damped_spring_joint_get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="joint" type="RID">
-			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.DampedSpringParam">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="joint" type="RID" />
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.DampedSpringParam" />
 			<description>
 				Returns the value of a damped spring joint parameter. See [enum DampedSpringParam] for a list of available parameters.
 			</description>
 		</method>
 		<method name="damped_spring_joint_set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint" type="RID">
-			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.DampedSpringParam">
-			</argument>
-			<argument index="2" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="joint" type="RID" />
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.DampedSpringParam" />
+			<argument index="2" name="value" type="float" />
 			<description>
 				Sets a damped spring joint parameter. See [enum DampedSpringParam] for a list of available parameters.
 			</description>
 		</method>
 		<method name="free_rid">
-			<return type="void">
-			</return>
-			<argument index="0" name="rid" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
 				Destroys any of the objects created by PhysicsServer2D. If the [RID] passed is not one of the objects that can be created by PhysicsServer2D, an error will be sent to the console.
 			</description>
 		</method>
 		<method name="get_process_info">
-			<return type="int">
-			</return>
-			<argument index="0" name="process_info" type="int" enum="PhysicsServer2D.ProcessInfo">
-			</argument>
+			<return type="int" />
+			<argument index="0" name="process_info" type="int" enum="PhysicsServer2D.ProcessInfo" />
 			<description>
 				Returns information about the current state of the 2D physics engine. See [enum ProcessInfo] for a list of available states.
 			</description>
 		</method>
 		<method name="joint_clear">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="joint" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="joint_create">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="joint_get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="joint" type="RID">
-			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.JointParam">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="joint" type="RID" />
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.JointParam" />
 			<description>
 				Returns the value of a joint parameter.
 			</description>
 		</method>
 		<method name="joint_get_type" qualifiers="const">
-			<return type="int" enum="PhysicsServer2D.JointType">
-			</return>
-			<argument index="0" name="joint" type="RID">
-			</argument>
+			<return type="int" enum="PhysicsServer2D.JointType" />
+			<argument index="0" name="joint" type="RID" />
 			<description>
 				Returns a joint's type (see [enum JointType]).
 			</description>
 		</method>
 		<method name="joint_make_damped_spring">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint" type="RID">
-			</argument>
-			<argument index="1" name="anchor_a" type="Vector2">
-			</argument>
-			<argument index="2" name="anchor_b" type="Vector2">
-			</argument>
-			<argument index="3" name="body_a" type="RID">
-			</argument>
-			<argument index="4" name="body_b" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="joint" type="RID" />
+			<argument index="1" name="anchor_a" type="Vector2" />
+			<argument index="2" name="anchor_b" type="Vector2" />
+			<argument index="3" name="body_a" type="RID" />
+			<argument index="4" name="body_b" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="joint_make_groove">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint" type="RID">
-			</argument>
-			<argument index="1" name="groove1_a" type="Vector2">
-			</argument>
-			<argument index="2" name="groove2_a" type="Vector2">
-			</argument>
-			<argument index="3" name="anchor_b" type="Vector2">
-			</argument>
-			<argument index="4" name="body_a" type="RID">
-			</argument>
-			<argument index="5" name="body_b" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="joint" type="RID" />
+			<argument index="1" name="groove1_a" type="Vector2" />
+			<argument index="2" name="groove2_a" type="Vector2" />
+			<argument index="3" name="anchor_b" type="Vector2" />
+			<argument index="4" name="body_a" type="RID" />
+			<argument index="5" name="body_b" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="joint_make_pin">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint" type="RID">
-			</argument>
-			<argument index="1" name="anchor" type="Vector2">
-			</argument>
-			<argument index="2" name="body_a" type="RID">
-			</argument>
-			<argument index="3" name="body_b" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="joint" type="RID" />
+			<argument index="1" name="anchor" type="Vector2" />
+			<argument index="2" name="body_a" type="RID" />
+			<argument index="3" name="body_b" type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="joint_set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint" type="RID">
-			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.JointParam">
-			</argument>
-			<argument index="2" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="joint" type="RID" />
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.JointParam" />
+			<argument index="2" name="value" type="float" />
 			<description>
 				Sets a joint parameter. See [enum JointParam] for a list of available parameters.
 			</description>
 		</method>
-		<method name="line_shape_create">
-			<return type="RID">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="ray_shape_create">
-			<return type="RID">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="rectangle_shape_create">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="segment_shape_create">
-			<return type="RID">
-			</return>
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="separation_ray_shape_create">
+			<return type="RID" />
 			<description>
 			</description>
 		</method>
 		<method name="set_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="active" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="active" type="bool" />
 			<description>
 				Activates or deactivates the 2D physics engine.
 			</description>
 		</method>
+		<method name="set_collision_iterations">
+			<return type="void" />
+			<argument index="0" name="iterations" type="int" />
+			<description>
+				Sets the amount of iterations for calculating velocities of colliding bodies. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. The default value is [code]8[/code].
+			</description>
+		</method>
 		<method name="shape_get_data" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="shape" type="RID">
-			</argument>
+			<return type="Variant" />
+			<argument index="0" name="shape" type="RID" />
 			<description>
 				Returns the shape data.
 			</description>
 		</method>
 		<method name="shape_get_type" qualifiers="const">
-			<return type="int" enum="PhysicsServer2D.ShapeType">
-			</return>
-			<argument index="0" name="shape" type="RID">
-			</argument>
+			<return type="int" enum="PhysicsServer2D.ShapeType" />
+			<argument index="0" name="shape" type="RID" />
 			<description>
 				Returns a shape's type (see [enum ShapeType]).
 			</description>
 		</method>
 		<method name="shape_set_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="shape" type="RID">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="shape" type="RID" />
+			<argument index="1" name="data" type="Variant" />
 			<description>
 				Sets the shape data that defines its shape and size. The data to be passed depends on the kind of shape created [method shape_get_type].
 			</description>
 		</method>
 		<method name="space_create">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Creates a space. A space is a collection of parameters for the physics engine that can be assigned to an area or a body. It can be assigned to an area with [method area_set_space], or to a body with [method body_set_space].
 			</description>
 		</method>
 		<method name="space_get_direct_state">
-			<return type="PhysicsDirectSpaceState2D">
-			</return>
-			<argument index="0" name="space" type="RID">
-			</argument>
+			<return type="PhysicsDirectSpaceState2D" />
+			<argument index="0" name="space" type="RID" />
 			<description>
 				Returns the state of a space, a [PhysicsDirectSpaceState2D]. This object can be used to make collision/intersection queries.
 			</description>
 		</method>
 		<method name="space_get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="space" type="RID">
-			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.SpaceParameter">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="space" type="RID" />
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.SpaceParameter" />
 			<description>
 				Returns the value of a space parameter.
 			</description>
 		</method>
 		<method name="space_is_active" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="space" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="space" type="RID" />
 			<description>
 				Returns whether the space is active.
 			</description>
 		</method>
 		<method name="space_set_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="space" type="RID">
-			</argument>
-			<argument index="1" name="active" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="space" type="RID" />
+			<argument index="1" name="active" type="bool" />
 			<description>
 				Marks a space as active. It will not have an effect, unless it is assigned to an area or body.
 			</description>
 		</method>
 		<method name="space_set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="space" type="RID">
-			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.SpaceParameter">
-			</argument>
-			<argument index="2" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="space" type="RID" />
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.SpaceParameter" />
+			<argument index="2" name="value" type="float" />
 			<description>
 				Sets the value for a space parameter. See [enum SpaceParameter] for a list of available parameters.
+			</description>
+		</method>
+		<method name="world_boundary_shape_create">
+			<return type="RID" />
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -1130,15 +813,14 @@
 		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="6" enum="SpaceParameter">
 			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
 		</constant>
-		<constant name="SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH" value="7" enum="SpaceParameter">
+		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
+			This is the constant for creating world boundary shapes. A world boundary shape is an [i]infinite[/i] line with an origin point, and a normal. Thus, it can be used for front/behind checks.
 		</constant>
-		<constant name="SHAPE_LINE" value="0" enum="ShapeType">
-			This is the constant for creating line shapes. A line shape is an infinite line with an origin point, and a normal. Thus, it can be used for front/behind checks.
-		</constant>
-		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
+		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
+			This is the constant for creating separation ray shapes. A separation ray is defined by a length and separates itself from what is touching its far endpoint. Useful for character controllers.
 		</constant>
 		<constant name="SHAPE_SEGMENT" value="2" enum="ShapeType">
-			This is the constant for creating segment shapes. A segment shape is a line from a point A to a point B. It can be checked for intersections.
+			This is the constant for creating segment shapes. A segment shape is a [i]finite[/i] line from a point A to a point B. It can be checked for intersections.
 		</constant>
 		<constant name="SHAPE_CIRCLE" value="3" enum="ShapeType">
 			This is the constant for creating circle shapes. A circle shape only has a radius. It can be used for intersections and inside/outside checks.
@@ -1158,28 +840,37 @@
 		<constant name="SHAPE_CUSTOM" value="8" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_OVERRIDE_MODE" value="0" enum="AreaParameter">
+			Constant to set/get gravity override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY" value="1" enum="AreaParameter">
 			Constant to set/get gravity strength in an area.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="2" enum="AreaParameter">
 			Constant to set/get gravity vector/center in an area.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="3" enum="AreaParameter">
 			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="4" enum="AreaParameter">
 			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="5" enum="AreaParameter">
 			This constant was used to set/get the falloff factor for point gravity. It has been superseded by [constant AREA_PARAM_GRAVITY_DISTANCE_SCALE].
 		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP" value="5" enum="AreaParameter">
-			Constant to set/get the linear dampening factor of an area.
+		<constant name="AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE" value="6" enum="AreaParameter">
+			Constant to set/get linear damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
 		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6" enum="AreaParameter">
-			Constant to set/get the angular dampening factor of an area.
+		<constant name="AREA_PARAM_LINEAR_DAMP" value="7" enum="AreaParameter">
+			Constant to set/get the linear damping factor of an area.
 		</constant>
-		<constant name="AREA_PARAM_PRIORITY" value="7" enum="AreaParameter">
+		<constant name="AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE" value="8" enum="AreaParameter">
+			Constant to set/get angular damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
+		</constant>
+		<constant name="AREA_PARAM_ANGULAR_DAMP" value="9" enum="AreaParameter">
+			Constant to set/get the angular damping factor of an area.
+		</constant>
+		<constant name="AREA_PARAM_PRIORITY" value="10" enum="AreaParameter">
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">
@@ -1198,16 +889,16 @@
 			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
 		</constant>
 		<constant name="BODY_MODE_STATIC" value="0" enum="BodyMode">
-			Constant for static bodies.
+			Constant for static bodies. In this mode, a body can be only moved by user code and doesn't collide with other bodies along its path when moved.
 		</constant>
 		<constant name="BODY_MODE_KINEMATIC" value="1" enum="BodyMode">
-			Constant for kinematic bodies.
+			Constant for kinematic bodies. In this mode, a body can be only moved by user code and collides with other bodies along its path.
 		</constant>
-		<constant name="BODY_MODE_RIGID" value="2" enum="BodyMode">
-			Constant for rigid bodies.
+		<constant name="BODY_MODE_DYNAMIC" value="2" enum="BodyMode">
+			Constant for dynamic bodies. In this mode, a body can be pushed by other bodies and has forces applied.
 		</constant>
-		<constant name="BODY_MODE_CHARACTER" value="3" enum="BodyMode">
-			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
+		<constant name="BODY_MODE_DYNAMIC_LINEAR" value="3" enum="BodyMode">
+			Constant for linear dynamic bodies. In this mode, a body is dynamic but can not rotate, and only its linear velocity is affected by external forces.
 		</constant>
 		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">
 			Constant to set/get a body's bounce factor.
@@ -1221,17 +912,32 @@
 		<constant name="BODY_PARAM_INERTIA" value="3" enum="BodyParameter">
 			Constant to set/get a body's inertia.
 		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="4" enum="BodyParameter">
+		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
+			Constant to set/get a body's center of mass position in the body's local coordinate system.
+		</constant>
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="5" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier.
 		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="5" enum="BodyParameter">
+		<constant name="BODY_PARAM_LINEAR_DAMP_MODE" value="6" enum="BodyParameter">
+			Constant to set/get a body's linear dampening mode. See [enum BodyDampMode] for possible values.
+		</constant>
+		<constant name="BODY_PARAM_ANGULAR_DAMP_MODE" value="7" enum="BodyParameter">
+			Constant to set/get a body's angular dampening mode. See [enum BodyDampMode] for possible values.
+		</constant>
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="8" enum="BodyParameter">
 			Constant to set/get a body's linear dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="6" enum="BodyParameter">
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="9" enum="BodyParameter">
 			Constant to set/get a body's angular dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="7" enum="BodyParameter">
+		<constant name="BODY_PARAM_MAX" value="10" enum="BodyParameter">
 			Represents the size of the [enum BodyParameter] enum.
+		</constant>
+		<constant name="BODY_DAMP_MODE_COMBINE" value="0" enum="BodyDampMode">
+			The body's damping value is added to any value set in areas or the default value.
+		</constant>
+		<constant name="BODY_DAMP_MODE_REPLACE" value="1" enum="BodyDampMode">
+			The body's damping value replaces any value set in areas or the default value.
 		</constant>
 		<constant name="BODY_STATE_TRANSFORM" value="0" enum="BodyState">
 			Constant to set/get the current transform matrix of the body.

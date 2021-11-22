@@ -80,8 +80,8 @@ struct CachedData {
 	GDMonoClass *class_Vector3;
 	GDMonoClass *class_Vector3i;
 	GDMonoClass *class_Basis;
-	GDMonoClass *class_Quat;
-	GDMonoClass *class_Transform;
+	GDMonoClass *class_Quaternion;
+	GDMonoClass *class_Transform3D;
 	GDMonoClass *class_AABB;
 	GDMonoClass *class_Color;
 	GDMonoClass *class_Plane;
@@ -111,12 +111,8 @@ struct CachedData {
 	GDMonoField *field_ExportAttribute_hintString;
 	GDMonoClass *class_SignalAttribute;
 	GDMonoClass *class_ToolAttribute;
-	GDMonoClass *class_RemoteAttribute;
-	GDMonoClass *class_MasterAttribute;
-	GDMonoClass *class_PuppetAttribute;
-	GDMonoClass *class_RemoteSyncAttribute;
-	GDMonoClass *class_MasterSyncAttribute;
-	GDMonoClass *class_PuppetSyncAttribute;
+	GDMonoClass *class_AnyPeerAttribute;
+	GDMonoClass *class_AuthorityAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;
 	GDMonoClass *class_ScriptPathAttribute;

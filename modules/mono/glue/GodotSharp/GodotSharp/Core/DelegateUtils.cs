@@ -61,7 +61,7 @@ namespace Godot
                     using (var stream = new MemoryStream())
                     using (var writer = new BinaryWriter(stream))
                     {
-                        writer.Write((ulong) TargetKind.Static);
+                        writer.Write((ulong)TargetKind.Static);
 
                         SerializeType(writer, @delegate.GetType());
 
@@ -77,8 +77,8 @@ namespace Godot
                     using (var stream = new MemoryStream())
                     using (var writer = new BinaryWriter(stream))
                     {
-                        writer.Write((ulong) TargetKind.GodotObject);
-                        writer.Write((ulong) godotObject.GetInstanceId());
+                        writer.Write((ulong)TargetKind.GodotObject);
+                        writer.Write((ulong)godotObject.GetInstanceId());
 
                         SerializeType(writer, @delegate.GetType());
 
@@ -100,7 +100,7 @@ namespace Godot
                         using (var stream = new MemoryStream())
                         using (var writer = new BinaryWriter(stream))
                         {
-                            writer.Write((ulong) TargetKind.CompilerGenerated);
+                            writer.Write((ulong)TargetKind.CompilerGenerated);
                             SerializeType(writer, targetType);
 
                             SerializeType(writer, @delegate.GetType());
@@ -149,14 +149,14 @@ namespace Godot
             int flags = 0;
 
             if (methodInfo.IsPublic)
-                flags |= (int) BindingFlags.Public;
+                flags |= (int)BindingFlags.Public;
             else
-                flags |= (int) BindingFlags.NonPublic;
+                flags |= (int)BindingFlags.NonPublic;
 
             if (methodInfo.IsStatic)
-                flags |= (int) BindingFlags.Static;
+                flags |= (int)BindingFlags.Static;
             else
-                flags |= (int) BindingFlags.Instance;
+                flags |= (int)BindingFlags.Instance;
 
             writer.Write(flags);
 
@@ -238,7 +238,7 @@ namespace Godot
                 }
                 else
                 {
-                    if (TryDeserializeSingleDelegate((byte[]) elem, out Delegate oneDelegate))
+                    if (TryDeserializeSingleDelegate((byte[])elem, out Delegate oneDelegate))
                         delegates.Add(oneDelegate);
                 }
             }
@@ -257,7 +257,7 @@ namespace Godot
             using (var stream = new MemoryStream(buffer, writable: false))
             using (var reader = new BinaryReader(stream))
             {
-                var targetKind = (TargetKind) reader.ReadUInt64();
+                var targetKind = (TargetKind)reader.ReadUInt64();
 
                 switch (targetKind)
                 {
@@ -353,11 +353,11 @@ namespace Godot
                     parameterTypes[i] = parameterType;
                 }
 
-                methodInfo = declaringType.GetMethod(methodName, (BindingFlags) flags, null, parameterTypes, null);
+                methodInfo = declaringType.GetMethod(methodName, (BindingFlags)flags, null, parameterTypes, null);
                 return methodInfo != null && methodInfo.ReturnType == returnType;
             }
 
-            methodInfo = declaringType.GetMethod(methodName, (BindingFlags) flags);
+            methodInfo = declaringType.GetMethod(methodName, (BindingFlags)flags);
             return methodInfo != null && methodInfo.ReturnType == returnType;
         }
 

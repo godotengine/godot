@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CharFXTransform" inherits="Reference" version="4.0">
+<class name="CharFXTransform" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Controls how an individual character will be displayed in a [RichTextEffect].
 	</brief_description>
@@ -7,17 +7,15 @@
 		By setting various properties on this object, you can control how individual characters will be displayed in a [RichTextEffect].
 	</description>
 	<tutorials>
-		<link title="BBCode in RichTextLabel">https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
 		<link title="RichTextEffect test project (third-party)">https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 0, 0, 0, 1 )">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)">
 			The color the character will be drawn with.
 		</member>
 		<member name="elapsed_time" type="float" setter="set_elapsed_time" getter="get_elapsed_time" default="0.0">
-			The time elapsed since the [RichTextLabel] was added to the scene tree (in seconds). Time stops when the project is paused depending on the value of the [RichTextLabel]'s [member Node.process_mode].
+			The time elapsed since the [RichTextLabel] was added to the scene tree (in seconds). Time stops when the [RichTextLabel] is paused (see [member Node.process_mode]). Resets when the text in the [RichTextLabel] is changed.
 			[b]Note:[/b] Time still passes while the [RichTextLabel] is hidden.
 		</member>
 		<member name="env" type="Dictionary" setter="set_environment" getter="get_environment" default="{}">
@@ -30,22 +28,26 @@
 		<member name="font" type="RID" setter="set_font" getter="get_font">
 			Font resource used to render glyph.
 		</member>
+		<member name="glyph_count" type="int" setter="set_glyph_count" getter="get_glyph_count" default="0">
+			Number of glyphs in the grapheme cluster. This value is set in the first glyph of a cluster. Setting this property won't affect drawing.
+		</member>
+		<member name="glyph_flags" type="int" setter="set_glyph_flags" getter="get_glyph_flags" default="0">
+			Glyph flags. See [enum TextServer.GraphemeFlag] for more info. Setting this property won't affect drawing.
+		</member>
 		<member name="glyph_index" type="int" setter="set_glyph_index" getter="get_glyph_index" default="0">
 			Font specific glyph index.
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The position offset the character will be drawn with (in pixels).
 		</member>
 		<member name="outline" type="bool" setter="set_outline" getter="is_outline" default="false">
-			If [code]ture[/code], FX transform is called for outline drawing. Setting this property won't affect drawing.
+			If [code]true[/code], FX transform is called for outline drawing. Setting this property won't affect drawing.
 		</member>
-		<member name="range" type="Vector2i" setter="set_range" getter="get_range" default="Vector2i( 0, 0 )">
+		<member name="range" type="Vector2i" setter="set_range" getter="get_range" default="Vector2i(0, 0)">
 			Absolute character range in the string, corresponding to the glyph. Setting this property won't affect drawing.
 		</member>
 		<member name="visible" type="bool" setter="set_visibility" getter="is_visible" default="true">
 			If [code]true[/code], the character will be drawn. If [code]false[/code], the character will be hidden. Characters around hidden characters will reflow to take the space of hidden characters. If this is not desired, set their [member color] to [code]Color(1, 1, 1, 0)[/code] instead.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

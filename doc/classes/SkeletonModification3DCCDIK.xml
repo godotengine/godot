@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModification3DCCDIK" inherits="SkeletonModification3D" version="4.0">
+	<brief_description>
+		A modification that uses CCDIK to manipulate a series of bones to reach a target.
+	</brief_description>
+	<description>
+		This [SkeletonModification3D] uses an algorithm called Cyclic Coordinate Descent Inverse Kinematics, or CCDIK, to maniuplate a chain of bones in a Skeleton so it reaches a defined target.
+		CCDIK works by rotating a set of bones, typically called a "bone chain", on a single axis. Each bone is rotated to face the target from the tip (by default), which over a chain of bones allow it to rotate properly to reach the target. Because the bones only rotate on a single axis, CCDIK [i]can[/i] look more robotic than other IK solvers.
+		[b]Note:[/b] The CCDIK modifier has [code]ccdik_joints[/code], which are the data objects that hold the data for each joint in the CCDIK chain. This is different from a bone! CCDIK joints hold the data needed for each bone in the bone chain used by CCDIK.
+		CCDIK also fully supports angle constraints, allowing for more control over how a solution is met.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_ccdik_joint_bone_index" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the bone index of the bone assigned to the CCDIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="get_ccdik_joint_bone_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the name of the bone that is assigned to the CCDIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="get_ccdik_joint_ccdik_axis" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the integer representing the joint axis of the CCDIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="get_ccdik_joint_constraint_angle_max" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the maximum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle is in degrees!
+			</description>
+		</method>
+		<method name="get_ccdik_joint_constraint_angle_min" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the minimum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle is in degrees!
+			</description>
+		</method>
+		<method name="get_ccdik_joint_constraint_invert" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Returns whether the CCDIK joint at [code]joint_idx[/code] uses an inverted joint constraint. See [method set_ccdik_joint_constraint_invert] for details.
+			</description>
+		</method>
+		<method name="get_ccdik_joint_enable_joint_constraint" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+				Enables angle constraints to the CCDIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+		<method name="set_ccdik_joint_bone_index">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="bone_index" type="int" />
+			<description>
+				Sets the bone index, [code]bone_index[/code], of the CCDIK joint at [code]joint_idx[/code]. When possible, this will also update the [code]bone_name[/code] of the CCDIK joint based on data provided by the linked skeleton.
+			</description>
+		</method>
+		<method name="set_ccdik_joint_bone_name">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="bone_name" type="String" />
+			<description>
+				Sets the bone name, [code]bone_name[/code], of the CCDIK joint at [code]joint_idx[/code]. When possible, this will also update the [code]bone_index[/code] of the CCDIK joint based on data provided by the linked skeleton.
+			</description>
+		</method>
+		<method name="set_ccdik_joint_ccdik_axis">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="axis" type="int" />
+			<description>
+				Sets the joint axis of the CCDIK joint at [code]joint_idx[/code] to the passed-in joint axis, [code]axis[/code].
+			</description>
+		</method>
+		<method name="set_ccdik_joint_constraint_angle_max">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="max_angle" type="float" />
+			<description>
+				Sets the maximum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle must be in radians!
+			</description>
+		</method>
+		<method name="set_ccdik_joint_constraint_angle_min">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="min_angle" type="float" />
+			<description>
+				Sets the minimum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle must be in radians!
+			</description>
+		</method>
+		<method name="set_ccdik_joint_constraint_invert">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="invert" type="bool" />
+			<description>
+				Sets whether the CCDIK joint at [code]joint_idx[/code] uses an inverted joint constraint.
+				An inverted joint constraint only constraints the CCDIK joint to the angles [i]outside of[/i] the inputted minimum and maximum angles. For this reason, it is referred to as an inverted joint constraint, as it constraints the joint to the outside of the inputted values.
+			</description>
+		</method>
+		<method name="set_ccdik_joint_enable_joint_constraint">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="enable" type="bool" />
+			<description>
+				Sets whether joint constraints are enabled for the CCDIK joint at [code]joint_idx[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="ccdik_data_chain_length" type="int" setter="set_ccdik_data_chain_length" getter="get_ccdik_data_chain_length" default="0">
+			The amount of CCDIK joints in the CCDIK modification.
+		</member>
+		<member name="high_quality_solve" type="bool" setter="set_use_high_quality_solve" getter="get_use_high_quality_solve" default="true">
+			When true, the CCDIK algorithm will perform a higher quality solve that returns more natural results. A high quality solve requires more computation power to solve though, and therefore can be disabled to save performance.
+		</member>
+		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+			The NodePath to the node that is the target for the CCDIK modification. This node is what the CCDIK chain will attempt to rotate the bone chain to.
+		</member>
+		<member name="tip_nodepath" type="NodePath" setter="set_tip_node" getter="get_tip_node" default="NodePath(&quot;&quot;)">
+			The end position of the CCDIK chain. Typically, this should be a child of a [BoneAttachment3D] node attached to the final bone in the CCDIK chain, where the child node is offset so it is at the end of the final bone.
+		</member>
+	</members>
+</class>

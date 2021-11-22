@@ -32,7 +32,7 @@
 #define UNDO_REDO_H
 
 #include "core/object/class_db.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
 class UndoRedo : public Object {
 	GDCLASS(UndoRedo, Object);
@@ -61,7 +61,8 @@ private:
 		};
 
 		Type type;
-		Ref<Reference> ref;
+		bool force_keep_in_merge_ends;
+		Ref<RefCounted> ref;
 		ObjectID object;
 		StringName name;
 		Variant args[VARIANT_ARG_MAX];
@@ -76,6 +77,7 @@ private:
 
 	Vector<Action> actions;
 	int current_action = -1;
+	bool force_keep_in_merge_ends = false;
 	int action_level = 0;
 	MergeMode merge_mode = MERGE_DISABLE;
 	bool merging = false;
@@ -109,6 +111,9 @@ public:
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
 
+	void start_force_keep_in_merge_ends();
+	void end_force_keep_in_merge_ends();
+
 	bool is_committing_action() const;
 	void commit_action(bool p_execute = true);
 
@@ -121,8 +126,8 @@ public:
 	String get_action_name(int p_id);
 	void clear_history(bool p_increase_version = true);
 
-	bool has_undo();
-	bool has_redo();
+	bool has_undo() const;
+	bool has_redo() const;
 
 	uint64_t get_version() const;
 

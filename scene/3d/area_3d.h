@@ -47,14 +47,23 @@ public:
 	};
 
 private:
-	SpaceOverride space_override = SPACE_OVERRIDE_DISABLED;
+	SpaceOverride gravity_space_override = SPACE_OVERRIDE_DISABLED;
 	Vector3 gravity_vec;
 	real_t gravity;
 	bool gravity_is_point = false;
 	real_t gravity_distance_scale = 0.0;
+
+	SpaceOverride linear_damp_space_override = SPACE_OVERRIDE_DISABLED;
+	SpaceOverride angular_damp_space_override = SPACE_OVERRIDE_DISABLED;
 	real_t angular_damp = 0.1;
 	real_t linear_damp = 0.1;
+
 	int priority = 0;
+
+	real_t wind_force_magnitude = 0.0;
+	real_t wind_attenuation_factor = 0.0;
+	NodePath wind_source_path;
+
 	bool monitoring = false;
 	bool monitorable = false;
 	bool locked = false;
@@ -83,6 +92,7 @@ private:
 	};
 
 	struct BodyState {
+		RID rid;
 		int rc = 0;
 		bool in_tree = false;
 		VSet<ShapePair> shapes;
@@ -114,6 +124,7 @@ private:
 	};
 
 	struct AreaState {
+		RID rid;
 		int rc = 0;
 		bool in_tree = false;
 		VSet<AreaShapePair> shapes;
@@ -132,25 +143,36 @@ private:
 
 	void _validate_property(PropertyInfo &property) const override;
 
+	void _initialize_wind();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_space_override_mode(SpaceOverride p_mode);
-	SpaceOverride get_space_override_mode() const;
+	void set_gravity_space_override_mode(SpaceOverride p_mode);
+	SpaceOverride get_gravity_space_override_mode() const;
 
 	void set_gravity_is_point(bool p_enabled);
 	bool is_gravity_a_point() const;
 
-	void set_gravity_distance_scale(real_t p_scale);
-	real_t get_gravity_distance_scale() const;
+	void set_gravity_point_distance_scale(real_t p_scale);
+	real_t get_gravity_point_distance_scale() const;
 
-	void set_gravity_vector(const Vector3 &p_vec);
-	Vector3 get_gravity_vector() const;
+	void set_gravity_point_center(const Vector3 &p_center);
+	const Vector3 &get_gravity_point_center() const;
+
+	void set_gravity_direction(const Vector3 &p_direction);
+	const Vector3 &get_gravity_direction() const;
 
 	void set_gravity(real_t p_gravity);
 	real_t get_gravity() const;
+
+	void set_linear_damp_space_override_mode(SpaceOverride p_mode);
+	SpaceOverride get_linear_damp_space_override_mode() const;
+
+	void set_angular_damp_space_override_mode(SpaceOverride p_mode);
+	SpaceOverride get_angular_damp_space_override_mode() const;
 
 	void set_angular_damp(real_t p_angular_damp);
 	real_t get_angular_damp() const;
@@ -160,6 +182,15 @@ public:
 
 	void set_priority(real_t p_priority);
 	real_t get_priority() const;
+
+	void set_wind_force_magnitude(real_t p_wind_force_magnitude);
+	real_t get_wind_force_magnitude() const;
+
+	void set_wind_attenuation_factor(real_t p_wind_attenuation_factor);
+	real_t get_wind_attenuation_factor() const;
+
+	void set_wind_source_path(const NodePath &p_wind_source_path);
+	const NodePath &get_wind_source_path() const;
 
 	void set_monitoring(bool p_enable);
 	bool is_monitoring() const;

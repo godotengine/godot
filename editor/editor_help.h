@@ -57,20 +57,17 @@ class FindBar : public HBoxContainer {
 
 	int results_count;
 
-	void _show_search();
 	void _hide_bar();
 
 	void _search_text_changed(const String &p_text);
-	void _search_text_entered(const String &p_text);
+	void _search_text_submitted(const String &p_text);
 
 	void _update_results_count();
 	void _update_matches_label();
 
-	void _update_size();
-
 protected:
 	void _notification(int p_what);
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	bool _search(bool p_search_previous = false);
 
@@ -123,6 +120,8 @@ class EditorHelp : public VBoxContainer {
 	ConfirmationDialog *search_dialog;
 	LineEdit *search;
 	FindBar *find_bar;
+	HBoxContainer *status_bar;
+	Button *toggle_scripts_button;
 
 	String base_path;
 
@@ -153,12 +152,15 @@ class EditorHelp : public VBoxContainer {
 
 	Error _goto_desc(const String &p_class, int p_vscr = -1);
 	//void _update_history_buttons();
+	void _update_method_list(const Vector<DocData::MethodDoc> p_methods, bool &r_method_descrpitons);
+	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, const String &p_method_type);
 	void _update_doc();
 
 	void _request_help(const String &p_string);
 	void _search(bool p_search_previous = false);
 
 	String _fix_constant(const String &p_constant) const;
+	void _toggle_scripts_pressed();
 
 protected:
 	void _notification(int p_what);
@@ -184,6 +186,8 @@ public:
 
 	int get_scroll() const;
 	void set_scroll(int p_scroll);
+
+	void update_toggle_scripts_button();
 
 	EditorHelp();
 	~EditorHelp();

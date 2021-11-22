@@ -40,8 +40,8 @@ class VehicleWheel3D : public Node3D {
 
 	friend class VehicleBody3D;
 
-	Transform m_worldTransform;
-	Transform local_xform;
+	Transform3D m_worldTransform;
+	Transform3D local_xform;
 	bool engine_traction = false;
 	bool steers = false;
 
@@ -150,8 +150,8 @@ public:
 	VehicleWheel3D();
 };
 
-class VehicleBody3D : public RigidBody3D {
-	GDCLASS(VehicleBody3D, RigidBody3D);
+class VehicleBody3D : public RigidDynamicBody3D {
+	GDCLASS(VehicleBody3D, RigidDynamicBody3D);
 
 	real_t engine_force = 0.0;
 	real_t brake = 0.0;
@@ -192,7 +192,8 @@ class VehicleBody3D : public RigidBody3D {
 
 	static void _bind_methods();
 
-	void _direct_state_changed(Object *p_state) override;
+	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
+	virtual void _body_state_changed(PhysicsDirectBodyState3D *p_state) override;
 
 public:
 	void set_engine_force(real_t p_engine_force);

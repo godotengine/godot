@@ -24,7 +24,7 @@ layout(push_constant, binding = 0, std430) uniform Params {
 }
 params;
 
-// http://in4k.untergrund.net/html_articles/hugi_27_-_coding_corner_polaris_sphere_tessellation_101.htm
+// https://in4k.untergrund.net/html_articles/hugi_27_-_coding_corner_polaris_sphere_tessellation_101.htm
 
 vec3 get_sphere_vertex(uint p_vertex_id) {
 	float x_angle = float(p_vertex_id & 1u) + (p_vertex_id >> params.band_power);

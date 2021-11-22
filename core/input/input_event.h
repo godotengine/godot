@@ -31,9 +31,10 @@
 #ifndef INPUT_EVENT_H
 #define INPUT_EVENT_H
 
+#include "core/input/input_enums.h"
 #include "core/io/resource.h"
 #include "core/math/transform_2d.h"
-#include "core/os/copymem.h"
+#include "core/os/keyboard.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 
@@ -42,71 +43,7 @@
  * The events are pretty obvious.
  */
 
-enum MouseButton {
-	MOUSE_BUTTON_LEFT = 1,
-	MOUSE_BUTTON_RIGHT = 2,
-	MOUSE_BUTTON_MIDDLE = 3,
-	MOUSE_BUTTON_WHEEL_UP = 4,
-	MOUSE_BUTTON_WHEEL_DOWN = 5,
-	MOUSE_BUTTON_WHEEL_LEFT = 6,
-	MOUSE_BUTTON_WHEEL_RIGHT = 7,
-	MOUSE_BUTTON_XBUTTON1 = 8,
-	MOUSE_BUTTON_XBUTTON2 = 9,
-	MOUSE_BUTTON_MASK_LEFT = (1 << (MOUSE_BUTTON_LEFT - 1)),
-	MOUSE_BUTTON_MASK_RIGHT = (1 << (MOUSE_BUTTON_RIGHT - 1)),
-	MOUSE_BUTTON_MASK_MIDDLE = (1 << (MOUSE_BUTTON_MIDDLE - 1)),
-	MOUSE_BUTTON_MASK_XBUTTON1 = (1 << (MOUSE_BUTTON_XBUTTON1 - 1)),
-	MOUSE_BUTTON_MASK_XBUTTON2 = (1 << (MOUSE_BUTTON_XBUTTON2 - 1))
-};
-
-enum JoyButton {
-	JOY_BUTTON_INVALID = -1,
-	JOY_BUTTON_A = 0,
-	JOY_BUTTON_B = 1,
-	JOY_BUTTON_X = 2,
-	JOY_BUTTON_Y = 3,
-	JOY_BUTTON_BACK = 4,
-	JOY_BUTTON_GUIDE = 5,
-	JOY_BUTTON_START = 6,
-	JOY_BUTTON_LEFT_STICK = 7,
-	JOY_BUTTON_RIGHT_STICK = 8,
-	JOY_BUTTON_LEFT_SHOULDER = 9,
-	JOY_BUTTON_RIGHT_SHOULDER = 10,
-	JOY_BUTTON_DPAD_UP = 11,
-	JOY_BUTTON_DPAD_DOWN = 12,
-	JOY_BUTTON_DPAD_LEFT = 13,
-	JOY_BUTTON_DPAD_RIGHT = 14,
-	JOY_BUTTON_MISC1 = 15,
-	JOY_BUTTON_PADDLE1 = 16,
-	JOY_BUTTON_PADDLE2 = 17,
-	JOY_BUTTON_PADDLE3 = 18,
-	JOY_BUTTON_PADDLE4 = 19,
-	JOY_BUTTON_TOUCHPAD = 20,
-	JOY_BUTTON_SDL_MAX = 21,
-	JOY_BUTTON_MAX = 36, // Android supports up to 36 buttons.
-};
-
-enum JoyAxis {
-	JOY_AXIS_INVALID = -1,
-	JOY_AXIS_LEFT_X = 0,
-	JOY_AXIS_LEFT_Y = 1,
-	JOY_AXIS_RIGHT_X = 2,
-	JOY_AXIS_RIGHT_Y = 3,
-	JOY_AXIS_TRIGGER_LEFT = 4,
-	JOY_AXIS_TRIGGER_RIGHT = 5,
-	JOY_AXIS_SDL_MAX = 6,
-	JOY_AXIS_MAX = 10, // OpenVR supports up to 5 Joysticks making a total of 10 axes.
-};
-
-enum MIDIMessage {
-	MIDI_MESSAGE_NOTE_OFF = 0x8,
-	MIDI_MESSAGE_NOTE_ON = 0x9,
-	MIDI_MESSAGE_AFTERTOUCH = 0xA,
-	MIDI_MESSAGE_CONTROL_CHANGE = 0xB,
-	MIDI_MESSAGE_PROGRAM_CHANGE = 0xC,
-	MIDI_MESSAGE_CHANNEL_PRESSURE = 0xD,
-	MIDI_MESSAGE_PITCH_BEND = 0xE,
-};
+class Shortcut;
 
 /**
  * Input Modifier Status
@@ -143,7 +80,8 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
+
 	virtual bool is_action_type() const;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
@@ -171,21 +109,21 @@ class InputEventWithModifiers : public InputEventFromWindow {
 
 	bool store_command = true;
 
-	bool shift = false;
-	bool alt = false;
+	bool shift_pressed = false;
+	bool alt_pressed = false;
 #ifdef APPLE_STYLE_KEYS
 	union {
-		bool command;
-		bool meta = false; //< windows/mac key
+		bool command_pressed;
+		bool meta_pressed = false; //< windows/mac key
 	};
 
-	bool control = false;
+	bool ctrl_pressed = false;
 #else
 	union {
-		bool command; //< windows/mac key
-		bool control = false;
+		bool command_pressed; //< windows/mac key
+		bool ctrl_pressed = false;
 	};
-	bool meta = false; //< windows/mac key
+	bool meta_pressed = false; //< windows/mac key
 #endif
 
 protected:
@@ -196,22 +134,24 @@ public:
 	void set_store_command(bool p_enabled);
 	bool is_storing_command() const;
 
-	void set_shift(bool p_enabled);
-	bool get_shift() const;
+	void set_shift_pressed(bool p_pressed);
+	bool is_shift_pressed() const;
 
-	void set_alt(bool p_enabled);
-	bool get_alt() const;
+	void set_alt_pressed(bool p_pressed);
+	bool is_alt_pressed() const;
 
-	void set_control(bool p_enabled);
-	bool get_control() const;
+	void set_ctrl_pressed(bool p_pressed);
+	bool is_ctrl_pressed() const;
 
-	void set_metakey(bool p_enabled);
-	bool get_metakey() const;
+	void set_meta_pressed(bool p_pressed);
+	bool is_meta_pressed() const;
 
-	void set_command(bool p_enabled);
-	bool get_command() const;
+	void set_command_pressed(bool p_pressed);
+	bool is_command_pressed() const;
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
+
+	Key get_modifiers_mask() const;
 
 	virtual String as_text() const override;
 	virtual String to_string() override;
@@ -224,8 +164,8 @@ class InputEventKey : public InputEventWithModifiers {
 
 	bool pressed = false; /// otherwise release
 
-	uint32_t keycode = 0; ///< check keyboard.h , KeyCode enum, without modifier masks
-	uint32_t physical_keycode = 0;
+	Key keycode = Key::NONE; // Key enum, without modifier masks.
+	Key physical_keycode = Key::NONE;
 	uint32_t unicode = 0; ///unicode
 
 	bool echo = false; /// true if this is an echo key
@@ -237,30 +177,30 @@ public:
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
 
-	void set_keycode(uint32_t p_keycode);
-	uint32_t get_keycode() const;
+	void set_keycode(Key p_keycode);
+	Key get_keycode() const;
 
-	void set_physical_keycode(uint32_t p_keycode);
-	uint32_t get_physical_keycode() const;
+	void set_physical_keycode(Key p_keycode);
+	Key get_physical_keycode() const;
 
-	void set_unicode(uint32_t p_unicode);
-	uint32_t get_unicode() const;
+	void set_unicode(char32_t p_unicode);
+	char32_t get_unicode() const;
 
 	void set_echo(bool p_enable);
 	virtual bool is_echo() const override;
 
-	uint32_t get_keycode_with_modifiers() const;
-	uint32_t get_physical_keycode_with_modifiers() const;
+	Key get_keycode_with_modifiers() const;
+	Key get_physical_keycode_with_modifiers() const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
 	virtual bool is_action_type() const override { return true; }
 
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
-	static Ref<InputEventKey> create_reference(uint32_t p_keycode_with_modifier_masks);
+	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks);
 
 	InputEventKey() {}
 };
@@ -268,7 +208,7 @@ public:
 class InputEventMouse : public InputEventWithModifiers {
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
-	int button_mask = 0;
+	MouseButton button_mask = MouseButton::NONE;
 
 	Vector2 pos;
 	Vector2 global_pos;
@@ -277,8 +217,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_button_mask(int p_mask);
-	int get_button_mask() const;
+	void set_button_mask(MouseButton p_mask);
+	MouseButton get_button_mask() const;
 
 	void set_position(const Vector2 &p_pos);
 	Vector2 get_position() const;
@@ -293,9 +233,9 @@ class InputEventMouseButton : public InputEventMouse {
 	GDCLASS(InputEventMouseButton, InputEventMouse);
 
 	float factor = 1;
-	int button_index = 0;
+	MouseButton button_index = MouseButton::NONE;
 	bool pressed = false; //otherwise released
-	bool doubleclick = false; //last even less than doubleclick time
+	bool double_click = false; //last even less than double click time
 
 protected:
 	static void _bind_methods();
@@ -304,17 +244,19 @@ public:
 	void set_factor(float p_factor);
 	float get_factor() const;
 
-	void set_button_index(int p_index);
-	int get_button_index() const;
+	void set_button_index(MouseButton p_index);
+	MouseButton get_button_index() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
 
-	void set_doubleclick(bool p_doubleclick);
-	bool is_doubleclick() const;
+	void set_double_click(bool p_double_click);
+	bool is_double_click() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
@@ -358,15 +300,15 @@ public:
 
 class InputEventJoypadMotion : public InputEvent {
 	GDCLASS(InputEventJoypadMotion, InputEvent);
-	int axis = 0; ///< Joypad axis
+	JoyAxis axis = (JoyAxis)0; ///< Joypad axis
 	float axis_value = 0; ///< -1 to 1
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_axis(int p_axis);
-	int get_axis() const;
+	void set_axis(JoyAxis p_axis);
+	JoyAxis get_axis() const;
 
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
@@ -374,6 +316,7 @@ public:
 	virtual bool is_pressed() const override;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
@@ -385,15 +328,15 @@ public:
 class InputEventJoypadButton : public InputEvent {
 	GDCLASS(InputEventJoypadButton, InputEvent);
 
-	int button_index = 0;
+	JoyButton button_index = (JoyButton)0;
 	bool pressed = false;
 	float pressure = 0; //0 to 1
 protected:
 	static void _bind_methods();
 
 public:
-	void set_button_index(int p_index);
-	int get_button_index() const;
+	void set_button_index(JoyButton p_index);
+	JoyButton get_button_index() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
@@ -402,13 +345,14 @@ public:
 	float get_pressure() const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
 	virtual bool is_action_type() const override { return true; }
+
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
-	static Ref<InputEventJoypadButton> create_reference(int p_btn_index);
+	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index);
 
 	InputEventJoypadButton() {}
 };
@@ -466,6 +410,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
+
 	InputEventScreenDrag() {}
 };
 
@@ -492,9 +438,10 @@ public:
 	virtual bool is_action(const StringName &p_action) const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const override;
 	virtual bool is_action_type() const override { return true; }
+
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
@@ -554,7 +501,7 @@ class InputEventMIDI : public InputEvent {
 	GDCLASS(InputEventMIDI, InputEvent);
 
 	int channel = 0;
-	int message = 0;
+	MIDIMessage message = MIDIMessage::NONE;
 	int pitch = 0;
 	int velocity = 0;
 	int instrument = 0;
@@ -569,8 +516,8 @@ public:
 	void set_channel(const int p_channel);
 	int get_channel() const;
 
-	void set_message(const int p_message);
-	int get_message() const;
+	void set_message(const MIDIMessage p_message);
+	MIDIMessage get_message() const;
 
 	void set_pitch(const int p_pitch);
 	int get_pitch() const;
@@ -594,6 +541,23 @@ public:
 	virtual String to_string() override;
 
 	InputEventMIDI() {}
+};
+
+class InputEventShortcut : public InputEvent {
+	GDCLASS(InputEventShortcut, InputEvent);
+
+	Ref<Shortcut> shortcut;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_shortcut(Ref<Shortcut> p_shortcut);
+	Ref<Shortcut> get_shortcut();
+	virtual bool is_pressed() const override;
+
+	virtual String as_text() const override;
+	virtual String to_string() override;
 };
 
 #endif // INPUT_EVENT_H

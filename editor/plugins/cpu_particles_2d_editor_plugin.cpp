@@ -74,7 +74,7 @@ void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 
 void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	Error err = ImageLoader::load_image(source_emission_file, img);
 	ERR_FAIL_COND_MSG(err != OK, "Error loading image '" + source_emission_file + "'.");
 
@@ -83,7 +83,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 	img->convert(Image::FORMAT_RGBA8);
 	ERR_FAIL_COND(img->get_format() != Image::FORMAT_RGBA8);
-	Size2i s = Size2(img->get_width(), img->get_height());
+	Size2i s = img->get_size();
 	ERR_FAIL_COND(s.width == 0 || s.height == 0);
 
 	Vector<Point2> valid_positions;
@@ -224,7 +224,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 void CPUParticles2DEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
-		menu->set_icon(epoints->get_theme_icon("CPUParticles2D", "EditorIcons"));
+		menu->set_icon(epoints->get_theme_icon(SNAME("CPUParticles2D"), SNAME("EditorIcons")));
 		file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
 	}
 }
@@ -253,8 +253,8 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 	file = memnew(EditorFileDialog);
 	List<String> ext;
 	ImageLoader::get_recognized_extensions(&ext);
-	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
-		file->add_filter("*." + E->get() + "; " + E->get().to_upper());
+	for (const String &E : ext) {
+		file->add_filter("*." + E + "; " + E.to_upper());
 	}
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);

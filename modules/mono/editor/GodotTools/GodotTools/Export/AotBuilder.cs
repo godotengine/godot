@@ -65,12 +65,12 @@ namespace GodotTools.Export
 
             if (platform == OS.Platforms.iOS)
             {
-                var architectures = GetEnablediOSArchs(features).ToArray();
+                string[] architectures = GetEnablediOSArchs(features).ToArray();
                 CompileAssembliesForiOS(exporter, isDebug, architectures, aotOpts, aotTempDir, assembliesPrepared, bclDir);
             }
             else if (platform == OS.Platforms.Android)
             {
-                var abis = GetEnabledAndroidAbis(features).ToArray();
+                string[] abis = GetEnabledAndroidAbis(features).ToArray();
                 CompileAssembliesForAndroid(exporter, isDebug, abis, aotOpts, aotTempDir, assembliesPrepared, bclDir);
             }
             else
@@ -138,7 +138,8 @@ namespace GodotTools.Export
                 }
                 else
                 {
-                    string outputDataLibDir = Path.Combine(outputDataDir, "Mono", platform == OS.Platforms.Windows ? "bin" : "lib");
+                    string libDir = platform == OS.Platforms.Windows ? "bin" : "lib";
+                    string outputDataLibDir = Path.Combine(outputDataDir, "Mono", libDir);
                     File.Copy(tempOutputFilePath, Path.Combine(outputDataLibDir, outputFileName));
                 }
             }
@@ -577,27 +578,27 @@ MONO_AOT_MODE_LAST = 1000,
             {
                 case OS.Platforms.Windows:
                 case OS.Platforms.UWP:
-                    {
-                        string arch = bits == "64" ? "x86_64" : "i686";
-                        return $"windows-{arch}";
-                    }
+                {
+                    string arch = bits == "64" ? "x86_64" : "i686";
+                    return $"windows-{arch}";
+                }
                 case OS.Platforms.MacOS:
-                    {
-                        Debug.Assert(bits == null || bits == "64");
-                        string arch = "x86_64";
-                        return $"{platform}-{arch}";
-                    }
+                {
+                    Debug.Assert(bits == null || bits == "64");
+                    string arch = "x86_64";
+                    return $"{platform}-{arch}";
+                }
                 case OS.Platforms.LinuxBSD:
                 case OS.Platforms.Server:
-                    {
-                        string arch = bits == "64" ? "x86_64" : "i686";
-                        return $"linux-{arch}";
-                    }
+                {
+                    string arch = bits == "64" ? "x86_64" : "i686";
+                    return $"linux-{arch}";
+                }
                 case OS.Platforms.Haiku:
-                    {
-                        string arch = bits == "64" ? "x86_64" : "i686";
-                        return $"{platform}-{arch}";
-                    }
+                {
+                    string arch = bits == "64" ? "x86_64" : "i686";
+                    return $"{platform}-{arch}";
+                }
                 default:
                     throw new NotSupportedException($"Platform not supported: {platform}");
             }

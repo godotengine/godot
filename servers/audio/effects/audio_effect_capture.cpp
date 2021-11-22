@@ -73,7 +73,7 @@ void AudioEffectCapture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_buffer_length", "get_buffer_length");
 }
 
-Ref<AudioEffectInstance> AudioEffectCapture::instance() {
+Ref<AudioEffectInstance> AudioEffectCapture::instantiate() {
 	if (!buffer_initialized) {
 		float target_buffer_size = AudioServer::get_singleton()->get_mix_rate() * buffer_length_seconds;
 		ERR_FAIL_COND_V(target_buffer_size <= 0 || target_buffer_size >= (1 << 27), Ref<AudioEffectInstance>());
@@ -84,7 +84,7 @@ Ref<AudioEffectInstance> AudioEffectCapture::instance() {
 	clear_buffer();
 
 	Ref<AudioEffectCaptureInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectCapture>(this);
 
 	return ins;

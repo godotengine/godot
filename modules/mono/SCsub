@@ -49,6 +49,7 @@ if env_mono["tools"] and env_mono["mono_glue"] and env_mono["build_cil"]:
 
 env_mono.add_source_files(env.modules_sources, "*.cpp")
 env_mono.add_source_files(env.modules_sources, "glue/*.cpp")
+env_mono.add_source_files(env.modules_sources, "glue/mono_glue.gen.cpp")
 env_mono.add_source_files(env.modules_sources, "mono_gd/*.cpp")
 env_mono.add_source_files(env.modules_sources, "utils/*.cpp")
 
@@ -57,6 +58,8 @@ env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.cpp")
 if env["platform"] in ["osx", "iphone"]:
     env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.mm")
     env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.m")
+elif env["platform"] == "android":
+    env_mono.add_source_files(env.modules_sources, "mono_gd/android_mono_config.gen.cpp")
 
 if env["tools"]:
     env_mono.add_source_files(env.modules_sources, "editor/*.cpp")

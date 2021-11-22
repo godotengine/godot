@@ -7,112 +7,94 @@
 		Base class of all sort of input event. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
-		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
+		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 		<method name="accumulate">
-			<return type="bool">
-			</return>
-			<argument index="0" name="with_event" type="InputEvent">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="with_event" type="InputEvent" />
 			<description>
 				Returns [code]true[/code] if the given input event and this input event can be added together (only for events of type [InputEventMouseMotion]).
 				The given input event's position, global position and speed will be copied. The resulting [code]relative[/code] is a sum of both events. Both events' modifiers have to be identical.
 			</description>
 		</method>
 		<method name="as_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a [String] representation of the event.
 			</description>
 		</method>
 		<method name="get_action_strength" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="action" type="StringName">
-			</argument>
-			<argument index="1" name="exact_match" type="bool" default="false">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="action" type="StringName" />
+			<argument index="1" name="exact_match" type="bool" default="false" />
 			<description>
 				Returns a value between 0.0 and 1.0 depending on the given actions' state. Useful for getting the value of events of type [InputEventJoypadMotion].
+				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_action" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="action" type="StringName">
-			</argument>
-			<argument index="1" name="exact_match" type="bool" default="false">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="action" type="StringName" />
+			<argument index="1" name="exact_match" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if this input event matches a pre-defined action of any type.
+				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="action" type="StringName">
-			</argument>
-			<argument index="1" name="allow_echo" type="bool" default="false">
-			</argument>
-			<argument index="2" name="exact_match" type="bool" default="false">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="action" type="StringName" />
+			<argument index="1" name="allow_echo" type="bool" default="false" />
+			<argument index="2" name="exact_match" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if the given action is being pressed (and is not an echo event for [InputEventKey] events, unless [code]allow_echo[/code] is [code]true[/code]). Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
+				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_action_released" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="action" type="StringName">
-			</argument>
-			<argument index="1" name="exact_match" type="bool" default="false">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="action" type="StringName" />
+			<argument index="1" name="exact_match" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if the given action is released (i.e. not pressed). Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
+				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_action_type" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this input event's type is one that can be assigned to an input action.
 			</description>
 		</method>
 		<method name="is_echo" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this input event is an echo event (only for events of type [InputEventKey]).
 			</description>
 		</method>
+		<method name="is_match" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="exact_match" type="bool" default="true" />
+			<description>
+				Returns [code]true[/code] if the specified [code]event[/code] matches this event. Only valid for action events i.e key ([InputEventKey]), button ([InputEventMouseButton] or [InputEventJoypadButton]), axis [InputEventJoypadMotion] or action ([InputEventAction]) events.
+				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+			</description>
+		</method>
 		<method name="is_pressed" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this input event is pressed. Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
 			</description>
 		</method>
-		<method name="shortcut_match" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<description>
-				Returns [code]true[/code] if the given input event is checking for the same key ([InputEventKey]), button ([InputEventJoypadButton]) or action ([InputEventAction]).
-			</description>
-		</method>
 		<method name="xformed_by" qualifiers="const">
-			<return type="InputEvent">
-			</return>
-			<argument index="0" name="xform" type="Transform2D">
-			</argument>
-			<argument index="1" name="local_ofs" type="Vector2" default="Vector2( 0, 0 )">
-			</argument>
+			<return type="InputEvent" />
+			<argument index="0" name="xform" type="Transform2D" />
+			<argument index="1" name="local_ofs" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Returns a copy of the given input event which has been offset by [code]local_ofs[/code] and transformed by [code]xform[/code]. Relevant for events of type [InputEventMouseButton], [InputEventMouseMotion], [InputEventScreenTouch], [InputEventScreenDrag], [InputEventMagnifyGesture] and [InputEventPanGesture].
 			</description>
@@ -124,6 +106,4 @@
 			[b]Note:[/b] This device ID will always be [code]-1[/code] for emulated mouse input from a touchscreen. This can be used to distinguish emulated mouse input from physical mouse input.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

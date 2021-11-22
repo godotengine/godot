@@ -19,18 +19,16 @@
 	</tutorials>
 	<methods>
 		<method name="get_cancel_button">
-			<return type="Button">
-			</return>
+			<return type="Button" />
 			<description>
 				Returns the cancel button.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" override="true" default="Vector2i( 200, 70 )" />
-		<member name="size" type="Vector2i" setter="set_size" getter="get_size" override="true" default="Vector2i( 200, 100 )" />
+		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" override="true" default="Vector2i(200, 70)" />
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" override="true" default="Vector2i(200, 100)" />
 		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Please Confirm...&quot;" />
 	</members>
-	<constants>
-	</constants>
 </class>

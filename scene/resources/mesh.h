@@ -105,6 +105,7 @@ public:
 		ARRAY_FORMAT_BLEND_SHAPE_MASK = RS::ARRAY_FORMAT_BLEND_SHAPE_MASK,
 
 		ARRAY_FORMAT_CUSTOM_BASE = RS::ARRAY_FORMAT_CUSTOM_BASE,
+		ARRAY_FORMAT_CUSTOM_BITS = RS::ARRAY_FORMAT_CUSTOM_BITS,
 		ARRAY_FORMAT_CUSTOM0_SHIFT = RS::ARRAY_FORMAT_CUSTOM0_SHIFT,
 		ARRAY_FORMAT_CUSTOM1_SHIFT = RS::ARRAY_FORMAT_CUSTOM1_SHIFT,
 		ARRAY_FORMAT_CUSTOM2_SHIFT = RS::ARRAY_FORMAT_CUSTOM2_SHIFT,
@@ -131,7 +132,6 @@ public:
 	virtual int get_surface_count() const = 0;
 	virtual int surface_get_array_len(int p_idx) const = 0;
 	virtual int surface_get_array_index_len(int p_idx) const = 0;
-	virtual bool surface_is_softbody_friendly(int p_idx) const;
 	virtual Array surface_get_arrays(int p_surface) const = 0;
 	virtual Array surface_get_blend_shape_arrays(int p_surface) const = 0;
 	virtual Dictionary surface_get_lods(int p_surface) const = 0;
@@ -149,7 +149,7 @@ public:
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 
 	Ref<Shape3D> create_trimesh_shape() const;
-	Ref<Shape3D> create_convex_shape() const;
+	Ref<Shape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
 
 	Ref<Mesh> create_outline(float p_margin) const;
 
@@ -159,11 +159,45 @@ public:
 	Size2i get_lightmap_size_hint() const;
 	void clear_cache() const;
 
-	typedef Vector<Vector<Face3>> (*ConvexDecompositionFunc)(const Vector<Face3> &);
+	struct ConvexDecompositionSettings {
+		enum Mode : int {
+			CONVEX_DECOMPOSITION_MODE_VOXEL = 0,
+			CONVEX_DECOMPOSITION_MODE_TETRAHEDRON
+		};
 
-	static ConvexDecompositionFunc convex_composition_function;
+		/// Maximum concavity. [Range: 0.0 -> 1.0]
+		real_t max_concavity = 1.0;
+		/// Controls the bias toward clipping along symmetry planes. [Range: 0.0 -> 1.0]
+		real_t symmetry_planes_clipping_bias = 0.05;
+		/// Controls the bias toward clipping along revolution axes. [Range: 0.0 -> 1.0]
+		real_t revolution_axes_clipping_bias = 0.05;
+		real_t min_volume_per_convex_hull = 0.0001;
+		/// Maximum number of voxels generated during the voxelization stage.
+		uint32_t resolution = 10'000;
+		uint32_t max_num_vertices_per_convex_hull = 32;
+		/// Controls the granularity of the search for the "best" clipping plane.
+		/// [Range: 1 -> 16]
+		uint32_t plane_downsampling = 4;
+		/// Controls the precision of the convex-hull generation process during the
+		/// clipping plane selection stage.
+		/// [Range: 1 -> 16]
+		uint32_t convexhull_downsampling = 4;
+		/// enable/disable normalizing the mesh before applying the convex decomposition.
+		bool normalize_mesh = false;
+		Mode mode = CONVEX_DECOMPOSITION_MODE_VOXEL;
+		bool convexhull_approximation = true;
+		/// This is the maximum number of convex hulls to produce from the merge operation.
+		uint32_t max_convex_hulls = 1;
+		bool project_hull_vertices = true;
+	};
+	typedef Vector<Vector<Vector3>> (*ConvexDecompositionFunc)(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const ConvexDecompositionSettings &p_settings, Vector<Vector<uint32_t>> *r_convex_indices);
 
-	Vector<Ref<Shape3D>> convex_decompose() const;
+	static ConvexDecompositionFunc convex_decomposition_function;
+
+	Vector<Ref<Shape3D>> convex_decompose(const ConvexDecompositionSettings &p_settings) const;
+
+	virtual int get_builtin_bind_pose_count() const;
+	virtual Transform3D get_builtin_bind_pose(int p_index) const;
 
 	Mesh();
 };
@@ -230,7 +264,9 @@ public:
 	void set_blend_shape_mode(BlendShapeMode p_mode);
 	BlendShapeMode get_blend_shape_mode() const;
 
-	void surface_update_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data);
+	void surface_update_vertex_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data);
+	void surface_update_attribute_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data);
+	void surface_update_skin_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data);
 
 	int get_surface_count() const override;
 
@@ -242,7 +278,6 @@ public:
 	int surface_get_array_index_len(int p_idx) const override;
 	uint32_t surface_get_format(int p_idx) const override;
 	PrimitiveType surface_get_primitive_type(int p_idx) const override;
-	bool surface_is_alpha_sorting_enabled(int p_idx) const;
 
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) override;
 	virtual Ref<Material> surface_get_material(int p_idx) const override;
@@ -259,8 +294,8 @@ public:
 
 	void regen_normal_maps();
 
-	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
-	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
+	Error lightmap_unwrap(const Transform3D &p_base_transform = Transform3D(), float p_texel_size = 0.05);
+	Error lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache, bool p_generate_cache = true);
 
 	virtual void reload_from_file() override;
 

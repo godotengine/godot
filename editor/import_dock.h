@@ -64,10 +64,13 @@ class ImportDock : public VBoxContainer {
 
 	void _preset_selected(int p_idx);
 	void _importer_selected(int i_idx);
-	void _update_options(const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
+	void _update_options(const String &p_path, const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
 	void _update_preset_menu();
+	void _add_keep_import_option(const String &p_importer_name);
 
+	void _property_edited(const StringName &p_prop);
 	void _property_toggled(const StringName &p_prop, bool p_checked);
+	void _set_dirty(bool p_dirty);
 	void _reimport_attempt();
 	void _reimport_and_restart();
 	void _reimport();

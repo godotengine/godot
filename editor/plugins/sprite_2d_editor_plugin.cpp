@@ -182,11 +182,11 @@ void Sprite2DEditor::_update_mesh_data() {
 	if (node->is_region_enabled()) {
 		rect = node->get_region_rect();
 	} else {
-		rect.size = Size2(image->get_width(), image->get_height());
+		rect.size = image->get_size();
 	}
 
 	Ref<BitMap> bm;
-	bm.instance();
+	bm.instantiate();
 	bm->create_from_image_alpha(image);
 
 	int shrink = shrink_pixels->get_value();
@@ -209,7 +209,7 @@ void Sprite2DEditor::_update_mesh_data() {
 	computed_uv.clear();
 	computed_indices.clear();
 
-	Size2 img_size = Vector2(image->get_width(), image->get_height());
+	Size2 img_size = image->get_size();
 	for (int i = 0; i < lines.size(); i++) {
 		lines.write[i] = expand(lines[i], rect, epsilon);
 	}
@@ -322,7 +322,7 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 	}
 
 	Ref<ArrayMesh> mesh;
-	mesh.instance();
+	mesh.instantiate();
 
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
@@ -435,7 +435,7 @@ void Sprite2DEditor::_create_light_occluder_2d_node() {
 		Vector<Vector2> outline = computed_outline_lines[i];
 
 		Ref<OccluderPolygon2D> polygon;
-		polygon.instance();
+		polygon.instantiate();
 
 		PackedVector2Array a;
 		a.resize(outline.size());
@@ -506,7 +506,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Sprite2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Sprite2D", "EditorIcons"));
+	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Sprite2D"), SNAME("EditorIcons")));
 
 	options->get_popup()->add_item(TTR("Convert to Mesh2D"), MENU_OPTION_CONVERT_TO_MESH_2D);
 	options->get_popup()->add_item(TTR("Convert to Polygon2D"), MENU_OPTION_CONVERT_TO_POLYGON_2D);
@@ -521,7 +521,7 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	debug_uv_dialog = memnew(ConfirmationDialog);
 	debug_uv_dialog->get_ok_button()->set_text(TTR("Create Mesh2D"));
-	debug_uv_dialog->set_title("Mesh 2D Preview");
+	debug_uv_dialog->set_title(TTR("Mesh 2D Preview"));
 	VBoxContainer *vb = memnew(VBoxContainer);
 	debug_uv_dialog->add_child(vb);
 	ScrollContainer *scroll = memnew(ScrollContainer);

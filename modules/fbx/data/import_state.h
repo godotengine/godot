@@ -37,7 +37,6 @@
 
 #include "pivot_transform.h"
 
-#include "core/core_bind.h"
 #include "core/io/resource_importer.h"
 #include "core/templates/vector.h"
 #include "editor/import/resource_importer_scene.h"

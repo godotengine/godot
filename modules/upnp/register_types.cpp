@@ -36,8 +36,8 @@
 #include "upnp_device.h"
 
 void register_upnp_types() {
-	ClassDB::register_class<UPNP>();
-	ClassDB::register_class<UPNPDevice>();
+	GDREGISTER_CLASS(UPNP);
+	GDREGISTER_CLASS(UPNPDevice);
 }
 
 void unregister_upnp_types() {

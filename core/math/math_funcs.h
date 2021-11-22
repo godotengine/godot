@@ -103,6 +103,9 @@ public:
 	static _ALWAYS_INLINE_ double log(double p_x) { return ::log(p_x); }
 	static _ALWAYS_INLINE_ float log(float p_x) { return ::logf(p_x); }
 
+	static _ALWAYS_INLINE_ double log2(double p_x) { return ::log2(p_x); }
+	static _ALWAYS_INLINE_ float log2(float p_x) { return ::log2f(p_x); }
+
 	static _ALWAYS_INLINE_ double exp(double p_x) { return ::exp(p_x); }
 	static _ALWAYS_INLINE_ float exp(float p_x) { return ::expf(p_x); }
 
@@ -156,7 +159,7 @@ public:
 		} ieee754;
 		ieee754.f = p_val;
 		return ((unsigned)(ieee754.u >> 32) & 0x7fffffff) == 0x7ff00000 &&
-			   ((unsigned)ieee754.u == 0);
+				((unsigned)ieee754.u == 0);
 #else
 		return isinf(p_val);
 #endif
@@ -215,8 +218,8 @@ public:
 		return value;
 	}
 
-	static _ALWAYS_INLINE_ int posmod(int p_x, int p_y) {
-		int value = p_x % p_y;
+	static _ALWAYS_INLINE_ int64_t posmod(int64_t p_x, int64_t p_y) {
+		int64_t value = p_x % p_y;
 		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
 			value += p_y;
 		}
@@ -263,8 +266,8 @@ public:
 		float s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return s * s * (3.0f - 2.0f * s);
 	}
-	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
-	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
+	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
+	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
 
 	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
 	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
@@ -272,8 +275,8 @@ public:
 	static _ALWAYS_INLINE_ double db2linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
 	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
 
-	static _ALWAYS_INLINE_ double round(double p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
-	static _ALWAYS_INLINE_ float round(float p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
+	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
+	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }
 
 	static _ALWAYS_INLINE_ int64_t wrapi(int64_t value, int64_t min, int64_t max) {
 		int64_t range = max - min;
@@ -288,12 +291,24 @@ public:
 		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
 	}
 
+	static _ALWAYS_INLINE_ float fract(float value) {
+		return value - floor(value);
+	}
+	static _ALWAYS_INLINE_ double fract(double value) {
+		return value - floor(value);
+	}
+	static _ALWAYS_INLINE_ float pingpong(float value, float length) {
+		return (length != 0.0f) ? abs(fract((value - length) / (length * 2.0f)) * length * 2.0f - length) : 0.0f;
+	}
+	static _ALWAYS_INLINE_ double pingpong(double value, double length) {
+		return (length != 0.0) ? abs(fract((value - length) / (length * 2.0)) * length * 2.0 - length) : 0.0;
+	}
+
 	// double only, as these functions are mainly used by the editor and not performance-critical,
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
 	static int range_step_decimals(double p_step);
 	static double snapped(double p_value, double p_step);
-	static double dectime(double p_value, double p_amount, double p_step);
 
 	static uint32_t larger_prime(uint32_t p_val);
 
@@ -303,25 +318,26 @@ public:
 	static uint32_t rand();
 	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_32BIT_MAX; }
 	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_32BIT_MAX; }
+	static double randfn(double mean, double deviation);
 
 	static double random(double from, double to);
 	static float random(float from, float to);
 	static int random(int from, int to);
 
-	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
+	static _ALWAYS_INLINE_ bool is_equal_approx(float a, float b) {
 		// Check for exact equality first, required to handle "infinity" values.
 		if (a == b) {
 			return true;
 		}
 		// Then check for approximate equality.
-		real_t tolerance = CMP_EPSILON * abs(a);
+		float tolerance = CMP_EPSILON * abs(a);
 		if (tolerance < CMP_EPSILON) {
 			tolerance = CMP_EPSILON;
 		}
 		return abs(a - b) < tolerance;
 	}
 
-	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b, real_t tolerance) {
+	static _ALWAYS_INLINE_ bool is_equal_approx(float a, float b, float tolerance) {
 		// Check for exact equality first, required to handle "infinity" values.
 		if (a == b) {
 			return true;
@@ -330,7 +346,33 @@ public:
 		return abs(a - b) < tolerance;
 	}
 
-	static _ALWAYS_INLINE_ bool is_zero_approx(real_t s) {
+	static _ALWAYS_INLINE_ bool is_zero_approx(float s) {
+		return abs(s) < CMP_EPSILON;
+	}
+
+	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b) {
+		// Check for exact equality first, required to handle "infinity" values.
+		if (a == b) {
+			return true;
+		}
+		// Then check for approximate equality.
+		double tolerance = CMP_EPSILON * abs(a);
+		if (tolerance < CMP_EPSILON) {
+			tolerance = CMP_EPSILON;
+		}
+		return abs(a - b) < tolerance;
+	}
+
+	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b, double tolerance) {
+		// Check for exact equality first, required to handle "infinity" values.
+		if (a == b) {
+			return true;
+		}
+		// Then check for approximate equality.
+		return abs(a - b) < tolerance;
+	}
+
+	static _ALWAYS_INLINE_ bool is_zero_approx(double s) {
 		return abs(s) < CMP_EPSILON;
 	}
 
@@ -355,28 +397,10 @@ public:
 		return u.d;
 	}
 
-	//this function should be as fast as possible and rounding mode should not matter
+	// This function should be as fast as possible and rounding mode should not matter.
 	static _ALWAYS_INLINE_ int fast_ftoi(float a) {
-		static int b;
-
-#if (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0603) || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // windows 8 phone?
-		b = (int)((a > 0.0) ? (a + 0.5) : (a - 0.5));
-
-#elif defined(_MSC_VER) && _MSC_VER < 1800
-		__asm fld a __asm fistp b
-		/*#elif defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) )
-		// use AT&T inline assembly style, document that
-		// we use memory as output (=m) and input (m)
-		__asm__ __volatile__ (
-		"flds %1        \n\t"
-		"fistpl %0      \n\t"
-		: "=m" (b)
-		: "m" (a));*/
-
-#else
-		b = lrintf(a); //assuming everything but msvc 2012 or earlier has lrint
-#endif
-		return b;
+		// Assuming every supported compiler has `lrint()`.
+		return lrintf(a);
 	}
 
 	static _ALWAYS_INLINE_ uint32_t halfbits_to_floatbits(uint16_t h) {
@@ -451,7 +475,7 @@ public:
 				mantissa = 0;
 			}
 			hf = (((uint16_t)sign) << 15) | (uint16_t)((0x1F << 10)) |
-				 (uint16_t)(mantissa >> 13);
+					(uint16_t)(mantissa >> 13);
 		}
 		// check if exponent is <= -15
 		else if (exp <= 0x38000000) {
@@ -464,8 +488,8 @@ public:
 			hf = 0; //denormals do not work for 3D, convert to zero
 		} else {
 			hf = (((uint16_t)sign) << 15) |
-				 (uint16_t)((exp - 0x38000000) >> 13) |
-				 (uint16_t)(mantissa >> 13);
+					(uint16_t)((exp - 0x38000000) >> 13) |
+					(uint16_t)(mantissa >> 13);
 		}
 
 		return hf;

@@ -20,32 +20,28 @@
 		@"/root/Main" # If your main scene's root node were named "Main".
 		@"/root/MyAutoload" # If you have an autoloaded node or scene.
 		[/codeblock]
+		[b]Note:[/b] In the editor, [NodePath] properties are automatically updated when moving, renaming or deleting a node in the scene tree, but they are never updated at runtime.
 	</description>
 	<tutorials>
 		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
 	</tutorials>
-	<methods>
-		<method name="NodePath" qualifiers="constructor">
-			<return type="NodePath">
-			</return>
+	<constructors>
+		<constructor name="NodePath">
+			<return type="NodePath" />
 			<description>
 				Constructs an empty [NodePath].
 			</description>
-		</method>
-		<method name="NodePath" qualifiers="constructor">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="from" type="NodePath">
-			</argument>
+		</constructor>
+		<constructor name="NodePath">
+			<return type="NodePath" />
+			<argument index="0" name="from" type="NodePath" />
 			<description>
 				Constructs a [NodePath] as a copy of the given [NodePath].
 			</description>
-		</method>
-		<method name="NodePath" qualifiers="constructor">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="from" type="String">
-			</argument>
+		</constructor>
+		<constructor name="NodePath">
+			<return type="NodePath" />
+			<argument index="0" name="from" type="String" />
 			<description>
 				Creates a NodePath from a string, e.g. [code]"Path2D/PathFollow2D/Sprite2D:texture:size"[/code]. A path is absolute if it starts with a slash. Absolute paths are only valid in the global scene tree, not within individual scenes. In a relative path, [code]"."[/code] and [code]".."[/code] indicate the current node and its parent.
 				The "subnames" optionally included after the path to the target node can point to resources or properties, and can also be nested.
@@ -65,10 +61,11 @@
 				"/root/Level/Path2D"
 				[/codeblock]
 			</description>
-		</method>
+		</constructor>
+	</constructors>
+	<methods>
 		<method name="get_as_property_path" qualifiers="const">
-			<return type="NodePath">
-			</return>
+			<return type="NodePath" />
 			<description>
 				Returns a node path with a colon character ([code]:[/code]) prepended, transforming it to a pure property path with no node name (defaults to resolving from the current node).
 				[codeblocks]
@@ -90,8 +87,7 @@
 			</description>
 		</method>
 		<method name="get_concatenated_subnames" qualifiers="const">
-			<return type="StringName">
-			</return>
+			<return type="StringName" />
 			<description>
 				Returns all subnames concatenated with a colon character ([code]:[/code]) as separator, i.e. the right side of the first colon in a node path.
 				[codeblocks]
@@ -107,10 +103,8 @@
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count]).
 				[codeblocks]
@@ -130,18 +124,15 @@
 			</description>
 		</method>
 		<method name="get_name_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Gets the number of node names which make up the path. Subnames (see [method get_subname_count]) are not included.
 				For example, [code]"Path2D/PathFollow2D/Sprite2D"[/code] has 3 names.
 			</description>
 		</method>
 		<method name="get_subname" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="StringName" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				Gets the resource or property name indicated by [code]idx[/code] (0 to [method get_subname_count]).
 				[codeblocks]
@@ -159,44 +150,47 @@
 			</description>
 		</method>
 		<method name="get_subname_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Gets the number of resource or property names ("subnames") in the path. Each subname is listed after a colon character ([code]:[/code]) in the node path.
 				For example, [code]"Path2D/PathFollow2D/Sprite2D:texture:load_path"[/code] has 2 subnames.
 			</description>
 		</method>
 		<method name="is_absolute" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node path is absolute (as opposed to relative), which means that it starts with a slash character ([code]/[/code]). Absolute node paths can be used to access the root node ([code]"/root"[/code]) or autoloads (e.g. [code]"/global"[/code] if a "global" autoload was registered).
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node path is empty.
 			</description>
 		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="NodePath">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="NodePath">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
-	<constants>
-	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="NodePath" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="NodePath" />
+			<description>
+			</description>
+		</operator>
+	</operators>
 </class>

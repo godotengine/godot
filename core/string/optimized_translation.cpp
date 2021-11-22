@@ -46,6 +46,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	// This method compresses a Translation instance.
 	// Right now, it doesn't handle context or plurals, so Translation subclasses using plurals or context (i.e TranslationPO) shouldn't be compressed.
 #ifdef TOOLS_ENABLED
+	ERR_FAIL_COND(p_from.is_null());
 	List<StringName> keys;
 	p_from->get_message_list(&keys);
 
@@ -63,11 +64,10 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 	int idx = 0;
 	int total_compression_size = 0;
-	int total_string_size = 0;
 
-	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
+	for (const StringName &E : keys) {
 		//hash string
-		CharString cs = E->get().operator String().utf8();
+		CharString cs = E.operator String().utf8();
 		uint32_t h = hash(0, cs.get_data());
 		Pair<int, CharString> p;
 		p.first = idx;
@@ -75,7 +75,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		buckets.write[h % size].push_back(p);
 
 		//compress string
-		CharString src_s = p_from->get_message(E->get()).operator String().utf8();
+		CharString src_s = p_from->get_message(E).operator String().utf8();
 		CompressedString ps;
 		ps.orig_len = src_s.size();
 		ps.offset = total_compression_size;
@@ -101,7 +101,6 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 		compressed.write[idx] = ps;
 		total_compression_size += ps.compressed.size();
-		total_string_size += src_s.size();
 		idx++;
 	}
 
@@ -146,26 +145,23 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	uint32_t *btw = (uint32_t *)&btwb[0];
 
 	int btindex = 0;
-	int collisions = 0;
 
 	for (int i = 0; i < size; i++) {
 		const Map<uint32_t, int> &t = table[i];
 		if (t.size() == 0) {
 			htw[i] = 0xFFFFFFFF; //nothing
 			continue;
-		} else if (t.size() > 1) {
-			collisions += t.size() - 1;
 		}
 
 		htw[i] = btindex;
 		btw[btindex++] = t.size();
 		btw[btindex++] = hfunc_table[i];
 
-		for (Map<uint32_t, int>::Element *E = t.front(); E; E = E->next()) {
-			btw[btindex++] = E->key();
-			btw[btindex++] = compressed[E->get()].offset;
-			btw[btindex++] = compressed[E->get()].compressed.size();
-			btw[btindex++] = compressed[E->get()].orig_len;
+		for (const KeyValue<uint32_t, int> &E : t) {
+			btw[btindex++] = E.key;
+			btw[btindex++] = compressed[E.value].offset;
+			btw[btindex++] = compressed[E.value].compressed.size();
+			btw[btindex++] = compressed[E.value].orig_len;
 		}
 	}
 

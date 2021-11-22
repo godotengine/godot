@@ -38,6 +38,8 @@
 #include "gltf_buffer_view.h"
 #include "gltf_camera.h"
 #include "gltf_document.h"
+#include "gltf_document_extension.h"
+#include "gltf_document_extension_convert_importer_mesh.h"
 #include "gltf_light.h"
 #include "gltf_mesh.h"
 #include "gltf_node.h"
@@ -50,8 +52,8 @@
 #ifndef _3D_DISABLED
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
-	Ref<EditorSceneImporterGLTF> import_gltf;
-	import_gltf.instance();
+	Ref<EditorSceneFormatImporterGLTF> import_gltf;
+	import_gltf.instantiate();
 	ResourceImporterScene::get_singleton()->add_importer(import_gltf);
 }
 #endif
@@ -62,25 +64,26 @@ void register_gltf_types() {
 #ifdef TOOLS_ENABLED
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	ClassDB::register_class<EditorSceneImporterGLTF>();
-	ClassDB::register_class<GLTFMesh>();
+	GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
+	GDREGISTER_CLASS(GLTFMesh);
 	EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 	ClassDB::set_current_api(prev_api);
 	EditorNode::add_init_callback(_editor_init);
 #endif
-	ClassDB::register_class<GLTFSpecGloss>();
-	ClassDB::register_class<GLTFNode>();
-	ClassDB::register_class<GLTFAnimation>();
-	ClassDB::register_class<GLTFBufferView>();
-	ClassDB::register_class<GLTFAccessor>();
-	ClassDB::register_class<GLTFTexture>();
-	ClassDB::register_class<GLTFSkeleton>();
-	ClassDB::register_class<GLTFSkin>();
-	ClassDB::register_class<GLTFCamera>();
-	ClassDB::register_class<GLTFLight>();
-	ClassDB::register_class<GLTFState>();
-	ClassDB::register_class<GLTFDocument>();
-	ClassDB::register_class<PackedSceneGLTF>();
+	GDREGISTER_CLASS(GLTFSpecGloss);
+	GDREGISTER_CLASS(GLTFNode);
+	GDREGISTER_CLASS(GLTFAnimation);
+	GDREGISTER_CLASS(GLTFBufferView);
+	GDREGISTER_CLASS(GLTFAccessor);
+	GDREGISTER_CLASS(GLTFTexture);
+	GDREGISTER_CLASS(GLTFSkeleton);
+	GDREGISTER_CLASS(GLTFSkin);
+	GDREGISTER_CLASS(GLTFCamera);
+	GDREGISTER_CLASS(GLTFLight);
+	GDREGISTER_CLASS(GLTFState);
+	GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
+	GDREGISTER_CLASS(GLTFDocumentExtension);
+	GDREGISTER_CLASS(GLTFDocument);
 #endif
 }
 

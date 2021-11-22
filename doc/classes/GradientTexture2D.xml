@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GradientTexture2D" inherits="Texture2D" version="4.0">
+	<brief_description>
+		Gradient-filled 2D texture.
+	</brief_description>
+	<description>
+		The texture uses a [Gradient] to fill the texture data in 2D space. The gradient is filled according to the specified [member fill] and [member repeat] types using colors obtained from the gradient. The texture does not necessarily represent an exact copy of the gradient, but instead an interpolation of samples obtained from the gradient at fixed steps (see [member width] and [member height]).
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="fill" type="int" setter="set_fill" getter="get_fill" enum="GradientTexture2D.Fill" default="0">
+			The gradient fill type, one of the [enum Fill] values. The texture is filled by interpolating colors starting from [member fill_from] to [member fill_to] offsets.
+		</member>
+		<member name="fill_from" type="Vector2" setter="set_fill_from" getter="get_fill_from" default="Vector2(0, 0)">
+			The initial offset used to fill the texture specified in UV coordinates.
+		</member>
+		<member name="fill_to" type="Vector2" setter="set_fill_to" getter="get_fill_to" default="Vector2(1, 0)">
+			The final offset used to fill the texture specified in UV coordinates.
+		</member>
+		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
+			The [Gradient] used to fill the texture.
+		</member>
+		<member name="height" type="int" setter="set_height" getter="get_height" default="64">
+			The number of vertical color samples that will be obtained from the [Gradient], which also represents the texture's height.
+		</member>
+		<member name="repeat" type="int" setter="set_repeat" getter="get_repeat" enum="GradientTexture2D.Repeat" default="0">
+			The gradient repeat type, one of the [enum Repeat] values. The texture is filled starting from [member fill_from] to [member fill_to] offsets by default, but the gradient fill can be repeated to cover the entire texture.
+		</member>
+		<member name="use_hdr" type="bool" setter="set_use_hdr" getter="is_using_hdr" default="false">
+			If [code]true[/code], the generated texture will support high dynamic range ([constant Image.FORMAT_RGBAF] format). This allows for glow effects to work if [member Environment.glow_enabled] is [code]true[/code]. If [code]false[/code], the generated texture will use low dynamic range; overbright colors will be clamped ([constant Image.FORMAT_RGBA8] format).
+		</member>
+		<member name="width" type="int" setter="set_width" getter="get_width" default="64">
+			The number of horizontal color samples that will be obtained from the [Gradient], which also represents the texture's width.
+		</member>
+	</members>
+	<constants>
+		<constant name="FILL_LINEAR" value="0" enum="Fill">
+			The colors are linearly interpolated in a straight line.
+		</constant>
+		<constant name="FILL_RADIAL" value="1" enum="Fill">
+			The colors are linearly interpolated in a circular pattern.
+		</constant>
+		<constant name="REPEAT_NONE" value="0" enum="Repeat">
+			The gradient fill is restricted to the range defined by [member fill_from] to [member fill_to] offsets.
+		</constant>
+		<constant name="REPEAT" value="1" enum="Repeat">
+			The texture is filled starting from [member fill_from] to [member fill_to] offsets, repeating the same pattern in both directions.
+		</constant>
+		<constant name="REPEAT_MIRROR" value="2" enum="Repeat">
+			The texture is filled starting from [member fill_from] to [member fill_to] offsets, mirroring the pattern in both directions.
+		</constant>
+	</constants>
+</class>

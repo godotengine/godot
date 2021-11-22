@@ -101,6 +101,9 @@ static void Increment(int* const v) {
 #if defined(MALLOC_LIMIT)
     {
       const char* const malloc_limit_str = getenv("MALLOC_LIMIT");
+#if MALLOC_LIMIT > 1
+      mem_limit = (size_t)MALLOC_LIMIT;
+#endif
       if (malloc_limit_str != NULL) {
         mem_limit = atoi(malloc_limit_str);
       }
@@ -169,16 +172,16 @@ static int CheckSizeArgumentsOverflow(uint64_t nmemb, size_t size) {
   const uint64_t total_size = nmemb * size;
   if (nmemb == 0) return 1;
   if ((uint64_t)size > WEBP_MAX_ALLOCABLE_MEMORY / nmemb) return 0;
-  if (total_size != (size_t)total_size) return 0;
+  if (!CheckSizeOverflow(total_size)) return 0;
 #if defined(PRINT_MEM_INFO) && defined(MALLOC_FAIL_AT)
   if (countdown_to_fail > 0 && --countdown_to_fail == 0) {
     return 0;    // fake fail!
   }
 #endif
-#if defined(MALLOC_LIMIT)
+#if defined(PRINT_MEM_INFO) && defined(MALLOC_LIMIT)
   if (mem_limit > 0) {
     const uint64_t new_total_mem = (uint64_t)total_mem + total_size;
-    if (new_total_mem != (size_t)new_total_mem ||
+    if (!CheckSizeOverflow(new_total_mem) ||
         new_total_mem > mem_limit) {
       return 0;   // fake fail!
     }
@@ -231,7 +234,7 @@ void WebPFree(void* ptr) {
 void WebPCopyPlane(const uint8_t* src, int src_stride,
                    uint8_t* dst, int dst_stride, int width, int height) {
   assert(src != NULL && dst != NULL);
-  assert(src_stride >= width && dst_stride >= width);
+  assert(abs(src_stride) >= width && abs(dst_stride) >= width);
   while (height-- > 0) {
     memcpy(dst, src, width);
     src += src_stride;

@@ -51,6 +51,8 @@ void Gradient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_offset", "point", "offset"), &Gradient::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset", "point"), &Gradient::get_offset);
 
+	ClassDB::bind_method(D_METHOD("reverse"), &Gradient::reverse);
+
 	ClassDB::bind_method(D_METHOD("set_color", "point", "color"), &Gradient::set_color);
 	ClassDB::bind_method(D_METHOD("get_color", "point"), &Gradient::get_color);
 
@@ -64,8 +66,18 @@ void Gradient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_colors", "colors"), &Gradient::set_colors);
 	ClassDB::bind_method(D_METHOD("get_colors"), &Gradient::get_colors);
 
+	ClassDB::bind_method(D_METHOD("set_interpolation_mode", "interpolation_mode"), &Gradient::set_interpolation_mode);
+	ClassDB::bind_method(D_METHOD("get_interpolation_mode"), &Gradient::get_interpolation_mode);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "interpolation_mode", PROPERTY_HINT_ENUM, "Linear,Constant,Cubic"), "set_interpolation_mode", "get_interpolation_mode");
+
+	ADD_GROUP("Raw data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "offsets"), "set_offsets", "get_offsets");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "colors"), "set_colors", "get_colors");
+
+	BIND_ENUM_CONSTANT(GRADIENT_INTERPOLATE_LINEAR);
+	BIND_ENUM_CONSTANT(GRADIENT_INTERPOLATE_CONSTANT);
+	BIND_ENUM_CONSTANT(GRADIENT_INTERPOLATE_CUBIC);
 }
 
 Vector<float> Gradient::get_offsets() const {
@@ -84,6 +96,15 @@ Vector<Color> Gradient::get_colors() const {
 		colors.write[i] = points[i].color;
 	}
 	return colors;
+}
+
+void Gradient::set_interpolation_mode(Gradient::InterpolationMode p_interp_mode) {
+	interpolation_mode = p_interp_mode;
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+Gradient::InterpolationMode Gradient::get_interpolation_mode() {
+	return interpolation_mode;
 }
 
 void Gradient::set_offsets(const Vector<float> &p_offsets) {
@@ -124,6 +145,15 @@ void Gradient::remove_point(int p_index) {
 	ERR_FAIL_INDEX(p_index, points.size());
 	ERR_FAIL_COND(points.size() <= 1);
 	points.remove(p_index);
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+void Gradient::reverse() {
+	for (int i = 0; i < points.size(); i++) {
+		points.write[i].offset = 1.0 - points[i].offset;
+	}
+
+	_update_sorting();
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 

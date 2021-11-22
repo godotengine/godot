@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 #include "main/main.h"
 
 #ifdef DEBUG_ENABLED
@@ -61,12 +63,19 @@ static void handle_crash(int sig) {
 	}
 
 	// Dump the backtrace to stderr with a message to the user
+	fprintf(stderr, "\n================================================================\n");
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
 
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 	}
 
+	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
+	if (String(VERSION_HASH).length() != 0) {
+		fprintf(stderr, "Engine version: " VERSION_FULL_NAME " (" VERSION_HASH ")\n");
+	} else {
+		fprintf(stderr, "Engine version: " VERSION_FULL_NAME "\n");
+	}
 	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
 	char **strings = backtrace_symbols(bt_buffer, size);
 	if (strings) {
@@ -106,7 +115,7 @@ static void handle_crash(int sig) {
 			int ret;
 			Error err = OS::get_singleton()->execute(String("addr2line"), args, &output, &ret);
 			if (err == OK) {
-				output.erase(output.length() - 1, 1);
+				output = output.substr(0, output.length() - 1);
 			}
 
 			fprintf(stderr, "[%ld] %s (%s)\n", (long int)i, fname, output.utf8().get_data());
@@ -115,6 +124,7 @@ static void handle_crash(int sig) {
 		free(strings);
 	}
 	fprintf(stderr, "-- END OF BACKTRACE --\n");
+	fprintf(stderr, "================================================================\n");
 
 	// Abort to pass the error to the OS
 	abort();

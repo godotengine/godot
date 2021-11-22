@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptCustomNodes" inherits="Object" version="4.0">
+	<brief_description>
+		Manages custom nodes for the Visual Script editor.
+	</brief_description>
+	<description>
+		This singleton can be used to manage (i.e., add or remove) custom nodes for the Visual Script editor.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_custom_node">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="category" type="String" />
+			<argument index="2" name="script" type="Script" />
+			<description>
+				Add a custom Visual Script node to the editor. It'll be placed under "Custom Nodes" with the [code]category[/code] as the parameter.
+			</description>
+		</method>
+		<method name="remove_custom_node">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="category" type="String" />
+			<description>
+				Remove a custom Visual Script node from the editor. Custom nodes already placed on scripts won't be removed.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="custom_nodes_updated">
+			<description>
+				Emitted when a custom Visual Script node is added or removed.
+			</description>
+		</signal>
+	</signals>
+</class>

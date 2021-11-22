@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VoxelGIData" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+	</tutorials>
+	<methods>
+		<method name="allocate">
+			<return type="void" />
+			<argument index="0" name="to_cell_xform" type="Transform3D" />
+			<argument index="1" name="aabb" type="AABB" />
+			<argument index="2" name="octree_size" type="Vector3" />
+			<argument index="3" name="octree_cells" type="PackedByteArray" />
+			<argument index="4" name="data_cells" type="PackedByteArray" />
+			<argument index="5" name="distance_field" type="PackedByteArray" />
+			<argument index="6" name="level_counts" type="PackedInt32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bounds" qualifiers="const">
+			<return type="AABB" />
+			<description>
+			</description>
+		</method>
+		<method name="get_data_cells" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="get_level_counts" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="get_octree_cells" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="get_octree_size" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_to_cell_xform" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="1.5">
+		</member>
+		<member name="dynamic_range" type="float" setter="set_dynamic_range" getter="get_dynamic_range" default="4.0">
+		</member>
+		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
+		</member>
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
+		</member>
+		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias" default="0.0">
+		</member>
+		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation" default="0.7">
+		</member>
+		<member name="use_two_bounces" type="bool" setter="set_use_two_bounces" getter="is_using_two_bounces" default="false">
+		</member>
+	</members>
+</class>

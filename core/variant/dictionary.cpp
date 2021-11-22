@@ -33,6 +33,11 @@
 #include "core/templates/ordered_hash_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/variant.h"
+// required in this order by VariantInternal, do not remove this comment.
+#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant_internal.h"
 
 struct DictionaryPrivate {
 	SafeRefCount refcount;
@@ -74,15 +79,32 @@ Variant Dictionary::get_value_at_index(int p_index) const {
 }
 
 Variant &Dictionary::operator[](const Variant &p_key) {
-	return _p->variant_map[p_key];
+	if (p_key.get_type() == Variant::STRING_NAME) {
+		const StringName *sn = VariantInternal::get_string_name(&p_key);
+		return _p->variant_map[sn->operator String()];
+	} else {
+		return _p->variant_map[p_key];
+	}
 }
 
 const Variant &Dictionary::operator[](const Variant &p_key) const {
-	return _p->variant_map[p_key];
+	if (p_key.get_type() == Variant::STRING_NAME) {
+		const StringName *sn = VariantInternal::get_string_name(&p_key);
+		return _p->variant_map[sn->operator String()];
+	} else {
+		return _p->variant_map[p_key];
+	}
 }
 
 const Variant *Dictionary::getptr(const Variant &p_key) const {
-	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
+	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E;
+
+	if (p_key.get_type() == Variant::STRING_NAME) {
+		const StringName *sn = VariantInternal::get_string_name(&p_key);
+		E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(sn->operator String());
+	} else {
+		E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
+	}
 
 	if (!E) {
 		return nullptr;
@@ -91,8 +113,14 @@ const Variant *Dictionary::getptr(const Variant &p_key) const {
 }
 
 Variant *Dictionary::getptr(const Variant &p_key) {
-	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.find(p_key);
+	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E;
 
+	if (p_key.get_type() == Variant::STRING_NAME) {
+		const StringName *sn = VariantInternal::get_string_name(&p_key);
+		E = ((OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(sn->operator String());
+	} else {
+		E = ((OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
+	}
 	if (!E) {
 		return nullptr;
 	}
@@ -100,7 +128,14 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 }
 
 Variant Dictionary::get_valid(const Variant &p_key) const {
-	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
+	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E;
+
+	if (p_key.get_type() == Variant::STRING_NAME) {
+		const StringName *sn = VariantInternal::get_string_name(&p_key);
+		E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(sn->operator String());
+	} else {
+		E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
+	}
 
 	if (!E) {
 		return Variant();
@@ -126,7 +161,12 @@ bool Dictionary::is_empty() const {
 }
 
 bool Dictionary::has(const Variant &p_key) const {
-	return _p->variant_map.has(p_key);
+	if (p_key.get_type() == Variant::STRING_NAME) {
+		const StringName *sn = VariantInternal::get_string_name(&p_key);
+		return _p->variant_map.has(sn->operator String());
+	} else {
+		return _p->variant_map.has(p_key);
+	}
 }
 
 bool Dictionary::has_all(const Array &p_keys) const {
@@ -139,15 +179,44 @@ bool Dictionary::has_all(const Array &p_keys) const {
 }
 
 bool Dictionary::erase(const Variant &p_key) {
-	return _p->variant_map.erase(p_key);
+	if (p_key.get_type() == Variant::STRING_NAME) {
+		const StringName *sn = VariantInternal::get_string_name(&p_key);
+		return _p->variant_map.erase(sn->operator String());
+	} else {
+		return _p->variant_map.erase(p_key);
+	}
 }
 
 bool Dictionary::operator==(const Dictionary &p_dictionary) const {
-	return _p == p_dictionary._p;
+	return recursive_equal(p_dictionary, 0);
 }
 
 bool Dictionary::operator!=(const Dictionary &p_dictionary) const {
-	return _p != p_dictionary._p;
+	return !recursive_equal(p_dictionary, 0);
+}
+
+bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_count) const {
+	// Cheap checks
+	if (_p == p_dictionary._p) {
+		return true;
+	}
+	if (_p->variant_map.size() != p_dictionary._p->variant_map.size()) {
+		return false;
+	}
+
+	// Heavy O(n) check
+	if (recursion_count > MAX_RECURSION) {
+		ERR_PRINT("Max recursion reached");
+		return true;
+	}
+	recursion_count++;
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement this_E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->front(); this_E; this_E = this_E.next()) {
+		OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement other_E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&p_dictionary._p->variant_map)->find(this_E.key());
+		if (!other_E || !this_E.value().hash_compare(other_E.value(), recursion_count)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void Dictionary::_ref(const Dictionary &p_from) const {
@@ -180,11 +249,21 @@ void Dictionary::_unref() const {
 }
 
 uint32_t Dictionary::hash() const {
+	return recursive_hash(0);
+}
+
+uint32_t Dictionary::recursive_hash(int recursion_count) const {
+	if (recursion_count > MAX_RECURSION) {
+		ERR_PRINT("Max recursion reached");
+		return 0;
+	}
+
 	uint32_t h = hash_djb2_one_32(Variant::DICTIONARY);
 
+	recursion_count++;
 	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
-		h = hash_djb2_one_32(E.key().hash(), h);
-		h = hash_djb2_one_32(E.value().hash(), h);
+		h = hash_djb2_one_32(E.key().recursive_hash(recursion_count), h);
+		h = hash_djb2_one_32(E.value().recursive_hash(recursion_count), h);
 	}
 
 	return h;
@@ -241,10 +320,26 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 }
 
 Dictionary Dictionary::duplicate(bool p_deep) const {
+	return recursive_duplicate(p_deep, 0);
+}
+
+Dictionary Dictionary::recursive_duplicate(bool p_deep, int recursion_count) const {
 	Dictionary n;
 
-	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
-		n[E.key()] = p_deep ? E.value().duplicate(true) : E.value();
+	if (recursion_count > MAX_RECURSION) {
+		ERR_PRINT("Max recursion reached");
+		return n;
+	}
+
+	if (p_deep) {
+		recursion_count++;
+		for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+			n[E.key().recursive_duplicate(true, recursion_count)] = E.value().recursive_duplicate(true, recursion_count);
+		}
+	} else {
+		for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+			n[E.key()] = E.value();
+		}
 	}
 
 	return n;

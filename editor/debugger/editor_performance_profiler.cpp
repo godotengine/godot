@@ -109,9 +109,9 @@ void EditorPerformanceProfiler::_monitor_draw() {
 
 	info_message->hide();
 
-	Ref<StyleBox> graph_style_box = get_theme_stylebox("normal", "TextEdit");
-	Ref<Font> graph_font = get_theme_font("font", "TextEdit");
-	int font_size = get_theme_font_size("font_size", "TextEdit");
+	Ref<StyleBox> graph_style_box = get_theme_stylebox(SNAME("normal"), SNAME("TextEdit"));
+	Ref<Font> graph_font = get_theme_font(SNAME("font"), SNAME("TextEdit"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("TextEdit"));
 
 	int columns = int(Math::ceil(Math::sqrt(float(active.size()))));
 	int rows = int(Math::ceil(float(active.size()) / float(columns)));
@@ -130,7 +130,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 
 		rect.position += graph_style_box->get_offset();
 		rect.size -= graph_style_box->get_minimum_size();
-		Color draw_color = get_theme_color("accent_color", "Editor");
+		Color draw_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 		draw_color.set_hsv(Math::fmod(hue_shift * float(current.frame_index), 0.9f), draw_color.get_s() * 0.9f, draw_color.get_v() * value_multiplier, 0.6f);
 		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent(font_size)), current.item->get_text(0), HALIGN_LEFT, rect.size.x, font_size, draw_color);
 
@@ -249,7 +249,7 @@ TreeItem *EditorPerformanceProfiler::_create_monitor_item(const StringName &p_mo
 
 void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Vector<StringName> active;
 		for (OrderedHashMap<StringName, Monitor>::Element i = monitors.front(); i; i = i.next()) {
 			if (i.value().item->is_checked(0)) {
@@ -271,7 +271,7 @@ void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 				} else {
 					marker_key = "";
 				}
-				Ref<StyleBox> graph_style_box = get_theme_stylebox("normal", "TextEdit");
+				Ref<StyleBox> graph_style_box = get_theme_stylebox(SNAME("normal"), SNAME("TextEdit"));
 				rect.position += graph_style_box->get_offset();
 				rect.size -= graph_style_box->get_minimum_size();
 				Vector2 point = mb->get_position() - rect.position;
@@ -380,7 +380,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
 	info_message->set_valign(Label::VALIGN_CENTER);
 	info_message->set_align(Label::ALIGN_CENTER);
-	info_message->set_autowrap(true);
+	info_message->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	monitor_draw->add_child(info_message);

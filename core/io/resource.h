@@ -31,8 +31,9 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
+#include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
 
@@ -43,8 +44,8 @@ public:                                                                         
                                                                                                                     \
 private:
 
-class Resource : public Reference {
-	GDCLASS(Resource, Reference);
+class Resource : public RefCounted {
+	GDCLASS(Resource, RefCounted);
 	OBJ_CATEGORY("Resources");
 
 public:
@@ -59,9 +60,7 @@ private:
 
 	String name;
 	String path_cache;
-	int subindex = 0;
-
-	virtual bool _use_builtin_script() const { return true; }
+	String scene_unique_id;
 
 #ifdef TOOLS_ENABLED
 	uint64_t last_modified_time = 0;
@@ -88,7 +87,9 @@ protected:
 
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor
+	static void (*_update_configuration_warning)(); //used by editor
 
+	void update_configuration_warning();
 	virtual bool editor_can_reload_from_file();
 	virtual void reset_state(); //for resources that use variable amount of properties, either via _validate_property or _get_property_list, this function needs to be implemented to correctly clear state
 	virtual Error copy_from(const Ref<Resource> &p_resource);
@@ -102,9 +103,11 @@ public:
 
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 	String get_path() const;
+	_FORCE_INLINE_ bool is_built_in() const { return path_cache.is_empty() || path_cache.find("::") != -1 || path_cache.begins_with("local://"); }
 
-	void set_subindex(int p_sub_index);
-	int get_subindex() const;
+	static String generate_scene_unique_id();
+	void set_scene_unique_id(const String &p_id);
+	String get_scene_unique_id() const;
 
 	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
 	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache);
@@ -138,8 +141,8 @@ public:
 
 #ifdef TOOLS_ENABLED
 	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
-	void set_id_for_path(const String &p_path, int p_id);
-	int get_id_for_path(const String &p_path) const;
+	void set_id_for_path(const String &p_path, const String &p_id);
+	String get_id_for_path(const String &p_path) const;
 #endif
 
 	Resource();
@@ -154,7 +157,7 @@ class ResourceCache {
 	static RWLock lock;
 	static HashMap<String, Resource *> resources;
 #ifdef TOOLS_ENABLED
-	static HashMap<String, HashMap<String, int>> resource_path_cache; // each tscn has a set of resource paths and IDs
+	static HashMap<String, HashMap<String, String>> resource_path_cache; // Each tscn has a set of resource paths and IDs.
 	static RWLock path_cache_lock;
 #endif // TOOLS_ENABLED
 	friend void unregister_core_types();

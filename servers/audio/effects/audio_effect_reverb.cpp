@@ -79,9 +79,9 @@ AudioEffectReverbInstance::AudioEffectReverbInstance() {
 	reverb[1].set_extra_spread_base(0.000521); //for stereo effect
 }
 
-Ref<AudioEffectInstance> AudioEffectReverb::instance() {
+Ref<AudioEffectInstance> AudioEffectReverb::instantiate() {
 	Ref<AudioEffectReverbInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectReverb>(this);
 	return ins;
 }

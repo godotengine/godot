@@ -13,33 +13,27 @@
 	</tutorials>
 	<methods>
 		<method name="add_excluded_object">
-			<return type="void">
-			</return>
-			<argument index="0" name="RID" type="RID">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="RID" type="RID" />
 			<description>
 				Adds the [PhysicsBody3D] object with the given [RID] to the list of [PhysicsBody3D] objects excluded from the collision check.
 			</description>
 		</method>
 		<method name="clear_excluded_objects">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the list of [PhysicsBody3D] objects excluded from the collision check.
 			</description>
 		</method>
 		<method name="get_hit_length">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the spring arm's current length.
 			</description>
 		</method>
 		<method name="remove_excluded_object">
-			<return type="bool">
-			</return>
-			<argument index="0" name="RID" type="RID">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="RID" type="RID" />
 			<description>
 				Removes the given [RID] from the list of [PhysicsBody3D] objects excluded from the collision check.
 			</description>
@@ -47,7 +41,7 @@
 	</methods>
 	<members>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The layers against which the collision check shall be done. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			The layers against which the collision check shall be done. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.01">
 			When the collision check is made, a candidate length for the SpringArm3D is given.
@@ -63,6 +57,4 @@
 			To know more about how to perform a shape cast or a ray cast, please consult the [PhysicsDirectSpaceState3D] documentation.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -10,10 +10,8 @@
 	</tutorials>
 	<methods>
 		<method name="load">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Loads the texture from the given path.
 			</description>
@@ -24,6 +22,4 @@
 			The StreamTexture's file path to a [code].stex[/code] file.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

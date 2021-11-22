@@ -51,6 +51,9 @@ class ScrollBar : public Range {
 
 	HighlightStatus highlight = HIGHLIGHT_NONE;
 
+	bool incr_active = false;
+	bool decr_active = false;
+
 	struct Drag {
 		bool active = false;
 		float pos_at_click = 0.0;
@@ -86,7 +89,7 @@ class ScrollBar : public Range {
 	void _drag_node_exit();
 	void _drag_node_input(const Ref<InputEvent> &p_input);
 
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
 	void _notification(int p_what);

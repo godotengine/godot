@@ -30,9 +30,9 @@
 
 #include "editor_asset_installer.h"
 
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/zip_io.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
 #include "editor_node.h"
 #include "progress_dialog.h"
 
@@ -45,8 +45,8 @@ void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool
 		p_item->set_checked(0, false);
 	}
 
-	if (p_item->get_children()) {
-		_update_subitems(p_item->get_children(), p_check);
+	if (p_item->get_first_child()) {
+		_update_subitems(p_item->get_first_child(), p_check);
 	}
 
 	if (!p_first && p_item->get_next()) {
@@ -60,7 +60,7 @@ void EditorAssetInstaller::_uncheck_parent(TreeItem *p_item) {
 	}
 
 	bool any_checked = false;
-	TreeItem *item = p_item->get_children();
+	TreeItem *item = p_item->get_first_child();
 	while (item) {
 		if (item->is_checked(0)) {
 			any_checked = true;
@@ -112,7 +112,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
 	if (!pkg) {
-		error->set_text(TTR("Error opening package file, not in ZIP format."));
+		error->set_text(vformat(TTR("Error opening asset file for \"%s\" (not in ZIP format)."), asset_name));
 		return;
 	}
 
@@ -132,17 +132,57 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 	Map<String, Ref<Texture2D>> extension_guess;
 	{
-		extension_guess["png"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["jpg"] = tree->get_theme_icon("ImageTexture", "EditorIcons");
-		extension_guess["atlastex"] = tree->get_theme_icon("AtlasTexture", "EditorIcons");
-		extension_guess["scn"] = tree->get_theme_icon("PackedScene", "EditorIcons");
-		extension_guess["tscn"] = tree->get_theme_icon("PackedScene", "EditorIcons");
-		extension_guess["shader"] = tree->get_theme_icon("Shader", "EditorIcons");
-		extension_guess["gd"] = tree->get_theme_icon("GDScript", "EditorIcons");
-		extension_guess["vs"] = tree->get_theme_icon("VisualScript", "EditorIcons");
+		extension_guess["bmp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["dds"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["exr"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["hdr"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["jpg"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["jpeg"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["png"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["svg"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["svgz"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["tga"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+		extension_guess["webp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
+
+		extension_guess["wav"] = tree->get_theme_icon(SNAME("AudioStreamSample"), SNAME("EditorIcons"));
+		extension_guess["ogg"] = tree->get_theme_icon(SNAME("AudioStreamOGGVorbis"), SNAME("EditorIcons"));
+		extension_guess["mp3"] = tree->get_theme_icon(SNAME("AudioStreamMP3"), SNAME("EditorIcons"));
+
+		extension_guess["scn"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		extension_guess["tscn"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		extension_guess["escn"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		extension_guess["dae"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		extension_guess["gltf"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+		extension_guess["glb"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
+
+		extension_guess["gdshader"] = tree->get_theme_icon(SNAME("Shader"), SNAME("EditorIcons"));
+		extension_guess["gd"] = tree->get_theme_icon(SNAME("GDScript"), SNAME("EditorIcons"));
+		if (Engine::get_singleton()->has_singleton("GodotSharp")) {
+			extension_guess["cs"] = tree->get_theme_icon(SNAME("CSharpScript"), SNAME("EditorIcons"));
+		} else {
+			// Mark C# support as unavailable.
+			extension_guess["cs"] = tree->get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
+		}
+		extension_guess["vs"] = tree->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons"));
+
+		extension_guess["res"] = tree->get_theme_icon(SNAME("Resource"), SNAME("EditorIcons"));
+		extension_guess["tres"] = tree->get_theme_icon(SNAME("Resource"), SNAME("EditorIcons"));
+		extension_guess["atlastex"] = tree->get_theme_icon(SNAME("AtlasTexture"), SNAME("EditorIcons"));
+		// By default, OBJ files are imported as Mesh resources rather than PackedScenes.
+		extension_guess["obj"] = tree->get_theme_icon(SNAME("Mesh"), SNAME("EditorIcons"));
+
+		extension_guess["txt"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["md"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["rst"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["json"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["yml"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["yaml"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["toml"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["cfg"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
+		extension_guess["ini"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
 	}
 
-	Ref<Texture2D> generic_extension = tree->get_theme_icon("Object", "EditorIcons");
+	Ref<Texture2D> generic_extension = tree->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 
 	unzClose(pkg);
 
@@ -151,10 +191,12 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	TreeItem *root = tree->create_item();
 	root->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	root->set_checked(0, true);
-	root->set_icon(0, tree->get_theme_icon("folder", "FileDialog"));
+	root->set_icon(0, tree->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 	root->set_text(0, "res://");
 	root->set_editable(0, true);
 	Map<String, TreeItem *> dir_map;
+
+	int num_file_conflicts = 0;
 
 	for (Set<String>::Element *E = files_sorted.front(); E; E = E->next()) {
 		String path = E->get();
@@ -200,7 +242,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		if (isdir) {
 			dir_map[path] = ti;
 			ti->set_text(0, path.get_file() + "/");
-			ti->set_icon(0, tree->get_theme_icon("folder", "FileDialog"));
+			ti->set_icon(0, tree->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 			ti->set_metadata(0, String());
 		} else {
 			String file = path.get_file();
@@ -214,8 +256,9 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 			String res_path = "res://" + path;
 			if (FileAccess::exists(res_path)) {
-				ti->set_custom_color(0, tree->get_theme_color("error_color", "Editor"));
-				ti->set_tooltip(0, vformat(TTR("%s (Already Exists)"), res_path));
+				num_file_conflicts += 1;
+				ti->set_custom_color(0, tree->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+				ti->set_tooltip(0, vformat(TTR("%s (already exists)"), res_path));
 				ti->set_checked(0, false);
 			} else {
 				ti->set_tooltip(0, res_path);
@@ -226,6 +269,13 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 		status_map[E->get()] = ti;
 	}
+
+	if (num_file_conflicts >= 1) {
+		asset_contents->set_text(vformat(TTR("Contents of asset \"%s\" - %d file(s) conflict with your project:"), asset_name, num_file_conflicts));
+	} else {
+		asset_contents->set_text(vformat(TTR("Contents of asset \"%s\" - No files conflict with your project:"), asset_name));
+	}
+
 	popup_centered_ratio();
 	updating = false;
 }
@@ -236,7 +286,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
 	if (!pkg) {
-		error->set_text(TTR("Error opening package file, not in ZIP format."));
+		error->set_text(vformat(TTR("Error opening asset file for \"%s\" (not in ZIP format)."), asset_name));
 		return;
 	}
 
@@ -303,10 +353,10 @@ void EditorAssetInstaller::ok_pressed() {
 	unzClose(pkg);
 
 	if (failed_files.size()) {
-		String msg = TTR("The following files failed extraction from package:") + "\n\n";
+		String msg = vformat(TTR("The following files failed extraction from asset \"%s\":"), asset_name) + "\n\n";
 		for (int i = 0; i < failed_files.size(); i++) {
 			if (i > 15) {
-				msg += "\n" + vformat(TTR("And %s more files."), itos(failed_files.size() - i));
+				msg += "\n" + vformat(TTR("(and %s more files)"), itos(failed_files.size() - i));
 				break;
 			}
 			msg += failed_files[i];
@@ -316,10 +366,18 @@ void EditorAssetInstaller::ok_pressed() {
 		}
 	} else {
 		if (EditorNode::get_singleton() != nullptr) {
-			EditorNode::get_singleton()->show_warning(TTR("Package installed successfully!"), TTR("Success!"));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Asset \"%s\" installed successfully!"), asset_name), TTR("Success!"));
 		}
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
+}
+
+void EditorAssetInstaller::set_asset_name(const String &p_asset_name) {
+	asset_name = p_asset_name;
+}
+
+String EditorAssetInstaller::get_asset_name() const {
+	return asset_name;
 }
 
 void EditorAssetInstaller::_bind_methods() {
@@ -329,14 +387,18 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 
+	asset_contents = memnew(Label);
+	vb->add_child(asset_contents);
+
 	tree = memnew(Tree);
-	vb->add_margin_child(TTR("Package Contents:"), tree, true);
+	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_edited));
+	vb->add_child(tree);
 
 	error = memnew(AcceptDialog);
 	add_child(error);
 	get_ok_button()->set_text(TTR("Install"));
-	set_title(TTR("Package Installer"));
+	set_title(TTR("Asset Installer"));
 
 	updating = false;
 

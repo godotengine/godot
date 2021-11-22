@@ -33,8 +33,8 @@
 #include "regex.h"
 
 void register_regex_types() {
-	ClassDB::register_class<RegExMatch>();
-	ClassDB::register_class<RegEx>();
+	GDREGISTER_CLASS(RegExMatch);
+	GDREGISTER_CLASS(RegEx);
 }
 
 void unregister_regex_types() {

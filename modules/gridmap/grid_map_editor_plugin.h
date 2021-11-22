@@ -94,9 +94,8 @@ class GridMapEditor : public VBoxContainer {
 	MeshLibrary *last_mesh_library;
 	ClipMode clip_mode = CLIP_DISABLED;
 
-	bool lock_view = false;
-	Transform grid_xform;
-	Transform edit_grid_xform;
+	Transform3D grid_xform;
+	Transform3D edit_grid_xform;
 	Vector3::Axis edit_axis;
 	int edit_floor[3];
 	Vector3 grid_ofs;
@@ -146,7 +145,7 @@ class GridMapEditor : public VBoxContainer {
 	PasteIndicator paste_indicator;
 
 	bool cursor_visible = false;
-	Transform cursor_transform;
+	Transform3D cursor_transform;
 
 	Vector3 cursor_origin;
 
@@ -233,7 +232,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool forward_spatial_input_event(Camera3D *p_camera, const Ref<InputEvent> &p_event);
+	EditorPlugin::AfterGUIInput forward_spatial_input_event(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 
 	void edit(GridMap *p_gridmap);
 	GridMapEditor() {}
@@ -251,7 +250,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return grid_map_editor->forward_spatial_input_event(p_camera, p_event); }
+	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return grid_map_editor->forward_spatial_input_event(p_camera, p_event); }
 	virtual String get_name() const override { return "GridMap"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;

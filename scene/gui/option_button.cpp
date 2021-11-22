@@ -35,12 +35,12 @@
 Size2 OptionButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
 
-	if (has_theme_icon("arrow")) {
-		const Size2 padding = get_theme_stylebox("normal")->get_minimum_size();
-		const Size2 arrow_size = Control::get_theme_icon("arrow")->get_size();
+	if (has_theme_icon(SNAME("arrow"))) {
+		const Size2 padding = get_theme_stylebox(SNAME("normal"))->get_minimum_size();
+		const Size2 arrow_size = Control::get_theme_icon(SNAME("arrow"))->get_size();
 
 		Size2 content_size = minsize - padding;
-		content_size.width += arrow_size.width + get_theme_constant("hseparation");
+		content_size.width += arrow_size.width + get_theme_constant(SNAME("hseparation"));
 		content_size.height = MAX(content_size.height, arrow_size.height);
 
 		minsize = content_size + padding;
@@ -52,26 +52,30 @@ Size2 OptionButton::get_minimum_size() const {
 void OptionButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			if (!has_theme_icon("arrow")) {
+			if (!has_theme_icon(SNAME("arrow"))) {
 				return;
 			}
 
 			RID ci = get_canvas_item();
-			Ref<Texture2D> arrow = Control::get_theme_icon("arrow");
+			Ref<Texture2D> arrow = Control::get_theme_icon(SNAME("arrow"));
 			Color clr = Color(1, 1, 1);
-			if (get_theme_constant("modulate_arrow")) {
+			if (get_theme_constant(SNAME("modulate_arrow"))) {
 				switch (get_draw_mode()) {
 					case DRAW_PRESSED:
-						clr = get_theme_color("font_pressed_color");
+						clr = get_theme_color(SNAME("font_pressed_color"));
 						break;
 					case DRAW_HOVER:
-						clr = get_theme_color("font_hover_color");
+						clr = get_theme_color(SNAME("font_hover_color"));
 						break;
 					case DRAW_DISABLED:
-						clr = get_theme_color("font_disabled_color");
+						clr = get_theme_color(SNAME("font_disabled_color"));
 						break;
 					default:
-						clr = get_theme_color("font_color");
+						if (has_focus()) {
+							clr = get_theme_color(SNAME("font_focus_color"));
+						} else {
+							clr = get_theme_color(SNAME("font_color"));
+						}
 				}
 			}
 
@@ -79,22 +83,22 @@ void OptionButton::_notification(int p_what) {
 
 			Point2 ofs;
 			if (is_layout_rtl()) {
-				ofs = Point2(get_theme_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+				ofs = Point2(get_theme_constant(SNAME("arrow_margin")), int(Math::abs((size.height - arrow->get_height()) / 2)));
 			} else {
-				ofs = Point2(size.width - arrow->get_width() - get_theme_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+				ofs = Point2(size.width - arrow->get_width() - get_theme_constant(SNAME("arrow_margin")), int(Math::abs((size.height - arrow->get_height()) / 2)));
 			}
 			arrow->draw(ci, ofs, clr);
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			if (has_theme_icon("arrow")) {
+			if (has_theme_icon(SNAME("arrow"))) {
 				if (is_layout_rtl()) {
-					_set_internal_margin(SIDE_LEFT, Control::get_theme_icon("arrow")->get_width());
+					_set_internal_margin(SIDE_LEFT, Control::get_theme_icon(SNAME("arrow"))->get_width());
 					_set_internal_margin(SIDE_RIGHT, 0.f);
 				} else {
 					_set_internal_margin(SIDE_LEFT, 0.f);
-					_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon("arrow")->get_width());
+					_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon(SNAME("arrow"))->get_width());
 				}
 			}
 		} break;
@@ -107,7 +111,7 @@ void OptionButton::_notification(int p_what) {
 }
 
 void OptionButton::_focused(int p_which) {
-	emit_signal("item_focused", p_which);
+	emit_signal(SNAME("item_focused"), p_which);
 }
 
 void OptionButton::_selected(int p_which) {
@@ -115,7 +119,7 @@ void OptionButton::_selected(int p_which) {
 }
 
 void OptionButton::pressed() {
-	Size2 size = get_size();
+	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
 	popup->popup();
@@ -220,7 +224,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 	set_icon(popup->get_item_icon(current));
 
 	if (is_inside_tree() && p_emit) {
-		emit_signal("item_selected", current);
+		emit_signal(SNAME("item_selected"), current);
 	}
 }
 
@@ -328,7 +332,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_items"), &OptionButton::_set_items);
 	ClassDB::bind_method(D_METHOD("_get_items"), &OptionButton::_get_items);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	// "selected" property must come after "items", otherwise GH-10213 occurs.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
@@ -339,19 +343,19 @@ OptionButton::OptionButton() {
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
 	if (is_layout_rtl()) {
-		if (has_theme_icon("arrow")) {
-			_set_internal_margin(SIDE_LEFT, Control::get_theme_icon("arrow")->get_width());
+		if (has_theme_icon(SNAME("arrow"))) {
+			_set_internal_margin(SIDE_LEFT, Control::get_theme_icon(SNAME("arrow"))->get_width());
 		}
 	} else {
-		if (has_theme_icon("arrow")) {
-			_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon("arrow")->get_width());
+		if (has_theme_icon(SNAME("arrow"))) {
+			_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon(SNAME("arrow"))->get_width());
 		}
 	}
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);
 	popup->hide();
-	add_child(popup);
+	add_child(popup, false, INTERNAL_MODE_FRONT);
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));

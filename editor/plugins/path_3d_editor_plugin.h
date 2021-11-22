@@ -31,7 +31,9 @@
 #ifndef PATH_EDITOR_PLUGIN_H
 #define PATH_EDITOR_PLUGIN_H
 
-#include "editor/node_3d_editor_gizmos.h"
+#include "editor/editor_plugin.h"
+#include "editor/plugins/node_3d_editor_gizmos.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
 
 class Path3DGizmo : public EditorNode3DGizmo {
@@ -44,9 +46,9 @@ class Path3DGizmo : public EditorNode3DGizmo {
 
 public:
 	virtual String get_handle_name(int p_idx) const override;
-	virtual Variant get_handle_value(int p_idx) override;
-	virtual void set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point) override;
-	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false) override;
+	virtual Variant get_handle_value(int p_id) const override;
+	virtual void set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point) override;
+	virtual void commit_handle(int p_id, const Variant &p_restore, bool p_cancel = false) override;
 
 	virtual void redraw() override;
 	Path3DGizmo(Path3D *p_path = nullptr);
@@ -98,7 +100,7 @@ public:
 	Path3D *get_edited_path() { return path; }
 
 	static Path3DEditorPlugin *singleton;
-	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
+	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
 	virtual String get_name() const override { return "Path3D"; }
 	bool has_main_screen() const override { return false; }

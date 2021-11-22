@@ -55,7 +55,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 	RD::ShaderStage stage = RD::SHADER_STAGE_MAX;
 	int first_found = -1;
 
-	Ref<RDShaderBytecode> bytecode = shader_file->get_bytecode(version_txt);
+	Ref<RDShaderSPIRV> bytecode = shader_file->get_spirv(version_txt);
 	ERR_FAIL_COND(bytecode.is_null());
 
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
@@ -66,9 +66,9 @@ void ShaderFileEditor::_version_selected(int p_option) {
 
 		Ref<Texture2D> icon;
 		if (bytecode->get_stage_compile_error(RD::ShaderStage(i)) != String()) {
-			icon = get_theme_icon("ImportFail", "EditorIcons");
+			icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 		} else {
-			icon = get_theme_icon("ImportCheck", "EditorIcons");
+			icon = get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons"));
 		}
 		stages[i]->set_icon(icon);
 
@@ -95,7 +95,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 
 	String error = bytecode->get_stage_compile_error(stage);
 
-	error_text->push_font(get_theme_font("source", "EditorFonts"));
+	error_text->push_font(get_theme_font(SNAME("source"), SNAME("EditorFonts")));
 
 	if (error == String()) {
 		error_text->add_text(TTR("Shader stage compiled without errors."));
@@ -111,7 +111,7 @@ void ShaderFileEditor::_update_options() {
 		stage_hb->hide();
 		versions->hide();
 		error_text->clear();
-		error_text->push_font(get_theme_font("source", "EditorFonts"));
+		error_text->push_font(get_theme_font(SNAME("source"), SNAME("EditorFonts")));
 		error_text->add_text(vformat(TTR("File structure for '%s' contains unrecoverable errors:\n\n"), shader_file->get_path().get_file()));
 		error_text->add_text(shader_file->get_base_error());
 		return;
@@ -142,7 +142,7 @@ void ShaderFileEditor::_update_options() {
 
 		Ref<Texture2D> icon;
 
-		Ref<RDShaderBytecode> bytecode = shader_file->get_bytecode(version_list[i]);
+		Ref<RDShaderSPIRV> bytecode = shader_file->get_spirv(version_list[i]);
 		ERR_FAIL_COND(bytecode.is_null());
 
 		bool failed = false;
@@ -154,9 +154,9 @@ void ShaderFileEditor::_update_options() {
 		}
 
 		if (failed) {
-			icon = get_theme_icon("ImportFail", "EditorIcons");
+			icon = get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 		} else {
-			icon = get_theme_icon("ImportCheck", "EditorIcons");
+			icon = get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons"));
 		}
 
 		versions->add_item(title, icon);
@@ -175,7 +175,7 @@ void ShaderFileEditor::_update_options() {
 		return;
 	}
 
-	Ref<RDShaderBytecode> bytecode = shader_file->get_bytecode(current_version);
+	Ref<RDShaderSPIRV> bytecode = shader_file->get_spirv(current_version);
 	ERR_FAIL_COND(bytecode.is_null());
 	int first_valid = -1;
 	int current = -1;
@@ -272,7 +272,7 @@ ShaderFileEditor::ShaderFileEditor(EditorNode *p_node) {
 	main_vb->add_child(stage_hb);
 
 	Ref<ButtonGroup> bg;
-	bg.instance();
+	bg.instantiate();
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		Button *button = memnew(Button(stage_str[i]));
 		button->set_toggle_mode(true);

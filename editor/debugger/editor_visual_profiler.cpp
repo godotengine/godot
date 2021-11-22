@@ -123,11 +123,11 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 }
 
 Color EditorVisualProfiler::_get_color_from_signature(const StringName &p_signature) const {
-	Color bc = get_theme_color("error_color", "Editor");
+	Color bc = get_theme_color(SNAME("error_color"), SNAME("Editor"));
 	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
-	return c.lerp(get_theme_color("base_color", "Editor"), 0.07);
+	return c.lerp(get_theme_color(SNAME("base_color"), SNAME("Editor")), 0.07);
 }
 
 void EditorVisualProfiler::_item_selected() {
@@ -299,17 +299,17 @@ void EditorVisualProfiler::_update_plot() {
 	}
 
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	img->create(w, h, false, Image::FORMAT_RGBA8, graph_image);
 
 	if (reset_texture) {
 		if (graph_texture.is_null()) {
-			graph_texture.instance();
+			graph_texture.instantiate();
 		}
 		graph_texture->create_from_image(img);
 	}
 
-	graph_texture->update(img, true);
+	graph_texture->update(img);
 
 	graph->set_texture(graph_texture);
 	graph->update();
@@ -318,7 +318,7 @@ void EditorVisualProfiler::_update_plot() {
 void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 	int cursor_metric = _get_cursor_index();
 
-	Ref<Texture> track_icon = get_theme_icon("TrackColor", "EditorIcons");
+	Ref<Texture> track_icon = get_theme_icon(SNAME("TrackColor"), SNAME("EditorIcons"));
 
 	ERR_FAIL_INDEX(cursor_metric, frame_metrics.size());
 
@@ -365,13 +365,13 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 		}
 		TreeItem *category = variables->create_item(parent);
 
-		for (List<TreeItem *>::Element *E = stack.front(); E; E = E->next()) {
-			float total_cpu = E->get()->get_metadata(1);
-			float total_gpu = E->get()->get_metadata(2);
+		for (TreeItem *E : stack) {
+			float total_cpu = E->get_metadata(1);
+			float total_gpu = E->get_metadata(2);
 			total_cpu += cpu_time;
 			total_gpu += gpu_time;
-			E->get()->set_metadata(1, cpu_time);
-			E->get()->set_metadata(2, gpu_time);
+			E->set_metadata(1, total_cpu);
+			E->set_metadata(2, total_gpu);
 		}
 
 		category->set_icon(0, track_icon);
@@ -392,11 +392,11 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 		}
 	}
 
-	for (List<TreeItem *>::Element *E = categories.front(); E; E = E->next()) {
-		float total_cpu = E->get()->get_metadata(1);
-		float total_gpu = E->get()->get_metadata(2);
-		E->get()->set_text(1, _get_time_as_text(total_cpu));
-		E->get()->set_text(2, _get_time_as_text(total_gpu));
+	for (TreeItem *E : categories) {
+		float total_cpu = E->get_metadata(1);
+		float total_gpu = E->get_metadata(2);
+		E->set_text(1, _get_time_as_text(total_cpu));
+		E->set_text(2, _get_time_as_text(total_gpu));
 	}
 
 	if (ensure_selected) {
@@ -407,14 +407,14 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 
 void EditorVisualProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_theme_icon("Stop", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Stop"));
 		_clear_pressed(); //always clear on start
 	} else {
-		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Start"));
 	}
-	emit_signal("enable_profiling", activate->is_pressed());
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 void EditorVisualProfiler::_clear_pressed() {
@@ -425,11 +425,11 @@ void EditorVisualProfiler::_clear_pressed() {
 void EditorVisualProfiler::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		if (is_layout_rtl()) {
-			activate->set_icon(get_theme_icon("PlayBackwards", "EditorIcons"));
+			activate->set_icon(get_theme_icon(SNAME("PlayBackwards"), SNAME("EditorIcons")));
 		} else {
-			activate->set_icon(get_theme_icon("Play", "EditorIcons"));
+			activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 		}
-		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
+		clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
 	}
 }
 
@@ -437,8 +437,8 @@ void EditorVisualProfiler::_graph_tex_draw() {
 	if (last_metric < 0) {
 		return;
 	}
-	Ref<Font> font = get_theme_font("font", "Label");
-	int font_size = get_theme_font_size("font_size", "Label");
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	if (seeking) {
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
@@ -517,7 +517,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 
 	if (
-			(mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) ||
+			(mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
 		int half_w = graph->get_size().width / 2;
 		int x = me->get_position().x;
@@ -549,7 +549,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			hover_metric = -1;
 		}
 
-		if (mb.is_valid() || mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+		if (mb.is_valid() || (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 			//cursor_metric=x;
 			updating_frame = true;
 
@@ -773,13 +773,16 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	variables->set_column_titles_visible(true);
 	variables->set_column_title(0, TTR("Name"));
 	variables->set_column_expand(0, true);
-	variables->set_column_min_width(0, 60);
+	variables->set_column_clip_content(0, true);
+	variables->set_column_custom_minimum_width(0, 60);
 	variables->set_column_title(1, TTR("CPU"));
 	variables->set_column_expand(1, false);
-	variables->set_column_min_width(1, 60 * EDSCALE);
+	variables->set_column_clip_content(1, true);
+	variables->set_column_custom_minimum_width(1, 60 * EDSCALE);
 	variables->set_column_title(2, TTR("GPU"));
 	variables->set_column_expand(2, false);
-	variables->set_column_min_width(2, 60 * EDSCALE);
+	variables->set_column_clip_content(2, true);
+	variables->set_column_custom_minimum_width(2, 60 * EDSCALE);
 	variables->connect("cell_selected", callable_mp(this, &EditorVisualProfiler::_item_selected));
 
 	graph = memnew(TextureRect);

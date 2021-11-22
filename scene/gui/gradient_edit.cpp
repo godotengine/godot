@@ -32,15 +32,6 @@
 
 #include "core/os/keyboard.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_scale.h"
-#define SPACING (3 * EDSCALE)
-#define POINT_WIDTH (8 * EDSCALE)
-#else
-#define SPACING 3
-#define POINT_WIDTH 8
-#endif
-
 GradientEdit::GradientEdit() {
 	set_focus_mode(FOCUS_ALL);
 
@@ -48,20 +39,21 @@ GradientEdit::GradientEdit() {
 	picker = memnew(ColorPicker);
 	popup->add_child(picker);
 
-	add_child(popup);
+	gradient_cache.instantiate();
+	preview_texture.instantiate();
 
-	checker = Ref<ImageTexture>(memnew(ImageTexture));
-	Ref<Image> img = memnew(Image(checker_bg_png));
+	preview_texture->set_width(1024);
+	add_child(popup, false, INTERNAL_MODE_FRONT);
 }
 
 int GradientEdit::_get_point_from_pos(int x) {
 	int result = -1;
-	int total_w = get_size().width - get_size().height - SPACING;
+	int total_w = get_size().width - get_size().height - draw_spacing;
 	float min_distance = 1e20;
 	for (int i = 0; i < points.size(); i++) {
-		//Check if we clicked at point
+		// Check if we clicked at point.
 		float distance = ABS(x - points[i].offset * total_w);
-		float min = (POINT_WIDTH / 2 * 1.7); //make it easier to grab
+		float min = (draw_point_width / 2 * 1.7); //make it easier to grab
 		if (distance <= min && distance < min_distance) {
 			result = i;
 			min_distance = distance;
@@ -91,73 +83,73 @@ void GradientEdit::_show_color_picker() {
 GradientEdit::~GradientEdit() {
 }
 
-void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
+void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && grabbed != -1) {
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() == Key::KEY_DELETE && grabbed != -1) {
 		points.remove(grabbed);
 		grabbed = -1;
 		grabbing = false;
 		update();
-		emit_signal("ramp_changed");
+		emit_signal(SNAME("ramp_changed"));
 		accept_event();
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	//Show color picker on double click.
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_doubleclick() && mb->is_pressed()) {
+	// Show color picker on double click.
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click() && mb->is_pressed()) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
 		_show_color_picker();
 		accept_event();
 	}
 
-	//Delete point on right click
-	if (mb.is_valid() && mb->get_button_index() == 2 && mb->is_pressed()) {
+	// Delete point on right click.
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
 		if (grabbed != -1) {
 			points.remove(grabbed);
 			grabbed = -1;
 			grabbing = false;
 			update();
-			emit_signal("ramp_changed");
+			emit_signal(SNAME("ramp_changed"));
 			accept_event();
 		}
 	}
 
-	//Hold alt key to duplicate selected color
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed() && mb->get_alt()) {
+	// Hold alt key to duplicate selected color.
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed() && mb->is_alt_pressed()) {
 		int x = mb->get_position().x;
 		grabbed = _get_point_from_pos(x);
 
 		if (grabbed != -1) {
-			int total_w = get_size().width - get_size().height - SPACING;
-			Gradient::Point newPoint = points[grabbed];
-			newPoint.offset = CLAMP(x / float(total_w), 0, 1);
+			int total_w = get_size().width - get_size().height - draw_spacing;
+			Gradient::Point new_point = points[grabbed];
+			new_point.offset = CLAMP(x / float(total_w), 0, 1);
 
-			points.push_back(newPoint);
+			points.push_back(new_point);
 			points.sort();
 			for (int i = 0; i < points.size(); ++i) {
-				if (points[i].offset == newPoint.offset) {
+				if (points[i].offset == new_point.offset) {
 					grabbed = i;
 					break;
 				}
 			}
 
-			emit_signal("ramp_changed");
+			emit_signal(SNAME("ramp_changed"));
 			update();
 		}
 	}
 
-	//select
-	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+	// Select.
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 		update();
 		int x = mb->get_position().x;
-		int total_w = get_size().width - get_size().height - SPACING;
+		int total_w = get_size().width - get_size().height - draw_spacing;
 
 		//Check if color selector was clicked.
-		if (x > total_w + SPACING) {
+		if (x > total_w + draw_spacing) {
 			_show_color_picker();
 			return;
 		}
@@ -170,16 +162,16 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		//insert
-		Gradient::Point newPoint;
-		newPoint.offset = CLAMP(x / float(total_w), 0, 1);
+		// Insert point.
+		Gradient::Point new_point;
+		new_point.offset = CLAMP(x / float(total_w), 0, 1);
 
 		Gradient::Point prev;
 		Gradient::Point next;
 
 		int pos = -1;
 		for (int i = 0; i < points.size(); i++) {
-			if (points[i].offset < newPoint.offset) {
+			if (points[i].offset < new_point.offset) {
 				pos = i;
 			}
 		}
@@ -203,24 +195,24 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			prev = points[pos];
 		}
 
-		newPoint.color = prev.color.lerp(next.color, (newPoint.offset - prev.offset) / (next.offset - prev.offset));
+		new_point.color = prev.color.lerp(next.color, (new_point.offset - prev.offset) / (next.offset - prev.offset));
 
-		points.push_back(newPoint);
+		points.push_back(new_point);
 		points.sort();
 		for (int i = 0; i < points.size(); i++) {
-			if (points[i].offset == newPoint.offset) {
+			if (points[i].offset == new_point.offset) {
 				grabbed = i;
 				break;
 			}
 		}
 
-		emit_signal("ramp_changed");
+		emit_signal(SNAME("ramp_changed"));
 	}
 
-	if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		if (grabbing) {
 			grabbing = false;
-			emit_signal("ramp_changed");
+			emit_signal(SNAME("ramp_changed"));
 		}
 		update();
 	}
@@ -228,17 +220,17 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && grabbing) {
-		int total_w = get_size().width - get_size().height - SPACING;
+		int total_w = get_size().width - get_size().height - draw_spacing;
 
 		int x = mm->get_position().x;
 
 		float newofs = CLAMP(x / float(total_w), 0, 1);
 
 		// Snap to "round" coordinates if holding Ctrl.
-		// Be more precise if holding Shift as well
-		if (mm->get_control()) {
-			newofs = Math::snapped(newofs, mm->get_shift() ? 0.025 : 0.1);
-		} else if (mm->get_shift()) {
+		// Be more precise if holding Shift as well.
+		if (mm->is_ctrl_pressed()) {
+			newofs = Math::snapped(newofs, mm->is_shift_pressed() ? 0.025 : 0.1);
+		} else if (mm->is_shift_pressed()) {
 			// Snap to nearest point if holding just Shift
 			const float snap_threshold = 0.03;
 			float smallest_ofs = snap_threshold;
@@ -288,7 +280,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		emit_signal("ramp_changed");
+		emit_signal(SNAME("ramp_changed"));
 
 		update();
 	}
@@ -300,68 +292,39 @@ void GradientEdit::_notification(int p_what) {
 			picker->connect("color_changed", callable_mp(this, &GradientEdit::_color_changed));
 		}
 	}
+
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		draw_spacing = BASE_SPACING * get_theme_default_base_scale();
+		draw_point_width = BASE_POINT_WIDTH * get_theme_default_base_scale();
+	}
+
 	if (p_what == NOTIFICATION_DRAW) {
 		int w = get_size().x;
 		int h = get_size().y;
 
 		if (w == 0 || h == 0) {
-			return; //Safety check. We have division by 'h'. And in any case there is nothing to draw with such size
+			return; // Safety check. We have division by 'h'. And in any case there is nothing to draw with such size.
 		}
 
-		int total_w = get_size().width - get_size().height - SPACING;
+		int total_w = get_size().width - get_size().height - draw_spacing;
 
-		//Draw checker pattern for ramp
-		_draw_checker(0, 0, total_w, h);
+		// Draw checker pattern for ramp.
+		draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(0, 0, total_w, h), true);
 
-		//Draw color ramp
-		Gradient::Point prev;
-		prev.offset = 0;
-		if (points.size() == 0) {
-			prev.color = Color(0, 0, 0); //Draw black rectangle if we have no points
-		} else {
-			prev.color = points[0].color; //Extend color of first point to the beginning.
-		}
+		// Draw color ramp.
 
-		for (int i = -1; i < points.size(); i++) {
-			Gradient::Point next;
-			//If there is no next point
-			if (i + 1 == points.size()) {
-				if (points.size() == 0) {
-					next.color = Color(0, 0, 0); //Draw black rectangle if we have no points
-				} else {
-					next.color = points[i].color; //Extend color of last point to the end.
-				}
-				next.offset = 1;
-			} else {
-				next = points[i + 1];
-			}
+		gradient_cache->set_points(points);
+		gradient_cache->set_interpolation_mode(interpolation_mode);
+		preview_texture->set_gradient(gradient_cache);
+		draw_texture_rect(preview_texture, Rect2(0, 0, total_w, h));
 
-			if (prev.offset == next.offset) {
-				prev = next;
-				continue;
-			}
-
-			Vector<Vector2> points;
-			Vector<Color> colors;
-			points.push_back(Vector2(prev.offset * total_w, h));
-			points.push_back(Vector2(prev.offset * total_w, 0));
-			points.push_back(Vector2(next.offset * total_w, 0));
-			points.push_back(Vector2(next.offset * total_w, h));
-			colors.push_back(prev.color);
-			colors.push_back(prev.color);
-			colors.push_back(next.color);
-			colors.push_back(next.color);
-			draw_primitive(points, colors, Vector<Point2>());
-			prev = next;
-		}
-
-		//Draw point markers
+		// Draw point markers.
 		for (int i = 0; i < points.size(); i++) {
 			Color col = points[i].color.inverted();
 			col.a = 0.9;
 
 			draw_line(Vector2(points[i].offset * total_w, 0), Vector2(points[i].offset * total_w, h / 2), col);
-			Rect2 rect = Rect2(points[i].offset * total_w - POINT_WIDTH / 2, h / 2, POINT_WIDTH, h / 2);
+			Rect2 rect = Rect2(points[i].offset * total_w - draw_point_width / 2, h / 2, draw_point_width, h / 2);
 			draw_rect(rect, points[i].color, true);
 			draw_rect(rect, col, false);
 			if (grabbed == i) {
@@ -378,18 +341,18 @@ void GradientEdit::_notification(int p_what) {
 		}
 
 		//Draw "button" for color selector
-		_draw_checker(total_w + SPACING, 0, h, h);
+		draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(total_w + draw_spacing, 0, h, h), true);
 		if (grabbed != -1) {
 			//Draw with selection color
-			draw_rect(Rect2(total_w + SPACING, 0, h, h), points[grabbed].color);
+			draw_rect(Rect2(total_w + draw_spacing, 0, h, h), points[grabbed].color);
 		} else {
 			//if no color selected draw grey color with 'X' on top.
-			draw_rect(Rect2(total_w + SPACING, 0, h, h), Color(0.5, 0.5, 0.5, 1));
-			draw_line(Vector2(total_w + SPACING, 0), Vector2(total_w + SPACING + h, h), Color(1, 1, 1, 0.6));
-			draw_line(Vector2(total_w + SPACING, h), Vector2(total_w + SPACING + h, 0), Color(1, 1, 1, 0.6));
+			draw_rect(Rect2(total_w + draw_spacing, 0, h, h), Color(0.5, 0.5, 0.5, 1));
+			draw_line(Vector2(total_w + draw_spacing, 0), Vector2(total_w + draw_spacing + h, h), Color(1, 1, 1, 0.6));
+			draw_line(Vector2(total_w + draw_spacing, h), Vector2(total_w + draw_spacing + h, 0), Color(1, 1, 1, 0.6));
 		}
 
-		//Draw borders around color ramp if in focus
+		// Draw borders around color ramp if in focus.
 		if (has_focus()) {
 			draw_line(Vector2(-1, -1), Vector2(total_w + 1, -1), Color(1, 1, 1, 0.6));
 			draw_line(Vector2(total_w + 1, -1), Vector2(total_w + 1, h + 1), Color(1, 1, 1, 0.6));
@@ -405,27 +368,6 @@ void GradientEdit::_notification(int p_what) {
 	}
 }
 
-void GradientEdit::_draw_checker(int x, int y, int w, int h) {
-	//Draw it with polygon to insert UVs for scale
-	Vector<Vector2> backPoints;
-	backPoints.push_back(Vector2(x, y));
-	backPoints.push_back(Vector2(x, y + h));
-	backPoints.push_back(Vector2(x + w, y + h));
-	backPoints.push_back(Vector2(x + w, y));
-	Vector<Color> colorPoints;
-	colorPoints.push_back(Color(1, 1, 1, 1));
-	colorPoints.push_back(Color(1, 1, 1, 1));
-	colorPoints.push_back(Color(1, 1, 1, 1));
-	colorPoints.push_back(Color(1, 1, 1, 1));
-	Vector<Vector2> uvPoints;
-	//Draw checker pattern pixel-perfect and scale it by 2.
-	uvPoints.push_back(Vector2(x, y));
-	uvPoints.push_back(Vector2(x, y + h * .5f / checker->get_height()));
-	uvPoints.push_back(Vector2(x + w * .5f / checker->get_width(), y + h * .5f / checker->get_height()));
-	uvPoints.push_back(Vector2(x + w * .5f / checker->get_width(), y));
-	draw_polygon(backPoints, colorPoints, uvPoints, checker);
-}
-
 Size2 GradientEdit::get_minimum_size() const {
 	return Vector2(0, 16);
 }
@@ -436,10 +378,10 @@ void GradientEdit::_color_changed(const Color &p_color) {
 	}
 	points.write[grabbed].color = p_color;
 	update();
-	emit_signal("ramp_changed");
+	emit_signal(SNAME("ramp_changed"));
 }
 
-void GradientEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors) {
+void GradientEdit::set_ramp(const Vector<real_t> &p_offsets, const Vector<Color> &p_colors) {
 	ERR_FAIL_COND(p_offsets.size() != p_colors.size());
 	points.clear();
 	for (int i = 0; i < p_offsets.size(); i++) {
@@ -453,8 +395,8 @@ void GradientEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color> 
 	update();
 }
 
-Vector<float> GradientEdit::get_offsets() const {
-	Vector<float> ret;
+Vector<real_t> GradientEdit::get_offsets() const {
+	Vector<real_t> ret;
 	for (int i = 0; i < points.size(); i++) {
 		ret.push_back(points[i].offset);
 	}
@@ -475,13 +417,21 @@ void GradientEdit::set_points(Vector<Gradient::Point> &p_points) {
 	}
 	points.clear();
 	points = p_points;
+	points.sort();
 }
 
 Vector<Gradient::Point> &GradientEdit::get_points() {
 	return points;
 }
 
+void GradientEdit::set_interpolation_mode(Gradient::InterpolationMode p_interp_mode) {
+	interpolation_mode = p_interp_mode;
+}
+
+Gradient::InterpolationMode GradientEdit::get_interpolation_mode() {
+	return interpolation_mode;
+}
+
 void GradientEdit::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &GradientEdit::_gui_input);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }

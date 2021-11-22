@@ -58,6 +58,7 @@ void joypad::free() {
 	if (ff_device) {
 		FFDeviceReleaseEffect(ff_device, ff_object);
 		FFReleaseDevice(ff_device);
+		ff_device = nullptr;
 		memfree(ff_axes);
 		memfree(ff_directions);
 	}
@@ -143,6 +144,8 @@ void joypad::add_hid_element(IOHIDElementRef p_element) {
 						switch (usage) {
 							case kHIDUsage_Sim_Rudder:
 							case kHIDUsage_Sim_Throttle:
+							case kHIDUsage_Sim_Accelerator:
+							case kHIDUsage_Sim_Brake:
 								if (!has_element(cookie, &axis_elements)) {
 									list = &axis_elements;
 								}
@@ -241,7 +244,7 @@ void JoypadOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
 	if (is_joypad(p_device)) {
 		configure_joypad(p_device, &new_joypad);
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-		if (IOHIDDeviceGetService != nullptr) {
+		if (IOHIDDeviceGetService) {
 #endif
 			const io_service_t ioservice = IOHIDDeviceGetService(p_device);
 			if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK) && new_joypad.config_force_feedback(ioservice)) {
@@ -286,8 +289,9 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 	}
 	if ((!refCF) || (!CFStringGetCString((CFStringRef)refCF, c_name, sizeof(c_name), kCFStringEncodingUTF8))) {
 		name = "Unidentified Joypad";
+	} else {
+		name = c_name;
 	}
-	name = c_name;
 
 	int id = input->get_unused_joy_id();
 	ERR_FAIL_COND_V(id == -1, false);
@@ -331,6 +335,13 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 		p_joy->add_hid_elements(array);
 		CFRelease(array);
 	}
+	// Xbox controller hat values start at 1 rather than 0.
+	p_joy->offset_hat = vendor == 0x45e &&
+			(product_id == 0x0b05 ||
+					product_id == 0x02e0 ||
+					product_id == 0x02fd ||
+					product_id == 0x0b13);
+
 	return true;
 }
 
@@ -338,6 +349,7 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 	{                                   \
 		if (ret != FF_OK) {             \
 			FFReleaseDevice(ff_device); \
+			ff_device = nullptr;        \
 			return false;               \
 		}                               \
 	}
@@ -357,6 +369,7 @@ bool joypad::config_force_feedback(io_service_t p_service) {
 		return true;
 	}
 	FFReleaseDevice(ff_device);
+	ff_device = nullptr;
 	return false;
 }
 #undef FF_ERR
@@ -387,41 +400,44 @@ bool joypad::check_ff_features() {
 	return false;
 }
 
-static int process_hat_value(int p_min, int p_max, int p_value) {
+static HatMask process_hat_value(int p_min, int p_max, int p_value, bool p_offset_hat) {
 	int range = (p_max - p_min + 1);
 	int value = p_value - p_min;
-	int hat_value = Input::HAT_MASK_CENTER;
+	HatMask hat_value = HatMask::CENTER;
 	if (range == 4) {
 		value *= 2;
+	}
+	if (p_offset_hat) {
+		value -= 1;
 	}
 
 	switch (value) {
 		case 0:
-			hat_value = Input::HAT_MASK_UP;
+			hat_value = HatMask::UP;
 			break;
 		case 1:
-			hat_value = Input::HAT_MASK_UP | Input::HAT_MASK_RIGHT;
+			hat_value = (HatMask::UP | HatMask::RIGHT);
 			break;
 		case 2:
-			hat_value = Input::HAT_MASK_RIGHT;
+			hat_value = HatMask::RIGHT;
 			break;
 		case 3:
-			hat_value = Input::HAT_MASK_DOWN | Input::HAT_MASK_RIGHT;
+			hat_value = (HatMask::DOWN | HatMask::RIGHT);
 			break;
 		case 4:
-			hat_value = Input::HAT_MASK_DOWN;
+			hat_value = HatMask::DOWN;
 			break;
 		case 5:
-			hat_value = Input::HAT_MASK_DOWN | Input::HAT_MASK_LEFT;
+			hat_value = (HatMask::DOWN | HatMask::LEFT);
 			break;
 		case 6:
-			hat_value = Input::HAT_MASK_LEFT;
+			hat_value = HatMask::LEFT;
 			break;
 		case 7:
-			hat_value = Input::HAT_MASK_UP | Input::HAT_MASK_LEFT;
+			hat_value = (HatMask::UP | HatMask::LEFT);
 			break;
 		default:
-			hat_value = Input::HAT_MASK_CENTER;
+			hat_value = HatMask::CENTER;
 			break;
 	}
 	return hat_value;
@@ -458,16 +474,16 @@ void JoypadOSX::process_joypads() {
 		for (int j = 0; j < joy.axis_elements.size(); j++) {
 			rec_element &elem = joy.axis_elements.write[j];
 			int value = joy.get_hid_element_state(&elem);
-			input->joy_axis(joy.id, j, axis_correct(value, elem.min, elem.max));
+			input->joy_axis(joy.id, (JoyAxis)j, axis_correct(value, elem.min, elem.max));
 		}
 		for (int j = 0; j < joy.button_elements.size(); j++) {
 			int value = joy.get_hid_element_state(&joy.button_elements.write[j]);
-			input->joy_button(joy.id, j, (value >= 1));
+			input->joy_button(joy.id, (JoyButton)j, (value >= 1));
 		}
 		for (int j = 0; j < joy.hat_elements.size(); j++) {
 			rec_element &elem = joy.hat_elements.write[j];
 			int value = joy.get_hid_element_state(&elem);
-			int hat_value = process_hat_value(elem.min, elem.max, value);
+			HatMask hat_value = process_hat_value(elem.min, elem.max, value, joy.offset_hat);
 			input->joy_hat(joy.id, hat_value);
 		}
 
@@ -588,7 +604,7 @@ JoypadOSX::JoypadOSX(Input *in) {
 
 	if (array) {
 		hid_manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
-		if (hid_manager != nullptr) {
+		if (hid_manager) {
 			config_hid_manager(array);
 		}
 		CFRelease(array);

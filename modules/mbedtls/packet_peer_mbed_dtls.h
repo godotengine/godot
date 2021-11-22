@@ -59,8 +59,6 @@ protected:
 	Ref<SSLContextMbedTLS> ssl_ctx;
 	mbedtls_timing_delay_context timer;
 
-	static void _bind_methods();
-
 	Error _do_handshake();
 	int _set_cookie();
 

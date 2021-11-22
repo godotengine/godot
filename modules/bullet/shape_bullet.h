@@ -81,7 +81,7 @@ public:
 
 public:
 	static class btEmptyShape *create_shape_empty();
-	static class btStaticPlaneShape *create_shape_plane(const btVector3 &planeNormal, btScalar planeConstant);
+	static class btStaticPlaneShape *create_shape_world_boundary(const btVector3 &planeNormal, btScalar planeConstant);
 	static class btSphereShape *create_shape_sphere(btScalar radius);
 	static class btBoxShape *create_shape_box(const btVector3 &boxHalfExtents);
 	static class btCapsuleShape *create_shape_capsule(btScalar radius, btScalar height);
@@ -93,11 +93,11 @@ public:
 	static class btRayShape *create_shape_ray(real_t p_length, bool p_slips_on_slope);
 };
 
-class PlaneShapeBullet : public ShapeBullet {
+class WorldBoundaryShapeBullet : public ShapeBullet {
 	Plane plane;
 
 public:
-	PlaneShapeBullet();
+	WorldBoundaryShapeBullet();
 
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;

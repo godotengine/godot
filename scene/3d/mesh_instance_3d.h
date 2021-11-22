@@ -31,10 +31,10 @@
 #ifndef MESH_INSTANCE_H
 #define MESH_INSTANCE_H
 
-#include "scene/3d/skeleton_3d.h"
+#include "core/templates/local_vector.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/mesh.h"
-#include "scene/resources/skin.h"
+class Skin;
+class SkinReference;
 
 class MeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MeshInstance3D, GeometryInstance3D);
@@ -46,12 +46,8 @@ protected:
 	Ref<SkinReference> skin_ref;
 	NodePath skeleton_path = NodePath("..");
 
-	struct BlendShapeTrack {
-		int idx = 0;
-		float value = 0.0;
-	};
-
-	Map<StringName, BlendShapeTrack> blend_shape_tracks;
+	LocalVector<float> blend_shape_tracks;
+	Map<StringName, int> blend_shape_properties;
 	Vector<Ref<Material>> surface_override_materials;
 
 	void _mesh_changed();
@@ -75,6 +71,11 @@ public:
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
 
+	int get_blend_shape_count() const;
+	int find_blend_shape_by_name(const StringName &p_name);
+	float get_blend_shape_value(int p_blend_shape) const;
+	void set_blend_shape_value(int p_blend_shape, float p_value);
+
 	int get_surface_override_material_count() const;
 	void set_surface_override_material(int p_surface, const Ref<Material> &p_material);
 	Ref<Material> get_surface_override_material(int p_surface) const;
@@ -83,8 +84,11 @@ public:
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
 
-	Node *create_convex_collision_node();
-	void create_convex_collision();
+	Node *create_convex_collision_node(bool p_clean = true, bool p_simplify = false);
+	void create_convex_collision(bool p_clean = true, bool p_simplify = false);
+
+	Node *create_multiple_convex_collisions_node();
+	void create_multiple_convex_collisions();
 
 	void create_debug_tangents();
 

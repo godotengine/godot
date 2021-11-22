@@ -58,12 +58,12 @@ void JoypadUWP::process_controllers() {
 					button_mask *= 2;
 				}
 
-				input->joy_axis(joy.id, JOY_AXIS_LEFT_X, axis_correct(reading.LeftThumbstickX));
-				input->joy_axis(joy.id, JOY_AXIS_LEFT_Y, axis_correct(reading.LeftThumbstickY, true));
-				input->joy_axis(joy.id, JOY_AXIS_RIGHT_X, axis_correct(reading.RightThumbstickX));
-				input->joy_axis(joy.id, JOY_AXIS_RIGHT_Y, axis_correct(reading.RightThumbstickY, true));
-				input->joy_axis(joy.id, JOY_AXIS_TRIGGER_LEFT, axis_correct(reading.LeftTrigger, false, true));
-				input->joy_axis(joy.id, JOY_AXIS_TRIGGER_RIGHT, axis_correct(reading.RightTrigger, false, true));
+				input->joy_axis(joy.id, JoyAxis::LEFT_X, axis_correct(reading.LeftThumbstickX));
+				input->joy_axis(joy.id, JoyAxis::LEFT_Y, axis_correct(reading.LeftThumbstickY, true));
+				input->joy_axis(joy.id, JoyAxis::RIGHT_X, axis_correct(reading.RightThumbstickX));
+				input->joy_axis(joy.id, JoyAxis::RIGHT_Y, axis_correct(reading.RightThumbstickY, true));
+				input->joy_axis(joy.id, JoyAxis::TRIGGER_LEFT, axis_correct(reading.LeftTrigger, false, true));
+				input->joy_axis(joy.id, JoyAxis::TRIGGER_RIGHT, axis_correct(reading.RightTrigger, false, true));
 
 				uint64_t timestamp = input->get_joy_vibration_timestamp(joy.id);
 				if (timestamp > joy.ff_timestamp) {

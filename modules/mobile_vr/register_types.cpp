@@ -32,15 +32,30 @@
 
 #include "mobile_vr_interface.h"
 
+Ref<MobileVRInterface> mobile_vr;
+
 void register_mobile_vr_types() {
-	ClassDB::register_class<MobileVRInterface>();
+	GDREGISTER_CLASS(MobileVRInterface);
 
 	if (XRServer::get_singleton()) {
-		Ref<MobileVRInterface> mobile_vr;
-		mobile_vr.instance();
+		mobile_vr.instantiate();
 		XRServer::get_singleton()->add_interface(mobile_vr);
 	}
 }
 
 void unregister_mobile_vr_types() {
+	if (mobile_vr.is_valid()) {
+		// uninitialise our interface if it is initialised
+		if (mobile_vr->is_initialized()) {
+			mobile_vr->uninitialize();
+		}
+
+		// unregister our interface from the XR server
+		if (XRServer::get_singleton()) {
+			XRServer::get_singleton()->remove_interface(mobile_vr);
+		}
+
+		// and release
+		mobile_vr.unref();
+	}
 }

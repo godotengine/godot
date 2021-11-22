@@ -128,8 +128,8 @@ private:
 	void _on_folder_button_pressed();
 	void _on_folder_selected(String path);
 	void _on_search_text_modified(String text);
-	void _on_search_text_entered(String text);
-	void _on_replace_text_entered(String text);
+	void _on_search_text_submitted(String text);
+	void _on_replace_text_submitted(String text);
 
 	FindInFilesMode _mode;
 	LineEdit *_search_text_line_edit;

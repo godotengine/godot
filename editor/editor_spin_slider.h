@@ -39,6 +39,7 @@ class EditorSpinSlider : public Range {
 	GDCLASS(EditorSpinSlider, Range);
 
 	String label;
+	String suffix;
 	int updown_offset;
 	bool hover_updown;
 	bool mouse_hover;
@@ -62,14 +63,16 @@ class EditorSpinSlider : public Range {
 	Vector2 grabbing_spinner_mouse_pos;
 	double pre_grab_value;
 
-	Popup *value_input_popup;
-	LineEdit *value_input;
-	bool value_input_just_closed;
+	Popup *value_input_popup = nullptr;
+	LineEdit *value_input = nullptr;
+	bool value_input_just_closed = false;
+	bool value_input_dirty = false;
 
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
 	void _value_input_closed();
-	void _value_input_entered(const String &);
+	void _value_input_submitted(const String &);
 	void _value_focus_exited();
+	void _value_input_gui_input(const Ref<InputEvent> &p_event);
 	bool hide_slider;
 	bool flat;
 
@@ -78,9 +81,13 @@ class EditorSpinSlider : public Range {
 
 	void _evaluate_input_text();
 
+	void _update_value_input_stylebox();
+	void _ensure_input_popup();
+	void _draw_spin_slider();
+
 protected:
 	void _notification(int p_what);
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 	void _grabber_mouse_entered();
 	void _grabber_mouse_exited();
@@ -92,6 +99,9 @@ public:
 	String get_text_value() const;
 	void set_label(const String &p_label);
 	String get_label() const;
+
+	void set_suffix(const String &p_suffix);
+	String get_suffix() const;
 
 	void set_hide_slider(bool p_hide);
 	bool is_hiding_slider() const;
@@ -105,7 +115,7 @@ public:
 	void set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color);
 
 	void setup_and_show() { _focus_entered(); }
-	LineEdit *get_line_edit() { return value_input; }
+	LineEdit *get_line_edit();
 
 	virtual Size2 get_minimum_size() const override;
 	EditorSpinSlider();

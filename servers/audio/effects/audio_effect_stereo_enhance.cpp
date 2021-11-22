@@ -74,9 +74,9 @@ AudioEffectStereoEnhanceInstance::~AudioEffectStereoEnhanceInstance() {
 	memdelete_arr(delay_ringbuff);
 }
 
-Ref<AudioEffectInstance> AudioEffectStereoEnhance::instance() {
+Ref<AudioEffectInstance> AudioEffectStereoEnhance::instantiate() {
 	Ref<AudioEffectStereoEnhanceInstance> ins;
-	ins.instance();
+	ins.instantiate();
 
 	ins->base = Ref<AudioEffectStereoEnhance>(this);
 

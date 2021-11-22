@@ -61,9 +61,9 @@ protected:
 		if (importer.is_null()) {
 			return;
 		}
-		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			if (importer->get_option_visibility(E->get().name, values)) {
-				p_list->push_back(E->get());
+		for (const PropertyInfo &E : properties) {
+			if (importer->get_option_visibility("", E.name, values)) {
+				p_list->push_back(E);
 			}
 		}
 	}
@@ -86,9 +86,9 @@ void ImportDefaultsEditor::_save() {
 	if (settings->importer.is_valid()) {
 		Dictionary modified;
 
-		for (Map<StringName, Variant>::Element *E = settings->values.front(); E; E = E->next()) {
-			if (E->get() != settings->default_values[E->key()]) {
-				modified[E->key()] = E->get();
+		for (const KeyValue<StringName, Variant> &E : settings->values) {
+			if (E.value != settings->default_values[E.key]) {
+				modified[E.key] = E.value;
 			}
 		}
 
@@ -98,7 +98,7 @@ void ImportDefaultsEditor::_save() {
 			ProjectSettings::get_singleton()->set("importer_defaults/" + settings->importer->get_importer_name(), Variant());
 		}
 
-		emit_signal("project_settings_changed");
+		emit_signal(SNAME("project_settings_changed"));
 	}
 }
 
@@ -106,9 +106,9 @@ void ImportDefaultsEditor::_update_importer() {
 	List<Ref<ResourceImporter>> importer_list;
 	ResourceFormatImporter::get_singleton()->get_importers(&importer_list);
 	Ref<ResourceImporter> importer;
-	for (List<Ref<ResourceImporter>>::Element *E = importer_list.front(); E; E = E->next()) {
-		if (E->get()->get_visible_name() == importers->get_item_text(importers->get_selected())) {
-			importer = E->get();
+	for (const Ref<ResourceImporter> &E : importer_list) {
+		if (E->get_visible_name() == importers->get_item_text(importers->get_selected())) {
+			importer = E;
 			break;
 		}
 	}
@@ -119,20 +119,20 @@ void ImportDefaultsEditor::_update_importer() {
 
 	if (importer.is_valid()) {
 		List<ResourceImporter::ImportOption> options;
-		importer->get_import_options(&options);
+		importer->get_import_options("", &options);
 		Dictionary d;
 		if (ProjectSettings::get_singleton()->has_setting("importer_defaults/" + importer->get_importer_name())) {
 			d = ProjectSettings::get_singleton()->get("importer_defaults/" + importer->get_importer_name());
 		}
 
-		for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
-			settings->properties.push_back(E->get().option);
-			if (d.has(E->get().option.name)) {
-				settings->values[E->get().option.name] = d[E->get().option.name];
+		for (const ResourceImporter::ImportOption &E : options) {
+			settings->properties.push_back(E.option);
+			if (d.has(E.option.name)) {
+				settings->values[E.option.name] = d[E.option.name];
 			} else {
-				settings->values[E->get().option.name] = E->get().default_value;
+				settings->values[E.option.name] = E.default_value;
 			}
-			settings->default_values[E->get().option.name] = E->get().default_value;
+			settings->default_values[E.option.name] = E.default_value;
 		}
 
 		save_defaults->set_disabled(false);
@@ -166,8 +166,8 @@ void ImportDefaultsEditor::clear() {
 	List<Ref<ResourceImporter>> importer_list;
 	ResourceFormatImporter::get_singleton()->get_importers(&importer_list);
 	Vector<String> names;
-	for (List<Ref<ResourceImporter>>::Element *E = importer_list.front(); E; E = E->next()) {
-		String vn = E->get()->get_visible_name();
+	for (const Ref<ResourceImporter> &E : importer_list) {
+		String vn = E->get_visible_name();
 		names.push_back(vn);
 	}
 	names.sort();

@@ -65,7 +65,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 
 	void set_threshold(float p_threshold);
 	float get_threshold() const;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Directory" inherits="Reference" version="4.0">
+<class name="Directory" inherits="RefCounted" version="4.0">
 	<brief_description>
 		Type used to handle the filesystem.
 	</brief_description>
@@ -54,176 +54,142 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="File system">https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
+		<link title="File system">$DOCS_URL/tutorials/scripting/filesystem.html</link>
 	</tutorials>
 	<methods>
 		<method name="change_dir">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="todir" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="todir" type="String" />
 			<description>
 				Changes the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="copy">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="from" type="String">
-			</argument>
-			<argument index="1" name="to" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="from" type="String" />
+			<argument index="1" name="to" type="String" />
 			<description>
 				Copies the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="current_is_dir" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether the current item processed with the last [method get_next] call is a directory ([code].[/code] and [code]..[/code] are considered directories).
 			</description>
 		</method>
 		<method name="dir_exists">
-			<return type="bool">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns whether the target directory exists. The argument can be relative to the current directory, or an absolute path.
 				If the [Directory] is not open, the path is relative to [code]res://[/code].
 			</description>
 		</method>
 		<method name="file_exists">
-			<return type="bool">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns whether the target file exists. The argument can be relative to the current directory, or an absolute path.
 				If the [Directory] is not open, the path is relative to [code]res://[/code].
 			</description>
 		</method>
 		<method name="get_current_dir">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the absolute path to the currently opened directory (e.g. [code]res://folder[/code] or [code]C:\tmp\folder[/code]).
 			</description>
 		</method>
 		<method name="get_current_drive">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the currently opened directory's drive index. See [method get_drive] to convert returned index to the name of the drive.
 			</description>
 		</method>
 		<method name="get_drive">
-			<return type="String">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
+			<return type="String" />
+			<argument index="0" name="idx" type="int" />
 			<description>
 				On Windows, returns the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]). On other platforms, or if the requested drive does not exist, the method returns an empty String.
 			</description>
 		</method>
 		<method name="get_drive_count">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				On Windows, returns the number of drives (partitions) mounted on the current filesystem. On other platforms, the method returns 0.
 			</description>
 		</method>
 		<method name="get_next">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the next element (file or directory) in the current directory (including [code].[/code] and [code]..[/code], unless [code]skip_navigational[/code] was given to [method list_dir_begin]).
 				The name of the file or directory is returned (and not its full path). Once the stream has been fully processed, the method returns an empty String and closes the stream automatically (i.e. [method list_dir_end] would not be mandatory in such a case).
 			</description>
 		</method>
 		<method name="get_space_left">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				On UNIX desktop systems, returns the available space on the current directory's disk. On other platforms, this information is not available and the method returns 0 or -1.
 			</description>
 		</method>
 		<method name="list_dir_begin">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="skip_navigational" type="bool" default="false">
-			</argument>
-			<argument index="1" name="skip_hidden" type="bool" default="false">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="show_navigational" type="bool" default="false" />
+			<argument index="1" name="show_hidden" type="bool" default="false" />
 			<description>
-				Initializes the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
-				If [code]skip_navigational[/code] is [code]true[/code], [code].[/code] and [code]..[/code] are filtered out.
-				If [code]skip_hidden[/code] is [code]true[/code], hidden files are filtered out.
+				Initializes the stream used to list all files and directories using the [method get_next] function, closing the currently opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
+				If [code]show_navigational[/code] is [code]true[/code], [code].[/code] and [code]..[/code] are included too.
+				If [code]show_hidden[/code] is [code]true[/code], hidden files are included too.
 			</description>
 		</method>
 		<method name="list_dir_end">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Closes the current stream opened with [method list_dir_begin] (whether it has been fully processed with [method get_next] does not matter).
 			</description>
 		</method>
 		<method name="make_dir">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Creates a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="make_dir_recursive">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Creates a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="open">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Opens an existing directory of the filesystem. The [code]path[/code] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="remove">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Deletes the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 		<method name="rename">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="from" type="String">
-			</argument>
-			<argument index="1" name="to" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="from" type="String" />
+			<argument index="1" name="to" type="String" />
 			<description>
-				Renames (move) the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
+				Renames (move) the [code]from[/code] file or directory to the [code]to[/code] destination. Both arguments should be paths to files or directories, either relative or absolute. If the destination file or directory exists and is not access-protected, it will be overwritten.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

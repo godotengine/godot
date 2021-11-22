@@ -34,9 +34,6 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_settings.h"
 
-void Texture3DEditor::_gui_input(Ref<InputEvent> p_event) {
-}
-
 void Texture3DEditor::_texture_rect_draw() {
 	texture_rect->draw_rect(Rect2(Point2(), texture_rect->get_size()), Color(1, 1, 1, 1));
 }
@@ -50,7 +47,7 @@ void Texture3DEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -77,17 +74,20 @@ void Texture3DEditor::_update_material() {
 }
 
 void Texture3DEditor::_make_shaders() {
-	String shader_3d = ""
-					   "shader_type canvas_item;\n"
-					   "uniform sampler3D tex;\n"
-					   "uniform float layer;\n"
-					   "void fragment() {\n"
-					   "  COLOR = textureLod(tex,vec3(UV,layer),0.0);\n"
-					   "}";
+	shader.instantiate();
+	shader->set_code(R"(
+// Texture3DEditor preview shader.
 
-	shader.instance();
-	shader->set_code(shader_3d);
-	material.instance();
+shader_type canvas_item;
+
+uniform sampler3D tex;
+uniform float layer;
+
+void fragment() {
+	COLOR = textureLod(tex, vec3(UV, layer), 0.0);
+}
+)");
+	material.instantiate();
 	material->set_shader(shader);
 }
 
@@ -144,7 +144,6 @@ void Texture3DEditor::edit(Ref<Texture3D> p_texture) {
 }
 
 void Texture3DEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &Texture3DEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_layer_changed"), &Texture3DEditor::_layer_changed);
 }
 
@@ -174,7 +173,7 @@ Texture3DEditor::Texture3DEditor() {
 	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
 	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
 	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
-	info->add_theme_constant_override("shadow_as_outline", 1);
+	info->add_theme_constant_override("shadow_outline_size", 1);
 	info->add_theme_constant_override("shadow_offset_x", 2);
 	info->add_theme_constant_override("shadow_offset_y", 2);
 
@@ -207,6 +206,6 @@ void EditorInspectorPlugin3DTexture::parse_begin(Object *p_object) {
 
 Texture3DEditorPlugin::Texture3DEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPlugin3DTexture> plugin;
-	plugin.instance();
+	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }

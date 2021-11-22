@@ -34,9 +34,9 @@
 
 void ProximityGroup3D::_clear_groups() {
 	Map<StringName, uint32_t>::Element *E;
+	const int size = 16;
 
-	{
-		const int size = 16;
+	do {
 		StringName remove_list[size];
 		E = groups.front();
 		int num = 0;
@@ -50,11 +50,7 @@ void ProximityGroup3D::_clear_groups() {
 		for (int i = 0; i < num; i++) {
 			groups.erase(remove_list[i]);
 		}
-	}
-
-	if (E) {
-		_clear_groups(); // call until we go through the whole list
-	}
+	} while (E);
 }
 
 void ProximityGroup3D::_update_groups() {
@@ -128,9 +124,10 @@ void ProximityGroup3D::broadcast(String p_method, Variant p_parameters) {
 
 void ProximityGroup3D::_proximity_group_broadcast(String p_method, Variant p_parameters) {
 	if (dispatch_mode == MODE_PROXY) {
+		ERR_FAIL_COND(!is_inside_tree());
 		get_parent()->call(p_method, p_parameters);
 	} else {
-		emit_signal("broadcast", p_method, p_parameters);
+		emit_signal(SNAME("broadcast"), p_method, p_parameters);
 	}
 }
 

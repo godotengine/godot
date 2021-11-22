@@ -229,12 +229,21 @@ typedef void mbedtls_x509_crt_restart_ctx;
 /**
  * Default security profile. Should provide a good balance between security
  * and compatibility with current deployments.
+ *
+ * This profile permits:
+ * - SHA2 hashes.
+ * - All supported elliptic curves.
+ * - RSA with 2048 bits and above.
+ *
+ * New minor versions of Mbed TLS may extend this profile, for example if
+ * new curves are added to the library. New minor versions of Mbed TLS will
+ * not reduce this profile unless serious security concerns require it.
  */
 extern const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_default;
 
 /**
  * Expected next default profile. Recommended for new deployments.
- * Currently targets a 128-bit security level, except for RSA-2048.
+ * Currently targets a 128-bit security level, except for allowing RSA-2048.
  */
 extern const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_next;
 

@@ -11,33 +11,25 @@
 	</tutorials>
 	<methods>
 		<method name="get_band_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of bands of the equalizer.
 			</description>
 		</method>
 		<method name="get_band_gain_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="band_idx" type="int">
-			</argument>
+			<return type="float" />
+			<argument index="0" name="band_idx" type="int" />
 			<description>
 				Returns the band's gain at the specified index, in dB.
 			</description>
 		</method>
 		<method name="set_band_gain_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="band_idx" type="int">
-			</argument>
-			<argument index="1" name="volume_db" type="float">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="band_idx" type="int" />
+			<argument index="1" name="volume_db" type="float" />
 			<description>
 				Sets band's gain at the specified index, in dB.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

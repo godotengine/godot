@@ -68,6 +68,7 @@ public:
 		ASSERT_ALWAYS_TRUE, // Expression for assert argument is always true.
 		ASSERT_ALWAYS_FALSE, // Expression for assert argument is always false.
 		REDUNDANT_AWAIT, // await is used but expression is synchronous (not a signal nor a coroutine).
+		EMPTY_FILE, // A script file is empty.
 		WARNING_MAX,
 	};
 

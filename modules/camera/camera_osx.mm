@@ -29,10 +29,11 @@
 /*************************************************************************/
 
 ///@TODO this is a near duplicate of CameraIOS, we should find a way to combine those to minimize code duplication!!!!
-// If you fix something here, make sure you fix it there as wel!
+// If you fix something here, make sure you fix it there as well!
 
 #include "camera_osx.h"
 #include "servers/camera/camera_feed.h"
+
 #import <AVFoundation/AVFoundation.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -106,15 +107,15 @@
 	if (input) {
 		[self removeInput:input];
 		// don't release this
-		input = NULL;
+		input = nullptr;
 	}
 
 	// free up our output
 	if (output) {
 		[self removeOutput:output];
-		[output setSampleBufferDelegate:nil queue:NULL];
+		[output setSampleBufferDelegate:nil queue:nullptr];
 		[output release];
-		output = NULL;
+		output = nullptr;
 	}
 
 	[self commitConfiguration];
@@ -141,9 +142,9 @@
 	// get our buffers
 	unsigned char *dataY = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
 	unsigned char *dataCbCr = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
-	if (dataY == NULL) {
+	if (dataY == nullptr) {
 		print_line("Couldn't access Y pixel buffer data");
-	} else if (dataCbCr == NULL) {
+	} else if (dataCbCr == nullptr) {
 		print_line("Couldn't access CbCr pixel buffer data");
 	} else {
 		Ref<Image> img[2];
@@ -162,7 +163,7 @@
 			uint8_t *w = img_data[0].ptrw();
 			memcpy(w, dataY, new_width * new_height);
 
-			img[0].instance();
+			img[0].instantiate();
 			img[0]->create(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
 		}
 
@@ -180,8 +181,8 @@
 			uint8_t *w = img_data[1].ptrw();
 			memcpy(w, dataCbCr, 2 * new_width * new_height);
 
-			///TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion
-			img[1].instance();
+			///TODO OpenGL doesn't support FORMAT_RG8, need to do some form of conversion
+			img[1].instantiate();
 			img[1]->create(new_width, new_height, 0, Image::FORMAT_RG8, img_data[1]);
 		}
 
@@ -220,8 +221,8 @@ AVCaptureDevice *CameraFeedOSX::get_device() const {
 };
 
 CameraFeedOSX::CameraFeedOSX() {
-	device = NULL;
-	capture_session = NULL;
+	device = nullptr;
+	capture_session = nullptr;
 };
 
 void CameraFeedOSX::set_device(AVCaptureDevice *p_device) {
@@ -240,23 +241,38 @@ void CameraFeedOSX::set_device(AVCaptureDevice *p_device) {
 };
 
 CameraFeedOSX::~CameraFeedOSX() {
-	if (capture_session != NULL) {
+	if (capture_session != nullptr) {
 		[capture_session release];
-		capture_session = NULL;
+		capture_session = nullptr;
 	};
 
-	if (device != NULL) {
+	if (device != nullptr) {
 		[device release];
-		device = NULL;
+		device = nullptr;
 	};
 };
 
 bool CameraFeedOSX::activate_feed() {
 	if (capture_session) {
-		// already recording!
+		// Already recording!
 	} else {
-		// start camera capture
-		capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+		// Start camera capture, check permission.
+		if (@available(macOS 10.14, *)) {
+			AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+			if (status == AVAuthorizationStatusAuthorized) {
+				capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+			} else if (status == AVAuthorizationStatusNotDetermined) {
+				// Request permission.
+				[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
+										 completionHandler:^(BOOL granted) {
+											 if (granted) {
+												 capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+											 }
+										 }];
+			}
+		} else {
+			capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+		}
 	};
 
 	return true;
@@ -267,7 +283,7 @@ void CameraFeedOSX::deactivate_feed() {
 	if (capture_session) {
 		[capture_session cleanup];
 		[capture_session release];
-		capture_session = NULL;
+		capture_session = nullptr;
 	};
 };
 
@@ -341,7 +357,7 @@ void CameraOSX::update_feeds() {
 
 		if (!found) {
 			Ref<CameraFeedOSX> newfeed;
-			newfeed.instance();
+			newfeed.instantiate();
 			newfeed->set_device(device);
 
 			// assume display camera so inverse

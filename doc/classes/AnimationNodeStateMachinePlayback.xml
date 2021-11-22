@@ -18,64 +18,54 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_current_length" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="get_current_node" qualifiers="const">
-			<return type="StringName">
-			</return>
+			<return type="StringName" />
 			<description>
 				Returns the currently playing animation state.
 			</description>
 		</method>
 		<method name="get_current_play_position" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the playback position within the current animation state.
 			</description>
 		</method>
 		<method name="get_travel_path" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns the current travel path as computed internally by the A* algorithm.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if an animation is playing.
 			</description>
 		</method>
 		<method name="start">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="node" type="StringName" />
 			<description>
 				Starts playing the given animation.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the currently playing animation.
 			</description>
 		</method>
 		<method name="travel">
-			<return type="void">
-			</return>
-			<argument index="0" name="to_node" type="StringName">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="to_node" type="StringName" />
 			<description>
 				Transitions from the current state to another one, following the shortest path.
 			</description>
@@ -84,6 +74,4 @@
 	<members>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" override="true" default="true" />
 	</members>
-	<constants>
-	</constants>
 </class>

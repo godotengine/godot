@@ -169,7 +169,8 @@ CallableCustomUnbind::~CallableCustomUnbind() {
 }
 
 Callable callable_bind(const Callable &p_callable, const Variant &p_arg1) {
-	return p_callable.bind((const Variant **)&p_arg1, 1);
+	const Variant *args[1] = { &p_arg1 };
+	return p_callable.bind(args, 1);
 }
 
 Callable callable_bind(const Callable &p_callable, const Variant &p_arg1, const Variant &p_arg2) {

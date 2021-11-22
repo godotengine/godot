@@ -44,15 +44,14 @@ class GDScriptLanguageServer : public EditorPlugin {
 	bool thread_running = false;
 	bool started = false;
 	bool use_thread = false;
+	String host = "127.0.0.1";
 	int port = 6008;
 	static void thread_main(void *p_userdata);
 
 private:
 	void _notification(int p_what);
-	void _iteration();
 
 public:
-	Error parse_script_file(const String &p_path);
 	GDScriptLanguageServer();
 	void start();
 	void stop();

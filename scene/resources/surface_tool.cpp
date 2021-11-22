@@ -35,6 +35,7 @@
 
 SurfaceTool::OptimizeVertexCacheFunc SurfaceTool::optimize_vertex_cache_func = nullptr;
 SurfaceTool::SimplifyFunc SurfaceTool::simplify_func = nullptr;
+SurfaceTool::SimplifyWithAttribFunc SurfaceTool::simplify_with_attrib_func = nullptr;
 SurfaceTool::SimplifyScaleFunc SurfaceTool::simplify_scale_func = nullptr;
 SurfaceTool::SimplifySloppyFunc SurfaceTool::simplify_sloppy_func = nullptr;
 
@@ -369,13 +370,13 @@ Array SurfaceTool::commit_to_arrays() {
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					w[idx + 0] = v.tangent.x;
-					w[idx + 1] = v.tangent.y;
-					w[idx + 2] = v.tangent.z;
+					w[idx * 4 + 0] = v.tangent.x;
+					w[idx * 4 + 1] = v.tangent.y;
+					w[idx * 4 + 2] = v.tangent.z;
 
 					//float d = v.tangent.dot(v.binormal,v.normal);
 					float d = v.binormal.dot(v.normal.cross(v.tangent));
-					w[idx + 3] = d < 0 ? -1 : 1;
+					w[idx * 4 + 3] = d < 0 ? -1 : 1;
 				}
 
 				a[i] = array;
@@ -408,7 +409,7 @@ Array SurfaceTool::commit_to_arrays() {
 						for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 							const Vertex &v = vertex_array[idx];
 
-							const Color &c = v.custom[idx];
+							const Color &c = v.custom[fmt];
 							w[idx * 4 + 0] = CLAMP(int32_t(c.r * 255.0), 0, 255);
 							w[idx * 4 + 1] = CLAMP(int32_t(c.g * 255.0), 0, 255);
 							w[idx * 4 + 2] = CLAMP(int32_t(c.b * 255.0), 0, 255);
@@ -425,7 +426,7 @@ Array SurfaceTool::commit_to_arrays() {
 						for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 							const Vertex &v = vertex_array[idx];
 
-							const Color &c = v.custom[idx];
+							const Color &c = v.custom[fmt];
 							w[idx * 4 + 0] = uint8_t(int8_t(CLAMP(int32_t(c.r * 127.0), -128, 127)));
 							w[idx * 4 + 1] = uint8_t(int8_t(CLAMP(int32_t(c.g * 127.0), -128, 127)));
 							w[idx * 4 + 2] = uint8_t(int8_t(CLAMP(int32_t(c.b * 127.0), -128, 127)));
@@ -442,7 +443,7 @@ Array SurfaceTool::commit_to_arrays() {
 						for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 							const Vertex &v = vertex_array[idx];
 
-							const Color &c = v.custom[idx];
+							const Color &c = v.custom[fmt];
 							w[idx * 2 + 0] = Math::make_half_float(c.r);
 							w[idx * 2 + 1] = Math::make_half_float(c.g);
 						}
@@ -457,7 +458,7 @@ Array SurfaceTool::commit_to_arrays() {
 						for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 							const Vertex &v = vertex_array[idx];
 
-							const Color &c = v.custom[idx];
+							const Color &c = v.custom[fmt];
 							w[idx * 4 + 0] = Math::make_half_float(c.r);
 							w[idx * 4 + 1] = Math::make_half_float(c.g);
 							w[idx * 4 + 2] = Math::make_half_float(c.b);
@@ -474,7 +475,7 @@ Array SurfaceTool::commit_to_arrays() {
 						for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 							const Vertex &v = vertex_array[idx];
 
-							const Color &c = v.custom[idx];
+							const Color &c = v.custom[fmt];
 							w[idx] = c.r;
 						}
 
@@ -488,7 +489,7 @@ Array SurfaceTool::commit_to_arrays() {
 						for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 							const Vertex &v = vertex_array[idx];
 
-							const Color &c = v.custom[idx];
+							const Color &c = v.custom[fmt];
 							w[idx * 2 + 0] = c.r;
 							w[idx * 2 + 1] = c.g;
 						}
@@ -503,7 +504,7 @@ Array SurfaceTool::commit_to_arrays() {
 						for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 							const Vertex &v = vertex_array[idx];
 
-							const Color &c = v.custom[idx];
+							const Color &c = v.custom[fmt];
 							w[idx * 3 + 0] = c.r;
 							w[idx * 3 + 1] = c.g;
 							w[idx * 3 + 2] = c.b;
@@ -519,7 +520,7 @@ Array SurfaceTool::commit_to_arrays() {
 						for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 							const Vertex &v = vertex_array[idx];
 
-							const Color &c = v.custom[idx];
+							const Color &c = v.custom[fmt];
 							w[idx * 4 + 0] = c.r;
 							w[idx * 4 + 1] = c.g;
 							w[idx * 4 + 2] = c.b;
@@ -536,12 +537,16 @@ Array SurfaceTool::commit_to_arrays() {
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 				Vector<int> array;
 				array.resize(varr_len * count);
+				array.fill(0);
 				int *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					ERR_CONTINUE(v.bones.size() != count);
+					if (v.bones.size() > count) {
+						ERR_PRINT_ONCE(vformat("Invalid bones size %d vs count %d", v.bones.size(), count));
+						continue;
+					}
 
 					for (int j = 0; j < count; j++) {
 						w[idx * count + j] = v.bones[j];
@@ -556,12 +561,16 @@ Array SurfaceTool::commit_to_arrays() {
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 
 				array.resize(varr_len * count);
+				array.fill(0.0f);
 				float *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
 					const Vertex &v = vertex_array[idx];
 
-					ERR_CONTINUE(v.weights.size() != count);
+					if (v.weights.size() > count) {
+						ERR_PRINT_ONCE(vformat("Invalid weight size %d vs count %d", v.weights.size(), count));
+						continue;
+					}
 
 					for (int j = 0; j < count; j++) {
 						w[idx * count + j] = v.weights[j];
@@ -598,7 +607,7 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_
 	if (p_existing.is_valid()) {
 		mesh = p_existing;
 	} else {
-		mesh.instance();
+		mesh.instantiate();
 	}
 
 	int varr_len = vertex_array.size();
@@ -663,10 +672,15 @@ void SurfaceTool::deindex() {
 }
 
 void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat) {
+	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::_create_list() must be a valid object of type Mesh");
+
 	Array arr = p_existing->surface_get_arrays(p_surface);
 	ERR_FAIL_COND(arr.size() != RS::ARRAY_MAX);
 	_create_list_from_arrays(arr, r_vertex, r_index, lformat);
 }
+
+static const uint32_t custom_mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0, Mesh::ARRAY_FORMAT_CUSTOM1, Mesh::ARRAY_FORMAT_CUSTOM2, Mesh::ARRAY_FORMAT_CUSTOM3 };
+static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
 
 void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<SurfaceTool::Vertex> &ret, uint32_t *r_format) {
 	ret.clear();
@@ -722,8 +736,6 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 	if (warr.size()) {
 		lformat |= RS::ARRAY_FORMAT_WEIGHTS;
 	}
-	static const uint32_t custom_mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0, Mesh::ARRAY_FORMAT_CUSTOM1, Mesh::ARRAY_FORMAT_CUSTOM2, Mesh::ARRAY_FORMAT_CUSTOM3 };
-	static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
 
 	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
 		ERR_CONTINUE_MSG(p_arrays[RS::ARRAY_CUSTOM0 + i].get_type() == Variant::PACKED_BYTE_ARRAY, "Extracting Byte/Half formats is not supported");
@@ -821,16 +833,32 @@ void SurfaceTool::create_from_triangle_arrays(const Array &p_arrays) {
 	clear();
 	primitive = Mesh::PRIMITIVE_TRIANGLES;
 	_create_list_from_arrays(p_arrays, &vertex_array, &index_array, format);
+
+	for (int j = 0; j < RS::ARRAY_CUSTOM_COUNT; j++) {
+		if (format & custom_mask[j]) {
+			last_custom_format[j] = (CustomFormat)((format >> custom_shift[j]) & RS::ARRAY_FORMAT_CUSTOM_MASK);
+		}
+	}
 }
 
 void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
+	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::create_from() must be a valid object of type Mesh");
+
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
 	_create_list(p_existing, p_surface, &vertex_array, &index_array, format);
 	material = p_existing->surface_get_material(p_surface);
+
+	for (int j = 0; j < RS::ARRAY_CUSTOM_COUNT; j++) {
+		if (format & custom_mask[j]) {
+			last_custom_format[j] = (CustomFormat)((format >> custom_shift[j]) & RS::ARRAY_FORMAT_CUSTOM_MASK);
+		}
+	}
 }
 
 void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name) {
+	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::create_from_blend_shape() must be a valid object of type Mesh");
+
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
 	Array arr = p_existing->surface_get_blend_shape_arrays(p_surface);
@@ -848,9 +876,17 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 	Array mesh = arr[shape_idx];
 	ERR_FAIL_COND(mesh.size() != RS::ARRAY_MAX);
 	_create_list_from_arrays(arr[shape_idx], &vertex_array, &index_array, format);
+
+	for (int j = 0; j < RS::ARRAY_CUSTOM_COUNT; j++) {
+		if (format & custom_mask[j]) {
+			last_custom_format[j] = (CustomFormat)((format >> custom_shift[j]) & RS::ARRAY_FORMAT_CUSTOM_MASK);
+		}
+	}
 }
 
-void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform) {
+void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform) {
+	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
+
 	if (vertex_array.size() == 0) {
 		primitive = p_existing->surface_get_primitive_type(p_surface);
 		format = 0;
@@ -861,6 +897,16 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 	LocalVector<int> nindices;
 	_create_list(p_existing, p_surface, &nvertices, &nindices, nformat);
 	format |= nformat;
+
+	for (int j = 0; j < RS::ARRAY_CUSTOM_COUNT; j++) {
+		if (format & custom_mask[j]) {
+			CustomFormat new_format = (CustomFormat)((format >> custom_shift[j]) & RS::ARRAY_FORMAT_CUSTOM_MASK);
+			if (last_custom_format[j] != CUSTOM_MAX && last_custom_format[j] != new_format) {
+				WARN_PRINT(vformat("Custom %d format %d mismatch when appending format %d", j, last_custom_format[j], new_format));
+			}
+			last_custom_format[j] = new_format;
+		}
+	}
 	int vfrom = vertex_array.size();
 
 	for (uint32_t vi = 0; vi < nvertices.size(); vi++) {
@@ -1103,9 +1149,10 @@ SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_index) const {
 void SurfaceTool::optimize_indices_for_cache() {
 	ERR_FAIL_COND(optimize_vertex_cache_func == nullptr);
 	ERR_FAIL_COND(index_array.size() == 0);
+	ERR_FAIL_COND(index_array.size() % 3 != 0);
 
 	LocalVector old_index_array = index_array;
-	zeromem(index_array.ptr(), index_array.size() * sizeof(int));
+	memset(index_array.ptr(), 0, index_array.size() * sizeof(int));
 	optimize_vertex_cache_func((unsigned int *)index_array.ptr(), (unsigned int *)old_index_array.ptr(), old_index_array.size(), vertex_array.size());
 }
 
@@ -1127,8 +1174,11 @@ Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_coun
 	Vector<int> lod;
 
 	ERR_FAIL_COND_V(simplify_func == nullptr, lod);
+	ERR_FAIL_COND_V(p_target_index_count < 0, lod);
 	ERR_FAIL_COND_V(vertex_array.size() == 0, lod);
 	ERR_FAIL_COND_V(index_array.size() == 0, lod);
+	ERR_FAIL_COND_V(index_array.size() % 3 != 0, lod);
+	ERR_FAIL_COND_V(index_array.size() < (unsigned int)p_target_index_count, lod);
 
 	lod.resize(index_array.size());
 	LocalVector<float> vertices; //uses floats

@@ -80,7 +80,7 @@ struct hangul_shape_plan_t
 static void *
 data_create_hangul (const hb_ot_shape_plan_t *plan)
 {
-  hangul_shape_plan_t *hangul_plan = (hangul_shape_plan_t *) calloc (1, sizeof (hangul_shape_plan_t));
+  hangul_shape_plan_t *hangul_plan = (hangul_shape_plan_t *) hb_calloc (1, sizeof (hangul_shape_plan_t));
   if (unlikely (!hangul_plan))
     return nullptr;
 
@@ -93,7 +93,7 @@ data_create_hangul (const hb_ot_shape_plan_t *plan)
 static void
 data_destroy_hangul (void *data)
 {
-  free (data);
+  hb_free (data);
 }
 
 /* Constants for algorithmic hangul syllable [de]composition. */

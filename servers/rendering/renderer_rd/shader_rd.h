@@ -59,7 +59,8 @@ class ShaderRD {
 		Map<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
 
-		RID *variants; //same size as version defines
+		Vector<uint8_t> *variant_data = nullptr;
+		RID *variants = nullptr; //same size as version defines
 
 		bool valid;
 		bool dirty;
@@ -96,9 +97,18 @@ class ShaderRD {
 
 	bool is_compute = false;
 
-	const char *name;
+	String name;
 
 	CharString base_compute_defines;
+
+	String base_sha256;
+
+	static String shader_cache_dir;
+	static bool shader_cache_cleanup_on_start;
+	static bool shader_cache_save_compressed;
+	static bool shader_cache_save_compressed_zstd;
+	static bool shader_cache_save_debug;
+	bool shader_cache_dir_valid = false;
 
 	enum StageType {
 		STAGE_TYPE_VERTEX,
@@ -112,6 +122,10 @@ class ShaderRD {
 	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template);
 
 	void _add_stage(const char *p_code, StageType p_stage_type);
+
+	String _version_get_sha1(Version *p_version) const;
+	bool _load_from_cache(Version *p_version);
+	void _save_to_cache(Version *p_version);
 
 protected:
 	ShaderRD();
@@ -127,7 +141,7 @@ public:
 		ERR_FAIL_INDEX_V(p_variant, variant_defines.size(), RID());
 		ERR_FAIL_COND_V(!variants_enabled[p_variant], RID());
 
-		Version *version = version_owner.getornull(p_version);
+		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_COND_V(!version, RID());
 
 		if (version->dirty) {
@@ -147,6 +161,11 @@ public:
 
 	void set_variant_enabled(int p_variant, bool p_enabled);
 	bool is_variant_enabled(int p_variant) const;
+
+	static void set_shader_cache_dir(const String &p_dir);
+	static void set_shader_cache_save_compressed(bool p_enable);
+	static void set_shader_cache_save_compressed_zstd(bool p_enable);
+	static void set_shader_cache_save_debug(bool p_enable);
 
 	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 

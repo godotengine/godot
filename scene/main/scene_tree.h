@@ -31,7 +31,7 @@
 #ifndef SCENE_TREE_H
 #define SCENE_TREE_H
 
-#include "core/io/multiplayer_api.h"
+#include "core/multiplayer/multiplayer_api.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/self_list.h"
@@ -47,22 +47,27 @@ class Window;
 class Material;
 class Mesh;
 class SceneDebugger;
+class Tween;
 
-class SceneTreeTimer : public Reference {
-	GDCLASS(SceneTreeTimer, Reference);
+class SceneTreeTimer : public RefCounted {
+	GDCLASS(SceneTreeTimer, RefCounted);
 
-	float time_left = 0.0;
+	double time_left = 0.0;
 	bool process_always = true;
+	bool ignore_time_scale = false;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_time_left(float p_time);
-	float get_time_left() const;
+	void set_time_left(double p_time);
+	double get_time_left() const;
 
 	void set_process_always(bool p_process_always);
 	bool is_process_always();
+
+	void set_ignore_time_scale(bool p_ignore);
+	bool is_ignore_time_scale();
 
 	void release_connections();
 
@@ -86,8 +91,8 @@ private:
 	Window *root = nullptr;
 
 	uint64_t tree_version = 1;
-	float physics_process_time = 1.0;
-	float process_time = 1.0;
+	double physics_process_time = 1.0;
+	double process_time = 1.0;
 	bool accept_quit = true;
 	bool quit_on_go_back = true;
 
@@ -131,7 +136,6 @@ private:
 	void _flush_ugc();
 
 	_FORCE_INLINE_ void _update_group_order(Group &g, bool p_use_priority = false);
-	void _update_listener();
 
 	Array _get_nodes_in_group(const StringName &p_group);
 
@@ -151,18 +155,12 @@ private:
 	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
 	List<Ref<SceneTreeTimer>> timers;
+	List<Ref<Tween>> tweens;
 
 	///network///
 
 	Ref<MultiplayerAPI> multiplayer;
 	bool multiplayer_poll = true;
-
-	void _network_peer_connected(int p_id);
-	void _network_peer_disconnected(int p_id);
-
-	void _connected_to_server();
-	void _connection_failed();
-	void _server_disconnected();
 
 	static SceneTree *singleton;
 	friend class Node;
@@ -171,6 +169,7 @@ private:
 	void node_added(Node *p_node);
 	void node_removed(Node *p_node);
 	void node_renamed(Node *p_node);
+	void process_tweens(float p_delta, bool p_physics_frame);
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
@@ -204,8 +203,14 @@ private:
 	void _main_window_close();
 	void _main_window_go_back();
 
+	enum CallInputType {
+		CALL_INPUT_TYPE_INPUT,
+		CALL_INPUT_TYPE_UNHANDLED_INPUT,
+		CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT,
+	};
+
 	//used by viewport
-	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport);
+	void _call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport);
 
 protected:
 	void _notification(int p_notification);
@@ -237,8 +242,8 @@ public:
 
 	virtual void initialize() override;
 
-	virtual bool physics_process(float p_time) override;
-	virtual bool process(float p_time) override;
+	virtual bool physics_process(double p_time) override;
+	virtual bool process(double p_time) override;
 
 	virtual void finalize() override;
 
@@ -247,8 +252,8 @@ public:
 
 	void quit(int p_exit_code = EXIT_SUCCESS);
 
-	_FORCE_INLINE_ float get_physics_process_time() const { return physics_process_time; }
-	_FORCE_INLINE_ float get_process_time() const { return process_time; }
+	_FORCE_INLINE_ double get_physics_process_time() const { return physics_process_time; }
+	_FORCE_INLINE_ double get_process_time() const { return process_time; }
 
 #ifdef TOOLS_ENABLED
 	bool is_node_being_edited(const Node *p_node) const;
@@ -258,9 +263,6 @@ public:
 
 	void set_pause(bool p_enabled);
 	bool is_paused() const;
-
-	void set_camera(const RID &p_camera);
-	RID get_camera() const;
 
 #ifdef DEBUG_ENABLED
 	void set_debug_collisions_hint(bool p_enabled);
@@ -317,7 +319,9 @@ public:
 	Error change_scene_to(const Ref<PackedScene> &p_scene);
 	Error reload_current_scene();
 
-	Ref<SceneTreeTimer> create_timer(float p_delay_sec, bool p_process_always = true);
+	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true);
+	Ref<Tween> create_tween();
+	Array get_processed_tweens();
 
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node *p_current);
@@ -332,16 +336,6 @@ public:
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;
 	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
-	void set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer);
-	Ref<NetworkedMultiplayerPeer> get_network_peer() const;
-	bool is_network_server() const;
-	bool has_network_peer() const;
-	int get_network_unique_id() const;
-	Vector<int> get_network_connected_peers() const;
-	int get_rpc_sender_id() const;
-
-	void set_refuse_new_network_connections(bool p_refuse);
-	bool is_refusing_new_network_connections() const;
 
 	static void add_idle_callback(IdleCallback p_callback);
 

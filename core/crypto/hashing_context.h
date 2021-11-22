@@ -31,10 +31,10 @@
 #ifndef HASHING_CONTEXT_H
 #define HASHING_CONTEXT_H
 
-#include "core/object/reference.h"
+#include "core/object/ref_counted.h"
 
-class HashingContext : public Reference {
-	GDCLASS(HashingContext, Reference);
+class HashingContext : public RefCounted {
+	GDCLASS(HashingContext, RefCounted);
 
 public:
 	enum HashType {

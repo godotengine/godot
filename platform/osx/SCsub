@@ -13,7 +13,7 @@ files = [
     "dir_access_osx.mm",
     "joypad_osx.cpp",
     "vulkan_context_osx.mm",
-    "context_gl_osx.mm",
+    "gl_manager_osx.mm",
 ]
 
 prog = env.add_program("#bin/godot", files)

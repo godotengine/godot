@@ -7,24 +7,20 @@
 		Contains screen drag information. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
+		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="index" type="int" setter="set_index" getter="get_index" default="0">
 			The drag event index in the case of a multi-drag event.
 		</member>
-		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2( 0, 0 )">
+		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
 			The drag position.
 		</member>
-		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative" default="Vector2( 0, 0 )">
-			The drag position relative to its start position.
+		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative" default="Vector2(0, 0)">
+			The drag position relative to the previous position (position at the last frame).
 		</member>
-		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed" default="Vector2( 0, 0 )">
+		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed" default="Vector2(0, 0)">
 			The drag speed.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -43,12 +43,9 @@
 class btGhostObject;
 
 class AreaBullet : public RigidCollisionObjectBullet {
-	friend void SpaceBullet::check_ghost_overlaps();
-
 public:
 	struct InOutEventCallback {
-		ObjectID event_callback_id;
-		StringName event_callback_method;
+		Callable event_callback;
 
 		InOutEventCallback() {}
 	};
@@ -60,21 +57,19 @@ public:
 		OVERLAP_STATE_EXIT // Mark ended overlaps
 	};
 
-	struct OverlappingObjectData {
-		CollisionObjectBullet *object = nullptr;
-		OverlapState state = OVERLAP_STATE_ENTER;
+	struct OverlappingShapeData {
+		CollisionObjectBullet *other_object = nullptr;
+		OverlapState state = OVERLAP_STATE_DIRTY;
+		uint32_t other_shape_id = 0;
+		uint32_t our_shape_id = 0;
 
-		OverlappingObjectData() {}
-		OverlappingObjectData(CollisionObjectBullet *p_object, OverlapState p_state) :
-				object(p_object),
-				state(p_state) {}
-		OverlappingObjectData(const OverlappingObjectData &other) {
-			operator=(other);
-		}
-		void operator=(const OverlappingObjectData &other) {
-			object = other.object;
-			state = other.state;
-		}
+		OverlappingShapeData() {}
+
+		OverlappingShapeData(CollisionObjectBullet *p_other_object, OverlapState p_state, uint32_t p_other_shape_id, uint32_t p_our_shape_id) :
+				other_object(p_other_object),
+				state(p_state),
+				other_shape_id(p_other_shape_id),
+				our_shape_id(p_our_shape_id) {}
 	};
 
 private:
@@ -83,7 +78,9 @@ private:
 	Variant *call_event_res_ptr[5] = {};
 
 	btGhostObject *btGhost = nullptr;
-	Vector<OverlappingObjectData> overlappingObjects;
+	Vector<OverlappingShapeData> overlapping_shapes;
+	int _overlapping_shape_count(CollisionObjectBullet *p_other_object);
+	int _find_overlapping_shape(CollisionObjectBullet *p_other_object, uint32_t p_other_shape_id, uint32_t p_our_shape_id);
 	bool monitorable = true;
 
 	PhysicsServer3D::AreaSpaceOverrideMode spOv_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
@@ -105,7 +102,6 @@ public:
 	~AreaBullet();
 
 	_FORCE_INLINE_ btGhostObject *get_bt_ghost() const { return btGhost; }
-	int find_overlapping_object(CollisionObjectBullet *p_colObj);
 
 	void set_monitorable(bool p_monitorable);
 	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }
@@ -144,26 +140,23 @@ public:
 	virtual void set_space(SpaceBullet *p_space);
 
 	virtual void dispatch_callbacks();
-	void call_event(CollisionObjectBullet *p_otherObject, PhysicsServer3D::AreaBodyStatus p_status);
-	void set_on_state_change(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
-	void scratch();
-
-	void clear_overlaps(bool p_notify);
-	// Dispatch the callbacks and removes from overlapping list
-	void remove_overlap(CollisionObjectBullet *p_object, bool p_notify);
+	void call_event(const OverlappingShapeData &p_overlapping_shape, PhysicsServer3D::AreaBodyStatus p_status);
 
 	virtual void on_collision_filters_change();
 	virtual void on_collision_checker_start() {}
-	virtual void on_collision_checker_end() { isTransformChanged = false; }
+	virtual void on_collision_checker_end() { updated = false; }
 
-	void add_overlap(CollisionObjectBullet *p_otherObject);
-	void put_overlap_as_exit(int p_index);
-	void put_overlap_as_inside(int p_index);
+	void mark_all_overlaps_dirty();
+	void mark_object_overlaps_inside(CollisionObjectBullet *p_other_object);
+	void set_overlap(CollisionObjectBullet *p_other_object, uint32_t p_other_shape_id, uint32_t p_our_shape_id);
+	void mark_all_dirty_overlaps_as_exit();
+	void remove_object_overlaps(CollisionObjectBullet *p_object);
+	void clear_overlaps();
 
 	void set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value);
 	Variant get_param(PhysicsServer3D::AreaParameter p_param) const;
 
-	void set_event_callback(Type p_callbackObjectType, ObjectID p_id, const StringName &p_method);
+	void set_event_callback(Type p_callbackObjectType, const Callable &p_callback);
 	bool has_event_callback(Type p_callbackObjectType);
 
 	virtual void on_enter_area(AreaBullet *p_area);

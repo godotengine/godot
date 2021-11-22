@@ -101,7 +101,7 @@ layout(set = 0, binding = 10, std430) restrict buffer DispatchData {
 dispatch_data;
 
 struct ProcessVoxel {
-	uint position; //xyz 7 bit packed, extra 11 bits for neigbours
+	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
 	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neibhbours
 	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbours
 	uint light_aniso; //55555 light anisotropy, extra 2 bits for neighbours
@@ -134,7 +134,7 @@ layout(set = 0, binding = 5, std430) restrict buffer readonly DispatchData {
 dispatch_data;
 
 struct ProcessVoxel {
-	uint position; //xyz 7 bit packed, extra 11 bits for neigbours
+	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
 	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neibhbours
 	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbours
 	uint light_aniso; //55555 light anisotropy, extra 2 bits for neighbours
@@ -183,7 +183,7 @@ void main() {
 	ivec3 write_pos = read_pos + params.scroll;
 
 	if (any(lessThan(write_pos, ivec3(0))) || any(greaterThanEqual(write_pos, ivec3(params.grid_size)))) {
-		return; //fits outside the 3D texture, dont do anything
+		return; // Fits outside the 3D texture, don't do anything.
 	}
 
 	uint albedo = ((src_process_voxels.data[index].albedo & 0x7FFF) << 1) | 1; //add solid bit

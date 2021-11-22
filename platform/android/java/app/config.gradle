@@ -1,23 +1,21 @@
 ext.versions = [
-    androidGradlePlugin: '4.0.1',
-    compileSdk         : 29,
-    minSdk             : 18,
-    targetSdk          : 29,
-    buildTools         : '30.0.1',
-    supportCoreUtils   : '1.0.0',
-    kotlinVersion      : '1.4.10',
-    v4Support          : '1.0.0',
-    javaVersion        : 1.8,
+    androidGradlePlugin: '7.0.3',
+    compileSdk         : 30,
+    minSdk             : 19, // Also update 'platform/android/java/lib/AndroidManifest.xml#minSdkVersion' value
+    targetSdk          : 30, // Also update 'platform/android/java/lib/AndroidManifest.xml#targetSdkVersion' value
+    buildTools         : '30.0.3',
+    kotlinVersion      : '1.5.10',
+    fragmentVersion    : '1.3.6',
+    javaVersion        : 11,
     ndkVersion         : '21.4.7075529' // Also update 'platform/android/detect.py#get_project_ndk_version()' when this is updated.
 
 ]
 
 ext.libraries = [
     androidGradlePlugin: "com.android.tools.build:gradle:$versions.androidGradlePlugin",
-    supportCoreUtils   : "androidx.legacy:legacy-support-core-utils:$versions.supportCoreUtils",
     kotlinGradlePlugin : "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlinVersion",
     kotlinStdLib       : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlinVersion",
-    v4Support          : "androidx.legacy:legacy-support-v4:$versions.v4Support"
+    androidxFragment   : "androidx.fragment:fragment:$versions.fragmentVersion",
 ]
 
 ext.getExportPackageName = { ->
@@ -189,6 +187,35 @@ ext.getGodotPluginsLocalBinaries = { ->
     }
 
     return binDeps
+}
+
+ext.getDebugKeystoreFile = { ->
+    String keystoreFile = project.hasProperty("debug_keystore_file") ? project.property("debug_keystore_file") : ""
+    if (keystoreFile == null || keystoreFile.isEmpty()) {
+        keystoreFile = "."
+    }
+    return keystoreFile
+}
+
+ext.hasCustomDebugKeystore = { ->
+    File keystoreFile = new File(getDebugKeystoreFile())
+    return keystoreFile.isFile()
+}
+
+ext.getDebugKeystorePassword = { ->
+    String keystorePassword = project.hasProperty("debug_keystore_password") ? project.property("debug_keystore_password") : ""
+    if (keystorePassword == null || keystorePassword.isEmpty()) {
+        keystorePassword = "android"
+    }
+    return keystorePassword
+}
+
+ext.getDebugKeyAlias = { ->
+    String keyAlias = project.hasProperty("debug_keystore_alias") ? project.property("debug_keystore_alias") : ""
+    if (keyAlias == null || keyAlias.isEmpty()) {
+        keyAlias = "androiddebugkey"
+    }
+    return keyAlias
 }
 
 ext.getReleaseKeystoreFile = { ->

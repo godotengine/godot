@@ -24,6 +24,7 @@ subject to the following restrictions:
 #define WANTS_DEACTIVATION 3
 #define DISABLE_DEACTIVATION 4
 #define DISABLE_SIMULATION 5
+#define FIXED_BASE_MULTI_BODY 6
 
 struct btBroadphaseProxy;
 class btCollisionShape;
@@ -304,7 +305,7 @@ public:
 
 	SIMD_FORCE_INLINE bool isActive() const
 	{
-		return ((getActivationState() != ISLAND_SLEEPING) && (getActivationState() != DISABLE_SIMULATION));
+		return ((getActivationState() != FIXED_BASE_MULTI_BODY) && (getActivationState() != ISLAND_SLEEPING) && (getActivationState() != DISABLE_SIMULATION));
 	}
 
 	void setRestitution(btScalar rest)

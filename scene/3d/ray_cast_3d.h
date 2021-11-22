@@ -65,17 +65,22 @@ class RayCast3D : public Node3D {
 	bool collide_with_areas = false;
 	bool collide_with_bodies = true;
 
+	bool hit_from_inside = false;
+
 protected:
 	void _notification(int p_what);
 	void _update_raycast_state();
 	static void _bind_methods();
 
 public:
-	void set_collide_with_areas(bool p_clip);
+	void set_collide_with_areas(bool p_enabled);
 	bool is_collide_with_areas_enabled() const;
 
-	void set_collide_with_bodies(bool p_clip);
+	void set_collide_with_bodies(bool p_enabled);
 	bool is_collide_with_bodies_enabled() const;
+
+	void set_hit_from_inside(bool p_enabled);
+	bool is_hit_from_inside_enabled() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
@@ -86,8 +91,8 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
+	void set_collision_mask_value(int p_layer_number, bool p_value);
+	bool get_collision_mask_value(int p_layer_number) const;
 
 	void set_exclude_parent_body(bool p_exclude_parent_body);
 	bool get_exclude_parent_body() const;

@@ -40,14 +40,14 @@ void EditorNetworkProfiler::_bind_methods() {
 
 void EditorNetworkProfiler::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
-		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
-		incoming_bandwidth_text->set_right_icon(get_theme_icon("ArrowDown", "EditorIcons"));
-		outgoing_bandwidth_text->set_right_icon(get_theme_icon("ArrowUp", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+		clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+		incoming_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowDown"), SNAME("EditorIcons")));
+		outgoing_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons")));
 
 		// This needs to be done here to set the faded color when the profiler is first opened
-		incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.5));
-		outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color("font_color", "Editor") * Color(1, 1, 1, 0.5));
+		incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+		outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
 	}
 }
 
@@ -56,30 +56,30 @@ void EditorNetworkProfiler::_update_frame() {
 
 	TreeItem *root = counters_display->create_item();
 
-	for (Map<ObjectID, DebuggerMarshalls::MultiplayerNodeInfo>::Element *E = nodes_data.front(); E; E = E->next()) {
+	for (const KeyValue<ObjectID, DebuggerMarshalls::MultiplayerNodeInfo> &E : nodes_data) {
 		TreeItem *node = counters_display->create_item(root);
 
 		for (int j = 0; j < counters_display->get_columns(); ++j) {
 			node->set_text_align(j, j > 0 ? TreeItem::ALIGN_RIGHT : TreeItem::ALIGN_LEFT);
 		}
 
-		node->set_text(0, E->get().node_path);
-		node->set_text(1, E->get().incoming_rpc == 0 ? "-" : itos(E->get().incoming_rpc));
-		node->set_text(2, E->get().incoming_rset == 0 ? "-" : itos(E->get().incoming_rset));
-		node->set_text(3, E->get().outgoing_rpc == 0 ? "-" : itos(E->get().outgoing_rpc));
-		node->set_text(4, E->get().outgoing_rset == 0 ? "-" : itos(E->get().outgoing_rset));
+		node->set_text(0, E.value.node_path);
+		node->set_text(1, E.value.incoming_rpc == 0 ? "-" : itos(E.value.incoming_rpc));
+		node->set_text(2, E.value.incoming_rset == 0 ? "-" : itos(E.value.incoming_rset));
+		node->set_text(3, E.value.outgoing_rpc == 0 ? "-" : itos(E.value.outgoing_rpc));
+		node->set_text(4, E.value.outgoing_rset == 0 ? "-" : itos(E.value.outgoing_rset));
 	}
 }
 
 void EditorNetworkProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_theme_icon("Stop", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Stop"));
 	} else {
-		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
+		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Start"));
 	}
-	emit_signal("enable_profiling", activate->is_pressed());
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 void EditorNetworkProfiler::_clear_pressed() {
@@ -114,10 +114,10 @@ void EditorNetworkProfiler::set_bandwidth(int p_incoming, int p_outgoing) {
 	// Make labels more prominent when the bandwidth is greater than 0 to attract user attention
 	incoming_bandwidth_text->add_theme_color_override(
 			"font_uneditable_color",
-			get_theme_color("font_color", "Editor") * Color(1, 1, 1, p_incoming > 0 ? 1 : 0.5));
+			get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, p_incoming > 0 ? 1 : 0.5));
 	outgoing_bandwidth_text->add_theme_color_override(
 			"font_uneditable_color",
-			get_theme_color("font_color", "Editor") * Color(1, 1, 1, p_outgoing > 0 ? 1 : 0.5));
+			get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, p_outgoing > 0 ? 1 : 0.5));
 }
 
 bool EditorNetworkProfiler::is_profiling() {
@@ -178,19 +178,24 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	counters_display->set_column_titles_visible(true);
 	counters_display->set_column_title(0, TTR("Node"));
 	counters_display->set_column_expand(0, true);
-	counters_display->set_column_min_width(0, 60 * EDSCALE);
+	counters_display->set_column_clip_content(0, true);
+	counters_display->set_column_custom_minimum_width(0, 60 * EDSCALE);
 	counters_display->set_column_title(1, TTR("Incoming RPC"));
 	counters_display->set_column_expand(1, false);
-	counters_display->set_column_min_width(1, 120 * EDSCALE);
+	counters_display->set_column_clip_content(1, true);
+	counters_display->set_column_custom_minimum_width(1, 120 * EDSCALE);
 	counters_display->set_column_title(2, TTR("Incoming RSET"));
 	counters_display->set_column_expand(2, false);
-	counters_display->set_column_min_width(2, 120 * EDSCALE);
+	counters_display->set_column_clip_content(2, true);
+	counters_display->set_column_custom_minimum_width(2, 120 * EDSCALE);
 	counters_display->set_column_title(3, TTR("Outgoing RPC"));
 	counters_display->set_column_expand(3, false);
-	counters_display->set_column_min_width(3, 120 * EDSCALE);
+	counters_display->set_column_clip_content(3, true);
+	counters_display->set_column_custom_minimum_width(3, 120 * EDSCALE);
 	counters_display->set_column_title(4, TTR("Outgoing RSET"));
 	counters_display->set_column_expand(4, false);
-	counters_display->set_column_min_width(4, 120 * EDSCALE);
+	counters_display->set_column_clip_content(4, true);
+	counters_display->set_column_custom_minimum_width(4, 120 * EDSCALE);
 	add_child(counters_display);
 
 	frame_delay = memnew(Timer);

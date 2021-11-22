@@ -28,16 +28,11 @@
 	</tutorials>
 	<methods>
 		<method name="config">
-			<return type="void">
-			</return>
-			<argument index="0" name="inherits" type="String">
-			</argument>
-			<argument index="1" name="path" type="String">
-			</argument>
-			<argument index="2" name="built_in_enabled" type="bool" default="true">
-			</argument>
-			<argument index="3" name="load_enabled" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="inherits" type="String" />
+			<argument index="1" name="path" type="String" />
+			<argument index="2" name="built_in_enabled" type="bool" default="true" />
+			<argument index="3" name="load_enabled" type="bool" default="true" />
 			<description>
 				Prefills required fields to configure the ScriptCreateDialog for use.
 			</description>
@@ -49,13 +44,10 @@
 	</members>
 	<signals>
 		<signal name="script_created">
-			<argument index="0" name="script" type="Script">
-			</argument>
+			<argument index="0" name="script" type="Script" />
 			<description>
 				Emitted when the user clicks the OK button.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

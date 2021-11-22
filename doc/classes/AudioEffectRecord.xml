@@ -7,29 +7,25 @@
 		Allows the user to record sound from a microphone. It sets and gets the format in which the audio file will be recorded (8-bit, 16-bit, or compressed). It checks whether or not the recording is active, and if it is, records the sound. It then returns the recorded sample.
 	</description>
 	<tutorials>
-		<link title="Recording with microphone">https://docs.godotengine.org/en/latest/tutorials/audio/recording_with_microphone.html</link>
+		<link title="Recording with microphone">$DOCS_URL/tutorials/audio/recording_with_microphone.html</link>
 		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
 	</tutorials>
 	<methods>
 		<method name="get_recording" qualifiers="const">
-			<return type="AudioStreamSample">
-			</return>
+			<return type="AudioStreamSample" />
 			<description>
 				Returns the recorded sample.
 			</description>
 		</method>
 		<method name="is_recording_active" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether the recording is active or not.
 			</description>
 		</method>
 		<method name="set_recording_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="record" type="bool">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="record" type="bool" />
 			<description>
 				If [code]true[/code], the sound will be recorded. Note that restarting the recording will remove the previously recorded sample.
 			</description>
@@ -40,6 +36,4 @@
 			Specifies the format in which the sample will be recorded. See [enum AudioStreamSample.Format] for available formats.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

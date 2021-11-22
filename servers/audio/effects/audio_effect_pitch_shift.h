@@ -89,7 +89,7 @@ class AudioEffectPitchShift : public AudioEffect {
 public:
 	friend class AudioEffectPitchShiftInstance;
 
-	enum FFT_Size {
+	enum FFTSize {
 		FFT_SIZE_256,
 		FFT_SIZE_512,
 		FFT_SIZE_1024,
@@ -100,7 +100,7 @@ public:
 
 	float pitch_scale;
 	int oversampling;
-	FFT_Size fft_size;
+	FFTSize fft_size;
 	float wet;
 	float dry;
 	bool filter;
@@ -109,7 +109,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance() override;
+	Ref<AudioEffectInstance> instantiate() override;
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
@@ -117,12 +117,12 @@ public:
 	void set_oversampling(int p_oversampling);
 	int get_oversampling() const;
 
-	void set_fft_size(FFT_Size);
-	FFT_Size get_fft_size() const;
+	void set_fft_size(FFTSize);
+	FFTSize get_fft_size() const;
 
 	AudioEffectPitchShift();
 };
 
-VARIANT_ENUM_CAST(AudioEffectPitchShift::FFT_Size);
+VARIANT_ENUM_CAST(AudioEffectPitchShift::FFTSize);
 
 #endif // AUDIO_EFFECT_PITCH_SHIFT_H

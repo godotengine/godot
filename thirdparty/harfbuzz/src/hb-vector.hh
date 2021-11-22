@@ -38,10 +38,23 @@ struct hb_vector_t
   typedef Type item_t;
   static constexpr unsigned item_size = hb_static_size (Type);
 
-  hb_vector_t ()  { init (); }
-  hb_vector_t (const hb_vector_t &o)
+  hb_vector_t () = default;
+  hb_vector_t (std::initializer_list<Type> lst) : hb_vector_t ()
   {
-    init ();
+    alloc (lst.size ());
+    for (auto&& item : lst)
+      push (item);
+  }
+  template <typename Iterable,
+	    hb_requires (hb_is_iterable (Iterable))>
+  hb_vector_t (const Iterable &o) : hb_vector_t ()
+  {
+    if (hb_iter (o).is_random_access_iterator)
+      alloc (hb_len (hb_iter (o)));
+    hb_copy (o, *this);
+  }
+  hb_vector_t (const hb_vector_t &o) : hb_vector_t ()
+  {
     alloc (o.length);
     hb_copy (o, *this);
   }
@@ -55,11 +68,11 @@ struct hb_vector_t
   ~hb_vector_t () { fini (); }
 
   private:
-  int allocated; /* == -1 means allocation failed. */
+  int allocated = 0; /* == -1 means allocation failed. */
   public:
-  unsigned int length;
+  unsigned int length = 0;
   public:
-  Type *arrayZ;
+  Type *arrayZ = nullptr;
 
   void init ()
   {
@@ -69,7 +82,7 @@ struct hb_vector_t
 
   void fini ()
   {
-    free (arrayZ);
+    hb_free (arrayZ);
     init ();
   }
   void fini_deep ()
@@ -87,6 +100,13 @@ struct hb_vector_t
     resize (0);
   }
 
+  friend void swap (hb_vector_t& a, hb_vector_t& b)
+  {
+    hb_swap (a.allocated, b.allocated);
+    hb_swap (a.length, b.length);
+    hb_swap (a.arrayZ, b.arrayZ);
+  }
+
   hb_vector_t& operator = (const hb_vector_t &o)
   {
     reset ();
@@ -96,11 +116,7 @@ struct hb_vector_t
   }
   hb_vector_t& operator = (hb_vector_t &&o)
   {
-    fini ();
-    allocated = o.allocated;
-    length = o.length;
-    arrayZ = o.arrayZ;
-    o.init ();
+    hb_swap (*this, o);
     return *this;
   }
 
@@ -134,7 +150,7 @@ struct hb_vector_t
 
   /* Sink interface. */
   template <typename T>
-  hb_vector_t& operator << (T&& v) { push (hb_forward<T> (v)); return *this; }
+  hb_vector_t& operator << (T&& v) { push (std::forward<T> (v)); return *this; }
 
   hb_array_t<      Type> as_array ()       { return hb_array (arrayZ, length); }
   hb_array_t<const Type> as_array () const { return hb_array (arrayZ, length); }
@@ -177,7 +193,12 @@ struct hb_vector_t
   Type *push (T&& v)
   {
     Type *p = push ();
-    *p = hb_forward<T> (v);
+    if (p == &Crap (Type))
+      // If push failed to allocate then don't copy v, since this may cause
+      // the created copy to leak memory since we won't have stored a
+      // reference to it.
+      return p;
+    *p = std::forward<T> (v);
     return p;
   }
 
@@ -204,7 +225,7 @@ struct hb_vector_t
       (new_allocated < (unsigned) allocated) ||
       hb_unsigned_mul_overflows (new_allocated, sizeof (Type));
     if (likely (!overflows))
-      new_array = (Type *) realloc (arrayZ, new_allocated * sizeof (Type));
+      new_array = (Type *) hb_realloc (arrayZ, new_allocated * sizeof (Type));
 
     if (unlikely (!new_array))
     {
@@ -234,7 +255,7 @@ struct hb_vector_t
   Type pop ()
   {
     if (!length) return Null (Type);
-    return hb_move (arrayZ[--length]); /* Does this move actually work? */
+    return std::move (arrayZ[--length]); /* Does this move actually work? */
   }
 
   void remove (unsigned int i)
@@ -290,6 +311,19 @@ struct hb_vector_t
 template <typename Type>
 struct hb_sorted_vector_t : hb_vector_t<Type>
 {
+  hb_sorted_vector_t () = default;
+  ~hb_sorted_vector_t () = default;
+  hb_sorted_vector_t (hb_sorted_vector_t& o) = default;
+  hb_sorted_vector_t (hb_sorted_vector_t &&o) = default;
+  hb_sorted_vector_t (std::initializer_list<Type> lst) : hb_vector_t<Type> (lst) {}
+  template <typename Iterable,
+	    hb_requires (hb_is_iterable (Iterable))>
+  hb_sorted_vector_t (const Iterable &o) : hb_vector_t<Type> (o) {}
+  hb_sorted_vector_t& operator = (const hb_sorted_vector_t &o) = default;
+  hb_sorted_vector_t& operator = (hb_sorted_vector_t &&o) = default;
+  friend void swap (hb_sorted_vector_t& a, hb_sorted_vector_t& b)
+  { hb_swap ((hb_vector_t<Type>&) (a), (hb_vector_t<Type>&) (b)); }
+
   hb_sorted_array_t<      Type> as_array ()       { return hb_sorted_array (this->arrayZ, this->length); }
   hb_sorted_array_t<const Type> as_array () const { return hb_sorted_array (this->arrayZ, this->length); }
 
@@ -310,7 +344,7 @@ struct hb_sorted_vector_t : hb_vector_t<Type>
   { return as_array ().bsearch (x, not_found); }
   template <typename T>
   bool bfind (const T &x, unsigned int *i = nullptr,
-	      hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
+	      hb_not_found_t not_found = HB_NOT_FOUND_DONT_STORE,
 	      unsigned int to_store = (unsigned int) -1) const
   { return as_array ().bfind (x, i, not_found, to_store); }
 };

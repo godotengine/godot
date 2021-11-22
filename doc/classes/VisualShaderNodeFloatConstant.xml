@@ -8,13 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="constant" type="float" setter="set_constant" getter="get_constant" default="0.0">
 			A floating-point constant which represents a state of this node.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

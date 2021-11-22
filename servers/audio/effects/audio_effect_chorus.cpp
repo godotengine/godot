@@ -141,9 +141,9 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 	buffer_pos += p_frame_count;
 }
 
-Ref<AudioEffectInstance> AudioEffectChorus::instance() {
+Ref<AudioEffectInstance> AudioEffectChorus::instantiate() {
 	Ref<AudioEffectChorusInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectChorus>(this);
 	for (int i = 0; i < 4; i++) {
 		ins->filter_h[i] = AudioFrame(0, 0);
@@ -276,7 +276,7 @@ void AudioEffectChorus::_validate_property(PropertyInfo &property) const {
 	if (property.name.begins_with("voice/")) {
 		int voice_idx = property.name.get_slice("/", 1).to_int();
 		if (voice_idx > voice_count) {
-			property.usage = 0;
+			property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }

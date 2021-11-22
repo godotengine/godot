@@ -33,132 +33,15 @@
 
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/resources/material.h"
-#include "scene/resources/multimesh.h"
-#include "scene/resources/shader.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/canvas_item_material.h"
+#include "scene/resources/font.h"
 #include "servers/text_server.h"
 
 class CanvasLayer;
-class Viewport;
-class Font;
-
+class MultiMesh;
 class StyleBox;
-
-class CanvasItemMaterial : public Material {
-	GDCLASS(CanvasItemMaterial, Material);
-
-public:
-	enum BlendMode {
-		BLEND_MODE_MIX,
-		BLEND_MODE_ADD,
-		BLEND_MODE_SUB,
-		BLEND_MODE_MUL,
-		BLEND_MODE_PREMULT_ALPHA,
-		BLEND_MODE_DISABLED
-	};
-
-	enum LightMode {
-		LIGHT_MODE_NORMAL,
-		LIGHT_MODE_UNSHADED,
-		LIGHT_MODE_LIGHT_ONLY
-	};
-
-private:
-	union MaterialKey {
-		struct {
-			uint32_t blend_mode : 4;
-			uint32_t light_mode : 4;
-			uint32_t particles_animation : 1;
-			uint32_t invalid_key : 1;
-		};
-
-		uint32_t key = 0;
-
-		bool operator<(const MaterialKey &p_key) const {
-			return key < p_key.key;
-		}
-	};
-
-	struct ShaderNames {
-		StringName particles_anim_h_frames;
-		StringName particles_anim_v_frames;
-		StringName particles_anim_loop;
-	};
-
-	static ShaderNames *shader_names;
-
-	struct ShaderData {
-		RID shader;
-		int users = 0;
-	};
-
-	static Map<MaterialKey, ShaderData> shader_map;
-
-	MaterialKey current_key;
-
-	_FORCE_INLINE_ MaterialKey _compute_key() const {
-		MaterialKey mk;
-		mk.key = 0;
-		mk.blend_mode = blend_mode;
-		mk.light_mode = light_mode;
-		mk.particles_animation = particles_animation;
-		return mk;
-	}
-
-	static Mutex material_mutex;
-	static SelfList<CanvasItemMaterial>::List *dirty_materials;
-	SelfList<CanvasItemMaterial> element;
-
-	void _update_shader();
-	_FORCE_INLINE_ void _queue_shader_change();
-	_FORCE_INLINE_ bool _is_shader_dirty() const;
-
-	BlendMode blend_mode = BLEND_MODE_MIX;
-	LightMode light_mode = LIGHT_MODE_NORMAL;
-	bool particles_animation = false;
-
-	// Initialized in the constructor.
-	int particles_anim_h_frames;
-	int particles_anim_v_frames;
-	bool particles_anim_loop;
-
-protected:
-	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
-
-public:
-	void set_blend_mode(BlendMode p_blend_mode);
-	BlendMode get_blend_mode() const;
-
-	void set_light_mode(LightMode p_light_mode);
-	LightMode get_light_mode() const;
-
-	void set_particles_animation(bool p_particles_anim);
-	bool get_particles_animation() const;
-
-	void set_particles_anim_h_frames(int p_frames);
-	int get_particles_anim_h_frames() const;
-	void set_particles_anim_v_frames(int p_frames);
-	int get_particles_anim_v_frames() const;
-
-	void set_particles_anim_loop(bool p_loop);
-	bool get_particles_anim_loop() const;
-
-	static void init_shaders();
-	static void finish_shaders();
-	static void flush_changes();
-
-	virtual RID get_shader_rid() const override;
-
-	virtual Shader::Mode get_shader_mode() const override;
-
-	CanvasItemMaterial();
-	virtual ~CanvasItemMaterial();
-};
-
-VARIANT_ENUM_CAST(CanvasItemMaterial::BlendMode)
-VARIANT_ENUM_CAST(CanvasItemMaterial::LightMode)
+class Window;
+class World2D;
 
 class CanvasItem : public Node {
 	GDCLASS(CanvasItem, Node);
@@ -187,7 +70,7 @@ private:
 	mutable SelfList<Node> xform_change;
 
 	RID canvas_item;
-	String group;
+	StringName group;
 
 	CanvasLayer *canvas_layer = nullptr;
 
@@ -259,6 +142,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	GDVIRTUAL0(_draw)
 public:
 	enum {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED, //unique
@@ -342,6 +226,7 @@ public:
 	void draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1, 1));
 	void draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false);
 	void draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false);
+	void draw_msdf_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), double p_outline = 0.0, double p_pixel_range = 4.0);
 	void draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect);
 	void draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture = Ref<Texture2D>(), real_t p_width = 1);
 	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>());
@@ -350,12 +235,14 @@ public:
 	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1));
 	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture);
 
-	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint8_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
-	void draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_max_lines = -1, int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint8_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
-	real_t draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", int p_size = -1, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0)) const;
+	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_size = Font::DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	void draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_max_lines = -1, int p_size = Font::DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	real_t draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", int p_size = Font::DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0)) const;
 
 	void draw_set_transform(const Point2 &p_offset, real_t p_rot = 0.0, const Size2 &p_scale = Size2(1.0, 1.0));
 	void draw_set_transform_matrix(const Transform2D &p_matrix);
+	void draw_animation_slice(double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset = 0);
+	void draw_end_animation();
 
 	static CanvasItem *get_current_item_drawn();
 

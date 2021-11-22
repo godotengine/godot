@@ -52,6 +52,9 @@ void NoiseTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_noise", "noise"), &NoiseTexture::set_noise);
 	ClassDB::bind_method(D_METHOD("get_noise"), &NoiseTexture::get_noise);
 
+	ClassDB::bind_method(D_METHOD("set_noise_offset", "noise_offset"), &NoiseTexture::set_noise_offset);
+	ClassDB::bind_method(D_METHOD("get_noise_offset"), &NoiseTexture::get_noise_offset);
+
 	ClassDB::bind_method(D_METHOD("set_seamless", "seamless"), &NoiseTexture::set_seamless);
 	ClassDB::bind_method(D_METHOD("get_seamless"), &NoiseTexture::get_seamless);
 
@@ -71,12 +74,13 @@ void NoiseTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "as_normal_map"), "set_as_normal_map", "is_normal_map");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "OpenSimplexNoise"), "set_noise", "get_noise");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "noise_offset"), "set_noise_offset", "get_noise_offset");
 }
 
 void NoiseTexture::_validate_property(PropertyInfo &property) const {
 	if (property.name == "bump_strength") {
 		if (!as_normal_map) {
-			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 }
@@ -105,7 +109,7 @@ void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
 
 void NoiseTexture::_thread_function(void *p_ud) {
 	NoiseTexture *tex = (NoiseTexture *)p_ud;
-	tex->call_deferred("_thread_done", tex->_generate_texture());
+	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
 }
 
 void NoiseTexture::_queue_update() {
@@ -114,7 +118,7 @@ void NoiseTexture::_queue_update() {
 	}
 
 	update_queued = true;
-	call_deferred("_update_texture");
+	call_deferred(SNAME("_update_texture"));
 }
 
 Ref<Image> NoiseTexture::_generate_texture() {
@@ -130,7 +134,7 @@ Ref<Image> NoiseTexture::_generate_texture() {
 	if (seamless) {
 		image = ref_noise->get_seamless_image(size.x);
 	} else {
-		image = ref_noise->get_image(size.x, size.y);
+		image = ref_noise->get_image(size.x, size.y, noise_offset);
 	}
 
 	if (as_normal_map) {
@@ -183,6 +187,7 @@ Ref<OpenSimplexNoise> NoiseTexture::get_noise() {
 }
 
 void NoiseTexture::set_width(int p_width) {
+	ERR_FAIL_COND(p_width <= 0);
 	if (p_width == size.x) {
 		return;
 	}
@@ -191,10 +196,19 @@ void NoiseTexture::set_width(int p_width) {
 }
 
 void NoiseTexture::set_height(int p_height) {
+	ERR_FAIL_COND(p_height <= 0);
 	if (p_height == size.y) {
 		return;
 	}
 	size.y = p_height;
+	_queue_update();
+}
+
+void NoiseTexture::set_noise_offset(Vector2 p_noise_offset) {
+	if (noise_offset == p_noise_offset) {
+		return;
+	}
+	noise_offset = p_noise_offset;
 	_queue_update();
 }
 
@@ -243,6 +257,10 @@ int NoiseTexture::get_width() const {
 
 int NoiseTexture::get_height() const {
 	return size.y;
+}
+
+Vector2 NoiseTexture::get_noise_offset() const {
+	return noise_offset;
 }
 
 RID NoiseTexture::get_rid() const {

@@ -12,25 +12,28 @@ import os
 
 txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
 if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
-    e = os.environ["SCRIPT_AES256_ENCRYPTION_KEY"]
-    txt = ""
+    key = os.environ["SCRIPT_AES256_ENCRYPTION_KEY"]
     ec_valid = True
-    if len(e) != 64:
+    if len(key) != 64:
         ec_valid = False
     else:
-
-        for i in range(len(e) >> 1):
+        txt = ""
+        for i in range(len(key) >> 1):
             if i > 0:
                 txt += ","
-            txts = "0x" + e[i * 2 : i * 2 + 2]
+            txts = "0x" + key[i * 2 : i * 2 + 2]
             try:
                 int(txts, 16)
             except Exception:
                 ec_valid = False
             txt += txts
     if not ec_valid:
-        txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
-        print("Invalid AES256 encryption key, not 64 bits hex: " + e)
+        print("Error: Invalid AES256 encryption key, not 64 hexadecimal characters: '" + key + "'.")
+        print(
+            "Unset 'SCRIPT_AES256_ENCRYPTION_KEY' in your environment "
+            "or make sure that it contains exactly 64 hexadecimal characters."
+        )
+        Exit(255)
 
 # NOTE: It is safe to generate this file here, since this is still executed serially
 with open("script_encryption_key.gen.cpp", "w") as f:
@@ -56,6 +59,7 @@ thirdparty_misc_sources = [
     "pcg.cpp",
     "polypartition.cpp",
     "clipper.cpp",
+    "smolv.cpp",
 ]
 thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_misc_sources]
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_misc_sources)
@@ -142,6 +146,7 @@ env.core_sources += thirdparty_obj
 # Godot source files
 
 env.add_source_files(env.core_sources, "*.cpp")
+env.add_source_files(env.core_sources, "script_encryption_key.gen.cpp")
 
 # Certificates
 env.Depends(
@@ -179,9 +184,11 @@ SConscript("os/SCsub")
 SConscript("math/SCsub")
 SConscript("crypto/SCsub")
 SConscript("io/SCsub")
+SConscript("multiplayer/SCsub")
 SConscript("debugger/SCsub")
 SConscript("input/SCsub")
 SConscript("variant/SCsub")
+SConscript("extension/SCsub")
 SConscript("object/SCsub")
 SConscript("templates/SCsub")
 SConscript("string/SCsub")

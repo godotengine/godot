@@ -8,10 +8,8 @@
 	</tutorials>
 	<methods>
 		<method name="load">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
 			<description>
 			</description>
 		</method>
@@ -20,6 +18,4 @@
 		<member name="load_path" type="String" setter="load" getter="get_load_path" default="&quot;&quot;">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

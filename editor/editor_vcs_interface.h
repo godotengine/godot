@@ -46,16 +46,16 @@ protected:
 	static void _bind_methods();
 
 	// Implemented by addons as end points for the proxy functions
-	bool _initialize(String p_project_root_path);
-	bool _is_vcs_initialized();
-	Dictionary _get_modified_files_data();
-	void _stage_file(String p_file_path);
-	void _unstage_file(String p_file_path);
-	void _commit(String p_msg);
-	Array _get_file_diff(String p_file_path);
-	bool _shut_down();
-	String _get_project_name();
-	String _get_vcs_name();
+	virtual bool _initialize(String p_project_root_path);
+	virtual bool _is_vcs_initialized();
+	virtual Dictionary _get_modified_files_data();
+	virtual void _stage_file(String p_file_path);
+	virtual void _unstage_file(String p_file_path);
+	virtual void _commit(String p_msg);
+	virtual Array _get_file_diff(String p_file_path);
+	virtual bool _shut_down();
+	virtual String _get_project_name();
+	virtual String _get_vcs_name();
 
 public:
 	static EditorVCSInterface *get_singleton();

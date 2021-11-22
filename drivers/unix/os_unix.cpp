@@ -129,7 +129,7 @@ void OS_Unix::initialize_core() {
 
 #ifndef NO_NETWORK
 	NetSocketPosix::make_default();
-	IP_Unix::make_default();
+	IPUnix::make_default();
 #endif
 
 	_setup_clock();
@@ -137,10 +137,6 @@ void OS_Unix::initialize_core() {
 
 void OS_Unix::finalize_core() {
 	NetSocketPosix::cleanup();
-}
-
-void OS_Unix::alert(const String &p_alert, const String &p_title) {
-	fprintf(stderr, "ERROR: %s\n", p_alert.utf8().get_data());
 }
 
 String OS_Unix::get_stdin_string(bool p_block) {
@@ -164,10 +160,10 @@ double OS_Unix::get_unix_time() const {
 	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
 };
 
-OS::Date OS_Unix::get_date(bool utc) const {
+OS::Date OS_Unix::get_date(bool p_utc) const {
 	time_t t = time(nullptr);
 	struct tm lt;
-	if (utc) {
+	if (p_utc) {
 		gmtime_r(&t, &lt);
 	} else {
 		localtime_r(&t, &lt);
@@ -185,18 +181,18 @@ OS::Date OS_Unix::get_date(bool utc) const {
 	return ret;
 }
 
-OS::Time OS_Unix::get_time(bool utc) const {
+OS::Time OS_Unix::get_time(bool p_utc) const {
 	time_t t = time(nullptr);
 	struct tm lt;
-	if (utc) {
+	if (p_utc) {
 		gmtime_r(&t, &lt);
 	} else {
 		localtime_r(&t, &lt);
 	}
 	Time ret;
 	ret.hour = lt.tm_hour;
-	ret.min = lt.tm_min;
-	ret.sec = lt.tm_sec;
+	ret.minute = lt.tm_min;
+	ret.second = lt.tm_sec;
 	get_time_zone_info();
 	return ret;
 }
@@ -396,7 +392,7 @@ String OS_Unix::get_locale() const {
 Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	String path = p_path;
 
-	if (FileAccess::exists(path) && path.is_rel_path()) {
+	if (FileAccess::exists(path) && path.is_relative_path()) {
 		// dlopen expects a slash, in this case a leading ./ for it to be interpreted as a relative path,
 		//  otherwise it will end up searching various system directories for the lib instead and finally failing.
 		path = "./" + path;
@@ -477,7 +473,7 @@ String OS_Unix::get_user_data_dir() const {
 		}
 	}
 
-	return ProjectSettings::get_singleton()->get_resource_path();
+	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
 }
 
 String OS_Unix::get_executable_path() const {
@@ -532,7 +528,7 @@ String OS_Unix::get_executable_path() const {
 #endif
 }
 
-void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;
 	}

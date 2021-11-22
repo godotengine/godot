@@ -44,13 +44,6 @@ void EditorInspectorPluginStyleBox::parse_begin(Object *p_object) {
 	add_custom_control(preview);
 }
 
-bool EditorInspectorPluginStyleBox::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) {
-	return false; //do not want
-}
-
-void EditorInspectorPluginStyleBox::parse_end() {
-}
-
 void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 	if (stylebox.is_valid()) {
 		stylebox->disconnect("changed", callable_mp(this, &StyleBoxPreview::_sb_changed));
@@ -93,6 +86,6 @@ StyleBoxPreview::StyleBoxPreview() {
 
 StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
 	Ref<EditorInspectorPluginStyleBox> inspector_plugin;
-	inspector_plugin.instance();
+	inspector_plugin.instantiate();
 	add_inspector_plugin(inspector_plugin);
 }

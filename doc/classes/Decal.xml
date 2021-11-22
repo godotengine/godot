@@ -12,10 +12,8 @@
 	</tutorials>
 	<methods>
 		<method name="get_texture" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="type" type="int" enum="Decal.DecalTexture">
-			</argument>
+			<return type="Texture2D" />
+			<argument index="0" name="type" type="int" enum="Decal.DecalTexture" />
 			<description>
 				Returns the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly.
 				For example, instead of [code]albedo_tex = $Decal.get_texture(Decal.TEXTURE_ALBEDO)[/code], use [code]albedo_tex = $Decal.texture_albedo[/code].
@@ -35,12 +33,9 @@
 			</description>
 		</method>
 		<method name="set_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int" enum="Decal.DecalTexture">
-			</argument>
-			<argument index="1" name="texture" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<argument index="0" name="type" type="int" enum="Decal.DecalTexture" />
+			<argument index="1" name="texture" type="Texture2D" />
 			<description>
 				Sets the [Texture2D] associated with the specified [enum DecalTexture]. This is a convenience method, in most cases you should access the texture directly.
 				For example, instead of [code]$Decal.set_texture(Decal.TEXTURE_ALBEDO, albedo_tex)[/code], use [code]$Decal.texture_albedo = albedo_tex[/code].
@@ -79,13 +74,13 @@
 		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
 			Energy multiplier for the emission texture. This will make the decal emit light at a higher intensity.
 		</member>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 1, 1, 1 )">
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
 			Sets the size of the [AABB] used by the decal. The AABB goes from [code]-extents[/code] to [code]extents[/code].
 		</member>
 		<member name="lower_fade" type="float" setter="set_lower_fade" getter="get_lower_fade" default="0.3">
 			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB].
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
 			Changes the [Color] of the Decal by multiplying it with this value.
 		</member>
 		<member name="normal_fade" type="float" setter="set_normal_fade" getter="get_normal_fade" default="0.0">

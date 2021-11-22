@@ -13,28 +13,22 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link title="Visual Shader plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/visual_shader_plugins.html</link>
+		<link title="Visual Shader plugins">$DOCS_URL/tutorials/plugins/editor/visual_shader_plugins.html</link>
 	</tutorials>
 	<methods>
-		<method name="_get_category" qualifiers="virtual">
-			<return type="String">
-			</return>
+		<method name="_get_category" qualifiers="virtual const">
+			<return type="String" />
 			<description>
 				Override this method to define the path to the associated custom node in the Visual Shader Editor's members dialog. The path may look like [code]"MyGame/MyFunctions/Noise"[/code].
 				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the "Addons" category.
 			</description>
 		</method>
-		<method name="_get_code" qualifiers="virtual">
-			<return type="String">
-			</return>
-			<argument index="0" name="input_vars" type="Array">
-			</argument>
-			<argument index="1" name="output_vars" type="Array">
-			</argument>
-			<argument index="2" name="mode" type="int">
-			</argument>
-			<argument index="3" name="type" type="int">
-			</argument>
+		<method name="_get_code" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="input_vars" type="PackedStringArray" />
+			<argument index="1" name="output_vars" type="String[]" />
+			<argument index="2" name="mode" type="int" enum="Shader.Mode" />
+			<argument index="3" name="type" type="int" enum="VisualShader.Type" />
 			<description>
 				Override this method to define the actual shader code of the associated custom node. The shader code should be returned as a string, which can have multiple lines (the [code]"""[/code] multiline string construct can be used for convenience).
 				The [code]input_vars[/code] and [code]output_vars[/code] arrays contain the string names of the various input and output variables, as defined by [code]_get_input_*[/code] and [code]_get_output_*[/code] virtual methods in this class.
@@ -43,19 +37,16 @@
 				Defining this method is [b]required[/b].
 			</description>
 		</method>
-		<method name="_get_description" qualifiers="virtual">
-			<return type="String">
-			</return>
+		<method name="_get_description" qualifiers="virtual const">
+			<return type="String" />
 			<description>
 				Override this method to define the description of the associated custom node in the Visual Shader Editor's members dialog.
 				Defining this method is [b]optional[/b].
 			</description>
 		</method>
-		<method name="_get_global_code" qualifiers="virtual">
-			<return type="String">
-			</return>
-			<argument index="0" name="mode" type="int">
-			</argument>
+		<method name="_get_global_code" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="mode" type="int" enum="Shader.Mode" />
 			<description>
 				Override this method to add shader code on top of the global shader, to define your own standard library of reusable methods, varyings, constants, uniforms, etc. The shader code should be returned as a string, which can have multiple lines (the [code]"""[/code] multiline string construct can be used for convenience).
 				Be careful with this functionality as it can cause name conflicts with other custom nodes, so be sure to give the defined entities unique names.
@@ -63,87 +54,72 @@
 				Defining this method is [b]optional[/b].
 			</description>
 		</method>
-		<method name="_get_input_port_count" qualifiers="virtual">
-			<return type="int">
-			</return>
+		<method name="_get_input_port_count" qualifiers="virtual const">
+			<return type="int" />
 			<description>
 				Override this method to define the amount of input ports of the associated custom node.
 				Defining this method is [b]required[/b]. If not overridden, the node has no input ports.
 			</description>
 		</method>
-		<method name="_get_input_port_name" qualifiers="virtual">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
+		<method name="_get_input_port_name" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="port" type="int" />
 			<description>
 				Override this method to define the names of input ports of the associated custom node. The names are used both for the input slots in the editor and as identifiers in the shader code, and are passed in the [code]input_vars[/code] array in [method _get_code].
 				Defining this method is [b]optional[/b], but recommended. If not overridden, input ports are named as [code]"in" + str(port)[/code].
 			</description>
 		</method>
-		<method name="_get_input_port_type" qualifiers="virtual">
-			<return type="int">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
+		<method name="_get_input_port_type" qualifiers="virtual const">
+			<return type="int" />
+			<argument index="0" name="port" type="int" />
 			<description>
 				Override this method to define the returned type of each input port of the associated custom node (see [enum VisualShaderNode.PortType] for possible types).
 				Defining this method is [b]optional[/b], but recommended. If not overridden, input ports will return the [constant VisualShaderNode.PORT_TYPE_SCALAR] type.
 			</description>
 		</method>
-		<method name="_get_name" qualifiers="virtual">
-			<return type="String">
-			</return>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="String" />
 			<description>
 				Override this method to define the name of the associated custom node in the Visual Shader Editor's members dialog and graph.
 				Defining this method is [b]optional[/b], but recommended. If not overridden, the node will be named as "Unnamed".
 			</description>
 		</method>
-		<method name="_get_output_port_count" qualifiers="virtual">
-			<return type="int">
-			</return>
+		<method name="_get_output_port_count" qualifiers="virtual const">
+			<return type="int" />
 			<description>
 				Override this method to define the amount of output ports of the associated custom node.
 				Defining this method is [b]required[/b]. If not overridden, the node has no output ports.
 			</description>
 		</method>
-		<method name="_get_output_port_name" qualifiers="virtual">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
+		<method name="_get_output_port_name" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="port" type="int" />
 			<description>
 				Override this method to define the names of output ports of the associated custom node. The names are used both for the output slots in the editor and as identifiers in the shader code, and are passed in the [code]output_vars[/code] array in [method _get_code].
 				Defining this method is [b]optional[/b], but recommended. If not overridden, output ports are named as [code]"out" + str(port)[/code].
 			</description>
 		</method>
-		<method name="_get_output_port_type" qualifiers="virtual">
-			<return type="int">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
+		<method name="_get_output_port_type" qualifiers="virtual const">
+			<return type="int" />
+			<argument index="0" name="port" type="int" />
 			<description>
 				Override this method to define the returned type of each output port of the associated custom node (see [enum VisualShaderNode.PortType] for possible types).
 				Defining this method is [b]optional[/b], but recommended. If not overridden, output ports will return the [constant VisualShaderNode.PORT_TYPE_SCALAR] type.
 			</description>
 		</method>
-		<method name="_get_return_icon_type" qualifiers="virtual">
-			<return type="int">
-			</return>
+		<method name="_get_return_icon_type" qualifiers="virtual const">
+			<return type="int" />
 			<description>
 				Override this method to define the return icon of the associated custom node in the Visual Shader Editor's members dialog.
 				Defining this method is [b]optional[/b]. If not overridden, no return icon is shown.
 			</description>
 		</method>
-		<method name="_is_highend" qualifiers="virtual">
-			<return type="bool">
-			</return>
+		<method name="_is_highend" qualifiers="virtual const">
+			<return type="bool" />
 			<description>
 				Override this method to enable high-end mark in the Visual Shader Editor's members dialog.
 				Defining this method is [b]optional[/b]. If not overridden, it's false.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

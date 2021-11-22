@@ -63,9 +63,9 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 void BackgroundProgress::_update() {
 	_THREAD_SAFE_METHOD_
 
-	for (Map<String, int>::Element *E = updates.front(); E; E = E->next()) {
-		if (tasks.has(E->key())) {
-			_task_step(E->key(), E->get());
+	for (const KeyValue<String, int> &E : updates) {
+		if (tasks.has(E.key)) {
+			_task_step(E.key, E.value);
 		}
 	}
 
@@ -139,7 +139,7 @@ void ProgressDialog::_popup() {
 	Size2 ms = main->get_combined_minimum_size();
 	ms.width = MAX(500 * EDSCALE, ms.width);
 
-	Ref<StyleBox> style = main->get_theme_stylebox("panel", "PopupMenu");
+	Ref<StyleBox> style = main->get_theme_stylebox(SNAME("panel"), SNAME("PopupMenu"));
 	ms += style->get_minimum_size();
 	main->set_offset(SIDE_LEFT, style->get_margin(SIDE_LEFT));
 	main->set_offset(SIDE_RIGHT, -style->get_margin(SIDE_RIGHT));

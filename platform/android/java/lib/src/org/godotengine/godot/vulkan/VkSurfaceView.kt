@@ -115,7 +115,7 @@ open internal class VkSurfaceView(context: Context) : SurfaceView(context), Surf
 	/**
 	 * Tear down the rendering thread.
 	 *
-	 * Must not be called  before a [VkRenderer] has been set.
+	 * Must not be called before a [VkRenderer] has been set.
 	 */
 	fun onDestroy() {
 		vkThread.blockingExit()

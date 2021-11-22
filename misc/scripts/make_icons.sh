@@ -20,7 +20,7 @@ zip godot-icons.zip icon*.png
 icotool -c -o godot-icon.ico icon{16,24,32,48,64,128,256}.png
 
 # icns for macOS
-# Only some sizes: http://iconhandbook.co.uk/reference/chart/osx/
+# Only some sizes: https://iconhandbook.co.uk/reference/chart/osx/
 png2icns godot-icon.icns icon{16,32,128,256,512,1024}.png
 
 rm -f icon*.png

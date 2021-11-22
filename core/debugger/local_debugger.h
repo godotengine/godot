@@ -50,7 +50,7 @@ private:
 public:
 	void debug(bool p_can_continue, bool p_is_error_breakpoint);
 	void send_message(const String &p_message, const Array &p_args);
-	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type);
+	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type);
 
 	LocalDebugger();
 	~LocalDebugger();

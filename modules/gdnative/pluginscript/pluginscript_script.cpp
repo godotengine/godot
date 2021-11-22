@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 // Godot imports
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 // PluginScript imports
 #include "pluginscript_instance.h"
 #include "pluginscript_script.h"
@@ -38,13 +38,13 @@
 
 #ifdef DEBUG_ENABLED
 #define __ASSERT_SCRIPT_REASON "Cannot retrieve PluginScript class for this script, is your code correct?"
-#define ASSERT_SCRIPT_VALID()                                       \
-	{                                                               \
-		ERR_FAIL_COND_MSG(!can_instance(), __ASSERT_SCRIPT_REASON); \
+#define ASSERT_SCRIPT_VALID()                                          \
+	{                                                                  \
+		ERR_FAIL_COND_MSG(!can_instantiate(), __ASSERT_SCRIPT_REASON); \
 	}
-#define ASSERT_SCRIPT_VALID_V(ret)                                         \
-	{                                                                      \
-		ERR_FAIL_COND_V_MSG(!can_instance(), ret, __ASSERT_SCRIPT_REASON); \
+#define ASSERT_SCRIPT_VALID_V(ret)                                            \
+	{                                                                         \
+		ERR_FAIL_COND_V_MSG(!can_instantiate(), ret, __ASSERT_SCRIPT_REASON); \
 	}
 #else
 #define ASSERT_SCRIPT_VALID()
@@ -94,9 +94,9 @@ Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	Object *owner = nullptr;
 
 	if (get_instance_base_type() == "") {
-		owner = memnew(Reference);
+		owner = memnew(RefCounted);
 	} else {
-		owner = ClassDB::instance(get_instance_base_type());
+		owner = ClassDB::instantiate(get_instance_base_type());
 	}
 
 	if (!owner) {
@@ -104,7 +104,7 @@ Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 		return Variant();
 	}
 
-	Reference *r = Object::cast_to<Reference>(owner);
+	RefCounted *r = Object::cast_to<RefCounted>(owner);
 	if (r) {
 		ref = REF(r);
 	}
@@ -133,15 +133,26 @@ void PluginScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder)
 
 #endif
 
-bool PluginScript::can_instance() const {
+bool PluginScript::can_instantiate() const {
 	bool can = _valid || (!_tool && !ScriptServer::is_scripting_enabled());
 	return can;
 }
 
 bool PluginScript::inherits_script(const Ref<Script> &p_script) const {
-#ifndef _MSC_VER
-#warning inheritance needs to be implemented in PluginScript
-#endif
+	Ref<PluginScript> ps = p_script;
+	if (ps.is_null()) {
+		return false;
+	}
+
+	const PluginScript *s = this;
+
+	while (s) {
+		if (s == p_script.ptr()) {
+			return true;
+		}
+		s = Object::cast_to<PluginScript>(s->_ref_base_parent.ptr());
+	}
+
 	return false;
 }
 
@@ -198,7 +209,7 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 	StringName base_type = get_instance_base_type();
 	if (base_type) {
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), base_type)) {
-			String msg = "Script inherits from native type '" + String(base_type) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'";
+			String msg = "Script inherits from native type '" + String(base_type) + "', so it can't be instantiated in object of type: '" + p_this->get_class() + "'";
 			// TODO: implement PluginscriptLanguage::debug_break_parse
 			// if (EngineDebugger::is_active()) {
 			// 	_language->debug_break_parse(get_path(), 0, msg);
@@ -212,6 +223,8 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 }
 
 bool PluginScript::instance_has(const Object *p_this) const {
+	ERR_FAIL_COND_V(!_language, false);
+
 	_language->lock();
 	bool hasit = _instances.has((Object *)p_this);
 	_language->unlock();
@@ -310,10 +323,9 @@ Error PluginScript::reload(bool p_keep_state) {
 	}
 	Array *methods = (Array *)&manifest.methods;
 	_rpc_methods.clear();
-	_rpc_variables.clear();
 	if (_ref_base_parent.is_valid()) {
+		/// XXX TODO Should this be _rpc_methods.append_array(...)
 		_rpc_methods = _ref_base_parent->get_rpc_methods();
-		_rpc_variables = _ref_base_parent->get_rset_properties();
 	}
 	for (int i = 0; i < methods->size(); ++i) {
 		Dictionary v = (*methods)[i];
@@ -322,9 +334,10 @@ Error PluginScript::reload(bool p_keep_state) {
 		// rpc_mode is passed as an optional field and is not part of MethodInfo
 		Variant var = v["rpc_mode"];
 		if (var != Variant()) {
-			ScriptNetData nd;
+			Multiplayer::RPCConfig nd;
 			nd.name = mi.name;
-			nd.mode = MultiplayerAPI::RPCMode(int(var));
+			nd.rpc_mode = Multiplayer::RPCMode(int(var));
+			// TODO Transfer Channel
 			if (_rpc_methods.find(nd) == -1) {
 				_rpc_methods.push_back(nd);
 			}
@@ -332,7 +345,7 @@ Error PluginScript::reload(bool p_keep_state) {
 	}
 
 	// Sort so we are 100% that they are always the same.
-	_rpc_methods.sort_custom<SortNetData>();
+	_rpc_methods.sort_custom<Multiplayer::SortRPCConfig>();
 
 	Array *signals = (Array *)&manifest.signals;
 	for (int i = 0; i < signals->size(); ++i) {
@@ -346,27 +359,7 @@ Error PluginScript::reload(bool p_keep_state) {
 		PropertyInfo pi = PropertyInfo::from_dict(v);
 		_properties_info[pi.name] = pi;
 		_properties_default_values[pi.name] = v["default_value"];
-		// rset_mode is passed as an optional field and is not part of PropertyInfo
-		Variant var = v["rset_mode"];
-		if (var != Variant()) {
-			ScriptNetData nd;
-			nd.name = pi.name;
-			nd.mode = MultiplayerAPI::RPCMode(int(var));
-			if (_rpc_variables.find(nd) == -1) {
-				_rpc_variables.push_back(nd);
-			}
-		}
 	}
-
-	// Sort so we are 100% that they are always the same.
-	_rpc_variables.sort_custom<SortNetData>();
-
-#ifdef TOOLS_ENABLED
-/*for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
-
-        _update_placeholder(E->get());
-    }*/
-#endif
 
 	FREE_SCRIPT_MANIFEST(manifest);
 	return OK;
@@ -441,10 +434,10 @@ Error PluginScript::load_source_code(const String &p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot open file '" + p_path + "'.");
 
-	int len = f->get_len();
+	uint64_t len = f->get_length();
 	sourcef.resize(len + 1);
 	uint8_t *w = sourcef.ptrw();
-	int r = f->get_buffer(w, len);
+	uint64_t r = f->get_buffer(w, len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);
@@ -484,74 +477,8 @@ int PluginScript::get_member_line(const StringName &p_member) const {
 	return -1;
 }
 
-Vector<ScriptNetData> PluginScript::get_rpc_methods() const {
+const Vector<Multiplayer::RPCConfig> PluginScript::get_rpc_methods() const {
 	return _rpc_methods;
-}
-
-uint16_t PluginScript::get_rpc_method_id(const StringName &p_method) const {
-	ASSERT_SCRIPT_VALID_V(UINT16_MAX);
-	for (int i = 0; i < _rpc_methods.size(); i++) {
-		if (_rpc_methods[i].name == p_method) {
-			return i;
-		}
-	}
-	return UINT16_MAX;
-}
-
-StringName PluginScript::get_rpc_method(const uint16_t p_rpc_method_id) const {
-	ASSERT_SCRIPT_VALID_V(StringName());
-	if (p_rpc_method_id >= _rpc_methods.size()) {
-		return StringName();
-	}
-	return _rpc_methods[p_rpc_method_id].name;
-}
-
-MultiplayerAPI::RPCMode PluginScript::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
-	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	if (p_rpc_method_id >= _rpc_methods.size()) {
-		return MultiplayerAPI::RPC_MODE_DISABLED;
-	}
-	return _rpc_methods[p_rpc_method_id].mode;
-}
-
-MultiplayerAPI::RPCMode PluginScript::get_rpc_mode(const StringName &p_method) const {
-	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	return get_rpc_mode_by_id(get_rpc_method_id(p_method));
-}
-
-Vector<ScriptNetData> PluginScript::get_rset_properties() const {
-	return _rpc_variables;
-}
-
-uint16_t PluginScript::get_rset_property_id(const StringName &p_property) const {
-	ASSERT_SCRIPT_VALID_V(UINT16_MAX);
-	for (int i = 0; i < _rpc_variables.size(); i++) {
-		if (_rpc_variables[i].name == p_property) {
-			return i;
-		}
-	}
-	return UINT16_MAX;
-}
-
-StringName PluginScript::get_rset_property(const uint16_t p_rset_property_id) const {
-	ASSERT_SCRIPT_VALID_V(StringName());
-	if (p_rset_property_id >= _rpc_variables.size()) {
-		return StringName();
-	}
-	return _rpc_variables[p_rset_property_id].name;
-}
-
-MultiplayerAPI::RPCMode PluginScript::get_rset_mode_by_id(const uint16_t p_rset_property_id) const {
-	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	if (p_rset_property_id >= _rpc_variables.size()) {
-		return MultiplayerAPI::RPC_MODE_DISABLED;
-	}
-	return _rpc_variables[p_rset_property_id].mode;
-}
-
-MultiplayerAPI::RPCMode PluginScript::get_rset_mode(const StringName &p_variable) const {
-	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	return get_rset_mode_by_id(get_rset_property_id(p_variable));
 }
 
 PluginScript::PluginScript() :

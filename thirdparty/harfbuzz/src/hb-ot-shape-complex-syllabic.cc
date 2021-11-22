@@ -34,7 +34,8 @@ hb_syllabic_insert_dotted_circles (hb_font_t *font,
 				   hb_buffer_t *buffer,
 				   unsigned int broken_syllable_type,
 				   unsigned int dottedcircle_category,
-				   int repha_category)
+				   int repha_category,
+				   int dottedcircle_position)
 {
   if (unlikely (buffer->flags & HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE))
     return;
@@ -61,6 +62,8 @@ hb_syllabic_insert_dotted_circles (hb_font_t *font,
   hb_glyph_info_t dottedcircle = {0};
   dottedcircle.codepoint = 0x25CCu;
   dottedcircle.complex_var_u8_category() = dottedcircle_category;
+  if (dottedcircle_position != -1)
+    dottedcircle.complex_var_u8_auxiliary() = dottedcircle_position;
   dottedcircle.codepoint = dottedcircle_glyph;
 
   buffer->clear_output ();

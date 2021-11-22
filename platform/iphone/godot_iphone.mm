@@ -50,7 +50,7 @@ int add_path(int p_argc, char **p_args) {
 
 	p_args[p_argc++] = (char *)"--path";
 	p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
-	p_args[p_argc] = NULL;
+	p_args[p_argc] = nullptr;
 
 	return p_argc;
 };
@@ -69,12 +69,12 @@ int add_cmdline(int p_argc, char **p_args) {
 		p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
 	};
 
-	p_args[p_argc] = NULL;
+	p_args[p_argc] = nullptr;
 
 	return p_argc;
 };
 
-int iphone_main(int argc, char **argv, String data_dir) {
+int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 	size_t len = strlen(argv[0]);
 
 	while (len--) {
@@ -95,7 +95,7 @@ int iphone_main(int argc, char **argv, String data_dir) {
 	char cwd[512];
 	getcwd(cwd, sizeof(cwd));
 	printf("cwd %s\n", cwd);
-	os = new OSIPhone(data_dir);
+	os = new OSIPhone(data_dir, cache_dir);
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE

@@ -158,7 +158,7 @@ T m2n_arg_cast(Mono_InterpMethodArguments *p_margs, size_t p_idx) {
 		return (T)(size_t)p_margs->iargs[p_idx];
 	} else if constexpr (cookie == 'L') {
 		static_assert(std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t> ||
-							  (sizeof(void *) == 8 && std::is_pointer_v<T>),
+						(sizeof(void *) == 8 && std::is_pointer_v<T>),
 				"Invalid type for cookie 'L'.");
 
 		union {

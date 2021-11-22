@@ -31,10 +31,13 @@
 #ifndef BASIS_H
 #define BASIS_H
 
-#include "core/math/quat.h"
+#include "core/math/quaternion.h"
 #include "core/math/vector3.h"
 
 class Basis {
+private:
+	void _set_diagonal(const Vector3 &p_diag);
+
 public:
 	Vector3 elements[3] = {
 		Vector3(1, 0, 0),
@@ -79,40 +82,37 @@ public:
 	void rotate(const Vector3 &p_euler);
 	Basis rotated(const Vector3 &p_euler) const;
 
-	void rotate(const Quat &p_quat);
-	Basis rotated(const Quat &p_quat) const;
+	void rotate(const Quaternion &p_quaternion);
+	Basis rotated(const Quaternion &p_quaternion) const;
 
-	Vector3 get_rotation_euler() const;
+	enum EulerOrder {
+		EULER_ORDER_XYZ,
+		EULER_ORDER_XZY,
+		EULER_ORDER_YXZ,
+		EULER_ORDER_YZX,
+		EULER_ORDER_ZXY,
+		EULER_ORDER_ZYX
+	};
+
+	Vector3 get_euler_normalized(EulerOrder p_order = EULER_ORDER_YXZ) const;
 	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
 	void get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const;
-	Quat get_rotation_quat() const;
-	Vector3 get_rotation() const { return get_rotation_euler(); };
+	Quaternion get_rotation_quaternion() const;
+
+	void rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction);
 
 	Vector3 rotref_posscale_decomposition(Basis &rotref) const;
 
-	Vector3 get_euler_xyz() const;
-	void set_euler_xyz(const Vector3 &p_euler);
+	Vector3 get_euler(EulerOrder p_order = EULER_ORDER_YXZ) const;
+	void set_euler(const Vector3 &p_euler, EulerOrder p_order = EULER_ORDER_YXZ);
+	static Basis from_euler(const Vector3 &p_euler, EulerOrder p_order = EULER_ORDER_YXZ) {
+		Basis b;
+		b.set_euler(p_euler, p_order);
+		return b;
+	}
 
-	Vector3 get_euler_xzy() const;
-	void set_euler_xzy(const Vector3 &p_euler);
-
-	Vector3 get_euler_yzx() const;
-	void set_euler_yzx(const Vector3 &p_euler);
-
-	Vector3 get_euler_yxz() const;
-	void set_euler_yxz(const Vector3 &p_euler);
-
-	Vector3 get_euler_zxy() const;
-	void set_euler_zxy(const Vector3 &p_euler);
-
-	Vector3 get_euler_zyx() const;
-	void set_euler_zyx(const Vector3 &p_euler);
-
-	Quat get_quat() const;
-	void set_quat(const Quat &p_quat);
-
-	Vector3 get_euler() const { return get_euler_yxz(); }
-	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); }
+	Quaternion get_quaternion() const;
+	void set_quaternion(const Quaternion &p_quaternion);
 
 	void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const;
 	void set_axis_angle(const Vector3 &p_axis, real_t p_phi);
@@ -132,7 +132,7 @@ public:
 
 	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale);
 	void set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale);
-	void set_quat_scale(const Quat &p_quat, const Vector3 &p_scale);
+	void set_quaternion_scale(const Quaternion &p_quaternion, const Vector3 &p_scale);
 
 	// transposed dot products
 	_FORCE_INLINE_ real_t tdotx(const Vector3 &v) const {
@@ -158,13 +158,11 @@ public:
 	_FORCE_INLINE_ Basis operator+(const Basis &p_matrix) const;
 	_FORCE_INLINE_ void operator-=(const Basis &p_matrix);
 	_FORCE_INLINE_ Basis operator-(const Basis &p_matrix) const;
-	_FORCE_INLINE_ void operator*=(real_t p_val);
-	_FORCE_INLINE_ Basis operator*(real_t p_val) const;
+	_FORCE_INLINE_ void operator*=(const real_t p_val);
+	_FORCE_INLINE_ Basis operator*(const real_t p_val) const;
 
 	int get_orthogonal_index() const;
 	void set_orthogonal_index(int p_index);
-
-	void set_diagonal(const Vector3 &p_diag);
 
 	bool is_orthogonal() const;
 	bool is_diagonal() const;
@@ -240,16 +238,16 @@ public:
 #endif
 	Basis diagonalize();
 
-	operator Quat() const { return get_quat(); }
+	operator Quaternion() const { return get_quaternion(); }
 
-	Basis(const Quat &p_quat) { set_quat(p_quat); };
-	Basis(const Quat &p_quat, const Vector3 &p_scale) { set_quat_scale(p_quat, p_scale); }
+	static Basis looking_at(const Vector3 &p_target, const Vector3 &p_up = Vector3(0, 1, 0));
 
-	Basis(const Vector3 &p_euler) { set_euler(p_euler); }
-	Basis(const Vector3 &p_euler, const Vector3 &p_scale) { set_euler_scale(p_euler, p_scale); }
+	Basis(const Quaternion &p_quaternion) { set_quaternion(p_quaternion); };
+	Basis(const Quaternion &p_quaternion, const Vector3 &p_scale) { set_quaternion_scale(p_quaternion, p_scale); }
 
 	Basis(const Vector3 &p_axis, real_t p_phi) { set_axis_angle(p_axis, p_phi); }
 	Basis(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_phi, p_scale); }
+	static Basis from_scale(const Vector3 &p_scale);
 
 	_FORCE_INLINE_ Basis(const Vector3 &row0, const Vector3 &row1, const Vector3 &row2) {
 		elements[0] = row0;
@@ -298,13 +296,13 @@ _FORCE_INLINE_ Basis Basis::operator-(const Basis &p_matrix) const {
 	return ret;
 }
 
-_FORCE_INLINE_ void Basis::operator*=(real_t p_val) {
+_FORCE_INLINE_ void Basis::operator*=(const real_t p_val) {
 	elements[0] *= p_val;
 	elements[1] *= p_val;
 	elements[2] *= p_val;
 }
 
-_FORCE_INLINE_ Basis Basis::operator*(real_t p_val) const {
+_FORCE_INLINE_ Basis Basis::operator*(const real_t p_val) const {
 	Basis ret(*this);
 	ret *= p_val;
 	return ret;
@@ -326,7 +324,7 @@ Vector3 Basis::xform_inv(const Vector3 &p_vector) const {
 
 real_t Basis::determinant() const {
 	return elements[0][0] * (elements[1][1] * elements[2][2] - elements[2][1] * elements[1][2]) -
-		   elements[1][0] * (elements[0][1] * elements[2][2] - elements[2][1] * elements[0][2]) +
-		   elements[2][0] * (elements[0][1] * elements[1][2] - elements[1][1] * elements[0][2]);
+			elements[1][0] * (elements[0][1] * elements[2][2] - elements[2][1] * elements[0][2]) +
+			elements[2][0] * (elements[0][1] * elements[1][2] - elements[1][1] * elements[0][2]);
 }
 #endif // BASIS_H

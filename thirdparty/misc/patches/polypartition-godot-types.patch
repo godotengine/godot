@@ -1,5 +1,5 @@
 diff --git a/thirdparty/misc/polypartition.cpp b/thirdparty/misc/polypartition.cpp
-index 3a8a6efa8319..4f1b6dcb21d8 100644
+index 3a8a6efa83..5e94793b79 100644
 --- a/thirdparty/misc/polypartition.cpp
 +++ b/thirdparty/misc/polypartition.cpp
 @@ -23,10 +23,7 @@
@@ -510,7 +510,7 @@ index 3a8a6efa8319..4f1b6dcb21d8 100644
 -      return 0;
 -    }
 -    numvertices += iter->GetNumPoints();
-+  for (iter = inpolys->front(); iter; iter++) {
++  for (iter = inpolys->front(); iter; iter = iter->next()) {
 +    numvertices += iter->get().GetNumPoints();
    }
  
@@ -521,7 +521,7 @@ index 3a8a6efa8319..4f1b6dcb21d8 100644
    polystartindex = 0;
 -  for (iter = inpolys->begin(); iter != inpolys->end(); iter++) {
 -    poly = &(*iter);
-+  for (iter = inpolys->front(); iter; iter++) {
++  for (iter = inpolys->front(); iter; iter = iter->next()) {
 +    poly = &(iter->get());
      polyendindex = polystartindex + poly->GetNumPoints() - 1;
      for (i = 0; i < poly->GetNumPoints(); i++) {
@@ -569,7 +569,7 @@ index 3a8a6efa8319..4f1b6dcb21d8 100644
          newedge.p2 = v->p;
          edgeIter = edgeTree.lower_bound(newedge);
 -        if (edgeIter == edgeTree.begin()) {
-+        if (edgeIter == edgeTree.front()) {
++        if (edgeIter == nullptr || edgeIter == edgeTree.front()) {
            error = true;
            break;
          }
@@ -606,7 +606,7 @@ index 3a8a6efa8319..4f1b6dcb21d8 100644
          newedge.p2 = v->p;
          edgeIter = edgeTree.lower_bound(newedge);
 -        if (edgeIter == edgeTree.begin()) {
-+        if (edgeIter == edgeTree.front()) {
++        if (edgeIter == nullptr || edgeIter == edgeTree.front()) {
            error = true;
            break;
          }
@@ -648,7 +648,7 @@ index 3a8a6efa8319..4f1b6dcb21d8 100644
            newedge.p2 = v->p;
            edgeIter = edgeTree.lower_bound(newedge);
 -          if (edgeIter == edgeTree.begin()) {
-+          if (edgeIter == edgeTree.front()) {
++          if (edgeIter == nullptr || edgeIter == edgeTree.front()) {
              error = true;
              break;
            }
@@ -716,7 +716,7 @@ index 3a8a6efa8319..4f1b6dcb21d8 100644
      }
    }
 diff --git a/thirdparty/misc/polypartition.h b/thirdparty/misc/polypartition.h
-index f163f5d2173f..b2d905a3ef76 100644
+index f163f5d217..b2d905a3ef 100644
 --- a/thirdparty/misc/polypartition.h
 +++ b/thirdparty/misc/polypartition.h
 @@ -24,8 +24,9 @@

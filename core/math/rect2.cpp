@@ -263,3 +263,11 @@ next4:
 
 	return true;
 }
+
+Rect2::operator String() const {
+	return "[P: " + position.operator String() + ", S: " + size + "]";
+}
+
+Rect2i::operator String() const {
+	return "[P: " + position.operator String() + ", S: " + size + "]";
+}

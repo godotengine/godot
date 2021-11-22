@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeVectorFunc.Function" default="0">
 			The function to be performed. See [enum Function] for options.
@@ -120,6 +118,9 @@
 		</constant>
 		<constant name="FUNC_ONEMINUS" value="34" enum="Function">
 			Returns [code]1.0 - vector[/code].
+		</constant>
+		<constant name="FUNC_MAX" value="35" enum="Function">
+			Represents the size of the [enum Function] enum.
 		</constant>
 	</constants>
 </class>
