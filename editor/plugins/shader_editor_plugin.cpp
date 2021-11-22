@@ -646,7 +646,7 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
 	context_menu->set_position(get_global_transform().xform(p_position));
-	context_menu->set_size(Vector2(1, 1));
+	context_menu->reset_size();
 	context_menu->popup();
 }
 

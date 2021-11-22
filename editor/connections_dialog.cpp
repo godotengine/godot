@@ -378,7 +378,7 @@ void ConnectDialog::_advanced_pressed() {
 		error_label->hide();
 	} else {
 		set_min_size(Size2(600, 500) * EDSCALE);
-		set_size(Size2());
+		reset_size();
 		connect_to_label->set_text(TTR("Connect to Script:"));
 		tree->set_connect_to_script_mode(true);
 

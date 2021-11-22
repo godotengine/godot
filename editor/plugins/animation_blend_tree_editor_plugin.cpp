@@ -68,7 +68,7 @@ void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_scrip
 
 void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) {
 	add_node->get_popup()->clear();
-	add_node->get_popup()->set_size(Size2i(-1, -1));
+	add_node->get_popup()->reset_size();
 	for (int i = 0; i < add_options.size(); i++) {
 		if (p_has_input_ports && add_options[i].input_port_count == 0) {
 			continue;

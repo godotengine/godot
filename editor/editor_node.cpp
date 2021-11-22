@@ -4903,7 +4903,7 @@ void EditorNode::_update_layouts_menu() {
 	editor_layouts->clear();
 	overridden_default_layout = -1;
 
-	editor_layouts->set_size(Vector2());
+	editor_layouts->reset_size();
 	editor_layouts->add_shortcut(ED_SHORTCUT("layout/save", TTR("Save Layout")), SETTINGS_LAYOUT_SAVE);
 	editor_layouts->add_shortcut(ED_SHORTCUT("layout/delete", TTR("Delete Layout")), SETTINGS_LAYOUT_DELETE);
 	editor_layouts->add_separator();
@@ -5030,7 +5030,7 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			// context menu
 			scene_tabs_context_menu->clear();
-			scene_tabs_context_menu->set_size(Size2(1, 1));
+			scene_tabs_context_menu->reset_size();
 
 			scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_scene"), FILE_NEW_SCENE);
 			if (scene_tabs->get_hovered_tab() >= 0) {

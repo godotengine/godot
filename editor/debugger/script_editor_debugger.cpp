@@ -1420,7 +1420,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 // Right click on specific file(s) or folder(s).
 void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 	item_menu->clear();
-	item_menu->set_size(Size2(1, 1));
+	item_menu->reset_size();
 
 	if (error_tree->is_anything_selected()) {
 		item_menu->add_icon_item(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), TTR("Copy Error"), ACTION_COPY_ERROR);

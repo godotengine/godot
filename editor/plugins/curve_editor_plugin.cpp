@@ -383,7 +383,7 @@ void CurveEditor::open_context_menu(Vector2 pos) {
 
 	_context_menu->add_submenu_item(TTR("Load Preset"), _presets_menu->get_name());
 
-	_context_menu->set_size(Size2(0, 0));
+	_context_menu->reset_size();
 	_context_menu->popup();
 }
 
