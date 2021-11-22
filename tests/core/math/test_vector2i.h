@@ -37,7 +37,7 @@
 
 #include "tests/test_macros.h"
 
-namespace TestVector2 {
+namespace TestVector2i {
 
 TEST_CASE("[Vector2i] Constructor methods") {
 	const Vector2i vector2i = Vector2(1.2, 2.1);
