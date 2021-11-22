@@ -183,7 +183,7 @@
   // #define THROW_RUNTIME_ERROR(str)
   //   throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
   #define THROW_RUNTIME_ERROR(str) \
-    printf(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str)), abort();
+    printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
   // -- GODOT end --
 #else
   // -- GODOT start --
