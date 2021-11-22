@@ -1584,6 +1584,7 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 	Vector3 prev_wall_normal = wall_normal;
 	int wall_collision_count = 0;
 	Vector3 combined_wall_normal;
+	Vector3 tmp_wall_col; // Avoid duplicate on average calculation.
 
 	for (int i = p_result.collision_count - 1; i >= 0; i--) {
 		const PhysicsServer3D::MotionCollision &collision = p_result.collisions[i];
@@ -1630,8 +1631,11 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 		}
 
 		// Collect normal for calculating average.
-		combined_wall_normal += collision.normal;
-		wall_collision_count++;
+		if (!collision.normal.is_equal_approx(tmp_wall_col)) {
+			tmp_wall_col = collision.normal;
+			combined_wall_normal += collision.normal;
+			wall_collision_count++;
+		}
 	}
 
 	if (r_state.wall) {
