@@ -31,7 +31,6 @@
 #ifndef GODOT_TEST_VECTOR3_H
 #define GODOT_TEST_VECTOR3_H
 
-
 #include "core/math/Vector3.h"
 
 #include "tests/test_macros.h"
@@ -48,18 +47,18 @@ TEST_CASE("[Vector3] Constructor methods") {
 
 TEST_CASE("[Vector3] Transpose methods") {
 	const Vector3 vector3 = Vector3(1.2, 2.1, 3.3);
-	const Vector3 xyz = vector3.xyz;
-	const Vector3 xzy = vector3.xzy;
-	const Vector3 yxz = vector3.yxz;
-	const Vector3 yzx = vector3.yzx;
-	const Vector3 zxy = vector3.zxy;
-	const Vector3 zyx = vector3.zyx;
-	const Vector2 xy = vector3.xy;
-	const Vector2 xz = vector3.xz;
-	const Vector2 yx = vector3.yx;
-	const Vector2 yz = vector3.yz;
-	const Vector2 zx = vector3.zx;
-	const Vector2 zy = vector3.zy;
+	const Vector3 xyz = vector3.get_XYZ();
+	const Vector3 xzy = vector3.get_XZY();
+	const Vector3 yxz = vector3.get_YXZ();
+	const Vector3 yzx = vector3.get_YZX();
+	const Vector3 zxy = vector3.get_ZXY();
+	const Vector3 zyx = vector3.get_ZYX();
+	const Vector2 xy = vector3.get_XY();
+	const Vector2 xz = vector3.get_XZ();
+	const Vector2 yx = vector3.get_YX();
+	const Vector2 yz = vector3.get_YZ();
+	const Vector2 zx = vector3.get_ZX();
+	const Vector2 zy = vector3.get_ZY();
 
 	CHECK_MESSAGE(
 			&vector3 != &xyz, "Transposed vectors should be new objects"
@@ -167,6 +166,5 @@ TEST_CASE("[Vector3] Transpose methods") {
 			zy.y == vector3.y, "Transposed vectors should have the correct values"
 	);
 }
-
 
 #endif //GODOT_TEST_VECTOR3_H
