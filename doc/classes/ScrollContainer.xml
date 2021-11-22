@@ -38,6 +38,9 @@
 			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
+		<member name="scroll_damping_factor" type="float" setter="set_damping_factor" getter="get_damping_factor" default="0.25">
+			Defines how fast the scroll container decelerates on touchscreen/mobile devices. A value of [code]0.0[/code] means no deceleration at all and a value of [code]1.0[/code] means instant deceleration.
+		</member>
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">

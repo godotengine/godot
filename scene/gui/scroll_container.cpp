@@ -371,23 +371,17 @@ void ScrollContainer::_notification(int p_what) {
 					v_scroll->set_value(pos.y);
 				}
 
-				float sgn_x = drag_speed.x < 0 ? -1 : 1;
-				float val_x = Math::abs(drag_speed.x);
-				val_x -= 1000 * get_physics_process_delta_time();
+				float lerp_value = 1.0f - Math::pow(1.0f - damping_factor, (float)get_physics_process_delta_time());
+				lerp_value = CLAMP(lerp_value * 10.0, 0.0, 1.0);
+				drag_speed = drag_speed.lerp(Vector2(), lerp_value);
 
-				if (val_x < 0) {
+				if (abs(drag_speed.x) < 1.0) {
 					turnoff_h = true;
 				}
 
-				float sgn_y = drag_speed.y < 0 ? -1 : 1;
-				float val_y = Math::abs(drag_speed.y);
-				val_y -= 1000 * get_physics_process_delta_time();
-
-				if (val_y < 0) {
+				if (abs(drag_speed.y) < 1.0) {
 					turnoff_v = true;
 				}
-
-				drag_speed = Vector2(sgn_x * val_x, sgn_y * val_y);
 
 				if (turnoff_h && turnoff_v) {
 					_cancel_drag();
@@ -523,6 +517,14 @@ void ScrollContainer::set_deadzone(int p_deadzone) {
 	deadzone = p_deadzone;
 }
 
+float ScrollContainer::get_damping_factor() const {
+	return damping_factor;
+}
+
+void ScrollContainer::set_damping_factor(float p_daming_factor) {
+	damping_factor = p_daming_factor;
+}
+
 bool ScrollContainer::is_following_focus() const {
 	return follow_focus;
 }
@@ -590,6 +592,9 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_deadzone", "deadzone"), &ScrollContainer::set_deadzone);
 	ClassDB::bind_method(D_METHOD("get_deadzone"), &ScrollContainer::get_deadzone);
 
+	ClassDB::bind_method(D_METHOD("set_damping_factor", "damping_factor"), &ScrollContainer::set_damping_factor);
+	ClassDB::bind_method(D_METHOD("get_damping_factor"), &ScrollContainer::get_damping_factor);
+
 	ClassDB::bind_method(D_METHOD("set_follow_focus", "enabled"), &ScrollContainer::set_follow_focus);
 	ClassDB::bind_method(D_METHOD("is_following_focus"), &ScrollContainer::is_following_focus);
 
@@ -610,8 +615,10 @@ void ScrollContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_visible"), "set_h_scroll_visible", "is_h_scroll_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_vertical_visible"), "set_v_scroll_visible", "is_v_scroll_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_deadzone"), "set_deadzone", "get_deadzone");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_damping_factor", PROPERTY_HINT_RANGE, "0.00,1.00,0.001"), "set_damping_factor", "get_damping_factor");
 
 	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
+	GLOBAL_DEF("gui/common/default_damping_factor", 0.25);
 };
 
 ScrollContainer::ScrollContainer() {
@@ -626,6 +633,7 @@ ScrollContainer::ScrollContainer() {
 	v_scroll->connect("value_changed", callable_mp(this, &ScrollContainer::_scroll_moved));
 
 	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
+	damping_factor = GLOBAL_GET("gui/common/default_damping_factor");
 
 	set_clip_contents(true);
 };

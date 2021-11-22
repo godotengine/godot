@@ -61,6 +61,7 @@ class ScrollContainer : public Container {
 	bool v_scroll_visible = true;
 
 	int deadzone = 0;
+	float damping_factor = 0.0;
 	bool follow_focus = false;
 
 	void _cancel_drag();
@@ -100,6 +101,9 @@ public:
 
 	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
+
+	float get_damping_factor() const;
+	void set_damping_factor(float p_daming_factor);
 
 	bool is_following_focus() const;
 	void set_follow_focus(bool p_follow);

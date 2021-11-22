@@ -539,6 +539,9 @@
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
 		</member>
+		<member name="gui/common/default_damping_factor" type="float" setter="" getter="" default="0.25">
+			Default value for [member ScrollContainer.scroll_damping_factor], which will be used for all [ScrollContainer]s unless overridden.
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
