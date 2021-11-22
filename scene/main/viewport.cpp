@@ -333,7 +333,6 @@ void Viewport::_notification(int p_what) {
 #endif
 
 			// Enable processing for tooltips, collision debugging, physics object picking, etc.
-			set_process_internal(true);
 			set_physics_process_internal(true);
 
 		} break;
@@ -361,16 +360,6 @@ void Viewport::_notification(int p_what) {
 			remove_from_group("_viewports");
 
 			VS::get_singleton()->viewport_set_active(viewport, false);
-
-		} break;
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (gui.tooltip_timer >= 0) {
-				gui.tooltip_timer -= get_process_delta_time();
-				if (gui.tooltip_timer < 0) {
-					_gui_show_tooltip();
-				}
-			}
-
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (get_tree()->is_debugging_collisions_hint() && contact_2d_debug.is_valid()) {
@@ -1500,7 +1489,10 @@ void Viewport::_gui_sort_roots() {
 
 void Viewport::_gui_cancel_tooltip() {
 	gui.tooltip_control = nullptr;
-	gui.tooltip_timer = -1;
+	if (gui.tooltip_timer.is_valid()) {
+		gui.tooltip_timer->release_connections();
+		gui.tooltip_timer = Ref<SceneTreeTimer>();
+	}
 	if (gui.tooltip_popup) {
 		gui.tooltip_popup->queue_delete();
 		gui.tooltip_popup = nullptr;
@@ -2241,9 +2233,15 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (can_tooltip && !is_tooltip_shown) {
+				if (gui.tooltip_timer.is_valid()) {
+					gui.tooltip_timer->release_connections();
+					gui.tooltip_timer = Ref<SceneTreeTimer>();
+				}
 				gui.tooltip_control = over;
 				gui.tooltip_pos = mpos;
-				gui.tooltip_timer = gui.tooltip_delay;
+				gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
+				gui.tooltip_timer->set_ignore_time_scale(true);
+				gui.tooltip_timer->connect("timeout", this, "_gui_show_tooltip");
 			}
 		}
 
