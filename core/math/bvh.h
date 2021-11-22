@@ -704,6 +704,11 @@ private:
 		// Note that non pairable items can pair with pairable,
 		// so all types must be added to the list
 
+#ifdef BVH_EXPAND_LEAF_AABBS
+		// if using expanded AABB in the leaf, the redundancy check will already have been made
+		BOUNDS &expanded_aabb = tree._pairs[p_handle.id()].expanded_aabb;
+		item_get_AABB(p_handle, expanded_aabb);
+#else
 		// aabb check with expanded aabb. This greatly decreases processing
 		// at the cost of slightly less accurate pairing checks
 		// Note this pairing AABB is separate from the AABB in the actual tree
@@ -720,6 +725,7 @@ private:
 		// this tick, because it is vital that the AABB is kept up to date
 		expanded_aabb = aabb;
 		expanded_aabb.grow_by(tree._pairing_expansion);
+#endif
 
 		// this code is to ensure that changed items only appear once on the updated list
 		// collision checking them multiple times is not needed, and repeats the same thing

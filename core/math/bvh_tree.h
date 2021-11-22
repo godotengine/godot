@@ -50,6 +50,9 @@
 
 #define BVHABB_CLASS BVH_ABB<BOUNDS, POINT>
 
+// not sure if this is better yet so making optional
+#define BVH_EXPAND_LEAF_AABBS
+
 // never do these checks in release
 #if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
 //#define BVH_VERBOSE
