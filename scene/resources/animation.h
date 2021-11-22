@@ -189,6 +189,7 @@ private:
 
 	struct AudioTrack : public Track {
 		Vector<TKey<AudioKey>> values;
+		bool auto_volume = false;
 
 		AudioTrack() {
 			type = TYPE_AUDIO;
@@ -443,6 +444,8 @@ public:
 	Ref<Resource> audio_track_get_key_stream(int p_track, int p_key) const;
 	real_t audio_track_get_key_start_offset(int p_track, int p_key) const;
 	real_t audio_track_get_key_end_offset(int p_track, int p_key) const;
+	void audio_track_set_auto_volume(int p_track, bool p_enable);
+	bool audio_track_get_auto_volume(int p_track) const;
 
 	int animation_track_insert_key(int p_track, double p_time, const StringName &p_animation);
 	void animation_track_set_key_animation(int p_track, int p_key, const StringName &p_animation);

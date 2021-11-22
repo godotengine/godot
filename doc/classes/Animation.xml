@@ -65,6 +65,13 @@
 				Sets the key identified by [param key_idx] to value [param animation]. The [param track_idx] must be the index of an Animation Track.
 			</description>
 		</method>
+		<method name="audio_track_get_auto_volume" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the track at [code]idx[/code] changes the volume in [AudioStreamPlayer].
+			</description>
+		</method>
 		<method name="audio_track_get_key_end_offset" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="track_idx" type="int" />
@@ -101,6 +108,14 @@
 			<description>
 				Inserts an Audio Track key at the given [param time] in seconds. The [param track_idx] must be the index of an Audio Track.
 				[param stream] is the [AudioStream] resource to play. [param start_offset] is the number of seconds cut off at the beginning of the audio stream, while [param end_offset] is at the ending.
+			</description>
+		</method>
+		<method name="audio_track_set_auto_volume">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], the track at [code]idx[/code] changes the volume in [AudioStreamPlayer].
 			</description>
 		</method>
 		<method name="audio_track_set_key_end_offset">

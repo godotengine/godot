@@ -2114,7 +2114,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 					get_theme_icon(SNAME("InterpWrapClamp"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpWrapLoop"), SNAME("EditorIcons")),
 				};
-
 				Ref<Texture2D> interp_icon[3] = {
 					get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")),
@@ -2125,6 +2124,10 @@ void AnimationTrackEdit::_notification(int p_what) {
 					get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("TrackTrigger"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons"))
+				};
+				Ref<Texture2D> volume_icon[2] = {
+					get_theme_icon(SNAME("AutoVolumeDisable"), SNAME("EditorIcons")),
+					get_theme_icon(SNAME("AutoVolumeEnable"), SNAME("EditorIcons")),
 				};
 
 				int ofs = get_size().width - timeline->get_buttons_width();
@@ -2154,6 +2157,11 @@ void AnimationTrackEdit::_notification(int p_what) {
 					if (!animation->track_is_compressed(track) && animation->track_get_type(track) == Animation::TYPE_VALUE) {
 						draw_texture(update_icon, update_mode_rect.position);
 					}
+					if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
+						Ref<Texture2D> auto_volume_icon = volume_icon[animation->audio_track_get_auto_volume(track) ? 1 : 0];
+						Vector2 auto_volume_icon_pos = update_mode_rect.position + (update_mode_rect.size - auto_volume_icon->get_size()) / 2;
+						draw_texture(auto_volume_icon, auto_volume_icon_pos);
+					}
 					// Make it easier to click.
 					update_mode_rect.position.y = 0;
 					update_mode_rect.size.y = get_size().height;
@@ -2162,13 +2170,12 @@ void AnimationTrackEdit::_notification(int p_what) {
 					update_mode_rect.size.x += hsep / 2;
 
 					if (!read_only) {
-						if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
+						if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_AUDIO) {
 							draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
 							update_mode_rect.size.x += down_icon->get_width();
 						} else if (animation->track_get_type(track) == Animation::TYPE_BEZIER) {
 							Ref<Texture2D> bezier_icon = get_theme_icon(SNAME("EditBezier"), SNAME("EditorIcons"));
 							update_mode_rect.size.x += down_icon->get_width();
-
 							update_mode_rect = Rect2();
 						} else {
 							update_mode_rect = Rect2();
@@ -2614,7 +2621,11 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	}
 
 	if (update_mode_rect.has_point(p_pos)) {
-		return TTR("Update Mode (How this property is set)");
+		if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
+			return TTR("Auto Volume (Allow animation tree to change stream player volume)");
+		} else {
+			return TTR("Update Mode (How this property is set)");
+		}
 	}
 
 	if (interp_mode_rect.has_point(p_pos)) {
@@ -2809,10 +2820,15 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					menu->connect("id_pressed", callable_mp(this, &AnimationTrackEdit::_menu_selected));
 				}
 				menu->clear();
-				menu->add_icon_item(get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")), TTR("Continuous"), MENU_CALL_MODE_CONTINUOUS);
-				menu->add_icon_item(get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")), TTR("Discrete"), MENU_CALL_MODE_DISCRETE);
-				menu->add_icon_item(get_theme_icon(SNAME("TrackTrigger"), SNAME("EditorIcons")), TTR("Trigger"), MENU_CALL_MODE_TRIGGER);
-				menu->add_icon_item(get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons")), TTR("Capture"), MENU_CALL_MODE_CAPTURE);
+				if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
+					menu->add_icon_item(get_theme_icon(SNAME("AutoVolumeDisable"), SNAME("EditorIcons")), TTR("Disable"), MENU_AUTO_VOLUME_DISABLE);
+					menu->add_icon_item(get_theme_icon(SNAME("AutoVolumeEnable"), SNAME("EditorIcons")), TTR("Enable"), MENU_AUTO_VOLUME_ENABLE);
+				} else {
+					menu->add_icon_item(get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")), TTR("Continuous"), MENU_CALL_MODE_CONTINUOUS);
+					menu->add_icon_item(get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")), TTR("Discrete"), MENU_CALL_MODE_DISCRETE);
+					menu->add_icon_item(get_theme_icon(SNAME("TrackTrigger"), SNAME("EditorIcons")), TTR("Trigger"), MENU_CALL_MODE_TRIGGER);
+					menu->add_icon_item(get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons")), TTR("Capture"), MENU_CALL_MODE_CAPTURE);
+				}
 				menu->reset_size();
 
 				Vector2 popup_pos = get_screen_position() + update_mode_rect.position + Vector2(0, update_mode_rect.size.height);
@@ -3202,6 +3218,15 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_KEY_DELETE: {
 			emit_signal(SNAME("delete_request"));
 
+		} break;
+		case MENU_AUTO_VOLUME_DISABLE:
+		case MENU_AUTO_VOLUME_ENABLE: {
+			bool auto_volume = p_index == MENU_AUTO_VOLUME_ENABLE;
+			undo_redo->create_action(TTR("Change Animation Auto Volume"));
+			undo_redo->add_do_method(animation.ptr(), "audio_track_set_auto_volume", track, auto_volume);
+			undo_redo->add_undo_method(animation.ptr(), "audio_track_set_auto_volume", track, animation->audio_track_get_auto_volume(track));
+			undo_redo->commit_action();
+			update();
 		} break;
 	}
 }
@@ -3640,6 +3665,9 @@ void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Anim
 		undo_redo->add_undo_method(p_from_animation.ptr(), "track_set_interpolation_type", idx, p_from_animation->track_get_interpolation_type(idx));
 		if (p_from_animation->track_get_type(idx) == Animation::TYPE_VALUE) {
 			undo_redo->add_undo_method(p_from_animation.ptr(), "value_track_set_update_mode", idx, p_from_animation->value_track_get_update_mode(idx));
+		}
+		if (animation->track_get_type(idx) == Animation::TYPE_AUDIO) {
+			undo_redo->add_undo_method(animation.ptr(), "audio_track_set_auto_volume", idx, animation->audio_track_get_auto_volume(idx));
 		}
 
 		undo_redo->commit_action();
@@ -5799,6 +5827,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 						if (tc.track_type == Animation::TYPE_VALUE) {
 							tc.update_mode = animation->value_track_get_update_mode(idx);
 						}
+						if (tc.track_type == Animation::TYPE_AUDIO) {
+							tc.auto_volume = animation->audio_track_get_auto_volume(idx);
+						}
 						tc.loop_wrap = animation->track_get_interpolation_loop_wrap(idx);
 						tc.enabled = animation->track_is_enabled(idx);
 						for (int i = 0; i < animation->track_get_key_count(idx); i++) {
@@ -5841,6 +5872,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				undo_redo->add_do_method(animation.ptr(), "track_set_enabled", base_track, track_clipboard[i].enabled);
 				if (track_clipboard[i].track_type == Animation::TYPE_VALUE) {
 					undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", base_track, track_clipboard[i].update_mode);
+				}
+				if (track_clipboard[i].track_type == Animation::TYPE_AUDIO) {
+					undo_redo->add_do_method(animation.ptr(), "audio_track_set_auto_volume", base_track, track_clipboard[i].auto_volume);
 				}
 
 				for (int j = 0; j < track_clipboard[i].keys.size(); j++) {

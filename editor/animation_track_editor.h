@@ -148,7 +148,9 @@ class AnimationTrackEdit : public Control {
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
 		MENU_KEY_ADD_RESET,
-		MENU_KEY_DELETE
+		MENU_KEY_DELETE,
+		MENU_AUTO_VOLUME_DISABLE,
+		MENU_AUTO_VOLUME_ENABLE,
 	};
 
 	AnimationTimelineEdit *timeline = nullptr;
@@ -491,6 +493,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		Animation::LoopMode loop_mode = Animation::LOOP_LINEAR;
 		bool loop_wrap = false;
 		bool enabled = false;
+		bool auto_volume = false;
 
 		struct Key {
 			float time = 0;
