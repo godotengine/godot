@@ -93,6 +93,12 @@
 				Returns font descent (number of pixels below the baseline).
 			</description>
 		</method>
+		<method name="get_fixed_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns font fixed size.
+			</description>
+		</method>
 		<method name="get_font_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -479,6 +485,13 @@
 			<argument index="2" name="descent" type="float" />
 			<description>
 				Sets the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="set_fixed_size">
+			<return type="void" />
+			<argument index="0" name="fixed_size" type="int" />
+			<description>
+				Sets the fixed size for the font.
 			</description>
 		</method>
 		<method name="set_font_name">
