@@ -403,6 +403,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_grapheme", "shaped", "coords"), &TextServer::shaped_text_hit_test_grapheme);
 	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_position", "shaped", "coords"), &TextServer::shaped_text_hit_test_position);
 
+	ClassDB::bind_method(D_METHOD("shaped_text_get_grapheme_bounds", "shaped", "pos"), &TextServer::shaped_text_get_grapheme_bounds);
 	ClassDB::bind_method(D_METHOD("shaped_text_next_grapheme_pos", "shaped", "pos"), &TextServer::shaped_text_next_grapheme_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_prev_grapheme_pos", "shaped", "pos"), &TextServer::shaped_text_prev_grapheme_pos);
 
@@ -1118,6 +1119,27 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, real_t p_coords) con
 		off += glyphs[i].advance * glyphs[i].repeat;
 	}
 	return 0;
+}
+
+Vector2 TextServer::shaped_text_get_grapheme_bounds(RID p_shaped, int p_pos) const {
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+
+	real_t off = 0.0f;
+	for (int i = 0; i < v_size; i++) {
+		if ((glyphs[i].count > 0) && ((glyphs[i].index != 0) || ((glyphs[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE))) {
+			if (glyphs[i].start <= p_pos && glyphs[i].end >= p_pos) {
+				real_t advance = 0.f;
+				for (int j = 0; j < glyphs[i].count; j++) {
+					advance += glyphs[i + j].advance;
+				}
+				return Vector2(off, off + advance);
+			}
+		}
+		off += glyphs[i].advance * glyphs[i].repeat;
+	}
+
+	return Vector2();
 }
 
 int TextServer::shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) const {

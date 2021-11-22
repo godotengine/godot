@@ -362,6 +362,24 @@
 				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
+		<method name="get_pos_at_line_column" qualifiers="const">
+			<return type="Vector2i" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="column" type="int" />
+			<description>
+				Returns the local position for the given [code]line[/code] and [code]column[/code]. If [code]x[/code] or [code]y[/code] of the returned vector equal [code]-1[/code], the position is outside of the viewable area of the control.
+				[b]Note:[/b] The Y position corresponds to the bottom side of the line. Use [method get_rect_at_line_column] to get the top side position.
+			</description>
+		</method>
+		<method name="get_rect_at_line_column" qualifiers="const">
+			<return type="Rect2i" />
+			<argument index="0" name="line" type="int" />
+			<argument index="1" name="column" type="int" />
+			<description>
+				Returns the local position and size for the grapheme at the given [code]line[/code] and [code]column[/code]. If [code]x[/code] or [code]y[/code] position of the returned rect equal [code]-1[/code], the position is outside of the viewable area of the control.
+				[b]Note:[/b] The Y position of the returned rect corresponds to the top side of the line, unlike [method get_pos_at_line_column] which returns the bottom side.
+			</description>
+		</method>
 		<method name="get_saved_version" qualifiers="const">
 			<return type="int" />
 			<description>

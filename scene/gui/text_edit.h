@@ -271,7 +271,7 @@ private:
 	bool virtual_keyboard_enabled = true;
 	bool middle_mouse_paste_enabled = true;
 
-	// Overridable actions
+	// Overridable actions.
 	String cut_copy_line = "";
 
 	// Context menu.
@@ -336,6 +336,14 @@ private:
 	Variant tooltip_ud;
 
 	/* Mouse */
+	struct LineDrawingCache {
+		int y_offset = 0;
+		Vector<int> first_visible_chars;
+		Vector<int> last_visible_chars;
+	};
+
+	Map<int, LineDrawingCache> line_drawing_cache;
+
 	int _get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 
 	/* Caret. */
@@ -415,7 +423,7 @@ private:
 	void _pre_shift_selection();
 	void _post_shift_selection();
 
-	/* line wrapping. */
+	/* Line wrapping. */
 	LineWrappingMode line_wrapping_mode = LineWrappingMode::LINE_WRAPPING_NONE;
 
 	int wrap_at_column = 0;
@@ -455,14 +463,14 @@ private:
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
-	// Minimap
+	// Minimap.
 	bool draw_minimap = false;
 
 	int minimap_width = 80;
 	Point2 minimap_char_size = Point2(1, 2);
 	int minimap_line_spacing = 1;
 
-	// minimap scroll
+	// Minimap scroll.
 	bool minimap_clicked = false;
 	bool hovering_minimap = false;
 	bool dragging_minimap = false;
@@ -717,6 +725,9 @@ public:
 	String get_word_at_pos(const Vector2 &p_pos) const;
 
 	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
+	Point2i get_pos_at_line_column(int p_line, int p_column) const;
+	Rect2i get_rect_at_line_column(int p_line, int p_column) const;
+
 	int get_minimap_line_at_pos(const Point2i &p_pos) const;
 
 	bool is_dragging_cursor() const;
@@ -782,7 +793,7 @@ public:
 	void deselect();
 	void delete_selection();
 
-	/* line wrapping. */
+	/* Line wrapping. */
 	void set_line_wrapping_mode(LineWrappingMode p_wrapping_mode);
 	LineWrappingMode get_line_wrapping_mode() const;
 

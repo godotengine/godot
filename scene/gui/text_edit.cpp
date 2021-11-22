@@ -608,7 +608,7 @@ void TextEdit::_notification(int p_what) {
 			int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
 			draw_amount += get_line_wrap_count(first_visible_line + 1);
 
-			// minimap
+			// Draw minimap.
 			if (draw_minimap) {
 				int minimap_visible_lines = get_minimap_visible_lines();
 				int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
@@ -788,8 +788,9 @@ void TextEdit::_notification(int p_what) {
 				bottom_limit_y -= style_normal->get_margin(SIDE_BOTTOM);
 			}
 
-			// draw main text
+			// Draw main text.
 			caret.visible = false;
+			line_drawing_cache.clear();
 			int row_height = get_line_height();
 			int line = first_visible_line;
 			for (int i = 0; i < draw_amount; i++) {
@@ -809,6 +810,8 @@ void TextEdit::_notification(int p_what) {
 				if (line < 0 || line >= (int)text.size()) {
 					continue;
 				}
+
+				LineDrawingCache cache_entry;
 
 				Dictionary color_map = _get_line_syntax_highlighting(line);
 
@@ -898,6 +901,8 @@ void TextEdit::_notification(int p_what) {
 
 					if (line_wrap_index == 0) {
 						// Only do these if we are on the first wrapped part of a line.
+
+						cache_entry.y_offset = ofs_y;
 
 						int gutter_offset = style_normal->get_margin(SIDE_LEFT);
 						for (int g = 0; g < gutters.size(); g++) {
@@ -1076,6 +1081,10 @@ void TextEdit::_notification(int p_what) {
 					int gl_size = TS->shaped_text_get_glyph_count(rid);
 
 					ofs_y += ldata->get_line_ascent(line_wrap_index);
+
+					int first_visible_char = TS->shaped_text_get_range(rid).y;
+					int last_visible_char = TS->shaped_text_get_range(rid).x;
+
 					int char_ofs = 0;
 					if (outline_size > 0 && outline_color.a > 0) {
 						for (int j = 0; j < gl_size; j++) {
@@ -1143,20 +1152,35 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 
+						bool had_glyphs_drawn = false;
 						for (int k = 0; k < glyphs[j].repeat; k++) {
 							if (!clipped && (char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
 								if (glyphs[j].font_rid != RID()) {
 									TS->font_draw_glyph(glyphs[j].font_rid, ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, current_color);
+									had_glyphs_drawn = true;
 								} else if ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
 									TS->draw_hex_code_box(ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, current_color);
+									had_glyphs_drawn = true;
 								}
 							}
 							char_ofs += glyphs[j].advance;
 						}
+
+						if (had_glyphs_drawn) {
+							if (first_visible_char > glyphs[j].start) {
+								first_visible_char = glyphs[j].start;
+							} else if (last_visible_char < glyphs[j].end) {
+								last_visible_char = glyphs[j].end;
+							}
+						}
+
 						if ((char_ofs + char_margin) >= xmargin_end) {
 							break;
 						}
 					}
+
+					cache_entry.first_visible_chars.push_back(first_visible_char);
+					cache_entry.last_visible_chars.push_back(last_visible_char);
 
 					// is_line_folded
 					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && _is_line_hidden(line + 1)) {
@@ -1308,6 +1332,8 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 				}
+
+				line_drawing_cache[line] = cache_entry;
 			}
 
 			if (has_focus()) {
@@ -3457,6 +3483,49 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 	return Point2i(col, row);
 }
 
+Point2i TextEdit::get_pos_at_line_column(int p_line, int p_column) const {
+	Rect2i rect = get_rect_at_line_column(p_line, p_column);
+	return rect.position + Vector2i(0, get_line_height());
+}
+
+Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), Rect2i(-1, -1, 0, 0));
+	ERR_FAIL_COND_V(p_column < 0, Rect2i(-1, -1, 0, 0));
+	ERR_FAIL_COND_V(p_column > text[p_line].length(), Rect2i(-1, -1, 0, 0));
+
+	if (line_drawing_cache.size() == 0 || !line_drawing_cache.has(p_line)) {
+		// Line is not in the cache, which means it's outside of the viewing area.
+		return Rect2i(-1, -1, 0, 0);
+	}
+	LineDrawingCache cache_entry = line_drawing_cache[p_line];
+
+	int wrap_index = get_line_wrap_index_at_column(p_line, p_column);
+	if (wrap_index >= cache_entry.first_visible_chars.size()) {
+		// Line seems to be wrapped beyond the viewable area.
+		return Rect2i(-1, -1, 0, 0);
+	}
+
+	int first_visible_char = cache_entry.first_visible_chars[wrap_index];
+	int last_visible_char = cache_entry.last_visible_chars[wrap_index];
+	if (p_column < first_visible_char || p_column > last_visible_char) {
+		// Character is outside of the viewing area, no point calculating its position.
+		return Rect2i(-1, -1, 0, 0);
+	}
+
+	Point2i pos, size;
+	pos.y = cache_entry.y_offset + get_line_height() * wrap_index;
+	pos.x = get_total_gutter_width() + style_normal->get_margin(SIDE_LEFT) - get_h_scroll();
+
+	RID text_rid = text.get_line_data(p_line)->get_line_rid(wrap_index);
+	Vector2 col_bounds = TS->shaped_text_get_grapheme_bounds(text_rid, p_column);
+	pos.x += col_bounds.x;
+	size.x = col_bounds.y - col_bounds.x;
+
+	size.y = get_line_height();
+
+	return Rect2i(pos, size);
+}
+
 int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 	float rows = p_pos.y;
 	rows -= style_normal->get_margin(SIDE_TOP);
@@ -3897,7 +3966,7 @@ void TextEdit::delete_selection() {
 	update();
 }
 
-/* line wrapping. */
+/* Line wrapping. */
 void TextEdit::set_line_wrapping_mode(LineWrappingMode p_wrapping_mode) {
 	if (line_wrapping_mode != p_wrapping_mode) {
 		line_wrapping_mode = p_wrapping_mode;
@@ -4701,6 +4770,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_word_at_pos", "position"), &TextEdit::get_word_at_pos);
 
 	ClassDB::bind_method(D_METHOD("get_line_column_at_pos", "position", "allow_out_of_bounds"), &TextEdit::get_line_column_at_pos, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_pos_at_line_column", "line", "column"), &TextEdit::get_pos_at_line_column);
+	ClassDB::bind_method(D_METHOD("get_rect_at_line_column", "line", "column"), &TextEdit::get_rect_at_line_column);
+
 	ClassDB::bind_method(D_METHOD("get_minimap_line_at_pos", "position"), &TextEdit::get_minimap_line_at_pos);
 
 	ClassDB::bind_method(D_METHOD("is_dragging_cursor"), &TextEdit::is_dragging_cursor);
@@ -4778,7 +4850,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("deselect"), &TextEdit::deselect);
 	ClassDB::bind_method(D_METHOD("delete_selection"), &TextEdit::delete_selection);
 
-	/* line wrapping. */
+	/* Line wrapping. */
 	BIND_ENUM_CONSTANT(LINE_WRAPPING_NONE);
 	BIND_ENUM_CONSTANT(LINE_WRAPPING_BOUNDARY);
 
