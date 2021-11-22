@@ -469,6 +469,7 @@ void OS_Android::set_screen_orientation(ScreenOrientation p_orientation) {
 
 OS::ScreenOrientation OS_Android::get_screen_orientation() const {
 	const int orientation = godot_io_java->get_screen_orientation();
+	ERR_FAIL_INDEX_V_MSG(orientation, 7, OS::ScreenOrientation(0), "Unrecognized screen orientation.");
 	return OS::ScreenOrientation(orientation);
 }
 
