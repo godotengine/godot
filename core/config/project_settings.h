@@ -117,7 +117,7 @@ protected:
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
-	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
+	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
 
 	void _add_builtin_input_map();
 
@@ -156,7 +156,7 @@ public:
 	void set_builtin_order(const String &p_name);
 	bool is_builtin_setting(const String &p_name) const;
 
-	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
+	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
 
 	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);
 	Error save();
