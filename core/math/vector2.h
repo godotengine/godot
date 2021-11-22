@@ -62,6 +62,9 @@ struct Vector2 {
 	Vector2 normalized() const;
 	bool is_normalized() const;
 
+	Vector2 get_XY() const;
+	Vector2 get_YX() const;
+
 	real_t length() const;
 	real_t length_squared() const;
 

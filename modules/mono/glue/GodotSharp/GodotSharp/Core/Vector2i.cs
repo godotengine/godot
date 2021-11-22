@@ -30,10 +30,22 @@ namespace Godot
         /// The vector's X component. Also accessible by using the index position `[0]`.
         /// </summary>
         public int x;
+
         /// <summary>
         /// The vector's Y component. Also accessible by using the index position `[1]`.
         /// </summary>
         public int y;
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2i"/> from this Vector2i's X and Y components.
+		/// This is effectively a shortcut to create a copy of the Vector2i object.
+		/// <summary>
+		public Vector2i xy => new Vector2i(this);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2i"/> from this Vector2i's Y and X components.
+		/// <summary>
+		public Vector2i yx => new Vector2i(this.y, this.x);
 
         /// <summary>
         /// Access vector components using their index.

@@ -118,3 +118,50 @@ bool Vector3::is_equal_approx(const Vector3 &p_v) const {
 Vector3::operator String() const {
 	return (rtos(x) + ", " + rtos(y) + ", " + rtos(z));
 }
+
+Vector3 Vector3::get_XYZ() const {
+	return *this;
+}
+
+Vector3 Vector3::get_XZY() const {
+	return new Vector3(x, z, y)
+}
+
+Vector3 Vector3::get_YXZ() const {
+	return new Vector3(y, x, z)}
+
+Vector3 Vector3::get_YZX() const {
+	return new Vector3(y, z, x)
+}
+
+Vector3 Vector3::get_ZXY() const {
+	return new Vector3(z, x, y);
+}
+
+Vector3 Vector3::get_ZYX() const {
+	return new Vector3(z, y, x);
+}
+
+Vector2 Vector3::get_XY() const {
+	return new Vector2(x, y);
+}
+
+Vector2 Vector3::get_XZ() const {
+	return new Vector2(x, z);
+}
+
+Vector2 Vector3::get_YX() const {
+	return new Vector2(y, x);
+}
+
+Vector2 Vector3::get_YZ() const {
+	return new Vector2(y, z);
+}
+
+Vector2 Vector3::get_ZX() const {
+	return new Vector2(z, x);
+}
+
+Vector2 Vector3::get_ZY() const {
+	return new Vector2(z, y);
+}

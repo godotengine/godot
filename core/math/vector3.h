@@ -65,6 +65,19 @@ struct Vector3 {
 	void set_axis(int p_axis, real_t p_value);
 	real_t get_axis(int p_axis) const;
 
+	Vector3 get_XYZ() const;
+	Vector3 get_XZY() const;
+	Vector3 get_YXZ() const;
+	Vector3 get_YZX() const;
+	Vector3 get_ZXY() const;
+	Vector3 get_ZYX() const;
+	Vector2 get_XY() const;
+	Vector2 get_XZ() const;
+	Vector2 get_YX() const;
+	Vector2 get_YZ() const;
+	Vector2 get_ZX() const;
+	Vector2 get_ZY() const;
+
 	int min_axis() const;
 	int max_axis() const;
 

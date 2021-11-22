@@ -62,6 +62,17 @@ bool Vector2::is_normalized() const {
 	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON);
 }
 
+Vector2 Vector2::get_XY() const {
+	return *this;
+}
+
+Vector2 Vector2::get_YX() const {
+	Vector2 v = *this;
+	v.x = this.y;
+	v.y = this.x;
+	return v;
+}
+
 real_t Vector2::distance_to(const Vector2 &p_vector2) const {
 	return Math::sqrt((x - p_vector2.x) * (x - p_vector2.x) + (y - p_vector2.y) * (y - p_vector2.y));
 }

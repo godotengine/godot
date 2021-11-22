@@ -36,16 +36,79 @@ namespace Godot
         /// The vector's X component. Also accessible by using the index position `[0]`.
         /// </summary>
         public real_t x;
+
         /// <summary>
         /// The vector's Y component. Also accessible by using the index position `[1]`.
         /// </summary>
         public real_t y;
+
         /// <summary>
         /// The vector's Z component. Also accessible by using the index position `[2]`.
         /// </summary>
         public real_t z;
 
-        /// <summary>
+		/// <summary>
+		/// Constructs a new <see cref="Vector3"/> from this Vector3's X, Y, and Z components.
+		/// This is effectively a shortcut to create a copy of the Vector3 object.
+		/// <summary>
+		public Vector3 xyz => new Vector3(this);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector3"/> from this Vector3's X, Z, and Y components.
+		/// <summary>
+		public Vector3 xzy => new Vector3(x, z, y);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector3"/> from this Vector3's Y, X, and Z components.
+		/// <summary>
+		public Vector3 yxz => new Vector3(y, x, z);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector3"/> from this Vector3's Y, Z, and X components.
+		/// <summary>
+		public Vector3 yzx => new Vector3(y, z, x);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector3"/> from this Vector3's Z, X, and Y components.
+		/// <summary>
+		public Vector3 zxy => new Vector3(z, x, y);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector3"/> from this Vector3's Z, Y, and X components.
+		/// <summary>
+		public Vector3 zyx => new Vector3(z, y, x);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2"/> from this Vector3's X and Y components.
+		/// <summary>
+		public Vector2 xy => new Vector2(x, y);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2"/> from this Vector3's X and Z components.
+		/// <summary>
+		public Vector2 xz => new Vector2(x, z);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2"/> from this Vector3's Y and X components.
+		/// <summary>
+		public Vector2 yx => new Vector2(y, x);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2"/> from this Vector3's Y and Z components.
+		/// <summary>
+		public Vector2 yz => new Vector2(y, z);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2"/> from this Vector3's Z and X components.
+		/// <summary>
+		public Vector2 zx => new Vector2(z, x);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2"/> from this Vector3's Z and Y components.
+		/// <summary>
+		public Vector2 zy => new Vector2(z, y);
+
+		/// <summary>
         /// Access vector components using their index.
         /// </summary>
         /// <value>`[0]` is equivalent to `.x`, `[1]` is equivalent to `.y`, `[2]` is equivalent to `.z`.</value>

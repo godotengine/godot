@@ -40,7 +40,18 @@ namespace Godot
         /// </summary>
         public real_t y;
 
-        /// <summary>
+		/// <summary>
+		/// Constructs a new <see cref="Vector2"/> from this Vector2's X and Y components.
+		/// This is effectively a shortcut to create a copy of the Vector2 object.
+		/// <summary>
+		public Vector2 xy => new Vector2(this);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2"/> from this Vector2's Y and X components.
+		/// <summary>
+		public Vector2 yx => new Vector2(this.y, this.x);
+
+		/// <summary>
         /// Access vector components using their index.
         /// </summary>
         /// <value>`[0]` is equivalent to `.x`, `[1]` is equivalent to `.y`.</value>

@@ -51,3 +51,50 @@ int Vector3i::max_axis() const {
 Vector3i::operator String() const {
 	return (itos(x) + ", " + itos(y) + ", " + itos(z));
 }
+
+Vector3i Vector3i::get_XYZ() const {
+	return *this;
+}
+
+Vector3i Vector3i::get_XZY() const {
+	return new Vector3i(x, z, y)
+}
+
+Vector3i Vector3i::get_YXZ() const {
+	return new Vector3i(y, x, z)}
+
+Vector3i Vector3i::get_YZX() const {
+	return new Vector3i(y, z, x)
+}
+
+Vector3i Vector3i::get_ZXY() const {
+	return new Vector3i(z, x, y);
+}
+
+Vector3i Vector3i::get_ZYX() const {
+	return new Vector3i(z, y, x);
+}
+
+Vector2i Vector3i::get_XY() const {
+	return new Vector2i(x, y);
+}
+
+Vector2i Vector3i::get_XZ() const {
+	return new Vector2i(x, z);
+}
+
+Vector2i Vector3i::get_YX() const {
+	return new Vector2i(y, x);
+}
+
+Vector2i Vector3i::get_YZ() const {
+	return new Vector2i(y, z);
+}
+
+Vector2i Vector3i::get_ZX() const {
+	return new Vector2i(z, x);
+}
+
+Vector2i Vector3i::get_ZY() const {
+	return new Vector2i(z, y);
+}
