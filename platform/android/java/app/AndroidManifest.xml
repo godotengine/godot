@@ -33,6 +33,11 @@
         <!-- The following metadata values are replaced when Godot exports, modifying them here has no effect. -->
         <!-- Do these changes in the export preset. Adding new ones is fine. -->
 
+        <!-- XR mode metadata. This is modified by the exporter based on the selected xr mode. DO NOT CHANGE the values here. -->
+        <meta-data
+            android:name="xr_mode_metadata_name"
+            android:value="xr_mode_metadata_value" />
+
         <activity
             android:name=".GodotApp"
             android:label="@string/godot_project_name_string"
