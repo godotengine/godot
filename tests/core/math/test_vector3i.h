@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_vector3i.h                                                        */
+/*  test_vector3i.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -69,110 +69,79 @@ TEST_CASE("[Vector3i] Transpose methods") {
 	const Vector2i zy = vector3i.get_ZY();
 
 	CHECK_MESSAGE(
-			&vector3i != &xyz, "Transposed vectors should be new objects"
-	);
+			&vector3i != &xyz, "Transposed vectors should be new objects");
 
 	CHECK_MESSAGE(
-			xyz.x == vector3i.x, "Transposed vectors should have the correct values"
-	);
+			xyz.x == vector3i.x, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			xyz.y == vector3i.y, "Transposed vectors should have the correct values"
-	);
+			xyz.y == vector3i.y, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			xyz.z == vector3i.z, "Transposed vectors should have the correct values"
-	);
+			xyz.z == vector3i.z, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			xzy.x == vector3i.x, "Transposed vectors should have the correct values"
-	);
+			xzy.x == vector3i.x, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			xzy.y == vector3i.z, "Transposed vectors should have the correct values"
-	);
+			xzy.y == vector3i.z, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			xzy.z == vector3i.y, "Transposed vectors should have the correct values"
-	);
+			xzy.z == vector3i.y, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			yxz.x == vector3i.y, "Transposed vectors should have the correct values"
-	);
+			yxz.x == vector3i.y, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			yxz.y == vector3i.x, "Transposed vectors should have the correct values"
-	);
+			yxz.y == vector3i.x, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			yxz.z == vector3i.z, "Transposed vectors should have the correct values"
-	);
+			yxz.z == vector3i.z, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			yzx.x == vector3i.y, "Transposed vectors should have the correct values"
-	);
+			yzx.x == vector3i.y, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			yzx.y == vector3i.z, "Transposed vectors should have the correct values"
-	);
+			yzx.y == vector3i.z, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			yzx.z == vector3i.x, "Transposed vectors should have the correct values"
-	);
+			yzx.z == vector3i.x, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			zxy.x == vector3i.z, "Transposed vectors should have the correct values"
-	);
+			zxy.x == vector3i.z, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			zxy.y == vector3i.x, "Transposed vectors should have the correct values"
-	);
+			zxy.y == vector3i.x, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			zxy.z == vector3i.y, "Transposed vectors should have the correct values"
-	);
+			zxy.z == vector3i.y, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			zyx.x == vector3i.z, "Transposed vectors should have the correct values"
-	);
+			zyx.x == vector3i.z, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			zyx.z == vector3i.y, "Transposed vectors should have the correct values"
-	);
+			zyx.z == vector3i.y, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			zyx.z == vector3i.x, "Transposed vectors should have the correct values"
-	);
+			zyx.z == vector3i.x, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			xy.x == vector3i.x, "Transposed vectors should have the correct values"
-	);
+			xy.x == vector3i.x, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			xy.y == vector3i.y, "Transposed vectors should have the correct values"
-	);
+			xy.y == vector3i.y, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			xz.x == vector3i.x, "Transposed vectors should have the correct values"
-	);
+			xz.x == vector3i.x, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			xz.y == vector3i.z, "Transposed vectors should have the correct values"
-	);
+			xz.y == vector3i.z, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			yx.x == vector3i.y, "Transposed vectors should have the correct values"
-	);
+			yx.x == vector3i.y, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			yx.y == vector3i.x, "Transposed vectors should have the correct values"
-	);
+			yx.y == vector3i.x, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			yz.x == vector3i.y, "Transposed vectors should have the correct values"
-	);
+			yz.x == vector3i.y, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			yz.y == vector3i.z, "Transposed vectors should have the correct values"
-	);
+			yz.y == vector3i.z, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			zx.x == vector3i.z, "Transposed vectors should have the correct values"
-	);
+			zx.x == vector3i.z, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			zx.y == vector3i.x, "Transposed vectors should have the correct values"
-	);
+			zx.y == vector3i.x, "Transposed vectors should have the correct values");
 
 	CHECK_MESSAGE(
-			zy.x == vector3i.z, "Transposed vectors should have the correct values"
-	);
+			zy.x == vector3i.z, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			zy.y == vector3i.y, "Transposed vectors should have the correct values"
-	);
+			zy.y == vector3i.y, "Transposed vectors should have the correct values");
 }
 
 #endif //GODOT_TEST_VECTOR3I_H

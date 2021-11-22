@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_vector2.h                                                        */
+/*  test_vector2.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -51,20 +51,15 @@ TEST_CASE("[Vector2] Transpose methods") {
 	const Vector2 yx = vector2.get_YX();
 
 	CHECK_MESSAGE(
-			&vector2 != &xy, "Transposed vectors should be new objects"
-	);
+			&vector2 != &xy, "Transposed vectors should be new objects");
 	CHECK_MESSAGE(
-			xy.x == vector2.x, "Transposed vectors should have the correct values"
-	);
+			xy.x == vector2.x, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			xy.y == vector2.y, "Transposed vectors should have the correct values"
-	);
+			xy.y == vector2.y, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			yx.x == vector2.y, "Transposed vectors should have the correct values"
-	);
+			yx.x == vector2.y, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			yx.y == vector2.x, "Transposed vectors should have the correct values"
-	);
+			yx.y == vector2.x, "Transposed vectors should have the correct values");
 }
 
 }
