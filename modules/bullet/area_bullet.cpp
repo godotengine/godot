@@ -92,8 +92,8 @@ void AreaBullet::dispatch_callbacks() {
 				overlapping_shapes.remove(i); // Remove after callback
 				break;
 			case OVERLAP_STATE_INSIDE: {
-				if (otherObj.object->getType() == TYPE_RIGID_BODY) {
-					RigidBodyBullet *body = static_cast<RigidBodyBullet *>(otherObj.object);
+				if (overlapping_shape.other_object->getType() == TYPE_RIGID_BODY) {
+					RigidBodyBullet *body = static_cast<RigidBodyBullet *>(overlapping_shape.other_object);
 					body->scratch_space_override_modificator();
 				}
 				break;
@@ -276,7 +276,7 @@ void AreaBullet::set_param(PhysicsServer3D::AreaParameter p_param, const Variant
 		default:
 			WARN_PRINT("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 	}
-	scratch();
+	isScratched = true;
 }
 
 Variant AreaBullet::get_param(PhysicsServer3D::AreaParameter p_param) const {
@@ -312,7 +312,7 @@ void AreaBullet::set_event_callback(Type p_callbackObjectType, const Callable &p
 		set_godot_object_flags(get_godot_object_flags() | GOF_IS_MONITORING_AREA);
 	} else {
 		set_godot_object_flags(get_godot_object_flags() & (~GOF_IS_MONITORING_AREA));
-		clear_overlaps(true);
+		clear_overlaps();
 	}
 }
 
