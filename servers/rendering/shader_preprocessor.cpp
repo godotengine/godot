@@ -641,7 +641,7 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *tokenizer) {
 
 	tokenizer->advance('"');
 	String path = tokens_to_string(tokenizer->advance('"'));
-	path.erase(path.length() - 1, 1);
+	path = path.substr(0, path.length() - 1);
 	tokenizer->skip_whitespace();
 
 	if (path.is_empty() /* || tokenizer->peek() != '\n'*/) {
@@ -979,7 +979,7 @@ void ShaderDependencyGraph::populate(ShaderDependencyNode *node) {
 			if (directive == "include") {
 				if (!tokenizer.advance('"').is_empty()) {
 					String path = tokens_to_string(tokenizer.advance('"'));
-					path.erase(path.length() - 1, 1);
+					path = path.substr(0, path.length() - 1);
 					tokenizer.skip_whitespace();
 					if (!path.is_empty()) {
 						RES res = ResourceLoader::load(path);
