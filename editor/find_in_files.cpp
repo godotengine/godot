@@ -627,7 +627,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		_replace_container->add_child(_replace_line_edit);
 
 		_replace_all_button = memnew(Button);
-		_replace_all_button->set_text(TTR("Replace all (no undo)"));
+		_replace_all_button->set_text(TTR("Replace All (NO UNDO)"));
 		_replace_all_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_replace_all_clicked));
 		_replace_container->add_child(_replace_all_button);
 

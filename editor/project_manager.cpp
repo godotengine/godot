@@ -2689,7 +2689,7 @@ ProjectManager::ProjectManager() {
 		erase_ask_vb->add_child(erase_ask_label);
 
 		delete_project_contents = memnew(CheckBox);
-		delete_project_contents->set_text(TTR("Also delete project contents (no undo!)"));
+		delete_project_contents->set_text(TTR("Also delete project contents (NO UNDO)"));
 		erase_ask_vb->add_child(delete_project_contents);
 
 		multi_open_ask = memnew(ConfirmationDialog);

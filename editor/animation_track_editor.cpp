@@ -6265,7 +6265,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	cleanup_all->set_text(TTR("Clean-up all animations"));
 	cleanup_vb->add_child(cleanup_all);
 
-	cleanup_dialog->set_title(TTR("Clean-Up Animation(s) (NO UNDO!)"));
+	cleanup_dialog->set_title(TTR("Clean-Up Animation(s) (NO UNDO)"));
 	cleanup_dialog->get_ok_button()->set_text(TTR("Clean-Up"));
 
 	cleanup_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_CLEAN_UP_ANIMATION_CONFIRM));
