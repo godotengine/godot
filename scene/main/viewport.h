@@ -49,6 +49,7 @@ class Label;
 class Timer;
 class Viewport;
 class CollisionObject;
+class SceneTreeTimer;
 
 class ViewportTexture : public Texture {
 	GDCLASS(ViewportTexture, Texture);
@@ -308,7 +309,7 @@ private:
 		bool drag_attempted;
 		Variant drag_data;
 		ObjectID drag_preview_id;
-		float tooltip_timer;
+		Ref<SceneTreeTimer> tooltip_timer;
 		float tooltip_delay;
 		List<Control *> modal_stack;
 		Transform2D focus_inv_xform;
