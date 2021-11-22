@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_vector2.h                                                        */
+/*  test_vector2i.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_TEST_VECTOR2_H
-#define GODOT_TEST_VECTOR2_H
 
-#include "core/math/Vector2.h"
+#ifndef GODOT_TEST_VECTOR2I_H
+#define GODOT_TEST_VECTOR2I_H
+
+
+#include "core/math/Vector2i.h"
 
 #include "tests/test_macros.h"
 
 namespace TestVector2 {
 
-TEST_CASE("[Vector2] Constructor methods") {
-	const Vector2 vector2 = Vector2(1.2, 2.1);
-	const Vector2 vector2_copy = Vector2(vector2);
+TEST_CASE("[Vector2i] Constructor methods") {
+	const Vector2i vector2i = Vector2(1.2, 2.1);
+	const Vector2i vector2i_copy = Vector2(vector2);
 
 	CHECK_MESSAGE(
-			vector2 == vector2_copy, "Vector2s created with the same values but different methods should be equal.");
+			vector2 == vector2_copy, "Vector2is created with the same values but different methods should be equal.");
 }
 
-TEST_CASE("[Vector2] Transpose methods") {
-	const Vector2 vector2 = Vector2(1.2, 2.1);
-	const Vector2 xy = vector2.xy;
-	const Vector2 yx = vector2.yx;
+TEST_CASE("[Vector2i] Transpose methods") {
+	const Vector2i vector2i = Vector2i(1.2, 2.1);
+	const Vector2i xy = vector2i.xy;
+	const Vector2i yx = vector2i.yx;
 
 	CHECK_MESSAGE(
-			&vector2 != &xy, "Transposed vectors should be new objects"
+			&vector2i != &xy, "Transposed vectors should be new objects"
 	);
 	CHECK_MESSAGE(
-			xy.x == vector2.x, "Transposed vectors should have the correct values"
+			xy.x == vector2i.x, "Transposed vectors should have the correct values"
 	);
 	CHECK_MESSAGE(
-			xy.y == vector2.y, "Transposed vectors should have the correct values"
+			xy.y == vector2i.y, "Transposed vectors should have the correct values"
 	);
 	CHECK_MESSAGE(
-			yx.x == vector2.y, "Transposed vectors should have the correct values"
+			yx.x == vector2i.y, "Transposed vectors should have the correct values"
 	);
 	CHECK_MESSAGE(
-			yx.y == vector2.x, "Transposed vectors should have the correct values"
+			yx.y == vector2i.x, "Transposed vectors should have the correct values"
 	);
 }
 
-}
-
-#endif //GODOT_TEST_VECTOR2_H
+#endif //GODOT_TEST_VECTOR2I_H
