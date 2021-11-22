@@ -45,7 +45,7 @@ namespace Godot
 		/// <summary>
 		/// Constructs a new <see cref="Vector2i"/> from this Vector2i's Y and X components.
 		/// <summary>
-		public Vector2i yx => new Vector2i(this.y, this.x);
+		public Vector2i yx => new Vector2i(y, x);
 
         /// <summary>
         /// Access vector components using their index.

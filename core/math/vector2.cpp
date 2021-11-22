@@ -67,10 +67,7 @@ Vector2 Vector2::get_XY() const {
 }
 
 Vector2 Vector2::get_YX() const {
-	Vector2 v = *this;
-	v.x = this.y;
-	v.y = this.x;
-	return v;
+	return new Vector2(y, x);
 }
 
 real_t Vector2::distance_to(const Vector2 &p_vector2) const {
