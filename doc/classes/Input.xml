@@ -264,6 +264,13 @@
 				Returns [code]true[/code] if you are pressing the mouse button specified with [enum ButtonList].
 			</description>
 		</method>
+		<method name="is_physical_key_pressed" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="scancode" type="int" />
+			<description>
+				Returns [code]true[/code] if you are pressing the key in the physical location on the 101/102-key US QWERTY keyboard. You can pass a [enum KeyList] constant.
+			</description>
+		</method>
 		<method name="joy_connection_changed">
 			<return type="void" />
 			<argument index="0" name="device" type="int" />
