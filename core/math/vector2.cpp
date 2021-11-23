@@ -66,11 +66,11 @@ bool Vector2::is_normalized() const {
 	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON);
 }
 
-Vector2 Vector2::get_XY() const {
+Vector2 Vector2::get_xy() const {
 	return *this;
 }
 
-Vector2 Vector2::get_YX() const {
+Vector2 Vector2::get_yx() const {
 	return new Vector2(y, x);
 }
 

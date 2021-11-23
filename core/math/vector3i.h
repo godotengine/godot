@@ -59,18 +59,18 @@ struct Vector3i {
 		return coord[p_axis];
 	}
 
-	Vector3i get_XYZ() const;
-	Vector3i get_XZY() const;
-	Vector3i get_YXZ() const;
-	Vector3i get_YZX() const;
-	Vector3i get_ZXY() const;
-	Vector3i get_ZYX() const;
-	Vector2i get_XY() const;
-	Vector2i get_XZ() const;
-	Vector2i get_YX() const;
-	Vector2i get_YZ() const;
-	Vector2i get_ZX() const;
-	Vector2i get_ZY() const;
+	Vector3i get_xyz() const;
+	Vector3i get_xzy() const;
+	Vector3i get_yxz() const;
+	Vector3i get_yzx() const;
+	Vector3i get_zxy() const;
+	Vector3i get_zyx() const;
+	Vector2i get_xy() const;
+	Vector2i get_xz() const;
+	Vector2i get_yx() const;
+	Vector2i get_yz() const;
+	Vector2i get_zx() const;
+	Vector2i get_zy() const;
 
 	void set_axis(const int p_axis, const int32_t p_value);
 	int32_t get_axis(const int p_axis) const;

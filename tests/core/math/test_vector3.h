@@ -47,18 +47,18 @@ TEST_CASE("[Vector3] Constructor methods") {
 
 TEST_CASE("[Vector3] Transpose methods") {
 	const Vector3 vector3 = Vector3(1.2, 2.1, 3.3);
-	const Vector3 xyz = vector3.get_XYZ();
-	const Vector3 xzy = vector3.get_XZY();
-	const Vector3 yxz = vector3.get_YXZ();
-	const Vector3 yzx = vector3.get_YZX();
-	const Vector3 zxy = vector3.get_ZXY();
-	const Vector3 zyx = vector3.get_ZYX();
-	const Vector2 xy = vector3.get_XY();
-	const Vector2 xz = vector3.get_XZ();
-	const Vector2 yx = vector3.get_YX();
-	const Vector2 yz = vector3.get_YZ();
-	const Vector2 zx = vector3.get_ZX();
-	const Vector2 zy = vector3.get_ZY();
+	const Vector3 xyz = vector3.get_xyz();
+	const Vector3 xzy = vector3.get_xzy();
+	const Vector3 yxz = vector3.get_yxz();
+	const Vector3 yzx = vector3.get_yzx();
+	const Vector3 zxy = vector3.get_zxy();
+	const Vector3 zyx = vector3.get_zyx();
+	const Vector2 xy = vector3.get_xy();
+	const Vector2 xz = vector3.get_xz();
+	const Vector2 yx = vector3.get_yx();
+	const Vector2 yz = vector3.get_yz();
+	const Vector2 zx = vector3.get_zx();
+	const Vector2 zy = vector3.get_zy();
 
 	CHECK_MESSAGE(
 			&vector3 != &xyz, "Transposed vectors should be new objects");

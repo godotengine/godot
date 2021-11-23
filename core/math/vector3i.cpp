@@ -59,35 +59,35 @@ Vector3i::operator String() const {
 	return "(" + itos(x) + ", " + itos(y) + ", " + itos(z) + ")";
 }
 
-Vector3i Vector3i::get_XYZ() const {
+Vector3i Vector3i::get_xyz() const {
 	return *this;
 }
 
-Vector3i Vector3i::get_XZY() const {
+Vector3i Vector3i::get_xzy() const {
 	return new Vector3i(x, z, y)
 }
 
-Vector3i Vector3i::get_YXZ() const {
+Vector3i Vector3i::get_yxz() const {
 	return new Vector3i(y, x, z)
 }
 
-Vector3i Vector3i::get_YZX() const {
+Vector3i Vector3i::get_yzx() const {
 	return new Vector3i(y, z, x)
 }
 
-Vector3i Vector3i::get_ZXY() const {
+Vector3i Vector3i::get_zxy() const {
 	return new Vector3i(z, x, y);
 }
 
-Vector3i Vector3i::get_ZYX() const {
+Vector3i Vector3i::get_zyx() const {
 	return new Vector3i(z, y, x);
 }
 
-Vector2i Vector3i::get_XY() const {
+Vector2i Vector3i::get_xy() const {
 	return new Vector2i(x, y);
 }
 
-Vector2i Vector3i::get_XZ() const {
+Vector2i Vector3i::get_xz() const {
 	return new Vector2i(x, z);
 }
 

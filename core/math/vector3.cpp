@@ -124,50 +124,50 @@ Vector3::operator String() const {
 	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ", " + String::num_real(z, false) + ")";
 }
 
-Vector3 Vector3::get_XYZ() const {
+Vector3 Vector3::get_xyz() const {
 	return *this;
 }
 
-Vector3 Vector3::get_XZY() const {
+Vector3 Vector3::get_xzy() const {
 	return new Vector3(x, z, y)
 }
 
-Vector3 Vector3::get_YXZ() const {
+Vector3 Vector3::get_yxz() const {
 	return new Vector3(y, x, z)
 }
 
-Vector3 Vector3::get_YZX() const {
+Vector3 Vector3::get_yzx() const {
 	return new Vector3(y, z, x)
 }
 
-Vector3 Vector3::get_ZXY() const {
+Vector3 Vector3::get_zxy() const {
 	return new Vector3(z, x, y);
 }
 
-Vector3 Vector3::get_ZYX() const {
+Vector3 Vector3::get_zyx() const {
 	return new Vector3(z, y, x);
 }
 
-Vector2 Vector3::get_XY() const {
+Vector2 Vector3::get_xy() const {
 	return new Vector2(x, y);
 }
 
-Vector2 Vector3::get_XZ() const {
+Vector2 Vector3::get_xz() const {
 	return new Vector2(x, z);
 }
 
-Vector2 Vector3::get_YX() const {
+Vector2 Vector3::get_yx() const {
 	return new Vector2(y, x);
 }
 
-Vector2 Vector3::get_YZ() const {
+Vector2 Vector3::get_yz() const {
 	return new Vector2(y, z);
 }
 
-Vector2 Vector3::get_ZX() const {
+Vector2 Vector3::get_zx() const {
 	return new Vector2(z, x);
 }
 
-Vector2 Vector3::get_ZY() const {
+Vector2 Vector3::get_zy() const {
 	return new Vector2(z, y);
 }

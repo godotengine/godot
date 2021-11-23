@@ -47,8 +47,8 @@ TEST_CASE("[Vector2] Constructor methods") {
 
 TEST_CASE("[Vector2] Transpose methods") {
 	const Vector2 vector2 = Vector2(1.2, 2.1);
-	const Vector2 xy = vector2.get_XY();
-	const Vector2 yx = vector2.get_YX();
+	const Vector2 xy = vector2.get_xy();
+	const Vector2 yx = vector2.get_yx();
 
 	CHECK_MESSAGE(
 			&vector2 != &xy, "Transposed vectors should be new objects");

@@ -54,18 +54,18 @@ TEST_CASE("[Vector3i] Constructor methods") {
 
 TEST_CASE("[Vector3i] Transpose methods") {
 	const Vector3i vector3i = Vector3i(1, 2, 3);
-	const Vector3i xyz = vector3i.get_XYZ();
-	const Vector3i xzy = vector3i.get_XZY();
-	const Vector3i yxz = vector3i.get_YXZ();
-	const Vector3i yzx = vector3i.get_YZX();
-	const Vector3i zxy = vector3i.get_ZXY();
-	const Vector3i zyx = vector3i.get_ZYX();
-	const Vector2i xy = vector3i.get_XY();
-	const Vector2i xz = vector3i.get_XZ();
-	const Vector2i yx = vector3i.get_YX();
-	const Vector2i yz = vector3i.get_YZ();
-	const Vector2i zx = vector3i.get_ZX();
-	const Vector2i zy = vector3i.get_ZY();
+	const Vector3i xyz = vector3i.get_xyz();
+	const Vector3i xzy = vector3i.get_xzy();
+	const Vector3i yxz = vector3i.get_yxz();
+	const Vector3i yzx = vector3i.get_yzx();
+	const Vector3i zxy = vector3i.get_zxy();
+	const Vector3i zyx = vector3i.get_zyx();
+	const Vector2i xy = vector3i.get_xy();
+	const Vector2i xz = vector3i.get_xz();
+	const Vector2i yx = vector3i.get_yx();
+	const Vector2i yz = vector3i.get_yz();
+	const Vector2i zx = vector3i.get_zx();
+	const Vector2i zy = vector3i.get_zy();
 
 	CHECK_MESSAGE(
 			&vector3i != &xyz, "Transposed vectors should be new objects");
