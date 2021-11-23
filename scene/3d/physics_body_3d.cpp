@@ -1328,8 +1328,15 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 						// Apply slide on forward in order to allow only lateral motion on next step.
 						Vector3 forward = wall_normal.slide(up_direction).normalized();
 						motion = motion.slide(forward);
-						// Avoid accelerating when you jump on the wall and smooth falling.
-						motion_velocity = motion_velocity.slide(forward);
+
+						// Scales the horizontal velocity according to the wall slope.
+						if (vel_dir_facing_up) {
+							Vector3 slide_motion = motion_velocity.slide(result.collisions[0].normal);
+							// Keeps the vertical motion from motion_velocity and add the horizontal motion of the projection.
+							motion_velocity = up_direction * up_direction.dot(motion_velocity) + slide_motion.slide(up_direction);
+						} else {
+							motion_velocity = motion_velocity.slide(forward);
+						}
 
 						// Allow only lateral motion along previous floor when already on floor.
 						// Fixes slowing down when moving in diagonal against an inclined wall.
