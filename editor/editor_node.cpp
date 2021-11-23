@@ -6844,7 +6844,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(custom_build_manage_templates);
 
 	file_android_build_source = memnew(EditorFileDialog);
-	file_android_build_source->set_title(TTR("Select android sources file"));
+	file_android_build_source->set_title(TTR("Select Android sources file"));
 	file_android_build_source->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_android_build_source->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_android_build_source->add_filter("*.zip");
