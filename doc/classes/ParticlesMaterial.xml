@@ -127,6 +127,9 @@
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
 			Each particle's initial color. If the [GPUParticles2D]'s [code]texture[/code] is defined, it will be multiplied by this color. To have particle display color in a [BaseMaterial3D] make sure to set [member BaseMaterial3D.vertex_color_use_as_albedo] to [code]true[/code].
 		</member>
+		<member name="color_initial_ramp" type="Texture2D" setter="set_color_initial_ramp" getter="get_color_initial_ramp">
+			Each particle's initial color will vary along this [GradientTexture1D] (multiplied with [member color]).
+		</member>
 		<member name="color_ramp" type="Texture2D" setter="set_color_ramp" getter="get_color_ramp">
 			Each particle's color will vary along this [GradientTexture1D] over its lifetime (multiplied with [member color]).
 		</member>
