@@ -248,9 +248,9 @@
 				- 1.0: Linear
 				- Between -1.0 and 0.0 (exclusive): Ease out-in
 				- 0.0: Constant
-				- Between 0.0 to 1.0 (exclusive): Ease in
+				- Between 0.0 to 1.0 (exclusive): Ease out
 				- 1.0: Linear
-				- Greater than 1.0 (exclusive): Ease out
+				- Greater than 1.0 (exclusive): Ease in
 				[/codeblock]
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/ease_cheatsheet.png]ease() curve values cheatsheet[/url]
 				See also [method smoothstep]. If you need to perform more advanced transitions, use [Tween] or [AnimationPlayer].
