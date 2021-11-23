@@ -67,11 +67,13 @@ bool Vector2::is_normalized() const {
 }
 
 Vector2 Vector2::get_xy() const {
-	return *this;
+	Vector2 v = *this;
+	return v;
 }
 
 Vector2 Vector2::get_yx() const {
-	return new Vector2(y, x);
+	Vector2 v = new Vector2(y, x);
+	return v;
 }
 
 real_t Vector2::distance_to(const Vector2 &p_vector2) const {
