@@ -1701,7 +1701,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	if (show_logo) { //boot logo!
 		const bool boot_logo_image = GLOBAL_DEF("application/boot_splash/show_image", true);
-		const String boot_logo_path = GLOBAL_DEF("application/boot_splash/image", String());
+		const String boot_logo_path = String(GLOBAL_DEF("application/boot_splash/image", String())).strip_edges();
 		const bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
 		const bool boot_logo_filter = GLOBAL_DEF("application/boot_splash/use_filter", true);
 		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/image",
