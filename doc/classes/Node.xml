@@ -233,6 +233,14 @@
 			<description>
 				Returns an array listing the groups that the node is a member of.
 				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.
+				[b]Note:[/b] The engine uses some group names internally (all starting with an underscore). To avoid conflicts with internal groups, do not add custom groups whose name starts with an underscore. To exclude internal groups while looping over [method get_groups], use the following snippet:
+				[codeblock]
+				# Stores the node's non-internal groups only (as an array of Strings).
+				var non_internal_groups = []
+				for group in get_groups():
+				    if not group.begins_with("_"):
+				        non_internal_groups.push_back(group)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_index" qualifiers="const">
