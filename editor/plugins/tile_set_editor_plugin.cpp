@@ -1227,12 +1227,10 @@ void TileSetEditor::_on_scroll_container_input(const Ref<InputEvent> &p_event) {
 		// to allow performing this action anywhere, even if the cursor isn't
 		// hovering the texture in the workspace.
 		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed() && mb->get_control()) {
-			print_line("zooming in");
 			_zoom_in();
 			// Don't scroll up after zooming in.
 			accept_event();
 		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed() && mb->get_control()) {
-			print_line("zooming out");
 			_zoom_out();
 			// Don't scroll down after zooming out.
 			accept_event();
@@ -2027,9 +2025,7 @@ void TileSetEditor::_update_tile_data() {
 		data.occlusion_shape = tileset->tile_get_light_occluder(get_current_tile());
 		current_tile_data[Vector2i()] = data;
 	} else {
-		int spacing = tileset->autotile_get_spacing(get_current_tile());
-		Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-		Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
+		Vector2 cell_count = _get_subtiles_count(get_current_tile());
 		for (int y = 0; y < cell_count.y; y++) {
 			for (int x = 0; x < cell_count.x; x++) {
 				SubtileData data;
@@ -2129,10 +2125,7 @@ void TileSetEditor::_select_previous_tile() {
 			case EDITMODE_NAVIGATION:
 			case EDITMODE_PRIORITY:
 			case EDITMODE_Z_INDEX: {
-				int spacing = tileset->autotile_get_spacing(get_current_tile());
-				Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-				Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
-				edited_shape_coord = cell_count;
+				edited_shape_coord = _get_subtiles_count(get_current_tile()) - Vector2(1, 1);
 				_select_edited_shape_coord();
 			} break;
 			default: {
@@ -2175,6 +2168,17 @@ bool TileSetEditor::_sort_tiles(Variant p_a, Variant p_b) {
 	}
 }
 
+Vector2 TileSetEditor::_get_subtiles_count(int p_tile_id) {
+	const int spacing = tileset->autotile_get_spacing(p_tile_id);
+	const Vector2 region_size = tileset->tile_get_region(p_tile_id).size;
+	const Vector2 subtile_size = tileset->autotile_get_size(p_tile_id);
+	// In case of not perfect fit the last row/column is allowed to exceed the tile region.
+	// The return value is the biggest integer-only `(m, n)` satisfying the formula:
+	// (m, n) * subtile_size + (m - 1, n - 1) * spacing < region_size + subtile_size
+	Vector2 mn = Vector2(1, 1) + (region_size / (subtile_size + Vector2(spacing, spacing)));
+	return mn == mn.floor() ? mn.floor() - Vector2(1, 1) : mn.floor();
+}
+
 void TileSetEditor::_select_next_subtile() {
 	if (get_current_tile() == -1) {
 		_select_next_tile();
@@ -2185,14 +2189,12 @@ void TileSetEditor::_select_next_subtile() {
 	} else if (edit_mode == EDITMODE_REGION || edit_mode == EDITMODE_BITMASK || edit_mode == EDITMODE_ICON) {
 		_select_next_tile();
 	} else {
-		int spacing = tileset->autotile_get_spacing(get_current_tile());
-		Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-		Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
-		if (edited_shape_coord.x > cell_count.x - 1 && edited_shape_coord.y > cell_count.y - 1) {
+		Vector2 cell_count = _get_subtiles_count(get_current_tile());
+		if (edited_shape_coord.x >= cell_count.x - 1 && edited_shape_coord.y >= cell_count.y - 1) {
 			_select_next_tile();
 		} else {
 			edited_shape_coord.x++;
-			if (edited_shape_coord.x > cell_count.x) {
+			if (edited_shape_coord.x > cell_count.x - 1) {
 				edited_shape_coord.x = 0;
 				edited_shape_coord.y++;
 			}
@@ -2211,15 +2213,13 @@ void TileSetEditor::_select_previous_subtile() {
 	} else if (edit_mode == EDITMODE_REGION || edit_mode == EDITMODE_BITMASK || edit_mode == EDITMODE_ICON) {
 		_select_previous_tile();
 	} else {
-		int spacing = tileset->autotile_get_spacing(get_current_tile());
-		Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-		Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
+		Vector2 cell_count = _get_subtiles_count(get_current_tile());
 		if (edited_shape_coord.x <= 0 && edited_shape_coord.y <= 0) {
 			_select_previous_tile();
 		} else {
 			edited_shape_coord.x--;
-			if (edited_shape_coord.x == -1) {
-				edited_shape_coord.x = cell_count.x;
+			if (edited_shape_coord.x < 0) {
+				edited_shape_coord.x = cell_count.x - 1;
 				edited_shape_coord.y--;
 			}
 			_select_edited_shape_coord();

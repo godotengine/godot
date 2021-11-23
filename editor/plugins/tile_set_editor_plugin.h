@@ -213,6 +213,7 @@ private:
 	void _select_previous_tile();
 	Array _get_tiles_in_current_texture(bool sorted = false);
 	bool _sort_tiles(Variant p_a, Variant p_b);
+	Vector2 _get_subtiles_count(int p_tile_id);
 	void _select_next_subtile();
 	void _select_previous_subtile();
 	void _select_next_shape();
