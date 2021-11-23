@@ -205,13 +205,22 @@ bool Particles2D::get_fractional_delta() const {
 
 String Particles2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
+
 	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
-		warning += TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles\" option for this purpose.");
+		warning += "- " + TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles2D\" toolbar option for this purpose.");
 		return warning;
 	}
+
+#ifdef OSX_ENABLED
+	if (warning != String()) {
+		warning += "\n\n";
+	}
+
+	warning += "- " + TTR("On macOS, Particles2D rendering is much slower than CPUParticles2D due to transform feedback being implemented on the CPU instead of the GPU.\nConsider using CPUParticles2D instead when targeting macOS.\nYou can use the \"Convert to CPUParticles2D\" toolbar option for this purpose.");
+#endif
 
 	if (process_material.is_null()) {
 		if (warning != String()) {
