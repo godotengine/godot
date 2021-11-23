@@ -120,6 +120,11 @@ Copyright: 2007, Starbreeze Studios
  2014-2021, Godot Engine contributors.
 License: Expat and Zlib
 
+Files: ./thirdparty/amd-fsr/
+Comment: AMD FidelityFX Super Resolution
+Copyright: 2021, Advanced Micro Devices, Inc.
+License: Expat
+
 Files: ./thirdparty/basis_universal/
 Comment: Basis Universal
 Copyright: 2019, Binomial LLC.

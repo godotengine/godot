@@ -3100,6 +3100,22 @@
 				If [code]true[/code], rendering of a viewport's environment is disabled.
 			</description>
 		</method>
+		<method name="viewport_set_fsr_mipmap_bias">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="mipmap_bias" type="float" />
+			<description>
+				Affects the final texture sharpness by reading from a lower or higher mipmap. Negative values make textures sharper, while positive values make textures blurrier. When using FSR, this value is used to adjust the mipmap bias calculated internally which is based on the selected quality. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code]
+			</description>
+		</method>
+		<method name="viewport_set_fsr_sharpness">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="sharpness" type="float" />
+			<description>
+				Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
+			</description>
+		</method>
 		<method name="viewport_set_global_canvas_transform">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
@@ -3151,12 +3167,21 @@
 				If [code]true[/code], render the contents of the viewport directly to screen. This allows a low-level optimization where you can skip drawing a viewport to the root viewport. While this optimization can result in a significant increase in speed (especially on older devices), it comes at a cost of usability. When this is enabled, you cannot read from the viewport or from the [code]SCREEN_TEXTURE[/code]. You also lose the benefit of certain window settings, such as the various stretch modes. Another consequence to be aware of is that in 2D the rendering happens in window coordinates, so if you have a viewport that is double the size of the window, and you set this, then only the portion that fits within the window will be drawn, no automatic scaling is possible, even if your game scene is significantly larger than the window size.
 			</description>
 		</method>
-		<method name="viewport_set_scale_3d">
+		<method name="viewport_set_scaling_3d_mode">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="scaling_3d_mode" type="int" enum="RenderingServer.ViewportScaling3DMode" />
+			<description>
+				Sets scaling 3d mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
+			</description>
+		</method>
+		<method name="viewport_set_scaling_3d_scale">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
 			<argument index="1" name="scale" type="float" />
 			<description>
-				Sets the scale at which we render 3D contents.
+				Scales the 3D render buffer based on the viewport size uses an image filter specified in [enum ViewportScaling3DMode] to scale the output image to the full viewport size. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] are only valid for bilinear mode and can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [enum ViewportMSAA] for multi-sample antialiasing, which is significantly cheaper but only smoothens the edges of polygons.
+				When using FSR upscaling, AMD recommends exposing the following values as preset options to users "Ultra Quality: 0.77", "Quality: 0.67", "Balanced: 0.59", "Performance: 0.5" instead of exposing the entire scale.
 			</description>
 		</method>
 		<method name="viewport_set_scenario">
@@ -3843,6 +3868,14 @@
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_WORLD" value="2" enum="FogVolumeShape">
 			[FogVolume] will have no shape, will cover the whole world and will not be culled.
+		</constant>
+		<constant name="VIEWPORT_SCALING_3D_MODE_BILINEAR" value="0" enum="ViewportScaling3DMode">
+			Enables bilinear scaling on 3D viewports. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
+		</constant>
+		<constant name="VIEWPORT_SCALING_3D_MODE_FSR" value="1" enum="ViewportScaling3DMode">
+			Enables FSR upscaling on 3D viewports. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear supersampling will be used instead. A value of [code]1.0[/code] disables scaling.
+		</constant>
+		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="2" enum="ViewportScaling3DMode">
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
 			Do not update the viewport.

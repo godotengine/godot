@@ -77,18 +77,69 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			RSG::scene->free(p_viewport->render_buffers);
 			p_viewport->render_buffers = RID();
 		} else {
-			float scale_3d = p_viewport->scale_3d;
-			if (Engine::get_singleton()->is_editor_hint()) {
-				// Ignore the 3D viewport render scaling inside of the editor.
-				// The Half Resolution 3D editor viewport option should be used instead.
-				scale_3d = 1.0;
+			float scaling_3d_scale = p_viewport->scaling_3d_scale;
+
+			RS::ViewportScaling3DMode scaling_3d_mode = p_viewport->scaling_3d_mode;
+			bool scaling_enabled = true;
+
+			if ((scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) && (scaling_3d_scale > 1.0)) {
+				// FSR is not design for downsampling.
+				// Throw a warning and fallback to VIEWPORT_SCALING_3D_MODE_BILINEAR
+				print_error("FSR does not support supersampling. Falling back to bilinear mode.");
+				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			}
 
-			// Clamp 3D rendering resolution to reasonable values supported on most hardware.
-			// This prevents freezing the engine or outright crashing on lower-end GPUs.
-			const int width = CLAMP(p_viewport->size.width * scale_3d, 1, 16384);
-			const int height = CLAMP(p_viewport->size.height * scale_3d, 1, 16384);
-			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, width, height, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding, p_viewport->get_view_count());
+			if ((scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) && !p_viewport->fsr_enabled) {
+				// FSR is not actually available.
+				// Throw a warning and fallback to disable scaling
+				print_error("FSR is not available. Disabled FSR scaling 3D. Try bilinear mode.");
+				scaling_enabled = false;
+			}
+
+			if (scaling_3d_scale == 1.0) {
+				scaling_enabled = false;
+			}
+
+			int width;
+			int height;
+			int render_width;
+			int render_height;
+
+			if (scaling_enabled) {
+				switch (scaling_3d_mode) {
+					case RS::VIEWPORT_SCALING_3D_MODE_BILINEAR:
+						// Clamp 3D rendering resolution to reasonable values supported on most hardware.
+						// This prevents freezing the engine or outright crashing on lower-end GPUs.
+						width = CLAMP(p_viewport->size.width * scaling_3d_scale, 1, 16384);
+						height = CLAMP(p_viewport->size.height * scaling_3d_scale, 1, 16384);
+						render_width = width;
+						render_height = height;
+						break;
+					case RS::VIEWPORT_SCALING_3D_MODE_FSR:
+						width = p_viewport->size.width;
+						height = p_viewport->size.height;
+						render_width = MAX(width * scaling_3d_scale, 1.0); // width / (width * scaling)
+						render_height = MAX(height * scaling_3d_scale, 1.0);
+						break;
+					default:
+						// This is an unknown mode.
+						print_error(vformat("Unknown scaling mode: %d, disabling scaling 3D", scaling_3d_mode));
+						width = p_viewport->size.width;
+						height = p_viewport->size.height;
+						render_width = width;
+						render_height = height;
+						break;
+				}
+			} else {
+				width = p_viewport->size.width;
+				height = p_viewport->size.height;
+				render_width = width;
+				render_height = height;
+			}
+
+			p_viewport->internal_size = Size2(render_width, render_height);
+
+			RSG::scene->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, render_width, render_height, width, height, p_viewport->fsr_sharpness, p_viewport->fsr_mipmap_bias, p_viewport->msaa, p_viewport->screen_space_aa, p_viewport->use_debanding, p_viewport->get_view_count());
 		}
 	}
 }
@@ -117,7 +168,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	}
 
 	float screen_lod_threshold = p_viewport->lod_threshold / float(p_viewport->size.width);
-	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->size, screen_lod_threshold, p_viewport->shadow_atlas, xr_interface, &p_viewport->render_info);
+	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, screen_lod_threshold, p_viewport->shadow_atlas, xr_interface, &p_viewport->render_info);
 
 	RENDER_TIMESTAMP("<End Rendering 3D Scene");
 }
@@ -571,7 +622,7 @@ void RendererViewport::draw_viewports() {
 			// override our size, make sure it matches our required size and is created as a stereo target
 			vp->size = xr_interface->get_render_target_size();
 			uint32_t view_count = xr_interface->get_view_count();
-			RSG::storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y, view_count);
+			RSG::storage->render_target_set_size(vp->render_target, vp->internal_size.x, vp->internal_size.y, view_count);
 
 			// check for an external texture destination (disabled for now, not yet supported)
 			// RSG::storage->render_target_set_external_texture(vp->render_target, xr_interface->get_external_texture_for_eye(leftOrMono));
@@ -662,6 +713,8 @@ void RendererViewport::viewport_initialize(RID p_rid) {
 	viewport->render_target = RSG::storage->render_target_create();
 	viewport->shadow_atlas = RSG::scene->shadow_atlas_create();
 	viewport->viewport_render_direct_to_screen = false;
+
+	viewport->fsr_enabled = !RSG::rasterizer->is_low_end() && !viewport->disable_3d;
 }
 
 void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
@@ -676,18 +729,42 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 	_configure_3d_render_buffers(viewport);
 }
 
-void RendererViewport::viewport_set_scale_3d(RID p_viewport, float p_scale_3d) {
+void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->scaling_3d_mode = p_mode;
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_fsr_sharpness(RID p_viewport, float p_sharpness) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->fsr_sharpness = p_sharpness;
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_fsr_mipmap_bias(RID p_viewport, float p_mipmap_bias) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->fsr_mipmap_bias = p_mipmap_bias;
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
 	// Clamp to reasonable values that are actually useful.
 	// Values above 2.0 don't serve a practical purpose since the viewport
 	// isn't displayed with mipmaps.
-	if (viewport->scale_3d == CLAMP(p_scale_3d, 0.1, 2.0)) {
+	if (viewport->scaling_3d_scale == CLAMP(p_scaling_3d_scale, 0.1, 2.0)) {
 		return;
 	}
 
-	viewport->scale_3d = CLAMP(p_scale_3d, 0.1, 2.0);
+	viewport->scaling_3d_scale = CLAMP(p_scaling_3d_scale, 0.1, 2.0);
 	_configure_3d_render_buffers(viewport);
 }
 
@@ -713,6 +790,7 @@ void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_heig
 	ERR_FAIL_COND(!viewport);
 
 	viewport->size = Size2(p_width, p_height);
+
 	uint32_t view_count = viewport->get_view_count();
 	RSG::storage->render_target_set_size(viewport->render_target, p_width, p_height, view_count);
 	_configure_3d_render_buffers(viewport);
@@ -765,7 +843,7 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 		// if render_direct_to_screen was used, reset size and position
 		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
 			RSG::storage->render_target_set_position(viewport->render_target, 0, 0);
-			RSG::storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->get_view_count());
+			RSG::storage->render_target_set_size(viewport->render_target, viewport->internal_size.x, viewport->internal_size.y, viewport->get_view_count());
 		}
 
 		viewport->viewport_to_screen_rect = Rect2();

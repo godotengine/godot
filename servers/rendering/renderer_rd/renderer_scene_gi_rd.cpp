@@ -3132,8 +3132,8 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-		tf.width = rb->width;
-		tf.height = rb->height;
+		tf.width = rb->internal_width;
+		tf.height = rb->internal_height;
 		if (half_resolution) {
 			tf.width >>= 1;
 			tf.height >>= 1;
@@ -3146,13 +3146,13 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 
 	PushConstant push_constant;
 
-	push_constant.screen_size[0] = rb->width;
-	push_constant.screen_size[1] = rb->height;
+	push_constant.screen_size[0] = rb->internal_width;
+	push_constant.screen_size[1] = rb->internal_height;
 	push_constant.z_near = p_projection.get_z_near();
 	push_constant.z_far = p_projection.get_z_far();
 	push_constant.orthogonal = p_projection.is_orthogonal();
-	push_constant.proj_info[0] = -2.0f / (rb->width * p_projection.matrix[0][0]);
-	push_constant.proj_info[1] = -2.0f / (rb->height * p_projection.matrix[1][1]);
+	push_constant.proj_info[0] = -2.0f / (rb->internal_width * p_projection.matrix[0][0]);
+	push_constant.proj_info[1] = -2.0f / (rb->internal_height * p_projection.matrix[1][1]);
 	push_constant.proj_info[2] = (1.0f - p_projection.matrix[0][2]) / p_projection.matrix[0][0];
 	push_constant.proj_info[3] = (1.0f + p_projection.matrix[1][2]) / p_projection.matrix[1][1];
 	push_constant.max_voxel_gi_instances = MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size());
@@ -3344,9 +3344,9 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
 
 	if (rb->gi.using_half_size_gi) {
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width >> 1, rb->height >> 1, 1);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->internal_width >> 1, rb->internal_height >> 1, 1);
 	} else {
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width, rb->height, 1);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->internal_width, rb->internal_height, 1);
 	}
 	//do barrier later to allow oeverlap
 	//RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER); //no barriers, let other compute, raster and transfer happen at the same time
