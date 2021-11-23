@@ -1,0 +1,9 @@
+GDTEST_OK
+>> WARNING
+>> Line: 2
+>> SHADOWED_GLOBAL_IDENTIFIER
+>> The local variable 'abs' has the same name as a built-in function.
+>> WARNING
+>> Line: 2
+>> UNUSED_VARIABLE
+>> The local variable 'abs' is declared but never used in the block. If this is intended, prefix it with an underscore: '_abs'

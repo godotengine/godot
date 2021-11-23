@@ -372,6 +372,9 @@
 		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
 		</member>
+		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables warnings when defining a local or subclass member variable, signal, or enum that would have the same name as a built-in function or global class name, which possibly shadow it.
+		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables warnings when defining a local or subclass member variable that would shadow a variable at an upper level (such as a member variable).
 		</member>
