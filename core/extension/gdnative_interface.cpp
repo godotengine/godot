@@ -783,6 +783,18 @@ static GDNativeVariantPtr gdnative_array_operator_index_const(const GDNativeType
 	return (GDNativeVariantPtr)&self->operator[](p_index);
 }
 
+/* Dictionary functions */
+
+static GDNativeVariantPtr gdnative_dictionary_operator_index(GDNativeTypePtr p_self, const GDNativeVariantPtr p_key) {
+	Dictionary *self = (Dictionary *)p_self;
+	return (GDNativeVariantPtr)&self->operator[](*(const Variant *)p_key);
+}
+
+static GDNativeVariantPtr gdnative_dictionary_operator_index_const(const GDNativeTypePtr p_self, const GDNativeVariantPtr p_key) {
+	const Dictionary *self = (const Dictionary *)p_self;
+	return (GDNativeVariantPtr)&self->operator[](*(const Variant *)p_key);
+}
+
 /* OBJECT API */
 
 static void gdnative_object_method_bind_call(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeVariantPtr *p_args, GDNativeInt p_arg_count, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
@@ -1000,6 +1012,11 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 
 	gdni.array_operator_index = gdnative_array_operator_index;
 	gdni.array_operator_index_const = gdnative_array_operator_index_const;
+
+	/* Dictionary functions */
+
+	gdni.dictionary_operator_index = gdnative_dictionary_operator_index;
+	gdni.dictionary_operator_index_const = gdnative_dictionary_operator_index_const;
 
 	/* OBJECT */
 
