@@ -7706,12 +7706,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Este esqueleto non ten ósos; crea uns nodos fillo Bone2D."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "Crear Pose de Repouso a partir dos Ósos"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "Asignar Pose de Repouso aos Ósos"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "Crear Pose de Repouso a partir dos Ósos"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"

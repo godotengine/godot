@@ -7,7 +7,7 @@
 		This is the base class for the resource importers implemented in core. To implement your own resource importers using editor plugins, see [EditorImportPlugin].
 	</description>
 	<tutorials>
-		<link title="Import plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
+		<link title="Import plugins">$DOCS_URL/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
 	<constants>
 		<constant name="IMPORT_ORDER_DEFAULT" value="0" enum="ImportOrder">

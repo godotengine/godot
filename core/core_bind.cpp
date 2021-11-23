@@ -315,6 +315,10 @@ Error OS::set_thread_name(const String &p_name) {
 	return ::Thread::get_caller_id();
 };
 
+::Thread::ID OS::get_main_thread_id() const {
+	return ::Thread::get_main_id();
+};
+
 bool OS::has_feature(const String &p_feature) const {
 	return ::OS::get_singleton()->has_feature(p_feature);
 }
@@ -601,6 +605,7 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &OS::set_thread_name);
 	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &OS::get_thread_caller_id);
+	ClassDB::bind_method(D_METHOD("get_main_thread_id"), &OS::get_main_thread_id);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &OS::has_feature);
 

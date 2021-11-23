@@ -115,7 +115,7 @@ Vector3i Vector3i::abs() const {
 }
 
 Vector3i Vector3i::sign() const {
-	return Vector3i(SGN(x), SGN(y), SGN(z));
+	return Vector3i(SIGN(x), SIGN(y), SIGN(z));
 }
 
 /* Operators */

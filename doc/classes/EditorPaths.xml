@@ -1,35 +1,65 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorPaths" inherits="Object" version="4.0">
 	<brief_description>
+		Editor-only singleton that returns paths to various OS-specific data folders and files.
 	</brief_description>
 	<description>
+		This editor-only singleton returns OS-specific paths to various data folders and files. It can be used in editor plugins to ensure files are saved in the correct location on each operating system.
+		[b]Note:[/b] This singleton is not accessible in exported projects. Attempting to access it in an exported project will result in a script error as the singleton won't be declared. To prevent script errors in exported projects, use [method Engine.has_singleton] to check whether the singleton is available before using it.
+		[b]Note:[/b] Godot complies with the [url=https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html]XDG Base Directory Specification[/url] on [i]all[/i] platforms. You can override environment variables following the specification to change the editor and project data paths.
 	</description>
 	<tutorials>
+		<link title="File paths in Godot projects">https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_cache_dir" qualifiers="const">
 			<return type="String" />
 			<description>
+				Returns the absolute path to the user's cache folder. This folder should be used for temporary data that can be removed safely whenever the editor is closed (such as generated resource thumbnails).
+				[b]Default paths per platform:[/b]
+				[codeblock]
+				- Windows: %LOCALAPPDATA%\Godot\
+				- macOS: ~/Library/Caches/Godot/
+				- Linux: ~/.cache/godot/
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_config_dir" qualifiers="const">
 			<return type="String" />
 			<description>
+				Returns the absolute path to the user's configuration folder. This folder should be used for [i]persistent[/i] user configuration files.
+				[b]Default paths per platform:[/b]
+				[codeblock]
+				- Windows: %APPDATA%\Godot\                    (same as `get_data_dir()`)
+				- macOS: ~/Library/Application Support/Godot/  (same as `get_data_dir()`)
+				- Linux: ~/.config/godot/
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
 			<return type="String" />
 			<description>
+				Returns the absolute path to the user's data folder. This folder should be used for [i]persistent[/i] user data files such as installed export templates.
+				[b]Default paths per platform:[/b]
+				[codeblock]
+				- Windows: %APPDATA%\Godot\                    (same as `get_config_dir()`)
+				- macOS: ~/Library/Application Support/Godot/  (same as `get_config_dir()`)
+				- Linux: ~/.local/share/godot/
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_self_contained_file" qualifiers="const">
 			<return type="String" />
 			<description>
+				Returns the absolute path to the self-contained file that makes the current Godot editor instance be considered as self-contained. Returns an empty string if the current Godot editor instance isn't self-contained. See also [method is_self_contained].
 			</description>
 		</method>
 		<method name="is_self_contained" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the editor is marked as self-contained, [code]false[/code] otherwise. When self-contained mode is enabled, user configuration, data and cache files are saved in an [code]editor_data/[/code] folder next to the editor binary. This makes portable usage easier and ensures the Godot editor minimizes file writes outside its own folder. Self-contained mode is not available for exported projects.
+				Self-contained mode can be enabled by creating a file named [code]._sc_[/code] or [code]_sc_[/code] in the same folder as the editor binary while the editor is not running. See also [method get_self_contained_file].
+				[b]Note:[/b] The Steam release of Godot uses self-contained mode by default.
 			</description>
 		</method>
 	</methods>

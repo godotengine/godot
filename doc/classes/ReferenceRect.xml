@@ -16,7 +16,7 @@
 			Sets the border width of the [ReferenceRect]. The border grows both inwards and outwards with respect to the rectangle box.
 		</member>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="get_editor_only" default="true">
-			If set to [code]true[/code], the [ReferenceRect] will only be visible while in editor. Otherwise, [ReferenceRect] will be visible in game.
+			If [code]true[/code], the [ReferenceRect] will only be visible while in editor. Otherwise, [ReferenceRect] will be visible in the running project.
 		</member>
 	</members>
 </class>

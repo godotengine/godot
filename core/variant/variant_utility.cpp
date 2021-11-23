@@ -151,10 +151,10 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 		switch (x.get_type()) {
 			case Variant::INT: {
-				return SGN(VariantInternalAccessor<int64_t>::get(&x));
+				return SIGN(VariantInternalAccessor<int64_t>::get(&x));
 			} break;
 			case Variant::FLOAT: {
-				return SGN(VariantInternalAccessor<double>::get(&x));
+				return SIGN(VariantInternalAccessor<double>::get(&x));
 			} break;
 			case Variant::VECTOR2: {
 				return VariantInternalAccessor<Vector2>::get(&x).sign();
@@ -176,11 +176,11 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline double signf(double x) {
-		return SGN(x);
+		return SIGN(x);
 	}
 
 	static inline int64_t signi(int64_t x) {
-		return SGN(x);
+		return SIGN(x);
 	}
 
 	static inline double pow(double x, double y) {
@@ -401,6 +401,10 @@ struct VariantUtilityFunctions {
 
 	static inline double randf() {
 		return Math::randf();
+	}
+
+	static inline double randfn(double mean, double deviation) {
+		return Math::randfn(mean, deviation);
 	}
 
 	static inline int64_t randi_range(int64_t from, int64_t to) {
@@ -1239,6 +1243,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(randf, sarray(), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randi_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randf_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDR(randfn, sarray("mean", "deviation"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBIND(seed, sarray("base"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(rand_from_seed, sarray("seed"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 

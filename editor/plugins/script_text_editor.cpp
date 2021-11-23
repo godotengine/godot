@@ -550,7 +550,7 @@ void ScriptTextEditor::_validate_script() {
 
 void ScriptTextEditor::_update_bookmark_list() {
 	bookmarks_menu->clear();
-	bookmarks_menu->set_size(Size2(1, 1));
+	bookmarks_menu->reset_size();
 
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
@@ -702,7 +702,7 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptCo
 
 void ScriptTextEditor::_update_breakpoint_list() {
 	breakpoints_menu->clear();
-	breakpoints_menu->set_size(Size2(1, 1));
+	breakpoints_menu->reset_size();
 
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_breakpoint"), DEBUG_TOGGLE_BREAKPOINT);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_breakpoints"), DEBUG_REMOVE_ALL_BREAKPOINTS);
@@ -1689,7 +1689,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_REDO), !tx->has_redo());
 
 	context_menu->set_position(get_global_transform().xform(p_pos));
-	context_menu->set_size(Vector2(1, 1));
+	context_menu->reset_size();
 	context_menu->popup();
 }
 

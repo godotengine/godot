@@ -168,7 +168,8 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 
 	mediump float roughness_limiter_amount;
 	mediump float roughness_limiter_limit;
-	uvec2 roughness_limiter_pad;
+	mediump float opaque_prepass_threshold;
+	uint roughness_limiter_pad;
 
 	bool fog_enabled;
 	highp float fog_density;

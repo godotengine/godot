@@ -296,11 +296,11 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				mpos.x = get_size().x - mpos.x;
 			}
 
-			Point2i pos = get_line_column_at_pos(mpos);
+			Point2i pos = get_line_column_at_pos(mpos, false);
 			int line = pos.y;
 			int col = pos.x;
 
-			if (mb->get_button_index() == MouseButton::LEFT) {
+			if (line != -1 && mb->get_button_index() == MouseButton::LEFT) {
 				if (is_line_folded(line)) {
 					int wrap_index = get_line_wrap_index_at_column(line, col);
 					if (wrap_index == get_line_wrap_count(line)) {
@@ -321,11 +321,13 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						mpos.x = get_size().x - mpos.x;
 					}
 
-					Point2i pos = get_line_column_at_pos(mpos);
+					Point2i pos = get_line_column_at_pos(mpos, false);
 					int line = pos.y;
 					int col = pos.x;
 
-					emit_signal(SNAME("symbol_lookup"), symbol_lookup_word, line, col);
+					if (line != -1) {
+						emit_signal(SNAME("symbol_lookup"), symbol_lookup_word, line, col);
+					}
 					return;
 				}
 			}
@@ -536,11 +538,11 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_ARROW;
 	}
 
-	Point2i pos = get_line_column_at_pos(p_pos);
+	Point2i pos = get_line_column_at_pos(p_pos, false);
 	int line = pos.y;
 	int col = pos.x;
 
-	if (is_line_folded(line)) {
+	if (line != -1 && is_line_folded(line)) {
 		int wrap_index = get_line_wrap_index_at_column(line, col);
 		if (wrap_index == get_line_wrap_count(line)) {
 			int eol_icon_width = folded_eol_icon->get_width();
@@ -2016,9 +2018,13 @@ bool CodeEdit::is_symbol_lookup_on_click_enabled() const {
 String CodeEdit::get_text_for_symbol_lookup() {
 	Point2i mp = get_local_mouse_pos();
 
-	Point2i pos = get_line_column_at_pos(mp);
+	Point2i pos = get_line_column_at_pos(mp, false);
 	int line = pos.y;
 	int col = pos.x;
+
+	if (line == -1) {
+		return String();
+	}
 
 	StringBuilder lookup_text;
 	const int text_size = get_line_count();

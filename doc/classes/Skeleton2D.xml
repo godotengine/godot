@@ -8,7 +8,7 @@
 		To setup different types of inverse kinematics for the given Skeleton2D, a [SkeletonModificationStack2D] should be created. They can be applied by creating the desired number of modifications, which can be done by increasing [member SkeletonModificationStack2D.modification_count].
 	</description>
 	<tutorials>
-		<link title="2D skeletons">https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html</link>
+		<link title="2D skeletons">$DOCS_URL/tutorials/animation/2d_skeletons.html</link>
 	</tutorials>
 	<methods>
 		<method name="execute_modifications">

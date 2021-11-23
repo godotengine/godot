@@ -87,6 +87,7 @@ public:
 private:
 	MouseButton mouse_button_mask = MouseButton::NONE;
 
+	Set<Key> physical_keys_pressed;
 	Set<Key> keys_pressed;
 	Set<JoyButton> joy_buttons_pressed;
 	Map<JoyAxis, float> _joy_axis;
@@ -247,6 +248,7 @@ public:
 	static Input *get_singleton();
 
 	bool is_key_pressed(Key p_keycode) const;
+	bool is_physical_key_pressed(Key p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
 	bool is_joy_button_pressed(int p_device, JoyButton p_button) const;
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;

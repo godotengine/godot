@@ -7,8 +7,8 @@
 		Translations are resources that can be loaded and unloaded on demand. They map a string to another string.
 	</description>
 	<tutorials>
-		<link title="Internationalizing games">https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link>
-		<link title="Locales">https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
+		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Locales">$DOCS_URL/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get_message" qualifiers="virtual const">

@@ -274,6 +274,7 @@ void CanvasItem::_exit_canvas() {
 void CanvasItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			ERR_FAIL_COND(!is_inside_tree());
 			_update_texture_filter_changed(false);
 			_update_texture_repeat_changed(false);
 

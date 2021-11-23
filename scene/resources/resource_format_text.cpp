@@ -350,7 +350,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 		} else if (next_tag.name == "editable") {
 			if (!next_tag.fields.has("path")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'path' field from connection tag";
+				error_text = "missing 'path' field from editable tag";
 				_printerr();
 				return Ref<PackedScene>();
 			}

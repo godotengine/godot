@@ -8,7 +8,7 @@
 		The [code]new[/code] method of a script subclass creates a new instance. [method Object.set_script] extends an existing object, if that object's class matches one of the script's base classes.
 	</description>
 	<tutorials>
-		<link title="Scripting documentation index">https://docs.godotengine.org/en/latest/tutorials/scripting/index.html</link>
+		<link title="Scripting documentation index">$DOCS_URL/tutorials/scripting/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="can_instantiate" qualifiers="const">

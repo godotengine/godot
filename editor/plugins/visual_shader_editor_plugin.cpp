@@ -132,7 +132,7 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 		if (links[p_node_id].preview_visible && !is_dirty() && links[p_node_id].preview_box != nullptr) {
 			links[p_node_id].graph_node->remove_child(links[p_node_id].preview_box);
 			memdelete(links[p_node_id].preview_box);
-			links[p_node_id].graph_node->set_size(Vector2(-1, -1));
+			links[p_node_id].graph_node->reset_size();
 			links[p_node_id].preview_visible = false;
 		}
 
@@ -256,7 +256,7 @@ void VisualShaderGraphPlugin::update_node_size(int p_node_id) {
 	if (!links.has(p_node_id)) {
 		return;
 	}
-	links[p_node_id].graph_node->set_size(Size2(-1, -1));
+	links[p_node_id].graph_node->reset_size();
 }
 
 void VisualShaderGraphPlugin::register_default_input_button(int p_node_id, int p_port_id, Button *p_button) {
@@ -1976,7 +1976,7 @@ void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p
 		}
 
 		gn->set_custom_minimum_size(size);
-		gn->set_size(Size2(1, 1));
+		gn->reset_size();
 
 		if (!expression_node.is_null() && text_box) {
 			Size2 box_size = size;
@@ -1990,7 +1990,7 @@ void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p
 			box_size.y -= text_box->get_offset(SIDE_TOP);
 			box_size.y -= 28 * EDSCALE;
 			text_box->set_custom_minimum_size(box_size);
-			text_box->set_size(Size2(1, 1));
+			text_box->reset_size();
 		}
 	}
 }
@@ -2038,8 +2038,8 @@ void VisualShaderEditor::_comment_title_popup_show(const Point2 &p_position, int
 }
 
 void VisualShaderEditor::_comment_title_text_changed(const String &p_new_text) {
-	comment_title_change_edit->set_size(Size2(-1, -1));
-	comment_title_change_popup->set_size(Size2(-1, -1));
+	comment_title_change_edit->reset_size();
+	comment_title_change_popup->reset_size();
 }
 
 void VisualShaderEditor::_comment_title_text_submitted(const String &p_new_text) {
@@ -2083,8 +2083,8 @@ void VisualShaderEditor::_comment_desc_popup_show(const Point2 &p_position, int 
 }
 
 void VisualShaderEditor::_comment_desc_text_changed() {
-	comment_desc_change_edit->set_size(Size2(-1, -1));
-	comment_desc_change_popup->set_size(Size2(-1, -1));
+	comment_desc_change_edit->reset_size();
+	comment_desc_change_popup->reset_size();
 }
 
 void VisualShaderEditor::_comment_desc_confirm() {
@@ -3167,7 +3167,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			menu_point = graph->get_local_mouse_position();
 			Point2 gpos = Input::get_singleton()->get_mouse_position();
 			popup_menu->set_position(gpos);
-			popup_menu->set_size(Size2(-1, -1));
+			popup_menu->reset_size();
 			popup_menu->popup();
 		}
 	}
@@ -4258,8 +4258,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	comment_title_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_comment_title_text_changed));
 	comment_title_change_edit->connect("text_submitted", callable_mp(this, &VisualShaderEditor::_comment_title_text_submitted));
 	comment_title_change_popup->add_child(comment_title_change_edit);
-	comment_title_change_edit->set_size(Size2(-1, -1));
-	comment_title_change_popup->set_size(Size2(-1, -1));
+	comment_title_change_edit->reset_size();
+	comment_title_change_popup->reset_size();
 	comment_title_change_popup->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_comment_title_popup_focus_out));
 	comment_title_change_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_comment_title_popup_hide));
 	add_child(comment_title_change_popup);
@@ -4271,8 +4271,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	comment_desc_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_comment_desc_text_changed));
 	comment_desc_vbox->add_child(comment_desc_change_edit);
 	comment_desc_change_edit->set_custom_minimum_size(Size2(300 * EDSCALE, 150 * EDSCALE));
-	comment_desc_change_edit->set_size(Size2(-1, -1));
-	comment_desc_change_popup->set_size(Size2(-1, -1));
+	comment_desc_change_edit->reset_size();
+	comment_desc_change_popup->reset_size();
 	comment_desc_change_popup->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_comment_desc_confirm));
 	comment_desc_change_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_comment_desc_popup_hide));
 	Button *comment_desc_confirm_button = memnew(Button);

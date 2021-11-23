@@ -881,54 +881,64 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Color" />
 			<description>
+				Returns [code]true[/code] if the colors are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Color" />
 			<argument index="0" name="right" type="Color" />
 			<description>
+				Multiplies each component of the [Color] by the components of the given [Color].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Color" />
 			<argument index="0" name="right" type="float" />
 			<description>
+				Multiplies each component of the [Color] by the given [float].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Color" />
 			<argument index="0" name="right" type="int" />
 			<description>
+				Multiplies each component of the [Color] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="Color" />
 			<argument index="0" name="right" type="Color" />
 			<description>
+				Adds each component of the [Color] with the components of the given [Color].
 			</description>
 		</operator>
 		<operator name="operator -">
 			<return type="Color" />
 			<argument index="0" name="right" type="Color" />
 			<description>
+				Subtracts each component of the [Color] by the components of the given [Color].
 			</description>
 		</operator>
 		<operator name="operator /">
 			<return type="Color" />
 			<argument index="0" name="right" type="Color" />
 			<description>
+				Divides each component of the [Color] by the components of the given [Color].
 			</description>
 		</operator>
 		<operator name="operator /">
 			<return type="Color" />
 			<argument index="0" name="right" type="float" />
 			<description>
+				Divides each component of the [Color] by the given [float].
 			</description>
 		</operator>
 		<operator name="operator /">
 			<return type="Color" />
 			<argument index="0" name="right" type="int" />
 			<description>
+				Divides each component of the [Color] by the given [int].
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -940,22 +950,27 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Color" />
 			<description>
+				Returns [code]true[/code] if the colors are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="float" />
 			<argument index="0" name="index" type="int" />
 			<description>
+				Access color components using their index. [code]c[0][/code] is equivalent to [code]c.r[/code], [code]c[1][/code] is equivalent to [code]c.g[/code], [code]c[2][/code] is equivalent to [code]c.b[/code], and [code]c[3][/code] is equivalent to [code]c.a[/code].
 			</description>
 		</operator>
 		<operator name="operator unary+">
 			<return type="Color" />
 			<description>
+				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
 			</description>
 		</operator>
 		<operator name="operator unary-">
 			<return type="Color" />
 			<description>
+				Inverts the given color. This is equivalent to [code]Color.WHITE - c[/code] or [code]Color(1 - c.r, 1 - c.g, 1 - c.b, 1 - c.a)[/code].
 			</description>
 		</operator>
 	</operators>

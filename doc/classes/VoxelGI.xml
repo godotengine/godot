@@ -10,7 +10,7 @@
 		[b]Note:[/b] Meshes should have sufficiently thick walls to avoid light leaks (avoid one-sided walls). For interior levels, enclose your level geometry in a sufficiently large box and bridge the loops to close the mesh. To further prevent light leaks, you can also strategically place temporary [MeshInstance3D] nodes with their [member GeometryInstance3D.gi_mode] set to [constant GeometryInstance3D.GI_MODE_BAKED]. These temporary nodes can then be hidden after baking the [VoxelGI] node.
 	</description>
 	<tutorials>
-		<link title="GI probes">https://docs.godotengine.org/en/latest/tutorials/3d/gi_probes.html</link>
+		<link title="GI probes">$DOCS_URL/tutorials/3d/gi_probes.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>

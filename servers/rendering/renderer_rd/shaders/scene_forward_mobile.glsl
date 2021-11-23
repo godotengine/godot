@@ -7,6 +7,8 @@
 /* Include our forward mobile UBOs definitions etc. */
 #include "scene_forward_mobile_inc.glsl"
 
+#define SHADER_IS_SRGB false
+
 /* INPUT ATTRIBS */
 
 layout(location = 0) in vec3 vertex_attrib;
@@ -370,6 +372,8 @@ void main() {
 
 #VERSION_DEFINES
 
+#define SHADER_IS_SRGB false
+
 /* Specialization Constants */
 
 #if !defined(MODE_RENDER_DEPTH)
@@ -701,7 +705,7 @@ void main() {
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
 #ifdef USE_OPAQUE_PREPASS
-	if (alpha < opaque_prepass_threshold) {
+	if (alpha < scene_data.opaque_prepass_threshold) {
 		discard;
 	}
 #endif // USE_OPAQUE_PREPASS
@@ -1472,7 +1476,7 @@ void main() {
 
 #ifdef USE_OPAQUE_PREPASS
 
-	if (alpha < opaque_prepass_threshold) {
+	if (alpha < scene_data.opaque_prepass_threshold) {
 		discard;
 	}
 

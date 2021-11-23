@@ -7,7 +7,7 @@
 		Stores general mouse events information.
 	</description>
 	<tutorials>
-		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
+		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<members>
 		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" enum="MouseButton" default="0">

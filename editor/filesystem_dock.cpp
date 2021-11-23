@@ -2507,7 +2507,7 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 
 	// Popup.
 	if (!paths.is_empty()) {
-		tree_popup->set_size(Size2(1, 1));
+		tree_popup->reset_size();
 		_file_and_folders_fill_popup(tree_popup, paths);
 		tree_popup->set_position(tree->get_screen_position() + p_pos);
 		tree_popup->popup();
@@ -2518,7 +2518,7 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	// Right click is pressed in the empty space of the tree.
 	path = "res://";
 	tree_popup->clear();
-	tree_popup->set_size(Size2(1, 1));
+	tree_popup->reset_size();
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("New Folder..."), FILE_NEW_FOLDER);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
@@ -2549,7 +2549,7 @@ void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	// Popup.
 	if (!paths.is_empty()) {
 		file_list_popup->clear();
-		file_list_popup->set_size(Size2(1, 1));
+		file_list_popup->reset_size();
 		_file_and_folders_fill_popup(file_list_popup, paths, searched_string.length() == 0);
 		file_list_popup->set_position(files->get_global_position() + p_pos);
 		file_list_popup->popup();
@@ -2563,7 +2563,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	}
 
 	file_list_popup->clear();
-	file_list_popup->set_size(Size2(1, 1));
+	file_list_popup->reset_size();
 
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("New Folder..."), FILE_NEW_FOLDER);
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);

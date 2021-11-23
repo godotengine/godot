@@ -16,7 +16,6 @@ from collections import OrderedDict
 import methods
 import glsl_builders
 import gles3_builders
-from platform_methods import run_in_subprocess
 
 # Scan possible build platforms
 
@@ -300,6 +299,13 @@ methods.write_modules(modules_detected)
 opts.Update(env_base)
 env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
 Help(opts.GenerateHelpText(env_base))
+
+# Detect and print a warning listing unknown SCons variables to ease troubleshooting.
+unknown = opts.UnknownVariables()
+if unknown:
+    print("WARNING: Unknown SCons variables were passed and will be ignored:")
+    for item in unknown.items():
+        print("    " + item[0] + "=" + item[1])
 
 # add default include paths
 
@@ -706,19 +712,13 @@ if selected_platform in platform_list:
             suffix="glsl.gen.h",
             src_suffix=".glsl",
         ),
+        "GLES3_GLSL": env.Builder(
+            action=env.Run(gles3_builders.build_gles3_headers, 'Building GLES3 GLSL header: "$TARGET"'),
+            suffix="glsl.gen.h",
+            src_suffix=".glsl",
+        ),
     }
     env.Append(BUILDERS=GLSL_BUILDERS)
-
-    if not env["platform"] == "server":
-        env.Append(
-            BUILDERS={
-                "GLES3_GLSL": env.Builder(
-                    action=run_in_subprocess(gles3_builders.build_gles3_headers),
-                    suffix="glsl.gen.h",
-                    src_suffix=".glsl",
-                )
-            }
-        )
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:

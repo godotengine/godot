@@ -7,7 +7,7 @@
 		Node used for displaying a [Mesh] in 2D. Can be constructed from an existing [Sprite2D] via a tool in the editor toolbar. Select "Sprite2D" then "Convert to Mesh2D", select settings in popup and press "Create Mesh2D".
 	</description>
 	<tutorials>
-		<link title="2D meshes">https://docs.godotengine.org/en/latest/tutorials/2d/2d_meshes.html</link>
+		<link title="2D meshes">$DOCS_URL/tutorials/2d/2d_meshes.html</link>
 	</tutorials>
 	<members>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">

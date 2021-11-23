@@ -8,7 +8,7 @@
 		See also [GodotSharp].
 	</description>
 	<tutorials>
-		<link title="C# documentation index">https://docs.godotengine.org/en/latest/tutorials/scripting/c_sharp/index.html</link>
+		<link title="C# documentation index">$DOCS_URL/tutorials/scripting/c_sharp/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="new" qualifiers="vararg">

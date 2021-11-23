@@ -195,7 +195,7 @@ namespace basisu
 	{
 		QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(pTicks));
 	}
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__OpenBSD__)
 #include <sys/time.h>
 	inline void query_counter(timer_ticks* pTicks)
 	{
@@ -1778,8 +1778,6 @@ namespace basisu
 		default:
 			return nullptr;
 		}
-
-		const uint32_t bytes_per_line = hdr.m_width * tga_bytes_per_pixel;
 
 		const uint8_t *pSrc = pBuf + sizeof(tga_header);
 		uint32_t bytes_remaining = buf_size - sizeof(tga_header);

@@ -597,9 +597,14 @@ char *ogg_sync_buffer(ogg_sync_state *oy, long size){
 
   if(size>oy->storage-oy->fill){
     /* We need to extend the internal buffer */
-    long newsize=size+oy->fill+4096; /* an extra page to be nice */
+    long newsize;
     void *ret;
 
+    if(size>INT_MAX-4096-oy->fill){
+      ogg_sync_clear(oy);
+      return NULL;
+    }
+    newsize=size+oy->fill+4096; /* an extra page to be nice */
     if(oy->data)
       ret=_ogg_realloc(oy->data,newsize);
     else
@@ -1564,7 +1569,7 @@ void test_pack(const int *pl, const int **headers, int byteskip,
             byteskipcount=byteskip;
           }
 
-          ogg_sync_wrote(&oy,next-buf);
+          ogg_sync_wrote(&oy,(long)(next-buf));
 
           while(1){
             int ret=ogg_sync_pageout(&oy,&og_de);

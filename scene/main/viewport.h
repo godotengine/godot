@@ -348,6 +348,7 @@ private:
 		List<Control *> roots;
 		int canvas_sort_index = 0; //for sorting items with canvas as root
 		bool dragging = false;
+		bool drag_successful = false;
 		bool embed_subwindows_hint = false;
 		bool embedding_subwindows = false;
 
@@ -556,6 +557,7 @@ public:
 	bool is_handling_input_locally() const;
 
 	bool gui_is_dragging() const;
+	bool gui_is_drag_successful() const;
 
 	Control *gui_find_control(const Point2 &p_global);
 

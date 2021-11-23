@@ -7,7 +7,7 @@
 		This class allows you to define a custom shader program that can be used by a [ShaderMaterial]. Shaders allow you to write your own custom behavior for rendering objects or updating particle information. For a detailed explanation and usage, please see the tutorials linked below.
 	</description>
 	<tutorials>
-		<link title="Shaders documentation index">https://docs.godotengine.org/en/latest/tutorials/shaders/index.html</link>
+		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_default_texture_param" qualifiers="const">

@@ -88,6 +88,10 @@ Size2i Window::get_size() const {
 	return size;
 }
 
+void Window::reset_size() {
+	set_size(Size2i());
+}
+
 Size2i Window::get_real_size() const {
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_get_real_size(window_id);
@@ -1410,6 +1414,7 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Window::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);
+	ClassDB::bind_method(D_METHOD("reset_size"), &Window::reset_size);
 
 	ClassDB::bind_method(D_METHOD("get_real_size"), &Window::get_real_size);
 

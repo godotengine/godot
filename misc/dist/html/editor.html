@@ -281,8 +281,7 @@
 				<label for="videoMode" style="margin-right: 1rem">Video driver:</label>
 				<select id="videoMode">
 					<option value="" selected="selected">Auto</option>
-					<option value="GLES2">WebGL</option>
-					<option value="GLES3">WebGL 2</option>
+					<option value="opengl3">WebGL 2</option>
 				</select>
 				<br />
 				<br />
@@ -562,8 +561,9 @@
 				const is_project_manager = args.filter(function(v) { return v == '--project-manager' }).length != 0;
 				const is_game = !is_editor && !is_project_manager;
 				if (video_driver) {
-					args.push('--video-driver', video_driver);
+					args.push('--rendering-driver', video_driver);
 				}
+
 				if (is_game) {
 					if (game) {
 						console.error("A game is already running. Close it first");
@@ -651,9 +651,9 @@
 					selectVideoMode();
 					showTab('editor');
 					setLoaderEnabled(false);
-					const args = ['--project-manager'];
+					const args = ['--project-manager', '--single-window'];
 					if (video_driver) {
-						args.push('--video-driver', video_driver);
+						args.push('--rendering-driver', video_driver);
 					}
 					editor.start({'args': args, 'persistentDrops': true}).then(function() {
 						setStatusMode('hidden');

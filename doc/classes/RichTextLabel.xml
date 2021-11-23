@@ -11,7 +11,7 @@
 		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content_height] property.
 	</description>
 	<tutorials>
-		<link title="BBCode in RichTextLabel">https://docs.godotengine.org/en/latest/tutorials/ui/bbcode_in_richtextlabel.html</link>
+		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
 		<link title="GUI Rich Text/BBcode Demo">https://godotengine.org/asset-library/asset/132</link>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>

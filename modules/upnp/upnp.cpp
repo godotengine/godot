@@ -30,8 +30,8 @@
 
 #include "upnp.h"
 
-#include <miniupnpc/miniwget.h>
-#include <miniupnpc/upnpcommands.h>
+#include <miniwget.h>
+#include <upnpcommands.h>
 
 #include <stdlib.h>
 

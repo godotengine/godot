@@ -6,6 +6,8 @@
 
 #include "scene_forward_clustered_inc.glsl"
 
+#define SHADER_IS_SRGB false
+
 /* INPUT ATTRIBS */
 
 layout(location = 0) in vec3 vertex_attrib;
@@ -358,6 +360,8 @@ void main() {
 
 #VERSION_DEFINES
 
+#define SHADER_IS_SRGB false
+
 /* Specialization Constants (Toggles) */
 
 layout(constant_id = 0) const bool sc_use_forward_gi = false;
@@ -691,7 +695,7 @@ void main() {
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
 #ifdef USE_OPAQUE_PREPASS
-	if (alpha < opaque_prepass_threshold) {
+	if (alpha < scene_data.opaque_prepass_threshold) {
 		discard;
 	}
 #endif // USE_OPAQUE_PREPASS
@@ -1707,7 +1711,7 @@ void main() {
 
 #ifdef USE_OPAQUE_PREPASS
 
-	if (alpha < opaque_prepass_threshold) {
+	if (alpha < scene_data.opaque_prepass_threshold) {
 		discard;
 	}
 

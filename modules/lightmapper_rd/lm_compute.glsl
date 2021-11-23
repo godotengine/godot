@@ -235,19 +235,39 @@ uint trace_ray(vec3 p_from, vec3 p_to
 	return RAY_MISS;
 }
 
-const float PI = 3.14159265f;
-const float GOLDEN_ANGLE = PI * (3.0 - sqrt(5.0));
-
-vec3 vogel_hemisphere(uint p_index, uint p_count, float p_offset) {
-	float r = sqrt(float(p_index) + 0.5f) / sqrt(float(p_count));
-	float theta = float(p_index) * GOLDEN_ANGLE + p_offset;
-	float y = cos(r * PI * 0.5);
-	float l = sin(r * PI * 0.5);
-	return vec3(l * cos(theta), l * sin(theta), y);
+// https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/
+uint hash(uint value) {
+	uint state = value * 747796405u + 2891336453u;
+	uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+	return (word >> 22u) ^ word;
 }
 
-float quick_hash(vec2 pos) {
-	return fract(sin(dot(pos * 19.19, vec2(49.5791, 97.413))) * 49831.189237);
+uint random_seed(ivec3 seed) {
+	return hash(seed.x ^ hash(seed.y ^ hash(seed.z)));
+}
+
+// generates a random value in range [0.0, 1.0)
+float randomize(inout uint value) {
+	value = hash(value);
+	return float(value / 4294967296.0);
+}
+
+const float PI = 3.14159265f;
+
+// http://www.realtimerendering.com/raytracinggems/unofficial_RayTracingGems_v1.4.pdf (chapter 15)
+vec3 generate_hemisphere_uniform_direction(inout uint noise) {
+	float noise1 = randomize(noise);
+	float noise2 = randomize(noise) * 2.0 * PI;
+
+	float factor = sqrt(1 - (noise1 * noise1));
+	return vec3(factor * cos(noise2), factor * sin(noise2), noise1);
+}
+
+vec3 generate_hemisphere_cosine_weighted_direction(inout uint noise) {
+	float noise1 = randomize(noise);
+	float noise2 = randomize(noise) * 2.0 * PI;
+
+	return vec3(sqrt(noise1) * cos(noise2), sqrt(noise1) * sin(noise2), sqrt(1.0 - noise1));
 }
 
 float get_omni_attenuation(float distance, float inv_range, float decay) {
@@ -404,8 +424,9 @@ void main() {
 #endif
 	vec3 light_average = vec3(0.0);
 	float active_rays = 0.0;
+	uint noise = random_seed(ivec3(params.ray_from, atlas_pos));
 	for (uint i = params.ray_from; i < params.ray_to; i++) {
-		vec3 ray_dir = normal_mat * vogel_hemisphere(i, params.ray_count, quick_hash(vec2(atlas_pos)));
+		vec3 ray_dir = normal_mat * generate_hemisphere_cosine_weighted_direction(noise);
 
 		uint tidx;
 		vec3 barycentric;
@@ -550,8 +571,9 @@ void main() {
 			vec4(0.0),
 			vec4(0.0));
 
+	uint noise = random_seed(ivec3(params.ray_from, probe_index, 49502741 /* some prime */));
 	for (uint i = params.ray_from; i < params.ray_to; i++) {
-		vec3 ray_dir = vogel_hemisphere(i, params.ray_count, quick_hash(vec2(float(probe_index), 0.0)));
+		vec3 ray_dir = generate_hemisphere_uniform_direction(noise);
 		if (bool(i & 1)) {
 			//throw to both sides, so alternate them
 			ray_dir.z *= -1.0;

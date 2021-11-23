@@ -64,8 +64,8 @@ void VP8LHistogramCreate(VP8LHistogram* const p,
                          const VP8LBackwardRefs* const refs,
                          int palette_code_bits);
 
-// Return the size of the histogram for a given palette_code_bits.
-int VP8LGetHistogramSize(int palette_code_bits);
+// Return the size of the histogram for a given cache_bits.
+int VP8LGetHistogramSize(int cache_bits);
 
 // Set the palette_code_bits and reset the stats.
 // If init_arrays is true, the arrays are also filled with 0's.
@@ -110,7 +110,7 @@ int VP8LGetHistoImageSymbols(int xsize, int ysize,
                              const VP8LBackwardRefs* const refs,
                              int quality, int low_effort,
                              int histogram_bits, int cache_bits,
-                             VP8LHistogramSet* const image_in,
+                             VP8LHistogramSet* const image_histo,
                              VP8LHistogram* const tmp_histo,
                              uint16_t* const histogram_symbols);
 

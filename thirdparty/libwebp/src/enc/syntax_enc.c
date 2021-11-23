@@ -349,7 +349,7 @@ int VP8EncWrite(VP8Encoder* const enc) {
                                        (enc->alpha_data_size_ & 1);
     riff_size += CHUNK_HEADER_SIZE + padded_alpha_size;
   }
-  // Sanity check.
+  // RIFF size should fit in 32-bits.
   if (riff_size > 0xfffffffeU) {
     return WebPEncodingSetError(pic, VP8_ENC_ERROR_FILE_TOO_BIG);
   }

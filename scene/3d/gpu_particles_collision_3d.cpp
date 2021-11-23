@@ -256,10 +256,10 @@ void GPUParticlesCollisionSDF::_find_closest_distance(const Vector3 &p_pos, cons
 				Vector2 pq1 = v1 - e1 * CLAMP(v1.dot(e1) / e1.dot(e1), 0.0, 1.0);
 				Vector2 pq2 = v2 - e2 * CLAMP(v2.dot(e2) / e2.dot(e2), 0.0, 1.0);
 
-				float s = SGN(e0.x * e2.y - e0.y * e2.x);
+				float s = SIGN(e0.x * e2.y - e0.y * e2.x);
 				Vector2 d2 = Vector2(pq0.dot(pq0), s * (v0.x * e0.y - v0.y * e0.x)).min(Vector2(pq1.dot(pq1), s * (v1.x * e1.y - v1.y * e1.x))).min(Vector2(pq2.dot(pq2), s * (v2.x * e2.y - v2.y * e2.x)));
 
-				inside_d = -Math::sqrt(d2.x) * SGN(d2.y);
+				inside_d = -Math::sqrt(d2.x) * SIGN(d2.y);
 			}
 
 			//make sure distance to planes is not shorter if inside
@@ -288,7 +288,7 @@ void GPUParticlesCollisionSDF::_find_closest_distance(const Vector3 &p_pos, cons
 			Vector3 nor = ba.cross(ac);
 
 			inside_d = Math::sqrt(
-					(SGN(ba.cross(nor).dot(pa)) + SGN(cb.cross(nor).dot(pb)) + SGN(ac.cross(nor).dot(pc)) < 2.0)
+					(SIGN(ba.cross(nor).dot(pa)) + SIGN(cb.cross(nor).dot(pb)) + SIGN(ac.cross(nor).dot(pc)) < 2.0)
 							? MIN(MIN(
 										  Vector3_dot2(ba * CLAMP(ba.dot(pa) / Vector3_dot2(ba), 0.0, 1.0) - pa),
 										  Vector3_dot2(cb * CLAMP(cb.dot(pb) / Vector3_dot2(cb), 0.0, 1.0) - pb)),

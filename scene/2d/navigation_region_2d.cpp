@@ -464,7 +464,7 @@ void NavigationRegion2D::_notification(int p_what) {
 					draw_line(a, b, doors_color);
 
 					// Draw a circle to illustrate the margins.
-					real_t angle = b.angle_to_point(a);
+					real_t angle = a.angle_to_point(b);
 					draw_arc(a, radius, angle + Math_PI / 2.0, angle - Math_PI / 2.0 + Math_TAU, 10, doors_color);
 					draw_arc(b, radius, angle - Math_PI / 2.0, angle + Math_PI / 2.0, 10, doors_color);
 				}

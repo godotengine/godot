@@ -357,6 +357,7 @@ public:
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 	void set_drag_preview(Control *p_control);
 	void force_drag(const Variant &p_data, Control *p_control);
+	bool is_drag_successful() const;
 
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
@@ -400,6 +401,7 @@ public:
 
 	void set_size(const Size2 &p_size, bool p_keep_offsets = false);
 	Size2 get_size() const;
+	void reset_size();
 
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;

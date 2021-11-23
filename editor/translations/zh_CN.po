@@ -87,7 +87,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-10-21 10:31+0000\n"
+"PO-Revision-Date: 2021-11-11 16:02+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -96,7 +96,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5591,7 +5591,7 @@ msgstr "创建垂直水平参考线"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr "将 CanvasItem “%s”的 Pivot Offset 设为 (%d, %d)"
+msgstr "将 CanvasItem“%s”的 Pivot Offset 设为 (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate %d CanvasItems"
@@ -5599,19 +5599,19 @@ msgstr "旋转 %d 个 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "旋转 CanvasItem “%s” 为 %d 度"
+msgstr "将 CanvasItem“%s”的旋转设为 %d 度"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "移动 CanvasItem “%s” 的锚点"
+msgstr "移动 CanvasItem“%s”的锚点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr "缩放 Node2D “%s” 为 (%s, %s)"
+msgstr "将 Node2D“%s”缩放为 (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr "缩放 Control “%s” 为 (%d, %d)"
+msgstr "将 Control“%s”的大小更改为 (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale %d CanvasItems"
@@ -5619,7 +5619,7 @@ msgstr "缩放 %d 个 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "缩放 CanvasItem “%s” 为 (%s, %s)"
+msgstr "将 CanvasItem“%s”缩放为 (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move %d CanvasItems"
@@ -5627,7 +5627,7 @@ msgstr "移动 %s 个 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "移动 CanvasItem “%s” 至 (%d, %d)"
+msgstr "移动 CanvasItem“%s”至 (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7647,12 +7647,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "该骨架没有骨骼绑定，请创建一些 Bone2D 骨骼子节点。"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "从骨骼创建放松姿势"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "将放松姿势设置到骨骼"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "从骨骼创建放松姿势"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"

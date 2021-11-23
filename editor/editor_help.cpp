@@ -33,13 +33,14 @@
 #include "core/core_constants.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "core/version_generated.gen.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 
-#define CONTRIBUTE_URL "https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
+#define CONTRIBUTE_URL vformat("%s/community/contributing/updating_the_class_reference.html", VERSION_DOCS_URL)
 
 DocTools *EditorHelp::doc = nullptr;
 
@@ -108,6 +109,9 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		} else if (tag == "constant") {
 			topic = "class_constant";
 			table = &this->constant_line;
+		} else if (tag == "theme_item") {
+			topic = "theme_item";
+			table = &this->theme_property_line;
 		} else {
 			return;
 		}
@@ -1537,7 +1541,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
 
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ")) {
 			int tag_end = tag.find(" ");
 
 			String link_tag = tag.substr(0, tag_end);

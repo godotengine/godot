@@ -9,7 +9,7 @@
 		[b]Kinematic motion:[/b] Character bodies can also be used for kinematic motion (same functionality as [AnimatableBody3D]), which allows them to be moved by code and push other bodies on their path.
 	</description>
 	<tutorials>
-		<link title="Kinematic character (2D)">https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
+		<link title="Kinematic character (2D)">$DOCS_URL/tutorials/physics/kinematic_character_2d.html</link>
 		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
 		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>

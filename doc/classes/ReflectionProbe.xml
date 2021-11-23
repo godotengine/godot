@@ -8,7 +8,7 @@
 		The [ReflectionProbe] is used to create high-quality reflections at the cost of performance. It can be combined with [VoxelGI]s and Screen Space Reflections to achieve high quality reflections. [ReflectionProbe]s render all objects within their [member cull_mask], so updating them can be quite expensive. It is best to update them once with the important static objects and then leave them.
 	</description>
 	<tutorials>
-		<link title="Reflection probes">https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html</link>
+		<link title="Reflection probes">$DOCS_URL/tutorials/3d/reflection_probes.html</link>
 	</tutorials>
 	<members>
 		<member name="ambient_color" type="Color" setter="set_ambient_color" getter="get_ambient_color" default="Color(0, 0, 0, 1)">

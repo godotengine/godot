@@ -264,7 +264,7 @@ bool GodotCollisionSolver3D::solve_soft_body(const GodotShape3D *p_shape_A, cons
 			local_aabb.size[i] = smax - smin;
 		}
 
-		concave_shape_A->cull(local_aabb, soft_body_concave_callback, &query_cinfo);
+		concave_shape_A->cull(local_aabb, soft_body_concave_callback, &query_cinfo, true);
 	} else {
 		AABB shape_aabb = p_transform_A.xform(p_shape_A->get_aabb());
 		shape_aabb.grow_by(collision_margin);
@@ -346,7 +346,7 @@ bool GodotCollisionSolver3D::solve_concave(const GodotShape3D *p_shape_A, const 
 		local_aabb.size[i] = smax - smin;
 	}
 
-	concave_B->cull(local_aabb, concave_callback, &cinfo);
+	concave_B->cull(local_aabb, concave_callback, &cinfo, false);
 
 	return cinfo.collided;
 }
@@ -559,7 +559,7 @@ bool GodotCollisionSolver3D::solve_distance(const GodotShape3D *p_shape_A, const
 			local_aabb.size[i] = smax - smin;
 		}
 
-		concave_B->cull(local_aabb, concave_distance_callback, &cinfo);
+		concave_B->cull(local_aabb, concave_distance_callback, &cinfo, false);
 		if (!cinfo.collided) {
 			r_point_A = cinfo.close_A;
 			r_point_B = cinfo.close_B;

@@ -387,14 +387,17 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 		// Due to WASAPI Shared Mode we have no control of the buffer size
-		buffer_frames = max_frames;
+		if (!p_capture) {
+			buffer_frames = max_frames;
 
-		int64_t latency = 0;
-		audio_output.audio_client->GetStreamLatency(&latency);
-		// WASAPI REFERENCE_TIME units are 100 nanoseconds per unit
-		// https://docs.microsoft.com/en-us/windows/win32/directshow/reference-time
-		// Convert REFTIME to seconds as godot uses for latency
-		real_latency = (float)latency / (float)REFTIMES_PER_SEC;
+			int64_t latency = 0;
+			audio_output.audio_client->GetStreamLatency(&latency);
+			// WASAPI REFERENCE_TIME units are 100 nanoseconds per unit
+			// https://docs.microsoft.com/en-us/windows/win32/directshow/reference-time
+			// Convert REFTIME to seconds as godot uses for latency
+			real_latency = (float)latency / (float)REFTIMES_PER_SEC;
+		}
+
 	} else {
 		IAudioClient3 *device_audio_client_3 = (IAudioClient3 *)p_device->audio_client;
 
