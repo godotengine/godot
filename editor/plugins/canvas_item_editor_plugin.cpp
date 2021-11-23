@@ -242,7 +242,7 @@ bool CanvasItemEditor::_is_node_movable(const Node *p_node, bool p_popup_warning
 	}
 	if (Object::cast_to<Control>(p_node) && Object::cast_to<Container>(p_node->get_parent())) {
 		if (p_popup_warning) {
-			_popup_warning_temporarily(warning_child_of_container, 3.0);
+			EditorToaster::get_singleton()->popup_str("Children of a container get their position and size determined only by their parent.", EditorToaster::SEVERITY_WARNING);
 		}
 		return false;
 	}
@@ -3665,8 +3665,6 @@ void CanvasItemEditor::_draw_viewport() {
 	group_button->set_disabled(selection.is_empty());
 	ungroup_button->set_visible(all_group);
 
-	info_overlay->set_offset(SIDE_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
-
 	_draw_grid();
 	_draw_ruler_tool();
 	_draw_axis();
@@ -3919,11 +3917,6 @@ void CanvasItemEditor::_notification(int p_what) {
 		anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignWide"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_PRESET_WIDE);
 
 		anchor_mode_button->set_icon(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")));
-
-		info_overlay->get_theme()->set_stylebox("normal", "Label", get_theme_stylebox(SNAME("CanvasItemInfoOverlay"), SNAME("EditorStyles")));
-		warning_child_of_container->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-		warning_child_of_container->add_theme_font_override("font", get_theme_font(SNAME("main"), SNAME("EditorFonts")));
-		warning_child_of_container->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
@@ -4077,34 +4070,6 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	previous_update_view_offset = view_offset;
 	updating_scroll = false;
-}
-
-void CanvasItemEditor::_popup_warning_depop(Control *p_control) {
-	ERR_FAIL_COND(!popup_temporarily_timers.has(p_control));
-
-	Timer *timer = popup_temporarily_timers[p_control];
-	timer->queue_delete();
-	p_control->hide();
-	popup_temporarily_timers.erase(p_control);
-	info_overlay->set_offset(SIDE_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
-}
-
-void CanvasItemEditor::_popup_warning_temporarily(Control *p_control, const double p_duration) {
-	Timer *timer;
-	if (!popup_temporarily_timers.has(p_control)) {
-		timer = memnew(Timer);
-		timer->connect("timeout", callable_mp(this, &CanvasItemEditor::_popup_warning_depop), varray(p_control));
-		timer->set_one_shot(true);
-		add_child(timer);
-
-		popup_temporarily_timers[p_control] = timer;
-	} else {
-		timer = popup_temporarily_timers[p_control];
-	}
-
-	timer->start(p_duration);
-	p_control->show();
-	info_overlay->set_offset(SIDE_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
 }
 
 void CanvasItemEditor::_update_scroll(real_t) {
@@ -5136,19 +5101,6 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	viewport->update();
 }
 
-void CanvasItemEditor::add_control_to_info_overlay(Control *p_control) {
-	ERR_FAIL_COND(!p_control);
-
-	p_control->set_h_size_flags(p_control->get_h_size_flags() & ~Control::SIZE_EXPAND_FILL);
-	info_overlay->add_child(p_control);
-	info_overlay->set_offset(SIDE_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
-}
-
-void CanvasItemEditor::remove_control_from_info_overlay(Control *p_control) {
-	info_overlay->remove_child(p_control);
-	info_overlay->set_offset(SIDE_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
-}
-
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
 	ERR_FAIL_COND(!p_control);
 
@@ -5280,23 +5232,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport->set_focus_mode(FOCUS_ALL);
 	viewport->connect("draw", callable_mp(this, &CanvasItemEditor::_draw_viewport));
 	viewport->connect("gui_input", callable_mp(this, &CanvasItemEditor::_gui_input_viewport));
-
-	info_overlay = memnew(VBoxContainer);
-	info_overlay->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT);
-	info_overlay->set_offset(SIDE_LEFT, 10);
-	info_overlay->set_offset(SIDE_BOTTOM, -15);
-	info_overlay->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
-	info_overlay->add_theme_constant_override("separation", 10);
-	viewport_scrollable->add_child(info_overlay);
-
-	// Make sure all labels inside of the container are styled the same.
-	Theme *info_overlay_theme = memnew(Theme);
-	info_overlay->set_theme(info_overlay_theme);
-
-	warning_child_of_container = memnew(Label);
-	warning_child_of_container->hide();
-	warning_child_of_container->set_text(TTR("Warning: Children of a container get their position and size determined only by their parent."));
-	add_control_to_info_overlay(warning_child_of_container);
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);
