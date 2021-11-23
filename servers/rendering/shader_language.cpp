@@ -7190,11 +7190,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			//check return type
 			BlockNode *b = p_block;
 
-			if (b && b->parent_function && p_function_info.main_function) {
-				_set_error(vformat("Using 'return' in '%s' processor function results in undefined behavior!", b->parent_function->name));
-				return ERR_PARSE_ERROR;
-			}
-
 			while (b && !b->parent_function) {
 				b = b->parent_block;
 			}
@@ -7202,6 +7197,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (!b) {
 				_set_error("Bug");
 				return ERR_BUG;
+			}
+
+			if (b && b->parent_function && p_function_info.main_function) {
+				_set_error(vformat("Using 'return' in '%s' processor function results in undefined behavior!", b->parent_function->name));
+				return ERR_PARSE_ERROR;
 			}
 
 			String return_struct_name = String(b->parent_function->return_struct_name);
