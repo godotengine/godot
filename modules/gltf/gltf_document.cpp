@@ -6068,7 +6068,10 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 			int bone_cnt = skeleton->get_bone_count();
 			ERR_FAIL_COND(bone_cnt != gltf_skeleton->joints.size());
 
-			ObjectID gltf_skin_key = skin->get_instance_id();
+			ObjectID gltf_skin_key = 0;
+			if (skin.is_valid()) {
+				gltf_skin_key = skin->get_instance_id();
+			}
 			ObjectID gltf_skel_key = godot_skeleton->get_instance_id();
 			GLTFSkinIndex skin_gltf_i = -1;
 			GLTFNodeIndex root_gltf_i = -1;
