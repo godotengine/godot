@@ -497,22 +497,6 @@ void ClassDB::add_compatibility_class(const StringName &p_class, const StringNam
 	compat_classes[p_class] = p_fallback;
 }
 
-thread_local bool initializing_with_extension = false;
-thread_local ObjectNativeExtension *initializing_extension = nullptr;
-thread_local GDExtensionClassInstancePtr initializing_extension_instance = nullptr;
-
-void ClassDB::instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance, Object *p_base) {
-	if (initializing_with_extension) {
-		*r_extension = initializing_extension;
-		*r_extension_instance = initializing_extension_instance;
-		initializing_with_extension = false;
-		initializing_extension->set_object_instance(*r_extension_instance, p_base);
-	} else {
-		*r_extension = nullptr;
-		*r_extension_instance = nullptr;
-	}
-}
-
 Object *ClassDB::instantiate(const StringName &p_class) {
 	ClassInfo *ti;
 	{
@@ -533,21 +517,31 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 		return nullptr;
 	}
 #endif
-	if (ti->native_extension) {
-		initializing_with_extension = true;
-		initializing_extension = ti->native_extension;
-		initializing_extension_instance = ti->native_extension->create_instance(ti->native_extension->class_userdata);
+	if (ti->native_extension && ti->native_extension->create_instance) {
+		return (Object *)ti->native_extension->create_instance(ti->native_extension->class_userdata);
+	} else {
+		return ti->creation_func();
 	}
-	return ti->creation_func();
 }
 
-Object *ClassDB::construct_object(Object *(*p_create_func)(), ObjectNativeExtension *p_extension) {
-	if (p_extension) {
-		initializing_with_extension = true;
-		initializing_extension = p_extension;
-		initializing_extension_instance = p_extension->create_instance(p_extension->class_userdata);
+void ClassDB::set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance) {
+	ERR_FAIL_COND(!p_object);
+	ClassInfo *ti;
+	{
+		OBJTYPE_RLOCK;
+		ti = classes.getptr(p_class);
+		if (!ti || ti->disabled || !ti->creation_func || (ti->native_extension && !ti->native_extension->create_instance)) {
+			if (compat_classes.has(p_class)) {
+				ti = classes.getptr(compat_classes[p_class]);
+			}
+		}
+		ERR_FAIL_COND_MSG(!ti, "Cannot get class '" + String(p_class) + "'.");
+		ERR_FAIL_COND_MSG(ti->disabled, "Class '" + String(p_class) + "' is disabled.");
+		ERR_FAIL_COND_MSG(!ti->native_extension, "Class '" + String(p_class) + "' has no native extension.");
 	}
-	return p_create_func();
+
+	p_object->_extension = ti->native_extension;
+	p_object->_extension_instance = p_instance;
 }
 
 bool ClassDB::can_instantiate(const StringName &p_class) {

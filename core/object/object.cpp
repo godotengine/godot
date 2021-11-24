@@ -1838,8 +1838,6 @@ void Object::_construct_object(bool p_reference) {
 	type_is_reference = p_reference;
 	_instance_id = ObjectDB::add_instance(this);
 
-	ClassDB::instance_get_native_extension_data(&_extension, &_extension_instance, this);
-
 #ifdef DEBUG_ENABLED
 	_lock_index.init(1);
 #endif
