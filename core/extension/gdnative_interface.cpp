@@ -855,6 +855,14 @@ static GDObjectInstanceID gdnative_object_get_instance_id(const GDNativeObjectPt
 	return (GDObjectInstanceID)o->get_instance_id();
 }
 
+static void gdnative_reference_assign(GDNativeObjectPtr p_ref, GDNativeObjectPtr p_object) {
+	ERR_FAIL_NULL(p_ref);
+
+	Ref<RefCounted> *ref = (Ref<RefCounted> *)p_ref;
+
+	ref->__internal_assign((Object *)p_object);
+}
+
 static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(const char *p_classname, const char *p_methodname, GDNativeInt p_hash) {
 	MethodBind *mb = ClassDB::get_method(StringName(p_classname), StringName(p_methodname));
 	ERR_FAIL_COND_V(!mb, nullptr);
@@ -1030,6 +1038,10 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.object_cast_to = gdnative_object_cast_to;
 	gdni.object_get_instance_from_id = gdnative_object_get_instance_from_id;
 	gdni.object_get_instance_id = gdnative_object_get_instance_id;
+
+	/* REFERENCE */
+
+	gdni.reference_assign = gdnative_reference_assign;
 
 	/* CLASSDB */
 

@@ -232,6 +232,25 @@ public:
 	~Ref() {
 		unref();
 	}
+
+	// Used exclusively for assigning an object pointer sourced from GDextensions
+	inline void __internal_assign(Object *p_obj) {
+		RefCounted *refb = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_obj));
+		if (!refb) {
+			unref();
+			return;
+		}
+
+		// We don't have a way to safely directly assign our reference so use a temporary variable
+		Ref<T> r; 
+		r.reference = Object::cast_to<T>(refb);
+
+		// Now assign to our actual reference so we properly unreference any existing object and reference our new object.
+		ref(r);
+
+		// clear so we don't unref what we haved referenced.
+		r.reference = nullptr;
+	}
 };
 
 typedef Ref<RefCounted> REF;

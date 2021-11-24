@@ -435,6 +435,10 @@ typedef struct {
 	GDNativeObjectPtr (*object_get_instance_from_id)(GDObjectInstanceID p_instance_id);
 	GDObjectInstanceID (*object_get_instance_id)(const GDNativeObjectPtr p_object);
 
+	/* REFERENCE */
+
+	void (*reference_assign)(GDNativeObjectPtr p_ref, GDNativeObjectPtr p_object);
+
 	/* CLASSDB */
 
 	GDNativeClassConstructor (*classdb_get_constructor)(const char *p_classname, GDNativeExtensionPtr *r_extension);
