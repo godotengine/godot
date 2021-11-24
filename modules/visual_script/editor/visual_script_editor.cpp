@@ -1262,6 +1262,23 @@ void VisualScriptEditor::_member_edited() {
 		undo_redo->create_action(TTR("Rename Variable"));
 		undo_redo->add_do_method(script.ptr(), "rename_variable", name, new_name);
 		undo_redo->add_undo_method(script.ptr(), "rename_variable", new_name, name);
+
+		// Also fix all variable setter & getter calls
+		List<int> lst;
+		script->get_node_list(&lst);
+		for (int &P : lst) {
+			Ref<VisualScriptPropertySet> pset = script->get_node(P);
+			if (pset.is_valid() && pset->get_property() == name) {
+				undo_redo->add_do_method(pset.ptr(), "set_property", new_name);
+				undo_redo->add_undo_method(pset.ptr(), "set_property", name);
+			}
+			Ref<VisualScriptPropertyGet> pget = script->get_node(P);
+			if (pget.is_valid() && pget->get_property() == name) {
+				undo_redo->add_do_method(pget.ptr(), "set_property", new_name);
+				undo_redo->add_undo_method(pget.ptr(), "set_property", name);
+			}
+		}
+
 		undo_redo->add_do_method(this, "_update_members");
 		undo_redo->add_undo_method(this, "_update_members");
 		undo_redo->add_do_method(this, "_update_graph");
@@ -1278,6 +1295,18 @@ void VisualScriptEditor::_member_edited() {
 		undo_redo->create_action(TTR("Rename Signal"));
 		undo_redo->add_do_method(script.ptr(), "rename_custom_signal", name, new_name);
 		undo_redo->add_undo_method(script.ptr(), "rename_custom_signal", new_name, name);
+
+		// Also fix all signal emitting nodes
+		List<int> lst;
+		script->get_node_list(&lst);
+		for (int &P : lst) {
+			Ref<VisualScriptEmitSignal> psig = script->get_node(P);
+			if (psig.is_valid() && psig->get_signal() == name) {
+				undo_redo->add_do_method(psig.ptr(), "set_signal", new_name);
+				undo_redo->add_undo_method(psig.ptr(), "set_signal", name);
+			}
+		}
+
 		undo_redo->add_do_method(this, "_update_members");
 		undo_redo->add_undo_method(this, "_update_members");
 		undo_redo->add_do_method(this, "emit_signal", "edited_script_changed");
