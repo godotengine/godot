@@ -586,6 +586,13 @@
 				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
 			</description>
 		</method>
+		<method name="is_mouse_over_selection" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="edges" type="bool" />
+			<description>
+				Returns whether the mouse is over selection. If [code]edges[/code] is [code]true[/code], the edges are considered part of the selection.
+			</description>
+		</method>
 		<method name="is_overtype_mode_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
