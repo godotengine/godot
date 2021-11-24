@@ -497,16 +497,17 @@ void ClassDB::add_compatibility_class(const StringName &p_class, const StringNam
 	compat_classes[p_class] = p_fallback;
 }
 
-thread_local bool initializing_with_extension = false;
 thread_local ObjectNativeExtension *initializing_extension = nullptr;
 thread_local GDExtensionClassInstancePtr initializing_extension_instance = nullptr;
 
 void ClassDB::instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance, Object *p_base) {
-	if (initializing_with_extension) {
+	if (initializing_extension) {
 		*r_extension = initializing_extension;
 		*r_extension_instance = initializing_extension_instance;
-		initializing_with_extension = false;
 		initializing_extension->set_object_instance(*r_extension_instance, p_base);
+
+		initializing_extension = nullptr;
+		initializing_extension_instance = nullptr;
 	} else {
 		*r_extension = nullptr;
 		*r_extension_instance = nullptr;
@@ -534,18 +535,18 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 	}
 #endif
 	if (ti->native_extension) {
-		initializing_with_extension = true;
-		initializing_extension = ti->native_extension;
 		initializing_extension_instance = ti->native_extension->create_instance(ti->native_extension->class_userdata);
+		// This needs to be set after calling create_instance, as any object created in a constructor there could take over the initializing_extension != nullptr status (checked into instance_get_native_extension_data).
+		initializing_extension = ti->native_extension;
 	}
 	return ti->creation_func();
 }
 
 Object *ClassDB::construct_object(Object *(*p_create_func)(), ObjectNativeExtension *p_extension) {
 	if (p_extension) {
-		initializing_with_extension = true;
-		initializing_extension = p_extension;
 		initializing_extension_instance = p_extension->create_instance(p_extension->class_userdata);
+		// This needs to be set after calling create_instance, as any object created in a constructor there could take over the initializing_extension != nullptr status (checked into instance_get_native_extension_data).
+		initializing_extension = p_extension;
 	}
 	return p_create_func();
 }
