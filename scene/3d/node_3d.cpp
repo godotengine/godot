@@ -478,7 +478,7 @@ void Node3D::remove_gizmo(Ref<Node3DGizmo> p_gizmo) {
 	int idx = data.gizmos.find(p_gizmo);
 	if (idx != -1) {
 		p_gizmo->free();
-		data.gizmos.remove(idx);
+		data.gizmos.remove_at(idx);
 	}
 #endif
 }

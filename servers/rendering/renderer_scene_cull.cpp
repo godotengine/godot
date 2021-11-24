@@ -1313,7 +1313,7 @@ void RendererSceneCull::_update_instance_visibility_dependencies(Instance *p_ins
 	bool needs_visibility_cull = has_visibility_range && is_geometry_instance && p_instance->array_index != -1;
 
 	if (!needs_visibility_cull && p_instance->visibility_index != -1) {
-		p_instance->scenario->instance_visibility.remove(p_instance->visibility_index);
+		p_instance->scenario->instance_visibility.remove_at(p_instance->visibility_index);
 		p_instance->visibility_index = -1;
 	} else if (needs_visibility_cull && p_instance->visibility_index == -1) {
 		InstanceVisibilityData vd;

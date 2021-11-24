@@ -332,7 +332,7 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	int motion_from = MIN(p_pos, p_child->data.pos);
 	int motion_to = MAX(p_pos, p_child->data.pos);
 
-	data.children.remove(p_child->data.pos);
+	data.children.remove_at(p_child->data.pos);
 	data.children.insert(p_pos, p_child);
 
 	if (data.tree) {
@@ -1208,7 +1208,7 @@ void Node::remove_child(Node *p_child) {
 	remove_child_notify(p_child);
 	p_child->notification(NOTIFICATION_UNPARENTED);
 
-	data.children.remove(idx);
+	data.children.remove_at(idx);
 
 	//update pointer and size
 	child_count = data.children.size();

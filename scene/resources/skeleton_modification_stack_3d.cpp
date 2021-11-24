@@ -133,7 +133,7 @@ void SkeletonModificationStack3D::add_modification(Ref<SkeletonModification3D> p
 void SkeletonModificationStack3D::delete_modification(int p_mod_idx) {
 	const int modifications_size = modifications.size();
 	ERR_FAIL_INDEX(p_mod_idx, modifications_size);
-	modifications.remove(p_mod_idx);
+	modifications.remove_at(p_mod_idx);
 }
 
 void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonModification3D> p_mod) {
@@ -141,7 +141,7 @@ void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonMo
 	ERR_FAIL_INDEX(p_mod_idx, modifications_size);
 
 	if (p_mod == nullptr) {
-		modifications.remove(p_mod_idx);
+		modifications.remove_at(p_mod_idx);
 	} else {
 		p_mod->_setup_modification(this);
 		modifications[p_mod_idx] = p_mod;

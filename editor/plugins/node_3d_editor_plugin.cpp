@@ -1238,7 +1238,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		Node3D *item = selection_results[i].item;
 		if (item != scene && item->get_owner() != scene && item != scene->get_deepest_editable_node(item)) {
 			//invalid result
-			selection_results.remove(i);
+			selection_results.remove_at(i);
 			i--;
 		}
 	}

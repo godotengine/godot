@@ -752,7 +752,7 @@ void FontData::remove_cache(int p_cache_index) {
 	if (cache[p_cache_index].is_valid()) {
 		TS->free(cache.write[p_cache_index]);
 	}
-	cache.remove(p_cache_index);
+	cache.remove_at(p_cache_index);
 	emit_changed();
 }
 
@@ -1356,8 +1356,8 @@ void Font::remove_data(int p_idx) {
 		data.write[p_idx]->disconnect(SNAME("changed"), callable_mp(this, &Font::_data_changed));
 	}
 
-	data.remove(p_idx);
-	rids.remove(p_idx);
+	data.remove_at(p_idx);
+	rids.remove_at(p_idx);
 
 	cache.clear();
 	cache_wrap.clear();

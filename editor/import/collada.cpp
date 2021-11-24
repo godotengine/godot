@@ -2024,7 +2024,7 @@ void Collada::_create_skeletons(Collada::Node **p_node, NodeSkeleton *p_skeleton
 bool Collada::_remove_node(Node *p_parent, Node *p_node) {
 	for (int i = 0; i < p_parent->children.size(); i++) {
 		if (p_parent->children[i] == p_node) {
-			p_parent->children.remove(i);
+			p_parent->children.remove_at(i);
 			return true;
 		}
 		if (_remove_node(p_parent->children[i], p_node)) {
@@ -2038,7 +2038,7 @@ bool Collada::_remove_node(Node *p_parent, Node *p_node) {
 void Collada::_remove_node(VisualScene *p_vscene, Node *p_node) {
 	for (int i = 0; i < p_vscene->root_nodes.size(); i++) {
 		if (p_vscene->root_nodes[i] == p_node) {
-			p_vscene->root_nodes.remove(i);
+			p_vscene->root_nodes.remove_at(i);
 			return;
 		}
 		if (_remove_node(p_vscene->root_nodes[i], p_node)) {
@@ -2271,7 +2271,7 @@ bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, L
 
 	for (int i = 0; i < p_node->children.size(); i++) {
 		if (_move_geometry_to_skeletons(p_vscene, p_node->children[i], p_mgeom)) {
-			p_node->children.remove(i);
+			p_node->children.remove_at(i);
 			i--;
 		}
 	}
@@ -2325,7 +2325,7 @@ void Collada::_optimize() {
 		for (int i = 0; i < vs.root_nodes.size(); i++) {
 			List<Node *> mgeom;
 			if (_move_geometry_to_skeletons(&vs, vs.root_nodes[i], &mgeom)) {
-				vs.root_nodes.remove(i);
+				vs.root_nodes.remove_at(i);
 				i--;
 			}
 

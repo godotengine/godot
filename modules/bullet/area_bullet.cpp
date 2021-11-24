@@ -89,7 +89,7 @@ void AreaBullet::dispatch_callbacks() {
 					// This object's last shape being removed.
 					overlapping_shape.other_object->on_exit_area(this);
 				}
-				overlapping_shapes.remove(i); // Remove after callback
+				overlapping_shapes.remove_at(i); // Remove after callback
 				break;
 			case OVERLAP_STATE_INSIDE: {
 				if (overlapping_shape.other_object->getType() == TYPE_RIGID_BODY) {
@@ -188,7 +188,7 @@ void AreaBullet::remove_object_overlaps(CollisionObjectBullet *p_object) {
 	// Reverse order so items can be removed.
 	for (int i = overlapping_shapes.size() - 1; i >= 0; i--) {
 		if (overlapping_shapes[i].other_object == p_object) {
-			overlapping_shapes.remove(i);
+			overlapping_shapes.remove_at(i);
 		}
 	}
 }

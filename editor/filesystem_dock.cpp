@@ -197,7 +197,7 @@ Vector<String> FileSystemDock::_compute_uncollapsed_paths() {
 						child = child->get_next();
 					}
 				}
-				needs_check.remove(0);
+				needs_check.remove_at(0);
 			}
 		}
 	}
@@ -1093,7 +1093,7 @@ void FileSystemDock::_push_to_history() {
 		history_pos++;
 
 		if (history.size() > history_max_size) {
-			history.remove(0);
+			history.remove_at(0);
 			history_pos = history_max_size - 1;
 		}
 	}
@@ -1670,7 +1670,7 @@ Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> select
 		String last_path = "";
 		for (int i = 0; i < selected_strings.size(); i++) {
 			if (last_path != "" && selected_strings[i].begins_with(last_path)) {
-				selected_strings.remove(i);
+				selected_strings.remove_at(i);
 				i--;
 			}
 			if (selected_strings[i].ends_with("/")) {
@@ -1704,7 +1704,7 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 						child = child->get_next();
 					}
 
-					needs_check.remove(0);
+					needs_check.remove_at(0);
 				}
 			}
 		} break;
@@ -2229,7 +2229,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		drop_position -= offset;
 		to_remove.sort();
 		for (int i = 0; i < to_remove.size(); i++) {
-			dirs.remove(to_remove[i] - i);
+			dirs.remove_at(to_remove[i] - i);
 		}
 
 		// Re-add them at the right position.

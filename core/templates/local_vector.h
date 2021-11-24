@@ -70,7 +70,7 @@ public:
 		}
 	}
 
-	void remove(U p_index) {
+	void remove_at(U p_index) {
 		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
 		count--;
 		for (U i = p_index; i < count; i++) {
@@ -83,7 +83,7 @@ public:
 
 	/// Removes the item copying the last value into the position of the one to
 	/// remove. It's generally faster than `remove`.
-	void remove_unordered(U p_index) {
+	void remove_at_unordered(U p_index) {
 		ERR_FAIL_INDEX(p_index, count);
 		count--;
 		if (count > p_index) {
@@ -97,7 +97,7 @@ public:
 	void erase(const T &p_val) {
 		int64_t idx = find(p_val);
 		if (idx >= 0) {
-			remove(idx);
+			remove_at(idx);
 		}
 	}
 

@@ -1403,7 +1403,7 @@ void PopupMenu::remove_item(int p_idx) {
 		_unref_shortcut(items[p_idx].shortcut);
 	}
 
-	items.remove(p_idx);
+	items.remove_at(p_idx);
 	control->update();
 	child_controls_changed();
 }

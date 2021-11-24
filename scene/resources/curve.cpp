@@ -136,7 +136,7 @@ void Curve::clean_dupes() {
 	for (int i = 1; i < _points.size(); ++i) {
 		real_t diff = _points[i - 1].pos.x - _points[i].pos.x;
 		if (diff <= CMP_EPSILON) {
-			_points.remove(i);
+			_points.remove_at(i);
 			--i;
 			dirty = true;
 		}
@@ -207,7 +207,7 @@ Curve::TangentMode Curve::get_point_right_mode(int i) const {
 
 void Curve::remove_point(int p_index) {
 	ERR_FAIL_INDEX(p_index, _points.size());
-	_points.remove(p_index);
+	_points.remove_at(p_index);
 	mark_dirty();
 }
 
@@ -591,7 +591,7 @@ Vector2 Curve2D::get_point_out(int p_index) const {
 
 void Curve2D::remove_point(int p_index) {
 	ERR_FAIL_INDEX(p_index, points.size());
-	points.remove(p_index);
+	points.remove_at(p_index);
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -1095,7 +1095,7 @@ Vector3 Curve3D::get_point_out(int p_index) const {
 
 void Curve3D::remove_point(int p_index) {
 	ERR_FAIL_INDEX(p_index, points.size());
-	points.remove(p_index);
+	points.remove_at(p_index);
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }

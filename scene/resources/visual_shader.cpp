@@ -367,7 +367,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 	if (!nend) {
 		code += "\n	}";
 	} else {
-		code.remove(code.size() - 1);
+		code.remove_at(code.size() - 1);
 		code += "}";
 	}
 	code += "\n";

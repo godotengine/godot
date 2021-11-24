@@ -302,7 +302,7 @@ void EditorFileDialog::_post_popup() {
 			bool exists = dir_access->dir_exists(recentd[i]);
 			if (!exists) {
 				// Remove invalid directory from the list of Recent directories.
-				recentd.remove(i--);
+				recentd.remove_at(i--);
 			} else {
 				recent->add_item(name, folder);
 				recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
@@ -1445,7 +1445,7 @@ void EditorFileDialog::_save_to_recent() {
 	for (int i = 0; i < recent.size(); i++) {
 		bool cres = recent[i].begins_with("res://");
 		if (recent[i] == dir || (res == cres && count > max)) {
-			recent.remove(i);
+			recent.remove_at(i);
 			i--;
 		} else {
 			count++;

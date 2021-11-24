@@ -413,7 +413,7 @@ void EditorPropertyArray::update_property() {
 
 void EditorPropertyArray::_remove_pressed(int p_index) {
 	Variant array = object->get_array();
-	array.call("remove", p_index);
+	array.call("remove_at", p_index);
 
 	emit_changed(get_edited_property(), array, "", false);
 	update_property();

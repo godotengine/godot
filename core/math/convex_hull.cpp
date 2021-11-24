@@ -1688,7 +1688,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 
 	while (stack.size() > 0) {
 		Vertex *v = stack[stack.size() - 1];
-		stack.remove(stack.size() - 1);
+		stack.remove_at(stack.size() - 1);
 		Edge *e = v->edges;
 		if (e) {
 			do {

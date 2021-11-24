@@ -847,7 +847,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			int event_index = item->get_meta("__index");
 
 			Array events = action["events"];
-			events.remove(event_index);
+			events.remove_at(event_index);
 			action["events"] = events;
 
 			emit_signal(SNAME("action_edited"), action_name, action);

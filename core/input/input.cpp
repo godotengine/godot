@@ -1351,7 +1351,7 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 void Input::remove_joy_mapping(String p_guid) {
 	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
-			map_db.remove(i);
+			map_db.remove_at(i);
 		}
 	}
 	for (KeyValue<int, Joypad> &E : joy_names) {

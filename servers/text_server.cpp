@@ -78,7 +78,7 @@ void TextServerManager::remove_interface(const Ref<TextServer> &p_interface) {
 	ERR_FAIL_COND(idx == -1);
 	print_verbose("TextServer: Removed interface \"" + p_interface->get_name() + "\"");
 	emit_signal(SNAME("interface_removed"), p_interface->get_name());
-	interfaces.remove(idx);
+	interfaces.remove_at(idx);
 }
 
 int TextServerManager::get_interface_count() const {
@@ -141,7 +141,7 @@ TextServerManager::~TextServerManager() {
 		primary_interface.unref();
 	}
 	while (interfaces.size() > 0) {
-		interfaces.remove(0);
+		interfaces.remove_at(0);
 	}
 	singleton = nullptr;
 }
@@ -1024,7 +1024,7 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 		while (j < ranges.size()) {
 			if (Math::is_equal_approx(ranges[i].y, ranges[j].x, (real_t)UNIT_EPSILON)) {
 				ranges.write[i].y = ranges[j].y;
-				ranges.remove(j);
+				ranges.remove_at(j);
 				continue;
 			}
 			j++;

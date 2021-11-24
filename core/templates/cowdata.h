@@ -167,7 +167,7 @@ public:
 
 	Error resize(int p_size);
 
-	_FORCE_INLINE_ void remove(int p_index) {
+	_FORCE_INLINE_ void remove_at(int p_index) {
 		ERR_FAIL_INDEX(p_index, size());
 		T *p = ptrw();
 		int len = size();

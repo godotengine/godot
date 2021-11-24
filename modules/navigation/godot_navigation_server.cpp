@@ -150,8 +150,8 @@ COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
 	} else {
 		int map_index = active_maps.find(map);
 		ERR_FAIL_COND(map_index < 0);
-		active_maps.remove(map_index);
-		active_maps_update_id.remove(map_index);
+		active_maps.remove_at(map_index);
+		active_maps_update_id.remove_at(map_index);
 	}
 }
 
@@ -469,8 +469,8 @@ COMMAND_1(free, RID, p_object) {
 		}
 
 		int map_index = active_maps.find(map);
-		active_maps.remove(map_index);
-		active_maps_update_id.remove(map_index);
+		active_maps.remove_at(map_index);
+		active_maps_update_id.remove_at(map_index);
 		map_owner.free(p_object);
 
 	} else if (region_owner.owns(p_object)) {

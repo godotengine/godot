@@ -560,7 +560,7 @@ void TileSet::move_occlusion_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, occlusion_layers.size());
 	ERR_FAIL_INDEX(p_to_pos, occlusion_layers.size() + 1);
 	occlusion_layers.insert(p_to_pos, occlusion_layers[p_from_index]);
-	occlusion_layers.remove(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
+	occlusion_layers.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->move_occlusion_layer(p_from_index, p_to_pos);
 	}
@@ -570,7 +570,7 @@ void TileSet::move_occlusion_layer(int p_from_index, int p_to_pos) {
 
 void TileSet::remove_occlusion_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, occlusion_layers.size());
-	occlusion_layers.remove(p_index);
+	occlusion_layers.remove_at(p_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->remove_occlusion_layer(p_index);
 	}
@@ -623,7 +623,7 @@ void TileSet::move_physics_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, physics_layers.size());
 	ERR_FAIL_INDEX(p_to_pos, physics_layers.size() + 1);
 	physics_layers.insert(p_to_pos, physics_layers[p_from_index]);
-	physics_layers.remove(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
+	physics_layers.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->move_physics_layer(p_from_index, p_to_pos);
 	}
@@ -633,7 +633,7 @@ void TileSet::move_physics_layer(int p_from_index, int p_to_pos) {
 
 void TileSet::remove_physics_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, physics_layers.size());
-	physics_layers.remove(p_index);
+	physics_layers.remove_at(p_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->remove_physics_layer(p_index);
 	}
@@ -698,7 +698,7 @@ void TileSet::move_terrain_set(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, terrain_sets.size());
 	ERR_FAIL_INDEX(p_to_pos, terrain_sets.size() + 1);
 	terrain_sets.insert(p_to_pos, terrain_sets[p_from_index]);
-	terrain_sets.remove(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
+	terrain_sets.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->move_terrain_set(p_from_index, p_to_pos);
 	}
@@ -709,7 +709,7 @@ void TileSet::move_terrain_set(int p_from_index, int p_to_pos) {
 
 void TileSet::remove_terrain_set(int p_index) {
 	ERR_FAIL_INDEX(p_index, terrain_sets.size());
-	terrain_sets.remove(p_index);
+	terrain_sets.remove_at(p_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->remove_terrain_set(p_index);
 	}
@@ -772,7 +772,7 @@ void TileSet::move_terrain(int p_terrain_set, int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, terrains.size());
 	ERR_FAIL_INDEX(p_to_pos, terrains.size() + 1);
 	terrains.insert(p_to_pos, terrains[p_from_index]);
-	terrains.remove(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
+	terrains.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->move_terrain(p_terrain_set, p_from_index, p_to_pos);
 	}
@@ -786,7 +786,7 @@ void TileSet::remove_terrain(int p_terrain_set, int p_index) {
 	Vector<Terrain> &terrains = terrain_sets.write[p_terrain_set].terrains;
 
 	ERR_FAIL_INDEX(p_index, terrains.size());
-	terrains.remove(p_index);
+	terrains.remove_at(p_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->remove_terrain(p_terrain_set, p_index);
 	}
@@ -941,7 +941,7 @@ void TileSet::move_navigation_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, navigation_layers.size());
 	ERR_FAIL_INDEX(p_to_pos, navigation_layers.size() + 1);
 	navigation_layers.insert(p_to_pos, navigation_layers[p_from_index]);
-	navigation_layers.remove(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
+	navigation_layers.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->move_navigation_layer(p_from_index, p_to_pos);
 	}
@@ -951,7 +951,7 @@ void TileSet::move_navigation_layer(int p_from_index, int p_to_pos) {
 
 void TileSet::remove_navigation_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, navigation_layers.size());
-	navigation_layers.remove(p_index);
+	navigation_layers.remove_at(p_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->remove_navigation_layer(p_index);
 	}
@@ -994,7 +994,7 @@ void TileSet::move_custom_data_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, custom_data_layers.size());
 	ERR_FAIL_INDEX(p_to_pos, custom_data_layers.size() + 1);
 	custom_data_layers.insert(p_to_pos, custom_data_layers[p_from_index]);
-	custom_data_layers.remove(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
+	custom_data_layers.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->move_custom_data_layer(p_from_index, p_to_pos);
 	}
@@ -1004,7 +1004,7 @@ void TileSet::move_custom_data_layer(int p_from_index, int p_to_pos) {
 
 void TileSet::remove_custom_data_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, custom_data_layers.size());
-	custom_data_layers.remove(p_index);
+	custom_data_layers.remove_at(p_index);
 	for (KeyValue<String, int> E : custom_data_layers_by_name) {
 		if (E.value == p_index) {
 			custom_data_layers_by_name.erase(E.key);
@@ -1340,7 +1340,7 @@ Ref<TileMapPattern> TileSet::get_pattern(int p_index) {
 
 void TileSet::remove_pattern(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)patterns.size());
-	patterns.remove(p_index);
+	patterns.remove_at(p_index);
 	emit_changed();
 }
 
@@ -4707,12 +4707,12 @@ void TileData::move_occlusion_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, occluders.size());
 	ERR_FAIL_INDEX(p_to_pos, occluders.size() + 1);
 	occluders.insert(p_to_pos, occluders[p_from_index]);
-	occluders.remove(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
+	occluders.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 }
 
 void TileData::remove_occlusion_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, occluders.size());
-	occluders.remove(p_index);
+	occluders.remove_at(p_index);
 }
 
 void TileData::add_physics_layer(int p_to_pos) {
@@ -4727,12 +4727,12 @@ void TileData::move_physics_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, physics.size());
 	ERR_FAIL_INDEX(p_to_pos, physics.size() + 1);
 	physics.insert(p_to_pos, physics[p_from_index]);
-	physics.remove(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
+	physics.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 }
 
 void TileData::remove_physics_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, physics.size());
-	physics.remove(p_index);
+	physics.remove_at(p_index);
 }
 
 void TileData::add_terrain_set(int p_to_pos) {
@@ -4816,12 +4816,12 @@ void TileData::move_navigation_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, navigation.size());
 	ERR_FAIL_INDEX(p_to_pos, navigation.size() + 1);
 	navigation.insert(p_to_pos, navigation[p_from_index]);
-	navigation.remove(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
+	navigation.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 }
 
 void TileData::remove_navigation_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, navigation.size());
-	navigation.remove(p_index);
+	navigation.remove_at(p_index);
 }
 
 void TileData::add_custom_data_layer(int p_to_pos) {
@@ -4836,12 +4836,12 @@ void TileData::move_custom_data_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, custom_data.size());
 	ERR_FAIL_INDEX(p_to_pos, custom_data.size() + 1);
 	custom_data.insert(p_to_pos, navigation[p_from_index]);
-	custom_data.remove(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
+	custom_data.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 }
 
 void TileData::remove_custom_data_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, custom_data.size());
-	custom_data.remove(p_index);
+	custom_data.remove_at(p_index);
 }
 
 void TileData::reset_state() {
@@ -5019,7 +5019,7 @@ void TileData::add_collision_polygon(int p_layer_id) {
 void TileData::remove_collision_polygon(int p_layer_id, int p_polygon_index) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
-	physics.write[p_layer_id].polygons.remove(p_polygon_index);
+	physics.write[p_layer_id].polygons.remove_at(p_polygon_index);
 	emit_signal(SNAME("changed"));
 }
 

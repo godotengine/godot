@@ -773,7 +773,7 @@ void SoftDynamicBody3D::_reset_points_offsets() {
 void SoftDynamicBody3D::_remove_pinned_point(int p_point_index) {
 	const int id(_has_pinned_point(p_point_index));
 	if (-1 != id) {
-		pinned_points.remove(id);
+		pinned_points.remove_at(id);
 	}
 }
 

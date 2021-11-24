@@ -194,7 +194,7 @@
 			<return type="void" />
 			<argument index="0" name="value" type="Variant" />
 			<description>
-				Removes the first occurrence of a value from the array. To remove an element by index, use [method remove] instead.
+				Removes the first occurrence of a value from the array. To remove an element by index, use [method remove_at] instead.
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
 			</description>
@@ -400,7 +400,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="remove">
+		<method name="remove_at">
 			<return type="void" />
 			<argument index="0" name="position" type="int" />
 			<description>

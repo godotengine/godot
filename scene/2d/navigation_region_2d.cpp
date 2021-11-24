@@ -207,7 +207,7 @@ void NavigationPolygon::set_outline(int p_idx, const Vector<Vector2> &p_outline)
 
 void NavigationPolygon::remove_outline(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, outlines.size());
-	outlines.remove(p_idx);
+	outlines.remove_at(p_idx);
 	rect_cache_dirty = true;
 }
 

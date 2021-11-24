@@ -51,7 +51,7 @@ struct ItemPairs {
 		for (int n = 0; n < num_pairs; n++) {
 			if (extended_pairs[n].handle == h) {
 				userdata = extended_pairs[n].userdata;
-				extended_pairs.remove_unordered(n);
+				extended_pairs.remove_at_unordered(n);
 				num_pairs--;
 				break;
 			}

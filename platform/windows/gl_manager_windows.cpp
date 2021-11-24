@@ -77,7 +77,7 @@ int GLManager_Windows::_find_or_create_display(GLWindow &win) {
 	if (err != OK) {
 		// not good
 		// delete the _display?
-		_displays.remove(new_display_id);
+		_displays.remove_at(new_display_id);
 		return -1;
 	}
 
@@ -193,7 +193,7 @@ Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND
 
 	if (win.gldisplay_id == -1) {
 		// release DC?
-		_windows.remove(_windows.size() - 1);
+		_windows.remove_at(_windows.size() - 1);
 		return FAILED;
 	}
 

@@ -285,7 +285,7 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 					if (closest_idx >= 0) {
 						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 						undo_redo->add_undo_method(node, "set_polygon", poly);
-						poly.remove(closest_idx);
+						poly.remove_at(closest_idx);
 						undo_redo->add_do_method(node, "set_polygon", poly);
 						undo_redo->add_do_method(this, "_polygon_draw");
 						undo_redo->add_undo_method(this, "_polygon_draw");

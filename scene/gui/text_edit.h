@@ -205,7 +205,7 @@ private:
 		}
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void insert(int p_at, const String &p_text, const Array &p_bidi_override);
-		void remove(int p_at);
+		void remove_at(int p_index);
 		int size() const { return text.size(); }
 		void clear();
 

@@ -62,7 +62,7 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 		if (storable_properties.has(pinned[i])) {
 			i++;
 		} else {
-			pinned.remove(i);
+			pinned.remove_at(i);
 		}
 	} while (i < pinned.size());
 	if (pinned.is_empty()) {

@@ -1061,7 +1061,7 @@ void VisualShaderEditor::remove_plugin(const Ref<VisualShaderNodePlugin> &p_plug
 void VisualShaderEditor::clear_custom_types() {
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].is_custom) {
-			add_options.remove(i);
+			add_options.remove_at(i);
 			i--;
 		}
 	}

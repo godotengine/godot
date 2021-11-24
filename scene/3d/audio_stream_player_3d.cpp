@@ -311,7 +311,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 		while (stream_playbacks.size() > max_polyphony) {
 			AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
-			stream_playbacks.remove(0);
+			stream_playbacks.remove_at(0);
 		}
 	}
 }

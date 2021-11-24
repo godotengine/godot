@@ -286,7 +286,7 @@ void DisplayServerX11::_flush_mouse_motion() {
 			XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
 			if (event_data->evtype == XI_RawMotion) {
 				XFreeEventData(x11_display, &event.xcookie);
-				polled_events.remove(event_index--);
+				polled_events.remove_at(event_index--);
 				continue;
 			}
 			XFreeEventData(x11_display, &event.xcookie);
