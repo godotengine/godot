@@ -139,7 +139,7 @@ class ShaderEditor : public PanelContainer {
 	ShaderTextEditor *shader_editor;
 
 	Map<String, String> shader_rolling_code;
-	ShaderDependencyGraph shader_dependencies;
+	// ShaderDependencyGraph shader_dependencies;
 	Tree *shader_dependency_tree;
 
 	void _menu_option(int p_option);
@@ -155,7 +155,7 @@ class ShaderEditor : public PanelContainer {
 	void _update_warnings(bool p_validate);
 
 	void _tree_activate_shader();
-	void _update_shader_dependency_tree();
+	
 	void _update_shader_dependency_tree_items(TreeItem *parent_tree_item, ShaderDependencyNode *node);
 
 protected:
@@ -168,6 +168,9 @@ protected:
 	void _bookmark_item_pressed(int p_idx);
 
 public:
+	ShaderDependencyGraph shader_dependencies;
+	void _update_shader_dependency_tree();
+
 	void apply_shaders();
 
 	Ref<Shader> get_shader();

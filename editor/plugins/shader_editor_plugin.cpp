@@ -288,7 +288,13 @@ void ShaderTextEditor::_validate_script() {
 
 	PreprocessorState *state = processor.get_state();
 	if (!state->error.is_empty()) {
+		// couldn't preprocess, so no sense in validating. Need to feed back issues to user.
+		return;
 	}
+
+	// shader_editor->shader_dependencies = ShaderDependencyGraph();
+	shader_editor->shader_dependencies.populate(shader_editor->get_shader());
+	shader_editor->_update_shader_dependency_tree();
 
 	ShaderLanguage sl;
 
@@ -300,12 +306,9 @@ void ShaderTextEditor::_validate_script() {
 	_clear_tree_item_backgrounds(shader_dependency_tree->get_root());
 
 	if (err != OK) {
-		// create shader preprocessor block here again
-		ShaderDependencyGraph graph;
-		graph.populate(code);
 		ShaderDependencyNode *context;
 		int adjusted_line = sl.get_error_line();
-		for (ShaderDependencyNode *node : graph.nodes) {
+		for (ShaderDependencyNode *node : shader_editor->shader_dependencies.nodes) {
 			adjusted_line = node->GetContext(sl.get_error_line(), &context);
 			break;
 		}
@@ -314,10 +317,8 @@ void ShaderTextEditor::_validate_script() {
 		error_shader_path = shader->get_path();
 		if (context) {
 			if (!context->path.is_empty()) {
-				// we have to change files
-				// shader_editor->open_path(context->path);
-				auto treeItem = shader_dependency_tree->get_item_with_text(context->path);
-				treeItem->set_custom_bg_color(0, marked_line_color);
+				TreeItem *tree_item = shader_dependency_tree->get_item_with_text(context->path);
+				tree_item->set_custom_bg_color(0, marked_line_color);
 
 				error_shader_path = context->path;
 			} else {
@@ -350,7 +351,7 @@ void ShaderTextEditor::_validate_script() {
 	}
 
 	if (!state->skipped_conditions.is_empty()) {
-		auto val_elem = state->skipped_conditions.find("");
+		auto val_elem = state->skipped_conditions.find(shader->get_path());
 		if (val_elem) {
 			for (auto &cond : val_elem->get()) {
 				int end_line = cond->end_line;
@@ -403,30 +404,68 @@ void ShaderTextEditor::goto_error() {
 void ShaderTextEditor::_update_warning_panel() {
 	int warning_count = 0;
 
+	const Color& warning_color = warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor"));
 	warnings_panel->push_table(2);
 	for (int i = 0; i < warnings.size(); i++) {
 		ShaderWarning &w = warnings[i];
 
+		ShaderDependencyNode* context;
+		int adjusted_line = w.get_line();
+		for (ShaderDependencyNode* node : shader_editor->shader_dependencies.nodes) {
+			adjusted_line = node->GetContext(w.get_line(), &context);
+			break;
+		}
+
+		bool highlight_error = false;
+		String warning_shader_path = shader->get_path();
+		if (context) {
+			if (!context->path.is_empty()) {
+				TreeItem *tree_item = shader_dependency_tree->get_item_with_text(context->path);
+				if (saved_treat_warning_as_errors) {
+					if (warning_count == 0) {
+						tree_item->set_custom_bg_color(0, marked_line_color);
+					}
+				} else {
+					// TODO need a less intense yellow. set font coor instead maybe?
+					// maybe use color * intensity used for preprocessor condition blocked code?
+					// tree_item->set_custom_bg_color(0, warning_color);
+				}
+
+				warning_shader_path = context->path;
+			}
+			else {
+				highlight_error = true;
+			}
+		}
+
 		if (warning_count == 0) {
 			if (saved_treat_warning_as_errors) {
-				String error_text = "error(" + itos(w.get_line()) + "): " + w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.");
-				set_error_pos(w.get_line() - 1, 0);
+				error_shader_path = warning_shader_path;
+				String error_text = "error(" + warning_shader_path + ":" + itos(adjusted_line) + "): " + w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.");
+				set_error_pos(adjusted_line - 1, 0);
 				set_error(error_text);
-				get_text_editor()->set_line_background_color(w.get_line() - 1, marked_line_color);
+
+				if (highlight_error) {
+					get_text_editor()->set_line_background_color(adjusted_line - 1, marked_line_color);
+				}
 			}
 		}
 
 		warning_count++;
 		int line = w.get_line();
 
+		Array warning_data_array;
+		warning_data_array.resize(2);
+		warning_data_array[0] = adjusted_line - 1;
+		warning_data_array[1] = warning_shader_path;
+
 		// First cell.
 		warnings_panel->push_cell();
-		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-		if (line != -1) {
-			warnings_panel->push_meta(line - 1);
-			warnings_panel->add_text(TTR("Line") + " " + itos(line));
+		warnings_panel->push_color(warning_color);
+		if (adjusted_line != -1) {
+			warnings_panel->push_meta(warning_data_array);
+			warnings_panel->add_text(warning_shader_path + " - " + TTR("Line") + " " + itos(adjusted_line));
 			warnings_panel->add_text(" (" + w.get_name() + "):");
-			warnings_panel->pop(); // Meta goto.
 		} else {
 			warnings_panel->add_text(w.get_name() + ":");
 		}
@@ -562,9 +601,12 @@ void ShaderEditor::_show_warnings_panel(bool p_show) {
 	warnings_panel->set_visible(p_show);
 }
 
-void ShaderEditor::_warning_clicked(Variant p_line) {
-	if (p_line.get_type() == Variant::INT) {
-		shader_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
+void ShaderEditor::_warning_clicked(Variant p_data) {
+	if (p_data.get_type() == Variant::ARRAY) {
+		// open shader path
+		Array data_array = p_data.operator Array();
+		open_path(data_array[1].operator String());
+		shader_editor->get_text_editor()->set_caret_line((data_array[0]).operator int64_t());
 	}
 }
 

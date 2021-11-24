@@ -886,13 +886,13 @@ ShaderDependencyGraph::~ShaderDependencyGraph() {
 }
 
 ShaderDependencyNode::ShaderDependencyNode(Ref<Shader> s) :
-		shader(s) {}
+		shader(s), code(s->get_code()), path(s->get_path()), line(0), line_count(0) {}
 
 ShaderDependencyNode::ShaderDependencyNode(String code) :
-		code(code) {}
+		code(code), line(0), line_count(0) {}
 
 ShaderDependencyNode::ShaderDependencyNode(String path, String code) :
-		code(code), path(path) {}
+		code(code), path(path), line(0), line_count(0) {}
 
 int ShaderDependencyNode::GetContext(int line, ShaderDependencyNode **context) {
 	int include_offset = 0;
@@ -901,12 +901,7 @@ int ShaderDependencyNode::GetContext(int line, ShaderDependencyNode **context) {
 			// line shifted by offset is sufficient. break.
 			break;
 		} else if (line >= include->line + include_offset && line <= (include->line + include_offset + include->get_line_count())) {
-			if (include->dependencies.is_empty()) {
-				*context = include;
-				return line - include->line;
-			} else {
-				return include->GetContext(line - include->line + 1, context); // plus 1 to be fully inclusive in the skip
-			}
+			return include->GetContext(line - include->line + 1, context); // plus 1 to be fully inclusive in the skip
 		}
 
 		include_offset += include->get_line_count();
@@ -967,10 +962,11 @@ void ShaderDependencyGraph::populate(ShaderDependencyNode *node) {
 
 	cyclic_dep_tracker.push_back(node);
 	String code;
-	if (!node->shader.is_null())
+	if (!node->shader.is_null()) {
 		code = CommentRemover(node->shader->get_code()).strip(); // Build dependency graph starting from edited shader. Strip comments
-	else
+	} else {
 		code = CommentRemover(node->code).strip();
+	}
 
 	PreproprocessorTokenizer tokenizer(code);
 	while (1) {
