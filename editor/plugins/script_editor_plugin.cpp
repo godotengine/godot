@@ -1173,8 +1173,12 @@ void ScriptEditor::_menu_option(int p_option) {
 			} break;
 			case SHOW_IN_FILE_SYSTEM: {
 				const RES script = current->get_edited_resource();
-				const String path = script->get_path();
+				String path = script->get_path();
 				if (!path.empty()) {
+					if (path.find("::") != -1) { // Built-in.
+						path = path.get_slice("::", 0); // Show the scene instead.
+					}
+
 					FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
 					file_system_dock->navigate_to_path(path);
 					// Ensure that the FileSystem dock is visible.
