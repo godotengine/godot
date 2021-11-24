@@ -155,7 +155,7 @@ class ShaderEditor : public PanelContainer {
 	void _update_warnings(bool p_validate);
 
 	void _tree_activate_shader();
-	
+
 	void _update_shader_dependency_tree_items(TreeItem *parent_tree_item, ShaderDependencyNode *node);
 
 protected:

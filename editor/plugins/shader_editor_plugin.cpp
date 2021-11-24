@@ -404,14 +404,14 @@ void ShaderTextEditor::goto_error() {
 void ShaderTextEditor::_update_warning_panel() {
 	int warning_count = 0;
 
-	const Color& warning_color = warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor"));
+	const Color &warning_color = warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor"));
 	warnings_panel->push_table(2);
 	for (int i = 0; i < warnings.size(); i++) {
 		ShaderWarning &w = warnings[i];
 
-		ShaderDependencyNode* context;
+		ShaderDependencyNode *context;
 		int adjusted_line = w.get_line();
-		for (ShaderDependencyNode* node : shader_editor->shader_dependencies.nodes) {
+		for (ShaderDependencyNode *node : shader_editor->shader_dependencies.nodes) {
 			adjusted_line = node->GetContext(w.get_line(), &context);
 			break;
 		}
@@ -432,8 +432,7 @@ void ShaderTextEditor::_update_warning_panel() {
 				}
 
 				warning_shader_path = context->path;
-			}
-			else {
+			} else {
 				highlight_error = true;
 			}
 		}
