@@ -90,34 +90,34 @@ public:
 
 	PreprocessorState *get_state() { return state; }
 
-	static void get_keyword_list(List<String> *keywords);
+	static void get_keyword_list(List<String> *p_keywords);
 
-	static void refresh_shader_dependencies(Ref<Shader> shader);
+	static void refresh_shader_dependencies(Ref<Shader> p_shader);
 
 private:
-	void process_directive(PreproprocessorTokenizer *);
+	void process_directive(PreproprocessorTokenizer *p_tokenizer);
 
-	void process_if(PreproprocessorTokenizer *);
-	void process_ifdef(PreproprocessorTokenizer *);
-	void process_ifndef(PreproprocessorTokenizer *);
-	void start_branch_condition(PreproprocessorTokenizer *tokenizer, bool success);
+	void process_if(PreproprocessorTokenizer *p_tokenizer);
+	void process_ifdef(PreproprocessorTokenizer *p_tokenizer);
+	void process_ifndef(PreproprocessorTokenizer *p_tokenizer);
+	void start_branch_condition(PreproprocessorTokenizer *p_tokenizer, bool p_success);
 
-	void process_else(PreproprocessorTokenizer *);
-	void process_endif(PreproprocessorTokenizer *);
+	void process_else(PreproprocessorTokenizer *p_tokenizer);
+	void process_endif(PreproprocessorTokenizer *p_tokenizer);
 
-	void process_define(PreproprocessorTokenizer *);
-	void process_undef(PreproprocessorTokenizer *);
-	void process_include(PreproprocessorTokenizer *);
+	void process_define(PreproprocessorTokenizer *p_tokenizer);
+	void process_undef(PreproprocessorTokenizer *p_tokenizer);
+	void process_include(PreproprocessorTokenizer *p_tokenizer);
 
-	void expand_output_macros(int start, int line);
+	void expand_output_macros(int p_start, int p_line);
 	String expand_macros(const String &p_string, int p_line);
 	String expand_macros_once(const String &p_line, int line, int *p_expanded);
 
 	String evaluate_internal_conditions(const String &p_string, int p_line);
 
-	String next_directive(PreproprocessorTokenizer *tokenizer, const Vector<String> &directives);
+	String next_directive(PreproprocessorTokenizer *p_tokenizer, const Vector<String> &p_directives);
 	void add_to_output(const String &p_str);
-	void set_error(const String &error, int line);
+	void set_error(const String &p_error, int p_line);
 
 	static PreprocessorState *create_state();
 	void free_state();
@@ -138,11 +138,11 @@ struct ShaderDependencyNode {
 	Set<ShaderDependencyNode *> dependencies;
 
 	ShaderDependencyNode() = default;
-	ShaderDependencyNode(Ref<Shader>);
-	ShaderDependencyNode(String code);
-	ShaderDependencyNode(String path, String code);
+	ShaderDependencyNode(Ref<Shader> p_shader);
+	ShaderDependencyNode(String p_code);
+	ShaderDependencyNode(String p_path, String p_code);
 
-	int GetContext(int line, ShaderDependencyNode **context);
+	int GetContext(int p_line, ShaderDependencyNode **r_context);
 	String get_path() {
 		if (shader.is_null()) {
 			return path;
@@ -162,8 +162,8 @@ struct ShaderDependencyNode {
 
 	~ShaderDependencyNode();
 
-	friend bool operator<(ShaderDependencyNode, ShaderDependencyNode);
-	friend bool operator==(ShaderDependencyNode, ShaderDependencyNode);
+	friend bool operator<(ShaderDependencyNode p_left, ShaderDependencyNode p_right);
+	friend bool operator==(ShaderDependencyNode p_left, ShaderDependencyNode p_right);
 };
 
 class ShaderDependencyGraph {
@@ -172,20 +172,19 @@ public:
 
 	Set<ShaderDependencyNode *> nodes;
 
-	void populate(Ref<Shader>);
-	void populate(String code);
-	void populate(String path, String code);
+	void populate(Ref<Shader> p_shader);
+	void populate(String p_code);
+	void populate(String p_path, String p_code);
 	void update_shaders();
 
 private:
 	List<ShaderDependencyNode *> cyclic_dep_tracker;
-	//List<Ref<Shader>> visited_shaders;
 	List<String> visited_shaders;
 
-	Set<ShaderDependencyNode *>::Element *find(Ref<Shader>);
-	Set<ShaderDependencyNode *>::Element *find(String path);
-	void populate(ShaderDependencyNode *);
-	void update_shaders(ShaderDependencyNode *);
+	Set<ShaderDependencyNode *>::Element *find(Ref<Shader> p_shader);
+	Set<ShaderDependencyNode *>::Element *find(String p_path);
+	void populate(ShaderDependencyNode *p_node);
+	void update_shaders(ShaderDependencyNode *p_node);
 };
 
 #endif

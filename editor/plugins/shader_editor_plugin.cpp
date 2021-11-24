@@ -100,16 +100,16 @@ void ShaderTextEditor::set_warnings_panel(RichTextLabel *p_warnings_panel) {
 	warnings_panel = p_warnings_panel;
 }
 
-void ShaderTextEditor::set_shader_editor(ShaderEditor *editor) {
-	shader_editor = editor;
+void ShaderTextEditor::set_shader_editor(ShaderEditor *p_editor) {
+	shader_editor = p_editor;
 }
 
-void ShaderTextEditor::set_shader_dependency_tree(Tree *tree) {
-	shader_dependency_tree = tree;
+void ShaderTextEditor::set_shader_dependency_tree(Tree *p_tree) {
+	shader_dependency_tree = p_tree;
 }
 
-void ShaderTextEditor::_clear_tree_item_backgrounds(TreeItem *node) {
-	Array tree_children = node->get_children();
+void ShaderTextEditor::_clear_tree_item_backgrounds(TreeItem *p_node) {
+	Array tree_children = p_node->get_children();
 	for (int i = 0; i < tree_children.size(); i++) {
 		auto child = tree_children[i];
 		if (child.get_type() == Variant::Type::OBJECT) {
@@ -762,8 +762,8 @@ void ShaderEditor::apply_shaders() {
 	}
 }
 
-void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
-	Ref<InputEventMouseButton> mb = ev;
+void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
+	Ref<InputEventMouseButton> mb = p_ev;
 
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
@@ -795,7 +795,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		}
 	}
 
-	Ref<InputEventKey> k = ev;
+	Ref<InputEventKey> k = p_ev;
 	if (k.is_valid() && k->is_pressed() && k->is_action("ui_menu", true)) {
 		CodeEdit *tx = shader_editor->get_text_editor();
 		tx->adjust_viewport_to_caret();
@@ -863,10 +863,10 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->popup();
 }
 
-void ShaderEditor::open_path(String path) {
+void ShaderEditor::open_path(String p_path) {
 	// TODO pull from shader dependency graph which can hold cache data, or store directly in tree?
 	// using only to pull code. how to cache data? hash set in editor panel with path lookup?
-	RES res = ResourceLoader::load(path);
+	RES res = ResourceLoader::load(p_path);
 	if (!res.is_null()) {
 		Shader *shader = Object::cast_to<Shader>(*res);
 		if (shader != nullptr) {
@@ -876,7 +876,7 @@ void ShaderEditor::open_path(String path) {
 				shader_editor->set_edited_shader(shader, rollingCode->get());
 			} else {
 				String included = shader->get_code();
-				shader_rolling_code[path] = included;
+				shader_rolling_code[p_path] = included;
 				shader_editor->set_edited_shader(shader);
 			}
 		}
@@ -911,9 +911,9 @@ void ShaderEditor::_update_shader_dependency_tree() {
 	}
 }
 
-void ShaderEditor::_update_shader_dependency_tree_items(TreeItem *parent_tree_item, ShaderDependencyNode *node) {
-	for (ShaderDependencyNode *child_node : node->dependencies) {
-		TreeItem *shader_child_item = shader_dependency_tree->create_item(parent_tree_item);
+void ShaderEditor::_update_shader_dependency_tree_items(TreeItem *p_parent_tree_item, ShaderDependencyNode *p_node) {
+	for (ShaderDependencyNode *child_node : p_node->dependencies) {
+		TreeItem *shader_child_item = shader_dependency_tree->create_item(p_parent_tree_item);
 		shader_child_item->set_text(0, TTR(child_node->get_path()));
 		shader_child_item->set_metadata(0, child_node->get_path());
 		shader_child_item->set_icon(0, get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));

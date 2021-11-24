@@ -65,9 +65,8 @@ class ShaderTextEditor : public CodeTextEditor {
 
 	void _check_shader_mode();
 	void _update_warning_panel();
-	void _update_shader_dependency_tree_items(TreeItem *parent_tree_item, ShaderDependencyNode *node);
 
-	void _clear_tree_item_backgrounds(TreeItem *node);
+	void _clear_tree_item_backgrounds(TreeItem *p_node);
 
 protected:
 	static void _bind_methods();
@@ -82,15 +81,15 @@ public:
 	void reload_text();
 	void set_warnings_panel(RichTextLabel *p_warnings_panel);
 
-	void set_shader_editor(ShaderEditor *editor);
+	void set_shader_editor(ShaderEditor *p_editor);
 
 	// TODO even necessary now?
-	void set_shader_dependency_tree(Tree *tree);
+	void set_shader_dependency_tree(Tree *p_tree);
 	void update_shader_dependency_tree();
 
 	Ref<Shader> get_edited_shader() const;
 	void set_edited_shader(const Ref<Shader> &p_shader);
-	void set_edited_shader(const Ref<Shader> &p_shader, String code);
+	void set_edited_shader(const Ref<Shader> &p_shader, String p_code);
 	ShaderTextEditor();
 };
 
@@ -156,13 +155,13 @@ class ShaderEditor : public PanelContainer {
 
 	void _tree_activate_shader();
 
-	void _update_shader_dependency_tree_items(TreeItem *parent_tree_item, ShaderDependencyNode *node);
+	void _update_shader_dependency_tree_items(TreeItem *p_parent_tree_item, ShaderDependencyNode *p_node);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	void _make_context_menu(bool p_selection, Vector2 p_position);
-	void _text_edit_gui_input(const Ref<InputEvent> &ev);
+	void _text_edit_gui_input(const Ref<InputEvent> &p_ev);
 
 	void _update_bookmark_list();
 	void _bookmark_item_pressed(int p_idx);
@@ -178,7 +177,7 @@ public:
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);
 
-	void open_path(String path);
+	void open_path(String p_path);
 
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 
