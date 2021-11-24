@@ -194,6 +194,14 @@
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			Disable 3D rendering (but keep 2D rendering).
 		</member>
+		<member name="fsr_mipmap_bias" type="float" setter="set_fsr_mipmap_bias" getter="get_fsr_mipmap_bias" default="0.0">
+			Affects the final texture sharpness by reading from a lower or higher mipmap when using FSR. Mipmap bias does nothing when FSR is not being used. Negative values make textures sharper, while positive values make textures blurrier. This value is used to adjust the mipmap bias calculated internally which is based on the selected quality. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code]. This updates the rendering server's mipmap bias when called
+			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/fsr_mipmap_bias] project setting.
+		</member>
+		<member name="fsr_sharpness" type="float" setter="set_fsr_sharpness" getter="get_fsr_sharpness" default="0.2">
+			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
+			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/fsr_sharpness] project setting.
+		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
@@ -210,7 +218,7 @@
 		<member name="lod_threshold" type="float" setter="set_lod_threshold" getter="get_lod_threshold" default="1.0">
 		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
-			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 2 or 4 is best unless targeting very high-end systems. See also [member scale_3d] for supersampling, which provides higher quality but is much more expensive.
+			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 2 or 4 is best unless targeting very high-end systems. See also bilinear scaling 3d [member scaling_3d_mode] for supersampling, which provides higher quality but is much more expensive.
 		</member>
 		<member name="own_world_3d" type="bool" setter="set_use_own_world_3d" getter="is_using_own_world_3d" default="false">
 			If [code]true[/code], the viewport will use the [World3D] defined in [member world_3d].
@@ -218,9 +226,14 @@
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
 		</member>
-		<member name="scale_3d" type="float" setter="set_scale_3d" getter="get_scale_3d" default="1.0">
-			Scales the 3D render buffer based on the viewport size and displays the result with linear filtering. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [member msaa] for multi-sample antialiasing, which is significantly cheaper but only smoothens the edges of polygons.
-			To control this property on the root viewport, set the [member ProjectSettings.rendering/3d/viewport/scale] project setting.
+		<member name="scaling_3d_mode" type="int" setter="set_scaling_3d_mode" getter="get_scaling_3d_mode" enum="Viewport.Scaling3DMode" default="0">
+			Sets scaling 3d mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
+			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/mode] project setting.
+		</member>
+		<member name="scaling_3d_scale" type="float" setter="set_scaling_3d_scale" getter="get_scaling_3d_scale" default="1.0">
+			Scales the 3D render buffer based on the viewport size uses an image filter specified in [member ProjectSettings.rendering/scaling_3d/mode] to scale the output image to the full viewport size. Values lower than [code]1.0[/code] can be used to speed up 3D rendering at the cost of quality (undersampling). Values greater than [code]1.0[/code] are only valid for bilinear mode and can be used to improve 3D rendering quality at a high performance cost (supersampling). See also [member ProjectSettings.rendering/anti_aliasing/quality/msaa] for multi-sample antialiasing, which is significantly cheaper but only smoothens the edges of polygons.
+			When using FSR upscaling, AMD recommends exposing the following values as preset options to users "Ultra Quality: 0.77", "Quality: 0.67", "Balanced: 0.59", "Performance: 0.5" instead of exposing the entire scale.
+			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/scale] project setting.
 		</member>
 		<member name="screen_space_aa" type="int" setter="set_screen_space_aa" getter="get_screen_space_aa" enum="Viewport.ScreenSpaceAA" default="0">
 			Sets the screen-space antialiasing method used. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
@@ -305,6 +318,15 @@
 		</constant>
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="ShadowAtlasQuadrantSubdiv">
 			Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum.
+		</constant>
+		<constant name="SCALING_3D_MODE_BILINEAR" value="0" enum="Scaling3DMode">
+			Enables bilinear scaling on 3D viewports. The amount of scaling can be set using [member scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
+		</constant>
+		<constant name="SCALING_3D_MODE_FSR" value="1" enum="Scaling3DMode">
+			Enables FSR upscaling on 3D viewports. The amount of scaling can be set using [member scaling_3d_scale]. Values less then [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear supersampling will be used instead. A value of [code]1.0[/code] disables scaling.
+		</constant>
+		<constant name="SCALING_3D_MODE_MAX" value="2" enum="Scaling3DMode">
+			Represents the size of the [enum Scaling3DMode] enum.
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
 			Multisample antialiasing mode disabled. This is the default value, and is also the fastest setting.

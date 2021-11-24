@@ -89,6 +89,12 @@ class Viewport : public Node {
 	GDCLASS(Viewport, Node);
 
 public:
+	enum Scaling3DMode {
+		SCALING_3D_MODE_BILINEAR,
+		SCALING_3D_MODE_FSR,
+		SCALING_3D_MODE_MAX
+	};
+
 	enum ShadowAtlasQuadrantSubdiv {
 		SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_1,
@@ -284,6 +290,11 @@ private:
 
 	MSAA msaa = MSAA_DISABLED;
 	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_DISABLED;
+
+	Scaling3DMode scaling_3d_mode = SCALING_3D_MODE_BILINEAR;
+	float scaling_3d_scale = 1.0;
+	float fsr_sharpness = 0.2f;
+	float fsr_mipmap_bias = 0.0f;
 	bool use_debanding = false;
 	float lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
@@ -504,6 +515,18 @@ public:
 	void set_screen_space_aa(ScreenSpaceAA p_screen_space_aa);
 	ScreenSpaceAA get_screen_space_aa() const;
 
+	void set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode);
+	Scaling3DMode get_scaling_3d_mode() const;
+
+	void set_scaling_3d_scale(float p_scaling_3d_scale);
+	float get_scaling_3d_scale() const;
+
+	void set_fsr_sharpness(float p_fsr_sharpness);
+	float get_fsr_sharpness() const;
+
+	void set_fsr_mipmap_bias(float p_fsr_mipmap_bias);
+	float get_fsr_mipmap_bias() const;
+
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
 
@@ -586,7 +609,6 @@ public:
 
 #ifndef _3D_DISABLED
 	bool use_xr = false;
-	float scale_3d = 1.0;
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
 	Set<AudioListener3D *> audio_listener_3d_set;
@@ -657,9 +679,6 @@ public:
 
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
-
-	void set_scale_3d(float p_scale_3d);
-	float get_scale_3d() const;
 #endif // _3D_DISABLED
 
 	Viewport();
@@ -714,6 +733,7 @@ public:
 	SubViewport();
 	~SubViewport();
 };
+VARIANT_ENUM_CAST(Viewport::Scaling3DMode);
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);

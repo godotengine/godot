@@ -67,6 +67,7 @@ private:
 
 protected:
 	static RendererCompositor *(*_create_func)();
+	bool back_end = false;
 
 public:
 	static RendererCompositor *create();
@@ -88,7 +89,7 @@ public:
 	virtual uint64_t get_frame_number() const = 0;
 	virtual double get_frame_delta_time() const = 0;
 
-	virtual bool is_low_end() const = 0;
+	_FORCE_INLINE_ virtual bool is_low_end() const { return back_end; };
 	virtual bool is_xr_enabled() const;
 
 	RendererCompositor();

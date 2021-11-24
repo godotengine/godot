@@ -8822,6 +8822,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		// get info about further features
 		VulkanContext::MultiviewCapabilities multiview_capabilies = p_context->get_multiview_capabilities();
 		device_capabilities.supports_multiview = multiview_capabilies.is_supported && multiview_capabilies.max_view_count > 1;
+		device_capabilities.supports_fsr_half_float = p_context->get_shader_capabilities().shader_float16_is_supported && p_context->get_storage_buffer_capabilities().storage_buffer_16_bit_access_is_supported;
 	}
 
 	context = p_context;

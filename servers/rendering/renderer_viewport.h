@@ -49,12 +49,16 @@ public:
 
 		bool use_xr; /* use xr interface to override camera positioning and projection matrices and control output */
 
-		float scale_3d = 1.0;
-
+		Size2i internal_size;
 		Size2i size;
 		RID camera;
 		RID scenario;
 
+		RS::ViewportScaling3DMode scaling_3d_mode;
+		float scaling_3d_scale = 1.0;
+		float fsr_sharpness = 0.2f;
+		float fsr_mipmap_bias = 0.0f;
+		bool fsr_enabled;
 		RS::ViewportUpdateMode update_mode;
 		RID render_target;
 		RID render_target_texture;
@@ -207,7 +211,6 @@ public:
 	void viewport_initialize(RID p_rid);
 
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
-	void viewport_set_scale_3d(RID p_viewport, float p_scale_3d);
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 
@@ -216,6 +219,12 @@ public:
 
 	void viewport_set_active(RID p_viewport, bool p_active);
 	void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport);
+
+	void viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode);
+	void viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale);
+	void viewport_set_fsr_sharpness(RID p_viewport, float p_sharpness);
+	void viewport_set_fsr_mipmap_bias(RID p_viewport, float p_mipmap_bias);
+
 	void viewport_set_update_mode(RID p_viewport, RS::ViewportUpdateMode p_mode);
 	void viewport_set_vflip(RID p_viewport, bool p_enable);
 
