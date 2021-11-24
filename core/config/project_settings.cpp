@@ -41,6 +41,9 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
+#include "core/version.h"
+
+#include "modules/modules_enabled.gen.h" // For mono.
 
 const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
 
@@ -64,6 +67,69 @@ String ProjectSettings::get_resource_path() const {
 
 String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().plus_file("imported");
+}
+
+// Returns the features that a project must have when opened with this build of Godot.
+// This is used by the project manager to provide the initial_settings for config/features.
+const PackedStringArray ProjectSettings::get_required_features() {
+	PackedStringArray features = PackedStringArray();
+	features.append(VERSION_BRANCH);
+#ifdef REAL_T_IS_DOUBLE
+	features.append("Double Precision");
+#endif
+	return features;
+}
+
+// Returns the features supported by this build of Godot. Includes all required features.
+const PackedStringArray ProjectSettings::_get_supported_features() {
+	PackedStringArray features = get_required_features();
+#ifdef MODULE_MONO_ENABLED
+	features.append("C#");
+#endif
+	// Allow pinning to a specific patch number or build type by marking
+	// them as supported. They're only used if the user adds them manually.
+	features.append(VERSION_BRANCH "." _MKSTR(VERSION_PATCH));
+	features.append(VERSION_FULL_CONFIG);
+	features.append(VERSION_FULL_BUILD);
+	// For now, assume Vulkan is always supported.
+	// This should be removed if it's possible to build the editor without Vulkan.
+	features.append("Vulkan Clustered");
+	features.append("Vulkan Mobile");
+	return features;
+}
+
+// Returns the features that this project needs but this build of Godot lacks.
+const PackedStringArray ProjectSettings::get_unsupported_features(const PackedStringArray &p_project_features) {
+	PackedStringArray unsupported_features = PackedStringArray();
+	PackedStringArray supported_features = singleton->_get_supported_features();
+	for (int i = 0; i < p_project_features.size(); i++) {
+		if (!supported_features.has(p_project_features[i])) {
+			unsupported_features.append(p_project_features[i]);
+		}
+	}
+	unsupported_features.sort();
+	return unsupported_features;
+}
+
+// Returns the features that both this project has and this build of Godot has, ensuring required features exist.
+const PackedStringArray ProjectSettings::_trim_to_supported_features(const PackedStringArray &p_project_features) {
+	// Remove unsupported features if present.
+	PackedStringArray features = PackedStringArray(p_project_features);
+	PackedStringArray supported_features = _get_supported_features();
+	for (int i = p_project_features.size() - 1; i > -1; i--) {
+		if (!supported_features.has(p_project_features[i])) {
+			features.remove_at(i);
+		}
+	}
+	// Add required features if not present.
+	PackedStringArray required_features = get_required_features();
+	for (int i = 0; i < required_features.size(); i++) {
+		if (!features.has(required_features[i])) {
+			features.append(required_features[i]);
+		}
+	}
+	features.sort();
+	return features;
 }
 
 String ProjectSettings::localize_path(const String &p_path) const {
@@ -635,6 +701,11 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			} else {
 				if (section == String()) {
 					set(assign, value);
+				} else if (section == "application" && assign == "config/features") {
+					const PackedStringArray project_features_untrimmed = value;
+					const PackedStringArray project_features = _trim_to_supported_features(project_features_untrimmed);
+					set("application/config/features", project_features);
+					save();
 				} else {
 					set(section + "/" + assign, value);
 				}
@@ -664,6 +735,13 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 	}
 
 	return err;
+}
+
+Error ProjectSettings::load_custom(const String &p_path) {
+	if (p_path.ends_with(".binary")) {
+		return _load_settings_binary(p_path);
+	}
+	return _load_settings_text(p_path);
 }
 
 int ProjectSettings::get_order(const String &p_name) const {
