@@ -2287,8 +2287,16 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_pressed() && (tool == TOOL_SELECT || tool == TOOL_MOVE) &&
 			(k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT)) {
 		if (!k->is_echo()) {
-			// Start moving the canvas items with the keyboard
-			drag_selection = _get_edited_canvas_items();
+			// Start moving the canvas items with the keyboard, if they are movable
+			List<CanvasItem *> selection = _get_edited_canvas_items();
+
+			drag_selection.clear();
+			for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
+				if (_is_node_movable(E->get(), true)) {
+					drag_selection.push_back(E->get());
+				}
+			}
+
 			drag_type = DRAG_KEY_MOVE;
 			drag_from = Vector2();
 			drag_to = Vector2();
