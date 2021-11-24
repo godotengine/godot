@@ -137,7 +137,15 @@
 			<return type="void" />
 			<argument index="0" name="color" type="Color" />
 			<description>
-				Fills the image with a given [Color].
+				Fills the image with [code]color[/code].
+			</description>
+		</method>
+		<method name="fill_rect">
+			<return type="void" />
+			<argument index="0" name="rect" type="Rect2" />
+			<argument index="1" name="color" type="Color" />
+			<description>
+				Fills [code]rect[/code] with [code]color[/code].
 			</description>
 		</method>
 		<method name="fix_alpha_edges">
