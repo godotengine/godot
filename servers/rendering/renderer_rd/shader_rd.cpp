@@ -177,6 +177,9 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 				for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
 					builder.append(String("#define ") + String(E.key) + "_CODE_USED\n");
 				}
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+				builder.append("#define MOLTENVK_USED\n");
+#endif
 			} break;
 			case StageTemplate::Chunk::TYPE_MATERIAL_UNIFORMS: {
 				builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)

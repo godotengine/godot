@@ -3796,6 +3796,18 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		rb->volumetric_fog->fog_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		RD::get_singleton()->set_resource_name(rb->volumetric_fog->fog_map, "Fog map");
 
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+		Vector<uint8_t> dm;
+		dm.resize(target_width * target_height * volumetric_fog_depth * 4);
+		dm.fill(0);
+
+		rb->volumetric_fog->density_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm);
+		RD::get_singleton()->set_resource_name(rb->volumetric_fog->density_map, "Fog density map");
+		rb->volumetric_fog->light_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm);
+		RD::get_singleton()->set_resource_name(rb->volumetric_fog->light_map, "Fog light map");
+		rb->volumetric_fog->emissive_map = RD::get_singleton()->storage_buffer_create(dm.size(), dm);
+		RD::get_singleton()->set_resource_name(rb->volumetric_fog->emissive_map, "Fog emissive map");
+#else
 		tf.format = RD::DATA_FORMAT_R32_UINT;
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 		rb->volumetric_fog->density_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -3807,6 +3819,7 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		rb->volumetric_fog->emissive_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		RD::get_singleton()->set_resource_name(rb->volumetric_fog->emissive_map, "Fog emissive map");
 		RD::get_singleton()->texture_clear(rb->volumetric_fog->emissive_map, Color(0, 0, 0, 0), 0, 1, 0, 1);
+#endif
 
 		Vector<RD::Uniform> uniforms;
 		{
@@ -3872,7 +3885,11 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			{
 				RD::Uniform u;
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+#else
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+#endif
 				u.binding = 1;
 				u.ids.push_back(rb->volumetric_fog->emissive_map);
 				uniforms.push_back(u);
@@ -3888,7 +3905,11 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			{
 				RD::Uniform u;
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+#else
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+#endif
 				u.binding = 3;
 				u.ids.push_back(rb->volumetric_fog->density_map);
 				uniforms.push_back(u);
@@ -3896,7 +3917,11 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 			{
 				RD::Uniform u;
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+#else
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+#endif
 				u.binding = 4;
 				u.ids.push_back(rb->volumetric_fog->light_map);
 				uniforms.push_back(u);
@@ -4163,14 +4188,22 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 		}
 		{
 			RD::Uniform u;
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+#else
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+#endif
 			u.binding = 16;
 			u.ids.push_back(rb->volumetric_fog->density_map);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+#else
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+#endif
 			u.binding = 17;
 			u.ids.push_back(rb->volumetric_fog->light_map);
 			uniforms.push_back(u);
@@ -4178,7 +4211,11 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		{
 			RD::Uniform u;
+#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+#else
 			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+#endif
 			u.binding = 18;
 			u.ids.push_back(rb->volumetric_fog->emissive_map);
 			uniforms.push_back(u);
