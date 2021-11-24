@@ -192,7 +192,7 @@ private:
 		DIVISOR_4,
 	};
 
-	uint32_t cluster_size = 32;
+	uint32_t cluster_size = 64;
 #if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	// Results in visual artifacts on macOS and iOS/visionOS when using MSAA and subgroups.
 	// Using subgroups and disabling MSAA is the optimal solution for now and also works
@@ -238,7 +238,7 @@ private:
 	RID debug_uniform_set;
 
 public:
-	void setup(Size2i p_screen_size, uint32_t p_max_elements, RID p_depth_buffer, RID p_depth_buffer_sampler, RID p_color_buffer);
+	void setup(Size2i p_screen_size, uint32_t p_max_elements, RID p_depth_buffer, RID p_depth_buffer_sampler, RID p_color_buffer, RS::ClusterSize cluster_size);
 
 	void begin(const Transform3D &p_view_transform, const Projection &p_cam_projection, bool p_flip_y);
 

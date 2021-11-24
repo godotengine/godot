@@ -165,6 +165,7 @@ private:
 	uint64_t scene_pass = 0;
 
 	uint32_t max_cluster_elements = 512;
+	RS::ClusterSize cluster_size = RS::CLUSTER_SIZE_64;
 
 	/* Volumetric Fog */
 
