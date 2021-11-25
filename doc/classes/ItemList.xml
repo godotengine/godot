@@ -412,6 +412,14 @@
 				Triggered when specified list item is activated via double-clicking or by pressing [kbd]Enter[/kbd].
 			</description>
 		</signal>
+		<signal name="item_lmb_selected">
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="at_position" type="Vector2" />
+			<description>
+				Triggered when specified list item has been selected via left mouse clicking.
+				The click position is also provided to allow appropriate popup of context menus at the correct location.
+			</description>
+		</signal>
 		<signal name="item_rmb_selected">
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="at_position" type="Vector2" />
