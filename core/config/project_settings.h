@@ -151,6 +151,7 @@ public:
 	String get_project_data_dir_name() const;
 	String get_project_data_path() const;
 	String get_resource_path() const;
+	String get_safe_project_name() const;
 	String get_imported_files_path() const;
 
 	static ProjectSettings *get_singleton();

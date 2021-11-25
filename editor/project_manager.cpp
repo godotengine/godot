@@ -1233,46 +1233,6 @@ ProjectList::Item ProjectList::load_project_data(const String &p_property_key, b
 	const String main_scene = cf->get_value("application", "run/main_scene", "");
 
 	PackedStringArray project_features = cf->get_value("application", "config/features", PackedStringArray());
-	bool project_features_dirty = false;
-	// If there is no feature list currently present, force one to generate.
-	if (project_features.is_empty()) {
-		project_features = ProjectSettings::get_required_features();
-		project_features_dirty = true;
-	}
-	// Check the rendering API.
-	const String rendering_api = cf->get_value("rendering", "quality/driver/driver_name", "");
-	if (rendering_api != "") {
-		// Add the rendering API as a project feature if it doesn't already exist.
-		if (!project_features.has(rendering_api)) {
-			project_features.append(rendering_api);
-			project_features_dirty = true;
-		}
-	}
-	// Check for the existence of a csproj file.
-	if (FileAccess::exists(path.plus_file(project_name + ".csproj"))) {
-		// If there is a csproj file, add the C# feature if it doesn't already exist.
-		if (!project_features.has("C#")) {
-			project_features.append("C#");
-			project_features_dirty = true;
-		}
-	} else {
-		// If there isn't a csproj file, remove the C# feature if it exists.
-		if (project_features.has("C#")) {
-			project_features.remove_at(project_features.find("C#"));
-			project_features_dirty = true;
-		}
-	}
-	if (project_features_dirty) {
-		project_features.sort();
-		// Write the updated feature list, but only if the project config version is the same.
-		// Never write to project files with a different config version!
-		if (config_version == ProjectSettings::CONFIG_VERSION) {
-			ProjectSettings *ps = ProjectSettings::get_singleton();
-			ps->load_custom(conf);
-			ps->set("application/config/features", project_features);
-			ps->save_custom(conf);
-		}
-	}
 	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
 
 	uint64_t last_edited = 0;
@@ -1470,7 +1430,7 @@ void ProjectList::create_project_item_control(int p_index) {
 		int length = unsupported_features_str.length();
 		if (length > 0) {
 			Label *unsupported_label = memnew(Label(unsupported_features_str));
-			unsupported_label->set_custom_minimum_size(Size2(length * 15, 10));
+			unsupported_label->set_custom_minimum_size(Size2(length * 15, 10) * EDSCALE);
 			unsupported_label->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
 			unsupported_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 			unsupported_label->set_clip_text(true);

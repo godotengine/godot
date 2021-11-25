@@ -788,11 +788,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 
 	GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
 
-	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-	if (appname_safe.is_empty()) {
-		appname_safe = "UnnamedProject";
-	}
+	String appname_safe = ProjectSettings::get_singleton()->get_safe_project_name();
 
 	appname_safe += ".dll";
 
