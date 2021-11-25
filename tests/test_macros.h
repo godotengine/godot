@@ -166,7 +166,7 @@ int register_test_command(String p_command, TestFunc p_function);
 #define SEND_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask)     \
 	{                                                                    \
 		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask); \
-		m_object->get_viewport()->push_gui_input(event);                     \
+		m_object->get_viewport()->push_gui_input(event);                 \
 		MessageQueue::get_singleton()->flush();                          \
 	}
 
@@ -174,7 +174,7 @@ int register_test_command(String p_command, TestFunc p_function);
 	{                                                                                         \
 		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, MouseButton::LEFT, MouseButton::LEFT); \
 		event->set_double_click(true);                                                        \
-		m_object->get_viewport()->push_gui_input(event);                                          \
+		m_object->get_viewport()->push_gui_input(event);                                      \
 		MessageQueue::get_singleton()->flush();                                               \
 	}
 
