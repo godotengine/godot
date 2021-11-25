@@ -460,14 +460,6 @@ void ClusterBuilderRD::bake_cluster() {
 				RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(ClusterBuilderSharedDataRD::ClusterRender::PushConstant));
 
 				uint32_t instances = 1;
-#if 0
-				for (uint32_t j = i+1; j < element_count; j++) {
-					if (elements[i].type!=elements[j].type) {
-						break;
-					}
-					instances++;
-				}
-#endif
 				RD::get_singleton()->draw_list_draw(draw_list, true, instances);
 				i += instances;
 			}
