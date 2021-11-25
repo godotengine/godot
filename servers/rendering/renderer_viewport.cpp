@@ -85,14 +85,14 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			if ((scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) && (scaling_3d_scale > 1.0)) {
 				// FSR is not design for downsampling.
 				// Throw a warning and fallback to VIEWPORT_SCALING_3D_MODE_BILINEAR
-				print_error("FSR does not support supersampling. Falling back to bilinear mode.");
+				WARN_PRINT_ONCE("FSR 3D resolution scaling does not support supersampling. Falling back to bilinear scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			}
 
 			if ((scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) && !p_viewport->fsr_enabled) {
 				// FSR is not actually available.
 				// Throw a warning and fallback to disable scaling
-				print_error("FSR is not available. Disabled FSR scaling 3D. Try bilinear mode.");
+				WARN_PRINT_ONCE("FSR 3D resolution scaling is not available. Disabling 3D resolution scaling.");
 				scaling_enabled = false;
 			}
 
@@ -123,7 +123,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 						break;
 					default:
 						// This is an unknown mode.
-						print_error(vformat("Unknown scaling mode: %d, disabling scaling 3D", scaling_3d_mode));
+						WARN_PRINT_ONCE(vformat("Unknown scaling mode: %d. Disabling 3D resolution scaling.", scaling_3d_mode));
 						width = p_viewport->size.width;
 						height = p_viewport->size.height;
 						render_width = width;
