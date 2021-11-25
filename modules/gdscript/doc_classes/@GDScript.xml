@@ -4,10 +4,10 @@
 		Built-in GDScript functions.
 	</brief_description>
 	<description>
-		List of core built-in GDScript functions. Math functions and other utilities. Everything else is provided by objects. (Keywords: builtin, built in, global functions.)
+		A list of GDScript-specific utility functions accessed in any script.
+		For the list of the global functions and constants see [@GlobalScope].
 	</description>
 	<tutorials>
-		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
 		<method name="Color8">
