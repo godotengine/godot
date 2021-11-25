@@ -340,12 +340,12 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *    If a project file is found, load it or fail.
  *    If nothing was found, error out.
  */
-Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
+Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	// If looking for files in a network client, use it directly
 
 	if (FileAccessNetworkClient::get_singleton()) {
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
-		if (err == OK) {
+		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails
 			_load_settings_text("res://override.cfg");
 		}
@@ -359,7 +359,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, "Cannot open resource pack '" + p_main_pack + "'.");
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
-		if (err == OK) {
+		if (err == OK && !p_ignore_override) {
 			// Load override from location of the main pack
 			// Optional, we don't mind if it fails
 			_load_settings_text(p_main_pack.get_base_dir().plus_file("override.cfg"));
@@ -409,7 +409,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// If we opened our package, try and load our project.
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
-			if (err == OK) {
+			if (err == OK && !p_ignore_override) {
 				// Load override from location of the executable.
 				// Optional, we don't mind if it fails.
 				_load_settings_text(exec_path.get_base_dir().plus_file("override.cfg"));
@@ -430,7 +430,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
-		if (err == OK) {
+		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
 			_load_settings_text("res://override.cfg");
 		}
@@ -451,7 +451,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	while (true) {
 		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
-		if (err == OK) {
+		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
 			_load_settings_text(current_dir.plus_file("override.cfg"));
 			candidate = current_dir;
@@ -486,8 +486,8 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	return OK;
 }
 
-Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
-	Error err = _setup(p_path, p_main_pack, p_upwards);
+Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
+	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
 	if (err == OK) {
 		String custom_settings = GLOBAL_DEF("application/config/project_settings_override", "");
 		if (custom_settings != "") {

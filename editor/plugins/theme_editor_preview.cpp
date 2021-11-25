@@ -71,6 +71,9 @@ void ThemeEditorPreview::_preview_visibility_changed() {
 
 void ThemeEditorPreview::_picker_button_cbk() {
 	picker_overlay->set_visible(picker_button->is_pressed());
+	if (picker_button->is_pressed()) {
+		_reset_picker_overlay();
+	}
 }
 
 Control *ThemeEditorPreview::_find_hovered_control(Control *p_parent, Vector2 p_mouse_position) {
