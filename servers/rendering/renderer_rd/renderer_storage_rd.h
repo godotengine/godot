@@ -1099,7 +1099,7 @@ private:
 		AABB bounds;
 		Vector3i octree_size;
 
-		float dynamic_range = 4.0;
+		float dynamic_range = 2.0;
 		float energy = 1.0;
 		float bias = 1.4;
 		float normal_bias = 0.0;
