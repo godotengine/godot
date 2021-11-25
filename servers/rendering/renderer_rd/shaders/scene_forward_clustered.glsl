@@ -1757,7 +1757,11 @@ void main() {
 			}
 		}
 
+#ifdef MOLTENVK_USED
+		imageStore(geom_facing_grid, grid_pos, uvec4(imageLoad(geom_facing_grid, grid_pos).r | facing_bits)); //store facing bits
+#else
 		imageAtomicOr(geom_facing_grid, grid_pos, facing_bits); //store facing bits
+#endif
 
 		if (length(emission) > 0.001) {
 			float lumas[6];
