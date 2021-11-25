@@ -273,11 +273,11 @@ public:
 	virtual real_t get_underline_thickness(int p_size = DEFAULT_FONT_SIZE) const;
 
 	// Drawing string.
-	virtual Size2 get_string_size(const String &p_text, int p_size = DEFAULT_FONT_SIZE, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	virtual Size2 get_string_size(const String &p_text, int p_size = DEFAULT_FONT_SIZE, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, real_t p_width = -1, uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
 	virtual Size2 get_multiline_string_size(const String &p_text, real_t p_width = -1, int p_size = DEFAULT_FONT_SIZE, uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND) const;
 
-	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
-	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align = HALIGN_LEFT, real_t p_width = -1, int p_max_lines = -1, int p_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, real_t p_width = -1, int p_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
+	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, real_t p_width = -1, int p_max_lines = -1, int p_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, const Color &p_outline_modulate = Color(1, 1, 1, 0), uint16_t p_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND) const;
 
 	// Helper functions.
 	virtual bool has_char(char32_t p_char) const;

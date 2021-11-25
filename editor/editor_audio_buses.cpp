@@ -1422,7 +1422,7 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 					Vector2((line_length + label_space) * EDSCALE,
 							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
 					String::num(Math::abs(n.db_value)) + "dB",
-					HALIGN_LEFT, -1, font_size,
+					HORIZONTAL_ALIGNMENT_LEFT, -1, font_size,
 					notch_color);
 		}
 	}

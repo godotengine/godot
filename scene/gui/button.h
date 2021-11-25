@@ -37,13 +37,6 @@
 class Button : public BaseButton {
 	GDCLASS(Button, BaseButton);
 
-public:
-	enum TextAlign {
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT
-	};
-
 private:
 	bool flat = false;
 	String text;
@@ -57,8 +50,8 @@ private:
 	Ref<Texture2D> icon;
 	bool expand_icon = false;
 	bool clip_text = false;
-	TextAlign align = ALIGN_CENTER;
-	TextAlign icon_align = ALIGN_LEFT;
+	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_CENTER;
+	HorizontalAlignment icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	float _internal_margin[4] = {};
 
 	void _shape();
@@ -100,16 +93,14 @@ public:
 	void set_clip_text(bool p_enabled);
 	bool get_clip_text() const;
 
-	void set_text_align(TextAlign p_align);
-	TextAlign get_text_align() const;
+	void set_text_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_text_alignment() const;
 
-	void set_icon_align(TextAlign p_align);
-	TextAlign get_icon_align() const;
+	void set_icon_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_icon_alignment() const;
 
 	Button(const String &p_text = String());
 	~Button();
 };
-
-VARIANT_ENUM_CAST(Button::TextAlign);
 
 #endif

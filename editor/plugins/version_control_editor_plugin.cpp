@@ -416,11 +416,11 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ok_button->set_text(TTR("Close"));
 
 	set_up_vbc = memnew(VBoxContainer);
-	set_up_vbc->set_alignment(VBoxContainer::ALIGN_CENTER);
+	set_up_vbc->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	set_up_dialog->add_child(set_up_vbc);
 
 	set_up_hbc = memnew(HBoxContainer);
-	set_up_hbc->set_h_size_flags(HBoxContainer::SIZE_EXPAND_FILL);
+	set_up_hbc->set_h_size_flags(BoxContainer::SIZE_EXPAND_FILL);
 	set_up_vbc->add_child(set_up_hbc);
 
 	set_up_vcs_status = memnew(RichTextLabel);
@@ -447,7 +447,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_commit_dock->set_visible(false);
 
 	commit_box_vbc = memnew(VBoxContainer);
-	commit_box_vbc->set_alignment(VBoxContainer::ALIGN_BEGIN);
+	commit_box_vbc->set_alignment(VBoxContainer::ALIGNMENT_BEGIN);
 	commit_box_vbc->set_h_size_flags(VBoxContainer::SIZE_EXPAND_FILL);
 	commit_box_vbc->set_v_size_flags(VBoxContainer::SIZE_EXPAND_FILL);
 	version_commit_dock->add_child(commit_box_vbc);
@@ -530,7 +530,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_box_vbc->add_child(commit_button);
 
 	commit_status = memnew(Label);
-	commit_status->set_align(Label::ALIGN_CENTER);
+	commit_status->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	commit_box_vbc->add_child(commit_status);
 
 	version_control_dock = memnew(PanelContainer);
@@ -555,7 +555,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_file_name = memnew(Label);
 	diff_file_name->set_text(TTR("No file diff is active"));
 	diff_file_name->set_h_size_flags(Label::SIZE_EXPAND_FILL);
-	diff_file_name->set_align(Label::ALIGN_RIGHT);
+	diff_file_name->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	diff_hbc->add_child(diff_file_name);
 
 	diff_refresh_button = memnew(Button);

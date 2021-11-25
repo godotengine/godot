@@ -59,7 +59,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabs->set_tabs_visible(false);
 	tabs->connect("tab_changed", callable_mp(this, &EditorDebuggerNode::_debugger_changed));
 	add_child(tabs);

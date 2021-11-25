@@ -612,7 +612,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	add_child(main_vbox);
 
 	tab_container = memnew(TabContainer);
-	tab_container->set_tab_align(TabContainer::TabAlign::ALIGN_LEFT);
+	tab_container->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_container->connect("tab_selected", callable_mp(this, &InputEventConfigurationDialog::_tab_selected));
@@ -622,7 +622,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_name(TTR("Listen for Input"));
 	event_as_text = memnew(Label);
-	event_as_text->set_align(Label::ALIGN_CENTER);
+	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	vb->add_child(event_as_text);
 	// Mouse button detection rect (Mouse button event outside this ColorRect will be ignored)
 	mouse_detection_rect = memnew(ColorRect);

@@ -319,9 +319,9 @@ void TabBar::_notification(int p_what) {
 				mw += get_tab_width(i);
 			}
 
-			if (tab_align == ALIGN_CENTER) {
+			if (tab_alignment == ALIGNMENT_CENTER) {
 				w = (get_size().width - mw) / 2;
-			} else if (tab_align == ALIGN_RIGHT) {
+			} else if (tab_alignment == ALIGNMENT_RIGHT) {
 				w = get_size().width - mw;
 			}
 
@@ -929,14 +929,14 @@ int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
 	return hover_now;
 }
 
-void TabBar::set_tab_align(TabAlign p_align) {
-	ERR_FAIL_INDEX(p_align, ALIGN_MAX);
-	tab_align = p_align;
+void TabBar::set_tab_alignment(AlignmentMode p_alignment) {
+	ERR_FAIL_INDEX(p_alignment, ALIGNMENT_MAX);
+	tab_alignment = p_alignment;
 	update();
 }
 
-TabBar::TabAlign TabBar::get_tab_align() const {
-	return tab_align;
+TabBar::AlignmentMode TabBar::get_tab_alignment() const {
+	return tab_alignment;
 }
 
 void TabBar::set_clip_tabs(bool p_clip_tabs) {
@@ -1149,8 +1149,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &TabBar::get_tab_disabled);
 	ClassDB::bind_method(D_METHOD("remove_tab", "tab_idx"), &TabBar::remove_tab);
 	ClassDB::bind_method(D_METHOD("add_tab", "title", "icon"), &TabBar::add_tab, DEFVAL(""), DEFVAL(Ref<Texture2D>()));
-	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &TabBar::set_tab_align);
-	ClassDB::bind_method(D_METHOD("get_tab_align"), &TabBar::get_tab_align);
+	ClassDB::bind_method(D_METHOD("set_tab_alignment", "alignment"), &TabBar::set_tab_alignment);
+	ClassDB::bind_method(D_METHOD("get_tab_alignment"), &TabBar::get_tab_alignment);
 	ClassDB::bind_method(D_METHOD("set_clip_tabs", "clip_tabs"), &TabBar::set_clip_tabs);
 	ClassDB::bind_method(D_METHOD("get_clip_tabs"), &TabBar::get_clip_tabs);
 	ClassDB::bind_method(D_METHOD("get_tab_offset"), &TabBar::get_tab_offset);
@@ -1178,16 +1178,16 @@ void TabBar::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 
-	BIND_ENUM_CONSTANT(ALIGN_LEFT);
-	BIND_ENUM_CONSTANT(ALIGN_CENTER);
-	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
-	BIND_ENUM_CONSTANT(ALIGN_MAX);
+	BIND_ENUM_CONSTANT(ALIGNMENT_LEFT);
+	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
+	BIND_ENUM_CONSTANT(ALIGNMENT_RIGHT);
+	BIND_ENUM_CONSTANT(ALIGNMENT_MAX);
 
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_SHOW_NEVER);
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_SHOW_ACTIVE_ONLY);

@@ -66,7 +66,7 @@ private:
 	uint16_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
 	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
 
-	HAlign align = HALIGN_LEFT;
+	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
 	Vector<float> tab_stops;
 
@@ -103,11 +103,11 @@ public:
 	void clear_dropcap();
 
 	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");
-	bool add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1);
-	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER);
+	bool add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1);
+	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER);
 
-	void set_align(HAlign p_align);
-	HAlign get_align() const;
+	void set_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_alignment() const;
 
 	void tab_align(const Vector<float> &p_tab_stops);
 

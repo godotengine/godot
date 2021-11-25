@@ -1000,8 +1000,8 @@ FileDialog::FileDialog() {
 	message = memnew(Label);
 	message->hide();
 	message->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	message->set_align(Label::ALIGN_CENTER);
-	message->set_valign(Label::VALIGN_CENTER);
+	message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	tree->add_child(message);
 
 	file_box = memnew(HBoxContainer);

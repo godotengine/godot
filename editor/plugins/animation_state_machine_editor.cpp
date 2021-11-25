@@ -761,12 +761,12 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 		bool onstart = state_machine->get_start_node() == name;
 		if (onstart) {
-			state_machine_draw->draw_string(font, offset + Vector2(0, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("Start"), HALIGN_LEFT, -1, font_size, font_color);
+			state_machine_draw->draw_string(font, offset + Vector2(0, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("Start"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 		}
 
 		if (state_machine->get_end_node() == name) {
 			int endofs = nr.node.size.x - font->get_string_size(TTR("End"), font_size).x;
-			state_machine_draw->draw_string(font, offset + Vector2(endofs, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("End"), HALIGN_LEFT, -1, font_size, font_color);
+			state_machine_draw->draw_string(font, offset + Vector2(endofs, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("End"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 		}
 
 		offset.x += sb->get_offset().x;
@@ -786,7 +786,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		nr.name.position = offset + Vector2(0, (h - font->get_height(font_size)) / 2).floor();
 		nr.name.size = Vector2(strsize, font->get_height(font_size));
 
-		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent(font_size)), name, HALIGN_LEFT, -1, font_size, font_color);
+		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent(font_size)), name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 		offset.x += strsize + sep;
 
 		if (needs_editor) {

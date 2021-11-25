@@ -60,7 +60,7 @@ void EditorNetworkProfiler::_update_frame() {
 		TreeItem *node = counters_display->create_item(root);
 
 		for (int j = 0; j < counters_display->get_columns(); ++j) {
-			node->set_text_align(j, j > 0 ? TreeItem::ALIGN_RIGHT : TreeItem::ALIGN_LEFT);
+			node->set_text_alignment(j, j > 0 ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT);
 		}
 
 		node->set_text(0, E.value.node_path);
@@ -149,7 +149,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	incoming_bandwidth_text = memnew(LineEdit);
 	incoming_bandwidth_text->set_editable(false);
 	incoming_bandwidth_text->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
-	incoming_bandwidth_text->set_align(LineEdit::Align::ALIGN_RIGHT);
+	incoming_bandwidth_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	hb->add_child(incoming_bandwidth_text);
 
 	Control *down_up_spacer = memnew(Control);
@@ -163,7 +163,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	outgoing_bandwidth_text = memnew(LineEdit);
 	outgoing_bandwidth_text->set_editable(false);
 	outgoing_bandwidth_text->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
-	outgoing_bandwidth_text->set_align(LineEdit::Align::ALIGN_RIGHT);
+	outgoing_bandwidth_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	hb->add_child(outgoing_bandwidth_text);
 
 	// Set initial texts in the incoming/outgoing bandwidth labels

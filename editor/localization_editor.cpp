@@ -641,7 +641,7 @@ LocalizationEditor::LocalizationEditor() {
 	translation_locales_list_created = false;
 
 	TabContainer *translations = memnew(TabContainer);
-	translations->set_tab_align(TabContainer::ALIGN_LEFT);
+	translations->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	translations->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(translations);
 

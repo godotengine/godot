@@ -141,8 +141,7 @@
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
-		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign" default="1">
-			The alignment of all tabs in the tab container. See the [enum TabAlign] constants for details.
+		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabContainer.AlignmentMode" default="1">
 		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible" default="true">
 			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.
@@ -171,14 +170,11 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="TabAlign">
-			Align the tabs to the left.
+		<constant name="ALIGNMENT_LEFT" value="0" enum="AlignmentMode">
 		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="TabAlign">
-			Align the tabs to the center.
+		<constant name="ALIGNMENT_CENTER" value="1" enum="AlignmentMode">
 		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="TabAlign">
-			Align the tabs to the right.
+		<constant name="ALIGNMENT_RIGHT" value="2" enum="AlignmentMode">
 		</constant>
 	</constants>
 	<theme_items>

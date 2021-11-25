@@ -1452,11 +1452,11 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb_border->add_child(library_vb);
 
 	library_loading = memnew(Label(TTR("Loading...")));
-	library_loading->set_align(Label::ALIGN_CENTER);
+	library_loading->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	library_vb->add_child(library_loading);
 
 	library_error = memnew(Label);
-	library_error->set_align(Label::ALIGN_CENTER);
+	library_error->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	library_error->hide();
 	library_vb->add_child(library_error);
 

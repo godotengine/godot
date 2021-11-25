@@ -227,12 +227,12 @@ void SpinBox::_notification(int p_what) {
 	}
 }
 
-void SpinBox::set_align(LineEdit::Align p_align) {
-	line_edit->set_align(p_align);
+void SpinBox::set_horizontal_alignment(HorizontalAlignment p_alignment) {
+	line_edit->set_horizontal_alignment(p_alignment);
 }
 
-LineEdit::Align SpinBox::get_align() const {
-	return line_edit->get_align();
+HorizontalAlignment SpinBox::get_horizontal_alignment() const {
+	return line_edit->get_horizontal_alignment();
 }
 
 void SpinBox::set_suffix(const String &p_suffix) {
@@ -284,8 +284,8 @@ void SpinBox::apply() {
 }
 
 void SpinBox::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_align", "align"), &SpinBox::set_align);
-	ClassDB::bind_method(D_METHOD("get_align"), &SpinBox::get_align);
+	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &SpinBox::set_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &SpinBox::get_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
 	ClassDB::bind_method(D_METHOD("set_prefix", "prefix"), &SpinBox::set_prefix);
@@ -297,7 +297,7 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply"), &SpinBox::apply);
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &SpinBox::get_line_edit);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
@@ -310,7 +310,7 @@ SpinBox::SpinBox() {
 
 	line_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
-	line_edit->set_align(LineEdit::ALIGN_LEFT);
+	line_edit->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 
 	line_edit->connect("text_submitted", callable_mp(this, &SpinBox::_text_submitted), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), Vector<Variant>(), CONNECT_DEFERRED);

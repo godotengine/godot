@@ -2987,7 +2987,7 @@ static void draw_indicator_bar(Control &surface, real_t fill, const Ref<Texture2
 	surface.draw_texture(icon, icon_pos);
 
 	// Draw text below the bar (for speed/zoom information).
-	surface.draw_string(font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), text, HALIGN_LEFT, -1.f, font_size);
+	surface.draw_string(font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, font_size);
 }
 
 void Node3DEditorViewport::_draw() {
@@ -3027,9 +3027,9 @@ void Node3DEditorViewport::_draw() {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		Point2 msgpos = Point2(5, get_size().y - 20);
-		font->draw_string(ci, msgpos + Point2(1, 1), message, HALIGN_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		font->draw_string(ci, msgpos + Point2(-1, -1), message, HALIGN_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		font->draw_string(ci, msgpos, message, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 1));
+		font->draw_string(ci, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+		font->draw_string(ci, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+		font->draw_string(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
 	}
 
 	if (_edit.mode == TRANSFORM_ROTATE) {
@@ -4444,7 +4444,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	cinema_label = memnew(Label);
 	cinema_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
 	cinema_label->set_h_grow_direction(GROW_DIRECTION_END);
-	cinema_label->set_align(Label::ALIGN_CENTER);
+	cinema_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	surface->add_child(cinema_label);
 	cinema_label->set_text(TTR("Cinematic Preview"));
 	cinema_label->hide();
@@ -4455,7 +4455,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	locked_label->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -10 * EDSCALE);
 	locked_label->set_h_grow_direction(GROW_DIRECTION_END);
 	locked_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	locked_label->set_align(Label::ALIGN_CENTER);
+	locked_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	surface->add_child(locked_label);
 	locked_label->set_text(TTR("View Rotation Locked"));
 	locked_label->hide();
@@ -7661,7 +7661,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_title->set_theme_type_variation("HeaderSmall");
 		sun_vb->add_child(sun_title);
 		sun_title->set_text(TTR("Preview Sun"));
-		sun_title->set_align(Label::ALIGN_CENTER);
+		sun_title->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 		CenterContainer *sun_direction_center = memnew(CenterContainer);
 		sun_direction = memnew(Control);
@@ -7749,8 +7749,8 @@ void fragment() {
 
 		sun_state = memnew(Label);
 		sun_environ_hb->add_child(sun_state);
-		sun_state->set_align(Label::ALIGN_CENTER);
-		sun_state->set_valign(Label::VALIGN_CENTER);
+		sun_state->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		sun_state->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 		sun_state->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		VSeparator *sc = memnew(VSeparator);
@@ -7768,7 +7768,7 @@ void fragment() {
 
 		environ_vb->add_child(environ_title);
 		environ_title->set_text(TTR("Preview Environment"));
-		environ_title->set_align(Label::ALIGN_CENTER);
+		environ_title->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 		environ_sky_color = memnew(ColorPickerButton);
 		environ_sky_color->set_edit_alpha(false);
@@ -7816,8 +7816,8 @@ void fragment() {
 
 		environ_state = memnew(Label);
 		sun_environ_hb->add_child(environ_state);
-		environ_state->set_align(Label::ALIGN_CENTER);
-		environ_state->set_valign(Label::VALIGN_CENTER);
+		environ_state->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		environ_state->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 		environ_state->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		preview_sun = memnew(DirectionalLight3D);

@@ -1115,7 +1115,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 		label_set->add_child(select_items_label);
 
 		HBoxContainer *button_set = memnew(HBoxContainer);
-		button_set->set_alignment(BoxContainer::ALIGN_END);
+		button_set->set_alignment(BoxContainer::ALIGNMENT_END);
 		all_set->add_child(button_set);
 		select_all_items_button->set_flat(true);
 		select_all_items_button->set_tooltip(select_all_items_tooltip);
@@ -1130,7 +1130,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 		button_set->add_child(deselect_all_items_button);
 		deselect_all_items_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_deselect_all_data_type_pressed), varray(i));
 
-		total_selected_items_label->set_align(Label::ALIGN_RIGHT);
+		total_selected_items_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 		total_selected_items_label->hide();
 		import_bulk_vb->add_child(total_selected_items_label);
 
@@ -1783,7 +1783,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	set_hide_on_ok(false); // Closing may require a confirmation in some cases.
 
 	tc = memnew(TabContainer);
-	tc->set_tab_align(TabContainer::TabAlign::ALIGN_LEFT);
+	tc->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	add_child(tc);
 
 	// Edit Items tab.
@@ -1909,8 +1909,8 @@ ThemeItemEditorDialog::ThemeItemEditorDialog() {
 	edit_items_message = memnew(Label);
 	edit_items_message->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	edit_items_message->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-	edit_items_message->set_align(Label::ALIGN_CENTER);
-	edit_items_message->set_valign(Label::VALIGN_CENTER);
+	edit_items_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	edit_items_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	edit_items_message->set_autowrap_mode(Label::AUTOWRAP_WORD);
 	edit_items_tree->add_child(edit_items_message);
 
@@ -3129,7 +3129,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 
 	type_variation_locked = memnew(Label);
 	type_variation_vb->add_child(type_variation_locked);
-	type_variation_locked->set_align(Label::ALIGN_CENTER);
+	type_variation_locked->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	type_variation_locked->set_autowrap_mode(Label::AUTOWRAP_WORD);
 	type_variation_locked->set_text(TTR("A type associated with a built-in class cannot be marked as a variation of another type."));
 	type_variation_locked->hide();
@@ -3329,7 +3329,7 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs_vb->add_child(preview_tabs_content);
 
 	preview_tabs = memnew(TabBar);
-	preview_tabs->set_tab_align(TabBar::ALIGN_LEFT);
+	preview_tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	preview_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_tabbar_hb->add_child(preview_tabs);
 	preview_tabs->connect("tab_changed", callable_mp(this, &ThemeEditor::_change_preview_tab));

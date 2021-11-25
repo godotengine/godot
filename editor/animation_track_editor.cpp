@@ -1622,7 +1622,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 					if (frame != prev_frame && i >= prev_frame_ofs) {
 						draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
 
-						draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), itos(frame), HALIGN_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
+						draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), itos(frame), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
 						prev_frame_ofs = i + font->get_string_size(itos(frame), font_size).x + 5 * EDSCALE;
 					}
 				}
@@ -1640,7 +1640,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 				if ((sc / step) != (prev_sc / step) || (prev_sc < 0 && sc >= 0)) {
 					int scd = sc < 0 ? prev_sc : sc;
 					draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
-					draw_string(font, Point2(get_name_limit() + i + 3, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), HALIGN_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
+					draw_string(font, Point2(get_name_limit() + i + 3, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
 				}
 			}
 		}
@@ -2029,7 +2029,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			Vector2 string_pos = Point2(ofs, (get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size));
 			string_pos = string_pos.floor();
-			draw_string(font, string_pos, text, HALIGN_LEFT, limit - ofs - hsep, font_size, text_color);
+			draw_string(font, string_pos, text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - hsep, font_size, text_color);
 
 			draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor, Math::round(EDSCALE));
 		}
@@ -2340,7 +2340,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 
 		int limit = MAX(0, p_clip_right - p_x - icon_to_draw->get_width());
 		if (limit > 0) {
-			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HALIGN_LEFT, limit, font_size, color);
+			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HORIZONTAL_ALIGNMENT_LEFT, limit, font_size, color);
 		}
 	}
 
@@ -3234,7 +3234,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 		int ofs = 0;
 		draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
 		ofs += separation + icon->get_width();
-		draw_string(font, Point2(ofs, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), node_name, HALIGN_LEFT, timeline->get_name_limit() - ofs, font_size, color);
+		draw_string(font, Point2(ofs, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), node_name, HORIZONTAL_ALIGNMENT_LEFT, timeline->get_name_limit() - ofs, font_size, color);
 
 		int px = (-timeline->get_value() + timeline->get_play_position()) * timeline->get_zoom_scale() + timeline->get_name_limit();
 
@@ -6072,8 +6072,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	info_message = memnew(Label);
 	info_message->set_text(TTR("Select an AnimationPlayer node to create and edit animations."));
-	info_message->set_valign(Label::VALIGN_CENTER);
-	info_message->set_align(Label::ALIGN_CENTER);
+	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	info_message->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);

@@ -2096,8 +2096,8 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	missing_source_label->set_text(TTR("This TileMap's TileSet has no source configured. Edit the TileSet resource to add one."));
 	missing_source_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	missing_source_label->set_align(Label::ALIGN_CENTER);
-	missing_source_label->set_valign(Label::VALIGN_CENTER);
+	missing_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	missing_source_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	missing_source_label->hide();
 	tiles_bottom_panel->add_child(missing_source_label);
 
@@ -2155,8 +2155,8 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	invalid_source_label->set_text(TTR("Invalid source selected."));
 	invalid_source_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	invalid_source_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	invalid_source_label->set_align(Label::ALIGN_CENTER);
-	invalid_source_label->set_valign(Label::VALIGN_CENTER);
+	invalid_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	invalid_source_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	invalid_source_label->hide();
 	atlas_sources_split_container->add_child(invalid_source_label);
 
@@ -3984,8 +3984,8 @@ TileMapEditor::TileMapEditor() {
 	missing_tileset_label->set_text(TTR("The edited TileMap node has no TileSet resource."));
 	missing_tileset_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	missing_tileset_label->set_v_size_flags(SIZE_EXPAND_FILL);
-	missing_tileset_label->set_align(Label::ALIGN_CENTER);
-	missing_tileset_label->set_valign(Label::VALIGN_CENTER);
+	missing_tileset_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	missing_tileset_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	missing_tileset_label->hide();
 	add_child(missing_tileset_label);
 

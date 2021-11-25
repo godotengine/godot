@@ -499,7 +499,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		error->set_icon(0, get_theme_icon(oe.warning ? "Warning" : "Error", "EditorIcons"));
 		error->set_text(0, time);
-		error->set_text_align(0, TreeItem::ALIGN_LEFT);
+		error->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 
 		const Color color = get_theme_color(oe.warning ? SNAME("warning_color") : SNAME("error_color"), SNAME("Editor"));
 		error->set_custom_color(0, color);
@@ -524,7 +524,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			TreeItem *cpp_cond = error_tree->create_item(error);
 			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
 			cpp_cond->set_text(1, oe.error);
-			cpp_cond->set_text_align(0, TreeItem::ALIGN_LEFT);
+			cpp_cond->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 			tooltip += TTR("C++ Error:") + " " + oe.error + "\n";
 			if (source_is_project_file) {
 				cpp_cond->set_metadata(0, source_meta);
@@ -542,7 +542,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		TreeItem *cpp_source = error_tree->create_item(error);
 		cpp_source->set_text(0, "<" + (source_is_project_file ? TTR("Source") : TTR("C++ Source")) + ">");
 		cpp_source->set_text(1, source_txt);
-		cpp_source->set_text_align(0, TreeItem::ALIGN_LEFT);
+		cpp_source->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 		tooltip += (source_is_project_file ? TTR("Source:") : TTR("C++ Source:")) + " " + source_txt + "\n";
 
 		// Set metadata to highlight error line in scripts.
@@ -565,7 +565,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			if (i == 0) {
 				stack_trace->set_text(0, "<" + TTR("Stack Trace") + ">");
-				stack_trace->set_text_align(0, TreeItem::ALIGN_LEFT);
+				stack_trace->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 				error->set_metadata(0, meta);
 				tooltip += TTR("Stack Trace:") + "\n";
 			}
@@ -1574,7 +1574,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	editor = p_editor;
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabs->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 

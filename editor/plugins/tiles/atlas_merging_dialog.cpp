@@ -309,8 +309,8 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	select_2_atlases_label = memnew(Label);
 	select_2_atlases_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_2_atlases_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	select_2_atlases_label->set_align(Label::ALIGN_CENTER);
-	select_2_atlases_label->set_valign(Label::VALIGN_CENTER);
+	select_2_atlases_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	select_2_atlases_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_2_atlases_label->set_text(TTR("Please select two atlases or more."));
 	atlas_merging_right_panel->add_child(select_2_atlases_label);
 

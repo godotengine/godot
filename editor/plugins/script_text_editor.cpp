@@ -90,7 +90,7 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	add_child(vbc);
 
 	method = memnew(Label);
-	method->set_align(Label::ALIGN_CENTER);
+	method->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	vbc->add_child(method);
 
 	tree = memnew(Tree);

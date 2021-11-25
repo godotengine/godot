@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="align" type="int" setter="set_text_align" getter="get_text_align" overrides="Button" enum="Button.TextAlign" default="0" />
+		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" overrides="Button" enum="HorizontalAlignment" default="0" />
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
 	</members>
 	<theme_items>

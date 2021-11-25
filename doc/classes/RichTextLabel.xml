@@ -22,7 +22,7 @@
 			<argument index="1" name="width" type="int" default="0" />
 			<argument index="2" name="height" type="int" default="0" />
 			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="4" name="inline_align" type="int" enum="InlineAlign" default="5" />
+			<argument index="4" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image and a [code]color[/code] to tint the image.
 				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
@@ -279,7 +279,7 @@
 		</method>
 		<method name="push_paragraph">
 			<return type="void" />
-			<argument index="0" name="align" type="int" enum="RichTextLabel.Align" />
+			<argument index="0" name="alignment" type="int" enum="HorizontalAlignment" />
 			<argument index="1" name="base_direction" type="int" enum="Control.TextDirection" default="0" />
 			<argument index="2" name="language" type="String" default="&quot;&quot;" />
 			<argument index="3" name="st_parser" type="int" enum="Control.StructuredTextParser" default="0" />
@@ -296,7 +296,7 @@
 		<method name="push_table">
 			<return type="void" />
 			<argument index="0" name="columns" type="int" />
-			<argument index="1" name="inline_align" type="int" enum="InlineAlign" default="0" />
+			<argument index="1" name="inline_align" type="int" enum="InlineAlignment" default="0" />
 			<description>
 				Adds a [code][table=columns,inline_align][/code] tag to the tag stack.
 			</description>
@@ -451,18 +451,6 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="Align">
-			Makes text left aligned.
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="Align">
-			Makes text centered.
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Makes text right aligned.
-		</constant>
-		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Makes text fill width.
-		</constant>
 		<constant name="LIST_NUMBERS" value="0" enum="ListType">
 			Each list item has a number marker.
 		</constant>

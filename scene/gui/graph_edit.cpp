@@ -2312,7 +2312,7 @@ GraphEdit::GraphEdit() {
 	zoom_hb->add_child(zoom_label);
 	zoom_label->set_visible(false);
 	zoom_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	zoom_label->set_align(Label::ALIGN_CENTER);
+	zoom_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	zoom_label->set_custom_minimum_size(Size2(48, 0));
 	_update_zoom_label();
 

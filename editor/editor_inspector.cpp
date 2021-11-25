@@ -310,7 +310,7 @@ void EditorProperty::_notification(int p_what) {
 			Ref<Texture2D> pinned_icon = get_theme_icon(SNAME("Pin"), SNAME("EditorIcons"));
 			int margin_w = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 			int total_icon_w = margin_w + pinned_icon->get_width();
-			int text_w = font->get_string_size(label, font_size, rtl ? HALIGN_RIGHT : HALIGN_LEFT, text_limit - total_icon_w).x;
+			int text_w = font->get_string_size(label, font_size, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w).x;
 			int y = (size.height - pinned_icon->get_height()) / 2;
 			if (rtl) {
 				draw_texture(pinned_icon, Vector2(size.width - ofs - text_w - total_icon_w, y), color);
@@ -322,9 +322,9 @@ void EditorProperty::_notification(int p_what) {
 
 		int v_ofs = (size.height - font->get_height(font_size)) / 2;
 		if (rtl) {
-			draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HALIGN_RIGHT, text_limit, font_size, color);
+			draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
 		} else {
-			draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HALIGN_LEFT, text_limit, font_size, color);
+			draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
 		}
 
 		if (keying) {
@@ -1077,7 +1077,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 		}
 
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
-		draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HALIGN_LEFT, get_size().width, font_size, color);
+		draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HORIZONTAL_ALIGNMENT_LEFT, get_size().width, font_size, color);
 	}
 }
 
@@ -1230,7 +1230,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			const int arrow_width = arrow.is_valid() ? arrow->get_width() : 0;
 			Color color = get_theme_color(SNAME("font_color"));
 			float text_width = get_size().width - Math::round(arrow_width + arrow_margin * EDSCALE);
-			draw_string(font, Point2(rtl ? 0 : Math::round(arrow_width + arrow_margin * EDSCALE), font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2).floor(), label, rtl ? HALIGN_RIGHT : HALIGN_LEFT, text_width, font_size, color);
+			draw_string(font, Point2(rtl ? 0 : Math::round(arrow_width + arrow_margin * EDSCALE), font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2).floor(), label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_width, font_size, color);
 
 			if (arrow.is_valid()) {
 				if (rtl) {
@@ -2083,13 +2083,13 @@ EditorInspectorArray::EditorInspectorArray() {
 
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add Element"));
-	add_button->set_text_align(Button::ALIGN_CENTER);
+	add_button->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	add_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_add_button_pressed));
 	vbox->add_child(add_button);
 
 	hbox_pagination = memnew(HBoxContainer);
 	hbox_pagination->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbox_pagination->set_alignment(HBoxContainer::ALIGN_CENTER);
+	hbox_pagination->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	vbox->add_child(hbox_pagination);
 
 	first_page_button = memnew(Button);

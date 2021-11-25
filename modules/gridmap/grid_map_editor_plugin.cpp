@@ -1163,7 +1163,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	spatial_editor_hb = memnew(HBoxContainer);
 	spatial_editor_hb->set_h_size_flags(SIZE_EXPAND_FILL);
-	spatial_editor_hb->set_alignment(BoxContainer::ALIGN_END);
+	spatial_editor_hb->set_alignment(BoxContainer::ALIGNMENT_END);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
 
 	spin_box_label = memnew(Label);
@@ -1280,8 +1280,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	info_message = memnew(Label);
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));
-	info_message->set_valign(Label::VALIGN_CENTER);
-	info_message->set_align(Label::ALIGN_CENTER);
+	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	info_message->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
