@@ -129,6 +129,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="push_gui_input">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<argument index="1" name="in_local_coords" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
 		<method name="push_input">
 			<return type="void" />
 			<argument index="0" name="event" type="InputEvent" />
@@ -141,13 +148,6 @@
 			<argument index="0" name="text" type="String" />
 			<description>
 				Returns [code]true[/code] if the viewport is currently embedding windows.
-			</description>
-		</method>
-		<method name="push_gui_input">
-			<return type="void" />
-			<argument index="0" name="event" type="InputEvent" />
-			<argument index="1" name="in_local_coords" type="bool" default="false" />
-			<description>
 			</description>
 		</method>
 		<method name="push_unhandled_input">
