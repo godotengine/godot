@@ -32,7 +32,6 @@
 #include "godot_collision_solver_2d.h"
 #include "godot_space_2d.h"
 
-#define POSITION_CORRECTION
 #define ACCUMULATE_IMPULSES
 
 void GodotBodyPair2D::_add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self) {
@@ -453,9 +452,9 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 
 		c.bounce = combine_bounce(A, B);
 		if (c.bounce) {
-			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
-			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
-			Vector2 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
+			Vector2 crA(-A->get_prev_angular_velocity() * c.rA.y, A->get_prev_angular_velocity() * c.rA.x);
+			Vector2 crB(-B->get_prev_angular_velocity() * c.rB.y, B->get_prev_angular_velocity() * c.rB.x);
+			Vector2 dv = B->get_prev_linear_velocity() + crB - A->get_prev_linear_velocity() - crA;
 			c.bounce = c.bounce * dv.dot(c.normal);
 		}
 
