@@ -55,6 +55,7 @@ private:
 	real_t randomness_ratio;
 	double speed_scale;
 	Rect2 visibility_rect;
+
 	bool local_coords;
 	int fixed_fps;
 	bool fractional_delta;
@@ -68,6 +69,13 @@ private:
 	Ref<Texture2D> texture;
 
 	void _update_particle_emission_transform();
+
+#ifdef TOOLS_ENABLED
+	Vector2 vis_rect_hvframes;
+	Ref<CanvasItemMaterial> material_in_use;
+	void _calc_vis_rect_hvframes(Ref<CanvasItemMaterial> p_material);
+	void _material_changed();
+#endif
 
 	NodePath sub_emitter;
 	real_t collision_base_size = 1.0;
@@ -86,6 +94,10 @@ protected:
 	void _update_collision_size();
 
 public:
+#ifdef TOOLS_ENABLED
+	virtual void set_material(const Ref<Material> &p_material) override;
+	virtual void set_use_parent_material(bool p_use_parent_material) override;
+#endif
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);
 	void set_lifetime(double p_lifetime);
