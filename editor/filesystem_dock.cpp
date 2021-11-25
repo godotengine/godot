@@ -2551,7 +2551,7 @@ void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		file_list_popup->clear();
 		file_list_popup->reset_size();
 		_file_and_folders_fill_popup(file_list_popup, paths, searched_string.length() == 0);
-		file_list_popup->set_position(files->get_global_position() + p_pos);
+		file_list_popup->set_position(files->get_screen_position() + p_pos);
 		file_list_popup->popup();
 	}
 }
@@ -2572,7 +2572,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 	file_list_popup->add_separator();
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
-	file_list_popup->set_position(files->get_global_position() + p_pos);
+	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->popup();
 }
 

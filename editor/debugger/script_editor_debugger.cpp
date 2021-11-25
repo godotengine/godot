@@ -1428,7 +1428,7 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 	}
 
 	if (item_menu->get_item_count() > 0) {
-		item_menu->set_position(error_tree->get_global_position() + p_pos);
+		item_menu->set_position(error_tree->get_screen_position() + p_pos);
 		item_menu->popup();
 	}
 }

@@ -362,7 +362,7 @@ void AnimationNodeBlendTreeEditor::_popup(bool p_has_input_ports, const Vector2 
 }
 
 void AnimationNodeBlendTreeEditor::_popup_request(const Vector2 &p_position) {
-	_popup(false, graph->get_local_mouse_position(), p_position);
+	_popup(false, graph->get_screen_position() + graph->get_local_mouse_position(), p_position);
 }
 
 void AnimationNodeBlendTreeEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {

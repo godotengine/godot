@@ -3055,7 +3055,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), WINDOW_SORT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_scripts_panel"), TOGGLE_SCRIPTS_PANEL);
 
-	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+	context_menu->set_position(get_screen_position() + get_local_mouse_position());
 	context_menu->reset_size();
 	context_menu->popup();
 }

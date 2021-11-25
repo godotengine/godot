@@ -1291,7 +1291,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			selection_menu->set_item_tooltip(i, String(spat->get_name()) + "\nType: " + spat->get_class() + "\nPath: " + node_path);
 		}
 
-		selection_menu->set_position(get_screen_transform().xform(b->get_position()));
+		selection_menu->set_position(get_screen_position() + b->get_position());
 		selection_menu->popup();
 	}
 }

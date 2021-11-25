@@ -1611,7 +1611,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					float alpha = color.size() > 3 ? color[3] : 1.0f;
 					color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
 				}
-				color_panel->set_position(get_global_transform().xform(local_pos));
+				color_panel->set_position(get_screen_position() + local_pos);
 			} else {
 				has_color = false;
 			}
@@ -1688,7 +1688,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_UNDO), !tx->has_undo());
 	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_REDO), !tx->has_redo());
 
-	context_menu->set_position(get_global_transform().xform(p_pos));
+	context_menu->set_position(get_screen_position() + p_pos);
 	context_menu->reset_size();
 	context_menu->popup();
 }

@@ -2258,7 +2258,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				}
 
 				selection_menu_additive_selection = b->is_shift_pressed();
-				selection_menu->set_position(get_screen_transform().xform(b->get_position()));
+				selection_menu->set_position(get_screen_position() + b->get_position());
 				selection_menu->popup();
 				return true;
 			}

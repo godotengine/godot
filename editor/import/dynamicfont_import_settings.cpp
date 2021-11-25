@@ -1159,7 +1159,7 @@ void DynamicFontImportSettings::_range_update(int32_t p_start, int32_t p_end) {
 /*************************************************************************/
 
 void DynamicFontImportSettings::_lang_add() {
-	menu_langs->set_position(lang_list->get_screen_transform().xform(lang_list->get_local_mouse_position()));
+	menu_langs->set_position(lang_list->get_screen_position() + lang_list->get_local_mouse_position());
 	menu_langs->reset_size();
 	menu_langs->popup();
 }
@@ -1186,7 +1186,7 @@ void DynamicFontImportSettings::_lang_remove(Object *p_item, int p_column, int p
 }
 
 void DynamicFontImportSettings::_script_add() {
-	menu_scripts->set_position(script_list->get_screen_transform().xform(script_list->get_local_mouse_position()));
+	menu_scripts->set_position(script_list->get_screen_position() + script_list->get_local_mouse_position());
 	menu_scripts->reset_size();
 	menu_scripts->popup();
 }
