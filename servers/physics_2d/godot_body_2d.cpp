@@ -549,6 +549,9 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 
 	gravity *= gravity_scale;
 
+	prev_linear_velocity = linear_velocity;
+	prev_angular_velocity = angular_velocity;
+
 	Vector2 motion;
 	bool do_motion = false;
 
