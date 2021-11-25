@@ -65,7 +65,11 @@ public:
 
 	Vector<DisplayServer::WindowID> get_window_list() const override { return Vector<DisplayServer::WindowID>(); }
 
-	WindowID get_window_at_screen_position(const Point2i &p_position) const override { return -1; }
+	WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override { return 0; }
+	void show_window(WindowID p_id) override {}
+	void delete_sub_window(WindowID p_id) override {}
+
+	WindowID get_window_at_screen_position(const Point2i &p_position) const override { return 0; }
 
 	void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override {}
 	ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override { return ObjectID(); }
@@ -93,7 +97,7 @@ public:
 	Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); }
 
 	void window_set_min_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override {}
-	Size2i window_get_min_size(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); };
+	Size2i window_get_min_size(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); }
 
 	void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override {}
 	Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); }
@@ -102,10 +106,13 @@ public:
 	void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override {}
 	WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override { return WINDOW_MODE_MINIMIZED; }
 
+	void window_set_vsync_mode(VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override {}
+	VSyncMode window_get_vsync_mode(WindowID p_window) const override { return VSyncMode::VSYNC_ENABLED; }
+
 	bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const override { return false; }
 
 	void window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) override {}
-	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const override { return false; }
+	bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const override { return false; }
 
 	void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override {}
 	void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override {}
@@ -113,6 +120,9 @@ public:
 	bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override { return false; }
 
 	bool can_any_window_draw() const override { return false; }
+
+	void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID) override {}
+	void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID) override {}
 
 	void process_events() override {}
 
