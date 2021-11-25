@@ -1749,7 +1749,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 				if (clicked.is_valid() && movement_threshold_passed) {
-					_compute_edit(_edit.mouse_pos);
+					_compute_edit(_edit.original_mouse_pos);
 					clicked = ObjectID();
 
 					_edit.mode = TRANSFORM_TRANSLATE;

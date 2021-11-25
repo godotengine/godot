@@ -2339,7 +2339,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 				if (selection2.size() > 0) {
 					drag_type = DRAG_MOVE;
-					drag_from = click;
+					drag_from = drag_start_origin;
 					_save_canvas_item_state(drag_selection);
 				}
 				return true;
