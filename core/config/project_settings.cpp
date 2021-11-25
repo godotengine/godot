@@ -926,13 +926,13 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
 	ERR_FAIL_COND_V_MSG(p_path == "", ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
 
-	PackedStringArray project_features = get("application/config/features");
+	PackedStringArray project_features = has_setting("application/config/features") ? (PackedStringArray)get_setting("application/config/features") : PackedStringArray();
 	// If there is no feature list currently present, force one to generate.
 	if (project_features.is_empty()) {
 		project_features = ProjectSettings::get_required_features();
 	}
 	// Check the rendering API.
-	const String rendering_api = get("rendering/quality/driver/driver_name");
+	const String rendering_api = has_setting("rendering/quality/driver/driver_name") ? (String)get_setting("rendering/quality/driver/driver_name") : String();
 	if (rendering_api != "") {
 		// Add the rendering API as a project feature if it doesn't already exist.
 		if (!project_features.has(rendering_api)) {
@@ -952,7 +952,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		}
 	}
 	project_features = _trim_to_supported_features(project_features);
-	set("application/config/features", project_features);
+	set_setting("application/config/features", project_features);
 
 	Set<_VCSort> vclist;
 
