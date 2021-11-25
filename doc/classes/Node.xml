@@ -791,8 +791,8 @@
 		<constant name="NOTIFICATION_DRAG_END" value="22">
 			Notification received when a drag ends.
 		</constant>
-		<constant name="NOTIFICATION_PATH_CHANGED" value="23">
-			Notification received when the node's [NodePath] changed.
+		<constant name="NOTIFICATION_PATH_RENAMED" value="23">
+			Notification received when the node's name or one of its parents' name is changed. This notification is [i]not[/i] received when the node is removed from the scene tree to be added to another parent later on.
 		</constant>
 		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25">
 			Notification received every frame when the internal process flag is set (see [method set_process_internal]).
