@@ -318,26 +318,24 @@ String VisualShaderNodeParticleMeshEmitter::get_input_port_name(int p_port) cons
 String VisualShaderNodeParticleMeshEmitter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code;
 
-	if (mesh.is_valid()) {
-		if (is_output_port_connected(0)) { // position
-			code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_vx") + ";\n";
-		}
+	if (is_output_port_connected(0)) { // position
+		code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_vx") + ";\n";
+	}
 
-		if (is_output_port_connected(1)) { // normal
-			code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_nm") + ";\n";
-		}
+	if (is_output_port_connected(1)) { // normal
+		code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_nm") + ";\n";
+	}
 
-		if (is_output_port_connected(2) || is_output_port_connected(3)) { // color & alpha
-			code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_col") + ";\n";
-		}
+	if (is_output_port_connected(2) || is_output_port_connected(3)) { // color & alpha
+		code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_col") + ";\n";
+	}
 
-		if (is_output_port_connected(4)) { // uv
-			code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_uv") + ";\n";
-		}
+	if (is_output_port_connected(4)) { // uv
+		code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_uv") + ";\n";
+	}
 
-		if (is_output_port_connected(5)) { // uv2
-			code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_uv2") + ";\n";
-		}
+	if (is_output_port_connected(5)) { // uv2
+		code += "uniform sampler2D " + make_unique_id(p_type, p_id, "mesh_uv2") + ";\n";
 	}
 
 	return code;
@@ -503,67 +501,97 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 	Vector<Vector2> uvs;
 	Vector<Vector2> uvs2;
 
+	const int surface_count = mesh->get_surface_count();
+
 	if (use_all_surfaces) {
-		for (int i = 0; i < max_surface_index; i++) {
+		for (int i = 0; i < surface_count; i++) {
+			const Array surface_arrays = mesh->surface_get_arrays(i);
+			const int surface_arrays_size = surface_arrays.size();
+
 			// position
-			Array vertex_array = mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
-			for (int j = 0; j < vertex_array.size(); j++) {
-				vertices.push_back((Vector3)vertex_array[j]);
+			if (surface_arrays_size > Mesh::ARRAY_VERTEX) {
+				Array vertex_array = surface_arrays[Mesh::ARRAY_VERTEX];
+				for (int j = 0; j < vertex_array.size(); j++) {
+					vertices.push_back((Vector3)vertex_array[j]);
+				}
 			}
 
 			// normal
-			Array normal_array = mesh->surface_get_arrays(i)[Mesh::ARRAY_NORMAL];
-			for (int j = 0; j < normal_array.size(); j++) {
-				normals.push_back((Vector3)normal_array[j]);
+			if (surface_arrays_size > Mesh::ARRAY_NORMAL) {
+				Array normal_array = surface_arrays[Mesh::ARRAY_NORMAL];
+				for (int j = 0; j < normal_array.size(); j++) {
+					normals.push_back((Vector3)normal_array[j]);
+				}
 			}
 
 			// color
-			Array color_array = mesh->surface_get_arrays(i)[Mesh::ARRAY_COLOR];
-			for (int j = 0; j < color_array.size(); j++) {
-				colors.push_back((Color)color_array[j]);
+			if (surface_arrays_size > Mesh::ARRAY_COLOR) {
+				Array color_array = surface_arrays[Mesh::ARRAY_COLOR];
+				for (int j = 0; j < color_array.size(); j++) {
+					colors.push_back((Color)color_array[j]);
+				}
 			}
 
 			// uv
-			Array uv_array = mesh->surface_get_arrays(i)[Mesh::ARRAY_TEX_UV];
-			for (int j = 0; j < uv_array.size(); j++) {
-				uvs.push_back((Vector2)uv_array[j]);
+			if (surface_arrays_size > Mesh::ARRAY_TEX_UV) {
+				Array uv_array = surface_arrays[Mesh::ARRAY_TEX_UV];
+				for (int j = 0; j < uv_array.size(); j++) {
+					uvs.push_back((Vector2)uv_array[j]);
+				}
 			}
 
 			// uv2
-			Array uv2_array = mesh->surface_get_arrays(i)[Mesh::ARRAY_TEX_UV2];
-			for (int j = 0; j < uv2_array.size(); j++) {
-				uvs2.push_back((Vector2)uv2_array[j]);
+			if (surface_arrays_size > Mesh::ARRAY_TEX_UV2) {
+				Array uv2_array = surface_arrays[Mesh::ARRAY_TEX_UV2];
+				for (int j = 0; j < uv2_array.size(); j++) {
+					uvs2.push_back((Vector2)uv2_array[j]);
+				}
 			}
 		}
 	} else {
-		// position
-		Array vertex_array = mesh->surface_get_arrays(surface_index)[Mesh::ARRAY_VERTEX];
-		for (int i = 0; i < vertex_array.size(); i++) {
-			vertices.push_back((Vector3)vertex_array[i]);
-		}
+		if (surface_index >= 0 && surface_index < surface_count) {
+			const Array surface_arrays = mesh->surface_get_arrays(surface_index);
+			const int surface_arrays_size = surface_arrays.size();
 
-		// normal
-		Array normal_array = mesh->surface_get_arrays(surface_index)[Mesh::ARRAY_NORMAL];
-		for (int i = 0; i < normal_array.size(); i++) {
-			normals.push_back((Vector3)normal_array[i]);
-		}
+			// position
+			if (surface_arrays_size > Mesh::ARRAY_VERTEX) {
+				Array vertex_array = surface_arrays[Mesh::ARRAY_VERTEX];
+				for (int i = 0; i < vertex_array.size(); i++) {
+					vertices.push_back((Vector3)vertex_array[i]);
+				}
+			}
 
-		// color
-		Array color_array = mesh->surface_get_arrays(surface_index)[Mesh::ARRAY_COLOR];
-		for (int i = 0; i < color_array.size(); i++) {
-			colors.push_back((Color)color_array[i]);
-		}
+			// normal
+			if (surface_arrays_size > Mesh::ARRAY_NORMAL) {
+				Array normal_array = surface_arrays[Mesh::ARRAY_NORMAL];
+				for (int i = 0; i < normal_array.size(); i++) {
+					normals.push_back((Vector3)normal_array[i]);
+				}
+			}
 
-		// uv
-		Array uv_array = mesh->surface_get_arrays(surface_index)[Mesh::ARRAY_TEX_UV];
-		for (int j = 0; j < uv_array.size(); j++) {
-			uvs.push_back((Vector2)uv_array[j]);
-		}
+			// color
+			if (surface_arrays_size > Mesh::ARRAY_COLOR) {
+				Array color_array = surface_arrays[Mesh::ARRAY_COLOR];
+				for (int i = 0; i < color_array.size(); i++) {
+					colors.push_back((Color)color_array[i]);
+				}
+			}
 
-		// uv2
-		Array uv2_array = mesh->surface_get_arrays(surface_index)[Mesh::ARRAY_TEX_UV2];
-		for (int j = 0; j < uv2_array.size(); j++) {
-			uvs2.push_back((Vector2)uv2_array[j]);
+			// uv
+			if (surface_arrays_size > Mesh::ARRAY_TEX_UV) {
+				Array uv_array = surface_arrays[Mesh::ARRAY_TEX_UV];
+				for (int j = 0; j < uv_array.size(); j++) {
+					uvs.push_back((Vector2)uv_array[j]);
+				}
+			}
+
+			// uv2
+			if (surface_arrays_size > Mesh::ARRAY_TEX_UV2) {
+				Array uv2_array = surface_arrays[Mesh::ARRAY_TEX_UV2];
+				for (int j = 0; j < uv2_array.size(); j++) {
+					uvs2.push_back((Vector2)uv2_array[j]);
+				}
+			}
 		}
 	}
 
@@ -577,12 +605,6 @@ void VisualShaderNodeParticleMeshEmitter::_update_textures() {
 void VisualShaderNodeParticleMeshEmitter::set_mesh(Ref<Mesh> p_mesh) {
 	if (mesh == p_mesh) {
 		return;
-	}
-
-	if (p_mesh.is_valid()) {
-		max_surface_index = p_mesh->get_surface_count();
-	} else {
-		max_surface_index = 0;
 	}
 
 	if (mesh.is_valid()) {
@@ -623,7 +645,16 @@ bool VisualShaderNodeParticleMeshEmitter::is_use_all_surfaces() const {
 }
 
 void VisualShaderNodeParticleMeshEmitter::set_surface_index(int p_surface_index) {
-	if (p_surface_index == surface_index || p_surface_index < 0 || p_surface_index >= max_surface_index) {
+	if (mesh.is_valid()) {
+		if (mesh->get_surface_count() > 0) {
+			p_surface_index = CLAMP(p_surface_index, 0, mesh->get_surface_count() - 1);
+		} else {
+			p_surface_index = 0;
+		}
+	} else if (p_surface_index < 0) {
+		p_surface_index = 0;
+	}
+	if (surface_index == p_surface_index) {
 		return;
 	}
 	surface_index = p_surface_index;

@@ -111,7 +111,6 @@ class VisualShaderNodeParticleMeshEmitter : public VisualShaderNodeParticleEmitt
 	Ref<Mesh> mesh;
 	bool use_all_surfaces = true;
 	int surface_index = 0;
-	int max_surface_index = 0;
 
 	Ref<ImageTexture> position_texture;
 	Ref<ImageTexture> normal_texture;
