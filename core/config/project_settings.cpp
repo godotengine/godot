@@ -65,6 +65,14 @@ String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
+String ProjectSettings::get_safe_project_name() const {
+	String safe_name = OS::get_singleton()->get_safe_dir_name(get("application/config/name"));
+	if (safe_name.is_empty()) {
+		safe_name = "UnnamedProject";
+	}
+	return safe_name;
+}
+
 String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().plus_file("imported");
 }
@@ -701,11 +709,6 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			} else {
 				if (section == String()) {
 					set(assign, value);
-				} else if (section == "application" && assign == "config/features") {
-					const PackedStringArray project_features_untrimmed = value;
-					const PackedStringArray project_features = _trim_to_supported_features(project_features_untrimmed);
-					set("application/config/features", project_features);
-					save();
 				} else {
 					set(section + "/" + assign, value);
 				}
@@ -922,6 +925,34 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 
 Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
 	ERR_FAIL_COND_V_MSG(p_path == "", ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
+
+	PackedStringArray project_features = get("application/config/features");
+	// If there is no feature list currently present, force one to generate.
+	if (project_features.is_empty()) {
+		project_features = ProjectSettings::get_required_features();
+	}
+	// Check the rendering API.
+	const String rendering_api = get("rendering/quality/driver/driver_name");
+	if (rendering_api != "") {
+		// Add the rendering API as a project feature if it doesn't already exist.
+		if (!project_features.has(rendering_api)) {
+			project_features.append(rendering_api);
+		}
+	}
+	// Check for the existence of a csproj file.
+	if (FileAccess::exists(get_resource_path().plus_file(get_safe_project_name() + ".csproj"))) {
+		// If there is a csproj file, add the C# feature if it doesn't already exist.
+		if (!project_features.has("C#")) {
+			project_features.append("C#");
+		}
+	} else {
+		// If there isn't a csproj file, remove the C# feature if it exists.
+		if (project_features.has("C#")) {
+			project_features.remove_at(project_features.find("C#"));
+		}
+	}
+	project_features = _trim_to_supported_features(project_features);
+	set("application/config/features", project_features);
 
 	Set<_VCSort> vclist;
 
