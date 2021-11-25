@@ -289,6 +289,7 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 		iea->set_action(action);
 		iea->set_pressed(true);
 		get_viewport()->push_input(iea, true);
+		get_viewport()->push_gui_input(iea, true);
 	}
 
 	emit_signal(SNAME("pressed"));
@@ -306,6 +307,7 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 			iea->set_action(action);
 			iea->set_pressed(false);
 			get_viewport()->push_input(iea, true);
+			get_viewport()->push_gui_input(iea, true);
 		}
 	}
 

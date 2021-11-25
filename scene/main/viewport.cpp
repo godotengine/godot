@@ -2687,14 +2687,44 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	}
 
 	if (!is_input_handled()) {
-		get_tree()->_call_input_pause(input_group, SceneTree::CALL_INPUT_TYPE_INPUT, ev, this); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
+		get_tree()->_call_input_pause(input_group, SceneTree::CALL_INPUT_TYPE_INPUT, ev, this);
+	}
+
+	event_count++;
+}
+
+void Viewport::push_gui_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+	ERR_FAIL_COND(!is_inside_tree());
+
+	if (disable_input) {
+		return;
+	}
+
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this)) {
+		return;
+	}
+
+	local_input_handled = false;
+
+	Ref<InputEvent> ev;
+	if (!p_local_coords) {
+		ev = _make_input_local(p_event);
+	} else {
+		ev = p_event;
+	}
+
+	if (is_embedding_subwindows() && _sub_windows_forward_input(p_event)) {
+		set_input_as_handled();
+		return;
+	}
+
+	if (!_can_consume_input_events()) {
+		return;
 	}
 
 	if (!is_input_handled()) {
 		_gui_input_event(ev);
 	}
-
-	event_count++;
 }
 
 void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
