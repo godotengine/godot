@@ -2637,7 +2637,11 @@ void FileSystemDock::_tree_empty_selected() {
 	tree->deselect_all();
 }
 
-void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
+void FileSystemDock::_file_list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::RIGHT) {
+		return;
+	}
+
 	// Right click is pressed in the file list.
 	Vector<String> paths;
 	for (int i = 0; i < files->get_item_count(); i++) {
@@ -3128,7 +3132,7 @@ FileSystemDock::FileSystemDock() {
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_drag_forwarding(this);
-	files->connect("item_rmb_selected", callable_mp(this, &FileSystemDock::_file_list_rmb_select));
+	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_rmb_clicked));
 	files->connect("gui_input", callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
 	files->connect("rmb_clicked", callable_mp(this, &FileSystemDock::_file_list_rmb_pressed));

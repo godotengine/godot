@@ -144,6 +144,8 @@ private:
 	void _update_fix_selected_and_hovered();
 	void _fix_invalid_tiles_in_tile_map_selection();
 
+	void patterns_item_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+
 	///// Bottom panel common ////
 	void _tab_changed();
 
@@ -187,7 +189,7 @@ private:
 	void _update_scenes_collection_view();
 	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud);
 	void _scenes_list_multi_selected(int p_index, bool p_selected);
-	void _scenes_list_nothing_selected();
+	void _scenes_list_lmb_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 
 	///// Bottom panel patterns ////
 	VBoxContainer *patterns_bottom_panel = nullptr;
