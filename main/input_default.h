@@ -39,6 +39,7 @@ class InputDefault : public Input {
 
 	int mouse_button_mask;
 
+	Set<int> physical_keys_pressed;
 	Set<int> keys_pressed;
 	Set<int> joy_buttons_pressed;
 	Map<int, float> _joy_axis;
@@ -221,6 +222,7 @@ protected:
 
 public:
 	virtual bool is_key_pressed(int p_scancode) const;
+	virtual bool is_physical_key_pressed(int p_scancode) const;
 	virtual bool is_mouse_button_pressed(int p_button) const;
 	virtual bool is_joy_button_pressed(int p_device, int p_button) const;
 	virtual bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;

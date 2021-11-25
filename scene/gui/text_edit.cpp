@@ -7176,6 +7176,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_drawing_tabs"), &TextEdit::is_drawing_tabs);
 	ClassDB::bind_method(D_METHOD("set_draw_spaces"), &TextEdit::set_draw_spaces);
 	ClassDB::bind_method(D_METHOD("is_drawing_spaces"), &TextEdit::is_drawing_spaces);
+	ClassDB::bind_method(D_METHOD("set_bookmark_gutter_enabled", "enable"), &TextEdit::set_bookmark_gutter_enabled);
+	ClassDB::bind_method(D_METHOD("is_bookmark_gutter_enabled"), &TextEdit::is_bookmark_gutter_enabled);
 	ClassDB::bind_method(D_METHOD("set_breakpoint_gutter_enabled", "enable"), &TextEdit::set_breakpoint_gutter_enabled);
 	ClassDB::bind_method(D_METHOD("is_breakpoint_gutter_enabled"), &TextEdit::is_breakpoint_gutter_enabled);
 	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter"), &TextEdit::set_draw_fold_gutter);
@@ -7237,6 +7239,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), "set_show_line_numbers", "is_show_line_numbers_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_tabs"), "set_draw_tabs", "is_drawing_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_spaces"), "set_draw_spaces", "is_drawing_spaces");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bookmark_gutter"), "set_bookmark_gutter_enabled", "is_bookmark_gutter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "breakpoint_gutter"), "set_breakpoint_gutter_enabled", "is_breakpoint_gutter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");

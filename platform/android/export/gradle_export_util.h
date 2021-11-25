@@ -44,6 +44,22 @@ const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="ut
 </resources>
 )";
 
+// Supported XR modes.
+// This should match the entries in 'platform/android/java/lib/src/org/godotengine/godot/xr/XRMode.java'
+static const int XR_MODE_REGULAR = 0;
+static const int XR_MODE_OVR = 1;
+static const int XR_MODE_OPENXR = 2;
+
+// Supported XR hand tracking modes.
+static const int XR_HAND_TRACKING_NONE = 0;
+static const int XR_HAND_TRACKING_OPTIONAL = 1;
+static const int XR_HAND_TRACKING_REQUIRED = 2;
+
+// Supported XR passthrough modes.
+static const int XR_PASSTHROUGH_NONE = 0;
+static const int XR_PASSTHROUGH_OPTIONAL = 1;
+static const int XR_PASSTHROUGH_REQUIRED = 2;
+
 struct CustomExportData {
 	String assets_directory;
 	bool debug;

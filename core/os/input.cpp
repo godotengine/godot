@@ -55,6 +55,7 @@ Input::MouseMode Input::get_mouse_mode() const {
 
 void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "scancode"), &Input::is_key_pressed);
+	ClassDB::bind_method(D_METHOD("is_physical_key_pressed", "scancode"), &Input::is_physical_key_pressed);
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_joy_button_pressed", "device", "button"), &Input::is_joy_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "exact"), &Input::is_action_pressed, DEFVAL(false));

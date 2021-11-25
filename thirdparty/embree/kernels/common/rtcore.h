@@ -126,7 +126,7 @@ namespace embree
   // #define throw_RTCError(error,str) \
   //   throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
   #define throw_RTCError(error,str) \
-    printf(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str)), abort();
+    printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
   // -- GODOT end --
 #else
   // -- GODOT begin --
