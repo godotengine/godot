@@ -92,6 +92,9 @@ private:
 
 	bool virtual_keyboard_enabled = true;
 
+	bool drag_action = false;
+	bool drag_caret_force_displayed = false;
+
 	Ref<Texture> right_icon;
 
 	struct Selection {

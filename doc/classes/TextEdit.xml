@@ -325,6 +325,13 @@
 				Returns if the given line is wrapped.
 			</description>
 		</method>
+		<method name="is_mouse_over_selection" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="edges" type="bool" />
+			<description>
+				Returns whether the mouse is over selection. If [code]edges[/code] is [code]true[/code], the edges are considered part of the selection.
+			</description>
+		</method>
 		<method name="is_selection_active" qualifiers="const">
 			<return type="bool" />
 			<description>
