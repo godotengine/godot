@@ -114,6 +114,12 @@
 				Returns [code]true[/code] if there are visible modals on-screen.
 			</description>
 		</method>
+		<method name="gui_is_drag_successful" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the drag operation is successful.
+			</description>
+		</method>
 		<method name="gui_is_dragging" qualifiers="const">
 			<return type="bool" />
 			<description>
