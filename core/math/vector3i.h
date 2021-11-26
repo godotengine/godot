@@ -65,12 +65,12 @@ struct Vector3i {
 	Vector3i get_yzx() const;
 	Vector3i get_zxy() const;
 	Vector3i get_zyx() const;
-//	Vector2i get_xy() const;
-//	Vector2i get_xz() const;
-//	Vector2i get_yx() const;
-//	Vector2i get_yz() const;
-//	Vector2i get_zx() const;
-//	Vector2i get_zy() const;
+	//	Vector2i get_xy() const;
+	//	Vector2i get_xz() const;
+	//	Vector2i get_yx() const;
+	//	Vector2i get_yz() const;
+	//	Vector2i get_zx() const;
+	//	Vector2i get_zy() const;
 
 	void set_axis(const int p_axis, const int32_t p_value);
 	int32_t get_axis(const int p_axis) const;
