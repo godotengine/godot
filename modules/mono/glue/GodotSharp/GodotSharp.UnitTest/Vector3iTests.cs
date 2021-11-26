@@ -23,11 +23,11 @@ namespace GodotSharp.UnitTest
         public void Vector3i_constructor_from_other()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = new Vector3i(vector3i);
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.x, vector3iCopy.x);
-            Assert.AreEqual(vector3i.y, vector3iCopy.y);
-            Assert.AreEqual(vector3i.z, vector3iCopy.z);
+            var vector2i = new Vector3i(vector3i);
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.x, vector2i.x);
+            Assert.AreEqual(vector3i.y, vector2i.y);
+            Assert.AreEqual(vector3i.z, vector2i.z);
         }
 
         [Test]
@@ -43,126 +43,126 @@ namespace GodotSharp.UnitTest
         public void Vector3i_xyz()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.xyz;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.x, vector3iCopy.x);
-            Assert.AreEqual(vector3i.y, vector3iCopy.y);
-            Assert.AreEqual(vector3i.z, vector3iCopy.z);
+            var vector2i = vector3i.xyz;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.x, vector2i.x);
+            Assert.AreEqual(vector3i.y, vector2i.y);
+            Assert.AreEqual(vector3i.z, vector2i.z);
         }
 
         [Test]
         public void Vector3i_xzy()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.xzy;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.x, vector3iCopy.x);
-            Assert.AreEqual(vector3i.z, vector3iCopy.y);
-            Assert.AreEqual(vector3i.y, vector3iCopy.z);
+            var vector2i = vector3i.xzy;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.x, vector2i.x);
+            Assert.AreEqual(vector3i.z, vector2i.y);
+            Assert.AreEqual(vector3i.y, vector2i.z);
         }
 
         [Test]
         public void Vector3i_yxz()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.yxz;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.y, vector3iCopy.x);
-            Assert.AreEqual(vector3i.x, vector3iCopy.y);
-            Assert.AreEqual(vector3i.z, vector3iCopy.z);
+            var vector2i = vector3i.yxz;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.y, vector2i.x);
+            Assert.AreEqual(vector3i.x, vector2i.y);
+            Assert.AreEqual(vector3i.z, vector2i.z);
         }
 
         [Test]
         public void Vector3i_yzx()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.yzx;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.y, vector3iCopy.x);
-            Assert.AreEqual(vector3i.z, vector3iCopy.y);
-            Assert.AreEqual(vector3i.x, vector3iCopy.z);
+            var vector2i = vector3i.yzx;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.y, vector2i.x);
+            Assert.AreEqual(vector3i.z, vector2i.y);
+            Assert.AreEqual(vector3i.x, vector2i.z);
         }
 
         [Test]
         public void Vector3i_zxy()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.zxy;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.z, vector3iCopy.x);
-            Assert.AreEqual(vector3i.x, vector3iCopy.y);
-            Assert.AreEqual(vector3i.y, vector3iCopy.z);
+            var vector2i = vector3i.zxy;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.z, vector2i.x);
+            Assert.AreEqual(vector3i.x, vector2i.y);
+            Assert.AreEqual(vector3i.y, vector2i.z);
         }
 
         [Test]
         public void Vector3i_zyx()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.zyx;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.z, vector3iCopy.x);
-            Assert.AreEqual(vector3i.y, vector3iCopy.y);
-            Assert.AreEqual(vector3i.x, vector3iCopy.z);
+            var vector2i = vector3i.zyx;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.z, vector2i.x);
+            Assert.AreEqual(vector3i.y, vector2i.y);
+            Assert.AreEqual(vector3i.x, vector2i.z);
         }
 
         [Test]
-        public void Vector3i_xy()
+        public void Vector2i_xy()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.xy;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.x, vector3iCopy.x);
-            Assert.AreEqual(vector3i.y, vector3iCopy.y);
+            var vector2i = vector3i.xy;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.x, vector2i.x);
+            Assert.AreEqual(vector3i.y, vector2i.y);
         }
 
         [Test]
-        public void Vector3i_xz()
+        public void Vector2i_xz()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.xz;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.x, vector3iCopy.x);
-            Assert.AreEqual(vector3i.z, vector3iCopy.y);
+            var vector2i = vector3i.xz;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.x, vector2i.x);
+            Assert.AreEqual(vector3i.z, vector2i.y);
         }
 
         [Test]
         public void Vector3i_yx()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.yx;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.y, vector3iCopy.x);
-            Assert.AreEqual(vector3i.x, vector3iCopy.y);
+            var vector2i = vector3i.yx;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.y, vector2i.x);
+            Assert.AreEqual(vector3i.x, vector2i.y);
         }
 
         [Test]
         public void Vector3i_yz()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.yz;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.y, vector3iCopy.x);
-            Assert.AreEqual(vector3i.z, vector3iCopy.y);
+            var vector2i = vector3i.yz;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.y, vector2i.x);
+            Assert.AreEqual(vector3i.z, vector2i.y);
         }
 
         [Test]
         public void Vector3i_zx()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.zx;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.z, vector3iCopy.x);
-            Assert.AreEqual(vector3i.x, vector3iCopy.y);
+            var vector2i = vector3i.zx;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.z, vector2i.x);
+            Assert.AreEqual(vector3i.x, vector2i.y);
         }
 
         [Test]
         public void Vector3i_zy()
         {
             var vector3i = new Vector3i(1, 2, 3);
-            var vector3iCopy = vector3i.zy;
-            Assert.AreNotSame(vector3i, vector3iCopy);
-            Assert.AreEqual(vector3i.z, vector3iCopy.x);
-            Assert.AreEqual(vector3i.y, vector3iCopy.y);
+            var vector2i = vector3i.zy;
+            Assert.AreNotSame(vector3i, vector2i);
+            Assert.AreEqual(vector3i.z, vector2i.x);
+            Assert.AreEqual(vector3i.y, vector2i.y);
         }
     }
 }
