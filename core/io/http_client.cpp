@@ -337,7 +337,7 @@ Error HTTPClient::poll() {
 
 					Error err = ERR_BUG; // Should be at least one entry.
 					while (ip_candidates.size() > 0) {
-						err = tcp_connection->connect_to_host(ip_candidates.front(), conn_port);
+						err = tcp_connection->connect_to_host(ip_candidates.pop_front(), conn_port);
 						if (err == OK) {
 							break;
 						}
