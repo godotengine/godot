@@ -113,6 +113,12 @@
 				Returns [code]true[/code] if there are visible modals on-screen.
 			</description>
 		</method>
+		<method name="gui_input">
+			<return type="void" />
+			<argument index="0" name="local_event" type="InputEvent" />
+			<description>
+			</description>
+		</method>
 		<method name="gui_is_dragging" qualifiers="const">
 			<return type="bool" />
 			<description>

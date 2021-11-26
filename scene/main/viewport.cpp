@@ -1409,6 +1409,7 @@ void Viewport::_vp_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEvent> ev = _make_input_local(p_ev);
 	input(ev);
+	gui_input(ev);
 }
 
 void Viewport::_vp_unhandled_input(const Ref<InputEvent> &p_ev) {
@@ -2801,13 +2802,20 @@ void Viewport::input(const Ref<InputEvent> &p_event) {
 	local_input_handled = false;
 
 	if (!is_input_handled()) {
-		get_tree()->_call_input_pause(input_group, "_input", p_event); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
+		get_tree()->_call_input_pause(input_group, "_input", p_event);
 	}
+
+	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
+}
+
+void Viewport::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(!is_inside_tree());
+
+	local_input_handled = false;
 
 	if (!is_input_handled()) {
 		_gui_input_event(p_event);
 	}
-	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
 }
 
 void Viewport::unhandled_input(const Ref<InputEvent> &p_event) {
@@ -3178,6 +3186,7 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
 	ClassDB::bind_method(D_METHOD("input", "local_event"), &Viewport::input);
+	ClassDB::bind_method(D_METHOD("gui_input", "local_event"), &Viewport::gui_input);
 	ClassDB::bind_method(D_METHOD("unhandled_input", "local_event"), &Viewport::unhandled_input);
 
 	ClassDB::bind_method(D_METHOD("update_worlds"), &Viewport::update_worlds);

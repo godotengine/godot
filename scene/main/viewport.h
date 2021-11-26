@@ -524,6 +524,7 @@ public:
 	bool is_using_own_world() const;
 
 	void input(const Ref<InputEvent> &p_event);
+	void gui_input(const Ref<InputEvent> &p_event);
 	void unhandled_input(const Ref<InputEvent> &p_event);
 
 	void set_disable_input(bool p_disable);
