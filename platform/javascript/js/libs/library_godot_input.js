@@ -393,7 +393,9 @@ const GodotInput = {
 			const rect = canvas.getBoundingClientRect();
 			const pos = GodotInput.computePosition(evt, rect);
 			const modifiers = GodotInput.getModifiers(evt);
-			if (p_pressed && document.activeElement !== GodotConfig.canvas) {
+			// Since the event is consumed, focus manually.
+			// NOTE: The iframe container may not have focus yet, so focus even when already active.
+			if (p_pressed) {
 				GodotConfig.canvas.focus();
 			}
 			if (func(p_pressed, evt.button, pos[0], pos[1], modifiers)) {
@@ -412,7 +414,9 @@ const GodotInput = {
 		const func = GodotRuntime.get_func(callback);
 		const canvas = GodotConfig.canvas;
 		function touch_cb(type, evt) {
-			if (type === 0 && document.activeElement !== GodotConfig.canvas) {
+			// Since the event is consumed, focus manually.
+			// NOTE: The iframe container may not have focus yet, so focus even when already active.
+			if (type === 0) {
 				GodotConfig.canvas.focus();
 			}
 			const rect = canvas.getBoundingClientRect();
