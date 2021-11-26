@@ -235,7 +235,7 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 	}
 #ifndef DISABLE_DEPRECATED
 	if (p_name == SceneStringNames::get_singleton()->use_in_baked_light && bool(p_value)) {
-		set_gi_mode(GI_MODE_BAKED);
+		set_gi_mode(GI_MODE_STATIC);
 		return true;
 	}
 
@@ -346,7 +346,7 @@ void GeometryInstance3D::set_gi_mode(GIMode p_mode) {
 			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 		} break;
-		case GI_MODE_BAKED: {
+		case GI_MODE_STATIC: {
 			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, true);
 			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 
@@ -438,7 +438,7 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_occlusion_culling"), "set_ignore_occlusion_culling", "is_ignoring_occlusion_culling");
 	ADD_GROUP("Global Illumination", "gi_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Baked,Dynamic"), "set_gi_mode", "get_gi_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static (VoxelGI/SDFGI/LightmapGI),Dynamic (VoxelGI only)"), "set_gi_mode", "get_gi_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×")), "set_lightmap_scale", "get_lightmap_scale");
 
 	ADD_GROUP("Visibility Range", "visibility_range_");
@@ -455,7 +455,7 @@ void GeometryInstance3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_SHADOWS_ONLY);
 
 	BIND_ENUM_CONSTANT(GI_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(GI_MODE_BAKED);
+	BIND_ENUM_CONSTANT(GI_MODE_STATIC);
 	BIND_ENUM_CONSTANT(GI_MODE_DYNAMIC);
 
 	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_1X);

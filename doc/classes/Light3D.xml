@@ -34,8 +34,9 @@
 		<member name="light_angular_distance" type="float" setter="set_param" getter="get_param" default="0.0">
 			The light's angular size in degrees. Increasing this will make shadows softer at greater distances. Only available for [DirectionalLight3D]s. For reference, the Sun from the Earth is approximately [code]0.5[/code].
 		</member>
-		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light3D.BakeMode" default="1">
-			The light's bake mode. See [enum BakeMode].
+		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light3D.BakeMode" default="2">
+			The light's bake mode. This will affect the global illumination techniques that have an effect on the light's rendering. See [enum BakeMode].
+			[b]Note:[/b] Meshes' global illumination mode will also affect the global illumination rendering. See [member GeometryInstance3D.gi_mode].
 		</member>
 		<member name="light_color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
 			The light's color. An [i]overbright[/i] color can be used to achieve a result equivalent to increasing the light's [member light_energy].
@@ -146,12 +147,14 @@
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
-			Light is ignored when baking.
-			[b]Note:[/b] Hiding a light does [i]not[/i] affect baking.
+			Light is ignored when baking. This is the fastest mode, but the light will be taken into account when baking global illumination. This mode should generally be used for dynamic lights that change quickly, as the effect of global illumination is less noticeable on those lights.
+			[b]Note:[/b] Hiding a light does [i]not[/i] affect baking [LightmapGI]. Hiding a light will still affect baking [VoxelGI] and SDFGI (see [member Environment.sdfgi_enabled).
 		</constant>
-		<constant name="BAKE_DYNAMIC" value="1" enum="BakeMode">
+		<constant name="BAKE_STATIC" value="1" enum="BakeMode">
+			Light is taken into account in static baking ([VoxelGI], [LightmapGI], SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time. This is suitable for subtle changes (such as flickering torches), but generally not large changes such as toggling a light on and off.
 		</constant>
-		<constant name="BAKE_STATIC" value="2" enum="BakeMode">
+		<constant name="BAKE_DYNAMIC" value="2" enum="BakeMode">
+			Light is taken into account in dynamic baking ([VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) only). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant BAKE_STATIC]. This has a greater performance cost compared to [constant BAKE_STATIC].
 		</constant>
 	</constants>
 </class>

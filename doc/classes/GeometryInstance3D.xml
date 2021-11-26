@@ -41,7 +41,8 @@
 			The texel density to use for lightmapping in [LightmapGI]. Greater scale values provide higher resolution in the lightmap, which can result in sharper shadows for lights that have both direct and indirect light baked. However, greater scale values will also increase the space taken by the mesh in the lightmap texture, which increases the memory, storage, and bake time requirements. When using a single mesh at different scales, consider adjusting this value to keep the lightmap texel density consistent across meshes.
 		</member>
 		<member name="gi_mode" type="int" setter="set_gi_mode" getter="get_gi_mode" enum="GeometryInstance3D.GIMode" default="0">
-			The global illumination mode to use for the whole geometry. Use a mode that matches the purpose
+			The global illumination mode to use for the whole geometry. To avoid inconsistent results, use a mode that matches the purpose of the mesh during gameplay (static/dynamic).
+			[b]Note:[/b] Lights' bake mode will also affect the global illumination rendering. See [member Light3D.light_bake_mode].
 		</member>
 		<member name="ignore_occlusion_culling" type="bool" setter="set_ignore_occlusion_culling" getter="is_ignoring_occlusion_culling" default="false">
 		</member>
@@ -87,13 +88,13 @@
 			In other words, the actual mesh will not be visible, only the shadows casted from the mesh will be.
 		</constant>
 		<constant name="GI_MODE_DISABLED" value="0" enum="GIMode">
-			Disabled global illumination mode. Use for dynamic objects that do not contribute to global illumination (such as characters). When using [VoxelGI] and SDFGI, the geometry will [i]receive[/i] indirect lighting and reflections but will not be considered in GI baking. When using [LightmapGI], the object will receive indirect lighting using lightmap probes instead of using the lightmap texture.
+			Disabled global illumination mode. Use for dynamic objects that do not contribute to global illumination (such as characters). When using [VoxelGI] and SDFGI, the geometry will [i]receive[/i] indirect lighting and reflections but the geometry will not be considered in GI baking. When using [LightmapGI], the object will receive indirect lighting using lightmap probes instead of using the baked lightmap texture.
 		</constant>
-		<constant name="GI_MODE_BAKED" value="1" enum="GIMode">
+		<constant name="GI_MODE_STATIC" value="1" enum="GIMode">
 			Baked global illumination mode. Use for static objects that contribute to global illumination (such as level geometry). This GI mode is effective when using [VoxelGI], SDFGI and [LightmapGI].
 		</constant>
 		<constant name="GI_MODE_DYNAMIC" value="2" enum="GIMode">
-			Dynamic global illumination mode. Use for dynamic objects that contribute to global illumination. This GI mode is only effective when using [VoxelGI], but it has a higher performance impact than [constant GI_MODE_BAKED].
+			Dynamic global illumination mode. Use for dynamic objects that contribute to global illumination. This GI mode is only effective when using [VoxelGI], but it has a higher performance impact than [constant GI_MODE_STATIC]. When using other GI methods, this will act the same as [constant GI_MODE_DISABLED].
 		</constant>
 		<constant name="LIGHTMAP_SCALE_1X" value="0" enum="LightmapScale">
 			The standard texel density for lightmapping with [LightmapGI].

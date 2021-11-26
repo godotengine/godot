@@ -3723,9 +3723,9 @@
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
 		</constant>
-		<constant name="LIGHT_BAKE_DYNAMIC" value="1" enum="LightBakeMode">
+		<constant name="LIGHT_BAKE_STATIC" value="1" enum="LightBakeMode">
 		</constant>
-		<constant name="LIGHT_BAKE_STATIC" value="2" enum="LightBakeMode">
+		<constant name="LIGHT_BAKE_DYNAMIC" value="2" enum="LightBakeMode">
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
 			Use a dual paraboloid shadow map for omni lights.
