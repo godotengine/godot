@@ -79,6 +79,10 @@
 #include "tests/servers/test_shader_lang.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
+#include "tests/core/math/test_vector2.h"
+#include "tests/core/math/test_vector2i.h"
+#include "tests/core/math/test_vector3.h"
+#include "tests/core/math/test_vector3i.h"
 
 #include "modules/modules_tests.gen.h"
 
