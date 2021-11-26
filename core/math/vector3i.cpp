@@ -91,18 +91,18 @@ Vector2i Vector3i::get_xz() const {
 	return Vector2i(x, z);
 }
 
-Vector2i Vector3i::get_YX() const {
+Vector2i Vector3i::get_yx() const {
 	return Vector2i(y, x);
 }
 
-Vector2i Vector3i::get_YZ() const {
+Vector2i Vector3i::get_yz() const {
 	return Vector2i(y, z);
 }
 
-Vector2i Vector3i::get_ZX() const {
+Vector2i Vector3i::get_zx() const {
 	return Vector2i(z, x);
 }
 
-Vector2i Vector3i::get_ZY() const {
+Vector2i Vector3i::get_zy() const {
 	return Vector2i(z, y);
 }
