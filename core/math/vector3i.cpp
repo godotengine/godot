@@ -64,45 +64,45 @@ Vector3i Vector3i::get_xyz() const {
 }
 
 Vector3i Vector3i::get_xzy() const {
-	return new Vector3i(x, z, y)
+	return Vector3i(x, z, y);
 }
 
 Vector3i Vector3i::get_yxz() const {
-	return new Vector3i(y, x, z)
+	return Vector3i(y, x, z);
 }
 
 Vector3i Vector3i::get_yzx() const {
-	return new Vector3i(y, z, x)
+	return Vector3i(y, z, x);
 }
 
 Vector3i Vector3i::get_zxy() const {
-	return new Vector3i(z, x, y);
+	return Vector3i(z, x, y);
 }
 
 Vector3i Vector3i::get_zyx() const {
-	return new Vector3i(z, y, x);
+	return Vector3i(z, y, x);
 }
 
 Vector2i Vector3i::get_xy() const {
-	return new Vector2i(x, y);
+	return Vector2i(x, y);
 }
 
 Vector2i Vector3i::get_xz() const {
-	return new Vector2i(x, z);
+	return Vector2i(x, z);
 }
 
 Vector2i Vector3i::get_YX() const {
-	return new Vector2i(y, x);
+	return Vector2i(y, x);
 }
 
 Vector2i Vector3i::get_YZ() const {
-	return new Vector2i(y, z);
+	return Vector2i(y, z);
 }
 
 Vector2i Vector3i::get_ZX() const {
-	return new Vector2i(z, x);
+	return Vector2i(z, x);
 }
 
 Vector2i Vector3i::get_ZY() const {
-	return new Vector2i(z, y);
+	return Vector2i(z, y);
 }

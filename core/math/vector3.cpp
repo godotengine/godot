@@ -125,61 +125,49 @@ Vector3::operator String() const {
 }
 
 Vector3 Vector3::get_xyz() const {
-	Vector3 v = *this;
-	return v;
+	return *this;
 }
 
 Vector3 Vector3::get_xzy() const {
-	Vector3 v = Vector3(x, z, y);
-	return v;
+	return Vector3(x, z, y);
 }
 
 Vector3 Vector3::get_yxz() const {
-	Vector3 v = Vector3(y, x, z);
-	return v;
+	return Vector3(y, x, z);
 }
 
 Vector3 Vector3::get_yzx() const {
-	Vector3 v = Vector3(y, z, x);
-	return v;
+	return Vector3(y, z, x);
 }
 
 Vector3 Vector3::get_zxy() const {
-	Vector3 v = Vector3(z, x, y);
-	return v;
+	return Vector3(z, x, y);
 }
 
 Vector3 Vector3::get_zyx() const {
-	Vector3 v = Vector3(z, y, x);
-	return v;
+	return Vector3(z, y, x);
 }
 
 Vector2 Vector3::get_xy() const {
-	Vector2 v = Vector2(x, y);
-	return v;
+	return Vector2(x, y);
 }
 
 Vector2 Vector3::get_xz() const {
-	Vector2 v = Vector2(x, z);
-	return v;
+	return Vector2(x, z);
 }
 
 Vector2 Vector3::get_yx() const {
-	Vector2 v = Vector2(y, x);
-	return v;
+	return Vector2(y, x);
 }
 
 Vector2 Vector3::get_yz() const {
-	Vector2 v = Vector2(y, z);
-	return v;
+	return Vector2(y, z);
 }
 
 Vector2 Vector3::get_zx() const {
-	Vector2 v = Vector2(z, x);
-	return v;
+	return Vector2(z, x);
 }
 
 Vector2 Vector3::get_zy() const {
-	Vector2 v = Vector2(z, y);
-	return v;
+	return Vector2(z, y);
 }
