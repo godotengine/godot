@@ -72,7 +72,7 @@ Vector2 Vector2::get_xy() const {
 }
 
 Vector2 Vector2::get_yx() const {
-	Vector2 v = new Vector2(y, x);
+	Vector2 v = Vector2(y, x);
 	return v;
 }
 
