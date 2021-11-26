@@ -266,7 +266,7 @@ void CompositeLogger::log_error(const char *p_function, const char *p_file, int 
 	}
 
 	for (int i = 0; i < loggers.size(); ++i) {
-		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
 	}
 }
 
