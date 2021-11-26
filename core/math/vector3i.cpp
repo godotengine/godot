@@ -83,6 +83,7 @@ Vector3i Vector3i::get_zyx() const {
 	return Vector3i(z, y, x);
 }
 
+/**
 Vector2i Vector3i::get_xy() const {
 	return Vector2i(x, y);
 }
@@ -106,3 +107,4 @@ Vector2i Vector3i::get_zx() const {
 Vector2i Vector3i::get_zy() const {
 	return Vector2i(z, y);
 }
+**/
