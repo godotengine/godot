@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "vector3i.h"
+#include "vector2.h"
 
 void Vector3i::set_axis(const int p_axis, const int32_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
@@ -83,7 +84,6 @@ Vector3i Vector3i::get_zyx() const {
 	return Vector3i(z, y, x);
 }
 
-/**
 Vector2i Vector3i::get_xy() const {
 	return Vector2i(x, y);
 }
@@ -107,4 +107,3 @@ Vector2i Vector3i::get_zx() const {
 Vector2i Vector3i::get_zy() const {
 	return Vector2i(z, y);
 }
-**/

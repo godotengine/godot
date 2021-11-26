@@ -320,6 +320,9 @@ struct Vector2i {
 		return Vector2(MAX(x, p_vector2i.x), MAX(y, p_vector2i.y));
 	}
 
+	Vector2i get_xy() const;
+	Vector2i get_yx() const;
+
 	Vector2i operator+(const Vector2i &p_v) const;
 	void operator+=(const Vector2i &p_v);
 	Vector2i operator-(const Vector2i &p_v) const;

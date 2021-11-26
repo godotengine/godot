@@ -218,6 +218,15 @@ Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
 			CLAMP(y, p_min.y, p_max.y));
 }
 
+Vector2i Vector2i::get_xy() const {
+	return *this;
+}
+
+Vector2i Vector2i::get_yx() const {
+	return Vector2i(y, x);
+}
+
+
 Vector2i Vector2i::operator+(const Vector2i &p_v) const {
 	return Vector2i(x + p_v.x, y + p_v.y);
 }
