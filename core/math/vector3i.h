@@ -33,6 +33,7 @@
 
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
+#include "core/math/vector2.h"
 
 struct Vector3i {
     enum Axis {
