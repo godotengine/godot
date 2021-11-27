@@ -501,8 +501,8 @@ void TextureProgress::_notification(int p_what) {
 									p = progress->get_size();
 								}
 
-								p.x *= get_relative_center().x;
-								p.y *= get_relative_center().y;
+								p *= get_relative_center();
+								p += progress_offset;
 								p = p.floor();
 								draw_line(p - Point2(8, 0), p + Point2(8, 0), Color(0.9, 0.5, 0.5), 2);
 								draw_line(p - Point2(0, 8), p + Point2(0, 8), Color(0.9, 0.5, 0.5), 2);
