@@ -365,55 +365,30 @@ Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
 	return new_arr;
 }
 
-int Array::_clamp_slice_index(int p_index) const {
-	int arr_size = size();
-	int fixed_index = CLAMP(p_index, -arr_size, arr_size - 1);
-	if (fixed_index < 0) {
-		fixed_index = arr_size + fixed_index;
-	}
-	return fixed_index;
-}
+Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
+	Array result;
 
-Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // like python, but inclusive on upper bound
+	ERR_FAIL_COND_V_MSG(p_step == 0, result, "Slice step cannot be zero.");
 
-	Array new_arr;
-
-	ERR_FAIL_COND_V_MSG(p_step == 0, new_arr, "Array slice step size cannot be zero.");
-
-	if (is_empty()) { // Don't try to slice empty arrays.
-		return new_arr;
-	}
-	if (p_step > 0) {
-		if (p_begin >= size() || p_end < -size()) {
-			return new_arr;
-		}
-	} else { // p_step < 0
-		if (p_begin < -size() || p_end >= size()) {
-			return new_arr;
-		}
+	if (p_end < 0) {
+		p_end += size() + 1;
 	}
 
-	int begin = _clamp_slice_index(p_begin);
-	int end = _clamp_slice_index(p_end);
+	ERR_FAIL_INDEX_V(p_begin, size(), result);
+	ERR_FAIL_INDEX_V(p_end, size() + 1, result);
 
-	int new_arr_size = MAX(((end - begin + p_step) / p_step), 0);
-	new_arr.resize(new_arr_size);
+	ERR_FAIL_COND_V_MSG(p_step > 0 && p_begin > p_end, result, "Slice is positive, but bounds is decreasing");
+	ERR_FAIL_COND_V_MSG(p_step < 0 && p_begin < p_end, result, "Slice is negative, but bounds is increasing");
 
-	if (p_step > 0) {
-		int dest_idx = 0;
-		for (int idx = begin; idx <= end; idx += p_step) {
-			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
-			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
-		}
-	} else { // p_step < 0
-		int dest_idx = 0;
-		for (int idx = begin; idx >= end; idx += p_step) {
-			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
-			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
-		}
+	int result_size = (p_end - p_begin) / p_step;
+	result.resize(result_size);
+
+	for (int src_idx = p_begin, dest_idx = 0; dest_idx < result_size; ++dest_idx) {
+		result[dest_idx] = p_deep ? get(src_idx).duplicate(true) : get(src_idx);
+		src_idx += p_step;
 	}
 
-	return new_arr;
+	return result;
 }
 
 Array Array::filter(const Callable &p_callable) const {

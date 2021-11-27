@@ -1089,7 +1089,7 @@ Vector<Ref<Image>> RendererStorageRD::texture_3d_get(RID p_texture) const {
 		const Texture::BufferSlice3D &bs = tex->buffer_slices_3d[i];
 		ERR_FAIL_COND_V(bs.offset >= (uint32_t)all_data.size(), Vector<Ref<Image>>());
 		ERR_FAIL_COND_V(bs.offset + bs.buffer_size > (uint32_t)all_data.size(), Vector<Ref<Image>>());
-		Vector<uint8_t> sub_region = all_data.subarray(bs.offset, bs.offset + bs.buffer_size - 1);
+		Vector<uint8_t> sub_region = all_data.slice(bs.offset, bs.offset + bs.buffer_size);
 
 		Ref<Image> img;
 		img.instantiate();
