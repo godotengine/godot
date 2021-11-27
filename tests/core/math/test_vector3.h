@@ -31,7 +31,7 @@
 #ifndef GODOT_TEST_VECTOR3_H
 #define GODOT_TEST_VECTOR3_H
 
-#include "core/math/Vector3.h"
+#include "core/math/vector3.h"
 
 #include "tests/test_macros.h"
 
