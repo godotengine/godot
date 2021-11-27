@@ -41,15 +41,22 @@ TEST_CASE("[Vector3i] Constructor methods") {
 	const Vector3i vector3i = Vector3i(1, 2, 3);
 	const Vector3i vector3i_copy = Vector3i(vector3i);
 	const Vector3i vector3i_from_float = Vector3i(Vector3(1.2, 2.6, 3.3));
+	const Vector3i vector3i_from_float_negative = Vector3i(Vector3(-1.2, -2.6, -3.3));
 
 	CHECK_MESSAGE(
 			vector3i == vector3i_copy, "Vector3is created with the same values but different methods should be equal.");
 	CHECK_MESSAGE(
-			vector3i_from_float.x == 1, "Vector3is created from a Vector3 should round to correct integer values.");
+			vector3i_from_float.x == 1, "Vector3is created from a Vector3 should truncate to the correct integer values.");
 	CHECK_MESSAGE(
-			vector3i_from_float.y == 3, "Vector3is created from a Vector3 should round to correct integer values.");
+			vector3i_from_float.y == 2, "Vector3is created from a Vector3 should truncate to the correct integer values.");
 	CHECK_MESSAGE(
-			vector3i_from_float.z == 3, "Vector3is created from a Vector3 should round to correct integer values.");
+			vector3i_from_float.z == 3, "Vector3is created from a Vector3 should truncate to the correct integer values.");
+	CHECK_MESSAGE(
+			vector3i_from_float_negative.x == -1, "Vector3is created from a Vector3 should truncate to the correct integer values.");
+	CHECK_MESSAGE(
+			vector3i_from_float_negative.y == -2, "Vector3is created from a Vector3 should truncate to the correct integer values.");
+	CHECK_MESSAGE(
+			vector3i_from_float_negative.z == -3, "Vector3is created from a Vector3 should truncate to the correct integer values.");
 }
 
 TEST_CASE("[Vector3i] Transpose methods") {
