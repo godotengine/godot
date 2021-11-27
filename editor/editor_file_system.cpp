@@ -529,7 +529,8 @@ bool EditorFileSystem::_update_scan_actions() {
 	Vector<String> reimports;
 	Vector<String> reloads;
 
-	for (const ItemAction &ia : scan_actions) {
+	while (scan_actions.size() > 0) {
+		const ItemAction &ia = scan_actions[0];
 		switch (ia.action) {
 			case ItemAction::ACTION_NONE: {
 			} break;
@@ -608,6 +609,7 @@ bool EditorFileSystem::_update_scan_actions() {
 
 			} break;
 		}
+		scan_actions.pop_front();
 	}
 
 	if (_scan_extensions()) {
@@ -639,7 +641,6 @@ bool EditorFileSystem::_update_scan_actions() {
 	if (reloads.size()) {
 		emit_signal(SNAME("resources_reload"), reloads);
 	}
-	scan_actions.clear();
 
 	return fs_changed;
 }
@@ -979,7 +980,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 				int idx = p_dir->find_file_index(f);
 
 				if (idx == -1) {
-					//never seen this file, add actition to add it
+					//never seen this file, add action to add it
 					EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 					fi->file = f;
 
@@ -1000,15 +1001,6 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 						ia.dir = p_dir;
 						ia.file = f;
 						ia.new_file = fi;
-						scan_actions.push_back(ia);
-					}
-
-					if (import_extensions.has(ext)) {
-						//if it can be imported, and it was added, it needs to be reimported
-						ItemAction ia;
-						ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
-						ia.dir = p_dir;
-						ia.file = f;
 						scan_actions.push_back(ia);
 					}
 
