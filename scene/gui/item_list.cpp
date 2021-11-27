@@ -610,25 +610,23 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (items[i].selected && mb->get_button_index() == MouseButton::RIGHT) {
-					emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
-				} else {
-					bool selected = items[i].selected;
-
+				if (!items[i].selected || (mb->get_button_index() == MouseButton::LEFT && allow_reselect)) {
 					select(i, select_mode == SELECT_SINGLE || !mb->is_command_pressed());
 
-					if (!selected || allow_reselect) {
-						if (select_mode == SELECT_SINGLE) {
-							emit_signal(SNAME("item_selected"), i);
-						} else {
-							emit_signal(SNAME("multi_selected"), i, true);
-						}
+					if (select_mode == SELECT_SINGLE) {
+						emit_signal(SNAME("item_selected"), i);
+					} else {
+						emit_signal(SNAME("multi_selected"), i, true);
 					}
-
+				} else {
 					if (mb->get_button_index() == MouseButton::RIGHT) {
 						emit_signal(SNAME("item_rmb_selected"), i, get_local_mouse_position());
-					} else if (/*select_mode==SELECT_SINGLE &&*/ mb->is_double_click()) {
-						emit_signal(SNAME("item_activated"), i);
+					} else {
+						emit_signal(SNAME("item_lmb_selected"), i, get_local_mouse_position());
+
+						if (/*select_mode==SELECT_SINGLE &&*/ mb->is_double_click()) {
+							emit_signal(SNAME("item_activated"), i);
+						}
 					}
 				}
 			}
@@ -1681,6 +1679,7 @@ void ItemList::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position")));
+	ADD_SIGNAL(MethodInfo("item_lmb_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position")));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("rmb_clicked", PropertyInfo(Variant::VECTOR2, "at_position")));
