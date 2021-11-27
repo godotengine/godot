@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  platform_config.h                                                    */
+/*  godot_webgl2.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,6 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include <alloca.h>
+#include "godot_webgl2.h"
 
-#define GLES3_INCLUDE_H "platform/javascript/godot_webgl2.h"
+extern "C" {
+extern void godot_js_display_glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
+}
+
+void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data) {
+	godot_js_display_glGetBufferSubData(target, offset, size, data);
+}

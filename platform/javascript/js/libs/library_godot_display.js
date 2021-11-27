@@ -320,6 +320,18 @@ const GodotDisplay = {
 		},
 	},
 
+	// This is implemented as "glGetBufferSubData" in new emscripten versions.
+	// Since we have to support older (pre 2.0.17) emscripten versions, we add this wrapper function instead.
+	godot_js_display_glGetBufferSubData__sig: 'viiii',
+	godot_js_display_glGetBufferSubData__deps: ['$GL', 'emscripten_webgl_get_current_context'],
+	godot_js_display_glGetBufferSubData: function (target, offset, size, data) {
+		const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
+		const gl = GL.getContext(gl_context_handle);
+		if (gl) {
+			gl.GLctx['getBufferSubData'](target, offset, HEAPU8, data, size);
+		}
+	},
+
 	godot_js_display_is_swap_ok_cancel__sig: 'i',
 	godot_js_display_is_swap_ok_cancel: function () {
 		const win = (['Windows', 'Win64', 'Win32', 'WinCE']);
