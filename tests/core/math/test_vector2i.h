@@ -39,7 +39,7 @@ namespace TestVector2i {
 
 TEST_CASE("[Vector2i] Constructor methods") {
 	const Vector2i vector2i = Vector2(1.2, 2.1);
-	const Vector2i vector2i_copy = Vector2(vector2);
+	const Vector2i vector2i_copy = Vector2(vector2i);
 
 	CHECK_MESSAGE(
 			vector2i == vector2i_copy, "Vector2is created with the same values but different methods should be equal.");
