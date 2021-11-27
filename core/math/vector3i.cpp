@@ -107,3 +107,33 @@ Vector2i Vector3i::get_zx() const {
 Vector2i Vector3i::get_zy() const {
 	return Vector2i(z, y);
 }
+
+void Vector3i::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_xyz"), &Vector3i::get_xyz);
+	ClassDB::bind_method(D_METHOD("get_xzy"), &Vector3i::get_xzy);
+	ClassDB::bind_method(D_METHOD("get_yxz"), &Vector3i::get_yxz);
+	ClassDB::bind_method(D_METHOD("get_yzx"), &Vector3i::get_yzx);
+	ClassDB::bind_method(D_METHOD("get_zxy"), &Vector3i::get_zxy);
+	ClassDB::bind_method(D_METHOD("get_zyx"), &Vector3i::get_zyx);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "xyz"), "get_xyz");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "xzy"), "get_xzy");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "yxz"), "get_yxz");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "yzx"), "get_yzx");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "zxy"), "get_zxy");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "zyx"), "get_zyx");
+
+	ClassDB::bind_method(D_METHOD("get_xy"), &Vector3i::get_xy);
+	ClassDB::bind_method(D_METHOD("get_xz"), &Vector3i::get_xz);
+	ClassDB::bind_method(D_METHOD("get_yx"), &Vector3i::get_yx);
+	ClassDB::bind_method(D_METHOD("get_yz"), &Vector3i::get_yz);
+	ClassDB::bind_method(D_METHOD("get_zx"), &Vector3i::get_zx);
+	ClassDB::bind_method(D_METHOD("get_zy"), &Vector3i::get_zy);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "xy"), "get_xy");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "xz"), "get_xz");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "yx"), "get_yx");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "yz"), "get_yz");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "zx"), "get_zx");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "zy"), "get_zy");
+}

@@ -176,6 +176,9 @@ struct Vector2 {
 		x = p_x;
 		y = p_y;
 	}
+
+protected:
+	static void _bind_methods();
 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(const real_t p_d, const Vector2 &p_vec) const {
@@ -368,6 +371,9 @@ struct Vector2i {
 		x = p_x;
 		y = p_y;
 	}
+
+protected:
+	static void _bind_methods();
 };
 
 _FORCE_INLINE_ Vector2i operator*(const int32_t &p_scalar, const Vector2i &p_vector) {
