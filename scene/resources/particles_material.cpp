@@ -189,6 +189,9 @@ void ParticlesMaterial::_update_shader() {
 		case EMISSION_SHAPE_SPHERE: {
 			code += "uniform float emission_sphere_radius;\n";
 		} break;
+		case EMISSION_SHAPE_SPHERE_SURFACE: {
+			code += "uniform float emission_sphere_radius;\n";
+		} break;
 		case EMISSION_SHAPE_BOX: {
 			code += "uniform vec3 emission_box_extents;\n";
 		} break;
@@ -388,6 +391,13 @@ void ParticlesMaterial::_update_shader() {
 			code += "		TRANSFORM = mat4(vec4(1,0,0,0),vec4(0,1,0,0),vec4(0,0,1,0),vec4(0,0,0,1));\n";
 		} break;
 		case EMISSION_SHAPE_SPHERE: {
+			code += "		float s = rand_from_seed(alt_seed) * 2.0 - 1.0;\n";
+			code += "		float t = rand_from_seed(alt_seed) * 2.0 * pi;\n";
+			code += "		float p = rand_from_seed(alt_seed);\n";
+			code += "		float radius = emission_sphere_radius * sqrt(1.0 - s * s);\n";
+			code += "		TRANSFORM[3].xyz = mix(vec3(0.0, 0.0, 0.0), vec3(radius * cos(t), radius * sin(t), emission_sphere_radius * s), p);\n";
+		} break;
+		case EMISSION_SHAPE_SPHERE_SURFACE: {
 			code += "		float s = rand_from_seed(alt_seed) * 2.0 - 1.0;\n";
 			code += "		float t = rand_from_seed(alt_seed) * 2.0 * pi;\n";
 			code += "		float radius = emission_sphere_radius * sqrt(1.0 - s * s);\n";
@@ -1135,7 +1145,7 @@ RID ParticlesMaterial::get_shader_rid() const {
 }
 
 void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
-	if (property.name == "emission_sphere_radius" && emission_shape != EMISSION_SHAPE_SPHERE) {
+	if (property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -1355,7 +1365,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_lifetime_randomness", "get_lifetime_randomness");
 
 	ADD_GROUP("Emission Shape", "emission_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points,Ring"), "set_emission_shape", "get_emission_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Sphere Surface,Box,Points,Directed Points,Ring"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,or_greater"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_point_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_point_texture", "get_emission_point_texture");
@@ -1462,6 +1472,7 @@ void ParticlesMaterial::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_SPHERE);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_SPHERE_SURFACE);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);

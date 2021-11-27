@@ -367,19 +367,22 @@
 		<constant name="EMISSION_SHAPE_SPHERE" value="1" enum="EmissionShape">
 			Particles will be emitted in the volume of a sphere.
 		</constant>
-		<constant name="EMISSION_SHAPE_BOX" value="2" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_SPHERE_SURFACE" value="2" enum="EmissionShape">
+			Particles will be emitted on the surface of a sphere.
+		</constant>
+		<constant name="EMISSION_SHAPE_BOX" value="3" enum="EmissionShape">
 			Particles will be emitted in the volume of a box.
 		</constant>
-		<constant name="EMISSION_SHAPE_POINTS" value="3" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_POINTS" value="4" enum="EmissionShape">
 			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle color will be modulated by [member emission_colors].
 		</constant>
-		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="5" enum="EmissionShape">
 			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
 		</constant>
-		<constant name="EMISSION_SHAPE_RING" value="5" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_RING" value="6" enum="EmissionShape">
 			Particles will be emitted in a ring or cylinder.
 		</constant>
-		<constant name="EMISSION_SHAPE_MAX" value="6" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_MAX" value="7" enum="EmissionShape">
 			Represents the size of the [enum EmissionShape] enum.
 		</constant>
 	</constants>
