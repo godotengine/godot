@@ -172,7 +172,6 @@ Vector2 Vector3::get_zy() const {
 	return Vector2(z, y);
 }
 
-
 void Vector3::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_xyz"), &Vector3::get_xyz);
 	ClassDB::bind_method(D_METHOD("get_xzy"), &Vector3::get_xzy);
