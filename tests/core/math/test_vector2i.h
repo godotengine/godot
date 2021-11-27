@@ -45,9 +45,9 @@ TEST_CASE("[Vector2i] Constructor methods") {
 	CHECK_MESSAGE(
 			vector2i == vector2i_copy, "Vector2is created with the same values but different methods should be equal.");
 	CHECK_MESSAGE(
-			vector3i_from_float.x == 1, "Vector3is created from a Vector2 should round to correct integer values.");
+			vector2i_from_float.x == 1, "Vector2is created from a Vector2 should round to correct integer values.");
 	CHECK_MESSAGE(
-			vector3i_from_float.y == 3, "Vector3is created from a Vector2 should round to correct integer values.");
+			vector2i_from_float.y == 3, "Vector2is created from a Vector2 should round to correct integer values.");
 }
 
 TEST_CASE("[Vector2i] Transpose methods") {
