@@ -121,7 +121,9 @@ void main() {
 			uint limit = params.total_particles - params.lifetime_split;
 
 			if (params.lifetime_reverse) {
-				particle = params.total_particles - particle - 1;
+				particle = params.total_particles - particle;
+			} else {
+				particle++;
 			}
 
 			if (particle < limit) {
