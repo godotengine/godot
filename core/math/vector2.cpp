@@ -210,6 +210,7 @@ Vector2::operator String() const {
 	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ")";
 }
 
+/**
 void Vector2::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_xy"), &Vector2::get_xy);
 	ClassDB::bind_method(D_METHOD("get_yx"), &Vector2::get_yx);
@@ -217,6 +218,7 @@ void Vector2::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "xy"), "get_xy");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "yx"), "get_yx");
 }
+**/
 
 /* Vector2i */
 
@@ -307,6 +309,7 @@ Vector2i::operator String() const {
 	return "(" + itos(x) + ", " + itos(y) + ")";
 }
 
+/**
 void Vector2i::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_xy"), &Vector2i::get_xy);
 	ClassDB::bind_method(D_METHOD("get_yx"), &Vector2i::get_yx);
@@ -314,3 +317,4 @@ void Vector2i::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "xy"), "get_xy");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "yx"), "get_yx");
 }
+**/

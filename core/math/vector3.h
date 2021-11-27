@@ -210,9 +210,10 @@ struct Vector3 {
 		y = p_y;
 		z = p_z;
 	}
-
-protected:
-	static void _bind_methods();
+	/**
+	protected:
+		static void _bind_methods();
+	**/
 };
 
 Vector3 Vector3::cross(const Vector3 &p_b) const {

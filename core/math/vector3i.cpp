@@ -108,6 +108,7 @@ Vector2i Vector3i::get_zy() const {
 	return Vector2i(z, y);
 }
 
+/**
 void Vector3i::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_xyz"), &Vector3i::get_xyz);
 	ClassDB::bind_method(D_METHOD("get_xzy"), &Vector3i::get_xzy);
@@ -137,3 +138,4 @@ void Vector3i::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "zx"), "get_zx");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "zy"), "get_zy");
 }
+**/

@@ -122,9 +122,10 @@ struct Vector3i {
 		y = p_y;
 		z = p_z;
 	}
-
-protected:
-	static void _bind_methods();
+	/**
+	protected:
+		static void _bind_methods();
+	**/
 };
 
 Vector3i Vector3i::abs() const {
