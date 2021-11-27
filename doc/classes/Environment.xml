@@ -99,6 +99,7 @@
 		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">
 			If [code]true[/code], fog effects are enabled.
+			[b]Note:[/b] Enabling fog automatically fades starting from 50% of the [member Camera3D.far] distance, regardless of [member fog_depth_density]. This is used for open world fog fading. To disable this, increase the camera's [member Camera3D.far] property.
 		</member>
 		<member name="fog_height" type="float" setter="set_fog_height" getter="get_fog_height" default="0.0">
 			The height at which the height fog effect begins.

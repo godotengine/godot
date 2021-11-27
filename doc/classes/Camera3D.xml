@@ -167,6 +167,7 @@
 		</member>
 		<member name="far" type="float" setter="set_far" getter="get_far" default="4000.0">
 			The distance to the far culling boundary for this camera relative to its local Z axis.
+			[b]Note:[/b] When [member Environment.fog_enabled] is [code]true[/code], this is used as a base for open world fog fading (with fog starting at 50% of the Z far distance).
 		</member>
 		<member name="fov" type="float" setter="set_fov" getter="get_fov" default="75.0">
 			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.

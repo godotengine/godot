@@ -530,7 +530,16 @@ vec4 fog_process(vec3 vertex) {
 		}
 	}
 
-	float fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
+	// Quadratic fade off to the Z far distance (for open world fog fading).
+	// Not physically accurate, but prevents visible sudden cutoffs near the Z far clip plane.
+	// This starts at 50% of the Z far distance, which is a good compromise between visibility
+	// and smoothness.
+	float fog_amount_quad = pow(smoothstep(scene_data.z_far * 0.5, scene_data.z_far, length(vertex)), 2.0);
+
+	// Exponential fog (physically accurate).
+	float fog_amount_exp = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
+
+	float fog_amount = max(fog_amount_quad, fog_amount_exp);
 
 	if (abs(scene_data.fog_height_density) >= 0.0001) {
 		float y = (scene_data.camera_matrix * vec4(vertex, 1.0)).y;
