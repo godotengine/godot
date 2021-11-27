@@ -226,7 +226,6 @@ Vector2i Vector2i::get_yx() const {
 	return Vector2i(y, x);
 }
 
-
 Vector2i Vector2i::operator+(const Vector2i &p_v) const {
 	return Vector2i(x + p_v.x, y + p_v.y);
 }

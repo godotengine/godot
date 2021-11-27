@@ -48,6 +48,10 @@
 #include "tests/core/math/test_math.h"
 #include "tests/core/math/test_random_number_generator.h"
 #include "tests/core/math/test_rect2.h"
+#include "tests/core/math/test_vector2.h"
+#include "tests/core/math/test_vector2i.h"
+#include "tests/core/math/test_vector3.h"
+#include "tests/core/math/test_vector3i.h"
 #include "tests/core/object/test_class_db.h"
 #include "tests/core/object/test_method_bind.h"
 #include "tests/core/object/test_object.h"
@@ -79,10 +83,6 @@
 #include "tests/servers/test_shader_lang.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
-#include "tests/core/math/test_vector2.h"
-#include "tests/core/math/test_vector2i.h"
-#include "tests/core/math/test_vector3.h"
-#include "tests/core/math/test_vector3i.h"
 
 #include "modules/modules_tests.gen.h"
 
