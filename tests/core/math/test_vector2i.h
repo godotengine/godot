@@ -38,15 +38,20 @@
 namespace TestVector2i {
 
 TEST_CASE("[Vector2i] Constructor methods") {
-	const Vector2i vector2i = Vector2(1.2, 2.1);
-	const Vector2i vector2i_copy = Vector2(vector2i);
+	const Vector2i vector2i = Vector2i(1, 2);
+	const Vector2i vector2i_copy = Vector2i(vector2i);
+	const Vector2i vector2i_from_float = Vector2i(Vector2(1.2, 2.6));
 
 	CHECK_MESSAGE(
 			vector2i == vector2i_copy, "Vector2is created with the same values but different methods should be equal.");
+	CHECK_MESSAGE(
+			vector3i_from_float.x == 1, "Vector3is created from a Vector2 should round to correct integer values.");
+	CHECK_MESSAGE(
+			vector3i_from_float.y == 3, "Vector3is created from a Vector2 should round to correct integer values.");
 }
 
 TEST_CASE("[Vector2i] Transpose methods") {
-	const Vector2i vector2i = Vector2i(1.2, 2.1);
+	const Vector2i vector2i = Vector2i(1, 2);
 	const Vector2i xy = vector2i.get_xy();
 	const Vector2i yx = vector2i.get_yx();
 
