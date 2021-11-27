@@ -497,14 +497,20 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	CUSTOM.x = base_angle * degree_to_rad;\n"; // angle
 	code += "	CUSTOM.y = 0.0;\n"; // phase
 	code += "	CUSTOM.w = (1.0 - lifetime_randomness * rand_from_seed(alt_seed));\n";
-	code += "	CUSTOM.z = (tex_anim_offset) * mix(anim_offset_min, anim_offset_max, anim_offset_rand);\n"; // animation offset (0-1)
+	code += "	CUSTOM.z = (tex_anim_offset) * mix(anim_offset_min, anim_offset_max, anim_offset_rand);\n\n"; // animation offset (0-1)
+
+	code += "	if (RESTART_ROT_SCALE) {\n";
+	code += "		TRANSFORM[0].xyz = vec3(1.0, 0.0, 0.0);\n";
+	code += "		TRANSFORM[1].xyz = vec3(0.0, 1.0, 0.0);\n";
+	code += "		TRANSFORM[2].xyz = vec3(0.0, 0.0, 1.0);\n";
+	code += "	}\n\n";
 
 	code += "	if (RESTART_POSITION) {\n";
 
 	switch (emission_shape) {
 		case EMISSION_SHAPE_POINT: {
 			//do none, identity (will later be multiplied by emission transform)
-			code += "		TRANSFORM = mat4(vec4(1,0,0,0),vec4(0,1,0,0),vec4(0,0,1,0),vec4(0,0,0,1));\n";
+			code += "		TRANSFORM[3].xyz = vec3(0.0, 0.0, 0.0);\n";
 		} break;
 		case EMISSION_SHAPE_SPHERE: {
 			code += "		float s = rand_from_seed(alt_seed) * 2.0 - 1.0;\n";
