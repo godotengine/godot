@@ -198,7 +198,7 @@ private:
 
 	struct PlaybackData {
 		AnimationData *from = nullptr;
-		float pos = 0.0;
+		double pos = 0.0;
 		float speed_scale = 1.0;
 	};
 
