@@ -101,7 +101,7 @@ TEST_CASE("[Vector3] Transpose methods") {
 	CHECK_MESSAGE(
 			zyx.x == vector3.z, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
-			zyx.z == vector3.y, "Transposed vectors should have the correct values");
+			zyx.y == vector3.y, "Transposed vectors should have the correct values");
 	CHECK_MESSAGE(
 			zyx.z == vector3.x, "Transposed vectors should have the correct values");
 

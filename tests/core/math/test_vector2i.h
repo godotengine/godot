@@ -47,7 +47,7 @@ TEST_CASE("[Vector2i] Constructor methods") {
 	CHECK_MESSAGE(
 			vector2i_from_float.x == 1, "Vector2is created from a Vector2 should round to correct integer values.");
 	CHECK_MESSAGE(
-			vector2i_from_float.y == 3, "Vector2is created from a Vector2 should round to correct integer values.");
+			vector2i_from_float.y == 2, "Vector2is created from a Vector2 should round to correct integer values.");
 }
 
 TEST_CASE("[Vector2i] Transpose methods") {
