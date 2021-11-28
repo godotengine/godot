@@ -31,13 +31,14 @@
 #ifndef VISUALSCRIPT_PROPERTYSELECTOR_H
 #define VISUALSCRIPT_PROPERTYSELECTOR_H
 
+#include "../visual_script.h"
 #include "editor/editor_help.h"
 #include "editor/property_editor.h"
 #include "scene/gui/rich_text_label.h"
 
 class VisualScriptPropertySelector : public ConfirmationDialog {
 	GDCLASS(VisualScriptPropertySelector, ConfirmationDialog);
-	
+
 	enum SearchFlags {
 		SEARCH_CLASSES = 1 << 0,
 		SEARCH_CONSTRUCTORS = 1 << 1,
@@ -69,9 +70,18 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	OptionButton *scope_combo;
 	Tree *results_tree;
 
+	class DocRunner;
+	Ref<DocRunner> doc_runner;
+	Vector<Ref<VisualScriptNode>> result_nodes;
+	Map<String, DocData::ClassDoc> result_class_list;
+
+	class SearchRunner;
+	Ref<SearchRunner> search_runner;
+
 	void _sbox_input(const Ref<InputEvent> &p_ie);
-	void _update_search_i(int p_int);
-	void _update_search_s(String p_string);
+	void _update_results_i(int p_int);
+	void _update_results_s(String p_string);
+	void _update_results();
 	void _update_search();
 
 	void create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text);
@@ -115,6 +125,118 @@ public:
 	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
 
 	VisualScriptPropertySelector();
+};
+
+class VisualScriptPropertySelector::DocRunner : public RefCounted {
+	enum Phase {
+		PHASE_INIT_SEARCH,
+		PHASE_GET_ALL_FOLDER_PATHS,
+		PHASE_GET_ALL_FILE_PATHS,
+		PHASE_MAX
+	};
+	int phase = 0;
+
+	Vector<Ref<VisualScriptNode>> *result_nodes;
+	//Vector<Ref<Script>> *result_scripts;
+	Map<String, DocData::ClassDoc> *result_class_list;
+
+	// Config
+	Vector<String> _extension_filter;
+
+	// State
+	String _current_dir;
+	Vector<PackedStringArray> _folders_stack;
+	Vector<String> _files_to_scan;
+	int _initial_files_count = 0;
+
+	bool _slice();
+	bool _phase_init_search();
+	bool _phase_get_all_folder_paths();
+	bool _phase_get_all_file_paths();
+
+	void _scan_dir(String path, PackedStringArray &out_folders);
+	void _scan_file(String fpath);
+	DocData::MethodDoc _get_method_doc(MethodInfo method_info);
+
+public:
+	bool work(uint64_t slot = 100000);
+
+	DocRunner(Vector<Ref<VisualScriptNode>> *p_result_nodes, Map<String, DocData::ClassDoc> *p_result_class_list);
+};
+
+class VisualScriptPropertySelector::SearchRunner : public RefCounted {
+	enum Phase {
+		PHASE_MATCH_CLASSES_INIT,
+		PHASE_MATCH_CLASSES,
+		PHASE_CLASS_ITEMS_INIT,
+		PHASE_CLASS_ITEMS,
+		PHASE_MEMBER_ITEMS_INIT,
+		PHASE_MEMBER_ITEMS,
+		PHASE_SELECT_MATCH,
+		PHASE_MAX
+	};
+	int phase = 0;
+
+	struct ClassMatch {
+		DocData::ClassDoc *doc;
+		bool name = false;
+		Vector<DocData::MethodDoc *> constructors;
+		Vector<DocData::MethodDoc *> methods;
+		Vector<DocData::MethodDoc *> operators;
+		Vector<DocData::MethodDoc *> signals;
+		Vector<DocData::ConstantDoc *> constants;
+		Vector<DocData::PropertyDoc *> properties;
+		Vector<DocData::ThemeItemDoc *> theme_properties;
+
+		bool required() {
+			return name || methods.size() || signals.size() || constants.size() || properties.size() || theme_properties.size();
+		}
+	};
+
+	VisualScriptPropertySelector *selector_ui;
+	Control *ui_service;
+	Tree *results_tree;
+	String term;
+	int search_flags;
+
+	Ref<Texture2D> empty_icon;
+	Color disabled_color;
+
+	Map<String, DocData::ClassDoc> *class_docs;
+	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
+	Map<String, ClassMatch> matches;
+	Map<String, ClassMatch>::Element *iterator_match = nullptr;
+	TreeItem *root_item = nullptr;
+	Map<String, TreeItem *> class_items;
+	TreeItem *matched_item = nullptr;
+	float match_highest_score = 0;
+
+	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
+
+	bool _slice();
+	bool _phase_match_classes_init();
+	bool _phase_match_classes();
+	bool _phase_class_items_init();
+	bool _phase_class_items();
+	bool _phase_member_items_init();
+	bool _phase_member_items();
+	bool _phase_select_match();
+
+	bool _match_string(const String &p_term, const String &p_string) const;
+	void _match_item(TreeItem *p_item, const String &p_text);
+	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
+	TreeItem *_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray);
+	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc);
+	TreeItem *_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc);
+	TreeItem *_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc);
+	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
+	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc);
+	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip);
+
+public:
+	bool work(uint64_t slot = 100000);
+
+	SearchRunner(VisualScriptPropertySelector *p_selector_ui, Tree *p_results_tree, Map<String, DocData::ClassDoc> *p_class_docs);
 };
 
 #endif // VISUALSCRIPT_PROPERTYSELECTOR_H

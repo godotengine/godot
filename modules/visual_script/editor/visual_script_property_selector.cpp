@@ -1,4 +1,3 @@
-#include "visual_script_property_selector.h"
 /*************************************************************************/
 /*  visual_script_property_selector.cpp                                  */
 /*************************************************************************/
@@ -38,6 +37,7 @@
 #include "../visual_script_nodes.h"
 #include "core/os/keyboard.h"
 #include "editor/doc_tools.h"
+#include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/main/node.h"
@@ -77,15 +77,26 @@ void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
-void VisualScriptPropertySelector::_update_search_i(int p_int) {
-	_update_search();
+void VisualScriptPropertySelector::_update_results_i(int p_int) {
+	_update_results();
 }
 
-void VisualScriptPropertySelector::_update_search_s(String p_string) {
-	_update_search();
+void VisualScriptPropertySelector::_update_results_s(String p_string) {
+	_update_results();
+}
+
+void VisualScriptPropertySelector::_update_results() {
+	//	node_runner = Ref<NodeRunner>(memnew(NodeRunner(vbox, &result_nodes)));
+	doc_runner = Ref<DocRunner>(memnew(DocRunner(&result_nodes, &result_class_list)));
+	search_runner = Ref<SearchRunner>(memnew(SearchRunner(this, results_tree, &result_class_list)));
+	set_process(true);
+	//// Get all nodes and atach them to there categorys
+	//List<String> fnodes;
+	//VisualScriptLanguage::singleton->get_registered_node_names(&fnodes);
 }
 
 void VisualScriptPropertySelector::_update_search() {
+	//	return;
 	set_title(TTR("Search VisualScript"));
 
 	results_tree->clear();
@@ -538,8 +549,30 @@ void VisualScriptPropertySelector::_hide_requested() {
 }
 
 void VisualScriptPropertySelector::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
+	switch (p_what) {
+		//case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		//	_update_icons();
+		//} break;
+		case NOTIFICATION_ENTER_TREE: {
+			connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
+			//_update_icons();
+		} break;
+		case NOTIFICATION_PROCESS: {
+			// Update background search.
+			if (doc_runner.is_valid() || search_runner.is_valid()) {
+				if (doc_runner->work() && search_runner->work()) {
+					// Search done.
+					get_ok_button()->set_disabled(!results_tree->get_selected());
+
+					doc_runner = Ref<DocRunner>();
+					search_runner = Ref<SearchRunner>();
+					set_process(false);
+				}
+			} else {
+				// if one is valid
+				set_process(false);
+			}
+		} break;
 	}
 }
 
@@ -697,8 +730,8 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 	}
 	search_box->grab_focus();
 	connecting = p_connecting;
-
-	_update_search();
+	_update_results();
+	//_update_search();
 }
 
 void VisualScriptPropertySelector::show_window(float p_screen_ratio) {
@@ -723,7 +756,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	search_box = memnew(LineEdit);
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_update_search_s));
+	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_update_results_s));
 	search_box->connect("gui_input", callable_mp(this, &VisualScriptPropertySelector::_sbox_input));
 	register_text_enter(search_box);
 	hbox->add_child(search_box);
@@ -731,7 +764,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	case_sensitive_button = memnew(Button);
 	//	case_sensitive_button->set_flat(true); comented until update icon is working
 	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
-	case_sensitive_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_search));
+	case_sensitive_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
 	case_sensitive_button->set_focus_mode(Control::FOCUS_NONE);
 	hbox->add_child(case_sensitive_button);
@@ -739,7 +772,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hierarchy_button = memnew(Button);
 	//	hierarchy_button->set_flat(true); comented until update icon is working
 	hierarchy_button->set_tooltip(TTR("Show Hierarchy"));
-	hierarchy_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_search));
+	hierarchy_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
 	hierarchy_button->set_focus_mode(Control::FOCUS_NONE);
@@ -758,7 +791,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
 	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
 	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
-	filter_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_update_search_i));
+	filter_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_update_results_i));
 	hbox->add_child(filter_combo);
 
 	scope_combo = memnew(OptionButton);
@@ -769,7 +802,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	scope_combo->add_item(TTR("Search Base"), SCOPE_BASE);
 	scope_combo->add_item(TTR("Search Inheriters"), SCOPE_INHERITERS);
 	scope_combo->add_item(TTR("Search Unrelated"), SCOPE_UNRELATED);
-	scope_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_update_search_i));
+	scope_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_update_results_i));
 	hbox->add_child(scope_combo);
 
 	results_tree = memnew(Tree);
@@ -797,4 +830,613 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	get_ok_button()->set_text(TTR("Open"));
 	get_ok_button()->set_disabled(true);
 	set_hide_on_ok(false);
+}
+
+bool VisualScriptPropertySelector::DocRunner::_slice() {
+	// Return true when fases are completed, otherwise false.
+	bool phase_done = false;
+	switch (phase) {
+		case PHASE_INIT_SEARCH:
+			phase_done = _phase_init_search();
+			break;
+		case PHASE_GET_ALL_FOLDER_PATHS:
+			phase_done = _phase_get_all_folder_paths();
+			break;
+		case PHASE_GET_ALL_FILE_PATHS:
+			phase_done = _phase_get_all_file_paths();
+			break;
+		case PHASE_MAX:
+			return true;
+		default:
+			WARN_PRINT("Invalid or unhandled phase in EditorHelpSearch::Runner, aborting search.");
+			return true;
+	};
+
+	if (phase_done) {
+		phase++;
+	}
+	return false;
+}
+
+bool VisualScriptPropertySelector::DocRunner::_phase_init_search() {
+	// Reset data
+	result_nodes->clear();
+	*result_class_list = EditorHelp::get_doc_data()->class_list;
+
+	// Config
+	_extension_filter.clear();
+	_extension_filter.append("gd");
+	_extension_filter.append("vs");
+
+	// State
+	_current_dir = "";
+	PackedStringArray init_folder;
+	init_folder.push_back("");
+	_folders_stack.clear();
+	_folders_stack.push_back(init_folder);
+	_initial_files_count = 0;
+
+	return true;
+}
+
+bool VisualScriptPropertySelector::DocRunner::_phase_get_all_folder_paths() {
+	if (_folders_stack.size() != 0) {
+		// Scan folders first so we can build a list of files and have progress info later.
+
+		PackedStringArray &folders_to_scan = _folders_stack.write[_folders_stack.size() - 1];
+
+		if (folders_to_scan.size() != 0) {
+			// Scan one folder below.
+
+			String folder_name = folders_to_scan[folders_to_scan.size() - 1];
+			folders_to_scan.resize(folders_to_scan.size() - 1); //pop_back(...);
+
+			_current_dir = _current_dir.plus_file(folder_name);
+
+			PackedStringArray sub_dirs;
+			_scan_dir("res://" + _current_dir, sub_dirs);
+
+			_folders_stack.push_back(sub_dirs);
+		} else {
+			// Go back one level.
+			_folders_stack.resize(_folders_stack.size() - 1); //pop_back(...);
+			_current_dir = _current_dir.get_base_dir();
+
+			if (_folders_stack.size() == 0) {
+				// All folders scanned.
+				_initial_files_count = _files_to_scan.size();
+			}
+		}
+		return false;
+	}
+	return true;
+}
+
+bool VisualScriptPropertySelector::DocRunner::_phase_get_all_file_paths() {
+	if (_files_to_scan.size() != 0) {
+		String fpath = _files_to_scan[_files_to_scan.size() - 1];
+		_files_to_scan.resize(_files_to_scan.size() - 1); //pop_back(...);
+		_scan_file(fpath);
+		return false;
+	}
+	return true;
+}
+
+void VisualScriptPropertySelector::DocRunner::_scan_dir(String path, PackedStringArray &out_folders) {
+	DirAccessRef dir = DirAccess::open(path);
+	if (!dir) {
+		print_verbose("Cannot open directory! " + path);
+		return;
+	}
+
+	dir->list_dir_begin();
+
+	for (int i = 0; i < 1000; ++i) {
+		String file = dir->get_next();
+
+		if (file == "") {
+			break;
+		}
+
+		// If there is a .gdignore file in the directory, skip searching the directory.
+		if (file == ".gdignore") {
+			break;
+		}
+
+		// Ignore special directories (such as those beginning with . and the project data directory).
+		String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
+		if (file.begins_with(".") || file == project_data_dir_name) {
+			continue;
+		}
+		if (dir->current_is_hidden()) {
+			continue;
+		}
+
+		if (dir->current_is_dir()) {
+			out_folders.push_back(file);
+
+		} else {
+			String file_ext = file.get_extension();
+			if (_extension_filter.has(file_ext)) {
+				_files_to_scan.push_back(path.plus_file(file));
+			}
+		}
+	}
+}
+
+void VisualScriptPropertySelector::DocRunner::_scan_file(String fpath) {
+	Ref<Script> script;
+	script = ResourceLoader::load(fpath);
+
+	if (script->get_instance_base_type() == "VisualScriptCustomNode") {
+		Ref<VisualScriptCustomNode> vs_c_node;
+		vs_c_node.instantiate();
+		vs_c_node->set_script(script);
+		result_nodes->push_back(vs_c_node);
+		return;
+	}
+	DocData::ClassDoc class_doc = DocData::ClassDoc();
+	class_doc.name = fpath;
+	class_doc.inherits = script->get_instance_base_type();
+	class_doc.brief_description = "a project script (brief_description)";
+	class_doc.description = "a project script (long_description)";
+
+	Object *obj = ObjectDB::get_instance(script->get_instance_id());
+	if (Object::cast_to<Script>(obj)) {
+		List<MethodInfo> methods;
+		Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
+			class_doc.methods.push_back(_get_method_doc(M->get()));
+		}
+
+		List<MethodInfo> signals;
+		Object::cast_to<Script>(obj)->get_script_signal_list(&signals);
+		for (List<MethodInfo>::Element *S = signals.front(); S; S = S->next()) {
+			class_doc.signals.push_back(_get_method_doc(S->get()));
+		}
+
+		List<PropertyInfo> propertys;
+		Object::cast_to<Script>(obj)->get_script_property_list(&propertys);
+		for (List<PropertyInfo>::Element *P = propertys.front(); P; P = P->next()) {
+			DocData::PropertyDoc pd = DocData::PropertyDoc();
+			pd.name = P->get().name;
+			pd.type = Variant::get_type_name(P->get().type);
+			class_doc.properties.push_back(pd);
+		}
+	}
+	result_class_list->insert(class_doc.name, class_doc);
+}
+
+DocData::MethodDoc VisualScriptPropertySelector::DocRunner::_get_method_doc(MethodInfo method_info) {
+	DocData::MethodDoc method_doc = DocData::MethodDoc();
+	method_doc.name = method_info.name;
+	method_doc.return_type = Variant::get_type_name(method_info.return_val.type);
+	method_doc.description = "No description available";
+	for (List<PropertyInfo>::Element *P = method_info.arguments.front(); P; P = P->next()) {
+		DocData::ArgumentDoc argument_doc = DocData::ArgumentDoc();
+		argument_doc.name = P->get().name;
+		argument_doc.type = Variant::get_type_name(P->get().type);
+		method_doc.arguments.push_back(argument_doc);
+	}
+	return method_doc;
+}
+
+bool VisualScriptPropertySelector::DocRunner::work(uint64_t slot) {
+	// Return true when the search has been completed, otherwise false.
+	const uint64_t until = OS::get_singleton()->get_ticks_usec() + slot;
+	while (!_slice()) {
+		if (OS::get_singleton()->get_ticks_usec() > until) {
+			return false;
+		}
+	}
+	return true;
+}
+
+VisualScriptPropertySelector::DocRunner::DocRunner(Vector<Ref<VisualScriptNode>> *p_result_nodes, Map<String, DocData::ClassDoc> *p_result_class_list) :
+		result_nodes(p_result_nodes),
+		result_class_list(p_result_class_list) {
+}
+
+bool VisualScriptPropertySelector::SearchRunner::_is_class_disabled_by_feature_profile(const StringName &p_class) {
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	if (profile.is_null()) {
+		return false;
+	}
+
+	StringName class_name = p_class;
+	while (class_name != StringName()) {
+		if (!ClassDB::class_exists(class_name)) {
+			return false;
+		}
+
+		if (profile->is_class_disabled(class_name)) {
+			return true;
+		}
+		class_name = ClassDB::get_parent_class(class_name);
+	}
+
+	return false;
+}
+
+bool VisualScriptPropertySelector::SearchRunner::_slice() {
+	bool phase_done = false;
+	switch (phase) {
+		case PHASE_MATCH_CLASSES_INIT:
+			phase_done = _phase_match_classes_init();
+			break;
+		case PHASE_MATCH_CLASSES:
+			phase_done = _phase_match_classes();
+			break;
+		case PHASE_CLASS_ITEMS_INIT:
+			phase_done = _phase_class_items_init();
+			break;
+		case PHASE_CLASS_ITEMS:
+			phase_done = _phase_class_items();
+			break;
+		case PHASE_MEMBER_ITEMS_INIT:
+			phase_done = _phase_member_items_init();
+			break;
+		case PHASE_MEMBER_ITEMS:
+			phase_done = _phase_member_items();
+			break;
+		case PHASE_SELECT_MATCH:
+			phase_done = _phase_select_match();
+			break;
+		case PHASE_MAX:
+			return true;
+		default:
+			WARN_PRINT("Invalid or unhandled phase in EditorHelpSearch::Runner, aborting search.");
+			return true;
+	};
+
+	if (phase_done) {
+		phase++;
+	}
+	return false;
+}
+
+bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
+	iterator_doc = class_docs->front();
+	matches.clear();
+	matched_item = nullptr;
+	match_highest_score = 0;
+
+	search_flags = selector_ui->filter_combo->get_selected_id();
+	if (selector_ui->case_sensitive_button->is_pressed()) {
+		search_flags |= SEARCH_CASE_SENSITIVE;
+	}
+	if (selector_ui->hierarchy_button->is_pressed()) {
+		search_flags |= SEARCH_SHOW_HIERARCHY;
+	}
+
+	return true;
+}
+
+bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
+	DocData::ClassDoc &class_doc = iterator_doc->value();
+	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
+		matches[class_doc.name] = ClassMatch();
+		ClassMatch &match = matches[class_doc.name];
+
+		match.doc = &class_doc;
+
+		// Match class name.
+		if (search_flags & SEARCH_CLASSES) {
+			match.name = term == "" || _match_string(term, class_doc.name);
+		}
+
+		// Match members if the term is long enough.
+		if (term.length() > 1) {
+			if (search_flags & SEARCH_CONSTRUCTORS) {
+				for (int i = 0; i < class_doc.constructors.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.constructors[i].name : class_doc.constructors[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.constructors.push_back(const_cast<DocData::MethodDoc *>(&class_doc.constructors[i]));
+					}
+				}
+			}
+			if (search_flags & SEARCH_METHODS) {
+				for (int i = 0; i < class_doc.methods.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
+					}
+				}
+			}
+			if (search_flags & SEARCH_OPERATORS) {
+				for (int i = 0; i < class_doc.operators.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.operators[i].name : class_doc.operators[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.operators.push_back(const_cast<DocData::MethodDoc *>(&class_doc.operators[i]));
+					}
+				}
+			}
+			if (search_flags & SEARCH_SIGNALS) {
+				for (int i = 0; i < class_doc.signals.size(); i++) {
+					if (_match_string(term, class_doc.signals[i].name)) {
+						match.signals.push_back(const_cast<DocData::MethodDoc *>(&class_doc.signals[i]));
+					}
+				}
+			}
+			if (search_flags & SEARCH_CONSTANTS) {
+				for (int i = 0; i < class_doc.constants.size(); i++) {
+					if (_match_string(term, class_doc.constants[i].name)) {
+						match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc.constants[i]));
+					}
+				}
+			}
+			if (search_flags & SEARCH_PROPERTIES) {
+				for (int i = 0; i < class_doc.properties.size(); i++) {
+					if (_match_string(term, class_doc.properties[i].name) || _match_string(term, class_doc.properties[i].getter) || _match_string(term, class_doc.properties[i].setter)) {
+						match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.properties[i]));
+					}
+				}
+			}
+			if (search_flags & SEARCH_THEME_ITEMS) {
+				for (int i = 0; i < class_doc.theme_properties.size(); i++) {
+					if (_match_string(term, class_doc.theme_properties[i].name)) {
+						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc.theme_properties[i]));
+					}
+				}
+			}
+		}
+	}
+
+	iterator_doc = iterator_doc->next();
+	return !iterator_doc;
+}
+
+bool VisualScriptPropertySelector::SearchRunner::_phase_class_items_init() {
+	iterator_match = matches.front();
+
+	results_tree->clear();
+	root_item = results_tree->create_item();
+	class_items.clear();
+
+	return true;
+}
+
+bool VisualScriptPropertySelector::SearchRunner::_phase_class_items() {
+	ClassMatch &match = iterator_match->value();
+
+	if (search_flags & SEARCH_SHOW_HIERARCHY) {
+		if (match.required()) {
+			_create_class_hierarchy(match);
+		}
+	} else {
+		if (match.name) {
+			_create_class_item(root_item, match.doc, false);
+		}
+	}
+
+	iterator_match = iterator_match->next();
+	return !iterator_match;
+}
+
+bool VisualScriptPropertySelector::SearchRunner::_phase_member_items_init() {
+	iterator_match = matches.front();
+
+	return true;
+}
+
+bool VisualScriptPropertySelector::SearchRunner::_phase_member_items() {
+	ClassMatch &match = iterator_match->value();
+
+	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
+	bool constructor_created = false;
+	for (int i = 0; i < match.methods.size(); i++) {
+		String text = match.methods[i]->name;
+		if (!constructor_created) {
+			if (match.doc->name == match.methods[i]->name) {
+				text += " " + TTR("(constructors)");
+				constructor_created = true;
+			}
+		} else {
+			if (match.doc->name == match.methods[i]->name) {
+				continue;
+			}
+		}
+		_create_method_item(parent, match.doc, text, match.methods[i]);
+	}
+	for (int i = 0; i < match.signals.size(); i++) {
+		_create_signal_item(parent, match.doc, match.signals[i]);
+	}
+	for (int i = 0; i < match.constants.size(); i++) {
+		_create_constant_item(parent, match.doc, match.constants[i]);
+	}
+	for (int i = 0; i < match.properties.size(); i++) {
+		_create_property_item(parent, match.doc, match.properties[i]);
+	}
+	for (int i = 0; i < match.theme_properties.size(); i++) {
+		_create_theme_property_item(parent, match.doc, match.theme_properties[i]);
+	}
+
+	iterator_match = iterator_match->next();
+	return !iterator_match;
+}
+
+bool VisualScriptPropertySelector::SearchRunner::_phase_select_match() {
+	if (matched_item) {
+		matched_item->select(0);
+	}
+	return true;
+}
+
+bool VisualScriptPropertySelector::SearchRunner::_match_string(const String &p_term, const String &p_string) const {
+	if (search_flags & SEARCH_CASE_SENSITIVE) {
+		return p_string.find(p_term) > -1;
+	} else {
+		return p_string.findn(p_term) > -1;
+	}
+}
+
+void VisualScriptPropertySelector::SearchRunner::_match_item(TreeItem *p_item, const String &p_text) {
+	float inverse_length = 1.f / float(p_text.length());
+
+	// Favor types where search term is a substring close to the start of the type.
+	float w = 0.5f;
+	int pos = p_text.findn(term);
+	float score = (pos > -1) ? 1.0f - w * MIN(1, 3 * pos * inverse_length) : MAX(0.f, .9f - w);
+
+	// Favor shorter items: they resemble the search term more.
+	w = 0.1f;
+	score *= (1 - w) + w * (term.length() * inverse_length);
+
+	if (match_highest_score == 0 || score > match_highest_score) {
+		matched_item = p_item;
+		match_highest_score = score;
+	}
+}
+
+TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_hierarchy(const ClassMatch &p_match) {
+	if (class_items.has(p_match.doc->name)) {
+		return class_items[p_match.doc->name];
+	}
+
+	// Ensure parent nodes are created first.
+	TreeItem *parent = root_item;
+	if (p_match.doc->inherits != "") {
+		if (class_items.has(p_match.doc->inherits)) {
+			parent = class_items[p_match.doc->inherits];
+		} else {
+			ClassMatch &base_match = matches[p_match.doc->inherits];
+			parent = _create_class_hierarchy(base_match);
+		}
+	}
+
+	TreeItem *class_item = _create_class_item(parent, p_match.doc, !p_match.name);
+	class_items[p_match.doc->name] = class_item;
+	return class_item;
+}
+
+TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
+	Ref<Texture2D> icon = empty_icon;
+	if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
+		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
+	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
+		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+	}
+	String tooltip = p_doc->brief_description.strip_edges();
+
+	TreeItem *item = results_tree->create_item(p_parent);
+	item->set_icon(0, icon);
+	item->set_text(0, p_doc->name);
+	item->set_text(1, TTR("Class"));
+	item->set_tooltip(0, tooltip);
+	item->set_tooltip(1, tooltip);
+	item->set_metadata(0, "class_name:" + p_doc->name);
+	if (p_gray) {
+		item->set_custom_color(0, disabled_color);
+		item->set_custom_color(1, disabled_color);
+	}
+
+	_match_item(item, p_doc->name);
+
+	return item;
+}
+
+TreeItem *VisualScriptPropertySelector::SearchRunner::_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc) {
+	String tooltip = p_doc->return_type + " " + p_class_doc->name + "." + p_doc->name + "(";
+	for (int i = 0; i < p_doc->arguments.size(); i++) {
+		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
+		tooltip += arg.type + " " + arg.name;
+		if (arg.default_value != "") {
+			tooltip += " = " + arg.default_value;
+		}
+		if (i < p_doc->arguments.size() - 1) {
+			tooltip += ", ";
+		}
+	}
+	tooltip += ")";
+	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_doc->name, p_text, TTRC("Method"), "method", tooltip);
+}
+
+TreeItem *VisualScriptPropertySelector::SearchRunner::_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) {
+	String tooltip = p_doc->return_type + " " + p_class_doc->name + "." + p_doc->name + "(";
+	for (int i = 0; i < p_doc->arguments.size(); i++) {
+		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
+		tooltip += arg.type + " " + arg.name;
+		if (arg.default_value != "") {
+			tooltip += " = " + arg.default_value;
+		}
+		if (i < p_doc->arguments.size() - 1) {
+			tooltip += ", ";
+		}
+	}
+	tooltip += ")";
+	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_doc->name, p_doc->name, TTRC("Signal"), "signal", tooltip);
+}
+
+TreeItem *VisualScriptPropertySelector::SearchRunner::_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc) {
+	String tooltip = p_class_doc->name + "." + p_doc->name;
+	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, p_doc->name, TTRC("Constant"), "constant", tooltip);
+}
+
+TreeItem *VisualScriptPropertySelector::SearchRunner::_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
+	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
+	tooltip += "\n    " + p_class_doc->name + "." + p_doc->setter + "(value) setter";
+	tooltip += "\n    " + p_class_doc->name + "." + p_doc->getter + "() getter";
+	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, p_doc->name, TTRC("Property"), "property", tooltip);
+}
+
+TreeItem *VisualScriptPropertySelector::SearchRunner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc) {
+	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
+	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, p_doc->name, TTRC("Theme Property"), "theme_item", tooltip);
+}
+
+TreeItem *VisualScriptPropertySelector::SearchRunner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip) {
+	Ref<Texture2D> icon;
+	String text;
+	if (search_flags & SEARCH_SHOW_HIERARCHY) {
+		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
+		text = p_text;
+	} else {
+		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
+		/*// In flat mode, show the class icon.
+if (ui_service->has_icon(p_class_name, "EditorIcons"))
+icon = ui_service->get_icon(p_class_name, "EditorIcons");
+else if (ClassDB::is_parent_class(p_class_name, "Object"))
+icon = ui_service->get_icon("Object", "EditorIcons");*/
+		text = p_class_name + "." + p_text;
+	}
+
+	TreeItem *item = results_tree->create_item(p_parent);
+	item->set_icon(0, icon);
+	item->set_text(0, text);
+	item->set_text(1, TTRGET(p_type));
+	item->set_tooltip(0, p_tooltip);
+	item->set_tooltip(1, p_tooltip);
+	item->set_metadata(0, "class_" + p_metatype + ":" + p_class_name + ":" + p_name);
+
+	_match_item(item, p_name);
+
+	return item;
+}
+
+bool VisualScriptPropertySelector::SearchRunner::work(uint64_t slot) {
+	// Return true when the search has been completed, otherwise false.
+	const uint64_t until = OS::get_singleton()->get_ticks_usec() + slot;
+	while (!_slice()) {
+		if (OS::get_singleton()->get_ticks_usec() > until) {
+			return false;
+		}
+	}
+	return true;
+}
+
+VisualScriptPropertySelector::SearchRunner::SearchRunner(VisualScriptPropertySelector *p_selector_ui, Tree *p_results_tree, Map<String, DocData::ClassDoc> *p_class_docs) :
+		selector_ui(p_selector_ui),
+		ui_service(p_selector_ui->vbox),
+		results_tree(p_results_tree),
+		term(p_selector_ui->search_box->get_text()),
+		class_docs(p_class_docs) {
 }
