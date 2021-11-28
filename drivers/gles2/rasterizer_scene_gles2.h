@@ -378,6 +378,10 @@ public:
 		bool glow_bicubic_upscale;
 		bool glow_high_quality;
 
+		VS::EnvironmentToneMapper tone_mapper;
+		float tone_mapper_exposure;
+		float tone_mapper_exposure_white;
+    
 		bool dof_blur_far_enabled;
 		float dof_blur_far_distance;
 		float dof_blur_far_transition;

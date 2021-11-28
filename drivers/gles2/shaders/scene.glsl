@@ -724,6 +724,114 @@ VERTEX_SHADER_CODE
 
 /* clang-format off */
 [fragment]
+  
+
+#if defined(USE_REINHARD_TONEMAPPER) || defined(USE_FILMIC_TONEMAPPER) || defined(USE_ACES_TONEMAPPER) || defined(USE_ACES_FITTED_TONEMAPPER)
+
+vec3 tonemap_filmic(vec3 color, float white) {
+	// exposure bias: input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
+	// also useful to scale the input to the range that the tonemapper is designed for (some require very high input values)
+	// has no effect on the curve's general shape or visual properties
+	const float exposure_bias = 2.0f;
+	const float A = 0.22f * exposure_bias * exposure_bias; // bias baked into constants for performance
+	const float B = 0.30f * exposure_bias;
+	const float C = 0.10f;
+	const float D = 0.20f;
+	const float E = 0.01f;
+	const float F = 0.30f;
+
+	vec3 color_tonemapped = ((color * (A * color + C * B) + D * E) / (color * (A * color + B) + D * F)) - E / F;
+	float white_tonemapped = ((white * (A * white + C * B) + D * E) / (white * (A * white + B) + D * F)) - E / F;
+
+	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
+}
+
+vec3 tonemap_aces(vec3 color, float white) {
+	const float exposure_bias = 0.85f;
+	const float A = 2.51f * exposure_bias * exposure_bias;
+	const float B = 0.03f * exposure_bias;
+	const float C = 2.43f * exposure_bias * exposure_bias;
+	const float D = 0.59f * exposure_bias;
+	const float E = 0.14f;
+
+	vec3 color_tonemapped = (color * (A * color + B)) / (color * (C * color + D) + E);
+	float white_tonemapped = (white * (A * white + B)) / (white * (C * white + D) + E);
+
+	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
+}
+
+// Adapted from https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
+// (MIT License).
+vec3 tonemap_aces_fitted(vec3 color, float white) {
+	const float exposure_bias = 1.8f;
+	const float A = 0.0245786f;
+	const float B = 0.000090537f;
+	const float C = 0.983729f;
+	const float D = 0.432951f;
+	const float E = 0.238081f;
+
+	// Exposure bias baked into transform to save shader instructions. Equivalent to `color *= exposure_bias`
+	const mat3 rgb_to_rrt = mat3(
+                               vec3(0.59719f * exposure_bias, 0.35458f * exposure_bias, 0.04823f * exposure_bias),
+                               vec3(0.07600f * exposure_bias, 0.90834f * exposure_bias, 0.01566f * exposure_bias),
+                               vec3(0.02840f * exposure_bias, 0.13383f * exposure_bias, 0.83777f * exposure_bias));
+
+	const mat3 odt_to_rgb = mat3(
+                               vec3(1.60475f, -0.53108f, -0.07367f),
+                               vec3(-0.10208f, 1.10813f, -0.00605f),
+                               vec3(-0.00327f, -0.07276f, 1.07602f));
+
+	color *= rgb_to_rrt;
+	vec3 color_tonemapped = (color * (color + A) - B) / (color * (C * color + D) + E);
+	color_tonemapped *= odt_to_rgb;
+
+	white *= exposure_bias;
+	float white_tonemapped = (white * (white + A) - B) / (white * (C * white + D) + E);
+
+	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
+}
+
+vec3 tonemap_reinhard(vec3 color, float white) {
+	return clamp((white * color + color) / (color * white + white), vec3(0.0f), vec3(1.0f));
+}
+
+vec3 linear_to_srgb(vec3 color) { // convert linear rgb to srgb, assumes clamped input in range [0;1]
+	const vec3 a = vec3(0.055f);
+	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, vec3(lessThan(color.rgb, vec3(0.0031308f))));
+}
+
+vec3 apply_tonemapping(vec3 color, float white) {
+	// Ensure color values are positive.
+	// They can be negative in the case of negative lights, which leads to undesired behavior.
+	color = max(vec3(0.0f), color);
+
+#ifdef USE_REINHARD_TONEMAPPER
+	return tonemap_reinhard(color, white);
+#endif
+
+#ifdef USE_FILMIC_TONEMAPPER
+	return tonemap_filmic(color, white);
+#endif
+
+#ifdef USE_ACES_TONEMAPPER
+	return tonemap_aces(color, white);
+#endif
+
+#ifdef USE_ACES_FITTED_TONEMAPPER
+	return tonemap_aces_fitted(color, white);
+#endif
+
+	return color;
+}
+
+#else
+
+// inputs are sRGB apparently lolwtf
+vec3 apply_tonemapping(vec3 color, float white) {
+	return color;
+}
+
+#endif
 
 // texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
 // Do not copy these defines in the vertex section.
@@ -845,6 +953,9 @@ uniform float refprobe2_intensity;
 uniform vec4 refprobe2_ambient;
 
 #endif //USE_REFLECTION_PROBE2
+
+uniform float exposure;
+uniform float white;
 
 #define RADIANCE_MAX_LOD 6.0
 
@@ -2347,6 +2458,8 @@ FRAGMENT_SHADER_CODE
 #ifdef OUTPUT_LINEAR
 	// sRGB -> linear
 	gl_FragColor.rgb = mix(pow((gl_FragColor.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), gl_FragColor.rgb * (1.0 / 12.92), vec3(lessThan(gl_FragColor.rgb, vec3(0.04045))));
+#else
+  gl_FragColor.rgb = apply_tonemapping(gl_FragColor.rgb * exposure, white);
 #endif
 
 #else // not RENDER_DEPTH

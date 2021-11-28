@@ -807,6 +807,10 @@ void RasterizerSceneGLES2::environment_set_ssao(RID p_env, bool p_enable, float 
 void RasterizerSceneGLES2::environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
+  
+	env->tone_mapper = p_tone_mapper;
+	env->tone_mapper_exposure = p_exposure;
+	env->tone_mapper_exposure_white = p_white;
 }
 
 void RasterizerSceneGLES2::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) {
@@ -2213,7 +2217,19 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		using_fog = true;
 	}
 
-	RasterizerStorageGLES2::Texture *prev_lightmap = nullptr;
+  if (p_env) {
+		state.scene_shader.set_conditional(SceneShaderGLES2::USE_FILMIC_TONEMAPPER, p_env->tone_mapper == VS::ENV_TONE_MAPPER_FILMIC);
+		state.scene_shader.set_conditional(SceneShaderGLES2::USE_ACES_TONEMAPPER, p_env->tone_mapper == VS::ENV_TONE_MAPPER_ACES);
+		state.scene_shader.set_conditional(SceneShaderGLES2::USE_ACES_FITTED_TONEMAPPER, p_env->tone_mapper == VS::ENV_TONE_MAPPER_ACES_FITTED);
+		state.scene_shader.set_conditional(SceneShaderGLES2::USE_REINHARD_TONEMAPPER, p_env->tone_mapper == VS::ENV_TONE_MAPPER_REINHARD);
+  } else {
+    state.scene_shader.set_conditional(SceneShaderGLES2::USE_FILMIC_TONEMAPPER, false);
+    state.scene_shader.set_conditional(SceneShaderGLES2::USE_ACES_TONEMAPPER, false);
+    state.scene_shader.set_conditional(SceneShaderGLES2::USE_ACES_FITTED_TONEMAPPER, false);
+    state.scene_shader.set_conditional(SceneShaderGLES2::USE_REINHARD_TONEMAPPER, false);
+  }
+
+  RasterizerStorageGLES2::Texture *prev_lightmap = nullptr;
 	float lightmap_energy = 1.0;
 	bool prev_use_lightmap_capture = false;
 
@@ -2474,12 +2490,16 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_COLOR, p_env->ambient_color);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_ENERGY, p_env->ambient_energy);
 
+          state.scene_shader.set_uniform(SceneShaderGLES2::EXPOSURE, p_env->tone_mapper_exposure);
+          state.scene_shader.set_uniform(SceneShaderGLES2::WHITE, p_env->tone_mapper_exposure_white);
 				} else {
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_ENERGY, 1.0);
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_COLOR, state.default_bg);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_SKY_CONTRIBUTION, 1.0);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_COLOR, state.default_ambient);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_ENERGY, 1.0);
+          
+          state.scene_shader.set_uniform(SceneShaderGLES2::EXPOSURE, 1.0);
 				}
 
 				//rebind all these
