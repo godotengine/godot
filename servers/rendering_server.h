@@ -55,6 +55,9 @@ class RenderingServer : public Object {
 
 	RendererThreadPool *thread_pool = nullptr;
 
+	const Vector2 SMALL_VEC2 = Vector2(CMP_EPSILON, CMP_EPSILON);
+	const Vector3 SMALL_VEC3 = Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON);
+
 protected:
 	RID _make_test_cube();
 	void _free_internal_rids();
@@ -108,7 +111,7 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to) = 0;
 
-	//these two APIs can be used together or in combination with the others.
+	// These two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create() = 0;
 	virtual RID texture_2d_layered_placeholder_create(TextureLayeredType p_layered_type) = 0;
 	virtual RID texture_3d_placeholder_create() = 0;
@@ -210,18 +213,18 @@ public:
 
 	enum ArrayType {
 		ARRAY_VERTEX = 0, // RG32F or RGB32F (depending on 2D bit)
-		ARRAY_NORMAL = 1, // A2B10G10R10, A is ignored
-		ARRAY_TANGENT = 2, // A2B10G10R10, A flips sign of binormal
+		ARRAY_NORMAL = 1, // A2B10G10R10, A is ignored.
+		ARRAY_TANGENT = 2, // A2B10G10R10, A flips sign of binormal.
 		ARRAY_COLOR = 3, // RGBA8
 		ARRAY_TEX_UV = 4, // RG32F
 		ARRAY_TEX_UV2 = 5, // RG32F
-		ARRAY_CUSTOM0 = 6, // depends on ArrayCustomFormat
+		ARRAY_CUSTOM0 = 6, // Depends on ArrayCustomFormat.
 		ARRAY_CUSTOM1 = 7,
 		ARRAY_CUSTOM2 = 8,
 		ARRAY_CUSTOM3 = 9,
 		ARRAY_BONES = 10, // RGBA16UI (x2 if 8 weights)
 		ARRAY_WEIGHTS = 11, // RGBA16UNORM (x2 if 8 weights)
-		ARRAY_INDEX = 12, // 16 or 32 bits depending on length > 0xFFFF
+		ARRAY_INDEX = 12, // 16 or 32 bits depending on length > 0xFFFF.
 		ARRAY_MAX = 13
 	};
 
@@ -243,7 +246,7 @@ public:
 
 	enum ArrayFormat {
 		/* ARRAY FORMAT FLAGS */
-		ARRAY_FORMAT_VERTEX = 1 << ARRAY_VERTEX, // mandatory
+		ARRAY_FORMAT_VERTEX = 1 << ARRAY_VERTEX, // Mandatory
 		ARRAY_FORMAT_NORMAL = 1 << ARRAY_NORMAL,
 		ARRAY_FORMAT_TANGENT = 1 << ARRAY_TANGENT,
 		ARRAY_FORMAT_COLOR = 1 << ARRAY_COLOR,
@@ -287,9 +290,9 @@ public:
 		PrimitiveType primitive = PRIMITIVE_MAX;
 
 		uint32_t format = 0;
-		Vector<uint8_t> vertex_data; // vertex, normal, tangent (change with skinning, blendshape)
-		Vector<uint8_t> attribute_data; // color,uv, uv2, custom0-3
-		Vector<uint8_t> skin_data; // bone index, bone weight
+		Vector<uint8_t> vertex_data; // Vertex, Normal, Tangent (change with skinning, blendshape).
+		Vector<uint8_t> attribute_data; // Color, UV, UV2, Custom0-3.
+		Vector<uint8_t> skin_data; // Bone index, Bone weight.
 		uint32_t vertex_count = 0;
 		Vector<uint8_t> index_data;
 		uint32_t index_count = 0;
@@ -452,7 +455,7 @@ public:
 	virtual void light_set_bake_mode(RID p_light, LightBakeMode p_bake_mode) = 0;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
 
-	// omni light
+	// Omni light
 	enum LightOmniShadowMode {
 		LIGHT_OMNI_SHADOW_DUAL_PARABOLOID,
 		LIGHT_OMNI_SHADOW_CUBE,
@@ -460,7 +463,7 @@ public:
 
 	virtual void light_omni_set_shadow_mode(RID p_light, LightOmniShadowMode p_mode) = 0;
 
-	// directional light
+	// Directional light
 	enum LightDirectionalShadowMode {
 		LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL,
 		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS,
@@ -671,7 +674,7 @@ public:
 
 	virtual AABB particles_get_current_aabb(RID p_particles) = 0;
 
-	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) = 0; //this is only used for 2D, in 3D it's automatic
+	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) = 0; // This is only used for 2D, in 3D it's automatic.
 
 	/* PARTICLES COLLISION API */
 
@@ -689,16 +692,16 @@ public:
 
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, ParticlesCollisionType p_type) = 0;
 	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) = 0;
-	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) = 0; //for spheres
-	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) = 0; //for non-spheres
+	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) = 0; // For spheres.
+	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) = 0; // For non-spheres.
 	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) = 0;
 	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, real_t p_directionality) = 0;
 	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, real_t p_curve) = 0;
-	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) = 0; //for SDF and vector field, heightfield is dynamic
+	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) = 0; // For SDF and vector field, heightfield is dynamic.
 
-	virtual void particles_collision_height_field_update(RID p_particles_collision) = 0; //for SDF and vector field
+	virtual void particles_collision_height_field_update(RID p_particles_collision) = 0; // For SDF and vector field.
 
-	enum ParticlesCollisionHeightfieldResolution { //longest axis resolution
+	enum ParticlesCollisionHeightfieldResolution { // Longest axis resolution.
 		PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_256,
 		PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_512,
 		PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024,
@@ -708,7 +711,7 @@ public:
 		PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX,
 	};
 
-	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field
+	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, ParticlesCollisionHeightfieldResolution p_resolution) = 0; // For SDF and vector field.
 
 	/* FOG VOLUME API */
 
@@ -750,7 +753,7 @@ public:
 	/* VIEWPORT API */
 
 	enum CanvasItemTextureFilter {
-		CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, //uses canvas item setting for draw command, uses global setting for canvas item
+		CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, // Uses canvas item setting for draw command, uses global setting for canvas item.
 		CANVAS_ITEM_TEXTURE_FILTER_NEAREST,
 		CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
 		CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS,
@@ -761,7 +764,7 @@ public:
 	};
 
 	enum CanvasItemTextureRepeat {
-		CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, //uses canvas item setting for draw command, uses global setting for canvas item
+		CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, // Uses canvas item setting for draw command, uses global setting for canvas item.
 		CANVAS_ITEM_TEXTURE_REPEAT_DISABLED,
 		CANVAS_ITEM_TEXTURE_REPEAT_ENABLED,
 		CANVAS_ITEM_TEXTURE_REPEAT_MIRROR,
@@ -791,8 +794,8 @@ public:
 
 	enum ViewportUpdateMode {
 		VIEWPORT_UPDATE_DISABLED,
-		VIEWPORT_UPDATE_ONCE, //then goes to disabled, must be manually updated
-		VIEWPORT_UPDATE_WHEN_VISIBLE, // default
+		VIEWPORT_UPDATE_ONCE, // Then goes to disabled, must be manually updated.
+		VIEWPORT_UPDATE_WHEN_VISIBLE, // Default
 		VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE,
 		VIEWPORT_UPDATE_ALWAYS
 	};
@@ -1171,7 +1174,7 @@ public:
 
 	virtual void instance_set_ignore_culling(RID p_instance, bool p_enabled) = 0;
 
-	// don't use these in a game!
+	// Don't use these in a game!
 	virtual Vector<ObjectID> instances_cull_aabb(const AABB &p_aabb, RID p_scenario = RID()) const = 0;
 	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const = 0;
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario = RID()) const = 0;
@@ -1245,7 +1248,7 @@ public:
 	virtual void canvas_texture_set_channel(RID p_canvas_texture, CanvasTextureChannel p_channel, RID p_texture) = 0;
 	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) = 0;
 
-	//takes effect only for new draw commands
+	// Takes effect only for new draw commands.
 	virtual void canvas_texture_set_texture_filter(RID p_canvas_texture, CanvasItemTextureFilter p_filter) = 0;
 	virtual void canvas_texture_set_texture_repeat(RID p_canvas_texture, CanvasItemTextureRepeat p_repeat) = 0;
 
@@ -1443,7 +1446,7 @@ public:
 
 	/* FREE */
 
-	virtual void free(RID p_rid) = 0; ///< free RIDs associated with the rendering server
+	virtual void free(RID p_rid) = 0; // Free RIDs associated with the rendering server.
 
 	/* EVENT QUEUING */
 
@@ -1529,7 +1532,7 @@ public:
 	virtual ~RenderingServer();
 
 private:
-	//binder helpers
+	// Binder helpers
 	RID _texture_2d_layered_create(const TypedArray<Image> &p_layers, TextureLayeredType p_layered_type);
 	RID _texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data);
 	void _texture_3d_update(RID p_texture, const TypedArray<Image> &p_data);
@@ -1543,7 +1546,7 @@ private:
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
 };
 
-// make variant understand the enums
+// Make variant understand the enums.
 VARIANT_ENUM_CAST(RenderingServer::TextureLayeredType);
 VARIANT_ENUM_CAST(RenderingServer::CubeMapLayer);
 VARIANT_ENUM_CAST(RenderingServer::ShaderMode);
