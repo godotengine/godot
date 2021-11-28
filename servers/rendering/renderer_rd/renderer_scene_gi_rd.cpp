@@ -2182,8 +2182,9 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 
 					if (dynamic_maps.size() == 0) {
-						//render depth for first one
-						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+						// Render depth for first one.
+						// Use 16-bit depth when supported to improve performance.
+						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D16_UNORM, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
 						dtf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 						dmap.fb_depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					}
