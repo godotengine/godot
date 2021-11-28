@@ -394,8 +394,15 @@ void ShaderEditor::_menu_option(int p_option) {
 }
 
 void ShaderEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
-		_check_for_external_edit();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+			[[fallthrough]];
+		case NOTIFICATION_THEME_CHANGED: {
+			material_preview_button->set_icon(Control::get_theme_icon(SNAME("SubViewport"), SNAME("EditorIcons")));
+		} break;
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			_check_for_external_edit();
+		} break;
 	}
 }
 
@@ -545,6 +552,7 @@ void ShaderEditor::apply_shaders() {
 		if (shader_code != editor_code) {
 			shader->set_code(editor_code);
 			shader->set_edited(true);
+			material_preview_window->set_shader(shader);
 		}
 	}
 }
@@ -742,13 +750,24 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
+	material_preview_button = memnew(Button);
+	material_preview_button->set_flat(true);
+	material_preview_button->set_toggle_mode(true);
+	material_preview_button->set_tooltip(TTR("Show material preview."));
+
 	add_child(main_container);
 	main_container->add_child(hbc);
 	hbc->add_child(search_menu);
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
+	hbc->add_spacer();
+	hbc->add_child(material_preview_button);
 	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+
+	material_preview_window = memnew(MaterialEditorPreview);
+	material_preview_window->register_open_button(material_preview_button);
+	add_child(material_preview_window);
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);

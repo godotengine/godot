@@ -33,6 +33,7 @@
 
 #include "editor/code_editor.h"
 #include "editor/editor_plugin.h"
+#include "editor/plugins/material_editor_plugin.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -110,6 +111,7 @@ class ShaderEditor : public PanelContainer {
 	MenuButton *search_menu;
 	PopupMenu *bookmarks_menu;
 	MenuButton *help_menu;
+	Button *material_preview_button = nullptr;
 	PopupMenu *context_menu;
 	RichTextLabel *warnings_panel = nullptr;
 	uint64_t idle;
@@ -117,6 +119,8 @@ class ShaderEditor : public PanelContainer {
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 	ConfirmationDialog *disk_changed;
+
+	MaterialEditorPreview *material_preview_window = nullptr;
 
 	ShaderTextEditor *shader_editor;
 

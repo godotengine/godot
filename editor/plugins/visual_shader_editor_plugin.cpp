@@ -1001,8 +1001,11 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		}
 		visual_shader = Ref<VisualShader>(p_visual_shader);
 		graph_plugin->register_shader(visual_shader.ptr());
-		if (!visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
-			visual_shader->connect("changed", callable_mp(this, &VisualShaderEditor::_update_preview));
+		if (!visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_shader_preview))) {
+			visual_shader->connect("changed", callable_mp(this, &VisualShaderEditor::_update_shader_preview));
+		}
+		if (!visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_material_preview))) {
+			visual_shader->connect("changed", callable_mp(this, &VisualShaderEditor::_update_material_preview));
 		}
 #ifndef DISABLE_DEPRECATED
 		Dictionary engine_version = Engine::get_singleton()->get_version_info();
@@ -1029,8 +1032,11 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		_set_mode(visual_shader->get_mode());
 	} else {
 		if (visual_shader.is_valid()) {
-			if (visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
-				visual_shader->disconnect("changed", callable_mp(this, &VisualShaderEditor::_update_preview));
+			if (visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_shader_preview))) {
+				visual_shader->disconnect("changed", callable_mp(this, &VisualShaderEditor::_update_shader_preview));
+			}
+			if (!visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_material_preview))) {
+				visual_shader->connect("changed", callable_mp(this, &VisualShaderEditor::_update_material_preview));
 			}
 		}
 		visual_shader.unref();
@@ -1041,7 +1047,8 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	} else {
 		if (changed) { // to avoid tree collapse
 			_update_options_menu();
-			_update_preview();
+			_update_shader_preview();
+			_update_material_preview();
 			_update_graph();
 		}
 	}
@@ -3249,7 +3256,9 @@ void VisualShaderEditor::_notification(int p_what) {
 
 		node_filter->set_right_icon(Control::get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
-		preview_shader->set_icon(Control::get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));
+		shader_preview_button->set_icon(Control::get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));
+
+		material_preview_button->set_icon(Control::get_theme_icon(SNAME("SubViewport"), SNAME("EditorIcons")));
 
 		{
 			Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
@@ -3262,7 +3271,7 @@ void VisualShaderEditor::_notification(int p_what) {
 			Color number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
 			Color members_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 
-			preview_text->add_theme_color_override("background_color", background_color);
+			shader_preview_text->add_theme_color_override("background_color", background_color);
 
 			for (const String &E : keyword_list) {
 				if (ShaderLanguage::is_control_flow_keyword(E)) {
@@ -3272,9 +3281,9 @@ void VisualShaderEditor::_notification(int p_what) {
 				}
 			}
 
-			preview_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
-			preview_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
-			preview_text->add_theme_color_override("font_color", text_color);
+			shader_preview_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
+			shader_preview_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
+			shader_preview_text->add_theme_color_override("font_color", text_color);
 			syntax_highlighter->set_number_color(number_color);
 			syntax_highlighter->set_symbol_color(symbol_color);
 			syntax_highlighter->set_function_color(function_color);
@@ -3283,14 +3292,14 @@ void VisualShaderEditor::_notification(int p_what) {
 			syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 			syntax_highlighter->add_color_region("//", "", comment_color, true);
 
-			preview_text->clear_comment_delimiters();
-			preview_text->add_comment_delimiter("/*", "*/", false);
-			preview_text->add_comment_delimiter("//", "", true);
+			shader_preview_text->clear_comment_delimiters();
+			shader_preview_text->add_comment_delimiter("/*", "*/", false);
+			shader_preview_text->add_comment_delimiter("//", "", true);
 
-			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
-			error_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
-			error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
-			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			shader_error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+			shader_error_label->add_theme_font_override("font", get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
+			shader_error_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), SNAME("EditorFonts")));
+			shader_error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		}
 
 		tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
@@ -3903,35 +3912,35 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 }
 
-void VisualShaderEditor::_show_preview_text() {
-	preview_showed = !preview_showed;
-	if (preview_showed) {
-		if (preview_first) {
-			preview_window->set_size(Size2(400 * EDSCALE, 600 * EDSCALE));
-			preview_window->popup_centered();
-			preview_first = false;
+void VisualShaderEditor::_shader_preview_button_pressed() {
+	shader_preview_showed = !shader_preview_showed;
+	if (shader_preview_showed) {
+		if (shader_preview_first) {
+			shader_preview_window->set_size(Size2(400 * EDSCALE, 600 * EDSCALE));
+			shader_preview_window->popup_centered();
+			shader_preview_first = false;
 		} else {
-			preview_window->popup();
+			shader_preview_window->popup();
 		}
-		_preview_size_changed();
+		_shader_preview_size_changed();
 
 		if (pending_update_preview) {
-			_update_preview();
+			_update_shader_preview();
 			pending_update_preview = false;
 		}
 	} else {
-		preview_window->hide();
+		shader_preview_window->hide();
 	}
 }
 
-void VisualShaderEditor::_preview_close_requested() {
-	preview_showed = false;
-	preview_window->hide();
-	preview_shader->set_pressed(false);
+void VisualShaderEditor::_shader_preview_close_requested() {
+	shader_preview_showed = false;
+	shader_preview_window->hide();
+	shader_preview_button->set_pressed(false);
 }
 
-void VisualShaderEditor::_preview_size_changed() {
-	preview_vbox->set_custom_minimum_size(preview_window->get_size());
+void VisualShaderEditor::_shader_preview_size_changed() {
+	shader_preview_vbox->set_custom_minimum_size(shader_preview_window->get_size());
 }
 
 static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_variable) {
@@ -3939,43 +3948,48 @@ static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_va
 	return RS::global_variable_type_get_shader_datatype(gvt);
 }
 
-void VisualShaderEditor::_update_preview() {
-	if (!preview_showed) {
+void VisualShaderEditor::_update_shader_preview() {
+	if (!shader_preview_showed) {
 		pending_update_preview = true;
 		return;
 	}
 
 	String code = visual_shader->get_code();
 
-	preview_text->set_text(code);
+	shader_preview_text->set_text(code);
 
 	ShaderLanguage sl;
 
 	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderLanguage::VaryingFunctionNames(), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type);
 
-	for (int i = 0; i < preview_text->get_line_count(); i++) {
-		preview_text->set_line_background_color(i, Color(0, 0, 0, 0));
+	for (int i = 0; i < shader_preview_text->get_line_count(); i++) {
+		shader_preview_text->set_line_background_color(i, Color(0, 0, 0, 0));
 	}
 	if (err != OK) {
 		Color error_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
-		preview_text->set_line_background_color(sl.get_error_line() - 1, error_line_color);
-		error_panel->show();
+		shader_preview_text->set_line_background_color(sl.get_error_line() - 1, error_line_color);
+		shader_error_panel->show();
 
 		String text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
-		error_label->set_text(text);
+		shader_error_label->set_text(text);
 		shader_error = true;
 	} else {
-		error_panel->hide();
+		shader_error_panel->hide();
 		shader_error = false;
 	}
 }
 
+void VisualShaderEditor::_update_material_preview() {
+	Ref<Shader> shader = visual_shader;
+	material_preview_window->set_shader(shader);
+}
+
 void VisualShaderEditor::_visibility_changed() {
 	if (!is_visible()) {
-		if (preview_window->is_visible()) {
-			preview_shader->set_pressed(false);
-			preview_window->hide();
-			preview_showed = false;
+		if (shader_preview_window->is_visible()) {
+			shader_preview_button->set_pressed(false);
+			shader_preview_window->hide();
+			shader_preview_showed = false;
 		}
 	}
 }
@@ -4122,43 +4136,57 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog), varray(false, VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX));
 
-	preview_shader = memnew(Button);
-	preview_shader->set_flat(true);
-	preview_shader->set_toggle_mode(true);
-	preview_shader->set_tooltip(TTR("Show generated shader code."));
-	graph->get_zoom_hbox()->add_child(preview_shader);
-	preview_shader->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_preview_text));
+	shader_preview_button = memnew(Button);
+	shader_preview_button->set_flat(true);
+	shader_preview_button->set_toggle_mode(true);
+	shader_preview_button->set_tooltip(TTR("Show generated shader code."));
+	graph->get_zoom_hbox()->add_child(shader_preview_button);
+	shader_preview_button->connect("pressed", callable_mp(this, &VisualShaderEditor::_shader_preview_button_pressed));
+
+	material_preview_button = memnew(Button);
+	material_preview_button->set_flat(true);
+	material_preview_button->set_toggle_mode(true);
+	material_preview_button->set_tooltip(TTR("Show material preview."));
+	graph->get_zoom_hbox()->add_child(material_preview_button);
 
 	///////////////////////////////////////
-	// PREVIEW WINDOW
+	// SHADER PREVIEW WINDOW
 	///////////////////////////////////////
 
-	preview_window = memnew(Window);
-	preview_window->set_title(TTR("Generated shader code"));
-	preview_window->set_visible(preview_showed);
-	preview_window->connect("close_requested", callable_mp(this, &VisualShaderEditor::_preview_close_requested));
-	preview_window->connect("size_changed", callable_mp(this, &VisualShaderEditor::_preview_size_changed));
-	add_child(preview_window);
+	shader_preview_window = memnew(Window);
+	shader_preview_window->set_title(TTR("Generated shader code"));
+	shader_preview_window->set_visible(shader_preview_showed);
+	shader_preview_window->connect("close_requested", callable_mp(this, &VisualShaderEditor::_shader_preview_close_requested));
+	shader_preview_window->connect("size_changed", callable_mp(this, &VisualShaderEditor::_shader_preview_size_changed));
+	add_child(shader_preview_window);
 
-	preview_vbox = memnew(VBoxContainer);
-	preview_window->add_child(preview_vbox);
-	preview_vbox->add_theme_constant_override("separation", 0);
+	shader_preview_vbox = memnew(VBoxContainer);
+	shader_preview_window->add_child(shader_preview_vbox);
+	shader_preview_vbox->add_theme_constant_override("separation", 0);
 
-	preview_text = memnew(CodeEdit);
+	shader_preview_text = memnew(CodeEdit);
 	syntax_highlighter.instantiate();
-	preview_vbox->add_child(preview_text);
-	preview_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	preview_text->set_syntax_highlighter(syntax_highlighter);
-	preview_text->set_draw_line_numbers(true);
-	preview_text->set_editable(false);
+	shader_preview_vbox->add_child(shader_preview_text);
+	shader_preview_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	shader_preview_text->set_syntax_highlighter(syntax_highlighter);
+	shader_preview_text->set_draw_line_numbers(true);
+	shader_preview_text->set_editable(false);
 
-	error_panel = memnew(PanelContainer);
-	preview_vbox->add_child(error_panel);
-	error_panel->set_visible(false);
+	shader_error_panel = memnew(PanelContainer);
+	shader_preview_vbox->add_child(shader_error_panel);
+	shader_error_panel->set_visible(false);
 
-	error_label = memnew(Label);
-	error_panel->add_child(error_label);
-	error_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	shader_error_label = memnew(Label);
+	shader_error_panel->add_child(shader_error_label);
+	shader_error_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+
+	///////////////////////////////////////
+	// MATERIAL PREVIEW WINDOW
+	///////////////////////////////////////
+
+	material_preview_window = memnew(MaterialEditorPreview);
+	material_preview_window->register_open_button(material_preview_button);
+	add_child(material_preview_window);
 
 	///////////////////////////////////////
 	// POPUP MENU

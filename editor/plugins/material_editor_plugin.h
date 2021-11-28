@@ -39,12 +39,15 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/color_rect.h"
+#include "scene/main/window.h"
 #include "scene/resources/material.h"
 
 class SubViewportContainer;
 
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
+	ColorRect *rect_instance;
 
 	SubViewportContainer *vc;
 	SubViewport *viewport;
@@ -57,9 +60,11 @@ class MaterialEditor : public Control {
 	Ref<SphereMesh> sphere_mesh;
 	Ref<BoxMesh> box_mesh;
 
+	VBoxContainer *vb_shape;
 	TextureButton *sphere_switch;
 	TextureButton *box_switch;
 
+	VBoxContainer *vb_light;
 	TextureButton *light_1_switch;
 	TextureButton *light_2_switch;
 
@@ -76,6 +81,31 @@ protected:
 public:
 	void edit(Ref<Material> p_material, const Ref<Environment> &p_env);
 	MaterialEditor();
+};
+
+class MaterialEditorPreview : public Window {
+	GDCLASS(MaterialEditorPreview, Window);
+
+	MaterialEditor *editor = nullptr;
+	bool is_first_open = true;
+	bool is_open = false;
+
+	Button *open_button = nullptr;
+	Ref<ShaderMaterial> material_preview;
+	Ref<Environment> material_env;
+	Ref<Shader> shader;
+
+	void _open_button_pressed();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void set_shader(Ref<Shader> &p_shader);
+	void register_open_button(Button *p_button);
+
+public:
+	MaterialEditorPreview();
 };
 
 class EditorInspectorPluginMaterial : public EditorInspectorPlugin {

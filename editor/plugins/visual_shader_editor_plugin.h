@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/curve_editor_plugin.h"
+#include "editor/plugins/material_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
@@ -138,7 +139,8 @@ class VisualShaderEditor : public VBoxContainer {
 	Ref<VisualShader> visual_shader;
 	GraphEdit *graph;
 	Button *add_node;
-	Button *preview_shader;
+	Button *shader_preview_button;
+	Button *material_preview_button;
 
 	OptionButton *edit_type = nullptr;
 	OptionButton *edit_type_standard;
@@ -150,12 +152,14 @@ class VisualShaderEditor : public VBoxContainer {
 
 	bool pending_update_preview;
 	bool shader_error;
-	Window *preview_window;
-	VBoxContainer *preview_vbox;
-	CodeEdit *preview_text;
+	Window *shader_preview_window = nullptr;
+	VBoxContainer *shader_preview_vbox = nullptr;
+	CodeEdit *shader_preview_text = nullptr;
 	Ref<CodeHighlighter> syntax_highlighter;
-	PanelContainer *error_panel;
-	Label *error_label;
+	PanelContainer *shader_error_panel = nullptr;
+	Label *shader_error_label = nullptr;
+
+	MaterialEditorPreview *material_preview_window = nullptr;
 
 	UndoRedo *undo_redo;
 	Point2 saved_node_pos;
@@ -174,8 +178,8 @@ class VisualShaderEditor : public VBoxContainer {
 	PopupPanel *comment_desc_change_popup = nullptr;
 	TextEdit *comment_desc_change_edit = nullptr;
 
-	bool preview_first = true;
-	bool preview_showed = false;
+	bool shader_preview_first = true;
+	bool shader_preview_showed = false;
 
 	enum ShaderModeFlags {
 		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
@@ -312,10 +316,11 @@ class VisualShaderEditor : public VBoxContainer {
 	void _update_options_menu();
 	void _set_mode(int p_which);
 
-	void _show_preview_text();
-	void _preview_close_requested();
-	void _preview_size_changed();
-	void _update_preview();
+	void _shader_preview_button_pressed();
+	void _shader_preview_close_requested();
+	void _shader_preview_size_changed();
+	void _update_shader_preview();
+	void _update_material_preview();
 	String _get_description(int p_idx);
 
 	static VisualShaderEditor *singleton;

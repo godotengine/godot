@@ -35,6 +35,7 @@
 #include "scene/resources/fog_material.h"
 #include "scene/resources/particles_material.h"
 #include "scene/resources/sky_material.h"
+#include "servers/rendering/shader_types.h"
 
 void MaterialEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
@@ -69,8 +70,20 @@ void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_en
 	material = p_material;
 	camera->set_environment(p_env);
 	if (!material.is_null()) {
-		sphere_instance->set_material_override(material);
-		box_instance->set_material_override(material);
+		if (material->get_shader_mode() == Shader::MODE_CANVAS_ITEM) {
+			vb_shape->hide();
+			vb_light->hide();
+			vc->hide();
+			rect_instance->show();
+			rect_instance->set_material(material);
+		} else {
+			vb_shape->show();
+			vb_light->show();
+			vc->show();
+			rect_instance->hide();
+			sphere_instance->set_material_override(material);
+			box_instance->set_material_override(material);
+		}
 	} else {
 		hide();
 	}
@@ -106,6 +119,11 @@ void MaterialEditor::_bind_methods() {
 }
 
 MaterialEditor::MaterialEditor() {
+	rect_instance = memnew(ColorRect);
+	add_child(rect_instance);
+	rect_instance->set_anchors_and_offsets_preset(PRESET_WIDE);
+	rect_instance->hide();
+
 	vc = memnew(SubViewportContainer);
 	vc->set_stretch(true);
 	add_child(vc);
@@ -158,7 +176,7 @@ MaterialEditor::MaterialEditor() {
 	add_child(hb);
 	hb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
 
-	VBoxContainer *vb_shape = memnew(VBoxContainer);
+	vb_shape = memnew(VBoxContainer);
 	hb->add_child(vb_shape);
 
 	sphere_switch = memnew(TextureButton);
@@ -175,7 +193,7 @@ MaterialEditor::MaterialEditor() {
 
 	hb->add_spacer();
 
-	VBoxContainer *vb_light = memnew(VBoxContainer);
+	vb_light = memnew(VBoxContainer);
 	hb->add_child(vb_light);
 
 	light_1_switch = memnew(TextureButton);
@@ -202,13 +220,123 @@ MaterialEditor::MaterialEditor() {
 
 ///////////////////////
 
+static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_variable) {
+	RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(p_variable);
+	return RS::global_variable_type_get_shader_datatype(gvt);
+}
+
+void MaterialEditorPreview::_open_button_pressed() {
+	is_open = !is_open;
+	if (is_open) {
+		if (is_first_open) {
+			popup_centered();
+			is_first_open = false;
+		} else {
+			popup();
+		}
+
+		set_shader(shader);
+	} else {
+		hide();
+	}
+}
+
+void MaterialEditorPreview::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
+			is_open = false;
+			hide();
+			open_button->set_pressed(false);
+		} break;
+	}
+}
+
+void MaterialEditorPreview::set_shader(Ref<Shader> &p_shader) {
+	shader = p_shader;
+
+	if (p_shader.is_null() || !is_visible()) {
+		return;
+	}
+
+	String code = p_shader->get_code();
+	Shader::Mode mode = p_shader->get_mode();
+
+	ShaderLanguage sl;
+
+	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(mode)), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(mode)), ShaderLanguage::VaryingFunctionNames(), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type);
+
+	if (err == OK && (mode == Shader::MODE_CANVAS_ITEM || mode == Shader::MODE_SPATIAL)) {
+		editor->show();
+
+		if (material_preview.is_null()) {
+			material_preview.instantiate();
+		}
+
+		material_preview->set_shader(p_shader);
+
+		if (material_env.is_null()) {
+			material_env.instantiate();
+			Ref<Sky> sky = memnew(Sky());
+			material_env->set_sky(sky);
+			material_env->set_background(Environment::BG_COLOR);
+			material_env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
+			material_env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
+		}
+
+		// Find if a material is also being edited and copy parameters to this one.
+
+		for (int i = EditorNode::get_singleton()->get_editor_history()->get_path_size() - 1; i >= 0; i--) {
+			Object *object = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_history()->get_path_object(i));
+			ShaderMaterial *src_mat;
+			if (!object) {
+				continue;
+			}
+			if (object->has_method("get_material_override")) { // trying getting material from MeshInstance
+				src_mat = Object::cast_to<ShaderMaterial>(object->call("get_material_override"));
+			} else if (object->has_method("get_material")) { // from CanvasItem/Node2D
+				src_mat = Object::cast_to<ShaderMaterial>(object->call("get_material"));
+			} else {
+				src_mat = Object::cast_to<ShaderMaterial>(object);
+			}
+			if (src_mat && src_mat->get_shader().is_valid()) {
+				List<PropertyInfo> params;
+				src_mat->get_shader()->get_param_list(&params);
+				for (const PropertyInfo &E : params) {
+					material_preview->set(E.name, src_mat->get(E.name));
+				}
+			}
+		}
+
+		editor->edit(material_preview, material_env);
+	} else {
+		editor->hide();
+	}
+}
+
+void MaterialEditorPreview::register_open_button(Button *p_button) {
+	open_button = p_button;
+	open_button->connect("pressed", callable_mp(this, &MaterialEditorPreview::_open_button_pressed));
+}
+
+MaterialEditorPreview::MaterialEditorPreview() {
+	editor = memnew(MaterialEditor);
+	add_child(editor);
+	editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+
+	set_title(TTR("Material preview"));
+	set_min_size(Size2(300, 300) * EDSCALE);
+	hide();
+}
+
+///////////////////////
+
 bool EditorInspectorPluginMaterial::can_handle(Object *p_object) {
 	Material *material = Object::cast_to<Material>(p_object);
 	if (!material) {
 		return false;
 	}
 
-	return material->get_shader_mode() == Shader::MODE_SPATIAL;
+	return material->get_shader_mode() == Shader::MODE_SPATIAL || material->get_shader_mode() == Shader::MODE_CANVAS_ITEM;
 }
 
 void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
