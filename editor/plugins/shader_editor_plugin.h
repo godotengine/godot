@@ -83,9 +83,7 @@ public:
 
 	void set_shader_editor(ShaderEditor *p_editor);
 
-	// TODO even necessary now?
 	void set_shader_dependency_tree(Tree *p_tree);
-	void update_shader_dependency_tree();
 
 	Ref<Shader> get_edited_shader() const;
 	void set_edited_shader(const Ref<Shader> &p_shader);
@@ -137,7 +135,7 @@ class ShaderEditor : public PanelContainer {
 
 	ShaderTextEditor *shader_editor;
 
-	Map<String, String> shader_rolling_code;
+	// Map<String, String> shader_rolling_code;
 	// ShaderDependencyGraph shader_dependencies;
 	Tree *shader_dependency_tree;
 
@@ -167,6 +165,7 @@ protected:
 	void _bookmark_item_pressed(int p_idx);
 
 public:
+	Map<String, String> shader_rolling_code;
 	ShaderDependencyGraph shader_dependencies;
 	void _update_shader_dependency_tree();
 

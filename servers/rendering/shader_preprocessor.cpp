@@ -341,7 +341,7 @@ ShaderPreprocessor::~ShaderPreprocessor() {
 
 ShaderPreprocessor::ShaderPreprocessor(const String &p_code) {
 	code = p_code;
-	state = NULL;
+	state = nullptr;
 	state_owner = false;
 }
 
@@ -351,7 +351,7 @@ String ShaderPreprocessor::preprocess(PreprocessorState *p_state) {
 	output.clear();
 
 	state = p_state;
-	if (state == NULL) {
+	if (state == nullptr) {
 		state = create_state();
 		state_owner = true;
 	}
@@ -449,7 +449,7 @@ void ShaderPreprocessor::process_if(PreproprocessorTokenizer *p_tokenizer) {
 		return;
 	}
 
-	Variant v = expression.execute(Array(), NULL, false);
+	Variant v = expression.execute(Array(), nullptr, false);
 	if (v.get_type() == Variant::NIL) {
 		set_error("Condition evaluation error", line);
 		return;
@@ -505,7 +505,7 @@ void ShaderPreprocessor::start_branch_condition(PreproprocessorTokenizer *p_toke
 	if (p_success) {
 		state->skip_stack_else.push_back(true);
 	} else {
-		SkippedPreprocessorCondition *cond = new SkippedPreprocessorCondition();
+		SkippedPreprocessorCondition *cond = memnew(SkippedPreprocessorCondition());
 		cond->start_line = p_tokenizer->get_line();
 		state->skipped_conditions[state->current_include].push_back(cond);
 
@@ -628,6 +628,7 @@ void ShaderPreprocessor::process_undef(PreproprocessorTokenizer *p_tokenizer) {
 		return;
 	}
 
+	memdelete(state->defines[label]);
 	state->defines.erase(label);
 }
 
@@ -639,7 +640,7 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *p_tokenizer) 
 	path = path.substr(0, path.length() - 1);
 	p_tokenizer->skip_whitespace();
 
-	if (path.is_empty() /* || p_tokenizer->peek() != '\n'*/) {
+	if (path.is_empty() || p_tokenizer->peek() != '\n') {
 		set_error("Invalid path", line);
 		return;
 	}
@@ -650,8 +651,8 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *p_tokenizer) 
 		return;
 	}
 
-	Shader *shader = Object::cast_to<Shader>(*res);
-	if (shader == NULL) {
+	Ref<Shader> shader = Object::cast_to<Shader>(*res);
+	if (shader.is_null()) {
 		set_error("Shader include resource type is wrong", line);
 		return;
 	}
@@ -692,7 +693,11 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *p_tokenizer) 
 	ShaderPreprocessor processor(included);
 	String result = processor.preprocess(state); // .replace("\n", " "); //To preserve line numbers cram everything into a single line
 	add_to_output(result);
-	state->current_include = old_include;
+
+	// reset to last include if there are no errors. We want to use this as context.
+	if (state->error.is_empty()) {
+		state->current_include = old_include;
+	}
 
 	if (!state->error.is_empty() && state_owner) {
 		//This is the root file, so force the line number to match this instead of the included file
@@ -823,14 +828,21 @@ void ShaderPreprocessor::set_error(const String &p_error, int p_line) {
 }
 
 void ShaderPreprocessor::free_state() {
-	if (state_owner && state != NULL) {
+	if (state_owner && state != nullptr) {
 		for (const Map<String, PreprocessorDefine *>::Element *E = state->defines.front(); E; E = E->next()) {
 			memdelete(E->get());
 		}
+
+		for (const Map<String, Vector<SkippedPreprocessorCondition *>>::Element *E = state->skipped_conditions.front(); E; E = E->next()) {
+			for (SkippedPreprocessorCondition *condition : E->get()) {
+				memdelete(condition);
+			}
+		}
+
 		memdelete(state);
 	}
 	state_owner = false;
-	state = NULL;
+	state = nullptr;
 }
 
 PreprocessorDefine *create_define(const String &p_body) {
@@ -874,12 +886,6 @@ void ShaderPreprocessor::refresh_shader_dependencies(Ref<Shader> p_shader) {
 	shaderDependencies.update_shaders();
 }
 
-ShaderDependencyGraph::~ShaderDependencyGraph() {
-	for (auto E = nodes.front(); E; E = E->next()) {
-		delete E->get();
-	}
-}
-
 ShaderDependencyNode::ShaderDependencyNode(Ref<Shader> p_shader) :
 		line(0), line_count(0), code(p_shader->get_code()), path(p_shader->get_path()), shader(p_shader) {}
 
@@ -907,8 +913,8 @@ int ShaderDependencyNode::GetContext(int p_line, ShaderDependencyNode **r_contex
 }
 
 ShaderDependencyNode::~ShaderDependencyNode() {
-	for (auto E = dependencies.front(); E; E = E->next()) {
-		delete E->get();
+	for (ShaderDependencyNode *node : dependencies) {
+		memdelete(node);
 	}
 }
 
@@ -921,33 +927,31 @@ bool operator==(ShaderDependencyNode p_left, ShaderDependencyNode p_right) {
 }
 
 void ShaderDependencyGraph::populate(Ref<Shader> p_shader) {
-	cyclic_dep_tracker.clear();
-	nodes.clear(); // TODO actually delete these if we're refreshing
-	visited_shaders.clear();
+	clear();
 
-	ShaderDependencyNode *node = new ShaderDependencyNode(p_shader);
+	ShaderDependencyNode *node = memnew(ShaderDependencyNode(p_shader));
 	nodes.insert(node);
 	populate(node);
 }
 
 void ShaderDependencyGraph::populate(String p_code) {
-	cyclic_dep_tracker.clear();
-	nodes.clear(); // TODO actually delete these if we're refreshing
-	visited_shaders.clear();
+	clear();
 
-	ShaderDependencyNode *node = new ShaderDependencyNode(p_code);
+	ShaderDependencyNode *node = memnew(ShaderDependencyNode(p_code));
 	nodes.insert(node);
 	populate(node);
 }
 
 void ShaderDependencyGraph::populate(String p_path, String p_code) {
-	cyclic_dep_tracker.clear();
-	nodes.clear(); // TODO actually delete these if we're refreshing
-	visited_shaders.clear();
+	clear();
 
-	ShaderDependencyNode *node = new ShaderDependencyNode(p_path, p_code);
+	ShaderDependencyNode *node = memnew(ShaderDependencyNode(p_path, p_code));
 	nodes.insert(node);
 	populate(node);
+}
+
+ShaderDependencyGraph::~ShaderDependencyGraph() {
+	clear();
 }
 
 void ShaderDependencyGraph::populate(ShaderDependencyNode *p_node) {
@@ -981,7 +985,7 @@ void ShaderDependencyGraph::populate(ShaderDependencyNode *p_node) {
 								String shader_path = shader_reference->get_path();
 								if (!visited_shaders.find(shader_path)) {
 									String included_code = shader_reference->get_code();
-									ShaderDependencyNode *new_node = new ShaderDependencyNode(shader_path, included_code);
+									ShaderDependencyNode *new_node = memnew(ShaderDependencyNode(shader_reference));
 									new_node->line = p_tokenizer.get_line() + 1;
 									Vector<String> shader = included_code.split("\n");
 									new_node->line_count = shader.size();
@@ -1026,6 +1030,16 @@ void ShaderDependencyGraph::update_shaders() {
 	for (ShaderDependencyNode *node : nodes) {
 		update_shaders(node);
 	}
+}
+
+void ShaderDependencyGraph::clear() {
+	for (ShaderDependencyNode *node : nodes) {
+		memdelete(node);
+	}
+
+	cyclic_dep_tracker.clear();
+	nodes.clear();
+	visited_shaders.clear();
 }
 
 void ShaderDependencyGraph::update_shaders(ShaderDependencyNode *p_node) {

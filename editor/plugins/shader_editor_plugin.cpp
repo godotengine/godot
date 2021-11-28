@@ -279,9 +279,15 @@ void ShaderTextEditor::_validate_script() {
 	// force apply current shader.
 	String code = get_text_editor()->get_text();
 	shader->set_code(code);
+	shader_editor->shader_rolling_code[shader->get_path()] = code;
 
 	// reset code to parent shader code
 	code = shader_editor->get_shader()->get_code();
+
+	shader_editor->shader_dependencies.populate(shader_editor->get_shader());
+	shader_editor->_update_shader_dependency_tree();
+
+	_clear_tree_item_backgrounds(shader_dependency_tree->get_root());
 
 	ShaderPreprocessor processor(code);
 	String processed = processor.preprocess();
@@ -289,12 +295,34 @@ void ShaderTextEditor::_validate_script() {
 	PreprocessorState *state = processor.get_state();
 	if (!state->error.is_empty()) {
 		// couldn't preprocess, so no sense in validating. Need to feed back issues to user.
+		String error_text = "error(" + state->current_include + ":" + itos(state->error_line) + "): " + state->error;
+		set_error(error_text);
+		set_error_pos(state->error_line - 1, 0);
+
+		bool highlight_error = false;
+		if (!state->current_include.is_empty()) {
+			TreeItem *tree_item = shader_dependency_tree->get_item_with_text(state->current_include);
+			tree_item->set_custom_bg_color(0, marked_line_color);
+
+			error_shader_path = state->current_include;
+
+			if (shader->get_path() == error_shader_path) {
+				highlight_error = true;
+			}
+		} else {
+			highlight_error = true;
+		}
+
+		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
+			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
+		}
+
+		if (highlight_error) {
+			get_text_editor()->set_line_background_color(state->error_line - 1, marked_line_color);
+		}
+
 		return;
 	}
-
-	// shader_editor->shader_dependencies = ShaderDependencyGraph();
-	shader_editor->shader_dependencies.populate(shader_editor->get_shader());
-	shader_editor->_update_shader_dependency_tree();
 
 	ShaderLanguage sl;
 
@@ -302,8 +330,6 @@ void ShaderTextEditor::_validate_script() {
 	sl.set_warning_flags(saved_warning_flags);
 
 	Error err = sl.compile(code, info);
-
-	_clear_tree_item_backgrounds(shader_dependency_tree->get_root());
 
 	if (err != OK) {
 		ShaderDependencyNode *context;
@@ -710,8 +736,6 @@ void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 	shader = p_shader;
 
 	// create shader dependencies and update tree.
-	// TODO need to call this on edit as well. if the script changes there could be new dpendencies.
-	// this needs to be updated constantly
 	shader_rolling_code.clear();
 	shader_dependencies.populate(shader);
 	_update_shader_dependency_tree();
@@ -747,7 +771,6 @@ void ShaderEditor::apply_shaders() {
 		String editor_code = shader_editor->get_text_editor()->get_text();
 		shader_rolling_code[currently_edited_shader->get_path()] = editor_code;
 		if (currently_edited_shader == shader) {
-			// TODO get cached version of root node shader code to apply. Then set all dep code too. Do this in reverse order up the tree?
 			String shader_code = shader->get_code();
 			if (shader_code != editor_code) {
 				shader->set_code(editor_code);
@@ -864,12 +887,10 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 }
 
 void ShaderEditor::open_path(String p_path) {
-	// TODO pull from shader dependency graph which can hold cache data, or store directly in tree?
-	// using only to pull code. how to cache data? hash set in editor panel with path lookup?
 	RES res = ResourceLoader::load(p_path);
 	if (!res.is_null()) {
-		Shader *shader = Object::cast_to<Shader>(*res);
-		if (shader != nullptr) {
+		Ref<Shader> shader = Object::cast_to<Shader>(*res);
+		if (!shader.is_null()) {
 			auto rollingCode = shader_rolling_code.find(shader->get_path());
 
 			if (rollingCode) {
