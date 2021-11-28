@@ -70,18 +70,29 @@ public:
 		Vector<int> errors_returned;
 		bool operator<(const MethodDoc &p_method) const {
 			if (name == p_method.name) {
-				// Must be a constructor since there is no overloading.
-				// We want this arbitrary order for a class "Foo":
-				// - 1. Default constructor: Foo()
-				// - 2. Copy constructor: Foo(Foo)
-				// - 3+. Other constructors Foo(Bar, ...) based on first argument's name
-				if (arguments.size() == 0 || p_method.arguments.size() == 0) { // 1.
+				// Must be an operator or a constructor since there is no other overloading
+				if (name.left(8) == "operator") {
+					if (arguments.size() == p_method.arguments.size()) {
+						if (arguments.size() == 0) {
+							return false;
+						}
+						return arguments[0].type < p_method.arguments[0].type;
+					}
 					return arguments.size() < p_method.arguments.size();
+				} else {
+					// Must be a constructor
+					// We want this arbitrary order for a class "Foo":
+					// - 1. Default constructor: Foo()
+					// - 2. Copy constructor: Foo(Foo)
+					// - 3+. Other constructors Foo(Bar, ...) based on first argument's name
+					if (arguments.size() == 0 || p_method.arguments.size() == 0) { // 1.
+						return arguments.size() < p_method.arguments.size();
+					}
+					if (arguments[0].type == return_type || p_method.arguments[0].type == p_method.return_type) { // 2.
+						return (arguments[0].type == return_type) || (p_method.arguments[0].type != p_method.return_type);
+					}
+					return arguments[0] < p_method.arguments[0];
 				}
-				if (arguments[0].type == return_type || p_method.arguments[0].type == p_method.return_type) { // 2.
-					return (arguments[0].type == return_type) || (p_method.arguments[0].type != p_method.return_type);
-				}
-				return arguments[0] < p_method.arguments[0];
 			}
 			return name < p_method.name;
 		}

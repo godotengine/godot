@@ -225,17 +225,17 @@
 			</description>
 		</operator>
 		<operator name="operator *">
-			<return type="Transform2D" />
-			<argument index="0" name="right" type="Transform2D" />
-			<description>
-				Composes these two transformation matrices by multiplying them together. This has the effect of transforming the second transform (the child) by the first transform (the parent).
-			</description>
-		</operator>
-		<operator name="operator *">
 			<return type="Rect2" />
 			<argument index="0" name="right" type="Rect2" />
 			<description>
 				Transforms (multiplies) the [Rect2] by the given [Transform2D] matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform2D" />
+			<argument index="0" name="right" type="Transform2D" />
+			<description>
+				Composes these two transformation matrices by multiplying them together. This has the effect of transforming the second transform (the child) by the first transform (the parent).
 			</description>
 		</operator>
 		<operator name="operator *">

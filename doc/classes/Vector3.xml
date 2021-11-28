@@ -373,16 +373,6 @@
 		</operator>
 		<operator name="operator *">
 			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
-			<description>
-				Multiplies each component of the [Vector3] by the components of the given [Vector3].
-				[codeblock]
-				print(Vector3(10, 20, 30) * Vector3(3, 4, 5)) # Prints "(30, 80, 150)"
-				[/codeblock]
-			</description>
-		</operator>
-		<operator name="operator *">
-			<return type="Vector3" />
 			<argument index="0" name="right" type="Basis" />
 			<description>
 				Inversely transforms (multiplies) the [Vector3] by the given [Basis] matrix.
@@ -400,6 +390,16 @@
 			<argument index="0" name="right" type="Transform3D" />
 			<description>
 				Inversely transforms (multiplies) the [Vector3] by the given [Transform3D] transformation matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<argument index="0" name="right" type="Vector3" />
+			<description>
+				Multiplies each component of the [Vector3] by the components of the given [Vector3].
+				[codeblock]
+				print(Vector3(10, 20, 30) * Vector3(3, 4, 5)) # Prints "(30, 80, 150)"
+				[/codeblock]
 			</description>
 		</operator>
 		<operator name="operator *">

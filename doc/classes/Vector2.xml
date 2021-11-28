@@ -358,19 +358,19 @@
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
+			<argument index="0" name="right" type="Transform2D" />
+			<description>
+				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
 				Multiplies each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
 				print(Vector2(10, 20) * Vector2(3, 4)) # Prints "(30, 80)"
 				[/codeblock]
-			</description>
-		</operator>
-		<operator name="operator *">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="Transform2D" />
-			<description>
-				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
