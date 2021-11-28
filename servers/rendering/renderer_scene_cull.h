@@ -1105,6 +1105,7 @@ public:
 #define PASSBASE scene_render
 
 	PASS1(voxel_gi_set_quality, RS::VoxelGIQuality)
+	PASS1(voxel_gi_set_dynamic_oversampling, RS::VoxelGIDynamicOversampling)
 
 	/* SKY API */
 
