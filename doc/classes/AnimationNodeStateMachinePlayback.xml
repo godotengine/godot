@@ -16,6 +16,32 @@
 		stateMachine.Travel("some_state");
 		[/csharp]
 		[/codeblocks]
+
+		State transitions emit signals, in a specific order:
+		- [signal state_exit] emits when a state is exited
+		- [signal state_changed] emits before the new state is entered
+		- [signal state_enter] emits when the new state is entered
+		[codeblocks]
+		[gdscript]
+		var state_machine: AnimationNodeStateMachinePlayback = $AnimationTree.get("parameters/playback")
+		state_machine.state_changed.connect(on_state_changed)
+
+		func on_state_changed(prev: String, next: String) -&gt; void:
+		print(prev, " -&gt; ", next)
+		[/gdscript]
+		[csharp]
+		public override void _Ready()
+		{
+		    var stateMachine = GetNode&lt;AnimationTree&gt;("AnimationTree").Get("parameters/playback") as AnimationNodeStateMachinePlayback;
+		    stateMachine.Connect("state_changed", new Callable(this, nameof(OnStateChanged)));
+		}
+
+		private void OnStateChanged(string previous, string next)
+		{
+		    GD.Print(previous, " -&gt; ", next);
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
@@ -74,4 +100,25 @@
 	<members>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="true" />
 	</members>
+	<signals>
+		<signal name="state_changed">
+			<argument index="0" name="previous_state" type="String" />
+			<argument index="1" name="next_state" type="String" />
+			<description>
+				Notified when a state transition occurs. Emitted before [signal state_enter]. Not emitted for the first state.
+			</description>
+		</signal>
+		<signal name="state_enter">
+			<argument index="0" name="state" type="String" />
+			<description>
+				Notifies when a state is entered.
+			</description>
+		</signal>
+		<signal name="state_exit">
+			<argument index="0" name="state" type="String" />
+			<description>
+				Notifies when a state is exited.
+			</description>
+		</signal>
+	</signals>
 </class>

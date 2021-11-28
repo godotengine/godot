@@ -215,4 +215,5 @@ SceneStringNames::SceneStringNames() {
 	use_in_baked_light = StaticCString::create("use_in_baked_light");
 	use_dynamic_gi = StaticCString::create("use_dynamic_gi");
 #endif
+
 }
