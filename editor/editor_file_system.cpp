@@ -1190,8 +1190,7 @@ void EditorFileSystem::_notification(int p_what) {
 			if (use_threads) {
 				if (scanning_changes) {
 					if (scanning_changes_done) {
-						scanning_changes_done = false; //reset this variable to prevent multiple code execution
-						scanning_changes = false;
+						scanning_changes_done = false; //reset this variable to prevent multiple code execution						
 
 						set_process(false);
 
@@ -1199,6 +1198,7 @@ void EditorFileSystem::_notification(int p_what) {
 						if (_update_scan_actions()) {
 							emit_signal(SNAME("filesystem_changed"));
 						}
+						scanning_changes = false;
 						emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 						_queue_update_script_classes();
 						first_scan = false;
