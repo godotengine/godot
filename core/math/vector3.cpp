@@ -62,6 +62,17 @@ Vector3 Vector3::snapped(Vector3 p_val) const {
 	return v;
 }
 
+Vector3 Vector3::limit_length(const real_t p_len) const {
+	const real_t l = length();
+	Vector3 v = *this;
+	if (l > 0 && p_len < l) {
+		v /= l;
+		v *= p_len;
+	}
+
+	return v;
+}
+
 Vector3 Vector3::cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const {
 	Vector3 p0 = p_pre_a;
 	Vector3 p1 = *this;

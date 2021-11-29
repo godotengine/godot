@@ -212,7 +212,7 @@ godot_vector2 GDAPI godot_vector2_clamped(const godot_vector2 *p_self, const god
 	godot_vector2 dest;
 	const Vector2 *self = (const Vector2 *)p_self;
 
-	*((Vector2 *)&dest) = self->clamped(p_length);
+	*((Vector2 *)&dest) = self->limit_length(p_length);
 	return dest;
 }
 

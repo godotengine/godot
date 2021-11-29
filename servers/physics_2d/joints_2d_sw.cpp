@@ -307,7 +307,7 @@ bool GrooveJoint2DSW::setup(real_t p_step) {
 	Vector2 delta = (B->get_transform().get_origin() + rB) - (A->get_transform().get_origin() + rA);
 
 	real_t _b = get_bias();
-	gbias = (delta * -(_b == 0 ? space->get_constraint_bias() : _b) * (1.0 / p_step)).clamped(get_max_bias());
+	gbias = (delta * -(_b == 0 ? space->get_constraint_bias() : _b) * (1.0 / p_step)).limit_length(get_max_bias());
 
 	// apply accumulated impulse
 	A->apply_impulse(rA, -jn_acc);
@@ -325,7 +325,7 @@ void GrooveJoint2DSW::solve(real_t p_step) {
 	Vector2 jOld = jn_acc;
 	j += jOld;
 
-	jn_acc = (((clamp * j.cross(xf_normal)) > 0) ? j : j.project(xf_normal)).clamped(jn_max);
+	jn_acc = (((clamp * j.cross(xf_normal)) > 0) ? j : j.project(xf_normal)).limit_length(jn_max);
 
 	j = jn_acc - jOld;
 

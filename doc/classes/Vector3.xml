@@ -138,6 +138,13 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
+		<method name="limit_length">
+			<return type="Vector3" />
+			<argument index="0" name="length" type="float" default="1.0" />
+			<description>
+				Returns the vector with a maximum length by limiting its length to [code]length[/code].
+			</description>
+		</method>
 		<method name="linear_interpolate">
 			<return type="Vector3" />
 			<argument index="0" name="to" type="Vector3" />

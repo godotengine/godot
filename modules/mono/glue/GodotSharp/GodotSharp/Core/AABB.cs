@@ -67,6 +67,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the center of the <see cref="AABB"/>, which is equal
+        /// to <see cref="Position"/> + (<see cref="Size"/> / 2).
+        /// </summary>
+        /// <returns>The center.</returns>
+        public Vector3 GetCenter()
+        {
+            return _position + (_size * 0.5f);
+        }
+
+        /// <summary>
         /// Returns <see langword="true"/> if this <see cref="AABB"/> completely encloses another one.
         /// </summary>
         /// <param name="with">The other <see cref="AABB"/> that may be enclosed.</param>

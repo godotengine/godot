@@ -100,6 +100,7 @@ struct Vector2 {
 	Vector2 plane_project(real_t p_d, const Vector2 &p_vec) const;
 
 	Vector2 clamped(real_t p_len) const;
+	Vector2 limit_length(const real_t p_len = 1.0) const;
 
 	_FORCE_INLINE_ static Vector2 linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_weight);
 	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2 &p_to, real_t p_weight) const;

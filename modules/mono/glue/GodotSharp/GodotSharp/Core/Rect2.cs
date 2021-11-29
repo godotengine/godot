@@ -162,6 +162,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the center of the <see cref="Rect2"/>, which is equal
+        /// to <see cref="Position"/> + (<see cref="Size"/> / 2).
+        /// </summary>
+        /// <returns>The center.</returns>
+        public Vector2 GetCenter()
+        {
+            return _position + (_size * 0.5f);
+        }
+
+        /// <summary>
         /// Returns a copy of the <see cref="Rect2"/> grown a given amount of units towards
         /// all the sides.
         /// </summary>

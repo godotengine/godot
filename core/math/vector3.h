@@ -85,6 +85,7 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 normalized() const;
 	_FORCE_INLINE_ bool is_normalized() const;
 	_FORCE_INLINE_ Vector3 inverse() const;
+	Vector3 limit_length(const real_t p_len = 1.0) const;
 
 	_FORCE_INLINE_ void zero();
 
