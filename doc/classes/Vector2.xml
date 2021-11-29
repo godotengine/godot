@@ -125,16 +125,16 @@
 		</method>
 		<method name="direction_to" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="b" type="Vector2" />
+			<argument index="0" name="to" type="Vector2" />
 			<description>
-				Returns the normalized vector pointing from this vector to [code]b[/code]. This is equivalent to using [code](b - a).normalized()[/code].
+				Returns the normalized vector pointing from this vector to [code]to[/code]. This is equivalent to using [code](b - a).normalized()[/code].
 			</description>
 		</method>
 		<method name="distance_squared_to" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="to" type="Vector2" />
 			<description>
-				Returns the squared distance between this vector and [code]b[/code].
+				Returns the squared distance between this vector and [code]to[/code].
 				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>

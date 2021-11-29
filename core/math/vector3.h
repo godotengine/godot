@@ -128,9 +128,9 @@ struct Vector3 {
 		return n.normalized();
 	}
 
-	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;
-	_FORCE_INLINE_ real_t dot(const Vector3 &p_b) const;
-	Basis outer(const Vector3 &p_b) const;
+	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_with) const;
+	_FORCE_INLINE_ real_t dot(const Vector3 &p_with) const;
+	Basis outer(const Vector3 &p_with) const;
 
 	_FORCE_INLINE_ Vector3 abs() const;
 	_FORCE_INLINE_ Vector3 floor() const;
@@ -199,17 +199,17 @@ struct Vector3 {
 	}
 };
 
-Vector3 Vector3::cross(const Vector3 &p_b) const {
+Vector3 Vector3::cross(const Vector3 &p_with) const {
 	Vector3 ret(
-			(y * p_b.z) - (z * p_b.y),
-			(z * p_b.x) - (x * p_b.z),
-			(x * p_b.y) - (y * p_b.x));
+			(y * p_with.z) - (z * p_with.y),
+			(z * p_with.x) - (x * p_with.z),
+			(x * p_with.y) - (y * p_with.x));
 
 	return ret;
 }
 
-real_t Vector3::dot(const Vector3 &p_b) const {
-	return x * p_b.x + y * p_b.y + z * p_b.z;
+real_t Vector3::dot(const Vector3 &p_with) const {
+	return x * p_with.x + y * p_with.y + z * p_with.z;
 }
 
 Vector3 Vector3::abs() const {
