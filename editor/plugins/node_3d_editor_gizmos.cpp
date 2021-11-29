@@ -2579,7 +2579,7 @@ void CPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 GPUParticles3DGizmoPlugin::GPUParticles3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particles", Color(0.8, 0.7, 0.4));
 	create_material("particles_material", gizmo_color);
-	gizmo_color.a = 0.1;
+	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("particles_solid_material", gizmo_color);
 	create_icon_material("particles_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("GizmoGPUParticles3D"), SNAME("EditorIcons")));
 	create_handle_material("handles");
