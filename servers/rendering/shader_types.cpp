@@ -367,7 +367,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["LIFETIME"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["DELTA"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["NUMBER"] = constt(ShaderLanguage::TYPE_UINT);
-	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["INDEX"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["INDEX"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["EMISSION_TRANSFORM"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["RANDOM_SEED"] = constt(ShaderLanguage::TYPE_UINT);
 	shader_modes[RS::SHADER_PARTICLES].functions["process"].built_ins["FLAG_EMIT_POSITION"] = constt(ShaderLanguage::TYPE_UINT);
