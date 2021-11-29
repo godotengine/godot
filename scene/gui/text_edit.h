@@ -109,12 +109,14 @@ public:
 		void set_indent_size(int p_indent_size);
 		void set_font(const Ref<Font> &p_font);
 		void set_color_regions(const Vector<ColorRegion> *p_regions) { color_regions = p_regions; }
+
 		int get_line_width(int p_line) const;
 		int get_max_width(bool p_exclude_hidden = false) const;
 		int get_char_width(CharType c, CharType next_c, int px) const;
 		void set_line_wrap_amount(int p_line, int p_wrap_amount) const;
 		int get_line_wrap_amount(int p_line) const;
 		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line) const;
+
 		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text.write[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
@@ -138,14 +140,19 @@ public:
 		bool has_info_icon(int p_line) const { return text[p_line].has_info; }
 		const Ref<Texture> &get_info_icon(int p_line) const { return text[p_line].info_icon; }
 		const String &get_info(int p_line) const { return text[p_line].info; }
+
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);
+
 		int size() const { return text.size(); }
+
 		void clear();
 		void clear_width_cache();
 		void clear_wrap_cache();
 		void clear_info_icons();
+
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
+
 		Text() { indent_size = 4; }
 	};
 
@@ -504,6 +511,15 @@ private:
 
 	void _push_current_op();
 
+	/* Line and character position. */
+	struct LineDrawingCache {
+		int y_offset = 0;
+		Vector<int> first_visible_char;
+		Vector<int> last_visible_char;
+	};
+
+	Map<int, LineDrawingCache> line_drawing_cache;
+
 	/* super internal api, undo/redo builds on it */
 
 	void _base_insert_text(int p_line, int p_char, const String &p_text, int &r_end_line, int &r_end_column);
@@ -586,21 +602,29 @@ public:
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
+
 	int get_line_count() const;
+
+	int get_line_width(int p_line, int p_wrap_index = -1) const;
+	int get_line_height() const;
+
 	void set_line_as_marked(int p_line, bool p_marked);
 	void set_line_as_bookmark(int p_line, bool p_bookmark);
 	bool is_line_set_as_bookmark(int p_line) const;
 	void get_bookmarks(List<int> *p_bookmarks) const;
 	Array get_bookmarks_array() const;
+
 	void set_line_as_breakpoint(int p_line, bool p_breakpoint);
 	bool is_line_set_as_breakpoint(int p_line) const;
-	void set_executing_line(int p_line);
-	void clear_executing_line();
-	void set_line_as_safe(int p_line, bool p_safe);
-	bool is_line_set_as_safe(int p_line) const;
 	void get_breakpoints(List<int> *p_breakpoints) const;
 	Array get_breakpoints_array() const;
 	void remove_breakpoints();
+
+	void set_executing_line(int p_line);
+	void clear_executing_line();
+
+	void set_line_as_safe(int p_line, bool p_safe);
+	bool is_line_set_as_safe(int p_line) const;
 
 	void set_line_info_icon(int p_line, Ref<Texture> p_icon, String p_info = "");
 	void clear_info_icons();
@@ -703,6 +727,11 @@ public:
 	String get_word_under_cursor() const;
 	String get_word_at_pos(const Vector2 &p_pos) const;
 
+	/* Line and character position. */
+	Point2 get_pos_at_line_column(int p_line, int p_column) const;
+	Rect2 get_rect_at_line_column(int p_line, int p_column) const;
+	Point2 get_line_column_at_pos(const Point2 &p_pos) const;
+
 	bool search(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column, int &r_line, int &r_column) const;
 
 	bool has_undo() const;
@@ -787,6 +816,8 @@ public:
 
 	void set_info_gutter_width(int p_gutter_width);
 	int get_info_gutter_width() const;
+
+	int get_total_gutter_width() const;
 
 	void set_draw_minimap(bool p_draw);
 	bool is_drawing_minimap() const;
