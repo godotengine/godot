@@ -58,6 +58,19 @@
 				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the length (magnitude) of this vector.
+			</description>
+		</method>
+		<method name="length_squared" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the squared length (squared magnitude) of this vector.
+				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
 		<method name="max_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>

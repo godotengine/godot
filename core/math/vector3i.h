@@ -31,6 +31,7 @@
 #ifndef VECTOR3I_H
 #define VECTOR3I_H
 
+#include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 
@@ -64,6 +65,9 @@ struct Vector3i {
 
 	Vector3i::Axis min_axis_index() const;
 	Vector3i::Axis max_axis_index() const;
+
+	_FORCE_INLINE_ int64_t length_squared() const;
+	_FORCE_INLINE_ double length() const;
 
 	_FORCE_INLINE_ void zero();
 
@@ -109,6 +113,14 @@ struct Vector3i {
 		z = p_z;
 	}
 };
+
+int64_t Vector3i::length_squared() const {
+	return x * (int64_t)x + y * (int64_t)y + z * (int64_t)z;
+}
+
+double Vector3i::length() const {
+	return Math::sqrt((double)length_squared());
+}
 
 Vector3i Vector3i::abs() const {
 	return Vector3i(ABS(x), ABS(y), ABS(z));

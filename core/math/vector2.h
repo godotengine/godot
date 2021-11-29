@@ -344,6 +344,9 @@ struct Vector2i {
 	bool operator==(const Vector2i &p_vec2) const;
 	bool operator!=(const Vector2i &p_vec2) const;
 
+	int64_t length_squared() const;
+	double length() const;
+
 	real_t aspect() const { return width / (real_t)height; }
 	Vector2i sign() const { return Vector2i(SIGN(x), SIGN(y)); }
 	Vector2i abs() const { return Vector2i(ABS(x), ABS(y)); }
