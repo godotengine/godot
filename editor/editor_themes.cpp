@@ -901,17 +901,16 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "PopupDialog", style_popup);
 
 	// PopupMenu
-	const int popup_menu_margin_size = default_margin_size * 1.5 * EDSCALE;
 	Ref<StyleBoxFlat> style_popup_menu = style_popup->duplicate();
 	// Use 1 pixel for the sides, since if 0 is used, the highlight of hovered items is drawn
 	// on top of the popup border. This causes a 'gap' in the panel border when an item is highlighted,
 	// and it looks weird. 1px solves this.
-	style_popup_menu->set_default_margin(SIDE_LEFT, 1 * EDSCALE);
-	style_popup_menu->set_default_margin(SIDE_TOP, popup_menu_margin_size);
-	style_popup_menu->set_default_margin(SIDE_RIGHT, 1 * EDSCALE);
-	style_popup_menu->set_default_margin(SIDE_BOTTOM, popup_menu_margin_size);
+	style_popup_menu->set_default_margin(SIDE_LEFT, EDSCALE);
+	style_popup_menu->set_default_margin(SIDE_TOP, 2 * EDSCALE);
+	style_popup_menu->set_default_margin(SIDE_RIGHT, EDSCALE);
+	style_popup_menu->set_default_margin(SIDE_BOTTOM, 2 * EDSCALE);
 	// Always display a border for PopupMenus so they can be distinguished from their background.
-	style_popup_menu->set_border_width_all(1 * EDSCALE);
+	style_popup_menu->set_border_width_all(EDSCALE);
 	style_popup_menu->set_border_color(dark_color_2);
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 
@@ -945,12 +944,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Force the v_separation to be even so that the spacing on top and bottom is even.
 	// If the vsep is odd and cannot be split into 2 even groups (of pixels), then it will be lopsided.
-	// We add 2 to the vsep to give it some extra spacing which looks a bit more modern (see Windows, for example)
-	int vsep_base = extra_spacing + default_margin_size + 2;
-	int force_even_vsep = vsep_base + (vsep_base % 2);
+	// We add 2 to the vsep to give it some extra spacing which looks a bit more modern (see Windows, for example).
+	const int vsep_base = extra_spacing + default_margin_size + 6;
+	const int force_even_vsep = vsep_base + (vsep_base % 2);
 	theme->set_constant("v_separation", "PopupMenu", force_even_vsep * EDSCALE);
-	theme->set_constant("item_start_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
-	theme->set_constant("item_end_padding", "PopupMenu", popup_menu_margin_size * EDSCALE);
+	theme->set_constant("item_start_padding", "PopupMenu", default_margin_size * 1.5 * EDSCALE);
+	theme->set_constant("item_end_padding", "PopupMenu", default_margin_size * 1.5 * EDSCALE);
 
 	// Sub-inspectors
 	for (int i = 0; i < 16; i++) {
