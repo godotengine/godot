@@ -60,7 +60,8 @@
 			If [code]true[/code], texture is flipped vertically.
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
-			A color value that gets multiplied on, could be used for mood-coloring or to simulate the color of light.
+			A color value used to [i]multiply[/i] the texture's colors. Can be used for mood-coloring or to simulate the color of light.
+			[b]Note:[/b] If a [member GeometryInstance3D.material_override] is defined on the [SpriteBase3D], the material override must be configured to take vertex colors into account for albedo. Otherwise, the color defined in [member modulate] will be ignored. For a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] must be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/color] must be inserted in the shader's [code]fragment()[/code] function.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
