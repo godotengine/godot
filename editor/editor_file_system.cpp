@@ -1190,6 +1190,7 @@ void EditorFileSystem::_notification(int p_what) {
 			if (use_threads) {
 				if (scanning_changes) {
 					if (scanning_changes_done) {
+						scanning_changes_done = false; //reset this variable to prevent multiple code execution
 						scanning_changes = false;
 
 						set_process(false);
