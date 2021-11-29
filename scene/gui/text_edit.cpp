@@ -1557,6 +1557,47 @@ void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+bool TextEdit::alt_input(const Ref<InputEvent> &p_gui_input) {
+	Ref<InputEventKey> k = p_gui_input;
+	if (k.is_valid()) {
+		if (!k->is_pressed()) {
+			if (alt_start && k->get_keycode() == Key::ALT) {
+				alt_start = false;
+				if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+					handle_unicode_input(alt_code);
+				}
+				return true;
+			}
+			return false;
+		}
+
+		if (k->is_alt_pressed()) {
+			if (!alt_start) {
+				if (k->get_keycode() == Key::KP_ADD) {
+					alt_start = true;
+					alt_code = 0;
+					return true;
+				}
+			} else {
+				if (k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::KEY_0);
+				}
+				if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
+				}
+				if (k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::A) + 10;
+				}
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
@@ -1865,6 +1906,10 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventKey> k = p_gui_input;
 
 	if (k.is_valid()) {
+		if (alt_input(p_gui_input)) {
+			accept_event();
+			return;
+		}
 		if (!k->is_pressed()) {
 			return;
 		}

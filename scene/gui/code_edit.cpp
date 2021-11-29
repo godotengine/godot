@@ -357,6 +357,11 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	Ref<InputEventKey> k = p_gui_input;
+	if (TextEdit::alt_input(p_gui_input)) {
+		accept_event();
+		return;
+	}
+
 	bool update_code_completion = false;
 	if (!k.is_valid()) {
 		TextEdit::gui_input(p_gui_input);

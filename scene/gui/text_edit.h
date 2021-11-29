@@ -247,6 +247,9 @@ private:
 
 	bool setting_text = false;
 
+	bool alt_start = false;
+	uint32_t alt_code = 0;
+
 	// Text properties.
 	String ime_text = "";
 	Point2 ime_selection;
@@ -625,6 +628,7 @@ public:
 	/* General overrides. */
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
+	bool alt_input(const Ref<InputEvent> &p_gui_input);
 	virtual Size2 get_minimum_size() const override;
 	virtual bool is_text_field() const override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
