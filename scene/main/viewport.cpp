@@ -1707,12 +1707,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			if (mm->get_button_mask() == MouseButton::NONE) {
 				// Nothing pressed.
 
-				bool can_tooltip = true;
-
 				bool is_tooltip_shown = false;
 
 				if (gui.tooltip_popup) {
-					if (can_tooltip && gui.tooltip_control) {
+					if (gui.tooltip_control) {
 						String tooltip = _gui_get_tooltip(over, gui.tooltip_control->get_global_transform().xform_inv(mpos));
 
 						if (tooltip.length() == 0) {
@@ -1737,7 +1735,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 				}
 
-				if (can_tooltip && !is_tooltip_shown) {
+				if (!is_tooltip_shown && over->can_process()) {
 					if (gui.tooltip_timer.is_valid()) {
 						gui.tooltip_timer->release_connections();
 						gui.tooltip_timer = Ref<SceneTreeTimer>();
