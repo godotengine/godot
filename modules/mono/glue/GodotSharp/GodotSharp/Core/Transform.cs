@@ -350,6 +350,14 @@ namespace Godot
             this.origin = origin;
         }
 
+        /// <summary>
+        /// Composes these two transformation matrices by multiplying them
+        /// together. This has the effect of transforming the second transform
+        /// (the child) by the first transform (the parent).
+        /// </summary>
+        /// <param name="left">The parent transform.</param>
+        /// <param name="right">The child transform.</param>
+        /// <returns>The composed transform.</returns>
         public static Transform operator *(Transform left, Transform right)
         {
             left.origin = left.Xform(right.origin);
@@ -357,21 +365,40 @@ namespace Godot
             return left;
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the transforms are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left transform.</param>
+        /// <param name="right">The right transform.</param>
+        /// <returns>Whether or not the transforms are exactly equal.</returns>
         public static bool operator ==(Transform left, Transform right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the transforms are not equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left transform.</param>
+        /// <param name="right">The right transform.</param>
+        /// <returns>Whether or not the transforms are not equal.</returns>
         public static bool operator !=(Transform left, Transform right)
         {
             return !left.Equals(right);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this transform and <paramref name="obj"/> are equal.
+        /// Returns <see langword="true"/> if the transform is exactly equal
+        /// to the given object (<see paramref="obj"/>).
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
-        /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the transform and the other object are equal.</returns>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns>Whether or not the transform and the object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is Transform)
@@ -383,10 +410,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this transform and <paramref name="other"/> are equal.
+        /// Returns <see langword="true"/> if the transforms are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
         /// <param name="other">The other transform to compare.</param>
-        /// <returns>Whether or not the matrices are equal.</returns>
+        /// <returns>Whether or not the matrices are exactly equal.</returns>
         public bool Equals(Transform other)
         {
             return basis.Equals(other.basis) && origin.Equals(other.origin);
