@@ -4,8 +4,9 @@
 		Tabbed container.
 	</brief_description>
 	<description>
-		Sets the active tab's [code]visible[/code] property to the value [code]true[/code]. Sets all other children's to [code]false[/code].
+		Arranges [Control] children into a tabbed view, creating a tab for each one. The active tab's corresponding [Control] has its [code]visible[/code] property set to [code]true[/code], and all other children's to [code]false[/code].
 		Ignores non-[Control] children.
+		[b]Note:[/b] The drawing of the clickable tabs themselves is handled by this node. Adding [TabBar]s as children is not needed.
 	</description>
 	<tutorials>
 	</tutorials>
