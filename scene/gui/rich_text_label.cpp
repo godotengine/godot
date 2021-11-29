@@ -222,7 +222,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 			if (align != ALIGN_FILL)                                                                                                                                        \
 				wofs += line_ofs;                                                                                                                                           \
 		} else {                                                                                                                                                            \
-			int used = wofs - margin;                                                                                                                                       \
+			float used = wofs - margin;                                                                                                                                     \
 			switch (align) {                                                                                                                                                \
 				case ALIGN_LEFT:                                                                                                                                            \
 					l.offset_caches.push_back(0);                                                                                                                           \
