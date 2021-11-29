@@ -132,20 +132,6 @@
 			</description>
 		</operator>
 		<operator name="operator *">
-			<return type="int" />
-			<argument index="0" name="right" type="int" />
-			<description>
-				Multiplies two [int]s.
-			</description>
-		</operator>
-		<operator name="operator *">
-			<return type="float" />
-			<argument index="0" name="right" type="float" />
-			<description>
-				Multiplies an [int] and a [float]. The result is a [float].
-			</description>
-		</operator>
-		<operator name="operator *">
 			<return type="Vector2" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
@@ -174,6 +160,20 @@
 			<argument index="0" name="right" type="Vector3i" />
 			<description>
 				Multiplies each component of the [Vector3i] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="float" />
+			<argument index="0" name="right" type="float" />
+			<description>
+				Multiplies an [int] and a [float]. The result is a [float].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="int" />
+			<argument index="0" name="right" type="int" />
+			<description>
+				Multiplies two [int]s.
 			</description>
 		</operator>
 		<operator name="operator +">
