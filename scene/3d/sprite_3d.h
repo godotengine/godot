@@ -69,7 +69,6 @@ private:
 	bool vflip = false;
 
 	Color modulate = Color(1, 1, 1, 1);
-	float opacity = 1.0;
 
 	Vector3::Axis axis = Vector3::AXIS_Z;
 	real_t pixel_size = 0.01;
@@ -120,9 +119,6 @@ public:
 
 	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
-
-	void set_opacity(float p_amount);
-	float get_opacity() const;
 
 	void set_pixel_size(real_t p_amount);
 	real_t get_pixel_size() const;

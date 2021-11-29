@@ -141,15 +141,6 @@ real_t SpriteBase3D::get_pixel_size() const {
 	return pixel_size;
 }
 
-void SpriteBase3D::set_opacity(float p_amount) {
-	opacity = p_amount;
-	_queue_update();
-}
-
-float SpriteBase3D::get_opacity() const {
-	return opacity;
-}
-
 void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	axis = p_axis;
@@ -295,9 +286,6 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &SpriteBase3D::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &SpriteBase3D::get_modulate);
 
-	ClassDB::bind_method(D_METHOD("set_opacity", "opacity"), &SpriteBase3D::set_opacity);
-	ClassDB::bind_method(D_METHOD("get_opacity"), &SpriteBase3D::get_opacity);
-
 	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &SpriteBase3D::set_pixel_size);
 	ClassDB::bind_method(D_METHOD("get_pixel_size"), &SpriteBase3D::get_pixel_size);
 
@@ -324,7 +312,6 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "opacity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_opacity", "get_opacity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
 	ADD_GROUP("Flags", "");
@@ -468,7 +455,6 @@ void Sprite3D::_draw() {
 	}
 
 	Color color = _get_color_accum();
-	color.a *= get_opacity();
 
 	real_t pixel_size = get_pixel_size();
 
@@ -835,7 +821,6 @@ void AnimatedSprite3D::_draw() {
 	}
 
 	Color color = _get_color_accum();
-	color.a *= get_opacity();
 
 	real_t pixel_size = get_pixel_size();
 
