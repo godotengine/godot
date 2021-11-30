@@ -1577,7 +1577,7 @@ void ProjectSettingsEditor::_update_translations() {
 
 			TreeItem *t = translation_filter->create_item(root);
 			t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-			t->set_text(0, n);
+			t->set_text(0, vformat("[%s] %s", l, n));
 			t->set_editable(0, true);
 			t->set_tooltip(0, l);
 			t->set_checked(0, is_checked);
@@ -1618,7 +1618,7 @@ void ProjectSettingsEditor::_update_translations() {
 					if (langnames.length() > 0) {
 						langnames += ",";
 					}
-					langnames += names[i];
+					langnames += vformat("[%s] %s", langs[i], names[i]);
 					translation_locales_idxs_remap.write[l_idx] = i;
 					l_idx++;
 				}
@@ -1627,7 +1627,7 @@ void ProjectSettingsEditor::_update_translations() {
 			if (i > 0) {
 				langnames += ",";
 			}
-			langnames += names[i];
+			langnames += vformat("[%s] %s", langs[i], names[i]);
 		}
 	}
 
