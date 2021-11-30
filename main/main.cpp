@@ -56,7 +56,6 @@
 #include "main/main_timer_sync.h"
 #include "main/performance.h"
 #include "main/splash.gen.h"
-#include "main/splash_editor.gen.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
 #include "scene/main/scene_tree.h"
@@ -86,6 +85,9 @@
 #include "editor/editor_settings.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
+#ifndef NO_EDITOR_SPLASH
+#include "main/splash_editor.gen.h"
+#endif
 #endif
 
 #include "modules/modules_enabled.gen.h" // For mono.
