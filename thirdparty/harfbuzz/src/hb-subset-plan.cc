@@ -41,7 +41,7 @@
 #include "hb-ot-math-table.hh"
 
 
-typedef hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> script_langsys_map;
+typedef hb_hashmap_t<unsigned, hb_set_t *> script_langsys_map;
 #ifndef HB_NO_SUBSET_CFF
 static inline void
 _add_cff_seac_components (const OT::cff1::accelerator_t &cff,
@@ -100,11 +100,23 @@ static void _collect_layout_indices (hb_face_t		  *face,
   if (!features.alloc (table.get_feature_count () + 1))
     return;
 
+  hb_set_t visited_features;
+  bool retain_all_features = true;
   for (unsigned i = 0; i < table.get_feature_count (); i++)
   {
     hb_tag_t tag = table.get_feature_tag (i);
-    if (tag && layout_features_to_retain->has (tag))
-      features.push (tag);
+    if (!tag) continue;
+    if (!layout_features_to_retain->has (tag))
+    {
+      retain_all_features = false;
+      continue;
+    }
+    
+    if (visited_features.has (tag))
+      continue;
+
+    features.push (tag);
+    visited_features.add (tag);
   }
 
   if (!features)
@@ -113,7 +125,7 @@ static void _collect_layout_indices (hb_face_t		  *face,
   // The collect function needs a null element to signal end of the array.
   features.push (0);
 
-  if (features.get_size () == table.get_feature_count () + 1)
+  if (retain_all_features)
   {
     // Looking for all features, trigger the faster collection method.
     layout_collect_func (face,
