@@ -125,7 +125,7 @@ AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
 Ref<AudioStreamPlayback> AudioStreamMP3::instance_playback() {
 	Ref<AudioStreamPlaybackMP3> mp3s;
 
-	ERR_FAIL_COND_V_MSG(data == nullptr, mp3s,
+	ERR_FAIL_COND_V_MSG(data.is_empty(), mp3s,
 			"This AudioStreamMP3 does not have an audio file assigned "
 			"to it. AudioStreamMP3 should not be created from the "
 			"inspector or with `.new()`. Instead, load an audio file.");
@@ -134,7 +134,7 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instance_playback() {
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
 	mp3s->mp3d = (mp3dec_ex_t *)memalloc(sizeof(mp3dec_ex_t));
 
-	int errorcode = mp3dec_ex_open_buf(mp3s->mp3d, (const uint8_t *)data, data_len, MP3D_SEEK_TO_SAMPLE);
+	int errorcode = mp3dec_ex_open_buf(mp3s->mp3d, data.ptr(), data_len, MP3D_SEEK_TO_SAMPLE);
 
 	mp3s->frames_mixed = 0;
 	mp3s->active = false;
@@ -152,11 +152,7 @@ String AudioStreamMP3::get_stream_name() const {
 }
 
 void AudioStreamMP3::clear_data() {
-	if (data) {
-		memfree(data);
-		data = nullptr;
-		data_len = 0;
-	}
+	data.clear();
 }
 
 void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
@@ -165,7 +161,7 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 
 	mp3dec_ex_t mp3d;
 	int err = mp3dec_ex_open_buf(&mp3d, src_datar, src_data_len, MP3D_SEEK_TO_SAMPLE);
-	ERR_FAIL_COND(err != 0);
+	ERR_FAIL_COND_MSG(err || mp3d.info.hz == 0, "Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
 
 	channels = mp3d.info.channels;
 	sample_rate = mp3d.info.hz;
@@ -175,23 +171,13 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 
 	clear_data();
 
-	data = memalloc(src_data_len);
-	memcpy(data, src_datar, src_data_len);
+	data.resize(src_data_len);
+	memcpy(data.ptrw(), src_datar, src_data_len);
 	data_len = src_data_len;
 }
 
 Vector<uint8_t> AudioStreamMP3::get_data() const {
-	Vector<uint8_t> vdata;
-
-	if (data_len && data) {
-		vdata.resize(data_len);
-		{
-			uint8_t *w = vdata.ptrw();
-			memcpy(w, data, data_len);
-		}
-	}
-
-	return vdata;
+	return data;
 }
 
 void AudioStreamMP3::set_loop(bool p_enable) {
