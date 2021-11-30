@@ -2743,7 +2743,7 @@ ProjectManager::ProjectManager() {
 		for (int i = 0; i < editor_languages.size(); i++) {
 			String lang = editor_languages[i];
 			String lang_name = TranslationServer::get_singleton()->get_locale_name(lang);
-			language_btn->add_item(lang_name + " [" + lang + "]", i);
+			language_btn->add_item(vformat("[%s] %s", lang, lang_name), i);
 			language_btn->set_item_metadata(i, lang);
 			if (current_lang == lang) {
 				language_btn->select(i);
