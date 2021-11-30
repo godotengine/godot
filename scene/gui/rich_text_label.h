@@ -542,7 +542,7 @@ public:
 
 	int get_content_height() const;
 
-	VScrollBar *get_v_scroll() { return vscroll; }
+	VScrollBar *get_v_scroll_bar() { return vscroll; }
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 

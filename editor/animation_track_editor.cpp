@@ -3380,7 +3380,7 @@ Dictionary AnimationTrackEditor::get_state() const {
 	state["fps_mode"] = timeline->is_using_fps();
 	state["zoom"] = zoom->get_value();
 	state["offset"] = timeline->get_value();
-	state["v_scroll"] = scroll->get_v_scrollbar()->get_value();
+	state["v_scroll"] = scroll->get_v_scroll_bar()->get_value();
 	return state;
 }
 
@@ -3408,9 +3408,9 @@ void AnimationTrackEditor::set_state(const Dictionary &p_state) {
 		timeline->set_value(0);
 	}
 	if (p_state.has("v_scroll")) {
-		scroll->get_v_scrollbar()->set_value(p_state["v_scroll"]);
+		scroll->get_v_scroll_bar()->set_value(p_state["v_scroll"]);
 	} else {
-		scroll->get_v_scrollbar()->set_value(0);
+		scroll->get_v_scroll_bar()->set_value(0);
 	}
 }
 
@@ -6031,7 +6031,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scroll = memnew(ScrollContainer);
 	timeline_vbox->add_child(scroll);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	VScrollBar *sb = scroll->get_v_scrollbar();
+	VScrollBar *sb = scroll->get_v_scroll_bar();
 	scroll->remove_child(sb);
 	timeline_scroll->add_child(sb); // Move here so timeline and tracks are always aligned.
 	scroll->connect("gui_input", callable_mp(this, &AnimationTrackEditor::_scroll_input));

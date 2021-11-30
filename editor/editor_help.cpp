@@ -1740,11 +1740,11 @@ void EditorHelp::search_again(bool p_search_previous) {
 }
 
 int EditorHelp::get_scroll() const {
-	return class_desc->get_v_scroll()->get_value();
+	return class_desc->get_v_scroll_bar()->get_value();
 }
 
 void EditorHelp::set_scroll(int p_scroll) {
-	class_desc->get_v_scroll()->set_value(p_scroll);
+	class_desc->get_v_scroll_bar()->set_value(p_scroll);
 }
 
 void EditorHelp::update_toggle_scripts_button() {

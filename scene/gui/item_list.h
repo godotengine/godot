@@ -255,7 +255,7 @@ public:
 
 	void set_autoscroll_to_bottom(const bool p_enable);
 
-	VScrollBar *get_v_scroll() { return scroll_bar; }
+	VScrollBar *get_v_scroll_bar() { return scroll_bar; }
 
 	ItemList();
 	~ItemList();

@@ -50,7 +50,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	int hseparation = get_theme_constant(SNAME("hseparation"));
 
 	Size2 minsize = get_theme_stylebox(SNAME("panel"))->get_minimum_size(); // Accounts for margin in the margin container
-	minsize.x += scroll_container->get_v_scrollbar()->get_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content
+	minsize.x += scroll_container->get_v_scroll_bar()->get_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content
 
 	float max_w = 0.0;
 	float icon_w = 0.0;
@@ -343,11 +343,11 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 
 	// Make an area which does not include v scrollbar, so that items are not activated when dragging scrollbar.
 	Rect2 item_clickable_area = scroll_container->get_rect();
-	if (scroll_container->get_v_scrollbar()->is_visible_in_tree()) {
+	if (scroll_container->get_v_scroll_bar()->is_visible_in_tree()) {
 		if (is_layout_rtl()) {
-			item_clickable_area.position.x += scroll_container->get_v_scrollbar()->get_size().width;
+			item_clickable_area.position.x += scroll_container->get_v_scroll_bar()->get_size().width;
 		} else {
-			item_clickable_area.size.width -= scroll_container->get_v_scrollbar()->get_size().width;
+			item_clickable_area.size.width -= scroll_container->get_v_scroll_bar()->get_size().width;
 		}
 	}
 
@@ -508,7 +508,7 @@ void PopupMenu::_draw_items() {
 	Color font_hover_color = get_theme_color(SNAME("font_hover_color"));
 	Color font_separator_color = get_theme_color(SNAME("font_separator_color"));
 
-	float scroll_width = scroll_container->get_v_scrollbar()->is_visible_in_tree() ? scroll_container->get_v_scrollbar()->get_size().width : 0;
+	float scroll_width = scroll_container->get_v_scroll_bar()->is_visible_in_tree() ? scroll_container->get_v_scroll_bar()->get_size().width : 0;
 	float display_width = control->get_size().width - scroll_width;
 
 	// Find the widest icon and whether any items have a checkbox, and store the offsets for each.

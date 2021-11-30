@@ -3345,7 +3345,7 @@ void EditorInspector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_PROCESS) {
 		if (update_scroll_request >= 0) {
-			get_v_scrollbar()->call_deferred(SNAME("set_value"), update_scroll_request);
+			get_v_scroll_bar()->call_deferred(SNAME("set_value"), update_scroll_request);
 			update_scroll_request = -1;
 		}
 		if (refresh_countdown > 0) {
@@ -3567,7 +3567,7 @@ EditorInspector::EditorInspector() {
 	deletable_properties = false;
 	property_clipboard = Variant();
 
-	get_v_scrollbar()->connect("value_changed", callable_mp(this, &EditorInspector::_vscroll_changed));
+	get_v_scroll_bar()->connect("value_changed", callable_mp(this, &EditorInspector::_vscroll_changed));
 	update_scroll_request = -1;
 	if (EditorSettings::get_singleton()) {
 		refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));

@@ -104,8 +104,8 @@ public:
 	bool is_following_focus() const;
 	void set_follow_focus(bool p_follow);
 
-	HScrollBar *get_h_scrollbar();
-	VScrollBar *get_v_scrollbar();
+	HScrollBar *get_h_scroll_bar();
+	VScrollBar *get_v_scroll_bar();
 	void ensure_control_visible(Control *p_control);
 
 	TypedArray<String> get_configuration_warnings() const override;
