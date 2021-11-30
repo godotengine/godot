@@ -53,6 +53,7 @@ public:
 			ANNOTATION,
 			IDENTIFIER,
 			LITERAL,
+			COMMENT,
 			// Comparison
 			LESS,
 			LESS_EQUAL,
@@ -164,6 +165,7 @@ public:
 
 		Type type = EMPTY;
 		Variant literal;
+		String comment;
 		int start_line = 0, end_line = 0, start_column = 0, end_column = 0;
 		int leftmost_column = 0, rightmost_column = 0; // Column span for multiline tokens.
 		int cursor_position = -1;
