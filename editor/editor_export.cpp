@@ -488,8 +488,8 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 	String cur_dir_no_prefix = cur_dir.replace("res://", "");
 
 	Vector<String> dirs;
-	String f;
-	while ((f = da->get_next()) != "") {
+	String f = da->get_next();
+	while (!f.is_empty()) {
 		if (da->current_is_dir()) {
 			dirs.push_back(f);
 		} else {
@@ -506,6 +506,7 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 				}
 			}
 		}
+		f = da->get_next();
 	}
 
 	da->list_dir_end();

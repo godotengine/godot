@@ -85,11 +85,10 @@ public:
 				next_element(other.next_element) {
 		}
 
-		Element &operator=(const Element &other) {
+		void operator=(const Element &other) {
 			list_element = other.list_element;
 			next_element = other.next_element;
 			prev_element = other.prev_element;
-			return *this;
 		}
 
 		_FORCE_INLINE_ bool operator==(const Element &p_other) const {
@@ -145,9 +144,8 @@ public:
 				list_element(other.list_element) {
 		}
 
-		ConstElement &operator=(const ConstElement &other) {
+		void operator=(const ConstElement &other) {
 			list_element = other.list_element;
-			return *this;
 		}
 
 		ConstElement next() const {

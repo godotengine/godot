@@ -100,12 +100,11 @@ SoftDynamicBody3D::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
 	offset = obj_tocopy.offset;
 }
 
-SoftDynamicBody3D::PinnedPoint &SoftDynamicBody3D::PinnedPoint::operator=(const PinnedPoint &obj) {
+void SoftDynamicBody3D::PinnedPoint::operator=(const PinnedPoint &obj) {
 	point_index = obj.point_index;
 	spatial_attachment_path = obj.spatial_attachment_path;
 	spatial_attachment = obj.spatial_attachment;
 	offset = obj.offset;
-	return *this;
 }
 
 void SoftDynamicBody3D::_update_pickable() {

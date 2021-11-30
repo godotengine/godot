@@ -192,10 +192,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		case Variant::VECTOR2I: {
 			int id = variable_id++;
 			Vector2 vec = p_var;
+			const String type_scalar = Variant::get_type_name(p_var.get_type() == Variant::VECTOR2 ? Variant::FLOAT : Variant::INT);
 			DAP::Variable x, y;
 			x.name = "x";
 			y.name = "y";
-			x.type = y.type = Variant::get_type_name(p_var.get_type() == Variant::VECTOR2 ? Variant::FLOAT : Variant::INT);
+			x.type = type_scalar;
+			y.type = type_scalar;
 			x.value = rtos(vec.x);
 			y.value = rtos(vec.y);
 
@@ -209,12 +211,16 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		case Variant::RECT2I: {
 			int id = variable_id++;
 			Rect2 rect = p_var;
+			const String type_scalar = Variant::get_type_name(p_var.get_type() == Variant::RECT2 ? Variant::FLOAT : Variant::INT);
 			DAP::Variable x, y, w, h;
 			x.name = "x";
 			y.name = "y";
 			w.name = "w";
 			h.name = "h";
-			x.type = y.type = w.type = h.type = Variant::get_type_name(p_var.get_type() == Variant::RECT2 ? Variant::FLOAT : Variant::INT);
+			x.type = type_scalar;
+			y.type = type_scalar;
+			w.type = type_scalar;
+			h.type = type_scalar;
 			x.value = rtos(rect.position.x);
 			y.value = rtos(rect.position.y);
 			w.value = rtos(rect.size.x);
@@ -232,11 +238,14 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		case Variant::VECTOR3I: {
 			int id = variable_id++;
 			Vector3 vec = p_var;
+			const String type_scalar = Variant::get_type_name(p_var.get_type() == Variant::VECTOR3 ? Variant::FLOAT : Variant::INT);
 			DAP::Variable x, y, z;
 			x.name = "x";
 			y.name = "y";
 			z.name = "z";
-			x.type = y.type = z.type = Variant::get_type_name(p_var.get_type() == Variant::VECTOR3 ? Variant::FLOAT : Variant::INT);
+			x.type = type_scalar;
+			y.type = type_scalar;
+			z.type = type_scalar;
 			x.value = rtos(vec.x);
 			y.value = rtos(vec.y);
 			z.value = rtos(vec.z);
@@ -251,11 +260,14 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		case Variant::TRANSFORM2D: {
 			int id = variable_id++;
 			Transform2D transform = p_var;
+			const String type_vec2 = Variant::get_type_name(Variant::VECTOR2);
 			DAP::Variable x, y, origin;
 			x.name = "x";
 			y.name = "y";
 			origin.name = "origin";
-			x.type = y.type = origin.type = Variant::get_type_name(Variant::VECTOR2);
+			x.type = type_vec2;
+			y.type = type_vec2;
+			origin.type = type_vec2;
 			x.value = transform.elements[0];
 			y.value = transform.elements[1];
 			origin.value = transform.elements[2];
@@ -291,12 +303,16 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		case Variant::QUATERNION: {
 			int id = variable_id++;
 			Quaternion quat = p_var;
+			const String type_float = Variant::get_type_name(Variant::FLOAT);
 			DAP::Variable x, y, z, w;
 			x.name = "x";
 			y.name = "y";
 			z.name = "z";
 			w.name = "w";
-			x.type = y.type = z.type = w.type = Variant::get_type_name(Variant::FLOAT);
+			x.type = type_float;
+			y.type = type_float;
+			z.type = type_float;
+			w.type = type_float;
 			x.value = rtos(quat.x);
 			y.value = rtos(quat.y);
 			z.value = rtos(quat.z);
@@ -313,10 +329,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		case Variant::AABB: {
 			int id = variable_id++;
 			AABB aabb = p_var;
+			const String type_vec3 = Variant::get_type_name(Variant::VECTOR3);
 			DAP::Variable position, size;
 			position.name = "position";
 			size.name = "size";
-			position.type = size.type = Variant::get_type_name(Variant::VECTOR3);
+			position.type = type_vec3;
+			size.type = type_vec3;
 			position.value = aabb.position;
 			size.value = aabb.size;
 			position.variablesReference = parse_variant(aabb.position);
@@ -331,11 +349,14 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		case Variant::BASIS: {
 			int id = variable_id++;
 			Basis basis = p_var;
+			const String type_vec2 = Variant::get_type_name(Variant::VECTOR2);
 			DAP::Variable x, y, z;
 			x.name = "x";
 			y.name = "y";
 			z.name = "z";
-			x.type = y.type = z.type = Variant::get_type_name(Variant::VECTOR2);
+			x.type = type_vec2;
+			y.type = type_vec2;
+			z.type = type_vec2;
 			x.value = basis.elements[0];
 			y.value = basis.elements[1];
 			z.value = basis.elements[2];
@@ -372,12 +393,16 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		case Variant::COLOR: {
 			int id = variable_id++;
 			Color color = p_var;
+			const String type_float = Variant::get_type_name(Variant::FLOAT);
 			DAP::Variable r, g, b, a;
 			r.name = "r";
 			g.name = "g";
 			b.name = "b";
 			a.name = "a";
-			r.type = g.type = b.type = a.type = Variant::get_type_name(Variant::FLOAT);
+			r.type = type_float;
+			g.type = type_float;
+			b.type = type_float;
+			a.type = type_float;
 			r.value = rtos(color.r);
 			g.value = rtos(color.g);
 			b.value = rtos(color.b);

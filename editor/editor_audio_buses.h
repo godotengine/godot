@@ -230,11 +230,10 @@ private:
 			render_db_value = n.render_db_value;
 		}
 
-		_FORCE_INLINE_ AudioNotch &operator=(const EditorAudioMeterNotches::AudioNotch &n) {
+		_FORCE_INLINE_ void operator=(const EditorAudioMeterNotches::AudioNotch &n) {
 			relative_position = n.relative_position;
 			db_value = n.db_value;
 			render_db_value = n.render_db_value;
-			return *this;
 		}
 
 		_FORCE_INLINE_ AudioNotch() {}

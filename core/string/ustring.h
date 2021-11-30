@@ -108,13 +108,10 @@ public:
 
 	_FORCE_INLINE_ Char16String() {}
 	_FORCE_INLINE_ Char16String(const Char16String &p_str) { _cowdata._ref(p_str._cowdata); }
-	_FORCE_INLINE_ Char16String &operator=(const Char16String &p_str) {
-		_cowdata._ref(p_str._cowdata);
-		return *this;
-	}
+	_FORCE_INLINE_ void operator=(const Char16String &p_str) { _cowdata._ref(p_str._cowdata); }
 	_FORCE_INLINE_ Char16String(const char16_t *p_cstr) { copy_from(p_cstr); }
 
-	Char16String &operator=(const char16_t *p_cstr);
+	void operator=(const char16_t *p_cstr);
 	bool operator<(const Char16String &p_right) const;
 	Char16String &operator+=(char16_t p_char);
 	int length() const { return size() ? size() - 1 : 0; }
@@ -152,13 +149,10 @@ public:
 
 	_FORCE_INLINE_ CharString() {}
 	_FORCE_INLINE_ CharString(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
-	_FORCE_INLINE_ CharString &operator=(const CharString &p_str) {
-		_cowdata._ref(p_str._cowdata);
-		return *this;
-	}
+	_FORCE_INLINE_ void operator=(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
 	_FORCE_INLINE_ CharString(const char *p_cstr) { copy_from(p_cstr); }
 
-	CharString &operator=(const char *p_cstr);
+	void operator=(const char *p_cstr);
 	bool operator<(const CharString &p_right) const;
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
@@ -442,11 +436,7 @@ public:
 
 	_FORCE_INLINE_ String() {}
 	_FORCE_INLINE_ String(const String &p_str) { _cowdata._ref(p_str._cowdata); }
-
-	String &operator=(const String &p_str) {
-		_cowdata._ref(p_str._cowdata);
-		return *this;
-	}
+	_FORCE_INLINE_ void operator=(const String &p_str) { _cowdata._ref(p_str._cowdata); }
 
 	Vector<uint8_t> to_ascii_buffer() const;
 	Vector<uint8_t> to_utf8_buffer() const;

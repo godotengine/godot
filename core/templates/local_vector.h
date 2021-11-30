@@ -234,19 +234,17 @@ public:
 			data[i] = p_from.data[i];
 		}
 	}
-	inline LocalVector &operator=(const LocalVector &p_from) {
+	inline void operator=(const LocalVector &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {
 			data[i] = p_from.data[i];
 		}
-		return *this;
 	}
-	inline LocalVector &operator=(const Vector<T> &p_from) {
+	inline void operator=(const Vector<T> &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < count; i++) {
 			data[i] = p_from[i];
 		}
-		return *this;
 	}
 
 	_FORCE_INLINE_ ~LocalVector() {

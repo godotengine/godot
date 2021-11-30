@@ -758,10 +758,9 @@ class PhysicsServer2DManager {
 				name(p_ci.name),
 				create_callback(p_ci.create_callback) {}
 
-		ClassInfo &operator=(const ClassInfo &p_ci) {
+		void operator=(const ClassInfo &p_ci) {
 			name = p_ci.name;
 			create_callback = p_ci.create_callback;
-			return *this;
 		}
 	};
 

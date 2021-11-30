@@ -473,6 +473,13 @@ void FileDialog::update_file_list() {
 
 	dir_access->list_dir_begin();
 
+	if (dir_access->is_readable(dir_access->get_current_dir().utf8().get_data())) {
+		message->hide();
+	} else {
+		message->set_text(TTRC("You don't have permission to access contents of this folder."));
+		message->show();
+	}
+
 	TreeItem *root = tree->create_item();
 	Ref<Texture2D> folder = vbox->get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
 	Ref<Texture2D> file_icon = vbox->get_theme_icon(SNAME("file"), SNAME("FileDialog"));
@@ -482,17 +489,11 @@ void FileDialog::update_file_list() {
 	List<String> dirs;
 
 	bool is_hidden;
-	String item;
+	String item = dir_access->get_next();
 
-	if (dir_access->is_readable(dir_access->get_current_dir().utf8().get_data())) {
-		message->hide();
-	} else {
-		message->set_text(TTRC("You don't have permission to access contents of this folder."));
-		message->show();
-	}
-
-	while ((item = dir_access->get_next()) != "") {
+	while (!item.is_empty()) {
 		if (item == "." || item == "..") {
+			item = dir_access->get_next();
 			continue;
 		}
 
@@ -505,6 +506,7 @@ void FileDialog::update_file_list() {
 				dirs.push_back(item);
 			}
 		}
+		item = dir_access->get_next();
 	}
 
 	dirs.sort_custom<NaturalNoCaseComparator>();
