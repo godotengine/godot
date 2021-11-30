@@ -4293,7 +4293,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_array_size(BlockNode *p_block, cons
 	return n;
 }
 
-Error ShaderLanguage::_parse_global_array_size(int &r_array_size) {
+Error ShaderLanguage::_parse_global_array_size(int &r_array_size, const FunctionInfo &p_function_info) {
 	if (r_array_size > 0) {
 		_set_error("Array size is already defined!");
 		return ERR_PARSE_ERROR;
@@ -4305,7 +4305,7 @@ Error ShaderLanguage::_parse_global_array_size(int &r_array_size) {
 
 	if (tk.type != TK_INT_CONSTANT || ((int)tk.constant) <= 0) {
 		_set_tkpos(pos);
-		Node *n = _parse_array_size(nullptr, FunctionInfo(), array_size);
+		Node *n = _parse_array_size(nullptr, p_function_info, array_size);
 		if (!n) {
 			return ERR_PARSE_ERROR;
 		}
@@ -7446,6 +7446,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 
 	stages = &p_functions;
+	const FunctionInfo &constants = p_functions.has("constants") ? p_functions["constants"] : FunctionInfo();
 
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
@@ -7561,7 +7562,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						int array_size = 0;
 
 						if (tk.type == TK_BRACKET_OPEN) {
-							Error error = _parse_global_array_size(array_size);
+							Error error = _parse_global_array_size(array_size, constants);
 							if (error != OK) {
 								return error;
 							}
@@ -7588,7 +7589,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						tk = _get_token();
 
 						if (tk.type == TK_BRACKET_OPEN) {
-							Error error = _parse_global_array_size(member->array_size);
+							Error error = _parse_global_array_size(member->array_size, constants);
 							if (error != OK) {
 								return error;
 							}
@@ -7715,7 +7716,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				if (tk.type == TK_BRACKET_OPEN) {
-					Error error = _parse_global_array_size(array_size);
+					Error error = _parse_global_array_size(array_size, constants);
 					if (error != OK) {
 						return error;
 					}
@@ -7730,7 +7731,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				prev_pos = _get_tkpos();
 				name = tk.text;
 
-				if (_find_identifier(nullptr, false, FunctionInfo(), name)) {
+				if (_find_identifier(nullptr, false, constants, name)) {
 					_set_error("Redefinition of '" + String(name) + "'");
 					return ERR_PARSE_ERROR;
 				}
@@ -7763,7 +7764,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					tk = _get_token();
 					if (tk.type == TK_BRACKET_OPEN) {
-						Error error = _parse_global_array_size(uniform2.array_size);
+						Error error = _parse_global_array_size(uniform2.array_size, constants);
 						if (error != OK) {
 							return error;
 						}
@@ -8017,7 +8018,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							return ERR_PARSE_ERROR;
 						}
 
-						Node *expr = _parse_and_reduce_expression(nullptr, FunctionInfo());
+						Node *expr = _parse_and_reduce_expression(nullptr, constants);
 						if (!expr) {
 							return ERR_PARSE_ERROR;
 						}
@@ -8187,7 +8188,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					return ERR_PARSE_ERROR;
 				}
 
-				if (_find_identifier(nullptr, false, FunctionInfo(), name)) {
+				if (_find_identifier(nullptr, false, constants, name)) {
 					_set_error("Redefinition of '" + String(name) + "'");
 					return ERR_PARSE_ERROR;
 				}
@@ -8300,7 +8301,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 										} else {
 											_set_tkpos(prev_pos);
 
-											Node *n = _parse_and_reduce_expression(nullptr, FunctionInfo());
+											Node *n = _parse_and_reduce_expression(nullptr, constants);
 											if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
 												_set_error("Expected single integer constant > 0");
 												return ERR_PARSE_ERROR;
@@ -8381,7 +8382,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 								if (tk.type == TK_PARENTHESIS_OPEN || curly) { // initialization
 									while (true) {
-										Node *n = _parse_and_reduce_expression(nullptr, FunctionInfo());
+										Node *n = _parse_and_reduce_expression(nullptr, constants);
 										if (!n) {
 											return ERR_PARSE_ERROR;
 										}
@@ -8436,7 +8437,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								constant.initializer = static_cast<ConstantNode *>(expr);
 							} else {
 								//variable created with assignment! must parse an expression
-								Node *expr = _parse_and_reduce_expression(nullptr, FunctionInfo());
+								Node *expr = _parse_and_reduce_expression(nullptr, constants);
 								if (!expr) {
 									return ERR_PARSE_ERROR;
 								}
@@ -8483,7 +8484,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							}
 
 							name = tk.text;
-							if (_find_identifier(nullptr, false, FunctionInfo(), name)) {
+							if (_find_identifier(nullptr, false, constants, name)) {
 								_set_error("Redefinition of '" + String(name) + "'");
 								return ERR_PARSE_ERROR;
 							}
@@ -8513,6 +8514,12 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				if (p_functions.has("global")) { // Adds global variables: 'TIME'
 					for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["global"].built_ins) {
+						builtins.built_ins.insert(E.key, E.value);
+					}
+				}
+
+				if (p_functions.has("constants")) { // Adds global constants: 'PI', 'TAU', 'E'
+					for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["constants"].built_ins) {
 						builtins.built_ins.insert(E.key, E.value);
 					}
 				}
@@ -9059,6 +9066,16 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				if (comp_ident) {
 					if (p_functions.has("global")) {
 						for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["global"].built_ins) {
+							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
+							if (E.value.constant) {
+								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
+							}
+							matches.insert(E.key, kind);
+						}
+					}
+
+					if (p_functions.has("constants")) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["constants"].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
 							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
