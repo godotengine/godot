@@ -2885,7 +2885,6 @@ void TileSetEditor::draw_polygon_shapes() {
 		}
 		workspace->draw_line(current_shape[current_shape.size() - 1], snap_point(workspace->get_local_mouse_position()), Color(0, 1, 1), 1, true);
 	}
-	
 	if (creating_shape) {
 		draw_handles = true;
 	}
