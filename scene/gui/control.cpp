@@ -641,6 +641,7 @@ bool Control::clips_input() const {
 	}
 	return false;
 }
+
 bool Control::has_point(const Point2 &p_point) const {
 	if (get_script_instance()) {
 		Variant v = p_point;
@@ -705,6 +706,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 
 	return false;
 }
+
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 	if (data.drag_owner) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
@@ -763,6 +765,98 @@ Size2 Control::get_minimum_size() const {
 	return Size2();
 }
 
+template <class T>
+T Control::get_theme_item_in_types(Control *p_theme_owner, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types) {
+	ERR_FAIL_COND_V_MSG(p_theme_types.size() == 0, T(), "At least one theme type must be specified.");
+
+	// First, look through each control node in the branch, until no valid parent can be found.
+	// Only nodes with a theme resource attached are considered.
+	Control *theme_owner = p_theme_owner;
+
+	while (theme_owner) {
+		// For each theme resource check the theme types provided and see if p_name exists with any of them.
+		for (List<StringName>::Element *E = p_theme_types.front(); E; E = E->next()) {
+			if (theme_owner && theme_owner->data.theme->has_theme_item(p_data_type, p_name, E->get())) {
+				return theme_owner->data.theme->get_theme_item(p_data_type, p_name, E->get());
+			}
+		}
+
+		Control *parent_c = Object::cast_to<Control>(theme_owner->get_parent());
+		if (parent_c) {
+			theme_owner = parent_c->data.theme_owner;
+		} else {
+			theme_owner = nullptr;
+		}
+	}
+
+	// Secondly, check the project-defined Theme resource.
+	if (Theme::get_project_default().is_valid()) {
+		for (List<StringName>::Element *E = p_theme_types.front(); E; E = E->next()) {
+			if (Theme::get_project_default()->has_theme_item(p_data_type, p_name, E->get())) {
+				return Theme::get_project_default()->get_theme_item(p_data_type, p_name, E->get());
+			}
+		}
+	}
+
+	// Lastly, fall back on the items defined in the default Theme, if they exist.
+	for (List<StringName>::Element *E = p_theme_types.front(); E; E = E->next()) {
+		if (Theme::get_default()->has_theme_item(p_data_type, p_name, E->get())) {
+			return Theme::get_default()->get_theme_item(p_data_type, p_name, E->get());
+		}
+	}
+	// If they don't exist, use any type to return the default/empty value.
+	return Theme::get_default()->get_theme_item(p_data_type, p_name, p_theme_types[0]);
+}
+
+bool Control::has_theme_item_in_types(Control *p_theme_owner, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types) {
+	ERR_FAIL_COND_V_MSG(p_theme_types.size() == 0, false, "At least one theme type must be specified.");
+
+	// First, look through each control node in the branch, until no valid parent can be found.
+	// Only nodes with a theme resource attached are considered.
+	Control *theme_owner = p_theme_owner;
+
+	while (theme_owner) {
+		// For each theme resource check the theme types provided and see if p_name exists with any of them.
+		for (List<StringName>::Element *E = p_theme_types.front(); E; E = E->next()) {
+			if (theme_owner && theme_owner->data.theme->has_theme_item(p_data_type, p_name, E->get())) {
+				return true;
+			}
+		}
+
+		Control *parent_c = Object::cast_to<Control>(theme_owner->get_parent());
+		if (parent_c) {
+			theme_owner = parent_c->data.theme_owner;
+		} else {
+			theme_owner = nullptr;
+		}
+	}
+
+	// Secondly, check the project-defined Theme resource.
+	if (Theme::get_project_default().is_valid()) {
+		for (List<StringName>::Element *E = p_theme_types.front(); E; E = E->next()) {
+			if (Theme::get_project_default()->has_theme_item(p_data_type, p_name, E->get())) {
+				return true;
+			}
+		}
+	}
+
+	// Lastly, fall back on the items defined in the default Theme, if they exist.
+	for (List<StringName>::Element *E = p_theme_types.front(); E; E = E->next()) {
+		if (Theme::get_default()->has_theme_item(p_data_type, p_name, E->get())) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void Control::_get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const {
+	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
+		Theme::get_default()->get_type_dependencies(get_class_name(), p_list);
+	} else {
+		Theme::get_default()->get_type_dependencies(p_theme_type, p_list);
+	}
+}
+
 Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_theme_type) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		const Ref<Texture> *tex = data.icon_override.getptr(p_name);
@@ -771,38 +865,9 @@ Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_the
 		}
 	}
 
-	StringName type = p_theme_type ? p_theme_type : get_class_name();
-
-	// try with custom themes
-	Control *theme_owner = data.theme_owner;
-
-	while (theme_owner) {
-		StringName class_name = type;
-
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_icon(p_name, class_name)) {
-				return theme_owner->data.theme->get_icon(p_name, class_name);
-			}
-
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
-		}
-
-		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
-
-		if (parent) {
-			theme_owner = parent->data.theme_owner;
-		} else {
-			theme_owner = nullptr;
-		}
-	}
-
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_icon(p_name, type)) {
-			return Theme::get_project_default()->get_icon(p_name, type);
-		}
-	}
-
-	return Theme::get_default()->get_icon(p_name, type);
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return get_theme_item_in_types<Ref<Texture>>(data.theme_owner, Theme::DATA_TYPE_ICON, p_name, theme_types);
 }
 
 Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_theme_type) const {
@@ -855,46 +920,11 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 		}
 	}
 
-	StringName type = p_theme_type ? p_theme_type : get_class_name();
-
-	// try with custom themes
-	Control *theme_owner = data.theme_owner;
-
-	StringName class_name = type;
-
-	while (theme_owner) {
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_stylebox(p_name, class_name)) {
-				return theme_owner->data.theme->get_stylebox(p_name, class_name);
-			}
-
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
-		}
-
-		class_name = type;
-
-		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
-
-		if (parent) {
-			theme_owner = parent->data.theme_owner;
-		} else {
-			theme_owner = nullptr;
-		}
-	}
-
-	while (class_name != StringName()) {
-		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->has_stylebox(p_name, type)) {
-			return Theme::get_project_default()->get_stylebox(p_name, type);
-		}
-
-		if (Theme::get_default()->has_stylebox(p_name, class_name)) {
-			return Theme::get_default()->get_stylebox(p_name, class_name);
-		}
-
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
-	}
-	return Theme::get_default()->get_stylebox(p_name, type);
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return get_theme_item_in_types<Ref<StyleBox>>(data.theme_owner, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
+
 Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_theme_type) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
@@ -903,36 +933,11 @@ Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_theme_
 		}
 	}
 
-	StringName type = p_theme_type ? p_theme_type : get_class_name();
-
-	// try with custom themes
-	Control *theme_owner = data.theme_owner;
-
-	while (theme_owner) {
-		StringName class_name = type;
-
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_font(p_name, class_name)) {
-				return theme_owner->data.theme->get_font(p_name, class_name);
-			}
-
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
-		}
-
-		if (theme_owner->data.theme->get_default_theme_font().is_valid()) {
-			return theme_owner->data.theme->get_default_theme_font();
-		}
-		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
-
-		if (parent) {
-			theme_owner = parent->data.theme_owner;
-		} else {
-			theme_owner = nullptr;
-		}
-	}
-
-	return Theme::get_default()->get_font(p_name, type);
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return get_theme_item_in_types<Ref<Font>>(data.theme_owner, Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
+
 Color Control::get_color(const StringName &p_name, const StringName &p_theme_type) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		const Color *color = data.color_override.getptr(p_name);
@@ -941,37 +946,9 @@ Color Control::get_color(const StringName &p_name, const StringName &p_theme_typ
 		}
 	}
 
-	StringName type = p_theme_type ? p_theme_type : get_class_name();
-
-	// try with custom themes
-	Control *theme_owner = data.theme_owner;
-
-	while (theme_owner) {
-		StringName class_name = type;
-
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_color(p_name, class_name)) {
-				return theme_owner->data.theme->get_color(p_name, class_name);
-			}
-
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
-		}
-
-		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
-
-		if (parent) {
-			theme_owner = parent->data.theme_owner;
-		} else {
-			theme_owner = nullptr;
-		}
-	}
-
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_color(p_name, type)) {
-			return Theme::get_project_default()->get_color(p_name, type);
-		}
-	}
-	return Theme::get_default()->get_color(p_name, type);
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return get_theme_item_in_types<Color>(data.theme_owner, Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
 int Control::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
@@ -982,37 +959,9 @@ int Control::get_constant(const StringName &p_name, const StringName &p_theme_ty
 		}
 	}
 
-	StringName type = p_theme_type ? p_theme_type : get_class_name();
-
-	// try with custom themes
-	Control *theme_owner = data.theme_owner;
-
-	while (theme_owner) {
-		StringName class_name = type;
-
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_constant(p_name, class_name)) {
-				return theme_owner->data.theme->get_constant(p_name, class_name);
-			}
-
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
-		}
-
-		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
-
-		if (parent) {
-			theme_owner = parent->data.theme_owner;
-		} else {
-			theme_owner = nullptr;
-		}
-	}
-
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_constant(p_name, type)) {
-			return Theme::get_project_default()->get_constant(p_name, type);
-		}
-	}
-	return Theme::get_default()->get_constant(p_name, type);
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return get_theme_item_in_types<int>(data.theme_owner, Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
 bool Control::has_icon_override(const StringName &p_name) const {
@@ -1052,36 +1001,9 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_theme_type)
 		}
 	}
 
-	StringName type = p_theme_type ? p_theme_type : get_class_name();
-
-	// try with custom themes
-	Control *theme_owner = data.theme_owner;
-
-	while (theme_owner) {
-		StringName class_name = type;
-
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_icon(p_name, class_name)) {
-				return true;
-			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
-		}
-
-		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
-
-		if (parent) {
-			theme_owner = parent->data.theme_owner;
-		} else {
-			theme_owner = nullptr;
-		}
-	}
-
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_icon(p_name, type)) {
-			return true;
-		}
-	}
-	return Theme::get_default()->has_icon(p_name, type);
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return has_theme_item_in_types(data.theme_owner, Theme::DATA_TYPE_ICON, p_name, theme_types);
 }
 
 bool Control::has_shader(const StringName &p_name, const StringName &p_theme_type) const {
@@ -1122,6 +1044,7 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_theme_typ
 	}
 	return Theme::get_default()->has_shader(p_name, type);
 }
+
 bool Control::has_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		if (has_stylebox_override(p_name)) {
@@ -1129,37 +1052,11 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_theme_t
 		}
 	}
 
-	StringName type = p_theme_type ? p_theme_type : get_class_name();
-
-	// try with custom themes
-	Control *theme_owner = data.theme_owner;
-
-	while (theme_owner) {
-		StringName class_name = type;
-
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_stylebox(p_name, class_name)) {
-				return true;
-			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
-		}
-
-		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
-
-		if (parent) {
-			theme_owner = parent->data.theme_owner;
-		} else {
-			theme_owner = nullptr;
-		}
-	}
-
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_stylebox(p_name, type)) {
-			return true;
-		}
-	}
-	return Theme::get_default()->has_stylebox(p_name, type);
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return has_theme_item_in_types(data.theme_owner, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
 }
+
 bool Control::has_font(const StringName &p_name, const StringName &p_theme_type) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name()) {
 		if (has_font_override(p_name)) {
@@ -1167,36 +1064,9 @@ bool Control::has_font(const StringName &p_name, const StringName &p_theme_type)
 		}
 	}
 
-	StringName type = p_theme_type ? p_theme_type : get_class_name();
-
-	// try with custom themes
-	Control *theme_owner = data.theme_owner;
-
-	while (theme_owner) {
-		StringName class_name = type;
-
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_font(p_name, class_name)) {
-				return true;
-			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
-		}
-
-		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
-
-		if (parent) {
-			theme_owner = parent->data.theme_owner;
-		} else {
-			theme_owner = nullptr;
-		}
-	}
-
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_font(p_name, type)) {
-			return true;
-		}
-	}
-	return Theme::get_default()->has_font(p_name, type);
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return has_theme_item_in_types(data.theme_owner, Theme::DATA_TYPE_FONT, p_name, theme_types);
 }
 
 bool Control::has_color(const StringName &p_name, const StringName &p_theme_type) const {
@@ -1206,36 +1076,9 @@ bool Control::has_color(const StringName &p_name, const StringName &p_theme_type
 		}
 	}
 
-	StringName type = p_theme_type ? p_theme_type : get_class_name();
-
-	// try with custom themes
-	Control *theme_owner = data.theme_owner;
-
-	while (theme_owner) {
-		StringName class_name = type;
-
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_color(p_name, class_name)) {
-				return true;
-			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
-		}
-
-		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
-
-		if (parent) {
-			theme_owner = parent->data.theme_owner;
-		} else {
-			theme_owner = nullptr;
-		}
-	}
-
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_color(p_name, type)) {
-			return true;
-		}
-	}
-	return Theme::get_default()->has_color(p_name, type);
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return has_theme_item_in_types(data.theme_owner, Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
 bool Control::has_constant(const StringName &p_name, const StringName &p_theme_type) const {
@@ -1245,40 +1088,13 @@ bool Control::has_constant(const StringName &p_name, const StringName &p_theme_t
 		}
 	}
 
-	StringName type = p_theme_type ? p_theme_type : get_class_name();
-
-	// try with custom themes
-	Control *theme_owner = data.theme_owner;
-
-	while (theme_owner) {
-		StringName class_name = type;
-
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_constant(p_name, class_name)) {
-				return true;
-			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
-		}
-
-		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
-
-		if (parent) {
-			theme_owner = parent->data.theme_owner;
-		} else {
-			theme_owner = nullptr;
-		}
-	}
-
-	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_constant(p_name, type)) {
-			return true;
-		}
-	}
-	return Theme::get_default()->has_constant(p_name, type);
+	List<StringName> theme_types;
+	_get_theme_type_dependencies(p_theme_type, &theme_types);
+	return has_theme_item_in_types(data.theme_owner, Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
 Ref<Font> Control::get_theme_default_font() const {
-	// First, look through each control or window node in the branch, until no valid parent can be found.
+	// First, look through each control node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
 	// For each theme resource see if their assigned theme has the default value defined and valid.
 	Control *theme_owner = data.theme_owner;
@@ -1288,8 +1104,7 @@ Ref<Font> Control::get_theme_default_font() const {
 			return theme_owner->data.theme->get_default_theme_font();
 		}
 
-		Node *parent = theme_owner->get_parent();
-		Control *parent_c = Object::cast_to<Control>(parent);
+		Control *parent_c = Object::cast_to<Control>(theme_owner->get_parent());
 		if (parent_c) {
 			theme_owner = parent_c->data.theme_owner;
 		} else {
@@ -1725,6 +1540,7 @@ float Control::get_margin(Margin p_margin) const {
 Size2 Control::get_begin() const {
 	return Size2(data.margin[0], data.margin[1]);
 }
+
 Size2 Control::get_end() const {
 	return Size2(data.margin[2], data.margin[3]);
 }
@@ -1869,6 +1685,7 @@ void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
 }
+
 void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 	if (data.style_override.has(p_name)) {
 		data.style_override[p_name]->disconnect("changed", this, "_override_changed");
@@ -1902,10 +1719,12 @@ void Control::add_font_override(const StringName &p_name, const Ref<Font> &p_fon
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
 }
+
 void Control::add_color_override(const StringName &p_name, const Color &p_color) {
 	data.color_override[p_name] = p_color;
 	notification(NOTIFICATION_THEME_CHANGED);
 }
+
 void Control::add_constant_override(const StringName &p_name, int p_constant) {
 	data.constant_override[p_name] = p_constant;
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -2148,6 +1967,7 @@ Control *Control::find_prev_valid_focus() const {
 Control::FocusMode Control::get_focus_mode() const {
 	return data.focus_mode;
 }
+
 bool Control::has_focus() const {
 	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this);
 }
@@ -2284,6 +2104,7 @@ void Control::set_tooltip(const String &p_tooltip) {
 String Control::get_tooltip(const Point2 &p_pos) const {
 	return data.tooltip;
 }
+
 Control *Control::make_custom_tooltip(const String &p_text) const {
 	if (get_script_instance()) {
 		return const_cast<Control *>(this)->call("_make_custom_tooltip", p_text);
@@ -2300,6 +2121,7 @@ void Control::set_default_cursor_shape(CursorShape p_shape) {
 Control::CursorShape Control::get_default_cursor_shape() const {
 	return data.default_cursor;
 }
+
 Control::CursorShape Control::get_cursor_shape(const Point2 &p_pos) const {
 	return data.default_cursor;
 }
@@ -2494,6 +2316,7 @@ void Control::set_h_size_flags(int p_flags) {
 int Control::get_h_size_flags() const {
 	return data.h_size_flags;
 }
+
 void Control::set_v_size_flags(int p_flags) {
 	if (data.v_size_flags == p_flags) {
 		return;
@@ -2634,6 +2457,7 @@ void Control::set_scale(const Vector2 &p_scale) {
 	_notify_transform();
 	_change_notify("rect_scale");
 }
+
 Vector2 Control::get_scale() const {
 	return data.scale;
 }
@@ -2743,6 +2567,7 @@ void Control::set_v_grow_direction(GrowDirection p_direction) {
 	data.v_grow = p_direction;
 	_size_changed();
 }
+
 Control::GrowDirection Control::get_v_grow_direction() const {
 	return data.v_grow;
 }
