@@ -284,6 +284,19 @@ File extracted from upstream release tarball:
   providing configuration for light bundling with core.
 
 
+## minimp3
+
+- Upstream: https://github.com/lieff/minimp3
+- Version: git (afb604c06bc8beb145fecd42c0ceb5bda8795144, 2021)
+- License: CC0 1.0
+
+Files extracted from upstream repository:
+
+- `minimp3.h`
+- `minimp3_ex.h`
+- `LICENSE`
+
+
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp
