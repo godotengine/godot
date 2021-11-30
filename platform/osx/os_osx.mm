@@ -2903,11 +2903,12 @@ void OS_OSX::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 			layered_window = false;
 		}
 		[context update];
-		NSRect frame = [window_object frame];
 
 		if (!is_no_window_mode_enabled()) {
-			[window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, 1, 1) display:YES];
-			[window_object setFrame:frame display:YES];
+			// Force resize window frame to update OpenGL context.
+			NSRect frameRect = [window_object frame];
+			[window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
+			[window_object setFrame:frameRect display:YES];
 		}
 	}
 }
