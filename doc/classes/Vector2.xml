@@ -219,7 +219,7 @@
 			<argument index="0" name="to" type="Vector2" />
 			<argument index="1" name="delta" type="float" />
 			<description>
-				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount.
+				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount. Will not go past the final value.
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">

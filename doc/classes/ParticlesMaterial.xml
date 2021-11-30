@@ -6,7 +6,7 @@
 	<description>
 		ParticlesMaterial defines particle properties and behavior. It is used in the [code]process_material[/code] of [GPUParticles3D] and [GPUParticles2D] emitter nodes.
 		Some of this material's properties are applied to each particle when emitted, while others can have a [CurveTexture] applied to vary values over the lifetime of the particle.
-		When a randomness ratio is applied to a property it is used to scale that property by a random amount. The random ratio is used to interpolate between [code]1.0[/code] and a random number less than one, the result is multiplied by the property to obtain the randomized property. For example a random ratio of [code]0.4[/code] would scale the original property between [code]0.4-1.0[/code] of its original value.
+		Particle animation is available only in [GPUParticles2D]. To use it, attach a [CanvasItemMaterial], with [member CanvasItemMaterial.particles_animation] enabled, to the particles node.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -104,7 +104,8 @@
 			Each particle's animation speed will vary along this [CurveTexture].
 		</member>
 		<member name="anim_speed_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum particle animation speed.
+			Maximum particle animation speed. Animation speed of [code]1[/code] means that the particles will make full [code]0[/code] to [code]1[/code] offset cycle during lifetime, [code]2[/code] means [code]2[/code] cycles etc.
+			With animation speed greater than [code]1[/code], remember to enable [member CanvasItemMaterial.particles_anim_loop] property if you want the animation to repeat.
 		</member>
 		<member name="anim_speed_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum particle animation speed.
@@ -195,7 +196,7 @@
 			Minimum initial velocity.
 		</member>
 		<member name="lifetime_randomness" type="float" setter="set_lifetime_randomness" getter="get_lifetime_randomness" default="0.0">
-			Particle lifetime randomness ratio.
+			Particle lifetime randomness ratio. The lifetime will be multipled by a value interpolated between [code]1.0[/code] and a random number less than one. For example a random ratio of [code]0.4[/code] would scale the original lifetime between [code]0.4-1.0[/code] of its original value.
 		</member>
 		<member name="linear_accel_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's linear acceleration will vary along this [CurveTexture].
