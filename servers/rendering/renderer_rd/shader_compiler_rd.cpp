@@ -1318,6 +1318,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					code += ")";
 
 				} break;
+				case SL::OP_EMPTY: {
+					// Semicolon (or empty statement) - ignored.
+				} break;
 
 				default: {
 					if (p_use_scope) {

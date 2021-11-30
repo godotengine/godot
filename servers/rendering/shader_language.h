@@ -287,6 +287,7 @@ public:
 		OP_CONSTRUCT,
 		OP_STRUCT,
 		OP_INDEX,
+		OP_EMPTY,
 		OP_MAX
 	};
 
