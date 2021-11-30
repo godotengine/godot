@@ -893,8 +893,13 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 	if (!ScriptServer::is_global_class(p_class)) {
 		return false;
 	}
-	String base = script_class_get_base(p_class);
+
 	Ref<Script> script = script_class_load_script(p_class);
+	if (script.is_null()) {
+		return false;
+	}
+
+	String base = script_class_get_base(p_class);
 	Ref<Script> base_script = script->get_base_script();
 
 	while (p_inherits != base) {
