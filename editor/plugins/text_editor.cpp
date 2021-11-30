@@ -284,6 +284,9 @@ void TextEditor::trim_trailing_whitespace() {
 	code_editor->trim_trailing_whitespace();
 }
 
+void TextEditor::format_code() {
+}
+
 void TextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }

@@ -589,6 +589,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/indent/size", 4, "1,64,1") // size of 0 crashes.
 	_initial_set("text_editor/behavior/indent/auto_indent", true);
 
+	// Behavior: Formatter
+	_initial_set("text_editor/behavior/formatter/indent_in_multiline_block", 2);
+	_initial_set("text_editor/behavior/formatter/lines_between_functions", 2);
+	_initial_set("text_editor/behavior/formatter/format_on_save", false);
+
 	// Behavior: Files
 	_initial_set("text_editor/behavior/files/trim_trailing_whitespace_on_save", false);
 	_initial_set("text_editor/behavior/files/autosave_interval_secs", 0);

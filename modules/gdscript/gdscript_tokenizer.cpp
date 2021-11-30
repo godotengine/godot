@@ -47,6 +47,7 @@ static const char *token_names[] = {
 	"Annotation", // ANNOTATION
 	"Identifier", // IDENTIFIER,
 	"Literal", // LITERAL,
+	"Comment", // COMMENT,
 	// Comparison
 	"<", // LESS,
 	"<=", // LESS_EQUAL,
@@ -1121,7 +1122,7 @@ void GDScriptTokenizer::check_indent() {
 		char32_t current_indent_char = _peek();
 		int indent_count = 0;
 
-		if (current_indent_char != ' ' && current_indent_char != '\t' && current_indent_char != '\r' && current_indent_char != '\n' && current_indent_char != '#') {
+		if (current_indent_char != ' ' && current_indent_char != '\t' && current_indent_char != '\r' && current_indent_char != '\n') {
 			// First character of the line is not whitespace, so we clear all indentation levels.
 			// Unless we are in a continuation or in multiline mode (inside expression).
 			if (line_continuation || multiline_mode) {
@@ -1178,29 +1179,6 @@ void GDScriptTokenizer::check_indent() {
 		if (_peek() == '\n') {
 			// Empty line, keep going.
 			_advance();
-			newline(false);
-			continue;
-		}
-		if (_peek() == '#') {
-			// Comment. Advance to the next line.
-#ifdef TOOLS_ENABLED
-			String comment;
-			while (_peek() != '\n' && !_is_at_end()) {
-				comment += _advance();
-			}
-			comments[line] = CommentData(comment, true);
-#else
-			while (_peek() != '\n' && !_is_at_end()) {
-				_advance();
-			}
-#endif // TOOLS_ENABLED
-			if (_is_at_end()) {
-				// Reached the end with an empty line, so just dedent as much as needed.
-				pending_indents -= indent_level();
-				indent_stack.clear();
-				return;
-			}
-			_advance(); // Consume '\n'.
 			newline(false);
 			continue;
 		}
@@ -1318,26 +1296,6 @@ void GDScriptTokenizer::_skip_whitespace() {
 				newline(!is_bol); // Don't create new line token if line is empty.
 				check_indent();
 				break;
-			case '#': {
-				// Comment.
-#ifdef TOOLS_ENABLED
-				String comment;
-				while (_peek() != '\n' && !_is_at_end()) {
-					comment += _advance();
-				}
-				comments[line] = CommentData(comment, is_bol);
-#else
-				while (_peek() != '\n' && !_is_at_end()) {
-					_advance();
-				}
-#endif // TOOLS_ENABLED
-				if (_is_at_end()) {
-					return;
-				}
-				_advance(); // Consume '\n'
-				newline(!is_bol);
-				check_indent();
-			} break;
 			default:
 				return;
 		}
@@ -1613,7 +1571,20 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			} else {
 				return make_token(Token::GREATER);
 			}
+		case '#': {
+			// Comment.
+			String comment;
+			while (_peek() != '\n' && !_is_at_end()) {
+				comment += _advance();
+			}
+#ifdef TOOLS_ENABLED
+			comments[line] = CommentData(comment, column == 1);
+#endif
 
+			Token comment_token = make_token(Token::COMMENT);
+			comment_token.comment = comment.lstrip(" ").rstrip(" ");
+			return comment_token;
+		}
 		default:
 			if (is_whitespace(c)) {
 				return make_error(vformat(R"(Invalid white space character U+%04X.)", static_cast<int32_t>(c)));
