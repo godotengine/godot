@@ -44,9 +44,6 @@ void TextureRect::_notification(int p_what) {
 		bool tile = false;
 
 		switch (stretch_mode) {
-			case STRETCH_SCALE_ON_EXPAND: {
-				size = expand ? get_size() : texture->get_size();
-			} break;
 			case STRETCH_SCALE: {
 				size = get_size();
 			} break;
@@ -114,7 +111,7 @@ void TextureRect::_notification(int p_what) {
 }
 
 Size2 TextureRect::get_minimum_size() const {
-	if (!expand && !texture.is_null()) {
+	if (!ignore_texture_size && !texture.is_null()) {
 		return texture->get_size();
 	} else {
 		return Size2();
@@ -124,8 +121,8 @@ Size2 TextureRect::get_minimum_size() const {
 void TextureRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &TextureRect::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &TextureRect::get_texture);
-	ClassDB::bind_method(D_METHOD("set_expand", "enable"), &TextureRect::set_expand);
-	ClassDB::bind_method(D_METHOD("has_expand"), &TextureRect::has_expand);
+	ClassDB::bind_method(D_METHOD("set_ignore_texture_size", "ignore"), &TextureRect::set_ignore_texture_size);
+	ClassDB::bind_method(D_METHOD("get_ignore_texture_size"), &TextureRect::get_ignore_texture_size);
 	ClassDB::bind_method(D_METHOD("set_flip_h", "enable"), &TextureRect::set_flip_h);
 	ClassDB::bind_method(D_METHOD("is_flipped_h"), &TextureRect::is_flipped_h);
 	ClassDB::bind_method(D_METHOD("set_flip_v", "enable"), &TextureRect::set_flip_v);
@@ -134,12 +131,11 @@ void TextureRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureRect::get_stretch_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_texture_size"), "set_ignore_texture_size", "get_ignore_texture_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 
-	BIND_ENUM_CONSTANT(STRETCH_SCALE_ON_EXPAND);
 	BIND_ENUM_CONSTANT(STRETCH_SCALE);
 	BIND_ENUM_CONSTANT(STRETCH_TILE);
 	BIND_ENUM_CONSTANT(STRETCH_KEEP);
@@ -179,14 +175,14 @@ Ref<Texture2D> TextureRect::get_texture() const {
 	return texture;
 }
 
-void TextureRect::set_expand(bool p_expand) {
-	expand = p_expand;
+void TextureRect::set_ignore_texture_size(bool p_ignore) {
+	ignore_texture_size = p_ignore;
 	update();
 	update_minimum_size();
 }
 
-bool TextureRect::has_expand() const {
-	return expand;
+bool TextureRect::get_ignore_texture_size() const {
+	return ignore_texture_size;
 }
 
 void TextureRect::set_stretch_mode(StretchMode p_mode) {
