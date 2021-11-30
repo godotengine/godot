@@ -34,4 +34,6 @@
 void register_scene_types();
 void unregister_scene_types();
 
+void initialize_theme();
+
 #endif
