@@ -307,7 +307,8 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	if (!err) {
 		return flags.st_mtime;
 	} else {
-		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + p_file + ".");
+		print_verbose("Failed to get modified time for: " + p_file + "");
+		return 0;
 	};
 }
 
