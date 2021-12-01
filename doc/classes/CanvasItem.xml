@@ -44,7 +44,7 @@
 			<argument index="6" name="width" type="float" default="1.0" />
 			<argument index="7" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws an arc between the given angles. The larger the value of [code]point_count[/code], the smoother the curve.
+				Draws a unfilled arc between the given angles. The larger the value of [code]point_count[/code], the smoother the curve. See also [method draw_circle].
 			</description>
 		</method>
 		<method name="draw_char" qualifiers="const">
@@ -67,7 +67,7 @@
 			<argument index="1" name="radius" type="float" />
 			<argument index="2" name="color" type="Color" />
 			<description>
-				Draws a colored circle.
+				Draws a colored, unfilled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_colored_polygon">
@@ -77,7 +77,7 @@
 			<argument index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<argument index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a colored polygon of any amount of points, convex or concave.
+				Draws a colored polygon of any amount of points, convex or concave. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
 			</description>
 		</method>
 		<method name="draw_end_animation">
@@ -93,7 +93,7 @@
 			<argument index="2" name="color" type="Color" />
 			<argument index="3" name="width" type="float" default="1.0" />
 			<description>
-				Draws a line from a 2D point to another, with a given color and width.
+				Draws a line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
 			</description>
 		</method>
 		<method name="draw_mesh">
@@ -126,7 +126,7 @@
 			<argument index="1" name="color" type="Color" />
 			<argument index="2" name="width" type="float" default="1.0" />
 			<description>
-				Draws multiple, parallel lines with a uniform [code]color[/code].
+				Draws multiple disconnected lines with a uniform [code]color[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
@@ -135,7 +135,7 @@
 			<argument index="1" name="colors" type="PackedColorArray" />
 			<argument index="2" name="width" type="float" default="1.0" />
 			<description>
-				Draws multiple, parallel lines with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
+				Draws multiple disconnected lines with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
 			</description>
 		</method>
 		<method name="draw_multiline_string" qualifiers="const">
@@ -170,7 +170,7 @@
 			<argument index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<argument index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a polygon of any amount of points, convex or concave.
+				Draws a solid polygon of any amount of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors].
 			</description>
 		</method>
 		<method name="draw_polyline">
@@ -180,7 +180,7 @@
 			<argument index="2" name="width" type="float" default="1.0" />
 			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code].
+				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_polyline_colors">
@@ -190,7 +190,7 @@
 			<argument index="2" name="width" type="float" default="1.0" />
 			<argument index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
+				Draws interconnected line segments with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
 			</description>
 		</method>
 		<method name="draw_primitive">
@@ -201,7 +201,7 @@
 			<argument index="3" name="texture" type="Texture2D" default="null" />
 			<argument index="4" name="width" type="float" default="1.0" />
 			<description>
-				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad.
+				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. See also [method draw_line], [method draw_polyline], [method draw_polygon], [method draw_rect]
 			</description>
 		</method>
 		<method name="draw_rect">
@@ -382,7 +382,7 @@
 		<method name="hide">
 			<return type="void" />
 			<description>
-				Hide the [CanvasItem] if it's currently visible.
+				Hide the [CanvasItem] if it's currently visible. This is equivalent to setting [member visible] to [code]false[/code].
 			</description>
 		</method>
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
@@ -434,7 +434,7 @@
 		<method name="show">
 			<return type="void" />
 			<description>
-				Show the [CanvasItem] if it's currently hidden. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
+				Show the [CanvasItem] if it's currently hidden. This is equivalent to setting [member visible] to [code]true[/code]. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 			</description>
 		</method>
 		<method name="update">
