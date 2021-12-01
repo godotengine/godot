@@ -7502,7 +7502,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					st.name = tk.text;
-					if (shader->structs.has(st.name)) {
+					if (shader->constants.has(st.name) || shader->structs.has(st.name)) {
 						_set_error("Redefinition of '" + String(st.name) + "'");
 						return ERR_PARSE_ERROR;
 					}
@@ -8212,12 +8212,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					return ERR_PARSE_ERROR;
 				}
 
-				if (_find_identifier(nullptr, false, constants, name)) {
-					_set_error("Redefinition of '" + String(name) + "'");
-					return ERR_PARSE_ERROR;
-				}
-
-				if (has_builtin(p_functions, name)) {
+				if (shader->structs.has(name) || _find_identifier(nullptr, false, constants, name) || has_builtin(p_functions, name)) {
 					_set_error("Redefinition of '" + String(name) + "'");
 					return ERR_PARSE_ERROR;
 				}
