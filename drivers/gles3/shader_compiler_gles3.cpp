@@ -758,6 +758,10 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += a + " - " + n + " * (" + a + " / " + n + "))";
 				} break;
 
+				case SL::OP_EMPTY: {
+					// Semicolon (or empty statement) - ignored.
+				} break;
+
 				default: {
 					if (p_use_scope) {
 						code += "(";

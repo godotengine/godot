@@ -5208,9 +5208,21 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			expression.push_back(e);
 			continue;
 		} else {
-			_set_error("Expected expression, found: " + get_token_text(tk));
-			return nullptr;
-			//nothing
+			if (tk.type != TK_SEMICOLON) {
+				_set_error("Expected expression, found: " + get_token_text(tk));
+				return nullptr;
+			} else {
+#if DEBUG_ENABLED
+				if (check_warnings && HAS_WARNING(ShaderWarning::FORMATTING_ERROR_FLAG)) {
+					_add_line_warning(ShaderWarning::FORMATTING_ERROR, "Empty statement. Remove ';' to fix this warning.");
+				}
+#endif // DEBUG_ENABLED
+				_set_tkpos(prepos);
+
+				OperatorNode *func = alloc_node<OperatorNode>();
+				func->op = OP_EMPTY;
+				expr = func;
+			}
 		}
 
 		ERR_FAIL_COND_V(!expr, nullptr);
