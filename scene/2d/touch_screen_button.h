@@ -52,6 +52,7 @@ private:
 	Ref<Shape2D> shape;
 	bool shape_centered = true;
 	bool shape_visible = true;
+	bool draw_centered = true;
 
 	Ref<RectangleShape2D> unit_rect;
 
@@ -89,6 +90,9 @@ public:
 
 	void set_shape(const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> get_shape() const;
+
+	void set_draw_centered(bool p_draw_centered);
+	bool is_draw_centered() const;
 
 	void set_shape_centered(bool p_shape_centered);
 	bool is_shape_centered() const;

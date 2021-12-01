@@ -94,6 +94,15 @@ bool TouchScreenButton::is_shape_centered() const {
 	return shape_centered;
 }
 
+void TouchScreenButton::set_draw_centered(bool p_draw_centered) {
+	draw_centered = p_draw_centered;
+	update();
+}
+
+bool TouchScreenButton::is_draw_centered() const {
+	return draw_centered;
+}
+
 void TouchScreenButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -104,17 +113,29 @@ void TouchScreenButton::_notification(int p_what) {
 				return;
 			}
 
+			Ref<Texture2D> texture_to_draw;
+
 			if (finger_pressed != -1) {
 				if (texture_pressed.is_valid()) {
-					draw_texture(texture_pressed, Point2());
+					texture_to_draw = texture_pressed;
 				} else if (texture.is_valid()) {
-					draw_texture(texture, Point2());
+					texture_to_draw = texture;
 				}
 
 			} else {
 				if (texture.is_valid()) {
-					draw_texture(texture, Point2());
+					texture_to_draw = texture;
 				}
+			}
+
+			if (texture_to_draw.is_valid()) {
+				Point2 offset = Point2();
+				if (draw_centered) {
+					Size2 size = texture_to_draw->get_size();
+					offset -= size / 2;
+				}
+
+				draw_texture(texture_to_draw, offset);
 			}
 
 			if (!shape_visible) {
@@ -127,7 +148,7 @@ void TouchScreenButton::_notification(int p_what) {
 				Color draw_col = get_tree()->get_debug_collisions_color();
 
 				Vector2 pos;
-				if (shape_centered && texture.is_valid()) {
+				if (shape_centered && !draw_centered && texture.is_valid()) {
 					pos = texture->get_size() * 0.5;
 				}
 
@@ -254,7 +275,7 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 		check_rect = false;
 
 		Vector2 pos;
-		if (shape_centered && texture.is_valid()) {
+		if (shape_centered && !draw_centered && texture.is_valid()) {
 			pos = texture->get_size() * 0.5;
 		}
 
@@ -272,7 +293,13 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 
 	if (!touched && check_rect) {
 		if (texture.is_valid()) {
-			touched = Rect2(Size2(), texture->get_size()).has_point(coord);
+			Point2 offset = Point2();
+			Size2 size = texture->get_size();
+			if (draw_centered) {
+				offset -= size / 2;
+			}
+
+			touched = Rect2(offset, size).has_point(coord);
 		}
 	}
 
@@ -321,7 +348,13 @@ Rect2 TouchScreenButton::_edit_get_rect() const {
 		return CanvasItem::_edit_get_rect();
 	}
 
-	return Rect2(Size2(), texture->get_size());
+	Point2 offset = Point2();
+	Size2 size = texture->get_size();
+	if (draw_centered) {
+		offset -= size / 2;
+	}
+
+	return Rect2(offset, size);
 }
 
 bool TouchScreenButton::_edit_use_rect() const {
@@ -367,6 +400,9 @@ void TouchScreenButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &TouchScreenButton::set_shape);
 	ClassDB::bind_method(D_METHOD("get_shape"), &TouchScreenButton::get_shape);
 
+	ClassDB::bind_method(D_METHOD("set_draw_centered", "bool"), &TouchScreenButton::set_draw_centered);
+	ClassDB::bind_method(D_METHOD("is_draw_centered"), &TouchScreenButton::is_draw_centered);
+
 	ClassDB::bind_method(D_METHOD("set_shape_centered", "bool"), &TouchScreenButton::set_shape_centered);
 	ClassDB::bind_method(D_METHOD("is_shape_centered"), &TouchScreenButton::is_shape_centered);
 
@@ -388,6 +424,7 @@ void TouchScreenButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_pressed", "get_texture_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bitmask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_bitmask", "get_bitmask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_centered"), "set_draw_centered", "is_draw_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shape_centered"), "set_shape_centered", "is_shape_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shape_visible"), "set_shape_visible", "is_shape_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "passby_press"), "set_passby_press", "is_passby_press_enabled");

@@ -25,6 +25,9 @@
 		<member name="bitmask" type="BitMap" setter="set_bitmask" getter="get_bitmask">
 			The button's bitmask.
 		</member>
+		<member name="draw_centered" type="bool" setter="set_draw_centered" getter="is_draw_centered" default="true">
+			If [code]true[/code], the texture is centered.
+		</member>
 		<member name="normal" type="Texture2D" setter="set_texture" getter="get_texture">
 			The button's texture for the normal state.
 		</member>
@@ -39,7 +42,7 @@
 			The button's shape.
 		</member>
 		<member name="shape_centered" type="bool" setter="set_shape_centered" getter="is_shape_centered" default="true">
-			If [code]true[/code], the button's shape is centered in the provided texture. If no texture is used, this property has no effect.
+			If [code]true[/code], the button's shape is centered in the provided texture. If no texture is used, or [member shape_centered] is [code]true[/code], this property has no effect.
 		</member>
 		<member name="shape_visible" type="bool" setter="set_shape_visible" getter="is_shape_visible" default="true">
 			If [code]true[/code], the button's shape is visible in the editor.
