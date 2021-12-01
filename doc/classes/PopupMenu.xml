@@ -496,12 +496,6 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="checked" data_type="icon" type="Texture">
-			[Texture] icon for the checked checkbox items.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] used for the menu items.
-		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			The default text [Color] for menu items' names.
 		</theme_item>
@@ -517,11 +511,32 @@
 		<theme_item name="font_color_separator" data_type="color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			[Color] used for labeled separators' text. See [method add_separator].
 		</theme_item>
-		<theme_item name="hover" data_type="style" type="StyleBox">
-			[StyleBox] displayed when the [PopupMenu] item is hovered.
-		</theme_item>
 		<theme_item name="hseparation" data_type="constant" type="int" default="4">
 			The horizontal space between the item's name and the shortcut text/submenu arrow.
+		</theme_item>
+		<theme_item name="vseparation" data_type="constant" type="int" default="4">
+			The vertical space between each menu item.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] used for the menu items.
+		</theme_item>
+		<theme_item name="checked" data_type="icon" type="Texture">
+			[Texture] icon for the checked checkbox items.
+		</theme_item>
+		<theme_item name="radio_checked" data_type="icon" type="Texture">
+			[Texture] icon for the checked radio button items.
+		</theme_item>
+		<theme_item name="radio_unchecked" data_type="icon" type="Texture">
+			[Texture] icon for the unchecked radio button items.
+		</theme_item>
+		<theme_item name="submenu" data_type="icon" type="Texture">
+			[Texture] icon for the submenu arrow.
+		</theme_item>
+		<theme_item name="unchecked" data_type="icon" type="Texture">
+			[Texture] icon for the unchecked checkbox items.
+		</theme_item>
+		<theme_item name="hover" data_type="style" type="StyleBox">
+			[StyleBox] displayed when the [PopupMenu] item is hovered.
 		</theme_item>
 		<theme_item name="labeled_separator_left" data_type="style" type="StyleBox">
 			[StyleBox] for the left side of labeled separator. See [method add_separator].
@@ -535,23 +550,8 @@
 		<theme_item name="panel_disabled" data_type="style" type="StyleBox">
 			[StyleBox] used when the [PopupMenu] item is disabled.
 		</theme_item>
-		<theme_item name="radio_checked" data_type="icon" type="Texture">
-			[Texture] icon for the checked radio button items.
-		</theme_item>
-		<theme_item name="radio_unchecked" data_type="icon" type="Texture">
-			[Texture] icon for the unchecked radio button items.
-		</theme_item>
 		<theme_item name="separator" data_type="style" type="StyleBox">
 			[StyleBox] used for the separators. See [method add_separator].
-		</theme_item>
-		<theme_item name="submenu" data_type="icon" type="Texture">
-			[Texture] icon for the submenu arrow.
-		</theme_item>
-		<theme_item name="unchecked" data_type="icon" type="Texture">
-			[Texture] icon for the unchecked checkbox items.
-		</theme_item>
-		<theme_item name="vseparation" data_type="constant" type="int" default="4">
-			The vertical space between each menu item.
 		</theme_item>
 	</theme_items>
 </class>

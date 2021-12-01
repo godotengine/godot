@@ -635,21 +635,13 @@
 		</theme_item>
 		<theme_item name="code_folding_color" data_type="color" type="Color" default="Color( 0.8, 0.8, 0.8, 0.8 )">
 		</theme_item>
-		<theme_item name="completion" data_type="style" type="StyleBox">
-		</theme_item>
 		<theme_item name="completion_background_color" data_type="color" type="Color" default="Color( 0.17, 0.16, 0.2, 1 )">
 		</theme_item>
 		<theme_item name="completion_existing_color" data_type="color" type="Color" default="Color( 0.87, 0.87, 0.87, 0.13 )">
 		</theme_item>
 		<theme_item name="completion_font_color" data_type="color" type="Color" default="Color( 0.67, 0.67, 0.67, 1 )">
 		</theme_item>
-		<theme_item name="completion_lines" data_type="constant" type="int" default="7">
-		</theme_item>
-		<theme_item name="completion_max_width" data_type="constant" type="int" default="50">
-		</theme_item>
 		<theme_item name="completion_scroll_color" data_type="color" type="Color" default="Color( 1, 1, 1, 1 )">
-		</theme_item>
-		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="3">
 		</theme_item>
 		<theme_item name="completion_selected_color" data_type="color" type="Color" default="Color( 0.26, 0.26, 0.27, 1 )">
 		</theme_item>
@@ -657,15 +649,6 @@
 			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
 		</theme_item>
 		<theme_item name="executing_line_color" data_type="color" type="Color" default="Color( 0.2, 0.8, 0.2, 0.4 )">
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-		</theme_item>
-		<theme_item name="fold" data_type="icon" type="Texture">
-		</theme_item>
-		<theme_item name="folded" data_type="icon" type="Texture">
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			Sets the default [Font].
 		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Sets the font [Color].
@@ -680,36 +663,53 @@
 		<theme_item name="line_number_color" data_type="color" type="Color" default="Color( 0.67, 0.67, 0.67, 0.4 )">
 			Sets the [Color] of the line numbers. [member show_line_numbers] has to be enabled.
 		</theme_item>
-		<theme_item name="line_spacing" data_type="constant" type="int" default="4">
-			Sets the spacing between the lines.
-		</theme_item>
 		<theme_item name="mark_color" data_type="color" type="Color" default="Color( 1, 0.4, 0.4, 0.4 )">
 			Sets the [Color] of marked text.
 		</theme_item>
 		<theme_item name="member_variable_color" data_type="color" type="Color" default="Color( 0.9, 0.31, 0.35, 1 )">
 		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			Sets the [StyleBox] of this [TextEdit].
-		</theme_item>
 		<theme_item name="number_color" data_type="color" type="Color" default="Color( 0.92, 0.58, 0.2, 1 )">
-		</theme_item>
-		<theme_item name="read_only" data_type="style" type="StyleBox">
-			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.
 		</theme_item>
 		<theme_item name="safe_line_number_color" data_type="color" type="Color" default="Color( 0.67, 0.78, 0.67, 0.6 )">
 		</theme_item>
 		<theme_item name="selection_color" data_type="color" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
 			Sets the highlight [Color] of text selections.
 		</theme_item>
-		<theme_item name="space" data_type="icon" type="Texture">
-		</theme_item>
 		<theme_item name="symbol_color" data_type="color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		</theme_item>
+		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color( 0.8, 0.9, 0.9, 0.15 )">
+			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
+		</theme_item>
+		<theme_item name="completion_lines" data_type="constant" type="int" default="7">
+		</theme_item>
+		<theme_item name="completion_max_width" data_type="constant" type="int" default="50">
+		</theme_item>
+		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="3">
+		</theme_item>
+		<theme_item name="line_spacing" data_type="constant" type="int" default="4">
+			Sets the spacing between the lines.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			Sets the default [Font].
+		</theme_item>
+		<theme_item name="fold" data_type="icon" type="Texture">
+		</theme_item>
+		<theme_item name="folded" data_type="icon" type="Texture">
+		</theme_item>
+		<theme_item name="space" data_type="icon" type="Texture">
 		</theme_item>
 		<theme_item name="tab" data_type="icon" type="Texture">
 			Sets a custom [Texture] for tab text characters.
 		</theme_item>
-		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color( 0.8, 0.9, 0.9, 0.15 )">
-			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
+		<theme_item name="completion" data_type="style" type="StyleBox">
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			Sets the [StyleBox] of this [TextEdit].
+		</theme_item>
+		<theme_item name="read_only" data_type="style" type="StyleBox">
+			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.
 		</theme_item>
 	</theme_items>
 </class>

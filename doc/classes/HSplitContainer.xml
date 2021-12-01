@@ -16,13 +16,13 @@
 		<theme_item name="autohide" data_type="constant" type="int" default="1">
 			Boolean value. If 1 ([code]true[/code]), the grabber will hide automatically when it isn't under the cursor. If 0 ([code]false[/code]), it's always visible.
 		</theme_item>
-		<theme_item name="bg" data_type="style" type="StyleBox">
+		<theme_item name="separation" data_type="constant" type="int" default="12">
+			The space between sides of the container.
 		</theme_item>
 		<theme_item name="grabber" data_type="icon" type="Texture">
 			The icon used for the grabber drawn in the middle area.
 		</theme_item>
-		<theme_item name="separation" data_type="constant" type="int" default="12">
-			The space between sides of the container.
+		<theme_item name="bg" data_type="style" type="StyleBox">
 		</theme_item>
 	</theme_items>
 </class>

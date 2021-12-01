@@ -408,21 +408,6 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="bg" data_type="style" type="StyleBox">
-			Default [StyleBox] for the [ItemList], i.e. used when the control is not being focused.
-		</theme_item>
-		<theme_item name="bg_focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [ItemList] is being focused.
-		</theme_item>
-		<theme_item name="cursor" data_type="style" type="StyleBox">
-			[StyleBox] used for the cursor, when the [ItemList] is being focused.
-		</theme_item>
-		<theme_item name="cursor_unfocused" data_type="style" type="StyleBox">
-			[StyleBox] used for the cursor, when the [ItemList] is not being focused.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] of the item's text.
-		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color( 0.63, 0.63, 0.63, 1 )">
 			Default text [Color] of the item.
 		</theme_item>
@@ -441,14 +426,29 @@
 		<theme_item name="line_separation" data_type="constant" type="int" default="2">
 			The vertical spacing between each line of text.
 		</theme_item>
+		<theme_item name="vseparation" data_type="constant" type="int" default="2">
+			The vertical spacing between items.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] of the item's text.
+		</theme_item>
+		<theme_item name="bg" data_type="style" type="StyleBox">
+			Default [StyleBox] for the [ItemList], i.e. used when the control is not being focused.
+		</theme_item>
+		<theme_item name="bg_focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [ItemList] is being focused.
+		</theme_item>
+		<theme_item name="cursor" data_type="style" type="StyleBox">
+			[StyleBox] used for the cursor, when the [ItemList] is being focused.
+		</theme_item>
+		<theme_item name="cursor_unfocused" data_type="style" type="StyleBox">
+			[StyleBox] used for the cursor, when the [ItemList] is not being focused.
+		</theme_item>
 		<theme_item name="selected" data_type="style" type="StyleBox">
 			[StyleBox] for the selected items, used when the [ItemList] is not being focused.
 		</theme_item>
 		<theme_item name="selected_focus" data_type="style" type="StyleBox">
 			[StyleBox] for the selected items, used when the [ItemList] is being focused.
-		</theme_item>
-		<theme_item name="vseparation" data_type="constant" type="int" default="2">
-			The vertical spacing between items.
 		</theme_item>
 	</theme_items>
 </class>

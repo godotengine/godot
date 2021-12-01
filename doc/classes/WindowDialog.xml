@@ -28,32 +28,32 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="close" data_type="icon" type="Texture">
-			The icon for the close button.
+		<theme_item name="title_color" data_type="color" type="Color" default="Color( 0, 0, 0, 1 )">
+			The color of the title text.
 		</theme_item>
 		<theme_item name="close_h_ofs" data_type="constant" type="int" default="18">
 			The horizontal offset of the close button.
 		</theme_item>
-		<theme_item name="close_highlight" data_type="icon" type="Texture">
-			The icon used for the close button when it's hovered with the mouse cursor.
-		</theme_item>
 		<theme_item name="close_v_ofs" data_type="constant" type="int" default="18">
 			The vertical offset of the close button.
-		</theme_item>
-		<theme_item name="panel" data_type="style" type="StyleBox">
-			The style for both the content background of the [WindowDialog] and the title bar. The title bar is created with a top border and an expand margin using the [code]panel[/code] stylebox.
 		</theme_item>
 		<theme_item name="scaleborder_size" data_type="constant" type="int" default="4">
 			The thickness of the border that can be dragged when scaling the window (if [member resizable] is enabled).
 		</theme_item>
-		<theme_item name="title_color" data_type="color" type="Color" default="Color( 0, 0, 0, 1 )">
-			The color of the title text.
+		<theme_item name="title_height" data_type="constant" type="int" default="20">
+			The vertical offset of the title text.
 		</theme_item>
 		<theme_item name="title_font" data_type="font" type="Font">
 			The font used to draw the title.
 		</theme_item>
-		<theme_item name="title_height" data_type="constant" type="int" default="20">
-			The vertical offset of the title text.
+		<theme_item name="close" data_type="icon" type="Texture">
+			The icon for the close button.
+		</theme_item>
+		<theme_item name="close_highlight" data_type="icon" type="Texture">
+			The icon used for the close button when it's hovered with the mouse cursor.
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			The style for both the content background of the [WindowDialog] and the title bar. The title bar is created with a top border and an expand margin using the [code]panel[/code] stylebox.
 		</theme_item>
 	</theme_items>
 </class>
