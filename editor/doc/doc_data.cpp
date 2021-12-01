@@ -511,6 +511,8 @@ void DocData::generate(bool p_basic_types) {
 				tid.data_type = "style";
 				c.theme_properties.push_back(tid);
 			}
+
+			c.theme_properties.sort();
 		}
 
 		classes.pop_front();
