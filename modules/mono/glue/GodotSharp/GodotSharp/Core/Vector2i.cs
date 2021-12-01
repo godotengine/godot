@@ -149,45 +149,45 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the cross product of this vector and <paramref name="b"/>.
+        /// Returns the cross product of this vector and <paramref name="with"/>.
         /// </summary>
-        /// <param name="b">The other vector.</param>
+        /// <param name="with">The other vector.</param>
         /// <returns>The cross product vector.</returns>
-        public int Cross(Vector2i b)
+        public int Cross(Vector2i with)
         {
-            return x * b.y - y * b.x;
+            return x * with.y - y * with.x;
         }
 
         /// <summary>
-        /// Returns the squared distance between this vector and <paramref name="b"/>.
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
         /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
         /// you need to compare vectors or need the squared distance for some formula.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="to">The other vector to use.</param>
         /// <returns>The squared distance between the two vectors.</returns>
-        public int DistanceSquaredTo(Vector2i b)
+        public int DistanceSquaredTo(Vector2i to)
         {
-            return (b - this).LengthSquared();
+            return (to - this).LengthSquared();
         }
 
         /// <summary>
-        /// Returns the distance between this vector and <paramref name="b"/>.
+        /// Returns the distance between this vector and <paramref name="to"/>.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="to">The other vector to use.</param>
         /// <returns>The distance between the two vectors.</returns>
-        public real_t DistanceTo(Vector2i b)
+        public real_t DistanceTo(Vector2i to)
         {
-            return (b - this).Length();
+            return (to - this).Length();
         }
 
         /// <summary>
-        /// Returns the dot product of this vector and <paramref name="b"/>.
+        /// Returns the dot product of this vector and <paramref name="with"/>.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="with">The other vector to use.</param>
         /// <returns>The dot product of the two vectors.</returns>
-        public int Dot(Vector2i b)
+        public int Dot(Vector2i with)
         {
-            return x * b.x + y * b.y;
+            return x * with.x + y * with.y;
         }
 
         /// <summary>

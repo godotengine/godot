@@ -124,36 +124,36 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the squared distance between this vector and <paramref name="b"/>.
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
         /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
         /// you need to compare vectors or need the squared distance for some formula.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="to">The other vector to use.</param>
         /// <returns>The squared distance between the two vectors.</returns>
-        public int DistanceSquaredTo(Vector3i b)
+        public int DistanceSquaredTo(Vector3i to)
         {
-            return (b - this).LengthSquared();
+            return (to - this).LengthSquared();
         }
 
         /// <summary>
-        /// Returns the distance between this vector and <paramref name="b"/>.
+        /// Returns the distance between this vector and <paramref name="to"/>.
         /// </summary>
         /// <seealso cref="DistanceSquaredTo(Vector3i)"/>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="to">The other vector to use.</param>
         /// <returns>The distance between the two vectors.</returns>
-        public real_t DistanceTo(Vector3i b)
+        public real_t DistanceTo(Vector3i to)
         {
-            return (b - this).Length();
+            return (to - this).Length();
         }
 
         /// <summary>
-        /// Returns the dot product of this vector and <paramref name="b"/>.
+        /// Returns the dot product of this vector and <paramref name="with"/>.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="with">The other vector to use.</param>
         /// <returns>The dot product of the two vectors.</returns>
-        public int Dot(Vector3i b)
+        public int Dot(Vector3i with)
         {
-            return x * b.x + y * b.y + z * b.z;
+            return x * with.x + y * with.y + z * with.z;
         }
 
         /// <summary>

@@ -86,7 +86,7 @@
 			<return type="Vector3" />
 			<argument index="0" name="with" type="Vector3" />
 			<description>
-				Returns the cross product of this vector and [code]b[/code].
+				Returns the cross product of this vector and [code]with[/code].
 			</description>
 		</method>
 		<method name="cubic_interpolate" qualifiers="const">
@@ -101,31 +101,31 @@
 		</method>
 		<method name="direction_to" qualifiers="const">
 			<return type="Vector3" />
-			<argument index="0" name="b" type="Vector3" />
+			<argument index="0" name="to" type="Vector3" />
 			<description>
-				Returns the normalized vector pointing from this vector to [code]b[/code]. This is equivalent to using [code](b - a).normalized()[/code].
+				Returns the normalized vector pointing from this vector to [code]to[/code]. This is equivalent to using [code](b - a).normalized()[/code].
 			</description>
 		</method>
 		<method name="distance_squared_to" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="b" type="Vector3" />
+			<argument index="0" name="to" type="Vector3" />
 			<description>
-				Returns the squared distance between this vector and [code]b[/code].
+				Returns the squared distance between this vector and [code]to[/code].
 				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="distance_to" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="b" type="Vector3" />
+			<argument index="0" name="to" type="Vector3" />
 			<description>
-				Returns the distance between this vector and [code]b[/code].
+				Returns the distance between this vector and [code]to[/code].
 			</description>
 		</method>
 		<method name="dot" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="with" type="Vector3" />
 			<description>
-				Returns the dot product of this vector and [code]b[/code]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
+				Returns the dot product of this vector and [code]with[/code]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
 				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
 				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
 				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
@@ -225,7 +225,7 @@
 			<return type="Basis" />
 			<argument index="0" name="with" type="Vector3" />
 			<description>
-				Returns the outer product with [code]b[/code].
+				Returns the outer product with [code]with[/code].
 			</description>
 		</method>
 		<method name="posmod" qualifiers="const">
