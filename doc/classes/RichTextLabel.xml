@@ -529,23 +529,8 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="bold_font" data_type="font" type="Font">
-			The font used for bold text.
-		</theme_item>
-		<theme_item name="bold_font_size" data_type="font_size" type="int">
-			The font size used for bold text.
-		</theme_item>
-		<theme_item name="bold_italics_font" data_type="font" type="Font">
-			The font used for bold italics text.
-		</theme_item>
-		<theme_item name="bold_italics_font_size" data_type="font_size" type="int">
-			The font size used for bold italics text.
-		</theme_item>
 		<theme_item name="default_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The default text color.
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			The background The background used when the [RichTextLabel] is focused.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The default tint of text outline.
@@ -556,35 +541,23 @@
 		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			The color of the font's shadow.
 		</theme_item>
-		<theme_item name="italics_font" data_type="font" type="Font">
-			The font used for italics text.
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.1, 0.1, 1, 0.8)">
+			The color of the selection box.
 		</theme_item>
-		<theme_item name="italics_font_size" data_type="font_size" type="int">
-			The font size used for italics text.
+		<theme_item name="table_border" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The default cell border color.
+		</theme_item>
+		<theme_item name="table_even_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The default background color for even rows.
+		</theme_item>
+		<theme_item name="table_odd_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The default background color for odd rows.
 		</theme_item>
 		<theme_item name="line_separation" data_type="constant" type="int" default="0">
 			The vertical space between lines.
 		</theme_item>
-		<theme_item name="mono_font" data_type="font" type="Font">
-			The font used for monospace text.
-		</theme_item>
-		<theme_item name="mono_font_size" data_type="font_size" type="int">
-			The font size used for monospace text.
-		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			The normal background for the [RichTextLabel].
-		</theme_item>
-		<theme_item name="normal_font" data_type="font" type="Font">
-			The default text font.
-		</theme_item>
-		<theme_item name="normal_font_size" data_type="font_size" type="int">
-			The default text font size.
-		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
-		</theme_item>
-		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.1, 0.1, 1, 0.8)">
-			The color of the selection box.
 		</theme_item>
 		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
 			The horizontal offset of the font's shadow.
@@ -595,20 +568,47 @@
 		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
 			The size of the shadow outline.
 		</theme_item>
-		<theme_item name="table_border" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			The default cell border color.
-		</theme_item>
-		<theme_item name="table_even_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			The default background color for even rows.
-		</theme_item>
 		<theme_item name="table_hseparation" data_type="constant" type="int" default="3">
 			The horizontal separation of elements in a table.
 		</theme_item>
-		<theme_item name="table_odd_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			The default background color for odd rows.
-		</theme_item>
 		<theme_item name="table_vseparation" data_type="constant" type="int" default="3">
 			The vertical separation of elements in a table.
+		</theme_item>
+		<theme_item name="bold_font" data_type="font" type="Font">
+			The font used for bold text.
+		</theme_item>
+		<theme_item name="bold_italics_font" data_type="font" type="Font">
+			The font used for bold italics text.
+		</theme_item>
+		<theme_item name="italics_font" data_type="font" type="Font">
+			The font used for italics text.
+		</theme_item>
+		<theme_item name="mono_font" data_type="font" type="Font">
+			The font used for monospace text.
+		</theme_item>
+		<theme_item name="normal_font" data_type="font" type="Font">
+			The default text font.
+		</theme_item>
+		<theme_item name="bold_font_size" data_type="font_size" type="int">
+			The font size used for bold text.
+		</theme_item>
+		<theme_item name="bold_italics_font_size" data_type="font_size" type="int">
+			The font size used for bold italics text.
+		</theme_item>
+		<theme_item name="italics_font_size" data_type="font_size" type="int">
+			The font size used for italics text.
+		</theme_item>
+		<theme_item name="mono_font_size" data_type="font_size" type="int">
+			The font size used for monospace text.
+		</theme_item>
+		<theme_item name="normal_font_size" data_type="font_size" type="int">
+			The default text font size.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			The background The background used when the [RichTextLabel] is focused.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			The normal background for the [RichTextLabel].
 		</theme_item>
 	</theme_items>
 </class>

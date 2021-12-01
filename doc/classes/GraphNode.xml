@@ -292,17 +292,41 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="breakpoint" data_type="style" type="StyleBox">
-			The background used when [member overlay] is set to [constant OVERLAY_BREAKPOINT].
+		<theme_item name="close_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The color modulation applied to the close button icon.
+		</theme_item>
+		<theme_item name="resizer_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The color modulation applied to the resizer icon.
+		</theme_item>
+		<theme_item name="title_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Color of the title text.
+		</theme_item>
+		<theme_item name="close_offset" data_type="constant" type="int" default="18">
+			The vertical offset of the close button.
+		</theme_item>
+		<theme_item name="port_offset" data_type="constant" type="int" default="3">
+			Horizontal offset for the ports.
+		</theme_item>
+		<theme_item name="separation" data_type="constant" type="int" default="1">
+			The vertical distance between ports.
+		</theme_item>
+		<theme_item name="title_offset" data_type="constant" type="int" default="20">
+			Vertical offset of the title text.
+		</theme_item>
+		<theme_item name="title_font" data_type="font" type="Font">
+			Font used for the title text.
 		</theme_item>
 		<theme_item name="close" data_type="icon" type="Texture2D">
 			The icon for the close button, visible when [member show_close] is enabled.
 		</theme_item>
-		<theme_item name="close_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
-			The color modulation applied to the close button icon.
+		<theme_item name="port" data_type="icon" type="Texture2D">
+			The icon used for representing ports.
 		</theme_item>
-		<theme_item name="close_offset" data_type="constant" type="int" default="18">
-			The vertical offset of the close button.
+		<theme_item name="resizer" data_type="icon" type="Texture2D">
+			The icon used for resizer, visible when [member resizable] is enabled.
+		</theme_item>
+		<theme_item name="breakpoint" data_type="style" type="StyleBox">
+			The background used when [member overlay] is set to [constant OVERLAY_BREAKPOINT].
 		</theme_item>
 		<theme_item name="comment" data_type="style" type="StyleBox">
 			The [StyleBox] used when [member comment] is enabled.
@@ -317,35 +341,11 @@
 		<theme_item name="frame" data_type="style" type="StyleBox">
 			The default background for [GraphNode].
 		</theme_item>
-		<theme_item name="port" data_type="icon" type="Texture2D">
-			The icon used for representing ports.
-		</theme_item>
-		<theme_item name="port_offset" data_type="constant" type="int" default="3">
-			Horizontal offset for the ports.
-		</theme_item>
 		<theme_item name="position" data_type="style" type="StyleBox">
 			The background used when [member overlay] is set to [constant OVERLAY_POSITION].
 		</theme_item>
-		<theme_item name="resizer" data_type="icon" type="Texture2D">
-			The icon used for resizer, visible when [member resizable] is enabled.
-		</theme_item>
-		<theme_item name="resizer_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
-			The color modulation applied to the resizer icon.
-		</theme_item>
 		<theme_item name="selectedframe" data_type="style" type="StyleBox">
 			The background used when the [GraphNode] is selected.
-		</theme_item>
-		<theme_item name="separation" data_type="constant" type="int" default="1">
-			The vertical distance between ports.
-		</theme_item>
-		<theme_item name="title_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
-			Color of the title text.
-		</theme_item>
-		<theme_item name="title_font" data_type="font" type="Font">
-			Font used for the title text.
-		</theme_item>
-		<theme_item name="title_offset" data_type="constant" type="int" default="20">
-			Vertical offset of the title text.
 		</theme_item>
 	</theme_items>
 </class>

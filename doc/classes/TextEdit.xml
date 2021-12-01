@@ -1221,12 +1221,6 @@
 		<theme_item name="current_line_color" data_type="color" type="Color" default="Color(0.25, 0.25, 0.26, 0.8)">
 			Background [Color] of the line containing the caret.
 		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			Sets the [StyleBox] when in focus.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			Sets the default [Font].
-		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Sets the font [Color].
 		</theme_item>
@@ -1239,21 +1233,6 @@
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			Sets the [Color] of the selected text. [member override_selected_font_color] has to be enabled.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Sets default font size.
-		</theme_item>
-		<theme_item name="line_spacing" data_type="constant" type="int" default="4">
-			Sets the spacing between the lines.
-		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			Sets the [StyleBox] of this [TextEdit].
-		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
-			The size of the text outline.
-		</theme_item>
-		<theme_item name="read_only" data_type="style" type="StyleBox">
-			Sets the [StyleBox] of this [TextEdit] when [member editable] is disabled.
-		</theme_item>
 		<theme_item name="search_result_border_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 0.4)">
 			[Color] of the border around text that matches the search query.
 		</theme_item>
@@ -1263,14 +1242,35 @@
 		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
 			Sets the highlight [Color] of text selections.
 		</theme_item>
+		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color(0.8, 0.9, 0.9, 0.15)">
+			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
+		</theme_item>
+		<theme_item name="line_spacing" data_type="constant" type="int" default="4">
+			Sets the spacing between the lines.
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the text outline.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			Sets the default [Font].
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Sets default font size.
+		</theme_item>
 		<theme_item name="space" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] for space text characters.
 		</theme_item>
 		<theme_item name="tab" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] for tab text characters.
 		</theme_item>
-		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color(0.8, 0.9, 0.9, 0.15)">
-			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			Sets the [StyleBox] when in focus.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			Sets the [StyleBox] of this [TextEdit].
+		</theme_item>
+		<theme_item name="read_only" data_type="style" type="StyleBox">
+			Sets the [StyleBox] of this [TextEdit] when [member editable] is disabled.
 		</theme_item>
 	</theme_items>
 </class>

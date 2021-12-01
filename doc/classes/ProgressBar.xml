@@ -16,15 +16,6 @@
 		<member name="step" type="float" setter="set_step" getter="get_step" override="true" default="0.01" />
 	</members>
 	<theme_items>
-		<theme_item name="bg" data_type="style" type="StyleBox">
-			The style of the background.
-		</theme_item>
-		<theme_item name="fg" data_type="style" type="StyleBox">
-			The style of the progress (i.e. the part that fills the bar).
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			Font used to draw the fill percentage if [member percent_visible] is [code]true[/code].
-		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			The color of the text.
 		</theme_item>
@@ -34,11 +25,20 @@
 		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The color of the text's shadow.
 		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the text outline.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			Font used to draw the fill percentage if [member percent_visible] is [code]true[/code].
+		</theme_item>
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size used to draw the fill percentage if [member percent_visible] is [code]true[/code].
 		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
-			The size of the text outline.
+		<theme_item name="bg" data_type="style" type="StyleBox">
+			The style of the background.
+		</theme_item>
+		<theme_item name="fg" data_type="style" type="StyleBox">
+			The style of the progress (i.e. the part that fills the bar).
 		</theme_item>
 	</theme_items>
 </class>

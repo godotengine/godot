@@ -66,12 +66,6 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [LinkButton] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] of the [LinkButton]'s text.
-		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Default text [Color] of the [LinkButton].
 		</theme_item>
@@ -87,14 +81,20 @@
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the [LinkButton] is being pressed.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [LinkButton]'s text.
-		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
 		<theme_item name="underline_spacing" data_type="constant" type="int" default="2">
 			The vertical space between the baseline of text and the underline.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] of the [LinkButton]'s text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the [LinkButton]'s text.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [LinkButton] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
 		</theme_item>
 	</theme_items>
 </class>

@@ -290,18 +290,27 @@
 	<theme_items>
 		<theme_item name="activity" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 		</theme_item>
-		<theme_item name="bezier_len_neg" data_type="constant" type="int" default="160">
-		</theme_item>
-		<theme_item name="bezier_len_pos" data_type="constant" type="int" default="80">
-		</theme_item>
-		<theme_item name="bg" data_type="style" type="StyleBox">
-			The background drawn under the grid.
-		</theme_item>
 		<theme_item name="grid_major" data_type="color" type="Color" default="Color(1, 1, 1, 0.2)">
 			Color of major grid lines.
 		</theme_item>
 		<theme_item name="grid_minor" data_type="color" type="Color" default="Color(1, 1, 1, 0.05)">
 			Color of minor grid lines.
+		</theme_item>
+		<theme_item name="selection_fill" data_type="color" type="Color" default="Color(1, 1, 1, 0.3)">
+			The fill color of the selection rectangle.
+		</theme_item>
+		<theme_item name="selection_stroke" data_type="color" type="Color" default="Color(1, 1, 1, 0.8)">
+			The outline color of the selection rectangle.
+		</theme_item>
+		<theme_item name="bezier_len_neg" data_type="constant" type="int" default="160">
+		</theme_item>
+		<theme_item name="bezier_len_pos" data_type="constant" type="int" default="80">
+		</theme_item>
+		<theme_item name="port_grab_distance_horizontal" data_type="constant" type="int" default="24">
+			The horizontal range within which a port can be grabbed (on both sides).
+		</theme_item>
+		<theme_item name="port_grab_distance_vertical" data_type="constant" type="int" default="6">
+			The vertical range within which a port can be grabbed (on both sides).
 		</theme_item>
 		<theme_item name="layout" data_type="icon" type="Texture2D">
 		</theme_item>
@@ -313,23 +322,14 @@
 		<theme_item name="more" data_type="icon" type="Texture2D">
 			The icon for the zoom in button.
 		</theme_item>
-		<theme_item name="port_grab_distance_horizontal" data_type="constant" type="int" default="24">
-			The horizontal range within which a port can be grabbed (on both sides).
-		</theme_item>
-		<theme_item name="port_grab_distance_vertical" data_type="constant" type="int" default="6">
-			The vertical range within which a port can be grabbed (on both sides).
-		</theme_item>
 		<theme_item name="reset" data_type="icon" type="Texture2D">
 			The icon for the zoom reset button.
 		</theme_item>
-		<theme_item name="selection_fill" data_type="color" type="Color" default="Color(1, 1, 1, 0.3)">
-			The fill color of the selection rectangle.
-		</theme_item>
-		<theme_item name="selection_stroke" data_type="color" type="Color" default="Color(1, 1, 1, 0.8)">
-			The outline color of the selection rectangle.
-		</theme_item>
 		<theme_item name="snap" data_type="icon" type="Texture2D">
 			The icon for the snap toggle button.
+		</theme_item>
+		<theme_item name="bg" data_type="style" type="StyleBox">
+			The background drawn under the grid.
 		</theme_item>
 	</theme_items>
 </class>
