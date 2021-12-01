@@ -419,6 +419,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (!selected_item) {
 				selected_item = tree->get_root();
+				if (!selected_item) {
+					break;
+				}
 			}
 
 			bool collapsed = _is_collapsed_recursive(selected_item);
