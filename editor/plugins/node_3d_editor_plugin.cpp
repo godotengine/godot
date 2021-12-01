@@ -4048,7 +4048,23 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		if (mesh != nullptr) {
 			MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 			mesh_instance->set_mesh(mesh);
-			mesh_instance->set_name(path.get_file().get_basename());
+
+			// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
+			String name = path.get_file().get_basename();
+			switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_casing").operator int()) {
+				case NAME_CASING_PASCAL_CASE:
+					name = name.capitalize().replace(" ", "");
+					break;
+				case NAME_CASING_CAMEL_CASE:
+					name = name.capitalize().replace(" ", "");
+					name[0] = name.to_lower()[0];
+					break;
+				case NAME_CASING_SNAKE_CASE:
+					name = name.capitalize().replace(" ", "_").to_lower();
+					break;
+			}
+			mesh_instance->set_name(name);
+
 			instantiated_scene = mesh_instance;
 		} else {
 			if (!scene.is_valid()) { // invalid scene
@@ -4221,10 +4237,9 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 		if (root_node) {
 			target_node = root_node;
 		} else {
-			accept->set_text(TTR("Cannot drag and drop into scene with no root node."));
-			accept->popup_centered();
-			_remove_preview();
-			return;
+			// Create a root node so we can add child nodes to it.
+			EditorNode::get_singleton()->get_scene_tree_dock()->add_root_node(memnew(Node3D));
+			target_node = get_tree()->get_edited_scene_root();
 		}
 	} else {
 		accept->set_text(TTR("Cannot drag and drop into multiple selected nodes."));
