@@ -155,12 +155,13 @@ LocalVector<uint32_t, uint32_t, true> _cull_hits;
 // we now have multiple root nodes, allowing us to store
 // more than 1 tree. This can be more efficient, while sharing the same
 // common lists
-enum { NUM_TREES = 2,
+enum { NUM_TREES = 3,
 };
 
-// Tree 0 - Non pairable
-// Tree 1 - Pairable
-// This is more efficient because in physics we only need check non pairable against the pairable tree.
+// Tree 0 - Static Bodies (non pairable with other static bodies)
+// Tree 1 - Non Monitorable Areas (non pairable with other non monitorable areas)
+// Tree 2 - Pairable
+// This is more efficient because in physics we only need check non pairable trees against other trees.
 uint32_t _root_node_id[NUM_TREES];
 
 // these values may need tweaking according to the project

@@ -3,6 +3,9 @@ int _handle_get_tree_id(BVHHandle p_handle) const {
 	if (USE_PAIRS) {
 		int tree = 0;
 		if (_extra[p_handle.id()].pairable) {
+			tree = 2;
+		} else if (_extra[p_handle.id()].pairable_type == 1) {
+			// Area
 			tree = 1;
 		}
 		return tree;

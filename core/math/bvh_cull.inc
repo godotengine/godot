@@ -120,7 +120,11 @@ int cull_aabb(CullParams &r_params, bool p_translate_hits = true) {
 			continue;
 		}
 
-		if ((n == 0) && r_params.test_pairable_only) {
+		if ((n == 0) && r_params.test_pairable_only && r_params.pairable_type == 2) {
+			continue;
+		}
+
+		if ((n == 1) && r_params.test_pairable_only && r_params.pairable_type == 1) {
 			continue;
 		}
 

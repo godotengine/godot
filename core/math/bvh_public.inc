@@ -55,6 +55,8 @@ BVHHandle item_add(T *p_userdata, bool p_active, const Bounds &p_aabb, int32_t p
 
 	uint32_t tree_id = 0;
 	if (p_pairable) {
+		tree_id = 2;
+	} else if (p_pairable_type == 1) {
 		tree_id = 1;
 	}
 
