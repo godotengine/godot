@@ -162,6 +162,7 @@
 #include "editor/plugins/path_3d_editor_plugin.h"
 #include "editor/plugins/physical_bone_3d_editor_plugin.h"
 #include "editor/plugins/polygon_2d_editor_plugin.h"
+#include "editor/plugins/replication_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -7021,6 +7022,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(InputEventEditorPlugin(this)));
 	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin(this)));
 	add_editor_plugin(memnew(TextControlEditorPlugin(this)));
+	add_editor_plugin(memnew(ReplicationEditorPlugin(this)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i, this));
