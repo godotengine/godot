@@ -38,6 +38,7 @@ class Path2D : public Node2D {
 	GDCLASS(Path2D, Node2D);
 
 	Ref<Curve2D> curve;
+	Vector<Vector2> _cached_draw_pts;
 
 	void _curve_changed();
 
