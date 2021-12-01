@@ -323,7 +323,8 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	if (rv == 0) {
 		return st.st_mtime;
 	} else {
-		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + file + ".");
+		print_verbose("Failed to get modified time for: " + p_file + "");
+		return 0;
 	}
 }
 
