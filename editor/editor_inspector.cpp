@@ -701,7 +701,7 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_edited_object"), &EditorProperty::get_edited_object);
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorProperty::_gui_input);
-	ClassDB::bind_method(D_METHOD("_menu_option"), &EditorProperty::_menu_option);
+	ClassDB::bind_method(D_METHOD("_menu_option", "option"), &EditorProperty::_menu_option);
 	ClassDB::bind_method(D_METHOD("_focusable_focused"), &EditorProperty::_focusable_focused);
 
 	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &EditorProperty::get_tooltip_text);
@@ -2249,7 +2249,7 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_property_keyed", &EditorInspector::_property_keyed);
 	ClassDB::bind_method("_property_keyed_with_value", &EditorInspector::_property_keyed_with_value);
 	ClassDB::bind_method("_property_checked", &EditorInspector::_property_checked);
-	ClassDB::bind_method("_property_pinned", &EditorInspector::_property_pinned);
+	ClassDB::bind_method(D_METHOD("_property_pinned", "path", "pinned"), &EditorInspector::_property_pinned);
 	ClassDB::bind_method("_property_selected", &EditorInspector::_property_selected);
 	ClassDB::bind_method("_resource_selected", &EditorInspector::_resource_selected);
 	ClassDB::bind_method("_object_id_selected", &EditorInspector::_object_id_selected);
