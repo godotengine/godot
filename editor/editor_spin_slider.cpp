@@ -371,17 +371,24 @@ void EditorSpinSlider::_draw_spin_slider() {
 			grabber->hide();
 		}
 	} else if (!hide_slider) {
-		int grabber_w = 4 * EDSCALE;
-		int width = size.width - sb->get_minimum_size().width - grabber_w;
-		int ofs = sb->get_offset().x;
-		int svofs = (size.height + vofs) / 2 - 1;
+		const int grabber_w = 4 * EDSCALE;
+		const int width = size.width - sb->get_minimum_size().width - grabber_w;
+		const int ofs = sb->get_offset().x;
+		const int svofs = (size.height + vofs) / 2 - 1;
 		Color c = fc;
-		c.a = 0.2;
 
+		// Draw the horizontal slider's background.
+		c.a = 0.2;
 		draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
-		int gofs = get_as_ratio() * width;
+
+		// Draw the horizontal slider's filled part on the left.
+		const int gofs = get_as_ratio() * width;
+		c.a = 0.45;
+		draw_rect(Rect2(ofs, svofs + 1, gofs, 2 * EDSCALE), c);
+
+		// Draw the horizontal slider's grabber.
 		c.a = 0.9;
-		Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
+		const Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
 		draw_rect(grabber_rect, c);
 
 		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
