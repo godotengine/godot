@@ -22,8 +22,7 @@ enum LPhysicsBodyPropertyType {
 
 class LIPhysicsBody : public LICollisionObject {
 private:
-    Transform transform;
-    real_t inverse_mass = 0;
+    real_t inverse_mass = 10;
     real_t linear_damping = 0.8;
     real_t angular_damping = 0.8;
     Vector3 velocity;
@@ -41,7 +40,6 @@ private:
     IntegrationCallback callback;
 public:
     LIPhysicsBody();
-    void set_transform(const Transform& p_transform) { transform = p_transform; };
     void set_integration_callback(ObjectID p_id, const StringName& p_method, const Variant& p_user_data);
     void perform_callback();
     bool has_finite_mass() const;
@@ -52,7 +50,6 @@ public:
     void clear_accumulators();
     Vector3 to_global(const Vector3& p_vector) const;
 
-    const Transform &get_transform() const;
     real_t get_inverse_mass() const;
     real_t get_mass() const;
     real_t get_linear_damping() const;

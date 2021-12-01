@@ -7,7 +7,7 @@
 #include "../lilyphys_server.h"
 #include "../l_body_state.h"
 
-LPhysicsBody::LPhysicsBody() {
+LPhysicsBody::LPhysicsBody() : LCollisionObject(Type::TYPE_BODY) {
     rid = LilyphysServer::get_singleton()->create_physics_body();
     LilyphysServer::get_singleton()->set_integration_callback(rid, this, "_state_changed");
 }

@@ -3,3 +3,5 @@ Import('env')
 env.add_source_files(env.modules_sources, "*.cpp") # Add all cpp files to the build
 env.add_source_files(env.modules_sources, "nodes/*.cpp") # Add all node cpp files to the build.
 env.add_source_files(env.modules_sources, "internal/*.cpp") # Add all internal object cpp files to the build.
+env.add_source_files(env.modules_sources, "thirdparty/libccd/*.c") # Add all libccd c files to the build.
+env.add_source_files(env.modules_sources, "thirdparty/libccd/ccd/*.c") # Add all libccd c files to the build.

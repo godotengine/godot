@@ -9,6 +9,9 @@
 #include "nodes/l_collision_object.h"
 #include "nodes/l_physics_body.h"
 #include "nodes/l_rigid_body.h"
+#include "nodes/l_collision_shape.h"
+#include "nodes/l_shape.h"
+#include "lilyphys_editor_plugin.h"
 
 static LilyphysServer *lilyphys_server = nullptr;
 static _LilyphysServer *_lilyphys_sever = nullptr;
@@ -25,6 +28,13 @@ void register_lilyphys_types() {
     ClassDB::register_virtual_class<LCollisionObject>();
     ClassDB::register_virtual_class<LPhysicsBody>();
     ClassDB::register_class<LRigidBody>();
+    ClassDB::register_class<LCollisionShape>();
+    ClassDB::register_virtual_class<LShape>();
+    ClassDB::register_class<LBoxShape>();
+
+#ifdef TOOLS_ENABLED
+    EditorPlugins::add_by_type<LilyphysEditorPlugin>();
+#endif
 }
 
 void unregister_lilyphys_types() {

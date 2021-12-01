@@ -10,13 +10,13 @@
 class LPhysicsBody : public LCollisionObject {
 GDCLASS(LPhysicsBody, LCollisionObject);
 private:
-    real_t inverse_mass;
-    real_t linear_damping;
-    real_t angular_damping;
-    Vector3 velocity;
-    Vector3 acceleration;
-    Vector3 angular_velocity;
-    Basis inverse_inertia_tensor;
+    real_t inverse_mass = 10;
+    real_t linear_damping = 0.8;
+    real_t angular_damping = 0.8;
+    Vector3 velocity{};
+    Vector3 acceleration{};
+    Vector3 angular_velocity{};
+    Basis inverse_inertia_tensor{};
 
     bool ignore_mass = false;
 protected:

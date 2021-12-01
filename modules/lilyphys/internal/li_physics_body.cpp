@@ -27,10 +27,6 @@ LIPhysicsBody::LIPhysicsBody() : LICollisionObject(TYPE_BODY) {
     set_inertia_tensor(tensor);
 }
 
-const Transform &LIPhysicsBody::get_transform() const {
-    return transform;
-}
-
 real_t LIPhysicsBody::get_inverse_mass() const {
     return inverse_mass;
 }
