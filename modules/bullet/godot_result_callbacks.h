@@ -74,8 +74,10 @@ public:
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
 	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult &rayResult, bool normalInWorldSpace) {
-		if (rayResult.m_localShapeInfo) {
-			m_shapeId = rayResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
+		// Triangle index is an odd name but contains the compound shape ID.
+		// A shape part of -1 indicates the index is a shape index and not a triangle index.
+		if (rayResult.m_localShapeInfo && rayResult.m_localShapeInfo->m_shapePart == -1) {
+			m_shapeId = rayResult.m_localShapeInfo->m_triangleIndex;
 		} else {
 			m_shapeId = 0;
 		}
