@@ -396,8 +396,17 @@ String ScriptTextEditor::get_name() {
 }
 
 Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
-	if (get_parent_control() && get_parent_control()->has_theme_icon(script->get_class(), "EditorIcons")) {
-		return get_parent_control()->get_theme_icon(script->get_class(), "EditorIcons");
+	if (get_parent_control()) {
+		String icon_name = script->get_class();
+		if (script->is_built_in()) {
+			icon_name += "Internal";
+		}
+
+		if (get_parent_control()->has_theme_icon(icon_name, "EditorIcons")) {
+			return get_parent_control()->get_theme_icon(icon_name, "EditorIcons");
+		} else if (get_parent_control()->has_theme_icon(script->get_class(), "EditorIcons")) {
+			return get_parent_control()->get_theme_icon(script->get_class(), "EditorIcons");
+		}
 	}
 
 	return Ref<Texture2D>();
