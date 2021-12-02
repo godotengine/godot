@@ -2843,7 +2843,7 @@ void SpatialEditorViewport::_draw() {
 void SpatialEditorViewport::_menu_option(int p_option) {
 	switch (p_option) {
 		case VIEW_TOP: {
-			cursor.y_rot = 0;
+			cursor.y_rot = Math_PI;
 			cursor.x_rot = Math_PI / 2.0;
 			set_message(TTR("Top View."), 2);
 			view_type = VIEW_TYPE_TOP;
@@ -2852,7 +2852,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 		} break;
 		case VIEW_BOTTOM: {
-			cursor.y_rot = 0;
+			cursor.y_rot = Math_PI;
 			cursor.x_rot = -Math_PI / 2.0;
 			set_message(TTR("Bottom View."), 2);
 			view_type = VIEW_TYPE_BOTTOM;
@@ -2862,7 +2862,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_LEFT: {
 			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI / 2.0;
+			cursor.y_rot = -Math_PI / 2.0;
 			set_message(TTR("Left View."), 2);
 			view_type = VIEW_TYPE_LEFT;
 			_set_auto_orthogonal();
@@ -2871,7 +2871,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_RIGHT: {
 			cursor.x_rot = 0;
-			cursor.y_rot = -Math_PI / 2.0;
+			cursor.y_rot = Math_PI / 2.0;
 			set_message(TTR("Right View."), 2);
 			view_type = VIEW_TYPE_RIGHT;
 			_set_auto_orthogonal();
