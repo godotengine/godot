@@ -102,7 +102,6 @@ private:
 	FileDialog *fdialog;
 	FileDialog *fdialog_install;
 	OptionButton *vcs_metadata_selection;
-	CheckBox *create_default_environment;
 	String zip_path;
 	String zip_title;
 	AcceptDialog *dialog_error;
@@ -495,31 +494,10 @@ private:
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 					initial_settings["application/config/icon"] = "res://icon.png";
 
-					if (create_default_environment->is_pressed()) {
-						initial_settings["rendering/environment/defaults/default_environment"] = "res://default_env.tres";
-					}
-
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
 						ResourceSaver::save(dir.plus_file("icon.png"), create_unscaled_default_project_icon());
-						FileAccess *f;
-						if (create_default_environment->is_pressed()) {
-							f = FileAccess::open(dir.plus_file("default_env.tres"), FileAccess::WRITE);
-							if (!f) {
-								set_message(TTR("Couldn't create default_env.tres in project path."), MESSAGE_ERROR);
-							} else {
-								f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
-								f->store_line("");
-								f->store_line("[sub_resource type=\"Sky\" id=\"1\"]");
-								f->store_line("");
-								f->store_line("[resource]");
-								f->store_line("background_mode = 2");
-								f->store_line("sky = SubResource( \"1\" )");
-								memdelete(f);
-							}
-						}
-
 						EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), dir);
 					}
 				} else if (mode == MODE_INSTALL) {
@@ -945,10 +923,6 @@ public:
 		Control *spacer = memnew(Control);
 		spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		default_files_container->add_child(spacer);
-		create_default_environment = memnew(CheckBox);
-		create_default_environment->set_text("Create Default Environment");
-		create_default_environment->set_pressed(true);
-		default_files_container->add_child(create_default_environment);
 
 		fdialog = memnew(FileDialog);
 		fdialog->set_access(FileDialog::ACCESS_FILESYSTEM);
