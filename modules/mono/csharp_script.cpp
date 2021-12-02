@@ -3614,7 +3614,11 @@ RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p
 
 	script->set_path(p_original_path);
 
-	script->reload();
+	if (Thread::get_caller_id() != Thread::get_main_id()) {
+		script->call_deferred("reload");
+	} else {
+		script->reload();
+	}
 
 	if (r_error) {
 		*r_error = OK;
