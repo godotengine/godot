@@ -35,6 +35,7 @@
 #include "core/io/file_access_compressed.h"
 #include "core/io/image.h"
 #include "core/io/marshalls.h"
+#include "core/os/thread.h"
 #include "core/version.h"
 
 //#define print_bl(m_what) print_line(m_what)
@@ -756,7 +757,11 @@ Error ResourceLoaderBinary::load() {
 				return error;
 			}
 
-			res->set(name, value);
+			if (Thread::get_caller_id() != Thread::get_main_id()) {
+				res->set_deferred(name, value);
+			} else {
+				res->set(name, value);
+			}
 		}
 #ifdef TOOLS_ENABLED
 		res->set_edited(false);
