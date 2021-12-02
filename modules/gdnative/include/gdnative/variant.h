@@ -170,8 +170,6 @@ extern "C" {
 
 godot_variant_type GDAPI godot_variant_get_type(const godot_variant *p_v);
 
-void GDAPI godot_variant_operator_assign(godot_variant *r_dest, const godot_variant *p_v);
-
 void GDAPI godot_variant_new_copy(godot_variant *r_dest, const godot_variant *p_src);
 
 void GDAPI godot_variant_new_nil(godot_variant *r_dest);

@@ -62,12 +62,6 @@ godot_variant_type GDAPI godot_variant_get_type(const godot_variant *p_self) {
 	return (godot_variant_type)self->get_type();
 }
 
-void GDAPI godot_variant_operator_assign(godot_variant *r_dest, const godot_variant *p_v) {
-	Variant *dest = (Variant *)r_dest;
-	Variant *v = (Variant *)p_v;
-	*dest = *v;
-}
-
 void GDAPI godot_variant_new_copy(godot_variant *p_dest, const godot_variant *p_src) {
 	Variant *dest = (Variant *)p_dest;
 	Variant *src = (Variant *)p_src;
