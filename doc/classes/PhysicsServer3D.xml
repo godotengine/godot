@@ -1152,16 +1152,16 @@
 			Maximum acceleration for the motor at the axes.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="G6DOFJointAxisFlag">
-			If [code]set[/code] there is linear motion possible within the given limits.
+			If set, linear motion is possible within the given limits.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1" enum="G6DOFJointAxisFlag">
-			If [code]set[/code] there is rotational motion possible.
+			If set, rotational motion is possible.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="4" enum="G6DOFJointAxisFlag">
-			If [code]set[/code] there is a rotational motor across these axes.
+			If set, there is a rotational motor across these axes.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="5" enum="G6DOFJointAxisFlag">
-			If [code]set[/code] there is a linear motor on this axis that targets a specific velocity.
+			If set, there is a linear motor on this axis that targets a specific velocity.
 		</constant>
 		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
 			The [Shape3D] is a [WorldBoundaryShape3D].
