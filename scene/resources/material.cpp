@@ -1658,13 +1658,28 @@ bool BaseMaterial3D::get_feature(Feature p_feature) const {
 
 void BaseMaterial3D::set_texture(TextureParam p_param, const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_INDEX(p_param, TEXTURE_MAX);
+
+	if (get_texture(TEXTURE_ROUGHNESS).is_null() && p_texture.is_valid() && p_param == TEXTURE_ROUGHNESS) {
+		// If no roughness texture is currently set, automatically set the recommended value
+		// for roughness when using a roughness map.
+		set_roughness(1.0);
+	}
+
+	if (get_texture(TEXTURE_METALLIC).is_null() && p_texture.is_valid() && p_param == TEXTURE_METALLIC) {
+		// If no metallic texture is currently set, automatically set the recommended value
+		// for metallic when using a metallic map.
+		set_metallic(1.0);
+	}
+
 	textures[p_param] = p_texture;
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
+
 	if (p_texture.is_valid() && p_param == TEXTURE_ALBEDO) {
 		RS::get_singleton()->material_set_param(_get_material(), shader_names->albedo_texture_size,
 				Vector2i(p_texture->get_width(), p_texture->get_height()));
 	}
+
 	notify_property_list_changed();
 	_queue_shader_change();
 }
