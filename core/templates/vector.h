@@ -132,9 +132,8 @@ public:
 		insert(i, p_val);
 	}
 
-	inline Vector &operator=(const Vector &p_from) {
+	inline void operator=(const Vector &p_from) {
 		_cowdata._ref(p_from._cowdata);
-		return *this;
 	}
 
 	Vector<uint8_t> to_byte_array() const {

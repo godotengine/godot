@@ -192,7 +192,7 @@ public:
 
 	GDScriptDataType() = default;
 
-	GDScriptDataType &operator=(const GDScriptDataType &p_other) {
+	void operator=(const GDScriptDataType &p_other) {
 		kind = p_other.kind;
 		has_type = p_other.has_type;
 		builtin_type = p_other.builtin_type;
@@ -203,7 +203,6 @@ public:
 		if (p_other.has_container_element_type()) {
 			set_container_element_type(p_other.get_container_element_type());
 		}
-		return *this;
 	}
 
 	GDScriptDataType(const GDScriptDataType &p_other) {

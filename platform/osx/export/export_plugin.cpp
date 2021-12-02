@@ -960,9 +960,10 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 
 	DirAccessRef da = DirAccess::open(dir);
 	da->list_dir_begin();
-	String f;
-	while ((f = da->get_next()) != "") {
+	String f = da->get_next();
+	while (!f.is_empty()) {
 		if (f == "." || f == "..") {
+			f = da->get_next();
 			continue;
 		}
 		if (da->is_link(f)) {
@@ -1065,6 +1066,7 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 
 			zipCloseFileInZip(p_zip);
 		}
+		f = da->get_next();
 	}
 	da->list_dir_end();
 }

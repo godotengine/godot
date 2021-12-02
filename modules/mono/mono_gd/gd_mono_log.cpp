@@ -121,12 +121,10 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 
 	ERR_FAIL_COND(da->list_dir_begin() != OK);
 
-	String current;
-	while ((current = da->get_next()).length()) {
-		if (da->current_is_dir()) {
-			continue;
-		}
-		if (!current.ends_with(".txt")) {
+	String current = da->get_next();
+	while (!current.is_empty()) {
+		if (da->current_is_dir() || !current.ends_with(".txt")) {
+			current = da->get_next();
 			continue;
 		}
 
@@ -135,6 +133,7 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 		if (OS::get_singleton()->get_unix_time() - modified_time > MAX_SECS) {
 			da->remove(current);
 		}
+		current = da->get_next();
 	}
 
 	da->list_dir_end();

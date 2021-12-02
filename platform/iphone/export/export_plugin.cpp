@@ -728,10 +728,10 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 
 Error EditorExportPlatformIOS::_walk_dir_recursive(DirAccess *p_da, FileHandler p_handler, void *p_userdata) {
 	Vector<String> dirs;
-	String path;
 	String current_dir = p_da->get_current_dir();
 	p_da->list_dir_begin();
-	while ((path = p_da->get_next()).length() != 0) {
+	String path = p_da->get_next();
+	while (!path.is_empty()) {
 		if (p_da->current_is_dir()) {
 			if (path != "." && path != "..") {
 				dirs.push_back(path);
@@ -743,6 +743,7 @@ Error EditorExportPlatformIOS::_walk_dir_recursive(DirAccess *p_da, FileHandler 
 				return err;
 			}
 		}
+		path = p_da->get_next();
 	}
 	p_da->list_dir_end();
 

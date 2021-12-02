@@ -193,9 +193,8 @@ public:
 	_FORCE_INLINE_ VMap() {}
 	_FORCE_INLINE_ VMap(const VMap &p_from) { _cowdata._ref(p_from._cowdata); }
 
-	inline VMap &operator=(const VMap &p_from) {
+	inline void operator=(const VMap &p_from) {
 		_cowdata._ref(p_from._cowdata);
-		return *this;
 	}
 };
 
