@@ -438,12 +438,22 @@ const Vector<GDMonoProperty *> &GDMonoClass::get_all_properties() {
 }
 
 const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
-	if (delegates_fetched)
+	if (delegates_fetched) {
 		return delegates_list;
+	}
+
+	// If the class is generic we must use the generic type definition.
+	MonoClass *klass = mono_class;
+	if (mono_type_get_type(get_mono_type()) == MONO_TYPE_GENERICINST) {
+		MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), get_mono_type());
+		GDMonoUtils::Marshal::get_generic_type_definition(reftype, &reftype);
+		MonoType *type = mono_reflection_type_get_type(reftype);
+		klass = mono_class_from_mono_type(type);
+	}
 
 	void *iter = NULL;
 	MonoClass *raw_class = NULL;
-	while ((raw_class = mono_class_get_nested_types(mono_class, &iter)) != NULL) {
+	while ((raw_class = mono_class_get_nested_types(klass, &iter)) != NULL) {
 		if (mono_class_is_delegate(raw_class)) {
 			StringName name = String::utf8(mono_class_get_name(raw_class));
 
