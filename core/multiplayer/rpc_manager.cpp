@@ -461,6 +461,42 @@ void RPCManager::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const Mult
 	}
 }
 
+void RPCManager::rpcp_synced(NodePath path, int uniqueId, bool p_call_local_native, bool p_call_local_script, const StringName &p_method, const Variant **p_arg, int p_argcount){
+
+	Node *p_node = multiplayer->get_root_node()->get_node(path);
+
+	if (p_call_local_native) {
+		Callable::CallError ce;
+
+		multiplayer->set_remote_sender_override(uniqueId);
+		p_node->call(p_method, p_arg, p_argcount, ce);
+		multiplayer->set_remote_sender_override(0);
+
+		if (ce.error != Callable::CallError::CALL_OK) {
+			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
+			error = "rpc() aborted in local call:  - " + error + ".";
+			ERR_PRINT(error);
+			return;
+		}
+	}
+
+	if (p_call_local_script) {
+		Callable::CallError ce;
+		ce.error = Callable::CallError::CALL_OK;
+
+		multiplayer->set_remote_sender_override(uniqueId);
+		p_node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
+		multiplayer->set_remote_sender_override(0);
+
+		if (ce.error != Callable::CallError::CALL_OK) {
+			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
+			error = "rpc() aborted in script local call:  - " + error + ".";
+			ERR_PRINT(error);
+			return;
+		}
+	}
+}
+
 void RPCManager::rpcp(Node *p_node, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
 	ERR_FAIL_COND_MSG(!peer.is_valid(), "Trying to call an RPC while no multiplayer peer is active.");
@@ -490,35 +526,10 @@ void RPCManager::rpcp(Node *p_node, int p_peer_id, const StringName &p_method, c
 		_send_rpc(p_node, p_peer_id, rpc_id, config, p_method, p_arg, p_argcount);
 	}
 
-	if (call_local_native) {
-		Callable::CallError ce;
-
-		multiplayer->set_remote_sender_override(peer->get_unique_id());
-		p_node->call(p_method, p_arg, p_argcount, ce);
-		multiplayer->set_remote_sender_override(0);
-
-		if (ce.error != Callable::CallError::CALL_OK) {
-			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
-			error = "rpc() aborted in local call:  - " + error + ".";
-			ERR_PRINT(error);
-			return;
-		}
-	}
-
-	if (call_local_script) {
-		Callable::CallError ce;
-		ce.error = Callable::CallError::CALL_OK;
-
-		multiplayer->set_remote_sender_override(peer->get_unique_id());
-		p_node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
-		multiplayer->set_remote_sender_override(0);
-
-		if (ce.error != Callable::CallError::CALL_OK) {
-			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
-			error = "rpc() aborted in script local call:  - " + error + ".";
-			ERR_PRINT(error);
-			return;
-		}
+	if(Thread::get_caller_id() != Thread::get_main_id()){
+			this->call_deferred("rpcp_synced", p_node->get_path(), peer->get_unique_id(), call_local_native, call_local_script, p_method, p_arg, p_argcount);
+	} else {
+			rpcp_synced(p_node->get_path(),peer->get_unique_id(), call_local_native, call_local_script, p_method, p_arg, p_argcount);
 	}
 
 	ERR_FAIL_COND_MSG(p_peer_id == node_id && !config.call_local, "RPC '" + p_method + "' on yourself is not allowed by selected mode.");

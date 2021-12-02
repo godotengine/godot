@@ -81,6 +81,7 @@ public:
 	// Called by Node.rpc
 	void rpcp(Node *p_node, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 	void process_rpc(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void rpcp_synced(NodePath path, int uniqueId,  bool p_call_local_native, bool p_call_local_script, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	String get_rpc_md5(const Node *p_node);
 	RPCManager(MultiplayerAPI *p_multiplayer) { multiplayer = p_multiplayer; }
