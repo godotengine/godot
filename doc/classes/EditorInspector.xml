@@ -13,6 +13,11 @@
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" overrides="ScrollContainer" enum="ScrollContainer.ScrollMode" default="0" />
 	</members>
 	<signals>
+		<signal name="edited_object_changed">
+			<description>
+				Emitted when the object being edited by the inspector has changed.
+			</description>
+		</signal>
 		<signal name="object_id_selected">
 			<argument index="0" name="id" type="int" />
 			<description>

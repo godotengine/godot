@@ -884,7 +884,6 @@ public:
 
 	void edit_current() { _edit_current(); };
 
-	void update_keying() const { inspector_dock->update_keying(); };
 	bool has_scenes_in_session();
 
 	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false);

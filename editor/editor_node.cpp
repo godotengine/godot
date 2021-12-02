@@ -2307,7 +2307,6 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	}
 
 	inspector_dock->update(current_obj);
-	inspector_dock->update_keying();
 }
 
 void EditorNode::_run(bool p_current, const String &p_custom) {

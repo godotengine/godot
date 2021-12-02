@@ -255,6 +255,10 @@ class AnimationPlayerEditorPlugin : public EditorPlugin {
 protected:
 	void _notification(int p_what);
 
+	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
+	void _transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key);
+	void _update_keying();
+
 public:
 	virtual Dictionary get_state() const override { return anim_editor->get_state(); }
 	virtual void set_state(const Dictionary &p_state) override { anim_editor->set_state(p_state); }
