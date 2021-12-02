@@ -158,14 +158,15 @@
 			<return type="bool" />
 			<argument index="0" name="point" type="Vector3" />
 			<description>
-				Returns [code]true[/code] if the [AABB] contains a point.
+				Returns [code]true[/code] if the [AABB] contains a point. Points on the faces of the AABB are considered included, though float-point precision errors may impact the accuracy of such checks.
+				[b]Note:[/b] This method is not reliable for [AABB] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent [AABB] to check for contained points.
 			</description>
 		</method>
 		<method name="intersection" qualifiers="const">
 			<return type="AABB" />
 			<argument index="0" name="with" type="AABB" />
 			<description>
-				Returns the intersection between two [AABB]. An empty AABB (size 0,0,0) is returned on failure.
+				Returns the intersection between two [AABB]. An empty AABB (size [code](0, 0, 0)[/code]) is returned on failure.
 			</description>
 		</method>
 		<method name="intersects" qualifiers="const">
