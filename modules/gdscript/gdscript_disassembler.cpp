@@ -702,7 +702,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 4 + argc;
 			} break;
 			case OPCODE_CALL_GDSCRIPT_UTILITY: {
-				text += "call-gscript-utility ";
+				text += "call-gdscript-utility ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += DADDR(1 + argc) + " = ";
