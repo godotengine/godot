@@ -79,6 +79,8 @@ static void handle_crash(int sig) {
 	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
 	char **strings = backtrace_symbols(bt_buffer, size);
 	if (strings) {
+		size_t useful_lines = 0;
+
 		for (size_t i = 1; i < size; i++) {
 			char fname[1024];
 			Dl_info info;
@@ -119,6 +121,17 @@ static void handle_crash(int sig) {
 			}
 
 			fprintf(stderr, "[%ld] %s (%s)\n", (long int)i, fname, output.utf8().get_data());
+
+			if (!output.is_empty() && !output.begins_with("??")) {
+				// The line has source information available. Consider it "useful" for bug reporting.
+				useful_lines += 1;
+			}
+		}
+
+		// `size` starts from 1, so subtract 1 from the total size.
+		if ((float(useful_lines) / float(size - 1)) < 0.3) {
+			// Less than 30% of lines have source information included; warn the user.
+			fprintf(stderr, "\nWARNING: This backtrace does not include source information for most files.\nAs a result, this backtrace is probably useful to include in a bug report.\nTo get a useful backtrace, compile a debug build (without stripping its symbols) and run the build until it crashes.\n\n");
 		}
 
 		free(strings);
