@@ -83,7 +83,7 @@
 			The smoothness of the rounded joints and caps. This is only used if a cap or joint is set as round.
 		</member>
 		<member name="sharp_limit" type="float" setter="set_sharp_limit" getter="get_sharp_limit" default="2.0">
-			The direction difference in radians between vector points. This value is only used if [code]joint mode[/code] is set to [constant LINE_JOINT_SHARP].
+			The direction difference in radians between vector points. This value is only used if [member joint_mode] is set to [constant LINE_JOINT_SHARP].
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			The texture used for the line's texture. Uses [code]texture_mode[/code] for drawing style.
