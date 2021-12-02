@@ -756,7 +756,7 @@ Error ResourceLoaderBinary::load() {
 				return error;
 			}
 
-			res->set(name, value);
+			res->set_deferred(name, value);
 		}
 #ifdef TOOLS_ENABLED
 		res->set_edited(false);
