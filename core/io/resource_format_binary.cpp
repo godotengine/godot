@@ -36,11 +36,6 @@
 #include "core/io/image.h"
 #include "core/io/marshalls.h"
 #include "core/version.h"
-#include "core/os/os.h"
-#include "core/os/time.h"
-#include "core/register_core_types.h"
-
-#include "servers/rendering_server.h"
 
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what) (void)(m_what)
