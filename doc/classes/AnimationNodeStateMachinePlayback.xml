@@ -72,6 +72,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" override="true" default="true" />
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="true" />
 	</members>
 </class>

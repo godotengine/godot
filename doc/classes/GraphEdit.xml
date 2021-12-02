@@ -159,7 +159,7 @@
 		<member name="connection_lines_thickness" type="float" setter="set_connection_lines_thickness" getter="get_connection_lines_thickness" default="2.0">
 			The thickness of the lines between the nodes.
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="minimap_enabled" type="bool" setter="set_minimap_enabled" getter="is_minimap_enabled" default="true">
 			If [code]true[/code], the minimap is visible.
 		</member>
@@ -169,7 +169,7 @@
 		<member name="minimap_size" type="Vector2" setter="set_minimap_size" getter="get_minimap_size" default="Vector2(240, 160)">
 			The size of the minimap rectangle. The map itself is based on the size of the grid area and is scaled to fit this rectangle.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
+		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled" default="false">
 			If [code]true[/code], enables disconnection of existing connections in the GraphEdit by dragging the right end.
 		</member>

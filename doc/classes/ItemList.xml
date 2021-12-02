@@ -374,7 +374,7 @@
 			The size all icons will be adjusted to.
 			If either X or Y component is not greater than zero, icon size won't be affected.
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="icon_mode" type="int" setter="set_icon_mode" getter="get_icon_mode" enum="ItemList.IconMode" default="1">
 			The icon position, whether above or to the left of the text. See the [enum IconMode] constants.
 		</member>
@@ -393,7 +393,7 @@
 			Maximum lines of text allowed in each item. Space will be reserved even when there is not enough lines of text to display.
 			[b]Note:[/b] This property takes effect only when [member icon_mode] is [constant ICON_MODE_TOP]. To make the text wrap, [member fixed_column_width] should be greater than zero.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
+		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width" default="false">
 			Whether all columns will have the same width.
 			If [code]true[/code], the width is equal to the largest column width of all columns.
