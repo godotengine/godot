@@ -75,6 +75,8 @@ class ImmediateMesh : public Mesh {
 	Vector<uint8_t> surface_vertex_create_cache;
 	Vector<uint8_t> surface_attribute_create_cache;
 
+	const Vector3 SMALL_VEC3 = Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON);
+
 protected:
 	static void _bind_methods();
 

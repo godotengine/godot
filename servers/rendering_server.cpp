@@ -199,11 +199,11 @@ RID RenderingServer::_make_test_cube() {
 			normal_points[j][i % 3] = (i >= 3 ? -1 : 1);
 		}
 
-		//tri 1
+		// Tri 1
 		ADD_VTX(0);
 		ADD_VTX(1);
 		ADD_VTX(2);
-		//tri 2
+		// Tri 2
 		ADD_VTX(2);
 		ADD_VTX(3);
 		ADD_VTX(0);
@@ -317,9 +317,6 @@ RID RenderingServer::get_white_texture() {
 	return white_texture;
 }
 
-#define SMALL_VEC2 Vector2(0.00001, 0.00001)
-#define SMALL_VEC3 Vector3(0.00001, 0.00001, 0.00001)
-
 Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb) {
 	uint8_t *vw = r_vertex_array.ptrw();
 	uint8_t *aw = r_attrib_array.ptrw();
@@ -333,7 +330,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 	int max_bone = 0;
 
 	for (int ai = 0; ai < RS::ARRAY_MAX; ai++) {
-		if (!(p_format & (1 << ai))) { // no array
+		if (!(p_format & (1 << ai))) { // No array
 			continue;
 		}
 
@@ -345,7 +342,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 					const Vector2 *src = array.ptr();
 
-					// setting vertices means regenerating the AABB
+					// Setting vertices means regenerating the AABB.
 					Rect2 aabb;
 
 					{
@@ -355,7 +352,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 							memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 2);
 
 							if (i == 0) {
-								aabb = Rect2(src[i], SMALL_VEC2); //must have a bit of size
+								aabb = Rect2(src[i], SMALL_VEC2); // Must have a bit of size.
 							} else {
 								aabb.expand_to(src[i]);
 							}
@@ -370,7 +367,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 					const Vector3 *src = array.ptr();
 
-					// setting vertices means regenerating the AABB
+					// Setting vertices means regenerating the AABB.
 					AABB aabb;
 
 					{
@@ -505,7 +502,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					case ARRAY_CUSTOM_RGBA8_UNORM:
 					case ARRAY_CUSTOM_RGBA8_SNORM:
 					case ARRAY_CUSTOM_RG_HALF: {
-						//size 4
+						// Size 4
 						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_BYTE_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<uint8_t> array = p_arrays[ai];
@@ -520,7 +517,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 					} break;
 					case ARRAY_CUSTOM_RGBA_HALF: {
-						//size 8
+						// Size 8
 						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_BYTE_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<uint8_t> array = p_arrays[ai];
@@ -537,7 +534,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					case ARRAY_CUSTOM_RG_FLOAT:
 					case ARRAY_CUSTOM_RGB_FLOAT:
 					case ARRAY_CUSTOM_RGBA_FLOAT: {
-						//RF
+						// RF
 						ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_FLOAT32_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<float> array = p_arrays[ai];
@@ -646,7 +643,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 	}
 
 	if (p_format & RS::ARRAY_FORMAT_BONES) {
-		//create AABBs for each detected bone
+		// Create AABBs for each detected bone.
 		int total_bones = max_bone + 1;
 
 		bool first = r_bone_aabb.size() == 0;
@@ -657,7 +654,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 		if (first) {
 			for (int i = 0; i < total_bones; i++) {
-				r_bone_aabb.write[i].size = Vector3(-1, -1, -1); //negative means unused
+				r_bone_aabb.write[i].size = Vector3(-1, -1, -1); // Negative means unused.
 			}
 		}
 
@@ -686,7 +683,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					ERR_FAIL_INDEX_V(idx, total_bones, ERR_INVALID_DATA);
 
 					if (bptr[idx].size.x < 0) {
-						//first
+						// First
 						bptr[idx] = AABB(v, SMALL_VEC3);
 						any_valid = true;
 					} else {
@@ -749,7 +746,7 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 	uint32_t *size_accum;
 
 	for (int i = 0; i < RS::ARRAY_MAX; i++) {
-		r_offsets[i] = 0; //reset
+		r_offsets[i] = 0; // Reset
 
 		if (i == RS::ARRAY_VERTEX) {
 			size_accum = &r_vertex_element_size;
@@ -759,7 +756,7 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 			size_accum = &r_skin_element_size;
 		}
 
-		if (!(p_format & (1 << i))) { // no array
+		if (!(p_format & (1 << i))) { // No array
 			continue;
 		}
 
@@ -873,7 +870,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 
 	uint32_t format = 0;
 
-	// validation
+	// Validation
 	int index_array_len = 0;
 	int array_len = 0;
 
@@ -921,10 +918,10 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 		}
 	}
 
-	ERR_FAIL_COND_V((format & RS::ARRAY_FORMAT_VERTEX) == 0, ERR_INVALID_PARAMETER); // mandatory
+	ERR_FAIL_COND_V((format & RS::ARRAY_FORMAT_VERTEX) == 0, ERR_INVALID_PARAMETER); // Mandatory
 
 	if (p_blend_shapes.size()) {
-		//validate format for morphs
+		// Validate format for morphs.
 		for (int i = 0; i < p_blend_shapes.size(); i++) {
 			uint32_t bsformat = 0;
 			Array arr = p_blend_shapes[i];
@@ -939,7 +936,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	}
 
 	for (uint32_t i = 0; i < RS::ARRAY_CUSTOM_COUNT; ++i) {
-		// include custom array format type.
+		// Include custom array format type.
 		if (format & (1 << (ARRAY_CUSTOM0 + i))) {
 			format |= (RS::ARRAY_FORMAT_CUSTOM_MASK << (RS::ARRAY_FORMAT_CUSTOM_BASE + i * RS::ARRAY_FORMAT_CUSTOM_BITS)) & p_compress_format;
 		}
@@ -954,7 +951,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	mesh_surface_make_offsets_from_format(format, array_len, index_array_len, offsets, vertex_element_size, attrib_element_size, skin_element_size);
 
 	uint32_t mask = (1 << ARRAY_MAX) - 1;
-	format |= (~mask) & p_compress_format; //make the full format
+	format |= (~mask) & p_compress_format; // Make the full format.
 
 	int vertex_array_size = vertex_element_size * array_len;
 	int attrib_array_size = attrib_element_size * array_len;
@@ -1010,13 +1007,13 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			Vector<int> indices = p_lods[E];
 			ERR_CONTINUE(indices.size() == 0);
 			uint32_t index_count = indices.size();
-			ERR_CONTINUE(index_count >= (uint32_t)index_array_len); //should be smaller..
+			ERR_CONTINUE(index_count >= (uint32_t)index_array_len); // Should be smaller..
 
 			const int *r = indices.ptr();
 
 			Vector<uint8_t> data;
 			if (array_len <= 65536) {
-				//16 bits indices
+				// 16 bits indices
 				data.resize(indices.size() * 2);
 				uint8_t *w = data.ptrw();
 				uint16_t *index_ptr = (uint16_t *)w;
@@ -1024,7 +1021,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					index_ptr[i] = r[i];
 				}
 			} else {
-				//32 bits indices
+				// 32 bits indices
 				data.resize(indices.size() * 4);
 				uint8_t *w = data.ptrw();
 				uint32_t *index_ptr = (uint32_t *)w;
@@ -1204,7 +1201,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 					case ARRAY_CUSTOM_RGBA8_SNORM:
 					case ARRAY_CUSTOM_RG_HALF:
 					case ARRAY_CUSTOM_RGBA_HALF: {
-						//size 4
+						// Size 4
 						int s = type == ARRAY_CUSTOM_RGBA_HALF ? 8 : 4;
 						Vector<uint8_t> arr;
 						arr.resize(p_vertex_len * s);
@@ -1472,12 +1469,12 @@ ShaderLanguage::DataType RenderingServer::global_variable_type_get_shader_dataty
 		case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE:
 			return ShaderLanguage::TYPE_SAMPLERCUBE;
 		default:
-			return ShaderLanguage::TYPE_MAX; //invalid or not found
+			return ShaderLanguage::TYPE_MAX; // Invalid or not found.
 	}
 }
 
 RenderingDevice *RenderingServer::get_rendering_device() const {
-	// return the rendering device we're using globally
+	// Return the rendering device we're using globally.
 	return RenderingDevice::get_singleton();
 }
 
@@ -2221,8 +2218,8 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ONCE); //then goes to disabled); must be manually updated
-	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_WHEN_VISIBLE); // default
+	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ONCE); // Then goes to disabled); must be manually updated.
+	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_WHEN_VISIBLE); // Default
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ALWAYS);
 
@@ -2553,7 +2550,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_set_modulate", "item", "color"), &RenderingServer::canvas_item_set_modulate);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_self_modulate", "item", "color"), &RenderingServer::canvas_item_set_self_modulate);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_draw_behind_parent", "item", "enabled"), &RenderingServer::canvas_item_set_draw_behind_parent);
-	//primitives
+
+	/* Primitives */
 
 	ClassDB::bind_method(D_METHOD("canvas_item_add_line", "item", "from", "to", "color", "width"), &RenderingServer::canvas_item_add_line, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_polyline", "item", "points", "colors", "width", "antialiased"), &RenderingServer::canvas_item_add_polyline, DEFVAL(1.0), DEFVAL(false));
@@ -2704,7 +2702,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_MAX);
 
 	/* Free */
-	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingServer::free); // shouldn't conflict with Object::free()
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingServer::free); // Shouldn't conflict with Object::free().
 
 	/* Misc */
 
