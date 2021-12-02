@@ -142,9 +142,15 @@ protected:
 	}
 
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-		p_list->clear(); //sorry, no want category
+		p_list->clear(); // Sorry, no want category.
 		for (const List<PropertyInfo>::Element *E = prop_list.front(); E; E = E->next()) {
-			p_list->push_back(E->get());
+			const PropertyInfo &prop = E->get();
+			if (prop.name == "script") {
+				// Skip the script property, it's always added by the non-virtual method.
+				continue;
+			}
+
+			p_list->push_back(prop);
 		}
 	}
 
