@@ -18,7 +18,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="2048" />
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" overrides="Texture" default="2048" />
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 1, 1 )">
 			External texture size.
 		</member>

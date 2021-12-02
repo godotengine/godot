@@ -49,7 +49,7 @@
 		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path" default="&quot;res://&quot;">
 			The file system path in the address bar.
 		</member>
-		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
 		<member name="disable_overwrite_warning" type="bool" setter="set_disable_overwrite_warning" getter="is_overwrite_warning_disabled" default="false">
 			If [code]true[/code], the [EditorFileDialog] will not warn the user before overwriting files.
 		</member>
@@ -59,11 +59,11 @@
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="EditorFileDialog.Mode" default="4">
 			The purpose of the [EditorFileDialog], which defines the allowed behaviors.
 		</member>
-		<member name="resizable" type="bool" setter="set_resizable" getter="get_resizable" override="true" default="true" />
+		<member name="resizable" type="bool" setter="set_resizable" getter="get_resizable" overrides="WindowDialog" default="true" />
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" default="false">
 			If [code]true[/code], hidden files and directories will be visible in the [EditorFileDialog].
 		</member>
-		<member name="window_title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Save a File&quot;" />
+		<member name="window_title" type="String" setter="set_title" getter="get_title" overrides="WindowDialog" default="&quot;Save a File&quot;" />
 	</members>
 	<signals>
 		<signal name="dir_selected">

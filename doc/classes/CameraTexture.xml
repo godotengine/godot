@@ -18,7 +18,7 @@
 		<member name="camera_is_active" type="bool" setter="set_camera_active" getter="get_camera_active" default="false">
 			Convenience property that gives access to the active property of the [CameraFeed].
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" overrides="Texture" default="0" />
 		<member name="which_feed" type="int" setter="set_which_feed" getter="get_which_feed" enum="CameraServer.FeedImage" default="0">
 			Which image within the [CameraFeed] we want access to, important if the camera image is split in a Y and CbCr component.
 		</member>

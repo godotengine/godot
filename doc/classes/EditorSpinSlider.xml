@@ -13,7 +13,7 @@
 	<members>
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="label" type="String" setter="set_label" getter="get_label" default="&quot;&quot;">
 		</member>
 		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only" default="false">

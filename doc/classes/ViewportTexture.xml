@@ -16,8 +16,8 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
-		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" override="true" default="true" />
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" overrides="Texture" default="0" />
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="true" />
 		<member name="viewport_path" type="NodePath" setter="set_viewport_path_in_scene" getter="get_viewport_path_in_scene" default="NodePath(&quot;&quot;)">
 			The path to the [Viewport] node to display. This is relative to the scene root, not to the node which uses the texture.
 		</member>

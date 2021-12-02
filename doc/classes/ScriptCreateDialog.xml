@@ -27,11 +27,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
-		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin" override="true" default="258.0" />
-		<member name="margin_right" type="float" setter="set_margin" getter="get_margin" override="true" default="366.0" />
-		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size" override="true" default="Vector2( 366, 258 )" />
-		<member name="window_title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Attach Node Script&quot;" />
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
+		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin" overrides="Control" default="258.0" />
+		<member name="margin_right" type="float" setter="set_margin" getter="get_margin" overrides="Control" default="366.0" />
+		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size" overrides="Control" default="Vector2( 366, 258 )" />
+		<member name="window_title" type="String" setter="set_title" getter="get_title" overrides="WindowDialog" default="&quot;Attach Node Script&quot;" />
 	</members>
 	<signals>
 		<signal name="script_created">

@@ -21,7 +21,7 @@
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="BoxContainer.AlignMode" default="0">
 			The alignment of the container's children (must be one of [constant ALIGN_BEGIN], [constant ALIGN_CENTER] or [constant ALIGN_END]).
 		</member>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="1" />
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
 	</members>
 	<constants>
 		<constant name="ALIGN_BEGIN" value="0" enum="AlignMode">

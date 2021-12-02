@@ -19,7 +19,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" override="true" default="false" />
+		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" overrides="ScrollContainer" default="false" />
 	</members>
 	<signals>
 		<signal name="object_id_selected">

@@ -70,7 +70,7 @@
 		<member name="preview_camera" type="NodePath" setter="set_preview_camera_path" getter="get_preview_camera_path" default="NodePath(&quot;&quot;)">
 			Portal culling normally operates using the current [Camera] / [Camera]s, however for debugging purposes within the editor, you can use this setting to override this behaviour and force it to use a particular camera to get a better idea of what the occlusion culling is doing.
 		</member>
-		<member name="process_priority" type="int" setter="set_process_priority" getter="get_process_priority" override="true" default="10000" />
+		<member name="process_priority" type="int" setter="set_process_priority" getter="get_process_priority" overrides="Node" default="10000" />
 		<member name="pvs_mode" type="int" setter="set_pvs_mode" getter="get_pvs_mode" enum="RoomManager.PVSMode" default="1">
 			Optionally during conversion the potentially visible set (PVS) of rooms that are potentially visible from each room can be calculated. This can be used either to aid in dynamic portal culling, or to totally replace portal culling.
 			In [code]Full[/code] PVS Mode, all objects within the potentially visible rooms will be frustum culled, and rendered if they are within the view frustum.

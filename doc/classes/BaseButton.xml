@@ -57,7 +57,7 @@
 		<member name="enabled_focus_mode" type="int" setter="set_enabled_focus_mode" getter="get_enabled_focus_mode" enum="Control.FocusMode" default="2">
 			[i]Deprecated.[/i] This property has been deprecated due to redundancy and will be removed in Godot 4.0. This property no longer has any effect when set. Please use [member Control.focus_mode] instead.
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="group" type="ButtonGroup" setter="set_button_group" getter="get_button_group">
 			[ButtonGroup] associated to the button.
 		</member>

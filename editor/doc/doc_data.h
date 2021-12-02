@@ -72,6 +72,7 @@ public:
 		String setter, getter;
 		String default_value;
 		bool overridden;
+		String overrides;
 		bool operator<(const PropertyDoc &p_prop) const {
 			return name < p_prop.name;
 		}

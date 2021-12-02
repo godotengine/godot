@@ -68,7 +68,7 @@
 		<member name="dialog_text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The text displayed by the dialog.
 		</member>
-		<member name="window_title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Alert!&quot;" />
+		<member name="window_title" type="String" setter="set_title" getter="get_title" overrides="WindowDialog" default="&quot;Alert!&quot;" />
 	</members>
 	<signals>
 		<signal name="confirmed">

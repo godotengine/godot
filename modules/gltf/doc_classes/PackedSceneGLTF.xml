@@ -38,7 +38,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" override="true" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PoolIntArray(  ),&quot;editable_instances&quot;: [  ],&quot;names&quot;: PoolStringArray(  ),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [  ],&quot;nodes&quot;: PoolIntArray(  ),&quot;variants&quot;: [  ],&quot;version&quot;: 2}" />
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" overrides="PackedScene" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PoolIntArray(  ),&quot;editable_instances&quot;: [  ],&quot;names&quot;: PoolStringArray(  ),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [  ],&quot;nodes&quot;: PoolIntArray(  ),&quot;variants&quot;: [  ],&quot;version&quot;: 2}" />
 	</members>
 	<constants>
 	</constants>

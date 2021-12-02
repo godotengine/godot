@@ -18,7 +18,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" overrides="Texture" default="0" />
 		<member name="load_path" type="String" setter="load" getter="get_load_path" default="&quot;&quot;">
 			The StreamTexture's file path to a [code].stex[/code] file.
 		</member>
