@@ -625,6 +625,7 @@ void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 		texture->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_queue_update"));
 	}
 	_queue_update();
+	emit_signal(SceneStringNames::get_singleton()->texture_changed);
 }
 
 Ref<Texture2D> Sprite3D::get_texture() const {
@@ -780,6 +781,7 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("texture_changed"));
 }
 
 Sprite3D::Sprite3D() {
