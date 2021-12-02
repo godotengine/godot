@@ -150,6 +150,7 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 			emit_signal("control_picked", theme_type);
 			picker_button->set_pressed(false);
 			picker_overlay->set_visible(false);
+			return;
 		}
 	}
 
@@ -160,6 +161,9 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 		hovered_control = _find_hovered_control(preview_content, mp);
 		picker_overlay->update();
 	}
+
+	// Forward input to the scroll container underneath to allow scrolling.
+	preview_container->call("_gui_input", p_event);
 }
 
 void ThemeEditorPreview::_reset_picker_overlay() {
@@ -223,7 +227,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_body->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(preview_body);
 
-	ScrollContainer *preview_container = memnew(ScrollContainer);
+	preview_container = memnew(ScrollContainer);
 	preview_container->set_enable_v_scroll(true);
 	preview_container->set_enable_h_scroll(true);
 	preview_body->add_child(preview_container);
