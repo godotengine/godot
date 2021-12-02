@@ -61,6 +61,7 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
 	// TODO: This signal is no use for VisualScript.
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
+	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 }
 
 static bool _is_built_in_script(Script *p_script) {
@@ -1036,6 +1037,9 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case SEARCH_IN_FILES: {
 			_on_find_in_files_requested("");
+		} break;
+		case REPLACE_IN_FILES: {
+			_on_replace_in_files_requested("");
 		} break;
 		case SEARCH_HELP: {
 			help_search_dialog->popup_dialog();
@@ -2136,6 +2140,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	se->connect("go_to_help", this, "_help_class_goto");
 	se->connect("request_save_history", this, "_save_history");
 	se->connect("search_in_files_requested", this, "_on_find_in_files_requested");
+	se->connect("replace_in_files_requested", this, "_on_replace_in_files_requested");
 
 	//test for modification, maybe the script was not edited but was loaded
 
@@ -2846,10 +2851,12 @@ void ScriptEditor::_update_selected_editor_menu() {
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3), HELP_SEARCH_FIND_PREVIOUS);
 		script_search_menu->get_popup()->add_separator();
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F), SEARCH_IN_FILES);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/replace_in_files", TTR("Replace in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R), REPLACE_IN_FILES);
 		script_search_menu->show();
 	} else {
 		if (tab_container->get_child_count() == 0) {
 			script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F), SEARCH_IN_FILES);
+			script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/replace_in_files", TTR("Replace in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R), REPLACE_IN_FILES);
 			script_search_menu->show();
 		} else {
 			script_search_menu->hide();
@@ -2990,7 +2997,15 @@ void ScriptEditor::_script_changed() {
 }
 
 void ScriptEditor::_on_find_in_files_requested(String text) {
+	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
 	find_in_files_dialog->set_search_text(text);
+	find_in_files_dialog->popup_centered_minsize();
+}
+
+void ScriptEditor::_on_replace_in_files_requested(String text) {
+	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::REPLACE_MODE);
+	find_in_files_dialog->set_search_text(text);
+	find_in_files_dialog->set_replace_text("");
 	find_in_files_dialog->popup_centered_minsize();
 }
 
@@ -3044,6 +3059,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	f->set_filter(find_in_files_dialog->get_filter());
 
 	find_in_files->set_with_replace(with_replace);
+	find_in_files->set_replace_text(find_in_files_dialog->get_replace_text());
 	find_in_files->start_search();
 
 	editor->make_bottom_panel_item_visible(find_in_files);
@@ -3119,6 +3135,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_filter_methods_text_changed", &ScriptEditor::_filter_methods_text_changed);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 	ClassDB::bind_method("_on_find_in_files_requested", &ScriptEditor::_on_find_in_files_requested);
+	ClassDB::bind_method("_on_replace_in_files_requested", &ScriptEditor::_on_replace_in_files_requested);
 	ClassDB::bind_method("_start_find_in_files", &ScriptEditor::_start_find_in_files);
 	ClassDB::bind_method("_on_find_in_files_result_selected", &ScriptEditor::_on_find_in_files_result_selected);
 	ClassDB::bind_method("_on_find_in_files_modified_files", &ScriptEditor::_on_find_in_files_modified_files);
@@ -3267,7 +3284,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R), FILE_TOOL_RELOAD_SOFT);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/show_in_file_system", TTR("Show in FileSystem")), SHOW_IN_FILE_SYSTEM);
 	file_menu->get_popup()->add_separator();
