@@ -375,6 +375,9 @@ private:
 
 	bool caret_mid_grapheme_enabled = false;
 
+	bool drag_action = false;
+	bool drag_caret_force_displayed = false;
+
 	void _emit_caret_changed();
 
 	void _reset_caret_blink_timer();
@@ -400,6 +403,7 @@ private:
 		int to_column = 0;
 
 		bool shiftclick_left = false;
+		bool drag_attempt = false;
 	} selection;
 
 	bool selecting_enabled = true;
@@ -611,6 +615,9 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	virtual bool is_text_field() const override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+	virtual Variant get_drag_data(const Point2 &p_point) override;
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
 
@@ -731,6 +738,7 @@ public:
 	int get_minimap_line_at_pos(const Point2i &p_pos) const;
 
 	bool is_dragging_cursor() const;
+	bool is_mouse_over_selection(bool p_edges = true) const;
 
 	/* Caret */
 	void set_caret_type(CaretType p_type);

@@ -39,6 +39,7 @@
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/string/translation.h"
+#include "label.h"
 
 #include "scene/main/window.h"
 
@@ -1224,7 +1225,7 @@ void TextEdit::_notification(int p_what) {
 
 							if (caret.draw_pos.x >= xmargin_beg && caret.draw_pos.x < xmargin_end) {
 								caret.visible = true;
-								if (draw_caret) {
+								if (draw_caret || drag_caret_force_displayed) {
 									if (caret_type == CaretType::CARET_TYPE_BLOCK || overtype_mode) {
 										//Block or underline caret, draw trailing carets at full height.
 										int h = font->get_height(font_size);
@@ -1391,7 +1392,7 @@ void TextEdit::_notification(int p_what) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
 
-			if (deselect_on_focus_loss_enabled) {
+			if (deselect_on_focus_loss_enabled && !selection.drag_attempt) {
 				deselect();
 			}
 		} break;
@@ -1410,6 +1411,30 @@ void TextEdit::_notification(int p_what) {
 				text.invalidate_cache(caret.line, caret.column, t, structured_text_parser(st_parser, st_args, t));
 				update();
 			}
+		} break;
+		case Control::NOTIFICATION_DRAG_BEGIN: {
+			selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
+			drag_action = true;
+			dragging_minimap = false;
+			dragging_selection = false;
+			can_drag_minimap = false;
+			click_select_held->stop();
+		} break;
+		case Control::NOTIFICATION_DRAG_END: {
+			if (is_drag_successful()) {
+				if (selection.drag_attempt) {
+					selection.drag_attempt = false;
+					if (is_editable() && !Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+						delete_selection();
+					} else if (deselect_on_focus_loss_enabled) {
+						deselect();
+					}
+				}
+			} else {
+				selection.drag_attempt = false;
+			}
+			drag_action = false;
+			drag_caret_force_displayed = false;
 		} break;
 	}
 }
@@ -1495,6 +1520,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				set_caret_line(row, false, false);
 				set_caret_column(col);
+				selection.drag_attempt = false;
 
 				if (mb->is_shift_pressed() && (caret.column != prev_col || caret.line != prev_line)) {
 					if (!selection.active) {
@@ -1538,6 +1564,9 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 						update();
 					}
+				} else if (is_mouse_over_selection()) {
+					selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
+					selection.drag_attempt = true;
 				} else {
 					selection.active = false;
 					selection.selecting_mode = SelectionMode::SELECTION_MODE_POINTER;
@@ -1551,6 +1580,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (!mb->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && mb->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance) {
 					// Triple-click select line.
 					selection.selecting_mode = SelectionMode::SELECTION_MODE_LINE;
+					selection.drag_attempt = false;
 					_update_selection_mode_line();
 					last_dblclk = 0;
 				} else if (mb->is_double_click() && text[caret.line].length()) {
@@ -1601,10 +1631,16 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		} else {
 			if (mb->get_button_index() == MouseButton::LEFT) {
+				if (selection.drag_attempt && is_mouse_over_selection()) {
+					selection.active = false;
+				}
 				dragging_minimap = false;
 				dragging_selection = false;
 				can_drag_minimap = false;
 				click_select_held->stop();
+				if (!drag_action) {
+					selection.drag_attempt = false;
+				}
 				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 				}
@@ -1688,6 +1724,14 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (current_hovered_gutter != hovered_gutter) {
 			hovered_gutter = current_hovered_gutter;
 			update();
+		}
+
+		if (drag_action && can_drop_data(mpos, get_viewport()->gui_get_drag_data())) {
+			drag_caret_force_displayed = true;
+			Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+			set_caret_line(pos.y, false);
+			set_caret_column(pos.x);
+			dragging_selection = true;
 		}
 	}
 
@@ -2404,6 +2448,75 @@ Size2 TextEdit::get_minimum_size() const {
 
 bool TextEdit::is_text_field() const {
 	return true;
+}
+
+Variant TextEdit::get_drag_data(const Point2 &p_point) {
+	if (selection.active && selection.drag_attempt) {
+		String t = get_selected_text();
+		Label *l = memnew(Label);
+		l->set_text(t);
+		set_drag_preview(l);
+		return t;
+	}
+
+	return Variant();
+}
+
+bool TextEdit::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	bool drop_override = Control::can_drop_data(p_point, p_data); // In case user wants to drop custom data.
+	if (drop_override) {
+		return drop_override;
+	}
+
+	return is_editable() && p_data.get_type() == Variant::STRING;
+}
+
+void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
+	Control::drop_data(p_point, p_data);
+
+	if (p_data.get_type() == Variant::STRING && is_editable()) {
+		Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+		int caret_row_tmp = pos.y;
+		int caret_column_tmp = pos.x;
+		if (selection.drag_attempt) {
+			selection.drag_attempt = false;
+			if (!is_mouse_over_selection(!Input::get_singleton()->is_key_pressed(Key::CTRL))) {
+				begin_complex_operation();
+				if (!Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+					if (caret_row_tmp > selection.to_line) {
+						caret_row_tmp = caret_row_tmp - (selection.to_line - selection.from_line);
+					} else if (caret_row_tmp == selection.to_line && caret_column_tmp >= selection.to_column) {
+						caret_column_tmp = caret_column_tmp - (selection.to_column - selection.from_column);
+					}
+					delete_selection();
+				} else {
+					deselect();
+				}
+
+				set_caret_line(caret_row_tmp, true, false);
+				set_caret_column(caret_column_tmp);
+				insert_text_at_caret(p_data);
+				end_complex_operation();
+			}
+		} else if (is_mouse_over_selection()) {
+			caret_row_tmp = selection.from_line;
+			caret_column_tmp = selection.from_column;
+			set_caret_line(caret_row_tmp, true, false);
+			set_caret_column(caret_column_tmp);
+			insert_text_at_caret(p_data);
+			grab_focus();
+		} else {
+			deselect();
+			set_caret_line(caret_row_tmp, true, false);
+			set_caret_column(caret_column_tmp);
+			insert_text_at_caret(p_data);
+			grab_focus();
+		}
+
+		if (caret_row_tmp != caret.line || caret_column_tmp != caret.column) {
+			select(caret_row_tmp, caret_column_tmp, caret.line, caret.column);
+		}
+	}
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
@@ -3578,6 +3691,21 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 
 bool TextEdit::is_dragging_cursor() const {
 	return dragging_selection || dragging_minimap;
+}
+
+bool TextEdit::is_mouse_over_selection(bool p_edges) const {
+	if (!has_selection()) {
+		return false;
+	}
+	Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+	int row = pos.y;
+	int col = pos.x;
+	if (p_edges) {
+		if ((row == selection.from_line && col == selection.from_column) || (row == selection.to_line && col == selection.to_column)) {
+			return true;
+		}
+	}
+	return (row >= selection.from_line && row <= selection.to_line && (row > selection.from_line || col > selection.from_column) && (row < selection.to_line || col < selection.to_column));
 }
 
 /* Caret */
@@ -4776,6 +4904,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_minimap_line_at_pos", "position"), &TextEdit::get_minimap_line_at_pos);
 
 	ClassDB::bind_method(D_METHOD("is_dragging_cursor"), &TextEdit::is_dragging_cursor);
+	ClassDB::bind_method(D_METHOD("is_mouse_over_selection", "edges"), &TextEdit::is_mouse_over_selection);
 
 	/* Caret. */
 	BIND_ENUM_CONSTANT(CARET_TYPE_LINE);
