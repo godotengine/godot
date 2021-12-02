@@ -49,7 +49,7 @@
 			<argument index="0" name="locale" type="String" />
 			<description>
 				Returns the [Translation] instance based on the [code]locale[/code] passed in.
-				It will return a [code]nullptr[/code] if there is no [Translation] instance that matches the [code]locale[/code].
+				It will return [code]null[/code] if there is no [Translation] instance that matches the [code]locale[/code].
 			</description>
 		</method>
 		<method name="pseudolocalize" qualifiers="const">
