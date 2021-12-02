@@ -444,6 +444,9 @@ Error Main::test_setup() {
 	register_module_types();
 	register_driver_types();
 
+	// Theme needs modules to be initialized so that sub-resources can be loaded.
+	initialize_theme();
+
 	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
 	TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(0));
 
@@ -1883,6 +1886,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	register_platform_apis();
 	register_module_types();
+
+	// Theme needs modules to be initialized so that sub-resources can be loaded.
+	initialize_theme();
 
 	GLOBAL_DEF("display/mouse_cursor/custom_image", String());
 	GLOBAL_DEF("display/mouse_cursor/custom_image_hotspot", Vector2());
