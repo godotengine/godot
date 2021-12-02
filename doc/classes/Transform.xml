@@ -132,7 +132,7 @@
 			<return type="Variant" />
 			<argument index="0" name="v" type="Variant" />
 			<description>
-				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
+				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform, under the assumption that the transformation is composed of rotation and translation (no scaling). Equivalent to calling [code]inverse().xform(v)[/code] on this transform. For affine transformations (e.g. with scaling) see [method affine_inverse] method.
 			</description>
 		</method>
 	</methods>
