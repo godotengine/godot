@@ -210,7 +210,7 @@ bool AStar::has_point(int p_id) const {
 	return points.has(p_id);
 }
 
-Array AStar::get_points() {
+Array AStar::get_point_ids() {
 	Array point_list;
 
 	for (OAHashMap<int, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
@@ -539,7 +539,7 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_point", "id"), &AStar::remove_point);
 	ClassDB::bind_method(D_METHOD("has_point", "id"), &AStar::has_point);
 	ClassDB::bind_method(D_METHOD("get_point_connections", "id"), &AStar::get_point_connections);
-	ClassDB::bind_method(D_METHOD("get_points"), &AStar::get_points);
+	ClassDB::bind_method(D_METHOD("get_point_ids"), &AStar::get_point_ids);
 
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar::is_point_disabled);
@@ -606,8 +606,8 @@ Vector<int> AStar2D::get_point_connections(int p_id) {
 	return astar.get_point_connections(p_id);
 }
 
-Array AStar2D::get_points() {
-	return astar.get_points();
+Array AStar2D::get_point_ids() {
+	return astar.get_point_ids();
 }
 
 void AStar2D::set_point_disabled(int p_id, bool p_disabled) {
@@ -859,7 +859,7 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_point", "id"), &AStar2D::remove_point);
 	ClassDB::bind_method(D_METHOD("has_point", "id"), &AStar2D::has_point);
 	ClassDB::bind_method(D_METHOD("get_point_connections", "id"), &AStar2D::get_point_connections);
-	ClassDB::bind_method(D_METHOD("get_points"), &AStar2D::get_points);
+	ClassDB::bind_method(D_METHOD("get_point_ids"), &AStar2D::get_point_ids);
 
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar2D::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar2D::is_point_disabled);
