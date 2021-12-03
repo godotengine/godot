@@ -46,7 +46,7 @@
 		</method>
 		<method name="add_mesh">
 			<return type="void" />
-			<argument index="0" name="mesh" type="ArrayMesh" />
+			<argument index="0" name="mesh" type="Mesh" />
 			<argument index="1" name="billboard" type="bool" default="false" />
 			<argument index="2" name="skeleton" type="SkinReference" default="null" />
 			<argument index="3" name="material" type="Material" default="null" />
