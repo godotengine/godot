@@ -211,7 +211,7 @@ typedef const char *(*GDNativeExtensionClassToString)(GDExtensionClassInstancePt
 typedef void (*GDNativeExtensionClassReference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDNativeExtensionClassUnreference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDNativeExtensionClassCallVirtual)(GDExtensionClassInstancePtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);
-typedef GDExtensionClassInstancePtr (*GDNativeExtensionClassCreateInstance)(void *p_userdata);
+typedef GDNativeObjectPtr (*GDNativeExtensionClassCreateInstance)(void *p_userdata);
 typedef void (*GDNativeExtensionClassFreeInstance)(void *p_userdata, GDExtensionClassInstancePtr p_instance);
 typedef void (*GDNativeExtensionClassObjectInstance)(GDExtensionClassInstancePtr p_instance, GDNativeObjectPtr p_object_instance);
 typedef GDNativeExtensionClassCallVirtual (*GDNativeExtensionClassGetVirtual)(void *p_userdata, const char *p_name);
@@ -227,7 +227,6 @@ typedef struct {
 	GDNativeExtensionClassUnreference unreference_func;
 	GDNativeExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
 	GDNativeExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
-	GDNativeExtensionClassObjectInstance object_instance_func; /* this one is mandatory */
 	GDNativeExtensionClassGetVirtual get_virtual_func;
 	void *class_userdata;
 } GDNativeExtensionClassCreationInfo;
@@ -428,17 +427,18 @@ typedef struct {
 	void (*object_method_bind_ptrcall)(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);
 	void (*object_destroy)(GDNativeObjectPtr p_o);
 	GDNativeObjectPtr (*global_get_singleton)(const char *p_name);
+
 	void *(*object_get_instance_binding)(GDNativeObjectPtr p_o, void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks);
 	void (*object_set_instance_binding)(GDNativeObjectPtr p_o, void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks);
+
+	void (*object_set_instance)(GDNativeObjectPtr p_o, const char *p_classname, GDExtensionClassInstancePtr p_instance); /* p_classname should be a registered extension class and should extend the p_o object's class. */
 
 	GDNativeObjectPtr (*object_cast_to)(const GDNativeObjectPtr p_object, void *p_class_tag);
 	GDNativeObjectPtr (*object_get_instance_from_id)(GDObjectInstanceID p_instance_id);
 	GDObjectInstanceID (*object_get_instance_id)(const GDNativeObjectPtr p_object);
 
 	/* CLASSDB */
-
-	GDNativeClassConstructor (*classdb_get_constructor)(const char *p_classname, GDNativeExtensionPtr *r_extension);
-	GDNativeObjectPtr (*classdb_construct_object)(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension);
+	GDNativeObjectPtr (*classdb_construct_object)(const char *p_classname); /* The passed class must be a built-in godot class, or an already-registered extension class. In both case, object_set_instance should be called to fully initialize the object. */
 	GDNativeMethodBindPtr (*classdb_get_method_bind)(const char *p_classname, const char *p_methodname, GDNativeInt p_hash);
 	void *(*classdb_get_class_tag)(const char *p_classname);
 
