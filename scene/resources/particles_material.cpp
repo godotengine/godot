@@ -315,6 +315,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "		tv = 1.0;\n";
 	code += "	}\n\n";
 	code += "	if (RESTART || restart) {\n";
+	code += "		uint alt_restart_seed = hash(base_number + uint(301184) + RANDOM_SEED);\n";
 
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 		code += "		float tex_linear_velocity = textureLod(linear_velocity_texture, vec2(0.0, 0.0), 0.0).r;\n";
@@ -338,17 +339,17 @@ void ParticlesMaterial::_update_shader() {
 
 	if (flags[FLAG_DISABLE_Z]) {
 		code += "		{\n";
-		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_restart_seed) * spread_rad;\n";
 		code += "			angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
 		code += "			vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
-		code += "			VELOCITY = rot * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "			VELOCITY = rot * initial_linear_velocity * mix(1.0, rand_from_seed(alt_restart_seed), initial_linear_velocity_random);\n";
 		code += "		}\n";
 
 	} else {
 		//initiate velocity spread in 3D
 		code += "		{\n";
-		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-		code += "			float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
+		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_restart_seed) * spread_rad;\n";
+		code += "			float angle2_rad = rand_from_seed_m1_p1(alt_restart_seed) * spread_rad * (1.0 - flatness);\n";
 		code += "			vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
 		code += "			vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
 		code += "			direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
@@ -363,14 +364,14 @@ void ParticlesMaterial::_update_shader() {
 		code += "			binormal = normalize(binormal);\n";
 		code += "			vec3 normal = cross(binormal, direction_nrm);\n";
 		code += "			spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
-		code += "			VELOCITY = spread_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "			VELOCITY = spread_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_restart_seed), initial_linear_velocity_random);\n";
 		code += "		}\n";
 	}
 
 	code += "		float base_angle = (initial_angle + tex_angle) * mix(1.0, angle_rand, initial_angle_random);\n";
 	code += "		CUSTOM.x = base_angle * degree_to_rad;\n"; // angle
 	code += "		CUSTOM.y = 0.0;\n"; // phase
-	code += "		CUSTOM.w = (1.0 - lifetime_randomness * rand_from_seed(alt_seed));\n";
+	code += "		CUSTOM.w = (1.0 - lifetime_randomness * rand_from_seed(alt_restart_seed));\n";
 	code += "		CUSTOM.z = (anim_offset + tex_anim_offset) * mix(1.0, anim_offset_rand, anim_offset_random);\n"; // animation offset (0-1)
 
 	switch (emission_shape) {
@@ -378,13 +379,13 @@ void ParticlesMaterial::_update_shader() {
 			//do none
 		} break;
 		case EMISSION_SHAPE_SPHERE: {
-			code += "		float s = rand_from_seed(alt_seed) * 2.0 - 1.0;\n";
-			code += "		float t = rand_from_seed(alt_seed) * 2.0 * pi;\n";
+			code += "		float s = rand_from_seed(alt_restart_seed) * 2.0 - 1.0;\n";
+			code += "		float t = rand_from_seed(alt_restart_seed) * 2.0 * pi;\n";
 			code += "		float radius = emission_sphere_radius * sqrt(1.0 - s * s);\n";
 			code += "		TRANSFORM[3].xyz = vec3(radius * cos(t), radius * sin(t), emission_sphere_radius * s);\n";
 		} break;
 		case EMISSION_SHAPE_BOX: {
-			code += "		TRANSFORM[3].xyz = vec3(rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0) * emission_box_extents;\n";
+			code += "		TRANSFORM[3].xyz = vec3(rand_from_seed(alt_restart_seed) * 2.0 - 1.0, rand_from_seed(alt_restart_seed) * 2.0 - 1.0, rand_from_seed(alt_restart_seed) * 2.0 - 1.0) * emission_box_extents;\n";
 		} break;
 		case EMISSION_SHAPE_POINTS:
 		case EMISSION_SHAPE_DIRECTED_POINTS: {
@@ -410,8 +411,8 @@ void ParticlesMaterial::_update_shader() {
 			}
 		} break;
 		case EMISSION_SHAPE_RING: {
-			code += "		float ring_spawn_angle = rand_from_seed(alt_seed) * 2.0 * pi;\n";
-			code += "		float ring_random_radius = rand_from_seed(alt_seed) * (ring_radius - ring_inner_radius) + ring_inner_radius;\n";
+			code += "		float ring_spawn_angle = rand_from_seed(alt_restart_seed) * 2.0 * pi;\n";
+			code += "		float ring_random_radius = rand_from_seed(alt_restart_seed) * (ring_radius - ring_inner_radius) + ring_inner_radius;\n";
 			code += "		vec3 axis = normalize(ring_axis);\n";
 			code += "		vec3 ortho_axis = vec3(0.0);\n";
 			code += "		if (axis == vec3(1.0, 0.0, 0.0)) {\n";
@@ -429,7 +430,7 @@ void ParticlesMaterial::_update_shader() {
 			code += "			vec3(axis.z * axis.x * oc - axis.y * s, axis.z * axis.y * oc + axis.x * s, c + axis.z * axis.z * oc)\n";
 			code += "			) * ortho_axis;\n";
 			code += "		ortho_axis = normalize(ortho_axis);\n";
-			code += "		TRANSFORM[3].xyz = ortho_axis * ring_random_radius + (rand_from_seed(alt_seed) * ring_height - ring_height / 2.0) * axis;\n";
+			code += "		TRANSFORM[3].xyz = ortho_axis * ring_random_radius + (rand_from_seed(alt_restart_seed) * ring_height - ring_height / 2.0) * axis;\n";
 		} break;
 		case EMISSION_SHAPE_MAX: { // Max value for validity check.
 			break;
