@@ -1869,14 +1869,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					Transform2D localizer = gui.drag_mouse_over->get_global_transform_with_canvas().affine_inverse();
 					gui.drag_mouse_over_pos = localizer.xform(viewport_pos);
 
-					if ((mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
-						bool can_drop = _gui_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos, true);
+					bool can_drop = _gui_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos, true);
 
-						if (!can_drop) {
-							ds_cursor_shape = DisplayServer::CURSOR_FORBIDDEN;
-						} else {
-							ds_cursor_shape = DisplayServer::CURSOR_CAN_DROP;
-						}
+					if (!can_drop) {
+						ds_cursor_shape = DisplayServer::CURSOR_FORBIDDEN;
+					} else {
+						ds_cursor_shape = DisplayServer::CURSOR_CAN_DROP;
 					}
 				}
 
@@ -2044,6 +2042,7 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *
 	if (p_control) {
 		_gui_set_drag_preview(p_base, p_control);
 	}
+	_propagate_viewport_notification(this, NOTIFICATION_DRAG_BEGIN);
 }
 
 void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
