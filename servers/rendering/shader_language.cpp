@@ -88,7 +88,8 @@ String ShaderLanguage::get_operator_text(Operator p_op) {
 		"--",
 		"()",
 		"construct",
-		"index" };
+		"index",
+		"empty" };
 
 	return op_names[p_op];
 }
@@ -474,6 +475,10 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 			case ':':
 				return _make_token(TK_COLON);
 			case '^':
+				if (GETCHAR(0) == '=') {
+					char_idx++;
+					return _make_token(TK_OP_ASSIGN_BIT_XOR);
+				}
 				return _make_token(TK_OP_BIT_XOR);
 			case '~':
 				return _make_token(TK_OP_BIT_INVERT);
