@@ -135,7 +135,7 @@
 		</method>
 		<method name="add_mesh">
 			<return type="void" />
-			<argument index="0" name="mesh" type="ArrayMesh" />
+			<argument index="0" name="mesh" type="Mesh" />
 			<argument index="1" name="material" type="Material" default="null" />
 			<argument index="2" name="transform" type="Transform3D" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)" />
 			<argument index="3" name="skeleton" type="SkinReference" default="null" />
