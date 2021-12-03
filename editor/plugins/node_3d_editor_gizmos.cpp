@@ -244,8 +244,10 @@ void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden)
 	RS::get_singleton()->instance_geometry_set_flag(instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 }
 
-void EditorNode3DGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, const Ref<Material> &p_material, const Transform3D &p_xform, const Ref<SkinReference> &p_skin_reference) {
+void EditorNode3DGizmo::add_mesh(const Ref<Mesh> &p_mesh, const Ref<Material> &p_material, const Transform3D &p_xform, const Ref<SkinReference> &p_skin_reference) {
 	ERR_FAIL_COND(!spatial_node);
+	ERR_FAIL_COND_MSG(!p_mesh.is_valid(), "EditorNode3DGizmo.add_mesh() requires a valid Mesh resource.");
+
 	Instance ins;
 
 	ins.mesh = p_mesh;
