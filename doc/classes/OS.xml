@@ -31,6 +31,13 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="crash">
+			<return type="void" />
+			<argument index="0" name="message" type="String" />
+			<description>
+				Crashes the engine (or the editor if called within a [code]@tool[/code] script). This should [i]only[/i] be used for testing the system's crash handler, not for any other purpose. For general error reporting, use (in order of preference) [method @GDScript.assert], [method @GlobalScope.push_error] or [method alert]. See also [method kill].
+			</description>
+		</method>
 		<method name="create_instance">
 			<return type="int" />
 			<argument index="0" name="arguments" type="PackedStringArray" />
@@ -374,7 +381,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="pid" type="int" />
 			<description>
-				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode.
+				Kill (terminate) the process identified by the given process ID ([code]pid[/code]), e.g. the one returned by [method execute] in non-blocking mode. See also [method crash].
 				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the game.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
