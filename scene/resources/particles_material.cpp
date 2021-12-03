@@ -1128,7 +1128,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if ((property.name == "emission_ring_radius" || property.name == "emission_ring_height" || property.name == "emission_ring_inner_radius") && emission_shape != EMISSION_SHAPE_RING) {
+	if (property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
 		property.usage = 0;
 	}
 
