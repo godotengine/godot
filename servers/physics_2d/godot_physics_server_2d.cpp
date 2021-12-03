@@ -1226,7 +1226,7 @@ void GodotPhysicsServer2D::set_collision_iterations(int p_iterations) {
 
 void GodotPhysicsServer2D::init() {
 	doing_sync = false;
-	iterations = 8; // 8?
+	iterations = 16;
 	stepper = memnew(GodotStep2D);
 };
 

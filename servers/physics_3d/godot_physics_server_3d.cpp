@@ -1585,7 +1585,7 @@ void GodotPhysicsServer3D::set_collision_iterations(int p_iterations) {
 };
 
 void GodotPhysicsServer3D::init() {
-	iterations = 8; // 8?
+	iterations = 16;
 	stepper = memnew(GodotStep3D);
 };
 
