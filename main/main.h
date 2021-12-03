@@ -40,7 +40,7 @@ class Main {
 	static uint64_t last_ticks;
 	static uint32_t frames;
 	static uint32_t frame;
-	static bool force_redraw_requested;
+	static uint32_t force_redraw_frames;
 	static int iterating;
 	static bool agile_input_event_flushing;
 
@@ -52,7 +52,7 @@ public:
 	static bool start();
 
 	static bool iteration();
-	static void force_redraw();
+	static void force_redraw(uint32_t frames = 1);
 
 	static bool is_iterating();
 
