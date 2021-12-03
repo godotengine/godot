@@ -168,7 +168,7 @@ public:
 	}
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
 
-	_FORCE_INLINE_ bool test_collision_mask(CollisionObjectSW *p_other) const {
+	_FORCE_INLINE_ bool test_collision_mask(const CollisionObjectSW *p_other) const {
 		return collision_layer & p_other->collision_mask || p_other->collision_layer & collision_mask;
 	}
 

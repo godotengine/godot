@@ -1,5 +1,5 @@
 public:
-BVHHandle item_add(T *p_userdata, bool p_active, const BOUNDS &p_aabb, int32_t p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_invisible = false) {
+BVHHandle item_add(T *p_userdata, bool p_active, const BOUNDS &p_aabb, int32_t p_subindex, uint32_t p_tree_id, uint32_t p_tree_collision_mask, bool p_invisible = false) {
 #ifdef BVH_VERBOSE_TREE
 	VERBOSE_PRINT("\nitem_add BEFORE");
 	_debug_recursive_print_tree(0);
@@ -47,29 +47,17 @@ BVHHandle item_add(T *p_userdata, bool p_active, const BOUNDS &p_aabb, int32_t p
 	extra->active_ref_id = _active_refs.size();
 	_active_refs.push_back(ref_id);
 
-	if (USE_PAIRS) {
-		extra->pairable_mask = p_pairable_mask;
-		extra->pairable_type = p_pairable_type;
-		extra->pairable = p_pairable;
-	} else {
-		// just for safety, in case this gets queried etc
-		extra->pairable = 0;
-		p_pairable = false;
-	}
+	extra->tree_id = p_tree_id;
+	extra->tree_collision_mask = p_tree_collision_mask;
 
 	// assign to handle to return
 	handle.set_id(ref_id);
 
-	uint32_t tree_id = 0;
-	if (p_pairable) {
-		tree_id = 1;
-	}
-
-	create_root_node(tree_id);
+	create_root_node(p_tree_id);
 
 	// we must choose where to add to tree
 	if (p_active) {
-		ref->tnode_id = _logic_choose_item_add_node(_root_node_id[tree_id], abb);
+		ref->tnode_id = _logic_choose_item_add_node(_root_node_id[p_tree_id], abb);
 
 		bool refit = _node_add_item(ref->tnode_id, ref_id, abb);
 
@@ -77,7 +65,7 @@ BVHHandle item_add(T *p_userdata, bool p_active, const BOUNDS &p_aabb, int32_t p
 			// only need to refit from the parent
 			const TNode &add_node = _nodes[ref->tnode_id];
 			if (add_node.parent_id != BVHCommon::INVALID) {
-				refit_upward_and_balance(add_node.parent_id, tree_id);
+				refit_upward_and_balance(add_node.parent_id, p_tree_id);
 			}
 		}
 	} else {
@@ -295,12 +283,14 @@ void item_fill_cullparams(BVHHandle p_handle, CullParams &r_params) const {
 	uint32_t ref_id = p_handle.id();
 	const ItemExtra &extra = _extra[ref_id];
 
-	// testing from a non pairable item, we only want to test pairable items
-	r_params.test_pairable_only = extra.pairable == 0;
+	// which trees does this item want to collide detect against?
+	r_params.tree_collision_mask = extra.tree_collision_mask;
 
-	// we take into account the mask of the item testing from
-	r_params.mask = extra.pairable_mask;
-	r_params.pairable_type = extra.pairable_type;
+	// The testing user defined object is passed to the user defined cull check function
+	// for masks etc. This is usually a dummy object of type T with masks set.
+	// However, if not using the cull_check callback (i.e. returning true), you can pass
+	// a nullptr instead of dummy object, as it will not be used.
+	r_params.tester = extra.userdata;
 }
 
 bool item_is_pairable(const BVHHandle &p_handle) {
@@ -320,7 +310,7 @@ void item_get_ABB(const BVHHandle &p_handle, BVHABB_CLASS &r_abb) {
 	r_abb = leaf.get_aabb(ref.item_id);
 }
 
-bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+bool item_set_tree(const BVHHandle &p_handle, uint32_t p_tree_id, uint32_t p_tree_collision_mask) {
 	// change tree?
 	uint32_t ref_id = p_handle.id();
 
@@ -328,13 +318,15 @@ bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 	ItemRef &ref = _refs[ref_id];
 
 	bool active = ref.is_active();
-	bool pairable_changed = (ex.pairable != 0) != p_pairable;
-	bool state_changed = pairable_changed || (ex.pairable_type != p_pairable_type) || (ex.pairable_mask != p_pairable_mask);
+	bool tree_changed = ex.tree_id != p_tree_id;
+	bool mask_changed = ex.tree_collision_mask != p_tree_collision_mask;
+	bool state_changed = tree_changed | mask_changed;
 
-	ex.pairable_type = p_pairable_type;
-	ex.pairable_mask = p_pairable_mask;
+	// Keep an eye on this for bugs of not noticing changes to objects,
+	// especially when changing client user masks that will not be detected as a change
+	// in the BVH. You may need to force a collision check in this case with recheck_pairs().
 
-	if (active && pairable_changed) {
+	if (active && (tree_changed | mask_changed)) {
 		// record abb
 		TNode &tnode = _nodes[ref.tnode_id];
 		TLeaf &leaf = _node_get_leaf(tnode);
@@ -348,7 +340,8 @@ bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 
 		// we must set the pairable AFTER getting the current tree
 		// because the pairable status determines which tree
-		ex.pairable = p_pairable;
+		ex.tree_id = p_tree_id;
+		ex.tree_collision_mask = p_tree_collision_mask;
 
 		// add to new tree
 		tree_id = _handle_get_tree_id(p_handle);
@@ -368,7 +361,8 @@ bool item_set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pa
 		}
 	} else {
 		// always keep this up to date
-		ex.pairable = p_pairable;
+		ex.tree_id = p_tree_id;
+		ex.tree_collision_mask = p_tree_collision_mask;
 	}
 
 	return state_changed;
