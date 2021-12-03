@@ -417,6 +417,7 @@
 			<argument index="0" name="string" type="String" />
 			<description>
 				Appends [code]string[/code] to the file without a line return, encoding the text as UTF-8.
+				[b]Note:[/b] This method is intended to be used to write text files. The string is stored as a UTF-8 encoded buffer without string length or terminating zero, which means that it can't be loaded back easily. If you want to store a retrievable string in a binary file, consider using [method store_pascal_string] instead. For retrieving strings from a text file, you can use [code]get_buffer(length).get_string_from_utf8()[/code] (if you know the length) or [method get_as_text].
 			</description>
 		</method>
 		<method name="store_var">
