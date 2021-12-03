@@ -676,6 +676,7 @@ void ScriptCreateDialog::_update_dialog() {
 			_path_changed(file_path->get_text());
 		}
 	}
+	internal->set_text(is_built_in ? TTR("On") : TTR("Off"));
 
 	if (!_can_be_built_in()) {
 		internal->set_pressed(false);
@@ -873,7 +874,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	/* Built-in Script */
 
 	internal = memnew(CheckBox);
-	internal->set_text(TTR("On"));
+	internal->set_text(TTR("Off"));
 	internal->connect("pressed", this, "_built_in_pressed");
 	gc->add_child(memnew(Label(TTR("Built-in Script:"))));
 	gc->add_child(internal);
