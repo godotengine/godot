@@ -1056,7 +1056,7 @@ void TextEdit::_notification(int p_what) {
 							while (highlighted_word_col != -1) {
 								Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_word_col + start, highlighted_word_col + lookup_symbol_word.length() + start);
 								for (int j = 0; j < sel.size(); j++) {
-									Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y, sel[j].y - sel[j].x, row_height);
+									Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y + (line_spacing / 2), sel[j].y - sel[j].x, row_height);
 									if (rect.position.x + rect.size.x <= xmargin_beg || rect.position.x > xmargin_end) {
 										continue;
 									}
@@ -1066,9 +1066,9 @@ void TextEdit::_notification(int p_what) {
 									} else if (rect.position.x + rect.size.x > xmargin_end) {
 										rect.size.x = xmargin_end - rect.position.x;
 									}
-									rect.position.y = TS->shaped_text_get_ascent(rid) + font->get_underline_position(font_size);
-									rect.size.y = font->get_underline_thickness(font_size);
-									draw_rect(rect, font_selected_color);
+									rect.position.y += ceil(TS->shaped_text_get_ascent(rid)) + ceil(font->get_underline_position(font_size));
+									rect.size.y = MAX(1, font->get_underline_thickness(font_size));
+									draw_rect(rect, color);
 								}
 
 								highlighted_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_word_col + 1);
