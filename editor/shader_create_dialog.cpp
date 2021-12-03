@@ -507,6 +507,7 @@ void ShaderCreateDialog::_update_dialog() {
 			_path_changed(file_path->get_text());
 		}
 	}
+	internal->set_text(is_built_in ? TTR("On") : TTR("Off"));
 
 	internal->set_disabled(!built_in_enabled);
 
@@ -652,7 +653,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	// Built-in Shader.
 
 	internal = memnew(CheckBox);
-	internal->set_text(TTR("On"));
+	internal->set_text(TTR("Off"));
 	internal->connect("toggled", callable_mp(this, &ShaderCreateDialog::_built_in_toggled));
 	gc->add_child(memnew(Label(TTR("Built-in Shader:"))));
 	gc->add_child(internal);
