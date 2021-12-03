@@ -4496,6 +4496,10 @@ void EditorNode::_save_docks() {
 }
 
 void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	// Clear previous settings before writing the new ones
+	if (p_layout->has_section(p_section)) {
+		p_layout->erase_section(p_section);
+	}
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 		String names;
 		for (int j = 0; j < dock_slot[i]->get_tab_count(); j++) {
