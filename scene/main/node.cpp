@@ -1104,6 +1104,10 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	add_child_notify(p_child);
 }
 
+void Node::add_child_deferred(Node *p_child, bool p_legible_unique_name, InternalMode p_internal) {
+	return call_deferred(SNAME("add_child"), p_child, p_legible_unique_name, p_internal);
+}
+
 void Node::add_child(Node *p_child, bool p_legible_unique_name, InternalMode p_internal) {
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
@@ -2698,6 +2702,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
+	ClassDB::bind_method(D_METHOD("add_child_deferred", "node", "legible_unique_name", "internal"), &Node::add_child_deferred, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDSCript.
