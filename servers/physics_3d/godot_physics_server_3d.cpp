@@ -1574,20 +1574,15 @@ void GodotPhysicsServer3D::free(RID p_rid) {
 	} else {
 		ERR_FAIL_MSG("Invalid ID.");
 	}
-};
+}
 
 void GodotPhysicsServer3D::set_active(bool p_active) {
 	active = p_active;
-};
-
-void GodotPhysicsServer3D::set_collision_iterations(int p_iterations) {
-	iterations = p_iterations;
-};
+}
 
 void GodotPhysicsServer3D::init() {
-	iterations = 16;
 	stepper = memnew(GodotStep3D);
-};
+}
 
 void GodotPhysicsServer3D::step(real_t p_step) {
 #ifndef _3D_DISABLED
@@ -1602,7 +1597,7 @@ void GodotPhysicsServer3D::step(real_t p_step) {
 	active_objects = 0;
 	collision_pairs = 0;
 	for (Set<const GodotSpace3D *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		stepper->step((GodotSpace3D *)E->get(), p_step, iterations);
+		stepper->step((GodotSpace3D *)E->get(), p_step);
 		island_count += E->get()->get_island_count();
 		active_objects += E->get()->get_active_objects();
 		collision_pairs += E->get()->get_collision_pairs();
@@ -1612,7 +1607,7 @@ void GodotPhysicsServer3D::step(real_t p_step) {
 
 void GodotPhysicsServer3D::sync() {
 	doing_sync = true;
-};
+}
 
 void GodotPhysicsServer3D::flush_queries() {
 #ifndef _3D_DISABLED
@@ -1665,15 +1660,15 @@ void GodotPhysicsServer3D::flush_queries() {
 		EngineDebugger::profiler_add_frame_data("servers", values);
 	}
 #endif
-};
+}
 
 void GodotPhysicsServer3D::end_sync() {
 	doing_sync = false;
-};
+}
 
 void GodotPhysicsServer3D::finish() {
 	memdelete(stepper);
-};
+}
 
 int GodotPhysicsServer3D::get_process_info(ProcessInfo p_info) {
 	switch (p_info) {

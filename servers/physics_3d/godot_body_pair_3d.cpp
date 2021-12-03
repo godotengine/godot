@@ -658,7 +658,7 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
 
-	real_t bias = 0.8;
+	real_t bias = space->get_contact_bias();
 
 	GodotShape3D *shape_A_ptr = body->get_shape(body_shape);
 

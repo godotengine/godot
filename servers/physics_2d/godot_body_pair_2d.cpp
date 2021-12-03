@@ -341,7 +341,7 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
 
-	real_t bias = 0.8;
+	real_t bias = space->get_contact_bias();
 
 	GodotShape2D *shape_A_ptr = A->get_shape(shape_A);
 	GodotShape2D *shape_B_ptr = B->get_shape(shape_B);

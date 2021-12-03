@@ -45,7 +45,6 @@ class GodotPhysicsServer2D : public PhysicsServer2D {
 	friend class GodotPhysicsDirectSpaceState2D;
 	friend class GodotPhysicsDirectBodyState2D;
 	bool active = true;
-	int iterations = 0;
 	bool doing_sync = false;
 
 	int island_count = 0;
@@ -282,8 +281,6 @@ public:
 	virtual void flush_queries() override;
 	virtual void end_sync() override;
 	virtual void finish() override;
-
-	virtual void set_collision_iterations(int p_iterations) override;
 
 	virtual bool is_flushing_queries() const override { return flushing_queries; }
 
