@@ -1647,6 +1647,21 @@ String VisualShaderNodeIntOp::generate_code(Shader::Mode p_mode, VisualShader::T
 		case OP_MIN:
 			code += "min(" + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 			break;
+		case OP_BITWISE_AND:
+			code += p_input_vars[0] + " & " + p_input_vars[1] + ";\n";
+			break;
+		case OP_BITWISE_OR:
+			code += p_input_vars[0] + " | " + p_input_vars[1] + ";\n";
+			break;
+		case OP_BITWISE_XOR:
+			code += p_input_vars[0] + " ^ " + p_input_vars[1] + ";\n";
+			break;
+		case OP_BITWISE_LEFT_SHIFT:
+			code += p_input_vars[0] + " << " + p_input_vars[1] + ";\n";
+			break;
+		case OP_BITWISE_RIGHT_SHIFT:
+			code += p_input_vars[0] + " >> " + p_input_vars[1] + ";\n";
+			break;
 		default:
 			break;
 	}
@@ -1677,7 +1692,7 @@ void VisualShaderNodeIntOp::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_operator", "op"), &VisualShaderNodeIntOp::set_operator);
 	ClassDB::bind_method(D_METHOD("get_operator"), &VisualShaderNodeIntOp::get_operator);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "operator", PROPERTY_HINT_ENUM, "Add,Subtract,Multiply,Divide,Remainder,Max,Min"), "set_operator", "get_operator");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "operator", PROPERTY_HINT_ENUM, "Add,Subtract,Multiply,Divide,Remainder,Max,Min,Bitwise AND,Bitwise OR,Bitwise XOR,Bitwise Left Shift,Bitwise Right Shift"), "set_operator", "get_operator");
 
 	BIND_ENUM_CONSTANT(OP_ADD);
 	BIND_ENUM_CONSTANT(OP_SUB);
@@ -1686,6 +1701,11 @@ void VisualShaderNodeIntOp::_bind_methods() {
 	BIND_ENUM_CONSTANT(OP_MOD);
 	BIND_ENUM_CONSTANT(OP_MAX);
 	BIND_ENUM_CONSTANT(OP_MIN);
+	BIND_ENUM_CONSTANT(OP_BITWISE_AND);
+	BIND_ENUM_CONSTANT(OP_BITWISE_OR);
+	BIND_ENUM_CONSTANT(OP_BITWISE_XOR);
+	BIND_ENUM_CONSTANT(OP_BITWISE_LEFT_SHIFT);
+	BIND_ENUM_CONSTANT(OP_BITWISE_RIGHT_SHIFT);
 	BIND_ENUM_CONSTANT(OP_ENUM_SIZE);
 }
 
@@ -2333,7 +2353,8 @@ String VisualShaderNodeIntFunc::generate_code(Shader::Mode p_mode, VisualShader:
 	static const char *functions[FUNC_MAX] = {
 		"abs($)",
 		"-($)",
-		"sign($)"
+		"sign($)",
+		"~($)"
 	};
 
 	return "	" + p_output_vars[0] + " = " + String(functions[func]).replace("$", p_input_vars[0]) + ";\n";
@@ -2362,11 +2383,12 @@ void VisualShaderNodeIntFunc::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeIntFunc::set_function);
 	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeIntFunc::get_function);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Abs,Negate,Sign"), "set_function", "get_function");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Abs,Negate,Sign,Bitwise NOT"), "set_function", "get_function");
 
 	BIND_ENUM_CONSTANT(FUNC_ABS);
 	BIND_ENUM_CONSTANT(FUNC_NEGATE);
 	BIND_ENUM_CONSTANT(FUNC_SIGN);
+	BIND_ENUM_CONSTANT(FUNC_BITWISE_NOT);
 	BIND_ENUM_CONSTANT(FUNC_MAX);
 }
 
