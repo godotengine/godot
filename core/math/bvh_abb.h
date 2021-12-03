@@ -212,11 +212,23 @@ struct BVH_ABB {
 		return true;
 	}
 
+	// Very hot in profiling, make sure optimized
 	bool intersects(const BVH_ABB &p_o) const {
 		if (_any_morethan(p_o.min, -neg_max)) {
 			return false;
 		}
 		if (_any_morethan(min, -p_o.neg_max)) {
+			return false;
+		}
+		return true;
+	}
+
+	// for pre-swizzled tester (this object)
+	bool intersects_swizzled(const BVH_ABB &p_o) const {
+		if (_any_lessthan(min, p_o.min)) {
+			return false;
+		}
+		if (_any_lessthan(neg_max, p_o.neg_max)) {
 			return false;
 		}
 		return true;

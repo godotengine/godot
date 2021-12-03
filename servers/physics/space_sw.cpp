@@ -1085,25 +1085,14 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 	return collided;
 }
 
+// Assumes a valid collision pair, this should have been checked beforehand in the BVH or octree.
 void *SpaceSW::_broadphase_pair(CollisionObjectSW *p_object_A, int p_subindex_A, CollisionObjectSW *p_object_B, int p_subindex_B, void *p_pair_data, void *p_self) {
-	bool valid_collision_pair = p_object_A->test_collision_mask(p_object_B);
-
+	// An existing pair - nothing to do, pair is still valid.
 	if (p_pair_data) {
-		// Checking an existing pair.
-		if (valid_collision_pair) {
-			// Nothing to do, pair is still valid.
-			return p_pair_data;
-		} else {
-			// Logical collision not valid anymore, unpair.
-			_broadphase_unpair(p_object_A, p_subindex_A, p_object_B, p_subindex_B, p_pair_data, p_self);
-			return nullptr;
-		}
+		return p_pair_data;
 	}
 
-	if (!valid_collision_pair) {
-		return nullptr;
-	}
-
+	// New pair
 	CollisionObjectSW::Type type_A = p_object_A->get_type();
 	CollisionObjectSW::Type type_B = p_object_B->get_type();
 	if (type_A > type_B) {

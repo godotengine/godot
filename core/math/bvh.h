@@ -46,13 +46,18 @@
 // Layer masks are implemented in the renderers as a later step, and light_cull_mask appears to be
 // implemented in GLES3 but not GLES2. Layer masks are not yet implemented for directional lights.
 
+// In the physics, the pairable_type is based on 1 << p_object->get_type() where:
+// TYPE_AREA,
+// TYPE_BODY
+// and pairable_mask is either 0 if static, or set to all if non static
+
 #include "bvh_tree.h"
 #include "core/os/mutex.h"
 
-#define BVHTREE_CLASS BVH_Tree<T, 2, MAX_ITEMS, USE_PAIRS, BOUNDS, POINT>
+#define BVHTREE_CLASS BVH_Tree<T, NUM_TREES, 2, MAX_ITEMS, USER_PAIR_TEST_FUNCTION, USER_CULL_TEST_FUNCTION, USE_PAIRS, BOUNDS, POINT>
 #define BVH_LOCKED_FUNCTION BVHLockedFunction(&_mutex, BVH_THREAD_SAFE &&_thread_safe);
 
-template <class T, bool USE_PAIRS = false, int MAX_ITEMS = 32, class BOUNDS = AABB, class POINT = Vector3, bool BVH_THREAD_SAFE = true>
+template <class T, int NUM_TREES = 1, bool USE_PAIRS = false, int MAX_ITEMS = 32, class USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, class USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, class BOUNDS = AABB, class POINT = Vector3, bool BVH_THREAD_SAFE = true>
 class BVH_Manager {
 public:
 	// note we are using uint32_t instead of BVHHandle, losing type safety, but this
@@ -99,7 +104,7 @@ public:
 		check_pair_callback_userdata = p_userdata;
 	}
 
-	BVHHandle create(T *p_userdata, bool p_active, const BOUNDS &p_aabb = BOUNDS(), int p_subindex = 0, bool p_pairable = false, uint32_t p_pairable_type = 0, uint32_t p_pairable_mask = 1) {
+	BVHHandle create(T *p_userdata, bool p_active = true, uint32_t p_tree_id = 0, uint32_t p_tree_collision_mask = 1, const BOUNDS &p_aabb = BOUNDS(), int p_subindex = 0) {
 		BVH_LOCKED_FUNCTION
 
 		// not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
@@ -108,15 +113,7 @@ public:
 			//_check_for_collisions();
 		}
 
-#ifdef TOOLS_ENABLED
-		if (!USE_PAIRS) {
-			if (p_pairable) {
-				WARN_PRINT_ONCE("creating pairable item in BVH with USE_PAIRS set to false");
-			}
-		}
-#endif
-
-		BVHHandle h = tree.item_add(p_userdata, p_active, p_aabb, p_subindex, p_pairable, p_pairable_type, p_pairable_mask);
+		BVHHandle h = tree.item_add(p_userdata, p_active, p_aabb, p_subindex, p_tree_id, p_tree_collision_mask);
 
 		if (USE_PAIRS) {
 			// for safety initialize the expanded AABB
@@ -173,16 +170,16 @@ public:
 		return deactivate(h);
 	}
 
-	void set_pairable(uint32_t p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_force_collision_check = true) {
+	void set_tree(uint32_t p_handle, uint32_t p_tree_id, uint32_t p_tree_collision_mask, bool p_force_collision_check = true) {
 		BVHHandle h;
 		h.set(p_handle);
-		set_pairable(h, p_pairable, p_pairable_type, p_pairable_mask, p_force_collision_check);
+		set_tree(h, p_tree_id, p_tree_collision_mask, p_force_collision_check);
 	}
 
-	bool is_pairable(uint32_t p_handle) const {
+	uint32_t get_tree_id(uint32_t p_handle) const {
 		BVHHandle h;
 		h.set(p_handle);
-		return item_is_pairable(h);
+		return item_get_tree_id(h);
 	}
 	int get_subindex(uint32_t p_handle) const {
 		BVHHandle h;
@@ -208,10 +205,7 @@ public:
 	}
 
 	void recheck_pairs(BVHHandle p_handle) {
-		BVH_LOCKED_FUNCTION
-		if (USE_PAIRS) {
-			_recheck_pairs(p_handle);
-		}
+		force_collision_check(p_handle);
 	}
 
 	void erase(BVHHandle p_handle) {
@@ -312,10 +306,10 @@ public:
 	}
 
 	// prefer calling this directly as type safe
-	void set_pairable(const BVHHandle &p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask, bool p_force_collision_check = true) {
+	void set_tree(const BVHHandle &p_handle, uint32_t p_tree_id, uint32_t p_tree_collision_mask, bool p_force_collision_check = true) {
 		BVH_LOCKED_FUNCTION
 		// Returns true if the pairing state has changed.
-		bool state_changed = tree.item_set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
+		bool state_changed = tree.item_set_tree(p_handle, p_tree_id, p_tree_collision_mask);
 
 		if (USE_PAIRS) {
 			// not sure if absolutely necessary to flush collisions here. It will cost performance to, instead
@@ -343,7 +337,7 @@ public:
 	}
 
 	// cull tests
-	int cull_aabb(const BOUNDS &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+	int cull_aabb(const BOUNDS &p_aabb, T **p_result_array, int p_result_max, const T *p_tester, uint32_t p_tree_collision_mask = 0xFFFFFFFF, int *p_subindex_array = nullptr) {
 		BVH_LOCKED_FUNCTION
 		typename BVHTREE_CLASS::CullParams params;
 
@@ -351,17 +345,16 @@ public:
 		params.result_max = p_result_max;
 		params.result_array = p_result_array;
 		params.subindex_array = p_subindex_array;
-		params.mask = p_mask;
-		params.pairable_type = 0;
-		params.test_pairable_only = false;
+		params.tree_collision_mask = p_tree_collision_mask;
 		params.abb.from(p_aabb);
+		params.tester = p_tester;
 
 		tree.cull_aabb(params);
 
 		return params.result_count_overall;
 	}
 
-	int cull_segment(const POINT &p_from, const POINT &p_to, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+	int cull_segment(const POINT &p_from, const POINT &p_to, T **p_result_array, int p_result_max, const T *p_tester, uint32_t p_tree_collision_mask = 0xFFFFFFFF, int *p_subindex_array = nullptr) {
 		BVH_LOCKED_FUNCTION
 		typename BVHTREE_CLASS::CullParams params;
 
@@ -369,8 +362,8 @@ public:
 		params.result_max = p_result_max;
 		params.result_array = p_result_array;
 		params.subindex_array = p_subindex_array;
-		params.mask = p_mask;
-		params.pairable_type = 0;
+		params.tester = p_tester;
+		params.tree_collision_mask = p_tree_collision_mask;
 
 		params.segment.from = p_from;
 		params.segment.to = p_to;
@@ -380,7 +373,7 @@ public:
 		return params.result_count_overall;
 	}
 
-	int cull_point(const POINT &p_point, T **p_result_array, int p_result_max, int *p_subindex_array = nullptr, uint32_t p_mask = 0xFFFFFFFF) {
+	int cull_point(const POINT &p_point, T **p_result_array, int p_result_max, const T *p_tester, uint32_t p_tree_collision_mask = 0xFFFFFFFF, int *p_subindex_array = nullptr) {
 		BVH_LOCKED_FUNCTION
 		typename BVHTREE_CLASS::CullParams params;
 
@@ -388,8 +381,8 @@ public:
 		params.result_max = p_result_max;
 		params.result_array = p_result_array;
 		params.subindex_array = p_subindex_array;
-		params.mask = p_mask;
-		params.pairable_type = 0;
+		params.tester = p_tester;
+		params.tree_collision_mask = p_tree_collision_mask;
 
 		params.point = p_point;
 
@@ -397,7 +390,7 @@ public:
 		return params.result_count_overall;
 	}
 
-	int cull_convex(const Vector<Plane> &p_convex, T **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF) {
+	int cull_convex(const Vector<Plane> &p_convex, T **p_result_array, int p_result_max, const T *p_tester, uint32_t p_tree_collision_mask = 0xFFFFFFFF) {
 		BVH_LOCKED_FUNCTION
 		if (!p_convex.size()) {
 			return 0;
@@ -413,8 +406,8 @@ public:
 		params.result_max = p_result_max;
 		params.result_array = p_result_array;
 		params.subindex_array = nullptr;
-		params.mask = p_mask;
-		params.pairable_type = 0;
+		params.tester = p_tester;
+		params.tree_collision_mask = p_tree_collision_mask;
 
 		params.hull.planes = &p_convex[0];
 		params.hull.num_planes = p_convex.size();
@@ -442,8 +435,6 @@ private:
 		params.result_max = INT_MAX;
 		params.result_array = nullptr;
 		params.subindex_array = nullptr;
-		params.mask = 0xFFFFFFFF;
-		params.pairable_type = 0;
 
 		for (unsigned int n = 0; n < changed_items.size(); n++) {
 			const BVHHandle &h = changed_items[n];
@@ -453,16 +444,13 @@ private:
 			BVHABB_CLASS abb;
 			abb.from(expanded_aabb);
 
+			tree.item_fill_cullparams(h, params);
+
 			// find all the existing paired aabbs that are no longer
 			// paired, and send callbacks
 			_find_leavers(h, abb, p_full_check);
 
 			uint32_t changed_item_ref_id = h.id();
-
-			// set up the test from this item.
-			// this includes whether to test the non pairable tree,
-			// and the item mask.
-			tree.item_fill_cullparams(h, params);
 
 			params.abb = abb;
 
@@ -504,7 +492,7 @@ public:
 
 private:
 	// supplemental funcs
-	bool item_is_pairable(BVHHandle p_handle) const { return _get_extra(p_handle).pairable; }
+	uint32_t item_get_tree_id(BVHHandle p_handle) const { return _get_extra(p_handle).tree_id; }
 	T *item_get_userdata(BVHHandle p_handle) const { return _get_extra(p_handle).userdata; }
 	int item_get_subindex(BVHHandle p_handle) const { return _get_extra(p_handle).subindex; }
 
@@ -561,8 +549,8 @@ private:
 
 		// do they overlap?
 		if (p_abb_from.intersects(abb_to)) {
-			// the full check for pairable / non pairable and mask changes is extra expense
-			// this need not be done in most cases (for speed) except in the case where set_pairable is called
+			// the full check for pairable / non pairable (i.e. tree_id and tree_masks) and mask changes is extra expense
+			// this need not be done in most cases (for speed) except in the case where set_tree is called
 			// where the masks etc of the objects in question may have changed
 			if (!p_full_check) {
 				return false;
@@ -570,12 +558,13 @@ private:
 			const typename BVHTREE_CLASS::ItemExtra &exa = _get_extra(p_from);
 			const typename BVHTREE_CLASS::ItemExtra &exb = _get_extra(p_to);
 
-			// one of the two must be pairable to still pair
-			// if neither are pairable, we always unpair
-			if (exa.pairable || exb.pairable) {
+			// Checking tree_ids and tree_collision_masks
+			if (exa.are_item_trees_compatible(exb)) {
+				bool pair_allowed = USER_PAIR_TEST_FUNCTION::user_pair_check(exa.userdata, exb.userdata);
+
 				// the masks must still be compatible to pair
-				// i.e. if there is a hit between the two, then they should stay paired
-				if (tree._cull_pairing_mask_test_hit(exa.pairable_mask, exa.pairable_type, exb.pairable_mask, exb.pairable_type)) {
+				// i.e. if there is a hit between the two and they intersect, then they should stay paired
+				if (pair_allowed) {
 					return false;
 				}
 			}
@@ -612,6 +601,11 @@ private:
 
 		const typename BVHTREE_CLASS::ItemExtra &exa = _get_extra(p_ha);
 		const typename BVHTREE_CLASS::ItemExtra &exb = _get_extra(p_hb);
+
+		// user collision callback
+		if (!USER_PAIR_TEST_FUNCTION::user_pair_check(exa.userdata, exb.userdata)) {
+			return;
+		}
 
 		// if the userdata is the same, no collisions should occur
 		if ((exa.userdata == exb.userdata) && exa.userdata) {

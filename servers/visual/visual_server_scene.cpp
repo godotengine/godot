@@ -101,6 +101,15 @@ void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera, bool p_enab
 VisualServerScene::SpatialPartitioningScene_BVH::SpatialPartitioningScene_BVH() {
 	_bvh.params_set_thread_safe(GLOBAL_GET("rendering/threads/thread_safe_bvh"));
 	_bvh.params_set_pairing_expansion(GLOBAL_GET("rendering/quality/spatial_partitioning/bvh_collision_margin"));
+
+	_dummy_cull_object = memnew(Instance);
+}
+
+VisualServerScene::SpatialPartitioningScene_BVH::~SpatialPartitioningScene_BVH() {
+	if (_dummy_cull_object) {
+		memdelete(_dummy_cull_object);
+		_dummy_cull_object = nullptr;
+	}
 }
 
 VisualServerScene::SpatialPartitionID VisualServerScene::SpatialPartitioningScene_BVH::create(Instance *p_userdata, const AABB &p_aabb, int p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
@@ -109,7 +118,16 @@ VisualServerScene::SpatialPartitionID VisualServerScene::SpatialPartitioningScen
 	// the visible flag to the bvh.
 	DEV_ASSERT(p_userdata);
 #endif
-	return _bvh.create(p_userdata, p_userdata->visible, p_aabb, p_subindex, p_pairable, p_pairable_type, p_pairable_mask) + 1;
+
+	// cache the pairable mask and pairable type on the instance as it is needed for user callbacks from the BVH, and this is
+	// too complex to calculate each callback...
+	p_userdata->bvh_pairable_mask = p_pairable_mask;
+	p_userdata->bvh_pairable_type = p_pairable_type;
+
+	uint32_t tree_id = p_pairable ? 1 : 0;
+	uint32_t tree_collision_mask = 3;
+
+	return _bvh.create(p_userdata, p_userdata->visible, tree_id, tree_collision_mask, p_aabb, p_subindex) + 1;
 }
 
 void VisualServerScene::SpatialPartitioningScene_BVH::erase(SpatialPartitionID p_handle) {
@@ -143,20 +161,34 @@ void VisualServerScene::SpatialPartitioningScene_BVH::update_collisions() {
 	_bvh.update_collisions();
 }
 
-void VisualServerScene::SpatialPartitioningScene_BVH::set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
-	_bvh.set_pairable(p_handle - 1, p_pairable, p_pairable_type, p_pairable_mask);
+void VisualServerScene::SpatialPartitioningScene_BVH::set_pairable(Instance *p_instance, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+	SpatialPartitionID handle = p_instance->spatial_partition_id;
+
+	p_instance->bvh_pairable_mask = p_pairable_mask;
+	p_instance->bvh_pairable_type = p_pairable_type;
+
+	uint32_t tree_id = p_pairable ? 1 : 0;
+	uint32_t tree_collision_mask = 3;
+
+	_bvh.set_tree(handle - 1, tree_id, tree_collision_mask);
 }
 
 int VisualServerScene::SpatialPartitioningScene_BVH::cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask) {
-	return _bvh.cull_convex(p_convex, p_result_array, p_result_max, p_mask);
+	_dummy_cull_object->bvh_pairable_mask = p_mask;
+	_dummy_cull_object->bvh_pairable_type = 0;
+	return _bvh.cull_convex(p_convex, p_result_array, p_result_max, _dummy_cull_object);
 }
 
 int VisualServerScene::SpatialPartitioningScene_BVH::cull_aabb(const AABB &p_aabb, Instance **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
-	return _bvh.cull_aabb(p_aabb, p_result_array, p_result_max, p_subindex_array, p_mask);
+	_dummy_cull_object->bvh_pairable_mask = p_mask;
+	_dummy_cull_object->bvh_pairable_type = 0;
+	return _bvh.cull_aabb(p_aabb, p_result_array, p_result_max, _dummy_cull_object, 0xFFFFFFFF, p_subindex_array);
 }
 
 int VisualServerScene::SpatialPartitioningScene_BVH::cull_segment(const Vector3 &p_from, const Vector3 &p_to, Instance **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
-	return _bvh.cull_segment(p_from, p_to, p_result_array, p_result_max, p_subindex_array, p_mask);
+	_dummy_cull_object->bvh_pairable_mask = p_mask;
+	_dummy_cull_object->bvh_pairable_type = 0;
+	return _bvh.cull_segment(p_from, p_to, p_result_array, p_result_max, _dummy_cull_object, 0xFFFFFFFF, p_subindex_array);
 }
 
 void VisualServerScene::SpatialPartitioningScene_BVH::set_pair_callback(PairCallback p_callback, void *p_userdata) {
@@ -181,8 +213,9 @@ void VisualServerScene::SpatialPartitioningScene_Octree::move(SpatialPartitionID
 	_octree.move(p_handle, p_aabb);
 }
 
-void VisualServerScene::SpatialPartitioningScene_Octree::set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
-	_octree.set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
+void VisualServerScene::SpatialPartitioningScene_Octree::set_pairable(Instance *p_instance, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+	SpatialPartitionID handle = p_instance->spatial_partition_id;
+	_octree.set_pairable(handle, p_pairable, p_pairable_type, p_pairable_mask);
 }
 
 int VisualServerScene::SpatialPartitioningScene_Octree::cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask) {
@@ -782,25 +815,25 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 	switch (instance->base_type) {
 		case VS::INSTANCE_LIGHT: {
 			if (VSG::storage->light_get_type(instance->base) != VS::LIGHT_DIRECTIONAL && instance->spatial_partition_id && instance->scenario) {
-				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_LIGHT, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
+				instance->scenario->sps->set_pairable(instance, p_visible, 1 << VS::INSTANCE_LIGHT, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
 			}
 
 		} break;
 		case VS::INSTANCE_REFLECTION_PROBE: {
 			if (instance->spatial_partition_id && instance->scenario) {
-				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_REFLECTION_PROBE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
+				instance->scenario->sps->set_pairable(instance, p_visible, 1 << VS::INSTANCE_REFLECTION_PROBE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
 			}
 
 		} break;
 		case VS::INSTANCE_LIGHTMAP_CAPTURE: {
 			if (instance->spatial_partition_id && instance->scenario) {
-				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_LIGHTMAP_CAPTURE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
+				instance->scenario->sps->set_pairable(instance, p_visible, 1 << VS::INSTANCE_LIGHTMAP_CAPTURE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
 			}
 
 		} break;
 		case VS::INSTANCE_GI_PROBE: {
 			if (instance->spatial_partition_id && instance->scenario) {
-				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_GI_PROBE, p_visible ? (VS::INSTANCE_GEOMETRY_MASK | (1 << VS::INSTANCE_LIGHT)) : 0);
+				instance->scenario->sps->set_pairable(instance, p_visible, 1 << VS::INSTANCE_GI_PROBE, p_visible ? (VS::INSTANCE_GEOMETRY_MASK | (1 << VS::INSTANCE_LIGHT)) : 0);
 			}
 
 		} break;

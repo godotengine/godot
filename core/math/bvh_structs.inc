@@ -14,19 +14,38 @@ struct ItemRef {
 // extra info kept in separate parallel list to the references,
 // as this is less used as keeps cache better
 struct ItemExtra {
-	uint32_t last_updated_tick;
-	uint32_t pairable;
-	uint32_t pairable_mask;
-	uint32_t pairable_type;
+	// Before doing user defined pairing checks (especially in the find_leavers function),
+	// we may want to check that two items have compatible tree ids and tree masks,
+	// as if they are incompatible they should not pair / collide.
+	bool are_item_trees_compatible(const ItemExtra &p_other) const {
+		uint32_t other_type = 1 << p_other.tree_id;
+		if (tree_collision_mask & other_type) {
+			return true;
+		}
+		uint32_t our_type = 1 << tree_id;
+		if (p_other.tree_collision_mask & our_type) {
+			return true;
+		}
+		return false;
+	}
 
+	// There can be multiple user defined trees
+	uint32_t tree_id;
+
+	// Defines which trees this item should collision check against.
+	// 1 << tree_id, and normally items would collide against there own
+	// tree (but not always).
+	uint32_t tree_collision_mask;
+
+	uint32_t last_updated_tick;
 	int32_t subindex;
+
+	T *userdata;
 
 	// the active reference is a separate list of which references
 	// are active so that we can slowly iterate through it over many frames for
 	// slow optimize.
 	uint32_t active_ref_id;
-
-	T *userdata;
 };
 
 // tree leaf
@@ -146,15 +165,11 @@ uint32_t _current_active_ref = 0;
 // for pairing collision detection
 LocalVector<uint32_t, uint32_t, true> _cull_hits;
 
-// we now have multiple root nodes, allowing us to store
-// more than 1 tree. This can be more efficient, while sharing the same
-// common lists
-enum { NUM_TREES = 2,
-};
-
-// Tree 0 - Non pairable
-// Tree 1 - Pairable
-// This is more efficient because in physics we only need check non pairable against the pairable tree.
+// We can now have a user definable number of trees.
+// This allows using e.g. a non-pairable and pairable tree,
+// which can be more efficient for example, if we only need check non pairable against the pairable tree.
+// It also may be more efficient in terms of separating static from dynamic objects, by reducing housekeeping.
+// However this is a trade off, as there is a cost of traversing two trees.
 uint32_t _root_node_id[NUM_TREES];
 
 // these values may need tweaking according to the project
