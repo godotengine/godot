@@ -64,17 +64,17 @@
 
 NavigationMeshGenerator *NavigationMeshGenerator::singleton = nullptr;
 
-void NavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &p_verticies) {
-	p_verticies.push_back(p_vec3.x);
-	p_verticies.push_back(p_vec3.y);
-	p_verticies.push_back(p_vec3.z);
+void NavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &p_vertices) {
+	p_vertices.push_back(p_vec3.x);
+	p_vertices.push_back(p_vec3.y);
+	p_vertices.push_back(p_vec3.z);
 }
 
-void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
+void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices) {
 	int current_vertex_count;
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
-		current_vertex_count = p_verticies.size() / 3;
+		current_vertex_count = p_vertices.size() / 3;
 
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
@@ -101,7 +101,7 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 			const int *ir = mesh_indices.ptr();
 
 			for (int j = 0; j < mesh_vertices.size(); j++) {
-				_add_vertex(p_xform.xform(vr[j]), p_verticies);
+				_add_vertex(p_xform.xform(vr[j]), p_vertices);
 			}
 
 			for (int j = 0; j < face_count; j++) {
@@ -113,9 +113,9 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 		} else {
 			face_count = mesh_vertices.size() / 3;
 			for (int j = 0; j < face_count; j++) {
-				_add_vertex(p_xform.xform(vr[j * 3 + 0]), p_verticies);
-				_add_vertex(p_xform.xform(vr[j * 3 + 2]), p_verticies);
-				_add_vertex(p_xform.xform(vr[j * 3 + 1]), p_verticies);
+				_add_vertex(p_xform.xform(vr[j * 3 + 0]), p_vertices);
+				_add_vertex(p_xform.xform(vr[j * 3 + 2]), p_vertices);
+				_add_vertex(p_xform.xform(vr[j * 3 + 1]), p_vertices);
 
 				p_indices.push_back(current_vertex_count + (j * 3 + 0));
 				p_indices.push_back(current_vertex_count + (j * 3 + 1));
@@ -125,14 +125,14 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 	}
 }
 
-void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
+void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices) {
 	int face_count = p_faces.size() / 3;
-	int current_vertex_count = p_verticies.size() / 3;
+	int current_vertex_count = p_vertices.size() / 3;
 
 	for (int j = 0; j < face_count; j++) {
-		_add_vertex(p_xform.xform(p_faces[j * 3 + 0]), p_verticies);
-		_add_vertex(p_xform.xform(p_faces[j * 3 + 1]), p_verticies);
-		_add_vertex(p_xform.xform(p_faces[j * 3 + 2]), p_verticies);
+		_add_vertex(p_xform.xform(p_faces[j * 3 + 0]), p_vertices);
+		_add_vertex(p_xform.xform(p_faces[j * 3 + 1]), p_vertices);
+		_add_vertex(p_xform.xform(p_faces[j * 3 + 2]), p_vertices);
 
 		p_indices.push_back(current_vertex_count + (j * 3 + 0));
 		p_indices.push_back(current_vertex_count + (j * 3 + 2));
@@ -140,12 +140,12 @@ void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, cons
 	}
 }
 
-void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, NavigationMesh::ParsedGeometryType p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
+void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transform, Node *p_node, Vector<float> &p_vertices, Vector<int> &p_indices, NavigationMesh::ParsedGeometryType p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
 	if (Object::cast_to<MeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
 		if (mesh.is_valid()) {
-			_add_mesh(mesh, p_accumulated_transform * mesh_instance->get_transform(), p_verticies, p_indices);
+			_add_mesh(mesh, p_accumulated_transform * mesh_instance->get_transform(), p_vertices, p_indices);
 		}
 	}
 
@@ -159,7 +159,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 				n = multimesh->get_instance_count();
 			}
 			for (int i = 0; i < n; i++) {
-				_add_mesh(mesh, p_accumulated_transform * multimesh->get_instance_transform(i), p_verticies, p_indices);
+				_add_mesh(mesh, p_accumulated_transform * multimesh->get_instance_transform(i), p_vertices, p_indices);
 			}
 		}
 	}
@@ -171,7 +171,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 		if (!meshes.is_empty()) {
 			Ref<Mesh> mesh = meshes[1];
 			if (mesh.is_valid()) {
-				_add_mesh(mesh, p_accumulated_transform * csg_shape->get_transform(), p_verticies, p_indices);
+				_add_mesh(mesh, p_accumulated_transform * csg_shape->get_transform(), p_vertices, p_indices);
 			}
 		}
 	}
@@ -229,7 +229,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 
 					ConcavePolygonShape3D *concave_polygon = Object::cast_to<ConcavePolygonShape3D>(*s);
 					if (concave_polygon) {
-						_add_faces(concave_polygon->get_faces(), transform, p_verticies, p_indices);
+						_add_faces(concave_polygon->get_faces(), transform, p_vertices, p_indices);
 					}
 
 					ConvexPolygonShape3D *convex_polygon = Object::cast_to<ConvexPolygonShape3D>(*s);
@@ -252,12 +252,12 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 								}
 							}
 
-							_add_faces(faces, transform, p_verticies, p_indices);
+							_add_faces(faces, transform, p_vertices, p_indices);
 						}
 					}
 
 					if (mesh.is_valid()) {
-						_add_mesh(mesh, transform, p_verticies, p_indices);
+						_add_mesh(mesh, transform, p_vertices, p_indices);
 					}
 				}
 			}
@@ -272,7 +272,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 		for (int i = 0; i < meshes.size(); i += 2) {
 			Ref<Mesh> mesh = meshes[i + 1];
 			if (mesh.is_valid()) {
-				_add_mesh(mesh, p_accumulated_transform * xform * (Transform3D)meshes[i], p_verticies, p_indices);
+				_add_mesh(mesh, p_accumulated_transform * xform * (Transform3D)meshes[i], p_vertices, p_indices);
 			}
 		}
 	}
@@ -285,7 +285,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transfor
 
 	if (p_recurse_children) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
-			_parse_geometry(p_accumulated_transform, p_node->get_child(i), p_verticies, p_indices, p_generate_from, p_collision_mask, p_recurse_children);
+			_parse_geometry(p_accumulated_transform, p_node->get_child(i), p_vertices, p_indices, p_generate_from, p_collision_mask, p_recurse_children);
 		}
 	}
 }
