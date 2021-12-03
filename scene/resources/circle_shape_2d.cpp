@@ -56,7 +56,7 @@ void CircleShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CircleShape2D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CircleShape2D::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:px"), "set_radius", "get_radius");
 }
 
 Rect2 CircleShape2D::get_rect() const {

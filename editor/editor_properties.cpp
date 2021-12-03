@@ -2229,8 +2229,8 @@ void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool 
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
 	}
+	spin[3]->set_suffix(p_suffix);
 }
 
 EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
@@ -2322,6 +2322,8 @@ void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, 
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
+		// Quaternion is inherently unitless, however someone may want to use it as
+		// a generic way to store 4 values, so we'll still respect the suffix.
 		spin[i]->set_suffix(p_suffix);
 	}
 }
@@ -2506,7 +2508,9 @@ void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step,
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		if (i % 3 == 2) {
+			spin[i]->set_suffix(p_suffix);
+		}
 	}
 }
 
@@ -2596,6 +2600,8 @@ void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool 
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
+		// Basis is inherently unitless, however someone may want to use it as
+		// a generic way to store 9 values, so we'll still respect the suffix.
 		spin[i]->set_suffix(p_suffix);
 	}
 }
@@ -2692,7 +2698,9 @@ void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step,
 		spin[i]->set_hide_slider(p_no_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		spin[i]->set_suffix(p_suffix);
+		if (i % 4 == 3) {
+			spin[i]->set_suffix(p_suffix);
+		}
 	}
 }
 
@@ -3352,7 +3360,6 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 }
 
 struct EditorPropertyRangeHint {
-	bool angle_in_degrees = false;
 	bool greater = true;
 	bool lesser = true;
 	double min = -99999.0;
