@@ -2275,15 +2275,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		set_input_as_handled();
 
-		if (gui.drag_data.get_type() != Variant::NIL && mm->get_button_mask() & BUTTON_MASK_LEFT) {
-			bool can_drop = _gui_drop(over, pos, true);
+		bool can_drop = _gui_drop(over, pos, true);
 
-			if (!can_drop) {
-				OS::get_singleton()->set_cursor_shape(OS::CURSOR_FORBIDDEN);
-			} else {
-				OS::get_singleton()->set_cursor_shape(OS::CURSOR_CAN_DROP);
-			}
-			//change mouse accordingly i guess
+		if (!can_drop) {
+			OS::get_singleton()->set_cursor_shape(OS::CURSOR_FORBIDDEN);
+		} else {
+			OS::get_singleton()->set_cursor_shape(OS::CURSOR_CAN_DROP);
 		}
 	}
 
@@ -2526,6 +2523,7 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *
 	if (p_control) {
 		_gui_set_drag_preview(p_base, p_control);
 	}
+	_propagate_viewport_notification(this, NOTIFICATION_DRAG_BEGIN);
 }
 
 void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
