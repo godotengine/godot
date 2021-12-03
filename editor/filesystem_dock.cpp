@@ -46,6 +46,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
+#include "shader_create_dialog.h"
 
 Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_file_type) {
 	Ref<Texture2D> file_icon;
@@ -1967,6 +1968,22 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 }
 
 void FileSystemDock::_resource_created() {
+	String fpath = path;
+	if (!fpath.ends_with("/")) {
+		fpath = fpath.get_base_dir();
+	}
+
+	String type_name = new_resource_dialog->get_selected_type();
+	if (type_name == "Shader") {
+		make_shader_dialog->config(fpath.plus_file("new_shader"), false, false, 0);
+		make_shader_dialog->popup_centered();
+		return;
+	} else if (type_name == "VisualShader") {
+		make_shader_dialog->config(fpath.plus_file("new_shader"), false, false, 1);
+		make_shader_dialog->popup_centered();
+		return;
+	}
+
 	Variant c = new_resource_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
@@ -1982,12 +1999,6 @@ void FileSystemDock::_resource_created() {
 	}
 
 	editor->push_item(r);
-
-	String fpath = path;
-	if (!fpath.ends_with("/")) {
-		fpath = fpath.get_base_dir();
-	}
-
 	editor->save_resource_as(RES(r), fpath);
 }
 
@@ -2996,6 +3007,9 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	make_script_dialog = memnew(ScriptCreateDialog);
 	make_script_dialog->set_title(TTR("Create Script"));
 	add_child(make_script_dialog);
+
+	make_shader_dialog = memnew(ShaderCreateDialog);
+	add_child(make_shader_dialog);
 
 	new_resource_dialog = memnew(CreateDialog);
 	add_child(new_resource_dialog);

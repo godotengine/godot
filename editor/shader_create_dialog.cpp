@@ -324,7 +324,7 @@ void ShaderCreateDialog::_path_submitted(const String &p_path) {
 	ok_pressed();
 }
 
-void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_mode) {
+void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_type, int p_preferred_mode) {
 	if (p_base_path != "") {
 		initial_base_path = p_base_path.get_basename();
 		file_path->set_text(initial_base_path + "." + language_data[language_menu->get_selected()].default_extension);
@@ -337,6 +337,11 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 
 	built_in_enabled = p_built_in_enabled;
 	load_enabled = p_load_enabled;
+
+	if (p_preferred_type > -1) {
+		language_menu->select(p_preferred_type);
+		_language_changed(p_preferred_type);
+	}
 
 	if (p_preferred_mode > -1) {
 		mode_menu->select(p_preferred_mode);

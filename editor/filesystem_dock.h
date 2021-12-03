@@ -54,6 +54,7 @@
 #include "script_create_dialog.h"
 
 class EditorNode;
+class ShaderCreateDialog;
 
 class FileSystemDock : public VBoxContainer {
 	GDCLASS(FileSystemDock, VBoxContainer);
@@ -158,6 +159,7 @@ private:
 	LineEdit *make_scene_dialog_text;
 	ConfirmationDialog *overwrite_dialog;
 	ScriptCreateDialog *make_script_dialog;
+	ShaderCreateDialog *make_shader_dialog;
 	CreateDialog *new_resource_dialog;
 
 	bool always_show_folders;
