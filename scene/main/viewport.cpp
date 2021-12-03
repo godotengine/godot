@@ -2275,12 +2275,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		set_input_as_handled();
 
-		bool can_drop = _gui_drop(over, pos, true);
+		if (gui.drag_data.get_type() != Variant::NIL) {
+			bool can_drop = _gui_drop(over, pos, true);
 
-		if (!can_drop) {
-			OS::get_singleton()->set_cursor_shape(OS::CURSOR_FORBIDDEN);
-		} else {
-			OS::get_singleton()->set_cursor_shape(OS::CURSOR_CAN_DROP);
+			if (!can_drop) {
+				OS::get_singleton()->set_cursor_shape(OS::CURSOR_FORBIDDEN);
+			} else {
+				OS::get_singleton()->set_cursor_shape(OS::CURSOR_CAN_DROP);
+			}
 		}
 	}
 
