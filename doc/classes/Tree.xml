@@ -474,65 +474,14 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="arrow" data_type="icon" type="Texture2D">
-			The arrow icon used when a foldable item is not collapsed.
-		</theme_item>
-		<theme_item name="arrow_collapsed" data_type="icon" type="Texture2D">
-			The arrow icon used when a foldable item is collapsed (for left-to-right layouts).
-		</theme_item>
-		<theme_item name="arrow_collapsed_mirrored" data_type="icon" type="Texture2D">
-			The arrow icon used when a foldable item is collapsed (for right-to-left layouts).
-		</theme_item>
-		<theme_item name="bg" data_type="style" type="StyleBox">
-			Default [StyleBox] for the [Tree], i.e. used when the control is not being focused.
-		</theme_item>
-		<theme_item name="bg_focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [Tree] is being focused.
-		</theme_item>
-		<theme_item name="button_margin" data_type="constant" type="int" default="4">
-			The horizontal space between each button in a cell.
-		</theme_item>
-		<theme_item name="button_pressed" data_type="style" type="StyleBox">
-			[StyleBox] used when a button in the tree is pressed.
-		</theme_item>
-		<theme_item name="checked" data_type="icon" type="Texture2D">
-			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked.
-		</theme_item>
 		<theme_item name="children_hl_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
 			The [Color] of the relationship lines between the selected [TreeItem] and its children.
-		</theme_item>
-		<theme_item name="children_hl_line_width" data_type="constant" type="int" default="1">
-			The width of the relationship lines between the selected [TreeItem] and its children.
-		</theme_item>
-		<theme_item name="cursor" data_type="style" type="StyleBox">
-			[StyleBox] used for the cursor, when the [Tree] is being focused.
-		</theme_item>
-		<theme_item name="cursor_unfocused" data_type="style" type="StyleBox">
-			[StyleBox] used for the cursor, when the [Tree] is not being focused.
-		</theme_item>
-		<theme_item name="custom_button" data_type="style" type="StyleBox">
-			Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell.
 		</theme_item>
 		<theme_item name="custom_button_font_highlight" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			Text [Color] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's hovered.
 		</theme_item>
-		<theme_item name="custom_button_hover" data_type="style" type="StyleBox">
-			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's hovered.
-		</theme_item>
-		<theme_item name="custom_button_pressed" data_type="style" type="StyleBox">
-			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's pressed.
-		</theme_item>
-		<theme_item name="draw_guides" data_type="constant" type="int" default="1">
-			Draws the guidelines if not zero, this acts as a boolean. The guideline is a horizontal line drawn at the bottom of each item.
-		</theme_item>
-		<theme_item name="draw_relationship_lines" data_type="constant" type="int" default="0">
-			Draws the relationship lines if not zero, this acts as a boolean. Relationship lines are drawn at the start of child items to show hierarchy.
-		</theme_item>
 		<theme_item name="drop_position_color" data_type="color" type="Color" default="Color(1, 0.3, 0.2, 1)">
 			[Color] used to draw possible drop locations. See [enum DropModeFlags] constants for further description of drop locations.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] of the item's text.
 		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.69, 0.69, 0.69, 1)">
 			Default text [Color] of the item.
@@ -543,17 +492,32 @@
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the item is selected.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the item's text.
-		</theme_item>
 		<theme_item name="guide_color" data_type="color" type="Color" default="Color(0, 0, 0, 0.1)">
 			[Color] of the guideline.
 		</theme_item>
+		<theme_item name="parent_hl_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
+			The [Color] of the relationship lines between the selected [TreeItem] and its parents.
+		</theme_item>
+		<theme_item name="relationship_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
+			The default [Color] of the relationship lines.
+		</theme_item>
+		<theme_item name="title_button_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+			Default text [Color] of the title button.
+		</theme_item>
+		<theme_item name="button_margin" data_type="constant" type="int" default="4">
+			The horizontal space between each button in a cell.
+		</theme_item>
+		<theme_item name="children_hl_line_width" data_type="constant" type="int" default="1">
+			The width of the relationship lines between the selected [TreeItem] and its children.
+		</theme_item>
+		<theme_item name="draw_guides" data_type="constant" type="int" default="1">
+			Draws the guidelines if not zero, this acts as a boolean. The guideline is a horizontal line drawn at the bottom of each item.
+		</theme_item>
+		<theme_item name="draw_relationship_lines" data_type="constant" type="int" default="0">
+			Draws the relationship lines if not zero, this acts as a boolean. Relationship lines are drawn at the start of child items to show hierarchy.
+		</theme_item>
 		<theme_item name="hseparation" data_type="constant" type="int" default="4">
 			The horizontal space between item cells. This is also used as the margin at the start of an item when folding is disabled.
-		</theme_item>
-		<theme_item name="indeterminate" data_type="icon" type="Texture2D">
-			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is indeterminate.
 		</theme_item>
 		<theme_item name="item_margin" data_type="constant" type="int" default="12">
 			The horizontal margin at the start of an item. This is used when folding is enabled for the item.
@@ -561,17 +525,11 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
-		<theme_item name="parent_hl_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
-			The [Color] of the relationship lines between the selected [TreeItem] and its parents.
-		</theme_item>
 		<theme_item name="parent_hl_line_margin" data_type="constant" type="int" default="0">
 			The space between the parent relationship lines for the selected [TreeItem] and the relationship lines to its siblings that are not selected.
 		</theme_item>
 		<theme_item name="parent_hl_line_width" data_type="constant" type="int" default="1">
 			The width of the relationship lines between the selected [TreeItem] and its parents.
-		</theme_item>
-		<theme_item name="relationship_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
-			The default [Color] of the relationship lines.
 		</theme_item>
 		<theme_item name="relationship_line_width" data_type="constant" type="int" default="1">
 			The default width of the relationship lines.
@@ -582,20 +540,71 @@
 		<theme_item name="scroll_speed" data_type="constant" type="int" default="12">
 			The speed of border scrolling.
 		</theme_item>
+		<theme_item name="vseparation" data_type="constant" type="int" default="4">
+			The vertical padding inside each item, i.e. the distance between the item's content and top/bottom border.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] of the item's text.
+		</theme_item>
+		<theme_item name="title_button_font" data_type="font" type="Font">
+			[Font] of the title button's text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the item's text.
+		</theme_item>
+		<theme_item name="arrow" data_type="icon" type="Texture2D">
+			The arrow icon used when a foldable item is not collapsed.
+		</theme_item>
+		<theme_item name="arrow_collapsed" data_type="icon" type="Texture2D">
+			The arrow icon used when a foldable item is collapsed (for left-to-right layouts).
+		</theme_item>
+		<theme_item name="arrow_collapsed_mirrored" data_type="icon" type="Texture2D">
+			The arrow icon used when a foldable item is collapsed (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="checked" data_type="icon" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked.
+		</theme_item>
+		<theme_item name="indeterminate" data_type="icon" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is indeterminate.
+		</theme_item>
 		<theme_item name="select_arrow" data_type="icon" type="Texture2D">
 			The arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
+		</theme_item>
+		<theme_item name="unchecked" data_type="icon" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is unchecked.
+		</theme_item>
+		<theme_item name="updown" data_type="icon" type="Texture2D">
+			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
+		</theme_item>
+		<theme_item name="bg" data_type="style" type="StyleBox">
+			Default [StyleBox] for the [Tree], i.e. used when the control is not being focused.
+		</theme_item>
+		<theme_item name="bg_focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [Tree] is being focused.
+		</theme_item>
+		<theme_item name="button_pressed" data_type="style" type="StyleBox">
+			[StyleBox] used when a button in the tree is pressed.
+		</theme_item>
+		<theme_item name="cursor" data_type="style" type="StyleBox">
+			[StyleBox] used for the cursor, when the [Tree] is being focused.
+		</theme_item>
+		<theme_item name="cursor_unfocused" data_type="style" type="StyleBox">
+			[StyleBox] used for the cursor, when the [Tree] is not being focused.
+		</theme_item>
+		<theme_item name="custom_button" data_type="style" type="StyleBox">
+			Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell.
+		</theme_item>
+		<theme_item name="custom_button_hover" data_type="style" type="StyleBox">
+			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's hovered.
+		</theme_item>
+		<theme_item name="custom_button_pressed" data_type="style" type="StyleBox">
+			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's pressed.
 		</theme_item>
 		<theme_item name="selected" data_type="style" type="StyleBox">
 			[StyleBox] for the selected items, used when the [Tree] is not being focused.
 		</theme_item>
 		<theme_item name="selected_focus" data_type="style" type="StyleBox">
 			[StyleBox] for the selected items, used when the [Tree] is being focused.
-		</theme_item>
-		<theme_item name="title_button_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
-			Default text [Color] of the title button.
-		</theme_item>
-		<theme_item name="title_button_font" data_type="font" type="Font">
-			[Font] of the title button's text.
 		</theme_item>
 		<theme_item name="title_button_hover" data_type="style" type="StyleBox">
 			[StyleBox] used when the title button is being hovered.
@@ -605,15 +614,6 @@
 		</theme_item>
 		<theme_item name="title_button_pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when the title button is being pressed.
-		</theme_item>
-		<theme_item name="unchecked" data_type="icon" type="Texture2D">
-			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is unchecked.
-		</theme_item>
-		<theme_item name="updown" data_type="icon" type="Texture2D">
-			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
-		</theme_item>
-		<theme_item name="vseparation" data_type="constant" type="int" default="4">
-			The vertical padding inside each item, i.e. the distance between the item's content and top/bottom border.
 		</theme_item>
 	</theme_items>
 </class>

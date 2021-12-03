@@ -182,15 +182,6 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="decrement" data_type="icon" type="Texture2D">
-			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
-		</theme_item>
-		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
-			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			The font used to draw tab names.
-		</theme_item>
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.9, 0.9, 0.9, 0.2)">
 			Font color of disabled tabs.
 		</theme_item>
@@ -200,14 +191,29 @@
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			Font color of the currently selected tab.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the tab names.
-		</theme_item>
 		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.69, 0.69, 0.69, 1)">
 			Font color of the other, unselected tabs.
 		</theme_item>
 		<theme_item name="icon_separation" data_type="constant" type="int" default="4">
 			Space between tab's name and its icon.
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the tab text outline.
+		</theme_item>
+		<theme_item name="side_margin" data_type="constant" type="int" default="8">
+			The space at the left and right edges of the tab bar.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			The font used to draw tab names.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the tab names.
+		</theme_item>
+		<theme_item name="decrement" data_type="icon" type="Texture2D">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
 		<theme_item name="increment" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.
@@ -221,14 +227,8 @@
 		<theme_item name="menu_highlight" data_type="icon" type="Texture2D">
 			The icon for the menu button (see [method set_popup]) when it's being hovered with the cursor.
 		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
-			The size of the tab text outline.
-		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The style for the background fill.
-		</theme_item>
-		<theme_item name="side_margin" data_type="constant" type="int" default="8">
-			The space at the left and right edges of the tab bar.
 		</theme_item>
 		<theme_item name="tab_disabled" data_type="style" type="StyleBox">
 			The style of disabled tabs.

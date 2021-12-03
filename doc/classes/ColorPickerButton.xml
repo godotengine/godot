@@ -56,18 +56,6 @@
 		</signal>
 	</signals>
 	<theme_items>
-		<theme_item name="bg" data_type="icon" type="Texture2D">
-			The background of the color preview rect on the button.
-		</theme_item>
-		<theme_item name="disabled" data_type="style" type="StyleBox">
-			[StyleBox] used when the [ColorPickerButton] is disabled.
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [ColorPickerButton] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] of the [ColorPickerButton]'s text.
-		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Default text [Color] of the [ColorPickerButton].
 		</theme_item>
@@ -86,20 +74,32 @@
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(0.8, 0.8, 0.8, 1)">
 			Text [Color] used when the [ColorPickerButton] is being pressed.
 		</theme_item>
+		<theme_item name="hseparation" data_type="constant" type="int" default="2">
+			The horizontal space between [ColorPickerButton]'s icon and text.
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the text outline.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] of the [ColorPickerButton]'s text.
+		</theme_item>
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the [ColorPickerButton]'s text.
+		</theme_item>
+		<theme_item name="bg" data_type="icon" type="Texture2D">
+			The background of the color preview rect on the button.
+		</theme_item>
+		<theme_item name="disabled" data_type="style" type="StyleBox">
+			[StyleBox] used when the [ColorPickerButton] is disabled.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [ColorPickerButton] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
 		</theme_item>
 		<theme_item name="hover" data_type="style" type="StyleBox">
 			[StyleBox] used when the [ColorPickerButton] is being hovered.
 		</theme_item>
-		<theme_item name="hseparation" data_type="constant" type="int" default="2">
-			The horizontal space between [ColorPickerButton]'s icon and text.
-		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Default [StyleBox] for the [ColorPickerButton].
-		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
-			The size of the text outline.
 		</theme_item>
 		<theme_item name="pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when the [ColorPickerButton] is being pressed.

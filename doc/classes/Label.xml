@@ -163,9 +163,6 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] used for the [Label]'s text.
-		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Default text [Color] of the [Label].
 		</theme_item>
@@ -175,14 +172,8 @@
 		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			[Color] of the text's shadow effect.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [Label]'s text.
-		</theme_item>
 		<theme_item name="line_spacing" data_type="constant" type="int" default="3">
 			Vertical space between lines in multiline [Label].
-		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			Background [StyleBox] for the [Label].
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			Text outline size.
@@ -195,6 +186,15 @@
 		</theme_item>
 		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
 			The size of the shadow outline.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] used for the [Label]'s text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the [Label]'s text.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			Background [StyleBox] for the [Label].
 		</theme_item>
 	</theme_items>
 </class>

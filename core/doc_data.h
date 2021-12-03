@@ -135,7 +135,11 @@ public:
 		String description;
 		String default_value;
 		bool operator<(const ThemeItemDoc &p_theme_item) const {
-			return name < p_theme_item.name;
+			// First sort by the data type, then by name.
+			if (data_type == p_theme_item.data_type) {
+				return name < p_theme_item.name;
+			}
+			return data_type < p_theme_item.data_type;
 		}
 	};
 
