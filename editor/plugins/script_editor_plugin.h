@@ -321,6 +321,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _add_callback(Object *p_obj, const String &p_function, const PoolStringArray &p_args);
 	void _res_saved_callback(const Ref<Resource> &p_res);
+	void _scene_saved_callback(const String &p_path);
 
 	bool trim_trailing_whitespace_on_save;
 	bool use_space_indentation;
