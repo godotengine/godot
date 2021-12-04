@@ -54,9 +54,13 @@ void GDScriptWorkspace::_bind_methods() {
 }
 
 void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
-	String function_signature = "func " + function;
 	Ref<Script> script = obj->get_script();
 
+	if (script->get_language()->get_name() != "GDScript") {
+		return;
+	}
+
+	String function_signature = "func " + function;
 	String source = script->get_source_code();
 
 	if (source.find(function_signature) != -1) {
