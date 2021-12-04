@@ -71,7 +71,8 @@
 			Snap makes the mesh snap to a given distance so that the faces of two meshes can be perfectly aligned. A lower value results in greater precision but may be harder to adjust.
 		</member>
 		<member name="use_collision" type="bool" setter="set_use_collision" getter="is_using_collision" default="false">
-			Adds a collision shape to the physics engine for our CSG shape. This will always act like a static body. Note that the collision shape is still active even if the CSG shape itself is hidden.
+			Adds a collision shape to the physics engine for our CSG shape. This will always act like a static body.
+			[b]Note:[/b] The collision shape is formed from the visible geometry. Toggling the visibility will remove the collision shape. To make a hidden collision shape, remove it from the [member VisualInstance3D.layers].
 		</member>
 	</members>
 	<constants>
