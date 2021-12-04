@@ -356,6 +356,7 @@ public:
 	String get_cache_dir() const;
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
+	void crash(const String &p_message);
 
 	void set_screen_orientation(ScreenOrientation p_orientation);
 	ScreenOrientation get_screen_orientation() const;

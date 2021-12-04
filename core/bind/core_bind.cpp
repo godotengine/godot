@@ -1182,6 +1182,10 @@ void _OS::alert(const String &p_alert, const String &p_title) {
 	OS::get_singleton()->alert(p_alert, p_title);
 }
 
+void _OS::crash(const String &p_message) {
+	CRASH_NOW_MSG(p_message);
+}
+
 bool _OS::request_permission(const String &p_name) {
 	return OS::get_singleton()->request_permission(p_name);
 }
@@ -1399,6 +1403,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_file_access_save_and_swap", "enabled"), &_OS::set_use_file_access_save_and_swap);
 
 	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &_OS::alert, DEFVAL("Alert!"));
+	ClassDB::bind_method(D_METHOD("crash", "message"), &_OS::crash);
 
 	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &_OS::set_thread_name);
 	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &_OS::get_thread_caller_id);
