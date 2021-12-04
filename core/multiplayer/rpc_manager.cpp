@@ -461,8 +461,7 @@ void RPCManager::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const Mult
 	}
 }
 
-void RPCManager::rpcp_synced(NodePath path, int uniqueId, bool p_call_local_native, bool p_call_local_script, const StringName &p_method, const Variant **p_arg, int p_argcount){
-
+void RPCManager::rpcp_synced(NodePath path, int uniqueId, bool p_call_local_native, bool p_call_local_script, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	Node *p_node = multiplayer->get_root_node()->get_node(path);
 
 	if (p_call_local_native) {
@@ -526,10 +525,10 @@ void RPCManager::rpcp(Node *p_node, int p_peer_id, const StringName &p_method, c
 		_send_rpc(p_node, p_peer_id, rpc_id, config, p_method, p_arg, p_argcount);
 	}
 
-	if(Thread::get_caller_id() != Thread::get_main_id()){
-			this->call_deferred("rpcp_synced", p_node->get_path(), peer->get_unique_id(), call_local_native, call_local_script, p_method, p_arg, p_argcount);
+	if (Thread::get_caller_id() != Thread::get_main_id()) {
+		this->call_deferred("rpcp_synced", p_node->get_path(), peer->get_unique_id(), call_local_native, call_local_script, p_method, p_arg, p_argcount);
 	} else {
-			rpcp_synced(p_node->get_path(),peer->get_unique_id(), call_local_native, call_local_script, p_method, p_arg, p_argcount);
+		rpcp_synced(p_node->get_path(), peer->get_unique_id(), call_local_native, call_local_script, p_method, p_arg, p_argcount);
 	}
 
 	ERR_FAIL_COND_MSG(p_peer_id == node_id && !config.call_local, "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
