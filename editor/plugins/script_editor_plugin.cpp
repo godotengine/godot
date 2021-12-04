@@ -770,10 +770,6 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 		RES script = se->get_edited_resource();
 
-		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
-			continue; //internal script, who cares
-		}
-
 		if (script == p_res) {
 			se->tag_saved_version();
 		}
@@ -781,6 +777,26 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 	_update_script_names();
 	_trigger_live_script_reload();
+}
+
+void ScriptEditor::_scene_saved_callback(const String &p_path) {
+	// If scene was saved, mark all built-in scripts from that scene as saved.
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+		if (!se) {
+			continue;
+		}
+
+		RES edited_res = se->get_edited_resource();
+
+		if (!edited_res->get_path().empty() && edited_res->get_path().find("::") == -1) {
+			continue; // External script, who cares.
+		}
+
+		if (edited_res->get_path().get_slice("::", 0) == p_path) {
+			se->tag_saved_version();
+		}
+	}
 }
 
 void ScriptEditor::_trigger_live_script_reload() {
@@ -1349,6 +1365,7 @@ void ScriptEditor::_notification(int p_what) {
 			editor->connect("stop_pressed", this, "_editor_stop");
 			editor->connect("script_add_function_request", this, "_add_callback");
 			editor->connect("resource_saved", this, "_res_saved_callback");
+			editor->connect("scene_saved", this, "_scene_saved_callback");
 			script_list->connect("item_selected", this, "_script_selected");
 
 			members_overview->connect("item_selected", this, "_members_overview_selected");
@@ -1431,7 +1448,7 @@ void ScriptEditor::close_builtin_scripts_from_scene(const String &p_scene) {
 			}
 
 			if (script->get_path().find("::") != -1 && script->get_path().begins_with(p_scene)) { //is an internal script and belongs to scene being closed
-				_close_tab(i);
+				_close_tab(i, false);
 				i--;
 			}
 		}
@@ -1732,20 +1749,7 @@ void ScriptEditor::_update_script_names() {
 		if (se) {
 			Ref<Texture> icon = se->get_icon();
 			String path = se->get_edited_resource()->get_path();
-			bool built_in = !path.is_resource_file();
-			String name;
-
-			if (built_in) {
-				name = path.get_file();
-				const String &resource_name = se->get_edited_resource()->get_name();
-				if (resource_name != "") {
-					// If the built-in script has a custom resource name defined,
-					// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
-					name = vformat("%s (%s)", resource_name, name.substr(0, name.find("::", 0)));
-				}
-			} else {
-				name = se->get_name();
-			}
+			String name = se->get_name();
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
@@ -2184,10 +2188,22 @@ void ScriptEditor::save_current_script() {
 		return;
 	}
 
-	editor->save_resource(resource);
+	if (resource->get_path().empty() || resource->get_path().find("::") != -1) {
+		// If built-in script, save the scene instead.
+		const String scene_path = resource->get_path().get_slice("::", 0);
+		if (!scene_path.empty()) {
+			Vector<String> scene_to_save;
+			scene_to_save.push_back(scene_path);
+			editor->save_scene_list(scene_to_save);
+		}
+	} else {
+		editor->save_resource(resource);
+	}
 }
 
 void ScriptEditor::save_all_scripts() {
+	Vector<String> scenes_to_save;
+
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
 		if (!se) {
@@ -2224,7 +2240,17 @@ void ScriptEditor::save_all_scripts() {
 				continue;
 			}
 			editor->save_resource(edited_res); //external script, save it
+		} else {
+			// For built-in scripts, save their scenes instead.
+			const String scene_path = edited_res->get_path().get_slice("::", 0);
+			if (scenes_to_save.find(scene_path) > -1) {
+				scenes_to_save.push_back(scene_path);
+			}
 		}
+	}
+
+	if (!scenes_to_save.empty()) {
+		editor->save_scene_list(scenes_to_save);
 	}
 
 	_update_script_names();
@@ -3097,6 +3123,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_reload_scripts", &ScriptEditor::_reload_scripts);
 	ClassDB::bind_method("_resave_scripts", &ScriptEditor::_resave_scripts);
 	ClassDB::bind_method("_res_saved_callback", &ScriptEditor::_res_saved_callback);
+	ClassDB::bind_method("_scene_saved_callback", &ScriptEditor::_scene_saved_callback);
 	ClassDB::bind_method("_goto_script_line", &ScriptEditor::_goto_script_line);
 	ClassDB::bind_method("_goto_script_line2", &ScriptEditor::_goto_script_line2);
 	ClassDB::bind_method("_set_execution", &ScriptEditor::_set_execution);
