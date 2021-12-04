@@ -14,6 +14,12 @@
 			<argument index="0" name="control" type="Control" />
 			<description>
 				Ensures the given [code]control[/code] is visible (must be a direct or indirect child of the ScrollContainer). Used by [member follow_focus].
+				[b]Note:[/b] This will not work on a node that was just added during the same frame. If you want to scroll to a newly added child, you must wait until the next frame using [signal SceneTree.idle_frame]:
+				[codeblock]
+				add_child(child_node)
+				yield(get_tree(), "idle_frame")
+				ensure_control_visible(child_node)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_h_scrollbar">
