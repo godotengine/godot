@@ -1190,12 +1190,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
-			editor_data->get_undo_redo().create_action(TTR("New Scene Root"));
-			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", new_node);
-			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
-			editor_data->get_undo_redo().add_do_reference(new_node);
-			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)nullptr);
-			editor_data->get_undo_redo().commit_action();
+			add_root_node(new_node);
 
 			editor->edit_node(new_node);
 			editor_selection->clear();
@@ -1233,6 +1228,16 @@ void SceneTreeDock::_perform_property_drop(Node *p_node, String p_property, RES 
 	editor_data->get_undo_redo().add_undo_method(p_node, "property_list_changed_notify");
 	editor_data->get_undo_redo().commit_action();
 }
+
+void SceneTreeDock::add_root_node(Node *p_node) {
+	editor_data->get_undo_redo().create_action(TTR("New Scene Root"));
+	editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", p_node);
+	editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+	editor_data->get_undo_redo().add_do_reference(p_node);
+	editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)nullptr);
+	editor_data->get_undo_redo().commit_action();
+}
+
 void SceneTreeDock::_node_collapsed(Object *p_obj) {
 	TreeItem *ti = Object::cast_to<TreeItem>(p_obj);
 	if (!ti) {
