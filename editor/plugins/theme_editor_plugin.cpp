@@ -2581,11 +2581,11 @@ void ThemeTypeEditor::_update_type_items() {
 	}
 
 	// Various type settings.
-	if (ClassDB::class_exists(edited_type)) {
+	if (edited_type.is_empty() || ClassDB::class_exists(edited_type)) {
 		type_variation_edit->set_editable(false);
 		type_variation_edit->set_text("");
 		type_variation_button->hide();
-		type_variation_locked->show();
+		type_variation_locked->set_visible(!edited_type.is_empty());
 	} else {
 		type_variation_edit->set_editable(true);
 		type_variation_edit->set_text(edited_theme->get_type_variation_base(edited_type));
