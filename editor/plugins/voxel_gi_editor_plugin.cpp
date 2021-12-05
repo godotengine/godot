@@ -67,31 +67,36 @@ void VoxelGIEditorPlugin::_notification(int p_what) {
 			return;
 		}
 
+		// Set information tooltip on the Bake button. This information is useful
+		// to optimize performance (video RAM size) and reduce light leaking (individual cell size).
+
 		const Vector3i size = voxel_gi->get_estimated_cell_size();
-		String text = vformat(String::utf8("%d × %d × %d"), size.x, size.y, size.z);
+
+		const Vector3 extents = voxel_gi->get_extents();
+
 		const int data_size = 4;
 		const double size_mb = size.x * size.y * size.z * data_size / (1024.0 * 1024.0);
-		text += " - " + vformat(TTR("VRAM Size: %s MB"), String::num(size_mb, 2));
+		// Add a qualitative measurement to help the user assess whether a VoxelGI node is using a lot of VRAM.
+		String size_quality;
+		if (size_mb < 16.0) {
+			size_quality = TTR("Low");
+		} else if (size_mb < 64.0) {
+			size_quality = TTR("Moderate");
+		} else {
+			size_quality = TTR("High");
+		}
 
-		if (bake_info->get_text() == text) {
+		String text;
+		text += vformat(TTR("Subdivisions: %s"), vformat(String::utf8("%d × %d × %d"), size.x, size.y, size.z)) + "\n";
+		text += vformat(TTR("Cell size: %s"), vformat(String::utf8("%.3f × %.3f × %.3f"), extents.x / size.x, extents.y / size.y, extents.z / size.z)) + "\n";
+		text += vformat(TTR("Video RAM size: %s MB (%s)"), String::num(size_mb, 2), size_quality);
+
+		// Only update the tooltip when needed to avoid constant redrawing.
+		if (bake->get_tooltip(Point2()) == text) {
 			return;
 		}
 
-		// Color the label depending on the estimated performance level.
-		Color color;
-		if (size_mb <= 16.0 + CMP_EPSILON) {
-			// Fast.
-			color = bake_info->get_theme_color(SNAME("success_color"), SNAME("Editor"));
-		} else if (size_mb <= 64.0 + CMP_EPSILON) {
-			// Medium.
-			color = bake_info->get_theme_color(SNAME("warning_color"), SNAME("Editor"));
-		} else {
-			// Slow.
-			color = bake_info->get_theme_color(SNAME("error_color"), SNAME("Editor"));
-		}
-		bake_info->add_theme_color_override("font_color", color);
-
-		bake_info->set_text(text);
+		bake->set_tooltip(text);
 	}
 }
 
@@ -147,10 +152,6 @@ VoxelGIEditorPlugin::VoxelGIEditorPlugin(EditorNode *p_node) {
 	bake->set_text(TTR("Bake GI Probe"));
 	bake->connect("pressed", callable_mp(this, &VoxelGIEditorPlugin::_bake));
 	bake_hb->add_child(bake);
-	bake_info = memnew(Label);
-	bake_info->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	bake_info->set_clip_text(true);
-	bake_hb->add_child(bake_info);
 
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake_hb);
 	voxel_gi = nullptr;
