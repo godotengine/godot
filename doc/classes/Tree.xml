@@ -35,12 +35,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="are_column_titles_visible" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the column titles are being shown.
-			</description>
-		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -313,13 +307,6 @@
 				Sets OpenType feature [code]tag[/code] for the column title.
 			</description>
 		</method>
-		<method name="set_column_titles_visible">
-			<return type="void" />
-			<argument index="0" name="visible" type="bool" />
-			<description>
-				If [code]true[/code], column titles are visible.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
@@ -327,6 +314,9 @@
 		</member>
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select" default="false">
 			If [code]true[/code], a right mouse button click can select items.
+		</member>
+		<member name="column_titles_visible" type="bool" setter="set_column_titles_visible" getter="are_column_titles_visible" default="false">
+			If [code]true[/code], column titles are visible.
 		</member>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="1">
 			The number of columns.
