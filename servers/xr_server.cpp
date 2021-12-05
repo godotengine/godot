@@ -193,7 +193,7 @@ void XRServer::remove_interface(const Ref<XRInterface> &p_interface) {
 	print_verbose("XR: Removed interface" + p_interface->get_name());
 
 	emit_signal(SNAME("interface_removed"), p_interface->get_name());
-	interfaces.remove(idx);
+	interfaces.remove_at(idx);
 };
 
 int XRServer::get_interface_count() const {
@@ -396,7 +396,7 @@ XRServer::~XRServer() {
 	primary_interface.unref();
 
 	while (interfaces.size() > 0) {
-		interfaces.remove(0);
+		interfaces.remove_at(0);
 	}
 
 	// TODO pretty sure there is a clear function or something...

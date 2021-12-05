@@ -240,7 +240,7 @@ void ConnectDialog::_remove_bind() {
 	int idx = st.get_slice("/", 1).to_int() - 1;
 
 	ERR_FAIL_INDEX(idx, cdbinds->params.size());
-	cdbinds->params.remove(idx);
+	cdbinds->params.remove_at(idx);
 	cdbinds->notify_changed();
 }
 
@@ -378,7 +378,7 @@ void ConnectDialog::_advanced_pressed() {
 		error_label->hide();
 	} else {
 		set_min_size(Size2(600, 500) * EDSCALE);
-		set_size(Size2());
+		reset_size();
 		connect_to_label->set_text(TTR("Connect to Script:"));
 		tree->set_connect_to_script_mode(true);
 
@@ -723,7 +723,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 				c = '_';
 			} else {
 				// Remove any other characters.
-				midname.remove(i);
+				midname.remove_at(i);
 				i--;
 				continue;
 			}

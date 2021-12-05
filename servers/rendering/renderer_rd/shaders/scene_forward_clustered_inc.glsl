@@ -208,7 +208,8 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 
 	float roughness_limiter_amount;
 	float roughness_limiter_limit;
-	uvec2 roughness_limiter_pad;
+	float opaque_prepass_threshold;
+	uint roughness_limiter_pad;
 
 	mat4 sdf_to_bounds;
 

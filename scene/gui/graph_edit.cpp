@@ -501,6 +501,43 @@ void GraphEdit::_notification(int p_what) {
 	}
 }
 
+void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes) {
+	Rect2 comment_node_rect = p_node->get_rect();
+	Vector<GraphNode *> enclosed_nodes;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
+		if (!gn || gn->is_selected()) {
+			continue;
+		}
+
+		Rect2 node_rect = gn->get_rect();
+		bool included = comment_node_rect.encloses(node_rect);
+		if (included) {
+			enclosed_nodes.push_back(gn);
+		}
+	}
+
+	p_comment_enclosed_nodes.set(p_node->get_name(), enclosed_nodes);
+}
+
+void GraphEdit::_set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag) {
+	for (int i = 0; i < p_comment_enclosed_nodes[p_node->get_name()].size(); i++) {
+		p_comment_enclosed_nodes[p_node->get_name()][i]->set_drag(p_drag);
+	}
+}
+
+void GraphEdit::_set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_drag_accum) {
+	for (int i = 0; i < p_comment_enclosed_nodes[p_node->get_name()].size(); i++) {
+		Vector2 pos = (p_comment_enclosed_nodes[p_node->get_name()][i]->get_drag_from() * zoom + drag_accum) / zoom;
+		if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+			const int snap = get_snap();
+			pos = pos.snapped(Vector2(snap, snap));
+		}
+		p_comment_enclosed_nodes[p_node->get_name()][i]->set_position_offset(pos);
+	}
+}
+
 bool GraphEdit::_filter_input(const Point2 &p_point) {
 	Ref<Texture2D> port = get_theme_icon(SNAME("port"), SNAME("GraphNode"));
 	Vector2i port_size = Vector2i(port->get_width(), port->get_height());
@@ -1058,6 +1095,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				}
 
 				gn->set_position_offset(pos);
+				if (gn->is_comment()) {
+					_set_position_of_comment_enclosed_nodes(gn, comment_enclosed_nodes, drag_accum);
+				}
 			}
 		}
 	}
@@ -1153,6 +1193,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 					if (gn && gn->is_selected()) {
 						gn->set_drag(false);
+						if (gn->is_comment()) {
+							_set_drag_comment_enclosed_nodes(gn, comment_enclosed_nodes, false);
+						}
 					}
 				}
 			}
@@ -1220,6 +1263,10 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					}
 					if (o_gn->is_selected()) {
 						o_gn->set_drag(true);
+						if (o_gn->is_comment()) {
+							_update_comment_enclosed_nodes_list(o_gn, comment_enclosed_nodes);
+							_set_drag_comment_enclosed_nodes(o_gn, comment_enclosed_nodes, true);
+						}
 					}
 				}
 

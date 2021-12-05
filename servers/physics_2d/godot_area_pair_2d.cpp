@@ -128,7 +128,7 @@ bool GodotArea2Pair2D::setup(real_t p_step) {
 
 	process_collision_a = false;
 	if (result_a != colliding_a) {
-		if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
+		if (area_a->has_area_monitor_callback() && area_b_monitorable) {
 			process_collision_a = true;
 			process_collision = true;
 		}
@@ -137,7 +137,7 @@ bool GodotArea2Pair2D::setup(real_t p_step) {
 
 	process_collision_b = false;
 	if (result_b != colliding_b) {
-		if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
+		if (area_b->has_area_monitor_callback() && area_a_monitorable) {
 			process_collision_b = true;
 			process_collision = true;
 		}
@@ -176,19 +176,21 @@ GodotArea2Pair2D::GodotArea2Pair2D(GodotArea2D *p_area_a, int p_shape_a, GodotAr
 	area_b = p_area_b;
 	shape_a = p_shape_a;
 	shape_b = p_shape_b;
+	area_a_monitorable = area_a->is_monitorable();
+	area_b_monitorable = area_b->is_monitorable();
 	area_a->add_constraint(this);
 	area_b->add_constraint(this);
 }
 
 GodotArea2Pair2D::~GodotArea2Pair2D() {
 	if (colliding_a) {
-		if (area_a->has_area_monitor_callback()) {
+		if (area_a->has_area_monitor_callback() && area_b_monitorable) {
 			area_a->remove_area_from_query(area_b, shape_b, shape_a);
 		}
 	}
 
 	if (colliding_b) {
-		if (area_b->has_area_monitor_callback()) {
+		if (area_b->has_area_monitor_callback() && area_a_monitorable) {
 			area_b->remove_area_from_query(area_a, shape_a, shape_b);
 		}
 	}

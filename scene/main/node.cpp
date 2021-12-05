@@ -114,7 +114,7 @@ void Node::_notification(int p_notification) {
 				get_multiplayer()->scene_enter_exit_notify(data.scene_file_path, this, false);
 			}
 		} break;
-		case NOTIFICATION_PATH_CHANGED: {
+		case NOTIFICATION_PATH_RENAMED: {
 			if (data.path_cache) {
 				memdelete(data.path_cache);
 				data.path_cache = nullptr;
@@ -332,7 +332,7 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	int motion_from = MIN(p_pos, p_child->data.pos);
 	int motion_to = MAX(p_pos, p_child->data.pos);
 
-	data.children.remove(p_child->data.pos);
+	data.children.remove_at(p_child->data.pos);
 	data.children.insert(p_pos, p_child);
 
 	if (data.tree) {
@@ -899,7 +899,7 @@ void Node::set_name(const String &p_name) {
 		data.parent->_validate_child_name(this);
 	}
 
-	propagate_notification(NOTIFICATION_PATH_CHANGED);
+	propagate_notification(NOTIFICATION_PATH_RENAMED);
 
 	if (is_inside_tree()) {
 		emit_signal(SNAME("renamed"));
@@ -1208,7 +1208,7 @@ void Node::remove_child(Node *p_child) {
 	remove_child_notify(p_child);
 	p_child->notification(NOTIFICATION_UNPARENTED);
 
-	data.children.remove(idx);
+	data.children.remove_at(idx);
 
 	//update pointer and size
 	child_count = data.children.size();
@@ -2829,7 +2829,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_INSTANCED);
 	BIND_CONSTANT(NOTIFICATION_DRAG_BEGIN);
 	BIND_CONSTANT(NOTIFICATION_DRAG_END);
-	BIND_CONSTANT(NOTIFICATION_PATH_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_PATH_RENAMED);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);

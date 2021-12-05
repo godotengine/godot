@@ -34,6 +34,7 @@
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/version_generated.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -142,10 +143,10 @@ void ShaderTextEditor::_load_theme_settings() {
 		}
 	}
 
-	const Color member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+	const Color user_type_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
 
 	for (const String &E : built_ins) {
-		syntax_highlighter->add_keyword_color(E, member_variable_color);
+		syntax_highlighter->add_keyword_color(E, user_type_color);
 	}
 
 	// Colorize comments.
@@ -384,7 +385,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->remove_all_bookmarks();
 		} break;
 		case HELP_DOCS: {
-			OS::get_singleton()->shell_open("https://docs.godotengine.org/en/latest/tutorials/shaders/shader_reference/index.html");
+			OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/shader_reference/index.html", VERSION_DOCS_URL));
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
@@ -645,7 +646,7 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
 	context_menu->set_position(get_global_transform().xform(p_position));
-	context_menu->set_size(Vector2(1, 1));
+	context_menu->reset_size();
 	context_menu->popup();
 }
 

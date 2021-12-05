@@ -133,8 +133,8 @@ Ref<CameraEffects> WorldEnvironment::get_camera_effects() const {
 TypedArray<String> WorldEnvironment::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (!environment.is_valid()) {
-		warnings.push_back(TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect."));
+	if (!environment.is_valid() && !camera_effects.is_valid()) {
+		warnings.push_back(TTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Effects\" property to contain a CameraEffects resource, or both."));
 	}
 
 	if (!is_inside_tree()) {

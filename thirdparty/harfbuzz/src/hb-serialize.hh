@@ -652,7 +652,9 @@ struct hb_serialize_context_t
   hb_vector_t<object_t *> packed;
 
   /* Map view of packed objects. */
-  hb_hashmap_t<const object_t *, objidx_t, nullptr, 0> packed_map;
+  hb_hashmap_t<const object_t *, objidx_t,
+	       const object_t *, objidx_t,
+	       nullptr, 0> packed_map;
 };
 
 #endif /* HB_SERIALIZE_HH */

@@ -374,7 +374,7 @@ void GodotSoftBody3D::unpin_vertex(int p_index) {
 	uint32_t pinned_count = pinned_vertices.size();
 	for (uint32_t i = 0; i < pinned_count; ++i) {
 		if (p_index == pinned_vertices[i]) {
-			pinned_vertices.remove(i);
+			pinned_vertices.remove_at(i);
 
 			if (!soft_mesh.is_null()) {
 				ERR_FAIL_COND(p_index >= (int)map_visual_to_physics.size());
@@ -964,12 +964,6 @@ void GodotSoftBody3D::apply_forces(const LocalVector<GodotArea3D *> &p_wind_area
 	}
 }
 
-void GodotSoftBody3D::_compute_area_gravity(const GodotArea3D *p_area) {
-	Vector3 area_gravity;
-	p_area->compute_gravity(get_transform().get_origin(), area_gravity);
-	gravity += area_gravity;
-}
-
 Vector3 GodotSoftBody3D::_compute_area_windforce(const GodotArea3D *p_area, const Face *p_face) {
 	real_t wfm = p_area->get_wind_force_magnitude();
 	real_t waf = p_area->get_wind_attenuation_factor();
@@ -987,12 +981,12 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 
 	ERR_FAIL_COND(!get_space());
 
-	int ac = areas.size();
-
 	bool gravity_done = false;
+	Vector3 gravity;
 
 	LocalVector<GodotArea3D *> wind_areas;
 
+	int ac = areas.size();
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];

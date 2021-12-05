@@ -96,7 +96,7 @@
 				Inserts a [Vector2] at the end.
 			</description>
 		</method>
-		<method name="remove">
+		<method name="remove_at">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
 			<description>

@@ -410,6 +410,14 @@ Error Expression::_get_token(Token &r_token) {
 					} else if (id == "self") {
 						r_token.type = TK_SELF;
 					} else {
+						for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+							if (id == Variant::get_type_name(Variant::Type(i))) {
+								r_token.type = TK_BASIC_TYPE;
+								r_token.value = i;
+								return OK;
+							}
+						}
+
 						if (Variant::has_utility_function(id)) {
 							r_token.type = TK_BUILTIN_FUNC;
 							r_token.value = id;
@@ -1087,7 +1095,7 @@ Expression::ENode *Expression::_parse_expression() {
 				op->nodes[1] = nullptr;
 				expression.write[i].is_op = false;
 				expression.write[i].node = op;
-				expression.remove(i + 1);
+				expression.remove_at(i + 1);
 			}
 
 		} else {
@@ -1119,8 +1127,8 @@ Expression::ENode *Expression::_parse_expression() {
 
 			//replace all 3 nodes by this operator and make it an expression
 			expression.write[next_op - 1].node = op;
-			expression.remove(next_op);
-			expression.remove(next_op);
+			expression.remove_at(next_op);
+			expression.remove_at(next_op);
 		}
 	}
 

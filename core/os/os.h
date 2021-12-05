@@ -243,7 +243,7 @@ public:
 	void set_stdout_enabled(bool p_enabled);
 	void set_stderr_enabled(bool p_enabled);
 
-	bool is_single_window() const;
+	virtual bool is_single_window() const;
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
@@ -298,6 +298,7 @@ public:
 	virtual void set_exit_code(int p_code);
 
 	virtual int get_processor_count() const;
+	virtual int get_default_thread_pool_size() const { return get_processor_count(); }
 
 	virtual String get_unique_id() const;
 

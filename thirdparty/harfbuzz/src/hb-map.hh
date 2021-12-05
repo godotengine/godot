@@ -35,8 +35,10 @@
  */
 
 template <typename K, typename V,
-	  K kINVALID = hb_is_pointer (K) ? 0 : std::is_signed<K>::value ? hb_int_min (K) : (K) -1,
-	  V vINVALID = hb_is_pointer (V) ? 0 : std::is_signed<V>::value ? hb_int_min (V) : (V) -1>
+	  typename k_invalid_t = K,
+	  typename v_invalid_t = V,
+	  k_invalid_t kINVALID = hb_is_pointer (K) ? 0 : std::is_signed<K>::value ? hb_int_min (K) : (K) -1,
+	  v_invalid_t vINVALID = hb_is_pointer (V) ? 0 : std::is_signed<V>::value ? hb_int_min (V) : (V) -1>
 struct hb_hashmap_t
 {
   static constexpr K INVALID_KEY   = kINVALID;
@@ -62,8 +64,10 @@ struct hb_hashmap_t
     hb_copy (o, *this);
   }
 
-  static_assert (std::is_integral<K>::value || hb_is_pointer (K), "");
-  static_assert (std::is_integral<V>::value || hb_is_pointer (V), "");
+  static_assert (std::is_trivially_copyable<K>::value, "");
+  static_assert (std::is_trivially_copyable<V>::value, "");
+  static_assert (std::is_trivially_destructible<K>::value, "");
+  static_assert (std::is_trivially_destructible<V>::value, "");
 
   struct item_t
   {
@@ -348,19 +352,23 @@ struct hb_hashmap_t
 
 struct hb_map_t : hb_hashmap_t<hb_codepoint_t,
 			       hb_codepoint_t,
+			       hb_codepoint_t,
+			       hb_codepoint_t,
 			       HB_MAP_VALUE_INVALID,
 			       HB_MAP_VALUE_INVALID>
 {
   using hashmap = hb_hashmap_t<hb_codepoint_t,
+			       hb_codepoint_t,
+			       hb_codepoint_t,
 			       hb_codepoint_t,
 			       HB_MAP_VALUE_INVALID,
 			       HB_MAP_VALUE_INVALID>;
 
   hb_map_t () = default;
   ~hb_map_t () = default;
-  hb_map_t (hb_map_t& o) = default;
-  hb_map_t& operator= (const hb_map_t& other) = default;
-  hb_map_t& operator= (hb_map_t&& other) = default;
+  hb_map_t (hb_map_t&) = default;
+  hb_map_t& operator= (const hb_map_t&) = default;
+  hb_map_t& operator= (hb_map_t&&) = default;
   hb_map_t (std::initializer_list<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> lst) : hashmap (lst) {}
   template <typename Iterable,
 	    hb_requires (hb_is_iterable (Iterable))>

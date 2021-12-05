@@ -535,6 +535,24 @@ Error VulkanContext::_check_capabilities() {
 		multiview_capabilities.is_supported = multiview_features.multiview;
 		multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
 		multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
+
+		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features;
+		shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
+		shader_features.pNext = NULL;
+
+		device_features.pNext = &shader_features;
+
+		device_features_func(gpu, &device_features);
+		shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
+
+		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature;
+		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
+		storage_feature.pNext = NULL;
+
+		device_features.pNext = &storage_feature;
+
+		device_features_func(gpu, &device_features);
+		storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = storage_feature.storageBuffer16BitAccess;
 	}
 
 	// check extended properties

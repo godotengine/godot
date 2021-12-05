@@ -46,6 +46,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
+#include "shader_create_dialog.h"
 
 Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_file_type) {
 	Ref<Texture2D> file_icon;
@@ -197,7 +198,7 @@ Vector<String> FileSystemDock::_compute_uncollapsed_paths() {
 						child = child->get_next();
 					}
 				}
-				needs_check.remove(0);
+				needs_check.remove_at(0);
 			}
 		}
 	}
@@ -1093,7 +1094,7 @@ void FileSystemDock::_push_to_history() {
 		history_pos++;
 
 		if (history.size() > history_max_size) {
-			history.remove(0);
+			history.remove_at(0);
 			history_pos = history_max_size - 1;
 		}
 	}
@@ -1670,7 +1671,7 @@ Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> select
 		String last_path = "";
 		for (int i = 0; i < selected_strings.size(); i++) {
 			if (last_path != "" && selected_strings[i].begins_with(last_path)) {
-				selected_strings.remove(i);
+				selected_strings.remove_at(i);
 				i--;
 			}
 			if (selected_strings[i].ends_with("/")) {
@@ -1704,7 +1705,7 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 						child = child->get_next();
 					}
 
-					needs_check.remove(0);
+					needs_check.remove_at(0);
 				}
 			}
 		} break;
@@ -1967,6 +1968,22 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 }
 
 void FileSystemDock::_resource_created() {
+	String fpath = path;
+	if (!fpath.ends_with("/")) {
+		fpath = fpath.get_base_dir();
+	}
+
+	String type_name = new_resource_dialog->get_selected_type();
+	if (type_name == "Shader") {
+		make_shader_dialog->config(fpath.plus_file("new_shader"), false, false, 0);
+		make_shader_dialog->popup_centered();
+		return;
+	} else if (type_name == "VisualShader") {
+		make_shader_dialog->config(fpath.plus_file("new_shader"), false, false, 1);
+		make_shader_dialog->popup_centered();
+		return;
+	}
+
 	Variant c = new_resource_dialog->instance_selected();
 
 	ERR_FAIL_COND(!c);
@@ -1982,12 +1999,6 @@ void FileSystemDock::_resource_created() {
 	}
 
 	editor->push_item(r);
-
-	String fpath = path;
-	if (!fpath.ends_with("/")) {
-		fpath = fpath.get_base_dir();
-	}
-
 	editor->save_resource_as(RES(r), fpath);
 }
 
@@ -2229,7 +2240,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		drop_position -= offset;
 		to_remove.sort();
 		for (int i = 0; i < to_remove.size(); i++) {
-			dirs.remove(to_remove[i] - i);
+			dirs.remove_at(to_remove[i] - i);
 		}
 
 		// Re-add them at the right position.
@@ -2507,7 +2518,7 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 
 	// Popup.
 	if (!paths.is_empty()) {
-		tree_popup->set_size(Size2(1, 1));
+		tree_popup->reset_size();
 		_file_and_folders_fill_popup(tree_popup, paths);
 		tree_popup->set_position(tree->get_screen_position() + p_pos);
 		tree_popup->popup();
@@ -2518,7 +2529,7 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	// Right click is pressed in the empty space of the tree.
 	path = "res://";
 	tree_popup->clear();
-	tree_popup->set_size(Size2(1, 1));
+	tree_popup->reset_size();
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("New Folder..."), FILE_NEW_FOLDER);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
@@ -2549,7 +2560,7 @@ void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	// Popup.
 	if (!paths.is_empty()) {
 		file_list_popup->clear();
-		file_list_popup->set_size(Size2(1, 1));
+		file_list_popup->reset_size();
 		_file_and_folders_fill_popup(file_list_popup, paths, searched_string.length() == 0);
 		file_list_popup->set_position(files->get_global_position() + p_pos);
 		file_list_popup->popup();
@@ -2563,7 +2574,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	}
 
 	file_list_popup->clear();
-	file_list_popup->set_size(Size2(1, 1));
+	file_list_popup->reset_size();
 
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("New Folder..."), FILE_NEW_FOLDER);
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
@@ -2996,6 +3007,9 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	make_script_dialog = memnew(ScriptCreateDialog);
 	make_script_dialog->set_title(TTR("Create Script"));
 	add_child(make_script_dialog);
+
+	make_shader_dialog = memnew(ShaderCreateDialog);
+	add_child(make_shader_dialog);
 
 	new_resource_dialog = memnew(CreateDialog);
 	add_child(new_resource_dialog);

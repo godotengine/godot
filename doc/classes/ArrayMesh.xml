@@ -47,7 +47,7 @@
 		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>
-		<link title="Procedural geometry using the ArrayMesh">https://docs.godotengine.org/en/latest/tutorials/3d/procedural_geometry/arraymesh.html</link>
+		<link title="Procedural geometry using the ArrayMesh">$DOCS_URL/tutorials/3d/procedural_geometry/arraymesh.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_blend_shape">

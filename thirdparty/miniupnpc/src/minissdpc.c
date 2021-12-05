@@ -1,4 +1,4 @@
-/* $Id: minissdpc.c,v 1.47 2021/03/02 23:38:30 nanard Exp $ */
+/* $Id: minissdpc.c,v 1.49 2021/05/13 11:00:36 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
@@ -460,7 +460,7 @@ parseMSEARCHReply(const char * reply, int size,
 static int upnp_gettimeofday(struct timeval * tv)
 {
 #if defined(_WIN32)
-#if defined(_WIN32_WINNT_VISTA) && (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
+#if _WIN32_WINNT >= 0x0600 // _WIN32_WINNT_VISTA
 	ULONGLONG ts = GetTickCount64();
 #else
 	DWORD ts = GetTickCount();
@@ -469,14 +469,29 @@ static int upnp_gettimeofday(struct timeval * tv)
 	tv->tv_usec = (ts % 1000) * 1000;
 	return 0; /* success */
 #elif defined(CLOCK_MONOTONIC_FAST) || defined(CLOCK_MONOTONIC)
-	struct timespec ts;
-	int ret_code = clock_gettime(UPNP_CLOCKID, &ts);
-	if (ret_code == 0)
-	{
-		tv->tv_sec = ts.tv_sec;
-		tv->tv_usec = ts.tv_nsec / 1000;
+#if defined(__APPLE__)
+#if defined(__clang__)
+	if (__builtin_available(macOS 10.12, iOS 10.0, tvOS 10.0, watchOS 3.0, *)) {
+#else /* !defined(__clang__) */
+	if (clock_gettime != NULL) {
+#endif /* defined(__clang__) */
+#endif /* defined(__APPLE__) */
+		struct timespec ts;
+		int ret_code = clock_gettime(UPNP_CLOCKID, &ts);
+		if (ret_code == 0)
+		{
+			tv->tv_sec = ts.tv_sec;
+			tv->tv_usec = ts.tv_nsec / 1000;
+		}
+		return ret_code;
+#if defined(__APPLE__)
 	}
-	return ret_code;
+	else
+	{
+		/* fall-back for earlier Apple platforms */
+		return gettimeofday(tv, NULL);
+	}
+#endif /* defined(__APPLE__) */
 #else
 	return gettimeofday(tv, NULL);
 #endif
@@ -705,7 +720,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 		}
 	}
 
-	if(multicastif)
+	if(multicastif && multicastif[0] != '\0')
 	{
 		if(ipv6) {
 #if !defined(_WIN32)
@@ -732,7 +747,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 		} else {
 			struct in_addr mc_if;
 #if defined(_WIN32)
-#if defined(_WIN32_WINNT_VISTA) && (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
+#if _WIN32_WINNT >= 0x0600 // _WIN32_WINNT_VISTA
 			InetPtonA(AF_INET, multicastif, &mc_if);
 #else
 			mc_if.s_addr = inet_addr(multicastif); /* old Windows SDK do not support InetPtoA() */

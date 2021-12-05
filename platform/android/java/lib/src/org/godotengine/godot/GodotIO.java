@@ -288,7 +288,34 @@ public class GodotIO {
 	}
 
 	public int getScreenOrientation() {
-		return activity.getRequestedOrientation();
+		int orientation = activity.getRequestedOrientation();
+		switch (orientation) {
+			case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
+				return SCREEN_LANDSCAPE;
+			case ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:
+				return SCREEN_PORTRAIT;
+			case ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE:
+				return SCREEN_REVERSE_LANDSCAPE;
+			case ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT:
+				return SCREEN_REVERSE_PORTRAIT;
+			case ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:
+			case ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE:
+				return SCREEN_SENSOR_LANDSCAPE;
+			case ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT:
+			case ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT:
+				return SCREEN_SENSOR_PORTRAIT;
+			case ActivityInfo.SCREEN_ORIENTATION_SENSOR:
+			case ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR:
+			case ActivityInfo.SCREEN_ORIENTATION_FULL_USER:
+				return SCREEN_SENSOR;
+			case ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED:
+			case ActivityInfo.SCREEN_ORIENTATION_USER:
+			case ActivityInfo.SCREEN_ORIENTATION_BEHIND:
+			case ActivityInfo.SCREEN_ORIENTATION_NOSENSOR:
+			case ActivityInfo.SCREEN_ORIENTATION_LOCKED:
+			default:
+				return -1;
+		}
 	}
 
 	public void setEdit(GodotEditText _edit) {

@@ -14,24 +14,6 @@
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" override="true" default="true" />
 	</members>
 	<theme_items>
-		<theme_item name="check_vadjust" data_type="constant" type="int" default="0">
-			The vertical offset used when rendering the check icons (in pixels).
-		</theme_item>
-		<theme_item name="checked" data_type="icon" type="Texture2D">
-			The check icon to display when the [CheckBox] is checked.
-		</theme_item>
-		<theme_item name="checked_disabled" data_type="icon" type="Texture2D">
-			The check icon to display when the [CheckBox] is checked and disabled.
-		</theme_item>
-		<theme_item name="disabled" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckBox] is disabled.
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckBox] is focused.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			The [Font] to use for the [CheckBox] text.
-		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			The [CheckBox] text's font color.
 		</theme_item>
@@ -53,26 +35,26 @@
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The [CheckBox] text's font color when it's pressed.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [CheckBox]'s text.
-		</theme_item>
-		<theme_item name="hover" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckBox] is hovered.
-		</theme_item>
-		<theme_item name="hover_pressed" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckBox] is hovered and pressed.
+		<theme_item name="check_vadjust" data_type="constant" type="int" default="0">
+			The vertical offset used when rendering the check icons (in pixels).
 		</theme_item>
 		<theme_item name="hseparation" data_type="constant" type="int" default="4">
 			The separation between the check icon and the text (in pixels).
 		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background.
-		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
-		<theme_item name="pressed" data_type="style" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckBox] is pressed.
+		<theme_item name="font" data_type="font" type="Font">
+			The [Font] to use for the [CheckBox] text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the [CheckBox]'s text.
+		</theme_item>
+		<theme_item name="checked" data_type="icon" type="Texture2D">
+			The check icon to display when the [CheckBox] is checked.
+		</theme_item>
+		<theme_item name="checked_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [CheckBox] is checked and disabled.
 		</theme_item>
 		<theme_item name="radio_checked" data_type="icon" type="Texture2D">
 			If the [CheckBox] is configured as a radio button, the icon to display when the [CheckBox] is checked.
@@ -89,6 +71,24 @@
 		</theme_item>
 		<theme_item name="unchecked_disabled" data_type="icon" type="Texture2D">
 			The check icon to display when the [CheckBox] is unchecked and disabled.
+		</theme_item>
+		<theme_item name="disabled" data_type="style" type="StyleBox">
+			The [StyleBox] to display as a background when the [CheckBox] is disabled.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			The [StyleBox] to display as a background when the [CheckBox] is focused.
+		</theme_item>
+		<theme_item name="hover" data_type="style" type="StyleBox">
+			The [StyleBox] to display as a background when the [CheckBox] is hovered.
+		</theme_item>
+		<theme_item name="hover_pressed" data_type="style" type="StyleBox">
+			The [StyleBox] to display as a background when the [CheckBox] is hovered and pressed.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			The [StyleBox] to display as a background.
+		</theme_item>
+		<theme_item name="pressed" data_type="style" type="StyleBox">
+			The [StyleBox] to display as a background when the [CheckBox] is pressed.
 		</theme_item>
 	</theme_items>
 </class>

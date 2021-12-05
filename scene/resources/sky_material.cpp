@@ -37,7 +37,7 @@ RID ProceduralSkyMaterial::shader;
 
 void ProceduralSkyMaterial::set_sky_top_color(const Color &p_sky_top) {
 	sky_top_color = p_sky_top;
-	RS::get_singleton()->material_set_param(_get_material(), "sky_top_color", sky_top_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "sky_top_color", sky_top_color);
 }
 
 Color ProceduralSkyMaterial::get_sky_top_color() const {
@@ -46,7 +46,7 @@ Color ProceduralSkyMaterial::get_sky_top_color() const {
 
 void ProceduralSkyMaterial::set_sky_horizon_color(const Color &p_sky_horizon) {
 	sky_horizon_color = p_sky_horizon;
-	RS::get_singleton()->material_set_param(_get_material(), "sky_horizon_color", sky_horizon_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "sky_horizon_color", sky_horizon_color);
 }
 
 Color ProceduralSkyMaterial::get_sky_horizon_color() const {
@@ -73,7 +73,7 @@ float ProceduralSkyMaterial::get_sky_energy() const {
 
 void ProceduralSkyMaterial::set_ground_bottom_color(const Color &p_ground_bottom) {
 	ground_bottom_color = p_ground_bottom;
-	RS::get_singleton()->material_set_param(_get_material(), "ground_bottom_color", ground_bottom_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "ground_bottom_color", ground_bottom_color);
 }
 
 Color ProceduralSkyMaterial::get_ground_bottom_color() const {
@@ -82,7 +82,7 @@ Color ProceduralSkyMaterial::get_ground_bottom_color() const {
 
 void ProceduralSkyMaterial::set_ground_horizon_color(const Color &p_ground_horizon) {
 	ground_horizon_color = p_ground_horizon;
-	RS::get_singleton()->material_set_param(_get_material(), "ground_horizon_color", ground_horizon_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "ground_horizon_color", ground_horizon_color);
 }
 
 Color ProceduralSkyMaterial::get_ground_horizon_color() const {
@@ -564,10 +564,10 @@ void PhysicalSkyMaterial::_update_shader() {
 shader_type sky;
 
 uniform float rayleigh : hint_range(0, 64) = 2.0;
-uniform vec4 rayleigh_color : hint_color = vec4(0.056, 0.14, 0.3, 1.0);
+uniform vec4 rayleigh_color : hint_color = vec4(0.26, 0.41, 0.58, 1.0);
 uniform float mie : hint_range(0, 1) = 0.005;
 uniform float mie_eccentricity : hint_range(-1, 1) = 0.8;
-uniform vec4 mie_color : hint_color = vec4(0.36, 0.56, 0.82, 1.0);
+uniform vec4 mie_color : hint_color = vec4(0.63, 0.77, 0.92, 1.0);
 
 uniform float turbidity : hint_range(0, 1000) = 10.0;
 uniform float sun_disk_scale : hint_range(0, 360) = 1.0;
@@ -661,10 +661,10 @@ void sky() {
 
 PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	set_rayleigh_coefficient(2.0);
-	set_rayleigh_color(Color(0.056, 0.14, 0.3));
+	set_rayleigh_color(Color(0.26, 0.41, 0.58));
 	set_mie_coefficient(0.005);
 	set_mie_eccentricity(0.8);
-	set_mie_color(Color(0.36, 0.56, 0.82));
+	set_mie_color(Color(0.63, 0.77, 0.92));
 	set_turbidity(10.0);
 	set_sun_disk_scale(1.0);
 	set_ground_color(Color(1.0, 1.0, 1.0));

@@ -261,6 +261,8 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 					}
 					code += ")";
 					break;
+				case SL::OP_EMPTY:
+					break;
 				default: {
 					code = "(" + dump_node_code(onode->arguments[0], p_level) + _opstr(onode->op) + dump_node_code(onode->arguments[1], p_level) + ")";
 					break;

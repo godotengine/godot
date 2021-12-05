@@ -69,12 +69,12 @@ void Transform2D::rotate(const real_t p_phi) {
 
 real_t Transform2D::get_skew() const {
 	real_t det = basis_determinant();
-	return Math::acos(elements[0].normalized().dot(SGN(det) * elements[1].normalized())) - Math_PI * 0.5;
+	return Math::acos(elements[0].normalized().dot(SIGN(det) * elements[1].normalized())) - Math_PI * 0.5;
 }
 
 void Transform2D::set_skew(const real_t p_angle) {
 	real_t det = basis_determinant();
-	elements[1] = SGN(det) * elements[0].rotated((Math_PI * 0.5 + p_angle)).normalized() * elements[1].length();
+	elements[1] = SIGN(det) * elements[0].rotated((Math_PI * 0.5 + p_angle)).normalized() * elements[1].length();
 }
 
 real_t Transform2D::get_rotation() const {
@@ -111,7 +111,7 @@ Transform2D::Transform2D(const real_t p_rot, const Size2 &p_scale, const real_t 
 }
 
 Size2 Transform2D::get_scale() const {
-	real_t det_sign = SGN(basis_determinant());
+	real_t det_sign = SIGN(basis_determinant());
 	return Size2(elements[0].length(), det_sign * elements[1].length());
 }
 

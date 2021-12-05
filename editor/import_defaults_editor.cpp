@@ -62,7 +62,7 @@ protected:
 			return;
 		}
 		for (const PropertyInfo &E : properties) {
-			if (importer->get_option_visibility(E.name, values)) {
+			if (importer->get_option_visibility("", E.name, values)) {
 				p_list->push_back(E);
 			}
 		}
@@ -119,7 +119,7 @@ void ImportDefaultsEditor::_update_importer() {
 
 	if (importer.is_valid()) {
 		List<ResourceImporter::ImportOption> options;
-		importer->get_import_options(&options);
+		importer->get_import_options("", &options);
 		Dictionary d;
 		if (ProjectSettings::get_singleton()->has_setting("importer_defaults/" + importer->get_importer_name())) {
 			d = ProjectSettings::get_singleton()->get("importer_defaults/" + importer->get_importer_name());

@@ -8,7 +8,7 @@
 		[b]Note:[/b] [RootMotionView] is only visible in the editor. It will be hidden automatically in the running project, and will also be converted to a plain [Node] in the running project. This means a script attached to a [RootMotionView] node [i]must[/i] have [code]extends Node[/code] instead of [code]extends RootMotionView[/code]. Additionally, it must not be a [code]@tool[/code] script.
 	</description>
 	<tutorials>
-		<link title="Using AnimationTree - Root motion">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html#root-motion</link>
+		<link title="Using AnimationTree - Root motion">$DOCS_URL/tutorials/animation/animation_tree.html#root-motion</link>
 	</tutorials>
 	<members>
 		<member name="animation_path" type="NodePath" setter="set_animation_path" getter="get_animation_path">

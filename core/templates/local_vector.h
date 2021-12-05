@@ -70,7 +70,7 @@ public:
 		}
 	}
 
-	void remove(U p_index) {
+	void remove_at(U p_index) {
 		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
 		count--;
 		for (U i = p_index; i < count; i++) {
@@ -83,7 +83,7 @@ public:
 
 	/// Removes the item copying the last value into the position of the one to
 	/// remove. It's generally faster than `remove`.
-	void remove_unordered(U p_index) {
+	void remove_at_unordered(U p_index) {
 		ERR_FAIL_INDEX(p_index, count);
 		count--;
 		if (count > p_index) {
@@ -97,7 +97,7 @@ public:
 	void erase(const T &p_val) {
 		int64_t idx = find(p_val);
 		if (idx >= 0) {
-			remove(idx);
+			remove_at(idx);
 		}
 	}
 
@@ -234,19 +234,17 @@ public:
 			data[i] = p_from.data[i];
 		}
 	}
-	inline LocalVector &operator=(const LocalVector &p_from) {
+	inline void operator=(const LocalVector &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {
 			data[i] = p_from.data[i];
 		}
-		return *this;
 	}
-	inline LocalVector &operator=(const Vector<T> &p_from) {
+	inline void operator=(const Vector<T> &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < count; i++) {
 			data[i] = p_from[i];
 		}
-		return *this;
 	}
 
 	_FORCE_INLINE_ ~LocalVector() {

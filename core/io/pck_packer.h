@@ -58,7 +58,7 @@ class PCKPacker : public RefCounted {
 	Vector<File> files;
 
 public:
-	Error pck_start(const String &p_file, int p_alignment = 0, const String &p_key = String(), bool p_encrypt_directory = false);
+	Error pck_start(const String &p_file, int p_alignment = 32, const String &p_key = "0000000000000000000000000000000000000000000000000000000000000000", bool p_encrypt_directory = false);
 	Error add_file(const String &p_file, const String &p_src, bool p_encrypt = false);
 	Error flush(bool p_verbose = false);
 

@@ -434,7 +434,7 @@ void CollisionObject2D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 		PhysicsServer2D::get_singleton()->body_remove_shape(rid, index_to_remove);
 	}
 
-	shapes[p_owner].shapes.remove(p_shape);
+	shapes[p_owner].shapes.remove_at(p_shape);
 
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 		for (int i = 0; i < E.value.shapes.size(); i++) {

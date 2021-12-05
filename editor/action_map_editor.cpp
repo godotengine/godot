@@ -260,7 +260,7 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 			return;
 		} else {
 			// Always make the value 1 or -1 for display consistency
-			joym->set_axis_value(SGN(axis_value));
+			joym->set_axis_value(SIGN(axis_value));
 		}
 	}
 
@@ -847,7 +847,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			int event_index = item->get_meta("__index");
 
 			Array events = action["events"];
-			events.remove(event_index);
+			events.remove_at(event_index);
 			action["events"] = events;
 
 			emit_signal(SNAME("action_edited"), action_name, action);

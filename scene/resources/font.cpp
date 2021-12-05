@@ -88,6 +88,9 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_msdf_size", "msdf_size"), &FontData::set_msdf_size);
 	ClassDB::bind_method(D_METHOD("get_msdf_size"), &FontData::get_msdf_size);
 
+	ClassDB::bind_method(D_METHOD("set_fixed_size", "fixed_size"), &FontData::set_fixed_size);
+	ClassDB::bind_method(D_METHOD("get_fixed_size"), &FontData::get_fixed_size);
+
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &FontData::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &FontData::is_force_autohinter);
 
@@ -749,7 +752,7 @@ void FontData::remove_cache(int p_cache_index) {
 	if (cache[p_cache_index].is_valid()) {
 		TS->free(cache.write[p_cache_index]);
 	}
-	cache.remove(p_cache_index);
+	cache.remove_at(p_cache_index);
 	emit_changed();
 }
 
@@ -1353,8 +1356,8 @@ void Font::remove_data(int p_idx) {
 		data.write[p_idx]->disconnect(SNAME("changed"), callable_mp(this, &Font::_data_changed));
 	}
 
-	data.remove(p_idx);
-	rids.remove(p_idx);
+	data.remove_at(p_idx);
+	rids.remove_at(p_idx);
 
 	cache.clear();
 	cache_wrap.clear();

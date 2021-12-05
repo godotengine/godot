@@ -55,7 +55,10 @@ struct CountedItem {
 		count++;
 	}
 
-	CountedItem &operator=(const CountedItem &p_other) = default;
+	void operator=(const CountedItem &p_other) {
+		id = p_other.id;
+		count++;
+	}
 
 	~CountedItem() {
 		CRASH_COND(destroyed);

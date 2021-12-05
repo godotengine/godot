@@ -409,7 +409,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 			Vector2 scale = get_global_transform_with_canvas().get_scale();
 			grabber->set_scale(scale);
-			grabber->set_size(Size2(0, 0));
+			grabber->reset_size();
 			grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
 
 			if (mousewheel_over_grabber) {

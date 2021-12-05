@@ -31,6 +31,8 @@
 #include "editor_debugger_server_websocket.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_log.h"
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "modules/websocket/remote_debugger_peer_websocket.h"
 
@@ -48,19 +50,47 @@ void EditorDebuggerServerWebSocket::poll() {
 	server->poll();
 }
 
+String EditorDebuggerServerWebSocket::get_uri() const {
+	return endpoint;
+}
+
 Error EditorDebuggerServerWebSocket::start(const String &p_uri) {
+	// Default host and port
+	String bind_host = (String)EditorSettings::get_singleton()->get("network/debug/remote_host");
 	int bind_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
-	String bind_host = EditorSettings::get_singleton()->get("network/debug/remote_host");
+
+	// Optionally override
 	if (!p_uri.is_empty() && p_uri != "ws://") {
 		String scheme, path;
 		Error err = p_uri.parse_url(scheme, bind_host, bind_port, path);
 		ERR_FAIL_COND_V(err != OK, ERR_INVALID_PARAMETER);
 		ERR_FAIL_COND_V(!bind_host.is_valid_ip_address() && bind_host != "*", ERR_INVALID_PARAMETER);
 	}
+
+	// Set up the server
 	server->set_bind_ip(bind_host);
 	Vector<String> compatible_protocols;
 	compatible_protocols.push_back("binary"); // compatibility with EMSCRIPTEN TCP-to-WebSocket layer.
-	return server->listen(bind_port, compatible_protocols);
+
+	// Try listening on ports
+	const int max_attempts = 5;
+	for (int attempt = 1;; ++attempt) {
+		const Error err = server->listen(bind_port, compatible_protocols);
+		if (err == OK) {
+			break;
+		}
+		if (attempt >= max_attempts) {
+			EditorNode::get_log()->add_message(vformat("Cannot listen on port %d, remote debugging unavailable.", bind_port), EditorLog::MSG_TYPE_ERROR);
+			return err;
+		}
+		int last_port = bind_port++;
+		EditorNode::get_log()->add_message(vformat("Cannot listen on port %d, trying %d instead.", last_port, bind_port), EditorLog::MSG_TYPE_WARNING);
+	}
+
+	// Endpoint that the client should connect to
+	endpoint = vformat("ws://%s:%d", bind_host, bind_port);
+
+	return OK;
 }
 
 void EditorDebuggerServerWebSocket::stop() {

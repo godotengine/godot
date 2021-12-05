@@ -1314,10 +1314,10 @@ void CodeTextEditor::delete_lines() {
 		int count = Math::abs(to_line - from_line) + 1;
 
 		text_editor->set_caret_line(from_line, false);
+		text_editor->deselect();
 		for (int i = 0; i < count; i++) {
 			_delete_line(from_line);
 		}
-		text_editor->deselect();
 	} else {
 		_delete_line(text_editor->get_caret_line());
 	}

@@ -175,9 +175,6 @@ TypedArray<String> Decal::get_configuration_warnings() const {
 	}
 
 	if (cull_mask == 0) {
-		// NOTE: This warning will not be emitted if none of the 20 checkboxes
-		// exposed in the editor are checked. This is because there are
-		// currently 12 unexposed layers in the editor inspector.
 		warnings.push_back(TTR("The decal's Cull Mask has no bits enabled, which means the decal will not paint objects on any layer.\nTo resolve this, enable at least one bit in the Cull Mask property."));
 	}
 

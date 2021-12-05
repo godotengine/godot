@@ -172,7 +172,7 @@ void SkeletonModificationStack2D::add_modification(Ref<SkeletonModification2D> p
 
 void SkeletonModificationStack2D::delete_modification(int p_mod_idx) {
 	ERR_FAIL_INDEX(p_mod_idx, modifications.size());
-	modifications.remove(p_mod_idx);
+	modifications.remove_at(p_mod_idx);
 
 #ifdef TOOLS_ENABLED
 	set_editor_gizmos_dirty(true);
@@ -195,6 +195,7 @@ void SkeletonModificationStack2D::set_modification(int p_mod_idx, Ref<SkeletonMo
 }
 
 void SkeletonModificationStack2D::set_modification_count(int p_count) {
+	ERR_FAIL_COND_MSG(p_count < 0, "Modification count cannot be less than zero.");
 	modifications.resize(p_count);
 	notify_property_list_changed();
 

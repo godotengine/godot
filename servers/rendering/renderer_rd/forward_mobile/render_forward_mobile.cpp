@@ -483,6 +483,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	scene_state.ubo.viewport_size[0] = vp_he.x;
 	scene_state.ubo.viewport_size[1] = vp_he.y;
 	scene_state.ubo.directional_light_count = 0;
+	scene_state.ubo.opaque_prepass_threshold = 0.0;
 
 	// We can only use our full subpass approach if we're:
 	// - not reading from SCREEN_TEXTURE/DEPTH_TEXTURE
@@ -793,7 +794,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 		if (using_subpass_transparent) {
 			RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
-			RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold, p_render_data->view_count);
+			RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR_TRANSPARENT, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->lod_camera_plane, p_render_data->lod_distance_multiplier, p_render_data->screen_lod_threshold, p_render_data->view_count);
 			render_list_params.framebuffer_format = fb_format;
 			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
 				// secondary command buffers need more testing at this time
@@ -897,6 +898,7 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 	render_data.lod_distance_multiplier = p_lod_distance_multiplier;
 
 	scene_state.ubo.dual_paraboloid_side = p_use_dp_flip ? -1 : 1;
+	scene_state.ubo.opaque_prepass_threshold = 0.1;
 
 	_setup_environment(&render_data, true, Vector2(1, 1), !p_flip_y, Color(), false, p_use_pancake, shadow_pass_index);
 
@@ -978,6 +980,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 
 	scene_state.ubo.dual_paraboloid_side = 0;
 	scene_state.ubo.material_uv2_mode = false;
+	scene_state.ubo.opaque_prepass_threshold = 0.0f;
 
 	RenderDataRD render_data;
 	render_data.cam_projection = p_cam_projection;
@@ -1089,6 +1092,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 
 	_update_render_base_uniform_set();
 	scene_state.ubo.dual_paraboloid_side = 0;
+	scene_state.ubo.opaque_prepass_threshold = 0.0;
 
 	RenderDataRD render_data;
 	render_data.cam_projection = p_cam_projection;
@@ -1447,13 +1451,13 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 			}
 
 			// ADD Element
-			if (p_pass_mode == PASS_MODE_COLOR) {
+			if (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
 #ifdef DEBUG_ENABLED
 				bool force_alpha = unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW);
 #else
 				bool force_alpha = false;
 #endif
-				if (!force_alpha && (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE))) {
+				if (!force_alpha && (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE)) {
 					rl->add_element(surf);
 				}
 				if (force_alpha || (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA)) {

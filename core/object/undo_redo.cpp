@@ -282,7 +282,7 @@ void UndoRedo::_pop_history_tail() {
 		}
 	}
 
-	actions.remove(0);
+	actions.remove_at(0);
 	if (current_action >= 0) {
 		current_action--;
 	}

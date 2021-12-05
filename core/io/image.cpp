@@ -86,20 +86,14 @@ SaveEXRFunc Image::save_exr_func = nullptr;
 
 SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
 
-void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
-	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
-
-	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_data[ofs + i] = p_pixel[i];
-	}
+void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel) {
+	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
+	memcpy(p_data + ofs, p_pixel, p_pixel_size);
 }
 
-void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p_data, uint8_t *p_pixel) {
-	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
-
-	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_pixel[i] = p_data[ofs + i];
-	}
+void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel) {
+	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
+	memcpy(p_pixel, p_data + ofs, p_pixel_size);
 }
 
 int Image::get_format_pixel_size(Format p_format) {
@@ -2697,24 +2691,55 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	}
 }
 
-void Image::fill(const Color &c) {
+// Repeats `p_pixel` `p_count` times in consecutive memory.
+// Results in the original pixel and `p_count - 1` subsequent copies of it.
+void Image::_repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_size, int p_count) {
+	int offset = 1;
+	for (int stride = 1; offset + stride <= p_count; stride *= 2) {
+		memcpy(p_pixel + offset * p_pixel_size, p_pixel, stride * p_pixel_size);
+		offset += stride;
+	}
+	if (offset < p_count) {
+		memcpy(p_pixel + offset * p_pixel_size, p_pixel, (p_count - offset) * p_pixel_size);
+	}
+}
+
+void Image::fill(const Color &p_color) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill in compressed or custom image formats.");
 
-	uint8_t *wp = data.ptrw();
-	uint8_t *dst_data_ptr = wp;
+	uint8_t *dst_data_ptr = data.ptrw();
 
 	int pixel_size = get_format_pixel_size(format);
 
-	// put first pixel with the format-aware API
-	set_pixel(0, 0, c);
+	// Put first pixel with the format-aware API.
+	_set_color_at_ofs(dst_data_ptr, 0, p_color);
 
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			uint8_t *dst = &dst_data_ptr[(y * width + x) * pixel_size];
+	_repeat_pixel_over_subsequent_memory(dst_data_ptr, pixel_size, width * height);
+}
 
-			for (int k = 0; k < pixel_size; k++) {
-				dst[k] = dst_data_ptr[k];
-			}
+void Image::fill_rect(const Rect2 &p_rect, const Color &p_color) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
+
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect.abs());
+	if (r.has_no_area()) {
+		return;
+	}
+
+	uint8_t *dst_data_ptr = data.ptrw();
+
+	int pixel_size = get_format_pixel_size(format);
+
+	// Put first pixel with the format-aware API.
+	uint8_t *rect_first_pixel_ptr = &dst_data_ptr[(r.position.y * width + r.position.x) * pixel_size];
+	_set_color_at_ofs(rect_first_pixel_ptr, 0, p_color);
+
+	if (r.size.x == width) {
+		// No need to fill rows separately.
+		_repeat_pixel_over_subsequent_memory(rect_first_pixel_ptr, pixel_size, width * r.size.y);
+	} else {
+		_repeat_pixel_over_subsequent_memory(rect_first_pixel_ptr, pixel_size, r.size.x);
+		for (int y = 1; y < r.size.y; y++) {
+			memcpy(rect_first_pixel_ptr + y * width * pixel_size, rect_first_pixel_ptr, r.size.x * pixel_size);
 		}
 	}
 }
@@ -3160,6 +3185,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("blend_rect", "src", "src_rect", "dst"), &Image::blend_rect);
 	ClassDB::bind_method(D_METHOD("blend_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blend_rect_mask);
 	ClassDB::bind_method(D_METHOD("fill", "color"), &Image::fill);
+	ClassDB::bind_method(D_METHOD("fill_rect", "rect", "color"), &Image::fill_rect);
 
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &Image::get_used_rect);
 	ClassDB::bind_method(D_METHOD("get_rect", "rect"), &Image::get_rect);

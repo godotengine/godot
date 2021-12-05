@@ -427,7 +427,7 @@ void GDScript::_add_doc(const DocData::ClassDoc &p_inner_class) {
 	} else {
 		for (int i = 0; i < docs.size(); i++) {
 			if (docs[i].name == p_inner_class.name) {
-				docs.remove(i);
+				docs.remove_at(i);
 				break;
 			}
 		}
@@ -2131,7 +2131,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 
 									const GDScriptParser::ClassNode *inner_class = subclass->members[i].m_class;
 									if (inner_class->identifier->name == extend_classes[0]) {
-										extend_classes.remove(0);
+										extend_classes.remove_at(0);
 										found = true;
 										subclass = inner_class;
 										break;

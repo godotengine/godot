@@ -61,6 +61,11 @@ void Range::_changed_notify(const char *p_what) {
 	update();
 }
 
+void Range::_validate_values() {
+	shared->max = MAX(shared->max, shared->min);
+	shared->page = CLAMP(shared->page, 0, shared->max - shared->min);
+}
+
 void Range::Shared::emit_changed(const char *p_what) {
 	for (Set<Range *>::Element *E = owners.front(); E; E = E->next()) {
 		Range *r = E->get();
@@ -100,6 +105,7 @@ void Range::set_value(double p_val) {
 void Range::set_min(double p_min) {
 	shared->min = p_min;
 	set_value(shared->val);
+	_validate_values();
 
 	shared->emit_changed("min");
 
@@ -109,6 +115,7 @@ void Range::set_min(double p_min) {
 void Range::set_max(double p_max) {
 	shared->max = p_max;
 	set_value(shared->val);
+	_validate_values();
 
 	shared->emit_changed("max");
 }
@@ -121,6 +128,7 @@ void Range::set_step(double p_step) {
 void Range::set_page(double p_page) {
 	shared->page = p_page;
 	set_value(shared->val);
+	_validate_values();
 
 	shared->emit_changed("page");
 }
@@ -270,6 +278,12 @@ void Range::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
+
+	ADD_LINKED_PROPERTY("min_value", "value");
+	ADD_LINKED_PROPERTY("min_value", "max_value");
+	ADD_LINKED_PROPERTY("min_value", "page");
+	ADD_LINKED_PROPERTY("max_value", "value");
+	ADD_LINKED_PROPERTY("max_value", "page");
 }
 
 void Range::set_use_rounded_values(bool p_enable) {

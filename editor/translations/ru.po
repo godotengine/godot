@@ -99,13 +99,14 @@
 # Олег Довгер <oleg.a.dovger@gmail.com>, 2021.
 # Anna Malinovskaia <tacitcoast@gmail.com>, 2021.
 # mrvladus <mrvladus@yandex.ru>, 2021.
+# DΞLTΛ <craftercrafter43@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-21 10:31+0000\n"
-"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
+"PO-Revision-Date: 2021-11-07 09:45+0000\n"
+"Last-Translator: DΞLTΛ <craftercrafter43@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -7817,12 +7818,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "У этого скелета нет костей, создайте дочерние Bone2D узлы."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "Создать позу покоя из костей"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "Задать позу покоя костям"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "Создать позу покоя из костей"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
@@ -7830,7 +7831,7 @@ msgstr "2D скелет"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Reset to Rest Pose"
-msgstr "Сбросить к позе покоя"
+msgstr "Создать позу покоя"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Overwrite Rest Pose"

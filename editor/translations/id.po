@@ -34,13 +34,14 @@
 # undisputedgoose <diablodvorak@gmail.com>, 2021.
 # Tsaqib Fadhlurrahman Soka <sokatsaqib@gmail.com>, 2021.
 # Hilman Hazazi <hafizd.muhammad.kren.403@gmail.com>, 2021.
+# Brian <brian@brianthe.dev>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-15 04:32+0000\n"
-"Last-Translator: Tsaqib Fadhlurrahman Soka <sokatsaqib@gmail.com>\n"
+"PO-Revision-Date: 2021-11-19 08:43+0000\n"
+"Last-Translator: Brian <brian@brianthe.dev>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -48,7 +49,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.9.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2430,9 +2431,8 @@ msgstr ""
 "tidak terpenuhi."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "Tidak dapat memulai subproses!"
+msgstr "Tidak dapat menyimpan satu atau lebih skena!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -7380,14 +7380,12 @@ msgid "Move Down"
 msgstr "Turunkan"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
-msgstr "Skrip berikutnya"
+msgstr "Skrip Berikutnya"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
-msgstr "Skrip sebelumnya"
+msgstr "Skrip Sebelumnya"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
@@ -7741,12 +7739,12 @@ msgstr ""
 "Kerangka ini tidak memiliki pertulangan, buatlah beberapa anak node Bone2D."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "Buat Pose Istirahat dari Pertulangan"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "Atur Pose Istirahat ke Pertulangan"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "Buat Pose Istirahat dari Pertulangan"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
@@ -7805,9 +7803,8 @@ msgid "Left Orthogonal"
 msgstr "Ortogonal Kiri"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Left Perspective"
-msgstr "Perspektif"
+msgstr "Perspektif Kiri"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right Orthogonal"
@@ -7908,7 +7905,7 @@ msgstr "Dongak:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
-msgstr ""
+msgstr "Yaw:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Size:"
@@ -7940,7 +7937,7 @@ msgstr "Sudut:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
-msgstr ""
+msgstr "FPS: %d (%s ms)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -8075,9 +8072,8 @@ msgid "Freelook Slow Modifier"
 msgstr "Pengubah Lambat Tampilan Bebas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Camera Preview"
-msgstr "Ubah Ukuran Kamera"
+msgstr "Alihkan Pratinjau Kamera"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"

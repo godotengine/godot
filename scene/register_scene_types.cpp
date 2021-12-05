@@ -1031,6 +1031,16 @@ void register_scene_types() {
 		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i + 1), "");
 	}
 
+	if (RenderingServer::get_singleton()) {
+		ColorPicker::init_shaders(); // RenderingServer needs to exist for this to succeed.
+	}
+
+	SceneDebugger::initialize();
+
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
+}
+
+void initialize_theme() {
 	bool default_theme_hidpi = GLOBAL_DEF("gui/theme/use_hidpi", false);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/use_hidpi", PropertyInfo(Variant::BOOL, "gui/theme/use_hidpi", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 	String theme_path = GLOBAL_DEF_RST("gui/theme/custom", "");
@@ -1049,7 +1059,6 @@ void register_scene_types() {
 	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
 	if (RenderingServer::get_singleton()) {
 		make_default_theme(default_theme_hidpi, font);
-		ColorPicker::init_shaders(); // RenderingServer needs to exist for this to succeed.
 	}
 
 	if (theme_path != String()) {
@@ -1063,9 +1072,6 @@ void register_scene_types() {
 			ERR_PRINT("Error loading custom theme '" + theme_path + "'");
 		}
 	}
-	SceneDebugger::initialize();
-
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }
 
 void unregister_scene_types() {

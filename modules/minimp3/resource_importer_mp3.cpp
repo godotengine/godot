@@ -54,7 +54,7 @@ String ResourceImporterMP3::get_resource_type() const {
 	return "AudioStreamMP3";
 }
 
-bool ResourceImporterMP3::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterMP3::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -66,7 +66,7 @@ String ResourceImporterMP3::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterMP3::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterMP3::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
 }

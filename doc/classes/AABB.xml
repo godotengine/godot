@@ -6,12 +6,13 @@
 	<description>
 		[AABB] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 		It uses floating-point coordinates. The 2D counterpart to [AABB] is [Rect2].
+		Negative values for [member size] are not supported and will not work for most methods. Use [method abs] to get an AABB with a positive size.
 		[b]Note:[/b] Unlike [Rect2], [AABB] does not have a variant that uses integer coordinates.
 	</description>
 	<tutorials>
-		<link title="Math documentation index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
-		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
-		<link title="Advanced vector math">https://docs.godotengine.org/en/latest/tutorials/math/vectors_advanced.html</link>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
+		<link title="Advanced vector math">$DOCS_URL/tutorials/math/vectors_advanced.html</link>
 	</tutorials>
 	<constructors>
 		<constructor name="AABB">
@@ -157,14 +158,15 @@
 			<return type="bool" />
 			<argument index="0" name="point" type="Vector3" />
 			<description>
-				Returns [code]true[/code] if the [AABB] contains a point.
+				Returns [code]true[/code] if the [AABB] contains a point. Points on the faces of the AABB are considered included, though float-point precision errors may impact the accuracy of such checks.
+				[b]Note:[/b] This method is not reliable for [AABB] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent [AABB] to check for contained points.
 			</description>
 		</method>
 		<method name="intersection" qualifiers="const">
 			<return type="AABB" />
 			<argument index="0" name="with" type="AABB" />
 			<description>
-				Returns the intersection between two [AABB]. An empty AABB (size 0,0,0) is returned on failure.
+				Returns the intersection between two [AABB]. An empty AABB (size [code](0, 0, 0)[/code]) is returned on failure.
 			</description>
 		</method>
 		<method name="intersects" qualifiers="const">
@@ -233,12 +235,15 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="AABB" />
 			<description>
+				Returns [code]true[/code] if the vectors are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="AABB" />
 			<argument index="0" name="right" type="Transform3D" />
 			<description>
+				Inversely transforms (multiplies) the [AABB] by the given [Transform3D] transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -250,6 +255,8 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="AABB" />
 			<description>
+				Returns [code]true[/code] if the AABBs are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 	</operators>

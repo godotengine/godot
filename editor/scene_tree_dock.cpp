@@ -419,6 +419,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (!selected_item) {
 				selected_item = tree->get_root();
+				if (!selected_item) {
+					break;
+				}
 			}
 
 			bool collapsed = _is_collapsed_recursive(selected_item);
@@ -899,7 +902,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				// Resize the dialog to its minimum size.
 				// This prevents the dialog from being too wide after displaying
 				// a deletion confirmation for a node with a long name.
-				delete_dialog->set_size(Size2());
+				delete_dialog->reset_size();
 				delete_dialog->popup_centered();
 			}
 
@@ -1306,6 +1309,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
 			button_detach_script->set_icon(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")));
+			button_tree_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			button_2d->set_icon(get_theme_icon(SNAME("Node2D"), SNAME("EditorIcons")));
 			button_3d->set_icon(get_theme_icon(SNAME("Node3D"), SNAME("EditorIcons")));
 			button_ui->set_icon(get_theme_icon(SNAME("Control"), SNAME("EditorIcons")));
@@ -2575,7 +2579,7 @@ void SceneTreeDock::_files_dropped(Vector<String> p_files, NodePath p_to, int p_
 				menu_properties->set_item_metadata(menu_properties->get_item_count() - 1, p);
 			}
 
-			menu_properties->set_size(Size2(1, 1));
+			menu_properties->reset_size();
 			menu_properties->set_position(get_screen_position() + get_local_mouse_position());
 			menu_properties->popup();
 		} else if (!valid_properties.is_empty()) {
@@ -2667,7 +2671,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
 		}
 
-		menu->set_size(Size2(1, 1));
+		menu->reset_size();
 		menu->set_position(get_screen_position() + p_menu_pos);
 		menu->popup();
 		return;
@@ -2690,7 +2694,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		if (profile_allow_editing) {
 			subresources.clear();
 			menu_subresources->clear();
-			menu_subresources->set_size(Size2(1, 1));
+			menu_subresources->reset_size();
 			_add_children_to_popup(selection.front()->get(), 0);
 			if (menu->get_item_count() > 0) {
 				menu->add_separator();
@@ -2831,7 +2835,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_separator();
 		menu->add_icon_shortcut(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), Key::KEY_DELETE), TOOL_ERASE);
 	}
-	menu->set_size(Size2(1, 1));
+	menu->reset_size();
 	menu->set_position(p_menu_pos);
 	menu->popup();
 }
@@ -2843,7 +2847,7 @@ void SceneTreeDock::_open_tree_menu() {
 	menu->add_check_item(TTR("Auto Expand to Selected"), TOOL_AUTO_EXPAND);
 	menu->set_item_checked(menu->get_item_idx_from_text(TTR("Auto Expand to Selected")), EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"));
 
-	menu->set_size(Size2(1, 1));
+	menu->reset_size();
 	menu->set_position(get_screen_position() + get_local_mouse_position());
 	menu->popup();
 }
@@ -2973,7 +2977,7 @@ void SceneTreeDock::attach_shader_to_selected(int p_preferred_mode) {
 	shader_create_dialog->connect("shader_created", callable_mp(this, &SceneTreeDock::_shader_created));
 	shader_create_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
 	shader_create_dialog->connect("cancelled", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
-	shader_create_dialog->config(path, true, true, p_preferred_mode);
+	shader_create_dialog->config(path, true, true, -1, p_preferred_mode);
 	shader_create_dialog->popup_centered();
 }
 

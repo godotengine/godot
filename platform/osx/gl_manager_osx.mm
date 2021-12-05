@@ -75,7 +75,7 @@ Error GLManager_OSX::window_create(DisplayServer::WindowID p_window_id, id p_vie
 	win.window_view = p_view;
 
 	if (_create_context(win) != OK) {
-		_windows.remove(_windows.size() - 1);
+		_windows.remove_at(_windows.size() - 1);
 		return FAILED;
 	}
 

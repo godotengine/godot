@@ -101,8 +101,6 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 	real_t drag_coefficient = 0.0; // [0,1]
 	LocalVector<int> pinned_vertices;
 
-	Vector3 gravity;
-
 	SelfList<GodotSoftBody3D> active_list;
 
 	Set<GodotConstraint3D *> constraints;
@@ -113,7 +111,6 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 
 	uint64_t island_step = 0;
 
-	_FORCE_INLINE_ void _compute_area_gravity(const GodotArea3D *p_area);
 	_FORCE_INLINE_ Vector3 _compute_area_windforce(const GodotArea3D *p_area, const Face *p_face);
 
 public:
@@ -151,7 +148,7 @@ public:
 		if (index > -1) {
 			areas.write[index].refCount -= 1;
 			if (areas[index].refCount < 1) {
-				areas.remove(index);
+				areas.remove_at(index);
 			}
 		}
 	}

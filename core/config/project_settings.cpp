@@ -41,6 +41,9 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
+#include "core/version.h"
+
+#include "modules/modules_enabled.gen.h" // For mono.
 
 const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
 
@@ -62,8 +65,79 @@ String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
+String ProjectSettings::get_safe_project_name() const {
+	String safe_name = OS::get_singleton()->get_safe_dir_name(get("application/config/name"));
+	if (safe_name.is_empty()) {
+		safe_name = "UnnamedProject";
+	}
+	return safe_name;
+}
+
 String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().plus_file("imported");
+}
+
+// Returns the features that a project must have when opened with this build of Godot.
+// This is used by the project manager to provide the initial_settings for config/features.
+const PackedStringArray ProjectSettings::get_required_features() {
+	PackedStringArray features = PackedStringArray();
+	features.append(VERSION_BRANCH);
+#ifdef REAL_T_IS_DOUBLE
+	features.append("Double Precision");
+#endif
+	return features;
+}
+
+// Returns the features supported by this build of Godot. Includes all required features.
+const PackedStringArray ProjectSettings::_get_supported_features() {
+	PackedStringArray features = get_required_features();
+#ifdef MODULE_MONO_ENABLED
+	features.append("C#");
+#endif
+	// Allow pinning to a specific patch number or build type by marking
+	// them as supported. They're only used if the user adds them manually.
+	features.append(VERSION_BRANCH "." _MKSTR(VERSION_PATCH));
+	features.append(VERSION_FULL_CONFIG);
+	features.append(VERSION_FULL_BUILD);
+	// For now, assume Vulkan is always supported.
+	// This should be removed if it's possible to build the editor without Vulkan.
+	features.append("Vulkan Clustered");
+	features.append("Vulkan Mobile");
+	return features;
+}
+
+// Returns the features that this project needs but this build of Godot lacks.
+const PackedStringArray ProjectSettings::get_unsupported_features(const PackedStringArray &p_project_features) {
+	PackedStringArray unsupported_features = PackedStringArray();
+	PackedStringArray supported_features = singleton->_get_supported_features();
+	for (int i = 0; i < p_project_features.size(); i++) {
+		if (!supported_features.has(p_project_features[i])) {
+			unsupported_features.append(p_project_features[i]);
+		}
+	}
+	unsupported_features.sort();
+	return unsupported_features;
+}
+
+// Returns the features that both this project has and this build of Godot has, ensuring required features exist.
+const PackedStringArray ProjectSettings::_trim_to_supported_features(const PackedStringArray &p_project_features) {
+	// Remove unsupported features if present.
+	PackedStringArray features = PackedStringArray(p_project_features);
+	PackedStringArray supported_features = _get_supported_features();
+	for (int i = p_project_features.size() - 1; i > -1; i--) {
+		if (!supported_features.has(p_project_features[i])) {
+			features.remove_at(i);
+		}
+	}
+	// Add required features if not present.
+	PackedStringArray required_features = get_required_features();
+	for (int i = 0; i < required_features.size(); i++) {
+		if (!features.has(required_features[i])) {
+			features.append(required_features[i]);
+		}
+	}
+	features.sort();
+	return features;
 }
 
 String ProjectSettings::localize_path(const String &p_path) const {
@@ -368,12 +442,12 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *    If a project file is found, load it or fail.
  *    If nothing was found, error out.
  */
-Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
+Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	// If looking for files in a network client, use it directly
 
 	if (FileAccessNetworkClient::get_singleton()) {
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
-		if (err == OK) {
+		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails
 			_load_settings_text("res://override.cfg");
 		}
@@ -387,7 +461,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, "Cannot open resource pack '" + p_main_pack + "'.");
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
-		if (err == OK) {
+		if (err == OK && !p_ignore_override) {
 			// Load override from location of the main pack
 			// Optional, we don't mind if it fails
 			_load_settings_text(p_main_pack.get_base_dir().plus_file("override.cfg"));
@@ -437,7 +511,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// If we opened our package, try and load our project.
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
-			if (err == OK) {
+			if (err == OK && !p_ignore_override) {
 				// Load override from location of the executable.
 				// Optional, we don't mind if it fails.
 				_load_settings_text(exec_path.get_base_dir().plus_file("override.cfg"));
@@ -458,7 +532,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
-		if (err == OK) {
+		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
 			_load_settings_text("res://override.cfg");
 		}
@@ -481,7 +555,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		resource_path = current_dir;
 		resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
 		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
-		if (err == OK) {
+		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
 			_load_settings_text(current_dir.plus_file("override.cfg"));
 			found = true;
@@ -513,8 +587,8 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	return OK;
 }
 
-Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
-	Error err = _setup(p_path, p_main_pack, p_upwards);
+Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
+	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
 	if (err == OK) {
 		String custom_settings = GLOBAL_DEF("application/config/project_settings_override", "");
 		if (custom_settings != "") {
@@ -664,6 +738,13 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 	}
 
 	return err;
+}
+
+Error ProjectSettings::load_custom(const String &p_path) {
+	if (p_path.ends_with(".binary")) {
+		return _load_settings_binary(p_path);
+	}
+	return _load_settings_text(p_path);
 }
 
 int ProjectSettings::get_order(const String &p_name) const {
@@ -844,6 +925,34 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 
 Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
 	ERR_FAIL_COND_V_MSG(p_path == "", ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
+
+	PackedStringArray project_features = has_setting("application/config/features") ? (PackedStringArray)get_setting("application/config/features") : PackedStringArray();
+	// If there is no feature list currently present, force one to generate.
+	if (project_features.is_empty()) {
+		project_features = ProjectSettings::get_required_features();
+	}
+	// Check the rendering API.
+	const String rendering_api = has_setting("rendering/quality/driver/driver_name") ? (String)get_setting("rendering/quality/driver/driver_name") : String();
+	if (rendering_api != "") {
+		// Add the rendering API as a project feature if it doesn't already exist.
+		if (!project_features.has(rendering_api)) {
+			project_features.append(rendering_api);
+		}
+	}
+	// Check for the existence of a csproj file.
+	if (FileAccess::exists(get_resource_path().plus_file(get_safe_project_name() + ".csproj"))) {
+		// If there is a csproj file, add the C# feature if it doesn't already exist.
+		if (!project_features.has("C#")) {
+			project_features.append("C#");
+		}
+	} else {
+		// If there isn't a csproj file, remove the C# feature if it exists.
+		if (project_features.has("C#")) {
+			project_features.remove_at(project_features.find("C#"));
+		}
+	}
+	project_features = _trim_to_supported_features(project_features);
+	set_setting("application/config/features", project_features);
 
 	Set<_VCSort> vclist;
 

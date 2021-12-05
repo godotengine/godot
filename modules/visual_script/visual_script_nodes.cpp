@@ -253,7 +253,7 @@ String VisualScriptFunction::get_argument_name(int p_argidx) const {
 void VisualScriptFunction::remove_argument(int p_argidx) {
 	ERR_FAIL_INDEX(p_argidx, arguments.size());
 
-	arguments.remove(p_argidx);
+	arguments.remove_at(p_argidx);
 	ports_changed_notify();
 }
 
@@ -623,7 +623,7 @@ void VisualScriptLists::remove_input_data_port(int p_argidx) {
 
 	ERR_FAIL_INDEX(p_argidx, inputports.size());
 
-	inputports.remove(p_argidx);
+	inputports.remove_at(p_argidx);
 
 	ports_changed_notify();
 	notify_property_list_changed();
@@ -679,7 +679,7 @@ void VisualScriptLists::remove_output_data_port(int p_argidx) {
 
 	ERR_FAIL_INDEX(p_argidx, outputports.size());
 
-	outputports.remove(p_argidx);
+	outputports.remove_at(p_argidx);
 
 	ports_changed_notify();
 	notify_property_list_changed();

@@ -453,7 +453,7 @@ struct WebPDecoderOptions {
   int scaled_width, scaled_height;    // final resolution
   int use_threads;                    // if true, use multi-threaded decoding
   int dithering_strength;             // dithering strength (0=Off, 100=full)
-  int flip;                           // flip output vertically
+  int flip;                           // if true, flip output vertically
   int alpha_dithering_strength;       // alpha dithering strength in [0..100]
 
   uint32_t pad[5];                    // padding for later use

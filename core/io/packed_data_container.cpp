@@ -100,6 +100,7 @@ Variant PackedDataContainer::_iter_get_ofs(const Variant &p_iter, uint32_t p_off
 }
 
 Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, bool &err) const {
+	ERR_FAIL_COND_V(p_ofs + 4 > (uint32_t)data.size(), Variant());
 	uint32_t type = decode_uint32(p_buf + p_ofs);
 
 	if (type == TYPE_ARRAY || type == TYPE_DICT) {
@@ -122,6 +123,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 }
 
 uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
+	ERR_FAIL_COND_V(p_ofs + 4 > (uint32_t)data.size(), 0);
 	const uint8_t *rd = data.ptr();
 	ERR_FAIL_COND_V(!rd, 0);
 	const uint8_t *r = &rd[p_ofs];
@@ -131,6 +133,7 @@ uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 }
 
 int PackedDataContainer::_size(uint32_t p_ofs) const {
+	ERR_FAIL_COND_V(p_ofs + 4 > (uint32_t)data.size(), 0);
 	const uint8_t *rd = data.ptr();
 	ERR_FAIL_COND_V(!rd, 0);
 	const uint8_t *r = &rd[p_ofs];
@@ -149,6 +152,7 @@ int PackedDataContainer::_size(uint32_t p_ofs) const {
 }
 
 Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, bool &err) const {
+	ERR_FAIL_COND_V(p_ofs + 4 > (uint32_t)data.size(), Variant());
 	const uint8_t *rd = data.ptr();
 	if (!rd) {
 		err = true;

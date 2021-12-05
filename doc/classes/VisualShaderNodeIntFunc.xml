@@ -23,7 +23,10 @@
 		<constant name="FUNC_SIGN" value="2" enum="Function">
 			Extracts the sign of the parameter. Translates to [code]sign(x)[/code] in the Godot Shader Language.
 		</constant>
-		<constant name="FUNC_MAX" value="3" enum="Function">
+		<constant name="FUNC_BITWISE_NOT" value="3" enum="Function">
+			Returns the result of bitwise [code]NOT[/code] operation on the integer. Translates to [code]~a[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="FUNC_MAX" value="4" enum="Function">
 			Represents the size of the [enum Function] enum.
 		</constant>
 	</constants>

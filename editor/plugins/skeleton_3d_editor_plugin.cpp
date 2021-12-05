@@ -964,6 +964,7 @@ void Skeleton3DEditor::select_bone(int p_idx) {
 
 Skeleton3DEditor::~Skeleton3DEditor() {
 	if (skeleton) {
+		select_bone(-1);
 #ifdef TOOLS_ENABLED
 		skeleton->disconnect("show_rest_only_changed", callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
 		skeleton->disconnect("bone_enabled_changed", callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
@@ -973,6 +974,7 @@ Skeleton3DEditor::~Skeleton3DEditor() {
 #endif
 		handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
 	}
+	edit_mode_toggled(false);
 
 	handles_mesh_instance->queue_delete();
 

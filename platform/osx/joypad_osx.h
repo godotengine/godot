@@ -68,8 +68,8 @@ struct joypad {
 
 	io_service_t ffservice = 0; /* Interface for force feedback, 0 = no ff */
 	FFCONSTANTFORCE ff_constant_force;
-	FFDeviceObjectReference ff_device;
-	FFEffectObjectReference ff_object;
+	FFDeviceObjectReference ff_device = nullptr;
+	FFEffectObjectReference ff_object = nullptr;
 	uint64_t ff_timestamp = 0;
 	LONG *ff_directions = nullptr;
 	FFEFFECT ff_effect;

@@ -185,9 +185,13 @@ Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<
 		String error;
 
 		ShaderStage stage = ShaderStage(i);
-		Vector<uint8_t> spirv = shader_compile_spirv_from_source(stage, p_source->get_stage_source(stage), p_source->get_language(), &error, p_allow_cache);
-		bytecode->set_stage_bytecode(stage, spirv);
-		bytecode->set_stage_compile_error(stage, error);
+		String source = p_source->get_stage_source(stage);
+
+		if (!source.is_empty()) {
+			Vector<uint8_t> spirv = shader_compile_spirv_from_source(stage, source, p_source->get_language(), &error, p_allow_cache);
+			bytecode->set_stage_bytecode(stage, spirv);
+			bytecode->set_stage_compile_error(stage, error);
+		}
 	}
 	return bytecode;
 }

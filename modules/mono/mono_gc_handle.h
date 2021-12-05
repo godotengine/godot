@@ -56,13 +56,12 @@ struct MonoGCHandleData {
 
 	void release();
 
-	MonoGCHandleData &operator=(const MonoGCHandleData &p_other) {
+	void operator=(const MonoGCHandleData &p_other) {
 #ifdef DEBUG_ENABLED
 		CRASH_COND(!is_released());
 #endif
 		handle = p_other.handle;
 		type = p_other.type;
-		return *this;
 	}
 
 	MonoGCHandleData(const MonoGCHandleData &) = default;

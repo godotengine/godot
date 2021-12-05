@@ -112,104 +112,107 @@
 		<constant name="MATH_RANDF" value="32" enum="BuiltinFunc">
 			Return a random floating-point value between 0 and 1. To obtain a random value between 0 to N, you can use it with multiplication.
 		</constant>
-		<constant name="MATH_RANDF_RANGE" value="33" enum="BuiltinFunc">
-			Return a random floating-point value between the two inputs.
-		</constant>
-		<constant name="MATH_RANDI_RANGE" value="34" enum="BuiltinFunc">
+		<constant name="MATH_RANDI_RANGE" value="33" enum="BuiltinFunc">
 			Return a random 32-bit integer value between the two inputs.
 		</constant>
-		<constant name="MATH_SEED" value="35" enum="BuiltinFunc">
+		<constant name="MATH_RANDF_RANGE" value="34" enum="BuiltinFunc">
+			Return a random floating-point value between the two inputs.
+		</constant>
+		<constant name="MATH_RANDFN" value="35" enum="BuiltinFunc">
+			Returns a normally-distributed pseudo-random number, using Box-Muller transform with the specified mean and a standard deviation. This is also called Gaussian distribution.
+		</constant>
+		<constant name="MATH_SEED" value="36" enum="BuiltinFunc">
 			Set the seed for the random number generator.
 		</constant>
-		<constant name="MATH_RANDSEED" value="36" enum="BuiltinFunc">
+		<constant name="MATH_RANDSEED" value="37" enum="BuiltinFunc">
 			Return a random value from the given seed, along with the new seed.
 		</constant>
-		<constant name="MATH_DEG2RAD" value="37" enum="BuiltinFunc">
+		<constant name="MATH_DEG2RAD" value="38" enum="BuiltinFunc">
 			Convert the input from degrees to radians.
 		</constant>
-		<constant name="MATH_RAD2DEG" value="38" enum="BuiltinFunc">
+		<constant name="MATH_RAD2DEG" value="39" enum="BuiltinFunc">
 			Convert the input from radians to degrees.
 		</constant>
-		<constant name="MATH_LINEAR2DB" value="39" enum="BuiltinFunc">
+		<constant name="MATH_LINEAR2DB" value="40" enum="BuiltinFunc">
 			Convert the input from linear volume to decibel volume.
 		</constant>
-		<constant name="MATH_DB2LINEAR" value="40" enum="BuiltinFunc">
+		<constant name="MATH_DB2LINEAR" value="41" enum="BuiltinFunc">
 			Convert the input from decibel volume to linear volume.
 		</constant>
-		<constant name="MATH_WRAP" value="41" enum="BuiltinFunc">
+		<constant name="MATH_WRAP" value="42" enum="BuiltinFunc">
 		</constant>
-		<constant name="MATH_WRAPF" value="42" enum="BuiltinFunc">
+		<constant name="MATH_WRAPF" value="43" enum="BuiltinFunc">
 		</constant>
-		<constant name="MATH_PINGPONG" value="43" enum="BuiltinFunc">
+		<constant name="MATH_PINGPONG" value="44" enum="BuiltinFunc">
 			Return the [code]value[/code] wrapped between [code]0[/code] and the [code]length[/code]. If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [code]length[/code] side (like a triangle wave). If [code]length[/code] is less than zero, it becomes positive.
 		</constant>
-		<constant name="LOGIC_MAX" value="44" enum="BuiltinFunc">
+		<constant name="LOGIC_MAX" value="45" enum="BuiltinFunc">
 			Return the greater of the two numbers, also known as their maximum.
 		</constant>
-		<constant name="LOGIC_MIN" value="45" enum="BuiltinFunc">
+		<constant name="LOGIC_MIN" value="46" enum="BuiltinFunc">
 			Return the lesser of the two numbers, also known as their minimum.
 		</constant>
-		<constant name="LOGIC_CLAMP" value="46" enum="BuiltinFunc">
+		<constant name="LOGIC_CLAMP" value="47" enum="BuiltinFunc">
 			Return the input clamped inside the given range, ensuring the result is never outside it. Equivalent to [code]min(max(input, range_low), range_high)[/code].
 		</constant>
-		<constant name="LOGIC_NEAREST_PO2" value="47" enum="BuiltinFunc">
+		<constant name="LOGIC_NEAREST_PO2" value="48" enum="BuiltinFunc">
 			Return the nearest power of 2 to the input.
 		</constant>
-		<constant name="OBJ_WEAKREF" value="48" enum="BuiltinFunc">
+		<constant name="OBJ_WEAKREF" value="49" enum="BuiltinFunc">
 			Create a [WeakRef] from the input.
 		</constant>
-		<constant name="TYPE_CONVERT" value="49" enum="BuiltinFunc">
+		<constant name="TYPE_CONVERT" value="50" enum="BuiltinFunc">
 			Convert between types.
 		</constant>
-		<constant name="TYPE_OF" value="50" enum="BuiltinFunc">
+		<constant name="TYPE_OF" value="51" enum="BuiltinFunc">
 			Return the type of the input as an integer. Check [enum Variant.Type] for the integers that might be returned.
 		</constant>
-		<constant name="TYPE_EXISTS" value="51" enum="BuiltinFunc">
+		<constant name="TYPE_EXISTS" value="52" enum="BuiltinFunc">
 			Checks if a type is registered in the [ClassDB].
 		</constant>
-		<constant name="TEXT_CHAR" value="52" enum="BuiltinFunc">
+		<constant name="TEXT_CHAR" value="53" enum="BuiltinFunc">
 			Return a character with the given ascii value.
 		</constant>
-		<constant name="TEXT_STR" value="53" enum="BuiltinFunc">
+		<constant name="TEXT_STR" value="54" enum="BuiltinFunc">
 			Convert the input to a string.
 		</constant>
-		<constant name="TEXT_PRINT" value="54" enum="BuiltinFunc">
+		<constant name="TEXT_PRINT" value="55" enum="BuiltinFunc">
 			Print the given string to the output window.
 		</constant>
-		<constant name="TEXT_PRINTERR" value="55" enum="BuiltinFunc">
+		<constant name="TEXT_PRINTERR" value="56" enum="BuiltinFunc">
 			Print the given string to the standard error output.
 		</constant>
-		<constant name="TEXT_PRINTRAW" value="56" enum="BuiltinFunc">
+		<constant name="TEXT_PRINTRAW" value="57" enum="BuiltinFunc">
 			Print the given string to the standard output, without adding a newline.
 		</constant>
-		<constant name="TEXT_PRINT_VERBOSE" value="57" enum="BuiltinFunc">
+		<constant name="TEXT_PRINT_VERBOSE" value="58" enum="BuiltinFunc">
 		</constant>
-		<constant name="VAR_TO_STR" value="58" enum="BuiltinFunc">
+		<constant name="VAR_TO_STR" value="59" enum="BuiltinFunc">
 			Serialize a [Variant] to a string.
 		</constant>
-		<constant name="STR_TO_VAR" value="59" enum="BuiltinFunc">
+		<constant name="STR_TO_VAR" value="60" enum="BuiltinFunc">
 			Deserialize a [Variant] from a string serialized using [constant VAR_TO_STR].
 		</constant>
-		<constant name="VAR_TO_BYTES" value="60" enum="BuiltinFunc">
+		<constant name="VAR_TO_BYTES" value="61" enum="BuiltinFunc">
 			Serialize a [Variant] to a [PackedByteArray].
 		</constant>
-		<constant name="BYTES_TO_VAR" value="61" enum="BuiltinFunc">
+		<constant name="BYTES_TO_VAR" value="62" enum="BuiltinFunc">
 			Deserialize a [Variant] from a [PackedByteArray] serialized using [constant VAR_TO_BYTES].
 		</constant>
-		<constant name="MATH_SMOOTHSTEP" value="62" enum="BuiltinFunc">
+		<constant name="MATH_SMOOTHSTEP" value="63" enum="BuiltinFunc">
 			Return a number smoothly interpolated between the first two inputs, based on the third input. Similar to [constant MATH_LERP], but interpolates faster at the beginning and slower at the end. Using Hermite interpolation formula:
 			[codeblock]
 			var t = clamp((weight - from) / (to - from), 0.0, 1.0)
 			return t * t * (3.0 - 2.0 * t)
 			[/codeblock]
 		</constant>
-		<constant name="MATH_POSMOD" value="63" enum="BuiltinFunc">
+		<constant name="MATH_POSMOD" value="64" enum="BuiltinFunc">
 		</constant>
-		<constant name="MATH_LERP_ANGLE" value="64" enum="BuiltinFunc">
+		<constant name="MATH_LERP_ANGLE" value="65" enum="BuiltinFunc">
 		</constant>
-		<constant name="TEXT_ORD" value="65" enum="BuiltinFunc">
+		<constant name="TEXT_ORD" value="66" enum="BuiltinFunc">
 		</constant>
-		<constant name="FUNC_MAX" value="66" enum="BuiltinFunc">
+		<constant name="FUNC_MAX" value="67" enum="BuiltinFunc">
 			Represents the size of the [enum BuiltinFunc] enum.
 		</constant>
 	</constants>

@@ -456,7 +456,11 @@ private:
 
 	struct RenderBuffers {
 		RenderBufferData *data = nullptr;
-		int width = 0, height = 0;
+		int internal_width = 0;
+		int internal_height = 0;
+		int width = 0;
+		int height = 0;
+		float fsr_sharpness = 0.2f;
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 		RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 		bool use_debanding = false;
@@ -466,9 +470,12 @@ private:
 
 		uint64_t auto_exposure_version = 1;
 
-		RID texture; //main texture for rendering to, must be filled after done rendering
+		RID sss_texture; //texture for sss. This needs to be a different resolution than blur[0]
+		RID internal_texture; //main texture for rendering to, must be filled after done rendering
+		RID texture; //upscaled version of main texture (This uses the same resource as internal_texture if there is no upscaling)
 		RID depth_texture; //main depth texture
 		RID texture_fb; // framebuffer for the main texture, ONLY USED FOR MOBILE RENDERER POST EFFECTS, DO NOT USE FOR RENDERING 3D!!!
+		RID upscale_texture; //used when upscaling internal_texture (This uses the same resource as internal_texture if there is no upscaling)
 
 		RendererSceneGIRD::SDFGI *sdfgi = nullptr;
 		VolumetricFog *volumetric_fog = nullptr;
@@ -1332,7 +1339,7 @@ public:
 	virtual RD::DataFormat _render_buffers_get_color_format();
 	virtual bool _render_buffers_can_be_storage();
 	virtual RID render_buffers_create() override;
-	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) override;
+	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) override;
 	virtual void gi_set_use_half_resolution(bool p_enable) override;
 
 	RID render_buffers_get_depth_texture(RID p_render_buffers);
@@ -1362,6 +1369,8 @@ public:
 	RID render_buffers_get_volumetric_fog_sky_uniform_set(RID p_render_buffers);
 	float render_buffers_get_volumetric_fog_end(RID p_render_buffers);
 	float render_buffers_get_volumetric_fog_detail_spread(RID p_render_buffers);
+
+	virtual void update_uniform_sets(){};
 
 	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
 

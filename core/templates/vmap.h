@@ -134,7 +134,7 @@ public:
 		if (pos < 0) {
 			return;
 		}
-		_cowdata.remove(pos);
+		_cowdata.remove_at(pos);
 	}
 
 	int find(const T &p_val) const {
@@ -193,9 +193,8 @@ public:
 	_FORCE_INLINE_ VMap() {}
 	_FORCE_INLINE_ VMap(const VMap &p_from) { _cowdata._ref(p_from._cowdata); }
 
-	inline VMap &operator=(const VMap &p_from) {
+	inline void operator=(const VMap &p_from) {
 		_cowdata._ref(p_from._cowdata);
-		return *this;
 	}
 };
 

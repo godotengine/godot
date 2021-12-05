@@ -7,11 +7,12 @@
 		[Rect2] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 		It uses floating-point coordinates. If you need integer coordinates, use [Rect2i] instead.
 		The 3D counterpart to [Rect2] is [AABB].
+		Negative values for [member size] are not supported and will not work for most methods. Use [method abs] to get a Rect2 with a positive size.
 	</description>
 	<tutorials>
-		<link title="Math documentation index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
-		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
-		<link title="Advanced vector math">https://docs.godotengine.org/en/latest/tutorials/math/vectors_advanced.html</link>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
+		<link title="Advanced vector math">$DOCS_URL/tutorials/math/vectors_advanced.html</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Rect2">
@@ -194,12 +195,15 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Rect2" />
 			<description>
+				Returns [code]true[/code] if the rectangles are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Rect2" />
 			<argument index="0" name="right" type="Transform2D" />
 			<description>
+				Inversely transforms (multiplies) the [Rect2] by the given [Transform2D] transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -211,6 +215,8 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Rect2" />
 			<description>
+				Returns [code]true[/code] if the rectangles are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 	</operators>

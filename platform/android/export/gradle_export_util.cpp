@@ -211,15 +211,23 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 
 String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 	String manifest_xr_features;
-	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
+	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
+	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
 	if (uses_xr) {
 		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vr.headtracking\" android:required=\"true\" android:version=\"1\" />\n";
 
 		int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
-		if (hand_tracking_index == 1) {
+		if (hand_tracking_index == XR_HAND_TRACKING_OPTIONAL) {
 			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"oculus.software.handtracking\" android:required=\"false\" />\n";
-		} else if (hand_tracking_index == 2) {
+		} else if (hand_tracking_index == XR_HAND_TRACKING_REQUIRED) {
 			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"oculus.software.handtracking\" android:required=\"true\" />\n";
+		}
+
+		int passthrough_mode = p_preset->get("xr_features/passthrough");
+		if (passthrough_mode == XR_PASSTHROUGH_OPTIONAL) {
+			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"com.oculus.feature.PASSTHROUGH\" android:required=\"false\" />\n";
+		} else if (passthrough_mode == XR_PASSTHROUGH_REQUIRED) {
+			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"com.oculus.feature.PASSTHROUGH\" android:required=\"true\" />\n";
 		}
 	}
 	return manifest_xr_features;
@@ -239,7 +247,8 @@ String _get_instrumentation_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
-	bool uses_xr = (int)(p_preset->get("xr_features/xr_mode")) == 1;
+	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
+	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
@@ -256,6 +265,8 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_storage_permission) {
+	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
+	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
 	String manifest_application_text = vformat(
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
 			"        android:allowBackup=\"%s\"\n"
@@ -270,6 +281,9 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 			bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
 			bool_to_string(p_has_storage_permission));
 
+	if (uses_xr) {
+		manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.samsung.android.vr.application.mode\" android:value=\"vr_only\" />\n";
+	}
 	manifest_application_text += _get_activity_tag(p_preset);
 	manifest_application_text += "    </application>\n";
 	return manifest_application_text;

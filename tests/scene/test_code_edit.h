@@ -2332,6 +2332,20 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		CHECK_FALSE(code_edit->is_line_folded(2));
 		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 2);
 
+		// Indent with blank lines.
+		code_edit->set_text("line1\n\tline2\n\n\nline3");
+		CHECK(code_edit->can_fold_line(0));
+		for (int i = 1; i < 2; i++) {
+			CHECK_FALSE(code_edit->can_fold_line(i));
+			code_edit->fold_line(i);
+			CHECK_FALSE(code_edit->is_line_folded(i));
+		}
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK_FALSE(code_edit->is_line_folded(1));
+		CHECK_FALSE(code_edit->is_line_folded(2));
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 2);
+
 		// Nested indents.
 		code_edit->set_text("line1\n\tline2\n\t\tline3\nline4");
 		CHECK(code_edit->can_fold_line(0));
@@ -2408,7 +2422,7 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		for (int i = 1; i < code_edit->get_line_count(); i++) {
 			CHECK_FALSE(code_edit->is_line_folded(i));
 		}
-		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 6);
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 5);
 
 		// End of file.
 		code_edit->set_text("line1\n\tline2");
@@ -2490,7 +2504,7 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 
 		// Multiline blocks.
 		code_edit->add_comment_delimiter("&", "&", false);
-		code_edit->set_text("&line1\n\tline2&");
+		code_edit->set_text("&line1\n\tline2&\nline3");
 		CHECK(code_edit->can_fold_line(0));
 		CHECK_FALSE(code_edit->can_fold_line(1));
 		code_edit->fold_line(1);
@@ -2498,7 +2512,17 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		code_edit->fold_line(0);
 		CHECK(code_edit->is_line_folded(0));
 		CHECK_FALSE(code_edit->is_line_folded(1));
-		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 1);
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 2);
+
+		// Multiline comment before last line.
+		code_edit->set_text("&line1\nline2&\ntest");
+		CHECK(code_edit->can_fold_line(0));
+		CHECK_FALSE(code_edit->can_fold_line(2));
+		code_edit->fold_line(1);
+		CHECK_FALSE(code_edit->is_line_folded(1));
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 2);
 
 		// Has to be full line.
 		code_edit->set_text("test &line1\n\tline2&");
@@ -2554,7 +2578,7 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		CHECK_FALSE(code_edit->is_line_folded(1));
 		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 1);
 
-		// Non-indented comments/ strings.
+		// Non-indented comments/strings.
 		// Single line
 		code_edit->set_text("test\n\tline1\n#line1\n#line2\n\ttest");
 		CHECK(code_edit->can_fold_line(0));
@@ -2575,6 +2599,50 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		CHECK(code_edit->is_line_folded(0));
 		CHECK_FALSE(code_edit->is_line_folded(1));
 		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 4);
+
+		// Indent level 0->1, comment after lines
+		code_edit->set_text("line1\n\tline2\n#test");
+		CHECK(code_edit->can_fold_line(0));
+		CHECK_FALSE(code_edit->can_fold_line(1));
+		code_edit->fold_line(1);
+		CHECK_FALSE(code_edit->is_line_folded(1));
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK_FALSE(code_edit->is_line_folded(1));
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 2);
+
+		// Indent level 0->1, comment between lines
+		code_edit->set_text("line1\n#test\n\tline2\nline3");
+		CHECK(code_edit->can_fold_line(0));
+		CHECK_FALSE(code_edit->can_fold_line(2));
+		code_edit->fold_line(2);
+		CHECK_FALSE(code_edit->is_line_folded(2));
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK_FALSE(code_edit->is_line_folded(2));
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 3);
+
+		// Indent level 1->2, comment after lines
+		code_edit->set_text("\tline1\n\t\tline2\n#test");
+		CHECK(code_edit->can_fold_line(0));
+		CHECK_FALSE(code_edit->can_fold_line(1));
+		code_edit->fold_line(1);
+		CHECK_FALSE(code_edit->is_line_folded(1));
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK_FALSE(code_edit->is_line_folded(1));
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 2);
+
+		// Indent level 1->2, comment between lines
+		code_edit->set_text("\tline1\n#test\n\t\tline2\nline3");
+		CHECK(code_edit->can_fold_line(0));
+		CHECK_FALSE(code_edit->can_fold_line(2));
+		code_edit->fold_line(2);
+		CHECK_FALSE(code_edit->is_line_folded(2));
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK_FALSE(code_edit->is_line_folded(2));
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 3);
 
 		// Multiline
 		code_edit->set_text("test\n\tline1\n&line1\nline2&\n\ttest");

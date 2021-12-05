@@ -650,7 +650,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
-		menu->set_size(Vector2(1, 1));
+		menu->reset_size();
 		menu->popup();
 		select();
 		return;
@@ -1556,7 +1556,7 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
 			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);
 			rmb_popup->set_position(mb->get_global_position());
-			rmb_popup->set_size(Vector2());
+			rmb_popup->reset_size();
 			rmb_popup->popup();
 		}
 	}
@@ -1608,11 +1608,11 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 			properties_as_array.insert(p_to_pos < 0 ? properties_as_array.size() : p_to_pos, Dictionary());
 		} else if (p_to_pos < 0) {
 			// Delete the element.
-			properties_as_array.remove(p_element_index);
+			properties_as_array.remove_at(p_element_index);
 		} else {
 			// Move the element.
 			properties_as_array.insert(p_to_pos, properties_as_array[p_element_index].duplicate());
-			properties_as_array.remove(p_to_pos < p_element_index ? p_element_index + 1 : p_element_index);
+			properties_as_array.remove_at(p_to_pos < p_element_index ? p_element_index + 1 : p_element_index);
 		}
 
 		// Change the array size then set the properties.

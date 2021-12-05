@@ -52,7 +52,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="Importing 3D scenes: Custom script">https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/importing_scenes.html#custom-script</link>
+		<link title="Importing 3D scenes: Custom script">$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html#custom-script</link>
 	</tutorials>
 	<methods>
 		<method name="_post_import" qualifiers="virtual">

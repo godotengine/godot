@@ -48,6 +48,8 @@ public:
 		//properties that are not for built in values begin from this value, so builtin ones are displayed first
 		NO_BUILTIN_ORDER_BASE = 1 << 16
 	};
+	const static PackedStringArray get_required_features();
+	const static PackedStringArray get_unsupported_features(const PackedStringArray &p_project_features);
 
 	struct AutoloadInfo {
 		StringName name;
@@ -111,13 +113,16 @@ protected:
 
 	Error _save_custom_bnd(const String &p_file);
 
+	const static PackedStringArray _get_supported_features();
+	const static PackedStringArray _trim_to_supported_features(const PackedStringArray &p_project_features);
+
 	void _convert_to_last_version(int p_from_version);
 
 	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
-	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
+	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
 
 	void _add_builtin_input_map();
 
@@ -125,7 +130,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static const int CONFIG_VERSION = 4;
+	static const int CONFIG_VERSION = 5;
 
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting) const;
@@ -146,6 +151,7 @@ public:
 	String get_project_data_dir_name() const;
 	String get_project_data_path() const;
 	String get_resource_path() const;
+	String get_safe_project_name() const;
 	String get_imported_files_path() const;
 
 	static ProjectSettings *get_singleton();
@@ -156,8 +162,9 @@ public:
 	void set_builtin_order(const String &p_name);
 	bool is_builtin_setting(const String &p_name) const;
 
-	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
+	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
 
+	Error load_custom(const String &p_path);
 	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);

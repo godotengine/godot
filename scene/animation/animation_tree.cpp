@@ -329,7 +329,7 @@ void AnimationNode::set_input_name(int p_input, const String &p_name) {
 
 void AnimationNode::remove_input(int p_index) {
 	ERR_FAIL_INDEX(p_index, inputs.size());
-	inputs.remove(p_index);
+	inputs.remove_at(p_index);
 	emit_changed();
 }
 

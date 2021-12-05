@@ -447,7 +447,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	DWORD dwCreationFlags = NORMAL_PRIORITY_CLASS;
+#ifndef DEBUG_ENABLED
+	dwCreationFlags |= CREATE_NO_WINDOW;
+#endif
+
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, dwCreationFlags, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
 	WaitForSingleObject(pi.pi.hProcess, INFINITE);
@@ -475,7 +480,12 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
+	DWORD dwCreationFlags = NORMAL_PRIORITY_CLASS;
+#ifndef DEBUG_ENABLED
+	dwCreationFlags |= CREATE_NO_WINDOW;
+#endif
+
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, dwCreationFlags, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
 	ProcessID pid = pi.pi.dwProcessId;
@@ -760,7 +770,7 @@ String OS_Windows::get_user_data_dir() const {
 		}
 	}
 
-	return ProjectSettings::get_singleton()->get_resource_path();
+	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
 }
 
 String OS_Windows::get_unique_id() const {

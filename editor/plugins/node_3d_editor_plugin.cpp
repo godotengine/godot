@@ -860,7 +860,7 @@ void Node3DEditorViewport::_update_name() {
 	}
 
 	view_menu->set_text(name);
-	view_menu->set_size(Vector2(0, 0)); // resets the button size
+	view_menu->reset_size();
 }
 
 void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
@@ -1238,7 +1238,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		Node3D *item = selection_results[i].item;
 		if (item != scene && item->get_owner() != scene && item != scene->get_deepest_editable_node(item)) {
 			//invalid result
-			selection_results.remove(i);
+			selection_results.remove_at(i);
 			i--;
 		}
 	}
@@ -1749,7 +1749,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 				if (clicked.is_valid() && movement_threshold_passed) {
-					_compute_edit(_edit.mouse_pos);
+					_compute_edit(_edit.original_mouse_pos);
 					clicked = ObjectID();
 
 					_edit.mode = TRANSFORM_TRANSLATE;
@@ -3620,7 +3620,7 @@ void Node3DEditorViewport::_selection_result_pressed(int p_result) {
 void Node3DEditorViewport::_selection_menu_hide() {
 	selection_results.clear();
 	selection_menu->clear();
-	selection_menu->set_size(Vector2(0, 0));
+	selection_menu->reset_size();
 }
 
 void Node3DEditorViewport::set_can_preview(Camera3D *p_preview) {
@@ -4048,7 +4048,23 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		if (mesh != nullptr) {
 			MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 			mesh_instance->set_mesh(mesh);
-			mesh_instance->set_name(path.get_file().get_basename());
+
+			// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
+			String name = path.get_file().get_basename();
+			switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_casing").operator int()) {
+				case NAME_CASING_PASCAL_CASE:
+					name = name.capitalize().replace(" ", "");
+					break;
+				case NAME_CASING_CAMEL_CASE:
+					name = name.capitalize().replace(" ", "");
+					name[0] = name.to_lower()[0];
+					break;
+				case NAME_CASING_SNAKE_CASE:
+					name = name.capitalize().replace(" ", "_").to_lower();
+					break;
+			}
+			mesh_instance->set_name(name);
+
 			instantiated_scene = mesh_instance;
 		} else {
 			if (!scene.is_valid()) { // invalid scene
@@ -4221,10 +4237,9 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 		if (root_node) {
 			target_node = root_node;
 		} else {
-			accept->set_text(TTR("Cannot drag and drop into scene with no root node."));
-			accept->popup_centered();
-			_remove_preview();
-			return;
+			// Create a root node so we can add child nodes to it.
+			EditorNode::get_singleton()->get_scene_tree_dock()->add_root_node(memnew(Node3D));
+			target_node = get_tree()->get_edited_scene_root();
 		}
 	} else {
 		accept->set_text(TTR("Cannot drag and drop into multiple selected nodes."));

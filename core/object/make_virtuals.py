@@ -1,7 +1,8 @@
 proto = """
 #define GDVIRTUAL$VER($RET m_name $ARG) \\
 StringName _gdvirtual_##m_name##_sn = #m_name;\\
-GDNativeExtensionClassCallVirtual _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, #m_name) : (GDNativeExtensionClassCallVirtual) nullptr;\\
+mutable bool _gdvirtual_##m_name##_initialized = false;\\
+mutable GDNativeExtensionClassCallVirtual _gdvirtual_##m_name = nullptr;\\
 _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 	ScriptInstance *script_instance = ((Object*)(this))->get_script_instance();\\
 	if (script_instance) {\\
@@ -13,6 +14,10 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 			return true;\\
 		}    \\
 	}\\
+    if (unlikely(_get_extension() && !_gdvirtual_##m_name##_initialized)) {\\
+        _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, #m_name) : (GDNativeExtensionClassCallVirtual) nullptr;\\
+        _gdvirtual_##m_name##_initialized = true;\\
+    }\\
 	if (_gdvirtual_##m_name) {\\
 		$CALLPTRARGS\\
 		$CALLPTRRETDEF\\
@@ -28,6 +33,10 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_overridden() const { \\
 	if (script_instance) {\\
 	    return script_instance->has_method(_gdvirtual_##m_name##_sn);\\
 	}\\
+    if (unlikely(_get_extension() && !_gdvirtual_##m_name##_initialized)) {\\
+        _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, #m_name) : (GDNativeExtensionClassCallVirtual) nullptr;\\
+        _gdvirtual_##m_name##_initialized = true;\\
+    }\\
 	if (_gdvirtual_##m_name) {\\
 	    return true;\\
 	}\\

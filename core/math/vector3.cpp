@@ -108,10 +108,10 @@ Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {
 	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
 }
 
-Basis Vector3::outer(const Vector3 &p_b) const {
-	Vector3 row0(x * p_b.x, x * p_b.y, x * p_b.z);
-	Vector3 row1(y * p_b.x, y * p_b.y, y * p_b.z);
-	Vector3 row2(z * p_b.x, z * p_b.y, z * p_b.z);
+Basis Vector3::outer(const Vector3 &p_with) const {
+	Vector3 row0(x * p_with.x, x * p_with.y, x * p_with.z);
+	Vector3 row1(y * p_with.x, y * p_with.y, y * p_with.z);
+	Vector3 row2(z * p_with.x, z * p_with.y, z * p_with.z);
 
 	return Basis(row0, row1, row2);
 }

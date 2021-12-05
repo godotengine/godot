@@ -733,7 +733,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 		return;
 	}
 
-	rc.remove(p_idx);
+	rc.remove_at(p_idx);
 	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scripts", rc);
 	_update_recent_scripts();
 	_show_error_dialog(path);
@@ -785,7 +785,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 	for (int i = 0; i < history.size(); i++) {
 		if (history[i].control == tselected) {
-			history.remove(i);
+			history.remove_at(i);
 			i--;
 			history_pos--;
 		}
@@ -1415,8 +1415,12 @@ void ScriptEditor::_menu_option(int p_option) {
 			} break;
 			case SHOW_IN_FILE_SYSTEM: {
 				const RES script = current->get_edited_resource();
-				const String path = script->get_path();
+				String path = script->get_path();
 				if (!path.is_empty()) {
+					if (script->is_built_in()) {
+						path = path.get_slice("::", 0); // Show the scene instead.
+					}
+
 					FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
 					file_system_dock->navigate_to_path(path);
 					// Ensure that the FileSystem dock is visible.
@@ -3052,7 +3056,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_scripts_panel"), TOGGLE_SCRIPTS_PANEL);
 
 	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
-	context_menu->set_size(Vector2(1, 1));
+	context_menu->reset_size();
 	context_menu->popup();
 }
 

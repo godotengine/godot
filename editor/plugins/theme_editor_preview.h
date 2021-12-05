@@ -55,6 +55,7 @@
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);
 
+	ScrollContainer *preview_container;
 	ColorRect *preview_bg;
 	MarginContainer *preview_overlay;
 	Control *picker_overlay;

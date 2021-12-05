@@ -69,6 +69,7 @@ public:
 		ASSERT_ALWAYS_FALSE, // Expression for assert argument is always false.
 		REDUNDANT_AWAIT, // await is used but expression is synchronous (not a signal nor a coroutine).
 		EMPTY_FILE, // A script file is empty.
+		SHADOWED_GLOBAL_IDENTIFIER, // A global class or function has the same name as variable.
 		WARNING_MAX,
 	};
 

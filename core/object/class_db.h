@@ -211,8 +211,7 @@ public:
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instantiate(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
-	static Object *construct_object(Object *(*p_create_func)(), ObjectNativeExtension *p_extension);
-	static void instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance, Object *p_base);
+	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
 	static APIType get_api_type(const StringName &p_class);
 

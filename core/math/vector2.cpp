@@ -79,7 +79,7 @@ real_t Vector2::angle_to(const Vector2 &p_vector2) const {
 }
 
 real_t Vector2::angle_to_point(const Vector2 &p_vector2) const {
-	return (*this - p_vector2).angle();
+	return (p_vector2 - *this).angle();
 }
 
 real_t Vector2::dot(const Vector2 &p_other) const {
@@ -91,7 +91,7 @@ real_t Vector2::cross(const Vector2 &p_other) const {
 }
 
 Vector2 Vector2::sign() const {
-	return Vector2(SGN(x), SGN(y));
+	return Vector2(SIGN(x), SIGN(y));
 }
 
 Vector2 Vector2::floor() const {

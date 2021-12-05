@@ -184,19 +184,6 @@ static void PREDICTOR_ADD(const uint32_t* in, const uint32_t* upper, \
   }                                                                  \
 }
 
-// It subtracts the prediction from the input pixel and stores the residual
-// in the output pixel.
-#define GENERATE_PREDICTOR_SUB(PREDICTOR, PREDICTOR_SUB)             \
-static void PREDICTOR_SUB(const uint32_t* in, const uint32_t* upper, \
-                          int num_pixels, uint32_t* out) {           \
-  int x;                                                             \
-  assert(upper != NULL);                                             \
-  for (x = 0; x < num_pixels; ++x) {                                 \
-    const uint32_t pred = (PREDICTOR)(in[x - 1], upper + x);         \
-    out[x] = VP8LSubPixels(in[x], pred);                             \
-  }                                                                  \
-}
-
 #ifdef __cplusplus
 }    // extern "C"
 #endif

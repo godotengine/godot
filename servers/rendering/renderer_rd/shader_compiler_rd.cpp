@@ -227,6 +227,13 @@ static String _prestr(SL::DataPrecision p_pres, bool p_force_highp = false) {
 	return "";
 }
 
+static String _constr(bool p_is_const) {
+	if (p_is_const) {
+		return "const ";
+	}
+	return "";
+}
+
 static String _qualstr(SL::ArgumentQualifier p_qual) {
 	switch (p_qual) {
 		case SL::ARGUMENT_QUALIFIER_IN:
@@ -417,9 +424,7 @@ void ShaderCompilerRD::_dump_function_deps(const SL::ShaderNode *p_node, const S
 			if (i > 0) {
 				header += ", ";
 			}
-			if (fnode->arguments[i].is_const) {
-				header += "const ";
-			}
+			header += _constr(fnode->arguments[i].is_const);
 			if (fnode->arguments[i].type == SL::TYPE_STRUCT) {
 				header += _qualstr(fnode->arguments[i].qualifier) + _mkid(fnode->arguments[i].type_str) + " " + _mkid(fnode->arguments[i].name);
 			} else {
@@ -656,6 +661,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 						uniform_sizes.write[uniform.order] = _get_datatype_size(ShaderLanguage::TYPE_UINT);
 						uniform_alignments.write[uniform.order] = _get_datatype_alignment(ShaderLanguage::TYPE_UINT);
 					} else {
+						// The following code enforces a 16-byte alignment of uniform arrays.
 						if (uniform.array_size > 0) {
 							int size = _get_datatype_size(uniform.type) * uniform.array_size;
 							int m = (16 * uniform.array_size);
@@ -663,10 +669,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 								size += m - (size % m);
 							}
 							uniform_sizes.write[uniform.order] = size;
+							uniform_alignments.write[uniform.order] = 16;
 						} else {
 							uniform_sizes.write[uniform.order] = _get_datatype_size(uniform.type);
+							uniform_alignments.write[uniform.order] = _get_datatype_alignment(uniform.type);
 						}
-						uniform_alignments.write[uniform.order] = _get_datatype_alignment(uniform.type);
 					}
 				}
 
@@ -791,7 +798,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			for (int i = 0; i < pnode->vconstants.size(); i++) {
 				const SL::ShaderNode::Constant &cnode = pnode->vconstants[i];
 				String gcode;
-				gcode += "const ";
+				gcode += _constr(true);
 				gcode += _prestr(cnode.precision, ShaderLanguage::is_float_type(cnode.type));
 				if (cnode.type == SL::TYPE_STRUCT) {
 					gcode += _mkid(cnode.type_str);
@@ -875,9 +882,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			SL::VariableDeclarationNode *vdnode = (SL::VariableDeclarationNode *)p_node;
 
 			String declaration;
-			if (vdnode->is_const) {
-				declaration += "const ";
-			}
+			declaration += _constr(vdnode->is_const);
 			if (vdnode->datatype == SL::TYPE_STRUCT) {
 				declaration += _mkid(vdnode->struct_name);
 			} else {
@@ -997,9 +1002,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 		case SL::Node::TYPE_ARRAY_DECLARATION: {
 			SL::ArrayDeclarationNode *adnode = (SL::ArrayDeclarationNode *)p_node;
 			String declaration;
-			if (adnode->is_const) {
-				declaration += "const ";
-			}
+			declaration += _constr(adnode->is_const);
 			if (adnode->datatype == SL::TYPE_STRUCT) {
 				declaration += _mkid(adnode->struct_name);
 			} else {
@@ -1314,6 +1317,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					code += _dump_node_code(onode->arguments[2], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 					code += ")";
 
+				} break;
+				case SL::OP_EMPTY: {
+					// Semicolon (or empty statement) - ignored.
 				} break;
 
 				default: {

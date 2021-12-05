@@ -42,6 +42,7 @@ public:
 	Vector<String> paths;
 	Set<StringName> checked;
 	bool checking;
+	String base_options_path;
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		if (values.has(p_name)) {
@@ -66,7 +67,7 @@ public:
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
 		for (const PropertyInfo &E : properties) {
-			if (!importer->get_option_visibility(E.name, values)) {
+			if (!importer->get_option_visibility(base_options_path, E.name, values)) {
 				continue;
 			}
 			PropertyInfo pi = E;
@@ -104,8 +105,9 @@ void ImportDock::set_edit_path(const String &p_path) {
 
 	params->paths.clear();
 	params->paths.push_back(p_path);
+	params->base_options_path = p_path;
 
-	_update_options(config);
+	_update_options(p_path, config);
 
 	List<Ref<ResourceImporter>> importers;
 	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_path.get_extension(), &importers);
@@ -146,17 +148,18 @@ void ImportDock::_add_keep_import_option(const String &p_importer_name) {
 	}
 }
 
-void ImportDock::_update_options(const Ref<ConfigFile> &p_config) {
+void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_config) {
 	List<ResourceImporter::ImportOption> options;
 
 	if (params->importer.is_valid()) {
-		params->importer->get_import_options(&options);
+		params->importer->get_import_options(p_path, &options);
 	}
 
 	params->properties.clear();
 	params->values.clear();
 	params->checking = params->paths.size() > 1;
 	params->checked.clear();
+	params->base_options_path = p_path;
 
 	for (const ResourceImporter::ImportOption &E : options) {
 		params->properties.push_back(E.option);
@@ -184,10 +187,12 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	// Use the value that is repeated the most.
 	Map<String, Dictionary> value_frequency;
+	Set<String> extensions;
 
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instantiate();
+		extensions.insert(p_paths[i].get_extension());
 		Error err = config->load(p_paths[i] + ".import");
 		ERR_CONTINUE(err != OK);
 
@@ -223,13 +228,18 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	ERR_FAIL_COND(params->importer.is_null());
 
+	String base_path;
+	if (extensions.size() == 1 && p_paths.size() > 0) {
+		base_path = p_paths[0];
+	}
 	List<ResourceImporter::ImportOption> options;
-	params->importer->get_import_options(&options);
+	params->importer->get_import_options(base_path, &options);
 
 	params->properties.clear();
 	params->values.clear();
 	params->checking = true;
 	params->checked.clear();
+	params->base_options_path = base_path;
 
 	for (const ResourceImporter::ImportOption &E : options) {
 		params->properties.push_back(E.option);
@@ -327,22 +337,22 @@ void ImportDock::_importer_selected(int i_idx) {
 	String name = import_as->get_selected_metadata();
 	if (name == "keep") {
 		params->importer.unref();
-		_update_options(Ref<ConfigFile>());
+		_update_options(params->base_options_path, Ref<ConfigFile>());
 	} else {
 		Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(name);
 		ERR_FAIL_COND(importer.is_null());
 
 		params->importer = importer;
-
 		Ref<ConfigFile> config;
 		if (params->paths.size()) {
+			String path = params->paths[0];
 			config.instantiate();
-			Error err = config->load(params->paths[0] + ".import");
+			Error err = config->load(path + ".import");
 			if (err != OK) {
 				config.unref();
 			}
 		}
-		_update_options(config);
+		_update_options(params->base_options_path, config);
 	}
 }
 
@@ -387,7 +397,7 @@ void ImportDock::_preset_selected(int p_idx) {
 		default: {
 			List<ResourceImporter::ImportOption> options;
 
-			params->importer->get_import_options(&options, p_idx);
+			params->importer->get_import_options(params->base_options_path, &options, p_idx);
 
 			if (params->checking) {
 				params->checked.clear();

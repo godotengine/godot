@@ -144,7 +144,7 @@ void Gradient::add_point(float p_offset, const Color &p_color) {
 void Gradient::remove_point(int p_index) {
 	ERR_FAIL_INDEX(p_index, points.size());
 	ERR_FAIL_COND(points.size() <= 1);
-	points.remove(p_index);
+	points.remove_at(p_index);
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 

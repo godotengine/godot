@@ -6,10 +6,11 @@
 	<description>
 		[Rect2i] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 		It uses integer coordinates. If you need floating-point coordinates, use [Rect2] instead.
+		Negative values for [member size] are not supported and will not work for most methods. Use [method abs] to get a Rect2i with a positive size.
 	</description>
 	<tutorials>
-		<link title="Math documentation index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
-		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Rect2i">
@@ -184,6 +185,7 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Rect2i" />
 			<description>
+				Returns [code]true[/code] if the rectangles are not equal.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -195,6 +197,7 @@
 			<return type="bool" />
 			<argument index="0" name="right" type="Rect2i" />
 			<description>
+				Returns [code]true[/code] if the rectangles are equal.
 			</description>
 		</operator>
 	</operators>

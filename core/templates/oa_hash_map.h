@@ -353,7 +353,7 @@ public:
 		(*this) = p_other;
 	}
 
-	OAHashMap &operator=(const OAHashMap &p_other) {
+	void operator=(const OAHashMap &p_other) {
 		if (capacity != 0) {
 			clear();
 		}
@@ -363,7 +363,6 @@ public:
 		for (Iterator it = p_other.iter(); it.valid; it = p_other.next_iter(it)) {
 			set(*it.key, *it.value);
 		}
-		return *this;
 	}
 
 	OAHashMap(uint32_t p_initial_capacity = 64) {

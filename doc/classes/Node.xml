@@ -17,7 +17,7 @@
 		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [ENetMultiplayerPeer]), it is possible to use the built-in RPC (remote procedure call) system to communicate over the network. By calling [method rpc] with a method name, it will be called locally and in all connected peers (peers = clients and the server that accepts connections). To identify which node receives the RPC call, Godot will use its [NodePath] (make sure node names are the same on all peers). Also, take a look at the high-level networking tutorial and corresponding demos.
 	</description>
 	<tutorials>
-		<link title="Nodes and scenes">https://docs.godotengine.org/en/latest/getting_started/step_by_step/nodes_and_scenes.htmltml</link>
+		<link title="Nodes and scenes">$DOCS_URL/getting_started/step_by_step/nodes_and_scenes.html</link>
 		<link title="All Demos">https://github.com/godotengine/godot-demo-projects/</link>
 	</tutorials>
 	<methods>
@@ -233,6 +233,14 @@
 			<description>
 				Returns an array listing the groups that the node is a member of.
 				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.
+				[b]Note:[/b] The engine uses some group names internally (all starting with an underscore). To avoid conflicts with internal groups, do not add custom groups whose name starts with an underscore. To exclude internal groups while looping over [method get_groups], use the following snippet:
+				[codeblock]
+				# Stores the node's non-internal groups only (as an array of Strings).
+				var non_internal_groups = []
+				for group in get_groups():
+				    if not group.begins_with("_"):
+				        non_internal_groups.push_back(group)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_index" qualifiers="const">
@@ -253,7 +261,7 @@
 			<return type="Node" />
 			<argument index="0" name="path" type="NodePath" />
 			<description>
-				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, a [code]null instance[/code] is returned and an error is logged. Attempts to access methods on the return value will result in an "Attempt to call &lt;method&gt; on a null instance." error.
+				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, [code]null[/code] is returned and an error is logged. Attempts to access methods on the return value will result in an "Attempt to call &lt;method&gt; on a null instance." error.
 				[b]Note:[/b] Fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
 				[b]Example:[/b] Assume your current node is Character and the following tree:
 				[codeblock]
@@ -314,7 +322,7 @@
 		<method name="get_parent" qualifiers="const">
 			<return type="Node" />
 			<description>
-				Returns the parent node of the current node, or a [code]null instance[/code] if the node lacks a parent.
+				Returns the parent node of the current node, or [code]null[/code] if the node lacks a parent.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -563,6 +571,7 @@
 			<description>
 				Replaces a node in a scene by the given one. Subscriptions that pass through this node will be lost.
 				If [code]keep_groups[/code] is [code]true[/code], the [code]node[/code] is added to the same groups that the replaced node is in.
+				Note that the replaced node is not automatically freed, so you either need to keep it in a variable for later use or free it using [method Object.free].
 			</description>
 		</method>
 		<method name="request_ready">
@@ -782,8 +791,8 @@
 		<constant name="NOTIFICATION_DRAG_END" value="22">
 			Notification received when a drag ends.
 		</constant>
-		<constant name="NOTIFICATION_PATH_CHANGED" value="23">
-			Notification received when the node's [NodePath] changed.
+		<constant name="NOTIFICATION_PATH_RENAMED" value="23">
+			Notification received when the node's name or one of its parents' name is changed. This notification is [i]not[/i] received when the node is removed from the scene tree to be added to another parent later on.
 		</constant>
 		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25">
 			Notification received every frame when the internal process flag is set (see [method set_process_internal]).

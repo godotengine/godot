@@ -58,7 +58,7 @@ void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const R
 void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_script) {
 	for (int i = 0; i < add_options.size(); i++) {
 		if (add_options[i].script == p_script) {
-			add_options.remove(i);
+			add_options.remove_at(i);
 			return;
 		}
 	}
@@ -68,7 +68,7 @@ void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_scrip
 
 void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) {
 	add_node->get_popup()->clear();
-	add_node->get_popup()->set_size(Size2i(-1, -1));
+	add_node->get_popup()->reset_size();
 	for (int i = 0; i < add_options.size(); i++) {
 		if (p_has_input_ports && add_options[i].input_port_count == 0) {
 			continue;
@@ -945,7 +945,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->get_popup()->connect("id_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_add_node));
-	add_node->connect("about_to_popup", callable_mp(this, &AnimationNodeBlendTreeEditor::_update_options_menu));
+	add_node->connect("about_to_popup", callable_mp(this, &AnimationNodeBlendTreeEditor::_update_options_menu), varray(false));
 
 	add_options.push_back(AddOption("Animation", "AnimationNodeAnimation"));
 	add_options.push_back(AddOption("OneShot", "AnimationNodeOneShot", 2));

@@ -501,7 +501,7 @@ void CodeHighlighter::add_color_region(const String &p_start_key, const String &
 void CodeHighlighter::remove_color_region(const String &p_start_key) {
 	for (int i = 0; i < color_regions.size(); i++) {
 		if (color_regions[i].start_key == p_start_key) {
-			color_regions.remove(i);
+			color_regions.remove_at(i);
 			break;
 		}
 	}

@@ -30,6 +30,9 @@
 
 #include "platform/javascript/display_server_javascript.h"
 
+#ifdef GLES3_ENABLED
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
 #include "platform/javascript/os_javascript.h"
 #include "servers/rendering/rasterizer_dummy.h"
 
@@ -50,14 +53,6 @@ DisplayServerJavaScript *DisplayServerJavaScript::get_singleton() {
 }
 
 // Window (canvas)
-void DisplayServerJavaScript::focus_canvas() {
-	godot_js_display_canvas_focus();
-}
-
-bool DisplayServerJavaScript::is_canvas_focused() {
-	return godot_js_display_canvas_is_focused() != 0;
-}
-
 bool DisplayServerJavaScript::check_size_force_redraw() {
 	return godot_js_display_size_update() != 0;
 }
@@ -141,11 +136,12 @@ void DisplayServerJavaScript::key_callback(int p_pressed, int p_repeat, int p_mo
 int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers) {
 	DisplayServerJavaScript *ds = get_singleton();
 
+	Point2 pos(p_x, p_y);
+	Input::get_singleton()->set_mouse_position(pos);
 	Ref<InputEventMouseButton> ev;
 	ev.instantiate();
-	ev->set_pressed(p_pressed);
-	ev->set_position(Point2(p_x, p_y));
-	ev->set_global_position(ev->get_position());
+	ev->set_position(pos);
+	ev->set_global_position(pos);
 	ev->set_pressed(p_pressed);
 	dom2godot_mod(ev, p_modifiers);
 
@@ -222,13 +218,15 @@ void DisplayServerJavaScript::mouse_move_callback(double p_x, double p_y, double
 		return;
 	}
 
+	Point2 pos(p_x, p_y);
+	Input::get_singleton()->set_mouse_position(pos);
 	Ref<InputEventMouseMotion> ev;
 	ev.instantiate();
 	dom2godot_mod(ev, p_modifiers);
 	ev->set_button_mask(input_mask);
 
-	ev->set_position(Point2(p_x, p_y));
-	ev->set_global_position(ev->get_position());
+	ev->set_position(pos);
+	ev->set_global_position(pos);
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
 	Input::get_singleton()->set_mouse_position(ev->get_position());
@@ -395,6 +393,10 @@ DisplayServer::MouseMode DisplayServerJavaScript::mouse_get_mode() const {
 		return MOUSE_MODE_CAPTURED;
 	}
 	return MOUSE_MODE_VISIBLE;
+}
+
+Point2i DisplayServerJavaScript::mouse_get_position() const {
+	return Input::get_singleton()->get_mouse_position();
 }
 
 // Wheel
@@ -580,7 +582,9 @@ void DisplayServerJavaScript::process_joypads() {
 
 Vector<String> DisplayServerJavaScript::get_rendering_drivers_func() {
 	Vector<String> drivers;
-	drivers.push_back("dummy");
+#ifdef GLES3_ENABLED
+	drivers.push_back("opengl3");
+#endif
 	return drivers;
 }
 
@@ -678,40 +682,34 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	// Expose method for requesting quit.
 	godot_js_os_request_quit_cb(request_quit_callback);
 
-	RasterizerDummy::make_current(); // TODO OpenGL in Godot 4.0... or webgpu?
-#if 0
-	EmscriptenWebGLContextAttributes attributes;
-	emscripten_webgl_init_context_attributes(&attributes);
-	attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
-	attributes.antialias = false;
-	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
+#ifdef GLES3_ENABLED
+	// TODO "vulkan" defaults to webgl2 for now.
+	bool wants_webgl2 = p_rendering_driver == "opengl3" || p_rendering_driver == "vulkan";
+	bool webgl2_init_failed = wants_webgl2 && !godot_js_display_has_webgl(2);
+	if (wants_webgl2 && !webgl2_init_failed) {
+		EmscriptenWebGLContextAttributes attributes;
+		emscripten_webgl_init_context_attributes(&attributes);
+		//attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
+		attributes.alpha = true;
+		attributes.antialias = false;
+		attributes.majorVersion = 2;
 
-	if (p_desired.layered) {
-		set_window_per_pixel_transparency_enabled(true);
+		webgl_ctx = emscripten_webgl_create_context(canvas_id, &attributes);
+		if (emscripten_webgl_make_context_current(webgl_ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
+			webgl2_init_failed = true;
+		} else {
+			RasterizerGLES3::make_current();
+		}
 	}
-
-	bool gl_initialization_error = false;
-
-	if (RasterizerGLES3::is_viable() == OK) {
-		attributes.majorVersion = 1;
-		RasterizerGLES3::register_config();
-		RasterizerGLES3::make_current();
-	} else {
-		gl_initialization_error = true;
-	}
-
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(canvas_id, &attributes);
-	if (emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
-		gl_initialization_error = true;
-	}
-
-	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your browser does not seem to support WebGL. Please update your browser version.",
+	if (webgl2_init_failed) {
+		OS::get_singleton()->alert("Your browser does not seem to support WebGL2. Please update your browser version.",
 				"Unable to initialize video driver");
-		return ERR_UNAVAILABLE;
 	}
-
-	video_driver_index = p_video_driver;
+	if (!wants_webgl2 || webgl2_init_failed) {
+		RasterizerDummy::make_current();
+	}
+#else
+	RasterizerDummy::make_current();
 #endif
 
 	// JS Input interface (js/libs/library_godot_input.js)
@@ -738,8 +736,12 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 }
 
 DisplayServerJavaScript::~DisplayServerJavaScript() {
-	//emscripten_webgl_commit_frame();
-	//emscripten_webgl_destroy_context(webgl_ctx);
+#ifdef GLES3_ENABLED
+	if (webgl_ctx) {
+		emscripten_webgl_commit_frame();
+		emscripten_webgl_destroy_context(webgl_ctx);
+	}
+#endif
 }
 
 bool DisplayServerJavaScript::has_feature(Feature p_feature) const {
@@ -968,5 +970,9 @@ bool DisplayServerJavaScript::get_swap_cancel_ok() {
 }
 
 void DisplayServerJavaScript::swap_buffers() {
-	//emscripten_webgl_commit_frame();
+#ifdef GLES3_ENABLED
+	if (webgl_ctx) {
+		emscripten_webgl_commit_frame();
+	}
+#endif
 }

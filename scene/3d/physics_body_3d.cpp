@@ -1299,7 +1299,6 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					// in order to avoid blocking lateral motion along a wall.
 					if (motion_angle < .5 * Math_PI) {
 						apply_default_sliding = false;
-
 						if (p_was_on_floor && !vel_dir_facing_up) {
 							// Cancel the motion.
 							Transform3D gt = get_global_transform();
@@ -1307,14 +1306,18 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 							real_t cancel_dist_max = MIN(0.1, margin * 20);
 							if (travel_total <= margin + CMP_EPSILON) {
 								gt.origin -= result.travel;
+								result.travel = Vector3(); // Cancel for constant speed computation.
 							} else if (travel_total < cancel_dist_max) { // If the movement is large the body can be prevented from reaching the walls.
 								gt.origin -= result.travel.slide(up_direction);
 								// Keep remaining motion in sync with amount canceled.
 								motion = motion.slide(up_direction);
+								result.travel = Vector3();
+							} else {
+								// Travel is too high to be safely cancelled, we take it into account.
+								result.travel = result.travel.slide(up_direction);
+								motion = motion.normalized() * result.travel.length();
 							}
 							set_global_transform(gt);
-							result.travel = Vector3(); // Cancel for constant speed computation.
-
 							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.
 							_snap_on_floor(true, false);
 						} else {
@@ -1325,8 +1328,15 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 						// Apply slide on forward in order to allow only lateral motion on next step.
 						Vector3 forward = wall_normal.slide(up_direction).normalized();
 						motion = motion.slide(forward);
-						// Avoid accelerating when you jump on the wall and smooth falling.
-						motion_velocity = motion_velocity.slide(forward);
+
+						// Scales the horizontal velocity according to the wall slope.
+						if (vel_dir_facing_up) {
+							Vector3 slide_motion = motion_velocity.slide(result.collisions[0].normal);
+							// Keeps the vertical motion from motion_velocity and add the horizontal motion of the projection.
+							motion_velocity = up_direction * up_direction.dot(motion_velocity) + slide_motion.slide(up_direction);
+						} else {
+							motion_velocity = motion_velocity.slide(forward);
+						}
 
 						// Allow only lateral motion along previous floor when already on floor.
 						// Fixes slowing down when moving in diagonal against an inclined wall.
@@ -1584,6 +1594,7 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 	Vector3 prev_wall_normal = wall_normal;
 	int wall_collision_count = 0;
 	Vector3 combined_wall_normal;
+	Vector3 tmp_wall_col; // Avoid duplicate on average calculation.
 
 	for (int i = p_result.collision_count - 1; i >= 0; i--) {
 		const PhysicsServer3D::MotionCollision &collision = p_result.collisions[i];
@@ -1630,8 +1641,11 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 		}
 
 		// Collect normal for calculating average.
-		combined_wall_normal += collision.normal;
-		wall_collision_count++;
+		if (!collision.normal.is_equal_approx(tmp_wall_col)) {
+			tmp_wall_col = collision.normal;
+			combined_wall_normal += collision.normal;
+			wall_collision_count++;
+		}
 	}
 
 	if (r_state.wall) {

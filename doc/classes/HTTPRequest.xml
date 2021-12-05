@@ -153,8 +153,8 @@
 		[b]Gzipped response bodies[/b]: HTTPRequest will automatically handle decompression of response bodies. A [code]Accept-Encoding[/code] header will be automatically added to each of your requests, unless one is already specified. Any response with a [code]Content-Encoding: gzip[/code] header will automatically be decompressed and delivered to you as uncompressed bytes.
 	</description>
 	<tutorials>
-		<link title="Making HTTP requests">https://docs.godotengine.org/en/latest/tutorials/networking/http_request_class.html</link>
-		<link title="SSL certificates">https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
+		<link title="Making HTTP requests">$DOCS_URL/tutorials/networking/http_request_class.html</link>
+		<link title="SSL certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="cancel_request">

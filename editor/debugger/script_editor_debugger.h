@@ -94,7 +94,9 @@ private:
 
 	VBoxContainer *errors_tab;
 	Tree *error_tree;
-	Button *clearbutton;
+	Button *expand_all_button;
+	Button *collapse_all_button;
+	Button *clear_button;
 	PopupMenu *item_menu;
 
 	EditorFileDialog *file_dialog;

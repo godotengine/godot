@@ -7,7 +7,7 @@
 		Gives access to input variables (built-ins) available for the shader. See the shading reference for the list of available built-ins for each shader type (check [code]Tutorials[/code] section for link).
 	</description>
 	<tutorials>
-		<link title="Shading reference index">https://docs.godotengine.org/en/latest/tutorials/shaders/shader_reference/index.html</link>
+		<link title="Shading reference index">$DOCS_URL/tutorials/shaders/shader_reference/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_input_real_name" qualifiers="const">

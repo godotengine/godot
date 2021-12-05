@@ -296,11 +296,11 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				mpos.x = get_size().x - mpos.x;
 			}
 
-			Point2i pos = get_line_column_at_pos(mpos);
+			Point2i pos = get_line_column_at_pos(mpos, false);
 			int line = pos.y;
 			int col = pos.x;
 
-			if (mb->get_button_index() == MouseButton::LEFT) {
+			if (line != -1 && mb->get_button_index() == MouseButton::LEFT) {
 				if (is_line_folded(line)) {
 					int wrap_index = get_line_wrap_index_at_column(line, col);
 					if (wrap_index == get_line_wrap_count(line)) {
@@ -321,11 +321,13 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						mpos.x = get_size().x - mpos.x;
 					}
 
-					Point2i pos = get_line_column_at_pos(mpos);
+					Point2i pos = get_line_column_at_pos(mpos, false);
 					int line = pos.y;
 					int col = pos.x;
 
-					emit_signal(SNAME("symbol_lookup"), symbol_lookup_word, line, col);
+					if (line != -1) {
+						emit_signal(SNAME("symbol_lookup"), symbol_lookup_word, line, col);
+					}
 					return;
 				}
 			}
@@ -536,11 +538,11 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_ARROW;
 	}
 
-	Point2i pos = get_line_column_at_pos(p_pos);
+	Point2i pos = get_line_column_at_pos(p_pos, false);
 	int line = pos.y;
 	int col = pos.x;
 
-	if (is_line_folded(line)) {
+	if (line != -1 && is_line_folded(line)) {
 		int wrap_index = get_line_wrap_index_at_column(line, col);
 		if (wrap_index == get_line_wrap_count(line)) {
 			int eol_icon_width = folded_eol_icon->get_width();
@@ -1417,40 +1419,23 @@ void CodeEdit::fold_line(int p_line) {
 		/* End line is the same therefore we have a block of single line delimiters. */
 		if (end_line == p_line) {
 			for (int i = p_line + 1; i <= line_count; i++) {
-				if (i == line_count) {
-					end_line = line_count;
-					break;
-				}
-
 				if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
-					end_line = i - 1;
 					break;
 				}
+				end_line = i;
 			}
 		}
 	} else {
 		int start_indent = get_indent_level(p_line);
 		for (int i = p_line + 1; i <= line_count; i++) {
-			if (get_line(p_line).strip_edges().size() == 0 || is_in_string(i) != -1 || is_in_comment(i) != -1) {
+			if (get_line(i).strip_edges().size() == 0) {
+				continue;
+			}
+			if (get_indent_level(i) > start_indent) {
 				end_line = i;
 				continue;
 			}
-
-			if (i == line_count) {
-				/* Do not fold empty last line of script if any */
-				end_line = i;
-				if (get_line(i).strip_edges().size() == 0) {
-					end_line--;
-				}
-				break;
-			}
-
-			if ((get_indent_level(i) <= start_indent && get_line(i).strip_edges().size() != 0)) {
-				/* Keep an empty line unfolded if any */
-				end_line = i - 1;
-				if (get_line(i - 1).strip_edges().size() == 0 && i - 2 > p_line) {
-					end_line = i - 2;
-				}
+			if (is_in_string(i) == -1 && is_in_comment(i) == -1) {
 				break;
 			}
 		}
@@ -2016,9 +2001,13 @@ bool CodeEdit::is_symbol_lookup_on_click_enabled() const {
 String CodeEdit::get_text_for_symbol_lookup() {
 	Point2i mp = get_local_mouse_pos();
 
-	Point2i pos = get_line_column_at_pos(mp);
+	Point2i pos = get_line_column_at_pos(mp, false);
 	int line = pos.y;
 	int col = pos.x;
+
+	if (line == -1) {
+		return String();
+	}
 
 	StringBuilder lookup_text;
 	const int text_size = get_line_count();
@@ -2389,7 +2378,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 	if (start_line != end_line) {
 		if (p_to_line < p_from_line) {
 			for (int i = end_line; i > start_line; i--) {
-				delimiter_cache.remove(i);
+				delimiter_cache.remove_at(i);
 			}
 		} else {
 			for (int i = start_line; i < end_line; i++) {
@@ -2626,7 +2615,7 @@ void CodeEdit::_remove_delimiter(const String &p_start_key, DelimiterType p_type
 			break;
 		}
 
-		delimiters.remove(i);
+		delimiters.remove_at(i);
 		if (!setting_delimiters) {
 			delimiter_cache.clear();
 			_update_delimiter_cache();
@@ -2667,7 +2656,7 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 void CodeEdit::_clear_delimiters(DelimiterType p_type) {
 	for (int i = delimiters.size() - 1; i >= 0; i--) {
 		if (delimiters[i].type == p_type) {
-			delimiters.remove(i);
+			delimiters.remove_at(i);
 		}
 	}
 	delimiter_cache.clear();

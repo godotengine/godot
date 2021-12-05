@@ -438,6 +438,7 @@ public:
 	virtual int shaped_text_hit_test_grapheme(RID p_shaped, float p_coords) const; // Return grapheme index.
 	virtual int shaped_text_hit_test_position(RID p_shaped, float p_coords) const; // Return caret/selection position.
 
+	virtual Vector2 shaped_text_get_grapheme_bounds(RID p_shaped, int p_pos) const;
 	virtual int shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) const;
 	virtual int shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) const;
 

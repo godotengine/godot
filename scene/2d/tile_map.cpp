@@ -576,7 +576,7 @@ void TileMap::move_layer(int p_layer, int p_to_pos) {
 
 	TileMapLayer tl = layers[p_layer];
 	layers.insert(p_to_pos, tl);
-	layers.remove(p_to_pos < p_layer ? p_layer + 1 : p_layer);
+	layers.remove_at(p_to_pos < p_layer ? p_layer + 1 : p_layer);
 	_recreate_internals();
 	notify_property_list_changed();
 
@@ -595,7 +595,7 @@ void TileMap::remove_layer(int p_layer) {
 	// Clear before removing the layer.
 	_clear_internals();
 
-	layers.remove(p_layer);
+	layers.remove_at(p_layer);
 	_recreate_internals();
 	notify_property_list_changed();
 
@@ -1928,7 +1928,7 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 
 	if ((source_id == TileSet::INVALID_SOURCE || atlas_coords == TileSetSource::INVALID_ATLAS_COORDS || alternative_tile == TileSetSource::INVALID_TILE_ALTERNATIVE) &&
 			(source_id != TileSet::INVALID_SOURCE || atlas_coords != TileSetSource::INVALID_ATLAS_COORDS || alternative_tile != TileSetSource::INVALID_TILE_ALTERNATIVE)) {
-		WARN_PRINT("Setting a cell a cell as empty requires both source_id, atlas_coord and alternative_tile to be set to their respective \"invalid\" values. Values were thus changes accordingly.");
+		WARN_PRINT("Setting a cell as empty requires both source_id, atlas_coord and alternative_tile to be set to their respective \"invalid\" values. Values were thus changes accordingly.");
 		source_id = TileSet::INVALID_SOURCE;
 		atlas_coords = TileSetSource::INVALID_ATLAS_COORDS;
 		alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;

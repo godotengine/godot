@@ -82,7 +82,7 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const PropertyInfo &E : properties) {
-		if (platform->get_option_visibility(E.name, values)) {
+		if (platform->get_export_option_visibility(E.name, values)) {
 			p_list->push_back(E);
 		}
 	}
@@ -488,8 +488,8 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 	String cur_dir_no_prefix = cur_dir.replace("res://", "");
 
 	Vector<String> dirs;
-	String f;
-	while ((f = da->get_next()) != "") {
+	String f = da->get_next();
+	while (!f.is_empty()) {
 		if (da->current_is_dir()) {
 			dirs.push_back(f);
 		} else {
@@ -506,6 +506,7 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 				}
 			}
 		}
+		f = da->get_next();
 	}
 
 	da->list_dir_end();
@@ -1534,7 +1535,7 @@ Ref<EditorExportPreset> EditorExport::get_export_preset(int p_idx) {
 }
 
 void EditorExport::remove_export_preset(int p_idx) {
-	export_presets.remove(p_idx);
+	export_presets.remove_at(p_idx);
 	save_presets();
 }
 

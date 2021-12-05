@@ -8,7 +8,7 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
- * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ * by the Xiph.Org Foundation https://xiph.org/                     *
  *                                                                  *
  ********************************************************************
 
@@ -60,7 +60,7 @@ void *_alloca(size_t size);
 #  define FAST_HYPOT hypot
 #endif
 
-#endif
+#endif /* _V_IFDEFJAIL_H_ */
 
 #ifdef HAVE_ALLOCA_H
 #  include <alloca.h>
@@ -80,7 +80,7 @@ void *_alloca(size_t size);
 
 
 /* Special i386 GCC implementation */
-#if defined(__i386__) && defined(__GNUC__) && !defined(__BEOS__)
+#if defined(__i386__) && defined(__GNUC__) && !defined(__BEOS__) && !defined(__SSE2_MATH__)
 #  define VORBIS_FPU_CONTROL
 /* both GCC and MSVC are kinda stupid about rounding/casting to int.
    Because of encapsulation constraints (GCC can't see inside the asm
@@ -119,8 +119,7 @@ static inline int vorbis_ftoi(double f){  /* yes, double!  Otherwise,
 
 /* MSVC inline assembly. 32 bit only; inline ASM isn't implemented in the
  * 64 bit compiler and doesn't work on arm. */
-#if defined(_MSC_VER) && !defined(_WIN64) && \
-      !defined(_WIN32_WCE) && !defined(_M_ARM)
+#if defined(_MSC_VER) && defined(_M_IX86) && !defined(_WIN32_WCE)
 #  define VORBIS_FPU_CONTROL
 
 typedef ogg_int16_t vorbis_fpu_control;
@@ -147,7 +146,7 @@ static __inline void vorbis_fpu_restore(vorbis_fpu_control fpu){
 
 /* Optimized code path for x86_64 builds. Uses SSE2 intrinsics. This can be
    done safely because all x86_64 CPUs supports SSE2. */
-#if (defined(_MSC_VER) && defined(_WIN64)) || (defined(__GNUC__) && defined (__x86_64__))
+#if (defined(_MSC_VER) && defined(_M_X64)) || (defined(__GNUC__) && defined (__SSE2_MATH__))
 #  define VORBIS_FPU_CONTROL
 
 typedef ogg_int16_t vorbis_fpu_control;
@@ -174,7 +173,7 @@ static __inline void vorbis_fpu_restore(vorbis_fpu_control fpu){
 
 typedef int vorbis_fpu_control;
 
-static int vorbis_ftoi(double f){
+STIN int vorbis_ftoi(double f){
         /* Note: MSVC and GCC (at least on some systems) round towards zero, thus,
            the floor() call is required to ensure correct roudning of
            negative numbers */

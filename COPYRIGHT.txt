@@ -120,6 +120,11 @@ Copyright: 2007, Starbreeze Studios
  2014-2021, Godot Engine contributors.
 License: Expat and Zlib
 
+Files: ./thirdparty/amd-fsr/
+Comment: AMD FidelityFX Super Resolution
+Copyright: 2021, Advanced Micro Devices, Inc.
+License: Expat
+
 Files: ./thirdparty/basis_universal/
 Comment: Basis Universal
 Copyright: 2019, Binomial LLC.
@@ -266,7 +271,7 @@ Copyright: lieff
 License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
-Comment: MiniUPnPc
+Comment: MiniUPnP Project
 Copyright: 2005-2021, Thomas Bernard
 License: BSD-3-clause
 
@@ -369,8 +374,8 @@ License: Apache-2.0
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2020, University of Cambridge
- 2009-2020, Zoltan Herczeg
+Copyright: 1997-2021, University of Cambridge
+ 2009-2021, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/pvrtccompressor/
@@ -400,7 +405,7 @@ License: Expat
 
 Files: ./thirdparty/tinyexr/
 Comment: TinyEXR
-Copyright: 2014-2020, Syoyo Fujita
+Copyright: 2014-2021, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
 License: BSD-3-clause
 
@@ -447,7 +452,7 @@ License: Zlib
 
 Files: ./thirdparty/zstd/
 Comment: Zstandard
-Copyright: 2016-2020, Facebook, Inc.
+Copyright: 2016-2021, Facebook, Inc.
 License: BSD-3-clause
 
 

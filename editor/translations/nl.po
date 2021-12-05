@@ -50,13 +50,14 @@
 # Hugo van de Kuilen <hugo.vandekuilen1234567890@gmail.com>, 2021.
 # tobeqz <vanveenjorik+tobeqz@gmail.com>, 2021.
 # Edgar <Edgar@anotherfoxguy.com>, 2021.
+# Daan van Luijk <daanvl@outlook.be>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-24 20:52+0000\n"
-"Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
+"PO-Revision-Date: 2021-11-07 22:23+0000\n"
+"Last-Translator: Daan van Luijk <daanvl@outlook.be>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -419,9 +420,8 @@ msgstr "node '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
-msgstr "Animatie"
+msgstr "animatie"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
@@ -1787,6 +1787,8 @@ msgstr "Laat u 3D scenes weergeven en bewerken."
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
 msgstr ""
+"Staat toe het script aan te passen door middel van de geïntegreerde script "
+"editor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Provides built-in access to the Asset Library."
@@ -2168,7 +2170,7 @@ msgstr "Thema-eigenschappen"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Enumeratie"
+msgstr "Enumeraties"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
@@ -7838,12 +7840,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Dit skelet heeft geen botten, maak een aantal Bone2D-knopen als kind."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "CreëerRest Pose vanuit botten"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "Botten in rusthouding zetten"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "CreëerRest Pose vanuit botten"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"

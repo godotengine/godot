@@ -65,6 +65,13 @@ static String _prestr(SL::DataPrecision p_pres) {
 	return "";
 }
 
+static String _constr(bool p_is_const) {
+	if (p_is_const) {
+		return "const ";
+	}
+	return "";
+}
+
 static String _qualstr(SL::ArgumentQualifier p_qual) {
 	switch (p_qual) {
 		case SL::ARGUMENT_QUALIFIER_IN:
@@ -246,9 +253,10 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 		header += "(";
 
 		for (int i = 0; i < fnode->arguments.size(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				header += ", ";
-
+			}
+			header += _constr(fnode->arguments[i].is_const);
 			header += _qualstr(fnode->arguments[i].qualifier);
 			header += _prestr(fnode->arguments[i].precision);
 			header += _typestr(fnode->arguments[i].type);
@@ -365,7 +373,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			for (int i = 0; i < snode->vconstants.size(); i++) {
 				String gcode;
-				gcode += "const ";
+				gcode += _constr(true);
 				gcode += _prestr(snode->vconstants[i].precision);
 				gcode += _typestr(snode->vconstants[i].type);
 				gcode += " " + _mkid(String(snode->vconstants[i].name));
@@ -446,9 +454,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			SL::VariableDeclarationNode *var_dec_node = (SL::VariableDeclarationNode *)p_node;
 
 			StringBuffer<> declaration;
-			if (var_dec_node->is_const) {
-				declaration += "const ";
-			}
+			declaration += _constr(var_dec_node->is_const);
 			declaration += _prestr(var_dec_node->precision);
 			declaration += _typestr(var_dec_node->datatype);
 
@@ -750,6 +756,10 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					String n = _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 					code += "(" + n + " == 0 ? 0 : ";
 					code += a + " - " + n + " * (" + a + " / " + n + "))";
+				} break;
+
+				case SL::OP_EMPTY: {
+					// Semicolon (or empty statement) - ignored.
 				} break;
 
 				default: {

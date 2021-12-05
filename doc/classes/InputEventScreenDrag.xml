@@ -7,7 +7,7 @@
 		Contains screen drag information. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
+		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<members>
 		<member name="index" type="int" setter="set_index" getter="get_index" default="0">

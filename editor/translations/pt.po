@@ -24,7 +24,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-21 10:31+0000\n"
+"PO-Revision-Date: 2021-11-07 09:45+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
@@ -3058,7 +3058,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
-msgstr "Sincronizar Alterações de Cena"
+msgstr "Sincronizar Alterações da Cena"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -7733,12 +7733,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Este esqueleto não tem ossos, crie alguns nós filhos Bone2D."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-msgid "Create Rest Pose from Bones"
-msgstr "Criar Pose de Descanso a partir de Ossos"
-
-#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
 msgstr "Definir Pose de Descanso para Ossos"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Create Rest Pose from Bones"
+msgstr "Criar Pose de Descanso a partir de Ossos"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"

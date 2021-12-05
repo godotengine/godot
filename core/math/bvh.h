@@ -654,7 +654,7 @@ private:
 		// remove from changed items (not very efficient yet)
 		for (int n = 0; n < (int)changed_items.size(); n++) {
 			if (changed_items[n] == p_handle) {
-				changed_items.remove_unordered(n);
+				changed_items.remove_at_unordered(n);
 
 				// because we are using an unordered remove,
 				// the last changed item will now be at spot 'n',

@@ -998,7 +998,7 @@ void VisualScriptEditor::_change_port_type(int p_select, int p_id, int p_port, b
 void VisualScriptEditor::_update_node_size(int p_id) {
 	Node *node = graph->get_node(itos(p_id));
 	if (Object::cast_to<Control>(node)) {
-		Object::cast_to<Control>(node)->set_size(Vector2(1, 1)); // Shrink if text is smaller.
+		Object::cast_to<Control>(node)->reset_size(); // Shrink if text is smaller.
 	}
 }
 
@@ -1262,6 +1262,23 @@ void VisualScriptEditor::_member_edited() {
 		undo_redo->create_action(TTR("Rename Variable"));
 		undo_redo->add_do_method(script.ptr(), "rename_variable", name, new_name);
 		undo_redo->add_undo_method(script.ptr(), "rename_variable", new_name, name);
+
+		// Also fix all variable setter & getter calls
+		List<int> lst;
+		script->get_node_list(&lst);
+		for (int &P : lst) {
+			Ref<VisualScriptPropertySet> pset = script->get_node(P);
+			if (pset.is_valid() && pset->get_property() == name) {
+				undo_redo->add_do_method(pset.ptr(), "set_property", new_name);
+				undo_redo->add_undo_method(pset.ptr(), "set_property", name);
+			}
+			Ref<VisualScriptPropertyGet> pget = script->get_node(P);
+			if (pget.is_valid() && pget->get_property() == name) {
+				undo_redo->add_do_method(pget.ptr(), "set_property", new_name);
+				undo_redo->add_undo_method(pget.ptr(), "set_property", name);
+			}
+		}
+
 		undo_redo->add_do_method(this, "_update_members");
 		undo_redo->add_undo_method(this, "_update_members");
 		undo_redo->add_do_method(this, "_update_graph");
@@ -1278,6 +1295,18 @@ void VisualScriptEditor::_member_edited() {
 		undo_redo->create_action(TTR("Rename Signal"));
 		undo_redo->add_do_method(script.ptr(), "rename_custom_signal", name, new_name);
 		undo_redo->add_undo_method(script.ptr(), "rename_custom_signal", new_name, name);
+
+		// Also fix all signal emitting nodes
+		List<int> lst;
+		script->get_node_list(&lst);
+		for (int &P : lst) {
+			Ref<VisualScriptEmitSignal> psig = script->get_node(P);
+			if (psig.is_valid() && psig->get_signal() == name) {
+				undo_redo->add_do_method(psig.ptr(), "set_signal", new_name);
+				undo_redo->add_undo_method(psig.ptr(), "set_signal", name);
+			}
+		}
+
 		undo_redo->add_do_method(this, "_update_members");
 		undo_redo->add_undo_method(this, "_update_members");
 		undo_redo->add_do_method(this, "emit_signal", "edited_script_changed");
@@ -1616,7 +1645,7 @@ void VisualScriptEditor::_expression_text_changed(const String &p_text, int p_id
 
 	Node *node = graph->get_node(itos(p_id));
 	if (Object::cast_to<Control>(node)) {
-		Object::cast_to<Control>(node)->set_size(Vector2(1, 1)); // Shrink if text is smaller.
+		Object::cast_to<Control>(node)->reset_size(); // Shrink if text is smaller.
 	}
 
 	updating_graph = false;
@@ -3676,7 +3705,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 	}
 
 	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_global_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
-	default_value_edit->set_size(Size2(1, 1));
+	default_value_edit->reset_size();
 
 	if (pinfo.type == Variant::NODE_PATH) {
 		Node *edited_scene = get_tree()->get_edited_scene_root();
@@ -3832,7 +3861,7 @@ void VisualScriptEditor::_comment_node_resized(const Vector2 &p_new_size, int p_
 	undo_redo->commit_action();
 
 	gn->set_custom_minimum_size(new_size);
-	gn->set_size(Size2(1, 1));
+	gn->reset_size();
 	graph->set_block_minimum_size_adjust(false);
 	updating_graph = false;
 }
@@ -4132,10 +4161,10 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 
 	member_popup->clear();
 	member_popup->set_position(members->get_global_position() + p_pos);
-	member_popup->set_size(Vector2());
+	member_popup->reset_size();
 
 	function_name_edit->set_position(members->get_global_position() + p_pos);
-	function_name_edit->set_size(Vector2());
+	function_name_edit->reset_size();
 
 	TreeItem *root = members->get_root();
 

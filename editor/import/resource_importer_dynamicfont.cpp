@@ -66,7 +66,7 @@ String ResourceImporterDynamicFont::get_resource_type() const {
 	return "FontData";
 }
 
-bool ResourceImporterDynamicFont::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	if (p_option == "msdf_pixel_range" && !bool(p_options["multichannel_signed_distance_field"])) {
 		return false;
 	}
@@ -94,7 +94,7 @@ String ResourceImporterDynamicFont::get_preset_name(int p_idx) const {
 	}
 }
 
-void ResourceImporterDynamicFont::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	bool msdf = p_preset == PRESET_MSDF;
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));

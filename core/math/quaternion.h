@@ -134,12 +134,11 @@ public:
 			w(p_q.w) {
 	}
 
-	Quaternion &operator=(const Quaternion &p_q) {
+	void operator=(const Quaternion &p_q) {
 		x = p_q.x;
 		y = p_q.y;
 		z = p_q.z;
 		w = p_q.w;
-		return *this;
 	}
 
 	Quaternion(const Vector3 &v0, const Vector3 &v1) // shortest arc

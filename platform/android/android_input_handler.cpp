@@ -223,7 +223,7 @@ void AndroidInputHandler::process_touch(int p_event, int p_pointer, const Vector
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
 					Input::get_singleton()->parse_input_event(ev);
-					touch.remove(i);
+					touch.remove_at(i);
 
 					break;
 				}

@@ -129,20 +129,20 @@ TEST_CASE("[Array] has() and count()") {
 	CHECK(arr.count(2) == 0);
 }
 
-TEST_CASE("[Array] remove()") {
+TEST_CASE("[Array] remove_at()") {
 	Array arr;
 	arr.push_back(1);
 	arr.push_back(2);
-	arr.remove(0);
+	arr.remove_at(0);
 	CHECK(arr.size() == 1);
 	CHECK(int(arr[0]) == 2);
-	arr.remove(0);
+	arr.remove_at(0);
 	CHECK(arr.size() == 0);
 
-	// The array is now empty; try to use `remove()` again.
+	// The array is now empty; try to use `remove_at()` again.
 	// Normally, this prints an error message so we silence it.
 	ERR_PRINT_OFF;
-	arr.remove(0);
+	arr.remove_at(0);
 	ERR_PRINT_ON;
 
 	CHECK(arr.size() == 0);

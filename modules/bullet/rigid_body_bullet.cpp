@@ -420,7 +420,7 @@ void RigidBodyBullet::on_collision_checker_start() {
 
 void RigidBodyBullet::on_collision_checker_end() {
 	// Always true if active and not a static or kinematic body
-	isTransformChanged = btBody->isActive() && !btBody->isStaticOrKinematicObject();
+	updated = btBody->isActive() && !btBody->isStaticOrKinematicObject();
 }
 
 bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const real_t &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {

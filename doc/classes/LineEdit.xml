@@ -397,20 +397,11 @@
 		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			Color of the [LineEdit]'s caret (text cursor).
 		</theme_item>
-		<theme_item name="clear" data_type="icon" type="Texture2D">
-			Texture for the clear button. See [member clear_button_enabled].
-		</theme_item>
 		<theme_item name="clear_button_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Color used as default tint for the clear button.
 		</theme_item>
 		<theme_item name="clear_button_color_pressed" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Color used for the clear button when it's pressed.
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			Background used when [LineEdit] has GUI focus.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			Font used for the text.
 		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Default font color.
@@ -421,26 +412,35 @@
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			Font color for selected text (inside the selection rectangle).
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [LineEdit]'s text.
-		</theme_item>
 		<theme_item name="font_uneditable_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 0.5)">
 			Font color when editing is disabled.
+		</theme_item>
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
+			Color of the selection rectangle.
 		</theme_item>
 		<theme_item name="minimum_character_width" data_type="constant" type="int" default="4">
 			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'M' characters (i.e. this amount of 'M' characters can be displayed without scrolling).
 		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			Default background for the [LineEdit].
-		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			Font used for the text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the [LineEdit]'s text.
+		</theme_item>
+		<theme_item name="clear" data_type="icon" type="Texture2D">
+			Texture for the clear button. See [member clear_button_enabled].
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			Background used when [LineEdit] has GUI focus.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			Default background for the [LineEdit].
+		</theme_item>
 		<theme_item name="read_only" data_type="style" type="StyleBox">
 			Background used when [LineEdit] is in read-only mode ([member editable] is set to [code]false[/code]).
-		</theme_item>
-		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
-			Color of the selection rectangle.
 		</theme_item>
 	</theme_items>
 </class>
