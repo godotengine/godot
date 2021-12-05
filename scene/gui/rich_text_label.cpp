@@ -397,7 +397,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	Item *it_to = (p_line + 1 < p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
 	int remaining_characters = visible_characters - l.char_offset;
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
-		if (visible_characters >= 0 && remaining_characters <= 0) {
+		if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters <= 0) {
 			break;
 		}
 		switch (it->type) {
@@ -440,7 +440,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				Dictionary font_ftr = _find_font_features(it);
 				String lang = _find_language(it);
 				String tx = t->text;
-				if (visible_characters >= 0 && remaining_characters >= 0) {
+				if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING && visible_characters >= 0 && remaining_characters >= 0) {
 					tx = tx.substr(0, remaining_characters);
 				}
 				remaining_characters -= tx.length();
@@ -621,7 +621,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 	}
 }
 
-int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs) {
+int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs) {
 	Vector2 off;
 
 	ERR_FAIL_COND_V(p_frame == nullptr, 0);
@@ -640,6 +640,12 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	RID ci = get_canvas_item();
 	bool rtl = (l.text_buf->get_direction() == TextServer::DIRECTION_RTL);
 	bool lrtl = is_layout_rtl();
+
+	bool trim_chars = (visible_characters >= 0) && (visible_chars_behavior == VC_CHARS_AFTER_SHAPING);
+	bool trim_glyphs_ltr = (visible_characters >= 0) && ((visible_chars_behavior == VC_GLYPHS_LTR) || ((visible_chars_behavior == VC_GLYPHS_AUTO) && !lrtl));
+	bool trim_glyphs_rtl = (visible_characters >= 0) && ((visible_chars_behavior == VC_GLYPHS_RTL) || ((visible_chars_behavior == VC_GLYPHS_AUTO) && lrtl));
+	int total_glyphs = (trim_glyphs_ltr || trim_glyphs_rtl) ? get_total_glyph_count() : 0;
+	int visible_glyphs = total_glyphs * percent_visible;
 
 	Vector<int> list_index;
 	Vector<ItemList *> list_items;
@@ -804,7 +810,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 							}
 
 							for (int j = 0; j < frame->lines.size(); j++) {
-								_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs);
+								_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
 							}
 							idx++;
 						}
@@ -820,6 +826,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 		Vector2 gloff = off;
 		// Draw oulines and shadow.
+		int processed_glyphs_ol = r_processed_glyphs;
 		for (int i = 0; i < gl_size; i++) {
 			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
 			int size = _find_outline_size(it, p_outline_size);
@@ -947,7 +954,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			// Draw glyph outlines.
 			for (int j = 0; j < glyphs[i].repeat; j++) {
 				if (visible) {
-					if (frid != RID()) {
+					bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
+					if (!skip && frid != RID()) {
 						if (font_shadow_color.a > 0) {
 							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + gloff + p_shadow_ofs, gl, font_shadow_color);
 						}
@@ -958,6 +966,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, p_ofs + fx_offset + gloff, gl, font_color);
 						}
 					}
+					processed_glyphs_ol++;
 				}
 				gloff.x += glyphs[i].advance;
 			}
@@ -1124,11 +1133,15 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			// Draw glyphs.
 			for (int j = 0; j < glyphs[i].repeat; j++) {
 				if (visible) {
-					if (frid != RID()) {
-						TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, selected ? selection_fg : font_color);
-					} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-						TS->draw_hex_code_box(ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, selected ? selection_fg : font_color);
+					bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
+					if (!skip) {
+						if (frid != RID()) {
+							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, selected ? selection_fg : font_color);
+						} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+							TS->draw_hex_code_box(ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, selected ? selection_fg : font_color);
+						}
 					}
+					r_processed_glyphs++;
 				}
 				off.x += glyphs[i].advance;
 			}
@@ -1481,9 +1494,10 @@ void RichTextLabel::_notification(int p_what) {
 
 			// New cache draw.
 			Point2 ofs = text_rect.get_position() + Vector2(0, main->lines[from_line].offset.y - vofs);
+			int processed_glyphs = 0;
 			while (ofs.y < size.height && from_line < main->lines.size()) {
 				visible_paragraph_count++;
-				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_shadow_color, shadow_outline_size, shadow_ofs);
+				visible_line_count += _draw_line(main, from_line, ofs, text_rect.size.x, base_color, outline_size, outline_color, font_shadow_color, shadow_outline_size, shadow_ofs, processed_glyphs);
 				ofs.y += main->lines[from_line].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
 				from_line++;
 			}
@@ -3993,8 +4007,10 @@ void RichTextLabel::set_percent_visible(float p_percent) {
 			visible_characters = get_total_character_count() * p_percent;
 			percent_visible = p_percent;
 		}
-		main->first_invalid_line = 0; //invalidate ALL
-		_validate_line_caches(main);
+		if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
+			main->first_invalid_line = 0; //invalidate ALL
+			_validate_line_caches(main);
+		}
 		update();
 	}
 }
@@ -4135,6 +4151,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visible_characters", "amount"), &RichTextLabel::set_visible_characters);
 	ClassDB::bind_method(D_METHOD("get_visible_characters"), &RichTextLabel::get_visible_characters);
 
+	ClassDB::bind_method(D_METHOD("get_visible_characters_behavior"), &RichTextLabel::get_visible_characters_behavior);
+	ClassDB::bind_method(D_METHOD("set_visible_characters_behavior", "behavior"), &RichTextLabel::set_visible_characters_behavior);
+
 	ClassDB::bind_method(D_METHOD("set_percent_visible", "percent_visible"), &RichTextLabel::set_percent_visible);
 	ClassDB::bind_method(D_METHOD("get_percent_visible"), &RichTextLabel::get_percent_visible);
 
@@ -4159,6 +4178,8 @@ void RichTextLabel::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters_behavior", PROPERTY_HINT_ENUM, "Characters Before Shaping,Characters After Shaping,Glyphs (Layout Direction),Glyphs (Left-to-Right),Glyphs (Right-to-Left)"), "set_visible_characters_behavior", "get_visible_characters_behavior");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_underlined"), "set_meta_underline", "is_meta_underlined");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_size", PROPERTY_HINT_RANGE, "0,24,1"), "set_tab_size", "get_tab_size");
@@ -4224,6 +4245,25 @@ void RichTextLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(ITEM_META);
 	BIND_ENUM_CONSTANT(ITEM_DROPCAP);
 	BIND_ENUM_CONSTANT(ITEM_CUSTOMFX);
+
+	BIND_ENUM_CONSTANT(VC_CHARS_BEFORE_SHAPING);
+	BIND_ENUM_CONSTANT(VC_CHARS_AFTER_SHAPING);
+	BIND_ENUM_CONSTANT(VC_GLYPHS_AUTO);
+	BIND_ENUM_CONSTANT(VC_GLYPHS_LTR);
+	BIND_ENUM_CONSTANT(VC_GLYPHS_RTL);
+}
+
+RichTextLabel::VisibleCharactersBehavior RichTextLabel::get_visible_characters_behavior() const {
+	return visible_chars_behavior;
+}
+
+void RichTextLabel::set_visible_characters_behavior(RichTextLabel::VisibleCharactersBehavior p_behavior) {
+	if (visible_chars_behavior != p_behavior) {
+		visible_chars_behavior = p_behavior;
+		main->first_invalid_line = 0; //invalidate ALL
+		_validate_line_caches(main);
+		update();
+	}
 }
 
 void RichTextLabel::set_visible_characters(int p_visible) {
@@ -4237,8 +4277,10 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 				percent_visible = (float)p_visible / (float)total_char_count;
 			}
 		}
-		main->first_invalid_line = 0; //invalidate ALL
-		_validate_line_caches(main);
+		if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
+			main->first_invalid_line = 0; //invalidate ALL
+			_validate_line_caches(main);
+		}
 		update();
 	}
 }
@@ -4264,6 +4306,22 @@ int RichTextLabel::get_total_character_count() const {
 	}
 
 	return tc;
+}
+
+int RichTextLabel::get_total_glyph_count() const {
+	int tg = 0;
+	Item *it = main;
+	while (it) {
+		if (it->type == ITEM_FRAME) {
+			ItemFrame *f = static_cast<ItemFrame *>(it);
+			for (int i = 0; i < f->lines.size(); i++) {
+				tg += TS->shaped_text_get_glyph_count(f->lines[i].text_buf->get_rid());
+			}
+		}
+		it = _get_next_item(it, true);
+	}
+
+	return tg;
 }
 
 void RichTextLabel::set_fixed_size_to_width(int p_width) {

@@ -66,6 +66,14 @@ public:
 		OVERRUN_TRIM_WORD_ELLIPSIS,
 	};
 
+	enum VisibleCharactersBehavior {
+		VC_CHARS_BEFORE_SHAPING,
+		VC_CHARS_AFTER_SHAPING,
+		VC_GLYPHS_AUTO,
+		VC_GLYPHS_LTR,
+		VC_GLYPHS_RTL,
+	};
+
 private:
 	Align align = ALIGN_LEFT;
 	VAlign valign = VALIGN_TOP;
@@ -90,6 +98,7 @@ private:
 
 	float percent_visible = 1.0;
 
+	VisibleCharactersBehavior visible_chars_behavior = VC_CHARS_BEFORE_SHAPING;
 	int visible_chars = -1;
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
@@ -140,6 +149,9 @@ public:
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;
 
+	VisibleCharactersBehavior get_visible_characters_behavior() const;
+	void set_visible_characters_behavior(VisibleCharactersBehavior p_behavior);
+
 	void set_visible_characters(int p_amount);
 	int get_visible_characters() const;
 	int get_total_character_count() const;
@@ -171,5 +183,6 @@ VARIANT_ENUM_CAST(Label::Align);
 VARIANT_ENUM_CAST(Label::VAlign);
 VARIANT_ENUM_CAST(Label::AutowrapMode);
 VARIANT_ENUM_CAST(Label::OverrunBehavior);
+VARIANT_ENUM_CAST(Label::VisibleCharactersBehavior);
 
 #endif

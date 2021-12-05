@@ -429,6 +429,9 @@
 			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
 			[b]Note:[/b] Setting this property updates [member percent_visible] based on current [method get_total_character_count].
 		</member>
+		<member name="visible_characters_behavior" type="int" setter="set_visible_characters_behavior" getter="get_visible_characters_behavior" enum="RichTextLabel.VisibleCharactersBehavior" default="0">
+			Sets the clipping behavior when [member visible_characters] or [member percent_visible] is set. See [enum VisibleCharactersBehavior] for more info.
+		</member>
 	</members>
 	<signals>
 		<signal name="meta_clicked">
@@ -526,6 +529,21 @@
 		<constant name="ITEM_DROPCAP" value="24" enum="ItemType">
 		</constant>
 		<constant name="ITEM_CUSTOMFX" value="25" enum="ItemType">
+		</constant>
+		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
+			Trims text before the shaping. e.g, increasing [member visible_characters] value is visually identical to typing the text.
+		</constant>
+		<constant name="VC_CHARS_AFTER_SHAPING" value="1" enum="VisibleCharactersBehavior">
+			Displays glyphs that are mapped to the first [member visible_characters] characters from the beginning of the text.
+		</constant>
+		<constant name="VC_GLYPHS_AUTO" value="2" enum="VisibleCharactersBehavior">
+			Displays [member percent_visible] glyphs, starting from the left or from the right, depending on [member Control.layout_direction] value.
+		</constant>
+		<constant name="VC_GLYPHS_LTR" value="3" enum="VisibleCharactersBehavior">
+			Displays [member percent_visible] glyphs, starting from the left.
+		</constant>
+		<constant name="VC_GLYPHS_RTL" value="4" enum="VisibleCharactersBehavior">
+			Displays [member percent_visible] glyphs, starting from the right.
 		</constant>
 	</constants>
 	<theme_items>
