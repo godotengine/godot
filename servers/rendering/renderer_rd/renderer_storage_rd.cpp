@@ -9265,7 +9265,6 @@ void RendererStorageRD::_update_global_variables() {
 			ERR_CONTINUE(!material); //wtf
 
 			_material_queue_update(material, false, true);
-			print_line("update material texture?");
 		}
 
 		global_variables.must_update_texture_materials = false;

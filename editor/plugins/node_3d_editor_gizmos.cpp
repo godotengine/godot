@@ -2871,7 +2871,6 @@ void GPUParticlesCollision3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *
 void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Node3D *cs = p_gizmo->get_spatial_node();
 
-	print_line("redraw request " + itos(cs != nullptr));
 	p_gizmo->clear();
 
 	const Ref<Material> material =
