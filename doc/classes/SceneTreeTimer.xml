@@ -12,6 +12,7 @@
 		    yield(get_tree().create_timer(1.0), "timeout")
 		    print("Timer ended.")
 		[/codeblock]
+		The timer will be automatically freed after its time elapses.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -19,7 +20,7 @@
 	</methods>
 	<members>
 		<member name="time_left" type="float" setter="set_time_left" getter="get_time_left">
-			The time remaining.
+			The time remaining (in seconds).
 		</member>
 	</members>
 	<signals>
