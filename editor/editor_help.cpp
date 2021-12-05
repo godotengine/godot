@@ -673,7 +673,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
-		class_desc->push_table(2);
+		class_desc->push_table(4);
 		class_desc->set_table_column_expand(1, true);
 
 		for (int i = 0; i < cd.properties.size(); i++) {
@@ -683,13 +683,14 @@ void EditorHelp::_update_doc() {
 			}
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 
+			// Property type.
 			class_desc->push_cell();
 			class_desc->push_paragraph(RichTextLabel::ALIGN_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.properties[i].type, cd.properties[i].enumeration);
 			class_desc->pop();
 			class_desc->pop();
-			class_desc->pop();
+			class_desc->pop(); // cell
 
 			bool describe = false;
 
@@ -710,6 +711,7 @@ void EditorHelp::_update_doc() {
 				describe = false;
 			}
 
+			// Property name.
 			class_desc->push_cell();
 			class_desc->push_font(doc_code_font);
 			class_desc->push_color(headline_color);
@@ -725,17 +727,42 @@ void EditorHelp::_update_doc() {
 				property_descr = true;
 			}
 
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->pop(); // cell
+
+			// Property value.
+			class_desc->push_cell();
+			class_desc->push_font(doc_code_font);
+
 			if (cd.properties[i].default_value != "") {
 				class_desc->push_color(symbol_color);
-				class_desc->add_text(cd.properties[i].overridden ? " [" + TTR("override:") + " " : " [" + TTR("default:") + " ");
+				if (cd.properties[i].overridden) {
+					class_desc->add_text(" [");
+					class_desc->push_meta("@member " + cd.properties[i].overrides + "." + cd.properties[i].name);
+					_add_text(vformat(TTR("overrides %s:"), cd.properties[i].overrides));
+					class_desc->pop();
+					class_desc->add_text(" ");
+				} else {
+					class_desc->add_text(" [" + TTR("default:") + " ");
+				}
 				class_desc->pop();
+
 				class_desc->push_color(value_color);
 				_add_text(_fix_constant(cd.properties[i].default_value));
 				class_desc->pop();
+
 				class_desc->push_color(symbol_color);
 				class_desc->add_text("]");
 				class_desc->pop();
 			}
+
+			class_desc->pop();
+			class_desc->pop(); // cell
+
+			// Property setters and getters.
+			class_desc->push_cell();
+			class_desc->push_font(doc_code_font);
 
 			if (cd.is_script_doc && (cd.properties[i].setter != "" || cd.properties[i].getter != "")) {
 				class_desc->push_color(symbol_color);
@@ -764,12 +791,10 @@ void EditorHelp::_update_doc() {
 			}
 
 			class_desc->pop();
-			class_desc->pop();
-
-			class_desc->pop();
+			class_desc->pop(); // cell
 		}
 
-		class_desc->pop(); //table
+		class_desc->pop(); // table
 		class_desc->pop();
 		class_desc->pop(); // font
 		class_desc->add_newline();

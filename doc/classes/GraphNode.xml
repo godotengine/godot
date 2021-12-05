@@ -218,7 +218,7 @@
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="0" />
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
 		<member name="overlay" type="int" setter="set_overlay" getter="get_overlay" enum="GraphNode.Overlay" default="0">
 			Sets the overlay shown above the GraphNode. See [enum Overlay].
 		</member>

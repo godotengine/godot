@@ -487,7 +487,7 @@
 		<member name="indent_use_spaces" type="bool" setter="set_indent_using_spaces" getter="is_indent_using_spaces" default="false">
 			Use spaces instead of tabs for indentation.
 		</member>
-		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" override="true" enum="Control.LayoutDirection" default="2" />
+		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" overrides="Control" enum="Control.LayoutDirection" default="2" />
 		<member name="line_folding" type="bool" setter="set_line_folding_enabled" getter="is_line_folding_enabled" default="false">
 			Sets whether line folding is allowed.
 		</member>
@@ -497,7 +497,7 @@
 		<member name="symbol_lookup_on_click" type="bool" setter="set_symbol_lookup_on_click_enabled" getter="is_symbol_lookup_on_click_enabled" default="false">
 			Set when a validated word from [signal symbol_validate] is clicked, the [signal symbol_lookup] should be emitted.
 		</member>
-		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" override="true" enum="Control.TextDirection" default="1" />
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" overrides="TextEdit" enum="Control.TextDirection" default="1" />
 	</members>
 	<signals>
 		<signal name="breakpoint_toggled">

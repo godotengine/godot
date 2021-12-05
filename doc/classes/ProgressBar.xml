@@ -12,8 +12,8 @@
 		<member name="percent_visible" type="bool" setter="set_percent_visible" getter="is_percent_visible" default="true">
 			If [code]true[/code], the fill percentage is displayed on the bar.
 		</member>
-		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" override="true" default="0" />
-		<member name="step" type="float" setter="set_step" getter="get_step" override="true" default="0.01" />
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" default="0" />
+		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="0.01" />
 	</members>
 	<theme_items>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">

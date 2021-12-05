@@ -971,7 +971,7 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled" default="false">
 			If [code]true[/code], all occurrences of the selected text will be highlighted.
 		</member>
@@ -991,7 +991,7 @@
 		<member name="minimap_width" type="int" setter="set_minimap_width" getter="get_minimap_width" default="80">
 			The width, in pixels, of the minimap.
 		</member>
-		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="1" />
+		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" overrides="Control" enum="Control.CursorShape" default="1" />
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
 			If [code]true[/code], custom [code]font_selected_color[/code] will be used for selected text.
 		</member>

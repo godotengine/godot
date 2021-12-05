@@ -199,7 +199,7 @@
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			If [code]true[/code], the [LineEdit] don't display decoration.
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
@@ -232,7 +232,7 @@
 			If [code]false[/code], using middle mouse button to paste clipboard will be disabled.
 			[b]Note:[/b] This method is only implemented on Linux.
 		</member>
-		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="1" />
+		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" overrides="Control" enum="Control.CursorShape" default="1" />
 		<member name="placeholder_alpha" type="float" setter="set_placeholder_alpha" getter="get_placeholder_alpha" default="0.6">
 			Opacity of the [member placeholder_text]. From [code]0[/code] to [code]1[/code].
 		</member>
