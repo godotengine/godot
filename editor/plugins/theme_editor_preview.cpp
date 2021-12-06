@@ -47,7 +47,7 @@ void ThemeEditorPreview::add_preview_overlay(Control *p_overlay) {
 
 void ThemeEditorPreview::_propagate_redraw(Control *p_at) {
 	p_at->notification(NOTIFICATION_THEME_CHANGED);
-	p_at->minimum_size_changed();
+	p_at->update_minimum_size();
 	p_at->update();
 	for (int i = 0; i < p_at->get_child_count(); i++) {
 		Control *a = Object::cast_to<Control>(p_at->get_child(i));

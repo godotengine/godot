@@ -1718,7 +1718,7 @@ void LineEdit::set_editable(bool p_editable) {
 
 	editable = p_editable;
 
-	minimum_size_changed();
+	update_minimum_size();
 	update();
 }
 
@@ -1948,7 +1948,7 @@ void LineEdit::_editor_settings_changed() {
 
 void LineEdit::set_expand_to_text_length_enabled(bool p_enabled) {
 	expand_to_text_length = p_enabled;
-	minimum_size_changed();
+	update_minimum_size();
 	set_caret_column(caret_column);
 }
 
@@ -1962,7 +1962,7 @@ void LineEdit::set_clear_button_enabled(bool p_enabled) {
 	}
 	clear_button_enabled = p_enabled;
 	_fit_to_width();
-	minimum_size_changed();
+	update_minimum_size();
 	update();
 }
 
@@ -2023,7 +2023,7 @@ void LineEdit::set_right_icon(const Ref<Texture2D> &p_icon) {
 	}
 	right_icon = p_icon;
 	_fit_to_width();
-	minimum_size_changed();
+	update_minimum_size();
 	update();
 }
 
@@ -2087,7 +2087,7 @@ void LineEdit::_shape() {
 	Size2 size = TS->shaped_text_get_size(text_rid);
 
 	if ((expand_to_text_length && old_size.x != size.x) || (old_size.y != size.y)) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 

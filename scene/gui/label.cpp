@@ -44,7 +44,7 @@ void Label::set_autowrap_mode(Label::AutowrapMode p_mode) {
 	update();
 
 	if (clip || overrun_behavior != OVERRUN_NO_TRIMMING) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -207,7 +207,7 @@ void Label::_shape() {
 	_update_visible();
 
 	if (autowrap_mode == AUTOWRAP_OFF || !clip || overrun_behavior == OVERRUN_NO_TRIMMING) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -592,7 +592,7 @@ void Label::set_text(const String &p_string) {
 		visible_chars = get_total_character_count() * percent_visible;
 	}
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 void Label::set_text_direction(Control::TextDirection p_text_direction) {
@@ -668,7 +668,7 @@ String Label::get_language() const {
 void Label::set_clip_text(bool p_clip) {
 	clip = p_clip;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool Label::is_clipping_text() const {
@@ -682,7 +682,7 @@ void Label::set_text_overrun_behavior(Label::OverrunBehavior p_behavior) {
 	}
 	update();
 	if (clip || overrun_behavior != OVERRUN_NO_TRIMMING) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 

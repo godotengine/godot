@@ -3241,7 +3241,7 @@ void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, co
 	node_name = p_name;
 	node = p_node;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Size2 AnimationTrackEditGroup::get_minimum_size() const {

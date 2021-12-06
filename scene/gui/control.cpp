@@ -192,7 +192,7 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 		return;
 	}
 	data.custom_minimum_size = p_custom;
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Size2 Control::get_custom_minimum_size() const {
@@ -213,7 +213,7 @@ void Control::_update_minimum_size_cache() {
 	data.minimum_size_valid = true;
 
 	if (size_changed) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -713,7 +713,7 @@ void Control::_notification(int p_notification) {
 			update();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -2534,7 +2534,7 @@ void Control::grab_click_focus() {
 	get_viewport()->_gui_grab_click_focus(this);
 }
 
-void Control::minimum_size_changed() {
+void Control::update_minimum_size() {
 	if (!is_inside_tree() || data.block_minimum_size_adjust) {
 		return;
 	}
@@ -2696,7 +2696,7 @@ real_t Control::get_rotation() const {
 void Control::_override_changed() {
 	notification(NOTIFICATION_THEME_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->theme_changed);
-	minimum_size_changed(); // overrides are likely to affect minimum size
+	update_minimum_size(); // Overrides are likely to affect minimum size.
 }
 
 void Control::set_pivot_offset(const Vector2 &p_pivot) {
@@ -2977,7 +2977,7 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Control::warp_mouse);
 
-	ClassDB::bind_method(D_METHOD("minimum_size_changed"), &Control::minimum_size_changed);
+	ClassDB::bind_method(D_METHOD("update_minimum_size"), &Control::update_minimum_size);
 
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Control::set_layout_direction);
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Control::get_layout_direction);

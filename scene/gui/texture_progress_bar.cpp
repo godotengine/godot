@@ -35,7 +35,7 @@
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
 	under = p_texture;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Ref<Texture2D> TextureProgressBar::get_under_texture() const {
@@ -46,7 +46,7 @@ void TextureProgressBar::set_over_texture(const Ref<Texture2D> &p_texture) {
 	over = p_texture;
 	update();
 	if (under.is_null()) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -58,7 +58,7 @@ void TextureProgressBar::set_stretch_margin(Side p_side, int p_size) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 	stretch_margin[p_side] = p_size;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 int TextureProgressBar::get_stretch_margin(Side p_side) const {
@@ -69,7 +69,7 @@ int TextureProgressBar::get_stretch_margin(Side p_side) const {
 void TextureProgressBar::set_nine_patch_stretch(bool p_stretch) {
 	nine_patch_stretch = p_stretch;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool TextureProgressBar::get_nine_patch_stretch() const {
@@ -93,7 +93,7 @@ Size2 TextureProgressBar::get_minimum_size() const {
 void TextureProgressBar::set_progress_texture(const Ref<Texture2D> &p_texture) {
 	progress = p_texture;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Ref<Texture2D> TextureProgressBar::get_progress_texture() const {

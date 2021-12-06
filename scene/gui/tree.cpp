@@ -4370,7 +4370,7 @@ void Tree::scroll_to_item(TreeItem *p_item) {
 
 void Tree::set_h_scroll_enabled(bool p_enable) {
 	h_scroll_enabled = p_enable;
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool Tree::is_h_scroll_enabled() const {
@@ -4379,7 +4379,7 @@ bool Tree::is_h_scroll_enabled() const {
 
 void Tree::set_v_scroll_enabled(bool p_enable) {
 	v_scroll_enabled = p_enable;
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool Tree::is_v_scroll_enabled() const {

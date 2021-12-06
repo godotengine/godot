@@ -832,7 +832,7 @@ public:
 				update();
 			} else if (expand_hovered) {
 				expanded = !expanded;
-				minimum_size_changed();
+				update_minimum_size();
 				update();
 			}
 		}
@@ -935,7 +935,7 @@ public:
 				}
 
 				if ((expansion_rows != prev_expansion_rows) && expanded) {
-					minimum_size_changed();
+					update_minimum_size();
 				}
 
 				if ((expansion_rows == 0) && (layer_index == layer_count)) {

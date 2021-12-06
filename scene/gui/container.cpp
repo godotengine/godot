@@ -35,7 +35,7 @@
 void Container::_child_minsize_changed() {
 	//Size2 ms = get_combined_minimum_size();
 	//if (ms.width > get_size().width || ms.height > get_size().height) {
-	minimum_size_changed();
+	update_minimum_size();
 	queue_sort();
 }
 
@@ -51,7 +51,7 @@ void Container::add_child_notify(Node *p_child) {
 	control->connect(SNAME("minimum_size_changed"), callable_mp(this, &Container::_child_minsize_changed));
 	control->connect(SNAME("visibility_changed"), callable_mp(this, &Container::_child_minsize_changed));
 
-	minimum_size_changed();
+	update_minimum_size();
 	queue_sort();
 }
 
@@ -62,7 +62,7 @@ void Container::move_child_notify(Node *p_child) {
 		return;
 	}
 
-	minimum_size_changed();
+	update_minimum_size();
 	queue_sort();
 }
 
@@ -78,7 +78,7 @@ void Container::remove_child_notify(Node *p_child) {
 	control->disconnect("minimum_size_changed", callable_mp(this, &Container::_child_minsize_changed));
 	control->disconnect("visibility_changed", callable_mp(this, &Container::_child_minsize_changed));
 
-	minimum_size_changed();
+	update_minimum_size();
 	queue_sort();
 }
 

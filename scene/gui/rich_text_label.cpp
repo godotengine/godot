@@ -2190,7 +2190,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 		updating_scroll = false;
 
 		if (fit_content_height) {
-			minimum_size_changed();
+			update_minimum_size();
 		}
 		return;
 	}
@@ -2227,7 +2227,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 	updating_scroll = false;
 
 	if (fit_content_height) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -2324,7 +2324,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	_invalidate_current_line(current_frame);
 
 	if (fixed_width != -1) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -2755,7 +2755,7 @@ void RichTextLabel::clear() {
 	}
 
 	if (fixed_width != -1) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -2772,7 +2772,7 @@ int RichTextLabel::get_tab_size() const {
 void RichTextLabel::set_fit_content_height(bool p_enabled) {
 	if (p_enabled != fit_content_height) {
 		fit_content_height = p_enabled;
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -4268,7 +4268,7 @@ int RichTextLabel::get_total_character_count() const {
 
 void RichTextLabel::set_fixed_size_to_width(int p_width) {
 	fixed_width = p_width;
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Size2 RichTextLabel::get_minimum_size() const {

@@ -82,13 +82,13 @@ void Button::_notification(int p_what) {
 			xl_text = atr(text);
 			_shape();
 
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_DRAW: {
@@ -368,7 +368,7 @@ void Button::set_text(const String &p_text) {
 		_shape();
 
 		update();
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -428,7 +428,7 @@ void Button::set_icon(const Ref<Texture2D> &p_icon) {
 	if (icon != p_icon) {
 		icon = p_icon;
 		update();
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -440,7 +440,7 @@ void Button::set_expand_icon(bool p_enabled) {
 	if (expand_icon != p_enabled) {
 		expand_icon = p_enabled;
 		update();
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -463,7 +463,7 @@ void Button::set_clip_text(bool p_enabled) {
 	if (clip_text != p_enabled) {
 		clip_text = p_enabled;
 		update();
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -484,7 +484,7 @@ Button::TextAlign Button::get_text_align() const {
 
 void Button::set_icon_align(TextAlign p_align) {
 	icon_align = p_align;
-	minimum_size_changed();
+	update_minimum_size();
 	update();
 }
 

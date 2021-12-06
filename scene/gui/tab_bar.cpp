@@ -285,7 +285,7 @@ void TabBar::_notification(int p_what) {
 				_shape(i);
 			}
 			_update_cache();
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_RESIZED: {
@@ -554,7 +554,7 @@ void TabBar::set_tab_title(int p_tab, const String &p_title) {
 	tabs.write[p_tab].text = p_title;
 	_shape(p_tab);
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 String TabBar::get_tab_title(int p_tab) const {
@@ -621,7 +621,7 @@ void TabBar::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	tabs.write[p_tab].icon = p_icon;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Ref<Texture2D> TabBar::get_tab_icon(int p_tab) const {
@@ -645,7 +645,7 @@ void TabBar::set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_butto
 	tabs.write[p_tab].right_button = p_right_button;
 	_update_cache();
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Ref<Texture2D> TabBar::get_tab_right_button(int p_tab) const {
@@ -777,7 +777,7 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	_update_cache();
 	call_deferred(SNAME("_update_hover"));
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 void TabBar::clear_tabs() {
@@ -797,7 +797,7 @@ void TabBar::remove_tab(int p_idx) {
 	_update_cache();
 	call_deferred(SNAME("_update_hover"));
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 
 	if (current < 0) {
 		current = 0;
@@ -945,7 +945,7 @@ void TabBar::set_clip_tabs(bool p_clip_tabs) {
 	}
 	clip_tabs = p_clip_tabs;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool TabBar::get_clip_tabs() const {

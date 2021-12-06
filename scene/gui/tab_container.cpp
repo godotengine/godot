@@ -600,7 +600,7 @@ void TabContainer::_on_theme_changed() {
 
 	_refresh_texts();
 
-	minimum_size_changed();
+	update_minimum_size();
 	if (get_tab_count() > 0) {
 		_repaint();
 		update();
@@ -995,7 +995,7 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	}
 
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool TabContainer::are_tabs_visible() const {
