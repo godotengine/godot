@@ -123,13 +123,13 @@
 			If [code]true[/code], draws the camera's screen rectangle in the editor.
 		</member>
 		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit" default="10000000">
-			Bottom scroll limit in pixels. The camera stops moving when reaching this value.
+			Bottom scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
 		</member>
 		<member name="limit_left" type="int" setter="set_limit" getter="get_limit" default="-10000000">
-			Left scroll limit in pixels. The camera stops moving when reaching this value.
+			Left scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
 		</member>
 		<member name="limit_right" type="int" setter="set_limit" getter="get_limit" default="10000000">
-			Right scroll limit in pixels. The camera stops moving when reaching this value.
+			Right scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
 		</member>
 		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled" default="false">
 			If [code]true[/code], the camera smoothly stops when reaches its limits.
@@ -137,10 +137,10 @@
 			[b]Note:[/b] To immediately update the camera's position to be within limits without smoothing, even with this setting enabled, invoke [method reset_smoothing].
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit" default="-10000000">
-			Top scroll limit in pixels. The camera stops moving when reaching this value.
+			Top scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
-			The camera's offset, useful for looking around or camera shake animations.
+			The camera's relative offset. Useful for looking around or camera shake animations. The offseted camera can go past the limits defined in [member limit_top], [member limit_bottom], [member limit_left] and [member limit_right].
 		</member>
 		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="Camera2D.Camera2DProcessCallback" default="1">
 			The camera's process callback. See [enum Camera2DProcessCallback].
