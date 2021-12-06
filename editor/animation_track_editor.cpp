@@ -39,6 +39,7 @@
 #include "editor_scale.h"
 #include "scene/animation/animation_player.h"
 #include "scene/main/window.h"
+#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 class AnimationTrackKeyEdit : public Object {
@@ -3505,7 +3506,7 @@ void AnimationTrackEditor::make_insert_queue() {
 void AnimationTrackEditor::commit_insert_queue() {
 	bool reset_allowed = true;
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-	if (player->has_animation("RESET") && player->get_animation("RESET") == animation) {
+	if (player->has_animation(SceneStringNames::get_singleton()->RESET) && player->get_animation(SceneStringNames::get_singleton()->RESET) == animation) {
 		// Avoid messing with the reset animation itself.
 		reset_allowed = false;
 	} else {
@@ -3925,15 +3926,15 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 
 Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-	if (player->has_animation("RESET")) {
-		return player->get_animation("RESET");
+	if (player->has_animation(SceneStringNames::get_singleton()->RESET)) {
+		return player->get_animation(SceneStringNames::get_singleton()->RESET);
 	} else {
 		Ref<Animation> reset_anim;
 		reset_anim.instantiate();
 		reset_anim->set_length(ANIM_MIN_LENGTH);
-		undo_redo->add_do_method(player, "add_animation", "RESET", reset_anim);
+		undo_redo->add_do_method(player, "add_animation", SceneStringNames::get_singleton()->RESET, reset_anim);
 		undo_redo->add_do_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
-		undo_redo->add_undo_method(player, "remove_animation", "RESET");
+		undo_redo->add_undo_method(player, "remove_animation", SceneStringNames::get_singleton()->RESET);
 		undo_redo->add_undo_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
 		return reset_anim;
 	}
