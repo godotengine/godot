@@ -1850,10 +1850,11 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 		RasterizerStorageGLES3::LightmapCapture *capture = storage->lightmap_capture_data_owner.getornull(e->instance->lightmap_capture->base);
 
 		if (lightmap && capture) {
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 10);
 			if (e->instance->lightmap_slice == -1) {
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 10);
 				glBindTexture(GL_TEXTURE_2D, lightmap->tex_id);
 			} else {
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 11);
 				glBindTexture(GL_TEXTURE_2D_ARRAY, lightmap->tex_id);
 				state.scene_shader.set_uniform(SceneShaderGLES3::LIGHTMAP_LAYER, e->instance->lightmap_slice);
 			}
