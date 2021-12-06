@@ -1305,7 +1305,6 @@ void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_fr
 	RD::get_singleton()->draw_list_draw(p_draw_list, false, total_probes, total_points);
 
 	if (gi->sdfgi_debug_probe_dir != Vector3()) {
-		print_line("CLICK DEBUG ME?");
 		uint32_t cascade = 0;
 		Vector3 offset = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[cascade].position)) * cascades[cascade].cell_size * Vector3(1.0, 1.0 / y_mult, 1.0);
 		Vector3 probe_size = cascades[cascade].cell_size * (cascade_size / SDFGI::PROBE_DIVISOR) * Vector3(1.0, 1.0 / y_mult, 1.0);
@@ -1333,11 +1332,6 @@ void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_fr
 			}
 		}
 
-		if (gi->sdfgi_debug_probe_enabled) {
-			print_line("found: " + gi->sdfgi_debug_probe_index);
-		} else {
-			print_line("no found");
-		}
 		gi->sdfgi_debug_probe_dir = Vector3();
 	}
 

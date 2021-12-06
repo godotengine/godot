@@ -192,7 +192,7 @@ Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &
 	uint64_t elapsed = OS::get_singleton()->get_ticks_usec() - begin_time;
 	float elapsed_sec = double(elapsed) / 1000000.0;
 	elapsed_sec = Math::snapped(elapsed_sec, 0.01f);
-	print_line("glTF: Export time elapsed seconds " + rtos(elapsed_sec).pad_decimals(2));
+	print_verbose("glTF: Export time elapsed seconds " + rtos(elapsed_sec).pad_decimals(2));
 
 	return OK;
 }

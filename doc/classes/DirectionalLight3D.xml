@@ -34,7 +34,7 @@
 		<member name="directional_shadow_split_3" type="float" setter="set_param" getter="get_param" default="0.5">
 			The distance from shadow split 2 to split 3. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS].
 		</member>
-		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" override="true" default="0.1" />
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.1" />
 		<member name="use_in_sky_only" type="bool" setter="set_sky_only" getter="is_sky_only" default="false">
 			If [code]true[/code], this [DirectionalLight3D] will not be used for anything except sky shaders. Use this for lights that impact your sky shader that you may want to hide from affecting the rest of the scene. For example, you may want to enable this when the sun in your sky shader falls below the horizon.
 		</member>

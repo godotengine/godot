@@ -42,6 +42,7 @@
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
+#include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
@@ -836,12 +837,12 @@ void AnimationPlayerEditor::_update_player() {
 	for (const StringName &E : animlist) {
 		Ref<Texture2D> icon;
 		if (E == player->get_autoplay()) {
-			if (E == "RESET") {
+			if (E == SceneStringNames::get_singleton()->RESET) {
 				icon = autoplay_reset_icon;
 			} else {
 				icon = autoplay_icon;
 			}
-		} else if (E == "RESET") {
+		} else if (E == SceneStringNames::get_singleton()->RESET) {
 			icon = reset_icon;
 		}
 		animation->add_icon_item(icon, E);

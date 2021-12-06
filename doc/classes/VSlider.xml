@@ -10,8 +10,8 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" override="true" default="0" />
-		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" override="true" default="1" />
+		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" overrides="Control" default="0" />
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" default="1" />
 	</members>
 	<theme_items>
 		<theme_item name="grabber" data_type="icon" type="Texture2D">

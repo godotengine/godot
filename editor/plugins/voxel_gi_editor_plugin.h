@@ -42,7 +42,6 @@ class VoxelGIEditorPlugin : public EditorPlugin {
 	VoxelGI *voxel_gi;
 
 	HBoxContainer *bake_hb;
-	Label *bake_info;
 	Button *bake;
 	EditorNode *editor;
 

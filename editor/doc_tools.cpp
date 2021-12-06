@@ -341,10 +341,16 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			DocData::PropertyDoc prop;
-
 			prop.name = E.name;
-
 			prop.overridden = inherited;
+
+			if (inherited) {
+				String parent = ClassDB::get_parent_class(c.name);
+				while (!ClassDB::has_property(parent, prop.name, true)) {
+					parent = ClassDB::get_parent_class(parent);
+				}
+				prop.overrides = parent;
+			}
 
 			bool default_value_valid = false;
 			Variant default_value;
@@ -1357,7 +1363,7 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 				const DocData::PropertyDoc &p = c.properties[i];
 
 				if (c.properties[i].overridden) {
-					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" override=\"true\"" + additional_attributes + " />");
+					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" overrides=\"" + p.overrides + "\"" + additional_attributes + " />");
 				} else {
 					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + additional_attributes + ">");
 					_write_string(f, 3, p.description.strip_edges().xml_escape());
