@@ -3139,7 +3139,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 	uint32_t layer = 1 << (GIZMO_BASE_LAYER + p_idx);
 
 	for (int i = 0; i < 3; i++) {
-		move_gizmo_instance[i] = VS::get_singleton()->instance_create();
+		move_gizmo_instance[i] = RID_PRIME(VS::get_singleton()->instance_create());
 		VS::get_singleton()->instance_set_base(move_gizmo_instance[i], spatial_editor->get_move_gizmo(i)->get_rid());
 		VS::get_singleton()->instance_set_scenario(move_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
@@ -3147,7 +3147,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 		VS::get_singleton()->instance_set_layer_mask(move_gizmo_instance[i], layer);
 		VS::get_singleton()->instance_set_portal_mode(move_gizmo_instance[i], VisualServer::INSTANCE_PORTAL_MODE_GLOBAL);
 
-		move_plane_gizmo_instance[i] = VS::get_singleton()->instance_create();
+		move_plane_gizmo_instance[i] = RID_PRIME(VS::get_singleton()->instance_create());
 		VS::get_singleton()->instance_set_base(move_plane_gizmo_instance[i], spatial_editor->get_move_plane_gizmo(i)->get_rid());
 		VS::get_singleton()->instance_set_scenario(move_plane_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
@@ -3155,7 +3155,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 		VS::get_singleton()->instance_set_layer_mask(move_plane_gizmo_instance[i], layer);
 		VS::get_singleton()->instance_set_portal_mode(move_plane_gizmo_instance[i], VisualServer::INSTANCE_PORTAL_MODE_GLOBAL);
 
-		rotate_gizmo_instance[i] = VS::get_singleton()->instance_create();
+		rotate_gizmo_instance[i] = RID_PRIME(VS::get_singleton()->instance_create());
 		VS::get_singleton()->instance_set_base(rotate_gizmo_instance[i], spatial_editor->get_rotate_gizmo(i)->get_rid());
 		VS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
@@ -3163,7 +3163,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 		VS::get_singleton()->instance_set_layer_mask(rotate_gizmo_instance[i], layer);
 		VS::get_singleton()->instance_set_portal_mode(rotate_gizmo_instance[i], VisualServer::INSTANCE_PORTAL_MODE_GLOBAL);
 
-		scale_gizmo_instance[i] = VS::get_singleton()->instance_create();
+		scale_gizmo_instance[i] = RID_PRIME(VS::get_singleton()->instance_create());
 		VS::get_singleton()->instance_set_base(scale_gizmo_instance[i], spatial_editor->get_scale_gizmo(i)->get_rid());
 		VS::get_singleton()->instance_set_scenario(scale_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
@@ -3171,7 +3171,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 		VS::get_singleton()->instance_set_layer_mask(scale_gizmo_instance[i], layer);
 		VS::get_singleton()->instance_set_portal_mode(scale_gizmo_instance[i], VisualServer::INSTANCE_PORTAL_MODE_GLOBAL);
 
-		scale_plane_gizmo_instance[i] = VS::get_singleton()->instance_create();
+		scale_plane_gizmo_instance[i] = RID_PRIME(VS::get_singleton()->instance_create());
 		VS::get_singleton()->instance_set_base(scale_plane_gizmo_instance[i], spatial_editor->get_scale_plane_gizmo(i)->get_rid());
 		VS::get_singleton()->instance_set_scenario(scale_plane_gizmo_instance[i], get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
@@ -3181,7 +3181,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 	}
 
 	// Rotation white outline
-	rotate_gizmo_instance[3] = VS::get_singleton()->instance_create();
+	rotate_gizmo_instance[3] = RID_PRIME(VS::get_singleton()->instance_create());
 	VS::get_singleton()->instance_set_base(rotate_gizmo_instance[3], spatial_editor->get_rotate_gizmo(3)->get_rid());
 	VS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[3], get_tree()->get_root()->get_world()->get_scenario());
 	VS::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], false);
@@ -5274,7 +5274,7 @@ void SpatialEditor::_init_indicators() {
 
 		_init_grid();
 
-		origin = VisualServer::get_singleton()->mesh_create();
+		origin = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 		Array d;
 		d.resize(VS::ARRAY_MAX);
 		d[VisualServer::ARRAY_VERTEX] = origin_points;
@@ -5837,7 +5837,7 @@ void SpatialEditor::_init_grid() {
 		}
 
 		// Create a mesh from the pushed vector points and colors.
-		grid[c] = VisualServer::get_singleton()->mesh_create();
+		grid[c] = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 		Array d;
 		d.resize(VS::ARRAY_MAX);
 		d[VisualServer::ARRAY_VERTEX] = grid_points[c];

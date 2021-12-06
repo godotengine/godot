@@ -244,7 +244,7 @@ void CollisionObject::_update_debug_shapes() {
 					}
 				}
 				if (!s.debug_shape.is_valid()) {
-					s.debug_shape = VS::get_singleton()->instance_create();
+					s.debug_shape = RID_PRIME(VS::get_singleton()->instance_create());
 					VS::get_singleton()->instance_set_scenario(s.debug_shape, get_world()->get_scenario());
 
 					if (!s.shape->is_connected("changed", this, "_shape_changed")) {

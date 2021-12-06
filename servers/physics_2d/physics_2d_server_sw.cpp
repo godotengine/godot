@@ -212,7 +212,7 @@ RID Physics2DServerSW::space_create() {
 	Space2DSW *space = memnew(Space2DSW);
 	RID id = space_owner.make_rid(space);
 	space->set_self(id);
-	RID area_id = area_create();
+	RID area_id = RID_PRIME(area_create());
 	Area2DSW *area = area_owner.get(area_id);
 	ERR_FAIL_COND_V(!area, RID());
 	space->set_default_area(area);

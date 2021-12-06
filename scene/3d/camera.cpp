@@ -645,7 +645,7 @@ Vector3 Camera::get_doppler_tracked_velocity() const {
 	}
 }
 Camera::Camera() {
-	camera = VisualServer::get_singleton()->camera_create();
+	camera = RID_PRIME(VisualServer::get_singleton()->camera_create());
 	size = 1;
 	fov = 0;
 	frustum_offset = Vector2();
@@ -880,7 +880,7 @@ ClippedCamera::ClippedCamera() {
 	collision_mask = 1;
 	set_notify_local_transform(Engine::get_singleton()->is_editor_hint());
 	points.resize(5);
-	pyramid_shape = PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON);
+	pyramid_shape = RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON));
 	clip_to_areas = false;
 	clip_to_bodies = true;
 }

@@ -85,7 +85,7 @@ protected:
 		PhysicsServer *ps = PhysicsServer::get_singleton();
 
 		RID mesh_instance = vs->instance_create2(type_mesh_map[p_shape], scenario);
-		RID body = ps->body_create(p_body, !p_active_default);
+		RID body = RID_PRIME(ps->body_create(p_body, !p_active_default));
 		ps->body_set_space(body, space);
 		ps->body_set_param(body, PhysicsServer::BODY_PARAM_BOUNCE, 0.0);
 		//todo set space
@@ -107,7 +107,7 @@ protected:
 		RID plane_shape = ps->shape_create(PhysicsServer::SHAPE_PLANE);
 		ps->shape_set_data(plane_shape, p_plane);
 
-		RID b = ps->body_create(PhysicsServer::BODY_MODE_STATIC);
+		RID b = RID_PRIME(ps->body_create(PhysicsServer::BODY_MODE_STATIC));
 		ps->body_set_space(b, space);
 		//todo set space
 		ps->body_add_shape(b, plane_shape);
@@ -136,7 +136,7 @@ protected:
 		/* BOX SHAPE */
 
 		PoolVector<Plane> box_planes = Geometry::build_box_planes(Vector3(0.5, 0.5, 0.5));
-		RID box_mesh = vs->mesh_create();
+		RID box_mesh = RID_PRIME(vs->mesh_create());
 		Geometry::MeshData box_data = Geometry::build_convex_mesh(box_planes);
 		vs->mesh_add_surface_from_mesh_data(box_mesh, box_data);
 		type_mesh_map[PhysicsServer::SHAPE_BOX] = box_mesh;
@@ -149,7 +149,7 @@ protected:
 
 		PoolVector<Plane> capsule_planes = Geometry::build_capsule_planes(0.5, 0.7, 12, Vector3::AXIS_Z);
 
-		RID capsule_mesh = vs->mesh_create();
+		RID capsule_mesh = RID_PRIME(vs->mesh_create());
 		Geometry::MeshData capsule_data = Geometry::build_convex_mesh(capsule_planes);
 		vs->mesh_add_surface_from_mesh_data(capsule_mesh, capsule_data);
 
@@ -166,7 +166,7 @@ protected:
 
 		PoolVector<Plane> convex_planes = Geometry::build_cylinder_planes(0.5, 0.7, 5, Vector3::AXIS_Z);
 
-		RID convex_mesh = vs->mesh_create();
+		RID convex_mesh = RID_PRIME(vs->mesh_create());
 		Geometry::MeshData convex_data = Geometry::build_convex_mesh(convex_planes);
 		ConvexHullComputer::convex_hull(convex_data.vertices, convex_data);
 		vs->mesh_add_surface_from_mesh_data(convex_mesh, convex_data);
@@ -192,7 +192,7 @@ protected:
 			normals.push_back(p.normal);
 		}
 
-		RID trimesh_mesh = vs->mesh_create();
+		RID trimesh_mesh = RID_PRIME(vs->mesh_create());
 		Array d;
 		d.resize(VS::ARRAY_MAX);
 		d[VS::ARRAY_VERTEX] = p_faces;
@@ -201,7 +201,7 @@ protected:
 
 		RID triins = vs->instance_create2(trimesh_mesh, scenario);
 
-		RID tribody = ps->body_create(PhysicsServer::BODY_MODE_STATIC);
+		RID tribody = RID_PRIME(ps->body_create(PhysicsServer::BODY_MODE_STATIC));
 		ps->body_set_space(tribody, space);
 		//todo set space
 		ps->body_add_shape(tribody, trimesh_shape);
@@ -273,14 +273,14 @@ public:
 		init_shapes();
 
 		PhysicsServer *ps = PhysicsServer::get_singleton();
-		space = ps->space_create();
+		space = RID_PRIME(ps->space_create());
 		ps->space_set_active(space, true);
 
 		VisualServer *vs = VisualServer::get_singleton();
 
 		/* LIGHT */
-		RID lightaux = vs->directional_light_create();
-		scenario = vs->scenario_create();
+		RID lightaux = RID_PRIME(vs->directional_light_create());
+		scenario = RID_PRIME(vs->scenario_create());
 		vs->light_set_shadow(lightaux, true);
 		light = vs->instance_create2(lightaux, scenario);
 		Transform t;
@@ -289,9 +289,9 @@ public:
 
 		/* CAMERA */
 
-		camera = vs->camera_create();
+		camera = RID_PRIME(vs->camera_create());
 
-		RID viewport = vs->viewport_create();
+		RID viewport = RID_PRIME(vs->viewport_create());
 		Size2i screen_size = OS::get_singleton()->get_window_size();
 		vs->viewport_set_size(viewport, screen_size.x, screen_size.y);
 		vs->viewport_attach_to_screen(viewport, Rect2(Vector2(), screen_size));
@@ -342,7 +342,7 @@ public:
 
 		PoolVector<Plane> capsule_planes = Geometry::build_capsule_planes(0.5, 1, 12, 5, Vector3::AXIS_Y);
 
-		RID capsule_mesh = vs->mesh_create();
+		RID capsule_mesh = RID_PRIME(vs->mesh_create());
 		Geometry::MeshData capsule_data = Geometry::build_convex_mesh(capsule_planes);
 		vs->mesh_add_surface_from_mesh_data(capsule_mesh, capsule_data);
 		type_mesh_map[PhysicsServer::SHAPE_CAPSULE] = capsule_mesh;
@@ -357,7 +357,7 @@ public:
 		ps->shape_set_data(capsule_shape, capsule_params);
 
 		RID mesh_instance = vs->instance_create2(capsule_mesh, scenario);
-		character = ps->body_create(PhysicsServer::BODY_MODE_CHARACTER);
+		character = RID_PRIME(ps->body_create(PhysicsServer::BODY_MODE_CHARACTER));
 		ps->body_set_space(character, space);
 		//todo add space
 		ps->body_add_shape(character, capsule_shape);

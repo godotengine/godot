@@ -322,7 +322,7 @@ CanvasLayer::CanvasLayer() {
 	rot = 0;
 	locrotscale_dirty = false;
 	layer = 1;
-	canvas = VS::get_singleton()->canvas_create();
+	canvas = RID_PRIME(VS::get_singleton()->canvas_create());
 	custom_viewport = nullptr;
 	custom_viewport_id = 0;
 	sort_index = 0;

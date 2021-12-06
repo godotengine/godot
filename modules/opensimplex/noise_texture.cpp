@@ -45,7 +45,7 @@ NoiseTexture::NoiseTexture() {
 
 	noise = Ref<OpenSimplexNoise>();
 
-	texture = VS::get_singleton()->texture_create();
+	texture = RID_PRIME(VS::get_singleton()->texture_create());
 
 	_queue_update();
 }

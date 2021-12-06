@@ -33,9 +33,12 @@
 
 #include "core/list.h"
 #include "core/os/memory.h"
+#include "core/rid_handle.h"
 #include "core/safe_refcount.h"
 #include "core/set.h"
 #include "core/typedefs.h"
+
+#ifndef RID_HANDLES_ENABLED
 
 class RID_OwnerBase;
 
@@ -186,5 +189,7 @@ public:
 #endif
 	}
 };
+
+#endif // not handles
 
 #endif

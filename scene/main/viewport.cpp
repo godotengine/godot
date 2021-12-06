@@ -146,7 +146,7 @@ ViewportTexture::ViewportTexture() {
 	vp = nullptr;
 	flags = 0;
 	set_local_to_scene(true);
-	proxy = VS::get_singleton()->texture_create();
+	proxy = RID_PRIME(VS::get_singleton()->texture_create());
 }
 
 ViewportTexture::~ViewportTexture() {
@@ -286,15 +286,15 @@ void Viewport::_notification(int p_what) {
 			if (get_tree()->is_debugging_collisions_hint()) {
 				//2D
 				Physics2DServer::get_singleton()->space_set_debug_contacts(find_world_2d()->get_space(), get_tree()->get_collision_debug_contact_count());
-				contact_2d_debug = VisualServer::get_singleton()->canvas_item_create();
+				contact_2d_debug = RID_PRIME(VisualServer::get_singleton()->canvas_item_create());
 				VisualServer::get_singleton()->canvas_item_set_parent(contact_2d_debug, find_world_2d()->get_canvas());
 				//3D
 				PhysicsServer::get_singleton()->space_set_debug_contacts(find_world()->get_space(), get_tree()->get_collision_debug_contact_count());
-				contact_3d_debug_multimesh = VisualServer::get_singleton()->multimesh_create();
+				contact_3d_debug_multimesh = RID_PRIME(VisualServer::get_singleton()->multimesh_create());
 				VisualServer::get_singleton()->multimesh_allocate(contact_3d_debug_multimesh, get_tree()->get_collision_debug_contact_count(), VS::MULTIMESH_TRANSFORM_3D, VS::MULTIMESH_COLOR_8BIT);
 				VisualServer::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, 0);
 				VisualServer::get_singleton()->multimesh_set_mesh(contact_3d_debug_multimesh, get_tree()->get_debug_contact_mesh()->get_rid());
-				contact_3d_debug_instance = VisualServer::get_singleton()->instance_create();
+				contact_3d_debug_instance = RID_PRIME(VisualServer::get_singleton()->instance_create());
 				VisualServer::get_singleton()->instance_set_base(contact_3d_debug_instance, contact_3d_debug_multimesh);
 				VisualServer::get_singleton()->instance_set_scenario(contact_3d_debug_instance, find_world()->get_scenario());
 				//VisualServer::get_singleton()->instance_geometry_set_flag(contact_3d_debug_instance, VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS, true);
@@ -1171,7 +1171,7 @@ void Viewport::enable_camera_override(bool p_enable) {
 	}
 
 	if (p_enable) {
-		camera_override.rid = VisualServer::get_singleton()->camera_create();
+		camera_override.rid = RID_PRIME(VisualServer::get_singleton()->camera_create());
 	} else {
 		VisualServer::get_singleton()->free(camera_override.rid);
 		camera_override.rid = RID();
@@ -3337,7 +3337,7 @@ void Viewport::_subwindow_visibility_changed() {
 Viewport::Viewport() {
 	world_2d = Ref<World2D>(memnew(World2D));
 
-	viewport = VisualServer::get_singleton()->viewport_create();
+	viewport = RID_PRIME(VisualServer::get_singleton()->viewport_create());
 	texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport);
 	texture_flags = 0;
 

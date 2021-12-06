@@ -404,7 +404,7 @@ void ImageTexture::_bind_methods() {
 ImageTexture::ImageTexture() {
 	w = h = 0;
 	flags = FLAGS_DEFAULT;
-	texture = VisualServer::get_singleton()->texture_create();
+	texture = RID_PRIME(VisualServer::get_singleton()->texture_create());
 	storage = STORAGE_RAW;
 	lossy_storage_quality = 0.7;
 	image_stored = false;
@@ -824,7 +824,7 @@ StreamTexture::StreamTexture() {
 	w = 0;
 	h = 0;
 
-	texture = VS::get_singleton()->texture_create();
+	texture = RID_PRIME(VS::get_singleton()->texture_create());
 }
 
 StreamTexture::~StreamTexture() {
@@ -1585,7 +1585,7 @@ CubeMap::CubeMap() {
 	for (int i = 0; i < 6; i++) {
 		valid[i] = false;
 	}
-	cubemap = VisualServer::get_singleton()->texture_create();
+	cubemap = RID_PRIME(VisualServer::get_singleton()->texture_create());
 	storage = STORAGE_RAW;
 	lossy_storage_quality = 0.7;
 	format = Image::FORMAT_BPTC_RGBA;
@@ -1694,7 +1694,7 @@ RID CurveTexture::get_rid() const {
 
 CurveTexture::CurveTexture() {
 	_width = 2048;
-	_texture = VS::get_singleton()->texture_create();
+	_texture = RID_PRIME(VS::get_singleton()->texture_create());
 }
 CurveTexture::~CurveTexture() {
 	VS::get_singleton()->free(_texture);
@@ -1711,7 +1711,7 @@ GradientTexture::GradientTexture() {
 	update_pending = false;
 	width = 2048;
 
-	texture = VS::get_singleton()->texture_create();
+	texture = RID_PRIME(VS::get_singleton()->texture_create());
 	_queue_update();
 }
 
@@ -1860,7 +1860,7 @@ uint32_t ProxyTexture::get_flags() const {
 }
 
 ProxyTexture::ProxyTexture() {
-	proxy = VS::get_singleton()->texture_create();
+	proxy = RID_PRIME(VS::get_singleton()->texture_create());
 }
 
 ProxyTexture::~ProxyTexture() {
@@ -2107,7 +2107,7 @@ void AnimatedTexture::_bind_methods() {
 }
 
 AnimatedTexture::AnimatedTexture() {
-	proxy = VS::get_singleton()->texture_create();
+	proxy = RID_PRIME(VS::get_singleton()->texture_create());
 	VisualServer::get_singleton()->texture_set_force_redraw_if_visible(proxy, true);
 	time = 0;
 	frame_count = 1;
@@ -2416,7 +2416,7 @@ TextureLayered::TextureLayered(bool p_3d) {
 	height = 0;
 	depth = 0;
 
-	texture = VS::get_singleton()->texture_create();
+	texture = RID_PRIME(VS::get_singleton()->texture_create());
 }
 
 TextureLayered::~TextureLayered() {
@@ -2632,7 +2632,7 @@ uint32_t ExternalTexture::get_flags() const {
 
 ExternalTexture::ExternalTexture() {
 	size = Size2(1.0, 1.0);
-	texture = VisualServer::get_singleton()->texture_create();
+	texture = RID_PRIME(VisualServer::get_singleton()->texture_create());
 
 	VisualServer::get_singleton()->texture_allocate(texture, size.width, size.height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_EXTERNAL, Texture::FLAG_VIDEO_SURFACE);
 	_change_notify();

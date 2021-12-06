@@ -1519,7 +1519,7 @@ CPUParticles::CPUParticles() {
 
 	set_notify_transform(true);
 
-	multimesh = VisualServer::get_singleton()->multimesh_create();
+	multimesh = RID_PRIME(VisualServer::get_singleton()->multimesh_create());
 	VisualServer::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	set_base(multimesh);
 

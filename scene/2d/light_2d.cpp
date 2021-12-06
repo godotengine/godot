@@ -435,7 +435,7 @@ void Light2D::_bind_methods() {
 }
 
 Light2D::Light2D() {
-	canvas_light = VisualServer::get_singleton()->canvas_light_create();
+	canvas_light = RID_PRIME(VisualServer::get_singleton()->canvas_light_create());
 	enabled = true;
 	editor_only = false;
 	shadow = false;

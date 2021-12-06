@@ -1273,7 +1273,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 		bool is_present = onion.differences_only && i == captures - 1;
 
 		// Each capture is a viewport with a canvas item attached that renders a full-size rect with the contents of the main viewport.
-		onion.captures.write[i] = VS::get_singleton()->viewport_create();
+		onion.captures.write[i] = RID_PRIME(VS::get_singleton()->viewport_create());
 		VS::get_singleton()->viewport_set_usage(onion.captures[i], VS::VIEWPORT_USAGE_2D);
 		VS::get_singleton()->viewport_set_size(onion.captures[i], capture_size.width, capture_size.height);
 		VS::get_singleton()->viewport_set_update_mode(onion.captures[i], VS::VIEWPORT_UPDATE_ALWAYS);
@@ -1737,8 +1737,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	onion.last_frame = 0;
 	onion.can_overlay = false;
 	onion.capture_size = Size2();
-	onion.capture.canvas = VS::get_singleton()->canvas_create();
-	onion.capture.canvas_item = VS::get_singleton()->canvas_item_create();
+	onion.capture.canvas = RID_PRIME(VS::get_singleton()->canvas_create());
+	onion.capture.canvas_item = RID_PRIME(VS::get_singleton()->canvas_item_create());
 	VS::get_singleton()->canvas_item_set_parent(onion.capture.canvas_item, onion.capture.canvas);
 
 	onion.capture.material = Ref<ShaderMaterial>(memnew(ShaderMaterial));

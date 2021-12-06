@@ -212,5 +212,5 @@ void OccluderShapeSphere::set_sphere_radius(int p_idx, real_t p_radius) {
 }
 
 OccluderShapeSphere::OccluderShapeSphere() :
-		OccluderShape(VisualServer::get_singleton()->occluder_create()) {
+		OccluderShape(RID_PRIME(VisualServer::get_singleton()->occluder_create())) {
 }

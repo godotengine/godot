@@ -398,7 +398,7 @@ RID HingeJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 
 	local_b.orthonormalize();
 
-	RID j = PhysicsServer::get_singleton()->joint_create_hinge(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+	RID j = RID_PRIME(PhysicsServer::get_singleton()->joint_create_hinge(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b));
 	for (int i = 0; i < PARAM_MAX; i++) {
 		PhysicsServer::get_singleton()->hinge_joint_set_param(j, PhysicsServer::HingeJointParam(i), params[i]);
 	}

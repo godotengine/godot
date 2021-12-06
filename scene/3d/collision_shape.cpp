@@ -198,7 +198,7 @@ bool CollisionShape::is_disabled() const {
 }
 
 CollisionShape::CollisionShape() {
-	//indicator = VisualServer::get_singleton()->mesh_create();
+	//indicator = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 	disabled = false;
 	parent = nullptr;
 	owner_id = 0;

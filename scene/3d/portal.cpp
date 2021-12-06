@@ -58,7 +58,7 @@ Portal::Portal() {
 	_use_default_margin = true;
 
 	// the visual server portal lifetime is linked to the lifetime of this object
-	_portal_rid = VisualServer::get_singleton()->portal_create();
+	_portal_rid = RID_PRIME(VisualServer::get_singleton()->portal_create());
 
 #ifdef TOOLS_ENABLED
 	_room_manager_godot_ID = 0;

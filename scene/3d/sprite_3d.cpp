@@ -358,7 +358,7 @@ SpriteBase3D::SpriteBase3D() {
 	pending_update = false;
 	opacity = 1.0;
 
-	material = VisualServer::get_singleton()->material_create();
+	material = RID_PRIME(VisualServer::get_singleton()->material_create());
 	// Set defaults for material, names need to match up those in SpatialMaterial
 	VS::get_singleton()->material_set_param(material, "albedo", Color(1, 1, 1, 1));
 	VS::get_singleton()->material_set_param(material, "specular", 0.5);
@@ -370,7 +370,7 @@ SpriteBase3D::SpriteBase3D() {
 	VS::get_singleton()->material_set_param(material, "uv2_scale", Vector3(1, 1, 1));
 	VS::get_singleton()->material_set_param(material, "alpha_scissor_threshold", 0.98);
 
-	mesh = VisualServer::get_singleton()->mesh_create();
+	mesh = RID_PRIME(VisualServer::get_singleton()->mesh_create());
 
 	PoolVector3Array mesh_vertices;
 	PoolVector3Array mesh_normals;

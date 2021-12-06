@@ -144,8 +144,8 @@ CameraFeed::CameraFeed() {
 
 	// create a texture object
 	VisualServer *vs = VisualServer::get_singleton();
-	texture[CameraServer::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
-	texture[CameraServer::FEED_CBCR_IMAGE] = vs->texture_create();
+	texture[CameraServer::FEED_Y_IMAGE] = RID_PRIME(vs->texture_create()); // also used for RGBA
+	texture[CameraServer::FEED_CBCR_IMAGE] = RID_PRIME(vs->texture_create());
 }
 
 CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
@@ -161,8 +161,8 @@ CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 
 	// create a texture object
 	VisualServer *vs = VisualServer::get_singleton();
-	texture[CameraServer::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
-	texture[CameraServer::FEED_CBCR_IMAGE] = vs->texture_create();
+	texture[CameraServer::FEED_Y_IMAGE] = RID_PRIME(vs->texture_create()); // also used for RGBA
+	texture[CameraServer::FEED_CBCR_IMAGE] = RID_PRIME(vs->texture_create());
 }
 
 CameraFeed::~CameraFeed() {

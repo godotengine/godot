@@ -41,7 +41,7 @@ void RoomGroup::_bind_methods() {
 }
 
 RoomGroup::RoomGroup() {
-	_room_group_rid = VisualServer::get_singleton()->roomgroup_create();
+	_room_group_rid = RID_PRIME(VisualServer::get_singleton()->roomgroup_create());
 }
 
 RoomGroup::~RoomGroup() {

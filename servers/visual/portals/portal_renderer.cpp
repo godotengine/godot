@@ -940,14 +940,14 @@ void PortalRenderer::_load_finalize_roaming() {
 		instance_moving_update(handle, aabb, true);
 	}
 
-	for (int n = 0; n < _rghost_pool.active_size(); n++) {
+	for (unsigned int n = 0; n < _rghost_pool.active_size(); n++) {
 		RGhost &moving = _rghost_pool.get_active(n);
 		const AABB &aabb = moving.exact_aabb;
 
 		rghost_update(_rghost_pool.get_active_id(n) + 1, aabb, true);
 	}
 
-	for (int n = 0; n < _occluder_pool.active_size(); n++) {
+	for (unsigned int n = 0; n < _occluder_pool.active_size(); n++) {
 		VSOccluder &occ = _occluder_pool.get_active(n);
 		int occluder_id = _occluder_pool.get_active_id(n);
 
@@ -1048,7 +1048,7 @@ void PortalRenderer::rooms_and_portals_clear() {
 		moving.rooms_and_portals_clear();
 	}
 
-	for (int n = 0; n < _rghost_pool.active_size(); n++) {
+	for (unsigned int n = 0; n < _rghost_pool.active_size(); n++) {
 		RGhost &moving = _rghost_pool.get_active(n);
 		moving.rooms_and_portals_clear();
 	}
@@ -1162,7 +1162,7 @@ int PortalRenderer::cull_convex_implementation(const Vector3 &p_point, const Vec
 }
 
 String PortalRenderer::_rid_to_string(RID p_rid) {
-	return _addr_to_string(p_rid.get_data());
+	return itos(p_rid.get_id());
 }
 
 String PortalRenderer::_addr_to_string(const void *p_addr) {

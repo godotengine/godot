@@ -77,6 +77,6 @@ void SphereShape::_bind_methods() {
 }
 
 SphereShape::SphereShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_SPHERE)) {
+		Shape(RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_SPHERE))) {
 	set_radius(1.0);
 }

@@ -98,7 +98,7 @@ void VisibilityNotifier::_refresh_portal_mode() {
 	if (get_portal_mode() == PORTAL_MODE_ROAMING) {
 		if (is_inside_world()) {
 			if (_cull_instance_rid == RID()) {
-				_cull_instance_rid = VisualServer::get_singleton()->ghost_create();
+				_cull_instance_rid = RID_PRIME(VisualServer::get_singleton()->ghost_create());
 			}
 
 			if (is_inside_world() && get_world().is_valid() && get_world()->get_scenario().is_valid() && is_inside_tree()) {

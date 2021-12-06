@@ -495,7 +495,7 @@ void ProceduralSky::_bind_methods() {
 
 ProceduralSky::ProceduralSky(bool p_desaturate) {
 	sky = VS::get_singleton()->sky_create();
-	texture = VS::get_singleton()->texture_create();
+	texture = RID_PRIME(VS::get_singleton()->texture_create());
 
 	update_queued = false;
 	sky_top_color = Color::hex(0xa5d6f1ff);

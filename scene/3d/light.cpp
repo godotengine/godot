@@ -273,13 +273,13 @@ Light::Light(VisualServer::LightType p_type) {
 	type = p_type;
 	switch (p_type) {
 		case VS::LIGHT_DIRECTIONAL:
-			light = VisualServer::get_singleton()->directional_light_create();
+			light = RID_PRIME(VisualServer::get_singleton()->directional_light_create());
 			break;
 		case VS::LIGHT_OMNI:
-			light = VisualServer::get_singleton()->omni_light_create();
+			light = RID_PRIME(VisualServer::get_singleton()->omni_light_create());
 			break;
 		case VS::LIGHT_SPOT:
-			light = VisualServer::get_singleton()->spot_light_create();
+			light = RID_PRIME(VisualServer::get_singleton()->spot_light_create());
 			break;
 		default: {
 		};

@@ -150,6 +150,14 @@ opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and be
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
+opts.Add(
+    EnumVariable(
+        "rids",
+        "Server object management technique (debug option)",
+        "pointers",
+        ("pointers", "handles", "tracked_handles"),
+    )
+)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True))
@@ -326,6 +334,15 @@ if env_base["no_editor_splash"]:
 
 if not env_base["deprecated"]:
     env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
+
+if env_base["rids"] == "handles":
+    env_base.Append(CPPDEFINES=["RID_HANDLES_ENABLED"])
+    print("WARNING: Building with RIDs as handles.")
+
+if env_base["rids"] == "tracked_handles":
+    env_base.Append(CPPDEFINES=["RID_HANDLES_ENABLED"])
+    env_base.Append(CPPDEFINES=["RID_HANDLE_ALLOCATION_TRACKING_ENABLED"])
+    print("WARNING: Building with RIDs as tracked handles.")
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform

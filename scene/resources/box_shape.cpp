@@ -71,6 +71,6 @@ void BoxShape::_bind_methods() {
 }
 
 BoxShape::BoxShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_BOX)) {
+		Shape(RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_BOX))) {
 	set_extents(Vector3(1, 1, 1));
 }

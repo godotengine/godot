@@ -76,5 +76,5 @@ void ConvexPolygonShape::_bind_methods() {
 }
 
 ConvexPolygonShape::ConvexPolygonShape() :
-		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON)) {
+		Shape(RID_PRIME(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON))) {
 }

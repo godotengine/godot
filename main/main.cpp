@@ -2343,6 +2343,10 @@ void Main::cleanup(bool p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
 
+#ifdef RID_HANDLES_ENABLED
+	g_rid_database.preshutdown();
+#endif
+
 	if (script_debugger) {
 		// Flush any remaining messages
 		script_debugger->idle_poll();
@@ -2451,4 +2455,8 @@ void Main::cleanup(bool p_force) {
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
+
+#ifdef RID_HANDLES_ENABLED
+	g_rid_database.shutdown();
+#endif
 }
