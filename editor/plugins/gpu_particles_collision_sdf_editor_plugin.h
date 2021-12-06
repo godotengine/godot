@@ -42,7 +42,6 @@ class GPUParticlesCollisionSDFEditorPlugin : public EditorPlugin {
 	GPUParticlesCollisionSDF *col_sdf;
 
 	HBoxContainer *bake_hb;
-	Label *bake_info;
 	Button *bake;
 	EditorNode *editor;
 
