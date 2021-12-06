@@ -111,7 +111,7 @@ void ShaderTextEditor::set_shader_dependency_tree(Tree *p_tree) {
 void ShaderTextEditor::_clear_tree_item_backgrounds(TreeItem *p_node) {
 	Array tree_children = p_node->get_children();
 	for (int i = 0; i < tree_children.size(); i++) {
-		auto child = tree_children[i];
+		Variant child = tree_children[i];
 		if (child.get_type() == Variant::Type::OBJECT) {
 			Object *obj = child.get_validated_object();
 			TreeItem *itemChild = obj->cast_to<TreeItem>(obj);
@@ -377,9 +377,9 @@ void ShaderTextEditor::_validate_script() {
 	}
 
 	if (!state->skipped_conditions.is_empty()) {
-		auto val_elem = state->skipped_conditions.find(shader->get_path());
+		Map<String, Vector<SkippedPreprocessorCondition *>>::Element *val_elem = state->skipped_conditions.find(shader->get_path());
 		if (val_elem) {
-			for (auto &cond : val_elem->get()) {
+			for (SkippedPreprocessorCondition *cond : val_elem->get()) {
 				int end_line = cond->end_line;
 				if (end_line < 0) {
 					// set to end of file
@@ -452,7 +452,7 @@ void ShaderTextEditor::_update_warning_panel() {
 						tree_item->set_custom_bg_color(0, marked_line_color);
 					}
 				} else {
-					// TODO need a less intense yellow. set font coor instead maybe?
+					// TODO need a less intense yellow. set font color instead maybe?
 					// maybe use color * intensity used for preprocessor condition blocked code?
 					// tree_item->set_custom_bg_color(0, warning_color);
 				}
@@ -757,7 +757,7 @@ void ShaderEditor::save_external_data(const String &p_str) {
 	apply_shaders();
 	if (!shader->is_built_in()) {
 		//external shader, save it
-		auto edited_shader = shader_editor->get_edited_shader();
+		Ref<Shader> edited_shader = shader_editor->get_edited_shader();
 		ResourceSaver::save(edited_shader->get_path(), edited_shader);
 		ResourceSaver::save(shader->get_path(), shader);
 	}
@@ -891,10 +891,10 @@ void ShaderEditor::open_path(String p_path) {
 	if (!res.is_null()) {
 		Ref<Shader> shader = Object::cast_to<Shader>(*res);
 		if (!shader.is_null()) {
-			auto rollingCode = shader_rolling_code.find(shader->get_path());
+			Map<String, String>::Element *rolling_code = shader_rolling_code.find(shader->get_path());
 
-			if (rollingCode) {
-				shader_editor->set_edited_shader(shader, rollingCode->get());
+			if (rolling_code) {
+				shader_editor->set_edited_shader(shader, rolling_code->get());
 			} else {
 				String included = shader->get_code();
 				shader_rolling_code[p_path] = included;

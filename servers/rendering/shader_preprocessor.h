@@ -99,7 +99,10 @@ private:
 
 	void expand_output_macros(int p_start, int p_line);
 	String expand_macros(const String &p_string, int p_line);
-	String expand_macros_once(const String &p_line, int line, int *p_expanded);
+	String expand_macros(const String &p_string, int p_line, Vector<Pair<String, PreprocessorDefine *>> p_defines);
+	String expand_macros_once(const String &p_line, int p_line_number, Pair<String, PreprocessorDefine *> p_define_pair, bool &r_expanded);
+	bool find_match(const String &p_string, const String &p_value, int &r_index, int &r_index_start);
+	bool is_char_word(const CharType p_char);
 
 	String evaluate_internal_conditions(const String &p_string, int p_line);
 

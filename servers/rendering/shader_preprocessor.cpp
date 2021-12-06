@@ -31,7 +31,6 @@
 #include "shader_preprocessor.h"
 #include "core/math/expression.h"
 #include "editor/property_editor.h"
-#include "modules/regex/regex.h"
 
 static bool is_whitespace(CharType p_c) {
 	return (p_c == ' ') || (p_c == '\t');
@@ -530,7 +529,7 @@ void ShaderPreprocessor::process_else(PreproprocessorTokenizer *p_tokenizer) {
 	bool skip = state->skip_stack_else[state->skip_stack_else.size() - 1];
 	state->skip_stack_else.remove(state->skip_stack_else.size() - 1);
 
-	auto vec = state->skipped_conditions[state->current_include];
+	Vector<SkippedPreprocessorCondition *> vec = state->skipped_conditions[state->current_include];
 	int index = vec.size() - 1;
 	if (index >= 0) {
 		SkippedPreprocessorCondition *cond = vec[index];
@@ -553,7 +552,7 @@ void ShaderPreprocessor::process_endif(PreproprocessorTokenizer *p_tokenizer) {
 		return;
 	}
 
-	auto vec = state->skipped_conditions[state->current_include];
+	Vector<SkippedPreprocessorCondition *> vec = state->skipped_conditions[state->current_include];
 	int index = vec.size() - 1;
 	if (index >= 0) {
 		SkippedPreprocessorCondition *cond = vec[index];
@@ -718,68 +717,137 @@ void ShaderPreprocessor::expand_output_macros(int p_start, int p_line_number) {
 }
 
 String ShaderPreprocessor::expand_macros(const String &p_string, int p_line) {
-	String result = p_string;
+	Vector<Pair<String, PreprocessorDefine *>> active_defines;
+	active_defines.resize(state->defines.size());
+	int index = 0;
+	for (const Map<String, PreprocessorDefine *>::Element *E = state->defines.front(); E; E = E->next()) {
+		active_defines.set(index++, Pair<String, PreprocessorDefine *>(E->key(), E->get()));
+	}
 
-	int expanded = 1;
-	while (expanded) {
-		result = expand_macros_once(result, p_line, &expanded);
+	return expand_macros(p_string, p_line, active_defines);
+}
+
+String ShaderPreprocessor::expand_macros(const String &p_string, int p_line, Vector<Pair<String, PreprocessorDefine *>> p_defines) {
+	String result = p_string;
+	bool expanded = false;
+	// when expanding macros we must only evaluate them once.
+	// later we continue expanding but with the already
+	// evaluated macros removed.
+	for (int i = 0; i < p_defines.size(); i++) {
+		Pair<String, PreprocessorDefine *> define_pair = p_defines[i];
+
+		result = expand_macros_once(result, p_line, define_pair, expanded);
 
 		if (!state->error.is_empty()) {
 			return "<error>";
 		}
+
+		if (expanded) {
+			// remove expanded macro and recursively replace remaining.
+			p_defines.remove(i);
+			return expand_macros(result, p_line, p_defines);
+		}
 	}
+
 	return result;
 }
 
-String ShaderPreprocessor::expand_macros_once(const String &p_line, int line_number, int *p_expanded) {
+String ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_number, Pair<String, PreprocessorDefine *> p_define_pair, bool &r_expanded) {
 	String result = p_line;
-	*p_expanded = 0;
+	r_expanded = false;
 
-	//TODO Could use something better than regular expressions for this...
-	for (const Map<String, PreprocessorDefine *>::Element *E = state->defines.front(); E; E = E->next()) {
-		const String &key = E->key();
-		const PreprocessorDefine *define = E->get();
+	const String &key = p_define_pair.first;
+	const PreprocessorDefine *define = p_define_pair.second;
 
-		//Match against word boundaries
-		RegEx label("\\b" + key + "\\b");
-
-		Ref<RegExMatch> match = label.search(result);
-		if (match.is_valid()) {
-			//Substitute all macro content
-			if (define->arguments.size() > 0) {
-				//Complex macro with arguments
-				int args_start = match->get_end(0);
-				int args_end = p_line.find(")", args_start);
-				if (args_start == -1 || args_end == -1) {
-					*p_expanded = 0;
-					set_error("Missing macro argument parenthesis", line_number);
-					return "<error>";
-				}
-
-				String values = result.substr(args_start + 1, args_end - (args_start + 1));
-				Vector<String> args = values.split(",");
-				if (args.size() != define->arguments.size()) {
-					*p_expanded = 0;
-					set_error("Invalid macro argument count", line_number);
-					return "<error>";
-				}
-				//Insert macro arguments into the body
-				String body = define->body;
-				for (int i = 0; i < args.size(); i++) {
-					RegEx value("\\b" + define->arguments[i] + "\\b");
-					body = value.sub(body, args[i], true);
-				}
-
-				result = result.substr(0, match->get_start(0)) + " " + body + " " + result.substr(args_end + 1, result.length());
-			} else {
-				//Simple substitution macro
-				result = label.sub(result, define->body, true);
+	int index_start = 0;
+	int index = 0;
+	while (find_match(result, key, index, index_start)) {
+		r_expanded = true;
+		String body = define->body;
+		if (define->arguments.size() > 0) {
+			//Complex macro with arguments
+			int args_start = index + key.length();
+			int args_end = p_line.find(")", args_start);
+			if (args_start == -1 || args_end == -1) {
+				r_expanded = false;
+				set_error("Missing macro argument parenthesis", p_line_number);
+				return "<error>";
 			}
 
-			*p_expanded = 1;
+			String values = result.substr(args_start + 1, args_end - (args_start + 1));
+			Vector<String> args = values.split(",");
+			if (args.size() != define->arguments.size()) {
+				r_expanded = false;
+				set_error("Invalid macro argument count", p_line_number);
+				return "<error>";
+			}
+
+			//Insert macro arguments into the body
+			for (int i = 0; i < args.size(); i++) {
+				String arg_name = define->arguments[i];
+				int arg_index_start = 0;
+				int arg_index = 0;
+				while (find_match(body, arg_name, arg_index, arg_index_start)) {
+					body = body.substr(0, arg_index) + args[i] + body.substr(arg_index + arg_name.length(), body.length() - (arg_index + arg_name.length()));
+					// manually reset arg_index_start to where the arg value of the define finishes.
+					// this ensures we don't skip the other args of this macro in the string.
+					arg_index_start = arg_index + args[i].length() + 1;
+					r_expanded = true;
+				}
+			}
+
+			result = result.substr(0, index) + " " + body + " " + result.substr(args_end + 1, result.length());
+		} else {
+			result = result.substr(0, index) + body + result.substr(index + key.length(), result.length() - (index + key.length()));
+			// manually reset index_start to where the body value of the define finishes.
+			// this ensures we don't skip another instance of this macro in the string.
+			index_start = index + body.length() + 1;
+			r_expanded = true;
+			break;
 		}
 	}
+
 	return result;
+}
+
+bool ShaderPreprocessor::find_match(const String &p_string, const String &p_value, int &r_index, int &r_index_start) {
+	// looks for value in string and then determines if the boundaries
+	// are non-word characters. This method semi-emulates \b in regex.
+	r_index = p_string.find(p_value, r_index_start);
+	while (r_index > -1) {
+		if (r_index > 0) {
+			if (is_char_word(p_string[r_index - 1])) {
+				r_index_start = r_index + 1;
+				r_index = p_string.find(p_value, r_index_start);
+				continue;
+			}
+		}
+
+		if (r_index + p_value.length() < p_string.length()) {
+			if (is_char_word(p_string[r_index + p_value.length()])) {
+				r_index_start = r_index + p_value.length() + 1;
+				r_index = p_string.find(p_value, r_index_start);
+				continue;
+			}
+		}
+
+		// return and shift index start automatically for next call.
+		r_index_start = r_index + p_value.length() + 1;
+		return true;
+	}
+
+	return false;
+}
+
+bool ShaderPreprocessor::is_char_word(const CharType p_char) {
+	if (p_char >= '0' && p_char <= '9' ||
+			p_char >= 'a' && p_char <= 'z' ||
+			p_char >= 'A' && p_char <= 'Z' ||
+			p_char == '_') {
+		return true;
+	}
+
+	return false;
 }
 
 String ShaderPreprocessor::next_directive(PreproprocessorTokenizer *p_tokenizer, const Vector<String> &p_directives) {
@@ -1007,7 +1075,7 @@ void ShaderDependencyGraph::populate(ShaderDependencyNode *p_node) {
 }
 
 Set<ShaderDependencyNode *>::Element *ShaderDependencyGraph::find(Ref<Shader> p_shader) {
-	for (auto E = nodes.front(); E; E = E->next()) {
+	for (Set<ShaderDependencyNode *>::Element *E = nodes.front(); E; E = E->next()) {
 		if (E->get()->shader == p_shader) {
 			return E;
 		}
@@ -1017,7 +1085,7 @@ Set<ShaderDependencyNode *>::Element *ShaderDependencyGraph::find(Ref<Shader> p_
 }
 
 Set<ShaderDependencyNode *>::Element *ShaderDependencyGraph::find(String p_path) {
-	for (auto E = nodes.front(); E; E = E->next()) {
+	for (Set<ShaderDependencyNode *>::Element *E = nodes.front(); E; E = E->next()) {
 		if (E->get()->path == p_path) {
 			return E;
 		}
