@@ -191,7 +191,7 @@ Size2 VideoPlayer::get_minimum_size() const {
 void VideoPlayer::set_expand(bool p_expand) {
 	expand = p_expand;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool VideoPlayer::has_expand() const {
@@ -241,7 +241,7 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	update();
 
 	if (!expand) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 };
 

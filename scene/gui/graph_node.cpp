@@ -442,7 +442,7 @@ void GraphNode::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 	}
@@ -666,7 +666,7 @@ void GraphNode::set_title(const String &p_title) {
 	_shape();
 
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 String GraphNode::get_title() const {

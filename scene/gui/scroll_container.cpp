@@ -467,7 +467,7 @@ void ScrollContainer::set_enable_h_scroll(bool p_enable) {
 	}
 
 	scroll_h = p_enable;
-	minimum_size_changed();
+	update_minimum_size();
 	queue_sort();
 }
 
@@ -481,7 +481,7 @@ void ScrollContainer::set_enable_v_scroll(bool p_enable) {
 	}
 
 	scroll_v = p_enable;
-	minimum_size_changed();
+	update_minimum_size();
 	queue_sort();
 }
 

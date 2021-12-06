@@ -52,7 +52,7 @@ void LinkButton::set_text(const String &p_text) {
 	text = p_text;
 	xl_text = atr(text);
 	_shape();
-	minimum_size_changed();
+	update_minimum_size();
 	update();
 }
 
@@ -149,7 +149,7 @@ void LinkButton::_notification(int p_what) {
 			xl_text = atr(text);
 			_shape();
 
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -157,7 +157,7 @@ void LinkButton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_DRAW: {

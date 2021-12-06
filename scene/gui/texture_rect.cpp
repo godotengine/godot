@@ -152,7 +152,7 @@ void TextureRect::_bind_methods() {
 void TextureRect::_texture_changed() {
 	if (texture.is_valid()) {
 		update();
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -172,7 +172,7 @@ void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
 	}
 
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Ref<Texture2D> TextureRect::get_texture() const {
@@ -182,7 +182,7 @@ Ref<Texture2D> TextureRect::get_texture() const {
 void TextureRect::set_expand(bool p_expand) {
 	expand = p_expand;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool TextureRect::has_expand() const {

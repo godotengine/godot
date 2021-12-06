@@ -1144,7 +1144,7 @@ void EditorInspectorSection::_test_unfold() {
 void EditorInspectorSection::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			minimum_size_changed();
+			update_minimum_size();
 		} break;
 		case NOTIFICATION_SORT_CHILDREN: {
 			if (!vbox_added) {
@@ -1995,7 +1995,7 @@ void EditorInspectorArray::_notification(int p_what) {
 			prev_page_button->set_icon(get_theme_icon(SNAME("PagePrevious"), SNAME("EditorIcons")));
 			next_page_button->set_icon(get_theme_icon(SNAME("PageNext"), SNAME("EditorIcons")));
 			last_page_button->set_icon(get_theme_icon(SNAME("PageLast"), SNAME("EditorIcons")));
-			minimum_size_changed();
+			update_minimum_size();
 		} break;
 		case NOTIFICATION_DRAG_BEGIN: {
 			Dictionary dict = get_viewport()->gui_get_drag_data();

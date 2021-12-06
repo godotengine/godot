@@ -220,8 +220,8 @@ void SpinBox::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		_value_changed(0);
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		call_deferred(SNAME("minimum_size_changed"));
-		get_line_edit()->call_deferred(SNAME("minimum_size_changed"));
+		call_deferred(SNAME("update_minimum_size"));
+		get_line_edit()->call_deferred(SNAME("update_minimum_size"));
 	} else if (p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		update();
 	}

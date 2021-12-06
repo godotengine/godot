@@ -441,7 +441,7 @@ public:
 	void set_stretch_ratio(real_t p_ratio);
 	real_t get_stretch_ratio() const;
 
-	void minimum_size_changed();
+	void update_minimum_size();
 
 	/* FOCUS */
 
