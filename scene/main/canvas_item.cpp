@@ -275,9 +275,6 @@ void CanvasItem::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			ERR_FAIL_COND(!is_inside_tree());
-			_update_texture_filter_changed(false);
-			_update_texture_repeat_changed(false);
-
 			first_draw = true;
 			Node *parent = get_parent();
 			if (parent) {
@@ -306,6 +303,10 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 			_enter_canvas();
+
+			_update_texture_filter_changed(false);
+			_update_texture_repeat_changed(false);
+
 			if (!block_transform_notify && !xform_change.in_list()) {
 				get_tree()->xform_change_list.add(&xform_change);
 			}
