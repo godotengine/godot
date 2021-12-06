@@ -54,6 +54,7 @@ protected:
 
 		real_t depth = 0.0;
 		bool active = false;
+		bool used = false;
 		Vector3 rA, rB; // Offset in world orientation with respect to center of mass
 	};
 

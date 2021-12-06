@@ -56,7 +56,7 @@ class GodotStep3D {
 	void _check_suspend(const LocalVector<GodotBody3D *> &p_body_island) const;
 
 public:
-	void step(GodotSpace3D *p_space, real_t p_delta, int p_iterations);
+	void step(GodotSpace3D *p_space, real_t p_delta);
 	GodotStep3D();
 	~GodotStep3D();
 };

@@ -234,9 +234,15 @@ public:
 		angular_velocity += _inv_inertia * p_torque;
 	}
 
-	_FORCE_INLINE_ void apply_bias_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) {
+	_FORCE_INLINE_ void apply_bias_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2(), real_t p_max_delta_av = -1.0) {
 		biased_linear_velocity += p_impulse * _inv_mass;
-		biased_angular_velocity += _inv_inertia * (p_position - center_of_mass).cross(p_impulse);
+		if (p_max_delta_av != 0.0) {
+			real_t delta_av = _inv_inertia * (p_position - center_of_mass).cross(p_impulse);
+			if (p_max_delta_av > 0 && delta_av > p_max_delta_av) {
+				delta_av = p_max_delta_av;
+			}
+			biased_angular_velocity += delta_av;
+		}
 	}
 
 	void set_active(bool p_active);
