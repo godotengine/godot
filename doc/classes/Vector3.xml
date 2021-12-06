@@ -184,16 +184,16 @@
 				Returns the vector with a maximum length by limiting its length to [code]length[/code].
 			</description>
 		</method>
-		<method name="max_axis" qualifiers="const">
+		<method name="max_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the axis of the vector's largest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
+				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
-		<method name="min_axis" qualifiers="const">
+		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
+				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
 			</description>
 		</method>
 		<method name="move_toward" qualifiers="const">
@@ -321,13 +321,13 @@
 	</members>
 	<constants>
 		<constant name="AXIS_X" value="0">
-			Enumerated value for the X axis. Returned by [method max_axis] and [method min_axis].
+			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="AXIS_Y" value="1">
-			Enumerated value for the Y axis. Returned by [method max_axis] and [method min_axis].
+			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="AXIS_Z" value="2">
-			Enumerated value for the Z axis. Returned by [method max_axis] and [method min_axis].
+			Enumerated value for the Z axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="ZERO" value="Vector3(0, 0, 0)">
 			Zero vector, a vector with all components set to [code]0[/code].
