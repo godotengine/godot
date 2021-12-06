@@ -232,7 +232,6 @@
 #include "scene/3d/path_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/position_3d.h"
-#include "scene/3d/proximity_group_3d.h"
 #include "scene/3d/ray_cast_3d.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform_3d.h"
@@ -511,7 +510,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VehicleBody3D);
 	GDREGISTER_CLASS(VehicleWheel3D);
 	GDREGISTER_CLASS(Area3D);
-	GDREGISTER_CLASS(ProximityGroup3D);
 	GDREGISTER_CLASS(CollisionShape3D);
 	GDREGISTER_CLASS(CollisionPolygon3D);
 	GDREGISTER_CLASS(RayCast3D);
@@ -964,7 +962,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("PinJoint", "PinJoint3D");
 	ClassDB::add_compatibility_class("PlaneShape", "WorldBoundaryShape3D");
 	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
-	ClassDB::add_compatibility_class("ProximityGroup", "ProximityGroup3D");
 	ClassDB::add_compatibility_class("RayCast", "RayCast3D");
 	ClassDB::add_compatibility_class("RayShape", "SeparationRayShape3D");
 	ClassDB::add_compatibility_class("RayShape2D", "SeparationRayShape2D");
