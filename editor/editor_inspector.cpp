@@ -2194,10 +2194,7 @@ void EditorInspector::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &
 	for (int i = idx; i < inspector_plugin_count - 1; i++) {
 		inspector_plugins[i] = inspector_plugins[i + 1];
 	}
-
-	if (idx == inspector_plugin_count - 1) {
-		inspector_plugins[idx] = Ref<EditorInspectorPlugin>();
-	}
+	inspector_plugins[inspector_plugin_count - 1] = Ref<EditorInspectorPlugin>();
 
 	inspector_plugin_count--;
 }
