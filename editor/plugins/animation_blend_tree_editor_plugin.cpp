@@ -83,7 +83,7 @@ void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) 
 	}
 	add_node->get_popup()->add_separator();
 	add_node->get_popup()->add_item(TTR("Load..."), MENU_LOAD_FILE);
-	use_popup_menu_position = false;
+	use_position_from_popup_menu = false;
 }
 
 Size2 AnimationNodeBlendTreeEditor::get_minimum_size() const {
@@ -319,8 +319,8 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 	}
 
 	Point2 instance_pos = graph->get_scroll_ofs();
-	if (use_popup_menu_position) {
-		instance_pos += popup_menu_position;
+	if (use_position_from_popup_menu) {
+		instance_pos += position_from_popup_menu;
 	} else {
 		instance_pos += graph->get_size() * 0.5;
 	}
@@ -355,14 +355,15 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 
 void AnimationNodeBlendTreeEditor::_popup(bool p_has_input_ports, const Vector2 &p_popup_position, const Vector2 &p_node_position) {
 	_update_options_menu(p_has_input_ports);
-	use_popup_menu_position = true;
-	popup_menu_position = p_popup_position;
-	add_node->get_popup()->set_position(p_node_position);
+	use_position_from_popup_menu = true;
+	position_from_popup_menu = p_node_position;
+	add_node->get_popup()->set_position(p_popup_position);
+	add_node->get_popup()->reset_size();
 	add_node->get_popup()->popup();
 }
 
 void AnimationNodeBlendTreeEditor::_popup_request(const Vector2 &p_position) {
-	_popup(false, graph->get_local_mouse_position(), p_position);
+	_popup(false, graph->get_screen_position() + graph->get_local_mouse_position(), p_position);
 }
 
 void AnimationNodeBlendTreeEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {
@@ -918,7 +919,7 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	singleton = this;
 	updating = false;
-	use_popup_menu_position = false;
+	use_position_from_popup_menu = false;
 
 	graph = memnew(GraphEdit);
 	add_child(graph);

@@ -1506,7 +1506,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 		}
 	} else if (ti->get_parent() == root->get_first_child()) {
 		selected = ti->get_text(0);
-		function_name_edit->set_position(Input::get_singleton()->get_mouse_position() - Vector2(60, -10));
+		function_name_edit->set_position(get_screen_position() + get_local_mouse_position() - Vector2(60, -10));
 		function_name_edit->popup();
 		function_name_box->set_text(selected);
 		function_name_box->select_all();
@@ -1974,7 +1974,7 @@ void VisualScriptEditor::input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> key = p_event;
 
 	if (key.is_valid() && !key->is_pressed()) {
-		mouse_up_position = Input::get_singleton()->get_mouse_position();
+		mouse_up_position = get_screen_position() + get_local_mouse_position();
 	}
 }
 
@@ -1984,7 +1984,7 @@ void VisualScriptEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid() && key->is_pressed() && key->get_button_mask() == MouseButton::RIGHT) {
 		saved_position = graph->get_local_mouse_position();
 
-		Point2 gpos = Input::get_singleton()->get_mouse_position();
+		Point2 gpos = get_screen_position() + get_local_mouse_position();
 		_generic_search(script->get_instance_base_type(), gpos);
 	}
 }
@@ -3704,7 +3704,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 		Variant::construct(pinfo.type, existing, &existingp, 1, ce);
 	}
 
-	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_global_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
+	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_screen_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
 	default_value_edit->reset_size();
 
 	if (pinfo.type == Variant::NODE_PATH) {
@@ -4160,10 +4160,10 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 	ERR_FAIL_COND(!ti);
 
 	member_popup->clear();
-	member_popup->set_position(members->get_global_position() + p_pos);
+	member_popup->set_position(members->get_screen_position() + p_pos);
 	member_popup->reset_size();
 
-	function_name_edit->set_position(members->get_global_position() + p_pos);
+	function_name_edit->set_position(members->get_screen_position() + p_pos);
 	function_name_edit->reset_size();
 
 	TreeItem *root = members->get_root();

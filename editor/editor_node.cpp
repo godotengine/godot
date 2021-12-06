@@ -5051,7 +5051,8 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 				scene_tabs_context_menu->add_item(TTR("Close Tabs to the Right"), FILE_CLOSE_RIGHT);
 				scene_tabs_context_menu->add_item(TTR("Close All Tabs"), FILE_CLOSE_ALL);
 			}
-			scene_tabs_context_menu->set_position(mb->get_global_position());
+			scene_tabs_context_menu->set_position(scene_tabs->get_screen_position() + mb->get_position());
+			scene_tabs_context_menu->reset_size();
 			scene_tabs_context_menu->popup();
 		}
 		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed()) {

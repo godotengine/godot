@@ -49,8 +49,8 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNodeBlendTree> blend_tree;
 	GraphEdit *graph;
 	MenuButton *add_node;
-	Vector2 popup_menu_position;
-	bool use_popup_menu_position;
+	Vector2 position_from_popup_menu;
+	bool use_position_from_popup_menu;
 
 	PanelContainer *error_panel;
 	Label *error_label;

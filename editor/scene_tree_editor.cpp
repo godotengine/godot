@@ -1122,7 +1122,7 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 }
 
 void SceneTreeEditor::_rmb_select(const Vector2 &p_pos) {
-	emit_signal(SNAME("rmb_pressed"), tree->get_screen_transform().xform(p_pos));
+	emit_signal(SNAME("rmb_pressed"), tree->get_screen_position() + p_pos);
 }
 
 void SceneTreeEditor::update_warning() {

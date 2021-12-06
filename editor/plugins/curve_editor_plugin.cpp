@@ -117,7 +117,7 @@ void CurveEditor::gui_input(const Ref<InputEvent> &p_event) {
 			switch (mb.get_button_index()) {
 				case MouseButton::RIGHT:
 					_context_click_pos = mpos;
-					open_context_menu(get_global_transform().xform(mpos));
+					open_context_menu(get_screen_position() + mpos);
 					break;
 
 				case MouseButton::MIDDLE:
