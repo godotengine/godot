@@ -5756,6 +5756,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					}
 				}
 
+				int existing_idx = -1;
 				if (dst_track == -1) {
 					// If adding multiple tracks, make sure that correct track is referenced.
 					dst_track = reset_tracks;
@@ -5764,9 +5765,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					undo_redo->add_do_method(reset.ptr(), "add_track", animation->track_get_type(sk.track));
 					undo_redo->add_do_method(reset.ptr(), "track_set_path", dst_track, path);
 					undo_redo->add_undo_method(reset.ptr(), "remove_track", dst_track);
+				} else {
+					existing_idx = reset->track_find_key(dst_track, 0, true);
 				}
-
-				int existing_idx = reset->track_find_key(dst_track, 0, true);
 
 				undo_redo->add_do_method(reset.ptr(), "track_insert_key", dst_track, 0, animation->track_get_key_value(sk.track, sk.key), animation->track_get_key_transition(sk.track, sk.key));
 				undo_redo->add_undo_method(reset.ptr(), "track_remove_key_at_time", dst_track, 0);
