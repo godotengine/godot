@@ -476,14 +476,14 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(Lightmapper);
 	GDREGISTER_CLASS(GPUParticles3D);
 	GDREGISTER_VIRTUAL_CLASS(GPUParticlesCollision3D);
-	GDREGISTER_CLASS(GPUParticlesCollisionBox);
-	GDREGISTER_CLASS(GPUParticlesCollisionSphere);
-	GDREGISTER_CLASS(GPUParticlesCollisionSDF);
-	GDREGISTER_CLASS(GPUParticlesCollisionHeightField);
+	GDREGISTER_CLASS(GPUParticlesCollisionBox3D);
+	GDREGISTER_CLASS(GPUParticlesCollisionSphere3D);
+	GDREGISTER_CLASS(GPUParticlesCollisionSDF3D);
+	GDREGISTER_CLASS(GPUParticlesCollisionHeightField3D);
 	GDREGISTER_VIRTUAL_CLASS(GPUParticlesAttractor3D);
-	GDREGISTER_CLASS(GPUParticlesAttractorBox);
-	GDREGISTER_CLASS(GPUParticlesAttractorSphere);
-	GDREGISTER_CLASS(GPUParticlesAttractorVectorField);
+	GDREGISTER_CLASS(GPUParticlesAttractorBox3D);
+	GDREGISTER_CLASS(GPUParticlesAttractorSphere3D);
+	GDREGISTER_CLASS(GPUParticlesAttractorVectorField3D);
 	GDREGISTER_CLASS(CPUParticles3D);
 	GDREGISTER_CLASS(Position3D);
 

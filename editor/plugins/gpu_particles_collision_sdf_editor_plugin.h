@@ -36,10 +36,10 @@
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/resources/material.h"
 
-class GPUParticlesCollisionSDFEditorPlugin : public EditorPlugin {
-	GDCLASS(GPUParticlesCollisionSDFEditorPlugin, EditorPlugin);
+class GPUParticlesCollisionSDF3DEditorPlugin : public EditorPlugin {
+	GDCLASS(GPUParticlesCollisionSDF3DEditorPlugin, EditorPlugin);
 
-	GPUParticlesCollisionSDF *col_sdf;
+	GPUParticlesCollisionSDF3D *col_sdf;
 
 	HBoxContainer *bake_hb;
 	Button *bake;
@@ -60,14 +60,14 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "GPUParticlesCollisionSDF"; }
+	virtual String get_name() const override { return "GPUParticlesCollisionSDF3D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	GPUParticlesCollisionSDFEditorPlugin(EditorNode *p_node);
-	~GPUParticlesCollisionSDFEditorPlugin();
+	GPUParticlesCollisionSDF3DEditorPlugin(EditorNode *p_node);
+	~GPUParticlesCollisionSDF3DEditorPlugin();
 };
 
 #endif // GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H

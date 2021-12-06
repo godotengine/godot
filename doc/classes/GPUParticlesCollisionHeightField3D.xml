@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GPUParticlesCollisionHeightField" inherits="GPUParticlesCollision3D" version="4.0">
+<class name="GPUParticlesCollisionHeightField3D" inherits="GPUParticlesCollision3D" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -13,9 +13,9 @@
 		</member>
 		<member name="follow_camera_push_ratio" type="float" setter="set_follow_camera_push_ratio" getter="get_follow_camera_push_ratio" default="0.1">
 		</member>
-		<member name="resolution" type="int" setter="set_resolution" getter="get_resolution" enum="GPUParticlesCollisionHeightField.Resolution" default="2">
+		<member name="resolution" type="int" setter="set_resolution" getter="get_resolution" enum="GPUParticlesCollisionHeightField3D.Resolution" default="2">
 		</member>
-		<member name="update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="GPUParticlesCollisionHeightField.UpdateMode" default="0">
+		<member name="update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="GPUParticlesCollisionHeightField3D.UpdateMode" default="0">
 		</member>
 	</members>
 	<constants>

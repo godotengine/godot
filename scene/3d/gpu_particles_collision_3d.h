@@ -55,8 +55,8 @@ public:
 	~GPUParticlesCollision3D();
 };
 
-class GPUParticlesCollisionSphere : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionSphere, GPUParticlesCollision3D);
+class GPUParticlesCollisionSphere3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionSphere3D, GPUParticlesCollision3D);
 
 	real_t radius = 1.0;
 
@@ -69,12 +69,12 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesCollisionSphere();
-	~GPUParticlesCollisionSphere();
+	GPUParticlesCollisionSphere3D();
+	~GPUParticlesCollisionSphere3D();
 };
 
-class GPUParticlesCollisionBox : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionBox, GPUParticlesCollision3D);
+class GPUParticlesCollisionBox3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionBox3D, GPUParticlesCollision3D);
 
 	Vector3 extents = Vector3(1, 1, 1);
 
@@ -87,12 +87,12 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesCollisionBox();
-	~GPUParticlesCollisionBox();
+	GPUParticlesCollisionBox3D();
+	~GPUParticlesCollisionBox3D();
 };
 
-class GPUParticlesCollisionSDF : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionSDF, GPUParticlesCollision3D);
+class GPUParticlesCollisionSDF3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionSDF3D, GPUParticlesCollision3D);
 
 public:
 	enum Resolution {
@@ -184,14 +184,14 @@ public:
 	static BakeStepFunc bake_step_function;
 	static BakeEndFunc bake_end_function;
 
-	GPUParticlesCollisionSDF();
-	~GPUParticlesCollisionSDF();
+	GPUParticlesCollisionSDF3D();
+	~GPUParticlesCollisionSDF3D();
 };
 
-VARIANT_ENUM_CAST(GPUParticlesCollisionSDF::Resolution)
+VARIANT_ENUM_CAST(GPUParticlesCollisionSDF3D::Resolution)
 
-class GPUParticlesCollisionHeightField : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionHeightField, GPUParticlesCollision3D);
+class GPUParticlesCollisionHeightField3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionHeightField3D, GPUParticlesCollision3D);
 
 public:
 	enum Resolution {
@@ -239,12 +239,12 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesCollisionHeightField();
-	~GPUParticlesCollisionHeightField();
+	GPUParticlesCollisionHeightField3D();
+	~GPUParticlesCollisionHeightField3D();
 };
 
-VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField::Resolution)
-VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField::UpdateMode)
+VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::Resolution)
+VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::UpdateMode)
 
 class GPUParticlesAttractor3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesAttractor3D, VisualInstance3D);
@@ -279,8 +279,8 @@ public:
 	~GPUParticlesAttractor3D();
 };
 
-class GPUParticlesAttractorSphere : public GPUParticlesAttractor3D {
-	GDCLASS(GPUParticlesAttractorSphere, GPUParticlesAttractor3D);
+class GPUParticlesAttractorSphere3D : public GPUParticlesAttractor3D {
+	GDCLASS(GPUParticlesAttractorSphere3D, GPUParticlesAttractor3D);
 
 	real_t radius = 1.0;
 
@@ -293,12 +293,12 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesAttractorSphere();
-	~GPUParticlesAttractorSphere();
+	GPUParticlesAttractorSphere3D();
+	~GPUParticlesAttractorSphere3D();
 };
 
-class GPUParticlesAttractorBox : public GPUParticlesAttractor3D {
-	GDCLASS(GPUParticlesAttractorBox, GPUParticlesAttractor3D);
+class GPUParticlesAttractorBox3D : public GPUParticlesAttractor3D {
+	GDCLASS(GPUParticlesAttractorBox3D, GPUParticlesAttractor3D);
 
 	Vector3 extents = Vector3(1, 1, 1);
 
@@ -311,12 +311,12 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesAttractorBox();
-	~GPUParticlesAttractorBox();
+	GPUParticlesAttractorBox3D();
+	~GPUParticlesAttractorBox3D();
 };
 
-class GPUParticlesAttractorVectorField : public GPUParticlesAttractor3D {
-	GDCLASS(GPUParticlesAttractorVectorField, GPUParticlesAttractor3D);
+class GPUParticlesAttractorVectorField3D : public GPUParticlesAttractor3D {
+	GDCLASS(GPUParticlesAttractorVectorField3D, GPUParticlesAttractor3D);
 
 	Vector3 extents = Vector3(1, 1, 1);
 	Ref<Texture3D> texture;
@@ -333,8 +333,8 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesAttractorVectorField();
-	~GPUParticlesAttractorVectorField();
+	GPUParticlesAttractorVectorField3D();
+	~GPUParticlesAttractorVectorField3D();
 };
 
 #endif // GPU_PARTICLES_COLLISION_3D_H

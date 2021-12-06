@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GPUParticlesCollisionSphere" inherits="GPUParticlesCollision3D" version="4.0">
+<class name="GPUParticlesCollisionSphere3D" inherits="GPUParticlesCollision3D" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
