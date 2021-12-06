@@ -101,6 +101,7 @@ private:
 
 	bool tool = false;
 	bool valid = false;
+	bool reload_invalidated = false;
 
 	bool builtin;
 
