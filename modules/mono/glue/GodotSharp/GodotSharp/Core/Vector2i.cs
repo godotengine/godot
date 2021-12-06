@@ -42,6 +42,17 @@ namespace Godot
         public int y;
 
         /// <summary>
+        /// Constructs a new <see cref="Vector2i"/> from this Vector2i's X and Y components.
+        /// This is effectively a shortcut to create a copy of the Vector2i object.
+        /// </summary>
+        public Vector2i xy => new Vector2i(this);
+
+        /// <summary>
+        /// Constructs a new <see cref="Vector2i"/> from this Vector2i's Y and X components.
+        /// </summary>
+        public Vector2i yx => new Vector2i(y, x);
+
+        /// <summary>
         /// Access vector components using their index.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">

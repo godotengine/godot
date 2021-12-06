@@ -71,6 +71,19 @@ struct Vector3 {
 		x = y = z = p_value;
 	}
 
+	Vector3 get_xyz() const;
+	Vector3 get_xzy() const;
+	Vector3 get_yxz() const;
+	Vector3 get_yzx() const;
+	Vector3 get_zxy() const;
+	Vector3 get_zyx() const;
+	Vector2 get_xy() const;
+	Vector2 get_xz() const;
+	Vector2 get_yx() const;
+	Vector2 get_yz() const;
+	Vector2 get_zx() const;
+	Vector2 get_zy() const;
+
 	_FORCE_INLINE_ int min_axis() const {
 		return x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2);
 	}
@@ -197,6 +210,10 @@ struct Vector3 {
 		y = p_y;
 		z = p_z;
 	}
+	/**
+	protected:
+		static void _bind_methods();
+	**/
 };
 
 Vector3 Vector3::cross(const Vector3 &p_with) const {

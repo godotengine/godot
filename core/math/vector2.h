@@ -82,6 +82,9 @@ struct Vector2 {
 	Vector2 normalized() const;
 	bool is_normalized() const;
 
+	Vector2 get_xy() const;
+	Vector2 get_yx() const;
+
 	real_t length() const;
 	real_t length_squared() const;
 	Vector2 limit_length(const real_t p_len = 1.0) const;
@@ -173,6 +176,10 @@ struct Vector2 {
 		x = p_x;
 		y = p_y;
 	}
+	/**
+	protected:
+		static void _bind_methods();
+	**/
 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(const real_t p_d, const Vector2 &p_vec) const {
@@ -317,6 +324,9 @@ struct Vector2i {
 		return Vector2(MAX(x, p_vector2i.x), MAX(y, p_vector2i.y));
 	}
 
+	Vector2i get_xy() const;
+	Vector2i get_yx() const;
+
 	Vector2i operator+(const Vector2i &p_v) const;
 	void operator+=(const Vector2i &p_v);
 	Vector2i operator-(const Vector2i &p_v) const;
@@ -362,6 +372,10 @@ struct Vector2i {
 		x = p_x;
 		y = p_y;
 	}
+	/**
+	protected:
+		static void _bind_methods();
+	**/
 };
 
 _FORCE_INLINE_ Vector2i operator*(const int32_t &p_scalar, const Vector2i &p_vector) {

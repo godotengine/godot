@@ -31,6 +31,7 @@
 #ifndef VECTOR3I_H
 #define VECTOR3I_H
 
+#include "core/math/vector2.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 
@@ -58,6 +59,19 @@ struct Vector3i {
 	_FORCE_INLINE_ int32_t &operator[](const int p_axis) {
 		return coord[p_axis];
 	}
+
+	Vector3i get_xyz() const;
+	Vector3i get_xzy() const;
+	Vector3i get_yxz() const;
+	Vector3i get_yzx() const;
+	Vector3i get_zxy() const;
+	Vector3i get_zyx() const;
+	Vector2i get_xy() const;
+	Vector2i get_xz() const;
+	Vector2i get_yx() const;
+	Vector2i get_yz() const;
+	Vector2i get_zx() const;
+	Vector2i get_zy() const;
 
 	void set_axis(const int p_axis, const int32_t p_value);
 	int32_t get_axis(const int p_axis) const;
@@ -108,6 +122,10 @@ struct Vector3i {
 		y = p_y;
 		z = p_z;
 	}
+	/**
+	protected:
+		static void _bind_methods();
+	**/
 };
 
 Vector3i Vector3i::abs() const {

@@ -50,6 +50,67 @@ namespace Godot
         /// </summary>
         public int z;
 
+		/// <summary>
+		/// Constructs a new <see cref="Vector3i"/> from this Vector3i's X, Y, and Z components.
+		/// This is effectively a shortcut to create a copy of the Vector3i object.
+		/// </summary>
+		public Vector3i xyz => new Vector3i(this);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector3i"/> from this Vector3i's X, Z, and Y components.
+		/// </summary>
+		public Vector3i xzy => new Vector3i(x, z, y);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector3i"/> from this Vector3i's Y, X, and Z components.
+		/// </summary>
+		public Vector3i yxz => new Vector3i(y, x, z);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector3i"/> from this Vector3i's Y, Z, and X components.
+		/// </summary>
+		public Vector3i yzx => new Vector3i(y, z, x);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector3i"/> from this Vector3i's Z, X, and Y components.
+		/// </summary>
+		public Vector3i zxy => new Vector3i(z, x, y);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector3i"/> from this Vector3i's Z, Y, and X components.
+		/// </summary>
+		public Vector3i zyx => new Vector3i(z, y, x);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2i"/> from this Vector3i's X and Y components.
+		/// </summary>
+		public Vector2i xy => new Vector2i(x, y);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2i"/> from this Vector3i's X and Z components.
+		/// </summary>
+		public Vector2i xz => new Vector2i(x, z);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2i"/> from this Vector3i's Y and X components.
+		/// </summary>
+		public Vector2i yx => new Vector2i(y, x);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2i"/> from this Vector3i's Y and Z components.
+		/// </summary>
+		public Vector2i yz => new Vector2i(y, z);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2i"/> from this Vector3i's Z and X components.
+		/// </summary>
+		public Vector2i zx => new Vector2i(z, x);
+
+		/// <summary>
+		/// Constructs a new <see cref="Vector2i"/> from this Vector3i's Z and Y components.
+		/// </summary>
+		public Vector2i zy => new Vector2i(z, y);
+
         /// <summary>
         /// Access vector components using their <paramref name="index"/>.
         /// </summary>

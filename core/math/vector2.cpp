@@ -66,6 +66,14 @@ bool Vector2::is_normalized() const {
 	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON);
 }
 
+Vector2 Vector2::get_xy() const {
+	return *this;
+}
+
+Vector2 Vector2::get_yx() const {
+	return Vector2(y, x);
+}
+
 real_t Vector2::distance_to(const Vector2 &p_vector2) const {
 	return Math::sqrt((x - p_vector2.x) * (x - p_vector2.x) + (y - p_vector2.y) * (y - p_vector2.y));
 }
@@ -202,12 +210,30 @@ Vector2::operator String() const {
 	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ")";
 }
 
+/**
+void Vector2::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_xy"), &Vector2::get_xy);
+	ClassDB::bind_method(D_METHOD("get_yx"), &Vector2::get_yx);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "xy"), "get_xy");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "yx"), "get_yx");
+}
+**/
+
 /* Vector2i */
 
 Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
 	return Vector2i(
 			CLAMP(x, p_min.x, p_max.x),
 			CLAMP(y, p_min.y, p_max.y));
+}
+
+Vector2i Vector2i::get_xy() const {
+	return *this;
+}
+
+Vector2i Vector2i::get_yx() const {
+	return Vector2i(y, x);
 }
 
 Vector2i Vector2i::operator+(const Vector2i &p_v) const {
@@ -282,3 +308,13 @@ bool Vector2i::operator!=(const Vector2i &p_vec2) const {
 Vector2i::operator String() const {
 	return "(" + itos(x) + ", " + itos(y) + ")";
 }
+
+/**
+void Vector2i::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_xy"), &Vector2i::get_xy);
+	ClassDB::bind_method(D_METHOD("get_yx"), &Vector2i::get_yx);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "xy"), "get_xy");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "yx"), "get_yx");
+}
+**/
