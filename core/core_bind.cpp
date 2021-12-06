@@ -207,6 +207,10 @@ void OS::alert(const String &p_alert, const String &p_title) {
 	::OS::get_singleton()->alert(p_alert, p_title);
 }
 
+void OS::crash(const String &p_message) {
+	CRASH_NOW_MSG(p_message);
+}
+
 String OS::get_executable_path() const {
 	return ::OS::get_singleton()->get_executable_path();
 }
@@ -542,6 +546,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &OS::close_midi_inputs);
 
 	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &OS::alert, DEFVAL("Alert!"));
+	ClassDB::bind_method(D_METHOD("crash", "message"), &OS::crash);
 
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &OS::set_low_processor_usage_mode);
 	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &OS::is_in_low_processor_usage_mode);
