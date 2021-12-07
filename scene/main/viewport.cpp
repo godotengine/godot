@@ -2954,7 +2954,7 @@ void Viewport::set_canvas_cull_mask(uint32_t p_mask) {
 	RenderingServer::get_singleton()->viewport_set_canvas_cull_mask(viewport, canvas_cull_mask);
 }
 
-int Viewport::get_canvas_cull_mask() const {
+uint32_t Viewport::get_canvas_cull_mask() const {
 	return canvas_cull_mask;
 }
 
