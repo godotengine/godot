@@ -339,8 +339,10 @@ void CreateDialog::_confirmed() {
 		memdelete(f);
 	}
 
-	emit_signal(SNAME("create"));
+	// To prevent, emitting an error from the transient window (shader dialog for example) hide this dialog before emitting the "create" signal.
 	hide();
+
+	emit_signal(SNAME("create"));
 	_cleanup();
 }
 
