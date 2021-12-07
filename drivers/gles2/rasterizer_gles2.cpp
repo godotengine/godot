@@ -535,6 +535,7 @@ RasterizerGLES2::RasterizerGLES2() {
 }
 
 RasterizerGLES2::~RasterizerGLES2() {
-	memdelete(storage);
+	memdelete(scene);
 	memdelete(canvas);
+	memdelete(storage);
 }

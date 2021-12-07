@@ -490,7 +490,7 @@ RasterizerGLES3::RasterizerGLES3() {
 }
 
 RasterizerGLES3::~RasterizerGLES3() {
-	memdelete(storage);
-	memdelete(canvas);
 	memdelete(scene);
+	memdelete(canvas);
+	memdelete(storage);
 }

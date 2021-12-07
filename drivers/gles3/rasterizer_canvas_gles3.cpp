@@ -396,7 +396,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 					}
 				}
 
-				glBindBufferBase(GL_UNIFORM_BUFFER, 1, static_cast<LightInternal *>(light->light_internal.get_data())->ubo);
+				glBindBufferBase(GL_UNIFORM_BUFFER, 1, static_cast<LightInternal *>(light_internal_owner.get(light->light_internal))->ubo);
 
 				if (has_shadow) {
 					RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
@@ -1500,7 +1500,7 @@ void RasterizerCanvasGLES3::render_joined_item(const BItemJoined &p_bij, RenderI
 					}
 				}
 
-				glBindBufferBase(GL_UNIFORM_BUFFER, 1, static_cast<LightInternal *>(light->light_internal.get_data())->ubo);
+				glBindBufferBase(GL_UNIFORM_BUFFER, 1, static_cast<LightInternal *>(light_internal_owner.get(light->light_internal))->ubo);
 
 				if (has_shadow) {
 					RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
