@@ -112,7 +112,7 @@
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3( 0, 0, 0 )">
-			RigidBody's rotational velocity.
+			The body's rotational velocity in axis-angle format. The magnitude of the vector is the rotation rate in [i]radians[/i] per second.
 		</member>
 		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's rotation in the X axis.
@@ -166,7 +166,7 @@
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3( 0, 0, 0 )">
-			The body's linear velocity. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
+			The body's linear velocity in units per second. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
 			The body's mass.

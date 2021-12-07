@@ -154,7 +154,7 @@
 	</methods>
 	<members>
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity">
-			The body's rotational velocity.
+			The body's rotational velocity in [i]radians[/i] per second.
 		</member>
 		<member name="inverse_inertia" type="float" setter="" getter="get_inverse_inertia">
 			The inverse of the inertia of the body.
@@ -163,7 +163,7 @@
 			The inverse of the mass of the body.
 		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity">
-			The body's linear velocity.
+			The body's linear velocity in pixels per second.
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleep_state" getter="is_sleeping">
 			If [code]true[/code], this body is currently sleeping (not active).
