@@ -377,7 +377,7 @@
 			<return type="bool" />
 			<argument index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member visibility_layer] is enabled, given a [code]layer_number[/code] between 1 and 20.
+				Returns whether or not the specified layer of the [member visibility_layer] mask is enabled, given a [code]layer_number[/code] between 1 and 20.
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
@@ -407,13 +407,13 @@
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all of its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree. This method ignores the [member visibility_layer] property and any [Viewport] cull masks.
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all of its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree. This method ignores the [member visibility_layer] mask property and any [Viewport] cull masks.
 			</description>
 		</method>
 		<method name="is_visible_in_viewport" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code], its [member visibility_layer] property is not masked by the current [Viewport] and all of its antecedents are also visible to and not masked by the current [Viewport]. If any antecedent is hidden or masked-and-marked with [member cull_children], then this node will not be visible in the scene tree.
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code], its [member visibility_layer] mask property is not masked by the current [Viewport] and all of its antecedents are also visible to and not masked by the current [Viewport]. If any antecedent is hidden or masked-and-marked with [member cull_children], then this node will not be visible in the scene tree.
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
@@ -449,7 +449,7 @@
 			<argument index="0" name="layer_number" type="int" />
 			<argument index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member visibility_layer], given a [code]layer_number[/code] between 1 and 20.
+				Based on [code]value[/code], enables or disables the specified layer in the [member visibility_layer] mask, given a [code]layer_number[/code] between 1 and 20.
 			</description>
 		</method>
 		<method name="show">
@@ -469,7 +469,7 @@
 		<member name="clip_children" type="bool" setter="set_clip_children" getter="is_clipping_children" default="false">
 		</member>
 		<member name="cull_children" type="bool" setter="set_cull_children" getter="is_cull_children_enabled" default="false">
-			If [code]true[/code], this [CanvasItem] will prevent rendering of its children if it itself is culled via the [member visibility_layer] when rendered.
+			If [code]true[/code], this [CanvasItem] will prevent rendering of its children if it itself is culled via the [member visibility_layer] mask property when rendered.
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
@@ -503,7 +503,7 @@
 		</member>
 		<member name="visibility_layer" type="int" setter="set_visibility_layer" getter="get_visibility_layer" default="1">
 			The 2D rendering layers this [CanvasItem] is drawn on.
-			This object will only be visible for [Viewport]s whose cull_mask does not exclude the 2D render layer(s) that this [CanvasItem] is set to.
+			This object will only be visible for [Viewport]s whose [code]cull_mask[/code] does not exclude the 2D render layer(s) that this [CanvasItem] is set to.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
 			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its antecedents are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
