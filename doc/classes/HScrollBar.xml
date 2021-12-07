@@ -22,15 +22,6 @@
 		<theme_item name="decrement_pressed" data_type="icon" type="Texture">
 			Displayed when the decrement button is being pressed.
 		</theme_item>
-		<theme_item name="grabber" data_type="style" type="StyleBox">
-			Used as texture for the grabber, the draggable element representing current scroll.
-		</theme_item>
-		<theme_item name="grabber_highlight" data_type="style" type="StyleBox">
-			Used when the mouse hovers over the grabber.
-		</theme_item>
-		<theme_item name="grabber_pressed" data_type="style" type="StyleBox">
-			Used when the grabber is being dragged.
-		</theme_item>
 		<theme_item name="increment" data_type="icon" type="Texture">
 			Icon used as a button to scroll the [ScrollBar] right. Supports custom step using the [member ScrollBar.custom_step] property.
 		</theme_item>
@@ -39,6 +30,15 @@
 		</theme_item>
 		<theme_item name="increment_pressed" data_type="icon" type="Texture">
 			Displayed when the increment button is being pressed.
+		</theme_item>
+		<theme_item name="grabber" data_type="style" type="StyleBox">
+			Used as texture for the grabber, the draggable element representing current scroll.
+		</theme_item>
+		<theme_item name="grabber_highlight" data_type="style" type="StyleBox">
+			Used when the mouse hovers over the grabber.
+		</theme_item>
+		<theme_item name="grabber_pressed" data_type="style" type="StyleBox">
+			Used when the grabber is being dragged.
 		</theme_item>
 		<theme_item name="scroll" data_type="style" type="StyleBox">
 			Used as background of this [ScrollBar].
