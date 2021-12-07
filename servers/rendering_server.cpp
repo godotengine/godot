@@ -942,6 +942,13 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 		}
 	}
 
+	for (uint32_t i = 0; i < RS::ARRAY_CUSTOM_COUNT; ++i) {
+		// include custom array format type.
+		if (format & (1 << (ARRAY_CUSTOM0 + i))) {
+			format |= (RS::ARRAY_FORMAT_CUSTOM_MASK << (RS::ARRAY_FORMAT_CUSTOM_BASE + i * RS::ARRAY_FORMAT_CUSTOM_BITS)) & p_compress_format;
+		}
+	}
+
 	uint32_t offsets[RS::ARRAY_MAX];
 
 	uint32_t vertex_element_size;

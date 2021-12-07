@@ -42,6 +42,8 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	ERR_FAIL_COND_V(p_mesh.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_mesh->surface_get_primitive_type(p_surface) != Mesh::PRIMITIVE_TRIANGLES, ERR_INVALID_PARAMETER);
 
+	uint32_t custom_fmt_byte_size[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+
 	Array arrays = p_mesh->surface_get_arrays(p_surface);
 	ERR_FAIL_COND_V(arrays.is_empty(), ERR_INVALID_PARAMETER);
 
@@ -112,6 +114,20 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		we = arrays[Mesh::ARRAY_WEIGHTS].operator Vector<float>().ptr();
 	}
 
+	const uint8_t *cu[Mesh::ARRAY_CUSTOM_COUNT] = {};
+	uint32_t custom_type_byte_sizes[Mesh::ARRAY_CUSTOM_COUNT] = {};
+	for (uint32_t i = 0; i < Mesh::ARRAY_CUSTOM_COUNT; ++i) {
+		uint32_t arrType = arrays[Mesh::ARRAY_CUSTOM0 + i].get_type();
+		if (arrType == Variant::PACKED_FLOAT32_ARRAY) {
+			cu[i] = (const uint8_t *)arrays[Mesh::ARRAY_CUSTOM0 + i].operator Vector<float>().ptr();
+		} else if (arrType == Variant::PACKED_BYTE_ARRAY) {
+			cu[i] = arrays[Mesh::ARRAY_CUSTOM0 + i].operator Vector<uint8_t>().ptr();
+		}
+
+		uint32_t type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + i * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+		custom_type_byte_sizes[i] = custom_fmt_byte_size[type];
+	}
+
 	vertices.resize(vcount);
 
 	for (int i = 0; i < vcount; i++) {
@@ -145,6 +161,12 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 			v.bones.push_back(bo[i * 4 + 1]);
 			v.bones.push_back(bo[i * 4 + 2]);
 			v.bones.push_back(bo[i * 4 + 3]);
+		}
+
+		for (uint32_t j = 0; j < Mesh::ARRAY_CUSTOM_COUNT; ++j) {
+			if (cu[j]) {
+				memcpy(&v.custom[j], &(cu[j][i * custom_type_byte_sizes[j]]), custom_type_byte_sizes[j]);
+			}
 		}
 
 		vertices.write[i] = v;
@@ -195,6 +217,9 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 	Array arr;
 	arr.resize(Mesh::ARRAY_MAX);
 
+	uint32_t custom_fmt_size[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 1, 2, 3, 4 };
+	uint32_t custom_fmt_byte_size[RS::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
+
 	int vcount = vertices.size();
 
 	Vector<Vector3> v;
@@ -206,8 +231,29 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 	Vector<int> b;
 	Vector<real_t> w;
 	Vector<int> in;
+	Vector<float> cuf[Mesh::ARRAY_CUSTOM_COUNT];
+	Vector<uint8_t> cuu[Mesh::ARRAY_CUSTOM_COUNT];
 
 	{
+		uint8_t *cu_ptr[Mesh::ARRAY_CUSTOM_COUNT] = {};
+		uint32_t custom_type_byte_sizes[Mesh::ARRAY_CUSTOM_COUNT] = {};
+		for (uint32_t i = 0; i < Mesh::ARRAY_CUSTOM_COUNT; ++i) {
+			uint32_t type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + i * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+			custom_type_byte_sizes[i] = custom_fmt_byte_size[type];
+
+			if (format & (Mesh::ARRAY_FORMAT_CUSTOM0 << i)) {
+				if (type > Mesh::ARRAY_CUSTOM_RGBA_HALF) {
+					// floating point type
+					cuf[i].resize(vcount * custom_fmt_size[type]);
+					cu_ptr[i] = (uint8_t *)cuf[i].ptrw();
+				} else {
+					// non floating point type
+					cuu[i].resize(vcount * custom_fmt_size[type]);
+					cu_ptr[i] = (uint8_t *)cuu[i].ptrw();
+				}
+			}
+		}
+
 		v.resize(vcount);
 		Vector3 *vr = v.ptrw();
 
@@ -289,6 +335,12 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 				bo[i * 4 + 2] = vtx.bones[2];
 				bo[i * 4 + 3] = vtx.bones[3];
 			}
+
+			for (uint32_t j = 0; j < Mesh::ARRAY_CUSTOM_COUNT; ++j) {
+				if (cu_ptr[j]) {
+					memcpy(cu_ptr[j] + i * custom_type_byte_sizes[j], &vtx.custom[j], custom_type_byte_sizes[j]);
+				}
+			}
 		}
 
 		int fc = faces.size();
@@ -324,10 +376,17 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 	if (w.size()) {
 		arr[Mesh::ARRAY_WEIGHTS] = w;
 	}
+	for (uint32_t i = 0; i < Mesh::ARRAY_CUSTOM_COUNT; ++i) {
+		if (cuf[i].size()) {
+			arr[Mesh::ARRAY_CUSTOM0 + i] = cuf[i];
+		} else if (cuu[i].size()) {
+			arr[Mesh::ARRAY_CUSTOM0 + i] = cuu[i];
+		}
+	}
 
 	Ref<ArrayMesh> ncmesh = p_mesh;
 	int sc = ncmesh->get_surface_count();
-	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr);
+	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), format);
 	ncmesh->surface_set_material(sc, material);
 
 	return OK;
@@ -448,6 +507,178 @@ void MeshDataTool::set_vertex_meta(int p_idx, const Variant &p_meta) {
 	vertices.write[p_idx].meta = p_meta;
 }
 
+Color MeshDataTool::get_vertex_custom_float(int p_idx, int p_custom_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, vertices.size(), Color());
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, Color());
+	uint32_t from_type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+	uint32_t to_type = Mesh::ARRAY_CUSTOM_RGBA_FLOAT;
+	return _convert_custom_data(vertices[p_idx].custom[p_custom_idx], from_type, to_type);
+}
+
+PackedByteArray MeshDataTool::get_vertex_custom_hfloat(int p_idx, int p_custom_idx) const {
+	Vector<uint8_t> ret;
+	ret.resize(8);
+	ERR_FAIL_INDEX_V(p_idx, vertices.size(), (memset(ret.ptrw(), 0, 8), ret));
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, (memset(ret.ptrw(), 0, 8), ret));
+	uint32_t from_type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+	uint32_t to_type = Mesh::ARRAY_CUSTOM_RGBA_HALF;
+	Color c = _convert_custom_data(vertices[p_idx].custom[p_custom_idx], from_type, to_type);
+	memcpy(ret.ptrw(), &c, 8);
+	return ret;
+}
+
+PackedByteArray MeshDataTool::get_vertex_custom_unorm8(int p_idx, int p_custom_idx) const {
+	Vector<uint8_t> ret;
+	ret.resize(4);
+	ERR_FAIL_INDEX_V(p_idx, vertices.size(), (memset(ret.ptrw(), 0, 4), ret));
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, (memset(ret.ptrw(), 0, 4), ret));
+	uint32_t from_type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+	uint32_t to_type = Mesh::ARRAY_CUSTOM_RGBA8_UNORM;
+	Color c = _convert_custom_data(vertices[p_idx].custom[p_custom_idx], from_type, to_type);
+	memcpy(ret.ptrw(), &c, 4);
+	return ret;
+}
+
+PackedInt32Array MeshDataTool::get_vertex_custom_snorm8_32i(int p_idx, int p_custom_idx) const {
+	Vector<int32_t> ret;
+	ret.resize(4);
+	ERR_FAIL_INDEX_V(p_idx, vertices.size(), (memset(ret.ptrw(), 0, 4 * sizeof(int32_t)), ret));
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, (memset(ret.ptrw(), 0, 4 * sizeof(int32_t)), ret));
+	uint32_t from_type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+	uint32_t to_type = Mesh::ARRAY_CUSTOM_RGBA8_SNORM;
+	Color c = _convert_custom_data(vertices[p_idx].custom[p_custom_idx], from_type, to_type);
+	for (int i = 0; i < 4; ++i) {
+		ret.write[i] = ((uint8_t *)&c)[i];
+	}
+	return ret;
+}
+
+Error MeshDataTool::set_vertex_custom_float(int p_idx, int p_custom_idx, const Color &p_customf) {
+	ERR_FAIL_INDEX_V(p_idx, vertices.size(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, ERR_INVALID_PARAMETER);
+	Color in(p_customf);
+
+	if (format & (Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx)) {
+		uint32_t type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+		vertices.write[p_idx].custom[p_custom_idx] = _convert_custom_data(in, Mesh::ARRAY_CUSTOM_RGBA_FLOAT, type);
+	} else {
+		// default behaviour setting the format to rgba_float
+		format |= Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx;
+		format &= ~(Mesh::ARRAY_FORMAT_CUSTOM_BITS << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS));
+		format |= Mesh::ARRAY_CUSTOM_RGBA_FLOAT << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS);
+		vertices.write[p_idx].custom[p_custom_idx] = in;
+	}
+
+	return OK;
+}
+
+Error MeshDataTool::set_vertex_custom_hfloat(int p_idx, int p_custom_idx, const PackedByteArray &p_customu) {
+	ERR_FAIL_INDEX_V(p_idx, vertices.size(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, ERR_INVALID_PARAMETER);
+	uint32_t count = MIN(p_customu.size(), 8);
+	Color in(Color(0, 0, 0, 0));
+	memcpy(&in, p_customu.ptr(), count);
+
+	if (format & (Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx)) {
+		uint32_t type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+		vertices.write[p_idx].custom[p_custom_idx] = _convert_custom_data(in, Mesh::ARRAY_CUSTOM_RGBA_HALF, type);
+	} else {
+		// default behaviour setting the format to rgba_hfloat
+		format |= Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx;
+		format &= ~(Mesh::ARRAY_FORMAT_CUSTOM_BITS << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS));
+		format |= Mesh::ARRAY_CUSTOM_RGBA_HALF << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS);
+		vertices.write[p_idx].custom[p_custom_idx] = in;
+	}
+
+	return OK;
+}
+
+Error MeshDataTool::set_vertex_custom_unorm8(int p_idx, int p_custom_idx, const PackedByteArray &p_customu) {
+	ERR_FAIL_INDEX_V(p_idx, vertices.size(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, ERR_INVALID_PARAMETER);
+	uint32_t count = MIN(p_customu.size(), 4);
+	Color in(Color(0, 0, 0, 0));
+	memcpy(&in, p_customu.ptr(), count);
+
+	if (format & (Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx)) {
+		uint32_t type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+		vertices.write[p_idx].custom[p_custom_idx] = _convert_custom_data(in, Mesh::ARRAY_CUSTOM_RGBA8_UNORM, type);
+	} else {
+		// default behaviour setting the format to rgba_hfloat
+		format |= Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx;
+		format &= ~(Mesh::ARRAY_FORMAT_CUSTOM_BITS << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS));
+		format |= Mesh::ARRAY_CUSTOM_RGBA8_UNORM << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS);
+		vertices.write[p_idx].custom[p_custom_idx] = in;
+	}
+
+	return OK;
+}
+
+Error MeshDataTool::set_vertex_custom_snorm8_32i(int p_idx, int p_custom_idx, const PackedInt32Array &p_customu) {
+	ERR_FAIL_INDEX_V(p_idx, vertices.size(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, ERR_INVALID_PARAMETER);
+	uint32_t count = MIN(p_customu.size(), 4);
+	Color in(Color(0, 0, 0, 0));
+	for (uint32_t i = 0; i < count; ++i) {
+		((uint8_t *)&in)[i] = CLAMP(p_customu[i], -127, 127);
+	}
+
+	if (format & (Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx)) {
+		uint32_t type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+		vertices.write[p_idx].custom[p_custom_idx] = _convert_custom_data(in, Mesh::ARRAY_CUSTOM_RGBA8_SNORM, type);
+	} else {
+		// default behaviour setting the format to rgba_hfloat
+		format |= Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx;
+		format &= ~(Mesh::ARRAY_FORMAT_CUSTOM_BITS << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS));
+		format |= Mesh::ARRAY_CUSTOM_RGBA8_SNORM << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS);
+		vertices.write[p_idx].custom[p_custom_idx] = in;
+	}
+
+	return OK;
+}
+
+int MeshDataTool::has_custom(int p_custom_idx) const {
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, 0);
+	if (format & (Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx)) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+int MeshDataTool::get_custom_type(int p_custom_idx) const {
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, -1);
+	ERR_FAIL_COND_V((format & (Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx)) == 0, -1);
+	uint32_t type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+	return (Mesh::ArrayCustomFormat)type;
+}
+
+Error MeshDataTool::set_custom_type(int p_custom_idx, Mesh::ArrayCustomFormat p_type, bool p_convert, bool has_custom) {
+	ERR_FAIL_INDEX_V(p_custom_idx, Mesh::ARRAY_CUSTOM_COUNT, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_type >= Mesh::ARRAY_CUSTOM_MAX, ERR_INVALID_PARAMETER);
+	if (has_custom) {
+		if (format & (Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx)) {
+			uint32_t prev_type = (format >> (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS)) & Mesh::ARRAY_FORMAT_CUSTOM_MASK;
+			if (prev_type != p_type) {
+				format &= ~(Mesh::ARRAY_FORMAT_CUSTOM_MASK << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS));
+				if (p_convert) {
+					_convert_custom_data_n(vertices.ptrw(), p_custom_idx, vertices.size(), prev_type, p_type);
+				}
+			}
+		}
+
+		format |= Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx;
+		format &= ~(Mesh::ARRAY_FORMAT_CUSTOM_BITS << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS));
+		format |= p_type << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS);
+	} else {
+		// remove custom type.
+		format &= ~(Mesh::ARRAY_FORMAT_CUSTOM0 << p_custom_idx);
+		format &= ~(Mesh::ARRAY_FORMAT_CUSTOM_BITS << (Mesh::ARRAY_FORMAT_CUSTOM_BASE + p_custom_idx * Mesh::ARRAY_FORMAT_CUSTOM_BITS));
+	}
+
+	return OK;
+}
+
 Vector<int> MeshDataTool::get_vertex_edges(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, vertices.size(), Vector<int>());
 	return vertices[p_idx].edges;
@@ -556,6 +787,20 @@ void MeshDataTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vertex_meta", "idx", "meta"), &MeshDataTool::set_vertex_meta);
 	ClassDB::bind_method(D_METHOD("get_vertex_meta", "idx"), &MeshDataTool::get_vertex_meta);
 
+	ClassDB::bind_method(D_METHOD("set_vertex_custom_float", "idx", "custom_idx", "customf"), &MeshDataTool::set_vertex_custom_float);
+	ClassDB::bind_method(D_METHOD("set_vertex_custom_hfloat", "idx", "custom_idx", "customu"), &MeshDataTool::set_vertex_custom_hfloat);
+	ClassDB::bind_method(D_METHOD("set_vertex_custom_unorm8", "idx", "custom_idx", "customu"), &MeshDataTool::set_vertex_custom_unorm8);
+	ClassDB::bind_method(D_METHOD("set_vertex_custom_snorm8_32i", "idx", "custom_idx", "customf"), &MeshDataTool::set_vertex_custom_snorm8_32i);
+
+	ClassDB::bind_method(D_METHOD("get_vertex_custom_float", "idx", "custom_idx"), &MeshDataTool::get_vertex_custom_float);
+	ClassDB::bind_method(D_METHOD("get_vertex_custom_hfloat", "idx", "custom_idx"), &MeshDataTool::get_vertex_custom_hfloat);
+	ClassDB::bind_method(D_METHOD("get_vertex_custom_unorm8", "idx", "custom_idx"), &MeshDataTool::get_vertex_custom_unorm8);
+	ClassDB::bind_method(D_METHOD("get_vertex_custom_snorm8_32i", "idx", "custom_idx"), &MeshDataTool::get_vertex_custom_snorm8_32i);
+
+	ClassDB::bind_method(D_METHOD("has_custom", "custom_idx"), &MeshDataTool::has_custom);
+	ClassDB::bind_method(D_METHOD("get_custom_type", "custom_idx"), &MeshDataTool::get_custom_type);
+	ClassDB::bind_method(D_METHOD("set_custom_type", "custom_idx", "type", "convert", "has_custom"), &MeshDataTool::set_custom_type, DEFVAL(false), DEFVAL(true));
+
 	ClassDB::bind_method(D_METHOD("get_vertex_edges", "idx"), &MeshDataTool::get_vertex_edges);
 	ClassDB::bind_method(D_METHOD("get_vertex_faces", "idx"), &MeshDataTool::get_vertex_faces);
 
@@ -575,6 +820,476 @@ void MeshDataTool::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &MeshDataTool::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &MeshDataTool::get_material);
+}
+
+Error MeshDataTool::_convert_custom_data_n(MeshDataTool::Vertex *p_data, uint32_t p_custom_idx, uint32_t n, uint32_t p_from_type, uint32_t p_to_type) {
+	// signed normalized conversions are based on : https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html
+	// [-127, 127] will be mapped to [-1.0, 1.0]
+	// unsigned normalized conversions are based on : https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html
+	// [0, 255] will be mapped to [0.0, 1.0]
+
+	if (p_from_type == p_to_type) {
+		return OK;
+	}
+	switch (p_from_type) {
+		case Mesh::ARRAY_CUSTOM_RGBA8_UNORM: {
+			// 4x [0,255] 8-bit numbers.
+			switch (p_to_type) {
+				case Mesh::ARRAY_CUSTOM_RGBA8_SNORM: {
+					// 4x [-127,127] 8-bit numbers.
+					for (size_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						const Color srcc = p_data[i].custom[p_custom_idx];
+						for (uint32_t j = 0; j < 4; ++j) {
+							((uint8_t *)&dstc)[j] = (float)((uint8_t *)&srcc)[j] * (127 / 255);
+						}
+					}
+					return OK;
+				} break;
+				case Mesh::ARRAY_CUSTOM_RG_HALF:
+					// 2x 16-bit floating point numbers
+				case Mesh::ARRAY_CUSTOM_RGBA_HALF: {
+					// 4x 16-bit floating point numbers.
+					const uint32_t ct = (p_to_type - Mesh::ARRAY_CUSTOM_RG_HALF + 1) * 2;
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						const Color srcc = p_data[i].custom[p_custom_idx];
+						uint16_t *wptr = (uint16_t *)&dstc;
+						for (uint32_t j = 0; j < ct; ++j) {
+							float value = (float)((uint8_t *)&srcc)[j] / 255;
+							// converting to half floating point
+							wptr[j] = Math::make_half_float(value);
+						}
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_R_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGBA_FLOAT: {
+					// 4x 32-bit floating point numbers.
+					const uint32_t ct = p_to_type - Mesh::ARRAY_CUSTOM_R_FLOAT + 1;
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						const Color srcc = p_data[i].custom[p_custom_idx];
+						for (uint32_t j = 0; j < ct; ++j) {
+							dstc.components[j] = (float)((uint8_t *)&srcc)[j] / 255;
+						}
+					}
+				} break;
+				default: {
+					ERR_FAIL_V(ERR_INVALID_PARAMETER);
+				} break;
+			}
+		} break;
+
+		case Mesh::ARRAY_CUSTOM_RGBA8_SNORM: {
+			// 4x [-127,127] 8-bit numbers.
+			switch (p_to_type) {
+				case Mesh::ARRAY_CUSTOM_RGBA8_UNORM: {
+					// 4x [0, 255] 8-bit numbers.
+					for (size_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						const Color srcc = p_data[i].custom[p_custom_idx];
+						for (uint32_t j = 0; j < 4; ++j) {
+							int8_t value = (int8_t)((uint8_t *)&srcc)[j];
+							((uint8_t *)&dstc)[j] = (float)(CLAMP(value, 0, 127)) * (255 / 127);
+						}
+					}
+					return OK;
+				} break;
+				case Mesh::ARRAY_CUSTOM_RG_HALF:
+					// 2x 16-bit floating point numbers.
+				case Mesh::ARRAY_CUSTOM_RGBA_HALF: {
+					// 4x 16-bit floating point numbers.
+					const uint32_t ct = (p_to_type - Mesh::ARRAY_CUSTOM_RG_HALF + 1) * 2;
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						const Color srcc = p_data[i].custom[p_custom_idx];
+						uint16_t *wptr = (uint16_t *)&dstc;
+						for (uint32_t j = 0; j < ct; ++j) {
+							float value = (float)((uint8_t *)&srcc)[j] / 127;
+							value = value >= -1.0f ? value : -1.0f;
+							// converting to half floating point
+							wptr[j] = Math::make_half_float(value);
+						}
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_R_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGBA_FLOAT: {
+					// 4x 32-bit floating point numbers.
+					const uint32_t ct = p_to_type - Mesh::ARRAY_CUSTOM_R_FLOAT + 1;
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						const Color srcc = p_data[i].custom[p_custom_idx];
+						for (uint32_t j = 0; j < ct; ++j) {
+							float value = (float)((uint8_t *)&srcc)[j] / 127;
+							dstc.components[j] = value >= -1.0f ? value : -1.0f;
+						}
+					}
+				} break;
+				default: {
+					ERR_FAIL_V(ERR_INVALID_PARAMETER);
+				} break;
+			}
+		} break;
+
+		case Mesh::ARRAY_CUSTOM_RG_HALF:
+			// 2x 16-bit floating point numbers.
+		case Mesh::ARRAY_CUSTOM_RGBA_HALF: {
+			// 4x 16-bit floating point numbers.
+			const uint32_t cf = (p_from_type - Mesh::ARRAY_CUSTOM_RG_HALF + 1) * 2;
+			switch (p_to_type) {
+				case Mesh::ARRAY_CUSTOM_RGBA8_UNORM: {
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						uint16_t rptr[8];
+						Color *srccptr = (Color *)rptr; // Pointer used to silence wrong -Wmaybe-initialized.
+						*srccptr = p_data[i].custom[p_custom_idx];
+						// 4x [0, 255] 8-bit numbers.
+						for (uint32_t j = 0; j < cf; ++j) {
+							float value = Math::half_to_float(rptr[j]);
+							// converting to 32-bit floating point.
+							value = CLAMP(value, 0.0f, 1.0f);
+							((uint8_t *)&dstc)[j] = value * 255;
+						}
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_RGBA8_SNORM: {
+					// 4x [-127,127] 8-bit numbers.
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						uint16_t rptr[8];
+						Color *srccptr = (Color *)rptr; // Pointer used to silence wrong -Wmaybe-initialized.
+						*srccptr = p_data[i].custom[p_custom_idx];
+						for (uint32_t j = 0; j < cf; ++j) {
+							float value = Math::half_to_float(rptr[j]);
+							// converting to 32-bit floating point.
+							value = CLAMP(value, -1.0f, 1.0f);
+							((uint8_t *)&dstc)[j] = value * 127;
+						}
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_RG_HALF: {
+					// 2x 16-bit floating point numbers.
+					// do nothing
+					return OK;
+				} break;
+				case Mesh::ARRAY_CUSTOM_RGBA_HALF: {
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						uint16_t *wptr = (uint16_t *)&dstc;
+						for (uint32_t j = 2; j < 4; ++j) {
+							wptr[j] = 0;
+						}
+					}
+					return OK;
+				} break;
+				case Mesh::ARRAY_CUSTOM_R_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGBA_FLOAT: {
+					// 4x 32-bit floating point numbers.
+					const uint32_t ct = p_to_type - Mesh::ARRAY_CUSTOM_R_FLOAT + 1;
+					const uint32_t c = MIN(cf, ct);
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						uint16_t rptr[8];
+						Color *srccptr = (Color *)rptr; // Pointer used to silence wrong -Wmaybe-initialized.
+						*srccptr = p_data[i].custom[p_custom_idx];
+						for (uint32_t j = 0; j < c; ++j) {
+							// converting to 32-bit floating point.
+							dstc.components[j] = Math::half_to_float(rptr[j]);
+						}
+						for (uint32_t j = c; j < ct; ++j) {
+							dstc.components[j] = 0.0f;
+						}
+					}
+				} break;
+				default: {
+					ERR_FAIL_V(ERR_INVALID_PARAMETER);
+				} break;
+			}
+		} break;
+
+		case Mesh::ARRAY_CUSTOM_R_FLOAT:
+			// 1x 32-bit floating point numbers.
+		case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+			// 2x 32-bit floating point numbers.
+		case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+			// 3x 32-bit floating point numbers.
+		case Mesh::ARRAY_CUSTOM_RGBA_FLOAT: {
+			// 4x 32-bit floating point numbers.
+			const uint32_t cf = p_from_type - Mesh::ARRAY_CUSTOM_R_FLOAT + 1;
+			switch (p_to_type) {
+				case Mesh::ARRAY_CUSTOM_RGBA8_UNORM: {
+					// 4x [0, 255] 8-bit numbers.
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						const Color srcc = p_data[i].custom[p_custom_idx];
+						for (uint32_t j = 0; j < cf; ++j) {
+							float value = CLAMP(srcc.components[j], 0.0f, 1.0f);
+							((uint8_t *)&dstc)[j] = value * 255;
+						}
+						for (uint32_t j = cf; j < 4; ++j) {
+							((uint8_t *)&dstc)[j] = 0;
+						}
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_RGBA8_SNORM: {
+					// 4x [-127,127] 8-bit numbers.
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						const Color srcc = p_data[i].custom[p_custom_idx];
+						for (uint32_t j = 0; j < cf; ++j) {
+							float value = CLAMP(srcc.components[j], -1.0f, 1.0f);
+							((uint8_t *)&dstc)[j] = value * 127;
+						}
+						for (uint32_t j = cf; j < 4; ++j) {
+							((uint8_t *)&dstc)[j] = 0;
+						}
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_RG_HALF:
+					// 2x 16-bit floating point numbers.
+				case Mesh::ARRAY_CUSTOM_RGBA_HALF: {
+					// 4x 16-bit floating point numbers.
+					const uint32_t ct = (p_to_type - Mesh::ARRAY_CUSTOM_RGBA_HALF + 1) * 2;
+					const uint32_t c = MIN(cf, ct);
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						const Color srcc = p_data[i].custom[p_custom_idx];
+						uint16_t *wptr = (uint16_t *)&dstc;
+						for (uint32_t j = 0; j < c; ++j) {
+							// converting to 16-bit floating point.
+							wptr[j] = Math::make_half_float(srcc.components[j]);
+						}
+						for (uint32_t j = c; j < ct; ++j) {
+							dstc.components[j] = 0.0f;
+						}
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_R_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGBA_FLOAT: {
+					const uint32_t ct = (p_to_type - Mesh::ARRAY_CUSTOM_R_FLOAT + 1);
+					for (uint32_t i = 0; i < n; ++i) {
+						Color &dstc = p_data[i].custom[p_custom_idx];
+						for (uint32_t j = cf; j < ct; ++j) {
+							dstc.components[j] = 0.0f;
+						}
+					}
+					return OK;
+				}
+				default: {
+					ERR_FAIL_V(ERR_INVALID_PARAMETER);
+				} break;
+			}
+		} break;
+		default: {
+			ERR_FAIL_V(ERR_INVALID_PARAMETER);
+		} break;
+	}
+
+	return OK;
+}
+
+Color MeshDataTool::_convert_custom_data(const Color &srcc, uint32_t p_from_type, uint32_t p_to_type) {
+	// signed normalized conversions are based on : https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html
+	// [-127, 127] will be mapped to [-1.0, 1.0]
+	// unsigned normalized conversions are based on : https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html
+	// [0, 255] will be mapped to [0.0, 1.0]
+
+	if (p_from_type == p_to_type) {
+		return srcc;
+	}
+
+	Color dstc(Color(0, 0, 0, 0));
+
+	switch (p_from_type) {
+		case Mesh::ARRAY_CUSTOM_RGBA8_UNORM: {
+			// 4x [0,255] 8-bit numbers.
+			switch (p_to_type) {
+				case Mesh::ARRAY_CUSTOM_RGBA8_SNORM: {
+					// 4x [-127,127] 8-bit numbers.
+					for (uint32_t j = 0; j < 4; ++j) {
+						((uint8_t *)&dstc)[j] = CLAMP(((uint8_t *)&srcc)[j], 0, 127);
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_RG_HALF:
+					// 2x 16-bit floating point numbers
+				case Mesh::ARRAY_CUSTOM_RGBA_HALF: {
+					// 4x 16-bit floating point numbers.
+					const uint32_t ct = (p_to_type - Mesh::ARRAY_CUSTOM_RG_HALF + 1) * 2;
+					uint16_t *wptr = (uint16_t *)&dstc;
+					for (uint32_t j = 0; j < ct; ++j) {
+						float value = (float)((uint8_t *)&srcc)[j] / 255;
+						// converting to half floating point
+						wptr[j] = Math::make_half_float(value);
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_R_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGBA_FLOAT: {
+					// 4x 32-bit floating point numbers.
+					const uint32_t ct = p_to_type - Mesh::ARRAY_CUSTOM_R_FLOAT + 1;
+					for (uint32_t j = 0; j < ct; ++j) {
+						dstc.components[j] = (float)((uint8_t *)&srcc)[j] / 255;
+					}
+				} break;
+				default: {
+					ERR_FAIL_V(Color(Color(0, 0, 0, 0)));
+				} break;
+			}
+		} break;
+
+		case Mesh::ARRAY_CUSTOM_RGBA8_SNORM: {
+			// 4x [-127,127] 8-bit numbers.
+			switch (p_to_type) {
+				case Mesh::ARRAY_CUSTOM_RGBA8_UNORM: {
+					// 4x [0, 255] 8-bit numbers.
+					for (uint32_t j = 0; j < 4; ++j) {
+						int8_t value = (int8_t)((uint8_t *)&srcc)[j];
+						((uint8_t *)&dstc)[j] = (float)(CLAMP(value, 0, 127)) * (255 / 127);
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_RG_HALF:
+					// 2x 16-bit floating point numbers.
+				case Mesh::ARRAY_CUSTOM_RGBA_HALF: {
+					// 4x 16-bit floating point numbers.
+					const uint32_t ct = (p_to_type - Mesh::ARRAY_CUSTOM_RG_HALF + 1) * 2;
+					uint16_t *wptr = (uint16_t *)&dstc;
+					for (uint32_t j = 0; j < ct; ++j) {
+						float value = (float)((uint8_t *)&srcc)[j] / 127;
+						value = value >= -1.0f ? value : -1.0f;
+						// converting to half floating point
+						wptr[j] = Math::make_half_float(value);
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_R_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGBA_FLOAT: {
+					// 4x 32-bit floating point numbers.
+					const uint32_t ct = p_to_type - Mesh::ARRAY_CUSTOM_R_FLOAT + 1;
+					for (uint32_t j = 0; j < ct; ++j) {
+						float value = (float)((uint8_t *)&srcc)[j] / 127;
+						dstc.components[j] = value >= -1.0f ? value : -1.0f;
+					}
+				} break;
+				default: {
+					ERR_FAIL_V(Color(Color(0, 0, 0, 0)));
+				} break;
+			}
+		} break;
+
+		case Mesh::ARRAY_CUSTOM_RG_HALF:
+			// 2x 16-bit floating point numbers.
+		case Mesh::ARRAY_CUSTOM_RGBA_HALF: {
+			// 4x 16-bit floating point numbers.
+			const uint32_t cf = (p_from_type - Mesh::ARRAY_CUSTOM_RG_HALF + 1) * 2;
+			switch (p_to_type) {
+				case Mesh::ARRAY_CUSTOM_RGBA8_UNORM: {
+					const uint16_t *rptr = (const uint16_t *)&srcc;
+					// 4x [0, 255] 8-bit numbers.
+					for (uint32_t j = 0; j < cf; ++j) {
+						float value = Math::half_to_float(rptr[j]);
+						// converting to 32-bit floating point.
+						value = CLAMP(value, 0.0f, 1.0f);
+						((uint8_t *)&dstc)[j] = value * 255;
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_RGBA8_SNORM: {
+					// 4x [-127,127] 8-bit numbers.
+					const uint16_t *rptr = (const uint16_t *)&srcc;
+					for (uint32_t j = 0; j < cf; ++j) {
+						float value = Math::half_to_float(rptr[j]);
+						// converting to 32-bit floating point.
+						value = CLAMP(value, -1.0f, 1.0f);
+						((uint8_t *)&dstc)[j] = value * 127;
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_RG_HALF:
+					// 2x 16-bit floating point numbers.
+				case Mesh::ARRAY_CUSTOM_RGBA_HALF: {
+					// do nothing
+					return srcc;
+				} break;
+				case Mesh::ARRAY_CUSTOM_R_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGBA_FLOAT: {
+					// 4x 32-bit floating point numbers.
+					const uint32_t ct = p_to_type - Mesh::ARRAY_CUSTOM_R_FLOAT + 1;
+					const uint32_t c = MIN(cf, ct);
+					const uint16_t *rptr = (const uint16_t *)&srcc;
+					for (uint32_t j = 0; j < c; ++j) {
+						// converting to 32-bit floating point.
+						dstc.components[j] = Math::half_to_float(rptr[j]);
+					}
+				} break;
+				default: {
+					ERR_FAIL_V(Color(Color(0, 0, 0, 0)));
+				} break;
+			}
+		} break;
+
+		case Mesh::ARRAY_CUSTOM_R_FLOAT:
+			// 1x 32-bit floating point numbers.
+		case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+			// 2x 32-bit floating point numbers.
+		case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+			// 3x 32-bit floating point numbers.
+		case Mesh::ARRAY_CUSTOM_RGBA_FLOAT: {
+			// 4x 32-bit floating point numbers.
+			const uint32_t cf = p_from_type - Mesh::ARRAY_CUSTOM_R_FLOAT + 1;
+			switch (p_to_type) {
+				case Mesh::ARRAY_CUSTOM_RGBA8_UNORM: {
+					// 4x [0, 255] 8-bit numbers.
+					for (uint32_t j = 0; j < cf; ++j) {
+						float value = CLAMP(srcc.components[j], 0.0f, 1.0f);
+						((uint8_t *)&dstc)[j] = value * 255;
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_RGBA8_SNORM: {
+					// 4x [-127,127] 8-bit numbers.
+					for (uint32_t j = 0; j < cf; ++j) {
+						float value = CLAMP(srcc.components[j], -1.0f, 1.0f);
+						((uint8_t *)&dstc)[j] = value * 127;
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_RG_HALF:
+					// 2x 16-bit floating point numbers.
+				case Mesh::ARRAY_CUSTOM_RGBA_HALF: {
+					// 4x 16-bit floating point numbers.
+					const uint32_t ct = (p_to_type - Mesh::ARRAY_CUSTOM_RGBA_HALF + 1) * 2;
+					const uint32_t c = MIN(cf, ct);
+					uint16_t *wptr = (uint16_t *)&dstc;
+					for (uint32_t j = 0; j < c; ++j) {
+						// converting to 16-bit floating point.
+						wptr[j] = Math::make_half_float(srcc.components[j]);
+					}
+				} break;
+				case Mesh::ARRAY_CUSTOM_R_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RG_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGB_FLOAT:
+				case Mesh::ARRAY_CUSTOM_RGBA_FLOAT: {
+					return srcc;
+				}
+				default: {
+					ERR_FAIL_V(Color(Color(0, 0, 0, 0)));
+				} break;
+			}
+		} break;
+		default: {
+			ERR_FAIL_V(Color(Color(0, 0, 0, 0)));
+		} break;
+	}
+
+	return dstc;
 }
 
 MeshDataTool::MeshDataTool() {
