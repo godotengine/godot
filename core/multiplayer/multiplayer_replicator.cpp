@@ -207,7 +207,7 @@ Error MultiplayerReplicator::_send_default_spawn_despawn(int p_peer_id, const Re
 	const Vector<StringName> names = rel_path.get_names();
 	ERR_FAIL_COND_V(names.size() < 2, ERR_INVALID_PARAMETER);
 
-	NodePath parent = NodePath(names.subarray(0, names.size() - 2), false);
+	NodePath parent = NodePath(names.slice(0, names.size() - 1), false);
 	ERR_FAIL_COND_V_MSG(!root_node->has_node(parent), ERR_INVALID_PARAMETER, "Path not found: " + parent);
 
 	int path_id = 0;

@@ -246,6 +246,37 @@ TEST_CASE("[Array] max() and min()") {
 	CHECK(min == 2);
 }
 
+TEST_CASE("[Array] slice()") {
+	Array array;
+	array.push_back(0);
+	array.push_back(1);
+	array.push_back(2);
+	array.push_back(3);
+	array.push_back(4);
+
+	Array slice1 = array.slice(1, 3);
+	CHECK(slice1.size() == 2);
+	CHECK(slice1[0] == Variant(1));
+	CHECK(slice1[1] == Variant(2));
+
+	Array slice2 = array.slice(1, -1);
+	CHECK(slice2.size() == 4);
+	CHECK(slice2[0] == Variant(1));
+	CHECK(slice2[1] == Variant(2));
+	CHECK(slice2[2] == Variant(3));
+	CHECK(slice2[3] == Variant(4));
+
+	Array slice3 = array.slice(3, -1);
+	CHECK(slice3.size() == 2);
+	CHECK(slice3[0] == Variant(3));
+	CHECK(slice3[1] == Variant(4));
+
+	Array slice4 = array.slice(2, -2);
+	CHECK(slice4.size() == 2);
+	CHECK(slice4[0] == Variant(2));
+	CHECK(slice4[1] == Variant(3));
+}
+
 TEST_CASE("[Array] Duplicate array") {
 	// a = [1, [2, 2], {3: 3}]
 	Array a = build_array(1, build_array(2, 2), build_dictionary(3, 3));
