@@ -1,8 +1,8 @@
 ext.versions = [
     androidGradlePlugin: '7.0.3',
     compileSdk         : 30,
-    minSdk             : 19, // Also update 'platform/android/java/lib/AndroidManifest.xml#minSdkVersion' value
-    targetSdk          : 30, // Also update 'platform/android/java/lib/AndroidManifest.xml#targetSdkVersion' value
+    minSdk             : 19, // Also update 'platform/android/java/lib/AndroidManifest.xml#minSdkVersion' & 'platform/android/export/export_plugin.cpp#DEFAULT_MIN_SDK_VERSION'
+    targetSdk          : 30, // Also update 'platform/android/java/lib/AndroidManifest.xml#targetSdkVersion' & 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
     buildTools         : '30.0.3',
     kotlinVersion      : '1.5.10',
     fragmentVersion    : '1.3.6',
@@ -46,6 +46,30 @@ ext.getExportVersionName = { ->
         versionName = "1.0"
     }
     return versionName
+}
+
+ext.getExportMinSdkVersion = { ->
+    String minSdkVersion = project.hasProperty("export_version_min_sdk") ? project.property("export_version_min_sdk") : ""
+    if (minSdkVersion == null || minSdkVersion.isEmpty()) {
+        minSdkVersion = "$versions.minSdk"
+    }
+    try {
+        return Integer.parseInt(minSdkVersion)
+    } catch (NumberFormatException ignored) {
+        return versions.minSdk
+    }
+}
+
+ext.getExportTargetSdkVersion = { ->
+    String targetSdkVersion = project.hasProperty("export_version_target_sdk") ? project.property("export_version_target_sdk") : ""
+    if (targetSdkVersion == null || targetSdkVersion.isEmpty()) {
+        targetSdkVersion = "$versions.targetSdk"
+    }
+    try {
+        return Integer.parseInt(targetSdkVersion)
+    } catch (NumberFormatException ignored) {
+        return versions.targetSdk
+    }
 }
 
 ext.getGodotEditorVersion = { ->

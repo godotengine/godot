@@ -224,6 +224,10 @@ static const int EXPORT_FORMAT_AAB = 1;
 static const char *APK_ASSETS_DIRECTORY = "res://android/build/assets";
 static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/installTime/src/main/assets";
 
+static const int DEFAULT_MIN_SDK_VERSION = 19; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
+static const int DEFAULT_TARGET_SDK_VERSION = 30; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
+const String SDK_VERSION_RANGE = vformat("%s,%s,1", DEFAULT_MIN_SDK_VERSION, DEFAULT_TARGET_SDK_VERSION);
+
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 	EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
 
@@ -1679,6 +1683,9 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/min_sdk", PROPERTY_HINT_RANGE, SDK_VERSION_RANGE), DEFAULT_MIN_SDK_VERSION));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/target_sdk", PROPERTY_HINT_RANGE, SDK_VERSION_RANGE), DEFAULT_TARGET_SDK_VERSION));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "org.godotengine.$genname"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
@@ -2002,10 +2009,11 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 	String err;
 	bool valid = false;
+	const bool custom_build_enabled = p_preset->get("custom_template/use_custom_build");
 
 	// Look for export templates (first official, and if defined custom templates).
 
-	if (!bool(p_preset->get("custom_template/use_custom_build"))) {
+	if (!custom_build_enabled) {
 		String template_err;
 		bool dvalid = false;
 		bool rvalid = false;
@@ -2150,7 +2158,6 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 
 	// Ensure that `Use Custom Build` is enabled if a plugin is selected.
 	String enabled_plugins_names = PluginConfigAndroid::get_plugins_names(get_enabled_plugins(p_preset));
-	bool custom_build_enabled = p_preset->get("custom_template/use_custom_build");
 	if (!enabled_plugins_names.is_empty() && !custom_build_enabled) {
 		valid = false;
 		err += TTR("\"Use Custom Build\" must be enabled to use the plugins.");
@@ -2176,9 +2183,31 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	}
 
 	if (int(p_preset->get("custom_template/export_format")) == EXPORT_FORMAT_AAB &&
-			!bool(p_preset->get("custom_template/use_custom_build"))) {
+			!custom_build_enabled) {
 		valid = false;
 		err += TTR("\"Export AAB\" is only valid when \"Use Custom Build\" is enabled.");
+		err += "\n";
+	}
+
+	// Check the min sdk version
+	int min_sdk_version = p_preset->get("version/min_sdk");
+	if (min_sdk_version != DEFAULT_MIN_SDK_VERSION && !custom_build_enabled) {
+		valid = false;
+		err += TTR("Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled.");
+		err += "\n";
+	}
+
+	// Check the target sdk version
+	int target_sdk_version = p_preset->get("version/target_sdk");
+	if (target_sdk_version != DEFAULT_TARGET_SDK_VERSION && !custom_build_enabled) {
+		valid = false;
+		err += TTR("Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is enabled.");
+		err += "\n";
+	}
+
+	if (target_sdk_version < min_sdk_version) {
+		valid = false;
+		err += TTR("\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version.");
 		err += "\n";
 	}
 
@@ -2559,6 +2588,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String package_name = get_package_name(p_preset->get("package/unique_name"));
 		String version_code = itos(p_preset->get("version/code"));
 		String version_name = p_preset->get("version/name");
+		String min_sdk_version = itos(p_preset->get("version/min_sdk"));
+		String target_sdk_version = itos(p_preset->get("version/target_sdk"));
 		String enabled_abi_string = String("|").join(enabled_abis);
 		String sign_flag = should_sign ? "true" : "false";
 		String zipalign_flag = "true";
@@ -2588,6 +2619,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
 		cmdline.push_back("-Pexport_version_code=" + version_code); // argument to specify the version code.
 		cmdline.push_back("-Pexport_version_name=" + version_name); // argument to specify the version name.
+		cmdline.push_back("-Pexport_version_min_sdk=" + min_sdk_version); // argument to specify the min sdk.
+		cmdline.push_back("-Pexport_version_target_sdk=" + target_sdk_version); // argument to specify the target sdk.
 		cmdline.push_back("-Pexport_enabled_abis=" + enabled_abi_string); // argument to specify enabled ABIs.
 		cmdline.push_back("-Pplugins_local_binaries=" + local_plugins_binaries); // argument to specify the list of plugins local dependencies.
 		cmdline.push_back("-Pplugins_remote_binaries=" + remote_plugins_binaries); // argument to specify the list of plugins remote dependencies.
