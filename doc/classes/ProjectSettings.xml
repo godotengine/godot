@@ -1420,6 +1420,26 @@
 		<member name="physics/2d/sleep_threshold_linear" type="float" setter="" getter="" default="2.0">
 			Threshold linear velocity under which a 2D physics body will be considered inactive. See [constant PhysicsServer2D.SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
+		<member name="physics/2d/solver/contact_max_allowed_penetration" type="float" setter="" getter="" default="0.3">
+			Maximum distance a shape can penetrate another shape before it is considered a collision. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION].
+		</member>
+		<member name="physics/2d/solver/contact_max_separation" type="float" setter="" getter="" default="1.5">
+			Maximum distance a shape can be from another before they are considered separated and the contact is discarded. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_MAX_SEPARATION].
+		</member>
+		<member name="physics/2d/solver/contact_recycle_radius" type="float" setter="" getter="" default="1.0">
+			Maximum distance a pair of bodies has to move before their collision status has to be recalculated. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_RECYCLE_RADIUS].
+		</member>
+		<member name="physics/2d/solver/default_constraint_bias" type="float" setter="" getter="" default="0.2">
+			Default solver bias for all physics constraints. Defines how much bodies react to enforce constraints. See [constant PhysicsServer2D.SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS].
+			Individual constraints can have a specific bias value (see [member Joint2D.bias]).
+		</member>
+		<member name="physics/2d/solver/default_contact_bias" type="float" setter="" getter="" default="0.8">
+			Default solver bias for all physics contacts. Defines how much bodies react to enforce contact separation. See [constant PhysicsServer2D.SPACE_PARAM_CONTACT_DEFAULT_BIAS].
+			Individual shapes can have a specific bias value (see [member Shape2D.custom_solver_bias]).
+		</member>
+		<member name="physics/2d/solver/solver_iterations" type="int" setter="" getter="" default="16">
+			Number of solver iterations for all contacts and constraints. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer2D.SPACE_PARAM_SOLVER_ITERATIONS].
+		</member>
 		<member name="physics/2d/time_before_sleep" type="float" setter="" getter="" default="0.5">
 			Time (in seconds) of inactivity before which a 2D physics body will put to sleep. See [constant PhysicsServer2D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
 		</member>
@@ -1467,10 +1487,29 @@
 			Sets whether 3D physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
 		</member>
 		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
+			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
 		</member>
 		<member name="physics/3d/sleep_threshold_linear" type="float" setter="" getter="" default="0.1">
+			Threshold linear velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD].
+		</member>
+		<member name="physics/3d/solver/contact_max_allowed_penetration" type="float" setter="" getter="" default="0.01">
+			Maximum distance a shape can penetrate another shape before it is considered a collision. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION].
+		</member>
+		<member name="physics/3d/solver/contact_max_separation" type="float" setter="" getter="" default="0.05">
+			Maximum distance a shape can be from another before they are considered separated and the contact is discarded. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_MAX_SEPARATION].
+		</member>
+		<member name="physics/3d/solver/contact_recycle_radius" type="float" setter="" getter="" default="0.01">
+			Maximum distance a pair of bodies has to move before their collision status has to be recalculated. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_RECYCLE_RADIUS].
+		</member>
+		<member name="physics/3d/solver/default_contact_bias" type="float" setter="" getter="" default="0.8">
+			Default solver bias for all physics contacts. Defines how much bodies react to enforce contact separation. See [constant PhysicsServer3D.SPACE_PARAM_CONTACT_DEFAULT_BIAS].
+			Individual shapes can have a specific bias value (see [member Shape3D.custom_solver_bias]).
+		</member>
+		<member name="physics/3d/solver/solver_iterations" type="int" setter="" getter="" default="16">
+			Number of solver iterations for all contacts and constraints. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer3D.SPACE_PARAM_SOLVER_ITERATIONS].
 		</member>
 		<member name="physics/3d/time_before_sleep" type="float" setter="" getter="" default="0.5">
+			Time (in seconds) of inactivity before which a 3D physics body will put to sleep. See [constant PhysicsServer3D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
 		</member>
 		<member name="physics/common/enable_object_picking" type="bool" setter="" getter="" default="true">
 			Enables [member Viewport.physics_object_picking] on the root viewport.

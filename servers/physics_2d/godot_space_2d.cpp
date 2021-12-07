@@ -1208,6 +1208,24 @@ GodotSpace2D::GodotSpace2D() {
 	body_time_to_sleep = GLOBAL_DEF("physics/2d/time_before_sleep", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/time_before_sleep", PropertyInfo(Variant::FLOAT, "physics/2d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
 
+	solver_iterations = GLOBAL_DEF("physics/2d/solver/solver_iterations", 16);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/solver_iterations", PropertyInfo(Variant::INT, "physics/2d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"));
+
+	contact_recycle_radius = GLOBAL_DEF("physics/2d/solver/contact_recycle_radius", 1.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_recycle_radius", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));
+
+	contact_max_separation = GLOBAL_DEF("physics/2d/solver/contact_max_separation", 1.5);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_max_separation", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));
+
+	contact_max_allowed_penetration = GLOBAL_DEF("physics/2d/solver/contact_max_allowed_penetration", 0.3);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/contact_max_allowed_penetration", PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"));
+
+	contact_bias = GLOBAL_DEF("physics/2d/solver/default_contact_bias", 0.8);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/default_contact_bias", PropertyInfo(Variant::FLOAT, "physics/2d/solver/default_contact_bias", PROPERTY_HINT_RANGE, "0,1,0.01"));
+
+	constraint_bias = GLOBAL_DEF("physics/2d/solver/default_constraint_bias", 0.2);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/solver/default_constraint_bias", PropertyInfo(Variant::FLOAT, "physics/2d/solver/default_constraint_bias", PROPERTY_HINT_RANGE, "0,1,0.01"));
+
 	broadphase = GodotBroadPhase2D::create_func();
 	broadphase->set_pair_callback(_broadphase_pair, this);
 	broadphase->set_unpair_callback(_broadphase_unpair, this);

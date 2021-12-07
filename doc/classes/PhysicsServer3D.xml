@@ -1333,7 +1333,7 @@
 			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
 		</constant>
 		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1" enum="SpaceParameter">
-			Constant to set/get the maximum distance a shape can be from another before they are considered separated.
+			Constant to set/get the maximum distance a shape can be from another before they are considered separated and the contact is discarded.
 		</constant>
 		<constant name="SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION" value="2" enum="SpaceParameter">
 			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
@@ -1350,12 +1350,7 @@
 		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="6" enum="SpaceParameter">
 			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO" value="7" enum="SpaceParameter">
-		</constant>
-		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="8" enum="SpaceParameter">
-			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
-		</constant>
-		<constant name="SPACE_PARAM_SOLVER_ITERATIONS" value="9" enum="SpaceParameter">
+		<constant name="SPACE_PARAM_SOLVER_ITERATIONS" value="7" enum="SpaceParameter">
 			Constant to set/get the number of solver iterations for contacts and constraints. The greater the amount of iterations, the more accurate the collisions and constraints will be. However, a greater amount of iterations requires more CPU power, which can decrease performance.
 		</constant>
 		<constant name="BODY_AXIS_LINEAR_X" value="1" enum="BodyAxis">

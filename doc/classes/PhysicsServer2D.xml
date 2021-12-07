@@ -789,7 +789,7 @@
 			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
 		</constant>
 		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1" enum="SpaceParameter">
-			Constant to set/get the maximum distance a shape can be from another before they are considered separated.
+			Constant to set/get the maximum distance a shape can be from another before they are considered separated and the contact is discarded.
 		</constant>
 		<constant name="SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION" value="2" enum="SpaceParameter">
 			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
