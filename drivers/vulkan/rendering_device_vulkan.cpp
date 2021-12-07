@@ -2520,7 +2520,7 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 		image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
 		image_memory_barrier.subresourceRange.layerCount = 1;
 
-		vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 	}
 
 	if (texture->used_in_frame != frames_drawn) {
