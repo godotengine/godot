@@ -381,7 +381,7 @@
 		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale" default="1.0">
 			The scale of icon applied after [member fixed_icon_size] and transposing takes effect.
 		</member>
-		<member name="items_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
+		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items currently in the list.
 		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" default="1">
