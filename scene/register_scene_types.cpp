@@ -123,7 +123,7 @@
 #include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
-#include "scene/gui/video_player.h"
+#include "scene/gui/video_stream_player.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
@@ -360,7 +360,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ItemList);
 
 	GDREGISTER_CLASS(LineEdit);
-	GDREGISTER_CLASS(VideoPlayer);
+	GDREGISTER_CLASS(VideoStreamPlayer);
 
 #ifndef ADVANCED_GUI_DISABLED
 	GDREGISTER_CLASS(FileDialog);
@@ -931,6 +931,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("KinematicBody2D", "CharacterBody2D");
 	ClassDB::add_compatibility_class("KinematicCollision", "KinematicCollision3D");
 	ClassDB::add_compatibility_class("Light", "Light3D");
+	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
 	ClassDB::add_compatibility_class("LineShape2D", "WorldBoundaryShape2D");
 	ClassDB::add_compatibility_class("Listener", "AudioListener3D");
 	ClassDB::add_compatibility_class("MeshInstance", "MeshInstance3D");
@@ -983,13 +984,17 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
+	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
 	ClassDB::add_compatibility_class("TextureProgress", "TextureProgressBar");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
+	ClassDB::add_compatibility_class("VideoPlayer", "VideoStreamPlayer");
 	ClassDB::add_compatibility_class("ViewportContainer", "SubViewportContainer");
 	ClassDB::add_compatibility_class("Viewport", "SubViewport");
 	ClassDB::add_compatibility_class("VisibilityEnabler", "VisibleOnScreenEnabler3D");
 	ClassDB::add_compatibility_class("VisibilityNotifier", "VisibleOnScreenNotifier3D");
+	ClassDB::add_compatibility_class("VisibilityNotifier2D", "VisibleOnScreenNotifier2D");
+	ClassDB::add_compatibility_class("VisibilityNotifier3D", "VisibleOnScreenNotifier3D");
 	ClassDB::add_compatibility_class("VisualServer", "RenderingServer");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
@@ -1007,11 +1012,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp");
 	ClassDB::add_compatibility_class("World", "World3D");
-	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
-	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
-	ClassDB::add_compatibility_class("VisibilityNotifier2D", "VisibleOnScreenNotifier2D");
-	ClassDB::add_compatibility_class("VisibilityNotifier3D", "VisibleOnScreenNotifier3D");
-
 #endif /* DISABLE_DEPRECATED */
 
 	OS::get_singleton()->yield(); // may take time to init

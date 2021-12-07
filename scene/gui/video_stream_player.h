@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  video_player.h                                                       */
+/*  video_stream_player.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VIDEO_PLAYER_H
-#define VIDEO_PLAYER_H
+#ifndef VIDEO_STREAM_PLAYER_H
+#define VIDEO_STREAM_PLAYER_H
 
 #include "scene/gui/control.h"
 #include "scene/resources/video_stream.h"
 #include "servers/audio/audio_rb_resampler.h"
 #include "servers/audio_server.h"
 
-class VideoPlayer : public Control {
-	GDCLASS(VideoPlayer, Control);
+class VideoStreamPlayer : public Control {
+	GDCLASS(VideoStreamPlayer, Control);
 
 	struct Output {
 		AudioFrame vol;
@@ -119,8 +119,8 @@ public:
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
 
-	VideoPlayer();
-	~VideoPlayer();
+	VideoStreamPlayer();
+	~VideoStreamPlayer();
 };
 
-#endif // VIDEO_PLAYER_H
+#endif // VIDEO_STREAM_PLAYER_H

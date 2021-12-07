@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  video_player.cpp                                                     */
+/*  video_stream_player.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "video_player.h"
+#include "video_stream_player.h"
 
 #include "core/os/os.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio_server.h"
 
-int VideoPlayer::sp_get_channel_count() const {
+int VideoStreamPlayer::sp_get_channel_count() const {
 	if (playback.is_null()) {
 		return 0;
 	}
@@ -42,7 +42,7 @@ int VideoPlayer::sp_get_channel_count() const {
 	return playback->get_channels();
 }
 
-bool VideoPlayer::mix(AudioFrame *p_buffer, int p_frames) {
+bool VideoStreamPlayer::mix(AudioFrame *p_buffer, int p_frames) {
 	// Check the amount resampler can really handle.
 	// If it cannot, wait "wait_resampler_phase_limit" times.
 	// This mechanism contributes to smoother pause/unpause operation.
@@ -56,11 +56,11 @@ bool VideoPlayer::mix(AudioFrame *p_buffer, int p_frames) {
 }
 
 // Called from main thread (e.g. VideoStreamPlaybackTheora::update).
-int VideoPlayer::_audio_mix_callback(void *p_udata, const float *p_data, int p_frames) {
+int VideoStreamPlayer::_audio_mix_callback(void *p_udata, const float *p_data, int p_frames) {
 	ERR_FAIL_NULL_V(p_udata, 0);
 	ERR_FAIL_NULL_V(p_data, 0);
 
-	VideoPlayer *vp = (VideoPlayer *)p_udata;
+	VideoStreamPlayer *vp = (VideoStreamPlayer *)p_udata;
 
 	int todo = MIN(vp->resampler.get_writer_space(), p_frames);
 
@@ -75,13 +75,13 @@ int VideoPlayer::_audio_mix_callback(void *p_udata, const float *p_data, int p_f
 	return todo;
 }
 
-void VideoPlayer::_mix_audios(void *p_self) {
+void VideoStreamPlayer::_mix_audios(void *p_self) {
 	ERR_FAIL_NULL(p_self);
-	reinterpret_cast<VideoPlayer *>(p_self)->_mix_audio();
+	reinterpret_cast<VideoStreamPlayer *>(p_self)->_mix_audio();
 }
 
 // Called from audio thread
-void VideoPlayer::_mix_audio() {
+void VideoStreamPlayer::_mix_audio() {
 	if (!stream.is_valid()) {
 		return;
 	}
@@ -126,7 +126,7 @@ void VideoPlayer::_mix_audio() {
 	}
 }
 
-void VideoPlayer::_notification(int p_notification) {
+void VideoStreamPlayer::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
 			AudioServer::get_singleton()->add_mix_callback(_mix_audios, this);
@@ -180,7 +180,7 @@ void VideoPlayer::_notification(int p_notification) {
 	};
 };
 
-Size2 VideoPlayer::get_minimum_size() const {
+Size2 VideoStreamPlayer::get_minimum_size() const {
 	if (!expand && !texture.is_null()) {
 		return texture->get_size();
 	} else {
@@ -188,17 +188,17 @@ Size2 VideoPlayer::get_minimum_size() const {
 	}
 }
 
-void VideoPlayer::set_expand(bool p_expand) {
+void VideoStreamPlayer::set_expand(bool p_expand) {
 	expand = p_expand;
 	update();
 	update_minimum_size();
 }
 
-bool VideoPlayer::has_expand() const {
+bool VideoStreamPlayer::has_expand() const {
 	return expand;
 }
 
-void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
+void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	stop();
 
 	AudioServer::get_singleton()->lock();
@@ -245,11 +245,11 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	}
 };
 
-Ref<VideoStream> VideoPlayer::get_stream() const {
+Ref<VideoStream> VideoStreamPlayer::get_stream() const {
 	return stream;
 };
 
-void VideoPlayer::play() {
+void VideoStreamPlayer::play() {
 	ERR_FAIL_COND(!is_inside_tree());
 	if (playback.is_null()) {
 		return;
@@ -262,7 +262,7 @@ void VideoPlayer::play() {
 	last_audio_time = 0;
 };
 
-void VideoPlayer::stop() {
+void VideoStreamPlayer::stop() {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -277,7 +277,7 @@ void VideoPlayer::stop() {
 	last_audio_time = 0;
 };
 
-bool VideoPlayer::is_playing() const {
+bool VideoStreamPlayer::is_playing() const {
 	if (playback.is_null()) {
 		return false;
 	}
@@ -285,7 +285,7 @@ bool VideoPlayer::is_playing() const {
 	return playback->is_playing();
 };
 
-void VideoPlayer::set_paused(bool p_paused) {
+void VideoStreamPlayer::set_paused(bool p_paused) {
 	paused = p_paused;
 	if (playback.is_valid()) {
 		playback->set_paused(p_paused);
@@ -294,35 +294,35 @@ void VideoPlayer::set_paused(bool p_paused) {
 	last_audio_time = 0;
 };
 
-bool VideoPlayer::is_paused() const {
+bool VideoStreamPlayer::is_paused() const {
 	return paused;
 }
 
-void VideoPlayer::set_buffering_msec(int p_msec) {
+void VideoStreamPlayer::set_buffering_msec(int p_msec) {
 	buffering_ms = p_msec;
 }
 
-int VideoPlayer::get_buffering_msec() const {
+int VideoStreamPlayer::get_buffering_msec() const {
 	return buffering_ms;
 }
 
-void VideoPlayer::set_audio_track(int p_track) {
+void VideoStreamPlayer::set_audio_track(int p_track) {
 	audio_track = p_track;
 }
 
-int VideoPlayer::get_audio_track() const {
+int VideoStreamPlayer::get_audio_track() const {
 	return audio_track;
 }
 
-void VideoPlayer::set_volume(float p_vol) {
+void VideoStreamPlayer::set_volume(float p_vol) {
 	volume = p_vol;
 };
 
-float VideoPlayer::get_volume() const {
+float VideoStreamPlayer::get_volume() const {
 	return volume;
 };
 
-void VideoPlayer::set_volume_db(float p_db) {
+void VideoStreamPlayer::set_volume_db(float p_db) {
 	if (p_db < -79) {
 		set_volume(0);
 	} else {
@@ -330,7 +330,7 @@ void VideoPlayer::set_volume_db(float p_db) {
 	}
 };
 
-float VideoPlayer::get_volume_db() const {
+float VideoStreamPlayer::get_volume_db() const {
 	if (volume == 0) {
 		return -80;
 	} else {
@@ -338,27 +338,27 @@ float VideoPlayer::get_volume_db() const {
 	}
 };
 
-String VideoPlayer::get_stream_name() const {
+String VideoStreamPlayer::get_stream_name() const {
 	if (stream.is_null()) {
 		return "<No Stream>";
 	}
 	return stream->get_name();
 };
 
-float VideoPlayer::get_stream_position() const {
+float VideoStreamPlayer::get_stream_position() const {
 	if (playback.is_null()) {
 		return 0;
 	}
 	return playback->get_playback_position();
 };
 
-void VideoPlayer::set_stream_position(float p_position) {
+void VideoStreamPlayer::set_stream_position(float p_position) {
 	if (playback.is_valid()) {
 		playback->seek(p_position);
 	}
 }
 
-Ref<Texture2D> VideoPlayer::get_video_texture() const {
+Ref<Texture2D> VideoStreamPlayer::get_video_texture() const {
 	if (playback.is_valid()) {
 		return playback->get_texture();
 	}
@@ -366,22 +366,22 @@ Ref<Texture2D> VideoPlayer::get_video_texture() const {
 	return Ref<Texture2D>();
 }
 
-void VideoPlayer::set_autoplay(bool p_enable) {
+void VideoStreamPlayer::set_autoplay(bool p_enable) {
 	autoplay = p_enable;
 };
 
-bool VideoPlayer::has_autoplay() const {
+bool VideoStreamPlayer::has_autoplay() const {
 	return autoplay;
 };
 
-void VideoPlayer::set_bus(const StringName &p_bus) {
+void VideoStreamPlayer::set_bus(const StringName &p_bus) {
 	//if audio is active, must lock this
 	AudioServer::get_singleton()->lock();
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();
 }
 
-StringName VideoPlayer::get_bus() const {
+StringName VideoStreamPlayer::get_bus() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == bus) {
 			return bus;
@@ -390,7 +390,7 @@ StringName VideoPlayer::get_bus() const {
 	return "Master";
 }
 
-void VideoPlayer::_validate_property(PropertyInfo &p_property) const {
+void VideoStreamPlayer::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "bus") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
@@ -405,45 +405,45 @@ void VideoPlayer::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void VideoPlayer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &VideoPlayer::set_stream);
-	ClassDB::bind_method(D_METHOD("get_stream"), &VideoPlayer::get_stream);
+void VideoStreamPlayer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &VideoStreamPlayer::set_stream);
+	ClassDB::bind_method(D_METHOD("get_stream"), &VideoStreamPlayer::get_stream);
 
-	ClassDB::bind_method(D_METHOD("play"), &VideoPlayer::play);
-	ClassDB::bind_method(D_METHOD("stop"), &VideoPlayer::stop);
+	ClassDB::bind_method(D_METHOD("play"), &VideoStreamPlayer::play);
+	ClassDB::bind_method(D_METHOD("stop"), &VideoStreamPlayer::stop);
 
-	ClassDB::bind_method(D_METHOD("is_playing"), &VideoPlayer::is_playing);
+	ClassDB::bind_method(D_METHOD("is_playing"), &VideoStreamPlayer::is_playing);
 
-	ClassDB::bind_method(D_METHOD("set_paused", "paused"), &VideoPlayer::set_paused);
-	ClassDB::bind_method(D_METHOD("is_paused"), &VideoPlayer::is_paused);
+	ClassDB::bind_method(D_METHOD("set_paused", "paused"), &VideoStreamPlayer::set_paused);
+	ClassDB::bind_method(D_METHOD("is_paused"), &VideoStreamPlayer::is_paused);
 
-	ClassDB::bind_method(D_METHOD("set_volume", "volume"), &VideoPlayer::set_volume);
-	ClassDB::bind_method(D_METHOD("get_volume"), &VideoPlayer::get_volume);
+	ClassDB::bind_method(D_METHOD("set_volume", "volume"), &VideoStreamPlayer::set_volume);
+	ClassDB::bind_method(D_METHOD("get_volume"), &VideoStreamPlayer::get_volume);
 
-	ClassDB::bind_method(D_METHOD("set_volume_db", "db"), &VideoPlayer::set_volume_db);
-	ClassDB::bind_method(D_METHOD("get_volume_db"), &VideoPlayer::get_volume_db);
+	ClassDB::bind_method(D_METHOD("set_volume_db", "db"), &VideoStreamPlayer::set_volume_db);
+	ClassDB::bind_method(D_METHOD("get_volume_db"), &VideoStreamPlayer::get_volume_db);
 
-	ClassDB::bind_method(D_METHOD("set_audio_track", "track"), &VideoPlayer::set_audio_track);
-	ClassDB::bind_method(D_METHOD("get_audio_track"), &VideoPlayer::get_audio_track);
+	ClassDB::bind_method(D_METHOD("set_audio_track", "track"), &VideoStreamPlayer::set_audio_track);
+	ClassDB::bind_method(D_METHOD("get_audio_track"), &VideoStreamPlayer::get_audio_track);
 
-	ClassDB::bind_method(D_METHOD("get_stream_name"), &VideoPlayer::get_stream_name);
+	ClassDB::bind_method(D_METHOD("get_stream_name"), &VideoStreamPlayer::get_stream_name);
 
-	ClassDB::bind_method(D_METHOD("set_stream_position", "position"), &VideoPlayer::set_stream_position);
-	ClassDB::bind_method(D_METHOD("get_stream_position"), &VideoPlayer::get_stream_position);
+	ClassDB::bind_method(D_METHOD("set_stream_position", "position"), &VideoStreamPlayer::set_stream_position);
+	ClassDB::bind_method(D_METHOD("get_stream_position"), &VideoStreamPlayer::get_stream_position);
 
-	ClassDB::bind_method(D_METHOD("set_autoplay", "enabled"), &VideoPlayer::set_autoplay);
-	ClassDB::bind_method(D_METHOD("has_autoplay"), &VideoPlayer::has_autoplay);
+	ClassDB::bind_method(D_METHOD("set_autoplay", "enabled"), &VideoStreamPlayer::set_autoplay);
+	ClassDB::bind_method(D_METHOD("has_autoplay"), &VideoStreamPlayer::has_autoplay);
 
-	ClassDB::bind_method(D_METHOD("set_expand", "enable"), &VideoPlayer::set_expand);
-	ClassDB::bind_method(D_METHOD("has_expand"), &VideoPlayer::has_expand);
+	ClassDB::bind_method(D_METHOD("set_expand", "enable"), &VideoStreamPlayer::set_expand);
+	ClassDB::bind_method(D_METHOD("has_expand"), &VideoStreamPlayer::has_expand);
 
-	ClassDB::bind_method(D_METHOD("set_buffering_msec", "msec"), &VideoPlayer::set_buffering_msec);
-	ClassDB::bind_method(D_METHOD("get_buffering_msec"), &VideoPlayer::get_buffering_msec);
+	ClassDB::bind_method(D_METHOD("set_buffering_msec", "msec"), &VideoStreamPlayer::set_buffering_msec);
+	ClassDB::bind_method(D_METHOD("get_buffering_msec"), &VideoStreamPlayer::get_buffering_msec);
 
-	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &VideoPlayer::set_bus);
-	ClassDB::bind_method(D_METHOD("get_bus"), &VideoPlayer::get_bus);
+	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &VideoStreamPlayer::set_bus);
+	ClassDB::bind_method(D_METHOD("get_bus"), &VideoStreamPlayer::get_bus);
 
-	ClassDB::bind_method(D_METHOD("get_video_texture"), &VideoPlayer::get_video_texture);
+	ClassDB::bind_method(D_METHOD("get_video_texture"), &VideoStreamPlayer::get_video_texture);
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
@@ -461,9 +461,9 @@ void VideoPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 }
 
-VideoPlayer::VideoPlayer() {}
+VideoStreamPlayer::VideoStreamPlayer() {}
 
-VideoPlayer::~VideoPlayer() {
+VideoStreamPlayer::~VideoStreamPlayer() {
 	//	if (stream_rid.is_valid())
 	//		AudioServer::get_singleton()->free(stream_rid);
 	resampler.clear(); //Not necessary here, but make in consistent with other "stream_player" classes

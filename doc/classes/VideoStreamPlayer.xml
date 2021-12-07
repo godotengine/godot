@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VideoPlayer" inherits="Control" version="4.0">
+<class name="VideoStreamPlayer" inherits="Control" version="4.0">
 	<brief_description>
 		Control for playing video streams.
 	</brief_description>
 	<description>
 		Control node for playing video streams using [VideoStream] resources.
 		Supported video formats are [url=https://www.theora.org/]Ogg Theora[/url] ([code].ogv[/code], [VideoStreamTheora]) and any format exposed via a GDNative plugin using [VideoStreamGDNative].
-		[b]Note:[/b] Due to a bug, VideoPlayer does not support localization remapping yet.
+		[b]Note:[/b] Due to a bug, VideoStreamPlayer does not support localization remapping yet.
 		[b]Warning:[/b] On HTML5, video playback [i]will[/i] perform poorly due to missing architecture-specific assembly optimizations.
 	</description>
 	<tutorials>
