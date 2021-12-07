@@ -65,6 +65,16 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 		return VK_FALSE;
 	}
 
+	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid") != nullptr) {
+		return VK_FALSE;
+	}
+	if (strstr(pCallbackData->pMessage, "invalid layer manifest file") != nullptr) {
+		return VK_FALSE;
+	}
+	if (strstr(pCallbackData->pMessage, "must be in the StorageBuffer, Uniform, or UniformConstant storage class") != nullptr) {
+		return VK_FALSE;
+	}
+
 	// This needs to be ignored because Validator is wrong here.
 	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid: Pointer operand") != nullptr &&
 			strstr(pCallbackData->pMessage, "must be a memory object") != nullptr) {
