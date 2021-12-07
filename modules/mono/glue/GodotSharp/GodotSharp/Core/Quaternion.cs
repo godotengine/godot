@@ -377,7 +377,7 @@ namespace Godot
         /// <param name="basis">The <see cref="Basis"/> to construct from.</param>
         public Quaternion(Basis basis)
         {
-            this = basis.Quaternion();
+            this = basis.GetQuaternion();
         }
 
         /// <summary>
