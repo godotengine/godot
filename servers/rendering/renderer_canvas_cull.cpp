@@ -501,14 +501,14 @@ void RendererCanvasCull::canvas_item_set_light_mask(RID p_item, int p_mask) {
 }
 
 void RendererCanvasCull::canvas_item_set_visibility_layer(RID p_item, uint32_t p_layer) {
-	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->visibility_layer = p_layer;
 }
 
 void RendererCanvasCull::canvas_item_set_cull_children(RID p_item, bool p_enable) {
-	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->cull_children = p_enable;
