@@ -3540,8 +3540,7 @@ EditorInspector::EditorInspector() {
 	main_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_vbox->add_theme_constant_override("separation", 0);
 	add_child(main_vbox);
-	set_enable_h_scroll(false);
-	set_enable_v_scroll(true);
+	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
 
 	wide_editors = false;
 	show_categories = false;

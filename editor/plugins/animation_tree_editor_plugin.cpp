@@ -226,8 +226,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	AnimationNodeAnimation::get_editable_animation_list = get_animation_list;
 	path_edit = memnew(ScrollContainer);
 	add_child(path_edit);
-	path_edit->set_enable_h_scroll(true);
-	path_edit->set_enable_v_scroll(false);
+	path_edit->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	path_hb = memnew(HBoxContainer);
 	path_edit->add_child(path_hb);
 	path_hb->add_child(memnew(Label(TTR("Path:"))));

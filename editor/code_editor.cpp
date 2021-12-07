@@ -1854,7 +1854,7 @@ CodeTextEditor::CodeTextEditor() {
 	ScrollContainer *scroll = memnew(ScrollContainer);
 	scroll->set_h_size_flags(SIZE_EXPAND_FILL);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	scroll->set_enable_v_scroll(false);
+	scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	status_bar->add_child(scroll);
 
 	error = memnew(Label);
