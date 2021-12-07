@@ -303,9 +303,17 @@ Help(opts.GenerateHelpText(env_base))
 # Detect and print a warning listing unknown SCons variables to ease troubleshooting.
 unknown = opts.UnknownVariables()
 if unknown:
-    print("WARNING: Unknown SCons variables were passed and will be ignored:")
+    ignored = []
     for item in unknown.items():
-        print("    " + item[0] + "=" + item[1])
+        # Some options are expected to be unrecognized when
+        # passed to the argument list, so we simply skip those.
+        if item[0] == "profile":
+            continue
+        ignored.append(item)
+    if ignored:
+        print("WARNING: Unknown SCons variables were passed and will be ignored:")
+        for item in ignored:
+            print("    " + item[0] + "=" + item[1])
 
 # add default include paths
 
