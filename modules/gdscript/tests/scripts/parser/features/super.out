@@ -1,4 +1,20 @@
 GDTEST_OK
+>> WARNING
+>> Line: 16
+>> SHADOWED_FUNCTION
+>> The function 'greet' has the same name as a parent class.
+>> WARNING
+>> Line: 20
+>> SHADOWED_FUNCTION
+>> The function 'say' has the same name as a parent class.
+>> WARNING
+>> Line: 28
+>> SHADOWED_FUNCTION
+>> The function 'greet' has the same name as a parent class.
+>> WARNING
+>> Line: 38
+>> SHADOWED_FUNCTION
+>> The function 'say' has the same name as a parent class.
 hello
 S Greeted say something foo
 

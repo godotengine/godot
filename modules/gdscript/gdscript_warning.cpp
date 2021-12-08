@@ -152,6 +152,10 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(3);
 			return vformat(R"(The %s '%s' has the same name as a %s.)", symbols[0], symbols[1], symbols[2]);
 		}
+		case SHADOWED_FUNCTION: {
+			CHECK_SYMBOLS(2);
+			return vformat(R"(The function '%s' has the same name as a %s.)", symbols[0], symbols[1]);
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -199,6 +203,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"REDUNDANT_AWAIT",
 		"EMPTY_FILE",
 		"SHADOWED_GLOBAL_IDENTIFIER",
+		"SHADOWED_FUNCTION",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
