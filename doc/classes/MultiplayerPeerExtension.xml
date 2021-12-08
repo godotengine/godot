@@ -10,16 +10,19 @@
 		<method name="_get_available_packet_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Returns the available packet count.
 			</description>
 		</method>
 		<method name="_get_connection_status" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Returns the current state of the connection. See [enum ConnectionStatus].
 			</description>
 		</method>
 		<method name="_get_max_packet_size" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Returns the max packet size.
 			</description>
 		</method>
 		<method name="_get_packet" qualifiers="virtual">
@@ -27,41 +30,49 @@
 			<argument index="0" name="r_buffer" type="const uint8_t **" />
 			<argument index="1" name="r_buffer_size" type="int32_t*" />
 			<description>
+				Returns the packet.
 			</description>
 		</method>
 		<method name="_get_packet_peer" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Returns the ID of the [MultiplayerPeerExtension] who sent the most recent packet.
 			</description>
 		</method>
 		<method name="_get_transfer_channel" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-			</description>
+			Returns the transfer channel.
+		</description>
 		</method>
 		<method name="_get_transfer_mode" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Returns the transfer mode.
 			</description>
 		</method>
 		<method name="_get_unique_id" qualifiers="virtual const">
 			<return type="int" />
 			<description>
+				Returns the ID of this [MultiplayerPeer].
 			</description>
 		</method>
 		<method name="_is_refusing_new_connections" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
+				Returns true if it's refusing new connections.
 			</description>
 		</method>
 		<method name="_is_server" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
+				Returns true if the server is implemented.
 			</description>
 		</method>
 		<method name="_poll" qualifiers="virtual">
 			<return type="int" />
 			<description>
+				Waits up to 1 second to receive a new network event.
 			</description>
 		</method>
 		<method name="_put_packet" qualifiers="virtual">
@@ -75,12 +86,15 @@
 			<return type="void" />
 			<argument index="0" name="p_enable" type="bool" />
 			<description>
+				Sets the enable to refuse new connections.
 			</description>
 		</method>
 		<method name="_set_target_peer" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="p_peer" type="int" />
 			<description>
+				Sets the peer to which packets will be sent.
+				The [code]id[/code] can be one of: [constant TARGET_PEER_BROADCAST] to send to all connected peers, [constant TARGET_PEER_SERVER] to send to the peer acting as server, a valid peer ID to send to that specific peer, a negative peer ID to send to all peers except that one. By default, the target peer is [constant TARGET_PEER_BROADCAST].
 			</description>
 		</method>
 		<method name="_set_transfer_channel" qualifiers="virtual">
