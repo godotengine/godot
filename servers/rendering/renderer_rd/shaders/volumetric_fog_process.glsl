@@ -581,16 +581,29 @@ void main() {
 
 						if (spot_lights.data[light_index].shadow_enabled) {
 							//has shadow
-							vec4 v = vec4(view_pos, 1.0);
+							vec4 uv_rect = spot_lights.data[light_index].atlas_rect;
+							vec2 flip_offset = spot_lights.data[light_index].direction.xy;
 
-							vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
-							splane /= splane.w;
+							vec3 local_vert = (spot_lights.data[light_index].shadow_matrix * vec4(view_pos, 1.0)).xyz;
 
-							float depth = texture(sampler2D(shadow_atlas, linear_sampler), splane.xy).r;
+							float shadow_len = length(local_vert); //need to remember shadow len from here
+							vec3 shadow_sample = normalize(local_vert);
 
-							shadow_attenuation = exp(min(0.0, (depth - splane.z)) / spot_lights.data[light_index].inv_radius * spot_lights.data[light_index].shadow_volumetric_fog_fade);
+							if (shadow_sample.z >= 0.0) {
+								uv_rect.xy += flip_offset;
+							}
+
+							shadow_sample.z = 1.0 + abs(shadow_sample.z);
+							vec3 pos = vec3(shadow_sample.xy / shadow_sample.z, shadow_len - spot_lights.data[light_index].shadow_bias);
+							pos.z *= spot_lights.data[light_index].inv_radius;
+
+							pos.xy = pos.xy * 0.5 + 0.5;
+							pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
+
+							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
+
+							shadow_attenuation = exp(min(0.0, (depth - pos.z)) / spot_lights.data[light_index].inv_radius * spot_lights.data[light_index].shadow_volumetric_fog_fade);
 						}
-
 						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_rel_vec), normalize(view_pos)), params.phase_g);
 					}
 				}
