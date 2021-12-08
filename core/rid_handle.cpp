@@ -73,9 +73,15 @@ String RID_Database::_rid_to_string(const RID &p_rid, const PoolElement &p_pe) {
 	s += "PE [ rev " + itos(p_pe.revision) + " ] ";
 #ifdef RID_HANDLE_ALLOCATION_TRACKING_ENABLED
 	if (p_pe.filename) {
-		s += String(p_pe.filename) + " ";
+		s += String(p_pe.filename).get_file() + " ";
 	}
 	s += "line " + itos(p_pe.line_number);
+
+	if (p_pe.previous_filename) {
+		s += " ( prev ";
+		s += String(p_pe.previous_filename).get_file() + " ";
+		s += "line " + itos(p_pe.previous_line_number) + " )";
+	}
 #endif
 	return s;
 }
@@ -186,6 +192,11 @@ void RID_Database::handle_make_rid(RID &r_rid, RID_Data *p_data, RID_OwnerBase *
 	r_rid._revision = pe->revision;
 
 #ifdef RID_HANDLE_ALLOCATION_TRACKING_ENABLED
+	// make a note of the previous allocation - this isn't super necessary
+	// but can pinpoint source allocations when dangling RIDs occur.
+	pe->previous_filename = pe->filename;
+	pe->previous_line_number = pe->line_number;
+
 	pe->line_number = 0;
 	pe->filename = nullptr;
 #endif
@@ -230,8 +241,7 @@ RID_Data *RID_Database::handle_get_or_null(const RID &p_rid) {
 
 		const PoolElement &pe = _pool[p_rid._id];
 		if (pe.revision != p_rid._revision) {
-			print_verbose("RID revision incorrect : " + _rid_to_string(p_rid, pe));
-			ERR_FAIL_COND_V_MSG(pe.revision != p_rid._revision, nullptr, "RID_Database get_or_null, revision is incorrect, object possibly freed before use.");
+			ERR_FAIL_COND_V_MSG(pe.revision != p_rid._revision, nullptr, "RID get_or_null, revision is incorrect, possible dangling RID. " + _rid_to_string(p_rid, pe));
 		}
 
 		return pe.data;
