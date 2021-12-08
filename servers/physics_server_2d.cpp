@@ -685,6 +685,10 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_state", "body", "state", "value"), &PhysicsServer2D::body_set_state);
 	ClassDB::bind_method(D_METHOD("body_get_state", "body", "state"), &PhysicsServer2D::body_get_state);
 
+	ClassDB::bind_method(D_METHOD("body_calculate_central_impulse_result", "body", "impulse"), &PhysicsServer2D::body_calculate_central_impulse_result);
+	ClassDB::bind_method(D_METHOD("body_calculate_torque_impulse_result", "body", "torque"), &PhysicsServer2D::body_calculate_torque_impulse_result);
+	ClassDB::bind_method(D_METHOD("body_calculate_bias_torque_impulse_result", "body", "impulse", "position"), &PhysicsServer2D::body_calculate_bias_torque_impulse_result);
+
 	ClassDB::bind_method(D_METHOD("body_apply_central_impulse", "body", "impulse"), &PhysicsServer2D::body_apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_torque_impulse", "body", "impulse"), &PhysicsServer2D::body_apply_torque_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_impulse", "body", "impulse", "position"), &PhysicsServer2D::body_apply_impulse, Vector2());

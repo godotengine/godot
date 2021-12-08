@@ -288,6 +288,10 @@ public:
 	void set_continuous_collision_detection_mode(CCDMode p_mode);
 	CCDMode get_continuous_collision_detection_mode() const;
 
+	Vector2 calculate_central_impulse_result(const Vector2 &p_impulse) const;
+	real_t calculate_torque_impulse_result(real_t p_torque) const;
+	real_t calculate_bias_torque_impulse_result(const Vector2 &p_impulse, const Vector2 &p_position) const;
+
 	void apply_central_impulse(const Vector2 &p_impulse);
 	void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2());
 	void apply_torque_impulse(real_t p_torque);

@@ -221,23 +221,35 @@ public:
 	_FORCE_INLINE_ void set_biased_angular_velocity(real_t p_velocity) { biased_angular_velocity = p_velocity; }
 	_FORCE_INLINE_ real_t get_biased_angular_velocity() const { return biased_angular_velocity; }
 
+	_FORCE_INLINE_ Vector2 calculate_central_impulse_result(const Vector2 &p_impulse) const {
+		return p_impulse * _inv_mass;
+	}
+
+	_FORCE_INLINE_ real_t calculate_torque_impulse_result(real_t p_torque) const {
+		return _inv_inertia * p_torque;
+	}
+
+	_FORCE_INLINE_ real_t calculate_bias_torque_impulse_result(const Vector2 &p_impulse, const Vector2 &p_position) const {
+		return _inv_inertia * (p_position - center_of_mass).cross(p_impulse);
+	}
+
 	_FORCE_INLINE_ void apply_central_impulse(const Vector2 &p_impulse) {
-		linear_velocity += p_impulse * _inv_mass;
+		linear_velocity += calculate_central_impulse_result(p_impulse);
 	}
 
 	_FORCE_INLINE_ void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) {
-		linear_velocity += p_impulse * _inv_mass;
-		angular_velocity += _inv_inertia * (p_position - center_of_mass).cross(p_impulse);
+		linear_velocity += calculate_central_impulse_result(p_impulse);
+		angular_velocity += calculate_bias_torque_impulse_result(p_impulse, p_position);
 	}
 
 	_FORCE_INLINE_ void apply_torque_impulse(real_t p_torque) {
-		angular_velocity += _inv_inertia * p_torque;
+		angular_velocity += calculate_torque_impulse_result(p_torque);
 	}
 
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2(), real_t p_max_delta_av = -1.0) {
-		biased_linear_velocity += p_impulse * _inv_mass;
+		biased_linear_velocity += calculate_central_impulse_result(p_impulse);
 		if (p_max_delta_av != 0.0) {
-			real_t delta_av = _inv_inertia * (p_position - center_of_mass).cross(p_impulse);
+			real_t delta_av = calculate_bias_torque_impulse_result(p_impulse, p_position);
 			if (p_max_delta_av > 0 && delta_av > p_max_delta_av) {
 				delta_av = p_max_delta_av;
 			}

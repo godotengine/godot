@@ -430,6 +430,10 @@ public:
 	virtual void body_add_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position = Vector2()) = 0;
 	virtual void body_add_torque(RID p_body, real_t p_torque) = 0;
 
+	virtual Vector2 body_calculate_central_impulse_result(RID p_body, const Vector2 &p_impulse) const = 0;
+	virtual real_t body_calculate_torque_impulse_result(RID p_body, real_t p_torque) const = 0;
+	virtual real_t body_calculate_bias_torque_impulse_result(RID p_body, const Vector2 &p_impulse, const Vector2 &p_position) const = 0;
+
 	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) = 0;
 	virtual void body_apply_torque_impulse(RID p_body, real_t p_torque) = 0;
 	virtual void body_apply_impulse(RID p_body, const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) = 0;

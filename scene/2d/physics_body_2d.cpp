@@ -797,6 +797,18 @@ int RigidDynamicBody2D::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
+Vector2 RigidDynamicBody2D::calculate_central_impulse_result(const Vector2 &p_impulse) const {
+	return PhysicsServer2D::get_singleton()->body_calculate_central_impulse_result(get_rid(), p_impulse);
+}
+
+real_t RigidDynamicBody2D::calculate_torque_impulse_result(real_t p_torque) const {
+	return PhysicsServer2D::get_singleton()->body_calculate_torque_impulse_result(get_rid(), p_torque);
+}
+
+real_t RigidDynamicBody2D::calculate_bias_torque_impulse_result(const Vector2 &p_impulse, const Vector2 &p_position) const {
+	return PhysicsServer2D::get_singleton()->body_calculate_bias_torque_impulse_result(get_rid(), p_impulse, p_position);
+}
+
 void RigidDynamicBody2D::apply_central_impulse(const Vector2 &p_impulse) {
 	PhysicsServer2D::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
 }
@@ -973,6 +985,10 @@ void RigidDynamicBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_continuous_collision_detection_mode", "mode"), &RigidDynamicBody2D::set_continuous_collision_detection_mode);
 	ClassDB::bind_method(D_METHOD("get_continuous_collision_detection_mode"), &RigidDynamicBody2D::get_continuous_collision_detection_mode);
+
+	ClassDB::bind_method(D_METHOD("calculate_central_impulse_result", "impulse"), &RigidDynamicBody2D::calculate_central_impulse_result);
+	ClassDB::bind_method(D_METHOD("calculate_torque_impulse_result", "torque"), &RigidDynamicBody2D::calculate_torque_impulse_result);
+	ClassDB::bind_method(D_METHOD("calculate_bias_torque_impulse_result", "impulse", "position"), &RigidDynamicBody2D::calculate_bias_torque_impulse_result);
 
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidDynamicBody2D::set_axis_velocity);
 	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidDynamicBody2D::apply_central_impulse, Vector2());

@@ -782,6 +782,27 @@ real_t GodotPhysicsServer2D::body_get_applied_torque(RID p_body) const {
 	return body->get_applied_torque();
 };
 
+Vector2 GodotPhysicsServer2D::body_calculate_central_impulse_result(RID p_body, const Vector2 &p_impulse) const {
+	GodotBody2D* body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND_V(!body, Vector2());
+
+	return body->calculate_central_impulse_result(p_impulse);
+}
+
+real_t GodotPhysicsServer2D::body_calculate_torque_impulse_result(RID p_body, real_t p_torque) const {
+	GodotBody2D* body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->calculate_torque_impulse_result(p_torque);
+}
+
+real_t GodotPhysicsServer2D::body_calculate_bias_torque_impulse_result(RID p_body, const Vector2 &p_impulse, const Vector2 &p_position) const {
+	GodotBody2D* body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->calculate_bias_torque_impulse_result(p_impulse, p_position);
+};
+
 void GodotPhysicsServer2D::body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
