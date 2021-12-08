@@ -2485,7 +2485,7 @@ String VisualScriptEditor::get_name() {
 	if (name.empty()) {
 		// This appears for newly created built-in scripts before saving the scene.
 		name = TTR("[unsaved]");
-	} else if (script->get_path().find("local://") == -1 && script->get_path().find("::") == -1) {
+	} else if (script->get_path().find("local://") == -1 || script->get_path().find("::") == -1) {
 		const String &script_name = script->get_name();
 		if (script_name != "") {
 			// If the built-in script has a custom resource name defined,
