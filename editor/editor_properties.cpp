@@ -3065,7 +3065,7 @@ void EditorPropertyResource::update_property() {
 		if (res.is_valid() && get_edited_object()->editor_is_section_unfolded(get_edited_property())) {
 			if (!sub_inspector) {
 				sub_inspector = memnew(EditorInspector);
-				sub_inspector->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+				sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 				sub_inspector->set_use_doc_hints(true);
 
 				sub_inspector->set_sub_inspector(true);

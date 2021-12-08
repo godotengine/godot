@@ -2385,7 +2385,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	atlas_source_inspector = memnew(EditorInspector);
 	atlas_source_inspector->set_undo_redo(undo_redo);
-	atlas_source_inspector->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	atlas_source_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	atlas_source_inspector->edit(atlas_source_proxy_object);
 	middle_vbox_container->add_child(atlas_source_inspector);
 
