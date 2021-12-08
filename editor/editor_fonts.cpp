@@ -138,6 +138,34 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontFile> tamil_font = load_internal_font(_font_NotoSansTamilUI_Regular, _font_NotoSansTamilUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> telugu_font = load_internal_font(_font_NotoSansTeluguUI_Regular, _font_NotoSansTeluguUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> thai_font = load_internal_font(_font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+
+	// Han Fonts
+
+	Ref<FontFile> FontJapanese = load_internal_font(_font_NotoSansJP_Regular, _font_NotoSansJP_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	FontJapanese->set_language_support_override("ja_JP", true);
+	FontJapanese->set_language_support_override("ko_KR", false);
+	FontJapanese->set_language_support_override("zh_Hans_CN", false);
+	FontJapanese->set_language_support_override("zh_Hans_TW", false);
+
+	Ref<FontFile> FontKorean = load_internal_font(_font_NotoSansKR_Regular, _font_NotoSansKR_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	FontKorean->set_language_support_override("ja_JP", false);
+	FontKorean->set_language_support_override("ko_KR", true);
+	FontKorean->set_language_support_override("zh_Hans_CN", false);
+	FontKorean->set_language_support_override("zh_Hant_TW", false);
+
+	Ref<FontFile> FontChineseSimplified = load_internal_font(_font_NotoSansSC_Regular, _font_NotoSansSC_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	FontChineseSimplified->set_language_support_override("ja_JP", false);
+	FontChineseSimplified->set_language_support_override("ko_KR", false);
+	FontChineseSimplified->set_language_support_override("zh_Hans_CN", true);
+	FontChineseSimplified->set_language_support_override("zh_Hant_TW", false);
+
+	Ref<FontFile> FontChineseTraditional = load_internal_font(_font_NotoSansTC_Regular, _font_NotoSansTC_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	FontChineseTraditional->set_language_support_override("ja_JP", false);
+	FontChineseTraditional->set_language_support_override("ko_KR", false);
+	FontChineseTraditional->set_language_support_override("zh_Hans_CN", false);
+	FontChineseTraditional->set_language_support_override("zh_Hant_TW", true);
+	//
+
 	Ref<FontFile> fallback_font = load_internal_font(_font_DroidSansFallback, _font_DroidSansFallback_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	Ref<FontFile> japanese_font = load_internal_font(_font_DroidSansJapanese, _font_DroidSansJapanese_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
 	default_font->set_fallbacks(fallbacks);
@@ -158,6 +186,32 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontFile> tamil_font_bold = load_internal_font(_font_NotoSansTamilUI_Bold, _font_NotoSansTamilUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> telugu_font_bold = load_internal_font(_font_NotoSansTeluguUI_Bold, _font_NotoSansTeluguUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
 	Ref<FontFile> thai_font_bold = load_internal_font(_font_NotoSansThaiUI_Bold, _font_NotoSansThaiUI_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks_bold);
+
+	// Han Fonts
+	Ref<FontFile> FontJapaneseBold = load_internal_font(_font_NotoSansJP_Bold, _font_NotoSansJP_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	FontJapaneseBold->set_language_support_override("ja_JP", true);
+	FontJapaneseBold->set_language_support_override("ko_KR", false);
+	FontJapaneseBold->set_language_support_override("zh_Hans_CN", false);
+	FontJapaneseBold->set_language_support_override("zh_Hant_TW", false);
+
+	Ref<FontFile> FontKoreanBold = load_internal_font(_font_NotoSansKR_Bold, _font_NotoSansKR_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	FontKoreanBold->set_language_support_override("ja_JP", false);
+	FontKoreanBold->set_language_support_override("ko_KR", true);
+	FontKoreanBold->set_language_support_override("zh_Hans_CN", false);
+	FontKoreanBold->set_language_support_override("zh_Hant_TW", false);
+
+	Ref<FontFile> FontChineseSimplifiedBold = load_internal_font(_font_NotoSansSC_Bold, _font_NotoSansSC_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	FontChineseSimplifiedBold->set_language_support_override("ja_JP", false);
+	FontChineseSimplifiedBold->set_language_support_override("ko_KR", false);
+	FontChineseSimplifiedBold->set_language_support_override("zh_Hans_CN", true);
+	FontChineseSimplifiedBold->set_language_support_override("zh_Hant_TW", false);
+
+	Ref<FontFile> FontChineseTraditionalBold = load_internal_font(_font_NotoSansTC_Bold, _font_NotoSansTC_Bold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, &fallbacks);
+	FontChineseTraditionalBold->set_language_support_override("ja_JP", false);
+	FontChineseTraditionalBold->set_language_support_override("ko_KR", false);
+	FontChineseTraditionalBold->set_language_support_override("zh_Hans_CN", false);
+	FontChineseTraditionalBold->set_language_support_override("zh_Hant_TW", true);
+
 	Ref<FontVariation> fallback_font_bold = make_bold_font(fallback_font, embolden_strength, &fallbacks_bold);
 	Ref<FontVariation> japanese_font_bold = make_bold_font(japanese_font, embolden_strength, &fallbacks_bold);
 	default_font_bold->set_fallbacks(fallbacks_bold);
