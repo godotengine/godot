@@ -11,26 +11,36 @@
 		<link title="Ray-casting">$DOCS_URL/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<methods>
-		<method name="add_central_force">
+		<method name="add_constant_central_force">
 			<return type="void" />
-			<argument index="0" name="force" type="Vector2" />
+			<argument index="0" name="force" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Adds a constant directional force without affecting rotation.
+				Adds a constant directional force without affecting rotation that keeps being applied over time until cleared with [code]constant_force = Vector2(0, 0)[/code].
+				This is equivalent to using [method add_constant_force] at the body's center of mass.
 			</description>
 		</method>
-		<method name="add_force">
+		<method name="add_constant_force">
 			<return type="void" />
 			<argument index="0" name="force" type="Vector2" />
 			<argument index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Adds a positioned force to the body. Both the force and the offset from the body origin are in global coordinates.
+				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]constant_force = Vector2(0, 0)[/code].
+				[code]position[/code] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
-		<method name="add_torque">
+		<method name="add_constant_torque">
 			<return type="void" />
 			<argument index="0" name="torque" type="float" />
 			<description>
-				Adds a constant rotational force.
+				Adds a constant rotational force without affecting position that keeps being applied over time until cleared with [code]constant_torque = 0[/code].
+			</description>
+		</method>
+		<method name="apply_central_force">
+			<return type="void" />
+			<argument index="0" name="force" type="Vector2" default="Vector2(0, 0)" />
+			<description>
+				Applies a directional force without affecting rotation. A force is time dependent and meant to be applied every physics update.
+				This is equivalent to using [method apply_force] at the body's center of mass.
 			</description>
 		</method>
 		<method name="apply_central_impulse">
@@ -38,6 +48,17 @@
 			<argument index="0" name="impulse" type="Vector2" />
 			<description>
 				Applies a directional impulse without affecting rotation.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				This is equivalent to using [method apply_impulse] at the body's center of mass.
+			</description>
+		</method>
+		<method name="apply_force">
+			<return type="void" />
+			<argument index="0" name="force" type="Vector2" />
+			<argument index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<description>
+				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
+				[code]position[/code] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -45,14 +66,38 @@
 			<argument index="0" name="impulse" type="Vector2" />
 			<argument index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Applies a positioned impulse to the body. An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise). The offset uses the rotation of the global coordinate system, but is centered at the object's origin.
+				Applies a positioned impulse to the body.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				[code]position[/code] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="apply_torque">
+			<return type="void" />
+			<argument index="0" name="torque" type="float" />
+			<description>
+				Applies a rotational force without affecting position. A force is time dependent and meant to be applied every physics update.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
 			<return type="void" />
 			<argument index="0" name="impulse" type="float" />
 			<description>
-				Applies a rotational impulse to the body.
+				Applies a rotational impulse to the body without affecting the position.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+			</description>
+		</method>
+		<method name="get_constant_force" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the body's total constant positional forces applied during each physics update.
+				See [method add_constant_force] and [method add_constant_central_force].
+			</description>
+		</method>
+		<method name="get_constant_torque" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the body's total constant rotational forces applied during each physics update.
+				See [method add_constant_torque].
 			</description>
 		</method>
 		<method name="get_contact_collider" qualifiers="const">
@@ -142,6 +187,22 @@
 			<return type="void" />
 			<description>
 				Calls the built-in force integration code.
+			</description>
+		</method>
+		<method name="set_constant_force">
+			<return type="void" />
+			<argument index="0" name="force" type="Vector2" />
+			<description>
+				Sets the body's total constant positional forces applied during each physics update.
+				See [method add_constant_force] and [method add_constant_central_force].
+			</description>
+		</method>
+		<method name="set_constant_torque">
+			<return type="void" />
+			<argument index="0" name="torque" type="float" />
+			<description>
+				Sets the body's total constant rotational forces applied during each physics update.
+				See [method add_constant_torque].
 			</description>
 		</method>
 	</methods>

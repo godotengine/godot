@@ -89,6 +89,9 @@ class GodotBody2D : public GodotCollisionObject2D {
 	Vector2 applied_force;
 	real_t applied_torque = 0.0;
 
+	Vector2 constant_force;
+	real_t constant_torque = 0.0;
+
 	SelfList<GodotBody2D> active_list;
 	SelfList<GodotBody2D> mass_properties_update_list;
 	SelfList<GodotBody2D> direct_state_query_list;
@@ -245,6 +248,38 @@ public:
 		}
 	}
 
+	_FORCE_INLINE_ void apply_central_force(const Vector2 &p_force) {
+		applied_force += p_force;
+	}
+
+	_FORCE_INLINE_ void apply_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) {
+		applied_force += p_force;
+		applied_torque += (p_position - center_of_mass).cross(p_force);
+	}
+
+	_FORCE_INLINE_ void apply_torque(real_t p_torque) {
+		applied_torque += p_torque;
+	}
+
+	_FORCE_INLINE_ void add_constant_central_force(const Vector2 &p_force) {
+		constant_force += p_force;
+	}
+
+	_FORCE_INLINE_ void add_constant_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) {
+		constant_force += p_force;
+		constant_torque += (p_position - center_of_mass).cross(p_force);
+	}
+
+	_FORCE_INLINE_ void add_constant_torque(real_t p_torque) {
+		constant_torque += p_torque;
+	}
+
+	void set_constant_force(const Vector2 &p_force) { constant_force = p_force; }
+	Vector2 get_constant_force() const { return constant_force; }
+
+	void set_constant_torque(real_t p_torque) { constant_torque = p_torque; }
+	real_t get_constant_torque() const { return constant_torque; }
+
 	void set_active(bool p_active);
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
@@ -263,25 +298,6 @@ public:
 
 	void set_state(PhysicsServer2D::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer2D::BodyState p_state) const;
-
-	void set_applied_force(const Vector2 &p_force) { applied_force = p_force; }
-	Vector2 get_applied_force() const { return applied_force; }
-
-	void set_applied_torque(real_t p_torque) { applied_torque = p_torque; }
-	real_t get_applied_torque() const { return applied_torque; }
-
-	_FORCE_INLINE_ void add_central_force(const Vector2 &p_force) {
-		applied_force += p_force;
-	}
-
-	_FORCE_INLINE_ void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) {
-		applied_force += p_force;
-		applied_torque += (p_position - center_of_mass).cross(p_force);
-	}
-
-	_FORCE_INLINE_ void add_torque(real_t p_torque) {
-		applied_torque += p_torque;
-	}
 
 	_FORCE_INLINE_ void set_continuous_collision_detection_mode(PhysicsServer2D::CCDMode p_mode) { continuous_cd_mode = p_mode; }
 	_FORCE_INLINE_ PhysicsServer2D::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }

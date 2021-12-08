@@ -208,13 +208,6 @@
 				Sets the transform matrix for an area.
 			</description>
 		</method>
-		<method name="body_add_central_force">
-			<return type="void" />
-			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="force" type="Vector2" />
-			<description>
-			</description>
-		</method>
 		<method name="body_add_collision_exception">
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
@@ -223,13 +216,31 @@
 				Adds a body to the list of bodies exempt from collisions.
 			</description>
 		</method>
-		<method name="body_add_force">
+		<method name="body_add_constant_central_force">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="force" type="Vector2" />
+			<description>
+				Adds a constant directional force without affecting rotation that keeps being applied over time until cleared with [code]body_set_constant_force(body, Vector2(0, 0))[/code].
+				This is equivalent to using [method body_add_constant_force] at the body's center of mass.
+			</description>
+		</method>
+		<method name="body_add_constant_force">
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="force" type="Vector2" />
 			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Adds a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates. A force differs from an impulse in that, while the two are forces, the impulse clears itself after being applied.
+				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]body_set_constant_force(body, Vector2(0, 0))[/code].
+				[code]position[/code] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="body_add_constant_torque">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="torque" type="float" />
+			<description>
+				Adds a constant rotational force without affecting position that keeps being applied over time until cleared with [code]body_set_constant_torque(body, 0)[/code].
 			</description>
 		</method>
 		<method name="body_add_shape">
@@ -242,11 +253,13 @@
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
 		</method>
-		<method name="body_add_torque">
+		<method name="body_apply_central_force">
 			<return type="void" />
 			<argument index="0" name="body" type="RID" />
-			<argument index="1" name="torque" type="float" />
+			<argument index="1" name="force" type="Vector2" />
 			<description>
+				Applies a directional force without affecting rotation. A force is time dependent and meant to be applied every physics update.
+				This is equivalent to using [method body_apply_force] at the body's center of mass.
 			</description>
 		</method>
 		<method name="body_apply_central_impulse">
@@ -254,6 +267,19 @@
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="impulse" type="Vector2" />
 			<description>
+				Applies a directional impulse without affecting rotation.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				This is equivalent to using [method body_apply_impulse] at the body's center of mass.
+			</description>
+		</method>
+		<method name="body_apply_force">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="force" type="Vector2" />
+			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<description>
+				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
+				[code]position[/code] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="body_apply_impulse">
@@ -262,7 +288,17 @@
 			<argument index="1" name="impulse" type="Vector2" />
 			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Adds a positioned impulse to the applied force and torque. Both the force and the offset from the body origin are in global coordinates.
+				Applies a positioned impulse to the body.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				[code]position[/code] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="body_apply_torque">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="torque" type="float" />
+			<description>
+				Applies a rotational force without affecting position. A force is time dependent and meant to be applied every physics update.
 			</description>
 		</method>
 		<method name="body_apply_torque_impulse">
@@ -270,6 +306,8 @@
 			<argument index="0" name="body" type="RID" />
 			<argument index="1" name="impulse" type="float" />
 			<description>
+				Applies a rotational impulse to the body without affecting the position.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 			</description>
 		</method>
 		<method name="body_attach_canvas_instance_id">
@@ -318,6 +356,22 @@
 			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the physics layer or layers a body can collide with.
+			</description>
+		</method>
+		<method name="body_get_constant_force" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="body" type="RID" />
+			<description>
+				Returns the body's total constant positional forces applied during each physics update.
+				See [method body_add_constant_force] and [method body_add_constant_central_force].
+			</description>
+		</method>
+		<method name="body_get_constant_torque" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="body" type="RID" />
+			<description>
+				Returns the body's total constant rotational forces applied during each physics update.
+				See [method body_add_constant_torque].
 			</description>
 		</method>
 		<method name="body_get_continuous_collision_detection_mode" qualifiers="const">
@@ -453,6 +507,24 @@
 			<argument index="1" name="mask" type="int" />
 			<description>
 				Sets the physics layer or layers a body can collide with.
+			</description>
+		</method>
+		<method name="body_set_constant_force">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="force" type="Vector2" />
+			<description>
+				Sets the body's total constant positional forces applied during each physics update.
+				See [method body_add_constant_force] and [method body_add_constant_central_force].
+			</description>
+		</method>
+		<method name="body_set_constant_torque">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="torque" type="float" />
+			<description>
+				Sets the body's total constant rotational forces applied during each physics update.
+				See [method body_add_constant_torque].
 			</description>
 		</method>
 		<method name="body_set_continuous_collision_detection_mode">
