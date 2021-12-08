@@ -155,30 +155,30 @@ _FORCE_INLINE_ const String &TextEdit::Text::operator[](int p_line) const {
 
 void TextEdit::Text::_calculate_line_height() {
 	int height = 0;
-	for (int i = 0; i < text.size(); i++) {
+	for (const Line &l : text) {
 		// Found another line with the same height...nothing to update.
-		if (text[i].height == line_height) {
+		if (l.height == line_height) {
 			height = line_height;
 			break;
 		}
-		height = MAX(height, text[i].height);
+		height = MAX(height, l.height);
 	}
 	line_height = height;
 }
 
 void TextEdit::Text::_calculate_max_line_width() {
 	int width = 0;
-	for (int i = 0; i < text.size(); i++) {
-		if (is_hidden(i)) {
+	for (const Line &l : text) {
+		if (l.hidden) {
 			continue;
 		}
 
 		// Found another line with the same width...nothing to update.
-		if (text[i].width == max_width) {
+		if (l.width == max_width) {
 			width = max_width;
 			break;
 		}
-		width = MAX(width, text[i].width);
+		width = MAX(width, l.width);
 	}
 	max_width = width;
 }
@@ -216,7 +216,7 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_
 	// Update height.
 	const int old_height = text.write[p_line].height;
 	const int wrap_amount = get_line_wrap_amount(p_line);
-	int height = font->get_height(font_size);
+	int height = font_height;
 	for (int i = 0; i <= wrap_amount; i++) {
 		height = MAX(height, text[p_line].data_buf->get_line_size(i).y);
 	}
@@ -267,6 +267,13 @@ void TextEdit::Text::invalidate_all() {
 		return;
 	}
 
+	max_width = -1;
+	line_height = -1;
+
+	if (!font.is_null() && font_size > 0) {
+		font_height = font->get_height(font_size);
+	}
+
 	for (int i = 0; i < text.size(); i++) {
 		invalidate_cache(i);
 	}
@@ -275,7 +282,15 @@ void TextEdit::Text::invalidate_all() {
 
 void TextEdit::Text::clear() {
 	text.clear();
-	insert(0, "", Array());
+
+	max_width = -1;
+	line_height = -1;
+
+	Line line;
+	line.gutters.resize(gutter_count);
+	line.data = "";
+	text.insert(0, line);
+	invalidate_cache(0);
 }
 
 int TextEdit::Text::get_max_width() const {
@@ -290,30 +305,64 @@ void TextEdit::Text::set(int p_line, const String &p_text, const Array &p_bidi_o
 	invalidate_cache(p_line);
 }
 
-void TextEdit::Text::insert(int p_at, const String &p_text, const Array &p_bidi_override) {
-	Line line;
-	line.gutters.resize(gutter_count);
-	line.hidden = false;
-	line.data = p_text;
-	line.bidi_override = p_bidi_override;
-	text.insert(p_at, line);
+void TextEdit::Text::insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override) {
+	int new_line_count = p_text.size() - 1;
+	if (new_line_count > 0) {
+		text.resize(text.size() + new_line_count);
+		for (int i = (text.size() - 1); i > p_at; i--) {
+			if ((i - new_line_count) <= 0) {
+				break;
+			}
+			text.write[i] = text[i - new_line_count];
+		}
+	}
 
-	invalidate_cache(p_at);
+	for (int i = 0; i < p_text.size(); i++) {
+		if (i == 0) {
+			set(p_at + i, p_text[i], p_bidi_override[i]);
+			continue;
+		}
+		Line line;
+		line.gutters.resize(gutter_count);
+		line.data = p_text[i];
+		line.bidi_override = p_bidi_override[i];
+		text.write[p_at + i] = line;
+		invalidate_cache(p_at + i);
+	}
 }
 
-void TextEdit::Text::remove_at(int p_index) {
-	int height = text[p_index].height;
-	int width = text[p_index].width;
+void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
+	if (p_from_line == p_to_line) {
+		return;
+	}
 
-	text.remove_at(p_index);
+	bool dirty_height = false;
+	bool dirty_width = false;
+	for (int i = p_from_line; i < p_to_line; i++) {
+		if (!dirty_height && text[i].height == line_height) {
+			dirty_height = true;
+		}
 
-	// If this is the tallest line, we need to get the next tallest.
-	if (height == line_height) {
+		if (!dirty_width && text[i].width == max_width) {
+			dirty_width = true;
+		}
+
+		if (dirty_height && dirty_width) {
+			break;
+		}
+	}
+
+	int diff = (p_to_line - p_from_line);
+	for (int i = p_to_line; i < text.size() - 1; i++) {
+		text.write[(i - diff) + 1] = text[i + 1];
+	}
+	text.resize(text.size() - diff);
+
+	if (dirty_height) {
 		_calculate_line_height();
 	}
 
-	// If this is the longest line, we need to get the next longest.
-	if (width == max_width) {
+	if (dirty_width) {
 		_calculate_max_line_width();
 	}
 }
@@ -6289,11 +6338,11 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	ERR_FAIL_COND(p_char < 0);
 
 	/* STEP 1: Remove \r from source text and separate in substrings. */
-
-	Vector<String> substrings = p_text.replace("\r", "").split("\n");
+	const String text_to_insert = p_text.replace("\r", "");
+	Vector<String> substrings = text_to_insert.split("\n");
 
 	// Is this just a new empty line?
-	bool shift_first_line = p_char == 0 && p_text.replace("\r", "") == "\n";
+	bool shift_first_line = p_char == 0 && substrings.size() == 2 && text_to_insert == "\n";
 
 	/* STEP 2: Add spaces if the char is greater than the end of the line. */
 	while (p_char > text[p_line].length()) {
@@ -6301,23 +6350,18 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	}
 
 	/* STEP 3: Separate dest string in pre and post text. */
-
-	String preinsert_text = text[p_line].substr(0, p_char);
 	String postinsert_text = text[p_line].substr(p_char, text[p_line].size());
 
-	for (int j = 0; j < substrings.size(); j++) {
-		// Insert the substrings.
+	substrings.write[0] = text[p_line].substr(0, p_char) + substrings[0];
+	substrings.write[substrings.size() - 1] += postinsert_text;
 
-		if (j == 0) {
-			text.set(p_line, preinsert_text + substrings[j], structured_text_parser(st_parser, st_args, preinsert_text + substrings[j]));
-		} else {
-			text.insert(p_line + j, substrings[j], structured_text_parser(st_parser, st_args, substrings[j]));
-		}
-
-		if (j == substrings.size() - 1) {
-			text.set(p_line + j, text[p_line + j] + postinsert_text, structured_text_parser(st_parser, st_args, text[p_line + j] + postinsert_text));
-		}
+	Vector<Array> bidi_override;
+	bidi_override.resize(substrings.size());
+	for (int i = 0; i < substrings.size(); i++) {
+		bidi_override.write[i] = structured_text_parser(st_parser, st_args, substrings[i]);
 	}
+
+	text.insert(p_line, substrings, bidi_override);
 
 	if (shift_first_line) {
 		text.move_gutters(p_line, p_line + 1);
@@ -6351,7 +6395,7 @@ String TextEdit::_base_get_text(int p_from_line, int p_from_column, int p_to_lin
 	ERR_FAIL_COND_V(p_to_line < p_from_line, String()); // 'from > to'.
 	ERR_FAIL_COND_V(p_to_line == p_from_line && p_to_column < p_from_column, String()); // 'from > to'.
 
-	String ret;
+	StringBuilder ret;
 
 	for (int i = p_from_line; i <= p_to_line; i++) {
 		int begin = (i == p_from_line) ? p_from_column : 0;
@@ -6363,7 +6407,7 @@ String TextEdit::_base_get_text(int p_from_line, int p_from_column, int p_to_lin
 		ret += text[i].substr(begin, end - begin);
 	}
 
-	return ret;
+	return ret.as_string();
 }
 
 void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
@@ -6377,9 +6421,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 	String pre_text = text[p_from_line].substr(0, p_from_column);
 	String post_text = text[p_to_line].substr(p_to_column, text[p_to_line].length());
 
-	for (int i = p_from_line; i < p_to_line; i++) {
-		text.remove_at(p_from_line + 1);
-	}
+	text.remove_range(p_from_line, p_to_line);
 	text.set(p_from_line, pre_text + post_text, structured_text_parser(st_parser, st_args, pre_text + post_text));
 
 	if (!text_changed_dirty && !setting_text) {
