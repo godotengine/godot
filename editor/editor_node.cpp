@@ -7010,7 +7010,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(PhysicalBone3DEditorPlugin(this)));
 	add_editor_plugin(memnew(MeshEditorPlugin(this)));
 	add_editor_plugin(memnew(MaterialEditorPlugin(this)));
-	add_editor_plugin(memnew(GPUParticlesCollisionSDFEditorPlugin(this)));
+	add_editor_plugin(memnew(GPUParticlesCollisionSDF3DEditorPlugin(this)));
 	add_editor_plugin(memnew(InputEventEditorPlugin(this)));
 	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin(this)));
 	add_editor_plugin(memnew(TextControlEditorPlugin(this)));
