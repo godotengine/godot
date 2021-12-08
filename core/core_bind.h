@@ -241,6 +241,7 @@ public:
 	Thread::ID get_thread_caller_id() const;
 	Thread::ID get_main_thread_id() const;
 
+	void set_custom_features(const PackedStringArray &p_features);
 	bool has_feature(const String &p_feature) const;
 
 	bool request_permission(const String &p_name);

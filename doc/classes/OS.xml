@@ -496,6 +496,27 @@
 				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
+		<method name="set_custom_features">
+			<return type="void" />
+			<argument index="0" name="features" type="PackedStringArray" />
+			<description>
+				Sets a list of additional custom features to use with [method has_feature]. These features will also be used for overrides set in [ProjectSettings].
+				To use this method, call it inside editor (from a plugin, [EditorScript] or any tool script) and it will have effect when running the project from the editor. The features will remain available until editor is restarted or the method is called again.
+				Example usage:
+				[codeblock]
+				@tool
+				extends EditorScript
+
+				func _run():
+				    OS.set_custom_features(["test"])
+				[/codeblock]
+				Make sure to run this script. Then in another script:
+				[codeblock]
+				func _ready():
+				    print(OS.has_feature("Test")) # true
+				[/codeblock]
+			</description>
+		</method>
 		<method name="set_environment" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="variable" type="String" />

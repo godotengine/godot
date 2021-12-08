@@ -322,6 +322,10 @@ Error OS::set_thread_name(const String &p_name) {
 	return ::Thread::get_main_id();
 };
 
+void OS::set_custom_features(const PackedStringArray &p_features) {
+	::OS::get_singleton()->set_environment("__EDITOR_CUSTOM_FEATURES__", String(",").join(p_features));
+}
+
 bool OS::has_feature(const String &p_feature) const {
 	return ::OS::get_singleton()->has_feature(p_feature);
 }
@@ -611,6 +615,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_thread_caller_id"), &OS::get_thread_caller_id);
 	ClassDB::bind_method(D_METHOD("get_main_thread_id"), &OS::get_main_thread_id);
 
+	ClassDB::bind_method(D_METHOD("set_custom_features", "features"), &OS::set_custom_features);
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &OS::has_feature);
 
 	ClassDB::bind_method(D_METHOD("request_permission", "name"), &OS::request_permission);
