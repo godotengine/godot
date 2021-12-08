@@ -119,9 +119,14 @@ class RID_Database {
 		RID_Data *data;
 		uint32_t revision;
 #ifdef RID_HANDLE_ALLOCATION_TRACKING_ENABLED
+		// current allocation
 		uint16_t line_number;
 		uint16_t owner_name_id;
 		const char *filename;
+
+		// previous allocation (allows identifying dangling RID source allocations)
+		const char *previous_filename;
+		uint32_t previous_line_number;
 #endif
 	};
 
