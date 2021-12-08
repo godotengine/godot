@@ -85,6 +85,7 @@ private:
 	bool force_autohinter;
 	Hinting hinting;
 	Vector<uint8_t> _fontdata;
+	float override_oversampling;
 
 	String font_path;
 	Map<CacheID, DynamicFontAtSize *> size_cache;
@@ -103,6 +104,9 @@ public:
 	void set_font_path(const String &p_path);
 	String get_font_path() const;
 	void set_force_autohinter(bool p_force);
+
+	float get_override_oversampling() const;
+	void set_override_oversampling(float p_oversampling);
 
 	DynamicFontData();
 	~DynamicFontData();
