@@ -2321,7 +2321,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	// Middle panel.
 	ScrollContainer *middle_panel = memnew(ScrollContainer);
-	middle_panel->set_enable_h_scroll(false);
+	middle_panel->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	middle_panel->set_custom_minimum_size(Size2i(200, 0) * EDSCALE);
 	split_container_right_side->add_child(middle_panel);
 
@@ -2339,7 +2339,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tile_inspector = memnew(EditorInspector);
 	tile_inspector->set_undo_redo(undo_redo);
-	tile_inspector->set_enable_v_scroll(false);
+	tile_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	tile_inspector->edit(tile_proxy_object);
 	tile_inspector->set_use_folding(true);
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
@@ -2385,7 +2385,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	atlas_source_inspector = memnew(EditorInspector);
 	atlas_source_inspector->set_undo_redo(undo_redo);
-	atlas_source_inspector->set_enable_v_scroll(false);
+	atlas_source_inspector->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	atlas_source_inspector->edit(atlas_source_proxy_object);
 	middle_vbox_container->add_child(atlas_source_inspector);
 

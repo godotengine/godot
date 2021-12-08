@@ -6117,8 +6117,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_vbox = memnew(VBoxContainer);
 	scroll->add_child(track_vbox);
 	track_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-	scroll->set_enable_h_scroll(false);
-	scroll->set_enable_v_scroll(true);
+	scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	track_vbox->add_theme_constant_override("separation", 0);
 
 	HBoxContainer *bottom_hb = memnew(HBoxContainer);

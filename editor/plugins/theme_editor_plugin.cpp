@@ -941,7 +941,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 
 	ScrollContainer *import_bulk_sc = memnew(ScrollContainer);
 	import_bulk_sc->set_custom_minimum_size(Size2(260.0, 0.0) * EDSCALE);
-	import_bulk_sc->set_enable_h_scroll(false);
+	import_bulk_sc->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	import_main_hb->add_child(import_bulk_sc);
 	VBoxContainer *import_bulk_vb = memnew(VBoxContainer);
 	import_bulk_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2113,7 +2113,7 @@ VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
 
 	ScrollContainer *items_sc = memnew(ScrollContainer);
 	items_sc->set_v_size_flags(SIZE_EXPAND_FILL);
-	items_sc->set_enable_h_scroll(false);
+	items_sc->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	items_tab->add_child(items_sc);
 	VBoxContainer *items_list = memnew(VBoxContainer);
 	items_list->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -3102,7 +3102,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 
 	ScrollContainer *type_settings_sc = memnew(ScrollContainer);
 	type_settings_sc->set_v_size_flags(SIZE_EXPAND_FILL);
-	type_settings_sc->set_enable_h_scroll(false);
+	type_settings_sc->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	type_settings_tab->add_child(type_settings_sc);
 	VBoxContainer *type_settings_list = memnew(VBoxContainer);
 	type_settings_list->set_h_size_flags(SIZE_EXPAND_FILL);

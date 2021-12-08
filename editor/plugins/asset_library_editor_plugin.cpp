@@ -288,8 +288,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	previews = memnew(ScrollContainer);
 	previews_bg->add_child(previews);
-	previews->set_enable_v_scroll(false);
-	previews->set_enable_h_scroll(true);
+	previews->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	preview_hb = memnew(HBoxContainer);
 	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -1431,8 +1430,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_scroll_bg->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	library_scroll = memnew(ScrollContainer);
-	library_scroll->set_enable_v_scroll(true);
-	library_scroll->set_enable_h_scroll(false);
+	library_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 
 	library_scroll_bg->add_child(library_scroll);
 
@@ -1499,8 +1497,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	set_process_unhandled_key_input(true); // Global shortcuts since there is no main element to be focused.
 
 	downloads_scroll = memnew(ScrollContainer);
-	downloads_scroll->set_enable_h_scroll(true);
-	downloads_scroll->set_enable_v_scroll(false);
+	downloads_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	library_main->add_child(downloads_scroll);
 	downloads_hb = memnew(HBoxContainer);
 	downloads_scroll->add_child(downloads_hb);

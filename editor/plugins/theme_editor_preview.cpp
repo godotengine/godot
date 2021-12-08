@@ -228,8 +228,6 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	add_child(preview_body);
 
 	preview_container = memnew(ScrollContainer);
-	preview_container->set_enable_v_scroll(true);
-	preview_container->set_enable_h_scroll(true);
 	preview_body->add_child(preview_container);
 
 	MarginContainer *preview_root = memnew(MarginContainer);
