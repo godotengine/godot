@@ -107,6 +107,7 @@
 			<description>
 				Adds a new item with text [code]label[/code].
 				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] The provided [code]id[/code] is used only in [signal id_pressed] and [signal id_focused] signals. It's not related to the [code]index[/code] arguments in e.g. [method set_item_checked].
 			</description>
 		</method>
 		<method name="add_multistate_item">
@@ -181,7 +182,7 @@
 		</method>
 		<method name="clear_item_opentype_features">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Removes all OpenType features form the item's text.
 			</description>
@@ -194,49 +195,49 @@
 		</method>
 		<method name="get_item_accelerator" qualifiers="const">
 			<return type="int" enum="Key" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns the accelerator of the item at index [code]idx[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				Returns the accelerator of the item at the given [code]index[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture2D" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns the icon of the item at index [code]idx[/code].
+				Returns the icon of the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="get_item_id" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns the id of the item at index [code]idx[/code]. [code]id[/code] can be manually assigned, while index can not.
+				Returns the id of the item at the given [code]index[/code]. [code]id[/code] can be manually assigned, while index can not.
 			</description>
 		</method>
 		<method name="get_item_index" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="id" type="int" />
 			<description>
-				Returns the index of the item containing the specified [code]id[/code]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				Returns the index of the item containing the specified [code]id[/code]. Index is automatically assigned to each item by the engine and can not be set manually.
 			</description>
 		</method>
 		<method name="get_item_language" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns item's text language code.
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the metadata of the specified item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
 			</description>
 		</method>
 		<method name="get_item_opentype_feature" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="tag" type="String" />
 			<description>
 				Returns OpenType feature [code]tag[/code] of the item's text.
@@ -244,160 +245,161 @@
 		</method>
 		<method name="get_item_shortcut" qualifiers="const">
 			<return type="Shortcut" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns the [Shortcut] associated with the specified [code]idx[/code] item.
+				Returns the [Shortcut] associated with the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="get_item_submenu" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns the submenu name of the item at index [code]idx[/code]. See [method add_submenu_item] for more info on how to add a submenu.
+				Returns the submenu name of the item at the given [code]index[/code]. See [method add_submenu_item] for more info on how to add a submenu.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns the text of the item at index [code]idx[/code].
+				Returns the text of the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="get_item_text_direction" qualifiers="const">
 			<return type="int" enum="Control.TextDirection" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns item's text base writing direction.
 			</description>
 		</method>
 		<method name="get_item_tooltip" qualifiers="const">
 			<return type="String" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns the tooltip associated with the specified index index [code]idx[/code].
+				Returns the tooltip associated with the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="is_item_checkable" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns [code]true[/code] if the item at index [code]idx[/code] is checkable in some way, i.e. if it has a checkbox or radio button.
+				Returns [code]true[/code] if the item at the given [code]index[/code] is checkable in some way, i.e. if it has a checkbox or radio button.
 				[b]Note:[/b] Checkable items just display a checkmark or radio button, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="is_item_checked" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns [code]true[/code] if the item at index [code]idx[/code] is checked.
+				Returns [code]true[/code] if the item at the given [code]index[/code] is checked.
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns [code]true[/code] if the item at index [code]idx[/code] is disabled. When it is disabled it can't be selected, or its action invoked.
+				Returns [code]true[/code] if the item at the given [code]index[/code] is disabled. When it is disabled it can't be selected, or its action invoked.
 				See [method set_item_disabled] for more info on how to disable an item.
 			</description>
 		</method>
 		<method name="is_item_radio_checkable" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Returns [code]true[/code] if the item at index [code]idx[/code] has radio button-style checkability.
+				Returns [code]true[/code] if the item at the given [code]index[/code] has radio button-style checkability.
 				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
 			</description>
 		</method>
 		<method name="is_item_separator" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns [code]true[/code] if the item is a separator. If it is, it will be displayed as a line. See [method add_separator] for more info on how to add a separator.
 			</description>
 		</method>
 		<method name="is_item_shortcut_disabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Returns [code]true[/code] if the specified item's shortcut is disabled.
 			</description>
 		</method>
 		<method name="remove_item">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Removes the item at index [code]idx[/code] from the menu.
+				Removes the item at the given [code]index[/code] from the menu.
 				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
 			</description>
 		</method>
 		<method name="set_item_accelerator">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="accel" type="int" enum="Key" />
 			<description>
-				Sets the accelerator of the item at index [code]idx[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				Sets the accelerator of the item at the given [code]index[/code]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
 			</description>
 		</method>
 		<method name="set_item_as_checkable">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="enable" type="bool" />
 			<description>
-				Sets whether the item at index [code]idx[/code] has a checkbox. If [code]false[/code], sets the type of the item to plain text.
+				Sets whether the item at the given [code]index[/code] has a checkbox. If [code]false[/code], sets the type of the item to plain text.
 				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
 			</description>
 		</method>
 		<method name="set_item_as_radio_checkable">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="enable" type="bool" />
 			<description>
-				Sets the type of the item at the specified index [code]idx[/code] to radio button. If [code]false[/code], sets the type of the item to plain text.
+				Sets the type of the item at the given [code]index[/code] to radio button. If [code]false[/code], sets the type of the item to plain text.
 			</description>
 		</method>
 		<method name="set_item_as_separator">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="enable" type="bool" />
 			<description>
-				Mark the item at index [code]idx[/code] as a separator, which means that it would be displayed as a line. If [code]false[/code], sets the type of the item to plain text.
+				Mark the item at the given [code]index[/code] as a separator, which means that it would be displayed as a line. If [code]false[/code], sets the type of the item to plain text.
 			</description>
 		</method>
 		<method name="set_item_checked">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="checked" type="bool" />
 			<description>
-				Sets the checkstate status of the item at index [code]idx[/code].
+				Sets the checkstate status of the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="set_item_disabled">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="disabled" type="bool" />
 			<description>
-				Enables/disables the item at index [code]idx[/code]. When it is disabled, it can't be selected and its action can't be invoked.
+				Enables/disables the item at the given [code]index[/code]. When it is disabled, it can't be selected and its action can't be invoked.
 			</description>
 		</method>
 		<method name="set_item_icon">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="icon" type="Texture2D" />
 			<description>
-				Replaces the [Texture2D] icon of the specified [code]idx[/code].
+				Replaces the [Texture2D] icon of the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="set_item_id">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="id" type="int" />
 			<description>
-				Sets the [code]id[/code] of the item at index [code]idx[/code].
+				Sets the [code]id[/code] of the item at the given [code]index[/code].
+				The [code]id[/code] is used in [signal id_pressed] and [signal id_focused] signals.
 			</description>
 		</method>
 		<method name="set_item_language">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="language" type="String" />
 			<description>
 				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -405,7 +407,7 @@
 		</method>
 		<method name="set_item_metadata">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="metadata" type="Variant" />
 			<description>
 				Sets the metadata of an item, which may be of any type. You can later get it with [method get_item_metadata], which provides a simple way of assigning context data to items.
@@ -413,7 +415,7 @@
 		</method>
 		<method name="set_item_multistate">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="state" type="int" />
 			<description>
 				Sets the state of a multistate item. See [method add_multistate_item] for details.
@@ -421,7 +423,7 @@
 		</method>
 		<method name="set_item_opentype_feature">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="tag" type="String" />
 			<argument index="2" name="value" type="int" />
 			<description>
@@ -430,40 +432,40 @@
 		</method>
 		<method name="set_item_shortcut">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="shortcut" type="Shortcut" />
 			<argument index="2" name="global" type="bool" default="false" />
 			<description>
-				Sets a [Shortcut] for the specified item [code]idx[/code].
+				Sets a [Shortcut] for the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="set_item_shortcut_disabled">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="disabled" type="bool" />
 			<description>
-				Disables the [Shortcut] of the specified index [code]idx[/code].
+				Disables the [Shortcut] of the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="set_item_submenu">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="submenu" type="String" />
 			<description>
-				Sets the submenu of the item at index [code]idx[/code]. The submenu is the name of a child [PopupMenu] node that would be shown when the item is clicked.
+				Sets the submenu of the item at the given [code]index[/code]. The submenu is the name of a child [PopupMenu] node that would be shown when the item is clicked.
 			</description>
 		</method>
 		<method name="set_item_text">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="text" type="String" />
 			<description>
-				Sets the text of the item at index [code]idx[/code].
+				Sets the text of the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="set_item_text_direction">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="direction" type="int" enum="Control.TextDirection" />
 			<description>
 				Sets item's text base writing direction.
@@ -471,22 +473,22 @@
 		</method>
 		<method name="set_item_tooltip">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<argument index="1" name="tooltip" type="String" />
 			<description>
-				Sets the [String] tooltip of the item at the specified index [code]idx[/code].
+				Sets the [String] tooltip of the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="toggle_item_checked">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
-				Toggles the check state of the item of the specified index [code]idx[/code].
+				Toggles the check state of the item at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="toggle_item_multistate">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<argument index="0" name="index" type="int" />
 			<description>
 				Cycle to the next state of a multistate item. See [method add_multistate_item] for details.
 			</description>
