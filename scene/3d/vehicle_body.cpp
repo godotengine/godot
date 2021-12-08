@@ -217,6 +217,10 @@ bool VehicleWheel::is_in_contact() const {
 	return m_raycastInfo.m_isInContact;
 }
 
+Spatial *VehicleWheel::get_contact_body() const {
+	return m_raycastInfo.m_groundObject;
+}
+
 void VehicleWheel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "length"), &VehicleWheel::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &VehicleWheel::get_radius);
@@ -249,6 +253,7 @@ void VehicleWheel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_friction_slip"), &VehicleWheel::get_friction_slip);
 
 	ClassDB::bind_method(D_METHOD("is_in_contact"), &VehicleWheel::is_in_contact);
+	ClassDB::bind_method(D_METHOD("get_contact_body"), &VehicleWheel::get_contact_body);
 
 	ClassDB::bind_method(D_METHOD("set_roll_influence", "roll_influence"), &VehicleWheel::set_roll_influence);
 	ClassDB::bind_method(D_METHOD("get_roll_influence"), &VehicleWheel::get_roll_influence);
@@ -357,6 +362,7 @@ VehicleWheel::VehicleWheel() {
 	m_suspensionRelativeVelocity = 0;
 	m_clippedInvContactDotSuspension = 1.0;
 	m_raycastInfo.m_isInContact = false;
+	m_raycastInfo.m_groundObject = nullptr;
 	m_raycastInfo.m_suspensionLength = 0.0;
 
 	body = nullptr;
@@ -423,9 +429,8 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 
 	PhysicsDirectSpaceState *ss = s->get_space_state();
 
-	bool col = ss->intersect_ray(source, target, rr, exclude, get_collision_mask());
-
 	wheel.m_raycastInfo.m_groundObject = nullptr;
+	bool col = ss->intersect_ray(source, target, rr, exclude, get_collision_mask());
 
 	if (col) {
 		param = source.distance_to(rr.position) / source.distance_to(target);

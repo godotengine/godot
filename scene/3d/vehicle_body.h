@@ -129,6 +129,8 @@ public:
 
 	bool is_in_contact() const;
 
+	Spatial *get_contact_body() const;
+
 	void set_roll_influence(float p_value);
 	float get_roll_influence() const;
 
