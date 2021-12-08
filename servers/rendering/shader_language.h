@@ -1024,8 +1024,17 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
-	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func);
-	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
+
+	struct ShaderCompileInfo {
+		Map<StringName, FunctionInfo> functions;
+		Vector<StringName> render_modes;
+		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
+		Set<String> shader_types;
+		GlobalVariableGetTypeFunc global_variable_type_func = nullptr;
+	};
+
+	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
+	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();
