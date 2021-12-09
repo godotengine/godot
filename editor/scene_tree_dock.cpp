@@ -228,7 +228,7 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String> &p_files, Node
 	}
 
 	editor_data->get_undo_redo().commit_action();
-	editor->push_item(instances[instances.size() - 1]);
+	_push_item(instances[instances.size() - 1]);
 	for (int i = 0; i < instances.size(); i++) {
 		emit_signal("node_created", instances[i]);
 	}
@@ -748,7 +748,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().commit_action();
 
 			if (dupsingle) {
-				editor->push_item(dupsingle);
+				_push_item(dupsingle);
 			}
 		} break;
 		case TOOL_REPARENT: {
@@ -853,7 +853,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				mne->add_node(root->get_path_to(E->key()));
 			}
 
-			EditorNode::get_singleton()->push_item(mne.ptr());
+			_push_item(mne.ptr());
 
 		} break;
 
@@ -1172,7 +1172,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				Object *obj = ObjectDB::get_instance(subresources[idx]);
 				ERR_FAIL_COND(!obj);
 
-				editor->push_item(obj);
+				_push_item(obj);
 			}
 		}
 	}
@@ -1362,6 +1362,12 @@ void SceneTreeDock::_script_open_request(const Ref<Script> &p_script) {
 	editor->edit_resource(p_script);
 }
 
+void SceneTreeDock::_push_item(Object *p_object) {
+	if (!Input::get_singleton()->is_key_pressed(KEY_ALT)) {
+		editor->push_item(p_object);
+	}
+}
+
 void SceneTreeDock::_node_selected() {
 	Node *node = scene_tree->get_selected();
 
@@ -1373,7 +1379,7 @@ void SceneTreeDock::_node_selected() {
 		restore_script_editor_on_drag = true;
 	}
 
-	editor->push_item(node);
+	_push_item(node);
 }
 
 void SceneTreeDock::_node_renamed() {
@@ -1944,7 +1950,7 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 
 	editor_data->get_undo_redo().commit_action();
 
-	editor->push_item(p_script.operator->());
+	_push_item(p_script.operator->());
 	_update_script_button();
 }
 
@@ -2073,7 +2079,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 		editor->get_viewport_control()->update();
 	}
 
-	editor->push_item(nullptr);
+	_push_item(nullptr);
 
 	// Fixes the EditorHistory from still offering deleted notes
 	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
@@ -2117,9 +2123,9 @@ void SceneTreeDock::_selection_changed() {
 		//automatically turn on multi-edit
 		_tool_selected(TOOL_MULTI_EDIT);
 	} else if (selection_size == 1) {
-		editor->push_item(editor_selection->get_selection().front()->key());
+		_push_item(editor_selection->get_selection().front()->key());
 	} else if (selection_size == 0) {
-		editor->push_item(nullptr);
+		_push_item(nullptr);
 	}
 
 	_update_script_button();
@@ -2172,7 +2178,7 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 	}
 
 	editor_data->get_undo_redo().commit_action();
-	editor->push_item(c);
+	_push_item(c);
 	editor_selection->clear();
 	editor_selection->add_node(child);
 	if (Object::cast_to<Control>(c)) {
@@ -2328,7 +2334,7 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 		memdelete(default_oldnode);
 	}
 
-	editor->push_item(nullptr);
+	_push_item(nullptr);
 
 	//reconnect signals
 	List<MethodInfo> sl;
@@ -2373,7 +2379,7 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 	}
 	newnode->set_name(newname);
 
-	editor->push_item(newnode);
+	_push_item(newnode);
 
 	if (p_remove_old) {
 		memdelete(n);

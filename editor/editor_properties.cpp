@@ -2139,6 +2139,29 @@ void EditorPropertyNodePath::_node_clear() {
 	update_property();
 }
 
+bool EditorPropertyNodePath::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	return !is_read_only() && is_drop_valid(p_data);
+}
+
+void EditorPropertyNodePath::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	ERR_FAIL_COND(!is_drop_valid(p_data));
+	Dictionary data = p_data;
+	Array nodes = data["nodes"];
+	Node *node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
+
+	if (node) {
+		_node_selected(node->get_path());
+	}
+}
+
+bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const {
+	if (p_drag_data["type"] != "nodes") {
+		return false;
+	}
+	Array nodes = p_drag_data["nodes"];
+	return nodes.size() == 1;
+}
+
 void EditorPropertyNodePath::update_property() {
 	NodePath p = get_edited_object()->get(get_edited_property());
 
@@ -2196,6 +2219,8 @@ void EditorPropertyNodePath::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_node_selected"), &EditorPropertyNodePath::_node_selected);
 	ClassDB::bind_method(D_METHOD("_node_assign"), &EditorPropertyNodePath::_node_assign);
 	ClassDB::bind_method(D_METHOD("_node_clear"), &EditorPropertyNodePath::_node_clear);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::drop_data_fw);
 }
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
@@ -2206,6 +2231,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect("pressed", this, "_node_assign");
+	assign->set_drag_forwarding(this);
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
