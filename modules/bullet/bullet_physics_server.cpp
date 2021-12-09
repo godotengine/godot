@@ -1480,6 +1480,11 @@ bool BulletPhysicsServer::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis
 }
 
 void BulletPhysicsServer::free(RID p_rid) {
+	if (!p_rid.is_valid()) {
+		ERR_FAIL_MSG("Invalid RID.");
+		return;
+	}
+
 	if (shape_owner.owns(p_rid)) {
 		ShapeBullet *shape = shape_owner.get(p_rid);
 
@@ -1490,6 +1495,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 
 		shape_owner.free(p_rid);
 		bulletdelete(shape);
+
 	} else if (rigid_body_owner.owns(p_rid)) {
 		RigidBodyBullet *body = rigid_body_owner.get(p_rid);
 
@@ -1532,8 +1538,9 @@ void BulletPhysicsServer::free(RID p_rid) {
 		space_set_active(p_rid, false);
 		space_owner.free(p_rid);
 		bulletdelete(space);
+
 	} else {
-		ERR_FAIL_MSG("Invalid ID.");
+		ERR_FAIL_MSG("Invalid RID.");
 	}
 }
 

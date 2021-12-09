@@ -654,7 +654,8 @@
 			<return type="void" />
 			<argument index="0" name="rid" type="RID" />
 			<description>
-				Destroys any of the objects created by Physics2DServer. If the [RID] passed is not one of the objects that can be created by Physics2DServer, an error will be sent to the console.
+				Destroys an object created by the Physics2DServer.
+				[b]Note:[/b] See [method VisualServer.free_rid] for details on how to handle RIDs for freed objects.
 			</description>
 		</method>
 		<method name="get_process_info">

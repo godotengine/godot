@@ -1199,6 +1199,11 @@ bool PhysicsServerSW::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_a
 }
 
 void PhysicsServerSW::free(RID p_rid) {
+	if (!p_rid.is_valid()) {
+		ERR_FAIL_MSG("Invalid RID.");
+		return;
+	}
+
 	_update_shapes(); //just in case
 
 	if (shape_owner.owns(p_rid)) {
@@ -1211,6 +1216,7 @@ void PhysicsServerSW::free(RID p_rid) {
 
 		shape_owner.free(p_rid);
 		memdelete(shape);
+
 	} else if (body_owner.owns(p_rid)) {
 		BodySW *body = body_owner.get(p_rid);
 
@@ -1247,6 +1253,7 @@ void PhysicsServerSW::free(RID p_rid) {
 
 		area_owner.free(p_rid);
 		memdelete(area);
+
 	} else if (space_owner.owns(p_rid)) {
 		SpaceSW *space = space_owner.get(p_rid);
 
@@ -1261,6 +1268,7 @@ void PhysicsServerSW::free(RID p_rid) {
 
 		space_owner.free(p_rid);
 		memdelete(space);
+
 	} else if (joint_owner.owns(p_rid)) {
 		JointSW *joint = joint_owner.get(p_rid);
 
@@ -1271,7 +1279,7 @@ void PhysicsServerSW::free(RID p_rid) {
 		memdelete(joint);
 
 	} else {
-		ERR_FAIL_MSG("Invalid ID.");
+		ERR_FAIL_MSG("Invalid RID.");
 	}
 };
 

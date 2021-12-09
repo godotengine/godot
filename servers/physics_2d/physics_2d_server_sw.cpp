@@ -1121,6 +1121,11 @@ Physics2DServer::JointType Physics2DServerSW::joint_get_type(RID p_joint) const 
 }
 
 void Physics2DServerSW::free(RID p_rid) {
+	if (!p_rid.is_valid()) {
+		ERR_FAIL_MSG("Invalid RID.");
+		return;
+	}
+
 	_update_shapes(); // just in case
 
 	if (shape_owner.owns(p_rid)) {
@@ -1169,6 +1174,7 @@ void Physics2DServerSW::free(RID p_rid) {
 
 		area_owner.free(p_rid);
 		memdelete(area);
+
 	} else if (space_owner.owns(p_rid)) {
 		Space2DSW *space = space_owner.get(p_rid);
 
@@ -1181,6 +1187,7 @@ void Physics2DServerSW::free(RID p_rid) {
 		free(space->get_default_area()->get_self());
 		space_owner.free(p_rid);
 		memdelete(space);
+
 	} else if (joint_owner.owns(p_rid)) {
 		Joint2DSW *joint = joint_owner.get(p_rid);
 
@@ -1188,7 +1195,7 @@ void Physics2DServerSW::free(RID p_rid) {
 		memdelete(joint);
 
 	} else {
-		ERR_FAIL_MSG("Invalid ID.");
+		ERR_FAIL_MSG("Invalid RID.");
 	}
 };
 
