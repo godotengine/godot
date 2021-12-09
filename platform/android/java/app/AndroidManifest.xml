@@ -38,6 +38,13 @@
             android:name="xr_mode_metadata_name"
             android:value="xr_mode_metadata_value" />
 
+        <!-- XR hand tracking metadata -->
+        <!-- This is modified by the exporter based on the selected xr mode. DO NOT CHANGE the values here. -->
+        <!-- Removed at export time if the xr mode is not VR or hand tracking is disabled. -->
+        <meta-data
+            android:name="xr_hand_tracking_metadata_name"
+            android:value="xr_hand_tracking_metadata_value"/>
+
         <activity
             android:name=".GodotApp"
             android:label="@string/godot_project_name_string"
