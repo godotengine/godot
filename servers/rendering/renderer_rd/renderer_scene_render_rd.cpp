@@ -3367,9 +3367,15 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 						CameraMatrix shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
-						float bias_scale = li->shadow_transform[j].bias_scale;
+
+						// If shadow blur is set above 1.0, scale the bias scale and normal bias with shadow blur to avoid shadow acne.
+						// At shadow blur = 8 (the highest value exposed in the inspector), the blur factor will be 5.5.
+						// This may still require further adjustments by the user, but this provides a good automatic baseline.
+						const float shadow_blur_bias_factor = MAX(1, 0.5 + light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR) * 0.5);
+
+						const float bias_scale = li->shadow_transform[j].bias_scale * shadow_blur_bias_factor;
 						light_data.shadow_bias[j] = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0 * bias_scale;
-						light_data.shadow_normal_bias[j] = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * li->shadow_transform[j].shadow_texel_size;
+						light_data.shadow_normal_bias[j] = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * li->shadow_transform[j].shadow_texel_size * shadow_blur_bias_factor;
 						light_data.shadow_transmittance_bias[j] = light_storage->light_get_transmittance_bias(base) * bias_scale;
 						light_data.shadow_z_range[j] = li->shadow_transform[j].farplane;
 						light_data.shadow_range_begin[j] = li->shadow_transform[j].range_begin;
@@ -3593,16 +3599,22 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 			light_data.shadow_enabled = true;
 
-			float shadow_texel_size = light_instance_get_shadow_texel_size(li->self, p_shadow_atlas);
-			light_data.shadow_normal_bias = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 10.0;
+			const float shadow_texel_size = light_instance_get_shadow_texel_size(li->self, p_shadow_atlas);
+
+			// If shadow blur is set above 1.0, scale the bias scale and normal bias with shadow blur to avoid shadow acne.
+			// At shadow blur = 8 (the highest value exposed in the inspector), the blur factor will be 5.5.
+			// This may still require further adjustments by the user, but this provides a good automatic baseline.
+			const float shadow_blur_bias_factor = MAX(1, 0.5 + light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR) * 0.5);
+
+			light_data.shadow_normal_bias = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 10.0 * shadow_blur_bias_factor;
 
 			if (type == RS::LIGHT_SPOT) {
-				light_data.shadow_bias = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0;
-			} else { //omni
-				light_data.shadow_bias = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS);
+				light_data.shadow_bias = (light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0) * shadow_blur_bias_factor;
+			} else { // OmniLight3D
+				light_data.shadow_bias = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * shadow_blur_bias_factor;
 			}
 
-			light_data.transmittance_bias = light_storage->light_get_transmittance_bias(base);
+			light_data.transmittance_bias = light_storage->light_get_transmittance_bias(base) * shadow_blur_bias_factor;
 
 			Vector2i omni_offset;
 			Rect2 rect = light_instance_get_shadow_atlas_rect(li->self, p_shadow_atlas, omni_offset);
