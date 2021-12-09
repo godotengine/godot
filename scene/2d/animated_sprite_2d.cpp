@@ -122,7 +122,7 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
 			}
 
 			property.hint_string += String(E->get());
-			if (animation == E) {
+			if (animation == E->get()) {
 				current_found = true;
 			}
 		}
