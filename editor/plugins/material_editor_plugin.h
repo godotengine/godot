@@ -39,6 +39,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/color_rect.h"
 #include "scene/resources/material.h"
 
 class SubViewportContainer;
@@ -46,22 +47,27 @@ class SubViewportContainer;
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
-	SubViewportContainer *vc;
-	SubViewport *viewport;
-	MeshInstance3D *sphere_instance;
-	MeshInstance3D *box_instance;
-	DirectionalLight3D *light1;
-	DirectionalLight3D *light2;
-	Camera3D *camera;
+	HBoxContainer *layout_2d = nullptr;
+	ColorRect *rect_instance = nullptr;
+
+	SubViewportContainer *vc = nullptr;
+	SubViewport *viewport = nullptr;
+	MeshInstance3D *sphere_instance = nullptr;
+	MeshInstance3D *box_instance = nullptr;
+	DirectionalLight3D *light1 = nullptr;
+	DirectionalLight3D *light2 = nullptr;
+	Camera3D *camera = nullptr;
 
 	Ref<SphereMesh> sphere_mesh;
 	Ref<BoxMesh> box_mesh;
 
-	TextureButton *sphere_switch;
-	TextureButton *box_switch;
+	HBoxContainer *layout_3d = nullptr;
 
-	TextureButton *light_1_switch;
-	TextureButton *light_2_switch;
+	TextureButton *sphere_switch = nullptr;
+	TextureButton *box_switch = nullptr;
+
+	TextureButton *light_1_switch = nullptr;
+	TextureButton *light_2_switch = nullptr;
 
 	Ref<Material> material;
 

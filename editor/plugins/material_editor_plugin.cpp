@@ -69,8 +69,24 @@ void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_en
 	material = p_material;
 	camera->set_environment(p_env);
 	if (!material.is_null()) {
-		sphere_instance->set_material_override(material);
-		box_instance->set_material_override(material);
+		Shader::Mode mode = p_material->get_shader_mode();
+		switch (mode) {
+			case Shader::MODE_CANVAS_ITEM:
+				layout_3d->hide();
+				layout_2d->show();
+				vc->hide();
+				rect_instance->set_material(material);
+				break;
+			case Shader::MODE_SPATIAL:
+				layout_2d->hide();
+				layout_3d->show();
+				vc->show();
+				sphere_instance->set_material_override(material);
+				box_instance->set_material_override(material);
+				break;
+			default:
+				break;
+		}
 	} else {
 		hide();
 	}
@@ -106,6 +122,21 @@ void MaterialEditor::_bind_methods() {
 }
 
 MaterialEditor::MaterialEditor() {
+	// canvas item
+
+	layout_2d = memnew(HBoxContainer);
+	layout_2d->set_alignment(BoxContainer::ALIGN_CENTER);
+	add_child(layout_2d);
+	layout_2d->set_anchors_and_offsets_preset(PRESET_WIDE);
+
+	rect_instance = memnew(ColorRect);
+	layout_2d->add_child(rect_instance);
+	rect_instance->set_custom_minimum_size(Size2(150, 150) * EDSCALE);
+
+	layout_2d->set_visible(false);
+
+	// spatial
+
 	vc = memnew(SubViewportContainer);
 	vc->set_stretch(true);
 	add_child(vc);
@@ -154,12 +185,12 @@ MaterialEditor::MaterialEditor() {
 
 	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
 
-	HBoxContainer *hb = memnew(HBoxContainer);
-	add_child(hb);
-	hb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
+	layout_3d = memnew(HBoxContainer);
+	add_child(layout_3d);
+	layout_3d->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
 
 	VBoxContainer *vb_shape = memnew(VBoxContainer);
-	hb->add_child(vb_shape);
+	layout_3d->add_child(vb_shape);
 
 	sphere_switch = memnew(TextureButton);
 	sphere_switch->set_toggle_mode(true);
@@ -173,10 +204,10 @@ MaterialEditor::MaterialEditor() {
 	vb_shape->add_child(box_switch);
 	box_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(box_switch));
 
-	hb->add_spacer();
+	layout_3d->add_spacer();
 
 	VBoxContainer *vb_light = memnew(VBoxContainer);
-	hb->add_child(vb_light);
+	layout_3d->add_child(vb_light);
 
 	light_1_switch = memnew(TextureButton);
 	light_1_switch->set_toggle_mode(true);
@@ -207,8 +238,8 @@ bool EditorInspectorPluginMaterial::can_handle(Object *p_object) {
 	if (!material) {
 		return false;
 	}
-
-	return material->get_shader_mode() == Shader::MODE_SPATIAL;
+	Shader::Mode mode = material->get_shader_mode();
+	return mode == Shader::MODE_SPATIAL || mode == Shader::MODE_CANVAS_ITEM;
 }
 
 void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
