@@ -748,6 +748,7 @@ public:
 		COMPLETION_CALL_ARGUMENTS,
 		COMPLETION_INDEX,
 		COMPLETION_STRUCT,
+		COMPLETION_HINT,
 	};
 
 	struct Token {
@@ -772,6 +773,7 @@ public:
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
 	static bool is_token_operator_assign(TokenType p_type);
+	static bool is_token_hint(TokenType p_type);
 
 	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = nullptr);
 	static DataType get_scalar_type(DataType p_type);
@@ -966,10 +968,12 @@ private:
 	int completion_line;
 	BlockNode *completion_block;
 	DataType completion_base;
+	bool completion_base_array;
 	SubClassTag completion_class;
 	StringName completion_function;
 	StringName completion_struct;
 	int completion_argument;
+
 	const Map<StringName, FunctionInfo> *stages = nullptr;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);

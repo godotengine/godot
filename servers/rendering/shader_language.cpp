@@ -914,8 +914,10 @@ void ShaderLanguage::clear() {
 	completion_type = COMPLETION_NONE;
 	completion_block = nullptr;
 	completion_function = StringName();
-	completion_class = SubClassTag::TAG_GLOBAL;
+	completion_class = TAG_GLOBAL;
 	completion_struct = StringName();
+	completion_base = TYPE_VOID;
+	completion_base_array = false;
 
 	unknown_varying_usages.clear();
 
@@ -3233,6 +3235,10 @@ bool ShaderLanguage::is_token_operator_assign(TokenType p_type) {
 			p_type == TK_OP_ASSIGN_BIT_AND ||
 			p_type == TK_OP_ASSIGN_BIT_OR ||
 			p_type == TK_OP_ASSIGN_BIT_XOR);
+}
+
+bool ShaderLanguage::is_token_hint(TokenType p_type) {
+	return int(p_type) > int(TK_RENDER_MODE) && int(p_type) < int(TK_SHADER_TYPE);
 }
 
 bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value) {
@@ -7829,9 +7835,19 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					int custom_instance_index = -1;
 
 					if (tk.type == TK_COLON) {
+						completion_type = COMPLETION_HINT;
+						completion_base = type;
+						completion_base_array = uniform2.array_size > 0;
+
 						//hint
 						do {
 							tk = _get_token();
+							completion_line = tk.line;
+
+							if (!is_token_hint(tk.type)) {
+								_set_error("Expected valid type hint after ':'.");
+								return ERR_PARSE_ERROR;
+							}
 
 							if (uniform2.array_size > 0) {
 								if (tk.type != TK_HINT_COLOR) {
@@ -8001,8 +8017,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								uniform2.repeat = REPEAT_DISABLE;
 							} else if (tk.type == TK_REPEAT_ENABLE) {
 								uniform2.repeat = REPEAT_ENABLE;
-							} else {
-								_set_error("Expected valid type hint after ':'.");
 							}
 
 							if (uniform2.hint != ShaderNode::Uniform::HINT_RANGE && uniform2.hint != ShaderNode::Uniform::HINT_NONE && uniform2.hint != ShaderNode::Uniform::HINT_COLOR && type <= TYPE_MAT4) {
@@ -8069,6 +8083,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						_set_error("Expected ';'");
 						return ERR_PARSE_ERROR;
 					}
+
+					completion_type = COMPLETION_NONE;
 				} else { // varying
 					ShaderNode::Varying varying;
 					varying.type = type;
@@ -9425,6 +9441,57 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				r_options->push_back(ScriptCodeCompletionOption(String::chr(coordt[i]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT));
 			}
 
+		} break;
+		case COMPLETION_HINT: {
+			if (completion_base == DataType::TYPE_VEC4) {
+				ScriptCodeCompletionOption option("hint_color", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				r_options->push_back(option);
+			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
+				ScriptCodeCompletionOption option("hint_range", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+
+				if (completion_base == DataType::TYPE_INT) {
+					option.insert_text = "hint_range(0, 100, 1)";
+				} else {
+					option.insert_text = "hint_range(0.0, 1.0, 0.1)";
+				}
+
+				r_options->push_back(option);
+			} else if ((int(completion_base) > int(TYPE_MAT4) && int(completion_base) < int(TYPE_STRUCT)) && !completion_base_array) {
+				static Vector<String> options;
+
+				if (options.is_empty()) {
+					options.push_back("filter_linear");
+					options.push_back("filter_linear_mipmap");
+					options.push_back("filter_linear_mipmap_aniso");
+					options.push_back("filter_nearest");
+					options.push_back("filter_nearest_mipmap");
+					options.push_back("filter_nearest_mipmap_aniso");
+					options.push_back("hint_albedo");
+					options.push_back("hint_aniso");
+					options.push_back("hint_black");
+					options.push_back("hint_black_albedo");
+					options.push_back("hint_normal");
+					options.push_back("hint_roughness_a");
+					options.push_back("hint_roughness_b");
+					options.push_back("hint_roughness_g");
+					options.push_back("hint_roughness_gray");
+					options.push_back("hint_roughness_normal");
+					options.push_back("hint_roughness_r");
+					options.push_back("hint_white");
+					options.push_back("repeat_enable");
+					options.push_back("repeat_disable");
+				}
+
+				for (int i = 0; i < options.size(); i++) {
+					ScriptCodeCompletionOption option(options[i], ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+					r_options->push_back(option);
+				}
+			}
+			if (!completion_base_array) {
+				ScriptCodeCompletionOption option("instance_index", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				option.insert_text = "instance_index(0)";
+				r_options->push_back(option);
+			}
 		} break;
 	}
 
