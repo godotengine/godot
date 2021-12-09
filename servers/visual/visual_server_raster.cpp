@@ -65,6 +65,11 @@ void VisualServerRaster::_draw_margins() {
 /* FREE */
 
 void VisualServerRaster::free(RID p_rid) {
+	if (!p_rid.is_valid()) {
+		ERR_FAIL_MSG("Invalid RID.");
+		return;
+	}
+
 	if (VSG::storage->free(p_rid)) {
 		return;
 	}
@@ -80,6 +85,8 @@ void VisualServerRaster::free(RID p_rid) {
 	if (VSG::scene_render->free(p_rid)) {
 		return;
 	}
+
+	ERR_FAIL_MSG("Invalid RID.");
 }
 
 /* EVENT QUEUING */

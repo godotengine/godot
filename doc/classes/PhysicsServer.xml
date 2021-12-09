@@ -628,7 +628,8 @@
 			<return type="void" />
 			<argument index="0" name="rid" type="RID" />
 			<description>
-				Destroys any of the objects created by PhysicsServer. If the [RID] passed is not one of the objects that can be created by PhysicsServer, an error will be sent to the console.
+				Destroys an object created by the PhysicsServer.
+				[b]Note:[/b] See [method VisualServer.free_rid] for details on how to handle RIDs for freed objects.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_get_flag">

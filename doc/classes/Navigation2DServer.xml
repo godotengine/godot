@@ -124,7 +124,8 @@
 			<return type="void" />
 			<argument index="0" name="rid" type="RID" />
 			<description>
-				Destroys the given RID.
+				Destroys an object created by the Navigation2DServer.
+				[b]Note:[/b] See [method VisualServer.free_rid] for details on how to handle RIDs for freed objects.
 			</description>
 		</method>
 		<method name="get_maps" qualifiers="const">
