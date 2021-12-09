@@ -624,7 +624,7 @@ FindReplaceBar::FindReplaceBar() {
 
 	vbc_lineedit = memnew(VBoxContainer);
 	add_child(vbc_lineedit);
-	vbc_lineedit->set_alignment(ALIGNMENT_CENTER);
+	vbc_lineedit->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	vbc_lineedit->set_h_size_flags(SIZE_EXPAND_FILL);
 	VBoxContainer *vbc_button = memnew(VBoxContainer);
 	add_child(vbc_button);
@@ -633,10 +633,10 @@ FindReplaceBar::FindReplaceBar() {
 
 	HBoxContainer *hbc_button_search = memnew(HBoxContainer);
 	vbc_button->add_child(hbc_button_search);
-	hbc_button_search->set_alignment(ALIGNMENT_END);
+	hbc_button_search->set_alignment(BoxContainer::ALIGNMENT_END);
 	hbc_button_replace = memnew(HBoxContainer);
 	vbc_button->add_child(hbc_button_replace);
-	hbc_button_replace->set_alignment(ALIGNMENT_END);
+	hbc_button_replace->set_alignment(BoxContainer::ALIGNMENT_END);
 
 	HBoxContainer *hbc_option_search = memnew(HBoxContainer);
 	vbc_option->add_child(hbc_option_search);
