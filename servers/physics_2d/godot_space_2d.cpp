@@ -36,6 +36,7 @@
 #include "core/os/os.h"
 #include "core/templates/pair.h"
 
+#define TEST_MOTION_MARGIN_MIN_VALUE 0.0001
 #define TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR 0.05
 
 _FORCE_INLINE_ static bool _can_collide_with(GodotCollisionObject2D *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
@@ -439,9 +440,11 @@ bool GodotPhysicsDirectSpaceState2D::rest_info(const ShapeParameters &p_paramete
 	GodotShape2D *shape = GodotPhysicsServer2D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
 	ERR_FAIL_COND_V(!shape, 0);
 
+	real_t margin = MAX(p_parameters.margin, TEST_MOTION_MARGIN_MIN_VALUE);
+
 	Rect2 aabb = p_parameters.transform.xform(shape->get_aabb());
 	aabb = aabb.merge(Rect2(aabb.position + p_parameters.motion, aabb.size)); //motion
-	aabb = aabb.grow(p_parameters.margin);
+	aabb = aabb.grow(margin);
 
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, GodotSpace2D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
@@ -449,7 +452,7 @@ bool GodotPhysicsDirectSpaceState2D::rest_info(const ShapeParameters &p_paramete
 
 	// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
 	real_t motion_length = p_parameters.motion.length();
-	real_t min_contact_depth = p_parameters.margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
+	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 	rcd.min_allowed_depth = MIN(motion_length, min_contact_depth);
 
 	for (int i = 0; i < amount; i++) {
@@ -469,7 +472,7 @@ bool GodotPhysicsDirectSpaceState2D::rest_info(const ShapeParameters &p_paramete
 		rcd.object = col_obj;
 		rcd.shape = shape_idx;
 		rcd.local_shape = 0;
-		bool sc = GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), _rest_cbk_result, &rcd, nullptr, p_parameters.margin);
+		bool sc = GodotCollisionSolver2D::solve(shape, p_parameters.transform, p_parameters.motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), _rest_cbk_result, &rcd, nullptr, margin);
 		if (!sc) {
 			continue;
 		}
@@ -540,6 +543,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 		r_result->collider_id = ObjectID();
 		r_result->collider_shape = 0;
 	}
+
 	Rect2 body_aabb;
 
 	bool shapes_found = false;
@@ -565,15 +569,17 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 		return false;
 	}
 
+	real_t margin = MAX(p_parameters.margin, TEST_MOTION_MARGIN_MIN_VALUE);
+
 	// Undo the currently transform the physics server is aware of and apply the provided one
 	body_aabb = p_parameters.from.xform(p_body->get_inv_transform().xform(body_aabb));
-	body_aabb = body_aabb.grow(p_parameters.margin);
+	body_aabb = body_aabb.grow(margin);
 
 	static const int max_excluded_shape_pairs = 32;
 	ExcludedShapeSW excluded_shape_pairs[max_excluded_shape_pairs];
 	int excluded_shape_pair_count = 0;
 
-	real_t min_contact_depth = p_parameters.margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
+	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 
 	real_t motion_length = p_parameters.motion.length();
 	Vector2 motion_normal = p_parameters.motion / motion_length;
@@ -630,7 +636,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 						cbk.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
 						real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
-						cbk.valid_depth = MAX(owc_margin, p_parameters.margin); //user specified, but never less than actual margin or it won't work
+						cbk.valid_depth = MAX(owc_margin, margin); //user specified, but never less than actual margin or it won't work
 						cbk.invalid_by_dir = 0;
 
 						if (col_obj->get_type() == GodotCollisionObject2D::TYPE_BODY) {
@@ -655,7 +661,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					bool did_collide = false;
 
 					GodotShape2D *against_shape = col_obj->get_shape(shape_idx);
-					if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, nullptr, p_parameters.margin)) {
+					if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, nullptr, margin)) {
 						did_collide = cbk.passed > current_passed; //more passed, so collision actually existed
 					}
 
@@ -927,7 +933,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					rcd.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
 					real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
-					rcd.valid_depth = MAX(owc_margin, p_parameters.margin); //user specified, but never less than actual margin or it won't work
+					rcd.valid_depth = MAX(owc_margin, margin); //user specified, but never less than actual margin or it won't work
 
 					if (col_obj->get_type() == GodotCollisionObject2D::TYPE_BODY) {
 						const GodotBody2D *b = static_cast<const GodotBody2D *>(col_obj);
@@ -949,7 +955,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
 				rcd.local_shape = j;
-				bool sc = GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), _rest_cbk_result, &rcd, nullptr, p_parameters.margin);
+				bool sc = GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), _rest_cbk_result, &rcd, nullptr, margin);
 				if (!sc) {
 					continue;
 				}
