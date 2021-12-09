@@ -60,6 +60,7 @@ protected:
 
 	Vector3 sep_axis;
 	bool collided = false;
+	bool check_ccd = false;
 
 	GodotSpace3D *space = nullptr;
 
