@@ -164,7 +164,7 @@ void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 void EditorCommandPalette::_confirmed() {
 	TreeItem *selected_option = search_options->get_selected();
 	String command_key = selected_option != nullptr ? selected_option->get_metadata(0) : "";
-	if (command_key != "") {
+	if (!command_key.is_empty()) {
 		hide();
 		execute_command(command_key);
 	}

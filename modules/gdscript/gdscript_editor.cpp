@@ -1365,7 +1365,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 									String arg1 = args[0];
 									if (arg1.begins_with("/root/")) {
 										String which = arg1.get_slice("/", 2);
-										if (which != "") {
+										if (!which.is_empty()) {
 											// Try singletons first
 											if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(which)) {
 												r_type = _type_from_variant(GDScriptLanguage::get_singleton()->get_named_globals_map()[which]);
@@ -2753,7 +2753,7 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 		}
 
 		String st = l.substr(tc, l.length()).strip_edges();
-		if (st == "" || st.begins_with("#")) {
+		if (st.is_empty() || st.begins_with("#")) {
 			continue; //ignore!
 		}
 

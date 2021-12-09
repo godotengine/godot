@@ -43,7 +43,7 @@ void ItemList::_shape(int p_idx) {
 	} else {
 		item.text_buf->set_direction((TextServer::Direction)item.text_direction);
 	}
-	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), item.opentype_features, (item.language != "") ? item.language : TranslationServer::get_singleton()->get_tool_locale());
+	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), item.opentype_features, (!item.language.is_empty()) ? item.language : TranslationServer::get_singleton()->get_tool_locale());
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 		item.text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
 	} else {
@@ -653,7 +653,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (p_event->is_pressed() && items.size() > 0) {
 		if (p_event->is_action("ui_up")) {
-			if (search_string != "") {
+			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
@@ -683,7 +683,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_down")) {
-			if (search_string != "") {
+			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
@@ -920,7 +920,7 @@ void ItemList::_notification(int p_what) {
 						minsize = items[i].get_icon_size() * icon_scale;
 					}
 
-					if (items[i].text != "") {
+					if (!items[i].text.is_empty()) {
 						if (icon_mode == ICON_MODE_TOP) {
 							minsize.y += icon_margin;
 						} else {
@@ -929,7 +929,7 @@ void ItemList::_notification(int p_what) {
 					}
 				}
 
-				if (items[i].text != "") {
+				if (!items[i].text.is_empty()) {
 					int max_width = -1;
 					if (fixed_column_width) {
 						max_width = fixed_column_width;
@@ -1188,7 +1188,7 @@ void ItemList::_notification(int p_what) {
 				draw_texture(items[i].tag_icon, draw_pos + base_ofs);
 			}
 
-			if (items[i].text != "") {
+			if (!items[i].text.is_empty()) {
 				int max_len = -1;
 
 				Vector2 size2 = items[i].text_buf->get_size();
@@ -1360,10 +1360,10 @@ String ItemList::get_tooltip(const Point2 &p_pos) const {
 		if (!items[closest].tooltip_enabled) {
 			return "";
 		}
-		if (items[closest].tooltip != "") {
+		if (!items[closest].tooltip.is_empty()) {
 			return items[closest].tooltip;
 		}
-		if (items[closest].text != "") {
+		if (!items[closest].text.is_empty()) {
 			return items[closest].text;
 		}
 	}

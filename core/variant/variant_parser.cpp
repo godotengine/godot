@@ -1598,14 +1598,14 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				}
 
 				//try path because it's a file
-				if (res_text == String() && res->get_path().is_resource_file()) {
+				if (res_text.is_empty() && res->get_path().is_resource_file()) {
 					//external resource
 					String path = res->get_path();
 					res_text = "Resource(\"" + path + "\")";
 				}
 
 				//could come up with some sort of text
-				if (res_text != String()) {
+				if (!res_text.is_empty()) {
 					p_store_string_func(p_store_string_ud, res_text);
 					break;
 				}

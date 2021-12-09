@@ -53,7 +53,7 @@ void ExportTemplateManager::_update_template_status() {
 	da->list_dir_begin();
 	if (err == OK) {
 		String c = da->get_next();
-		while (c != String()) {
+		while (!c.is_empty()) {
 			if (da->current_is_dir() && !c.begins_with(".")) {
 				templates.insert(c);
 			}
@@ -424,7 +424,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		ret = unzGoToNextFile(pkg);
 	}
 
-	if (version == String()) {
+	if (version.is_empty()) {
 		EditorNode::get_singleton()->show_warning(TTR("No version.txt found inside the export templates file."));
 		unzClose(pkg);
 		return false;

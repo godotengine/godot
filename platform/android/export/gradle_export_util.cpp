@@ -161,7 +161,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 	da->list_dir_begin();
 	while (true) {
 		String file = da->get_next();
-		if (file == "") {
+		if (file.is_empty()) {
 			break;
 		}
 		if (!file.begins_with("values-")) {

@@ -380,7 +380,7 @@ void EditorPropertyPath::_path_pressed() {
 		dialog->set_file_mode(save_mode ? EditorFileDialog::FILE_MODE_SAVE_FILE : EditorFileDialog::FILE_MODE_OPEN_FILE);
 		for (int i = 0; i < extensions.size(); i++) {
 			String e = extensions[i].strip_edges();
-			if (e != String()) {
+			if (!e.is_empty()) {
 				dialog->add_filter(extensions[i].strip_edges());
 			}
 		}
@@ -706,7 +706,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 	bool first = true;
 	for (int i = 0; i < p_options.size(); i++) {
 		String option = p_options[i].strip_edges();
-		if (option != "") {
+		if (!option.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(option);
 			cb->set_clip_text(true);
@@ -1055,7 +1055,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i + 1));
 		}
 
-		if (name == "") {
+		if (name.is_empty()) {
 			name = vformat(TTR("Layer %d"), i + 1);
 		}
 
@@ -1186,7 +1186,7 @@ void EditorPropertyObjectID::_edit_pressed() {
 
 void EditorPropertyObjectID::update_property() {
 	String type = base_type;
-	if (type == "") {
+	if (type.is_empty()) {
 		type = "Object";
 	}
 
@@ -3229,7 +3229,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		}
 	}
 
-	if ((hint.radians || degrees) && hint.suffix == String()) {
+	if ((hint.radians || degrees) && hint.suffix.is_empty()) {
 		hint.suffix = U"\u00B0";
 	}
 
@@ -3514,10 +3514,10 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::NODE_PATH: {
 			EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
-			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && p_hint_text != String()) {
+			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && !p_hint_text.is_empty()) {
 				editor->setup(p_hint_text, Vector<StringName>(), (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));
 			}
-			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && p_hint_text != String()) {
+			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && !p_hint_text.is_empty()) {
 				Vector<String> types = p_hint_text.split(",", false);
 				Vector<StringName> sn = Variant(types); //convert via variant
 				editor->setup(NodePath(), sn, (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));

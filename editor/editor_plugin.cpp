@@ -295,7 +295,7 @@ Error EditorInterface::save_scene() {
 	if (!get_edited_scene_root()) {
 		return ERR_CANT_CREATE;
 	}
-	if (get_edited_scene_root()->get_scene_file_path() == String()) {
+	if (get_edited_scene_root()->get_scene_file_path().is_empty()) {
 		return ERR_CANT_CREATE;
 	}
 

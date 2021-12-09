@@ -114,7 +114,7 @@ void FindInFiles::_notification(int p_notification) {
 }
 
 void FindInFiles::start() {
-	if (_pattern == "") {
+	if (_pattern.is_empty()) {
 		print_verbose("Nothing to search, pattern is empty");
 		emit_signal(SNAME(SIGNAL_FINISHED));
 		return;
@@ -224,7 +224,7 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 	for (int i = 0; i < 1000; ++i) {
 		String file = dir->get_next();
 
-		if (file == "") {
+		if (file.is_empty()) {
 			break;
 		}
 

@@ -3100,7 +3100,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 	if (!comments.has(p_line)) {
 		return;
 	}
-	ERR_FAIL_COND(p_brief != "" || p_desc != "" || p_tutorials.size() != 0);
+	ERR_FAIL_COND(!p_brief.is_empty() || !p_desc.is_empty() || p_tutorials.size() != 0);
 
 	int line = p_line;
 	bool in_codeblock = false;
@@ -3132,7 +3132,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 		String striped_line = doc_line.strip_edges();
 
 		// Set the read mode.
-		if (striped_line.begins_with("@desc:") && p_desc == "") {
+		if (striped_line.begins_with("@desc:") && p_desc.is_empty()) {
 			mode = DESC;
 			striped_line = striped_line.trim_prefix("@desc:");
 			in_codeblock = _in_codeblock(doc_line, in_codeblock);

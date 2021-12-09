@@ -262,9 +262,9 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 	// The margin values below were determined by empirical testing.
 	if (is_layout_rtl()) {
 		stylebox->set_default_margin(SIDE_LEFT, 0);
-		stylebox->set_default_margin(SIDE_RIGHT, (get_label() != String() ? 23 : 16) * EDSCALE);
+		stylebox->set_default_margin(SIDE_RIGHT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
 	} else {
-		stylebox->set_default_margin(SIDE_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
+		stylebox->set_default_margin(SIDE_LEFT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
 		stylebox->set_default_margin(SIDE_RIGHT, 0);
 	}
 
@@ -308,7 +308,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 		lc = fc;
 	}
 
-	if (flat && label != String()) {
+	if (flat && !label.is_empty()) {
 		Color label_bg_color = get_theme_color(SNAME("dark_color_3"), SNAME("Editor"));
 		if (rtl) {
 			draw_rect(Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);

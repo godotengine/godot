@@ -561,7 +561,7 @@ void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, in
 		if (icon.is_valid()) {
 			int y = y_center - (icon->get_height() / 2);
 			icon->draw(canvas, Point2i(x_content, y));
-			if (text != "") {
+			if (!text.is_empty()) {
 				x_content += icon->get_width() + icon_text_distance;
 			}
 		}
@@ -656,7 +656,7 @@ int TabContainer::_get_tab_width(int p_index) const {
 		Ref<Texture2D> icon = control->get_meta("_tab_icon");
 		if (icon.is_valid()) {
 			width += icon->get_width();
-			if (text != "") {
+			if (!text.is_empty()) {
 				width += get_theme_constant(SNAME("icon_separation"));
 			}
 		}
@@ -1108,7 +1108,7 @@ void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 
 		String name = c->get_meta("_tab_name");
 
-		if (name != "") {
+		if (!name.is_empty()) {
 			p_strings->push_back(name);
 		}
 	}

@@ -241,7 +241,7 @@ void EditorFileSystem::_scan_filesystem() {
 				first = false;
 				continue;
 			}
-			if (l == String()) {
+			if (l.is_empty()) {
 				continue;
 			}
 
@@ -295,7 +295,7 @@ void EditorFileSystem::_scan_filesystem() {
 		{
 			FileAccessRef f2 = FileAccess::open(update_cache, FileAccess::READ);
 			String l = f2->get_line().strip_edges();
-			while (l != String()) {
+			while (!l.is_empty()) {
 				file_cache.erase(l); //erase cache for this, so it gets updated
 				l = f2->get_line().strip_edges();
 			}
@@ -405,7 +405,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			return false; //parse error, try reimport manually (Avoid reimport loop on broken file)
 		}
 
-		if (assign != String()) {
+		if (!assign.is_empty()) {
 			if (assign.begins_with("path")) {
 				to_check.push_back(value);
 			} else if (assign == "files") {
@@ -476,7 +476,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			memdelete(md5s);
 			return false; // parse error
 		}
-		if (assign != String()) {
+		if (!assign.is_empty()) {
 			if (!p_only_imported_files) {
 				if (assign == "source_md5") {
 					source_md5 = value;
@@ -497,11 +497,11 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	//check source md5 matching
 	if (!p_only_imported_files) {
-		if (source_file != String() && source_file != p_path) {
+		if (!source_file.is_empty() && source_file != p_path) {
 			return true; //file was moved, reimport
 		}
 
-		if (source_md5 == String()) {
+		if (source_md5.is_empty()) {
 			return true; //lacks md5, so just reimport
 		}
 
@@ -510,7 +510,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			return true;
 		}
 
-		if (dest_files.size() && dest_md5 != String()) {
+		if (dest_files.size() && !dest_md5.is_empty()) {
 			md5 = FileAccess::get_multiple_md5(dest_files);
 			if (md5 != dest_md5) {
 				return true;
@@ -710,7 +710,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 	da->list_dir_begin();
 	while (true) {
 		String f = da->get_next();
-		if (f == "") {
+		if (f.is_empty()) {
 			break;
 		}
 
@@ -820,7 +820,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 					scan_actions.push_back(ia);
 				}
 
-				if (fc->type == String()) {
+				if (fc->type.is_empty()) {
 					fi->type = ResourceLoader::get_resource_type(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
 					//there is also the chance that file type changed due to reimport, must probably check this somehow here (or kind of note it for next time in another file?)
@@ -932,7 +932,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 		da->list_dir_begin();
 		while (true) {
 			String f = da->get_next();
-			if (f == "") {
+			if (f.is_empty()) {
 				break;
 			}
 
@@ -1246,7 +1246,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 	p_file->store_line("::" + p_dir->get_path() + "::" + String::num(p_dir->modified_time));
 
 	for (int i = 0; i < p_dir->files.size(); i++) {
-		if (p_dir->files[i]->import_group_file != String()) {
+		if (!p_dir->files[i]->import_group_file.is_empty()) {
 			group_file_cache.insert(p_dir->files[i]->import_group_file);
 		}
 		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->uid) + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
@@ -1386,7 +1386,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 
 	f = f.substr(6, f.length());
 	f = f.replace("\\", "/");
-	if (f == String()) {
+	if (f.is_empty()) {
 		return filesystem;
 	}
 
@@ -1465,7 +1465,7 @@ void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 	int filecount = p_dir->files.size();
 	const EditorFileSystemDirectory::FileInfo *const *files = p_dir->files.ptr();
 	for (int i = 0; i < filecount; i++) {
-		if (files[i]->script_class_name == String()) {
+		if (files[i]->script_class_name.is_empty()) {
 			continue;
 		}
 
@@ -1545,7 +1545,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 	}
 
 	String type = ResourceLoader::get_resource_type(p_file);
-	if (type == "" && textfile_extensions.has(p_file.get_extension())) {
+	if (type.is_empty() && textfile_extensions.has(p_file.get_extension())) {
 		type = "TextFile";
 	}
 	ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_file);
@@ -1616,9 +1616,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		ERR_CONTINUE(err != OK);
 		ERR_CONTINUE(!config->has_section_key("remap", "importer"));
 		String file_importer_name = config->get_value("remap", "importer");
-		ERR_CONTINUE(file_importer_name == String());
+		ERR_CONTINUE(file_importer_name.is_empty());
 
-		if (importer_name != String() && importer_name != file_importer_name) {
+		if (!importer_name.is_empty() && importer_name != file_importer_name) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("There are multiple importers for different types pointing to file %s, import aborted"), p_group_file));
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
 		}
@@ -1656,7 +1656,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		return OK; // (do nothing)
 	}
 
-	ERR_FAIL_COND_V(importer_name == String(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(importer_name.is_empty(), ERR_UNCONFIGURED);
 
 	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 
@@ -1677,7 +1677,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		if (version > 0) {
 			f->store_line("importer_version=" + itos(version));
 		}
-		if (importer->get_resource_type() != "") {
+		if (!importer->get_resource_type().is_empty()) {
 			f->store_line("type=\"" + importer->get_resource_type() + "\"");
 		}
 
@@ -1759,7 +1759,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		if (ResourceCache::has(file)) {
 			Resource *r = ResourceCache::get(file);
 
-			if (r->get_import_path() != String()) {
+			if (!r->get_import_path().is_empty()) {
 				String dst_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(file);
 				r->set_import_path(dst_path);
 				r->set_import_last_modified_time(0);
@@ -1783,7 +1783,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	Map<StringName, Variant> params;
 	String importer_name; //empty by default though
 
-	if (p_custom_importer != String()) {
+	if (!p_custom_importer.is_empty()) {
 		importer_name = p_custom_importer;
 	}
 	if (p_custom_options != nullptr) {
@@ -1808,7 +1808,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 				}
 
 				if (cf->has_section("remap")) {
-					if (p_custom_importer == String()) {
+					if (p_custom_importer.is_empty()) {
 						importer_name = cf->get_value("remap", "importer");
 					}
 
@@ -1834,7 +1834,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	Ref<ResourceImporter> importer;
 	bool load_default = false;
 	//find the importer
-	if (importer_name != "") {
+	if (!importer_name.is_empty()) {
 		importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 	}
 
@@ -1894,7 +1894,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	if (version > 0) {
 		f->store_line("importer_version=" + itos(version));
 	}
-	if (importer->get_resource_type() != "") {
+	if (!importer->get_resource_type().is_empty()) {
 		f->store_line("type=\"" + importer->get_resource_type() + "\"");
 	}
 
@@ -1907,7 +1907,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	Vector<String> dest_paths;
 
 	if (err == OK) {
-		if (importer->get_save_extension() == "") {
+		if (importer->get_save_extension().is_empty()) {
 			//no path
 		} else if (import_variants.size()) {
 			//import with variants
@@ -2003,7 +2003,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	if (ResourceCache::has(p_file)) {
 		Resource *r = ResourceCache::get(p_file);
 
-		if (r->get_import_path() != String()) {
+		if (!r->get_import_path().is_empty()) {
 			String dst_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_file);
 			r->set_import_path(dst_path);
 			r->set_import_last_modified_time(0);
@@ -2062,7 +2062,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			groups_to_reimport.insert(file);
 			//groups do not belong to grups
 			group_file = String();
-		} else if (group_file != String()) {
+		} else if (!group_file.is_empty()) {
 			//it's a group file, add group to import and skip this file
 			groups_to_reimport.insert(group_file);
 		} else {

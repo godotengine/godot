@@ -990,7 +990,7 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 }
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
-	ERR_FAIL_COND_MSG(p_signal.name == "", "Signal name cannot be empty.");
+	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
 	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), "User signal's name conflicts with a built-in signal of '" + get_class_name() + "'.");
 	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), "Trying to add already existing signal '" + p_signal.name + "'.");
 	SignalData s;
@@ -1253,7 +1253,7 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 	const StringName *S = nullptr;
 
 	while ((S = signal_map.next(S))) {
-		if (signal_map[*S].user.name != "") {
+		if (!signal_map[*S].user.name.is_empty()) {
 			//user signal
 			p_signals->push_back(signal_map[*S].user);
 		}
@@ -1680,7 +1680,7 @@ void Object::get_translatable_strings(List<String> *p_strings) const {
 
 		String text = get(E.name);
 
-		if (text == "") {
+		if (text.is_empty()) {
 			continue;
 		}
 

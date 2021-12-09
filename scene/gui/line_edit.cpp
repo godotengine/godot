@@ -1017,7 +1017,7 @@ void LineEdit::paste_text() {
 	// Strip escape characters like \n and \t as they can't be displayed on LineEdit.
 	String paste_buffer = DisplayServer::get_singleton()->clipboard_get().strip_escapes();
 
-	if (paste_buffer != "") {
+	if (!paste_buffer.is_empty()) {
 		int prev_len = text.length();
 		if (selection.enabled) {
 			selection_delete();
@@ -2078,7 +2078,7 @@ void LineEdit::_shape() {
 	const Ref<Font> &font = get_theme_font(SNAME("font"));
 	int font_size = get_theme_font_size(SNAME("font_size"));
 	ERR_FAIL_COND(font.is_null());
-	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 	TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, t));
 
 	full_width = TS->shaped_text_get_size(text_rid).x;

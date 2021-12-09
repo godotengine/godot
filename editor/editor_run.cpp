@@ -180,7 +180,7 @@ Error EditorRun::run(const String &p_scene) {
 		args.push_back("--skip-breakpoints");
 	}
 
-	if (p_scene != "") {
+	if (!p_scene.is_empty()) {
 		args.push_back(p_scene);
 	}
 
@@ -244,7 +244,7 @@ Error EditorRun::run(const String &p_scene) {
 	}
 
 	status = STATUS_PLAY;
-	if (p_scene != "") {
+	if (!p_scene.is_empty()) {
 		running_scene = p_scene;
 	}
 

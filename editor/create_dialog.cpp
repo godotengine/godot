@@ -173,7 +173,7 @@ void CreateDialog::_update_search() {
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type));
 
 	const String search_text = search_box->get_text();
-	bool empty_search = search_text == "";
+	bool empty_search = search_text.is_empty();
 
 	// Filter all candidate results.
 	Vector<String> candidates;
@@ -244,7 +244,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 	}
 
-	if (search_box->get_text() != "") {
+	if (!search_box->get_text().is_empty()) {
 		r_item->set_collapsed(false);
 	} else {
 		// Don't collapse the root node or an abstract node on the first tree level.
@@ -322,7 +322,7 @@ void CreateDialog::_cleanup() {
 
 void CreateDialog::_confirmed() {
 	String selected_item = get_selected_type();
-	if (selected_item == String()) {
+	if (selected_item.is_empty()) {
 		return;
 	}
 
@@ -642,7 +642,7 @@ void CreateDialog::_load_favorites_and_history() {
 		while (!f->eof_reached()) {
 			String l = f->get_line().strip_edges();
 
-			if (l != String()) {
+			if (!l.is_empty()) {
 				favorite_list.push_back(l);
 			}
 		}

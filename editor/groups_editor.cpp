@@ -227,7 +227,7 @@ void GroupDialog::_group_renamed() {
 		}
 	}
 
-	if (name == "") {
+	if (name.is_empty()) {
 		renamed_group->set_text(0, selected_group);
 		error->set_text(TTR("Invalid group name."));
 		error->popup_centered();

@@ -291,7 +291,7 @@ void OccluderInstance3D::_bake_node(Node *p_node, PackedVector3Array &r_vertices
 }
 
 OccluderInstance3D::BakeError OccluderInstance3D::bake(Node *p_from_node, String p_occluder_path) {
-	if (p_occluder_path == "") {
+	if (p_occluder_path.is_empty()) {
 		if (get_occluder().is_null()) {
 			return BAKE_ERROR_NO_SAVE_PATH;
 		}

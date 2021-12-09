@@ -205,7 +205,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 		String beg = string.get_slice(" ", 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
 		if (!text_edit->has_string_delimiter(beg)) {
-			text_edit->add_string_delimiter(beg, end, end == "");
+			text_edit->add_string_delimiter(beg, end, end.is_empty());
 		}
 
 		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
@@ -219,7 +219,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 	for (const String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
-		text_edit->add_comment_delimiter(beg, end, end == "");
+		text_edit->add_comment_delimiter(beg, end, end.is_empty());
 
 		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
 			text_edit->add_auto_brace_completion_pair(beg, end);
@@ -381,7 +381,7 @@ String ScriptTextEditor::get_name() {
 		name = TTR("[unsaved]");
 	} else if (script->is_built_in()) {
 		const String &script_name = script->get_name();
-		if (script_name != "") {
+		if (!script_name.is_empty()) {
 			// If the built-in script has a custom resource name defined,
 			// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
 			name = vformat("%s (%s)", script_name, name.get_slice("::", 0));
@@ -990,7 +990,7 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 	}
 
 	String method = code_editor->get_text_editor()->get_line_gutter_metadata(p_line, p_gutter);
-	if (method == "") {
+	if (method.is_empty()) {
 		return;
 	}
 
@@ -1137,7 +1137,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 				if (expression.parse(line) == OK) {
 					Variant result = expression.execute(Array(), Variant(), false);
-					if (expression.get_error_text() == "") {
+					if (expression.get_error_text().is_empty()) {
 						results.push_back(whitespace + result.get_construct_string());
 					} else {
 						results.push_back(line);
@@ -1263,19 +1263,19 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case HELP_CONTEXTUAL: {
 			String text = tx->get_selected_text();
-			if (text == "") {
+			if (text.is_empty()) {
 				text = tx->get_word_under_caret();
 			}
-			if (text != "") {
+			if (!text.is_empty()) {
 				emit_signal(SNAME("request_help"), text);
 			}
 		} break;
 		case LOOKUP_SYMBOL: {
 			String text = tx->get_word_under_caret();
-			if (text == "") {
+			if (text.is_empty()) {
 				text = tx->get_selected_text();
 			}
-			if (text != "") {
+			if (!text.is_empty()) {
 				_lookup_symbol(text, tx->get_caret_line(), tx->get_caret_column());
 			}
 		} break;
@@ -1560,10 +1560,10 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		}
 
 		String word_at_pos = tx->get_word_at_pos(local_pos);
-		if (word_at_pos == "") {
+		if (word_at_pos.is_empty()) {
 			word_at_pos = tx->get_word_under_caret();
 		}
-		if (word_at_pos == "") {
+		if (word_at_pos.is_empty()) {
 			word_at_pos = tx->get_selected_text();
 		}
 

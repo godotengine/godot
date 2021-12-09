@@ -175,7 +175,7 @@ void VisualScriptPropertySelector::_update_search() {
 				String set_text = set_text_raw.capitalize();
 				String input = search_box->get_text().capitalize();
 
-				if (input == String() || get_text_raw.findn(input) != -1 || get_text.findn(input) != -1) {
+				if (input.is_empty() || get_text_raw.findn(input) != -1 || get_text.findn(input) != -1) {
 					TreeItem *item = search_options->create_item(category ? category : root);
 					item->set_text(0, get_text);
 					item->set_metadata(0, F.name);
@@ -188,7 +188,7 @@ void VisualScriptPropertySelector::_update_search() {
 					item->set_metadata(2, connecting);
 				}
 
-				if (input == String() || set_text_raw.findn(input) != -1 || set_text.findn(input) != -1) {
+				if (input.is_empty() || set_text_raw.findn(input) != -1 || set_text.findn(input) != -1) {
 					TreeItem *item = search_options->create_item(category ? category : root);
 					item->set_text(0, set_text);
 					item->set_metadata(0, F.name);
@@ -252,7 +252,7 @@ void VisualScriptPropertySelector::_update_search() {
 			String desc_raw = mi.name + desc_arguments;
 			String desc = desc_raw.capitalize().replace("( ", "(");
 
-			if (search_box->get_text() != String() &&
+			if (!search_box->get_text().is_empty() &&
 					name.findn(search_box->get_text()) == -1 &&
 					desc.findn(search_box->get_text()) == -1 &&
 					desc_raw.findn(search_box->get_text()) == -1) {
@@ -322,7 +322,7 @@ void VisualScriptPropertySelector::_update_search() {
 }
 
 void VisualScriptPropertySelector::create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text) {
-	if (search_input == String() || text.findn(search_input) != -1) {
+	if (search_input.is_empty() || text.findn(search_input) != -1) {
 		TreeItem *item = search_options->create_item(root);
 		item->set_text(0, text);
 		item->set_icon(0, vbc->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons")));
@@ -352,7 +352,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		bool in_filter = false;
 		Vector<String> tx_filters = search_box->get_text().split(" ");
 		for (int i = 0; i < tx_filters.size(); i++) {
-			if (tx_filters[i] == "") {
+			if (tx_filters[i].is_empty()) {
 				in_filter = true;
 			} else {
 				in_filter = false;
@@ -451,7 +451,7 @@ void VisualScriptPropertySelector::_item_selected() {
 
 	String at_class = class_type;
 
-	while (at_class != String()) {
+	while (!at_class.is_empty()) {
 		Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
 		if (E) {
 			for (int i = 0; i < E->get().properties.size(); i++) {
@@ -465,7 +465,7 @@ void VisualScriptPropertySelector::_item_selected() {
 	}
 	at_class = class_type;
 
-	while (at_class != String()) {
+	while (!at_class.is_empty()) {
 		Map<String, DocData::ClassDoc>::Element *C = dd->class_list.find(at_class);
 		if (C) {
 			for (int i = 0; i < C->get().methods.size(); i++) {
@@ -521,7 +521,7 @@ void VisualScriptPropertySelector::_item_selected() {
 
 	memdelete(names);
 
-	if (text == String()) {
+	if (text.is_empty()) {
 		return;
 	}
 

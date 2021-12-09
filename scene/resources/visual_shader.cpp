@@ -979,7 +979,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 String VisualShader::validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const {
 	String name = p_port_name;
 
-	if (name == String()) {
+	if (name.is_empty()) {
 		return String();
 	}
 
@@ -987,7 +987,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		name = name.substr(1, name.length() - 1);
 	}
 
-	if (name != String()) {
+	if (!name.is_empty()) {
 		String valid_name;
 
 		for (int i = 0; i < name.length(); i++) {
@@ -1031,7 +1031,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 	while (name.length() && !IS_INITIAL_CHAR(name[0])) {
 		name = name.substr(1, name.length() - 1);
 	}
-	if (name != String()) {
+	if (!name.is_empty()) {
 		String valid_name;
 
 		for (int i = 0; i < name.length(); i++) {
@@ -1045,7 +1045,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 		name = valid_name;
 	}
 
-	if (name == String()) {
+	if (name.is_empty()) {
 		name = p_uniform->get_caption();
 	}
 
@@ -1075,7 +1075,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 			while (name.length() && name[name.length() - 1] >= '0' && name[name.length() - 1] <= '9') {
 				name = name.substr(0, name.length() - 1);
 			}
-			ERR_FAIL_COND_V(name == String(), String());
+			ERR_FAIL_COND_V(name.is_empty(), String());
 			name += itos(attempt);
 		} else {
 			break;
@@ -1568,7 +1568,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 	}
 
 	node_code += vsnode->generate_code(get_mode(), type, node, inputs, outputs, for_preview);
-	if (node_code != String()) {
+	if (!node_code.is_empty()) {
 		code += node_name;
 		code += node_code;
 		code += "\n";
@@ -1664,7 +1664,7 @@ void VisualShader::_update_shader() const {
 						String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
 						if (mode.begins_with(render_mode_enums[idx].string)) {
 							if (count == which) {
-								if (render_mode != String()) {
+								if (!render_mode.is_empty()) {
 									render_mode += ", ";
 								}
 								render_mode += mode;
@@ -1682,7 +1682,7 @@ void VisualShader::_update_shader() const {
 		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
 			String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
 			if (flags.has(mode)) {
-				if (render_mode != String()) {
+				if (!render_mode.is_empty()) {
 					render_mode += ", ";
 				}
 				render_mode += mode;
@@ -1690,7 +1690,7 @@ void VisualShader::_update_shader() const {
 		}
 	}
 
-	if (render_mode != String()) {
+	if (!render_mode.is_empty()) {
 		global_code += "render_mode " + render_mode + ";\n\n";
 	}
 
@@ -2468,7 +2468,7 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 			idx++;
 		}
 
-		if (code == String()) {
+		if (code.is_empty()) {
 			switch (get_output_port_type(0)) {
 				case PORT_TYPE_SCALAR: {
 					code = "	" + p_output_vars[0] + " = 0.0;\n";
@@ -2502,7 +2502,7 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 			idx++;
 		}
 
-		if (code == String()) {
+		if (code.is_empty()) {
 			code = "	" + p_output_vars[0] + " = 0.0;\n"; //default (none found) is scalar
 		}
 
@@ -2605,7 +2605,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 
 		while (ports[idx].mode != Shader::MODE_MAX) {
 			if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
-				if (port_list != String()) {
+				if (!port_list.is_empty()) {
 					port_list += ",";
 				}
 				port_list += ports[idx].name;
@@ -2613,7 +2613,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 			idx++;
 		}
 
-		if (port_list == "") {
+		if (port_list.is_empty()) {
 			port_list = TTR("None");
 		}
 		property.hint_string = port_list;
@@ -3063,7 +3063,7 @@ String VisualShaderNodeOutput::generate_code(Shader::Mode p_mode, VisualShader::
 	String code;
 	while (ports[idx].mode != Shader::MODE_MAX) {
 		if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
-			if (p_input_vars[count] != String()) {
+			if (!p_input_vars[count].is_empty()) {
 				String s = ports[idx].string;
 				if (s.find(":") != -1) {
 					code += "	" + s.get_slicec(':', 0) + " = " + p_input_vars[count] + "." + s.get_slicec(':', 1) + ";\n";

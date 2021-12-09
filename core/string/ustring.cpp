@@ -4283,7 +4283,7 @@ bool String::is_valid_filename() const {
 		return false;
 	}
 
-	if (stripped == String()) {
+	if (stripped.is_empty()) {
 		return false;
 	}
 
@@ -4902,7 +4902,7 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 String RTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
-		if (rtr == String() || rtr == p_text) {
+		if (rtr.is_empty() || rtr == p_text) {
 			return TranslationServer::get_singleton()->translate(p_text, p_context);
 		} else {
 			return rtr;
@@ -4915,7 +4915,7 @@ String RTR(const String &p_text, const String &p_context) {
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
-		if (rtr == String() || rtr == p_text || rtr == p_text_plural) {
+		if (rtr.is_empty() || rtr == p_text || rtr == p_text_plural) {
 			return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
 		} else {
 			return rtr;

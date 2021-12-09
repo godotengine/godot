@@ -477,7 +477,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	}
 
 	String code = scr->get_source_code().strip_edges();
-	if (code == "") {
+	if (code.is_empty()) {
 		return Ref<Texture2D>();
 	}
 

@@ -1046,7 +1046,7 @@ void initialize_theme() {
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	Ref<Font> font;
-	if (font_path != String()) {
+	if (!font_path.is_empty()) {
 		font = ResourceLoader::load(font_path);
 		if (!font.is_valid()) {
 			ERR_PRINT("Error loading custom font '" + font_path + "'");
@@ -1058,7 +1058,7 @@ void initialize_theme() {
 		make_default_theme(default_theme_hidpi, font);
 	}
 
-	if (theme_path != String()) {
+	if (!theme_path.is_empty()) {
 		Ref<Theme> theme = ResourceLoader::load(theme_path);
 		if (theme.is_valid()) {
 			Theme::set_project_default(theme);

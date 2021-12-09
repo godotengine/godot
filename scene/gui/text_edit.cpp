@@ -601,7 +601,7 @@ void TextEdit::_notification(int p_what) {
 			String highlighted_text = get_selected_text();
 
 			// Check if highlighted words contain only whitespaces (tabs or spaces).
-			bool only_whitespaces_highlighted = highlighted_text.strip_edges() == String();
+			bool only_whitespaces_highlighted = highlighted_text.strip_edges().is_empty();
 
 			const int caret_wrap_index = get_caret_wrap_index();
 
@@ -916,7 +916,7 @@ void TextEdit::_notification(int p_what) {
 							switch (gutter.type) {
 								case GUTTER_TYPE_STRING: {
 									const String &text = get_line_gutter_text(line, g);
-									if (text == "") {
+									if (text.is_empty()) {
 										break;
 									}
 
@@ -2428,7 +2428,7 @@ void TextEdit::_update_caches() {
 	} else {
 		dir = (TextServer::Direction)text_direction;
 	}
-	text.set_direction_and_language(dir, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+	text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 	text.set_font_features(opentype_features);
 	text.set_draw_control_chars(draw_control_chars);
 	text.set_font(font);
@@ -2611,7 +2611,7 @@ void TextEdit::set_text_direction(Control::TextDirection p_text_direction) {
 		} else {
 			dir = (TextServer::Direction)text_direction;
 		}
-		text.set_direction_and_language(dir, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 		text.invalidate_all();
 
 		if (menu_dir) {
@@ -2662,7 +2662,7 @@ void TextEdit::set_language(const String &p_language) {
 		} else {
 			dir = (TextServer::Direction)text_direction;
 		}
-		text.set_direction_and_language(dir, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 		text.invalidate_all();
 		update();
 	}

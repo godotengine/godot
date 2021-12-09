@@ -52,7 +52,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		return;
 	}
 
-	if (path_cache != "") {
+	if (!path_cache.is_empty()) {
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
 		ResourceCache::lock.write_unlock();
@@ -82,7 +82,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 	}
 	path_cache = p_path;
 
-	if (path_cache != "") {
+	if (!path_cache.is_empty()) {
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources[path_cache] = this;
 		ResourceCache::lock.write_unlock();
@@ -383,7 +383,7 @@ bool Resource::is_translation_remapped() const {
 #ifdef TOOLS_ENABLED
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(const String &p_path, const String &p_id) {
-	if (p_id == "") {
+	if (p_id.is_empty()) {
 		ResourceCache::path_cache_lock.write_lock();
 		ResourceCache::resource_path_cache[p_path].erase(get_path());
 		ResourceCache::path_cache_lock.write_unlock();
@@ -434,7 +434,7 @@ Resource::Resource() :
 		remapped_list(this) {}
 
 Resource::~Resource() {
-	if (path_cache != "") {
+	if (!path_cache.is_empty()) {
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
 		ResourceCache::lock.write_unlock();

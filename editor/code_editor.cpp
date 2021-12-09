@@ -1534,7 +1534,7 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 
 void CodeTextEditor::set_error(const String &p_error) {
 	error->set_text(p_error);
-	if (p_error != "") {
+	if (!p_error.is_empty()) {
 		error->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	} else {
 		error->set_default_cursor_shape(CURSOR_ARROW);
@@ -1547,7 +1547,7 @@ void CodeTextEditor::set_error_pos(int p_line, int p_column) {
 }
 
 void CodeTextEditor::goto_error() {
-	if (error->get_text() != "") {
+	if (!error->get_text().is_empty()) {
 		text_editor->unfold_line(error_line);
 		text_editor->set_caret_line(error_line);
 		text_editor->set_caret_column(error_column);

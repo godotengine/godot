@@ -4263,7 +4263,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 	}
 	hb_buffer_set_script(p_sd->hb_buffer, p_script);
 
-	if (p_sd->spans[p_span].language != String()) {
+	if (!p_sd->spans[p_span].language.is_empty()) {
 		hb_language_t lang = hb_language_from_string(p_sd->spans[p_span].language.ascii().get_data(), -1);
 		hb_buffer_set_language(p_sd->hb_buffer, lang);
 	}
@@ -4971,12 +4971,12 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 }
 
 String TextServerAdvanced::format_number(const String &p_string, const String &p_language) const {
-	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
 	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].digits == String()) {
+			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
 			res.replace("e", num_systems[i].exp);
@@ -4996,12 +4996,12 @@ String TextServerAdvanced::format_number(const String &p_string, const String &p
 }
 
 String TextServerAdvanced::parse_number(const String &p_string, const String &p_language) const {
-	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
 	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].digits == String()) {
+			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
 			res.replace(num_systems[i].exp, "e");
@@ -5024,11 +5024,11 @@ String TextServerAdvanced::parse_number(const String &p_string, const String &p_
 }
 
 String TextServerAdvanced::percent_sign(const String &p_language) const {
-	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].percent_sign == String()) {
+			if (num_systems[i].percent_sign.is_empty()) {
 				return "%";
 			}
 			return num_systems[i].percent_sign;

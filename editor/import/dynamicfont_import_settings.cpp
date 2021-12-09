@@ -1597,7 +1597,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	menu_langs = memnew(PopupMenu);
 	menu_langs->set_name("Language");
-	for (int i = 0; langs[i].name != String(); i++) {
+	for (int i = 0; !langs[i].name.is_empty(); i++) {
 		if (langs[i].name == "-") {
 			menu_langs->add_separator();
 		} else {
@@ -1609,7 +1609,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	menu_scripts = memnew(PopupMenu);
 	menu_scripts->set_name("Script");
-	for (int i = 0; scripts[i].name != String(); i++) {
+	for (int i = 0; !scripts[i].name.is_empty(); i++) {
 		if (scripts[i].name == "-") {
 			menu_scripts->add_separator();
 		} else {
@@ -1826,7 +1826,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	glyph_tree->connect("item_selected", callable_mp(this, &DynamicFontImportSettings::_range_selected));
 	glyph_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	glyph_root = glyph_tree->create_item();
-	for (int i = 0; unicode_ranges[i].name != String(); i++) {
+	for (int i = 0; !unicode_ranges[i].name.is_empty(); i++) {
 		_add_glyph_range_item(unicode_ranges[i].start, unicode_ranges[i].end, unicode_ranges[i].name);
 	}
 

@@ -266,7 +266,7 @@ void VersionControlEditorPlugin::_display_file_diff(String p_file_path) {
 
 void VersionControlEditorPlugin::_refresh_file_diff() {
 	String open_file = diff_file_name->get_text();
-	if (open_file != "") {
+	if (!open_file.is_empty()) {
 		_display_file_diff(diff_file_name->get_text());
 	}
 }
@@ -299,7 +299,7 @@ void VersionControlEditorPlugin::_update_commit_status() {
 }
 
 void VersionControlEditorPlugin::_update_commit_button() {
-	commit_button->set_disabled(commit_message->get_text().strip_edges() == "");
+	commit_button->set_disabled(commit_message->get_text().strip_edges().is_empty());
 }
 
 void VersionControlEditorPlugin::_commit_message_gui_input(const Ref<InputEvent> &p_event) {

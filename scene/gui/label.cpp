@@ -96,7 +96,7 @@ void Label::_shape() {
 		if (visible_chars >= 0) {
 			text = text.substr(0, visible_chars);
 		}
-		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, text));
 		dirty = false;
 		lines_dirty = true;
