@@ -204,7 +204,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_WHITE_TEXTURE",
 	"HINT_BLACK_TEXTURE",
 	"HINT_NORMAL_TEXTURE",
-	"HINT_ANISO_TEXTURE",
+	"HINT_ANISOTROPY_TEXTURE",
 	"HINT_ALBEDO_TEXTURE",
 	"HINT_BLACK_ALBEDO_TEXTURE",
 	"HINT_COLOR",
@@ -318,7 +318,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_ROUGHNESS_B, "hint_roughness_b" },
 	{ TK_HINT_ROUGHNESS_A, "hint_roughness_a" },
 	{ TK_HINT_ROUGHNESS_GRAY, "hint_roughness_gray" },
-	{ TK_HINT_ANISO_TEXTURE, "hint_aniso" },
+	{ TK_HINT_ANISOTROPY_TEXTURE, "hint_anisotropy" },
 	{ TK_HINT_ALBEDO_TEXTURE, "hint_albedo" },
 	{ TK_HINT_BLACK_ALBEDO_TEXTURE, "hint_black_albedo" },
 	{ TK_HINT_COLOR, "hint_color" },
@@ -7946,8 +7946,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_A;
 							} else if (tk.type == TK_HINT_ROUGHNESS_GRAY) {
 								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_GRAY;
-							} else if (tk.type == TK_HINT_ANISO_TEXTURE) {
-								uniform2.hint = ShaderNode::Uniform::HINT_ANISO;
+							} else if (tk.type == TK_HINT_ANISOTROPY_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_ANISOTROPY;
 							} else if (tk.type == TK_HINT_ALBEDO_TEXTURE) {
 								uniform2.hint = ShaderNode::Uniform::HINT_ALBEDO;
 							} else if (tk.type == TK_HINT_BLACK_ALBEDO_TEXTURE) {
@@ -9539,7 +9539,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					options.push_back("filter_nearest_mipmap");
 					options.push_back("filter_nearest_mipmap_aniso");
 					options.push_back("hint_albedo");
-					options.push_back("hint_aniso");
+					options.push_back("hint_anisotropy");
 					options.push_back("hint_black");
 					options.push_back("hint_black_albedo");
 					options.push_back("hint_normal");
