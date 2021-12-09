@@ -293,8 +293,8 @@
 				Returns the given column's text.
 			</description>
 		</method>
-		<method name="get_text_align" qualifiers="const">
-			<return type="int" enum="TreeItem.TextAlign" />
+		<method name="get_text_alignment" qualifiers="const">
+			<return type="int" enum="HorizontalAlignment" />
 			<argument index="0" name="column" type="int" />
 			<description>
 				Returns the given column's text alignment.
@@ -623,12 +623,12 @@
 				Sets the given column's text value.
 			</description>
 		</method>
-		<method name="set_text_align">
+		<method name="set_text_alignment">
 			<return type="void" />
 			<argument index="0" name="column" type="int" />
-			<argument index="1" name="text_align" type="int" enum="TreeItem.TextAlign" />
+			<argument index="1" name="text_alignment" type="int" enum="HorizontalAlignment" />
 			<description>
-				Sets the given column's text alignment. See [enum TextAlign] for possible values.
+				Sets the given column's text alignment. See [enum HorizontalAlignment] for possible values.
 			</description>
 		</method>
 		<method name="set_text_direction">
@@ -678,15 +678,6 @@
 			Cell contains an icon.
 		</constant>
 		<constant name="CELL_MODE_CUSTOM" value="4" enum="TreeCellMode">
-		</constant>
-		<constant name="ALIGN_LEFT" value="0" enum="TextAlign">
-			Align text to the left. See [code]set_text_align()[/code].
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="TextAlign">
-			Center text. See [code]set_text_align()[/code].
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="TextAlign">
-			Align text to the right. See [code]set_text_align()[/code].
 		</constant>
 	</constants>
 </class>

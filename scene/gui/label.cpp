@@ -175,7 +175,7 @@ void Label::_shape() {
 			if (lines_hidden) {
 				overrun_flags |= TextServer::OVERRUN_ENFORCE_ELLIPSIS;
 			}
-			if (align == ALIGN_FILL) {
+			if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 				for (int i = 0; i < lines_rid.size(); i++) {
 					if (i < visible_lines - 1 || lines_rid.size() == 1) {
 						TS->shaped_text_fit_to_width(lines_rid[i], width);
@@ -191,7 +191,7 @@ void Label::_shape() {
 		} else {
 			// Autowrap disabled.
 			for (int i = 0; i < lines_rid.size(); i++) {
-				if (align == ALIGN_FILL) {
+				if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 					TS->shaped_text_fit_to_width(lines_rid[i], width);
 					overrun_flags |= TextServer::OVERRUN_JUSTIFICATION_AWARE;
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
@@ -326,21 +326,21 @@ void Label::_notification(int p_what) {
 
 		int vbegin = 0, vsep = 0;
 		if (lines_visible > 0) {
-			switch (valign) {
-				case VALIGN_TOP: {
+			switch (vertical_alignment) {
+				case VERTICAL_ALIGNMENT_TOP: {
 					// Nothing.
 				} break;
-				case VALIGN_CENTER: {
+				case VERTICAL_ALIGNMENT_CENTER: {
 					vbegin = (size.y - (total_h - line_spacing)) / 2;
 					vsep = 0;
 
 				} break;
-				case VALIGN_BOTTOM: {
+				case VERTICAL_ALIGNMENT_BOTTOM: {
 					vbegin = size.y - (total_h - line_spacing);
 					vsep = 0;
 
 				} break;
-				case VALIGN_FILL: {
+				case VERTICAL_ALIGNMENT_FILL: {
 					vbegin = 0;
 					if (lines_visible > 1) {
 						vsep = (size.y - (total_h - line_spacing)) / (lines_visible - 1);
@@ -358,25 +358,25 @@ void Label::_notification(int p_what) {
 			Size2 line_size = TS->shaped_text_get_size(lines_rid[i]);
 			ofs.x = 0;
 			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) + font->get_spacing(TextServer::SPACING_TOP);
-			switch (align) {
-				case ALIGN_FILL:
+			switch (horizontal_alignment) {
+				case HORIZONTAL_ALIGNMENT_FILL:
 					if (rtl && autowrap_mode != AUTOWRAP_OFF) {
 						ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
 					} else {
 						ofs.x = style->get_offset().x;
 					}
 					break;
-				case ALIGN_LEFT: {
+				case HORIZONTAL_ALIGNMENT_LEFT: {
 					if (rtl_layout) {
 						ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
 					} else {
 						ofs.x = style->get_offset().x;
 					}
 				} break;
-				case ALIGN_CENTER: {
+				case HORIZONTAL_ALIGNMENT_CENTER: {
 					ofs.x = int(size.width - line_size.width) / 2;
 				} break;
-				case ALIGN_RIGHT: {
+				case HORIZONTAL_ALIGNMENT_RIGHT: {
 					if (rtl_layout) {
 						ofs.x = style->get_offset().x;
 					} else {
@@ -556,29 +556,29 @@ int Label::get_visible_line_count() const {
 	return lines_visible;
 }
 
-void Label::set_align(Align p_align) {
-	ERR_FAIL_INDEX((int)p_align, 4);
-	if (align != p_align) {
-		if (align == ALIGN_FILL || p_align == ALIGN_FILL) {
+void Label::set_horizontal_alignment(HorizontalAlignment p_alignment) {
+	ERR_FAIL_INDEX((int)p_alignment, 4);
+	if (horizontal_alignment != p_alignment) {
+		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 			lines_dirty = true; // Reshape lines.
 		}
-		align = p_align;
+		horizontal_alignment = p_alignment;
 	}
 	update();
 }
 
-Label::Align Label::get_align() const {
-	return align;
+HorizontalAlignment Label::get_horizontal_alignment() const {
+	return horizontal_alignment;
 }
 
-void Label::set_valign(VAlign p_align) {
-	ERR_FAIL_INDEX((int)p_align, 4);
-	valign = p_align;
+void Label::set_vertical_alignment(VerticalAlignment p_alignment) {
+	ERR_FAIL_INDEX((int)p_alignment, 4);
+	vertical_alignment = p_alignment;
 	update();
 }
 
-Label::VAlign Label::get_valign() const {
-	return valign;
+VerticalAlignment Label::get_vertical_alignment() const {
+	return vertical_alignment;
 }
 
 void Label::set_text(const String &p_string) {
@@ -809,10 +809,10 @@ void Label::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void Label::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_align", "align"), &Label::set_align);
-	ClassDB::bind_method(D_METHOD("get_align"), &Label::get_align);
-	ClassDB::bind_method(D_METHOD("set_valign", "valign"), &Label::set_valign);
-	ClassDB::bind_method(D_METHOD("get_valign"), &Label::get_valign);
+	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &Label::set_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &Label::get_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("set_vertical_alignment", "alignment"), &Label::set_vertical_alignment);
+	ClassDB::bind_method(D_METHOD("get_vertical_alignment"), &Label::get_vertical_alignment);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &Label::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &Label::get_text);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &Label::set_text_direction);
@@ -847,16 +847,6 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &Label::set_structured_text_bidi_override_options);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &Label::get_structured_text_bidi_override_options);
 
-	BIND_ENUM_CONSTANT(ALIGN_LEFT);
-	BIND_ENUM_CONSTANT(ALIGN_CENTER);
-	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
-	BIND_ENUM_CONSTANT(ALIGN_FILL);
-
-	BIND_ENUM_CONSTANT(VALIGN_TOP);
-	BIND_ENUM_CONSTANT(VALIGN_CENTER);
-	BIND_ENUM_CONSTANT(VALIGN_BOTTOM);
-	BIND_ENUM_CONSTANT(VALIGN_FILL);
-
 	BIND_ENUM_CONSTANT(AUTOWRAP_OFF);
 	BIND_ENUM_CONSTANT(AUTOWRAP_ARBITRARY);
 	BIND_ENUM_CONSTANT(AUTOWRAP_WORD);
@@ -869,10 +859,11 @@ void Label::_bind_methods() {
 	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ELLIPSIS);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
+	ADD_GROUP("Locale", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language"), "set_language", "get_language");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "valign", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_valign", "get_valign");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");

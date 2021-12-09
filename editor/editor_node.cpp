@@ -6150,7 +6150,7 @@ EditorNode::EditorNode() {
 	Label *dock_label = memnew(Label);
 	dock_label->set_text(TTR("Dock Position"));
 	dock_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	dock_label->set_align(Label::ALIGN_CENTER);
+	dock_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	dock_hb->add_child(dock_label);
 
 	dock_tab_move_right = memnew(Button);
@@ -6190,7 +6190,7 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		dock_slot[i]->set_popup(dock_select_popup);
 		dock_slot[i]->connect("pre_popup_pressed", callable_mp(this, &EditorNode::_dock_pre_popup), varray(i));
-		dock_slot[i]->set_tab_align(TabContainer::ALIGN_LEFT);
+		dock_slot[i]->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 		dock_slot[i]->set_drag_to_rearrange_enabled(true);
 		dock_slot[i]->set_tabs_rearrange_group(1);
 		dock_slot[i]->connect("tab_changed", callable_mp(this, &EditorNode::_dock_tab_changed));
@@ -6230,7 +6230,7 @@ EditorNode::EditorNode() {
 	scene_tabs->add_theme_style_override("tab_unselected", gui_base->get_theme_stylebox(SNAME("SceneTabBG"), SNAME("EditorStyles")));
 	scene_tabs->set_select_with_rmb(true);
 	scene_tabs->add_tab("unsaved");
-	scene_tabs->set_tab_align(TabBar::ALIGN_LEFT);
+	scene_tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/scene_tabs/always_show_close_button", false)) ? TabBar::CLOSE_BUTTON_SHOW_ALWAYS : TabBar::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);

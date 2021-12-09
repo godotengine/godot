@@ -675,11 +675,11 @@ void CurveEditor::_draw() {
 		// X axis
 		float y = curve.get_min_value();
 		Vector2 off(0, font_height - 1);
-		draw_string(font, get_view_pos(Vector2(0, y)) + off, "0.0", HALIGN_LEFT, -1, font_size, text_color);
-		draw_string(font, get_view_pos(Vector2(0.25, y)) + off, "0.25", HALIGN_LEFT, -1, font_size, text_color);
-		draw_string(font, get_view_pos(Vector2(0.5, y)) + off, "0.5", HALIGN_LEFT, -1, font_size, text_color);
-		draw_string(font, get_view_pos(Vector2(0.75, y)) + off, "0.75", HALIGN_LEFT, -1, font_size, text_color);
-		draw_string(font, get_view_pos(Vector2(1, y)) + off, "1.0", HALIGN_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0, y)) + off, "0.0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0.25, y)) + off, "0.25", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0.5, y)) + off, "0.5", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0.75, y)) + off, "0.75", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(1, y)) + off, "1.0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
 	}
 
 	{
@@ -688,9 +688,9 @@ void CurveEditor::_draw() {
 		float m1 = 0.5 * (curve.get_min_value() + curve.get_max_value());
 		float m2 = curve.get_max_value();
 		Vector2 off(1, -1);
-		draw_string(font, get_view_pos(Vector2(0, m0)) + off, String::num(m0, 2), HALIGN_LEFT, -1, font_size, text_color);
-		draw_string(font, get_view_pos(Vector2(0, m1)) + off, String::num(m1, 2), HALIGN_LEFT, -1, font_size, text_color);
-		draw_string(font, get_view_pos(Vector2(0, m2)) + off, String::num(m2, 3), HALIGN_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0, m0)) + off, String::num(m0, 2), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0, m1)) + off, String::num(m1, 2), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		draw_string(font, get_view_pos(Vector2(0, m2)) + off, String::num(m2, 3), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
 	}
 
 	// Draw tangents for current point
@@ -750,10 +750,10 @@ void CurveEditor::_draw() {
 
 	if (_selected_point > 0 && _selected_point + 1 < curve.get_point_count()) {
 		text_color.a *= 0.4;
-		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Hold Shift to edit tangents individually"), HALIGN_LEFT, -1, font_size, text_color);
+		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Hold Shift to edit tangents individually"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
 	} else if (curve.get_point_count() == 0) {
 		text_color.a *= 0.4;
-		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Right click to add point"), HALIGN_LEFT, -1, font_size, text_color);
+		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Right click to add point"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
 	}
 }
 

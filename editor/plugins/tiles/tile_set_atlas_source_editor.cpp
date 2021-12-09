@@ -2346,7 +2346,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	middle_vbox_container->add_child(tile_inspector);
 
 	tile_inspector_no_tile_selected_label = memnew(Label);
-	tile_inspector_no_tile_selected_label->set_align(Label::ALIGN_CENTER);
+	tile_inspector_no_tile_selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	tile_inspector_no_tile_selected_label->set_text(TTR("No tile selected."));
 	middle_vbox_container->add_child(tile_inspector_no_tile_selected_label);
 
@@ -2527,8 +2527,8 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tile_atlas_view_missing_source_label = memnew(Label);
 	tile_atlas_view_missing_source_label->set_text(TTR("Add or select an atlas texture to the left panel."));
-	tile_atlas_view_missing_source_label->set_align(Label::ALIGN_CENTER);
-	tile_atlas_view_missing_source_label->set_valign(Label::VALIGN_CENTER);
+	tile_atlas_view_missing_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	tile_atlas_view_missing_source_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	tile_atlas_view_missing_source_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view_missing_source_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view_missing_source_label->hide();

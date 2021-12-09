@@ -235,7 +235,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 
 	if (p_overview) {
 		class_desc->push_cell();
-		class_desc->push_paragraph(RichTextLabel::ALIGN_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
+		class_desc->push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
 	} else {
 		_add_bulletpoint();
 	}
@@ -685,7 +685,7 @@ void EditorHelp::_update_doc() {
 
 			// Property type.
 			class_desc->push_cell();
-			class_desc->push_paragraph(RichTextLabel::ALIGN_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
+			class_desc->push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.properties[i].type, cd.properties[i].enumeration);
 			class_desc->pop();
@@ -1646,7 +1646,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front(tag);
 		} else if (tag == "center") {
 			//align to center
-			p_rt->push_paragraph(RichTextLabel::ALIGN_CENTER, Control::TEXT_DIRECTION_AUTO, "");
+			p_rt->push_paragraph(HORIZONTAL_ALIGNMENT_CENTER, Control::TEXT_DIRECTION_AUTO, "");
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "br") {

@@ -37,20 +37,6 @@ class Label : public Control {
 	GDCLASS(Label, Control);
 
 public:
-	enum Align {
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_FILL
-	};
-
-	enum VAlign {
-		VALIGN_TOP,
-		VALIGN_CENTER,
-		VALIGN_BOTTOM,
-		VALIGN_FILL
-	};
-
 	enum AutowrapMode {
 		AUTOWRAP_OFF,
 		AUTOWRAP_ARBITRARY,
@@ -67,8 +53,8 @@ public:
 	};
 
 private:
-	Align align = ALIGN_LEFT;
-	VAlign valign = VALIGN_TOP;
+	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
 	String xl_text;
 	AutowrapMode autowrap_mode = AUTOWRAP_OFF;
@@ -109,11 +95,11 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
-	void set_align(Align p_align);
-	Align get_align() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
-	void set_valign(VAlign p_align);
-	VAlign get_valign() const;
+	void set_vertical_alignment(VerticalAlignment p_alignment);
+	VerticalAlignment get_vertical_alignment() const;
 
 	void set_text(const String &p_string);
 	String get_text() const;
@@ -167,8 +153,6 @@ public:
 	~Label();
 };
 
-VARIANT_ENUM_CAST(Label::Align);
-VARIANT_ENUM_CAST(Label::VAlign);
 VARIANT_ENUM_CAST(Label::AutowrapMode);
 VARIANT_ENUM_CAST(Label::OverrunBehavior);
 

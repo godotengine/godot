@@ -851,7 +851,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	Ref<Font> font = sampled_font;
 
-	font->draw_string(canvas_item, pos, sample, HALIGN_LEFT, -1.f, 50, Color(1, 1, 1));
+	font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(1, 1, 1));
 
 	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_generate_frame_started), Vector<Variant>(), Object::CONNECT_ONESHOT);
 

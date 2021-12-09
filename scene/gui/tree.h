@@ -52,12 +52,6 @@ public:
 		CELL_MODE_CUSTOM, ///< Contains a custom value, show a string, and an edit button
 	};
 
-	enum TextAlign {
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT
-	};
-
 private:
 	friend class Tree;
 
@@ -98,7 +92,7 @@ private:
 		Size2i cached_minimum_size;
 		bool cached_minimum_size_dirty = true;
 
-		TextAlign text_align = ALIGN_LEFT;
+		HorizontalAlignment text_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
 		Variant meta;
 		String tooltip;
@@ -316,8 +310,8 @@ public:
 	void set_tooltip(int p_column, const String &p_tooltip);
 	String get_tooltip(int p_column) const;
 
-	void set_text_align(int p_column, TextAlign p_align);
-	TextAlign get_text_align(int p_column) const;
+	void set_text_alignment(int p_column, HorizontalAlignment p_alignment);
+	HorizontalAlignment get_text_alignment(int p_column) const;
 
 	void set_expand_right(int p_column, bool p_enable);
 	bool get_expand_right(int p_column) const;
@@ -359,7 +353,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(TreeItem::TreeCellMode);
-VARIANT_ENUM_CAST(TreeItem::TextAlign);
 
 class VBoxContainer;
 

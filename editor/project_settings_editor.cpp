@@ -513,13 +513,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	data = p_data;
 
 	tab_container = memnew(TabContainer);
-	tab_container->set_tab_align(TabContainer::ALIGN_LEFT);
+	tab_container->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	add_child(tab_container);
 
 	VBoxContainer *general_editor = memnew(VBoxContainer);
 	general_editor->set_name(TTR("General"));
-	general_editor->set_alignment(BoxContainer::ALIGN_BEGIN);
+	general_editor->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
 	general_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_container->add_child(general_editor);
 

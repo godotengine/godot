@@ -1083,7 +1083,7 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 			item = glyph_table->create_item(root);
 			ERR_FAIL_NULL(item);
 			item->set_text(0, _pad_zeros(String::num_int64(c, 16)));
-			item->set_text_align(0, TreeItem::ALIGN_LEFT);
+			item->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 			item->set_selectable(0, false);
 			item->set_custom_bg_color(0, glyph_table->get_theme_color("dark_color_3", "Editor"));
 		}
@@ -1101,7 +1101,7 @@ void DynamicFontImportSettings::_edit_range(int32_t p_start, int32_t p_end) {
 			item->set_custom_bg_color(col + 1, glyph_table->get_theme_color("dark_color_2", "Editor"));
 		}
 		item->set_metadata(col + 1, c);
-		item->set_text_align(col + 1, TreeItem::ALIGN_CENTER);
+		item->set_text_alignment(col + 1, HORIZONTAL_ALIGNMENT_CENTER);
 		item->set_selectable(col + 1, true);
 		item->set_custom_font(col + 1, font_main);
 		item->set_custom_font_size(col + 1, get_theme_font_size("font_size") * 2);
@@ -1632,7 +1632,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	root_vb->add_child(main_pages);
 
 	label_warn = memnew(Label);
-	label_warn->set_align(Label::ALIGN_CENTER);
+	label_warn->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_warn->set_text("");
 	root_vb->add_child(label_warn);
 	label_warn->add_theme_color_override("font_color", warn_color);
@@ -1656,8 +1656,8 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	font_preview_label = memnew(Label);
 	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
-	font_preview_label->set_align(Label::ALIGN_CENTER);
-	font_preview_label->set_valign(Label::VALIGN_CENTER);
+	font_preview_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	font_preview_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	font_preview_label->set_autowrap_mode(Label::AUTOWRAP_ARBITRARY);
 	font_preview_label->set_clip_text(true);
 	font_preview_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1694,7 +1694,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	label_vars = memnew(Label);
 	page2_hb_vars->add_child(label_vars);
-	label_vars->set_align(Label::ALIGN_CENTER);
+	label_vars->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_vars->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	label_vars->set_text(TTR("Configuration:"));
 
@@ -1845,7 +1845,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page5_vb->add_child(hb_lang);
 
 	label_langs = memnew(Label);
-	label_langs->set_align(Label::ALIGN_CENTER);
+	label_langs->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_langs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	label_langs->set_text(TTR("Language support overrides"));
 	hb_lang->add_child(label_langs);
@@ -1873,7 +1873,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	page5_vb->add_child(hb_script);
 
 	label_script = memnew(Label);
-	label_script->set_align(Label::ALIGN_CENTER);
+	label_script->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_script->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	label_script->set_text(TTR("Script support overrides"));
 	hb_script->add_child(label_script);

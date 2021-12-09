@@ -61,14 +61,14 @@
 		</method>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_align" getter="get_align" enum="Label.Align" default="0">
-			Controls the text's horizontal align. Supports left, center, right, and fill, or justify. Set it to one of the [enum Align] constants.
-		</member>
 		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="Label.AutowrapMode" default="0">
 			If set to something other than [constant AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. To see how each mode behaves, see [enum AutowrapMode].
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text" default="false">
 			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle and will clip text horizontally.
+		</member>
+		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -102,38 +102,14 @@
 		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
 			If [code]true[/code], all the text displays as UPPERCASE.
 		</member>
-		<member name="valign" type="int" setter="set_valign" getter="get_valign" enum="Label.VAlign" default="0">
-			Controls the text's vertical align. Supports top, center, bottom, and fill. Set it to one of the [enum VAlign] constants.
+		<member name="vertical_alignment" type="int" setter="set_vertical_alignment" getter="get_vertical_alignment" enum="VerticalAlignment" default="0">
+			Controls the text's vertical alignment. Supports top, center, bottom, and fill. Set it to one of the [enum VerticalAlignment] constants.
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			Restricts the number of characters to display. Set to -1 to disable.
 		</member>
 	</members>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="Align">
-			Align rows to the left (default).
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="Align">
-			Align rows centered.
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Align rows to the right.
-		</constant>
-		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Expand row to fit the width.
-		</constant>
-		<constant name="VALIGN_TOP" value="0" enum="VAlign">
-			Align the whole text to the top.
-		</constant>
-		<constant name="VALIGN_CENTER" value="1" enum="VAlign">
-			Align the whole text to the center.
-		</constant>
-		<constant name="VALIGN_BOTTOM" value="2" enum="VAlign">
-			Align the whole text to the bottom.
-		</constant>
-		<constant name="VALIGN_FILL" value="3" enum="VAlign">
-			Align the whole text by spreading the rows.
-		</constant>
 		<constant name="AUTOWRAP_OFF" value="0" enum="AutowrapMode">
 			Autowrap is disabled.
 		</constant>

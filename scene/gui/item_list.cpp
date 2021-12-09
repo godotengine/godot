@@ -1213,7 +1213,7 @@ void ItemList::_notification(int p_what) {
 						text_ofs.x = size.width - text_ofs.x - max_len;
 					}
 
-					items.write[i].text_buf->set_align(HALIGN_CENTER);
+					items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 					if (outline_size > 0 && font_outline_color.a > 0) {
 						items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, outline_size, font_outline_color);
@@ -1241,9 +1241,9 @@ void ItemList::_notification(int p_what) {
 					items.write[i].text_buf->set_width(max_len);
 
 					if (rtl) {
-						items.write[i].text_buf->set_align(HALIGN_RIGHT);
+						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 					} else {
-						items.write[i].text_buf->set_align(HALIGN_LEFT);
+						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 					}
 
 					if (outline_size > 0 && font_outline_color.a > 0) {

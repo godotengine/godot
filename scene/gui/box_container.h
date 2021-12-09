@@ -37,15 +37,15 @@ class BoxContainer : public Container {
 	GDCLASS(BoxContainer, Container);
 
 public:
-	enum AlignMode {
-		ALIGN_BEGIN,
-		ALIGN_CENTER,
-		ALIGN_END
+	enum AlignmentMode {
+		ALIGNMENT_BEGIN,
+		ALIGNMENT_CENTER,
+		ALIGNMENT_END
 	};
 
 private:
 	bool vertical = false;
-	AlignMode align = ALIGN_BEGIN;
+	AlignmentMode alignment = ALIGNMENT_BEGIN;
 
 	void _resort();
 
@@ -57,8 +57,8 @@ protected:
 public:
 	Control *add_spacer(bool p_begin = false);
 
-	void set_alignment(AlignMode p_align);
-	AlignMode get_alignment() const;
+	void set_alignment(AlignmentMode p_alignment);
+	AlignmentMode get_alignment() const;
 
 	virtual Size2 get_minimum_size() const override;
 
@@ -84,6 +84,6 @@ public:
 			BoxContainer(true) {}
 };
 
-VARIANT_ENUM_CAST(BoxContainer::AlignMode);
+VARIANT_ENUM_CAST(BoxContainer::AlignmentMode);
 
 #endif // BOX_CONTAINER_H

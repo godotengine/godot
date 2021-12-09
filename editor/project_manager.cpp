@@ -850,7 +850,7 @@ public:
 		iphb->add_child(install_browse);
 
 		msg = memnew(Label);
-		msg->set_align(Label::ALIGN_CENTER);
+		msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		vb->add_child(msg);
 
 		// rasterizer selection
@@ -904,8 +904,8 @@ public:
 		l->set_text(TTR("The renderer can be changed later, but scenes may need to be adjusted."));
 		// Add some extra spacing to separate it from the list above and the buttons below.
 		l->set_custom_minimum_size(Size2(0, 40) * EDSCALE);
-		l->set_align(Label::ALIGN_CENTER);
-		l->set_valign(Label::VALIGN_CENTER);
+		l->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		l->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rasterizer_container->add_child(l);
 
@@ -1361,7 +1361,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	favorite->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite->connect("pressed", callable_mp(this, &ProjectList::_favorite_pressed), varray(hb));
 	favorite_box->add_child(favorite);
-	favorite_box->set_alignment(BoxContainer::ALIGN_CENTER);
+	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	hb->add_child(favorite_box);
 	hb->favorite_button = favorite;
 	hb->set_is_favorite(item.favorite);
@@ -1408,7 +1408,7 @@ void ProjectList::create_project_item_control(int p_index) {
 			unsupported_label->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
 			unsupported_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 			unsupported_label->set_clip_text(true);
-			unsupported_label->set_align(Label::ALIGN_RIGHT);
+			unsupported_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 			title_hb->add_child(unsupported_label);
 			Control *spacer = memnew(Control());
 			spacer->set_custom_minimum_size(Size2(10, 10));
@@ -2134,7 +2134,7 @@ void ProjectManager::_open_selected_projects_ask() {
 	PackedStringArray unsupported_features = project.unsupported_features;
 
 	Label *ask_update_label = ask_update_settings->get_label();
-	ask_update_label->set_align(Label::ALIGN_LEFT); // Reset in case of previous center align.
+	ask_update_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT); // Reset in case of previous center align.
 
 	// Check if the config_version property was empty or 0
 	if (config_version == 0) {
@@ -2178,7 +2178,7 @@ void ProjectManager::_open_selected_projects_ask() {
 			warning_message += vformat(TTR("Warning: This project uses the following features not supported by this build of Godot:\n\n%s\n\n"), unsupported_features_str);
 		}
 		warning_message += TTR("Open anyway? Project will be modified.");
-		ask_update_label->set_align(Label::ALIGN_CENTER);
+		ask_update_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		ask_update_settings->set_text(warning_message);
 		ask_update_settings->popup_centered();
 		return;
@@ -2537,7 +2537,7 @@ ProjectManager::ProjectManager() {
 	tabs = memnew(TabContainer);
 	center_box->add_child(tabs);
 	tabs->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabs->connect("tab_changed", callable_mp(this, &ProjectManager::_on_tab_changed));
 
 	HBoxContainer *projects_hb = memnew(HBoxContainer);
@@ -2666,7 +2666,7 @@ ProjectManager::ProjectManager() {
 	{
 		// Version info and language options
 		settings_hb = memnew(HBoxContainer);
-		settings_hb->set_alignment(BoxContainer::ALIGN_END);
+		settings_hb->set_alignment(BoxContainer::ALIGNMENT_END);
 		settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
 		settings_hb->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
 

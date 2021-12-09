@@ -170,12 +170,12 @@ void CodeEdit::_notification(int p_what) {
 						if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
 							draw_rect(Rect2(Point2(code_completion_rect.position.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
 						}
-						tl->set_align(HALIGN_RIGHT);
+						tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 					} else {
 						if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
 							draw_rect(Rect2(Point2(code_completion_rect.position.x + code_completion_rect.size.width - icon_area_size.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
 						}
-						tl->set_align(HALIGN_LEFT);
+						tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 					}
 					tl->draw(ci, title_pos, code_completion_options[l].font_color);
 				}
@@ -229,7 +229,7 @@ void CodeEdit::_notification(int p_what) {
 
 					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent(font_size) + font_height * i + yofs);
 					round_ofs = round_ofs.round();
-					draw_string(font, round_ofs, line.replace(String::chr(0xFFFF), ""), HALIGN_LEFT, -1, font_size, font_color);
+					draw_string(font, round_ofs, line.replace(String::chr(0xFFFF), ""), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 					if (end > 0) {
 						// Draw an underline for the currently edited function parameter.
 						const Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font_height + font_height * i + yofs);

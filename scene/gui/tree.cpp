@@ -1002,18 +1002,18 @@ bool TreeItem::is_custom_set_as_button(int p_column) const {
 	return cells[p_column].custom_button;
 }
 
-void TreeItem::set_text_align(int p_column, TextAlign p_align) {
+void TreeItem::set_text_alignment(int p_column, HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
-	cells.write[p_column].text_align = p_align;
+	cells.write[p_column].text_alignment = p_alignment;
 	cells.write[p_column].cached_minimum_size_dirty = true;
 
 	_changed_notify(p_column);
 }
 
-TreeItem::TextAlign TreeItem::get_text_align(int p_column) const {
-	ERR_FAIL_INDEX_V(p_column, cells.size(), ALIGN_LEFT);
-	return cells[p_column].text_align;
+HorizontalAlignment TreeItem::get_text_alignment(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), HORIZONTAL_ALIGNMENT_LEFT);
+	return cells[p_column].text_alignment;
 }
 
 void TreeItem::set_expand_right(int p_column, bool p_enable) {
@@ -1231,8 +1231,8 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_tooltip", "column", "tooltip"), &TreeItem::set_tooltip);
 	ClassDB::bind_method(D_METHOD("get_tooltip", "column"), &TreeItem::get_tooltip);
-	ClassDB::bind_method(D_METHOD("set_text_align", "column", "text_align"), &TreeItem::set_text_align);
-	ClassDB::bind_method(D_METHOD("get_text_align", "column"), &TreeItem::get_text_align);
+	ClassDB::bind_method(D_METHOD("set_text_alignment", "column", "text_alignment"), &TreeItem::set_text_alignment);
+	ClassDB::bind_method(D_METHOD("get_text_alignment", "column"), &TreeItem::get_text_alignment);
 
 	ClassDB::bind_method(D_METHOD("set_expand_right", "column", "enable"), &TreeItem::set_expand_right);
 	ClassDB::bind_method(D_METHOD("get_expand_right", "column"), &TreeItem::get_expand_right);
@@ -1278,10 +1278,6 @@ void TreeItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(CELL_MODE_RANGE);
 	BIND_ENUM_CONSTANT(CELL_MODE_ICON);
 	BIND_ENUM_CONSTANT(CELL_MODE_CUSTOM);
-
-	BIND_ENUM_CONSTANT(ALIGN_LEFT);
-	BIND_ENUM_CONSTANT(ALIGN_CENTER);
-	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
 }
 
 void TreeItem::clear_children() {
@@ -1477,16 +1473,17 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 	}
 	w += ts.width;
 
-	switch (p_cell.text_align) {
-		case TreeItem::ALIGN_LEFT:
+	switch (p_cell.text_alignment) {
+		case HORIZONTAL_ALIGNMENT_FILL:
+		case HORIZONTAL_ALIGNMENT_LEFT: {
 			if (rtl) {
 				rect.position.x += MAX(0, (rect.size.width - w));
 			}
-			break;
-		case TreeItem::ALIGN_CENTER:
+		} break;
+		case HORIZONTAL_ALIGNMENT_CENTER:
 			rect.position.x += MAX(0, (rect.size.width - w) / 2);
 			break;
-		case TreeItem::ALIGN_RIGHT:
+		case HORIZONTAL_ALIGNMENT_RIGHT:
 			if (!rtl) {
 				rect.position.x += MAX(0, (rect.size.width - w));
 			}

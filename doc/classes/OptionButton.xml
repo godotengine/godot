@@ -164,7 +164,7 @@
 	</methods>
 	<members>
 		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" overrides="BaseButton" enum="BaseButton.ActionMode" default="0" />
-		<member name="align" type="int" setter="set_text_align" getter="get_text_align" overrides="Button" enum="Button.TextAlign" default="0" />
+		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" overrides="Button" enum="HorizontalAlignment" default="0" />
 		<member name="selected" type="int" setter="_select_int" getter="get_selected" default="-1">
 			The index of the currently selected item, or [code]-1[/code] if no item is selected.
 		</member>

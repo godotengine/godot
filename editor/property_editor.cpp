@@ -1410,7 +1410,7 @@ void CustomPropertyEditor::_draw_easing() {
 		prev = h;
 	}
 
-	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), String::num(exp, 2), HALIGN_LEFT, -1, font_size, color);
+	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), String::num(exp, 2), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
 }
 
 void CustomPropertyEditor::_text_edit_changed() {
@@ -1864,7 +1864,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	slider->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	action_hboxes = memnew(HBoxContainer);
-	action_hboxes->set_alignment(BoxContainer::ALIGN_CENTER);
+	action_hboxes->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	value_vbox->add_child(action_hboxes);
 	for (int i = 0; i < MAX_ACTION_BUTTONS; i++) {
 		action_buttons[i] = memnew(Button);

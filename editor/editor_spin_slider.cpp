@@ -323,9 +323,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 
 	if (rtl) {
-		draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HALIGN_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HORIZONTAL_ALIGNMENT_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 	} else {
-		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 	}
 
 	int suffix_start = numstr.length();

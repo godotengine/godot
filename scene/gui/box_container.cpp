@@ -154,29 +154,29 @@ void BoxContainer::_resort() {
 	int ofs = 0;
 	if (!has_stretched) {
 		if (!vertical) {
-			switch (align) {
-				case ALIGN_BEGIN:
+			switch (alignment) {
+				case ALIGNMENT_BEGIN:
 					if (rtl) {
 						ofs = stretch_diff;
 					}
 					break;
-				case ALIGN_CENTER:
+				case ALIGNMENT_CENTER:
 					ofs = stretch_diff / 2;
 					break;
-				case ALIGN_END:
+				case ALIGNMENT_END:
 					if (!rtl) {
 						ofs = stretch_diff;
 					}
 					break;
 			}
 		} else {
-			switch (align) {
-				case ALIGN_BEGIN:
+			switch (alignment) {
+				case ALIGNMENT_BEGIN:
 					break;
-				case ALIGN_CENTER:
+				case ALIGNMENT_CENTER:
 					ofs = stretch_diff / 2;
 					break;
-				case ALIGN_END:
+				case ALIGNMENT_END:
 					ofs = stretch_diff;
 					break;
 			}
@@ -304,13 +304,13 @@ void BoxContainer::_notification(int p_what) {
 	}
 }
 
-void BoxContainer::set_alignment(AlignMode p_align) {
-	align = p_align;
+void BoxContainer::set_alignment(AlignmentMode p_alignment) {
+	alignment = p_alignment;
 	_resort();
 }
 
-BoxContainer::AlignMode BoxContainer::get_alignment() const {
-	return align;
+BoxContainer::AlignmentMode BoxContainer::get_alignment() const {
+	return alignment;
 }
 
 Control *BoxContainer::add_spacer(bool p_begin) {
@@ -340,9 +340,9 @@ void BoxContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_alignment"), &BoxContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &BoxContainer::set_alignment);
 
-	BIND_ENUM_CONSTANT(ALIGN_BEGIN);
-	BIND_ENUM_CONSTANT(ALIGN_CENTER);
-	BIND_ENUM_CONSTANT(ALIGN_END);
+	BIND_ENUM_CONSTANT(ALIGNMENT_BEGIN);
+	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
+	BIND_ENUM_CONSTANT(ALIGNMENT_END);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
 }

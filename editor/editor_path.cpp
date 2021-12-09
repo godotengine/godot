@@ -211,7 +211,7 @@ EditorPath::EditorPath(EditorHistory *p_history) {
 
 	current_object_label = memnew(Label);
 	current_object_label->set_clip_text(true);
-	current_object_label->set_align(Label::ALIGN_LEFT);
+	current_object_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	current_object_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_hb->add_child(current_object_label);
 
