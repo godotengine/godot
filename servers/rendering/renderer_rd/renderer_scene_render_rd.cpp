@@ -4417,9 +4417,9 @@ void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_e
 
 		uint32_t cluster_screen_width = (rb->width - 1) / cluster_size + 1;
 		uint32_t cluster_screen_height = (rb->height - 1) / cluster_size + 1;
-		params.cluster_type_size = cluster_screen_width * cluster_screen_height * (32 + 32);
-		params.cluster_width = cluster_screen_width;
 		params.max_cluster_element_count_div_32 = max_cluster_elements / 32;
+		params.cluster_type_size = cluster_screen_width * cluster_screen_height * (params.max_cluster_element_count_div_32 + 32);
+		params.cluster_width = cluster_screen_width;
 
 		params.screen_size[0] = rb->width;
 		params.screen_size[1] = rb->height;
