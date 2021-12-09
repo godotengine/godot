@@ -371,7 +371,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 				// Disable clicks under a time threshold to avoid selection right when opening the popup.
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - popup_time_msec;
-				if (diff < 100) {
+				if (diff < 150) {
 					return;
 				}
 
