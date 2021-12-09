@@ -4,8 +4,8 @@
 		Array of textures stored in a single primitive.
 	</brief_description>
 	<description>
-		[TextureArray]s store an array of [Image]s in a single [Texture] primitive. Each layer of the texture array has its own mipmap chain. This makes it is a good alternative to texture atlases.
-		[TextureArray]s must be displayed using shaders. After importing your file as a [TextureArray] and setting the appropriate Horizontal and Vertical Slices, display it by setting it as a uniform to a shader, for example:
+		[TextureArray]s store an array of [Image]s in a single [Texture] primitive. Each layer of the texture array has its own mipmap chain. This makes it is a good alternative to texture atlases. See also [Texture3D].
+		[TextureArray]s must be displayed using shaders. After importing your file as a [TextureArray] and setting the appropriate Horizontal and Vertical Slices, display it by setting it as a uniform to a shader, for example (2D):
 		[codeblock]
 		shader_type canvas_item;
 
@@ -17,6 +17,18 @@
 		}
 		[/codeblock]
 		Set the integer uniform "index" to show a particular part of the texture as defined by the Horizontal and Vertical Slices in the importer.
+		[b]Note:[/b] When sampling an albedo texture from a texture array in 3D, the sRGB -&gt; linear conversion hint ([code]hint_albedo[/code]) should be used to prevent colors from looking washed out:
+		[codeblock]
+		shader_type spatial;
+
+		uniform sampler2DArray tex : hint_albedo;
+		uniform int index;
+
+		void fragment() {
+		    ALBEDO = texture(tex, vec3(UV.x, UV.y, float(index)));
+		}
+		[/codeblock]
+		[b]Note:[/b] [TextureArray]s can only be sampled in shaders in the GLES3 backend. In GLES2, their data can be accessed via scripting, but there is no way to render them in a hardware-accelerated manner.
 	</description>
 	<tutorials>
 	</tutorials>
