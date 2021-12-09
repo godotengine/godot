@@ -140,6 +140,13 @@ void Particles2D::set_speed_scale(float p_scale) {
 	VS::get_singleton()->particles_set_speed_scale(particles, p_scale);
 }
 
+#ifdef TOOLS_ENABLED
+void Particles2D::set_show_visibility_rect(bool p_show_visibility_rect) {
+	show_visibility_rect = p_show_visibility_rect;
+	update();
+}
+#endif
+
 bool Particles2D::is_emitting() const {
 	return VS::get_singleton()->particles_get_emitting(particles);
 }
@@ -287,7 +294,7 @@ void Particles2D::_notification(int p_what) {
 		VS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid, normal_rid);
 
 #ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint() && (this == get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
+		if (show_visibility_rect) {
 			draw_rect(visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
 		}
 #endif
@@ -397,6 +404,9 @@ Particles2D::Particles2D() {
 	set_use_local_coordinates(true);
 	set_draw_order(DRAW_ORDER_INDEX);
 	set_speed_scale(1);
+#ifdef TOOLS_ENABLED
+	show_visibility_rect = false;
+#endif
 }
 
 Particles2D::~Particles2D() {
