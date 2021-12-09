@@ -39,6 +39,15 @@
 #include "editor/editor_settings.h"
 #include "editor/project_settings_editor.h"
 
+static inline void setup_http_request(HTTPRequest *request) {
+	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+
+	const String proxy_host = EDITOR_DEF("network/http_proxy/host", "");
+	const int proxy_port = EDITOR_DEF("network/http_proxy/port", -1);
+	request->set_http_proxy(proxy_host, proxy_port);
+	request->set_https_proxy(proxy_host, proxy_port);
+}
+
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
 	title->set_text(p_title);
 	asset_id = p_asset_id;
@@ -533,7 +542,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	download = memnew(HTTPRequest);
 	add_child(download);
 	download->connect("request_completed", callable_mp(this, &EditorAssetLibraryItemDownload::_http_download_completed));
-	download->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	setup_http_request(download);
 
 	download_error = memnew(AcceptDialog);
 	add_child(download_error);
@@ -868,7 +877,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 	iq.image_index = p_image_index;
 	iq.image_type = p_type;
 	iq.request = memnew(HTTPRequest);
-	iq.request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	setup_http_request(iq.request);
 
 	iq.target = p_for;
 	iq.queue_id = ++last_queue_id;
@@ -1475,7 +1484,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	request = memnew(HTTPRequest);
 	add_child(request);
-	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	setup_http_request(request);
 	request->connect("request_completed", callable_mp(this, &EditorAssetLibrary::_http_request_completed));
 
 	last_queue_id = 0;

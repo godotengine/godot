@@ -554,6 +554,14 @@ int HTTPRequest::get_body_size() const {
 	return body_len;
 }
 
+void HTTPRequest::set_http_proxy(const String &p_host, int p_port) {
+	client->set_http_proxy(p_host, p_port);
+}
+
+void HTTPRequest::set_https_proxy(const String &p_host, int p_port) {
+	client->set_https_proxy(p_host, p_port);
+}
+
 void HTTPRequest::set_timeout(int p_timeout) {
 	ERR_FAIL_COND(p_timeout < 0);
 	timeout = p_timeout;
@@ -601,6 +609,9 @@ void HTTPRequest::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_download_chunk_size", "chunk_size"), &HTTPRequest::set_download_chunk_size);
 	ClassDB::bind_method(D_METHOD("get_download_chunk_size"), &HTTPRequest::get_download_chunk_size);
+
+	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPRequest::set_http_proxy);
+	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPRequest::set_https_proxy);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_download_chunk_size", "get_download_chunk_size");
