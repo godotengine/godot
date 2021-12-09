@@ -416,8 +416,12 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	//erase multimeshes
 
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
-		VS::get_singleton()->free(g.multimesh_instances[i].instance);
-		VS::get_singleton()->free(g.multimesh_instances[i].multimesh);
+		if (g.multimesh_instances[i].instance.is_valid()) {
+			VS::get_singleton()->free(g.multimesh_instances[i].instance);
+		}
+		if (g.multimesh_instances[i].multimesh.is_valid()) {
+			VS::get_singleton()->free(g.multimesh_instances[i].multimesh);
+		}
 	}
 	g.multimesh_instances.clear();
 
@@ -615,12 +619,18 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 
 	if (g.collision_debug.is_valid()) {
 		VS::get_singleton()->free(g.collision_debug);
-	}
-	if (g.collision_debug_instance.is_valid()) {
-		VS::get_singleton()->free(g.collision_debug_instance);
+		g.collision_debug = RID();
 	}
 
-	PhysicsServer::get_singleton()->free(g.static_body);
+	if (g.collision_debug_instance.is_valid()) {
+		VS::get_singleton()->free(g.collision_debug_instance);
+		g.collision_debug_instance = RID();
+	}
+
+	if (g.static_body.is_valid()) {
+		PhysicsServer::get_singleton()->free(g.static_body);
+		g.static_body = RID();
+	}
 
 	//erase navigation
 	if (navigation) {
@@ -633,8 +643,12 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 	//erase multimeshes
 
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
-		VS::get_singleton()->free(g.multimesh_instances[i].instance);
-		VS::get_singleton()->free(g.multimesh_instances[i].multimesh);
+		if (g.multimesh_instances[i].instance.is_valid()) {
+			VS::get_singleton()->free(g.multimesh_instances[i].instance);
+		}
+		if (g.multimesh_instances[i].multimesh.is_valid()) {
+			VS::get_singleton()->free(g.multimesh_instances[i].multimesh);
+		}
 	}
 	g.multimesh_instances.clear();
 }
@@ -949,7 +963,9 @@ Vector3 GridMap::_get_offset() const {
 
 void GridMap::clear_baked_meshes() {
 	for (int i = 0; i < baked_meshes.size(); i++) {
-		VS::get_singleton()->free(baked_meshes[i].instance);
+		if (baked_meshes[i].instance.is_valid()) {
+			VS::get_singleton()->free(baked_meshes[i].instance);
+		}
 	}
 	baked_meshes.clear();
 

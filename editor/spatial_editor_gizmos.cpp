@@ -91,6 +91,7 @@ void EditorSpatialGizmo::clear() {
 	for (int i = 0; i < instances.size(); i++) {
 		if (instances[i].instance.is_valid()) {
 			VS::get_singleton()->free(instances[i].instance);
+			instances.write[i].instance = RID();
 		}
 	}
 
@@ -743,8 +744,8 @@ void EditorSpatialGizmo::free() {
 	for (int i = 0; i < instances.size(); i++) {
 		if (instances[i].instance.is_valid()) {
 			VS::get_singleton()->free(instances[i].instance);
+			instances.write[i].instance = RID();
 		}
-		instances.write[i].instance = RID();
 	}
 
 	clear();

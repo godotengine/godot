@@ -507,7 +507,9 @@ void GridMapEditor::_fill_selection() {
 
 void GridMapEditor::_clear_clipboard_data() {
 	for (List<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
-		VisualServer::get_singleton()->free(E->get().instance);
+		if (E->get().instance.is_valid()) {
+			VisualServer::get_singleton()->free(E->get().instance);
+		}
 	}
 
 	clipboard_items.clear();
@@ -1054,17 +1056,31 @@ void GridMapEditor::_notification(int p_what) {
 			_clear_clipboard_data();
 
 			for (int i = 0; i < 3; i++) {
-				VS::get_singleton()->free(grid_instance[i]);
-				VS::get_singleton()->free(grid[i]);
-				grid_instance[i] = RID();
-				grid[i] = RID();
-				VisualServer::get_singleton()->free(selection_level_instance[i]);
+				if (grid_instance[i].is_valid()) {
+					VS::get_singleton()->free(grid_instance[i]);
+					grid_instance[i] = RID();
+				}
+
+				if (grid[i].is_valid()) {
+					VS::get_singleton()->free(grid[i]);
+					grid[i] = RID();
+				}
+
+				if (selection_level_instance[i].is_valid()) {
+					VS::get_singleton()->free(selection_level_instance[i]);
+					selection_level_instance[i] = RID();
+				}
 			}
 
-			VisualServer::get_singleton()->free(selection_instance);
-			VisualServer::get_singleton()->free(paste_instance);
-			selection_instance = RID();
-			paste_instance = RID();
+			if (selection_instance.is_valid()) {
+				VS::get_singleton()->free(selection_instance);
+				selection_instance = RID();
+			}
+
+			if (paste_instance.is_valid()) {
+				VS::get_singleton()->free(paste_instance);
+				paste_instance = RID();
+			}
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1124,8 +1140,8 @@ void GridMapEditor::_update_cursor_instance() {
 
 	if (cursor_instance.is_valid()) {
 		VisualServer::get_singleton()->free(cursor_instance);
+		cursor_instance = RID();
 	}
-	cursor_instance = RID();
 
 	if (selected_palette >= 0) {
 		if (node && !node->get_mesh_library().is_null()) {
@@ -1477,12 +1493,15 @@ GridMapEditor::~GridMapEditor() {
 		}
 	}
 
-	VisualServer::get_singleton()->free(selection_mesh);
+	if (selection_mesh.is_valid()) {
+		VisualServer::get_singleton()->free(selection_mesh);
+	}
 	if (selection_instance.is_valid()) {
 		VisualServer::get_singleton()->free(selection_instance);
 	}
-
-	VisualServer::get_singleton()->free(paste_mesh);
+	if (paste_mesh.is_valid()) {
+		VisualServer::get_singleton()->free(paste_mesh);
+	}
 	if (paste_instance.is_valid()) {
 		VisualServer::get_singleton()->free(paste_instance);
 	}
