@@ -836,6 +836,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	bool backup_allowed = p_preset->get("user_data_backup/allow");
 	bool classify_as_game = p_preset->get("package/classify_as_game");
 	bool retain_data_on_uninstall = p_preset->get("package/retain_data_on_uninstall");
+	bool exclude_from_recents = p_preset->get("package/exclude_from_recents");
 
 	Vector<String> perms;
 	// Write permissions into the perms variable.
@@ -947,6 +948,10 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 					if (tname == "activity" && attrname == "screenOrientation") {
 						encode_uint32(screen_orientation, &p_manifest.write[iofs + 16]);
+					}
+
+					if (tname == "activity" && attrname == "excludeFromRecents") {
+						encode_uint32(exclude_from_recents, &p_manifest.write[iofs + 16]);
 					}
 
 					if (tname == "supports-screens") {
@@ -1684,6 +1689,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/classify_as_game"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/retain_data_on_uninstall"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/exclude_from_recents"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icon_option, PROPERTY_HINT_FILE, "*.png"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_foreground_option, PROPERTY_HINT_FILE, "*.png"), ""));
