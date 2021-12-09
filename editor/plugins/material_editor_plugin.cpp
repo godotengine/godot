@@ -125,7 +125,7 @@ MaterialEditor::MaterialEditor() {
 	// canvas item
 
 	layout_2d = memnew(HBoxContainer);
-	layout_2d->set_alignment(BoxContainer::ALIGN_CENTER);
+	layout_2d->set_alignment(ALIGNMENT_CENTER);
 	add_child(layout_2d);
 	layout_2d->set_anchors_and_offsets_preset(PRESET_WIDE);
 
