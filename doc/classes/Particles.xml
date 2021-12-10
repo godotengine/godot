@@ -10,7 +10,7 @@
 		[b]Note:[/b] After working on a Particles node, remember to update its [member visibility_aabb] by selecting it, clicking the [b]Particles[/b] menu at the top of the 3D editor viewport then choose [b]Generate Visibility AABB[/b]. Otherwise, particles may suddenly disappear depending on the camera position and angle.
 	</description>
 	<tutorials>
-		<link title="Controlling thousands of fish with Particles">$DOCS_URL/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
+		<link title="Controlling thousands of fish with Particles">$DOCS_URL/tutorials/performance/vertex_animation/controlling_thousands_of_fish.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>

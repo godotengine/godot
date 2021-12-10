@@ -26,7 +26,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>$DOCS_URL/getting_started/workflow/assets/importing_scenes.html#custom-script</link>
+		<link>$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html#custom-script</link>
 	</tutorials>
 	<methods>
 		<method name="get_source_file" qualifiers="const">

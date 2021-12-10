@@ -8,7 +8,7 @@
 		Theme resources can alternatively be loaded by writing them in a [code].theme[/code] file, see the documentation for more information.
 	</description>
 	<tutorials>
-		<link>$DOCS_URL/tutorials/gui/gui_skinning.html</link>
+		<link>$DOCS_URL/tutorials/ui/gui_skinning.html</link>
 	</tutorials>
 	<methods>
 		<method name="clear">

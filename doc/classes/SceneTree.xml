@@ -9,8 +9,8 @@
 		[SceneTree] is the default [MainLoop] implementation used by scenes, and is thus in charge of the game loop.
 	</description>
 	<tutorials>
-		<link>$DOCS_URL/getting_started/step_by_step/scene_tree.html</link>
-		<link>$DOCS_URL/tutorials/viewports/multiple_resolutions.html</link>
+		<link>$DOCS_URL/tutorials/scripting/scene_tree.html</link>
+		<link>$DOCS_URL/tutorials/rendering/multiple_resolutions.html</link>
 	</tutorials>
 	<methods>
 		<method name="call_group" qualifiers="vararg">
