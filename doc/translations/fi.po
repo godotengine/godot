@@ -69952,7 +69952,3 @@ msgstr ""
 msgid ""
 "If [code]true[/code], child nodes are sorted, otherwise sorting is disabled."
 msgstr ""
-
-#, fuzzy
-#~ msgid "Returns the close [TextureButton]."
-#~ msgstr "Palauttaa parametrin kosinin."

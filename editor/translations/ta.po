@@ -13933,15 +13933,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "அசைவூட்டு பாதையை மேலே நகர்த்து"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "அசைவூட்டு பாதையை கீழே நகர்த்து"
-
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "அசைவூட்டு பாதை மதிப்பு[value] விதம் மாற்று"
-
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "அசைவூட்டு பாதை மறை[wrap] விதம் மாற்று"

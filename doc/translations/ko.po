@@ -70346,14 +70346,3 @@ msgstr ""
 msgid ""
 "If [code]true[/code], child nodes are sorted, otherwise sorting is disabled."
 msgstr ""
-
-#, fuzzy
-#~ msgid "Returns the close [TextureButton]."
-#~ msgstr "매개변수의 코사인 값을 반환합니다."
-
-#~ msgid ""
-#~ "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-#~ "animations.html"
-#~ msgstr ""
-#~ "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-#~ "animations.html"
