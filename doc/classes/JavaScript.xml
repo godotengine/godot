@@ -8,7 +8,7 @@
 		[b]Note:[/b] This singleton can be disabled at build-time to improve security. By default, the JavaScript singleton is enabled. Official export templates also have the JavaScript singleton enabled. See [url=https://docs.godotengine.org/en/3.4/development/compiling/compiling_for_web.html]Compiling for the Web[/url] in the documentation for more information.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/3.4/getting_started/workflow/export/exporting_for_web.html#calling-javascript-from-script</link>
+		<link>https://docs.godotengine.org/en/3.4/tutorials/export/exporting_for_web.html#calling-javascript-from-script</link>
 	</tutorials>
 	<methods>
 		<method name="create_callback">
