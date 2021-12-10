@@ -1470,12 +1470,8 @@ bool Directory::is_open() const {
 	return d && dir_open;
 }
 
-Error Directory::list_dir_begin(bool p_show_navigational, bool p_show_hidden) {
+Error Directory::list_dir_begin() {
 	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
-
-	_list_skip_navigational = !p_show_navigational;
-	_list_skip_hidden = !p_show_hidden;
-
 	return d->list_dir_begin();
 }
 
@@ -1483,7 +1479,7 @@ String Directory::get_next() {
 	ERR_FAIL_COND_V_MSG(!is_open(), "", "Directory must be opened before use.");
 
 	String next = d->get_next();
-	while (!next.is_empty() && ((_list_skip_navigational && (next == "." || next == "..")) || (_list_skip_hidden && d->current_is_hidden()))) {
+	while (!next.is_empty() && ((!include_navigational && (next == "." || next == "..")) || (!include_hidden && d->current_is_hidden()))) {
 		next = d->get_next();
 	}
 	return next;
@@ -1497,6 +1493,47 @@ bool Directory::current_is_dir() const {
 void Directory::list_dir_end() {
 	ERR_FAIL_COND_MSG(!is_open(), "Directory must be opened before use.");
 	d->list_dir_end();
+}
+
+PackedStringArray Directory::get_files() {
+	return _get_contents(false);
+}
+
+PackedStringArray Directory::get_directories() {
+	return _get_contents(true);
+}
+
+PackedStringArray Directory::_get_contents(bool p_directories) {
+	PackedStringArray ret;
+	ERR_FAIL_COND_V_MSG(!is_open(), ret, "Directory must be opened before use.");
+
+	list_dir_begin();
+	String s = get_next();
+	while (!s.is_empty()) {
+		if (current_is_dir() == p_directories) {
+			ret.append(s);
+		}
+		s = get_next();
+	}
+
+	ret.sort();
+	return ret;
+}
+
+void Directory::set_include_navigational(bool p_enable) {
+	include_navigational = p_enable;
+}
+
+bool Directory::get_include_navigational() const {
+	return include_navigational;
+}
+
+void Directory::set_include_hidden(bool p_enable) {
+	include_hidden = p_enable;
+}
+
+bool Directory::get_include_hidden() const {
+	return include_hidden;
 }
 
 int Directory::get_drive_count() {
@@ -1614,10 +1651,12 @@ Error Directory::remove(String p_name) {
 
 void Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open", "path"), &Directory::open);
-	ClassDB::bind_method(D_METHOD("list_dir_begin", "show_navigational", "show_hidden"), &Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("list_dir_begin"), &Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_next"), &Directory::get_next);
 	ClassDB::bind_method(D_METHOD("current_is_dir"), &Directory::current_is_dir);
 	ClassDB::bind_method(D_METHOD("list_dir_end"), &Directory::list_dir_end);
+	ClassDB::bind_method(D_METHOD("get_files"), &Directory::get_files);
+	ClassDB::bind_method(D_METHOD("get_directories"), &Directory::get_directories);
 	ClassDB::bind_method(D_METHOD("get_drive_count"), &Directory::get_drive_count);
 	ClassDB::bind_method(D_METHOD("get_drive", "idx"), &Directory::get_drive);
 	ClassDB::bind_method(D_METHOD("get_current_drive"), &Directory::get_current_drive);
@@ -1632,6 +1671,14 @@ void Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("copy", "from", "to"), &Directory::copy);
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &Directory::rename);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &Directory::remove);
+
+	ClassDB::bind_method(D_METHOD("set_include_navigational"), &Directory::set_include_navigational);
+	ClassDB::bind_method(D_METHOD("get_include_navigational"), &Directory::get_include_navigational);
+	ClassDB::bind_method(D_METHOD("set_include_hidden"), &Directory::set_include_hidden);
+	ClassDB::bind_method(D_METHOD("get_include_hidden"), &Directory::get_include_hidden);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");
 }
 
 Directory::Directory() {

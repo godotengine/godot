@@ -108,6 +108,13 @@
 				Returns the currently opened directory's drive index. See [method get_drive] to convert returned index to the name of the drive.
 			</description>
 		</method>
+		<method name="get_directories">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a [PackedStringArray] containing filenames of the directory contents, excluding files. The array is sorted alphabetically.
+				Affected by [member include_hidden] and [member include_navigational].
+			</description>
+		</method>
 		<method name="get_drive">
 			<return type="String" />
 			<argument index="0" name="idx" type="int" />
@@ -119,6 +126,13 @@
 			<return type="int" />
 			<description>
 				On Windows, returns the number of drives (partitions) mounted on the current filesystem. On other platforms, the method returns 0.
+			</description>
+		</method>
+		<method name="get_files">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a [PackedStringArray] containing filenames of the directory contents, excluding directories. The array is sorted alphabetically.
+				Affected by [member include_hidden].
 			</description>
 		</method>
 		<method name="get_next">
@@ -136,12 +150,10 @@
 		</method>
 		<method name="list_dir_begin">
 			<return type="int" enum="Error" />
-			<argument index="0" name="show_navigational" type="bool" default="false" />
-			<argument index="1" name="show_hidden" type="bool" default="false" />
 			<description>
 				Initializes the stream used to list all files and directories using the [method get_next] function, closing the currently opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
-				If [code]show_navigational[/code] is [code]true[/code], [code].[/code] and [code]..[/code] are included too.
-				If [code]show_hidden[/code] is [code]true[/code], hidden files are included too.
+				Affected by [member include_hidden] and [member include_navigational].
+				[b]Note:[/b] The order of files and directories returned by this method is not deterministic, and can vary between operating systems. If you want a list of all files or folders sorted alphabetically, use [method get_files] or [method get_directories].
 			</description>
 		</method>
 		<method name="list_dir_end">
@@ -192,4 +204,14 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="include_hidden" type="bool" setter="set_include_hidden" getter="get_include_hidden" default="false">
+			If [code]true[/code], hidden files are included when the navigating directory.
+			Affects [method list_dir_begin], [method get_directories] and [method get_files].
+		</member>
+		<member name="include_navigational" type="bool" setter="set_include_navigational" getter="get_include_navigational" default="false">
+			If [code]true[/code], [code].[/code] and [code]..[/code] are included when navigating the directory.
+			Affects [method list_dir_begin] and [method get_directories].
+		</member>
+	</members>
 </class>
