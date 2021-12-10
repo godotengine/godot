@@ -226,7 +226,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 
 String ShaderLanguage::get_token_text(Token p_token) {
 	String name = token_names[p_token.type];
-	if (p_token.type == TK_INT_CONSTANT || p_token.type == TK_FLOAT_CONSTANT) {
+	if (p_token.is_integer_constant() || p_token.type == TK_FLOAT_CONSTANT) {
 		name += "(" + rtos(p_token.constant) + ")";
 	} else if (p_token.type == TK_IDENTIFIER) {
 		name += "(" + String(p_token.text) + ")";
@@ -545,63 +545,113 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 
 				if (_is_number(GETCHAR(0)) || (GETCHAR(0) == '.' && _is_number(GETCHAR(1)))) {
 					// parse number
+					bool hexa_found = false;
 					bool period_found = false;
 					bool exponent_found = false;
-					bool hexa_found = false;
-					bool sign_found = false;
 					bool float_suffix_found = false;
+					bool uint_suffix_found = false;
+					bool end_suffix_found = false;
+
+					enum {
+						CASE_ALL,
+						CASE_HEXA_PERIOD,
+						CASE_EXPONENT,
+						CASE_SIGN_AFTER_EXPONENT,
+						CASE_NONE,
+						CASE_MAX,
+					} lut_case = CASE_ALL;
+
+					static bool suffix_lut[CASE_MAX][127];
+
+					if (!is_const_suffix_lut_initialized) {
+						is_const_suffix_lut_initialized = true;
+
+						for (int i = 0; i < 127; i++) {
+							char t = char(i);
+
+							suffix_lut[CASE_ALL][i] = t == '.' || t == 'x' || t == 'e' || t == 'f' || t == 'u' || t == '-' || t == '+';
+							suffix_lut[CASE_HEXA_PERIOD][i] = t == 'e' || t == 'f';
+							suffix_lut[CASE_EXPONENT][i] = t == 'f' || t == '-' || t == '+';
+							suffix_lut[CASE_SIGN_AFTER_EXPONENT][i] = t == 'f';
+							suffix_lut[CASE_NONE][i] = false;
+						}
+					}
 
 					String str;
 					int i = 0;
 
 					while (true) {
-						if (GETCHAR(i) == '.') {
-							if (period_found || exponent_found || hexa_found || float_suffix_found) {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
+						const char32_t symbol = String::char_lowercase(GETCHAR(i));
+						bool error = false;
+
+						if (_is_number(symbol)) {
+							if (end_suffix_found) {
+								error = true;
 							}
-							period_found = true;
-						} else if (GETCHAR(i) == 'x') {
-							if (hexa_found || str.length() != 1 || str[0] != '0') {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
-							}
-							hexa_found = true;
-						} else if (GETCHAR(i) == 'e' && !hexa_found) {
-							if (exponent_found || float_suffix_found) {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
-							}
-							exponent_found = true;
-						} else if (GETCHAR(i) == 'f' && !hexa_found) {
-							if (exponent_found) {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
-							}
-							float_suffix_found = true;
-						} else if (_is_number(GETCHAR(i))) {
-							if (float_suffix_found) {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
-							}
-						} else if (hexa_found && _is_hex(GETCHAR(i))) {
-						} else if ((GETCHAR(i) == '-' || GETCHAR(i) == '+') && exponent_found) {
-							if (sign_found) {
-								return _make_token(TK_ERROR, "Invalid numeric constant");
-							}
-							sign_found = true;
 						} else {
-							break;
+							if (symbol < 0x7F && suffix_lut[lut_case][symbol]) {
+								if (symbol == 'x') {
+									hexa_found = true;
+									lut_case = CASE_HEXA_PERIOD;
+								} else if (symbol == '.') {
+									period_found = true;
+									lut_case = CASE_HEXA_PERIOD;
+								} else if (symbol == 'e' && !hexa_found) {
+									exponent_found = true;
+									lut_case = CASE_EXPONENT;
+								} else if (symbol == 'f' && !hexa_found) {
+									if (!period_found && !exponent_found) {
+										error = true;
+									}
+									float_suffix_found = true;
+									end_suffix_found = true;
+									lut_case = CASE_NONE;
+								} else if (symbol == 'u') {
+									uint_suffix_found = true;
+									end_suffix_found = true;
+									lut_case = CASE_NONE;
+								} else if (symbol == '-' || symbol == '+') {
+									if (exponent_found) {
+										lut_case = CASE_SIGN_AFTER_EXPONENT;
+									} else {
+										break;
+									}
+								}
+							} else if (!hexa_found || !_is_hex(symbol)) {
+								if (_is_text_char(symbol)) {
+									error = true;
+								} else {
+									break;
+								}
+							}
 						}
 
-						str += char32_t(GETCHAR(i));
+						if (error) {
+							if (hexa_found) {
+								return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
+							}
+							if (period_found || exponent_found || float_suffix_found) {
+								return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+							}
+							if (uint_suffix_found) {
+								return _make_token(TK_ERROR, "Invalid (unsigned integer) numeric constant");
+							}
+							return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
+						}
+						str += symbol;
 						i++;
 					}
 
 					char32_t last_char = str[str.length() - 1];
 
-					if (hexa_found) {
-						//integer(hex)
+					if (hexa_found) { // Integer(hex)
 						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
 							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
 						}
-					} else if (period_found || exponent_found || float_suffix_found) {
-						//floats
+					} else if (period_found || exponent_found || float_suffix_found) { // Float
+						if (exponent_found && (!_is_number(last_char) && last_char != 'f')) { // checks for eg: "2E", "2E-", "2E+"
+							return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+						}
 						if (period_found) {
 							if (float_suffix_found) {
 								//checks for eg "1.f" or "1.99f" notations
@@ -622,22 +672,28 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						}
 
 						if (float_suffix_found) {
-							//strip the suffix
+							// Strip the suffix.
 							str = str.left(str.length() - 1);
-							//compensate reading cursor position
+							// Compensate reading cursor position.
 							char_idx += 1;
 						}
 
 						if (!str.is_valid_float()) {
 							return _make_token(TK_ERROR, "Invalid (float) numeric constant");
 						}
-					} else {
-						//integers
-						if (!_is_number(last_char)) {
-							return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
+					} else { // Integer
+						if (uint_suffix_found) {
+							// Strip the suffix.
+							str = str.left(str.length() - 1);
+							// Compensate reading cursor position.
+							char_idx += 1;
 						}
 						if (!str.is_valid_int()) {
-							return _make_token(TK_ERROR, "Invalid numeric constant");
+							if (uint_suffix_found) {
+								return _make_token(TK_ERROR, "Invalid (usigned integer) numeric constant");
+							} else {
+								return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
+							}
 						}
 					}
 
@@ -645,6 +701,8 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					Token tk;
 					if (period_found || exponent_found || float_suffix_found) {
 						tk.type = TK_FLOAT_CONSTANT;
+					} else if (uint_suffix_found) {
+						tk.type = TK_UINT_CONSTANT;
 					} else {
 						tk.type = TK_INT_CONSTANT;
 					}
@@ -2661,6 +2719,8 @@ const ShaderLanguage::BuiltinFuncConstArgs ShaderLanguage::builtin_func_const_ar
 	{ nullptr, 0, 0, 0 }
 };
 
+bool ShaderLanguage::is_const_suffix_lut_initialized = false;
+
 bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str) {
 	ERR_FAIL_COND_V(p_func->op != OP_CALL && p_func->op != OP_CONSTRUCT, false);
 
@@ -4314,7 +4374,7 @@ Error ShaderLanguage::_parse_global_array_size(int &r_array_size, const Function
 
 	int array_size = 0;
 
-	if (tk.type != TK_INT_CONSTANT || ((int)tk.constant) <= 0) {
+	if (!tk.is_integer_constant() || ((int)tk.constant) <= 0) {
 		_set_tkpos(pos);
 		Node *n = _parse_array_size(nullptr, p_function_info, array_size);
 		if (!n) {
@@ -4346,7 +4406,7 @@ Error ShaderLanguage::_parse_local_array_size(BlockNode *p_block, const Function
 	if (tk.type == TK_BRACKET_CLOSE) {
 		r_is_unknown_size = true;
 	} else {
-		if (tk.type != TK_INT_CONSTANT || ((int)tk.constant) <= 0) {
+		if (!tk.is_integer_constant() || ((int)tk.constant) <= 0) {
 			_set_tkpos(pos);
 			int array_size = 0;
 			Node *n = _parse_array_size(p_block, p_function_info, array_size);
@@ -4678,6 +4738,14 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			v.sint = tk.constant;
 			constant->values.push_back(v);
 			constant->datatype = TYPE_INT;
+			expr = constant;
+
+		} else if (tk.type == TK_UINT_CONSTANT) {
+			ConstantNode *constant = alloc_node<ConstantNode>();
+			ConstantNode::Value v;
+			v.uint = tk.constant;
+			constant->values.push_back(v);
+			constant->datatype = TYPE_UINT;
 			expr = constant;
 
 		} else if (tk.type == TK_TRUE) {
@@ -6993,7 +7061,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			Node *n = nullptr;
 
-			if (tk.type != TK_INT_CONSTANT) {
+			if (!tk.is_integer_constant()) {
 				bool correct_constant_expression = false;
 				DataType data_type;
 
@@ -7016,11 +7084,15 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				n = vn;
 			} else {
 				ConstantNode::Value v;
-				v.sint = (int)tk.constant * sign;
+				if (tk.type == TK_UINT_CONSTANT) {
+					v.uint = (uint32_t)tk.constant;
+				} else {
+					v.sint = (int)tk.constant * sign;
+				}
 
 				ConstantNode *cn = alloc_node<ConstantNode>();
 				cn->values.push_back(v);
-				cn->datatype = TYPE_INT;
+				cn->datatype = (tk.type == TK_UINT_CONSTANT ? TYPE_UINT : TYPE_INT);
 				n = cn;
 			}
 
@@ -7908,7 +7980,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 									tk = _get_token();
 								}
 
-								if (tk.type != TK_FLOAT_CONSTANT && tk.type != TK_INT_CONSTANT) {
+								if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
 									_set_error("Expected integer constant");
 									return ERR_PARSE_ERROR;
 								}
@@ -7932,7 +8004,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 									tk = _get_token();
 								}
 
-								if (tk.type != TK_FLOAT_CONSTANT && tk.type != TK_INT_CONSTANT) {
+								if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
 									_set_error("Expected integer constant after ','");
 									return ERR_PARSE_ERROR;
 								}
@@ -7945,7 +8017,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								if (tk.type == TK_COMMA) {
 									tk = _get_token();
 
-									if (tk.type != TK_FLOAT_CONSTANT && tk.type != TK_INT_CONSTANT) {
+									if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
 										_set_error("Expected integer constant after ','");
 										return ERR_PARSE_ERROR;
 									}
@@ -7983,7 +8055,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 									return ERR_PARSE_ERROR;
 								}
 
-								if (tk.type != TK_INT_CONSTANT) {
+								if (!tk.is_integer_constant()) {
 									_set_error("Expected integer constant");
 									return ERR_PARSE_ERROR;
 								}
@@ -8109,7 +8181,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							return ERR_PARSE_ERROR;
 						}
 						tk = _get_token();
-						if (tk.type == TK_INT_CONSTANT && tk.constant > 0) {
+						if (tk.is_integer_constant() && tk.constant > 0) {
 							varying.array_size = (int)tk.constant;
 
 							tk = _get_token();
@@ -8196,7 +8268,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					bool error = false;
 					tk = _get_token();
 
-					if (tk.type == TK_INT_CONSTANT) {
+					if (tk.is_integer_constant()) {
 						array_size = (int)tk.constant;
 						if (array_size > 0) {
 							tk = _get_token();
@@ -8270,7 +8342,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							if (tk.type == TK_BRACKET_CLOSE) {
 								unknown_size = true;
 								tk = _get_token();
-							} else if (tk.type == TK_INT_CONSTANT && ((int)tk.constant) > 0) {
+							} else if (tk.is_integer_constant() && ((int)tk.constant) > 0) {
 								constant.array_size = (int)tk.constant;
 								tk = _get_token();
 								if (tk.type != TK_BRACKET_CLOSE) {
@@ -8685,7 +8757,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						bool error = false;
 						tk = _get_token();
 
-						if (tk.type == TK_INT_CONSTANT) {
+						if (tk.is_integer_constant()) {
 							arg_array_size = (int)tk.constant;
 
 							if (arg_array_size > 0) {
@@ -8747,7 +8819,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						bool error = false;
 						tk = _get_token();
 
-						if (tk.type == TK_INT_CONSTANT) {
+						if (tk.is_integer_constant()) {
 							arg_array_size = (int)tk.constant;
 
 							if (arg_array_size > 0) {
