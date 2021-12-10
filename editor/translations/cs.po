@@ -27,13 +27,14 @@
 # ProfJack <profjackcz@gmail.com>, 2021.
 # swifterik <blaha.j502@gmail.com>, 2021.
 # Daniel <dan@ger.cz>, 2021.
+# Jakub Janšta <jansta.ja@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-27 21:45+0000\n"
-"Last-Translator: Daniel <dan@ger.cz>\n"
+"PO-Revision-Date: 2021-11-22 20:39+0000\n"
+"Last-Translator: Jakub Janšta <jansta.ja@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -41,7 +42,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -294,6 +295,7 @@ msgid "Time (s): "
 msgstr "Čas (s): "
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Toggle Track Enabled"
 msgstr "Povolit stopu"
 
@@ -307,7 +309,7 @@ msgstr "Diskrétní"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
-msgstr "Spoušť"
+msgstr "Spouštěč"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
@@ -327,6 +329,7 @@ msgid "Cubic"
 msgstr "Kubická"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Clamp Loop Interp"
 msgstr "Interpolace smyčky svorkou"
 
@@ -637,9 +640,8 @@ msgid "Use Bezier Curves"
 msgstr "Použít Bézierovy křivky"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create RESET Track(s)"
-msgstr "Vložit stopy"
+msgstr "Vytvořit RESET stopu/stopy"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -1380,9 +1382,8 @@ msgid "Bypass"
 msgstr "Obejít"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Bus Options"
-msgstr "Možnosti Busu"
+msgstr "Možnosti sběrnice"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -1403,31 +1404,31 @@ msgstr "Zvuk"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
-msgstr "Přidat Audio Bus"
+msgstr "Přidat audio sběrnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr "Master bus nelze smazat!"
+msgstr "Master sběrnici nelze smazat!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
-msgstr "Smazat Audio Bus"
+msgstr "Smazat zvukovou sběrnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Duplicate Audio Bus"
-msgstr "Duplikovat Audio Bus"
+msgstr "Duplikovat audio sběrnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Bus Volume"
-msgstr "Obnovit hlasitost Busu"
+msgstr "Obnovit hlasitost sběrnice"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
-msgstr "Přesunout Audio Bus"
+msgstr "Přesunout audio sběrnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "Uložit rozložení Audio Busu jako..."
+msgstr "Uložit rozložení audio sběrnice jako..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
@@ -1435,7 +1436,7 @@ msgstr "Umístění pro nové rozložení..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr "Otevřít rozložení Audio Busu"
+msgstr "Otevřít rozložení audio sběrnice"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
@@ -1447,7 +1448,7 @@ msgstr "Rozložení"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr "Neplatný soubor, neni to rozložení Audio Busu."
+msgstr "Neplatný soubor, není rozložení audio sběrnice."
 
 #: editor/editor_audio_buses.cpp
 msgid "Error saving file: %s"
@@ -1455,7 +1456,7 @@ msgstr "Chyba při ukládání souboru: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
-msgstr "Přidat bus"
+msgstr "Přidat sběrnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add a new Audio Bus to this layout."
@@ -2128,13 +2129,33 @@ msgstr "Metody"
 msgid "Theme Properties"
 msgstr "Vlastnosti motivu"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Výčty"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "Barva"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Konstanty"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Fonts"
+msgstr "Font"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Icons"
+msgstr "Ikona"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "Styl"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Výčty"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -6532,9 +6553,8 @@ msgstr ""
 "Toto je nejrychlejší (ale nejméně přesná) možnost detekce kolizí."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Simplified Convex Collision Sibling"
-msgstr "Vytvořit jediného konvexního kolizního sourozence"
+msgstr "Vytvořit zjednodušeného sourozence konvexní kolize"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -7228,9 +7248,8 @@ msgid "Occluder Set Transform"
 msgstr "Promazat transformaci"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Center Node"
-msgstr "Vytvořit uzel"
+msgstr "Vycentrovat uzel"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7366,12 +7385,10 @@ msgid "Move Down"
 msgstr "Přesunout dolů"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
 msgstr "Další skript"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
 msgstr "Předchozí skript"
 
@@ -7739,9 +7756,8 @@ msgid "Reset to Rest Pose"
 msgstr "Umístit kosti do klidové pózy"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Overwrite Rest Pose"
-msgstr "Přepsat"
+msgstr "Přepsat klidovou pózu"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7874,7 +7890,7 @@ msgstr "Posunout"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale"
-msgstr "Zvětšit"
+msgstr "Měřítko"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -8069,9 +8085,8 @@ msgid "Freelook Slow Modifier"
 msgstr "Zpomalení volného pohledu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Camera Preview"
-msgstr "Změnit velikost kamery"
+msgstr "Přepnout náhled kamery"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
@@ -8116,7 +8131,6 @@ msgstr ""
 "Polootevřené oko: Gizmo je viditelné přes neprůhledné (rentgenové) povrchy."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Nodes to Floor"
 msgstr "Přichytit uzly k podlaze"
 
@@ -8580,21 +8594,6 @@ msgstr "Oblast textury"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Colors"
-msgstr "Barva"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Fonts"
-msgstr "Font"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Icons"
-msgstr "Ikona"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Styleboxes"
 msgstr "Styl"
 
@@ -8901,18 +8900,16 @@ msgid "Edit Items"
 msgstr "Upravitelná položka"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Types:"
-msgstr "Typ:"
+msgstr "Typy:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Type:"
-msgstr "Typ:"
+msgstr "Přidat typ:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item:"
-msgstr "Přidat položku:"
+msgstr "Přidat prvek:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -13398,8 +13395,17 @@ msgstr ""
 "Chcete-li používat doplňky, musí být povoleno \"použít vlastní build\"."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"\"Hand Tracking\" je platné pouze v případě, že \"Režim Xr\" má hodnotu "
+"\"Oculus Mobile VR\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "\"Hand Tracking\" je platné pouze v případě, že \"Režim Xr\" má hodnotu "
 "\"Oculus Mobile VR\"."
@@ -13409,6 +13415,27 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"Export AAB\" je validní pouze v případě, že je povolena možnost \"Použít "
 "vlastní sestavu\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+"\"Export AAB\" je validní pouze v případě, že je povolena možnost \"Použít "
+"vlastní sestavu\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+"\"Export AAB\" je validní pouze v případě, že je povolena možnost \"Použít "
+"vlastní sestavu\"."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""

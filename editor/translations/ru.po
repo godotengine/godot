@@ -100,13 +100,14 @@
 # Anna Malinovskaia <tacitcoast@gmail.com>, 2021.
 # mrvladus <mrvladus@yandex.ru>, 2021.
 # DΞLTΛ <craftercrafter43@gmail.com>, 2021.
+# AngryPhilomel <an.aries@icloud.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-07 09:45+0000\n"
-"Last-Translator: DΞLTΛ <craftercrafter43@gmail.com>\n"
+"PO-Revision-Date: 2021-11-22 20:39+0000\n"
+"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -115,17 +116,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
-"Недопустимый аргумент type для convert(), используйте константы TYPE_*."
+"Недопустимое значение аргумента type для convert(), используйте константы "
+"TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Ожидалась строка длиной 1 (т. е. 1 символ)."
+msgstr "Ожидалась строка длиной 1 (символ)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -338,7 +340,7 @@ msgstr "Аудиодорожки:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr "Дорожки анимации:"
+msgstr "Анимационные клипы:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
@@ -2207,13 +2209,30 @@ msgstr "Методы"
 msgid "Theme Properties"
 msgstr "Свойства темы"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Перечисления"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr "Цвета"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Константы"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr "Шрифты"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr "Иконки"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "Стиль"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Перечисления"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8658,18 +8677,6 @@ msgid "TextureRegion"
 msgstr "Область текстуры"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr "Цвета"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr "Шрифты"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr "Иконки"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr "Стили"
 
@@ -13458,8 +13465,17 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "«Use Custom Build» должен быть включен для использования плагинов."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"«Отслеживание рук» действует только тогда, когда «Xr Mode» - это «Oculus "
+"Mobile VR»."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "«Отслеживание рук» действует только тогда, когда «Xr Mode» - это «Oculus "
 "Mobile VR»."
@@ -13469,6 +13485,27 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "«Export AAB» действителен только при включённой опции «Использовать "
 "пользовательскую сборку»."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+"«Export AAB» действителен только при включённой опции «Использовать "
+"пользовательскую сборку»."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+"«Export AAB» действителен только при включённой опции «Использовать "
+"пользовательскую сборку»."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""

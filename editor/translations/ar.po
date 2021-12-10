@@ -61,7 +61,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-11 08:00+0000\n"
+"PO-Revision-Date: 2021-11-27 23:46+0000\n"
 "Last-Translator: Nabeel20 <nabeelandnizam@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
@@ -71,7 +71,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2148,13 +2148,33 @@ msgstr "الطُرق"
 msgid "Theme Properties"
 msgstr "خصائص الثِمة"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "التعدادات"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "اللون"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "الثوابت"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Fonts"
+msgstr "الخط"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Icons"
+msgstr "الأيقونة"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "الأسلوب"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "التعدادات"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -7952,9 +7972,8 @@ msgid "Translate"
 msgstr "الترجمة:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scale"
-msgstr "تكبير/تصغير:"
+msgstr "المقياس"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -8669,21 +8688,6 @@ msgstr "التعدادات:"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "TextureRegion"
 msgstr "منطقة النقش TextureRegion"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Colors"
-msgstr "اللون"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Fonts"
-msgstr "الخط"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Icons"
-msgstr "الأيقونة"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -13572,8 +13576,17 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "يجب تفعيل \"Use Custom Build\" لإستخدام الإضافات."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"\"Hand Tracking\" تكون صالحة فقط عندما يكون وضع ال \"Xr Mode\"هو \"Oculus "
+"Mobile VR\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "\"Hand Tracking\" تكون صالحة فقط عندما يكون وضع ال \"Xr Mode\"هو \"Oculus "
 "Mobile VR\"."
@@ -13583,6 +13596,27 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "يصبح خيار \"تصدير ABB\" صالحاً فقط عندما يتم اختيار \"استعمال تصدير مخصص "
 "Custom Build\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+"يصبح خيار \"تصدير ABB\" صالحاً فقط عندما يتم اختيار \"استعمال تصدير مخصص "
+"Custom Build\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+"يصبح خيار \"تصدير ABB\" صالحاً فقط عندما يتم اختيار \"استعمال تصدير مخصص "
+"Custom Build\"."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
