@@ -319,9 +319,9 @@ msgid ""
 "- 1.0: Linear\n"
 "- Between -1.0 and 0.0 (exclusive): Ease out-in\n"
 "- 0.0: Constant\n"
-"- Between 0.0 to 1.0 (exclusive): Ease in\n"
+"- Between 0.0 to 1.0 (exclusive): Ease out\n"
 "- 1.0: Linear\n"
-"- Greater than 1.0 (exclusive): Ease out\n"
+"- Greater than 1.0 (exclusive): Ease in\n"
 "[/codeblock]\n"
 "[url=https://raw.githubusercontent.com/godotengine/godot-docs/3.4/img/"
 "ease_cheatsheet.png]ease() curve values cheatsheet[/url]\n"
@@ -11242,76 +11242,79 @@ msgstr ""
 
 #: doc/classes/Button.xml:43
 msgid ""
-"Button's icon, if text is present the icon will be placed before the text."
+"Button's icon, if text is present the icon will be placed before the text.\n"
+"To edit margin and spacing of the icon, use [code]hseparation[/code] theme "
+"property of [Button] and [code]content_margin_*[/code] properties of the "
+"used [StyleBox]es."
 msgstr ""
 
-#: doc/classes/Button.xml:46 doc/classes/LinkButton.xml:18
+#: doc/classes/Button.xml:47 doc/classes/LinkButton.xml:18
 msgid "The button's text that will be displayed inside the button's area."
 msgstr ""
 
-#: doc/classes/Button.xml:51
+#: doc/classes/Button.xml:52
 msgid "Align the text to the left."
 msgstr ""
 
-#: doc/classes/Button.xml:54
+#: doc/classes/Button.xml:55
 msgid "Align the text to the center."
 msgstr ""
 
-#: doc/classes/Button.xml:57
+#: doc/classes/Button.xml:58
 msgid "Align the text to the right."
 msgstr ""
 
-#: doc/classes/Button.xml:62
-msgid "[StyleBox] used when the [Button] is disabled."
-msgstr ""
-
-#: doc/classes/Button.xml:65
-msgid ""
-"[StyleBox] used when the [Button] is focused. It is displayed over the "
-"current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
-"visual effect."
-msgstr ""
-
-#: doc/classes/Button.xml:68
-msgid "[Font] of the [Button]'s text."
-msgstr ""
-
-#: doc/classes/Button.xml:71
+#: doc/classes/Button.xml:63
 msgid "Default text [Color] of the [Button]."
 msgstr ""
 
-#: doc/classes/Button.xml:74
+#: doc/classes/Button.xml:66
 msgid "Text [Color] used when the [Button] is disabled."
 msgstr ""
 
-#: doc/classes/Button.xml:77
+#: doc/classes/Button.xml:69
 msgid ""
 "Text [Color] used when the [Button] is focused. Only replaces the normal "
 "text color of the button. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
 
-#: doc/classes/Button.xml:80
+#: doc/classes/Button.xml:72
 msgid "Text [Color] used when the [Button] is being hovered."
 msgstr ""
 
-#: doc/classes/Button.xml:83
+#: doc/classes/Button.xml:75
 msgid "Text [Color] used when the [Button] is being pressed."
 msgstr ""
 
-#: doc/classes/Button.xml:86
-msgid "[StyleBox] used when the [Button] is being hovered."
-msgstr ""
-
-#: doc/classes/Button.xml:89
+#: doc/classes/Button.xml:78
 msgid "The horizontal space between [Button]'s icon and text."
 msgstr ""
 
-#: doc/classes/Button.xml:92
+#: doc/classes/Button.xml:81
+msgid "[Font] of the [Button]'s text."
+msgstr ""
+
+#: doc/classes/Button.xml:84
+msgid "[StyleBox] used when the [Button] is disabled."
+msgstr ""
+
+#: doc/classes/Button.xml:87
+msgid ""
+"[StyleBox] used when the [Button] is focused. It is displayed over the "
+"current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
+"visual effect."
+msgstr ""
+
+#: doc/classes/Button.xml:90
+msgid "[StyleBox] used when the [Button] is being hovered."
+msgstr ""
+
+#: doc/classes/Button.xml:93
 msgid "Default [StyleBox] for the [Button]."
 msgstr ""
 
-#: doc/classes/Button.xml:95
+#: doc/classes/Button.xml:96
 msgid "[StyleBox] used when the [Button] is being pressed."
 msgstr ""
 
@@ -12773,101 +12776,101 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CheckBox.xml:22
-msgid "The vertical offset used when rendering the check icons (in pixels)."
-msgstr ""
-
-#: doc/classes/CheckBox.xml:25
-msgid "The check icon to display when the [CheckBox] is checked."
-msgstr ""
-
-#: doc/classes/CheckBox.xml:28
-msgid "The check icon to display when the [CheckBox] is checked and disabled."
-msgstr ""
-
-#: doc/classes/CheckBox.xml:31
-msgid ""
-"The [StyleBox] to display as a background when the [CheckBox] is disabled."
-msgstr ""
-
-#: doc/classes/CheckBox.xml:34
-msgid ""
-"The [StyleBox] to display as a background when the [CheckBox] is focused."
-msgstr ""
-
-#: doc/classes/CheckBox.xml:37
-msgid "The [Font] to use for the [CheckBox] text."
-msgstr ""
-
-#: doc/classes/CheckBox.xml:40
 msgid "The [CheckBox] text's font color."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:43
+#: doc/classes/CheckBox.xml:25
 msgid "The [CheckBox] text's font color when it's disabled."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:46
+#: doc/classes/CheckBox.xml:28
 msgid ""
 "The [CheckBox] text's font color when it's focused. Only replaces the normal "
 "text color of the checkbox. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:49
+#: doc/classes/CheckBox.xml:31
 msgid "The [CheckBox] text's font color when it's hovered."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:52
+#: doc/classes/CheckBox.xml:34
 msgid "The [CheckBox] text's font color when it's hovered and pressed."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:55
+#: doc/classes/CheckBox.xml:37
 msgid "The [CheckBox] text's font color when it's pressed."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:58
-msgid ""
-"The [StyleBox] to display as a background when the [CheckBox] is hovered."
+#: doc/classes/CheckBox.xml:40
+msgid "The vertical offset used when rendering the check icons (in pixels)."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:61
-msgid ""
-"The [StyleBox] to display as a background when the [CheckBox] is hovered and "
-"pressed."
-msgstr ""
-
-#: doc/classes/CheckBox.xml:64
+#: doc/classes/CheckBox.xml:43
 msgid "The separation between the check icon and the text (in pixels)."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:67 doc/classes/CheckButton.xml:61
-msgid "The [StyleBox] to display as a background."
+#: doc/classes/CheckBox.xml:46
+msgid "The [Font] to use for the [CheckBox] text."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:70
-msgid ""
-"The [StyleBox] to display as a background when the [CheckBox] is pressed."
+#: doc/classes/CheckBox.xml:49
+msgid "The check icon to display when the [CheckBox] is checked."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:73
+#: doc/classes/CheckBox.xml:52
+msgid "The check icon to display when the [CheckBox] is checked and disabled."
+msgstr ""
+
+#: doc/classes/CheckBox.xml:55
 msgid ""
 "If the [CheckBox] is configured as a radio button, the icon to display when "
 "the [CheckBox] is checked."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:78
+#: doc/classes/CheckBox.xml:60
 msgid ""
 "If the [CheckBox] is configured as a radio button, the icon to display when "
 "the [CheckBox] is unchecked."
 msgstr ""
 
-#: doc/classes/CheckBox.xml:83
+#: doc/classes/CheckBox.xml:65
 msgid "The check icon to display when the [CheckBox] is unchecked."
+msgstr ""
+
+#: doc/classes/CheckBox.xml:68
+msgid ""
+"The check icon to display when the [CheckBox] is unchecked and disabled."
+msgstr ""
+
+#: doc/classes/CheckBox.xml:71
+msgid ""
+"The [StyleBox] to display as a background when the [CheckBox] is disabled."
+msgstr ""
+
+#: doc/classes/CheckBox.xml:74
+msgid ""
+"The [StyleBox] to display as a background when the [CheckBox] is focused."
+msgstr ""
+
+#: doc/classes/CheckBox.xml:77
+msgid ""
+"The [StyleBox] to display as a background when the [CheckBox] is hovered."
+msgstr ""
+
+#: doc/classes/CheckBox.xml:80
+msgid ""
+"The [StyleBox] to display as a background when the [CheckBox] is hovered and "
+"pressed."
+msgstr ""
+
+#: doc/classes/CheckBox.xml:83 doc/classes/CheckButton.xml:73
+msgid "The [StyleBox] to display as a background."
 msgstr ""
 
 #: doc/classes/CheckBox.xml:86
 msgid ""
-"The check icon to display when the [CheckBox] is unchecked and disabled."
+"The [StyleBox] to display as a background when the [CheckBox] is pressed."
 msgstr ""
 
 #: doc/classes/CheckButton.xml:4
@@ -12887,79 +12890,79 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CheckButton.xml:22
-msgid "The vertical offset used when rendering the toggle icons (in pixels)."
-msgstr ""
-
-#: doc/classes/CheckButton.xml:25
-msgid ""
-"The [StyleBox] to display as a background when the [CheckButton] is disabled."
-msgstr ""
-
-#: doc/classes/CheckButton.xml:28
-msgid ""
-"The [StyleBox] to display as a background when the [CheckButton] is focused."
-msgstr ""
-
-#: doc/classes/CheckButton.xml:31
-msgid "The [Font] to use for the [CheckButton] text."
-msgstr ""
-
-#: doc/classes/CheckButton.xml:34
 msgid "The [CheckButton] text's font color."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:37
+#: doc/classes/CheckButton.xml:25
 msgid "The [CheckButton] text's font color when it's disabled."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:40
+#: doc/classes/CheckButton.xml:28
 msgid ""
 "The [CheckButton] text's font color when it's focused. Only replaces the "
 "normal text color of the button. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:43
+#: doc/classes/CheckButton.xml:31
 msgid "The [CheckButton] text's font color when it's hovered."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:46
+#: doc/classes/CheckButton.xml:34
 msgid "The [CheckButton] text's font color when it's hovered and pressed."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:49
+#: doc/classes/CheckButton.xml:37
 msgid "The [CheckButton] text's font color when it's pressed."
 msgstr ""
 
+#: doc/classes/CheckButton.xml:40
+msgid "The vertical offset used when rendering the toggle icons (in pixels)."
+msgstr ""
+
+#: doc/classes/CheckButton.xml:43
+msgid "The separation between the toggle icon and the text (in pixels)."
+msgstr ""
+
+#: doc/classes/CheckButton.xml:46
+msgid "The [Font] to use for the [CheckButton] text."
+msgstr ""
+
+#: doc/classes/CheckButton.xml:49
+msgid "The icon to display when the [CheckButton] is unchecked."
+msgstr ""
+
 #: doc/classes/CheckButton.xml:52
+msgid "The icon to display when the [CheckButton] is unchecked and disabled."
+msgstr ""
+
+#: doc/classes/CheckButton.xml:55
+msgid "The icon to display when the [CheckButton] is checked."
+msgstr ""
+
+#: doc/classes/CheckButton.xml:58
+msgid "The icon to display when the [CheckButton] is checked and disabled."
+msgstr ""
+
+#: doc/classes/CheckButton.xml:61
+msgid ""
+"The [StyleBox] to display as a background when the [CheckButton] is disabled."
+msgstr ""
+
+#: doc/classes/CheckButton.xml:64
+msgid ""
+"The [StyleBox] to display as a background when the [CheckButton] is focused."
+msgstr ""
+
+#: doc/classes/CheckButton.xml:67
 msgid ""
 "The [StyleBox] to display as a background when the [CheckButton] is hovered."
 msgstr ""
 
-#: doc/classes/CheckButton.xml:55
+#: doc/classes/CheckButton.xml:70
 msgid ""
 "The [StyleBox] to display as a background when the [CheckButton] is hovered "
 "and pressed."
-msgstr ""
-
-#: doc/classes/CheckButton.xml:58
-msgid "The separation between the toggle icon and the text (in pixels)."
-msgstr ""
-
-#: doc/classes/CheckButton.xml:64
-msgid "The icon to display when the [CheckButton] is unchecked."
-msgstr ""
-
-#: doc/classes/CheckButton.xml:67
-msgid "The icon to display when the [CheckButton] is unchecked and disabled."
-msgstr ""
-
-#: doc/classes/CheckButton.xml:70
-msgid "The icon to display when the [CheckButton] is checked."
-msgstr ""
-
-#: doc/classes/CheckButton.xml:73
-msgid "The icon to display when the [CheckButton] is checked and disabled."
 msgstr ""
 
 #: doc/classes/CheckButton.xml:76
@@ -14623,37 +14626,37 @@ msgid "Emitted when a preset is removed."
 msgstr ""
 
 #: doc/classes/ColorPicker.xml:85
-msgid "The icon for the \"Add Preset\" button."
-msgstr ""
-
-#: doc/classes/ColorPicker.xml:88
-msgid "Custom texture for the hue selection slider on the right."
-msgstr ""
-
-#: doc/classes/ColorPicker.xml:93
 msgid "The width of the hue selection slider."
 msgstr ""
 
-#: doc/classes/ColorPicker.xml:98
+#: doc/classes/ColorPicker.xml:90
 msgid "The margin around the [ColorPicker]."
 msgstr ""
 
-#: doc/classes/ColorPicker.xml:101
+#: doc/classes/ColorPicker.xml:93
+msgid "The height of the saturation-value selection box."
+msgstr ""
+
+#: doc/classes/ColorPicker.xml:96
+msgid "The width of the saturation-value selection box."
+msgstr ""
+
+#: doc/classes/ColorPicker.xml:99
+msgid "The icon for the \"Add Preset\" button."
+msgstr ""
+
+#: doc/classes/ColorPicker.xml:102
+msgid "Custom texture for the hue selection slider on the right."
+msgstr ""
+
+#: doc/classes/ColorPicker.xml:107
 msgid ""
 "The indicator used to signalize that the color value is outside the 0-1 "
 "range."
 msgstr ""
 
-#: doc/classes/ColorPicker.xml:106
-msgid "The icon for the screen color picker button."
-msgstr ""
-
-#: doc/classes/ColorPicker.xml:109
-msgid "The height of the saturation-value selection box."
-msgstr ""
-
 #: doc/classes/ColorPicker.xml:112
-msgid "The width of the saturation-value selection box."
+msgid "The icon for the screen color picker button."
 msgstr ""
 
 #: doc/classes/ColorPickerButton.xml:4
@@ -14710,53 +14713,53 @@ msgid "Emitted when the [ColorPicker] is closed."
 msgstr ""
 
 #: doc/classes/ColorPickerButton.xml:62
-msgid "The background of the color preview rect on the button."
-msgstr ""
-
-#: doc/classes/ColorPickerButton.xml:65
-msgid "[StyleBox] used when the [ColorPickerButton] is disabled."
-msgstr ""
-
-#: doc/classes/ColorPickerButton.xml:68
-msgid ""
-"[StyleBox] used when the [ColorPickerButton] is focused. It is displayed "
-"over the current [StyleBox], so using [StyleBoxEmpty] will just disable the "
-"focus visual effect."
-msgstr ""
-
-#: doc/classes/ColorPickerButton.xml:71
-msgid "[Font] of the [ColorPickerButton]'s text."
-msgstr ""
-
-#: doc/classes/ColorPickerButton.xml:74
 msgid "Default text [Color] of the [ColorPickerButton]."
 msgstr ""
 
-#: doc/classes/ColorPickerButton.xml:77
+#: doc/classes/ColorPickerButton.xml:65
 msgid "Text [Color] used when the [ColorPickerButton] is disabled."
 msgstr ""
 
-#: doc/classes/ColorPickerButton.xml:80
+#: doc/classes/ColorPickerButton.xml:68
 msgid ""
 "Text [Color] used when the [ColorPickerButton] is focused. Only replaces the "
 "normal text color of the button. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
 
-#: doc/classes/ColorPickerButton.xml:83
+#: doc/classes/ColorPickerButton.xml:71
 msgid "Text [Color] used when the [ColorPickerButton] is being hovered."
 msgstr ""
 
-#: doc/classes/ColorPickerButton.xml:86
+#: doc/classes/ColorPickerButton.xml:74
 msgid "Text [Color] used when the [ColorPickerButton] is being pressed."
 msgstr ""
 
+#: doc/classes/ColorPickerButton.xml:77
+msgid "The horizontal space between [ColorPickerButton]'s icon and text."
+msgstr ""
+
+#: doc/classes/ColorPickerButton.xml:80
+msgid "[Font] of the [ColorPickerButton]'s text."
+msgstr ""
+
+#: doc/classes/ColorPickerButton.xml:83
+msgid "The background of the color preview rect on the button."
+msgstr ""
+
+#: doc/classes/ColorPickerButton.xml:86
+msgid "[StyleBox] used when the [ColorPickerButton] is disabled."
+msgstr ""
+
 #: doc/classes/ColorPickerButton.xml:89
-msgid "[StyleBox] used when the [ColorPickerButton] is being hovered."
+msgid ""
+"[StyleBox] used when the [ColorPickerButton] is focused. It is displayed "
+"over the current [StyleBox], so using [StyleBoxEmpty] will just disable the "
+"focus visual effect."
 msgstr ""
 
 #: doc/classes/ColorPickerButton.xml:92
-msgid "The horizontal space between [ColorPickerButton]'s icon and text."
+msgid "[StyleBox] used when the [ColorPickerButton] is being hovered."
 msgstr ""
 
 #: doc/classes/ColorPickerButton.xml:95
@@ -16692,8 +16695,8 @@ msgstr ""
 
 #: doc/classes/CPUParticles.xml:103 doc/classes/CPUParticles2D.xml:104
 msgid ""
-"Initial angular velocity applied to each particle. Sets the speed of "
-"rotation of the particle."
+"Initial angular velocity applied to each particle in [i]degrees[/i] per "
+"second. Sets the speed of rotation of the particle."
 msgstr ""
 
 #: doc/classes/CPUParticles.xml:106 doc/classes/CPUParticles2D.xml:107
@@ -20292,10 +20295,19 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorInterface.xml:24
-msgid "Edits the given [Resource]."
+msgid ""
+"Edits the given [Resource]. If the resource is a [Script] you can also edit "
+"it with [method edit_script] to specify the line and column position."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:30
+#: doc/classes/EditorInterface.xml:34
+msgid ""
+"Edits the given [Script]. The line and column on which to open the script "
+"can also be specified. The script will be open with the user-configured "
+"editor for the script's language which may be an external editor."
+msgstr ""
+
+#: doc/classes/EditorInterface.xml:40
 msgid ""
 "Returns the main container of Godot editor's window. For example, you can "
 "use it to retrieve the size of the container and place your controls "
@@ -20304,15 +20316,15 @@ msgid ""
 "useless and may cause a crash."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:37
+#: doc/classes/EditorInterface.xml:47
 msgid "Returns the current path being viewed in the [FileSystemDock]."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:43
+#: doc/classes/EditorInterface.xml:53
 msgid "Returns the edited (current) scene's root [Node]."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:49
+#: doc/classes/EditorInterface.xml:59
 msgid ""
 "Returns the actual scale of the editor UI ([code]1.0[/code] being 100% "
 "scale). This can be used to adjust position and dimensions of the UI added "
@@ -20322,11 +20334,11 @@ msgid ""
 "settings. Editor must be restarted for changes to be properly applied."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:56
+#: doc/classes/EditorInterface.xml:66
 msgid "Returns the editor's [EditorSettings] instance."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:62
+#: doc/classes/EditorInterface.xml:72
 msgid ""
 "Returns the main editor control. Use this as a parent for main screens.\n"
 "[b]Note:[/b] This returns the main editor control containing the whole "
@@ -20335,117 +20347,117 @@ msgid ""
 "editor useless and may cause a crash."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:70
+#: doc/classes/EditorInterface.xml:80
 msgid ""
 "Returns the editor's [FileSystemDock] instance.\n"
 "[b]Warning:[/b] Removing and freeing this node will render a part of the "
 "editor useless and may cause a crash."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:77
+#: doc/classes/EditorInterface.xml:87
 msgid ""
 "Returns the editor's [EditorInspector] instance.\n"
 "[b]Warning:[/b] Removing and freeing this node will render a part of the "
 "editor useless and may cause a crash."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:84
+#: doc/classes/EditorInterface.xml:94
 msgid "Returns an [Array] with the file paths of the currently opened scenes."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:90
+#: doc/classes/EditorInterface.xml:100
 msgid ""
 "Returns the name of the scene that is being played. If no scene is currently "
 "being played, returns an empty string."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:96
+#: doc/classes/EditorInterface.xml:106
 msgid "Returns the editor's [EditorFileSystem] instance."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:102
+#: doc/classes/EditorInterface.xml:112
 msgid "Returns the editor's [EditorResourcePreview] instance."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:108
+#: doc/classes/EditorInterface.xml:118
 msgid ""
 "Returns the editor's [ScriptEditor] instance.\n"
 "[b]Warning:[/b] Removing and freeing this node will render a part of the "
 "editor useless and may cause a crash."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:115
+#: doc/classes/EditorInterface.xml:125
 msgid ""
 "Returns the path of the directory currently selected in the "
 "[FileSystemDock]. If a file is selected, its base directory will be returned "
 "using [method String.get_base_dir] instead."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:121
+#: doc/classes/EditorInterface.xml:131
 msgid "Returns the editor's [EditorSelection] instance."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:130
+#: doc/classes/EditorInterface.xml:140
 msgid ""
 "Shows the given property on the given [code]object[/code] in the editor's "
 "Inspector dock. If [code]inspector_only[/code] is [code]true[/code], plugins "
 "will not attempt to edit [code]object[/code]."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:136
+#: doc/classes/EditorInterface.xml:146
 msgid ""
 "Returns [code]true[/code] if a scene is currently being played, [code]false[/"
 "code] otherwise. Paused scenes are considered as being played."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:143
+#: doc/classes/EditorInterface.xml:153
 msgid ""
 "Returns [code]true[/code] if the specified [code]plugin[/code] is enabled. "
 "The plugin name is the same as its directory name."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:151
+#: doc/classes/EditorInterface.xml:161
 msgid ""
 "Returns mesh previews rendered at the given size as an [Array] of [Texture]s."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:158
+#: doc/classes/EditorInterface.xml:168
 msgid "Opens the scene at the given path."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:164
+#: doc/classes/EditorInterface.xml:174
 msgid "Plays the currently active scene."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:171
+#: doc/classes/EditorInterface.xml:181
 msgid "Plays the scene specified by its filepath."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:177
+#: doc/classes/EditorInterface.xml:187
 msgid "Plays the main scene."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:184
+#: doc/classes/EditorInterface.xml:194
 msgid "Reloads the scene at the given path."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:190
+#: doc/classes/EditorInterface.xml:200
 msgid ""
 "Saves the scene. Returns either [code]OK[/code] or [code]ERR_CANT_CREATE[/"
 "code] (see [@GlobalScope] constants)."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:198
+#: doc/classes/EditorInterface.xml:208
 msgid "Saves the scene as a file at [code]path[/code]."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:205
+#: doc/classes/EditorInterface.xml:215
 msgid ""
 "Selects the file, with the path provided by [code]file[/code], in the "
 "FileSystem dock."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:212
+#: doc/classes/EditorInterface.xml:222
 msgid ""
 "Sets the editor's current main screen to the one specified in [code]name[/"
 "code]. [code]name[/code] must match the text of the tab in question exactly "
@@ -20453,17 +20465,17 @@ msgid ""
 "code])."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:220
+#: doc/classes/EditorInterface.xml:230
 msgid ""
 "Sets the enabled status of a plugin. The plugin name is the same as its "
 "directory name."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:226
+#: doc/classes/EditorInterface.xml:236
 msgid "Stops the scene that is currently playing."
 msgstr ""
 
-#: doc/classes/EditorInterface.xml:232
+#: doc/classes/EditorInterface.xml:242
 msgid ""
 "If [code]true[/code], enables distraction-free mode which hides side docks "
 "to increase the space available for the main view."
@@ -23349,10 +23361,17 @@ msgstr ""
 #: doc/classes/File.xml:375
 msgid ""
 "Appends [code]string[/code] to the file without a line return, encoding the "
-"text as UTF-8."
+"text as UTF-8.\n"
+"[b]Note:[/b] This method is intended to be used to write text files. The "
+"string is stored as a UTF-8 encoded buffer without string length or "
+"terminating zero, which means that it can't be loaded back easily. If you "
+"want to store a retrievable string in a binary file, consider using [method "
+"store_pascal_string] instead. For retrieving strings from a text file, you "
+"can use [code]get_buffer(length).get_string_from_utf8()[/code] (if you know "
+"the length) or [method get_as_text]."
 msgstr ""
 
-#: doc/classes/File.xml:383
+#: doc/classes/File.xml:384
 msgid ""
 "Stores any Variant value in the file. If [code]full_objects[/code] is "
 "[code]true[/code], encoding objects is allowed (and can potentially include "
@@ -23366,7 +23385,7 @@ msgid ""
 "flags."
 msgstr ""
 
-#: doc/classes/File.xml:390
+#: doc/classes/File.xml:391
 msgid ""
 "If [code]true[/code], the file is read with big-endian [url=https://en."
 "wikipedia.org/wiki/Endianness]endianness[/url]. If [code]false[/code], the "
@@ -23380,48 +23399,48 @@ msgid ""
 "the file, not before."
 msgstr ""
 
-#: doc/classes/File.xml:397
+#: doc/classes/File.xml:398
 msgid ""
 "Opens the file for read operations. The cursor is positioned at the "
 "beginning of the file."
 msgstr ""
 
-#: doc/classes/File.xml:400
+#: doc/classes/File.xml:401
 msgid ""
 "Opens the file for write operations. The file is created if it does not "
 "exist, and truncated if it does."
 msgstr ""
 
-#: doc/classes/File.xml:403
+#: doc/classes/File.xml:404
 msgid ""
 "Opens the file for read and write operations. Does not truncate the file. "
 "The cursor is positioned at the beginning of the file."
 msgstr ""
 
-#: doc/classes/File.xml:406
+#: doc/classes/File.xml:407
 msgid ""
 "Opens the file for read and write operations. The file is created if it does "
 "not exist, and truncated if it does. The cursor is positioned at the "
 "beginning of the file."
 msgstr ""
 
-#: doc/classes/File.xml:409
+#: doc/classes/File.xml:410
 msgid "Uses the [url=http://fastlz.org/]FastLZ[/url] compression method."
 msgstr ""
 
-#: doc/classes/File.xml:412
+#: doc/classes/File.xml:413
 msgid ""
 "Uses the [url=https://en.wikipedia.org/wiki/DEFLATE]DEFLATE[/url] "
 "compression method."
 msgstr ""
 
-#: doc/classes/File.xml:415
+#: doc/classes/File.xml:416
 msgid ""
 "Uses the [url=https://facebook.github.io/zstd/]Zstandard[/url] compression "
 "method."
 msgstr ""
 
-#: doc/classes/File.xml:418
+#: doc/classes/File.xml:419
 msgid "Uses the [url=https://www.gzip.org/]gzip[/url] compression method."
 msgstr ""
 
@@ -23572,25 +23591,25 @@ msgid "The dialog allows accessing files on the whole file system."
 msgstr ""
 
 #: doc/classes/FileDialog.xml:129
-msgid "Custom icon for files."
-msgstr ""
-
-#: doc/classes/FileDialog.xml:132
 msgid "The color modulation applied to the file icon."
 msgstr ""
 
-#: doc/classes/FileDialog.xml:135
+#: doc/classes/FileDialog.xml:132
 msgid ""
 "The color tint for disabled files (when the [FileDialog] is used in open "
 "folder mode)."
 msgstr ""
 
+#: doc/classes/FileDialog.xml:135
+msgid "The color modulation applied to the folder icon."
+msgstr ""
+
 #: doc/classes/FileDialog.xml:138
-msgid "Custom icon for folders."
+msgid "Custom icon for files."
 msgstr ""
 
 #: doc/classes/FileDialog.xml:141
-msgid "The color modulation applied to the folder icon."
+msgid "Custom icon for folders."
 msgstr ""
 
 #: doc/classes/FileDialog.xml:144
@@ -25461,49 +25480,49 @@ msgid ""
 "emitted when changed in code."
 msgstr ""
 
-#: doc/classes/GraphEdit.xml:272
-msgid "The background drawn under the grid."
-msgstr ""
-
-#: doc/classes/GraphEdit.xml:275
+#: doc/classes/GraphEdit.xml:268
 msgid "Color of major grid lines."
 msgstr ""
 
-#: doc/classes/GraphEdit.xml:278
+#: doc/classes/GraphEdit.xml:271
 msgid "Color of minor grid lines."
 msgstr ""
 
-#: doc/classes/GraphEdit.xml:283
-msgid "The icon for the zoom out button."
+#: doc/classes/GraphEdit.xml:274
+msgid "The fill color of the selection rectangle."
 msgstr ""
 
-#: doc/classes/GraphEdit.xml:286
-msgid "The icon for the zoom in button."
+#: doc/classes/GraphEdit.xml:277
+msgid "The outline color of the selection rectangle."
 msgstr ""
 
-#: doc/classes/GraphEdit.xml:289
+#: doc/classes/GraphEdit.xml:284
 msgid ""
 "The horizontal range within which a port can be grabbed (on both sides)."
 msgstr ""
 
-#: doc/classes/GraphEdit.xml:292
+#: doc/classes/GraphEdit.xml:287
 msgid "The vertical range within which a port can be grabbed (on both sides)."
 msgstr ""
 
+#: doc/classes/GraphEdit.xml:292
+msgid "The icon for the zoom out button."
+msgstr ""
+
 #: doc/classes/GraphEdit.xml:295
-msgid "The icon for the zoom reset button."
+msgid "The icon for the zoom in button."
 msgstr ""
 
 #: doc/classes/GraphEdit.xml:298
-msgid "The fill color of the selection rectangle."
+msgid "The icon for the zoom reset button."
 msgstr ""
 
 #: doc/classes/GraphEdit.xml:301
-msgid "The outline color of the selection rectangle."
+msgid "The icon for the snap toggle button."
 msgstr ""
 
 #: doc/classes/GraphEdit.xml:304
-msgid "The icon for the snap toggle button."
+msgid "The background drawn under the grid."
 msgstr ""
 
 #: doc/classes/GraphNode.xml:4
@@ -25739,78 +25758,78 @@ msgid "Show overlay set in the [code]position[/code] theme property."
 msgstr ""
 
 #: doc/classes/GraphNode.xml:268
+msgid "The color modulation applied to the close button icon."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:271
+msgid "The color modulation applied to the resizer icon."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:274
+msgid "Color of the title text."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:277 doc/classes/WindowDialog.xml:38
+msgid "The vertical offset of the close button."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:280
+msgid "Horizontal offset for the ports."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:283
+msgid "The vertical distance between ports."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:286
+msgid "Vertical offset of the title text."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:289
+msgid "Font used for the title text."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:292
+msgid ""
+"The icon for the close button, visible when [member show_close] is enabled."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:295
+msgid "The icon used for representing ports."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:298
+msgid "The icon used for resizer, visible when [member resizable] is enabled."
+msgstr ""
+
+#: doc/classes/GraphNode.xml:301
 msgid ""
 "The background used when [member overlay] is set to [constant "
 "OVERLAY_BREAKPOINT]."
 msgstr ""
 
-#: doc/classes/GraphNode.xml:271
-msgid ""
-"The icon for the close button, visible when [member show_close] is enabled."
-msgstr ""
-
-#: doc/classes/GraphNode.xml:274
-msgid "The color modulation applied to the close button icon."
-msgstr ""
-
-#: doc/classes/GraphNode.xml:277 doc/classes/WindowDialog.xml:41
-msgid "The vertical offset of the close button."
-msgstr ""
-
-#: doc/classes/GraphNode.xml:280
+#: doc/classes/GraphNode.xml:304
 msgid "The [StyleBox] used when [member comment] is enabled."
 msgstr ""
 
-#: doc/classes/GraphNode.xml:283
+#: doc/classes/GraphNode.xml:307
 msgid ""
 "The [StyleBox] used when [member comment] is enabled and the [GraphNode] is "
 "focused."
 msgstr ""
 
-#: doc/classes/GraphNode.xml:290
+#: doc/classes/GraphNode.xml:314
 msgid "The default background for [GraphNode]."
 msgstr ""
 
-#: doc/classes/GraphNode.xml:293
-msgid "The icon used for representing ports."
-msgstr ""
-
-#: doc/classes/GraphNode.xml:296
-msgid "Horizontal offset for the ports."
-msgstr ""
-
-#: doc/classes/GraphNode.xml:299
+#: doc/classes/GraphNode.xml:317
 msgid ""
 "The background used when [member overlay] is set to [constant "
 "OVERLAY_POSITION]."
 msgstr ""
 
-#: doc/classes/GraphNode.xml:302
-msgid "The icon used for resizer, visible when [member resizable] is enabled."
-msgstr ""
-
-#: doc/classes/GraphNode.xml:305
-msgid "The color modulation applied to the resizer icon."
-msgstr ""
-
-#: doc/classes/GraphNode.xml:308
-msgid "The background used when the [GraphNode] is selected."
-msgstr ""
-
-#: doc/classes/GraphNode.xml:311
-msgid "The vertical distance between ports."
-msgstr ""
-
-#: doc/classes/GraphNode.xml:314
-msgid "Color of the title text."
-msgstr ""
-
-#: doc/classes/GraphNode.xml:317
-msgid "Font used for the title text."
-msgstr ""
-
 #: doc/classes/GraphNode.xml:320
-msgid "Vertical offset of the title text."
+msgid "The background used when the [GraphNode] is selected."
 msgstr ""
 
 #: doc/classes/GridContainer.xml:4
@@ -26310,32 +26329,32 @@ msgstr ""
 msgid "Displayed when the decrement button is being pressed."
 msgstr ""
 
-#: doc/classes/HScrollBar.xml:26 doc/classes/VScrollBar.xml:30
-msgid ""
-"Used as texture for the grabber, the draggable element representing current "
-"scroll."
-msgstr ""
-
-#: doc/classes/HScrollBar.xml:29 doc/classes/VScrollBar.xml:33
-msgid "Used when the mouse hovers over the grabber."
-msgstr ""
-
-#: doc/classes/HScrollBar.xml:32 doc/classes/VScrollBar.xml:36
-msgid "Used when the grabber is being dragged."
-msgstr ""
-
-#: doc/classes/HScrollBar.xml:35
+#: doc/classes/HScrollBar.xml:26
 msgid ""
 "Icon used as a button to scroll the [ScrollBar] right. Supports custom step "
 "using the [member ScrollBar.custom_step] property."
 msgstr ""
 
-#: doc/classes/HScrollBar.xml:38 doc/classes/VScrollBar.xml:42
+#: doc/classes/HScrollBar.xml:29 doc/classes/VScrollBar.xml:33
 msgid "Displayed when the mouse cursor hovers over the increment button."
 msgstr ""
 
-#: doc/classes/HScrollBar.xml:41 doc/classes/VScrollBar.xml:45
+#: doc/classes/HScrollBar.xml:32 doc/classes/VScrollBar.xml:36
 msgid "Displayed when the increment button is being pressed."
+msgstr ""
+
+#: doc/classes/HScrollBar.xml:35 doc/classes/VScrollBar.xml:39
+msgid ""
+"Used as texture for the grabber, the draggable element representing current "
+"scroll."
+msgstr ""
+
+#: doc/classes/HScrollBar.xml:38 doc/classes/VScrollBar.xml:42
+msgid "Used when the mouse hovers over the grabber."
+msgstr ""
+
+#: doc/classes/HScrollBar.xml:41 doc/classes/VScrollBar.xml:45
+msgid "Used when the grabber is being dragged."
 msgstr ""
 
 #: doc/classes/HScrollBar.xml:44 doc/classes/VScrollBar.xml:48
@@ -26382,28 +26401,28 @@ msgstr ""
 msgid "The texture for the grabber (the draggable element)."
 msgstr ""
 
-#: doc/classes/HSlider.xml:21
-msgid "The background of the area to the left of the grabber."
-msgstr ""
-
-#: doc/classes/HSlider.xml:26 doc/classes/VSlider.xml:30
+#: doc/classes/HSlider.xml:21 doc/classes/VSlider.xml:25
 msgid "The texture for the grabber when it's disabled."
 msgstr ""
 
-#: doc/classes/HSlider.xml:29 doc/classes/VSlider.xml:33
+#: doc/classes/HSlider.xml:24 doc/classes/VSlider.xml:28
 msgid "The texture for the grabber when it's focused."
 msgstr ""
 
-#: doc/classes/HSlider.xml:32
-msgid ""
-"The background for the whole slider. Determines the height of the "
-"[code]grabber_area[/code]."
-msgstr ""
-
-#: doc/classes/HSlider.xml:35 doc/classes/VSlider.xml:39
+#: doc/classes/HSlider.xml:27 doc/classes/VSlider.xml:31
 msgid ""
 "The texture for the ticks, visible when [member Slider.tick_count] is "
 "greater than 0."
+msgstr ""
+
+#: doc/classes/HSlider.xml:30
+msgid "The background of the area to the left of the grabber."
+msgstr ""
+
+#: doc/classes/HSlider.xml:35
+msgid ""
+"The background for the whole slider. Determines the height of the "
+"[code]grabber_area[/code]."
 msgstr ""
 
 #: doc/classes/HSplitContainer.xml:4
@@ -26423,12 +26442,12 @@ msgid ""
 "visible."
 msgstr ""
 
-#: doc/classes/HSplitContainer.xml:22 doc/classes/VSplitContainer.xml:22
-msgid "The icon used for the grabber drawn in the middle area."
+#: doc/classes/HSplitContainer.xml:20 doc/classes/VSplitContainer.xml:20
+msgid "The space between sides of the container."
 msgstr ""
 
-#: doc/classes/HSplitContainer.xml:25 doc/classes/VSplitContainer.xml:25
-msgid "The space between sides of the container."
+#: doc/classes/HSplitContainer.xml:23 doc/classes/VSplitContainer.xml:23
+msgid "The icon used for the grabber drawn in the middle area."
 msgstr ""
 
 #: doc/classes/HTTPClient.xml:4
@@ -27631,7 +27650,7 @@ msgstr ""
 #: doc/classes/Image.xml:262
 msgid ""
 "Loads an image from file [code]path[/code]. See [url=https://docs."
-"godotengine.org/en/3.4/getting_started/workflow/assets/importing_images."
+"godotengine.org/en/3.4/tutorials/assets_pipeline/importing_images."
 "html#supported-image-formats]Supported image formats[/url] for a list of "
 "supported image formats and limitations.\n"
 "[b]Warning:[/b] This method should only be used in the editor or in cases "
@@ -28583,7 +28602,14 @@ msgid ""
 "with [enum ButtonList]."
 msgstr ""
 
-#: doc/classes/Input.xml:274
+#: doc/classes/Input.xml:271
+msgid ""
+"Returns [code]true[/code] if you are pressing the key in the physical "
+"location on the 101/102-key US QWERTY keyboard. You can pass a [enum "
+"KeyList] constant."
+msgstr ""
+
+#: doc/classes/Input.xml:281
 msgid ""
 "Notifies the [Input] singleton that a connection has changed, to update the "
 "state for the [code]device[/code] index.\n"
@@ -28592,7 +28618,7 @@ msgid ""
 "triggered internally."
 msgstr ""
 
-#: doc/classes/Input.xml:282
+#: doc/classes/Input.xml:289
 msgid ""
 "Feeds an [InputEvent] to the game. Can be used to artificially trigger input "
 "events from code. Also generates [method Node._input] calls.\n"
@@ -28605,12 +28631,12 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/Input.xml:296
+#: doc/classes/Input.xml:303
 msgid ""
 "Removes all mappings from the internal database that match the given GUID."
 msgstr ""
 
-#: doc/classes/Input.xml:303
+#: doc/classes/Input.xml:310
 msgid ""
 "Sets the acceleration value of the accelerometer sensor. Can be used for "
 "debugging on devices without a hardware sensor, for example in an editor on "
@@ -28619,7 +28645,7 @@ msgid ""
 "sensor value on Android and iOS."
 msgstr ""
 
-#: doc/classes/Input.xml:313
+#: doc/classes/Input.xml:320
 msgid ""
 "Sets a custom mouse cursor image, which is only visible inside the game "
 "window. The hotspot can also be specified. Passing [code]null[/code] to the "
@@ -28634,7 +28660,7 @@ msgid ""
 "compression mode can't be used for custom cursors."
 msgstr ""
 
-#: doc/classes/Input.xml:324
+#: doc/classes/Input.xml:331
 msgid ""
 "Sets the default cursor shape to be used in the viewport instead of "
 "[constant CURSOR_ARROW].\n"
@@ -28644,7 +28670,7 @@ msgid ""
 "cursor immediately."
 msgstr ""
 
-#: doc/classes/Input.xml:333
+#: doc/classes/Input.xml:340
 msgid ""
 "Sets the gravity value of the accelerometer sensor. Can be used for "
 "debugging on devices without a hardware sensor, for example in an editor on "
@@ -28653,7 +28679,7 @@ msgid ""
 "sensor value on Android and iOS."
 msgstr ""
 
-#: doc/classes/Input.xml:341
+#: doc/classes/Input.xml:348
 msgid ""
 "Sets the value of the rotation rate of the gyroscope sensor. Can be used for "
 "debugging on devices without a hardware sensor, for example in an editor on "
@@ -28662,7 +28688,7 @@ msgid ""
 "sensor value on Android and iOS."
 msgstr ""
 
-#: doc/classes/Input.xml:349
+#: doc/classes/Input.xml:356
 msgid ""
 "Sets the value of the magnetic field of the magnetometer sensor. Can be used "
 "for debugging on devices without a hardware sensor, for example in an editor "
@@ -28671,11 +28697,11 @@ msgid ""
 "sensor value on Android and iOS."
 msgstr ""
 
-#: doc/classes/Input.xml:357
+#: doc/classes/Input.xml:364
 msgid "Sets the mouse mode. See the constants for more information."
 msgstr ""
 
-#: doc/classes/Input.xml:364
+#: doc/classes/Input.xml:371
 msgid ""
 "Enables or disables the accumulation of similar input events sent by the "
 "operating system. When input accumulation is enabled, all input events "
@@ -28689,7 +28715,7 @@ msgid ""
 "results that closely follow the actual input."
 msgstr ""
 
-#: doc/classes/Input.xml:375
+#: doc/classes/Input.xml:382
 msgid ""
 "Starts to vibrate the joypad. Joypads usually come with two rumble motors, a "
 "strong and a weak one. [code]weak_magnitude[/code] is the strength of the "
@@ -28702,34 +28728,34 @@ msgid ""
 "few seconds."
 msgstr ""
 
-#: doc/classes/Input.xml:383
+#: doc/classes/Input.xml:390
 msgid "Stops the vibration of the joypad."
 msgstr ""
 
-#: doc/classes/Input.xml:390
+#: doc/classes/Input.xml:397
 msgid ""
 "Vibrate Android and iOS devices.\n"
 "[b]Note:[/b] It needs [code]VIBRATE[/code] permission for Android at export "
 "settings. iOS does not support duration."
 msgstr ""
 
-#: doc/classes/Input.xml:398
+#: doc/classes/Input.xml:405
 msgid "Sets the mouse position to the specified vector."
 msgstr ""
 
-#: doc/classes/Input.xml:407
+#: doc/classes/Input.xml:414
 msgid "Emitted when a joypad device has been connected or disconnected."
 msgstr ""
 
-#: doc/classes/Input.xml:413
+#: doc/classes/Input.xml:420
 msgid "Makes the mouse cursor visible if it is hidden."
 msgstr ""
 
-#: doc/classes/Input.xml:416
+#: doc/classes/Input.xml:423
 msgid "Makes the mouse cursor hidden if it is visible."
 msgstr ""
 
-#: doc/classes/Input.xml:419
+#: doc/classes/Input.xml:426
 msgid ""
 "Captures the mouse. The mouse will be hidden and its position locked at the "
 "center of the screen.\n"
@@ -28737,83 +28763,83 @@ msgid ""
 "need to use [member InputEventMouseMotion.relative]."
 msgstr ""
 
-#: doc/classes/Input.xml:423
+#: doc/classes/Input.xml:430
 msgid "Makes the mouse cursor visible but confines it to the game window."
 msgstr ""
 
-#: doc/classes/Input.xml:426
+#: doc/classes/Input.xml:433
 msgid "Arrow cursor. Standard, default pointing cursor."
 msgstr ""
 
-#: doc/classes/Input.xml:429
+#: doc/classes/Input.xml:436
 msgid ""
 "I-beam cursor. Usually used to show where the text cursor will appear when "
 "the mouse is clicked."
 msgstr ""
 
-#: doc/classes/Input.xml:432
+#: doc/classes/Input.xml:439
 msgid ""
 "Pointing hand cursor. Usually used to indicate the pointer is over a link or "
 "other interactable item."
 msgstr ""
 
-#: doc/classes/Input.xml:435
+#: doc/classes/Input.xml:442
 msgid ""
 "Cross cursor. Typically appears over regions in which a drawing operation "
 "can be performed or for selections."
 msgstr ""
 
-#: doc/classes/Input.xml:438
+#: doc/classes/Input.xml:445
 msgid ""
 "Wait cursor. Indicates that the application is busy performing an operation. "
 "This cursor shape denotes that the application is still usable during the "
 "operation."
 msgstr ""
 
-#: doc/classes/Input.xml:441
+#: doc/classes/Input.xml:448
 msgid ""
 "Busy cursor. Indicates that the application is busy performing an operation. "
 "This cursor shape denotes that the application isn't usable during the "
 "operation (e.g. something is blocking its main thread)."
 msgstr ""
 
-#: doc/classes/Input.xml:444
+#: doc/classes/Input.xml:451
 msgid "Drag cursor. Usually displayed when dragging something."
 msgstr ""
 
-#: doc/classes/Input.xml:447
+#: doc/classes/Input.xml:454
 msgid ""
 "Can drop cursor. Usually displayed when dragging something to indicate that "
 "it can be dropped at the current position."
 msgstr ""
 
-#: doc/classes/Input.xml:450
+#: doc/classes/Input.xml:457
 msgid ""
 "Forbidden cursor. Indicates that the current action is forbidden (for "
 "example, when dragging something) or that the control at a position is "
 "disabled."
 msgstr ""
 
-#: doc/classes/Input.xml:453
+#: doc/classes/Input.xml:460
 msgid ""
 "Vertical resize mouse cursor. A double-headed vertical arrow. It tells the "
 "user they can resize the window or the panel vertically."
 msgstr ""
 
-#: doc/classes/Input.xml:456
+#: doc/classes/Input.xml:463
 msgid ""
 "Horizontal resize mouse cursor. A double-headed horizontal arrow. It tells "
 "the user they can resize the window or the panel horizontally."
 msgstr ""
 
-#: doc/classes/Input.xml:459
+#: doc/classes/Input.xml:466
 msgid ""
 "Window resize mouse cursor. The cursor is a double-headed arrow that goes "
 "from the bottom left to the top right. It tells the user they can resize the "
 "window or the panel both horizontally and vertically."
 msgstr ""
 
-#: doc/classes/Input.xml:462
+#: doc/classes/Input.xml:469
 msgid ""
 "Window resize mouse cursor. The cursor is a double-headed arrow that goes "
 "from the top left to the bottom right, the opposite of [constant "
@@ -28821,23 +28847,23 @@ msgid ""
 "both horizontally and vertically."
 msgstr ""
 
-#: doc/classes/Input.xml:465
+#: doc/classes/Input.xml:472
 msgid "Move cursor. Indicates that something can be moved."
 msgstr ""
 
-#: doc/classes/Input.xml:468
+#: doc/classes/Input.xml:475
 msgid ""
 "Vertical split mouse cursor. On Windows, it's the same as [constant "
 "CURSOR_VSIZE]."
 msgstr ""
 
-#: doc/classes/Input.xml:471
+#: doc/classes/Input.xml:478
 msgid ""
 "Horizontal split mouse cursor. On Windows, it's the same as [constant "
 "CURSOR_HSIZE]."
 msgstr ""
 
-#: doc/classes/Input.xml:474
+#: doc/classes/Input.xml:481
 msgid "Help cursor. Usually a question mark."
 msgstr ""
 
@@ -30010,68 +30036,68 @@ msgstr ""
 msgid "Allows selecting multiple items by holding Ctrl or Shift."
 msgstr ""
 
-#: doc/classes/ItemList.xml:412
-msgid ""
-"Default [StyleBox] for the [ItemList], i.e. used when the control is not "
-"being focused."
-msgstr ""
-
-#: doc/classes/ItemList.xml:415
-msgid "[StyleBox] used when the [ItemList] is being focused."
-msgstr ""
-
-#: doc/classes/ItemList.xml:418
-msgid "[StyleBox] used for the cursor, when the [ItemList] is being focused."
-msgstr ""
-
-#: doc/classes/ItemList.xml:421
-msgid ""
-"[StyleBox] used for the cursor, when the [ItemList] is not being focused."
-msgstr ""
-
-#: doc/classes/ItemList.xml:424 doc/classes/Tree.xml:407
-msgid "[Font] of the item's text."
-msgstr ""
-
-#: doc/classes/ItemList.xml:427 doc/classes/Tree.xml:410
+#: doc/classes/ItemList.xml:412 doc/classes/Tree.xml:365
 msgid "Default text [Color] of the item."
 msgstr ""
 
-#: doc/classes/ItemList.xml:430 doc/classes/Tree.xml:413
+#: doc/classes/ItemList.xml:415 doc/classes/Tree.xml:368
 msgid "Text [Color] used when the item is selected."
 msgstr ""
 
-#: doc/classes/ItemList.xml:433
+#: doc/classes/ItemList.xml:418
 msgid ""
 "[Color] of the guideline. The guideline is a line drawn between each row of "
 "items."
 msgstr ""
 
-#: doc/classes/ItemList.xml:436
+#: doc/classes/ItemList.xml:421
 msgid "The horizontal spacing between items."
 msgstr ""
 
-#: doc/classes/ItemList.xml:439
+#: doc/classes/ItemList.xml:424
 msgid "The spacing between item's icon and text."
 msgstr ""
 
-#: doc/classes/ItemList.xml:442
+#: doc/classes/ItemList.xml:427
 msgid "The vertical spacing between each line of text."
 msgstr ""
 
+#: doc/classes/ItemList.xml:430
+msgid "The vertical spacing between items."
+msgstr ""
+
+#: doc/classes/ItemList.xml:433 doc/classes/Tree.xml:404
+msgid "[Font] of the item's text."
+msgstr ""
+
+#: doc/classes/ItemList.xml:436
+msgid ""
+"Default [StyleBox] for the [ItemList], i.e. used when the control is not "
+"being focused."
+msgstr ""
+
+#: doc/classes/ItemList.xml:439
+msgid "[StyleBox] used when the [ItemList] is being focused."
+msgstr ""
+
+#: doc/classes/ItemList.xml:442
+msgid "[StyleBox] used for the cursor, when the [ItemList] is being focused."
+msgstr ""
+
 #: doc/classes/ItemList.xml:445
+msgid ""
+"[StyleBox] used for the cursor, when the [ItemList] is not being focused."
+msgstr ""
+
+#: doc/classes/ItemList.xml:448
 msgid ""
 "[StyleBox] for the selected items, used when the [ItemList] is not being "
 "focused."
 msgstr ""
 
-#: doc/classes/ItemList.xml:448
+#: doc/classes/ItemList.xml:451
 msgid ""
 "[StyleBox] for the selected items, used when the [ItemList] is being focused."
-msgstr ""
-
-#: doc/classes/ItemList.xml:451
-msgid "The vertical spacing between items."
 msgstr ""
 
 #: doc/classes/JavaScript.xml:4
@@ -31058,41 +31084,41 @@ msgid "Align the whole text by spreading the rows."
 msgstr ""
 
 #: doc/classes/Label.xml:102
-msgid "[Font] used for the [Label]'s text."
-msgstr ""
-
-#: doc/classes/Label.xml:105
 msgid "Default text [Color] of the [Label]."
 msgstr ""
 
-#: doc/classes/Label.xml:108
+#: doc/classes/Label.xml:105
 msgid "[Color] of the text's shadow effect."
 msgstr ""
 
-#: doc/classes/Label.xml:111
+#: doc/classes/Label.xml:108
 msgid "The tint of [Font]'s outline. See [member DynamicFont.outline_color]."
 msgstr ""
 
-#: doc/classes/Label.xml:114
+#: doc/classes/Label.xml:111
 msgid "Vertical space between lines in multiline [Label]."
 msgstr ""
 
-#: doc/classes/Label.xml:117
-msgid "Background [StyleBox] for the [Label]."
-msgstr ""
-
-#: doc/classes/Label.xml:120
+#: doc/classes/Label.xml:114
 msgid ""
 "Boolean value. If set to 1 ([code]true[/code]), the shadow will be displayed "
 "around the whole text as an outline."
 msgstr ""
 
-#: doc/classes/Label.xml:123
+#: doc/classes/Label.xml:117
 msgid "The horizontal offset of the text's shadow."
 msgstr ""
 
-#: doc/classes/Label.xml:126
+#: doc/classes/Label.xml:120
 msgid "The vertical offset of the text's shadow."
+msgstr ""
+
+#: doc/classes/Label.xml:123
+msgid "[Font] used for the [Label]'s text."
+msgstr ""
+
+#: doc/classes/Label.xml:126
+msgid "Background [StyleBox] for the [Label]."
 msgstr ""
 
 #: doc/classes/LargeTexture.xml:4
@@ -31798,11 +31824,11 @@ msgstr ""
 msgid "Text alignment as defined in the [enum Align] enum."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:110 doc/classes/TextEdit.xml:391
+#: doc/classes/LineEdit.xml:110 doc/classes/TextEdit.xml:460
 msgid "If [code]true[/code], the caret (visual cursor) blinks."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:113 doc/classes/TextEdit.xml:394
+#: doc/classes/LineEdit.xml:113 doc/classes/TextEdit.xml:463
 msgid "Duration (in seconds) of a caret's blinking cycle."
 msgstr ""
 
@@ -31905,7 +31931,7 @@ msgid ""
 "text_changed] signal."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:172 doc/classes/TextEdit.xml:468
+#: doc/classes/LineEdit.xml:172 doc/classes/TextEdit.xml:537
 msgid ""
 "If [code]true[/code], the native virtual keyboard is shown when focused on "
 "platforms that support it."
@@ -31918,7 +31944,7 @@ msgid ""
 "couldn't fit is passed as the [code]rejected_substring[/code] argument."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:185 doc/classes/TextEdit.xml:506
+#: doc/classes/LineEdit.xml:185 doc/classes/TextEdit.xml:575
 msgid "Emitted when the text changes."
 msgstr ""
 
@@ -31942,11 +31968,11 @@ msgstr ""
 msgid "Stretches whitespaces to fit the [LineEdit]'s width."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:209 doc/classes/TextEdit.xml:527
+#: doc/classes/LineEdit.xml:209 doc/classes/TextEdit.xml:596
 msgid "Cuts (copies and clears) the selected text."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:212 doc/classes/TextEdit.xml:530
+#: doc/classes/LineEdit.xml:212 doc/classes/TextEdit.xml:599
 msgid "Copies the selected text."
 msgstr ""
 
@@ -31966,7 +31992,7 @@ msgstr ""
 msgid "Selects the whole [LineEdit] text."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:225 doc/classes/TextEdit.xml:542
+#: doc/classes/LineEdit.xml:225 doc/classes/TextEdit.xml:611
 msgid "Undoes the previous action."
 msgstr ""
 
@@ -31974,65 +32000,65 @@ msgstr ""
 msgid "Reverse the last undo action."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:231 doc/classes/TextEdit.xml:548
+#: doc/classes/LineEdit.xml:231 doc/classes/TextEdit.xml:617
 msgid "Represents the size of the [enum MenuItems] enum."
 msgstr ""
 
 #: doc/classes/LineEdit.xml:236
-msgid "Texture for the clear button. See [member clear_button_enabled]."
-msgstr ""
-
-#: doc/classes/LineEdit.xml:239
 msgid "Color used as default tint for the clear button."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:242
+#: doc/classes/LineEdit.xml:239
 msgid "Color used for the clear button when it's pressed."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:245
+#: doc/classes/LineEdit.xml:242
 msgid "Color of the [LineEdit]'s visual cursor (caret)."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:248
-msgid "Background used when [LineEdit] has GUI focus."
-msgstr ""
-
-#: doc/classes/LineEdit.xml:251
-msgid "Font used for the text."
-msgstr ""
-
-#: doc/classes/LineEdit.xml:254
+#: doc/classes/LineEdit.xml:245
 msgid "Default font color."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:257
+#: doc/classes/LineEdit.xml:248
 msgid "Font color for selected text (inside the selection rectangle)."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:260
+#: doc/classes/LineEdit.xml:251
 msgid "Font color when editing is disabled."
 msgstr ""
 
-#: doc/classes/LineEdit.xml:263
+#: doc/classes/LineEdit.xml:254
+msgid "Color of the selection rectangle."
+msgstr ""
+
+#: doc/classes/LineEdit.xml:257
 msgid ""
 "Minimum horizontal space for the text (not counting the clear button and "
 "content margins). This value is measured in count of space characters (i.e. "
 "this amount of space characters can be displayed without scrolling)."
 msgstr ""
 
+#: doc/classes/LineEdit.xml:260
+msgid "Font used for the text."
+msgstr ""
+
+#: doc/classes/LineEdit.xml:263
+msgid "Texture for the clear button. See [member clear_button_enabled]."
+msgstr ""
+
 #: doc/classes/LineEdit.xml:266
-msgid "Default background for the [LineEdit]."
+msgid "Background used when [LineEdit] has GUI focus."
 msgstr ""
 
 #: doc/classes/LineEdit.xml:269
-msgid ""
-"Background used when [LineEdit] is in read-only mode ([member editable] is "
-"set to [code]false[/code])."
+msgid "Default background for the [LineEdit]."
 msgstr ""
 
 #: doc/classes/LineEdit.xml:272
-msgid "Color of the selection rectangle."
+msgid ""
+"Background used when [LineEdit] is in read-only mode ([member editable] is "
+"set to [code]false[/code])."
 msgstr ""
 
 #: doc/classes/LineShape2D.xml:4
@@ -32087,37 +32113,37 @@ msgid "The LinkButton will never show an underline at the bottom of its text."
 msgstr ""
 
 #: doc/classes/LinkButton.xml:37
-msgid ""
-"[StyleBox] used when the [LinkButton] is focused. It is displayed over the "
-"current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
-"visual effect."
-msgstr ""
-
-#: doc/classes/LinkButton.xml:40
-msgid "[Font] of the [LinkButton]'s text."
-msgstr ""
-
-#: doc/classes/LinkButton.xml:43
 msgid "Default text [Color] of the [LinkButton]."
 msgstr ""
 
-#: doc/classes/LinkButton.xml:46
+#: doc/classes/LinkButton.xml:40
 msgid ""
 "Text [Color] used when the [LinkButton] is focused. Only replaces the normal "
 "text color of the button. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
 
-#: doc/classes/LinkButton.xml:49
+#: doc/classes/LinkButton.xml:43
 msgid "Text [Color] used when the [LinkButton] is being hovered."
 msgstr ""
 
-#: doc/classes/LinkButton.xml:52
+#: doc/classes/LinkButton.xml:46
 msgid "Text [Color] used when the [LinkButton] is being pressed."
 msgstr ""
 
-#: doc/classes/LinkButton.xml:55
+#: doc/classes/LinkButton.xml:49
 msgid "The vertical space between the baseline of text and the underline."
+msgstr ""
+
+#: doc/classes/LinkButton.xml:52
+msgid "[Font] of the [LinkButton]'s text."
+msgstr ""
+
+#: doc/classes/LinkButton.xml:55
+msgid ""
+"[StyleBox] used when the [LinkButton] is focused. It is displayed over the "
+"current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
+"visual effect."
 msgstr ""
 
 #: doc/classes/Listener.xml:4 doc/classes/Listener2D.xml:4
@@ -32321,59 +32347,59 @@ msgstr ""
 msgid "Emitted when a user responds to a permission request."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:156 doc/classes/Node.xml:791
+#: doc/classes/MainLoop.xml:156 doc/classes/Node.xml:800
 msgid ""
 "Notification received from the OS when the mouse enters the game window.\n"
 "Implemented on desktop and web platforms."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:160 doc/classes/Node.xml:795
+#: doc/classes/MainLoop.xml:160 doc/classes/Node.xml:804
 msgid ""
 "Notification received from the OS when the mouse leaves the game window.\n"
 "Implemented on desktop and web platforms."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:164 doc/classes/Node.xml:799
+#: doc/classes/MainLoop.xml:164 doc/classes/Node.xml:808
 msgid ""
 "Notification received from the OS when the game window is focused.\n"
 "Implemented on all platforms."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:168 doc/classes/Node.xml:803
+#: doc/classes/MainLoop.xml:168 doc/classes/Node.xml:812
 msgid ""
 "Notification received from the OS when the game window is unfocused.\n"
 "Implemented on all platforms."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:172 doc/classes/Node.xml:807
+#: doc/classes/MainLoop.xml:172 doc/classes/Node.xml:816
 msgid ""
 "Notification received from the OS when a quit request is sent (e.g. closing "
 "the window with a \"Close\" button or Alt+F4).\n"
 "Implemented on desktop platforms."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:176 doc/classes/Node.xml:811
+#: doc/classes/MainLoop.xml:176 doc/classes/Node.xml:820
 msgid ""
 "Notification received from the OS when a go back request is sent (e.g. "
 "pressing the \"Back\" button on Android).\n"
 "Specific to the Android platform."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:180 doc/classes/Node.xml:815
+#: doc/classes/MainLoop.xml:180 doc/classes/Node.xml:824
 msgid ""
 "Notification received from the OS when an unfocus request is sent (e.g. "
 "another OS window wants to take the focus).\n"
 "No supported platforms currently send this notification."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:184 doc/classes/Node.xml:819
+#: doc/classes/MainLoop.xml:184 doc/classes/Node.xml:828
 msgid ""
 "Notification received from the OS when the application is exceeding its "
 "allocated memory.\n"
 "Specific to the iOS platform."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:188 doc/classes/Node.xml:823
+#: doc/classes/MainLoop.xml:188 doc/classes/Node.xml:832
 msgid ""
 "Notification received when translations may have changed. Can be triggered "
 "by the user changing the locale. Can be used to respond to language changes, "
@@ -32381,34 +32407,34 @@ msgid ""
 "the built-in translation support, like [method Object.tr]."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:191 doc/classes/Node.xml:826
+#: doc/classes/MainLoop.xml:191 doc/classes/Node.xml:835
 msgid ""
 "Notification received from the OS when a request for \"About\" information "
 "is sent.\n"
 "Specific to the macOS platform."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:195 doc/classes/Node.xml:830
+#: doc/classes/MainLoop.xml:195 doc/classes/Node.xml:839
 msgid ""
 "Notification received from Godot's crash handler when the engine is about to "
 "crash.\n"
 "Implemented on desktop platforms if the crash handler is enabled."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:199 doc/classes/Node.xml:834
+#: doc/classes/MainLoop.xml:199 doc/classes/Node.xml:843
 msgid ""
 "Notification received from the OS when an update of the Input Method Engine "
 "occurs (e.g. change of IME cursor position or composition string).\n"
 "Specific to the macOS platform."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:203 doc/classes/Node.xml:838
+#: doc/classes/MainLoop.xml:203 doc/classes/Node.xml:847
 msgid ""
 "Notification received from the OS when the app is resumed.\n"
 "Specific to the Android platform."
 msgstr ""
 
-#: doc/classes/MainLoop.xml:207 doc/classes/Node.xml:842
+#: doc/classes/MainLoop.xml:207 doc/classes/Node.xml:851
 msgid ""
 "Notification received from the OS when the app is paused.\n"
 "Specific to the Android platform."
@@ -32586,49 +32612,49 @@ msgid "Emitted when [PopupMenu] of this MenuButton is about to show."
 msgstr ""
 
 #: doc/classes/MenuButton.xml:49
-msgid "[StyleBox] used when the [MenuButton] is disabled."
-msgstr ""
-
-#: doc/classes/MenuButton.xml:52
-msgid ""
-"[StyleBox] used when the [MenuButton] is focused. It is displayed over the "
-"current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
-"visual effect."
-msgstr ""
-
-#: doc/classes/MenuButton.xml:55
-msgid "[Font] of the [MenuButton]'s text."
-msgstr ""
-
-#: doc/classes/MenuButton.xml:58
 msgid "Default text [Color] of the [MenuButton]."
 msgstr ""
 
-#: doc/classes/MenuButton.xml:61
+#: doc/classes/MenuButton.xml:52
 msgid "Text [Color] used when the [MenuButton] is disabled."
 msgstr ""
 
-#: doc/classes/MenuButton.xml:64
+#: doc/classes/MenuButton.xml:55
 msgid ""
 "Text [Color] used when the [MenuButton] is focused. Only replaces the normal "
 "text color of the button. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
 
-#: doc/classes/MenuButton.xml:67
+#: doc/classes/MenuButton.xml:58
 msgid "Text [Color] used when the [MenuButton] is being hovered."
 msgstr ""
 
-#: doc/classes/MenuButton.xml:70
+#: doc/classes/MenuButton.xml:61
 msgid "Text [Color] used when the [MenuButton] is being pressed."
 msgstr ""
 
+#: doc/classes/MenuButton.xml:64
+msgid "The horizontal space between [MenuButton]'s icon and text."
+msgstr ""
+
+#: doc/classes/MenuButton.xml:67
+msgid "[Font] of the [MenuButton]'s text."
+msgstr ""
+
+#: doc/classes/MenuButton.xml:70
+msgid "[StyleBox] used when the [MenuButton] is disabled."
+msgstr ""
+
 #: doc/classes/MenuButton.xml:73
-msgid "[StyleBox] used when the [MenuButton] is being hovered."
+msgid ""
+"[StyleBox] used when the [MenuButton] is focused. It is displayed over the "
+"current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
+"visual effect."
 msgstr ""
 
 #: doc/classes/MenuButton.xml:76
-msgid "The horizontal space between [MenuButton]'s icon and text."
+msgid "[StyleBox] used when the [MenuButton] is being hovered."
 msgstr ""
 
 #: doc/classes/MenuButton.xml:79
@@ -35254,21 +35280,32 @@ msgid ""
 "Returns an array listing the groups that the node is a member of.\n"
 "[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] "
 "guaranteed. The order of node groups should not be relied upon as it can "
-"vary across project runs."
+"vary across project runs.\n"
+"[b]Note:[/b] The engine uses some group names internally (all starting with "
+"an underscore). To avoid conflicts with internal groups, do not add custom "
+"groups whose name starts with an underscore. To exclude internal groups "
+"while looping over [method get_groups], use the following snippet:\n"
+"[codeblock]\n"
+"# Stores the node's non-internal groups only (as an array of Strings).\n"
+"var non_internal_groups = []\n"
+"for group in get_groups():\n"
+"    if not group.begins_with(\"_\"):\n"
+"        non_internal_groups.push_back(group)\n"
+"[/codeblock]"
 msgstr ""
 
-#: doc/classes/Node.xml:210
+#: doc/classes/Node.xml:218
 msgid ""
 "Returns the node's index, i.e. its position among the siblings of its parent."
 msgstr ""
 
-#: doc/classes/Node.xml:216
+#: doc/classes/Node.xml:224
 msgid ""
 "Returns the peer ID of the network master for this node. See [method "
 "set_network_master]."
 msgstr ""
 
-#: doc/classes/Node.xml:223
+#: doc/classes/Node.xml:231
 msgid ""
 "Fetches a node. The [NodePath] can be either a relative path (from the "
 "current node) or an absolute path (in the scene tree) to a node. If the path "
@@ -35298,7 +35335,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/Node.xml:249
+#: doc/classes/Node.xml:257
 msgid ""
 "Fetches a node and one of its resources as specified by the [NodePath]'s "
 "subname (e.g. [code]Area2D/CollisionShape2D:shape[/code]). If several nested "
@@ -35320,31 +35357,31 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/Node.xml:263
+#: doc/classes/Node.xml:271
 msgid ""
 "Similar to [method get_node], but does not log an error if [code]path[/code] "
 "does not point to a valid [Node]."
 msgstr ""
 
-#: doc/classes/Node.xml:269
+#: doc/classes/Node.xml:277
 msgid ""
 "Returns the parent node of the current node, or a [code]null instance[/code] "
 "if the node lacks a parent."
 msgstr ""
 
-#: doc/classes/Node.xml:275
+#: doc/classes/Node.xml:283
 msgid ""
 "Returns the absolute path of the current node. This only works if the "
 "current node is inside the scene tree (see [method is_inside_tree])."
 msgstr ""
 
-#: doc/classes/Node.xml:282
+#: doc/classes/Node.xml:290
 msgid ""
 "Returns the relative [NodePath] from this node to the specified [code]node[/"
 "code]. Both nodes must be in the same scene or the function will fail."
 msgstr ""
 
-#: doc/classes/Node.xml:288
+#: doc/classes/Node.xml:296
 msgid ""
 "Returns the time elapsed (in seconds) since the last physics-bound frame "
 "(see [method _physics_process]). This is always a constant value in physics "
@@ -35352,38 +35389,38 @@ msgid ""
 "iterations_per_second]."
 msgstr ""
 
-#: doc/classes/Node.xml:294
+#: doc/classes/Node.xml:302
 msgid ""
 "Returns the node's order in the scene tree branch. For example, if called on "
 "the first child node the position is [code]0[/code]."
 msgstr ""
 
-#: doc/classes/Node.xml:300
+#: doc/classes/Node.xml:308
 msgid ""
 "Returns the time elapsed (in seconds) since the last process callback. This "
 "value may vary from frame to frame."
 msgstr ""
 
-#: doc/classes/Node.xml:306
+#: doc/classes/Node.xml:314
 msgid ""
 "Returns [code]true[/code] if this is an instance load placeholder. See "
 "[InstancePlaceholder]."
 msgstr ""
 
-#: doc/classes/Node.xml:312
+#: doc/classes/Node.xml:320
 msgid "Returns the [SceneTree] that contains this node."
 msgstr ""
 
-#: doc/classes/Node.xml:318
+#: doc/classes/Node.xml:326
 msgid "Returns the node's [Viewport]."
 msgstr ""
 
-#: doc/classes/Node.xml:325
+#: doc/classes/Node.xml:333
 msgid ""
 "Returns [code]true[/code] if the node that the [NodePath] points to exists."
 msgstr ""
 
-#: doc/classes/Node.xml:332
+#: doc/classes/Node.xml:340
 msgid ""
 "Returns [code]true[/code] if the [NodePath] points to a valid node and its "
 "subname points to a valid resource, e.g. [code]Area2D/CollisionShape2D:"
@@ -35391,96 +35428,96 @@ msgid ""
 "math types) are not considered resources."
 msgstr ""
 
-#: doc/classes/Node.xml:339
+#: doc/classes/Node.xml:347
 msgid ""
 "Returns [code]true[/code] if the given node is a direct or indirect child of "
 "the current node."
 msgstr ""
 
-#: doc/classes/Node.xml:345
+#: doc/classes/Node.xml:353
 msgid ""
 "Returns [code]true[/code] if the node is folded (collapsed) in the Scene "
 "dock."
 msgstr ""
 
-#: doc/classes/Node.xml:352
+#: doc/classes/Node.xml:360
 msgid ""
 "Returns [code]true[/code] if the given node occurs later in the scene "
 "hierarchy than the current node."
 msgstr ""
 
-#: doc/classes/Node.xml:359
+#: doc/classes/Node.xml:367
 msgid ""
 "Returns [code]true[/code] if this node is in the specified group. See notes "
 "in the description, and the group methods in [SceneTree]."
 msgstr ""
 
-#: doc/classes/Node.xml:365
+#: doc/classes/Node.xml:373
 msgid ""
 "Returns [code]true[/code] if this node is currently inside a [SceneTree]."
 msgstr ""
 
-#: doc/classes/Node.xml:371
+#: doc/classes/Node.xml:379
 msgid ""
 "Returns [code]true[/code] if the local system is the master of this node."
 msgstr ""
 
-#: doc/classes/Node.xml:377
+#: doc/classes/Node.xml:385
 msgid ""
 "Returns [code]true[/code] if physics processing is enabled (see [method "
 "set_physics_process])."
 msgstr ""
 
-#: doc/classes/Node.xml:383
+#: doc/classes/Node.xml:391
 msgid ""
 "Returns [code]true[/code] if internal physics processing is enabled (see "
 "[method set_physics_process_internal])."
 msgstr ""
 
-#: doc/classes/Node.xml:389
+#: doc/classes/Node.xml:397
 msgid ""
 "Returns [code]true[/code] if processing is enabled (see [method "
 "set_process])."
 msgstr ""
 
-#: doc/classes/Node.xml:395
+#: doc/classes/Node.xml:403
 msgid ""
 "Returns [code]true[/code] if the node is processing input (see [method "
 "set_process_input])."
 msgstr ""
 
-#: doc/classes/Node.xml:401
+#: doc/classes/Node.xml:409
 msgid ""
 "Returns [code]true[/code] if internal processing is enabled (see [method "
 "set_process_internal])."
 msgstr ""
 
-#: doc/classes/Node.xml:407
+#: doc/classes/Node.xml:415
 msgid ""
 "Returns [code]true[/code] if the node is processing unhandled input (see "
 "[method set_process_unhandled_input])."
 msgstr ""
 
-#: doc/classes/Node.xml:413
+#: doc/classes/Node.xml:421
 msgid ""
 "Returns [code]true[/code] if the node is processing unhandled key input (see "
 "[method set_process_unhandled_key_input])."
 msgstr ""
 
-#: doc/classes/Node.xml:421
+#: doc/classes/Node.xml:429
 msgid ""
 "Moves a child node to a different position (order) among the other children. "
 "Since calls, signals, etc are performed by tree order, changing the order of "
 "children nodes may be useful."
 msgstr ""
 
-#: doc/classes/Node.xml:427
+#: doc/classes/Node.xml:435
 msgid ""
 "Prints all stray nodes (nodes outside the [SceneTree]). Used for debugging. "
 "Works only in debug builds."
 msgstr ""
 
-#: doc/classes/Node.xml:433
+#: doc/classes/Node.xml:441
 msgid ""
 "Prints the tree to stdout. Used mainly for debugging purposes. This version "
 "displays the path relative to the current node, and is good for copy/pasting "
@@ -35496,7 +35533,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/Node.xml:448
+#: doc/classes/Node.xml:456
 msgid ""
 "Similar to [method print_tree], this prints the tree to stdout. This version "
 "displays a more graphical representation similar to what is displayed in the "
@@ -35512,7 +35549,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/Node.xml:466
+#: doc/classes/Node.xml:474
 msgid ""
 "Calls the given method (if present) with the arguments given in [code]args[/"
 "code] on this node and recursively on all its children. If the "
@@ -35522,13 +35559,13 @@ msgid ""
 "first."
 msgstr ""
 
-#: doc/classes/Node.xml:473
+#: doc/classes/Node.xml:481
 msgid ""
 "Notifies the current node and all its children recursively by calling "
 "[method Object.notification] on all of them."
 msgstr ""
 
-#: doc/classes/Node.xml:479
+#: doc/classes/Node.xml:487
 msgid ""
 "Queues a node for deletion at the end of the current frame. When deleted, "
 "all of its child nodes will be deleted as well. This method ensures it's "
@@ -35542,7 +35579,7 @@ msgid ""
 "or access its properties."
 msgstr ""
 
-#: doc/classes/Node.xml:486
+#: doc/classes/Node.xml:494
 msgid ""
 "Moves this node to the bottom of parent node's children hierarchy. This is "
 "often useful in GUIs ([Control] nodes), because their order of drawing "
@@ -35552,14 +35589,14 @@ msgid ""
 "siblings."
 msgstr ""
 
-#: doc/classes/Node.xml:492
+#: doc/classes/Node.xml:500
 msgid ""
 "Removes a node and sets all its children as children of the parent node (if "
 "it exists). All event subscriptions that pass by the removed node will be "
 "unsubscribed."
 msgstr ""
 
-#: doc/classes/Node.xml:499
+#: doc/classes/Node.xml:507
 msgid ""
 "Removes a child node. The node is NOT deleted and must be deleted manually.\n"
 "[b]Note:[/b] This function may set the [member owner] of the removed Node "
@@ -35567,19 +35604,21 @@ msgid ""
 "longer a parent or ancestor."
 msgstr ""
 
-#: doc/classes/Node.xml:507
+#: doc/classes/Node.xml:515
 msgid ""
 "Removes a node from a group. See notes in the description, and the group "
 "methods in [SceneTree]."
 msgstr ""
 
-#: doc/classes/Node.xml:515
+#: doc/classes/Node.xml:523
 msgid ""
 "Replaces a node in a scene by the given one. Subscriptions that pass through "
-"this node will be lost."
+"this node will be lost.\n"
+"Note that the replaced node is not automatically freed, so you either need "
+"to keep it in a variable for later use or free it using [method Object.free]."
 msgstr ""
 
-#: doc/classes/Node.xml:521
+#: doc/classes/Node.xml:530
 msgid ""
 "Requests that [code]_ready[/code] be called again. Note that the method "
 "won't be called immediately, but is scheduled for when the node is added to "
@@ -35590,7 +35629,7 @@ msgid ""
 "normally)."
 msgstr ""
 
-#: doc/classes/Node.xml:528
+#: doc/classes/Node.xml:537
 msgid ""
 "Sends a remote procedure call request for the given [code]method[/code] to "
 "peers on the network (and locally), optionally sending all additional "
@@ -35607,7 +35646,7 @@ msgid ""
 "network_peer.get_connection_status() == CONNECTION_CONNECTED[/code]."
 msgstr ""
 
-#: doc/classes/Node.xml:537
+#: doc/classes/Node.xml:546
 msgid ""
 "Changes the RPC mode for the given [code]method[/code] to the given "
 "[code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is "
@@ -35618,27 +35657,27 @@ msgid ""
 "[method rset] and [method rset_config] for properties."
 msgstr ""
 
-#: doc/classes/Node.xml:545
+#: doc/classes/Node.xml:554
 msgid ""
 "Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] "
 "(see [method NetworkedMultiplayerPeer.set_target_peer]). Returns an empty "
 "[Variant]."
 msgstr ""
 
-#: doc/classes/Node.xml:552
+#: doc/classes/Node.xml:561
 msgid ""
 "Sends a [method rpc] using an unreliable protocol. Returns an empty "
 "[Variant]."
 msgstr ""
 
-#: doc/classes/Node.xml:560
+#: doc/classes/Node.xml:569
 msgid ""
 "Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] "
 "using an unreliable protocol (see [method NetworkedMultiplayerPeer."
 "set_target_peer]). Returns an empty [Variant]."
 msgstr ""
 
-#: doc/classes/Node.xml:568
+#: doc/classes/Node.xml:577
 msgid ""
 "Remotely changes a property's value on other peers (and locally). Behaviour "
 "depends on the RPC configuration for the given property, see [method "
@@ -35646,7 +35685,7 @@ msgid ""
 "applies to this method as well."
 msgstr ""
 
-#: doc/classes/Node.xml:576
+#: doc/classes/Node.xml:585
 msgid ""
 "Changes the RPC mode for the given [code]property[/code] to the given "
 "[code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is "
@@ -35657,30 +35696,30 @@ msgid ""
 "[method rpc] and [method rpc_config] for methods."
 msgstr ""
 
-#: doc/classes/Node.xml:585
+#: doc/classes/Node.xml:594
 msgid ""
 "Remotely changes the property's value on a specific peer identified by "
 "[code]peer_id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer])."
 msgstr ""
 
-#: doc/classes/Node.xml:593
+#: doc/classes/Node.xml:602
 msgid ""
 "Remotely changes the property's value on other peers (and locally) using an "
 "unreliable protocol."
 msgstr ""
 
-#: doc/classes/Node.xml:602
+#: doc/classes/Node.xml:611
 msgid ""
 "Remotely changes property's value on a specific peer identified by "
 "[code]peer_id[/code] using an unreliable protocol (see [method "
 "NetworkedMultiplayerPeer.set_target_peer])."
 msgstr ""
 
-#: doc/classes/Node.xml:609
+#: doc/classes/Node.xml:618
 msgid "Sets the folded state of the node in the Scene dock."
 msgstr ""
 
-#: doc/classes/Node.xml:617
+#: doc/classes/Node.xml:626
 msgid ""
 "Sets the node's network master to the peer with the given peer ID. The "
 "network master is the peer that has authority over the node on the network. "
@@ -35690,7 +35729,7 @@ msgid ""
 "peer is recursively set as the master for all children of this node."
 msgstr ""
 
-#: doc/classes/Node.xml:624
+#: doc/classes/Node.xml:633
 msgid ""
 "Enables or disables physics (i.e. fixed framerate) processing. When a node "
 "is being processed, it will receive a [constant "
@@ -35701,7 +35740,7 @@ msgid ""
 "_ready] will be ignored."
 msgstr ""
 
-#: doc/classes/Node.xml:631
+#: doc/classes/Node.xml:640
 msgid ""
 "Enables or disables internal physics for this node. Internal physics "
 "processing happens in isolation from the normal [method _physics_process] "
@@ -35715,7 +35754,7 @@ msgid ""
 "advanced uses, but is unsafe and not supported."
 msgstr ""
 
-#: doc/classes/Node.xml:639
+#: doc/classes/Node.xml:648
 msgid ""
 "Enables or disables processing. When a node is being processed, it will "
 "receive a [constant NOTIFICATION_PROCESS] on every drawn frame (and the "
@@ -35724,14 +35763,14 @@ msgid ""
 "will be ignored."
 msgstr ""
 
-#: doc/classes/Node.xml:646
+#: doc/classes/Node.xml:655
 msgid ""
 "Enables or disables input processing. This is not required for GUI controls! "
 "Enabled automatically if [method _input] is overridden. Any calls to this "
 "before [method _ready] will be ignored."
 msgstr ""
 
-#: doc/classes/Node.xml:653
+#: doc/classes/Node.xml:662
 msgid ""
 "Enables or disabled internal processing for this node. Internal processing "
 "happens in isolation from the normal [method _process] calls and is used by "
@@ -35744,7 +35783,7 @@ msgid ""
 "advanced uses, but is unsafe and not supported."
 msgstr ""
 
-#: doc/classes/Node.xml:661
+#: doc/classes/Node.xml:670
 msgid ""
 "Enables unhandled input processing. This is not required for GUI controls! "
 "It enables the node to receive all input that was not previously handled "
@@ -35752,32 +35791,32 @@ msgid ""
 "is overridden. Any calls to this before [method _ready] will be ignored."
 msgstr ""
 
-#: doc/classes/Node.xml:668
+#: doc/classes/Node.xml:677
 msgid ""
 "Enables unhandled key input processing. Enabled automatically if [method "
 "_unhandled_key_input] is overridden. Any calls to this before [method "
 "_ready] will be ignored."
 msgstr ""
 
-#: doc/classes/Node.xml:675
+#: doc/classes/Node.xml:684
 msgid ""
 "Sets whether this is an instance load placeholder. See [InstancePlaceholder]."
 msgstr ""
 
-#: doc/classes/Node.xml:681
+#: doc/classes/Node.xml:690
 msgid ""
 "Updates the warning displayed for this node in the Scene Dock.\n"
 "Use [method _get_configuration_warning] to setup the warning message to "
 "display."
 msgstr ""
 
-#: doc/classes/Node.xml:688
+#: doc/classes/Node.xml:697
 msgid ""
 "The override to the default [MultiplayerAPI]. Set to [code]null[/code] to "
 "use the default [SceneTree] one."
 msgstr ""
 
-#: doc/classes/Node.xml:691
+#: doc/classes/Node.xml:700
 msgid ""
 "If a scene is instantiated from a file, its topmost node contains the "
 "absolute file path from which it was loaded in [member filename] (e.g. "
@@ -35785,13 +35824,13 @@ msgid ""
 "empty string."
 msgstr ""
 
-#: doc/classes/Node.xml:694
+#: doc/classes/Node.xml:703
 msgid ""
 "The [MultiplayerAPI] instance associated with this node. Either the [member "
 "custom_multiplayer], or the default SceneTree one (if inside tree)."
 msgstr ""
 
-#: doc/classes/Node.xml:697
+#: doc/classes/Node.xml:706
 msgid ""
 "The name of the node. This name is unique among the siblings (other child "
 "nodes from the same parent). When set to an existing name, the node will be "
@@ -35801,7 +35840,7 @@ msgid ""
 "When setting the name manually, any [code]@[/code] will be removed."
 msgstr ""
 
-#: doc/classes/Node.xml:701
+#: doc/classes/Node.xml:710
 msgid ""
 "The node owner. A node can have any other node as owner (as long as it is a "
 "valid parent, grandparent, etc. ascending in the tree). When saving a node "
@@ -35810,11 +35849,11 @@ msgid ""
 "subinstancing."
 msgstr ""
 
-#: doc/classes/Node.xml:704
+#: doc/classes/Node.xml:713
 msgid "Pause mode. How the node will behave if the [SceneTree] is paused."
 msgstr ""
 
-#: doc/classes/Node.xml:707
+#: doc/classes/Node.xml:716
 msgid ""
 "The node's priority in the execution order of the enabled processing "
 "callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant "
@@ -35823,138 +35862,138 @@ msgid ""
 "executed first."
 msgstr ""
 
-#: doc/classes/Node.xml:713
+#: doc/classes/Node.xml:722
 msgid "Emitted when the node is ready."
 msgstr ""
 
-#: doc/classes/Node.xml:718
+#: doc/classes/Node.xml:727
 msgid "Emitted when the node is renamed."
 msgstr ""
 
-#: doc/classes/Node.xml:723
+#: doc/classes/Node.xml:732
 msgid "Emitted when the node enters the tree."
 msgstr ""
 
-#: doc/classes/Node.xml:728
+#: doc/classes/Node.xml:737
 msgid "Emitted after the node exits the tree and is no longer active."
 msgstr ""
 
-#: doc/classes/Node.xml:733
+#: doc/classes/Node.xml:742
 msgid ""
 "Emitted when the node is still active but about to exit the tree. This is "
 "the right place for de-initialization (or a \"destructor\", if you will)."
 msgstr ""
 
-#: doc/classes/Node.xml:739
+#: doc/classes/Node.xml:748
 msgid "Notification received when the node enters a [SceneTree]."
 msgstr ""
 
-#: doc/classes/Node.xml:742
+#: doc/classes/Node.xml:751
 msgid "Notification received when the node is about to exit a [SceneTree]."
 msgstr ""
 
-#: doc/classes/Node.xml:745
+#: doc/classes/Node.xml:754
 msgid "Notification received when the node is moved in the parent."
 msgstr ""
 
-#: doc/classes/Node.xml:748
+#: doc/classes/Node.xml:757
 msgid "Notification received when the node is ready. See [method _ready]."
 msgstr ""
 
-#: doc/classes/Node.xml:751
+#: doc/classes/Node.xml:760
 msgid "Notification received when the node is paused."
 msgstr ""
 
-#: doc/classes/Node.xml:754
+#: doc/classes/Node.xml:763
 msgid "Notification received when the node is unpaused."
 msgstr ""
 
-#: doc/classes/Node.xml:757
+#: doc/classes/Node.xml:766
 msgid ""
 "Notification received every frame when the physics process flag is set (see "
 "[method set_physics_process])."
 msgstr ""
 
-#: doc/classes/Node.xml:760
+#: doc/classes/Node.xml:769
 msgid ""
 "Notification received every frame when the process flag is set (see [method "
 "set_process])."
 msgstr ""
 
-#: doc/classes/Node.xml:763
+#: doc/classes/Node.xml:772
 msgid ""
 "Notification received when a node is set as a child of another node.\n"
 "[b]Note:[/b] This doesn't mean that a node entered the [SceneTree]."
 msgstr ""
 
-#: doc/classes/Node.xml:767
+#: doc/classes/Node.xml:776
 msgid ""
 "Notification received when a node is unparented (parent removed it from the "
 "list of children)."
 msgstr ""
 
-#: doc/classes/Node.xml:770
+#: doc/classes/Node.xml:779
 msgid "Notification received when the node is instanced."
 msgstr ""
 
-#: doc/classes/Node.xml:773
+#: doc/classes/Node.xml:782
 msgid "Notification received when a drag begins."
 msgstr ""
 
-#: doc/classes/Node.xml:776
+#: doc/classes/Node.xml:785
 msgid "Notification received when a drag ends."
 msgstr ""
 
-#: doc/classes/Node.xml:779
+#: doc/classes/Node.xml:788
 msgid "Notification received when the node's [NodePath] changed."
 msgstr ""
 
-#: doc/classes/Node.xml:782
+#: doc/classes/Node.xml:791
 msgid ""
 "Notification received every frame when the internal process flag is set (see "
 "[method set_process_internal])."
 msgstr ""
 
-#: doc/classes/Node.xml:785
+#: doc/classes/Node.xml:794
 msgid ""
 "Notification received every frame when the internal physics process flag is "
 "set (see [method set_physics_process_internal])."
 msgstr ""
 
-#: doc/classes/Node.xml:788
+#: doc/classes/Node.xml:797
 msgid ""
 "Notification received when the node is ready, just before [constant "
 "NOTIFICATION_READY] is received. Unlike the latter, it's sent every time the "
 "node enters tree, instead of only once."
 msgstr ""
 
-#: doc/classes/Node.xml:846
+#: doc/classes/Node.xml:855
 msgid ""
 "Inherits pause mode from the node's parent. For the root node, it is "
 "equivalent to [constant PAUSE_MODE_STOP]. Default."
 msgstr ""
 
-#: doc/classes/Node.xml:849
+#: doc/classes/Node.xml:858
 msgid "Stops processing when the [SceneTree] is paused."
 msgstr ""
 
-#: doc/classes/Node.xml:852
+#: doc/classes/Node.xml:861
 msgid "Continue to process regardless of the [SceneTree] pause state."
 msgstr ""
 
-#: doc/classes/Node.xml:855
+#: doc/classes/Node.xml:864
 msgid "Duplicate the node's signals."
 msgstr ""
 
-#: doc/classes/Node.xml:858
+#: doc/classes/Node.xml:867
 msgid "Duplicate the node's groups."
 msgstr ""
 
-#: doc/classes/Node.xml:861
+#: doc/classes/Node.xml:870
 msgid "Duplicate the node's scripts."
 msgstr ""
 
-#: doc/classes/Node.xml:864
+#: doc/classes/Node.xml:873
 msgid ""
 "Duplicate using instancing.\n"
 "An instance stays linked to the original so when the original changes, the "
@@ -36581,29 +36620,33 @@ msgid ""
 "Gets the object's property indexed by the given [NodePath]. The node path "
 "should be relative to the current object and can use the colon character "
 "([code]:[/code]) to access nested properties. Examples: [code]\"position:x"
-"\"[/code] or [code]\"material:next_pass:blend_mode\"[/code]."
+"\"[/code] or [code]\"material:next_pass:blend_mode\"[/code].\n"
+"[b]Note:[/b] Even though the method takes [NodePath] argument, it doesn't "
+"support actual paths to [Node]s in the scene tree, only colon-separated sub-"
+"property paths. For the purpose of nodes, use [method Node."
+"get_node_and_resource] instead."
 msgstr ""
 
-#: doc/classes/Object.xml:209
+#: doc/classes/Object.xml:210
 msgid ""
 "Returns the object's unique instance ID.\n"
 "This ID can be saved in [EncodedObjectAsID], and can be used to retrieve the "
 "object instance with [method @GDScript.instance_from_id]."
 msgstr ""
 
-#: doc/classes/Object.xml:217
+#: doc/classes/Object.xml:218
 msgid "Returns the object's metadata entry for the given [code]name[/code]."
 msgstr ""
 
-#: doc/classes/Object.xml:223
+#: doc/classes/Object.xml:224
 msgid "Returns the object's metadata as a [PoolStringArray]."
 msgstr ""
 
-#: doc/classes/Object.xml:229
+#: doc/classes/Object.xml:230
 msgid "Returns the object's methods and their signatures as an [Array]."
 msgstr ""
 
-#: doc/classes/Object.xml:235
+#: doc/classes/Object.xml:236
 msgid ""
 "Returns the object's property list as an [Array] of dictionaries.\n"
 "Each property's [Dictionary] contain at least [code]name: String[/code] and "
@@ -36613,48 +36656,48 @@ msgid ""
 "PropertyUsageFlags])."
 msgstr ""
 
-#: doc/classes/Object.xml:242
+#: doc/classes/Object.xml:243
 msgid ""
 "Returns the object's [Script] instance, or [code]null[/code] if none is "
 "assigned."
 msgstr ""
 
-#: doc/classes/Object.xml:249
+#: doc/classes/Object.xml:250
 msgid "Returns an [Array] of connections for the given [code]signal[/code]."
 msgstr ""
 
-#: doc/classes/Object.xml:255
+#: doc/classes/Object.xml:256
 msgid "Returns the list of signals as an [Array] of dictionaries."
 msgstr ""
 
-#: doc/classes/Object.xml:262
+#: doc/classes/Object.xml:263
 msgid ""
 "Returns [code]true[/code] if a metadata entry is found with the given "
 "[code]name[/code]."
 msgstr ""
 
-#: doc/classes/Object.xml:269
+#: doc/classes/Object.xml:270
 msgid ""
 "Returns [code]true[/code] if the object contains the given [code]method[/"
 "code]."
 msgstr ""
 
-#: doc/classes/Object.xml:276
+#: doc/classes/Object.xml:277
 msgid "Returns [code]true[/code] if the given [code]signal[/code] exists."
 msgstr ""
 
-#: doc/classes/Object.xml:283
+#: doc/classes/Object.xml:284
 msgid ""
 "Returns [code]true[/code] if the given user-defined [code]signal[/code] "
 "exists. Only signals added using [method add_user_signal] are taken into "
 "account."
 msgstr ""
 
-#: doc/classes/Object.xml:289
+#: doc/classes/Object.xml:290
 msgid "Returns [code]true[/code] if signal emission blocking is enabled."
 msgstr ""
 
-#: doc/classes/Object.xml:296
+#: doc/classes/Object.xml:297
 msgid ""
 "Returns [code]true[/code] if the object inherits from the given [code]class[/"
 "code]. See also [method get_class].\n"
@@ -36663,19 +36706,19 @@ msgid ""
 "defined, [method is_class] will return [code]false[/code] for that name."
 msgstr ""
 
-#: doc/classes/Object.xml:306
+#: doc/classes/Object.xml:307
 msgid ""
 "Returns [code]true[/code] if a connection exists for a given [code]signal[/"
 "code], [code]target[/code], and [code]method[/code]."
 msgstr ""
 
-#: doc/classes/Object.xml:312
+#: doc/classes/Object.xml:313
 msgid ""
 "Returns [code]true[/code] if the [method Node.queue_free] method was called "
 "for the object."
 msgstr ""
 
-#: doc/classes/Object.xml:320
+#: doc/classes/Object.xml:321
 msgid ""
 "Send a given notification to the object, which will also trigger a call to "
 "the [method _notification] method of all classes that the object inherits "
@@ -36687,18 +36730,18 @@ msgid ""
 "and then down to its successive inheriting classes."
 msgstr ""
 
-#: doc/classes/Object.xml:327
+#: doc/classes/Object.xml:328
 msgid ""
 "Notify the editor that the property list has changed, so that editor plugins "
 "can take the new values into account. Does nothing on export builds."
 msgstr ""
 
-#: doc/classes/Object.xml:334
+#: doc/classes/Object.xml:335
 msgid ""
 "Removes a given entry from the object's metadata. See also [method set_meta]."
 msgstr ""
 
-#: doc/classes/Object.xml:342
+#: doc/classes/Object.xml:343
 msgid ""
 "Assigns a new value to the given property. If the [code]property[/code] does "
 "not exist, nothing will happen.\n"
@@ -36708,11 +36751,11 @@ msgid ""
 "(typically PascalCase)."
 msgstr ""
 
-#: doc/classes/Object.xml:350
+#: doc/classes/Object.xml:351
 msgid "If set to [code]true[/code], signal emission is blocked."
 msgstr ""
 
-#: doc/classes/Object.xml:358
+#: doc/classes/Object.xml:359
 msgid ""
 "Assigns a new value to the given property, after the current frame's physics "
 "step. This is equivalent to calling [method set] via [method call_deferred], "
@@ -36723,7 +36766,7 @@ msgid ""
 "(typically PascalCase)."
 msgstr ""
 
-#: doc/classes/Object.xml:367
+#: doc/classes/Object.xml:368
 msgid ""
 "Assigns a new value to the property identified by the [NodePath]. The node "
 "path should be relative to the current object and can use the colon "
@@ -36735,13 +36778,13 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/Object.xml:379
+#: doc/classes/Object.xml:380
 msgid ""
 "Defines whether the object can translate strings (with calls to [method "
 "tr]). Enabled by default."
 msgstr ""
 
-#: doc/classes/Object.xml:387
+#: doc/classes/Object.xml:388
 msgid ""
 "Adds, changes or removes a given entry in the object's metadata. Metadata "
 "are serialized and can take any [Variant] value.\n"
@@ -36751,7 +36794,7 @@ msgid ""
 "remove metadata for [code]\"name\"[/code]."
 msgstr ""
 
-#: doc/classes/Object.xml:395
+#: doc/classes/Object.xml:396
 msgid ""
 "Assigns a script to the object. Each object can have a single script "
 "assigned to it, which are used to extend its functionality.\n"
@@ -36760,7 +36803,7 @@ msgid ""
 "_init] method will be called."
 msgstr ""
 
-#: doc/classes/Object.xml:402
+#: doc/classes/Object.xml:403
 msgid ""
 "Returns a [String] representing the object. If not overridden, defaults to "
 "[code]\"[ClassName:RID]\"[/code].\n"
@@ -36768,7 +36811,7 @@ msgid ""
 "representation."
 msgstr ""
 
-#: doc/classes/Object.xml:410
+#: doc/classes/Object.xml:411
 msgid ""
 "Translates a message using translation catalogs configured in the Project "
 "Settings.\n"
@@ -36777,33 +36820,33 @@ msgid ""
 "set_message_translation]."
 msgstr ""
 
-#: doc/classes/Object.xml:418
+#: doc/classes/Object.xml:419
 msgid "Emitted whenever the object's script is changed."
 msgstr ""
 
-#: doc/classes/Object.xml:424
+#: doc/classes/Object.xml:425
 msgid "Called right when the object is initialized. Not available in script."
 msgstr ""
 
-#: doc/classes/Object.xml:427
+#: doc/classes/Object.xml:428
 msgid "Called before the object is about to be deleted."
 msgstr ""
 
-#: doc/classes/Object.xml:430
+#: doc/classes/Object.xml:431
 msgid ""
 "Connects a signal in deferred mode. This way, signal emissions are stored in "
 "a queue, then set on idle time."
 msgstr ""
 
-#: doc/classes/Object.xml:433
+#: doc/classes/Object.xml:434
 msgid "Persisting connections are saved when the object is serialized to file."
 msgstr ""
 
-#: doc/classes/Object.xml:436
+#: doc/classes/Object.xml:437
 msgid "One-shot connections disconnect themselves after emission."
 msgstr ""
 
-#: doc/classes/Object.xml:439
+#: doc/classes/Object.xml:440
 msgid ""
 "Connect a signal as reference-counted. This means that a given signal can be "
 "connected several times to the same target, and will only be fully "
@@ -37212,58 +37255,58 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OptionButton.xml:191
-msgid "The arrow icon to be drawn on the right end of the button."
-msgstr ""
-
-#: doc/classes/OptionButton.xml:194
-msgid ""
-"The horizontal space between the arrow icon and the right edge of the button."
-msgstr ""
-
-#: doc/classes/OptionButton.xml:197
-msgid "[StyleBox] used when the [OptionButton] is disabled."
-msgstr ""
-
-#: doc/classes/OptionButton.xml:200
-msgid ""
-"[StyleBox] used when the [OptionButton] is focused. It is displayed over the "
-"current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
-"visual effect."
-msgstr ""
-
-#: doc/classes/OptionButton.xml:203
-msgid "[Font] of the [OptionButton]'s text."
-msgstr ""
-
-#: doc/classes/OptionButton.xml:206
 msgid "Default text [Color] of the [OptionButton]."
 msgstr ""
 
-#: doc/classes/OptionButton.xml:209
+#: doc/classes/OptionButton.xml:194
 msgid "Text [Color] used when the [OptionButton] is disabled."
 msgstr ""
 
-#: doc/classes/OptionButton.xml:212
+#: doc/classes/OptionButton.xml:197
 msgid ""
 "Text [Color] used when the [OptionButton] is focused. Only replaces the "
 "normal text color of the button. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
 
-#: doc/classes/OptionButton.xml:215
+#: doc/classes/OptionButton.xml:200
 msgid "Text [Color] used when the [OptionButton] is being hovered."
 msgstr ""
 
-#: doc/classes/OptionButton.xml:218
+#: doc/classes/OptionButton.xml:203
 msgid "Text [Color] used when the [OptionButton] is being pressed."
 msgstr ""
 
+#: doc/classes/OptionButton.xml:206
+msgid ""
+"The horizontal space between the arrow icon and the right edge of the button."
+msgstr ""
+
+#: doc/classes/OptionButton.xml:209
+msgid "The horizontal space between [OptionButton]'s icon and text."
+msgstr ""
+
+#: doc/classes/OptionButton.xml:212
+msgid "[Font] of the [OptionButton]'s text."
+msgstr ""
+
+#: doc/classes/OptionButton.xml:215
+msgid "The arrow icon to be drawn on the right end of the button."
+msgstr ""
+
+#: doc/classes/OptionButton.xml:218
+msgid "[StyleBox] used when the [OptionButton] is disabled."
+msgstr ""
+
 #: doc/classes/OptionButton.xml:221
-msgid "[StyleBox] used when the [OptionButton] is being hovered."
+msgid ""
+"[StyleBox] used when the [OptionButton] is focused. It is displayed over the "
+"current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
+"visual effect."
 msgstr ""
 
 #: doc/classes/OptionButton.xml:224
-msgid "The horizontal space between [OptionButton]'s icon and text."
+msgid "[StyleBox] used when the [OptionButton] is being hovered."
 msgstr ""
 
 #: doc/classes/OptionButton.xml:227
@@ -39295,9 +39338,9 @@ msgstr ""
 #: doc/classes/ParticlesMaterial.xml:77
 msgid ""
 "Initial rotation applied to each particle, in degrees.\n"
-"Only applied when [member flag_disable_z] or [member flag_rotate_y] are "
-"[code]true[/code] or the [SpatialMaterial] being used to draw the particle "
-"is using [constant SpatialMaterial.BILLBOARD_PARTICLES]."
+"[b]Note:[/b] Only applied when [member flag_disable_z] or [member "
+"flag_rotate_y] are [code]true[/code] or the [SpatialMaterial] being used to "
+"draw the particle is using [constant SpatialMaterial.BILLBOARD_PARTICLES]."
 msgstr ""
 
 #: doc/classes/ParticlesMaterial.xml:81
@@ -39306,11 +39349,11 @@ msgstr ""
 
 #: doc/classes/ParticlesMaterial.xml:87
 msgid ""
-"Initial angular velocity applied to each particle. Sets the speed of "
-"rotation of the particle.\n"
-"Only applied when [member flag_disable_z] or [member flag_rotate_y] are "
-"[code]true[/code] or the [SpatialMaterial] being used to draw the particle "
-"is using [constant SpatialMaterial.BILLBOARD_PARTICLES]."
+"Initial angular velocity applied to each particle in [i]degrees[/i] per "
+"second. Sets the speed of rotation of the particle.\n"
+"[b]Note:[/b] Only applied when [member flag_disable_z] or [member "
+"flag_rotate_y] are [code]true[/code] or the [SpatialMaterial] being used to "
+"draw the particle is using [constant SpatialMaterial.BILLBOARD_PARTICLES]."
 msgstr ""
 
 #: doc/classes/ParticlesMaterial.xml:91
@@ -39424,7 +39467,8 @@ msgstr ""
 msgid ""
 "Orbital velocity applied to each particle. Makes the particles circle around "
 "origin. Specified in number of full rotations around origin per second.\n"
-"Only available when [member flag_disable_z] is [code]true[/code]."
+"[b]Note:[/b] Only available when [member flag_disable_z] is [code]true[/"
+"code]."
 msgstr ""
 
 #: doc/classes/ParticlesMaterial.xml:212
@@ -40084,9 +40128,8 @@ msgstr ""
 msgid "Calls the built-in force integration code."
 msgstr ""
 
-#: doc/classes/Physics2DDirectBodyState.xml:157
-#: doc/classes/PhysicsDirectBodyState.xml:159 doc/classes/RigidBody2D.xml:101
-msgid "The body's rotational velocity."
+#: doc/classes/Physics2DDirectBodyState.xml:157 doc/classes/RigidBody2D.xml:101
+msgid "The body's rotational velocity in [i]radians[/i] per second."
 msgstr ""
 
 #: doc/classes/Physics2DDirectBodyState.xml:160
@@ -40100,8 +40143,7 @@ msgid "The inverse of the mass of the body."
 msgstr ""
 
 #: doc/classes/Physics2DDirectBodyState.xml:166
-#: doc/classes/PhysicsDirectBodyState.xml:170 doc/classes/RigidBody2D.xml:146
-msgid "The body's linear velocity."
+msgid "The body's linear velocity in pixels per second."
 msgstr ""
 
 #: doc/classes/Physics2DDirectBodyState.xml:169
@@ -41207,6 +41249,16 @@ msgstr ""
 
 #: doc/classes/PhysicsDirectBodyState.xml:113
 msgid "Impulse created by the contact. Only implemented for Bullet physics."
+msgstr ""
+
+#: doc/classes/PhysicsDirectBodyState.xml:159 doc/classes/RigidBody.xml:115
+msgid ""
+"The body's rotational velocity in axis-angle format. The magnitude of the "
+"vector is the rotation rate in [i]radians[/i] per second."
+msgstr ""
+
+#: doc/classes/PhysicsDirectBodyState.xml:170
+msgid "The body's linear velocity in units per second."
 msgstr ""
 
 #: doc/classes/PhysicsDirectSpaceState.xml:4
@@ -43127,88 +43179,88 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PopupMenu.xml:500
-msgid "[Texture] icon for the checked checkbox items."
-msgstr ""
-
-#: doc/classes/PopupMenu.xml:503
-msgid "[Font] used for the menu items."
-msgstr ""
-
-#: doc/classes/PopupMenu.xml:506
 msgid "The default text [Color] for menu items' names."
 msgstr ""
 
-#: doc/classes/PopupMenu.xml:509
+#: doc/classes/PopupMenu.xml:503
 msgid ""
 "The text [Color] used for shortcuts and accelerators that show next to the "
 "menu item name when defined. See [method get_item_accelerator] for more info "
 "on accelerators."
 msgstr ""
 
-#: doc/classes/PopupMenu.xml:512
+#: doc/classes/PopupMenu.xml:506
 msgid "[Color] used for disabled menu items' text."
 msgstr ""
 
-#: doc/classes/PopupMenu.xml:515
+#: doc/classes/PopupMenu.xml:509
 msgid "[Color] used for the hovered text."
 msgstr ""
 
-#: doc/classes/PopupMenu.xml:518
+#: doc/classes/PopupMenu.xml:512
 msgid "[Color] used for labeled separators' text. See [method add_separator]."
 msgstr ""
 
-#: doc/classes/PopupMenu.xml:521
-msgid "[StyleBox] displayed when the [PopupMenu] item is hovered."
-msgstr ""
-
-#: doc/classes/PopupMenu.xml:524
+#: doc/classes/PopupMenu.xml:515
 msgid ""
 "The horizontal space between the item's name and the shortcut text/submenu "
 "arrow."
 msgstr ""
 
+#: doc/classes/PopupMenu.xml:518
+msgid "The vertical space between each menu item."
+msgstr ""
+
+#: doc/classes/PopupMenu.xml:521
+msgid "[Font] used for the menu items."
+msgstr ""
+
+#: doc/classes/PopupMenu.xml:524
+msgid "[Texture] icon for the checked checkbox items."
+msgstr ""
+
 #: doc/classes/PopupMenu.xml:527
+msgid "[Texture] icon for the checked radio button items."
+msgstr ""
+
+#: doc/classes/PopupMenu.xml:530
+msgid "[Texture] icon for the unchecked radio button items."
+msgstr ""
+
+#: doc/classes/PopupMenu.xml:533
+msgid "[Texture] icon for the submenu arrow."
+msgstr ""
+
+#: doc/classes/PopupMenu.xml:536
+msgid "[Texture] icon for the unchecked checkbox items."
+msgstr ""
+
+#: doc/classes/PopupMenu.xml:539
+msgid "[StyleBox] displayed when the [PopupMenu] item is hovered."
+msgstr ""
+
+#: doc/classes/PopupMenu.xml:542
 msgid ""
 "[StyleBox] for the left side of labeled separator. See [method "
 "add_separator]."
 msgstr ""
 
-#: doc/classes/PopupMenu.xml:530
+#: doc/classes/PopupMenu.xml:545
 msgid ""
 "[StyleBox] for the right side of labeled separator. See [method "
 "add_separator]."
 msgstr ""
 
-#: doc/classes/PopupMenu.xml:533
+#: doc/classes/PopupMenu.xml:548
 msgid "Default [StyleBox] of the [PopupMenu] items."
 msgstr ""
 
-#: doc/classes/PopupMenu.xml:536
+#: doc/classes/PopupMenu.xml:551
 msgid "[StyleBox] used when the [PopupMenu] item is disabled."
 msgstr ""
 
-#: doc/classes/PopupMenu.xml:539
-msgid "[Texture] icon for the checked radio button items."
-msgstr ""
-
-#: doc/classes/PopupMenu.xml:542
-msgid "[Texture] icon for the unchecked radio button items."
-msgstr ""
-
-#: doc/classes/PopupMenu.xml:545
-msgid "[StyleBox] used for the separators. See [method add_separator]."
-msgstr ""
-
-#: doc/classes/PopupMenu.xml:548
-msgid "[Texture] icon for the submenu arrow."
-msgstr ""
-
-#: doc/classes/PopupMenu.xml:551
-msgid "[Texture] icon for the unchecked checkbox items."
-msgstr ""
-
 #: doc/classes/PopupMenu.xml:554
-msgid "The vertical space between each menu item."
+msgid "[StyleBox] used for the separators. See [method add_separator]."
 msgstr ""
 
 #: doc/classes/PopupPanel.xml:4
@@ -43511,11 +43563,11 @@ msgid "If [code]true[/code], the fill percentage is displayed on the bar."
 msgstr ""
 
 #: doc/classes/ProgressBar.xml:24
-msgid "The style of the background."
+msgid "The color of the text."
 msgstr ""
 
 #: doc/classes/ProgressBar.xml:27
-msgid "The style of the progress (i.e. the part that fills the bar)."
+msgid "The color of the text's shadow."
 msgstr ""
 
 #: doc/classes/ProgressBar.xml:30
@@ -43525,11 +43577,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ProgressBar.xml:33
-msgid "The color of the text."
+msgid "The style of the background."
 msgstr ""
 
 #: doc/classes/ProgressBar.xml:36
-msgid "The color of the text's shadow."
+msgid "The style of the progress (i.e. the part that fills the bar)."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml:4
@@ -45216,12 +45268,24 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml:1020
 msgid ""
+"Additional expansion applied to object bounds in the 2D physics bounding "
+"volume hierarchy. This can reduce BVH processing at the cost of a slightly "
+"coarser broadphase, which can stress the physics more in some situations.\n"
+"The default value will work well in most situations. A value of 0.0 will "
+"turn this optimization off, and larger values may work better for larger, "
+"faster moving objects.\n"
+"[b]Note:[/b] Used only if [member ProjectSettings.physics/2d/use_bvh] is "
+"enabled."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml:1025
+msgid ""
 "Cell size used for the broad-phase 2D hash grid algorithm (in pixels).\n"
 "[b]Note:[/b] Not used if [member ProjectSettings.physics/2d/use_bvh] is "
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1024
+#: doc/classes/ProjectSettings.xml:1029
 msgid ""
 "The default angular damp in 2D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -45234,7 +45298,7 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1028
+#: doc/classes/ProjectSettings.xml:1033
 msgid ""
 "The default gravity strength in 2D (in pixels per second squared).\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -45246,7 +45310,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1036
+#: doc/classes/ProjectSettings.xml:1041
 msgid ""
 "The default gravity direction in 2D.\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -45258,7 +45322,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1044
+#: doc/classes/ProjectSettings.xml:1049
 msgid ""
 "The default linear damp in 2D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -45271,7 +45335,7 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1048
+#: doc/classes/ProjectSettings.xml:1053
 msgid ""
 "Threshold defining the surface size that constitutes a large object with "
 "regard to cells in the broad-phase 2D hash grid algorithm.\n"
@@ -45279,28 +45343,28 @@ msgid ""
 "enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1052
+#: doc/classes/ProjectSettings.xml:1057
 msgid ""
 "Sets which physics engine to use for 2D physics.\n"
 "\"DEFAULT\" and \"GodotPhysics\" are the same, as there is currently no "
 "alternative 2D physics server implemented."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1056
+#: doc/classes/ProjectSettings.xml:1061
 msgid ""
 "Threshold angular velocity under which a 2D physics body will be considered "
 "inactive. See [constant Physics2DServer."
 "SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1059
+#: doc/classes/ProjectSettings.xml:1064
 msgid ""
 "Threshold linear velocity under which a 2D physics body will be considered "
 "inactive. See [constant Physics2DServer."
 "SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1062
+#: doc/classes/ProjectSettings.xml:1067
 msgid ""
 "Sets whether physics is run on the main thread or a separate one. Running "
 "the server on a thread increases performance, but restricts API access to "
@@ -45310,25 +45374,25 @@ msgid ""
 "give you extra performance and no regressions when using it."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1066
+#: doc/classes/ProjectSettings.xml:1071
 msgid ""
 "Time (in seconds) of inactivity before which a 2D physics body will put to "
 "sleep. See [constant Physics2DServer.SPACE_PARAM_BODY_TIME_TO_SLEEP]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1069
+#: doc/classes/ProjectSettings.xml:1074
 msgid ""
 "Enables the use of bounding volume hierarchy instead of hash grid for 2D "
 "physics spatial partitioning. This may give better performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1072
+#: doc/classes/ProjectSettings.xml:1077
 msgid ""
 "Sets whether the 3D physics world will be created with support for "
 "[SoftBody] physics. Only applies to the Bullet physics engine."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1075
+#: doc/classes/ProjectSettings.xml:1080
 msgid ""
 "The default angular damp in 3D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -45341,7 +45405,7 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1079
+#: doc/classes/ProjectSettings.xml:1084
 msgid ""
 "The default gravity strength in 3D (in meters per second squared).\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -45353,7 +45417,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1087
+#: doc/classes/ProjectSettings.xml:1092
 msgid ""
 "The default gravity direction in 3D.\n"
 "[b]Note:[/b] This property is only read when the project starts. To change "
@@ -45365,7 +45429,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1095
+#: doc/classes/ProjectSettings.xml:1100
 msgid ""
 "The default linear damp in 3D.\n"
 "[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. "
@@ -45378,13 +45442,25 @@ msgid ""
 "stop in one iteration."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1099
+#: doc/classes/ProjectSettings.xml:1104
+msgid ""
+"Additional expansion applied to object bounds in the 3D physics bounding "
+"volume hierarchy. This can reduce BVH processing at the cost of a slightly "
+"coarser broadphase, which can stress the physics more in some situations.\n"
+"The default value will work well in most situations. A value of 0.0 will "
+"turn this optimization off, and larger values may work better for larger, "
+"faster moving objects.\n"
+"[b]Note:[/b] Used only if [member ProjectSettings.physics/3d/godot_physics/"
+"use_bvh] is enabled."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml:1109
 msgid ""
 "Enables the use of bounding volume hierarchy instead of octree for 3D "
 "physics spatial partitioning. This may give better performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1102
+#: doc/classes/ProjectSettings.xml:1112
 msgid ""
 "Sets which physics engine to use for 3D physics.\n"
 "\"DEFAULT\" is currently the [url=https://bulletphysics.org]Bullet[/url] "
@@ -45392,11 +45468,11 @@ msgid ""
 "alternative."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1106
+#: doc/classes/ProjectSettings.xml:1116
 msgid "Enables [member Viewport.physics_object_picking] on the root viewport."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1109
+#: doc/classes/ProjectSettings.xml:1119
 msgid ""
 "If enabled, 2D and 3D physics picking behaves this way in relation to "
 "pause:\n"
@@ -45410,7 +45486,7 @@ msgid ""
 "that queue on resume, against the state of the 2D/3D world at that point."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1115
+#: doc/classes/ProjectSettings.xml:1125
 msgid ""
 "The number of fixed iterations per second. This controls how often physics "
 "simulation and [method Node._physics_process] methods are run.\n"
@@ -45419,7 +45495,7 @@ msgid ""
 "instead."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1119
+#: doc/classes/ProjectSettings.xml:1129
 msgid ""
 "Controls how much physics ticks are synchronized with real time. For 0 or "
 "less, the ticks are synchronized. Such values are recommended for network "
@@ -45435,7 +45511,7 @@ msgid ""
 "the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1124
+#: doc/classes/ProjectSettings.xml:1134
 msgid ""
 "[b]Experimental.[/b] Calls [code]glBufferData[/code] with NULL data prior to "
 "uploading batching data. This may not be necessary but can be used for "
@@ -45445,7 +45521,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1128
+#: doc/classes/ProjectSettings.xml:1138
 msgid ""
 "[b]Experimental.[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag "
 "for batching buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] "
@@ -45455,7 +45531,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1132
+#: doc/classes/ProjectSettings.xml:1142
 msgid ""
 "[b]Experimental.[/b] If set to on, this applies buffer orphaning - "
 "[code]glBufferData[/code] is called with NULL data and the full buffer size "
@@ -45466,7 +45542,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1136
+#: doc/classes/ProjectSettings.xml:1146
 msgid ""
 "[b]Experimental.[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag "
 "for legacy buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] "
@@ -45476,7 +45552,7 @@ msgid ""
 "adversely affect performance for end users."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1140
+#: doc/classes/ProjectSettings.xml:1150
 msgid ""
 "Choose between fixed mode where corner scalings are preserved matching the "
 "artwork, and scaling mode.\n"
@@ -45484,7 +45560,7 @@ msgid ""
 "is off."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1144
+#: doc/classes/ProjectSettings.xml:1154
 msgid ""
 "Some NVIDIA GPU drivers have a bug which produces flickering issues for the "
 "[code]draw_rect[/code] method, especially as used in [TileMap]. Refer to "
@@ -45495,7 +45571,7 @@ msgid ""
 "rendering, but only on desktop platforms."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1148
+#: doc/classes/ProjectSettings.xml:1158
 msgid ""
 "If [code]true[/code], performs 2D skinning on the CPU rather than the GPU. "
 "This provides greater compatibility with a wide range of hardware, and also "
@@ -45510,7 +45586,7 @@ msgid ""
 "skinning."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1154
+#: doc/classes/ProjectSettings.xml:1164
 msgid ""
 "If [code]true[/code], forces snapping of vertices to pixels in 2D rendering. "
 "May help in some pixel art styles.\n"
@@ -45519,13 +45595,13 @@ msgid ""
 "uv_contract] to prevent artifacts."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1159
+#: doc/classes/ProjectSettings.xml:1169
 msgid ""
 "When batching is on, this regularly prints a frame diagnosis log. Note that "
 "this will degrade performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1162
+#: doc/classes/ProjectSettings.xml:1172
 msgid ""
 "[b]Experimental.[/b] For regression testing against the old renderer. If "
 "this is switched on, and [code]use_batching[/code] is set, the renderer will "
@@ -45534,7 +45610,7 @@ msgid ""
 "Performance will be degraded."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1165
+#: doc/classes/ProjectSettings.xml:1175
 msgid ""
 "Lights have the potential to prevent joining items, and break many of the "
 "performance benefits of batching. This setting enables some complex logic to "
@@ -45544,7 +45620,7 @@ msgid ""
 "returns."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1168
+#: doc/classes/ProjectSettings.xml:1178
 msgid ""
 "Sets the proportion of the total screen area (in pixels) that must be saved "
 "by a scissor operation in order to activate light scissoring. This can "
@@ -45556,7 +45632,7 @@ msgid ""
 "a lot of lighting."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1171
+#: doc/classes/ProjectSettings.xml:1181
 msgid ""
 "Enabling this setting uses the legacy method to draw batches containing only "
 "one rect. The legacy method is faster (approx twice as fast), but can cause "
@@ -45566,24 +45642,24 @@ msgid ""
 "this method."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1174
+#: doc/classes/ProjectSettings.xml:1184
 msgid ""
 "Turns 2D batching on and off. Batching increases performance by reducing the "
 "amount of graphics API drawcalls."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1177
+#: doc/classes/ProjectSettings.xml:1187
 msgid "Switches on 2D batching within the editor."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1180
+#: doc/classes/ProjectSettings.xml:1190
 msgid ""
 "Size of buffer reserved for batched vertices. Larger size enables larger "
 "batches, but there are diminishing returns for the memory used. This should "
 "only have a minor effect on performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1183
+#: doc/classes/ProjectSettings.xml:1193
 msgid ""
 "Including color in the vertex format has a cost, however, not including "
 "color prevents batching across color changes. This threshold determines the "
@@ -45592,7 +45668,7 @@ msgid ""
 "0 will always use colored vertices, 1 will never use colored vertices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1186
+#: doc/classes/ProjectSettings.xml:1196
 msgid ""
 "In certain circumstances, the batcher can reorder items in order to better "
 "join them. This may result in better performance. An overlap test is needed "
@@ -45600,7 +45676,7 @@ msgid ""
 "returns. If you are getting no benefit, setting this to 0 will switch it off."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1189
+#: doc/classes/ProjectSettings.xml:1199
 msgid ""
 "Sets the number of commands to lookahead to determine whether to batch "
 "render items. A value of 1 can join items consisting of single commands, 0 "
@@ -45609,7 +45685,7 @@ msgid ""
 "recommended."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1192
+#: doc/classes/ProjectSettings.xml:1202
 msgid ""
 "On some platforms (especially mobile), precision issues in shaders can lead "
 "to reading 1 texel outside of bounds, particularly where rects are scaled. "
@@ -45619,7 +45695,7 @@ msgid ""
 "texels."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1196
+#: doc/classes/ProjectSettings.xml:1206
 msgid ""
 "The amount of UV contraction. This figure is divided by 1000000, and is a "
 "proportion of the total texture dimensions, where the width and height are "
@@ -45627,31 +45703,31 @@ msgid ""
 "Use the default unless correcting for a problem on particular hardware."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1200
+#: doc/classes/ProjectSettings.xml:1210
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_HIGH]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1203
+#: doc/classes/ProjectSettings.xml:1213
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_LOW]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1206
+#: doc/classes/ProjectSettings.xml:1216
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_MEDIUM]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1209
+#: doc/classes/ProjectSettings.xml:1219
 msgid ""
 "Amount of light samples taken when using [constant BakedLightmap."
 "BAKE_QUALITY_ULTRA]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1212
+#: doc/classes/ProjectSettings.xml:1222
 msgid ""
 "Default background clear color. Overridable per [Viewport] using its "
 "[Environment]. See [member Environment.background_mode] and [member "
@@ -45659,7 +45735,7 @@ msgid ""
 "programmatically, use [method VisualServer.set_default_clear_color]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1215
+#: doc/classes/ProjectSettings.xml:1225
 msgid ""
 "[Environment] that will be used as a fallback environment in case a scene "
 "does not specify its own environment. The default environment is loaded in "
@@ -45669,21 +45745,21 @@ msgid ""
 "here."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1218
+#: doc/classes/ProjectSettings.xml:1228
 msgid ""
 "The use of half-float vertex compression may be producing rendering errors "
 "on some platforms (especially iOS). These have been seen particularly in "
 "particles. Disabling half-float may resolve these problems."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1221
+#: doc/classes/ProjectSettings.xml:1231
 msgid ""
 "iOS specific override for [member rendering/gles2/compatibility/"
 "disable_half_float], due to poor support for half-float vertex compression "
 "on many devices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1224
+#: doc/classes/ProjectSettings.xml:1234
 msgid ""
 "If [code]true[/code] and available on the target Android device, enables "
 "high floating point precision for all shader computations in GLES2.\n"
@@ -45691,31 +45767,31 @@ msgid ""
 "devices and is often not available at all. Use with caution."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1228
+#: doc/classes/ProjectSettings.xml:1238
 msgid ""
 "Max buffer size for blend shapes. Any blend shape bigger than this will not "
 "work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1231
+#: doc/classes/ProjectSettings.xml:1241
 msgid ""
 "Max buffer size for drawing polygons. Any polygon bigger than this will not "
 "work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1234
+#: doc/classes/ProjectSettings.xml:1244
 msgid ""
 "Max index buffer size for drawing polygons. Any polygon bigger than this "
 "will not work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1237
+#: doc/classes/ProjectSettings.xml:1247
 msgid ""
 "Max buffer size for drawing immediate objects (ImmediateGeometry nodes). "
 "Nodes using more than this size will not work."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1240
+#: doc/classes/ProjectSettings.xml:1250
 msgid ""
 "Max number of lights renderable per object. This is further limited by "
 "hardware support. Most devices only support 409 lights, while many devices "
@@ -45723,7 +45799,7 @@ msgid ""
 "memory usage and may decrease shader compile times."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1243
+#: doc/classes/ProjectSettings.xml:1253
 msgid ""
 "Max amount of elements renderable in a frame. If more elements than this are "
 "visible per frame, they will not be drawn. Keep in mind elements refer to "
@@ -45733,7 +45809,7 @@ msgid ""
 "much as possible on web export."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1246
+#: doc/classes/ProjectSettings.xml:1256
 msgid ""
 "Max number of lights renderable in a frame. If more lights than this number "
 "are used, they will be ignored. Setting this low will slightly reduce memory "
@@ -45742,7 +45818,7 @@ msgid ""
 "possible on web export."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1249
+#: doc/classes/ProjectSettings.xml:1259
 msgid ""
 "Max number of reflection probes renderable in a frame. If more reflection "
 "probes than this number are used, they will be ignored. Setting this low "
@@ -45751,20 +45827,20 @@ msgid ""
 "consider lowering as much as possible on web export."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1252
+#: doc/classes/ProjectSettings.xml:1262
 msgid ""
 "Shaders have a time variable that constantly increases. At some point, it "
 "needs to be rolled back to zero to avoid precision errors on shader "
 "animations. This setting specifies when (in seconds)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1255
+#: doc/classes/ProjectSettings.xml:1265
 msgid ""
 "If [code]true[/code], the texture importer will import lossless textures "
 "using the PNG format. Otherwise, it will default to using WebP."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1258
+#: doc/classes/ProjectSettings.xml:1268
 msgid ""
 "The default compression level for lossless WebP. Higher levels result in "
 "smaller files at the cost of compression speed. Decompression speed is "
@@ -45773,7 +45849,7 @@ msgid ""
 "savings."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1261
+#: doc/classes/ProjectSettings.xml:1271
 msgid ""
 "On import, mesh vertex data will be split into two streams within a single "
 "vertex buffer, one for position data and the other for interleaved "
@@ -45781,7 +45857,7 @@ msgid ""
 "Requires manual reimport of meshes after toggling."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1264
+#: doc/classes/ProjectSettings.xml:1274
 msgid ""
 "Determines the maximum number of sphere occluders that will be used at any "
 "one time.\n"
@@ -45790,7 +45866,7 @@ msgid ""
 "to give the best overall performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1268
+#: doc/classes/ProjectSettings.xml:1278
 msgid ""
 "The default convention is for portal normals to point outward (face outward) "
 "from the source room.\n"
@@ -45800,20 +45876,20 @@ msgid ""
 "convertion to [Portal] nodes."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1273
+#: doc/classes/ProjectSettings.xml:1283
 msgid ""
 "Show conversion logs.\n"
 "[b]Note:[/b] This will automatically be disabled in exports."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1277
+#: doc/classes/ProjectSettings.xml:1287
 msgid ""
 "If [code]true[/code], gameplay callbacks will be sent as [code]signals[/"
 "code]. If [code]false[/code], they will be sent as [code]notifications[/"
 "code]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1280
+#: doc/classes/ProjectSettings.xml:1290
 msgid ""
 "If enabled, while merging meshes, the system will also attempt to remove "
 "[Spatial] nodes that no longer have any children.\n"
@@ -45822,13 +45898,13 @@ msgid ""
 "for markers or some other purpose."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1284
+#: doc/classes/ProjectSettings.xml:1294
 msgid ""
 "Show logs during PVS generation.\n"
 "[b]Note:[/b] This will automatically be disabled in exports."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1288
+#: doc/classes/ProjectSettings.xml:1298
 msgid ""
 "Uses a simplified method of generating PVS (potentially visible set) data. "
 "The results may not be accurate where more than one portal join adjacent "
@@ -45838,46 +45914,46 @@ msgid ""
 "default method."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1292
+#: doc/classes/ProjectSettings.xml:1302
 msgid ""
 "If [code]true[/code], allocates the main framebuffer with high dynamic "
 "range. High dynamic range allows the use of [Color] values greater than 1.\n"
 "[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1296
+#: doc/classes/ProjectSettings.xml:1306
 msgid ""
 "Lower-end override for [member rendering/quality/depth/hdr] on mobile "
 "devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1299
+#: doc/classes/ProjectSettings.xml:1309
 msgid ""
 "Disables depth pre-pass for some GPU vendors (usually mobile), as their "
 "architecture already does this."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1302
+#: doc/classes/ProjectSettings.xml:1312
 msgid ""
 "If [code]true[/code], performs a previous depth pass before rendering "
 "materials. This increases performance in scenes with high overdraw, when "
 "complex materials and lighting are used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1305
+#: doc/classes/ProjectSettings.xml:1315
 msgid ""
 "The directional shadow's size in pixels. Higher values will result in "
 "sharper shadows, at the cost of performance. The value will be rounded up to "
 "the nearest power of 2."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1308
+#: doc/classes/ProjectSettings.xml:1318
 msgid ""
 "Lower-end override for [member rendering/quality/directional_shadow/size] on "
 "mobile devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1311
+#: doc/classes/ProjectSettings.xml:1321
 msgid ""
 "The video driver to use (\"GLES2\" or \"GLES3\").\n"
 "[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--"
@@ -45887,7 +45963,7 @@ msgid ""
 "updated, so use [method OS.get_current_video_driver] to query it at run-time."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1315
+#: doc/classes/ProjectSettings.xml:1325
 msgid ""
 "If [code]true[/code], allows falling back to the GLES2 driver if the GLES3 "
 "driver is not supported.\n"
@@ -45899,7 +45975,7 @@ msgid ""
 "data pack's size."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1319
+#: doc/classes/ProjectSettings.xml:1329
 msgid ""
 "Maximum anisotropic filter level used for textures with anisotropy enabled. "
 "Higher values will result in sharper textures when viewed from oblique "
@@ -45907,7 +45983,7 @@ msgid ""
 "4, 8, 16)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1322
+#: doc/classes/ProjectSettings.xml:1332
 msgid ""
 "Sets the number of MSAA samples to use. MSAA is used to reduce aliasing "
 "around the edges of polygons. A higher MSAA value results in smoother edges "
@@ -45915,7 +45991,7 @@ msgid ""
 "[b]Note:[/b] MSAA is not available on HTML5 export using the GLES2 backend."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1326
+#: doc/classes/ProjectSettings.xml:1336
 msgid ""
 "If set to a value greater than [code]0.0[/code], contrast-adaptive "
 "sharpening will be applied to the 3D viewport. This has a low performance "
@@ -45924,7 +46000,7 @@ msgid ""
 "[member rendering/quality/filters/use_fxaa]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1329
+#: doc/classes/ProjectSettings.xml:1339
 msgid ""
 "If [code]true[/code], uses a fast post-processing filter to make banding "
 "significantly less visible. In some cases, debanding may introduce a "
@@ -45938,7 +46014,7 @@ msgid ""
 "disabled when targeting mobile platforms."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1334
+#: doc/classes/ProjectSettings.xml:1344
 msgid ""
 "Enables FXAA in the root Viewport. FXAA is a popular screen-space "
 "antialiasing method, which is fast but will make the image look blurry, "
@@ -45948,7 +46024,7 @@ msgid ""
 "quality/filters/sharpen_intensity])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1337
+#: doc/classes/ProjectSettings.xml:1347
 msgid ""
 "If [code]true[/code], uses nearest-neighbor mipmap filtering when using "
 "mipmaps (also called \"bilinear filtering\"), which will result in visible "
@@ -45957,7 +46033,7 @@ msgid ""
 "mipmap filtering (also called \"trilinear filtering\") is used."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1340
+#: doc/classes/ProjectSettings.xml:1350
 msgid ""
 "Strategy used for framebuffer allocation. The simpler it is, the less "
 "resources it uses (but the less features it supports). If set to \"2D "
@@ -45967,54 +46043,54 @@ msgid ""
 "be available in the [Environment]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1343
+#: doc/classes/ProjectSettings.xml:1353
 msgid ""
 "Lower-end override for [member rendering/quality/intended_usage/"
 "framebuffer_allocation] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1346
+#: doc/classes/ProjectSettings.xml:1356
 msgid ""
 "Enable usage of bicubic sampling in baked lightmaps. This results in "
 "smoother looking lighting at the expense of more bandwidth usage. On GLES2, "
 "changes to this setting will only be applied upon restarting the application."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1349
+#: doc/classes/ProjectSettings.xml:1359
 msgid ""
 "Lower-end override for [member rendering/quality/lightmapping/"
 "use_bicubic_sampling] on mobile devices, in order to reduce bandwidth usage."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1352
+#: doc/classes/ProjectSettings.xml:1362
 msgid ""
 "Size of the atlas used by reflection probes. A larger size can result in "
 "higher visual quality, while a smaller size will be faster and take up less "
 "memory."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1355
+#: doc/classes/ProjectSettings.xml:1365
 msgid ""
 "Number of subdivisions to use for the reflection atlas. A higher number "
 "lowers the quality of each atlas, but allows you to use more."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1358
+#: doc/classes/ProjectSettings.xml:1368
 msgid ""
 "If [code]true[/code], uses a high amount of samples to create blurred "
 "variants of reflection probes and panorama backgrounds (sky). Those blurred "
 "variants are used by rough materials."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1361
+#: doc/classes/ProjectSettings.xml:1371
 msgid ""
 "Lower-end override for [member rendering/quality/reflections/"
 "high_quality_ggx] on mobile devices, due to performance concerns or driver "
 "support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1364
+#: doc/classes/ProjectSettings.xml:1374
 msgid ""
 "Limits the size of the irradiance map which is normally determined by "
 "[member Sky.radiance_size]. A higher size results in a higher quality "
@@ -46025,61 +46101,61 @@ msgid ""
 "maps well and may crash if this is set too high."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1368
+#: doc/classes/ProjectSettings.xml:1378
 msgid ""
 "If [code]true[/code], uses texture arrays instead of mipmaps for reflection "
 "probes and panorama backgrounds (sky). This reduces jitter noise on "
 "reflections, but costs more performance and memory."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1371
+#: doc/classes/ProjectSettings.xml:1381
 msgid ""
 "Lower-end override for [member rendering/quality/reflections/"
 "texture_array_reflections] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1374
+#: doc/classes/ProjectSettings.xml:1384
 msgid ""
 "If [code]true[/code], uses faster but lower-quality Blinn model to generate "
 "blurred reflections instead of the GGX model."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1377
+#: doc/classes/ProjectSettings.xml:1387
 msgid ""
 "Lower-end override for [member rendering/quality/shading/"
 "force_blinn_over_ggx] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1380
+#: doc/classes/ProjectSettings.xml:1390
 msgid ""
 "If [code]true[/code], uses faster but lower-quality Lambert material "
 "lighting model instead of Burley."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1383
+#: doc/classes/ProjectSettings.xml:1393
 msgid ""
 "Lower-end override for [member rendering/quality/shading/"
 "force_lambert_over_burley] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1386
+#: doc/classes/ProjectSettings.xml:1396
 msgid ""
 "If [code]true[/code], forces vertex shading for all rendering. This can "
 "increase performance a lot, but also reduces quality immensely. Can be used "
 "to optimize performance on low-end mobile devices."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1389
+#: doc/classes/ProjectSettings.xml:1399
 msgid ""
 "Lower-end override for [member rendering/quality/shading/"
 "force_vertex_shading] on mobile devices, due to performance concerns or "
 "driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1392
+#: doc/classes/ProjectSettings.xml:1402
 msgid ""
 "If [code]true[/code], enables new physical light attenuation for "
 "[OmniLight]s and [SpotLight]s. This results in more realistic lighting "
@@ -46090,7 +46166,7 @@ msgid ""
 "Changes to this setting will only be applied upon restarting the application."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1396
+#: doc/classes/ProjectSettings.xml:1406
 msgid ""
 "Size for cubemap into which the shadow is rendered before being copied into "
 "the shadow atlas. A higher number can result in higher resolution shadows "
@@ -46099,26 +46175,26 @@ msgid ""
 "size] will not result in a perceptible increase in visual quality."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1399 doc/classes/ProjectSettings.xml:1402
-#: doc/classes/ProjectSettings.xml:1405 doc/classes/ProjectSettings.xml:1408
+#: doc/classes/ProjectSettings.xml:1409 doc/classes/ProjectSettings.xml:1412
+#: doc/classes/ProjectSettings.xml:1415 doc/classes/ProjectSettings.xml:1418
 msgid ""
 "Subdivision quadrant size for shadow mapping. See shadow mapping "
 "documentation."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1411
+#: doc/classes/ProjectSettings.xml:1421
 msgid ""
 "Size for shadow atlas (used for OmniLights and SpotLights). See "
 "documentation."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1414
+#: doc/classes/ProjectSettings.xml:1424
 msgid ""
 "Lower-end override for [member rendering/quality/shadow_atlas/size] on "
 "mobile devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1417
+#: doc/classes/ProjectSettings.xml:1427
 msgid ""
 "Shadow filter mode. Higher-quality settings result in smoother shadows that "
 "flicker less when moving. \"Disabled\" is the fastest option, but also has "
@@ -46129,20 +46205,20 @@ msgid ""
 "shadow appearance similar to the one produced by the GLES3 backend."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1421
+#: doc/classes/ProjectSettings.xml:1431
 msgid ""
 "Lower-end override for [member rendering/quality/shadows/filter_mode] on "
 "mobile devices, due to performance concerns or driver support."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1424
+#: doc/classes/ProjectSettings.xml:1434
 msgid ""
 "Forces [MeshInstance] to always perform skinning on the CPU (applies to both "
 "GLES2 and GLES3).\n"
 "See also [member rendering/quality/skinning/software_skinning_fallback]."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1428
+#: doc/classes/ProjectSettings.xml:1438
 msgid ""
 "Allows [MeshInstance] to perform skinning on the CPU when the hardware "
 "doesn't support the default GPU skinning process with GLES2.\n"
@@ -46154,52 +46230,66 @@ msgid ""
 "already applied to the modelview matrix."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1434
+#: doc/classes/ProjectSettings.xml:1444
+msgid ""
+"Additional expansion applied to object bounds in the 3D rendering bounding "
+"volume hierarchy. This can reduce BVH processing at the cost of a slightly "
+"reduced accuracy.\n"
+"The default value will work well in most situations. A value of 0.0 will "
+"turn this optimization off, and larger values may work better for larger, "
+"faster moving objects.\n"
+"[b]Note:[/b] Used only if [member ProjectSettings.rendering/quality/"
+"spatial_partitioning/use_bvh] is enabled."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml:1449
 msgid ""
 "The rendering octree balance can be changed to favor smaller ([code]0[/"
 "code]), or larger ([code]1[/code]) branches.\n"
-"Larger branches can increase performance significantly in some projects."
+"Larger branches can increase performance significantly in some projects.\n"
+"[b]Note:[/b] Not used if [member ProjectSettings.rendering/quality/"
+"spatial_partitioning/use_bvh] is enabled."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1438
+#: doc/classes/ProjectSettings.xml:1454
 msgid ""
 "Enables the use of bounding volume hierarchy instead of octree for rendering "
 "spatial partitioning. This may give better performance."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1441
+#: doc/classes/ProjectSettings.xml:1457
 msgid ""
 "Improves quality of subsurface scattering, but cost significantly increases."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1444
+#: doc/classes/ProjectSettings.xml:1460
 msgid "Quality setting for subsurface scattering (samples taken)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1447
+#: doc/classes/ProjectSettings.xml:1463
 msgid "Max radius used for subsurface scattering samples."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1450
+#: doc/classes/ProjectSettings.xml:1466
 msgid ""
 "Weight subsurface scattering samples. Helps to avoid reading samples from "
 "unrelated parts of the screen."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1453
+#: doc/classes/ProjectSettings.xml:1469
 msgid ""
 "Use high-quality voxel cone tracing. This results in better-looking "
 "reflections, but is much more expensive on the GPU."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1456
+#: doc/classes/ProjectSettings.xml:1472
 msgid ""
 "Thread model for rendering. Rendering on a thread can vastly improve "
 "performance, but synchronizing to the main thread can cause a bit more "
 "jitter."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1459
+#: doc/classes/ProjectSettings.xml:1475
 msgid ""
 "If [code]true[/code], a thread safe version of BVH (bounding volume "
 "hierarchy) will be used in rendering and Godot physics.\n"
@@ -46207,7 +46297,7 @@ msgid ""
 "incorrect object visibility)."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1463
+#: doc/classes/ProjectSettings.xml:1479
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the BPTC algorithm. This texture compression algorithm is "
@@ -46220,7 +46310,7 @@ msgid ""
 "application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1467
+#: doc/classes/ProjectSettings.xml:1483
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the Ericsson Texture Compression algorithm. This algorithm "
@@ -46232,7 +46322,7 @@ msgid ""
 "application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1471
+#: doc/classes/ProjectSettings.xml:1487
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the Ericsson Texture Compression 2 algorithm. This texture "
@@ -46244,7 +46334,7 @@ msgid ""
 "application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1475
+#: doc/classes/ProjectSettings.xml:1491
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the PowerVR Texture Compression algorithm. This texture "
@@ -46256,7 +46346,7 @@ msgid ""
 "application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1479
+#: doc/classes/ProjectSettings.xml:1495
 msgid ""
 "If [code]true[/code], the texture importer will import VRAM-compressed "
 "textures using the S3 Texture Compression algorithm. This algorithm is only "
@@ -46268,7 +46358,7 @@ msgid ""
 "application/config/use_hidden_project_data_directory])."
 msgstr ""
 
-#: doc/classes/ProjectSettings.xml:1483
+#: doc/classes/ProjectSettings.xml:1499
 msgid ""
 "Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses (in "
 "pixels)."
@@ -48357,75 +48447,75 @@ msgid "Each list item has a filled circle marker."
 msgstr ""
 
 #: doc/classes/RichTextLabel.xml:371
-msgid "The font used for bold text."
-msgstr ""
-
-#: doc/classes/RichTextLabel.xml:374
-msgid "The font used for bold italics text."
-msgstr ""
-
-#: doc/classes/RichTextLabel.xml:377
 msgid "The default text color."
 msgstr ""
 
-#: doc/classes/RichTextLabel.xml:380
-msgid "The background The background used when the [RichTextLabel] is focused."
-msgstr ""
-
-#: doc/classes/RichTextLabel.xml:383
+#: doc/classes/RichTextLabel.xml:374
 msgid ""
 "The color of selected text, used when [member selection_enabled] is "
 "[code]true[/code]."
 msgstr ""
 
-#: doc/classes/RichTextLabel.xml:386
+#: doc/classes/RichTextLabel.xml:377
 msgid "The color of the font's shadow."
 msgstr ""
 
-#: doc/classes/RichTextLabel.xml:389
-msgid "The font used for italics text."
-msgstr ""
-
-#: doc/classes/RichTextLabel.xml:392
-msgid "The vertical space between lines."
-msgstr ""
-
-#: doc/classes/RichTextLabel.xml:395
-msgid "The font used for monospace text."
-msgstr ""
-
-#: doc/classes/RichTextLabel.xml:398
-msgid "The normal background for the [RichTextLabel]."
-msgstr ""
-
-#: doc/classes/RichTextLabel.xml:401
-msgid "The default text font."
-msgstr ""
-
-#: doc/classes/RichTextLabel.xml:404
+#: doc/classes/RichTextLabel.xml:380
 msgid "The color of the selection box."
 msgstr ""
 
-#: doc/classes/RichTextLabel.xml:407
+#: doc/classes/RichTextLabel.xml:383
+msgid "The vertical space between lines."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml:386
 msgid ""
 "Boolean value. If 1 ([code]true[/code]), the shadow will be displayed around "
 "the whole text as an outline."
 msgstr ""
 
-#: doc/classes/RichTextLabel.xml:410
+#: doc/classes/RichTextLabel.xml:389
 msgid "The horizontal offset of the font's shadow."
 msgstr ""
 
-#: doc/classes/RichTextLabel.xml:413
+#: doc/classes/RichTextLabel.xml:392
 msgid "The vertical offset of the font's shadow."
 msgstr ""
 
-#: doc/classes/RichTextLabel.xml:416
+#: doc/classes/RichTextLabel.xml:395
 msgid "The horizontal separation of elements in a table."
 msgstr ""
 
-#: doc/classes/RichTextLabel.xml:419
+#: doc/classes/RichTextLabel.xml:398
 msgid "The vertical separation of elements in a table."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml:401
+msgid "The font used for bold text."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml:404
+msgid "The font used for bold italics text."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml:407
+msgid "The font used for italics text."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml:410
+msgid "The font used for monospace text."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml:413
+msgid "The default text font."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml:416
+msgid "The background The background used when the [RichTextLabel] is focused."
+msgstr ""
+
+#: doc/classes/RichTextLabel.xml:419
+msgid "The normal background for the [RichTextLabel]."
 msgstr ""
 
 #: doc/classes/RID.xml:4
@@ -48559,10 +48649,6 @@ msgid ""
 "details about damping."
 msgstr ""
 
-#: doc/classes/RigidBody.xml:115
-msgid "RigidBody's rotational velocity."
-msgstr ""
-
 #: doc/classes/RigidBody.xml:118
 msgid "Lock the body's rotation in the X axis."
 msgstr ""
@@ -48665,10 +48751,10 @@ msgstr ""
 
 #: doc/classes/RigidBody.xml:169
 msgid ""
-"The body's linear velocity. Can be used sporadically, but [b]don't set this "
-"every frame[/b], because physics may run in another thread and runs at a "
-"different granularity. Use [method _integrate_forces] as your process loop "
-"for precise control of the body state."
+"The body's linear velocity in units per second. Can be used sporadically, "
+"but [b]don't set this every frame[/b], because physics may run in another "
+"thread and runs at a different granularity. Use [method _integrate_forces] "
+"as your process loop for precise control of the body state."
 msgstr ""
 
 #: doc/classes/RigidBody.xml:172 doc/classes/RigidBody2D.xml:149
@@ -48959,6 +49045,14 @@ msgid ""
 "Physics > 2d[/b].\n"
 "See [member ProjectSettings.physics/2d/default_linear_damp] for more details "
 "about damping."
+msgstr ""
+
+#: doc/classes/RigidBody2D.xml:146
+msgid ""
+"The body's linear velocity in pixels per second. Can be used sporadically, "
+"but [b]don't set this every frame[/b], because physics may run in another "
+"thread and runs at a different granularity. Use [method _integrate_forces] "
+"as your process loop for precise control of the body state."
 msgstr ""
 
 #: doc/classes/RigidBody2D.xml:152
@@ -50063,14 +50157,15 @@ msgid ""
 "    print(\"Timer started.\")\n"
 "    yield(get_tree().create_timer(1.0), \"timeout\")\n"
 "    print(\"Timer ended.\")\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"The timer will be automatically freed after its time elapses."
 msgstr ""
 
-#: doc/classes/SceneTreeTimer.xml:22
-msgid "The time remaining."
+#: doc/classes/SceneTreeTimer.xml:23
+msgid "The time remaining (in seconds)."
 msgstr ""
 
-#: doc/classes/SceneTreeTimer.xml:28 doc/classes/Timer.xml:61
+#: doc/classes/SceneTreeTimer.xml:29 doc/classes/Timer.xml:61
 msgid "Emitted when the timer reaches 0."
 msgstr ""
 
@@ -54895,16 +54990,20 @@ msgstr ""
 
 #: doc/classes/TabContainer.xml:7
 msgid ""
-"Sets the active tab's [code]visible[/code] property to the value [code]true[/"
-"code]. Sets all other children's to [code]false[/code].\n"
-"Ignores non-[Control] children."
+"Arranges [Control] children into a tabbed view, creating a tab for each one. "
+"The active tab's corresponding [Control] has its [code]visible[/code] "
+"property set to [code]true[/code], and all other children's to [code]false[/"
+"code].\n"
+"Ignores non-[Control] children.\n"
+"[b]Note:[/b] The drawing of the clickable tabs themselves is handled by this "
+"node. Adding [Tabs] as children is not needed."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:16
+#: doc/classes/TabContainer.xml:17
 msgid "Returns the child [Control] node located at the active tab index."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:22
+#: doc/classes/TabContainer.xml:23
 msgid ""
 "Returns the [Popup] node instance if one has been set already with [method "
 "set_popup].\n"
@@ -54913,225 +55012,225 @@ msgid ""
 "[member CanvasItem.visible] property."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:29 doc/classes/Tabs.xml:36
+#: doc/classes/TabContainer.xml:30 doc/classes/Tabs.xml:36
 msgid "Returns the previously active tab index."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:36
+#: doc/classes/TabContainer.xml:37
 msgid "Returns the [Control] node from the tab at index [code]tab_idx[/code]."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:42 doc/classes/Tabs.xml:48
+#: doc/classes/TabContainer.xml:43 doc/classes/Tabs.xml:48
 msgid "Returns the number of tabs."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:49 doc/classes/Tabs.xml:55
+#: doc/classes/TabContainer.xml:50 doc/classes/Tabs.xml:55
 msgid ""
 "Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is "
 "disabled."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:56
+#: doc/classes/TabContainer.xml:57
 msgid ""
 "Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is hidden."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:63 doc/classes/Tabs.xml:62
+#: doc/classes/TabContainer.xml:64 doc/classes/Tabs.xml:62
 msgid ""
 "Returns the [Texture] for the tab at index [code]tab_idx[/code] or "
 "[code]null[/code] if the tab has no [Texture]."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:70
+#: doc/classes/TabContainer.xml:71
 msgid ""
 "Returns the index of the tab at local coordinates [code]point[/code]. "
 "Returns [code]-1[/code] if the point is outside the control boundaries or if "
 "there's no tab at the queried position."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:77
+#: doc/classes/TabContainer.xml:78
 msgid ""
 "Returns the title of the tab at index [code]tab_idx[/code]. Tab titles "
 "default to the name of the indexed child node, but this can be overridden "
 "with [method set_tab_title]."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:83
+#: doc/classes/TabContainer.xml:84
 msgid "Returns the [TabContainer] rearrange group id."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:90
+#: doc/classes/TabContainer.xml:91
 msgid ""
 "If set on a [Popup] node instance, a popup menu icon appears in the top-"
 "right corner of the [TabContainer]. Clicking it will expand the [Popup] node."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:98 doc/classes/Tabs.xml:118
+#: doc/classes/TabContainer.xml:99 doc/classes/Tabs.xml:118
 msgid ""
 "If [code]disabled[/code] is [code]true[/code], disables the tab at index "
 "[code]tab_idx[/code], making it non-interactable."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:106
+#: doc/classes/TabContainer.xml:107
 msgid ""
 "If [code]hidden[/code] is [code]true[/code], hides the tab at index "
 "[code]tab_idx[/code], making it disappear from the tab area."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:114
+#: doc/classes/TabContainer.xml:115
 msgid "Sets an icon for the tab at index [code]tab_idx[/code]."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:122
+#: doc/classes/TabContainer.xml:123
 msgid ""
 "Sets a title for the tab at index [code]tab_idx[/code]. Tab titles default "
 "to the name of the indexed child node."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:129
+#: doc/classes/TabContainer.xml:130
 msgid ""
 "Defines rearrange group id, choose for each [TabContainer] the same value to "
 "enable tab drag between [TabContainer]. Enable drag with [member "
 "drag_to_rearrange_enabled]."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:135
+#: doc/classes/TabContainer.xml:136
 msgid ""
 "If [code]true[/code], all tabs are drawn in front of the panel. If "
 "[code]false[/code], inactive tabs are drawn behind the panel."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:138
+#: doc/classes/TabContainer.xml:139
 msgid ""
 "The current tab index. When set, this index's [Control] node's "
 "[code]visible[/code] property is set to [code]true[/code] and all others are "
 "set to [code]false[/code]."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:141 doc/classes/Tabs.xml:150
+#: doc/classes/TabContainer.xml:142 doc/classes/Tabs.xml:150
 msgid "If [code]true[/code], tabs can be rearranged with mouse drag."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:144
+#: doc/classes/TabContainer.xml:145
 msgid ""
 "The alignment of all tabs in the tab container. See the [enum TabAlign] "
 "constants for details."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:147
+#: doc/classes/TabContainer.xml:148
 msgid ""
 "If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content "
 "and titles are hidden."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:150
+#: doc/classes/TabContainer.xml:151
 msgid ""
 "If [code]true[/code], children [Control] nodes that are hidden have their "
 "minimum size take into account in the total, instead of only the currently "
 "visible one."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:156
+#: doc/classes/TabContainer.xml:157
 msgid ""
 "Emitted when the [TabContainer]'s [Popup] button is clicked. See [method "
 "set_popup] for details."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:162 doc/classes/Tabs.xml:178
+#: doc/classes/TabContainer.xml:163 doc/classes/Tabs.xml:178
 msgid "Emitted when switching to another tab."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:168
+#: doc/classes/TabContainer.xml:169
 msgid "Emitted when a tab is selected, even if it is the current tab."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:174 doc/classes/Tabs.xml:202
+#: doc/classes/TabContainer.xml:175 doc/classes/Tabs.xml:202
 msgid "Align the tabs to the left."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:177 doc/classes/Tabs.xml:205
+#: doc/classes/TabContainer.xml:178 doc/classes/Tabs.xml:205
 msgid "Align the tabs to the center."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:180 doc/classes/Tabs.xml:208
+#: doc/classes/TabContainer.xml:181 doc/classes/Tabs.xml:208
 msgid "Align the tabs to the right."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:185 doc/classes/Tabs.xml:237
+#: doc/classes/TabContainer.xml:186 doc/classes/Tabs.xml:228
+msgid "Font color of inactive tabs."
+msgstr ""
+
+#: doc/classes/TabContainer.xml:189 doc/classes/Tabs.xml:231
+msgid "Font color of disabled tabs."
+msgstr ""
+
+#: doc/classes/TabContainer.xml:192 doc/classes/Tabs.xml:234
+msgid "Font color of the currently selected tab."
+msgstr ""
+
+#: doc/classes/TabContainer.xml:195
+msgid "Horizontal separation between tabs."
+msgstr ""
+
+#: doc/classes/TabContainer.xml:202
+msgid "The space at the left and right edges of the tab bar."
+msgstr ""
+
+#: doc/classes/TabContainer.xml:207 doc/classes/Tabs.xml:246
+msgid "The font used to draw tab names."
+msgstr ""
+
+#: doc/classes/TabContainer.xml:210 doc/classes/Tabs.xml:252
 msgid ""
 "Icon for the left arrow button that appears when there are too many tabs to "
 "fit in the container width. When the button is disabled (i.e. the first tab "
 "is visible), it appears semi-transparent."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:188 doc/classes/Tabs.xml:240
+#: doc/classes/TabContainer.xml:213 doc/classes/Tabs.xml:255
 msgid ""
 "Icon for the left arrow button that appears when there are too many tabs to "
 "fit in the container width. Used when the button is being hovered with the "
 "cursor."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:191 doc/classes/Tabs.xml:243
-msgid "The font used to draw tab names."
-msgstr ""
-
-#: doc/classes/TabContainer.xml:194 doc/classes/Tabs.xml:246
-msgid "Font color of inactive tabs."
-msgstr ""
-
-#: doc/classes/TabContainer.xml:197 doc/classes/Tabs.xml:249
-msgid "Font color of disabled tabs."
-msgstr ""
-
-#: doc/classes/TabContainer.xml:200 doc/classes/Tabs.xml:252
-msgid "Font color of the currently selected tab."
-msgstr ""
-
-#: doc/classes/TabContainer.xml:203
-msgid "Horizontal separation between tabs."
-msgstr ""
-
-#: doc/classes/TabContainer.xml:206 doc/classes/Tabs.xml:258
+#: doc/classes/TabContainer.xml:216 doc/classes/Tabs.xml:258
 msgid ""
 "Icon for the right arrow button that appears when there are too many tabs to "
 "fit in the container width. When the button is disabled (i.e. the last tab "
 "is visible) it appears semi-transparent."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:209 doc/classes/Tabs.xml:261
+#: doc/classes/TabContainer.xml:219 doc/classes/Tabs.xml:261
 msgid ""
 "Icon for the right arrow button that appears when there are too many tabs to "
 "fit in the container width. Used when the button is being hovered with the "
 "cursor."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:216
+#: doc/classes/TabContainer.xml:222
 msgid "The icon for the menu button (see [method set_popup])."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:219
+#: doc/classes/TabContainer.xml:225
 msgid ""
 "The icon for the menu button (see [method set_popup]) when it's being "
 "hovered with the cursor."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:222
+#: doc/classes/TabContainer.xml:228
 msgid "The style for the background fill."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:225
-msgid "The space at the left and right edges of the tab bar."
-msgstr ""
-
-#: doc/classes/TabContainer.xml:228
+#: doc/classes/TabContainer.xml:231
 msgid "The style of inactive tabs."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:231
+#: doc/classes/TabContainer.xml:234
 msgid "The style of disabled tabs."
 msgstr ""
 
-#: doc/classes/TabContainer.xml:234 doc/classes/Tabs.xml:274
+#: doc/classes/TabContainer.xml:237 doc/classes/Tabs.xml:276
 msgid "The style of the currently selected tab."
 msgstr ""
 
@@ -55269,27 +55368,27 @@ msgstr ""
 msgid "Represents the size of the [enum CloseButtonDisplayPolicy] enum."
 msgstr ""
 
-#: doc/classes/Tabs.xml:228
-msgid "Background of the close button when it's being hovered with the cursor."
-msgstr ""
-
-#: doc/classes/Tabs.xml:231
-msgid "Background of the close button when it's being pressed."
-msgstr ""
-
-#: doc/classes/Tabs.xml:234
-msgid "The icon for the close button (see [member tab_close_display_policy])."
-msgstr ""
-
-#: doc/classes/Tabs.xml:255
+#: doc/classes/Tabs.xml:237
 msgid "The horizontal separation between the tabs."
 msgstr ""
 
-#: doc/classes/Tabs.xml:268
+#: doc/classes/Tabs.xml:249
+msgid "The icon for the close button (see [member tab_close_display_policy])."
+msgstr ""
+
+#: doc/classes/Tabs.xml:264
+msgid "Background of the close button when it's being hovered with the cursor."
+msgstr ""
+
+#: doc/classes/Tabs.xml:267
+msgid "Background of the close button when it's being pressed."
+msgstr ""
+
+#: doc/classes/Tabs.xml:270
 msgid "The style of an inactive tab."
 msgstr ""
 
-#: doc/classes/Tabs.xml:271
+#: doc/classes/Tabs.xml:273
 msgid "The style of a disabled tab"
 msgstr ""
 
@@ -55436,11 +55535,35 @@ msgstr ""
 msgid "Returns the text of a specific line."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:143
+#: doc/classes/TextEdit.xml:144
+msgid ""
+"Returns the line and column at the given position. In the returned vector, "
+"[code]x[/code] is the column, [code]y[/code] is the line."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:150
 msgid "Returns the amount of total lines in the text."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:149
+#: doc/classes/TextEdit.xml:156
+msgid "Returns the height of a largest line."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:164
+msgid ""
+"Returns the width in pixels of the [code]wrap_index[/code] on [code]line[/"
+"code]."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:171
+msgid "Returns the number of times the given line is wrapped."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:178
+msgid "Returns an array of [String]s representing each wrapped index."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:184
 msgid ""
 "Returns the [PopupMenu] of this [TextEdit]. By default, this menu is "
 "displayed when right-clicking on the [TextEdit].\n"
@@ -55449,99 +55572,128 @@ msgid ""
 "[member CanvasItem.visible] property."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:156
+#: doc/classes/TextEdit.xml:193
+msgid ""
+"Returns the local position for the given [code]line[/code] and [code]column[/"
+"code]. If [code]x[/code] or [code]y[/code] of the returned vector equal "
+"[code]-1[/code], the position is outside of the viewable area of the "
+"control.\n"
+"[b]Note:[/b] The Y position corresponds to the bottom side of the line. Use "
+"[method get_rect_at_line_column] to get the top side position."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:202
+msgid ""
+"Returns the local position and size for the grapheme at the given "
+"[code]line[/code] and [code]column[/code]. If [code]x[/code] or [code]y[/"
+"code] position of the returned rect equal [code]-1[/code], the position is "
+"outside of the viewable area of the control.\n"
+"[b]Note:[/b] The Y position of the returned rect corresponds to the top side "
+"of the line, unlike [method get_pos_at_line_column] which returns the bottom "
+"side."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:209
 msgid "Returns the selection begin column."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:162
+#: doc/classes/TextEdit.xml:215
 msgid "Returns the selection begin line."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:168
+#: doc/classes/TextEdit.xml:221
 msgid "Returns the text inside the selection."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:174
+#: doc/classes/TextEdit.xml:227
 msgid "Returns the selection end column."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:180
+#: doc/classes/TextEdit.xml:233
 msgid "Returns the selection end line."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:186
+#: doc/classes/TextEdit.xml:239
+msgid "Returns the total width of all gutters and internal padding."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:245
 msgid ""
 "Returns a [String] text with the word under the caret (text cursor) location."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:193
+#: doc/classes/TextEdit.xml:252
 msgid ""
 "Returns whether the specified [code]keyword[/code] has a color set to it or "
 "not."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:199 doc/classes/UndoRedo.xml:121
+#: doc/classes/TextEdit.xml:258 doc/classes/UndoRedo.xml:121
 msgid "Returns [code]true[/code] if a \"redo\" action is available."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:205 doc/classes/UndoRedo.xml:127
+#: doc/classes/TextEdit.xml:264 doc/classes/UndoRedo.xml:127
 msgid "Returns [code]true[/code] if an \"undo\" action is available."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:212
+#: doc/classes/TextEdit.xml:271
 msgid "Insert the specified text at the cursor position."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:219
+#: doc/classes/TextEdit.xml:278
 msgid "Returns whether the line at the specified index is folded or not."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:226
+#: doc/classes/TextEdit.xml:285
 msgid "Returns whether the line at the specified index is hidden or not."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:233
+#: doc/classes/TextEdit.xml:292
 msgid ""
 "Returns [code]true[/code] when the specified [code]line[/code] is bookmarked."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:240
+#: doc/classes/TextEdit.xml:299
 msgid ""
 "Returns [code]true[/code] when the specified [code]line[/code] has a "
 "breakpoint."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:247
+#: doc/classes/TextEdit.xml:306
 msgid ""
 "Returns [code]true[/code] when the specified [code]line[/code] is marked as "
 "safe."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:253
+#: doc/classes/TextEdit.xml:313
+msgid "Returns if the given line is wrapped."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:319
 msgid "Returns [code]true[/code] if the selection is active."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:260
+#: doc/classes/TextEdit.xml:326
 msgid ""
 "Triggers a right-click menu action by the specified index. See [enum "
 "MenuItems] for a list of available indexes."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:266
+#: doc/classes/TextEdit.xml:332
 msgid "Paste the current selection."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:272
+#: doc/classes/TextEdit.xml:338
 msgid "Perform redo operation."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:278
+#: doc/classes/TextEdit.xml:344
 msgid ""
 "Removes all the breakpoints. This will not fire the [signal "
 "breakpoint_toggled] signal."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:288
+#: doc/classes/TextEdit.xml:354
 msgid ""
 "Perform a search inside the text. Search flags can be specified in the [enum "
 "SearchFlags] enum.\n"
@@ -55557,314 +55709,318 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/TextEdit.xml:306
+#: doc/classes/TextEdit.xml:372
 msgid ""
 "Perform selection, from line/column to line/column.\n"
 "If [member selecting_enabled] is [code]false[/code], no selection will occur."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:313
+#: doc/classes/TextEdit.xml:379
 msgid ""
 "Select all the text.\n"
 "If [member selecting_enabled] is [code]false[/code], no selection will occur."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:322
+#: doc/classes/TextEdit.xml:388
 msgid "Sets the text for a specific line."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:330
+#: doc/classes/TextEdit.xml:396
 msgid ""
 "Bookmarks the [code]line[/code] if [code]bookmark[/code] is true. Deletes "
 "the bookmark if [code]bookmark[/code] is false.\n"
 "Bookmarks are shown in the [member breakpoint_gutter]."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:339
+#: doc/classes/TextEdit.xml:405
 msgid ""
 "Adds or removes the breakpoint in [code]line[/code]. Breakpoints are shown "
 "in the [member breakpoint_gutter]."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:347
+#: doc/classes/TextEdit.xml:413
 msgid "If [code]true[/code], hides the line of the specified index."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:355
+#: doc/classes/TextEdit.xml:421
 msgid ""
 "If [code]true[/code], marks the [code]line[/code] as safe.\n"
 "This will show the line number with the color provided in the "
 "[code]safe_line_number_color[/code] theme property."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:363
+#: doc/classes/TextEdit.xml:429
 msgid "Toggle the folding of the code block at the given line."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:369
+#: doc/classes/TextEdit.xml:435
 msgid "Perform undo operation."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:376
+#: doc/classes/TextEdit.xml:442
 msgid "Unfolds the given line, if folded."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:382
+#: doc/classes/TextEdit.xml:448
 msgid ""
 "Unhide all lines that were previously set to hidden by [method "
 "set_line_as_hidden]."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:388
+#: doc/classes/TextEdit.xml:454
+msgid "If [code]true[/code], the bookmark gutter is visible."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:457
 msgid "If [code]true[/code], the breakpoint gutter is visible."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:397
+#: doc/classes/TextEdit.xml:466
 msgid ""
 "If [code]true[/code], the caret displays as a rectangle.\n"
 "If [code]false[/code], the caret displays as a bar."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:401
+#: doc/classes/TextEdit.xml:470
 msgid ""
 "If [code]true[/code], a right-click moves the cursor at the mouse position "
 "before displaying the context menu.\n"
 "If [code]false[/code], the context menu disregards mouse location."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:405
+#: doc/classes/TextEdit.xml:474
 msgid "If [code]true[/code], a right-click displays the context menu."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:408
+#: doc/classes/TextEdit.xml:477
 msgid ""
 "If [code]true[/code], the \"space\" character will have a visible "
 "representation."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:411
+#: doc/classes/TextEdit.xml:480
 msgid ""
 "If [code]true[/code], the \"tab\" character will have a visible "
 "representation."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:415
+#: doc/classes/TextEdit.xml:484
 msgid ""
 "If [code]true[/code], the fold gutter is visible. This enables folding "
 "groups of indented lines."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:418
+#: doc/classes/TextEdit.xml:487
 msgid ""
 "If [code]true[/code], all lines that have been set to hidden by [method "
 "set_line_as_hidden], will not be visible."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:421
+#: doc/classes/TextEdit.xml:490
 msgid ""
 "If [code]true[/code], all occurrences of the selected text will be "
 "highlighted."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:424
+#: doc/classes/TextEdit.xml:493
 msgid "If [code]true[/code], the line containing the cursor is highlighted."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:427
+#: doc/classes/TextEdit.xml:496
 msgid ""
 "If [code]true[/code], a minimap is shown, providing an outline of your "
 "source code."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:430
+#: doc/classes/TextEdit.xml:499
 msgid "The width, in pixels, of the minimap."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:434
+#: doc/classes/TextEdit.xml:503
 msgid ""
 "If [code]true[/code], custom [code]font_color_selected[/code] will be used "
 "for selected text."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:437
+#: doc/classes/TextEdit.xml:506
 msgid ""
 "If [code]true[/code], read-only mode is enabled. Existing text cannot be "
 "modified and new text cannot be added."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:440
+#: doc/classes/TextEdit.xml:509
 msgid ""
 "If there is a horizontal scrollbar, this determines the current horizontal "
 "scroll value in pixels."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:443
+#: doc/classes/TextEdit.xml:512
 msgid ""
 "If there is a vertical scrollbar, this determines the current vertical "
 "scroll value in line numbers, starting at 0 for the top line."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:446
+#: doc/classes/TextEdit.xml:515
 msgid ""
 "If [code]true[/code], text can be selected.\n"
 "If [code]false[/code], text can not be selected by the user or by the "
 "[method select] or [method select_all] methods."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:450
+#: doc/classes/TextEdit.xml:519
 msgid ""
 "If [code]true[/code], shortcut keys for context menu items are enabled, even "
 "if the context menu is disabled."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:453
+#: doc/classes/TextEdit.xml:522
 msgid ""
 "If [code]true[/code], line numbers are displayed to the left of the text."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:456
+#: doc/classes/TextEdit.xml:525
 msgid ""
 "If [code]true[/code], sets the [code]step[/code] of the scrollbars to "
 "[code]0.25[/code] which results in smoother scrolling."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:459
+#: doc/classes/TextEdit.xml:528
 msgid ""
 "If [code]true[/code], any custom color properties that have been set for "
 "this [TextEdit] will be visible."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:462
+#: doc/classes/TextEdit.xml:531
 msgid "String value of the [TextEdit]."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:465
+#: doc/classes/TextEdit.xml:534
 msgid "Vertical scroll sensitivity."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:471
+#: doc/classes/TextEdit.xml:540
 msgid ""
 "If [code]true[/code], enables text wrapping when it goes beyond the edge of "
 "what is visible."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:478
+#: doc/classes/TextEdit.xml:547
 msgid "Emitted when a breakpoint is placed via the breakpoint gutter."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:483
+#: doc/classes/TextEdit.xml:552
 msgid "Emitted when the cursor changes."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:490
+#: doc/classes/TextEdit.xml:559
 msgid "Emitted when the info icon is clicked."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:512
+#: doc/classes/TextEdit.xml:581
 msgid "Match case when searching."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:515
+#: doc/classes/TextEdit.xml:584
 msgid "Match whole words when searching."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:518
+#: doc/classes/TextEdit.xml:587
 msgid "Search from end to beginning."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:521
+#: doc/classes/TextEdit.xml:590
 msgid "Used to access the result column from [method search]."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:524
+#: doc/classes/TextEdit.xml:593
 msgid "Used to access the result line from [method search]."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:533
+#: doc/classes/TextEdit.xml:602
 msgid ""
 "Pastes the clipboard text over the selected text (or at the cursor's "
 "position)."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:536
+#: doc/classes/TextEdit.xml:605
 msgid "Erases the whole [TextEdit] text."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:539
+#: doc/classes/TextEdit.xml:608
 msgid "Selects the whole [TextEdit] text."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:545
+#: doc/classes/TextEdit.xml:614
 msgid "Redoes the previous action."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:553
+#: doc/classes/TextEdit.xml:622
 msgid ""
 "Sets the background [Color] of this [TextEdit]. [member syntax_highlighting] "
 "has to be enabled."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:556
+#: doc/classes/TextEdit.xml:625
 msgid ""
 "Sets the [Color] of the bookmark marker. [member syntax_highlighting] has to "
 "be enabled."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:561 doc/classes/TextEdit.xml:588
+#: doc/classes/TextEdit.xml:630 doc/classes/TextEdit.xml:649
 msgid ""
 "Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be "
 "enabled."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:599
-msgid "Sets the default [Font]."
-msgstr ""
-
-#: doc/classes/TextEdit.xml:602
+#: doc/classes/TextEdit.xml:654
 msgid "Sets the font [Color]."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:607
+#: doc/classes/TextEdit.xml:659
 msgid ""
 "Sets the [Color] of the selected text. [member override_selected_font_color] "
 "has to be enabled."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:612
+#: doc/classes/TextEdit.xml:664
 msgid ""
 "Sets the [Color] of the line numbers. [member show_line_numbers] has to be "
 "enabled."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:615
-msgid "Sets the spacing between the lines."
-msgstr ""
-
-#: doc/classes/TextEdit.xml:618
+#: doc/classes/TextEdit.xml:667
 msgid "Sets the [Color] of marked text."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:623
-msgid "Sets the [StyleBox] of this [TextEdit]."
-msgstr ""
-
-#: doc/classes/TextEdit.xml:628
-msgid ""
-"Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled."
-msgstr ""
-
-#: doc/classes/TextEdit.xml:633
+#: doc/classes/TextEdit.xml:676
 msgid "Sets the highlight [Color] of text selections."
 msgstr ""
 
-#: doc/classes/TextEdit.xml:640
-msgid "Sets a custom [Texture] for tab text characters."
-msgstr ""
-
-#: doc/classes/TextEdit.xml:643
+#: doc/classes/TextEdit.xml:681
 msgid ""
 "Sets the highlight [Color] of multiple occurrences. [member "
 "highlight_all_occurrences] has to be enabled."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:690
+msgid "Sets the spacing between the lines."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:693
+msgid "Sets the default [Font]."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:702
+msgid "Sets a custom [Texture] for tab text characters."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:709
+msgid "Sets the [StyleBox] of this [TextEdit]."
+msgstr ""
+
+#: doc/classes/TextEdit.xml:712
+msgid ""
+"Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled."
 msgstr ""
 
 #: doc/classes/Texture.xml:4
@@ -57648,49 +57804,49 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ToolButton.xml:24
-msgid "[StyleBox] used when the [ToolButton] is disabled."
-msgstr ""
-
-#: doc/classes/ToolButton.xml:27
-msgid ""
-"[StyleBox] used when the [ToolButton] is focused. It is displayed over the "
-"current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
-"visual effect."
-msgstr ""
-
-#: doc/classes/ToolButton.xml:30
-msgid "[Font] of the [ToolButton]'s text."
-msgstr ""
-
-#: doc/classes/ToolButton.xml:33
 msgid "Default text [Color] of the [ToolButton]."
 msgstr ""
 
-#: doc/classes/ToolButton.xml:36
+#: doc/classes/ToolButton.xml:27
 msgid "Text [Color] used when the [ToolButton] is disabled."
 msgstr ""
 
-#: doc/classes/ToolButton.xml:39
+#: doc/classes/ToolButton.xml:30
 msgid ""
 "Text [Color] used when the [ToolButton] is focused. Only replaces the normal "
 "text color of the button. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
 
-#: doc/classes/ToolButton.xml:42
+#: doc/classes/ToolButton.xml:33
 msgid "Text [Color] used when the [ToolButton] is being hovered."
 msgstr ""
 
-#: doc/classes/ToolButton.xml:45
+#: doc/classes/ToolButton.xml:36
 msgid "Text [Color] used when the [ToolButton] is being pressed."
 msgstr ""
 
+#: doc/classes/ToolButton.xml:39
+msgid "The horizontal space between [ToolButton]'s icon and text."
+msgstr ""
+
+#: doc/classes/ToolButton.xml:42
+msgid "[Font] of the [ToolButton]'s text."
+msgstr ""
+
+#: doc/classes/ToolButton.xml:45
+msgid "[StyleBox] used when the [ToolButton] is disabled."
+msgstr ""
+
 #: doc/classes/ToolButton.xml:48
-msgid "[StyleBox] used when the [ToolButton] is being hovered."
+msgid ""
+"[StyleBox] used when the [ToolButton] is focused. It is displayed over the "
+"current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
+"visual effect."
 msgstr ""
 
 #: doc/classes/ToolButton.xml:51
-msgid "The horizontal space between [ToolButton]'s icon and text."
+msgid "[StyleBox] used when the [ToolButton] is being hovered."
 msgstr ""
 
 #: doc/classes/ToolButton.xml:54
@@ -57893,7 +58049,11 @@ msgstr ""
 #: doc/classes/Transform.xml:135
 msgid ""
 "Inverse-transforms the given [Vector3], [Plane], [AABB], or "
-"[PoolVector3Array] by this transform."
+"[PoolVector3Array] by this transform, under the assumption that the "
+"transformation is composed of rotation and translation (no scaling). "
+"Equivalent to calling [code]inverse().xform(v)[/code] on this transform. For "
+"affine transformations (e.g. with scaling) see [method affine_inverse] "
+"method."
 msgstr ""
 
 #: doc/classes/Transform.xml:141
@@ -58018,7 +58178,10 @@ msgstr ""
 #: doc/classes/Transform2D.xml:141
 msgid ""
 "Inverse-transforms the given [Vector2], [Rect2], or [PoolVector2Array] by "
-"this transform."
+"this transform, under the assumption that the transformation is composed of "
+"rotation and translation (no scaling). Equivalent to calling [code]inverse()."
+"xform(v)[/code] on this transform. For affine transformations (e.g. with "
+"scaling) see [method affine_inverse] method."
 msgstr ""
 
 #: doc/classes/Transform2D.xml:147
@@ -58503,168 +58666,168 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Tree.xml:359
-msgid "The arrow icon used when a foldable item is not collapsed."
-msgstr ""
-
-#: doc/classes/Tree.xml:362
-msgid "The arrow icon used when a foldable item is collapsed."
-msgstr ""
-
-#: doc/classes/Tree.xml:365
-msgid ""
-"Default [StyleBox] for the [Tree], i.e. used when the control is not being "
-"focused."
-msgstr ""
-
-#: doc/classes/Tree.xml:368
-msgid "[StyleBox] used when the [Tree] is being focused."
-msgstr ""
-
-#: doc/classes/Tree.xml:371
-msgid "The horizontal space between each button in a cell."
-msgstr ""
-
-#: doc/classes/Tree.xml:374
-msgid "[StyleBox] used when a button in the tree is pressed."
-msgstr ""
-
-#: doc/classes/Tree.xml:377
-msgid ""
-"The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode "
-"cell is checked."
-msgstr ""
-
-#: doc/classes/Tree.xml:380
-msgid "[StyleBox] used for the cursor, when the [Tree] is being focused."
-msgstr ""
-
-#: doc/classes/Tree.xml:383
-msgid "[StyleBox] used for the cursor, when the [Tree] is not being focused."
-msgstr ""
-
-#: doc/classes/Tree.xml:386
-msgid ""
-"Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell."
-msgstr ""
-
-#: doc/classes/Tree.xml:389
 msgid ""
 "Text [Color] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's "
 "hovered."
 msgstr ""
 
-#: doc/classes/Tree.xml:392
-msgid ""
-"[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's "
-"hovered."
-msgstr ""
-
-#: doc/classes/Tree.xml:395
-msgid ""
-"[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's "
-"pressed."
-msgstr ""
-
-#: doc/classes/Tree.xml:398
-msgid ""
-"Draws the guidelines if not zero, this acts as a boolean. The guideline is a "
-"horizontal line drawn at the bottom of each item."
-msgstr ""
-
-#: doc/classes/Tree.xml:401
-msgid ""
-"Draws the relationship lines if not zero, this acts as a boolean. "
-"Relationship lines are drawn at the start of child items to show hierarchy."
-msgstr ""
-
-#: doc/classes/Tree.xml:404
+#: doc/classes/Tree.xml:362
 msgid ""
 "[Color] used to draw possible drop locations. See [enum DropModeFlags] "
 "constants for further description of drop locations."
 msgstr ""
 
-#: doc/classes/Tree.xml:416
+#: doc/classes/Tree.xml:371
 msgid "[Color] of the guideline."
 msgstr ""
 
-#: doc/classes/Tree.xml:419
+#: doc/classes/Tree.xml:374
+msgid "[Color] of the relationship lines."
+msgstr ""
+
+#: doc/classes/Tree.xml:377
+msgid "Default text [Color] of the title button."
+msgstr ""
+
+#: doc/classes/Tree.xml:380
+msgid "The horizontal space between each button in a cell."
+msgstr ""
+
+#: doc/classes/Tree.xml:383
+msgid ""
+"Draws the guidelines if not zero, this acts as a boolean. The guideline is a "
+"horizontal line drawn at the bottom of each item."
+msgstr ""
+
+#: doc/classes/Tree.xml:386
+msgid ""
+"Draws the relationship lines if not zero, this acts as a boolean. "
+"Relationship lines are drawn at the start of child items to show hierarchy."
+msgstr ""
+
+#: doc/classes/Tree.xml:389
 msgid ""
 "The horizontal space between item cells. This is also used as the margin at "
 "the start of an item when folding is disabled."
 msgstr ""
 
-#: doc/classes/Tree.xml:422
+#: doc/classes/Tree.xml:392
 msgid ""
 "The horizontal margin at the start of an item. This is used when folding is "
 "enabled for the item."
 msgstr ""
 
-#: doc/classes/Tree.xml:425
-msgid "[Color] of the relationship lines."
-msgstr ""
-
-#: doc/classes/Tree.xml:428
+#: doc/classes/Tree.xml:395
 msgid ""
 "The maximum distance between the mouse cursor and the control's border to "
 "trigger border scrolling when dragging."
 msgstr ""
 
-#: doc/classes/Tree.xml:431
+#: doc/classes/Tree.xml:398
 msgid "The speed of border scrolling."
 msgstr ""
 
-#: doc/classes/Tree.xml:434
+#: doc/classes/Tree.xml:401
+msgid ""
+"The vertical padding inside each item, i.e. the distance between the item's "
+"content and top/bottom border."
+msgstr ""
+
+#: doc/classes/Tree.xml:407
+msgid "[Font] of the title button's text."
+msgstr ""
+
+#: doc/classes/Tree.xml:410
+msgid "The arrow icon used when a foldable item is not collapsed."
+msgstr ""
+
+#: doc/classes/Tree.xml:413
+msgid "The arrow icon used when a foldable item is collapsed."
+msgstr ""
+
+#: doc/classes/Tree.xml:416
+msgid ""
+"The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode "
+"cell is checked."
+msgstr ""
+
+#: doc/classes/Tree.xml:419
 msgid ""
 "The arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode "
 "cell."
 msgstr ""
 
-#: doc/classes/Tree.xml:437
-msgid ""
-"[StyleBox] for the selected items, used when the [Tree] is not being focused."
-msgstr ""
-
-#: doc/classes/Tree.xml:440
-msgid ""
-"[StyleBox] for the selected items, used when the [Tree] is being focused."
-msgstr ""
-
-#: doc/classes/Tree.xml:443
-msgid "Default text [Color] of the title button."
-msgstr ""
-
-#: doc/classes/Tree.xml:446
-msgid "[Font] of the title button's text."
-msgstr ""
-
-#: doc/classes/Tree.xml:449
-msgid "[StyleBox] used when the title button is being hovered."
-msgstr ""
-
-#: doc/classes/Tree.xml:452
-msgid "Default [StyleBox] for the title button."
-msgstr ""
-
-#: doc/classes/Tree.xml:455
-msgid "[StyleBox] used when the title button is being pressed."
-msgstr ""
-
-#: doc/classes/Tree.xml:458
+#: doc/classes/Tree.xml:422
 msgid ""
 "The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode "
 "cell is unchecked."
 msgstr ""
 
-#: doc/classes/Tree.xml:461
+#: doc/classes/Tree.xml:425
 msgid ""
 "The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] "
 "mode cell."
 msgstr ""
 
-#: doc/classes/Tree.xml:464
+#: doc/classes/Tree.xml:428
 msgid ""
-"The vertical padding inside each item, i.e. the distance between the item's "
-"content and top/bottom border."
+"Default [StyleBox] for the [Tree], i.e. used when the control is not being "
+"focused."
+msgstr ""
+
+#: doc/classes/Tree.xml:431
+msgid "[StyleBox] used when the [Tree] is being focused."
+msgstr ""
+
+#: doc/classes/Tree.xml:434
+msgid "[StyleBox] used when a button in the tree is pressed."
+msgstr ""
+
+#: doc/classes/Tree.xml:437
+msgid "[StyleBox] used for the cursor, when the [Tree] is being focused."
+msgstr ""
+
+#: doc/classes/Tree.xml:440
+msgid "[StyleBox] used for the cursor, when the [Tree] is not being focused."
+msgstr ""
+
+#: doc/classes/Tree.xml:443
+msgid ""
+"Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell."
+msgstr ""
+
+#: doc/classes/Tree.xml:446
+msgid ""
+"[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's "
+"hovered."
+msgstr ""
+
+#: doc/classes/Tree.xml:449
+msgid ""
+"[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's "
+"pressed."
+msgstr ""
+
+#: doc/classes/Tree.xml:452
+msgid ""
+"[StyleBox] for the selected items, used when the [Tree] is not being focused."
+msgstr ""
+
+#: doc/classes/Tree.xml:455
+msgid ""
+"[StyleBox] for the selected items, used when the [Tree] is being focused."
+msgstr ""
+
+#: doc/classes/Tree.xml:458
+msgid "[StyleBox] used when the title button is being hovered."
+msgstr ""
+
+#: doc/classes/Tree.xml:461
+msgid "Default [StyleBox] for the title button."
+msgstr ""
+
+#: doc/classes/Tree.xml:464
+msgid "[StyleBox] used when the title button is being pressed."
 msgstr ""
 
 #: doc/classes/TreeItem.xml:4
@@ -61003,12 +61166,14 @@ msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
 
 #: doc/classes/Viewport.xml:28
 msgid ""
-"Returns the 3D world of the viewport, or if none the world of the parent "
-"viewport."
+"Returns the first valid [World] for this viewport, searching the [member "
+"world] property of itself and any Viewport ancestor."
 msgstr ""
 
 #: doc/classes/Viewport.xml:34
-msgid "Returns the 2D world of the viewport."
+msgid ""
+"Returns the first valid [World2D] for this viewport, searching the [member "
+"world_2d] property of itself and any Viewport ancestor."
 msgstr ""
 
 #: doc/classes/Viewport.xml:40
@@ -68292,7 +68457,7 @@ msgid ""
 "using the [member ScrollBar.custom_step] property."
 msgstr ""
 
-#: doc/classes/VScrollBar.xml:39
+#: doc/classes/VScrollBar.xml:30
 msgid ""
 "Icon used as a button to scroll the [ScrollBar] down. Supports custom step "
 "using the [member ScrollBar.custom_step] property."
@@ -68332,11 +68497,11 @@ msgid ""
 "signals are part of the [Range] class which this class inherits from."
 msgstr ""
 
-#: doc/classes/VSlider.xml:25
+#: doc/classes/VSlider.xml:34
 msgid "The background of the area below the grabber."
 msgstr ""
 
-#: doc/classes/VSlider.xml:36
+#: doc/classes/VSlider.xml:39
 msgid ""
 "The background for the whole slider. Determines the width of the "
 "[code]grabber_area[/code]."
@@ -69441,41 +69606,41 @@ msgid "The text displayed in the window's title bar."
 msgstr ""
 
 #: doc/classes/WindowDialog.xml:32
-msgid "The icon for the close button."
+msgid "The color of the title text."
 msgstr ""
 
 #: doc/classes/WindowDialog.xml:35
 msgid "The horizontal offset of the close button."
 msgstr ""
 
-#: doc/classes/WindowDialog.xml:38
-msgid ""
-"The icon used for the close button when it's hovered with the mouse cursor."
-msgstr ""
-
-#: doc/classes/WindowDialog.xml:44
-msgid ""
-"The style for both the content background of the [WindowDialog] and the "
-"title bar. The title bar is created with a top border and an expand margin "
-"using the [code]panel[/code] stylebox."
-msgstr ""
-
-#: doc/classes/WindowDialog.xml:47
+#: doc/classes/WindowDialog.xml:41
 msgid ""
 "The thickness of the border that can be dragged when scaling the window (if "
 "[member resizable] is enabled)."
 msgstr ""
 
-#: doc/classes/WindowDialog.xml:50
-msgid "The color of the title text."
+#: doc/classes/WindowDialog.xml:44
+msgid "The vertical offset of the title text."
 msgstr ""
 
-#: doc/classes/WindowDialog.xml:53
+#: doc/classes/WindowDialog.xml:47
 msgid "The font used to draw the title."
 msgstr ""
 
+#: doc/classes/WindowDialog.xml:50
+msgid "The icon for the close button."
+msgstr ""
+
+#: doc/classes/WindowDialog.xml:53
+msgid ""
+"The icon used for the close button when it's hovered with the mouse cursor."
+msgstr ""
+
 #: doc/classes/WindowDialog.xml:56
-msgid "The vertical offset of the title text."
+msgid ""
+"The style for both the content background of the [WindowDialog] and the "
+"title bar. The title bar is created with a top border and an expand margin "
+"using the [code]panel[/code] stylebox."
 msgstr ""
 
 #: doc/classes/World.xml:4
