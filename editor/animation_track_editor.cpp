@@ -650,7 +650,7 @@ public:
 						List<StringName> anims;
 						ap->get_animation_list(&anims);
 						for (const StringName &E : anims) {
-							if (animations != String()) {
+							if (!animations.is_empty()) {
 								animations += ",";
 							}
 
@@ -659,7 +659,7 @@ public:
 					}
 				}
 
-				if (animations != String()) {
+				if (!animations.is_empty()) {
 					animations += ",";
 				}
 				animations += "[stop]";
@@ -1332,7 +1332,7 @@ public:
 							List<StringName> anims;
 							ap->get_animation_list(&anims);
 							for (List<StringName>::Element *G = anims.front(); G; G = G->next()) {
-								if (animations != String()) {
+								if (!animations.is_empty()) {
 									animations += ",";
 								}
 
@@ -1341,7 +1341,7 @@ public:
 						}
 					}
 
-					if (animations != String()) {
+					if (!animations.is_empty()) {
 						animations += ",";
 					}
 					animations += "[stop]";
@@ -2665,7 +2665,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					if (stream.is_valid()) {
 						if (stream->get_path().is_resource_file()) {
 							stream_name = stream->get_path().get_file();
-						} else if (stream->get_name() != "") {
+						} else if (!stream->get_name().is_empty()) {
 							stream_name = stream->get_name();
 						} else {
 							stream_name = stream->get_class();
@@ -3657,7 +3657,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 
 	// Let's build a node path.
 	String path = root->get_path_to(p_node);
-	if (p_sub != "") {
+	if (!p_sub.is_empty()) {
 		path += ":" + p_sub;
 	}
 
@@ -3697,7 +3697,7 @@ bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const 
 
 	// Let's build a node path.
 	String path = root->get_path_to(p_node);
-	if (p_sub != "") {
+	if (!p_sub.is_empty()) {
 		path += ":" + p_sub;
 	}
 
@@ -3762,7 +3762,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	EditorHistory *history = EditorNode::get_singleton()->get_editor_history();
 	for (int i = 1; i < history->get_path_size(); i++) {
 		String prop = history->get_path_property(i);
-		ERR_FAIL_COND(prop == "");
+		ERR_FAIL_COND(prop.is_empty());
 		path += ":" + prop;
 	}
 
@@ -3862,7 +3862,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 
 	for (int i = 1; i < history->get_path_size(); i++) {
 		String prop = history->get_path_property(i);
-		ERR_FAIL_COND(prop == "");
+		ERR_FAIL_COND(prop.is_empty());
 		path += ":" + prop;
 	}
 
@@ -6021,7 +6021,7 @@ void AnimationTrackEditor::_pick_track_select_recursive(TreeItem *p_item, const 
 	NodePath np = p_item->get_metadata(0);
 	Node *node = get_node(np);
 
-	if (p_filter != String() && ((String)node->get_name()).findn(p_filter) != -1) {
+	if (!p_filter.is_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
 		p_select_candidates.push_back(node);
 	}
 

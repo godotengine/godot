@@ -2239,7 +2239,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 					ep->property_usage = 0;
 				}
 
-				if (F.label != String()) {
+				if (!F.label.is_empty()) {
 					ep->set_label(F.label);
 				}
 
@@ -2438,7 +2438,7 @@ void EditorInspector::update_tree() {
 				}
 			}
 			if (category->icon.is_null()) {
-				if (type != String()) { // Can happen for built-in scripts.
+				if (!type.is_empty()) { // Can happen for built-in scripts.
 					category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
 				}
 			}
@@ -2459,7 +2459,7 @@ void EditorInspector::update_tree() {
 					class_descr_cache[type2] = descr;
 				}
 
-				category->set_tooltip(p.name + "::" + (class_descr_cache[type2] == "" ? "" : class_descr_cache[type2]));
+				category->set_tooltip(p.name + "::" + (class_descr_cache[type2].is_empty() ? "" : class_descr_cache[type2]));
 			}
 
 			// Add editors at the start of a category.
@@ -2529,7 +2529,7 @@ void EditorInspector::update_tree() {
 			}
 		} else {
 			// Check if we exit or not a subgroup. If there is a prefix, remove it from the property label string.
-			if (subgroup != "" && subgroup_base != "") {
+			if (!subgroup.is_empty() && !subgroup_base.is_empty()) {
 				if (path.begins_with(subgroup_base)) {
 					path = path.trim_prefix(subgroup_base);
 				} else if (subgroup_base.begins_with(path)) {
@@ -2540,7 +2540,7 @@ void EditorInspector::update_tree() {
 			}
 
 			// Check if we exit or not a group. If there is a prefix, remove it from the property label string.
-			if (group != "" && group_base != "" && subgroup == "") {
+			if (!group.is_empty() && !group_base.is_empty() && subgroup.is_empty()) {
 				if (path.begins_with(group_base)) {
 					path = path.trim_prefix(group_base);
 				} else if (group_base.begins_with(path)) {
@@ -2552,10 +2552,10 @@ void EditorInspector::update_tree() {
 			}
 
 			// Add the group and subgroup to the path.
-			if (subgroup != "") {
+			if (!subgroup.is_empty()) {
 				path = subgroup + "/" + path;
 			}
-			if (group != "") {
+			if (!group.is_empty()) {
 				path = group + "/" + path;
 			}
 		}
@@ -2584,7 +2584,7 @@ void EditorInspector::update_tree() {
 		}
 
 		// Ignore properties that do not fit the filter.
-		if (use_filter && filter != "") {
+		if (use_filter && !filter.is_empty()) {
 			if (!filter.is_subsequence_ofi(path) && !filter.is_subsequence_ofi(property_label_string) && property_prefix.to_lower().find(filter.to_lower()) == -1) {
 				continue;
 			}
@@ -2707,7 +2707,7 @@ void EditorInspector::update_tree() {
 
 			// Get the class name.
 			StringName classname = object->get_class_name();
-			if (object_class != String()) {
+			if (!object_class.is_empty()) {
 				classname = object_class;
 			}
 
@@ -2729,7 +2729,7 @@ void EditorInspector::update_tree() {
 				// Build the property description String and add it to the cache.
 				DocTools *dd = EditorHelp::get_doc_data();
 				Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(classname);
-				while (F && descr == String()) {
+				while (F && descr.is_empty()) {
 					for (int i = 0; i < F->get().properties.size(); i++) {
 						if (F->get().properties[i].name == propname.operator String()) {
 							descr = DTR(F->get().properties[i].description);
@@ -2781,7 +2781,7 @@ void EditorInspector::update_tree() {
 							//and set label?
 						}
 
-						if (F.label != String()) {
+						if (!F.label.is_empty()) {
 							ep->set_label(F.label);
 						} else {
 							// Use the existing one.
@@ -2820,7 +2820,7 @@ void EditorInspector::update_tree() {
 					ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
 					ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), varray(), CONNECT_DEFERRED);
 					ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
-					if (doc_hint != String()) {
+					if (!doc_hint.is_empty()) {
 						ep->set_tooltip(property_prefix + p.name + "::" + doc_hint);
 					} else {
 						ep->set_tooltip(property_prefix + p.name);
@@ -3050,7 +3050,7 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 		return;
 	}
 
-	if (p_property == String()) {
+	if (p_property.is_empty()) {
 		update_tree_pending = true;
 	} else {
 		pending.insert(p_property);

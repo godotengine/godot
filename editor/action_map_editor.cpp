@@ -761,7 +761,7 @@ void ActionMapEditor::_add_action_pressed() {
 }
 
 void ActionMapEditor::_add_action(const String &p_name) {
-	if (p_name == "" || !_is_action_name_valid(p_name)) {
+	if (p_name.is_empty() || !_is_action_name_valid(p_name)) {
 		show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 		return;
 	}
@@ -785,7 +785,7 @@ void ActionMapEditor::_action_edited() {
 			return;
 		}
 
-		if (new_name == "" || !_is_action_name_valid(new_name)) {
+		if (new_name.is_empty() || !_is_action_name_valid(new_name)) {
 			ti->set_text(0, old_name);
 			show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 			return;

@@ -79,7 +79,7 @@ void ScriptEditorDebugger::_put_msg(String p_message, Array p_data) {
 
 void ScriptEditorDebugger::debug_copy() {
 	String msg = reason->get_text();
-	if (msg == "") {
+	if (msg.is_empty()) {
 		return;
 	}
 	DisplayServer::get_singleton()->clipboard_set(msg);
@@ -312,7 +312,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (is_move_to_foreground()) {
 			DisplayServer::get_singleton()->window_move_to_foreground();
 		}
-		if (error != "") {
+		if (!error.is_empty()) {
 			tabs->set_current_tab(0);
 		}
 		profiler->set_enabled(false);
@@ -1083,7 +1083,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 
 	Resource *res = Object::cast_to<Resource>(p_base);
 
-	if (res && res->get_path() != String()) {
+	if (res && !res->get_path().is_empty()) {
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
@@ -1113,7 +1113,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
 		if (p_value.is_ref()) {
 			Ref<Resource> res = p_value;
-			if (res.is_valid() && res->get_path() != String()) {
+			if (res.is_valid() && !res->get_path().is_empty()) {
 				Array msg;
 				msg.push_back(pathid);
 				msg.push_back(p_property);
@@ -1133,13 +1133,13 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
 	Resource *res = Object::cast_to<Resource>(p_base);
 
-	if (res && res->get_path() != String()) {
+	if (res && !res->get_path().is_empty()) {
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
 		if (p_value.is_ref()) {
 			Ref<Resource> res2 = p_value;
-			if (res2.is_valid() && res2->get_path() != String()) {
+			if (res2.is_valid() && !res2->get_path().is_empty()) {
 				Array msg;
 				msg.push_back(pathid);
 				msg.push_back(p_property);

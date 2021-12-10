@@ -372,7 +372,7 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 
 void ShaderGlobalsEditor::_variable_added() {
 	String var = variable_name->get_text().strip_edges();
-	if (var == "" || !var.is_valid_identifier()) {
+	if (var.is_empty() || !var.is_valid_identifier()) {
 		EditorNode::get_singleton()->show_warning(TTR("Please specify a valid variable identifier name."));
 		return;
 	}

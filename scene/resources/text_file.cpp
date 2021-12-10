@@ -33,7 +33,7 @@
 #include "core/io/file_access.h"
 
 bool TextFile::has_text() const {
-	return text != "";
+	return !text.is_empty();
 }
 
 String TextFile::get_text() const {

@@ -438,7 +438,7 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 		return;
 	}
 
-	if (base_name == String()) {
+	if (base_name.is_empty()) {
 		base_name = node->get_class().replace_first("AnimationNode", "");
 	}
 
@@ -927,7 +927,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 		if (error != error_label->get_text()) {
 			error_label->set_text(error);
-			if (error != String()) {
+			if (!error.is_empty()) {
 				error_panel->show();
 			} else {
 				error_panel->hide();
@@ -1059,7 +1059,7 @@ void AnimationNodeStateMachineEditor::_removed_from_graph() {
 void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	const String &new_name = p_text;
 
-	ERR_FAIL_COND(new_name == "" || new_name.find(".") != -1 || new_name.find("/") != -1);
+	ERR_FAIL_COND(new_name.is_empty() || new_name.find(".") != -1 || new_name.find("/") != -1);
 
 	if (new_name == prev_name) {
 		return; // Nothing to do.

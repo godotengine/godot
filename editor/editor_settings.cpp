@@ -389,14 +389,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 				best = locale;
 			}
 
-			if (best == String() && host_lang.begins_with(locale)) {
+			if (best.is_empty() && host_lang.begins_with(locale)) {
 				best = locale;
 			}
 
 			etl++;
 		}
 
-		if (best == String()) {
+		if (best.is_empty()) {
 			best = "en";
 		}
 
@@ -989,7 +989,7 @@ void EditorSettings::setup_network() {
 		if (ip == current) {
 			selected = ip;
 		}
-		if (hint != "") {
+		if (!hint.is_empty()) {
 			hint += ",";
 		}
 		hint += ip;
@@ -1008,7 +1008,7 @@ void EditorSettings::save() {
 		return;
 	}
 
-	if (singleton->config_file_path == "") {
+	if (singleton->config_file_path.is_empty()) {
 		ERR_PRINT("Cannot save EditorSettings config, no valid path");
 		return;
 	}
@@ -1218,7 +1218,7 @@ void EditorSettings::load_favorites() {
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
-		while (line != "") {
+		while (!line.is_empty()) {
 			favorites.push_back(line);
 			line = f->get_line().strip_edges();
 		}
@@ -1228,7 +1228,7 @@ void EditorSettings::load_favorites() {
 	f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
-		while (line != "") {
+		while (!line.is_empty()) {
 			recent_dirs.push_back(line);
 			line = f->get_line().strip_edges();
 		}
@@ -1252,7 +1252,7 @@ void EditorSettings::list_text_editor_themes() {
 		List<String> custom_themes;
 		d->list_dir_begin();
 		String file = d->get_next();
-		while (file != String()) {
+		while (!file.is_empty()) {
 			if (file.get_extension() == "tet" && !_is_default_text_editor_theme(file.get_basename().to_lower())) {
 				custom_themes.push_back(file.get_basename());
 			}
@@ -1371,7 +1371,7 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
-		while (file != String()) {
+		while (!file.is_empty()) {
 			if (file.get_extension() == p_extension) {
 				templates.push_back(file.get_basename());
 			}

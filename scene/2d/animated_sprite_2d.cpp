@@ -128,7 +128,7 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
 		}
 
 		if (!current_found) {
-			if (property.hint_string == String()) {
+			if (property.hint_string.is_empty()) {
 				property.hint_string = String(animation);
 			} else {
 				property.hint_string = String(animation) + "," + property.hint_string;

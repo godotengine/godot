@@ -232,8 +232,7 @@ bool PluginScript::instance_has(const Object *p_this) const {
 }
 
 bool PluginScript::has_source_code() const {
-	bool has = _source != "";
-	return has;
+	return !_source.is_empty();
 }
 
 String PluginScript::get_source_code() const {
@@ -257,11 +256,11 @@ Error PluginScript::reload(bool p_keep_state) {
 	_valid = false;
 	String basedir = _path;
 
-	if (basedir == "") {
+	if (basedir.is_empty()) {
 		basedir = get_path();
 	}
 
-	if (basedir != "") {
+	if (!basedir.is_empty()) {
 		basedir = basedir.get_base_dir();
 	}
 

@@ -97,7 +97,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 
 	error_text->push_font(get_theme_font(SNAME("source"), SNAME("EditorFonts")));
 
-	if (error == String()) {
+	if (error.is_empty()) {
 		error_text->add_text(TTR("Shader stage compiled without errors."));
 	} else {
 		error_text->add_text(error);
@@ -107,7 +107,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 void ShaderFileEditor::_update_options() {
 	ERR_FAIL_COND(shader_file.is_null());
 
-	if (shader_file->get_base_error() != String()) {
+	if (!shader_file->get_base_error().is_empty()) {
 		stage_hb->hide();
 		versions->hide();
 		error_text->clear();
@@ -136,7 +136,7 @@ void ShaderFileEditor::_update_options() {
 
 	for (int i = 0; i < version_list.size(); i++) {
 		String title = version_list[i];
-		if (title == "") {
+		if (title.is_empty()) {
 			title = "default";
 		}
 
@@ -148,7 +148,7 @@ void ShaderFileEditor::_update_options() {
 		bool failed = false;
 		for (int j = 0; j < RD::SHADER_STAGE_MAX; j++) {
 			String error = bytecode->get_stage_compile_error(RD::ShaderStage(j));
-			if (error != String()) {
+			if (!error.is_empty()) {
 				failed = true;
 			}
 		}
@@ -182,7 +182,7 @@ void ShaderFileEditor::_update_options() {
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		Vector<uint8_t> bc = bytecode->get_stage_bytecode(RD::ShaderStage(i));
 		String error = bytecode->get_stage_compile_error(RD::ShaderStage(i));
-		bool disable = error == String() && bc.is_empty();
+		bool disable = error.is_empty() && bc.is_empty();
 		stages[i]->set_disabled(disable);
 		if (!disable) {
 			if (stages[i]->is_pressed()) {

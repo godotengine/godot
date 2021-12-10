@@ -397,7 +397,7 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 		}
 	}
 
-	if (library_path == String()) {
+	if (library_path.is_empty()) {
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}

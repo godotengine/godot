@@ -52,7 +52,7 @@ void EditorResourcePicker::_update_resource() {
 	} else {
 		assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
 
-		if (edited_resource->get_name() != String()) {
+		if (!edited_resource->get_name().is_empty()) {
 			assign_button->set_text(edited_resource->get_name());
 		} else if (edited_resource->get_path().is_resource_file()) {
 			assign_button->set_text(edited_resource->get_path().get_file());
@@ -113,7 +113,7 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	RES loaded_resource = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + p_path + "'.");
 
-	if (base_type != "") {
+	if (!base_type.is_empty()) {
 		bool any_type_matches = false;
 
 		for (int i = 0; i < base_type.get_slice_count(","); i++) {
@@ -180,7 +180,7 @@ void EditorResourcePicker::_update_menu_items() {
 	RES cb = EditorSettings::get_singleton()->get_resource_clipboard();
 	bool paste_valid = false;
 	if (cb.is_valid()) {
-		if (base_type == "") {
+		if (base_type.is_empty()) {
 			paste_valid = true;
 		} else {
 			for (int i = 0; i < base_type.get_slice_count(","); i++) {
@@ -391,7 +391,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	}
 
 	// By default provide generic "New ..." options.
-	if (base_type != "") {
+	if (!base_type.is_empty()) {
 		int idx = 0;
 
 		Set<String> allowed_types;
@@ -571,7 +571,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 			String file = files[0];
 
 			String file_type = EditorFileSystem::get_singleton()->get_file_type(file);
-			if (file_type != "" && _is_type_valid(file_type, allowed_types)) {
+			if (!file_type.is_empty() && _is_type_valid(file_type, allowed_types)) {
 				return true;
 			}
 		}

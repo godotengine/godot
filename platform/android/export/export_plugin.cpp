@@ -307,7 +307,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 						}
 					}
 
-					if (d.description == "") {
+					if (d.description.is_empty()) {
 						//in the oven, request!
 						args.clear();
 						args.push_back("-s");
@@ -356,7 +356,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 						}
 
 						d.name = vendor + " " + device;
-						if (device == String()) {
+						if (device.is_empty()) {
 							continue;
 						}
 					}
@@ -394,13 +394,13 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 
 String EditorExportPlatformAndroid::get_project_name(const String &p_name) const {
 	String aname;
-	if (p_name != "") {
+	if (!p_name.is_empty()) {
 		aname = p_name;
 	} else {
 		aname = ProjectSettings::get_singleton()->get("application/config/name");
 	}
 
-	if (aname == "") {
+	if (aname.is_empty()) {
 		aname = VERSION_NAME;
 	}
 
@@ -424,7 +424,7 @@ String EditorExportPlatformAndroid::get_package_name(const String &p_package) co
 			first = false;
 		}
 	}
-	if (name == "") {
+	if (name.is_empty()) {
 		name = "noname";
 	}
 
@@ -581,7 +581,7 @@ Vector<String> EditorExportPlatformAndroid::list_gdap_files(const String &p_path
 		da->list_dir_begin();
 		while (true) {
 			String file = da->get_next();
-			if (file == "") {
+			if (file.is_empty()) {
 				break;
 			}
 
@@ -2108,7 +2108,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	}
 
 	String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
-	if (sdk_path == "") {
+	if (sdk_path.is_empty()) {
 		err += TTR("A valid Android SDK path is required in Editor Settings.") + "\n";
 		valid = false;
 	} else {
@@ -2155,7 +2155,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	if (apk_expansion) {
 		String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
-		if (apk_expansion_pkey == "") {
+		if (apk_expansion_pkey.is_empty()) {
 			valid = false;
 
 			err += TTR("Invalid public key for APK expansion.") + "\n";
@@ -2171,7 +2171,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	}
 
 	String etc_error = test_etc2();
-	if (etc_error != String()) {
+	if (!etc_error.is_empty()) {
 		valid = false;
 		err += etc_error;
 	}
@@ -2733,13 +2733,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		src_apk = p_preset->get("custom_template/release");
 	}
 	src_apk = src_apk.strip_edges();
-	if (src_apk == "") {
+	if (src_apk.is_empty()) {
 		if (p_debug) {
 			src_apk = find_export_template("android_debug.apk");
 		} else {
 			src_apk = find_export_template("android_release.apk");
 		}
-		if (src_apk == "") {
+		if (src_apk.is_empty()) {
 			EditorNode::add_io_error(vformat(TTR("Package not found: %s"), src_apk));
 			return ERR_FILE_NOT_FOUND;
 		}

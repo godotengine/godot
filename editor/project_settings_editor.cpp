@@ -78,7 +78,7 @@ void ProjectSettingsEditor::_advanced_toggled(bool p_button_pressed) {
 }
 
 void ProjectSettingsEditor::_setting_selected(const String &p_path) {
-	if (p_path == String()) {
+	if (p_path.is_empty()) {
 		return;
 	}
 
@@ -147,12 +147,12 @@ void ProjectSettingsEditor::_update_property_box() {
 	const Vector<String> t = setting.split(".", true, 1);
 	const String name = t[0];
 	const String feature = (t.size() == 2) ? t[1] : "";
-	bool feature_invalid = (t.size() == 2) && (t[1] == "");
+	bool feature_invalid = (t.size() == 2) && (t[1].is_empty());
 
 	add_button->set_disabled(true);
 	del_button->set_disabled(true);
 
-	if (feature != "") {
+	if (!feature.is_empty()) {
 		feature_invalid = true;
 		for (int i = 1; i < feature_box->get_item_count(); i++) {
 			if (feature == feature_box->get_item_text(i)) {
@@ -163,11 +163,11 @@ void ProjectSettingsEditor::_update_property_box() {
 		}
 	}
 
-	if (feature == "" || feature_invalid) {
+	if (feature.is_empty() || feature_invalid) {
 		feature_box->select(0);
 	}
 
-	if (property_box->get_text() == "") {
+	if (property_box->get_text().is_empty()) {
 		return;
 	}
 
@@ -244,7 +244,7 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 		Vector<String> custom_list = custom.split(",");
 		for (int j = 0; j < custom_list.size(); j++) {
 			String f = custom_list[j].strip_edges();
-			if (f != String()) {
+			if (!f.is_empty()) {
 				presets.insert(f);
 			}
 		}

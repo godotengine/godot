@@ -591,7 +591,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 		if (vsnode->is_use_prop_slots()) {
 			String error = vsnode->get_warning(visual_shader->get_mode(), p_type);
-			if (error != String()) {
+			if (!error.is_empty()) {
 				Label *error_label = memnew(Label);
 				error_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 				error_label->set_text(error);
@@ -877,7 +877,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	node->add_child(offset);
 
 	String error = vsnode->get_warning(visual_shader->get_mode(), p_type);
-	if (error != String()) {
+	if (!error.is_empty()) {
 		Label *error_label = memnew(Label);
 		error_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		error_label->set_text(error);
@@ -1191,7 +1191,7 @@ void VisualShaderEditor::update_custom_nodes() {
 			category = category.rstrip("/");
 			category = category.lstrip("/");
 			category = "Addons/" + category;
-			if (subcategory != "") {
+			if (!subcategory.is_empty()) {
 				category += "/" + subcategory;
 			}
 
@@ -1687,7 +1687,7 @@ void VisualShaderEditor::_change_input_port_name(const String &p_text, Object *p
 	ERR_FAIL_COND(!line_edit);
 
 	String validated_name = visual_shader->validate_port_name(p_text, node.ptr(), p_port_id, false);
-	if (validated_name == String() || prev_name == validated_name) {
+	if (validated_name.is_empty() || prev_name == validated_name) {
 		line_edit->set_text(node->get_input_port_name(p_port_id));
 		return;
 	}
@@ -1715,7 +1715,7 @@ void VisualShaderEditor::_change_output_port_name(const String &p_text, Object *
 	ERR_FAIL_COND(!line_edit);
 
 	String validated_name = visual_shader->validate_port_name(p_text, node.ptr(), p_port_id, true);
-	if (validated_name == String() || prev_name == validated_name) {
+	if (validated_name.is_empty() || prev_name == validated_name) {
 		line_edit->set_text(node->get_output_port_name(p_port_id));
 		return;
 	}
@@ -2410,7 +2410,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 
 	bool is_custom = add_options[p_idx].is_custom;
 
-	if (!is_custom && add_options[p_idx].type != String()) {
+	if (!is_custom && !add_options[p_idx].type.is_empty()) {
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(add_options[p_idx].type));
 		ERR_FAIL_COND(!vsn);
 

@@ -65,7 +65,7 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 }
 
 void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::Node *p_node) {
-	if (error != "") {
+	if (!error.is_empty()) {
 		return;
 	}
 
@@ -2020,7 +2020,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	if (EngineDebugger::is_active()) {
 		String signature;
 		// Path.
-		if (p_script->get_path() != String()) {
+		if (!p_script->get_path().is_empty()) {
 			signature += p_script->get_path();
 		}
 		// Location.
@@ -2158,7 +2158,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	p_script->tool = parser->is_tool();
 	p_script->name = p_class->identifier ? p_class->identifier->name : "";
 
-	if (p_script->name != "") {
+	if (!p_script->name.is_empty()) {
 		if (ClassDB::class_exists(p_script->name) && ClassDB::is_class_exposed(p_script->name)) {
 			_set_error("The class '" + p_script->name + "' shadows a native class", p_class);
 			return ERR_ALREADY_EXISTS;
@@ -2287,7 +2287,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				p_script->constants.insert(name, constant->initializer->reduced_value);
 #ifdef TOOLS_ENABLED
 				p_script->member_lines[name] = constant->start_line;
-				if (constant->doc_description != String()) {
+				if (!constant->doc_description.is_empty()) {
 					p_script->doc_constants[name] = constant->doc_description;
 				}
 #endif

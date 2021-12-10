@@ -60,7 +60,7 @@ String find_file(const String &p_base, const String &p_file_to_find) {
 
 	dir.list_dir_begin();
 	String n = dir.get_next();
-	while (n != String()) {
+	while (!n.is_empty()) {
 		if (n == "." || n == "..") {
 			n = dir.get_next();
 			continue;
@@ -68,7 +68,7 @@ String find_file(const String &p_base, const String &p_file_to_find) {
 		if (dir.current_is_dir()) {
 			// Don't use `path_to` or the returned path will be wrong.
 			const String f = find_file(p_base + "/" + n, p_file_to_find);
-			if (f != "") {
+			if (!f.is_empty()) {
 				return f;
 			}
 		} else if (n == p_file_to_find) {
@@ -119,7 +119,7 @@ String FBXMaterial::find_texture_path_by_filename(const String p_filename, const
 	dir.open("res://");
 	dir.list_dir_begin();
 	String n = dir.get_next();
-	while (n != String()) {
+	while (!n.is_empty()) {
 		if (n == "." || n == "..") {
 			n = dir.get_next();
 			continue;
@@ -136,7 +136,7 @@ String FBXMaterial::find_texture_path_by_filename(const String p_filename, const
 					lower_n.find("picture") >= 0) {
 				// Don't use `path_to` or the returned path will be wrong.
 				const String f = find_file(String("res://") + n, p_filename);
-				if (f != "") {
+				if (!f.is_empty()) {
 					return f;
 				}
 			}

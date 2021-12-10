@@ -1555,7 +1555,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 	p_shader->uniforms.clear();
 
-	if (p_shader->code == String()) {
+	if (p_shader->code.is_empty()) {
 		return; //just invalid, but no error
 	}
 

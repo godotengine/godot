@@ -243,7 +243,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 			}
 		}
 
-		if (new_request != "") {
+		if (!new_request.is_empty()) {
 			// Process redirect
 			client->close();
 			int new_redirs = redirections + 1; // Because _request() will clear it
@@ -363,7 +363,7 @@ bool HTTPRequest::_update_connection() {
 					return true;
 				}
 
-				if (download_to_file != String()) {
+				if (!download_to_file.is_empty()) {
 					file = FileAccess::open(download_to_file, FileAccess::WRITE);
 					if (!file) {
 						call_deferred(SNAME("_request_done"), RESULT_DOWNLOAD_FILE_CANT_OPEN, response_code, response_headers, PackedByteArray());

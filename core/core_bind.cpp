@@ -1483,7 +1483,7 @@ String Directory::get_next() {
 	ERR_FAIL_COND_V_MSG(!is_open(), "", "Directory must be opened before use.");
 
 	String next = d->get_next();
-	while (next != "" && ((_list_skip_navigational && (next == "." || next == "..")) || (_list_skip_hidden && d->current_is_hidden()))) {
+	while (!next.is_empty() && ((_list_skip_navigational && (next == "." || next == "..")) || (_list_skip_hidden && d->current_is_hidden()))) {
 		next = d->get_next();
 	}
 	return next;
@@ -1665,7 +1665,7 @@ String Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) {
 	ERR_FAIL_COND_V_MSG(err != OK, "", "Error when trying to encode Variant.");
 
 	String ret = CryptoCore::b64_encode_str(&w[0], len);
-	ERR_FAIL_COND_V(ret == "", ret);
+	ERR_FAIL_COND_V(ret.is_empty(), ret);
 
 	return ret;
 }
@@ -1690,7 +1690,7 @@ Variant Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects) 
 
 String Marshalls::raw_to_base64(const Vector<uint8_t> &p_arr) {
 	String ret = CryptoCore::b64_encode_str(p_arr.ptr(), p_arr.size());
-	ERR_FAIL_COND_V(ret == "", ret);
+	ERR_FAIL_COND_V(ret.is_empty(), ret);
 	return ret;
 }
 
@@ -1714,7 +1714,7 @@ Vector<uint8_t> Marshalls::base64_to_raw(const String &p_str) {
 String Marshalls::utf8_to_base64(const String &p_str) {
 	CharString cstr = p_str.utf8();
 	String ret = CryptoCore::b64_encode_str((unsigned char *)cstr.get_data(), cstr.length());
-	ERR_FAIL_COND_V(ret == "", ret);
+	ERR_FAIL_COND_V(ret.is_empty(), ret);
 	return ret;
 }
 
