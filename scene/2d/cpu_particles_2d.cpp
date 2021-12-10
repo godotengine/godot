@@ -393,6 +393,14 @@ Ref<Gradient> CPUParticles2D::get_color_ramp() const {
 	return color_ramp;
 }
 
+void CPUParticles2D::set_color_initial_ramp(const Ref<Gradient> &p_ramp) {
+	color_initial_ramp = p_ramp;
+}
+
+Ref<Gradient> CPUParticles2D::get_color_initial_ramp() const {
+	return color_initial_ramp;
+}
+
 void CPUParticles2D::set_particle_flag(Flags p_flag, bool p_enable) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags[p_flag] = p_enable;
@@ -690,6 +698,12 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			p.hue_rot_rand = Math::randf();
 			p.anim_offset_rand = Math::randf();
 
+			if (color_initial_ramp.is_valid()) {
+				p.start_color_rand = color_initial_ramp->get_color_at_offset(Math::randf());
+			} else {
+				p.start_color_rand = Color(1, 1, 1, 1);
+			}
+
 			float angle1_rad = Math::atan2(direction.y, direction.x) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
 			Vector2 rot = Vector2(Math::cos(angle1_rad), Math::sin(angle1_rad));
 			p.velocity = rot * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp(1.0f, float(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
@@ -895,7 +909,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 		p.color.g = color_rgb.y;
 		p.color.b = color_rgb.z;
 
-		p.color *= p.base_color;
+		p.color *= p.base_color * p.start_color_rand;
 
 		if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
 			if (p.velocity.length() > 0.0) {
@@ -1127,6 +1141,11 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 		set_color_ramp(gt->get_gradient());
 	}
 
+	Ref<GradientTexture> gti = material->get_color_initial_ramp();
+	if (gti.is_valid()) {
+		set_color_initial_ramp(gti->get_gradient());
+	}
+
 	set_particle_flag(FLAG_ALIGN_Y_TO_VELOCITY, material->get_flag(ParticlesMaterial::FLAG_ALIGN_Y_TO_VELOCITY));
 
 	set_emission_shape(EmissionShape(material->get_emission_shape()));
@@ -1247,6 +1266,9 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &CPUParticles2D::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &CPUParticles2D::get_color_ramp);
 
+	ClassDB::bind_method(D_METHOD("set_color_initial_ramp", "ramp"), &CPUParticles2D::set_color_initial_ramp);
+	ClassDB::bind_method(D_METHOD("get_color_initial_ramp"), &CPUParticles2D::get_color_initial_ramp);
+
 	ClassDB::bind_method(D_METHOD("set_particle_flag", "flag", "enable"), &CPUParticles2D::set_particle_flag);
 	ClassDB::bind_method(D_METHOD("get_particle_flag", "flag"), &CPUParticles2D::get_particle_flag);
 
@@ -1328,6 +1350,7 @@ void CPUParticles2D::_bind_methods() {
 	ADD_GROUP("Color", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_initial_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_initial_ramp", "get_color_initial_ramp");
 
 	ADD_GROUP("Hue Variation", "hue_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "hue_variation", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param", "get_param", PARAM_HUE_VARIATION);

@@ -94,6 +94,7 @@ private:
 		float scale_rand;
 		float hue_rot_rand;
 		float anim_offset_rand;
+		Color start_color_rand;
 		float time;
 		float lifetime;
 		Color base_color;
@@ -163,6 +164,7 @@ private:
 	Ref<Curve> curve_parameters[PARAM_MAX];
 	Color color;
 	Ref<Gradient> color_ramp;
+	Ref<Gradient> color_initial_ramp;
 
 	bool flags[FLAG_MAX];
 
@@ -258,6 +260,9 @@ public:
 
 	void set_color_ramp(const Ref<Gradient> &p_ramp);
 	Ref<Gradient> get_color_ramp() const;
+
+	void set_color_initial_ramp(const Ref<Gradient> &p_ramp);
+	Ref<Gradient> get_color_initial_ramp() const;
 
 	void set_particle_flag(Flags p_flag, bool p_enable);
 	bool get_particle_flag(Flags p_flag) const;
