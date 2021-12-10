@@ -2135,13 +2135,30 @@ msgstr "Методи"
 msgid "Theme Properties"
 msgstr "Властивості теми"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Переліки"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr "Кольори"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Константи"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr "Шрифти"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr "Піктограми"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "Стиль"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Переліки"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8601,18 +8618,6 @@ msgid "TextureRegion"
 msgstr "TextureRegion"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr "Кольори"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr "Шрифти"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr "Піктограми"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr "Стильові панелі"
 
@@ -13417,8 +13422,17 @@ msgstr ""
 "«Використовувати нетипову збірку»."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"«Стеженням за руками» можна скористатися, лише якщо «Режим Xr» дорівнює "
+"«Oculus Mobile VR»."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "«Стеженням за руками» можна скористатися, лише якщо «Режим Xr» дорівнює "
 "«Oculus Mobile VR»."
@@ -13428,6 +13442,27 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "Пункт «Експортувати AAB» є чинним, лише якщо увімкнено «Використовувати "
 "нетипове збирання»."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+"Пункт «Експортувати AAB» є чинним, лише якщо увімкнено «Використовувати "
+"нетипове збирання»."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+"Пункт «Експортувати AAB» є чинним, лише якщо увімкнено «Використовувати "
+"нетипове збирання»."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""

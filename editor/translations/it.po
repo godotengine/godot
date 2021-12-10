@@ -2185,13 +2185,31 @@ msgstr "Metodi"
 msgid "Theme Properties"
 msgstr "Proprietà del tema"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumerazioni"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "Colore"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Costanti"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr "Font"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr "Icone"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "Stile"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumerazioni"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8762,19 +8780,6 @@ msgstr "TextureRegion"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Colors"
-msgstr "Colore"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr "Font"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr "Icone"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Styleboxes"
 msgstr "Stile Box"
 
@@ -13633,8 +13638,17 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "Per utilizzare i plugin \"Use Custom Build\" deve essere abilitato."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"\"Hand Tracking\" è valido solo quando \"Xr Mode\" è impostato su \"Oculus "
+"Mobile VR\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "\"Hand Tracking\" è valido solo quando \"Xr Mode\" è impostato su \"Oculus "
 "Mobile VR\"."
@@ -13643,6 +13657,25 @@ msgstr ""
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"Export AAB\" è valido soltanto quanto \"Use Custom Build\" è abilitato."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+"\"Export AAB\" è valido soltanto quanto \"Use Custom Build\" è abilitato."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+"\"Export AAB\" è valido soltanto quanto \"Use Custom Build\" è abilitato."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""

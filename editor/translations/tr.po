@@ -2169,13 +2169,30 @@ msgstr "Metodlar"
 msgid "Theme Properties"
 msgstr "Tema Özellikleri"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Numaralandırmalar"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr "Renkler"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Sabitler"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr "Yazı Tipleri"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr "Simgeler"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "Yoldam"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Numaralandırmalar"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8615,18 +8632,6 @@ msgid "TextureRegion"
 msgstr "DokuBölgesi"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr "Renkler"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr "Yazı Tipleri"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr "Simgeler"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr "StilKutusu"
 
@@ -13401,8 +13406,17 @@ msgstr ""
 "Eklentileri kullanabilmek için \"Özel Derleme Kullan\" seçeneği aktif olmalı."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"\"El Takibi(Hand Tracking)\" sadece \"Xr Modu\" \"Oculus Mobile VR\" "
+"olduğunda geçerlidir."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "\"El Takibi(Hand Tracking)\" sadece \"Xr Modu\" \"Oculus Mobile VR\" "
 "olduğunda geçerlidir."
@@ -13412,6 +13426,27 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"AAB Dışa Aktar\" yalnızca \"Özel Yapı Kullan\" etkinleştirildiğinde "
 "geçerlidir."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+"\"AAB Dışa Aktar\" yalnızca \"Özel Yapı Kullan\" etkinleştirildiğinde "
+"geçerlidir."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+"\"AAB Dışa Aktar\" yalnızca \"Özel Yapı Kullan\" etkinleştirildiğinde "
+"geçerlidir."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""

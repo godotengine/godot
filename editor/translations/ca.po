@@ -6,7 +6,7 @@
 # Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
 # Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2018, 2020.
 # Rubén Moreno <ruben.moreno.romero@gmail.com>, 2018.
-# roger <616steam@gmail.com>, 2019, 2020.
+# roger <616steam@gmail.com>, 2019, 2020, 2021.
 # Roger BR <drai_kin@hotmail.com>, 2019.
 # Adolfo Jayme Barrientos <fitojb@ubuntu.com>, 2020.
 # Xavier Gomez <hiulit@gmail.com>, 2020, 2021.
@@ -21,8 +21,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-21 10:31+0000\n"
-"Last-Translator: Xavier Gomez <hiulit@gmail.com>\n"
+"PO-Revision-Date: 2021-11-20 22:06+0000\n"
+"Last-Translator: roger <616steam@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.9.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2148,13 +2148,33 @@ msgstr "Mètodes"
 msgid "Theme Properties"
 msgstr "Propietats del tema"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeracions"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "Color"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Constants"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Fonts"
+msgstr "Lletra"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Icons"
+msgstr "Icona"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "Estil"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeracions"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -2655,9 +2675,8 @@ msgid "Can't reload a scene that was never saved."
 msgstr "No es pot recarregar una escena mai desada."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Desa Escena"
+msgstr "Recarregar l'Escena Desada"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3007,13 +3026,12 @@ msgid "Orphan Resource Explorer..."
 msgstr "Navegador de Recursos Orfes..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Current Project"
-msgstr "Reanomena el Projecte"
+msgstr "Recarregar Projecte Actual"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr "Surt a la Llista de Projectes"
+msgstr "Sortir a la Llista de Projectes"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
@@ -3173,22 +3191,20 @@ msgid "Help"
 msgstr "Ajuda"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Online Documentation"
-msgstr "Obrir documentació"
+msgstr "Documentació en Línia"
 
 #: editor/editor_node.cpp
 msgid "Questions & Answers"
-msgstr ""
+msgstr "Preguntes i Respostes"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "ReImportar"
+msgstr "Informar d'un Bug"
 
 #: editor/editor_node.cpp
 msgid "Suggest a Feature"
-msgstr ""
+msgstr "Suggerir una Característica"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
@@ -3199,13 +3215,12 @@ msgid "Community"
 msgstr "Comunitat"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "About Godot"
-msgstr "Quant a"
+msgstr "Quant a Godot"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr "Contribueix a el Desenvolupament de Godot"
+msgstr "Contribueix al Desenvolupament de Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -4600,9 +4615,8 @@ msgid "MultiNode Set"
 msgstr "Establir MultiNode"
 
 #: editor/node_dock.cpp
-#, fuzzy
 msgid "Select a single node to edit its signals and groups."
-msgstr "Seleccioneu un Node per editar Senyals i Grups."
+msgstr "Seleccioneu un únic node per editar les seves senyals i grups."
 
 #: editor/plugin_config_dialog.cpp
 msgid "Edit a Plugin"
@@ -8142,14 +8156,12 @@ msgid "Rear View."
 msgstr "Vista Posterior."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Transform with View"
-msgstr "Alinear amb la Vista"
+msgstr "Alinear Transformació amb la Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Rotation with View"
-msgstr "Alinea la Selecció amb la Vista"
+msgstr "Alinea Rotació amb la Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -8160,9 +8172,8 @@ msgid "This operation requires a single selected node."
 msgstr "Aquesta operació requereix un únic node seleccionat."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
-msgstr "Ortogonal"
+msgstr "Auto Ortogonal Activat"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -8305,9 +8316,8 @@ msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "No s'ha pogut trobar un sòl sòlid on ajustar la selecció."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Use Local Space"
-msgstr "Mode Espai Local (%s)"
+msgstr "Utilitzar Espai Local"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
@@ -8771,21 +8781,6 @@ msgstr "Separació:"
 #, fuzzy
 msgid "TextureRegion"
 msgstr "Regió de Textura"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Colors"
-msgstr "Color"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Fonts"
-msgstr "Lletra"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Icons"
-msgstr "Icona"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -12962,14 +12957,12 @@ msgid "Object can't provide a length."
 msgstr "L'objecte no pot proporcionar una longitud."
 
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "Export Mesh GLTF2"
-msgstr "Exporta Biblioteca de Models"
+msgstr "Exportar Malla GLTF2"
 
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "Export GLTF..."
-msgstr "Exportar..."
+msgstr "Exportar GLTF..."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -13818,11 +13811,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
