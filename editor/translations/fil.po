@@ -13858,9 +13858,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Walang laman ang Clipboard"
-
-#~ msgid "No"
-#~ msgstr "Hindi"

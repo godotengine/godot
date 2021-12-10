@@ -13913,10 +13913,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#, fuzzy
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr "Animasiya pleyeri özünü canlandıra bilməz, yalnız digər pleyerlər."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Panel(Clipboard) boşdur"

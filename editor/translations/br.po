@@ -13826,11 +13826,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr ""
-#~ "Ul lennerezh fiñvskeudenn ne c'hell ket em lakaat da fiñval, nemet "
-#~ "lennerezhioù all."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Goullo ar gwask-paper"

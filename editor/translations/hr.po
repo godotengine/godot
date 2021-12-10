@@ -13922,27 +13922,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstante se ne mogu mijenjati."
-
-#~ msgid "Singleton"
-#~ msgstr "Sajngleton"
-
-#, fuzzy
-#~ msgid "Move to Trash"
-#~ msgstr "Premjesti Autoload"
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr "Animator ne može animirati sebe, samo druge objekte."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Međuspremnik je prazan"
-
-#, fuzzy
-#~ msgid "Pack File"
-#~ msgstr "Otvori datoteku"
-
-#~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "Zamijenjeno %d pojavljivanja."
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "Opis:"

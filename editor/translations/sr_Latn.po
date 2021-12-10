@@ -14043,36 +14043,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "Pomjeri Kanal Animacije Gore"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "Pomjeri Kanal Animacije Dole"
-
-#~ msgid "Anim Track Change Interpolation"
-#~ msgstr "Animacija Promjeni Interpolaciju Kanala"
-
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "Animacija Promjeni Vrijednosni Režim Kanala"
-
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "Animacija Promjeni Režim Omotavanja Kanala"
-
-#~ msgid "Anim Add Key"
-#~ msgstr "Animacija Dodaj Ključ"
-
-#~ msgid "In"
-#~ msgstr "U"
-
-#~ msgid "Out"
-#~ msgstr "Izvan"
-
-#~ msgid "In-Out"
-#~ msgstr "U-Izvan"
-
-#~ msgid "Out-In"
-#~ msgstr "Izvan-U"
-
-#~ msgid "Anim Create Typed Value Key"
-#~ msgstr "Animacija Napravit Tip Vrijednosni Ključ"

@@ -17,6 +17,7 @@ merge:
 	  echo -e "\nMerging $$po..."; \
 	  msgmerge -w 79 -C $$po $$po $(TEMPLATE) > "$$po".new; \
 	  mv -f "$$po".new $$po; \
+	  msgattrib --output-file=$$po --no-obsolete $$po; \
 	done
 
 check:

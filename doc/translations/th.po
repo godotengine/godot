@@ -70083,20 +70083,3 @@ msgstr ""
 msgid ""
 "If [code]true[/code], child nodes are sorted, otherwise sorting is disabled."
 msgstr ""
-
-#, fuzzy
-#~ msgid "Returns the close [TextureButton]."
-#~ msgstr "คืนค่าการกำหนดค่าของลำโพง"
-
-#~ msgid "Back key."
-#~ msgstr "ปุ่ม"
-
-#~ msgid "Stop key."
-#~ msgstr "ปุ่ม"
-
-#~ msgid ""
-#~ "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-#~ "animations.html"
-#~ msgstr ""
-#~ "https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-#~ "animations.html"
