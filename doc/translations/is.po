@@ -1,40 +1,40 @@
-# LANGUAGE translation of the Godot Engine class reference.
+# Icelandic translation of the Godot Engine class reference.
 # Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# slasken06 <ask.skivdal@gmail.com>, 2021.
-# Daniel Skogly <daniel@klungo.no>, 2021.
+# Tumi Gudmundsson <tumi435@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-11-03 13:15+0000\n"
-"Last-Translator: Daniel Skogly <daniel@klungo.no>\n"
-"Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
-"engine/godot-class-reference/nb_NO/>\n"
-"Language: nb_NO\n"
+"PO-Revision-Date: 2021-11-23 14:41+0000\n"
+"Last-Translator: Tumi Gudmundsson <tumi435@gmail.com>\n"
+"Language-Team: Icelandic <https://hosted.weblate.org/projects/godot-engine/"
+"godot-class-reference/is/>\n"
+"Language: is\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"Plural-Forms: nplurals=2; plural=n % 10 != 1 || n % 100 == 11;\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
-msgstr "Beskrivelse"
+msgstr "Lýsing"
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid "Tutorials"
-msgstr ""
+msgstr "Leiðbeiningar"
 
 #: doc/tools/make_rst.py
 msgid "Properties"
-msgstr "Egenskaper"
+msgstr "Breytur"
 
 #: doc/tools/make_rst.py
 msgid "Methods"
-msgstr "Metoder"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Theme Properties"
@@ -42,19 +42,19 @@ msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Signals"
-msgstr "Signaler"
+msgstr "Merki"
 
 #: doc/tools/make_rst.py
 msgid "Enumerations"
-msgstr ""
+msgstr "Upptalningartög"
 
 #: doc/tools/make_rst.py
 msgid "Constants"
-msgstr "Konstanter"
+msgstr "Fasti"
 
 #: doc/tools/make_rst.py
 msgid "Property Descriptions"
-msgstr ""
+msgstr "Lýsing á Breytum"
 
 #: doc/tools/make_rst.py
 msgid "Method Descriptions"
@@ -62,7 +62,7 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
-msgstr "Innebygde GDScript-funksjoner."
+msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml:7
 msgid ""
@@ -84,15 +84,6 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
-"Returnerer en farge konstruert fra heltall rødt-, grønt-, blått- og "
-"alfakanaler. Hver kanal skal ha 8 bits med informasjon fra 0 til 255.\n"
-"[code]r8[/code] rød kanal\n"
-"[code]g8[/code] grønn kanal\n"
-"[code]b8[/code] blå kanal\n"
-"[code]a8[/code] alfakanal\n"
-"[codeblock]\n"
-"red = Color8(255, 0, 0)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:34
 msgid ""
@@ -271,7 +262,7 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml:211
 msgid "Converts from decibels to linear energy (audio)."
-msgstr "Konverterer fra desibel til lineær energi (lyd)."
+msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml:218
 msgid "Deprecated alias for [method step_decimals]."
