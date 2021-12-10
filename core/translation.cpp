@@ -1011,9 +1011,12 @@ Array TranslationServer::get_loaded_locales() const {
 		ERR_FAIL_COND_V(t.is_null(), Array());
 		String l = t->get_locale();
 
-		locales.push_back(l);
+		if (!locales.has(l)) {
+			locales.push_back(l);
+		}
 	}
 
+	locales.sort();
 	return locales;
 }
 
