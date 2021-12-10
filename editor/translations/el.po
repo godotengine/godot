@@ -2145,13 +2145,33 @@ msgstr "Συναρτήσεις"
 msgid "Theme Properties"
 msgstr "Ιδιότητες θέματος"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Απαριθμήσεις"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "Χρώμα"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Σταθερές"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Fonts"
+msgstr "Γραμματοσειρά"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Icons"
+msgstr "Εικονίδιο"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "Στυλ"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Απαριθμήσεις"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8734,21 +8754,6 @@ msgstr "TextureRegion"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Colors"
-msgstr "Χρώμα"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Fonts"
-msgstr "Γραμματοσειρά"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Icons"
-msgstr "Εικονίδιο"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Styleboxes"
 msgstr "Κουτί Στυλ"
 
@@ -13646,14 +13651,38 @@ msgstr ""
 "Η επιλογή «Use Custom Build» πρέπει να ενεργοποιηθεί για χρήση προσθέτων."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"Το «Hand Tracking» είναι έγκυρο μόνο όταν το «Xr Mode» είναι «Oculus Mobile "
+"VR»."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "Το «Hand Tracking» είναι έγκυρο μόνο όταν το «Xr Mode» είναι «Oculus Mobile "
 "VR»."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp

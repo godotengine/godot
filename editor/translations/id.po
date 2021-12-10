@@ -2139,13 +2139,33 @@ msgstr "Metode"
 msgid "Theme Properties"
 msgstr "Properti Tema"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumerasi"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "Warna"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Konstanta"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Fonts"
+msgstr "Fonta"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Icons"
+msgstr "Ikon"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "Gaya"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumerasi"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8585,21 +8605,6 @@ msgstr "TeksturRegion"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Colors"
-msgstr "Warna"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Fonts"
-msgstr "Fonta"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Icons"
-msgstr "Ikon"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Styleboxes"
 msgstr "Gaya"
 
@@ -13437,8 +13442,17 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "\"Gunakan Build Custom\" harus diaktifkan untuk menggunakan plugin."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"\"Pelacakan Tangan\" hanya valid ketika \"Mode Xr\" bernilai \"Oculus Mobile "
+"VR\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "\"Pelacakan Tangan\" hanya valid ketika \"Mode Xr\" bernilai \"Oculus Mobile "
 "VR\"."
@@ -13447,6 +13461,25 @@ msgstr ""
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"Expor AAB\" hanya bisa valid ketika \"Gunakan Build Custom\" diaktifkan."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+"\"Expor AAB\" hanya bisa valid ketika \"Gunakan Build Custom\" diaktifkan."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+"\"Expor AAB\" hanya bisa valid ketika \"Gunakan Build Custom\" diaktifkan."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
