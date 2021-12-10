@@ -462,7 +462,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), Color(1, 1, 1, 0.3));
 
 		String limit_str = String::num(graph_limit, 2);
-		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
+		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
 	}
 
 	if (graph_height_gpu > 0) {
@@ -473,11 +473,11 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), Color(1, 1, 1, 0.3));
 
 		String limit_str = String::num(graph_limit, 2);
-		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
+		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
 	}
 
-	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x, font->get_ascent(font_size) + 2), "CPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
-	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
+	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x, font->get_ascent(font_size) + 2), "CPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
+	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
 
 	/*
 	if (hover_metric != -1 && frame_metrics[hover_metric].valid) {

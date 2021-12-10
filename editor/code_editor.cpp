@@ -624,7 +624,7 @@ FindReplaceBar::FindReplaceBar() {
 
 	vbc_lineedit = memnew(VBoxContainer);
 	add_child(vbc_lineedit);
-	vbc_lineedit->set_alignment(ALIGN_CENTER);
+	vbc_lineedit->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	vbc_lineedit->set_h_size_flags(SIZE_EXPAND_FILL);
 	VBoxContainer *vbc_button = memnew(VBoxContainer);
 	add_child(vbc_button);
@@ -633,10 +633,10 @@ FindReplaceBar::FindReplaceBar() {
 
 	HBoxContainer *hbc_button_search = memnew(HBoxContainer);
 	vbc_button->add_child(hbc_button_search);
-	hbc_button_search->set_alignment(ALIGN_END);
+	hbc_button_search->set_alignment(BoxContainer::ALIGNMENT_END);
 	hbc_button_replace = memnew(HBoxContainer);
 	vbc_button->add_child(hbc_button_replace);
-	hbc_button_replace->set_alignment(ALIGN_END);
+	hbc_button_replace->set_alignment(BoxContainer::ALIGNMENT_END);
 
 	HBoxContainer *hbc_option_search = memnew(HBoxContainer);
 	vbc_option->add_child(hbc_option_search);
@@ -1534,7 +1534,7 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 
 void CodeTextEditor::set_error(const String &p_error) {
 	error->set_text(p_error);
-	if (p_error != "") {
+	if (!p_error.is_empty()) {
 		error->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	} else {
 		error->set_default_cursor_shape(CURSOR_ARROW);
@@ -1547,7 +1547,7 @@ void CodeTextEditor::set_error_pos(int p_line, int p_column) {
 }
 
 void CodeTextEditor::goto_error() {
-	if (error->get_text() != "") {
+	if (!error->get_text().is_empty()) {
 		text_editor->unfold_line(error_line);
 		text_editor->set_caret_line(error_line);
 		text_editor->set_caret_column(error_column);
@@ -1854,7 +1854,7 @@ CodeTextEditor::CodeTextEditor() {
 	ScrollContainer *scroll = memnew(ScrollContainer);
 	scroll->set_h_size_flags(SIZE_EXPAND_FILL);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	scroll->set_enable_v_scroll(false);
+	scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	status_bar->add_child(scroll);
 
 	error = memnew(Label);

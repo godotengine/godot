@@ -166,7 +166,7 @@ namespace Godot
         /// Operations take place in global space.
         /// </summary>
         /// <param name="target">The object to look at.</param>
-        /// <param name="up">The relative up direction</param>
+        /// <param name="up">The relative up direction.</param>
         /// <returns>The resulting transform.</returns>
         public Transform3D LookingAt(Vector3 target, Vector3 up)
         {

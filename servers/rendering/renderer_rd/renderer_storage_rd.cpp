@@ -1089,7 +1089,7 @@ Vector<Ref<Image>> RendererStorageRD::texture_3d_get(RID p_texture) const {
 		const Texture::BufferSlice3D &bs = tex->buffer_slices_3d[i];
 		ERR_FAIL_COND_V(bs.offset >= (uint32_t)all_data.size(), Vector<Ref<Image>>());
 		ERR_FAIL_COND_V(bs.offset + bs.buffer_size > (uint32_t)all_data.size(), Vector<Ref<Image>>());
-		Vector<uint8_t> sub_region = all_data.subarray(bs.offset, bs.offset + bs.buffer_size - 1);
+		Vector<uint8_t> sub_region = all_data.slice(bs.offset, bs.offset + bs.buffer_size);
 
 		Ref<Image> img;
 		img.instantiate();
@@ -2861,7 +2861,7 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 				}
 			}
 #ifdef TOOLS_ENABLED
-			if (roughness_detect_texture && normal_detect_texture && normal_detect_texture->path != String()) {
+			if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty()) {
 				roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
 			}
 #endif
@@ -2901,7 +2901,7 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
 				}
 #ifdef TOOLS_ENABLED
-				if (roughness_detect_texture && normal_detect_texture && normal_detect_texture->path != String()) {
+				if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty()) {
 					roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
 				}
 #endif
@@ -5820,7 +5820,7 @@ void RendererStorageRD::ParticlesShaderData::set_code(const String &p_code) {
 	uniforms.clear();
 	uses_collision = false;
 
-	if (code == String()) {
+	if (code.is_empty()) {
 		return; //just invalid, but no error
 	}
 

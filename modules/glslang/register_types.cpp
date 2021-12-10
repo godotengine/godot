@@ -120,7 +120,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		preamble += "#define has_VK_KHR_multiview 1\n";
 	}
 
-	if (preamble != "") {
+	if (!preamble.empty()) {
 		shader.setPreamble(preamble.c_str());
 	}
 

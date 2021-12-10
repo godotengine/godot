@@ -114,7 +114,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc->add_child(cbut_collapse_features);
 
 	tabc_features = memnew(TabContainer);
-	tabc_features->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabc_features->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabc_features->set_use_hidden_tabs_for_min_size(true);
 	vbc->add_child(tabc_features);
 

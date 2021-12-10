@@ -136,6 +136,7 @@ void OpenTypeFeaturesAdd::update_property() {
 void OpenTypeFeaturesAdd::_features_menu() {
 	Size2 size = get_size();
 	menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+	menu->reset_size();
 	menu->popup();
 }
 

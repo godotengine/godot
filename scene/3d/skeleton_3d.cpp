@@ -506,7 +506,7 @@ int Skeleton3D::get_bone_axis_forward_enum(int p_bone) {
 // Skeleton creation api
 
 void Skeleton3D::add_bone(const String &p_name) {
-	ERR_FAIL_COND(p_name == "" || p_name.find(":") != -1 || p_name.find("/") != -1);
+	ERR_FAIL_COND(p_name.is_empty() || p_name.find(":") != -1 || p_name.find("/") != -1);
 
 	for (int i = 0; i < bones.size(); i++) {
 		ERR_FAIL_COND(bones[i].name == p_name);

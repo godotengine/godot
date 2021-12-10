@@ -224,6 +224,10 @@ static const int EXPORT_FORMAT_AAB = 1;
 static const char *APK_ASSETS_DIRECTORY = "res://android/build/assets";
 static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/installTime/src/main/assets";
 
+static const int DEFAULT_MIN_SDK_VERSION = 19; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
+static const int DEFAULT_TARGET_SDK_VERSION = 30; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
+const String SDK_VERSION_RANGE = vformat("%s,%s,1", DEFAULT_MIN_SDK_VERSION, DEFAULT_TARGET_SDK_VERSION);
+
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 	EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
 
@@ -303,7 +307,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 						}
 					}
 
-					if (d.description == "") {
+					if (d.description.is_empty()) {
 						//in the oven, request!
 						args.clear();
 						args.push_back("-s");
@@ -352,7 +356,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 						}
 
 						d.name = vendor + " " + device;
-						if (device == String()) {
+						if (device.is_empty()) {
 							continue;
 						}
 					}
@@ -390,13 +394,13 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 
 String EditorExportPlatformAndroid::get_project_name(const String &p_name) const {
 	String aname;
-	if (p_name != "") {
+	if (!p_name.is_empty()) {
 		aname = p_name;
 	} else {
 		aname = ProjectSettings::get_singleton()->get("application/config/name");
 	}
 
-	if (aname == "") {
+	if (aname.is_empty()) {
 		aname = VERSION_NAME;
 	}
 
@@ -420,7 +424,7 @@ String EditorExportPlatformAndroid::get_package_name(const String &p_package) co
 			first = false;
 		}
 	}
-	if (name == "") {
+	if (name.is_empty()) {
 		name = "noname";
 	}
 
@@ -577,7 +581,7 @@ Vector<String> EditorExportPlatformAndroid::list_gdap_files(const String &p_path
 		da->list_dir_begin();
 		while (true) {
 			String file = da->get_next();
-			if (file == "") {
+			if (file.is_empty()) {
 				break;
 			}
 
@@ -832,10 +836,13 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	bool screen_support_xlarge = p_preset->get("screen/support_xlarge");
 
 	int xr_mode_index = p_preset->get("xr_features/xr_mode");
+	int hand_tracking_index = p_preset->get("xr_features/hand_tracking");
+	int hand_tracking_frequency_index = p_preset->get("xr_features/hand_tracking_frequency");
 
 	bool backup_allowed = p_preset->get("user_data_backup/allow");
 	bool classify_as_game = p_preset->get("package/classify_as_game");
 	bool retain_data_on_uninstall = p_preset->get("package/retain_data_on_uninstall");
+	bool exclude_from_recents = p_preset->get("package/exclude_from_recents");
 
 	Vector<String> perms;
 	// Write permissions into the perms variable.
@@ -949,6 +956,10 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						encode_uint32(screen_orientation, &p_manifest.write[iofs + 16]);
 					}
 
+					if (tname == "activity" && attrname == "excludeFromRecents") {
+						encode_uint32(exclude_from_recents, &p_manifest.write[iofs + 16]);
+					}
+
 					if (tname == "supports-screens") {
 						if (attrname == "smallScreens") {
 							encode_uint32(screen_support_small ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
@@ -978,6 +989,18 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						}
 					}
 
+					if (tname == "meta-data" && attrname == "name" && value == "xr_hand_tracking_metadata_name") {
+						if (xr_mode_index == XR_MODE_OPENXR && hand_tracking_index > XR_HAND_TRACKING_NONE) {
+							string_table.write[attr_value] = "com.oculus.handtracking.frequency";
+						}
+					}
+
+					if (tname == "meta-data" && attrname == "value" && value == "xr_hand_tracking_metadata_value") {
+						if (xr_mode_index == XR_MODE_OPENXR && hand_tracking_index > XR_HAND_TRACKING_NONE) {
+							string_table.write[attr_value] = (hand_tracking_frequency_index == XR_HAND_TRACKING_FREQUENCY_LOW ? "LOW" : "HIGH");
+						}
+					}
+
 					iofs += 20;
 				}
 
@@ -999,7 +1022,6 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						feature_versions.push_back(1);
 
 						// Check for hand tracking
-						int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
 						if (hand_tracking_index > XR_HAND_TRACKING_NONE) {
 							feature_names.push_back("oculus.software.handtracking");
 							feature_required_list.push_back(hand_tracking_index == XR_HAND_TRACKING_REQUIRED);
@@ -1679,11 +1701,15 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/min_sdk", PROPERTY_HINT_RANGE, SDK_VERSION_RANGE), DEFAULT_MIN_SDK_VERSION));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/target_sdk", PROPERTY_HINT_RANGE, SDK_VERSION_RANGE), DEFAULT_TARGET_SDK_VERSION));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "org.godotengine.$genname"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/classify_as_game"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/retain_data_on_uninstall"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/exclude_from_recents"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icon_option, PROPERTY_HINT_FILE, "*.png"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_foreground_option, PROPERTY_HINT_FILE, "*.png"), ""));
@@ -1691,9 +1717,10 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,OpenXR"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/passthrough", PROPERTY_HINT_ENUM, "None,Optional,Required"), 0));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,OpenXR"), XR_MODE_REGULAR));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), XR_HAND_TRACKING_NONE));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking_frequency", PROPERTY_HINT_ENUM, "Low,High"), XR_HAND_TRACKING_FREQUENCY_LOW));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/passthrough", PROPERTY_HINT_ENUM, "None,Optional,Required"), XR_PASSTHROUGH_NONE));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
@@ -2002,10 +2029,11 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 	String err;
 	bool valid = false;
+	const bool custom_build_enabled = p_preset->get("custom_template/use_custom_build");
 
 	// Look for export templates (first official, and if defined custom templates).
 
-	if (!bool(p_preset->get("custom_template/use_custom_build"))) {
+	if (!custom_build_enabled) {
 		String template_err;
 		bool dvalid = false;
 		bool rvalid = false;
@@ -2080,7 +2108,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	}
 
 	String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
-	if (sdk_path == "") {
+	if (sdk_path.is_empty()) {
 		err += TTR("A valid Android SDK path is required in Editor Settings.") + "\n";
 		valid = false;
 	} else {
@@ -2127,7 +2155,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	if (apk_expansion) {
 		String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
-		if (apk_expansion_pkey == "") {
+		if (apk_expansion_pkey.is_empty()) {
 			valid = false;
 
 			err += TTR("Invalid public key for APK expansion.") + "\n";
@@ -2143,14 +2171,13 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	}
 
 	String etc_error = test_etc2();
-	if (etc_error != String()) {
+	if (!etc_error.is_empty()) {
 		valid = false;
 		err += etc_error;
 	}
 
 	// Ensure that `Use Custom Build` is enabled if a plugin is selected.
 	String enabled_plugins_names = PluginConfigAndroid::get_plugins_names(get_enabled_plugins(p_preset));
-	bool custom_build_enabled = p_preset->get("custom_template/use_custom_build");
 	if (!enabled_plugins_names.is_empty() && !custom_build_enabled) {
 		valid = false;
 		err += TTR("\"Use Custom Build\" must be enabled to use the plugins.");
@@ -2176,9 +2203,31 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	}
 
 	if (int(p_preset->get("custom_template/export_format")) == EXPORT_FORMAT_AAB &&
-			!bool(p_preset->get("custom_template/use_custom_build"))) {
+			!custom_build_enabled) {
 		valid = false;
 		err += TTR("\"Export AAB\" is only valid when \"Use Custom Build\" is enabled.");
+		err += "\n";
+	}
+
+	// Check the min sdk version
+	int min_sdk_version = p_preset->get("version/min_sdk");
+	if (min_sdk_version != DEFAULT_MIN_SDK_VERSION && !custom_build_enabled) {
+		valid = false;
+		err += TTR("Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled.");
+		err += "\n";
+	}
+
+	// Check the target sdk version
+	int target_sdk_version = p_preset->get("version/target_sdk");
+	if (target_sdk_version != DEFAULT_TARGET_SDK_VERSION && !custom_build_enabled) {
+		valid = false;
+		err += TTR("Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is enabled.");
+		err += "\n";
+	}
+
+	if (target_sdk_version < min_sdk_version) {
+		valid = false;
+		err += TTR("\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version.");
 		err += "\n";
 	}
 
@@ -2559,6 +2608,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String package_name = get_package_name(p_preset->get("package/unique_name"));
 		String version_code = itos(p_preset->get("version/code"));
 		String version_name = p_preset->get("version/name");
+		String min_sdk_version = itos(p_preset->get("version/min_sdk"));
+		String target_sdk_version = itos(p_preset->get("version/target_sdk"));
 		String enabled_abi_string = String("|").join(enabled_abis);
 		String sign_flag = should_sign ? "true" : "false";
 		String zipalign_flag = "true";
@@ -2588,6 +2639,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
 		cmdline.push_back("-Pexport_version_code=" + version_code); // argument to specify the version code.
 		cmdline.push_back("-Pexport_version_name=" + version_name); // argument to specify the version name.
+		cmdline.push_back("-Pexport_version_min_sdk=" + min_sdk_version); // argument to specify the min sdk.
+		cmdline.push_back("-Pexport_version_target_sdk=" + target_sdk_version); // argument to specify the target sdk.
 		cmdline.push_back("-Pexport_enabled_abis=" + enabled_abi_string); // argument to specify enabled ABIs.
 		cmdline.push_back("-Pplugins_local_binaries=" + local_plugins_binaries); // argument to specify the list of plugins local dependencies.
 		cmdline.push_back("-Pplugins_remote_binaries=" + remote_plugins_binaries); // argument to specify the list of plugins remote dependencies.
@@ -2680,13 +2733,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		src_apk = p_preset->get("custom_template/release");
 	}
 	src_apk = src_apk.strip_edges();
-	if (src_apk == "") {
+	if (src_apk.is_empty()) {
 		if (p_debug) {
 			src_apk = find_export_template("android_debug.apk");
 		} else {
 			src_apk = find_export_template("android_release.apk");
 		}
-		if (src_apk == "") {
+		if (src_apk.is_empty()) {
 			EditorNode::add_io_error(vformat(TTR("Package not found: %s"), src_apk));
 			return ERR_FILE_NOT_FOUND;
 		}

@@ -79,7 +79,7 @@ static Error _erase_recursive(DirAccess *da) {
 
 	da->list_dir_begin();
 	String n = da->get_next();
-	while (n != String()) {
+	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
 			if (da->current_is_dir()) {
 				dirs.push_back(n);
@@ -183,7 +183,7 @@ String DirAccess::fix_path(String p_path) const {
 			if (ProjectSettings::get_singleton()) {
 				if (p_path.begins_with("res://")) {
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
-					if (resource_path != "") {
+					if (!resource_path.is_empty()) {
 						return p_path.replace_first("res:/", resource_path);
 					}
 					return p_path.replace_first("res://", "");
@@ -194,7 +194,7 @@ String DirAccess::fix_path(String p_path) const {
 		case ACCESS_USERDATA: {
 			if (p_path.begins_with("user://")) {
 				String data_dir = OS::get_singleton()->get_user_data_dir();
-				if (data_dir != "") {
+				if (!data_dir.is_empty()) {
 					return p_path.replace_first("user:/", data_dir);
 				}
 				return p_path.replace_first("user://", "");
@@ -337,7 +337,7 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 	String curdir = get_current_dir();
 	list_dir_begin();
 	String n = get_next();
-	while (n != String()) {
+	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
 			if (p_copy_links && is_link(get_current_dir().plus_file(n))) {
 				create_link(read_link(get_current_dir().plus_file(n)), p_to + n);

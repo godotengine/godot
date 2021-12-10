@@ -368,13 +368,13 @@ public:
 	}
 
 	void print_errors(const String &p_file) {
-		if (base_error != "") {
+		if (!base_error.is_empty()) {
 			ERR_PRINT("Error parsing shader '" + p_file + "':\n\n" + base_error);
 		} else {
 			for (KeyValue<StringName, Ref<RDShaderSPIRV>> &E : versions) {
 				for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 					String error = E.value->get_stage_compile_error(RD::ShaderStage(i));
-					if (error != String()) {
+					if (!error.is_empty()) {
 						static const char *stage_str[RD::SHADER_STAGE_MAX] = {
 							"vertex",
 							"fragment",

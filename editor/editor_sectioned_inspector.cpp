@@ -45,7 +45,7 @@ class SectionedInspectorFilter : public Object {
 		}
 
 		String name = p_name;
-		if (section != "") {
+		if (!section.is_empty()) {
 			name = section + "/" + name;
 		}
 
@@ -60,7 +60,7 @@ class SectionedInspectorFilter : public Object {
 		}
 
 		String name = p_name;
-		if (section != "") {
+		if (!section.is_empty()) {
 			name = section + "/" + name;
 		}
 
@@ -155,7 +155,7 @@ String SectionedInspector::get_current_section() const {
 String SectionedInspector::get_full_item_path(const String &p_item) {
 	String base = get_current_section();
 
-	if (base != "") {
+	if (!base.is_empty()) {
 		return base + "/" + p_item;
 	} else {
 		return p_item;

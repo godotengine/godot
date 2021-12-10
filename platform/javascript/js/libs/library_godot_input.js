@@ -262,7 +262,7 @@ const GodotInputDragDrop = {
 				const DROP = `/tmp/drop-${parseInt(Math.random() * (1 << 30), 10)}/`;
 				const drops = [];
 				const files = [];
-				FS.mkdir(DROP);
+				FS.mkdir(DROP.slice(0, -1)); // Without trailing slash
 				GodotInputDragDrop.pending_files.forEach((elem) => {
 					const path = elem['path'];
 					GodotFS.copy_to_fs(DROP + path, elem['data']);

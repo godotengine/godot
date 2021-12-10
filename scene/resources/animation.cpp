@@ -3998,13 +3998,12 @@ bool Animation::_blend_shape_track_optimize_key(const TKey<float> &t0, const TKe
 	float v1 = t1.value;
 	float v2 = t2.value;
 
-	if (Math::is_equal_approx(v1, v2, p_allowed_unit_error)) {
+	if (Math::is_equal_approx(v1, v2, (float)p_allowed_unit_error)) {
 		//0 and 2 are close, let's see if 1 is close
-		if (!Math::is_equal_approx(v0, v1, p_allowed_unit_error)) {
+		if (!Math::is_equal_approx(v0, v1, (float)p_allowed_unit_error)) {
 			//not close, not optimizable
 			return false;
 		}
-
 	} else {
 		/*
 		TODO eventually discuss a way to optimize these better.

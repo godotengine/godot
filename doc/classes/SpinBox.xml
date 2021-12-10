@@ -12,14 +12,14 @@
 		add_child(spin_box)
 		var line_edit = spin_box.get_line_edit()
 		line_edit.context_menu_enabled = false
-		spin_box.align = LineEdit.ALIGN_RIGHT
+		spin_box.horizontal_alignment = LineEdit.HORIZONTAL_ALIGNMENT_RIGHT
 		[/gdscript]
 		[csharp]
 		var spinBox = new SpinBox();
 		AddChild(spinBox);
 		var lineEdit = spinBox.GetLineEdit();
 		lineEdit.ContextMenuEnabled = false;
-		spinBox.Align = LineEdit.AlignEnum.Right;
+		spinBox.AlignHorizontal = LineEdit.HorizontalAlignEnum.Right;
 		[/csharp]
 		[/codeblocks]
 		The above code will create a [SpinBox], disable context menu on it and set the text alignment to right.
@@ -44,8 +44,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align" default="0">
-			Sets the text alignment of the [SpinBox].
+		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.

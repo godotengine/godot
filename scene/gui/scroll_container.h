@@ -38,6 +38,15 @@
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);
 
+public:
+	enum ScrollMode {
+		SCROLL_MODE_DISABLED = 0,
+		SCROLL_MODE_AUTO,
+		SCROLL_MODE_SHOW_ALWAYS,
+		SCROLL_MODE_SHOW_NEVER,
+	};
+
+private:
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
 
@@ -54,11 +63,8 @@ class ScrollContainer : public Container {
 	bool drag_touching_deaccel = false;
 	bool beyond_deadzone = false;
 
-	bool scroll_h = true;
-	bool scroll_v = true;
-
-	bool h_scroll_visible = true;
-	bool v_scroll_visible = true;
+	ScrollMode horizontal_scroll_mode = SCROLL_MODE_AUTO;
+	ScrollMode vertical_scroll_mode = SCROLL_MODE_AUTO;
 
 	int deadzone = 0;
 	bool follow_focus = false;
@@ -87,17 +93,11 @@ public:
 	void set_v_scroll(int p_pos);
 	int get_v_scroll() const;
 
-	void set_enable_h_scroll(bool p_enable);
-	bool is_h_scroll_enabled() const;
+	void set_horizontal_scroll_mode(ScrollMode p_mode);
+	ScrollMode get_horizontal_scroll_mode() const;
 
-	void set_enable_v_scroll(bool p_enable);
-	bool is_v_scroll_enabled() const;
-
-	void set_h_scroll_visible(bool p_visible);
-	bool is_h_scroll_visible() const;
-
-	void set_v_scroll_visible(bool p_visible);
-	bool is_v_scroll_visible() const;
+	void set_vertical_scroll_mode(ScrollMode p_mode);
+	ScrollMode get_vertical_scroll_mode() const;
 
 	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
@@ -113,5 +113,7 @@ public:
 
 	ScrollContainer();
 };
+
+VARIANT_ENUM_CAST(ScrollContainer::ScrollMode);
 
 #endif

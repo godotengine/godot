@@ -125,7 +125,7 @@ EditorAbout::EditorAbout() {
 	vbc->connect("theme_changed", callable_mp(this, &EditorAbout::_theme_changed));
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	hbc->set_alignment(BoxContainer::ALIGN_CENTER);
+	hbc->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	hbc->add_theme_constant_override("separation", 30 * EDSCALE);
 	add_child(vbc);
 	vbc->add_child(hbc);

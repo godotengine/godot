@@ -1238,8 +1238,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_preview->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_preview_input));
 
 	split_sheet_scroll = memnew(ScrollContainer);
-	split_sheet_scroll->set_enable_h_scroll(true);
-	split_sheet_scroll->set_enable_v_scroll(true);
 	split_sheet_scroll->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_scroll_input));
 	split_sheet_panel->add_child(split_sheet_scroll);
 	CenterContainer *cc = memnew(CenterContainer);

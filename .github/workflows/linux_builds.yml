@@ -29,15 +29,15 @@ jobs:
             build-mono: true
             artifact: true
 
-          - name: Editor and sanitizers (target=debug, tools=yes, tests=yes, use_asan=yes, use_ubsan=yes)
-            cache-name: linux-editor-sanitizers
+          - name: Editor with doubles and sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes)
+            cache-name: linux-editor-double-sanitizers
             target: debug
             tools: true
             tests: true
-            sconsflags: use_asan=yes use_ubsan=yes
+            sconsflags: float=64 use_asan=yes use_ubsan=yes
             proj-test: true
             godot-cpp-test: true
-            bin: "./bin/godot.linuxbsd.tools.64s"
+            bin: "./bin/godot.linuxbsd.double.tools.64s"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false

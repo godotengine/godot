@@ -107,7 +107,7 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position) {
 	item_menu->clear();
 	item_menu->add_icon_item(get_theme_icon(SNAME("CreateNewSceneFrom"), SNAME("EditorIcons")), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
 	item_menu->add_icon_item(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
-	item_menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
+	item_menu->set_position(get_screen_position() + get_local_mouse_position());
 	item_menu->popup();
 }
 

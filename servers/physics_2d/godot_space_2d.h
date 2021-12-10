@@ -96,9 +96,12 @@ private:
 
 	GodotArea2D *area = nullptr;
 
+	int solver_iterations = 16;
+
 	real_t contact_recycle_radius = 1.0;
 	real_t contact_max_separation = 1.5;
 	real_t contact_max_allowed_penetration = 0.3;
+	real_t contact_bias = 0.8;
 	real_t constraint_bias = 0.2;
 
 	enum {
@@ -155,9 +158,11 @@ public:
 	void remove_object(GodotCollisionObject2D *p_object);
 	const Set<GodotCollisionObject2D *> &get_objects() const;
 
+	_FORCE_INLINE_ int get_solver_iterations() const { return solver_iterations; }
 	_FORCE_INLINE_ real_t get_contact_recycle_radius() const { return contact_recycle_radius; }
 	_FORCE_INLINE_ real_t get_contact_max_separation() const { return contact_max_separation; }
 	_FORCE_INLINE_ real_t get_contact_max_allowed_penetration() const { return contact_max_allowed_penetration; }
+	_FORCE_INLINE_ real_t get_contact_bias() const { return contact_bias; }
 	_FORCE_INLINE_ real_t get_constraint_bias() const { return constraint_bias; }
 	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_threshold() const { return body_linear_velocity_sleep_threshold; }
 	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_threshold() const { return body_angular_velocity_sleep_threshold; }

@@ -79,7 +79,7 @@ void ScriptEditorDebugger::_put_msg(String p_message, Array p_data) {
 
 void ScriptEditorDebugger::debug_copy() {
 	String msg = reason->get_text();
-	if (msg == "") {
+	if (msg.is_empty()) {
 		return;
 	}
 	DisplayServer::get_singleton()->clipboard_set(msg);
@@ -312,7 +312,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (is_move_to_foreground()) {
 			DisplayServer::get_singleton()->window_move_to_foreground();
 		}
-		if (error != "") {
+		if (!error.is_empty()) {
 			tabs->set_current_tab(0);
 		}
 		profiler->set_enabled(false);
@@ -499,7 +499,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		error->set_icon(0, get_theme_icon(oe.warning ? "Warning" : "Error", "EditorIcons"));
 		error->set_text(0, time);
-		error->set_text_align(0, TreeItem::ALIGN_LEFT);
+		error->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 
 		const Color color = get_theme_color(oe.warning ? SNAME("warning_color") : SNAME("error_color"), SNAME("Editor"));
 		error->set_custom_color(0, color);
@@ -524,7 +524,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			TreeItem *cpp_cond = error_tree->create_item(error);
 			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
 			cpp_cond->set_text(1, oe.error);
-			cpp_cond->set_text_align(0, TreeItem::ALIGN_LEFT);
+			cpp_cond->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 			tooltip += TTR("C++ Error:") + " " + oe.error + "\n";
 			if (source_is_project_file) {
 				cpp_cond->set_metadata(0, source_meta);
@@ -542,7 +542,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		TreeItem *cpp_source = error_tree->create_item(error);
 		cpp_source->set_text(0, "<" + (source_is_project_file ? TTR("Source") : TTR("C++ Source")) + ">");
 		cpp_source->set_text(1, source_txt);
-		cpp_source->set_text_align(0, TreeItem::ALIGN_LEFT);
+		cpp_source->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 		tooltip += (source_is_project_file ? TTR("Source:") : TTR("C++ Source:")) + " " + source_txt + "\n";
 
 		// Set metadata to highlight error line in scripts.
@@ -565,7 +565,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			if (i == 0) {
 				stack_trace->set_text(0, "<" + TTR("Stack Trace") + ">");
-				stack_trace->set_text_align(0, TreeItem::ALIGN_LEFT);
+				stack_trace->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 				error->set_metadata(0, meta);
 				tooltip += TTR("Stack Trace:") + "\n";
 			}
@@ -1083,7 +1083,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 
 	Resource *res = Object::cast_to<Resource>(p_base);
 
-	if (res && res->get_path() != String()) {
+	if (res && !res->get_path().is_empty()) {
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
@@ -1113,7 +1113,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
 		if (p_value.is_ref()) {
 			Ref<Resource> res = p_value;
-			if (res.is_valid() && res->get_path() != String()) {
+			if (res.is_valid() && !res->get_path().is_empty()) {
 				Array msg;
 				msg.push_back(pathid);
 				msg.push_back(p_property);
@@ -1133,13 +1133,13 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
 	Resource *res = Object::cast_to<Resource>(p_base);
 
-	if (res && res->get_path() != String()) {
+	if (res && !res->get_path().is_empty()) {
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
 		if (p_value.is_ref()) {
 			Ref<Resource> res2 = p_value;
-			if (res2.is_valid() && res2->get_path() != String()) {
+			if (res2.is_valid() && !res2->get_path().is_empty()) {
 				Array msg;
 				msg.push_back(pathid);
 				msg.push_back(p_property);
@@ -1428,7 +1428,7 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 	}
 
 	if (item_menu->get_item_count() > 0) {
-		item_menu->set_position(error_tree->get_global_position() + p_pos);
+		item_menu->set_position(error_tree->get_screen_position() + p_pos);
 		item_menu->popup();
 	}
 }
@@ -1574,7 +1574,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	editor = p_editor;
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabs->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 

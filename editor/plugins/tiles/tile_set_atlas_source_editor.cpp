@@ -2321,7 +2321,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	// Middle panel.
 	ScrollContainer *middle_panel = memnew(ScrollContainer);
-	middle_panel->set_enable_h_scroll(false);
+	middle_panel->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	middle_panel->set_custom_minimum_size(Size2i(200, 0) * EDSCALE);
 	split_container_right_side->add_child(middle_panel);
 
@@ -2339,14 +2339,14 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tile_inspector = memnew(EditorInspector);
 	tile_inspector->set_undo_redo(undo_redo);
-	tile_inspector->set_enable_v_scroll(false);
+	tile_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	tile_inspector->edit(tile_proxy_object);
 	tile_inspector->set_use_folding(true);
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
 	middle_vbox_container->add_child(tile_inspector);
 
 	tile_inspector_no_tile_selected_label = memnew(Label);
-	tile_inspector_no_tile_selected_label->set_align(Label::ALIGN_CENTER);
+	tile_inspector_no_tile_selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	tile_inspector_no_tile_selected_label->set_text(TTR("No tile selected."));
 	middle_vbox_container->add_child(tile_inspector_no_tile_selected_label);
 
@@ -2385,7 +2385,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	atlas_source_inspector = memnew(EditorInspector);
 	atlas_source_inspector->set_undo_redo(undo_redo);
-	atlas_source_inspector->set_enable_v_scroll(false);
+	atlas_source_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	atlas_source_inspector->edit(atlas_source_proxy_object);
 	middle_vbox_container->add_child(atlas_source_inspector);
 
@@ -2527,8 +2527,8 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tile_atlas_view_missing_source_label = memnew(Label);
 	tile_atlas_view_missing_source_label->set_text(TTR("Add or select an atlas texture to the left panel."));
-	tile_atlas_view_missing_source_label->set_align(Label::ALIGN_CENTER);
-	tile_atlas_view_missing_source_label->set_valign(Label::VALIGN_CENTER);
+	tile_atlas_view_missing_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	tile_atlas_view_missing_source_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	tile_atlas_view_missing_source_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view_missing_source_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view_missing_source_label->hide();

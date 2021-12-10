@@ -115,7 +115,7 @@ void NativeExtensionManager::load_extensions() {
 	FileAccessRef f = FileAccess::open(NativeExtension::get_extension_list_config_file(), FileAccess::READ);
 	while (f && !f->eof_reached()) {
 		String s = f->get_line().strip_edges();
-		if (s != String()) {
+		if (!s.is_empty()) {
 			LoadStatus err = load_extension(s);
 			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, "Error loading extension: " + s);
 		}

@@ -726,7 +726,7 @@
 	<signals>
 		<signal name="ready">
 			<description>
-				Emitted when the node is ready.
+				Emitted when the node is ready. Comes after [method _ready] callback and follows the same rules.
 			</description>
 		</signal>
 		<signal name="renamed">

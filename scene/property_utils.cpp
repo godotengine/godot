@@ -164,7 +164,7 @@ Vector<SceneState::PackState> PropertyUtils::get_node_states_stack(const Node *p
 					}
 				}
 				break;
-			} else if (n->get_scene_file_path() != String()) {
+			} else if (!n->get_scene_file_path().is_empty()) {
 				const Ref<SceneState> &state = n->get_scene_instance_state();
 				_collect_inheritance_chain(state, n->get_path_to(p_node), states_stack);
 			}

@@ -893,7 +893,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="key" type="Variant" />
 			<argument index="2" name="size" type="Vector2" />
-			<argument index="3" name="inline_align" type="int" enum="InlineAlign" />
+			<argument index="3" name="inline_align" type="int" enum="InlineAlignment" />
 			<argument index="4" name="length" type="int" />
 			<description>
 				Adds inline object to the text buffer, [code]key[/code] must be unique. In the text, object is represented as [code]length[/code] object replacement characters.
@@ -1222,7 +1222,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="key" type="Variant" />
 			<argument index="2" name="size" type="Vector2" />
-			<argument index="3" name="inline_align" type="int" enum="InlineAlign" />
+			<argument index="3" name="inline_align" type="int" enum="InlineAlignment" />
 			<description>
 				Sets new size and alignment of embedded object.
 			</description>

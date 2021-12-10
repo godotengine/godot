@@ -861,7 +861,13 @@ ShaderLanguage::DataType ShaderCompilerGLES3::_get_variable_type(const StringNam
 Error ShaderCompilerGLES3::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
 	ShaderLanguage::VaryingFunctionNames var_names;
 
-	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), var_names, ShaderTypes::get_singleton()->get_types(), _get_variable_type);
+	ShaderLanguage::ShaderCompileInfo info;
+	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
+	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
+	info.shader_types = ShaderTypes::get_singleton()->get_types();
+	info.global_variable_type_func = _get_variable_type;
+
+	Error err = parser.compile(p_code, info);
 
 	//	Error ShaderLanguage::compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func) {
 	if (err != OK) {

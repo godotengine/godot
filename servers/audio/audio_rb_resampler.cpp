@@ -43,7 +43,7 @@ int AudioRBResampler::get_channel_count() const {
 
 // Linear interpolation based sample rate conversion (low quality)
 // Note that AudioStreamPlaybackResampled::mix has better algorithm,
-// but it wasn't obvious to integrate that with VideoPlayer
+// but it wasn't obvious to integrate that with VideoStreamPlayer
 template <int C>
 uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_increment) {
 	uint32_t read = offset & MIX_FRAC_MASK;

@@ -47,7 +47,7 @@ void ThemeEditorPreview::add_preview_overlay(Control *p_overlay) {
 
 void ThemeEditorPreview::_propagate_redraw(Control *p_at) {
 	p_at->notification(NOTIFICATION_THEME_CHANGED);
-	p_at->minimum_size_changed();
+	p_at->update_minimum_size();
 	p_at->update();
 	for (int i = 0; i < p_at->get_child_count(); i++) {
 		Control *a = Object::cast_to<Control>(p_at->get_child(i));
@@ -136,7 +136,7 @@ void ThemeEditorPreview::_draw_picker_overlay() {
 		Point2 label_pos = highlight_label_rect.position;
 		label_pos.y += highlight_label_rect.size.y - margin_bottom;
 		label_pos.x += margin_left;
-		picker_overlay->draw_string(theme_cache.preview_picker_font, label_pos, highlight_name, HALIGN_LEFT, -1, theme_cache.font_size);
+		picker_overlay->draw_string(theme_cache.preview_picker_font, label_pos, highlight_name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size);
 	}
 }
 
@@ -228,8 +228,6 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	add_child(preview_body);
 
 	preview_container = memnew(ScrollContainer);
-	preview_container->set_enable_v_scroll(true);
-	preview_container->set_enable_h_scroll(true);
 	preview_body->add_child(preview_container);
 
 	MarginContainer *preview_root = memnew(MarginContainer);
@@ -367,7 +365,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	vhb->add_child(memnew(VSeparator));
 	VBoxContainer *hvb = memnew(VBoxContainer);
 	vhb->add_child(hvb);
-	hvb->set_alignment(BoxContainer::ALIGN_CENTER);
+	hvb->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	hvb->set_h_size_flags(SIZE_EXPAND_FILL);
 	hvb->add_child(memnew(HSlider));
 	HScrollBar *hsb = memnew(HScrollBar);

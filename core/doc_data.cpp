@@ -33,7 +33,7 @@
 void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo) {
 	if (p_retinfo.type == Variant::INT && p_retinfo.hint == PROPERTY_HINT_INT_IS_POINTER) {
 		p_method.return_type = p_retinfo.hint_string;
-		if (p_method.return_type == "") {
+		if (p_method.return_type.is_empty()) {
 			p_method.return_type = "void*";
 		} else {
 			p_method.return_type += "*";
@@ -64,7 +64,7 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 
 	if (p_arginfo.type == Variant::INT && p_arginfo.hint == PROPERTY_HINT_INT_IS_POINTER) {
 		p_argument.type = p_arginfo.hint_string;
-		if (p_argument.type == "") {
+		if (p_argument.type.is_empty()) {
 			p_argument.type = "void*";
 		} else {
 			p_argument.type += "*";

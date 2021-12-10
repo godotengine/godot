@@ -103,7 +103,6 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vector", "negative_x", "positive_x", "negative_y", "positive_y", "deadzone"), &Input::get_vector, DEFVAL(-1.0f));
 	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_joy_mapping", "guid"), &Input::remove_joy_mapping);
-	ClassDB::bind_method(D_METHOD("joy_connection_changed", "device", "connected", "name", "guid"), &Input::joy_connection_changed);
 	ClassDB::bind_method(D_METHOD("is_joy_known", "device"), &Input::is_joy_known);
 	ClassDB::bind_method(D_METHOD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
 	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
@@ -404,7 +403,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 
 	if (p_connected) {
 		String uidname = p_guid;
-		if (p_guid == "") {
+		if (p_guid.is_empty()) {
 			int uidlen = MIN(p_name.length(), 16);
 			for (int i = 0; i < uidlen; i++) {
 				uidname = uidname + _hex_str(p_name[i]);
@@ -1250,7 +1249,7 @@ void Input::parse_mapping(String p_mapping) {
 
 	int idx = 1;
 	while (++idx < entry.size()) {
-		if (entry[idx] == "") {
+		if (entry[idx].is_empty()) {
 			continue;
 		}
 
@@ -1421,10 +1420,10 @@ Input::Input() {
 
 	// If defined, parse SDL_GAMECONTROLLERCONFIG for possible new mappings/overrides.
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
-	if (env_mapping != "") {
+	if (!env_mapping.is_empty()) {
 		Vector<String> entries = env_mapping.split("\n");
 		for (int i = 0; i < entries.size(); i++) {
-			if (entries[i] == "") {
+			if (entries[i].is_empty()) {
 				continue;
 			}
 			parse_mapping(entries[i]);

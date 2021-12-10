@@ -184,7 +184,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		String parent = path.substr(0, sep);
 
 		String plocal = localize_path(parent);
-		if (plocal == "") {
+		if (plocal.is_empty()) {
 			return "";
 		}
 		// Only strip the starting '/' from 'path' if its parent ('plocal') ends with '/'
@@ -228,13 +228,13 @@ bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
 
 String ProjectSettings::globalize_path(const String &p_path) const {
 	if (p_path.begins_with("res://")) {
-		if (resource_path != "") {
+		if (!resource_path.is_empty()) {
 			return p_path.replace("res:/", resource_path);
 		}
 		return p_path.replace("res://", "");
 	} else if (p_path.begins_with("user://")) {
 		String data_dir = OS::get_singleton()->get_user_data_dir();
-		if (data_dir != "") {
+		if (!data_dir.is_empty()) {
 			return p_path.replace("user:/", data_dir);
 		}
 		return p_path.replace("user://", "");
@@ -456,7 +456,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	// Attempt with a user-defined main pack first
 
-	if (p_main_pack != "") {
+	if (!p_main_pack.is_empty()) {
 		bool ok = _load_resource_pack(p_main_pack);
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, "Cannot open resource pack '" + p_main_pack + "'.");
 
@@ -471,7 +471,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	String exec_path = OS::get_singleton()->get_executable_path();
 
-	if (exec_path != "") {
+	if (!exec_path.is_empty()) {
 		// We do several tests sequentially until one succeeds to find a PCK,
 		// and if so, we attempt loading it at the end.
 
@@ -523,11 +523,11 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	// Try to use the filesystem for files, according to OS.
 	// (Only Android -when reading from pck- and iOS use this.)
 
-	if (OS::get_singleton()->get_resource_dir() != "") {
+	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
 		// If the OS would rather use a specific location, then it will not be empty.
 		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
-		if (resource_path != "" && resource_path[resource_path.length() - 1] == '/') {
+		if (!resource_path.is_empty() && resource_path[resource_path.length() - 1] == '/') {
 			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
 		}
 
@@ -591,7 +591,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
 	if (err == OK) {
 		String custom_settings = GLOBAL_DEF("application/config/project_settings_override", "");
-		if (custom_settings != "") {
+		if (!custom_settings.is_empty()) {
 			_load_settings_text(custom_settings);
 		}
 	}
@@ -699,21 +699,21 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			return err;
 		}
 
-		if (assign != String()) {
-			if (section == String() && assign == "config_version") {
+		if (!assign.is_empty()) {
+			if (section.is_empty() && assign == "config_version") {
 				config_version = value;
 				if (config_version > CONFIG_VERSION) {
 					memdelete(f);
 					ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, vformat("Can't open project at '%s', its `config_version` (%d) is from a more recent and incompatible version of the engine. Expected config version: %d.", p_path, config_version, CONFIG_VERSION));
 				}
 			} else {
-				if (section == String()) {
+				if (section.is_empty()) {
 					set(assign, value);
 				} else {
 					set(section + "/" + assign, value);
 				}
 			}
-		} else if (next_tag.name != String()) {
+		} else if (!next_tag.name.is_empty()) {
 			section = next_tag.name;
 		}
 	}
@@ -797,7 +797,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		count += E.value.size();
 	}
 
-	if (p_custom_features != String()) {
+	if (!p_custom_features.is_empty()) {
 		file->store_32(count + 1);
 		//store how many properties are saved, add one for custom featuers, which must always go first
 		String key = CoreStringNames::get_singleton()->_custom_features;
@@ -827,7 +827,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 		for (String &key : E->get()) {
-			if (E->key() != "") {
+			if (!E->key().is_empty()) {
 				key = E->key() + "/" + key;
 			}
 			Variant value;
@@ -881,7 +881,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 	file->store_line("");
 
 	file->store_string("config_version=" + itos(CONFIG_VERSION) + "\n");
-	if (p_custom_features != String()) {
+	if (!p_custom_features.is_empty()) {
 		file->store_string("custom_features=\"" + p_custom_features + "\"\n");
 	}
 	file->store_string("\n");
@@ -891,12 +891,12 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 			file->store_string("\n");
 		}
 
-		if (E->key() != "") {
+		if (!E->key().is_empty()) {
 			file->store_string("[" + E->key() + "]\n\n");
 		}
 		for (const String &F : E->get()) {
 			String key = F;
-			if (E->key() != "") {
+			if (!E->key().is_empty()) {
 				key = E->key() + "/" + key;
 			}
 			Variant value;
@@ -924,7 +924,7 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 }
 
 Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
-	ERR_FAIL_COND_V_MSG(p_path == "", ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
+	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
 
 	PackedStringArray project_features = has_setting("application/config/features") ? (PackedStringArray)get_setting("application/config/features") : PackedStringArray();
 	// If there is no feature list currently present, force one to generate.
@@ -933,7 +933,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 	// Check the rendering API.
 	const String rendering_api = has_setting("rendering/quality/driver/driver_name") ? (String)get_setting("rendering/quality/driver/driver_name") : String();
-	if (rendering_api != "") {
+	if (!rendering_api.is_empty()) {
 		// Add the rendering API as a project feature if it doesn't already exist.
 		if (!project_features.has(rendering_api)) {
 			project_features.append(rendering_api);

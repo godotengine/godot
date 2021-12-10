@@ -102,7 +102,7 @@ String DirAccessJAndroid::get_drive(int p_drive) {
 Error DirAccessJAndroid::change_dir(String p_dir) {
 	JNIEnv *env = get_jni_env();
 
-	if (p_dir == "" || p_dir == "." || (p_dir == ".." && current_dir == ""))
+	if (p_dir.is_empty() || p_dir == "." || (p_dir == ".." && current_dir.is_empty()))
 		return OK;
 
 	String new_dir;
@@ -114,7 +114,7 @@ Error DirAccessJAndroid::change_dir(String p_dir) {
 		new_dir = p_dir.substr(1, p_dir.length());
 	else if (p_dir.begins_with("res://"))
 		new_dir = p_dir.substr(6, p_dir.length());
-	else if (current_dir == "")
+	else if (current_dir.is_empty())
 		new_dir = p_dir;
 	else
 		new_dir = current_dir.plus_file(p_dir);
@@ -141,7 +141,7 @@ String DirAccessJAndroid::get_current_dir(bool p_include_drive) {
 
 bool DirAccessJAndroid::file_exists(String p_file) {
 	String sd;
-	if (current_dir == "")
+	if (current_dir.is_empty())
 		sd = p_file;
 	else
 		sd = current_dir.plus_file(p_file);
@@ -158,7 +158,7 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 
 	String sd;
 
-	if (current_dir == "")
+	if (current_dir.is_empty())
 		sd = p_dir;
 	else {
 		if (p_dir.is_relative_path())

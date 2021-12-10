@@ -132,14 +132,14 @@ void EditorPerformanceProfiler::_monitor_draw() {
 		rect.size -= graph_style_box->get_minimum_size();
 		Color draw_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 		draw_color.set_hsv(Math::fmod(hue_shift * float(current.frame_index), 0.9f), draw_color.get_s() * 0.9f, draw_color.get_v() * value_multiplier, 0.6f);
-		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent(font_size)), current.item->get_text(0), HALIGN_LEFT, rect.size.x, font_size, draw_color);
+		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent(font_size)), current.item->get_text(0), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size, draw_color);
 
 		draw_color.a = 0.9f;
 		float value_position = rect.size.width - graph_font->get_string_size(current.item->get_text(1), font_size).width;
 		if (value_position < 0) {
 			value_position = 0;
 		}
-		monitor_draw->draw_string(graph_font, rect.position + Point2(value_position, graph_font->get_ascent(font_size)), current.item->get_text(1), HALIGN_LEFT, rect.size.x, font_size, draw_color);
+		monitor_draw->draw_string(graph_font, rect.position + Point2(value_position, graph_font->get_ascent(font_size)), current.item->get_text(1), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size, draw_color);
 
 		rect.position.y += graph_font->get_height(font_size);
 		rect.size.height -= graph_font->get_height(font_size);
@@ -152,12 +152,12 @@ void EditorPerformanceProfiler::_monitor_draw() {
 			Color horizontal_line_color;
 			horizontal_line_color.set_hsv(draw_color.get_h(), draw_color.get_s() * 0.5f, draw_color.get_v() * 0.5f, 0.3f);
 			monitor_draw->draw_line(rect.position, rect.position + Vector2(rect.size.width, 0), horizontal_line_color, Math::round(EDSCALE));
-			monitor_draw->draw_string(graph_font, rect.position + Vector2(0, graph_font->get_ascent(font_size)), _create_label(current.max, current.type), HALIGN_LEFT, rect.size.width, font_size, horizontal_line_color);
+			monitor_draw->draw_string(graph_font, rect.position + Vector2(0, graph_font->get_ascent(font_size)), _create_label(current.max, current.type), HORIZONTAL_ALIGNMENT_LEFT, rect.size.width, font_size, horizontal_line_color);
 
 			for (int j = 0; j < line_count; j++) {
 				Vector2 y_offset = Vector2(0, rect.size.height * (1.0f - float(j) / float(line_count)));
 				monitor_draw->draw_line(rect.position + y_offset, rect.position + Vector2(rect.size.width, 0) + y_offset, horizontal_line_color, Math::round(EDSCALE));
-				monitor_draw->draw_string(graph_font, rect.position - Vector2(0, graph_font->get_descent(font_size)) + y_offset, _create_label(current.max * float(j) / float(line_count), current.type), HALIGN_LEFT, rect.size.width, font_size, horizontal_line_color);
+				monitor_draw->draw_string(graph_font, rect.position - Vector2(0, graph_font->get_descent(font_size)) + y_offset, _create_label(current.max * float(j) / float(line_count), current.type), HORIZONTAL_ALIGNMENT_LEFT, rect.size.width, font_size, horizontal_line_color);
 			}
 		}
 
@@ -191,7 +191,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 				if (text_top_left_position.y < 0) {
 					text_top_left_position.y = h2 + MARKER_MARGIN;
 				}
-				monitor_draw->draw_string(graph_font, rect.position + text_top_left_position + Point2(0, graph_font->get_ascent(font_size)), label, HALIGN_LEFT, rect.size.x, font_size, line_color);
+				monitor_draw->draw_string(graph_font, rect.position + text_top_left_position + Point2(0, graph_font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size, line_color);
 			}
 			prev = h2;
 			e = e->next();
@@ -378,8 +378,8 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 
 	info_message = memnew(Label);
 	info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
-	info_message->set_valign(Label::VALIGN_CENTER);
-	info_message->set_align(Label::ALIGN_CENTER);
+	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	info_message->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);

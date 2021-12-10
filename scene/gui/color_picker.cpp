@@ -1274,7 +1274,7 @@ ColorPicker::ColorPicker() :
 	preset_container->set_columns(preset_column_count);
 	add_child(preset_container, false, INTERNAL_MODE_FRONT);
 
-	btn_add_preset->set_icon_align(Button::ALIGN_CENTER);
+	btn_add_preset->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	btn_add_preset->set_tooltip(RTR("Add current color as a preset."));
 	btn_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);

@@ -53,7 +53,7 @@ void ExportTemplateManager::_update_template_status() {
 	da->list_dir_begin();
 	if (err == OK) {
 		String c = da->get_next();
-		while (c != String()) {
+		while (!c.is_empty()) {
 			if (da->current_is_dir() && !c.begins_with(".")) {
 				templates.insert(c);
 			}
@@ -424,7 +424,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		ret = unzGoToNextFile(pkg);
 	}
 
-	if (version == String()) {
+	if (version.is_empty()) {
 		EditorNode::get_singleton()->show_warning(TTR("No version.txt found inside the export templates file."));
 		unzClose(pkg);
 		return false;
@@ -827,7 +827,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_missing_label->set_theme_type_variation("HeaderSmall");
 
 	current_missing_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	current_missing_label->set_align(Label::ALIGN_RIGHT);
+	current_missing_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	current_missing_label->set_text(TTR("Export templates are missing. Download them or install from a file."));
 	current_hb->add_child(current_missing_label);
 
@@ -835,7 +835,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_installed_label = memnew(Label);
 	current_installed_label->set_theme_type_variation("HeaderSmall");
 	current_installed_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	current_installed_label->set_align(Label::ALIGN_RIGHT);
+	current_installed_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	current_installed_label->set_text(TTR("Export templates are installed and ready to be used."));
 	current_hb->add_child(current_installed_label);
 	current_installed_label->hide();
@@ -909,7 +909,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	}
 
 	HBoxContainer *install_file_hb = memnew(HBoxContainer);
-	install_file_hb->set_alignment(BoxContainer::ALIGN_END);
+	install_file_hb->set_alignment(BoxContainer::ALIGNMENT_END);
 	install_options_vb->add_child(install_file_hb);
 
 	install_file_button = memnew(Button);

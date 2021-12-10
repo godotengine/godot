@@ -22,14 +22,14 @@
 			<return type="HScrollBar" />
 			<description>
 				Returns the horizontal scrollbar [HScrollBar] of this [ScrollContainer].
-				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to disable the horizontal scrollbar, use [member scroll_horizontal_enabled]. If you want to only hide it instead, use [member scroll_horizontal_visible].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to disable or hide a scrollbar, you can use [member horizontal_scroll_mode].
 			</description>
 		</method>
 		<method name="get_v_scrollbar">
 			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar [VScrollBar] of this [ScrollContainer].
-				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to disable the vertical scrollbar, use [member scroll_vertical_enabled]. If you want to only hide it instead, use [member scroll_vertical_visible].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to disable or hide a scrollbar, you can use [member vertical_scroll_mode].
 			</description>
 		</method>
 	</methods>
@@ -37,26 +37,20 @@
 		<member name="follow_focus" type="bool" setter="set_follow_focus" getter="is_following_focus" default="false">
 			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.
 		</member>
+		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
+			Controls whether horizontal scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
+		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="scroll_deadzone" type="int" setter="set_deadzone" getter="get_deadzone" default="0">
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			The current horizontal scroll value.
 		</member>
-		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" default="true">
-			If [code]true[/code], enables horizontal scrolling.
-		</member>
-		<member name="scroll_horizontal_visible" type="bool" setter="set_h_scroll_visible" getter="is_h_scroll_visible" default="true">
-			If [code]false[/code], hides the horizontal scrollbar.
-		</member>
 		<member name="scroll_vertical" type="int" setter="set_v_scroll" getter="get_v_scroll" default="0">
 			The current vertical scroll value.
 		</member>
-		<member name="scroll_vertical_enabled" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled" default="true">
-			If [code]true[/code], enables vertical scrolling.
-		</member>
-		<member name="scroll_vertical_visible" type="bool" setter="set_v_scroll_visible" getter="is_v_scroll_visible" default="true">
-			If [code]false[/code], hides the vertical scrollbar.
+		<member name="vertical_scroll_mode" type="int" setter="set_vertical_scroll_mode" getter="get_vertical_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
+			Controls whether vertical scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
 		</member>
 	</members>
 	<signals>
@@ -71,6 +65,20 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="SCROLL_MODE_DISABLED" value="0" enum="ScrollMode">
+			Scrolling disabled, scrollbar will be invisible.
+		</constant>
+		<constant name="SCROLL_MODE_AUTO" value="1" enum="ScrollMode">
+			Scrolling enabled, scrollbar will be visible only if necessary, i.e. container's content is bigger than the container.
+		</constant>
+		<constant name="SCROLL_MODE_SHOW_ALWAYS" value="2" enum="ScrollMode">
+			Scrolling enabled, scrollbar will be always visible.
+		</constant>
+		<constant name="SCROLL_MODE_SHOW_NEVER" value="3" enum="ScrollMode">
+			Scrolling enabled, scrollbar will be hidden.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="bg" data_type="style" type="StyleBox">
 			The background [StyleBox] of the [ScrollContainer].

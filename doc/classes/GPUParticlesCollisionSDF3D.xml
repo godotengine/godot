@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GPUParticlesCollisionSDF" inherits="GPUParticlesCollision3D" version="4.0">
+<class name="GPUParticlesCollisionSDF3D" inherits="GPUParticlesCollision3D" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -9,7 +9,7 @@
 	<members>
 		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
 		</member>
-		<member name="resolution" type="int" setter="set_resolution" getter="get_resolution" enum="GPUParticlesCollisionSDF.Resolution" default="2">
+		<member name="resolution" type="int" setter="set_resolution" getter="get_resolution" enum="GPUParticlesCollisionSDF3D.Resolution" default="2">
 		</member>
 		<member name="texture" type="Texture3D" setter="set_texture" getter="get_texture">
 		</member>

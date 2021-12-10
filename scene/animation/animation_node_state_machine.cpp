@@ -52,7 +52,7 @@ void AnimationNodeStateMachineTransition::set_advance_condition(const StringName
 	String cs = p_condition;
 	ERR_FAIL_COND(cs.find("/") != -1 || cs.find(":") != -1);
 	advance_condition = p_condition;
-	if (cs != String()) {
+	if (!cs.is_empty()) {
 		advance_condition_name = "conditions/" + cs;
 	} else {
 		advance_condition_name = StringName();

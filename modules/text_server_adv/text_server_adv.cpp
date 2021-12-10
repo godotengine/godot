@@ -3144,7 +3144,7 @@ bool TextServerAdvanced::shaped_text_add_string(RID p_shaped, const String &p_te
 	return true;
 }
 
-bool TextServerAdvanced::shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align, int p_length) {
+bool TextServerAdvanced::shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length) {
 	_THREAD_SAFE_METHOD_
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
@@ -3174,7 +3174,7 @@ bool TextServerAdvanced::shaped_text_add_object(RID p_shaped, Variant p_key, con
 	return true;
 }
 
-bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
+bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align) {
 	ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
@@ -3242,56 +3242,56 @@ bool TextServerAdvanced::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 		for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : sd->objects) {
 			if ((E.value.pos >= sd->start) && (E.value.pos < sd->end)) {
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
-					switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-						case INLINE_ALIGN_TO_TOP: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+						case INLINE_ALIGNMENT_TO_TOP: {
 							E.value.rect.position.y = -sd->ascent;
 						} break;
-						case INLINE_ALIGN_TO_CENTER: {
+						case INLINE_ALIGNMENT_TO_CENTER: {
 							E.value.rect.position.y = (-sd->ascent + sd->descent) / 2;
 						} break;
-						case INLINE_ALIGN_TO_BASELINE: {
+						case INLINE_ALIGNMENT_TO_BASELINE: {
 							E.value.rect.position.y = 0;
 						} break;
-						case INLINE_ALIGN_TO_BOTTOM: {
+						case INLINE_ALIGNMENT_TO_BOTTOM: {
 							E.value.rect.position.y = sd->descent;
 						} break;
 					}
-					switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-						case INLINE_ALIGN_BOTTOM_TO: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+						case INLINE_ALIGNMENT_BOTTOM_TO: {
 							E.value.rect.position.y -= E.value.rect.size.y;
 						} break;
-						case INLINE_ALIGN_CENTER_TO: {
+						case INLINE_ALIGNMENT_CENTER_TO: {
 							E.value.rect.position.y -= E.value.rect.size.y / 2;
 						} break;
-						case INLINE_ALIGN_TOP_TO: {
+						case INLINE_ALIGNMENT_TOP_TO: {
 							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.y);
 					full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
 				} else {
-					switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-						case INLINE_ALIGN_TO_TOP: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+						case INLINE_ALIGNMENT_TO_TOP: {
 							E.value.rect.position.x = -sd->ascent;
 						} break;
-						case INLINE_ALIGN_TO_CENTER: {
+						case INLINE_ALIGNMENT_TO_CENTER: {
 							E.value.rect.position.x = (-sd->ascent + sd->descent) / 2;
 						} break;
-						case INLINE_ALIGN_TO_BASELINE: {
+						case INLINE_ALIGNMENT_TO_BASELINE: {
 							E.value.rect.position.x = 0;
 						} break;
-						case INLINE_ALIGN_TO_BOTTOM: {
+						case INLINE_ALIGNMENT_TO_BOTTOM: {
 							E.value.rect.position.x = sd->descent;
 						} break;
 					}
-					switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-						case INLINE_ALIGN_BOTTOM_TO: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+						case INLINE_ALIGNMENT_BOTTOM_TO: {
 							E.value.rect.position.x -= E.value.rect.size.x;
 						} break;
-						case INLINE_ALIGN_CENTER_TO: {
+						case INLINE_ALIGNMENT_CENTER_TO: {
 							E.value.rect.position.x -= E.value.rect.size.x / 2;
 						} break;
-						case INLINE_ALIGN_TOP_TO: {
+						case INLINE_ALIGNMENT_TOP_TO: {
 							// NOP
 						} break;
 					}
@@ -3433,56 +3433,56 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 		for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : new_sd->objects) {
 			if ((E.value.pos >= new_sd->start) && (E.value.pos < new_sd->end)) {
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
-					switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-						case INLINE_ALIGN_TO_TOP: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+						case INLINE_ALIGNMENT_TO_TOP: {
 							E.value.rect.position.y = -new_sd->ascent;
 						} break;
-						case INLINE_ALIGN_TO_CENTER: {
+						case INLINE_ALIGNMENT_TO_CENTER: {
 							E.value.rect.position.y = (-new_sd->ascent + new_sd->descent) / 2;
 						} break;
-						case INLINE_ALIGN_TO_BASELINE: {
+						case INLINE_ALIGNMENT_TO_BASELINE: {
 							E.value.rect.position.y = 0;
 						} break;
-						case INLINE_ALIGN_TO_BOTTOM: {
+						case INLINE_ALIGNMENT_TO_BOTTOM: {
 							E.value.rect.position.y = new_sd->descent;
 						} break;
 					}
-					switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-						case INLINE_ALIGN_BOTTOM_TO: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+						case INLINE_ALIGNMENT_BOTTOM_TO: {
 							E.value.rect.position.y -= E.value.rect.size.y;
 						} break;
-						case INLINE_ALIGN_CENTER_TO: {
+						case INLINE_ALIGNMENT_CENTER_TO: {
 							E.value.rect.position.y -= E.value.rect.size.y / 2;
 						} break;
-						case INLINE_ALIGN_TOP_TO: {
+						case INLINE_ALIGNMENT_TOP_TO: {
 							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.y);
 					full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
 				} else {
-					switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-						case INLINE_ALIGN_TO_TOP: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+						case INLINE_ALIGNMENT_TO_TOP: {
 							E.value.rect.position.x = -new_sd->ascent;
 						} break;
-						case INLINE_ALIGN_TO_CENTER: {
+						case INLINE_ALIGNMENT_TO_CENTER: {
 							E.value.rect.position.x = (-new_sd->ascent + new_sd->descent) / 2;
 						} break;
-						case INLINE_ALIGN_TO_BASELINE: {
+						case INLINE_ALIGNMENT_TO_BASELINE: {
 							E.value.rect.position.x = 0;
 						} break;
-						case INLINE_ALIGN_TO_BOTTOM: {
+						case INLINE_ALIGNMENT_TO_BOTTOM: {
 							E.value.rect.position.x = new_sd->descent;
 						} break;
 					}
-					switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-						case INLINE_ALIGN_BOTTOM_TO: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+						case INLINE_ALIGNMENT_BOTTOM_TO: {
 							E.value.rect.position.x -= E.value.rect.size.x;
 						} break;
-						case INLINE_ALIGN_CENTER_TO: {
+						case INLINE_ALIGNMENT_CENTER_TO: {
 							E.value.rect.position.x -= E.value.rect.size.x / 2;
 						} break;
-						case INLINE_ALIGN_TOP_TO: {
+						case INLINE_ALIGNMENT_TOP_TO: {
 							// NOP
 						} break;
 					}
@@ -4263,7 +4263,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 	}
 	hb_buffer_set_script(p_sd->hb_buffer, p_script);
 
-	if (p_sd->spans[p_span].language != String()) {
+	if (!p_sd->spans[p_span].language.is_empty()) {
 		hb_language_t lang = hb_language_from_string(p_sd->spans[p_span].language.ascii().get_data(), -1);
 		hb_buffer_set_language(p_sd->hb_buffer, lang);
 	}
@@ -4579,56 +4579,56 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 	float full_descent = sd->descent;
 	for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : sd->objects) {
 		if (sd->orientation == ORIENTATION_HORIZONTAL) {
-			switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-				case INLINE_ALIGN_TO_TOP: {
+			switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+				case INLINE_ALIGNMENT_TO_TOP: {
 					E.value.rect.position.y = -sd->ascent;
 				} break;
-				case INLINE_ALIGN_TO_CENTER: {
+				case INLINE_ALIGNMENT_TO_CENTER: {
 					E.value.rect.position.y = (-sd->ascent + sd->descent) / 2;
 				} break;
-				case INLINE_ALIGN_TO_BASELINE: {
+				case INLINE_ALIGNMENT_TO_BASELINE: {
 					E.value.rect.position.y = 0;
 				} break;
-				case INLINE_ALIGN_TO_BOTTOM: {
+				case INLINE_ALIGNMENT_TO_BOTTOM: {
 					E.value.rect.position.y = sd->descent;
 				} break;
 			}
-			switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-				case INLINE_ALIGN_BOTTOM_TO: {
+			switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+				case INLINE_ALIGNMENT_BOTTOM_TO: {
 					E.value.rect.position.y -= E.value.rect.size.y;
 				} break;
-				case INLINE_ALIGN_CENTER_TO: {
+				case INLINE_ALIGNMENT_CENTER_TO: {
 					E.value.rect.position.y -= E.value.rect.size.y / 2;
 				} break;
-				case INLINE_ALIGN_TOP_TO: {
+				case INLINE_ALIGNMENT_TOP_TO: {
 					// NOP
 				} break;
 			}
 			full_ascent = MAX(full_ascent, -E.value.rect.position.y);
 			full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
 		} else {
-			switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-				case INLINE_ALIGN_TO_TOP: {
+			switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+				case INLINE_ALIGNMENT_TO_TOP: {
 					E.value.rect.position.x = -sd->ascent;
 				} break;
-				case INLINE_ALIGN_TO_CENTER: {
+				case INLINE_ALIGNMENT_TO_CENTER: {
 					E.value.rect.position.x = (-sd->ascent + sd->descent) / 2;
 				} break;
-				case INLINE_ALIGN_TO_BASELINE: {
+				case INLINE_ALIGNMENT_TO_BASELINE: {
 					E.value.rect.position.x = 0;
 				} break;
-				case INLINE_ALIGN_TO_BOTTOM: {
+				case INLINE_ALIGNMENT_TO_BOTTOM: {
 					E.value.rect.position.x = sd->descent;
 				} break;
 			}
-			switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-				case INLINE_ALIGN_BOTTOM_TO: {
+			switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+				case INLINE_ALIGNMENT_BOTTOM_TO: {
 					E.value.rect.position.x -= E.value.rect.size.x;
 				} break;
-				case INLINE_ALIGN_CENTER_TO: {
+				case INLINE_ALIGNMENT_CENTER_TO: {
 					E.value.rect.position.x -= E.value.rect.size.x / 2;
 				} break;
-				case INLINE_ALIGN_TOP_TO: {
+				case INLINE_ALIGNMENT_TOP_TO: {
 					// NOP
 				} break;
 			}
@@ -4971,12 +4971,12 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 }
 
 String TextServerAdvanced::format_number(const String &p_string, const String &p_language) const {
-	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
 	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].digits == String()) {
+			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
 			res.replace("e", num_systems[i].exp);
@@ -4996,12 +4996,12 @@ String TextServerAdvanced::format_number(const String &p_string, const String &p
 }
 
 String TextServerAdvanced::parse_number(const String &p_string, const String &p_language) const {
-	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
 	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].digits == String()) {
+			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
 			res.replace(num_systems[i].exp, "e");
@@ -5024,11 +5024,11 @@ String TextServerAdvanced::parse_number(const String &p_string, const String &p_
 }
 
 String TextServerAdvanced::percent_sign(const String &p_language) const {
-	const StringName lang = (p_language == "") ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].percent_sign == String()) {
+			if (num_systems[i].percent_sign.is_empty()) {
 				return "%";
 			}
 			return num_systems[i].percent_sign;

@@ -96,7 +96,7 @@
 			<argument index="0" name="canvas_item" type="RID" />
 			<argument index="1" name="pos" type="Vector2" />
 			<argument index="2" name="text" type="String" />
-			<argument index="3" name="align" type="int" enum="HAlign" default="0" />
+			<argument index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
 			<argument index="4" name="width" type="float" default="-1" />
 			<argument index="5" name="max_lines" type="int" default="-1" />
 			<argument index="6" name="size" type="int" default="16" />
@@ -114,7 +114,7 @@
 			<argument index="0" name="canvas_item" type="RID" />
 			<argument index="1" name="pos" type="Vector2" />
 			<argument index="2" name="text" type="String" />
-			<argument index="3" name="align" type="int" enum="HAlign" default="0" />
+			<argument index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
 			<argument index="4" name="width" type="float" default="-1" />
 			<argument index="5" name="size" type="int" default="16" />
 			<argument index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
@@ -202,7 +202,7 @@
 			<return type="Vector2" />
 			<argument index="0" name="text" type="String" />
 			<argument index="1" name="size" type="int" default="16" />
-			<argument index="2" name="align" type="int" enum="HAlign" default="0" />
+			<argument index="2" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
 			<argument index="3" name="width" type="float" default="-1" />
 			<argument index="4" name="flags" type="int" default="3" />
 			<description>

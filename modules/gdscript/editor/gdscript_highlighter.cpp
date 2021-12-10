@@ -413,7 +413,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					previous_column = j;
 
 					// ignore if just whitespace
-					if (text != "") {
+					if (!text.is_empty()) {
 						previous_text = text;
 					}
 				}
@@ -509,7 +509,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	for (const String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
-		add_color_region(beg, end, comment_color, end == "");
+		add_color_region(beg, end, comment_color, end.is_empty());
 	}
 
 	/* Strings */
@@ -519,7 +519,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	for (const String &string : strings) {
 		String beg = string.get_slice(" ", 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
-		add_color_region(beg, end, string_color, end == "");
+		add_color_region(beg, end, string_color, end.is_empty());
 	}
 
 	const Ref<Script> script = _get_edited_resource();

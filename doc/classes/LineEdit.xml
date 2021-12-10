@@ -159,8 +159,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align" default="0">
-			Text alignment as defined in the [enum Align] enum.
+		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Text alignment as defined in the [enum HorizontalAlignment] enum.
 		</member>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
 			If [code]true[/code], the caret (text cursor) blinks.
@@ -292,18 +292,6 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="Align">
-			Aligns the text on the left-hand side of the [LineEdit].
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="Align">
-			Centers the text in the middle of the [LineEdit].
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Aligns the text on the right-hand side of the [LineEdit].
-		</constant>
-		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Expand row to fit the [LineEdit]'s width.
-		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (copies and clears) the selected text.
 		</constant>

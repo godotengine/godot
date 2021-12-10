@@ -79,7 +79,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 		}
 
 		if (push_chunk) {
-			if (text != String()) {
+			if (!text.is_empty()) {
 				StageTemplate::Chunk text_chunk;
 				text_chunk.type = StageTemplate::Chunk::TYPE_TEXT;
 				text_chunk.text = text.utf8();
@@ -90,7 +90,7 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 		}
 	}
 
-	if (text != String()) {
+	if (!text.is_empty()) {
 		StageTemplate::Chunk text_chunk;
 		text_chunk.type = StageTemplate::Chunk::TYPE_TEXT;
 		text_chunk.text = text.utf8();
@@ -638,7 +638,7 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 		variants_enabled.push_back(true);
 	}
 
-	if (shader_cache_dir != String()) {
+	if (!shader_cache_dir.is_empty()) {
 		StringBuilder hash_build;
 
 		hash_build.append("[base_hash]");

@@ -4804,7 +4804,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 					bool last = false;
 					Vector<real_t> weight_track;
 					while (true) {
-						float weight = _interpolate_track<float>(track.weight_tracks[track_idx].times,
+						float weight = _interpolate_track<real_t>(track.weight_tracks[track_idx].times,
 								track.weight_tracks[track_idx].values,
 								time,
 								track.weight_tracks[track_idx].interpolation);
@@ -4828,7 +4828,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 				int32_t weight_tracks_size = track.weight_tracks.size();
 				all_track_values.resize(weight_tracks_size * values_size);
 				for (int k = 0; k < track.weight_tracks.size(); k++) {
-					Vector<float> wdata = track.weight_tracks[k].values;
+					Vector<real_t> wdata = track.weight_tracks[k].values;
 					for (int l = 0; l < wdata.size(); l++) {
 						int32_t index = l * weight_tracks_size + k;
 						ERR_BREAK(index >= all_track_values.size());
@@ -4979,10 +4979,10 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 
 				const int wlen = weights.size() / wc;
 				for (int k = 0; k < wc; k++) { //separate tracks, having them together is not such a good idea
-					GLTFAnimation::Channel<float> cf;
+					GLTFAnimation::Channel<real_t> cf;
 					cf.interpolation = interp;
 					cf.times = Variant(times);
-					Vector<float> wdata;
+					Vector<real_t> wdata;
 					wdata.resize(wlen);
 					for (int l = 0; l < wlen; l++) {
 						wdata.write[l] = weights[l * wc + k];
@@ -5772,7 +5772,7 @@ struct EditorSceneFormatImporterGLTFInterpolate<Quaternion> {
 };
 
 template <class T>
-T GLTFDocument::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, const float p_time, const GLTFAnimation::Interpolation p_interp) {
+T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values, const float p_time, const GLTFAnimation::Interpolation p_interp) {
 	ERR_FAIL_COND_V(!p_values.size(), T());
 	if (p_times.size() != (p_values.size() / (p_interp == GLTFAnimation::INTERP_CUBIC_SPLINE ? 3 : 1))) {
 		ERR_PRINT_ONCE("The interpolated values are not corresponding to its times.");
@@ -6052,7 +6052,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				double time = 0.0;
 				bool last = false;
 				while (true) {
-					float blend = _interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
+					real_t blend = _interpolate_track<real_t>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
 					animation->blend_shape_track_insert_key(track_idx, time, blend);
 					if (last) {
 						break;
@@ -6246,7 +6246,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 	}
 	Animation::TrackType track_type = p_animation->track_get_type(p_track_i);
 	int32_t key_count = p_animation->track_get_key_count(p_track_i);
-	Vector<float> times;
+	Vector<real_t> times;
 	times.resize(key_count);
 	String path = p_animation->track_get_path(p_track_i);
 	for (int32_t key_i = 0; key_i < key_count; key_i++) {
@@ -6352,7 +6352,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 		if (path.find("/scale") != -1) {
 			const int32_t keys = p_animation->track_get_key_time(p_track_i, key_count - 1) * BAKE_FPS;
 			if (!p_track.scale_track.times.size()) {
-				Vector<float> new_times;
+				Vector<real_t> new_times;
 				new_times.resize(keys);
 				for (int32_t key_i = 0; key_i < keys; key_i++) {
 					new_times.write[key_i] = key_i / BAKE_FPS;
@@ -6382,7 +6382,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 		} else if (path.find("/position") != -1) {
 			const int32_t keys = p_animation->track_get_key_time(p_track_i, key_count - 1) * BAKE_FPS;
 			if (!p_track.position_track.times.size()) {
-				Vector<float> new_times;
+				Vector<real_t> new_times;
 				new_times.resize(keys);
 				for (int32_t key_i = 0; key_i < keys; key_i++) {
 					new_times.write[key_i] = key_i / BAKE_FPS;
@@ -6503,7 +6503,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					NodePath shape_path = String(path) + ":" + shape_name;
 					int32_t shape_track_i = animation->find_track(shape_path, Animation::TYPE_BLEND_SHAPE);
 					if (shape_track_i == -1) {
-						GLTFAnimation::Channel<float> weight;
+						GLTFAnimation::Channel<real_t> weight;
 						weight.interpolation = GLTFAnimation::INTERP_LINEAR;
 						weight.times.push_back(0.0f);
 						weight.times.push_back(0.0f);
@@ -6522,7 +6522,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 						gltf_interpolation = GLTFAnimation::INTERP_CUBIC_SPLINE;
 					}
 					int32_t key_count = animation->track_get_key_count(shape_track_i);
-					GLTFAnimation::Channel<float> weight;
+					GLTFAnimation::Channel<real_t> weight;
 					weight.interpolation = gltf_interpolation;
 					weight.times.resize(key_count);
 					for (int32_t time_i = 0; time_i < key_count; time_i++) {

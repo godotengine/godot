@@ -42,10 +42,10 @@ void OccluderInstance3DEditorPlugin::_bake_select_file(const String &p_file) {
 		switch (err) {
 			case OccluderInstance3D::BAKE_ERROR_NO_SAVE_PATH: {
 				String scene_path = occluder_instance->get_scene_file_path();
-				if (scene_path == String()) {
+				if (scene_path.is_empty()) {
 					scene_path = occluder_instance->get_owner()->get_scene_file_path();
 				}
-				if (scene_path == String()) {
+				if (scene_path.is_empty()) {
 					EditorNode::get_singleton()->show_warning(TTR("Can't determine a save path for the occluder.\nSave your scene and try again."));
 					break;
 				}

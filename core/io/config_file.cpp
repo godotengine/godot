@@ -183,7 +183,7 @@ Error ConfigFile::_internal_save(FileAccess *file) {
 		if (E != values.front()) {
 			file->store_string("\n");
 		}
-		if (E.key() != "") {
+		if (!E.key().is_empty()) {
 			file->store_string("[" + E.key() + "]\n\n");
 		}
 
@@ -287,9 +287,9 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 			return err;
 		}
 
-		if (assign != String()) {
+		if (!assign.is_empty()) {
 			set_value(section, assign, value);
-		} else if (next_tag.name != String()) {
+		} else if (!next_tag.name.is_empty()) {
 			section = next_tag.name;
 		}
 	}

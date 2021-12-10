@@ -121,7 +121,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		menu->add_separator();
 		menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
-		menu->set_position(blend_space_draw->get_screen_transform().xform(mb->get_position()));
+		menu->set_position(blend_space_draw->get_screen_position() + mb->get_position());
+		menu->reset_size();
 		menu->popup();
 		add_point_pos = (mb->get_position() / blend_space_draw->get_size());
 		add_point_pos.y = 1.0 - add_point_pos.y;
@@ -411,14 +412,14 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 	if (blend_space->get_min_space().y < 0) {
 		int y = (blend_space->get_max_space().y / (blend_space->get_max_space().y - blend_space->get_min_space().y)) * s.height;
 		blend_space_draw->draw_line(Point2(0, y), Point2(5 * EDSCALE, y), linecolor);
-		blend_space_draw->draw_string(font, Point2(2 * EDSCALE, y - font->get_height(font_size) + font->get_ascent(font_size)), "0", HALIGN_LEFT, -1, font_size, linecolor);
+		blend_space_draw->draw_string(font, Point2(2 * EDSCALE, y - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
 		blend_space_draw->draw_line(Point2(5 * EDSCALE, y), Point2(s.width, y), linecolor_soft);
 	}
 
 	if (blend_space->get_min_space().x < 0) {
 		int x = (-blend_space->get_min_space().x / (blend_space->get_max_space().x - blend_space->get_min_space().x)) * s.width;
 		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor);
-		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height(font_size) + font->get_ascent(font_size)), "0", HALIGN_LEFT, -1, font_size, linecolor);
+		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
 		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft);
 	}
 
@@ -760,7 +761,7 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 
 		if (error != error_label->get_text()) {
 			error_label->set_text(error);
-			if (error != String()) {
+			if (!error.is_empty()) {
 				error_panel->show();
 			} else {
 				error_panel->hide();

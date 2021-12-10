@@ -80,7 +80,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 						}
 					}
 
-					if (base_error != String()) {
+					if (!base_error.is_empty()) {
 						break;
 					}
 				}
@@ -89,7 +89,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 			}
 		}
 
-		if (stage == RD::SHADER_STAGE_MAX && line.strip_edges() != "") {
+		if (stage == RD::SHADER_STAGE_MAX && !line.strip_edges().is_empty()) {
 			line = line.strip_edges();
 			if (line.begins_with("//") || line.begins_with("/*")) {
 				continue; //assuming comment (single line)
@@ -98,7 +98,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 
 		if (reading_versions) {
 			String l = line.strip_edges();
-			if (l != "") {
+			if (!l.is_empty()) {
 				if (l.find("=") == -1) {
 					base_error = "Missing `=` in '" + l + "'. Version syntax is `version = \"<defines with C escaping>\";`.";
 					break;
@@ -124,7 +124,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				version_texts[version] = define + "\n" + p_defines;
 			}
 		} else {
-			if (stage == RD::SHADER_STAGE_MAX && line.strip_edges() != "") {
+			if (stage == RD::SHADER_STAGE_MAX && !line.strip_edges().is_empty()) {
 				base_error = "Text was found that does not belong to a valid section: " + line;
 				break;
 			}
@@ -140,7 +140,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 						}
 						include = include.substr(1, include.length() - 2).strip_edges();
 						String include_text = p_include_func(include, p_include_func_userdata);
-						if (include_text != String()) {
+						if (!include_text.is_empty()) {
 							stage_code[stage] += "\n" + include_text + "\n";
 						} else {
 							base_error = "#include failed for file '" + include + "'";
@@ -158,7 +158,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	Ref<RDShaderFile> shader_file;
 	shader_file.instantiate();
 
-	if (base_error == "") {
+	if (base_error.is_empty()) {
 		if (stage_found[RD::SHADER_STAGE_COMPUTE] && stages_found > 1) {
 			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "When writing compute shaders, [compute] mustbe the only stage present.");
 		}
@@ -177,14 +177,14 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 
 			for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 				String code = stage_code[i];
-				if (code == String()) {
+				if (code.is_empty()) {
 					continue;
 				}
 				code = code.replace("VERSION_DEFINES", E.value);
 				String error;
 				Vector<uint8_t> spirv = RenderingDevice::get_singleton()->shader_compile_spirv_from_source(RD::ShaderStage(i), code, RD::SHADER_LANGUAGE_GLSL, &error, false);
 				bytecode->set_stage_bytecode(RD::ShaderStage(i), spirv);
-				if (error != "") {
+				if (!error.is_empty()) {
 					error += String() + "\n\nStage '" + stage_str[i] + "' source code: \n\n";
 					Vector<String> sclines = code.split("\n");
 					for (int j = 0; j < sclines.size(); j++) {

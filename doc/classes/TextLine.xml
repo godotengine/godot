@@ -13,7 +13,7 @@
 			<return type="bool" />
 			<argument index="0" name="key" type="Variant" />
 			<argument index="1" name="size" type="Vector2" />
-			<argument index="2" name="inline_align" type="int" enum="InlineAlign" default="5" />
+			<argument index="2" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<argument index="3" name="length" type="int" default="1" />
 			<description>
 				Adds inline object to the text buffer, [code]key[/code] must be unique. In the text, object is represented as [code]length[/code] object replacement characters.
@@ -122,7 +122,7 @@
 			<return type="bool" />
 			<argument index="0" name="key" type="Variant" />
 			<argument index="1" name="size" type="Vector2" />
-			<argument index="2" name="inline_align" type="int" enum="InlineAlign" default="5" />
+			<argument index="2" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<description>
 				Sets new size and alignment of embedded object.
 			</description>
@@ -144,8 +144,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_align" getter="get_align" enum="HAlign" default="0">
-			Text horizontal alignment.
+		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 		</member>
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.

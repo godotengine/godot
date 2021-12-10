@@ -56,18 +56,18 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextLine::set_bidi_override);
 
 	ClassDB::bind_method(D_METHOD("add_string", "text", "fonts", "size", "opentype_features", "language"), &TextLine::add_string, DEFVAL(Dictionary()), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextLine::add_object, DEFVAL(INLINE_ALIGN_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextLine::resize_object, DEFVAL(INLINE_ALIGN_CENTER));
+	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length"), &TextLine::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align"), &TextLine::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER));
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &TextLine::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &TextLine::get_width);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width"), "set_width", "get_width");
 
-	ClassDB::bind_method(D_METHOD("set_align", "align"), &TextLine::set_align);
-	ClassDB::bind_method(D_METHOD("get_align"), &TextLine::get_align);
+	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &TextLine::set_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &TextLine::get_horizontal_alignment);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 
 	ClassDB::bind_method(D_METHOD("tab_align", "tab_stops"), &TextLine::tab_align);
 
@@ -135,14 +135,14 @@ void TextLine::_shape() {
 					break;
 			}
 
-			if (align == HALIGN_FILL) {
+			if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
 				TS->shaped_text_fit_to_width(rid, width, flags);
 				overrun_flags |= TextServer::OVERRUN_JUSTIFICATION_AWARE;
 				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
 			} else {
 				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
 			}
-		} else if (align == HALIGN_FILL) {
+		} else if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
 			TS->shaped_text_fit_to_width(rid, width, flags);
 		}
 		dirty = false;
@@ -209,13 +209,13 @@ bool TextLine::add_string(const String &p_text, const Ref<Font> &p_fonts, int p_
 	return res;
 }
 
-bool TextLine::add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align, int p_length) {
+bool TextLine::add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length) {
 	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length);
 	dirty = true;
 	return res;
 }
 
-bool TextLine::resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
+bool TextLine::resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align) {
 	const_cast<TextLine *>(this)->_shape();
 	return TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align);
 }
@@ -228,19 +228,19 @@ Rect2 TextLine::get_object_rect(Variant p_key) const {
 	return TS->shaped_text_get_object_rect(rid, p_key);
 }
 
-void TextLine::set_align(HAlign p_align) {
-	if (align != p_align) {
-		if (align == HALIGN_FILL || p_align == HALIGN_FILL) {
-			align = p_align;
+void TextLine::set_horizontal_alignment(HorizontalAlignment p_alignment) {
+	if (alignment != p_alignment) {
+		if (alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+			alignment = p_alignment;
 			dirty = true;
 		} else {
-			align = p_align;
+			alignment = p_alignment;
 		}
 	}
 }
 
-HAlign TextLine::get_align() const {
-	return align;
+HorizontalAlignment TextLine::get_horizontal_alignment() const {
+	return alignment;
 }
 
 void TextLine::tab_align(const Vector<float> &p_tab_stops) {
@@ -272,7 +272,7 @@ TextLine::OverrunBehavior TextLine::get_text_overrun_behavior() const {
 
 void TextLine::set_width(float p_width) {
 	width = p_width;
-	if (align == HALIGN_FILL || overrun_behavior != OVERRUN_NO_TRIMMING) {
+	if (alignment == HORIZONTAL_ALIGNMENT_FILL || overrun_behavior != OVERRUN_NO_TRIMMING) {
 		dirty = true;
 	}
 }
@@ -322,18 +322,18 @@ void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) co
 
 	float length = TS->shaped_text_get_width(rid);
 	if (width > 0) {
-		switch (align) {
-			case HALIGN_FILL:
-			case HALIGN_LEFT:
+		switch (alignment) {
+			case HORIZONTAL_ALIGNMENT_FILL:
+			case HORIZONTAL_ALIGNMENT_LEFT:
 				break;
-			case HALIGN_CENTER: {
+			case HORIZONTAL_ALIGNMENT_CENTER: {
 				if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
 					ofs.x += Math::floor((width - length) / 2.0);
 				} else {
 					ofs.y += Math::floor((width - length) / 2.0);
 				}
 			} break;
-			case HALIGN_RIGHT: {
+			case HORIZONTAL_ALIGNMENT_RIGHT: {
 				if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
 					ofs.x += width - length;
 				} else {
@@ -361,18 +361,18 @@ void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_si
 
 	float length = TS->shaped_text_get_width(rid);
 	if (width > 0) {
-		switch (align) {
-			case HALIGN_FILL:
-			case HALIGN_LEFT:
+		switch (alignment) {
+			case HORIZONTAL_ALIGNMENT_FILL:
+			case HORIZONTAL_ALIGNMENT_LEFT:
 				break;
-			case HALIGN_CENTER: {
+			case HORIZONTAL_ALIGNMENT_CENTER: {
 				if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
 					ofs.x += Math::floor((width - length) / 2.0);
 				} else {
 					ofs.y += Math::floor((width - length) / 2.0);
 				}
 			} break;
-			case HALIGN_RIGHT: {
+			case HORIZONTAL_ALIGNMENT_RIGHT: {
 				if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
 					ofs.x += width - length;
 				} else {

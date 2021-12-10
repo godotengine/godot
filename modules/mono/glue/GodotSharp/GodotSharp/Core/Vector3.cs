@@ -17,7 +17,7 @@ namespace Godot
     {
         /// <summary>
         /// Enumerated index values for the axes.
-        /// Returned by <see cref="MaxAxis"/> and <see cref="MinAxis"/>.
+        /// Returned by <see cref="MaxAxisIndex"/> and <see cref="MinAxisIndex"/>.
         /// </summary>
         public enum Axis
         {
@@ -364,21 +364,21 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the axis of the vector's largest value. See <see cref="Axis"/>.
+        /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
-        /// <returns>The index of the largest axis.</returns>
-        public Axis MaxAxis()
+        /// <returns>The index of the highest axis.</returns>
+        public Axis MaxAxisIndex()
         {
             return x < y ? (y < z ? Axis.Z : Axis.Y) : (x < z ? Axis.Z : Axis.X);
         }
 
         /// <summary>
-        /// Returns the axis of the vector's smallest value. See <see cref="Axis"/>.
+        /// Returns the axis of the vector's lowest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.Z"/>.
         /// </summary>
-        /// <returns>The index of the smallest axis.</returns>
-        public Axis MinAxis()
+        /// <returns>The index of the lowest axis.</returns>
+        public Axis MinAxisIndex()
         {
             return x < y ? (x < z ? Axis.X : Axis.Z) : (y < z ? Axis.Y : Axis.Z);
         }

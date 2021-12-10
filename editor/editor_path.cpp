@@ -130,14 +130,14 @@ void EditorPath::update_path() {
 					name = r->get_name();
 				}
 
-				if (name == "") {
+				if (name.is_empty()) {
 					name = r->get_class();
 				}
 			} else if (obj->is_class("EditorDebuggerRemoteObject")) {
 				name = obj->call("get_title");
 			} else if (Object::cast_to<Node>(obj)) {
 				name = Object::cast_to<Node>(obj)->get_name();
-			} else if (Object::cast_to<Resource>(obj) && Object::cast_to<Resource>(obj)->get_name() != "") {
+			} else if (Object::cast_to<Resource>(obj) && !Object::cast_to<Resource>(obj)->get_name().is_empty()) {
 				name = Object::cast_to<Resource>(obj)->get_name();
 			} else {
 				name = obj->get_class();
@@ -211,7 +211,7 @@ EditorPath::EditorPath(EditorHistory *p_history) {
 
 	current_object_label = memnew(Label);
 	current_object_label->set_clip_text(true);
-	current_object_label->set_align(Label::ALIGN_LEFT);
+	current_object_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	current_object_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_hb->add_child(current_object_label);
 
