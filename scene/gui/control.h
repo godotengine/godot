@@ -279,7 +279,7 @@ protected:
 
 	//virtual void _window_gui_input(InputEvent p_event);
 
-	virtual Array structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String p_text) const;
+	virtual Array structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String &p_text) const;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
