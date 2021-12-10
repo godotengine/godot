@@ -70,8 +70,13 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				grab.active = true;
 				grab.uvalue = get_as_ratio();
+
+				emit_signal(SNAME("drag_started"));
 			} else {
 				grab.active = false;
+
+				const bool value_changed = !Math::is_equal_approx((double)grab.uvalue, get_as_ratio());
+				emit_signal(SNAME("drag_ended"), value_changed);
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
@@ -263,6 +268,9 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable"), &Slider::is_editable);
 	ClassDB::bind_method(D_METHOD("set_scrollable", "scrollable"), &Slider::set_scrollable);
 	ClassDB::bind_method(D_METHOD("is_scrollable"), &Slider::is_scrollable);
+
+	ADD_SIGNAL(MethodInfo("drag_started"));
+	ADD_SIGNAL(MethodInfo("drag_ended", PropertyInfo(Variant::BOOL, "value_changed")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
