@@ -136,6 +136,7 @@ private:
 	Vector<Cell> cells;
 
 	bool collapsed; // won't show children
+	bool visible;
 	bool disable_folding;
 	int custom_min_height;
 
@@ -146,6 +147,7 @@ private:
 
 	TreeItem(Tree *p_tree);
 
+	TreeItem *_get_prev_sibling_visible();
 	void _changed_notify(int p_cell);
 	void _changed_notify();
 	void _cell_selected(int p_cell);
@@ -235,6 +237,8 @@ public:
 	TreeItem *get_parent();
 	TreeItem *get_children();
 
+	void set_visible(bool p_visible);
+	bool get_visible();
 	TreeItem *get_prev_visible(bool p_wrap = false);
 	TreeItem *get_next_visible(bool p_wrap = false);
 

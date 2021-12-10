@@ -356,16 +356,50 @@ TreeItem *TreeItem::get_children() {
 	return children;
 }
 
+void TreeItem::set_visible(bool p_visible) {
+	visible = p_visible;
+	_changed_notify();
+}
+
+bool TreeItem::get_visible() {
+	return visible;
+}
+
+TreeItem *TreeItem::_get_prev_sibling_visible() {
+	TreeItem *lastVisible;
+	TreeItem *current;
+
+	// find nearest visible previous sibling
+	if (!parent || parent->children == this) {
+		return nullptr;
+	}
+
+	lastVisible = nullptr;
+	current = parent->children;
+	while (current && current->next != this) {
+		if (current->visible) {
+			lastVisible = current;
+		}
+		current = current->next;
+	}
+	if (!current->visible) {
+		return lastVisible;
+	} else {
+		return current;
+	}
+}
+
 TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
 	TreeItem *current = this;
-
-	TreeItem *prev = current->get_prev();
+	TreeItem *lastVisible;
+	TreeItem *prev = current->_get_prev_sibling_visible();
 
 	if (!prev) {
-		current = current->parent;
-		if (current == tree->root && tree->hide_root) {
-			return nullptr;
-		} else if (!current) {
+		do {
+			current = current->parent;
+		} while (current && !current->visible);
+
+		if (!current || (current == tree->root && tree->hide_root)) {
 			if (p_wrap) {
 				current = this;
 				TreeItem *temp = this->get_next_visible();
@@ -373,19 +407,30 @@ TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
 					current = temp;
 					temp = temp->get_next_visible();
 				}
+				if (!current->visible) {
+					// handle case where this isn't visible and nothing else is either
+					return nullptr;
+				}
 			} else {
 				return nullptr;
 			}
 		}
 	} else {
 		current = prev;
+		lastVisible = current;
+		// find the last visible child
 		while (!current->collapsed && current->children) {
-			//go to the very end
-
 			current = current->children;
 			while (current->next) {
+				if (current->visible) {
+					lastVisible = current;
+				}
 				current = current->next;
 			}
+		}
+		if (!current->visible) {
+			// the last child isn't visible; remember the most recent one that was
+			current = lastVisible;
 		}
 	}
 
@@ -396,27 +441,59 @@ TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 	TreeItem *current = this;
 
 	if (!current->collapsed && current->children) {
+		// find the first visible child
 		current = current->children;
-
-	} else if (current->next) {
-		current = current->next;
-	} else {
-		while (current && !current->next) {
-			current = current->parent;
-		}
-
-		if (!current) {
-			if (p_wrap) {
-				return tree->root;
-			} else {
-				return nullptr;
-			}
-		} else {
+		while (current && !current->visible) {
 			current = current->next;
+		}
+		if (current) {
+			return current;
 		}
 	}
 
-	return current;
+	// find the next visible sibling
+	current = this->next;
+	while (current && !current->visible) {
+		current = current->next;
+	}
+	if (current) {
+		return current;
+	}
+
+	// nothing at our level or below is visible; recurse up the tree
+	current = this->parent;
+	while (current) {
+		if (current == tree->root && tree->hide_root) {
+			break;
+		}
+		TreeItem *nextHigher = current->parent;
+		do {
+			current = current->next;
+		} while (current && !current->visible);
+		if (current) {
+			return current;
+		}
+		current = nextHigher;
+	}
+
+	// couldn't find anything visible ahead of us in the tree; go back to the
+	// root, and return it (or its first visible child, if hidden)
+	if (p_wrap) {
+		current = tree->root;
+		if (current->visible) {
+			if (tree->hide_root && current->children) {
+				current = current->children;
+				while (current && !current->visible) {
+					current = current->next;
+				}
+			}
+			if (current) {
+				return current;
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 void TreeItem::remove_child(TreeItem *p_item) {
@@ -750,6 +827,8 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parent"), &TreeItem::get_parent);
 	ClassDB::bind_method(D_METHOD("get_children"), &TreeItem::get_children);
 
+	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &TreeItem::set_visible);
+	ClassDB::bind_method(D_METHOD("get_visible"), &TreeItem::get_visible);
 	ClassDB::bind_method(D_METHOD("get_next_visible", "wrap"), &TreeItem::get_next_visible, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_prev_visible", "wrap"), &TreeItem::get_prev_visible, DEFVAL(false));
 
@@ -807,6 +886,7 @@ void TreeItem::_bind_methods() {
 	}
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collapsed"), "set_collapsed", "is_collapsed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "get_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_folding"), "set_disable_folding", "is_folding_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "custom_minimum_height", PROPERTY_HINT_RANGE, "0,1000,1"), "set_custom_minimum_height", "get_custom_minimum_height");
 
@@ -836,6 +916,7 @@ void TreeItem::clear_children() {
 TreeItem::TreeItem(Tree *p_tree) {
 	tree = p_tree;
 	collapsed = false;
+	visible = true;
 	disable_folding = false;
 	custom_min_height = 0;
 
@@ -936,7 +1017,7 @@ void Tree::update_cache() {
 }
 
 int Tree::compute_item_height(TreeItem *p_item) const {
-	if (p_item == root && hide_root) {
+	if ((p_item == root && hide_root) || !p_item->visible) {
 		return 0;
 	}
 
@@ -993,17 +1074,21 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 }
 
 int Tree::get_item_height(TreeItem *p_item) const {
-	int height = compute_item_height(p_item);
-	height += cache.vseparation;
+	int height;
 
-	if (!p_item->collapsed) { /* if not collapsed, check the children */
+	if ((p_item == root && hide_root) || !p_item->visible) {
+		height = 0;
+	} else {
+		height = compute_item_height(p_item) + cache.vseparation;
+		if (!p_item->collapsed) { /* if not collapsed, check the children */
 
-		TreeItem *c = p_item->children;
+			TreeItem *c = p_item->children;
 
-		while (c) {
-			height += get_item_height(c);
+			while (c) {
+				height += get_item_height(c);
 
-			c = c->next;
+				c = c->next;
+			}
 		}
 	}
 
@@ -1076,7 +1161,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 	/* Draw label, if height fits */
 
-	bool skip = (p_item == root && hide_root);
+	bool skip = (p_item == root && hide_root) || !p_item->visible;
 
 	if (!skip && (p_pos.y + label_h - cache.offset.y) > 0) {
 		//draw separation.
@@ -1419,14 +1504,14 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		children_pos.y += htotal;
 	}
 
-	if (!p_item->collapsed) { /* if not collapsed, check the children */
+	if (!p_item->collapsed && p_item->visible) { /* if not collapsed or hidden, check the children */
 
 		TreeItem *c = p_item->children;
 
 		int prev_ofs = children_pos.y - cache.offset.y + p_draw_ofs.y;
 
 		while (c) {
-			if (htotal >= 0) {
+			if ((htotal >= 0) && c->visible) {
 				int child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c);
 
 				// Draw relationship lines.
@@ -1630,9 +1715,14 @@ void Tree::_range_click_timeout() {
 }
 
 int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool p_doubleclick, TreeItem *p_item, int p_button, const Ref<InputEventWithModifiers> &p_mod) {
-	int item_h = compute_item_height(p_item) + cache.vseparation;
+	int item_h;
+	bool skip = (p_item == root && hide_root) || !p_item->visible;
 
-	bool skip = (p_item == root && hide_root);
+	if (skip) {
+		item_h = 0;
+	} else {
+		item_h = compute_item_height(p_item) + cache.vseparation;
+	}
 
 	if (!skip && p_pos.y < item_h) {
 		// check event!
@@ -1926,7 +2016,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			new_pos.y -= item_h;
 		}
 
-		if (!p_item->collapsed) { /* if not collapsed, check the children */
+		if (!p_item->collapsed && p_item->visible) { /* if not collapsed or hidden, check the children */
 
 			TreeItem *c = p_item->children;
 
@@ -3524,6 +3614,10 @@ void Tree::_do_incr_search(const String &p_add) {
 TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const {
 	Point2 pos = p_pos;
 
+	if (!p_item->visible) {
+		h = 0;
+		return nullptr;
+	}
 	if (root != p_item || !hide_root) {
 		h = compute_item_height(p_item) + cache.vseparation;
 		if (pos.y < h) {

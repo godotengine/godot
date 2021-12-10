@@ -488,6 +488,9 @@
 		<member name="disable_folding" type="bool" setter="set_disable_folding" getter="is_folding_disabled">
 			If [code]true[/code], folding is disabled for this TreeItem.
 		</member>
+		<member name="visible" type="bool" setter="set_visible" getter="get_visible">
+			If [code]false[/code], the TreeItem is not displayed.
+		</member>
 	</members>
 	<constants>
 		<constant name="CELL_MODE_STRING" value="0" enum="TreeCellMode">
