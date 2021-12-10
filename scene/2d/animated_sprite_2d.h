@@ -57,8 +57,6 @@ class AnimatedSprite2D : public Node2D {
 
 	double _get_frame_duration();
 	void _reset_timeout();
-	void _set_playing(bool p_playing);
-	bool _is_playing() const;
 	Rect2 _get_rect() const;
 
 protected:
@@ -85,6 +83,8 @@ public:
 
 	void play(const StringName &p_animation = StringName(), const bool p_backwards = false);
 	void stop();
+
+	void set_playing(bool p_playing);
 	bool is_playing() const;
 
 	void set_animation(const StringName &p_animation);
