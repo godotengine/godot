@@ -111,6 +111,7 @@ public:
 	virtual String get_video_adapter_api_version() const override { return String(); }
 
 	virtual Size2i get_maximum_viewport_size() const override { return Size2i(); };
+	virtual uint64_t get_video_adapter_total_memory() const override { return 0; }
 };
 
 } // namespace RendererDummy

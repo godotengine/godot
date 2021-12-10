@@ -274,6 +274,10 @@ String RenderingServerDefault::get_video_adapter_api_version() const {
 	return RSG::utilities->get_video_adapter_api_version();
 }
 
+uint64_t RenderingServerDefault::get_video_adapter_total_memory() const {
+	return RSG::utilities->get_video_adapter_total_memory();
+}
+
 void RenderingServerDefault::set_frame_profiling_enabled(bool p_enable) {
 	RSG::utilities->capturing_timestamps = p_enable;
 }

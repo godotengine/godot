@@ -183,6 +183,7 @@ public:
 	virtual String get_video_adapter_api_version() const = 0;
 
 	virtual Size2i get_maximum_viewport_size() const = 0;
+	virtual uint64_t get_video_adapter_total_memory() const = 0;
 };
 
 #endif // RENDERER_UTILITIES_H

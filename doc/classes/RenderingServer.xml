@@ -1441,8 +1441,16 @@
 		<method name="get_video_adapter_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of the video adapter (e.g. "GeForce GTX 1080/PCIe/SSE2").
+				Returns the name of the video adapter (e.g. "GeForce GTX 1080/PCIe/SSE2"). See also [method get_video_adapter_vendor].
 				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
+			</description>
+		</method>
+		<method name="get_video_adapter_total_memory" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total amount of video memory present on the video adapter (in bytes). This method does not distinguish between dedicated video memory (fast) and shared video memory (slow). On dedicated GPUs, the value returned will be equal to the amount of dedicated video memory available (typically between 2 GB and 24 GB on modern GPUs). On integrated GPUs, the value returned will be equal to the shared video memory allocated by the system (typically between 1 and 8 GB). See also [method get_rendering_info].
+				[method get_video_adapter_total_memory] can be used to warn users about features that may not run well on their system due to high VRAM requirements. However, video memory amount is [i]not[/i] an indicator of GPU performance, so this should not be used to automatically configure graphics settings (with the exception of texture quality).
+				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [code]0[/code].
 			</description>
 		</method>
 		<method name="get_video_adapter_type" qualifiers="const">
@@ -1455,7 +1463,8 @@
 		<method name="get_video_adapter_vendor" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the vendor of the video adapter (e.g. "NVIDIA Corporation").
+				Returns the vendor of the video adapter. When using Vulkan, the return value will [i]always[/i] be one of the following: [code]AMD[/code], [code]ImgTec[/code], [code]Apple[/code] (M1), [code]NVIDIA[/code], [code]ARM[/code] (Mali), [code]Qualcomm[/code] (Adreno), [code]Intel[/code], [code]Unknown[/code] (fallback if the vendor cannot be determined).
+				See also [method get_video_adapter_name].
 				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
 			</description>
 		</method>
@@ -5198,22 +5207,22 @@
 			Represents the size of the [enum GlobalShaderParameterType] enum.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME" value="0" enum="RenderingInfo">
-			Number of objects rendered in the current 3D scene. This varies depending on camera position and rotation.
+			The number of 3D objects drawn in the currently displayed frame. This usually influences [constant RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME]. 2D elements are not included in this metric.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME" value="1" enum="RenderingInfo">
-			Number of vertices/indices rendered in the current 3D scene. This varies depending on camera position and rotation.
+			The number of 3D primitives (lines, points, triangles) drawn in the currently displayed frame. This is usually significantly greater than the number of primitives present in each mesh in the view frustum, since the depth prepass and shadow passes are also included in this metric. 2D elements are not included in this metric.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME" value="2" enum="RenderingInfo">
-			Number of draw calls performed to render in the current 3D scene. This varies depending on camera position and rotation.
+			The number of 3D draw calls performed in the currently displayed frame. This generally varies depending on [constant RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME]. This is usually significantly greater than the number of meshes present in the view frustum, since the depth prepass and shadow passes are also included in this metric. 2D elements are not included in this metric.
 		</constant>
 		<constant name="RENDERING_INFO_TEXTURE_MEM_USED" value="3" enum="RenderingInfo">
-			Texture memory used (in bytes).
+			The memory currently used by textures in the engine (in bytes). This metric does [i]not[/i] include memory used by other applications on the system.
 		</constant>
 		<constant name="RENDERING_INFO_BUFFER_MEM_USED" value="4" enum="RenderingInfo">
-			Buffer memory used (in bytes).
+			The memory currently used by buffers in the engine (in bytes). This metric does [i]not[/i] include memory used by other applications on the system.
 		</constant>
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
-			Video memory used (in bytes). This is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics.
+			The video memory currently used by the engine (in bytes). This metric does [i]not[/i] include video memory used by other applications on the system. This is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">
 			Hardware supports shaders. This enum is currently unused in Godot 3.x.

@@ -331,10 +331,11 @@ public:
 	void command_end_label(VkCommandBuffer p_command_buffer);
 	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name);
 
-	String get_device_vendor_name() const;
 	String get_device_name() const;
+	String get_device_vendor_name() const;
 	RenderingDevice::DeviceType get_device_type() const;
 	String get_device_api_version() const;
+	uint64_t get_device_total_memory() const;
 	String get_device_pipeline_cache_uuid() const;
 
 	void set_vsync_mode(DisplayServer::WindowID p_window, DisplayServer::VSyncMode p_mode);
