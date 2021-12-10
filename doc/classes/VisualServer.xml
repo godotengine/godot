@@ -15,7 +15,7 @@
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
 	</description>
 	<tutorials>
-		<link>$DOCS_URL/tutorials/optimization/using_servers.html</link>
+		<link>$DOCS_URL/tutorials/performance/using_servers.html</link>
 	</tutorials>
 	<methods>
 		<method name="black_bars_set_images">

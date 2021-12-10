@@ -25,7 +25,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>$DOCS_URL/getting_started/step_by_step/filesystem.html</link>
+		<link>$DOCS_URL/tutorials/scripting/filesystem.html</link>
 	</tutorials>
 	<methods>
 		<method name="change_dir">

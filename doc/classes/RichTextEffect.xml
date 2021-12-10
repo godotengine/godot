@@ -13,7 +13,7 @@
 		[b]Note:[/b] As soon as a [RichTextLabel] contains at least one [RichTextEffect], it will continuously process the effect unless the project is paused. This may impact battery life negatively.
 	</description>
 	<tutorials>
-		<link>$DOCS_URL/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link>$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
 		<link>https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<methods>
