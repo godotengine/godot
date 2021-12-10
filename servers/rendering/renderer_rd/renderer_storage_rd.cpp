@@ -9529,8 +9529,13 @@ uint64_t RendererStorageRD::get_rendering_info(RS::RenderingInfo p_info) {
 String RendererStorageRD::get_video_adapter_name() const {
 	return RenderingDevice::get_singleton()->get_device_name();
 }
+
 String RendererStorageRD::get_video_adapter_vendor() const {
 	return RenderingDevice::get_singleton()->get_device_vendor_name();
+}
+
+RenderingDevice::DeviceType RendererStorageRD::get_video_adapter_type() const {
+	return RenderingDevice::get_singleton()->get_device_type();
 }
 
 RendererStorageRD *RendererStorageRD::base_singleton = nullptr;

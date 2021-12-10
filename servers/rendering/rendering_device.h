@@ -60,6 +60,17 @@ public:
 		DEVICE_DIRECTX
 	};
 
+	// This enum matches VkPhysicalDeviceType (except for `DEVICE_TYPE_MAX`).
+	// Unlike VkPhysicalDeviceType, DeviceType is exposed to the scripting API.
+	enum DeviceType {
+		DEVICE_TYPE_OTHER,
+		DEVICE_TYPE_INTEGRATED_GPU,
+		DEVICE_TYPE_DISCRETE_GPU,
+		DEVICE_TYPE_VIRTUAL_GPU,
+		DEVICE_TYPE_CPU,
+		DEVICE_TYPE_MAX,
+	};
+
 	enum DriverResource {
 		DRIVER_RESOURCE_VULKAN_DEVICE = 0,
 		DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE,
@@ -1199,6 +1210,7 @@ public:
 
 	virtual String get_device_vendor_name() const = 0;
 	virtual String get_device_name() const = 0;
+	virtual RenderingDevice::DeviceType get_device_type() const = 0;
 	virtual String get_device_pipeline_cache_uuid() const = 0;
 
 	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0) = 0;
@@ -1237,6 +1249,7 @@ protected:
 	Vector<int64_t> _draw_list_switch_to_next_pass_split(uint32_t p_splits);
 };
 
+VARIANT_ENUM_CAST(RenderingDevice::DeviceType)
 VARIANT_ENUM_CAST(RenderingDevice::DriverResource)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)

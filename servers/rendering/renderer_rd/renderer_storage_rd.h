@@ -2393,6 +2393,7 @@ public:
 
 	String get_video_adapter_name() const;
 	String get_video_adapter_vendor() const;
+	RenderingDevice::DeviceType get_video_adapter_type() const;
 
 	virtual void capture_timestamps_begin();
 	virtual void capture_timestamp(const String &p_name);

@@ -8525,6 +8525,11 @@ String RenderingDeviceVulkan::get_device_vendor_name() const {
 String RenderingDeviceVulkan::get_device_name() const {
 	return context->get_device_name();
 }
+
+RenderingDevice::DeviceType RenderingDeviceVulkan::get_device_type() const {
+	return context->get_device_type();
+}
+
 String RenderingDeviceVulkan::get_device_pipeline_cache_uuid() const {
 	return context->get_device_pipeline_cache_uuid();
 }

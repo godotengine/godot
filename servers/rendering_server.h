@@ -1473,6 +1473,7 @@ public:
 	virtual uint64_t get_rendering_info(RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
+	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
 
 	struct FrameProfileArea {
 		String name;

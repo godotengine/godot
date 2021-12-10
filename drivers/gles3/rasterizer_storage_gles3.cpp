@@ -4465,6 +4465,10 @@ String RasterizerStorageGLES3::get_video_adapter_vendor() const {
 	return (const char *)glGetString(GL_VENDOR);
 }
 
+RenderingDevice::DeviceType RasterizerStorageGLES3::get_video_adapter_type() const {
+	return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER;
+}
+
 void RasterizerStorageGLES3::initialize() {
 	RasterizerStorageGLES3::system_fbo = 0;
 
