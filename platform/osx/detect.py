@@ -124,7 +124,7 @@ def configure(env):
         env["AS"] = basecmd + "as"
 
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
-        env.extra_suffix += "s"
+        env.extra_suffix += ".san"
 
         if env["use_ubsan"]:
             env.Append(
