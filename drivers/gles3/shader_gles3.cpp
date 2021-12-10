@@ -791,10 +791,10 @@ void ShaderGLES3::use_material(void *p_material) {
 					Transform2D tr = V->get();
 					GLfloat matrix[4] = {
 						/* build a 16x16 matrix */
-						tr.elements[0][0],
-						tr.elements[0][1],
-						tr.elements[1][0],
-						tr.elements[1][1],
+						(GLfloat)tr.elements[0][0],
+						(GLfloat)tr.elements[0][1],
+						(GLfloat)tr.elements[1][0],
+						(GLfloat)tr.elements[1][1],
 					};
 					glUniformMatrix2fv(location, 1, GL_FALSE, matrix);
 
@@ -804,15 +804,15 @@ void ShaderGLES3::use_material(void *p_material) {
 					Basis val = V->get();
 
 					GLfloat mat[9] = {
-						val.elements[0][0],
-						val.elements[1][0],
-						val.elements[2][0],
-						val.elements[0][1],
-						val.elements[1][1],
-						val.elements[2][1],
-						val.elements[0][2],
-						val.elements[1][2],
-						val.elements[2][2],
+						(GLfloat)val.elements[0][0],
+						(GLfloat)val.elements[1][0],
+						(GLfloat)val.elements[2][0],
+						(GLfloat)val.elements[0][1],
+						(GLfloat)val.elements[1][1],
+						(GLfloat)val.elements[2][1],
+						(GLfloat)val.elements[0][2],
+						(GLfloat)val.elements[1][2],
+						(GLfloat)val.elements[2][2],
 					};
 
 					glUniformMatrix3fv(location, 1, GL_FALSE, mat);
@@ -822,22 +822,22 @@ void ShaderGLES3::use_material(void *p_material) {
 				case ShaderLanguage::TYPE_MAT4: {
 					Transform2D tr = V->get();
 					GLfloat matrix[16] = { /* build a 16x16 matrix */
-						tr.elements[0][0],
-						tr.elements[0][1],
-						0,
-						0,
-						tr.elements[1][0],
-						tr.elements[1][1],
-						0,
-						0,
-						0,
-						0,
-						1,
-						0,
-						tr.elements[2][0],
-						tr.elements[2][1],
-						0,
-						1
+						(GLfloat)tr.elements[0][0],
+						(GLfloat)tr.elements[0][1],
+						(GLfloat)0,
+						(GLfloat)0,
+						(GLfloat)tr.elements[1][0],
+						(GLfloat)tr.elements[1][1],
+						(GLfloat)0,
+						(GLfloat)0,
+						(GLfloat)0,
+						(GLfloat)0,
+						(GLfloat)1,
+						(GLfloat)0,
+						(GLfloat)tr.elements[2][0],
+						(GLfloat)tr.elements[2][1],
+						(GLfloat)0,
+						(GLfloat)1
 					};
 
 					glUniformMatrix4fv(location, 1, GL_FALSE, matrix);
