@@ -57,7 +57,7 @@
 			If [code]true[/code], the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event.
 			[b]Note:[/b] Enabling this property doesn't affect the Close or Cancel buttons' behavior in dialogs that inherit from this class. As a workaround, you can use [method WindowDialog.get_close_button] or [method ConfirmationDialog.get_cancel] and hide the buttons in question by setting their [member CanvasItem.visible] property to [code]false[/code].
 		</member>
-		<member name="visible" type="bool" setter="set_visible" getter="is_visible" override="true" default="false" />
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" overrides="CanvasItem" default="false" />
 	</members>
 	<signals>
 		<signal name="about_to_show">

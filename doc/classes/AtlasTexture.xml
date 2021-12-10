@@ -19,7 +19,7 @@
 		<member name="filter_clip" type="bool" setter="set_filter_clip" getter="has_filter_clip" default="false">
 			If [code]true[/code], clips the area outside of the region to avoid bleeding of the surrounding texture pixels.
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" overrides="Texture" default="0" />
 		<member name="margin" type="Rect2" setter="set_margin" getter="get_margin" default="Rect2( 0, 0, 0, 0 )">
 			The margin around the region. The [Rect2]'s [member Rect2.size] parameter ("w" and "h" in the editor) resizes the texture so it fits within the margin.
 		</member>

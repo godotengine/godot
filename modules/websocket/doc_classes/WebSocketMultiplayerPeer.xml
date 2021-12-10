@@ -31,8 +31,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" override="true" default="false" />
-		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" override="true" enum="NetworkedMultiplayerPeer.TransferMode" default="2" />
+		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" overrides="NetworkedMultiplayerPeer" default="false" />
+		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" overrides="NetworkedMultiplayerPeer" enum="NetworkedMultiplayerPeer.TransferMode" default="2" />
 	</members>
 	<signals>
 		<signal name="peer_packet">

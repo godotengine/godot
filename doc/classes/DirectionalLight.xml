@@ -39,7 +39,7 @@
 		<member name="directional_shadow_split_3" type="float" setter="set_param" getter="get_param" default="0.5">
 			The distance from shadow split 2 to split 3. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code].
 		</member>
-		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" override="true" default="0.1" />
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light" default="0.1" />
 	</members>
 	<constants>
 		<constant name="SHADOW_ORTHOGONAL" value="0" enum="ShadowMode">

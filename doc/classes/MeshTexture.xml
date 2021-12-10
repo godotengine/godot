@@ -14,7 +14,7 @@
 		<member name="base_texture" type="Texture" setter="set_base_texture" getter="get_base_texture">
 			Sets the base texture that the Mesh will use to draw.
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" overrides="Texture" default="0" />
 		<member name="image_size" type="Vector2" setter="set_image_size" getter="get_image_size" default="Vector2( 0, 0 )">
 			Sets the size of the image, needed for reference.
 		</member>

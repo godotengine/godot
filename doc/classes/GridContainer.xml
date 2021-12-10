@@ -17,7 +17,7 @@
 		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="1">
 			The number of columns in the [GridContainer]. If modified, [GridContainer] reorders its Control-derived children to accommodate the new layout.
 		</member>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="1" />
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
 	</members>
 	<constants>
 	</constants>

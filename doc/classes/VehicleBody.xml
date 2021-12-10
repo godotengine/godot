@@ -22,11 +22,11 @@
 			[b]Note:[/b] The simulation does not take the effect of gears into account, you will need to add logic for this if you wish to simulate gears.
 			A negative value will result in the vehicle reversing.
 		</member>
-		<member name="mass" type="float" setter="set_mass" getter="get_mass" override="true" default="40.0" />
+		<member name="mass" type="float" setter="set_mass" getter="get_mass" overrides="RigidBody" default="40.0" />
 		<member name="steering" type="float" setter="set_steering" getter="get_steering" default="0.0">
 			The steering angle for the vehicle. Setting this to a non-zero value will result in the vehicle turning when it's moving. Wheels that have [member VehicleWheel.use_as_steering] set to [code]true[/code] will automatically be rotated.
 		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight" override="true" default="392.0" />
+		<member name="weight" type="float" setter="set_weight" getter="get_weight" overrides="RigidBody" default="392.0" />
 	</members>
 	<constants>
 	</constants>

@@ -22,8 +22,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" override="true" default="{&quot;depth&quot;: 0,&quot;flags&quot;: 4,&quot;format&quot;: 37,&quot;height&quot;: 0,&quot;layers&quot;: [  ],&quot;width&quot;: 0}" />
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="4" />
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" overrides="TextureLayered" default="{&quot;depth&quot;: 0,&quot;flags&quot;: 4,&quot;format&quot;: 37,&quot;height&quot;: 0,&quot;layers&quot;: [  ],&quot;width&quot;: 0}" />
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" overrides="TextureLayered" default="4" />
 	</members>
 	<constants>
 	</constants>

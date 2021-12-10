@@ -69,7 +69,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" overrides="Texture" default="0" />
 	</members>
 	<constants>
 	</constants>
