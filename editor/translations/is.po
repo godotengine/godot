@@ -13999,26 +13999,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Edit:"
-#~ msgstr "Breyta:"
-
-#, fuzzy
-#~ msgid "Move Anim Track Up"
-#~ msgstr "Færa Anim track upp"
-
-#, fuzzy
-#~ msgid "Move Anim Track Down"
-#~ msgstr "Færa Anim track niður"
-
-#, fuzzy
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "Breyta gildisstilling í Anim track"
-
-#, fuzzy
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "Anim track breyta hulum ham"
-
-#, fuzzy
-#~ msgid "Anim Add Key"
-#~ msgstr "Anim bæta við lykli"

@@ -13836,7 +13836,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Ní féidir tairisigh a athrú."
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "Cuntas:"
