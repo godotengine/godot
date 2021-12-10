@@ -1214,21 +1214,16 @@ void GodotPhysicsServer2D::free(RID p_rid) {
 	} else {
 		ERR_FAIL_MSG("Invalid ID.");
 	}
-};
+}
 
 void GodotPhysicsServer2D::set_active(bool p_active) {
 	active = p_active;
-};
-
-void GodotPhysicsServer2D::set_collision_iterations(int p_iterations) {
-	iterations = p_iterations;
-};
+}
 
 void GodotPhysicsServer2D::init() {
 	doing_sync = false;
-	iterations = 8; // 8?
 	stepper = memnew(GodotStep2D);
-};
+}
 
 void GodotPhysicsServer2D::step(real_t p_step) {
 	if (!active) {
@@ -1241,16 +1236,16 @@ void GodotPhysicsServer2D::step(real_t p_step) {
 	active_objects = 0;
 	collision_pairs = 0;
 	for (Set<const GodotSpace2D *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		stepper->step((GodotSpace2D *)E->get(), p_step, iterations);
+		stepper->step((GodotSpace2D *)E->get(), p_step);
 		island_count += E->get()->get_island_count();
 		active_objects += E->get()->get_active_objects();
 		collision_pairs += E->get()->get_collision_pairs();
 	}
-};
+}
 
 void GodotPhysicsServer2D::sync() {
 	doing_sync = true;
-};
+}
 
 void GodotPhysicsServer2D::flush_queries() {
 	if (!active) {
@@ -1308,7 +1303,7 @@ void GodotPhysicsServer2D::end_sync() {
 
 void GodotPhysicsServer2D::finish() {
 	memdelete(stepper);
-};
+}
 
 void GodotPhysicsServer2D::_update_shapes() {
 	while (pending_shape_update_list.first()) {
@@ -1340,4 +1335,4 @@ GodotPhysicsServer2D::GodotPhysicsServer2D(bool p_using_threads) {
 	GodotBroadPhase2D::create_func = GodotBroadPhase2DBVH::_create;
 
 	using_threads = p_using_threads;
-};
+}

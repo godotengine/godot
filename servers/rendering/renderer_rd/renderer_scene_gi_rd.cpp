@@ -1858,7 +1858,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 		Ref<Image> img;
 		img.instantiate();
 		for (uint32_t i = 0; i < cascade_size; i++) {
-			Vector<uint8_t> subarr = data.subarray(128 * 128 * i, 128 * 128 * (i + 1) - 1);
+			Vector<uint8_t> subarr = data.slice(128 * 128 * i, 128 * 128 * (i + 1));
 			img->create(cascade_size, cascade_size, false, Image::FORMAT_L8, subarr);
 			img->save_png("res://cascade_sdf_" + itos(cascade) + "_" + itos(i) + ".png");
 		}
@@ -1871,7 +1871,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 		Ref<Image> img;
 		img.instantiate();
 		for (uint32_t i = 0; i < cascade_size; i++) {
-			Vector<uint8_t> subarr = data.subarray(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2 - 1);
+			Vector<uint8_t> subarr = data.slice(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2);
 			img->createcascade_size, cascade_size, false, Image::FORMAT_RGB565, subarr);
 			img->convert(Image::FORMAT_RGBA8);
 			img->save_png("res://cascade_" + itos(cascade) + "_" + itos(i) + ".png");

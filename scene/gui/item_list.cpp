@@ -43,7 +43,7 @@ void ItemList::_shape(int p_idx) {
 	} else {
 		item.text_buf->set_direction((TextServer::Direction)item.text_direction);
 	}
-	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), item.opentype_features, (item.language != "") ? item.language : TranslationServer::get_singleton()->get_tool_locale());
+	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), item.opentype_features, (!item.language.is_empty()) ? item.language : TranslationServer::get_singleton()->get_tool_locale());
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 		item.text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
 	} else {
@@ -653,7 +653,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (p_event->is_pressed() && items.size() > 0) {
 		if (p_event->is_action("ui_up")) {
-			if (search_string != "") {
+			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
@@ -683,7 +683,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_down")) {
-			if (search_string != "") {
+			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
@@ -920,7 +920,7 @@ void ItemList::_notification(int p_what) {
 						minsize = items[i].get_icon_size() * icon_scale;
 					}
 
-					if (items[i].text != "") {
+					if (!items[i].text.is_empty()) {
 						if (icon_mode == ICON_MODE_TOP) {
 							minsize.y += icon_margin;
 						} else {
@@ -929,7 +929,7 @@ void ItemList::_notification(int p_what) {
 					}
 				}
 
-				if (items[i].text != "") {
+				if (!items[i].text.is_empty()) {
 					int max_width = -1;
 					if (fixed_column_width) {
 						max_width = fixed_column_width;
@@ -1037,7 +1037,7 @@ void ItemList::_notification(int p_what) {
 				}
 			}
 
-			minimum_size_changed();
+			update_minimum_size();
 			shape_changed = false;
 		}
 
@@ -1188,7 +1188,7 @@ void ItemList::_notification(int p_what) {
 				draw_texture(items[i].tag_icon, draw_pos + base_ofs);
 			}
 
-			if (items[i].text != "") {
+			if (!items[i].text.is_empty()) {
 				int max_len = -1;
 
 				Vector2 size2 = items[i].text_buf->get_size();
@@ -1213,7 +1213,7 @@ void ItemList::_notification(int p_what) {
 						text_ofs.x = size.width - text_ofs.x - max_len;
 					}
 
-					items.write[i].text_buf->set_align(HALIGN_CENTER);
+					items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 					if (outline_size > 0 && font_outline_color.a > 0) {
 						items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, outline_size, font_outline_color);
@@ -1241,9 +1241,9 @@ void ItemList::_notification(int p_what) {
 					items.write[i].text_buf->set_width(max_len);
 
 					if (rtl) {
-						items.write[i].text_buf->set_align(HALIGN_RIGHT);
+						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 					} else {
-						items.write[i].text_buf->set_align(HALIGN_LEFT);
+						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 					}
 
 					if (outline_size > 0 && font_outline_color.a > 0) {
@@ -1360,10 +1360,10 @@ String ItemList::get_tooltip(const Point2 &p_pos) const {
 		if (!items[closest].tooltip_enabled) {
 			return "";
 		}
-		if (items[closest].tooltip != "") {
+		if (!items[closest].tooltip.is_empty()) {
 			return items[closest].tooltip;
 		}
-		if (items[closest].text != "") {
+		if (!items[closest].text.is_empty()) {
 			return items[closest].text;
 		}
 	}
@@ -1663,7 +1663,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_text_lines", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), "set_max_text_lines", "get_max_text_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
-	ADD_ARRAY_COUNT("Items", "items_count", "set_item_count", "get_item_count", "item_");
+	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 	ADD_GROUP("Columns", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_columns", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), "set_max_columns", "get_max_columns");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "same_column_width"), "set_same_column_width", "is_same_column_width");

@@ -449,7 +449,10 @@
 			<argument index="2" name="step" type="int" default="1" />
 			<argument index="3" name="deep" type="bool" default="false" />
 			<description>
-				Duplicates the subset described in the function and returns it in an array, deeply copying the array if [code]deep[/code] is [code]true[/code]. Lower and upper index are inclusive, with the [code]step[/code] describing the change between indices while slicing. Wraps around if [code]begin[/code] or [code]end[/code] are out of bounds or negative. Returns an empty array for invalid parameters.
+				Returns the slice of the [Array], from [code]begin[/code] (inclusive) to [code]end[/code] (exclusive), as a new [Array].
+				If [code]end[/code] is negative, it will be relative to the end of the array.
+				If specified, [code]step[/code] is the relative index between source elements.
+				If [code]deep[/code] is true, each element will be copied by value rather than by reference.
 			</description>
 		</method>
 		<method name="sort">

@@ -267,7 +267,7 @@ bool GDScriptTestRunner::generate_class_index() {
 		String base_type;
 
 		String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(test.get_source_file(), &base_type);
-		if (class_name == String()) {
+		if (class_name.is_empty()) {
 			continue;
 		}
 		ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,

@@ -368,7 +368,7 @@ NodePath::NodePath(const String &p_path) {
 		for (int i = from; i <= path.length(); i++) {
 			if (path[i] == ':' || path[i] == 0) {
 				String str = path.substr(from, i - from);
-				if (str == "") {
+				if (str.is_empty()) {
 					if (path[i] == 0) {
 						continue; // Allow end-of-path :
 					}

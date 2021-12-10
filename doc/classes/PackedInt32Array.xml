@@ -130,17 +130,17 @@
 				Returns the array size.
 			</description>
 		</method>
+		<method name="slice" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<argument index="0" name="begin" type="int" />
+			<argument index="1" name="end" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="sort">
 			<return type="void" />
 			<description>
 				Sorts the elements of the array in ascending order.
-			</description>
-		</method>
-		<method name="subarray" qualifiers="const">
-			<return type="PackedInt32Array" />
-			<argument index="0" name="from" type="int" />
-			<argument index="1" name="to" type="int" />
-			<description>
 			</description>
 		</method>
 		<method name="to_byte_array" qualifiers="const">

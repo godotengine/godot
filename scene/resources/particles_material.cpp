@@ -85,6 +85,7 @@ void ParticlesMaterial::init_shaders() {
 
 	shader_names->color = "color_value";
 	shader_names->color_ramp = "color_ramp";
+	shader_names->color_initial_ramp = "color_initial_ramp";
 
 	shader_names->emission_sphere_radius = "emission_sphere_radius";
 	shader_names->emission_box_extents = "emission_box_extents";
@@ -232,6 +233,10 @@ void ParticlesMaterial::_update_shader() {
 		code += "uniform sampler2D color_ramp;\n";
 	}
 
+	if (color_initial_ramp.is_valid()) {
+		code += "uniform sampler2D color_initial_ramp;\n";
+	}
+
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 		code += "uniform sampler2D linear_velocity_texture;\n";
 	}
@@ -311,6 +316,9 @@ void ParticlesMaterial::_update_shader() {
 	code += "	float scale_rand = rand_from_seed(alt_seed);\n";
 	code += "	float hue_rot_rand = rand_from_seed(alt_seed);\n";
 	code += "	float anim_offset_rand = rand_from_seed(alt_seed);\n";
+	if (color_initial_ramp.is_valid()) {
+		code += "	float color_initial_rand = rand_from_seed(alt_seed);\n";
+	}
 	code += "	float pi = 3.14159;\n";
 	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "\n";
@@ -462,6 +470,10 @@ void ParticlesMaterial::_update_shader() {
 	code += "	float scale_rand = rand_from_seed(alt_seed);\n";
 	code += "	float hue_rot_rand = rand_from_seed(alt_seed);\n";
 	code += "	float anim_offset_rand = rand_from_seed(alt_seed);\n";
+	if (color_initial_ramp.is_valid()) {
+		code += "	float color_initial_rand = rand_from_seed(alt_seed);\n";
+	}
+
 	code += "	float pi = 3.14159;\n";
 	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "\n";
@@ -620,6 +632,12 @@ void ParticlesMaterial::_update_shader() {
 	} else {
 		code += "	COLOR = hue_rot_mat * color_value;\n";
 	}
+
+	if (color_initial_ramp.is_valid()) {
+		code += "	vec4 start_color = textureLod(color_initial_ramp, vec2(color_initial_rand, 0.0), 0.0);\n";
+		code += "	COLOR *= start_color;\n";
+	}
+
 	if (emission_color_texture.is_valid() && (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS)) {
 		code += "	COLOR *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
 	}
@@ -988,6 +1006,18 @@ Ref<Texture2D> ParticlesMaterial::get_color_ramp() const {
 	return color_ramp;
 }
 
+void ParticlesMaterial::set_color_initial_ramp(const Ref<Texture2D> &p_texture) {
+	color_initial_ramp = p_texture;
+	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->color_initial_ramp, tex_rid);
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+
+Ref<Texture2D> ParticlesMaterial::get_color_initial_ramp() const {
+	return color_initial_ramp;
+}
+
 void ParticlesMaterial::set_particle_flag(ParticleFlags p_particle_flag, bool p_enable) {
 	ERR_FAIL_INDEX(p_particle_flag, PARTICLE_FLAG_MAX);
 	particle_flags[p_particle_flag] = p_enable;
@@ -1282,6 +1312,9 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &ParticlesMaterial::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &ParticlesMaterial::get_color_ramp);
 
+	ClassDB::bind_method(D_METHOD("set_color_initial_ramp", "ramp"), &ParticlesMaterial::set_color_initial_ramp);
+	ClassDB::bind_method(D_METHOD("get_color_initial_ramp"), &ParticlesMaterial::get_color_initial_ramp);
+
 	ClassDB::bind_method(D_METHOD("set_particle_flag", "particle_flag", "enable"), &ParticlesMaterial::set_particle_flag);
 	ClassDB::bind_method(D_METHOD("get_particle_flag", "particle_flag"), &ParticlesMaterial::get_particle_flag);
 
@@ -1414,6 +1447,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_GROUP("Color", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "GradientTexture1D"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_initial_ramp", PROPERTY_HINT_RESOURCE_TYPE, "GradientTexture1D"), "set_color_initial_ramp", "get_color_initial_ramp");
 
 	ADD_GROUP("Hue Variation", "hue_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "hue_variation_min", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param_min", "get_param_min", PARAM_HUE_VARIATION);

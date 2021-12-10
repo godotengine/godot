@@ -165,7 +165,7 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 
 	Vector<String> plugins;
 	da->list_dir_begin();
-	for (String path = da->get_next(); path != String(); path = da->get_next()) {
+	for (String path = da->get_next(); !path.is_empty(); path = da->get_next()) {
 		if (path[0] == '.' || !da->current_is_dir()) {
 			continue;
 		}

@@ -526,8 +526,6 @@ Sprite2DEditor::Sprite2DEditor() {
 	debug_uv_dialog->add_child(vb);
 	ScrollContainer *scroll = memnew(ScrollContainer);
 	scroll->set_custom_minimum_size(Size2(800, 500) * EDSCALE);
-	scroll->set_enable_h_scroll(true);
-	scroll->set_enable_v_scroll(true);
 	vb->add_margin_child(TTR("Preview:"), scroll, true);
 	debug_uv = memnew(Control);
 	debug_uv->connect("draw", callable_mp(this, &Sprite2DEditor::_debug_uv_draw));

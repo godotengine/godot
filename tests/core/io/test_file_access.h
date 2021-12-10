@@ -53,7 +53,7 @@ TEST_CASE("[FileAccess] CSV read") {
 	REQUIRE(row2.size() == 3);
 	CHECK(row2[0] == "GOOD_EVENING");
 	CHECK(row2[1] == "Good Evening");
-	CHECK(row2[2] == ""); // Use case: not yet translated!
+	CHECK(row2[2].is_empty()); // Use case: not yet translated!
 	// https://github.com/godotengine/godot/issues/44269
 	CHECK_MESSAGE(row2[2] != "\"", "Should not parse empty string as a single double quote.");
 

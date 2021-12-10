@@ -159,6 +159,7 @@ private:
 		mutable Vector<Line> text;
 		Ref<Font> font;
 		int font_size = -1;
+		int font_height = 0;
 
 		Dictionary opentype_features;
 		String language;
@@ -204,8 +205,8 @@ private:
 			}
 		}
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
-		void insert(int p_at, const String &p_text, const Array &p_bidi_override);
-		void remove_at(int p_index);
+		void insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override);
+		void remove_range(int p_from_line, int p_to_line);
 		int size() const { return text.size(); }
 		void clear();
 

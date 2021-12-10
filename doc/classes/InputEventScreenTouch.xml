@@ -15,7 +15,7 @@
 			The touch index in the case of a multi-touch event. One index = one finger.
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
-			The touch position.
+			The touch position, in screen (global) coordinates.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the touch's state is pressed. If [code]false[/code], the touch's state is released.

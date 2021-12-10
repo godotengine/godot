@@ -61,7 +61,7 @@ void MeshLibraryEditor::_menu_update_confirm(bool p_apply_xforms) {
 	cd_update->hide();
 	apply_xforms = p_apply_xforms;
 	String existing = mesh_library->get_meta("_editor_source_scene");
-	ERR_FAIL_COND(existing == "");
+	ERR_FAIL_COND(existing.is_empty());
 	_import_scene_cbk(existing);
 }
 

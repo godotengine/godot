@@ -78,7 +78,7 @@
 	}                                                                 \
 	{                                                                 \
 		Dictionary variations;                                        \
-		if (m_variations != String()) {                               \
+		if (!m_variations.is_empty()) {                               \
 			Vector<String> variation_tags = m_variations.split(",");  \
 			for (int i = 0; i < variation_tags.size(); i++) {         \
 				Vector<String> tokens = variation_tags[i].split("="); \
@@ -104,7 +104,7 @@
 	}                                                                 \
 	{                                                                 \
 		Dictionary variations;                                        \
-		if (m_variations != String()) {                               \
+		if (!m_variations.is_empty()) {                               \
 			Vector<String> variation_tags = m_variations.split(",");  \
 			for (int i = 0; i < variation_tags.size(); i++) {         \
 				Vector<String> tokens = variation_tags[i].split("="); \
@@ -130,7 +130,7 @@
 	}                                                                 \
 	{                                                                 \
 		Dictionary variations;                                        \
-		if (m_variations != String()) {                               \
+		if (!m_variations.is_empty()) {                               \
 			Vector<String> variation_tags = m_variations.split(",");  \
 			for (int i = 0; i < variation_tags.size(); i++) {         \
 				Vector<String> tokens = variation_tags[i].split("="); \

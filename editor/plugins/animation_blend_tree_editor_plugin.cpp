@@ -83,7 +83,7 @@ void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) 
 	}
 	add_node->get_popup()->add_separator();
 	add_node->get_popup()->add_item(TTR("Load..."), MENU_LOAD_FILE);
-	use_popup_menu_position = false;
+	use_position_from_popup_menu = false;
 }
 
 Size2 AnimationNodeBlendTreeEditor::get_minimum_size() const {
@@ -292,7 +292,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		anode = EditorSettings::get_singleton()->get_resource_clipboard();
 		ERR_FAIL_COND(!anode.is_valid());
 		base_name = anode->get_class();
-	} else if (add_options[p_idx].type != String()) {
+	} else if (!add_options[p_idx].type.is_empty()) {
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(add_options[p_idx].type));
 		ERR_FAIL_COND(!an);
 		anode = Ref<AnimationNode>(an);
@@ -319,8 +319,8 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 	}
 
 	Point2 instance_pos = graph->get_scroll_ofs();
-	if (use_popup_menu_position) {
-		instance_pos += popup_menu_position;
+	if (use_position_from_popup_menu) {
+		instance_pos += position_from_popup_menu;
 	} else {
 		instance_pos += graph->get_size() * 0.5;
 	}
@@ -355,14 +355,15 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 
 void AnimationNodeBlendTreeEditor::_popup(bool p_has_input_ports, const Vector2 &p_popup_position, const Vector2 &p_node_position) {
 	_update_options_menu(p_has_input_ports);
-	use_popup_menu_position = true;
-	popup_menu_position = p_popup_position;
-	add_node->get_popup()->set_position(p_node_position);
+	use_position_from_popup_menu = true;
+	position_from_popup_menu = p_node_position;
+	add_node->get_popup()->set_position(p_popup_position);
+	add_node->get_popup()->reset_size();
 	add_node->get_popup()->popup();
 }
 
 void AnimationNodeBlendTreeEditor::_popup_request(const Vector2 &p_position) {
-	_popup(false, graph->get_local_mouse_position(), p_position);
+	_popup(false, graph->get_screen_position() + graph->get_local_mouse_position(), p_position);
 }
 
 void AnimationNodeBlendTreeEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {
@@ -599,7 +600,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 		String accum;
 		for (int i = 0; i < path.get_name_count(); i++) {
 			String name = path.get_name(i);
-			if (accum != String()) {
+			if (!accum.is_empty()) {
 				accum += "/";
 			}
 			accum += name;
@@ -751,7 +752,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 
 		if (error != error_label->get_text()) {
 			error_label->set_text(error);
-			if (error != String()) {
+			if (!error.is_empty()) {
 				error_panel->show();
 			} else {
 				error_panel->hide();
@@ -820,13 +821,13 @@ AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = nullptr;
 
 void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<AnimationNode> p_node) {
 	String prev_name = blend_tree->get_node_name(p_node);
-	ERR_FAIL_COND(prev_name == String());
+	ERR_FAIL_COND(prev_name.is_empty());
 	GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(prev_name));
 	ERR_FAIL_COND(!gn);
 
 	const String &new_name = p_text;
 
-	ERR_FAIL_COND(new_name == "" || new_name.find(".") != -1 || new_name.find("/") != -1);
+	ERR_FAIL_COND(new_name.is_empty() || new_name.find(".") != -1 || new_name.find("/") != -1);
 
 	if (new_name == prev_name) {
 		return; //nothing to do
@@ -918,7 +919,7 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	singleton = this;
 	updating = false;
-	use_popup_menu_position = false;
+	use_position_from_popup_menu = false;
 
 	graph = memnew(GraphEdit);
 	add_child(graph);

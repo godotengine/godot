@@ -243,17 +243,6 @@
 				Returns [code]true[/code] if you are pressing the key in the physical location on the 101/102-key US QWERTY keyboard. You can pass a [enum Key] constant.
 			</description>
 		</method>
-		<method name="joy_connection_changed">
-			<return type="void" />
-			<argument index="0" name="device" type="int" />
-			<argument index="1" name="connected" type="bool" />
-			<argument index="2" name="name" type="String" />
-			<argument index="3" name="guid" type="String" />
-			<description>
-				Notifies the [Input] singleton that a connection has changed, to update the state for the [code]device[/code] index.
-				This is used internally and should not have to be called from user scripts. See [signal joy_connection_changed] for the signal emitted when this is triggered internally.
-			</description>
-		</method>
 		<method name="parse_input_event">
 			<return type="void" />
 			<argument index="0" name="event" type="InputEvent" />

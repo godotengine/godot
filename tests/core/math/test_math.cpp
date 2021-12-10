@@ -312,7 +312,7 @@ public:
 					}
 				}
 
-				if (name != String()) {
+				if (!name.is_empty()) {
 					namespace_stack[at_level] = name;
 				}
 

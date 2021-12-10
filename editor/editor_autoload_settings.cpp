@@ -340,22 +340,22 @@ void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 }
 
 void EditorAutoloadSettings::_autoload_text_submitted(const String p_name) {
-	if (autoload_add_path->get_text() != "" && _autoload_name_is_valid(p_name, nullptr)) {
+	if (!autoload_add_path->get_text().is_empty() && _autoload_name_is_valid(p_name, nullptr)) {
 		_autoload_add();
 	}
 }
 
 void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
 	add_autoload->set_disabled(
-			p_path == "" || !_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
+			p_path.is_empty() || !_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
 }
 
 void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 	String error_string;
 	bool is_name_valid = _autoload_name_is_valid(p_name, &error_string);
-	add_autoload->set_disabled(autoload_add_path->get_text() == "" || !is_name_valid);
+	add_autoload->set_disabled(autoload_add_path->get_text().is_empty() || !is_name_valid);
 	error_message->set_text(error_string);
-	error_message->set_visible(autoload_add_name->get_text() != "" && !is_name_valid);
+	error_message->set_visible(!autoload_add_name->get_text().is_empty() && !is_name_valid);
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
@@ -838,7 +838,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	error_message = memnew(Label);
 	error_message->hide();
-	error_message->set_align(Label::Align::ALIGN_RIGHT);
+	error_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	error_message->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	add_child(error_message);
 

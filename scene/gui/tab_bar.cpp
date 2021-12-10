@@ -50,7 +50,7 @@ Size2 TabBar::get_minimum_size() const {
 		Ref<Texture2D> tex = tabs[i].icon;
 		if (tex.is_valid()) {
 			ms.height = MAX(ms.height, tex->get_size().height);
-			if (tabs[i].text != "") {
+			if (!tabs[i].text.is_empty()) {
 				ms.width += get_theme_constant(SNAME("hseparation"));
 			}
 		}
@@ -270,7 +270,7 @@ void TabBar::_shape(int p_tab) {
 		tabs.write[p_tab].text_buf->set_direction((TextServer::Direction)tabs[p_tab].text_direction);
 	}
 
-	tabs.write[p_tab].text_buf->add_string(tabs.write[p_tab].xl_text, font, font_size, tabs[p_tab].opentype_features, (tabs[p_tab].language != "") ? tabs[p_tab].language : TranslationServer::get_singleton()->get_tool_locale());
+	tabs.write[p_tab].text_buf->add_string(tabs.write[p_tab].xl_text, font, font_size, tabs[p_tab].opentype_features, !tabs[p_tab].language.is_empty() ? tabs[p_tab].language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 void TabBar::_notification(int p_what) {
@@ -285,7 +285,7 @@ void TabBar::_notification(int p_what) {
 				_shape(i);
 			}
 			_update_cache();
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_RESIZED: {
@@ -319,9 +319,9 @@ void TabBar::_notification(int p_what) {
 				mw += get_tab_width(i);
 			}
 
-			if (tab_align == ALIGN_CENTER) {
+			if (tab_alignment == ALIGNMENT_CENTER) {
 				w = (get_size().width - mw) / 2;
-			} else if (tab_align == ALIGN_RIGHT) {
+			} else if (tab_alignment == ALIGNMENT_RIGHT) {
 				w = get_size().width - mw;
 			}
 
@@ -385,7 +385,7 @@ void TabBar::_notification(int p_what) {
 					} else {
 						icon->draw(ci, Point2i(w, sb->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
 					}
-					if (tabs[i].text != "") {
+					if (!tabs[i].text.is_empty()) {
 						w += icon->get_width() + get_theme_constant(SNAME("hseparation"));
 					}
 				}
@@ -554,7 +554,7 @@ void TabBar::set_tab_title(int p_tab, const String &p_title) {
 	tabs.write[p_tab].text = p_title;
 	_shape(p_tab);
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 String TabBar::get_tab_title(int p_tab) const {
@@ -621,7 +621,7 @@ void TabBar::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	tabs.write[p_tab].icon = p_icon;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Ref<Texture2D> TabBar::get_tab_icon(int p_tab) const {
@@ -645,7 +645,7 @@ void TabBar::set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_butto
 	tabs.write[p_tab].right_button = p_right_button;
 	_update_cache();
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Ref<Texture2D> TabBar::get_tab_right_button(int p_tab) const {
@@ -777,7 +777,7 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	_update_cache();
 	call_deferred(SNAME("_update_hover"));
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 void TabBar::clear_tabs() {
@@ -797,7 +797,7 @@ void TabBar::remove_tab(int p_idx) {
 	_update_cache();
 	call_deferred(SNAME("_update_hover"));
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 
 	if (current < 0) {
 		current = 0;
@@ -929,14 +929,14 @@ int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
 	return hover_now;
 }
 
-void TabBar::set_tab_align(TabAlign p_align) {
-	ERR_FAIL_INDEX(p_align, ALIGN_MAX);
-	tab_align = p_align;
+void TabBar::set_tab_alignment(AlignmentMode p_alignment) {
+	ERR_FAIL_INDEX(p_alignment, ALIGNMENT_MAX);
+	tab_alignment = p_alignment;
 	update();
 }
 
-TabBar::TabAlign TabBar::get_tab_align() const {
-	return tab_align;
+TabBar::AlignmentMode TabBar::get_tab_alignment() const {
+	return tab_alignment;
 }
 
 void TabBar::set_clip_tabs(bool p_clip_tabs) {
@@ -945,7 +945,7 @@ void TabBar::set_clip_tabs(bool p_clip_tabs) {
 	}
 	clip_tabs = p_clip_tabs;
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 bool TabBar::get_clip_tabs() const {
@@ -980,7 +980,7 @@ int TabBar::get_tab_width(int p_idx) const {
 	Ref<Texture2D> tex = tabs[p_idx].icon;
 	if (tex.is_valid()) {
 		x += tex->get_width();
-		if (tabs[p_idx].text != "") {
+		if (!tabs[p_idx].text.is_empty()) {
 			x += get_theme_constant(SNAME("hseparation"));
 		}
 	}
@@ -1149,8 +1149,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &TabBar::get_tab_disabled);
 	ClassDB::bind_method(D_METHOD("remove_tab", "tab_idx"), &TabBar::remove_tab);
 	ClassDB::bind_method(D_METHOD("add_tab", "title", "icon"), &TabBar::add_tab, DEFVAL(""), DEFVAL(Ref<Texture2D>()));
-	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &TabBar::set_tab_align);
-	ClassDB::bind_method(D_METHOD("get_tab_align"), &TabBar::get_tab_align);
+	ClassDB::bind_method(D_METHOD("set_tab_alignment", "alignment"), &TabBar::set_tab_alignment);
+	ClassDB::bind_method(D_METHOD("get_tab_alignment"), &TabBar::get_tab_alignment);
 	ClassDB::bind_method(D_METHOD("set_clip_tabs", "clip_tabs"), &TabBar::set_clip_tabs);
 	ClassDB::bind_method(D_METHOD("get_clip_tabs"), &TabBar::get_clip_tabs);
 	ClassDB::bind_method(D_METHOD("get_tab_offset"), &TabBar::get_tab_offset);
@@ -1178,16 +1178,16 @@ void TabBar::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 
-	BIND_ENUM_CONSTANT(ALIGN_LEFT);
-	BIND_ENUM_CONSTANT(ALIGN_CENTER);
-	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
-	BIND_ENUM_CONSTANT(ALIGN_MAX);
+	BIND_ENUM_CONSTANT(ALIGNMENT_LEFT);
+	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
+	BIND_ENUM_CONSTANT(ALIGNMENT_RIGHT);
+	BIND_ENUM_CONSTANT(ALIGNMENT_MAX);
 
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_SHOW_NEVER);
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_SHOW_ACTIVE_ONLY);

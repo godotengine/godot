@@ -194,6 +194,7 @@ private:
 
 		StringName color;
 		StringName color_ramp;
+		StringName color_initial_ramp;
 
 		StringName emission_sphere_radius;
 		StringName emission_box_extents;
@@ -237,6 +238,7 @@ private:
 	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;
 	Ref<Texture2D> color_ramp;
+	Ref<Texture2D> color_initial_ramp;
 
 	bool particle_flags[PARTICLE_FLAG_MAX];
 
@@ -298,6 +300,9 @@ public:
 
 	void set_color_ramp(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_color_ramp() const;
+
+	void set_color_initial_ramp(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_color_initial_ramp() const;
 
 	void set_particle_flag(ParticleFlags p_particle_flag, bool p_enable);
 	bool get_particle_flag(ParticleFlags p_particle_flag) const;

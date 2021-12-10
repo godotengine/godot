@@ -190,8 +190,8 @@ static void _OS_printres(Object *p_obj) {
 }
 
 void OS::print_all_resources(String p_to_file) {
-	ERR_FAIL_COND(p_to_file != "" && _OSPRF);
-	if (p_to_file != "") {
+	ERR_FAIL_COND(!p_to_file.is_empty() && _OSPRF);
+	if (!p_to_file.is_empty()) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
@@ -202,7 +202,7 @@ void OS::print_all_resources(String p_to_file) {
 
 	ObjectDB::debug_objects(_OS_printres);
 
-	if (p_to_file != "") {
+	if (!p_to_file.is_empty()) {
 		if (_OSPRF) {
 			memdelete(_OSPRF);
 		}

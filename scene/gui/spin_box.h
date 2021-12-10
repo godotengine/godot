@@ -79,8 +79,8 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
-	void set_align(LineEdit::Align p_align);
-	LineEdit::Align get_align() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
 	void set_editable(bool p_enabled);
 	bool is_editable() const;

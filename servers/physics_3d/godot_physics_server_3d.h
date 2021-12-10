@@ -44,7 +44,6 @@ class GodotPhysicsServer3D : public PhysicsServer3D {
 
 	friend class GodotPhysicsDirectSpaceState3D;
 	bool active = true;
-	int iterations = 0;
 
 	int island_count = 0;
 	int active_objects = 0;
@@ -363,8 +362,6 @@ public:
 	virtual void flush_queries() override;
 	virtual void end_sync() override;
 	virtual void finish() override;
-
-	virtual void set_collision_iterations(int p_iterations) override;
 
 	virtual bool is_flushing_queries() const override { return flushing_queries; }
 

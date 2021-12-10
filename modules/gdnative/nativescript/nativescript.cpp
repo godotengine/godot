@@ -682,7 +682,7 @@ void NativeScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 				ERR_CONTINUE(info.type < 0 || info.type >= Variant::VARIANT_MAX);
 
 				info.name = d["name"];
-				ERR_CONTINUE(info.name == "");
+				ERR_CONTINUE(info.name.is_empty());
 
 				if (d.has("hint")) {
 					info.hint = PropertyHint(d["hint"].operator int64_t());

@@ -1210,56 +1210,59 @@
 		</constant>
 		<constant name="COUNTERCLOCKWISE" value="1" enum="ClockDirection">
 		</constant>
-		<constant name="HALIGN_LEFT" value="0" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_LEFT" value="0" enum="HorizontalAlignment">
 			Horizontal left alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HALIGN_CENTER" value="1" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_CENTER" value="1" enum="HorizontalAlignment">
 			Horizontal center alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HALIGN_RIGHT" value="2" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_RIGHT" value="2" enum="HorizontalAlignment">
 			Horizontal right alignment, usually for text-derived classes.
 		</constant>
-		<constant name="HALIGN_FILL" value="3" enum="HAlign">
+		<constant name="HORIZONTAL_ALIGNMENT_FILL" value="3" enum="HorizontalAlignment">
 			Expand row to fit width, usually for text-derived classes.
 		</constant>
-		<constant name="VALIGN_TOP" value="0" enum="VAlign">
+		<constant name="VERTICAL_ALIGNMENT_TOP" value="0" enum="VerticalAlignment">
 			Vertical top alignment, usually for text-derived classes.
 		</constant>
-		<constant name="VALIGN_CENTER" value="1" enum="VAlign">
+		<constant name="VERTICAL_ALIGNMENT_CENTER" value="1" enum="VerticalAlignment">
 			Vertical center alignment, usually for text-derived classes.
 		</constant>
-		<constant name="VALIGN_BOTTOM" value="2" enum="VAlign">
+		<constant name="VERTICAL_ALIGNMENT_BOTTOM" value="2" enum="VerticalAlignment">
 			Vertical bottom alignment, usually for text-derived classes.
 		</constant>
-		<constant name="INLINE_ALIGN_TOP_TO" value="0" enum="InlineAlign">
-			Aligns the top of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		<constant name="VERTICAL_ALIGNMENT_FILL" value="3" enum="VerticalAlignment">
+			Expand rows to fit height, usually for text-derived classes.
 		</constant>
-		<constant name="INLINE_ALIGN_CENTER_TO" value="1" enum="InlineAlign">
-			Aligns the center of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		<constant name="INLINE_ALIGNMENT_TOP_TO" value="0" enum="InlineAlignment">
+			Aligns the top of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
 		</constant>
-		<constant name="INLINE_ALIGN_BOTTOM_TO" value="2" enum="InlineAlign">
-			Aligns the bottom of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGN_TO_*[/code] constant.
+		<constant name="INLINE_ALIGNMENT_CENTER_TO" value="1" enum="InlineAlignment">
+			Aligns the center of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
 		</constant>
-		<constant name="INLINE_ALIGN_TO_TOP" value="0" enum="InlineAlign">
-			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the top of the text.
+		<constant name="INLINE_ALIGNMENT_BOTTOM_TO" value="2" enum="InlineAlignment">
+			Aligns the bottom of the inline object (e.g. image, table) to the position of the text specified by [code]INLINE_ALIGNMENT_TO_*[/code] constant.
 		</constant>
-		<constant name="INLINE_ALIGN_TO_CENTER" value="4" enum="InlineAlign">
-			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the center of the text.
+		<constant name="INLINE_ALIGNMENT_TO_TOP" value="0" enum="InlineAlignment">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGNMENT_*_TO[/code] constant to the top of the text.
 		</constant>
-		<constant name="INLINE_ALIGN_TO_BASELINE" value="8" enum="InlineAlign">
-			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGN_*_TO[/code] constant to the baseline of the text.
+		<constant name="INLINE_ALIGNMENT_TO_CENTER" value="4" enum="InlineAlignment">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGNMENT_*_TO[/code] constant to the center of the text.
 		</constant>
-		<constant name="INLINE_ALIGN_TO_BOTTOM" value="12" enum="InlineAlign">
+		<constant name="INLINE_ALIGNMENT_TO_BASELINE" value="8" enum="InlineAlignment">
+			Aligns the position of the inline object (e.g. image, table) specified by [code]INLINE_ALIGNMENT_*_TO[/code] constant to the baseline of the text.
+		</constant>
+		<constant name="INLINE_ALIGNMENT_TO_BOTTOM" value="12" enum="InlineAlignment">
 			Aligns inline object (e.g. image, table) to the bottom of the text.
 		</constant>
-		<constant name="INLINE_ALIGN_TOP" value="0" enum="InlineAlign">
-			Aligns top of the inline object (e.g. image, table) to the top of the text. Equvalent to [code]INLINE_ALIGN_TOP_TO | INLINE_ALIGN_TO_TOP[/code].
+		<constant name="INLINE_ALIGNMENT_TOP" value="0" enum="InlineAlignment">
+			Aligns top of the inline object (e.g. image, table) to the top of the text. Equvalent to [code]INLINE_ALIGNMENT_TOP_TO | INLINE_ALIGNMENT_TO_TOP[/code].
 		</constant>
-		<constant name="INLINE_ALIGN_CENTER" value="5" enum="InlineAlign">
-			Aligns center of the inline object (e.g. image, table) to the center of the text. Equvalent to [code]INLINE_ALIGN_CENTER_TO | INLINE_ALIGN_TO_CENTER[/code].
+		<constant name="INLINE_ALIGNMENT_CENTER" value="5" enum="InlineAlignment">
+			Aligns center of the inline object (e.g. image, table) to the center of the text. Equvalent to [code]INLINE_ALIGNMENT_CENTER_TO | INLINE_ALIGNMENT_TO_CENTER[/code].
 		</constant>
-		<constant name="INLINE_ALIGN_BOTTOM" value="14" enum="InlineAlign">
-			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equvalent to [code]INLINE_ALIGN_BOTTOM_TO | INLINE_ALIGN_TO_BOTTOM[/code].
+		<constant name="INLINE_ALIGNMENT_BOTTOM" value="14" enum="InlineAlignment">
+			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equvalent to [code]INLINE_ALIGNMENT_BOTTOM_TO | INLINE_ALIGNMENT_TO_BOTTOM[/code].
 		</constant>
 		<constant name="KEY_SPECIAL" value="16777216" enum="Key">
 			Keycodes with this bit applied are non-printable.

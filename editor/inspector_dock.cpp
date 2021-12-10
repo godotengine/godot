@@ -312,7 +312,7 @@ void InspectorDock::_prepare_history() {
 			Resource *r = Object::cast_to<Resource>(obj);
 			if (r->get_path().is_resource_file()) {
 				text = r->get_path().get_file();
-			} else if (r->get_name() != String()) {
+			} else if (!r->get_name().is_empty()) {
 				text = r->get_name();
 			} else {
 				text = r->get_class();
@@ -460,7 +460,7 @@ void InspectorDock::open_resource(const String &p_type) {
 
 void InspectorDock::set_warning(const String &p_message) {
 	warning->hide();
-	if (p_message != String()) {
+	if (!p_message.is_empty()) {
 		warning->show();
 		warning_dialog->set_text(p_message);
 	}

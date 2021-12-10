@@ -138,7 +138,7 @@ real_t AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode 
 void AnimationNode::make_invalid(const String &p_reason) {
 	ERR_FAIL_COND(!state);
 	state->valid = false;
-	if (state->invalid_reasons != String()) {
+	if (!state->invalid_reasons.is_empty()) {
 		state->invalid_reasons += "\n";
 	}
 	state->invalid_reasons += String::utf8("•  ") + p_reason;
@@ -1239,8 +1239,7 @@ void AnimationTree::_process_graph(real_t p_delta) {
 							continue;
 						}
 
-						t->value = Math::lerp(t->value, value, blend);
-
+						t->value = Math::lerp(t->value, value, (float)blend);
 #endif // _3D_DISABLED
 					} break;
 					case Animation::TYPE_VALUE: {

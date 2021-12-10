@@ -182,7 +182,7 @@ void GridContainer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			minimum_size_changed();
+			update_minimum_size();
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -195,7 +195,7 @@ void GridContainer::set_columns(int p_columns) {
 	ERR_FAIL_COND(p_columns < 1);
 	columns = p_columns;
 	queue_sort();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 int GridContainer::get_columns() const {

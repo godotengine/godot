@@ -341,7 +341,7 @@ void OptionButton::_bind_methods() {
 
 OptionButton::OptionButton() {
 	set_toggle_mode(true);
-	set_text_align(ALIGN_LEFT);
+	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	if (is_layout_rtl()) {
 		if (has_theme_icon(SNAME("arrow"))) {
 			_set_internal_margin(SIDE_LEFT, Control::get_theme_icon(SNAME("arrow"))->get_width());

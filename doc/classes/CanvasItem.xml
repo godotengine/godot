@@ -143,7 +143,7 @@
 			<argument index="0" name="font" type="Font" />
 			<argument index="1" name="pos" type="Vector2" />
 			<argument index="2" name="text" type="String" />
-			<argument index="3" name="align" type="int" enum="HAlign" default="0" />
+			<argument index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
 			<argument index="4" name="width" type="float" default="-1" />
 			<argument index="5" name="max_lines" type="int" default="-1" />
 			<argument index="6" name="size" type="int" default="16" />
@@ -236,7 +236,7 @@
 			<argument index="0" name="font" type="Font" />
 			<argument index="1" name="pos" type="Vector2" />
 			<argument index="2" name="text" type="String" />
-			<argument index="3" name="align" type="int" enum="HAlign" default="0" />
+			<argument index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
 			<argument index="4" name="width" type="float" default="-1" />
 			<argument index="5" name="size" type="int" default="16" />
 			<argument index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
@@ -253,7 +253,7 @@
 				# so the Control is only created once.
 				var default_font = Control.new().get_font("font")
 				var default_font_size = Control.new().get_font_size("font_size")
-				draw_string(default_font, Vector2(64, 64), "Hello world", HALIGN_LEFT, -1, font_size)
+				draw_string(default_font, Vector2(64, 64), "Hello world", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 				[/gdscript]
 				[csharp]
 				// If using this method in a script that redraws constantly, move the
@@ -261,7 +261,7 @@
 				// so the Control is only created once.
 				Font defaultFont = new Control().GetFont("font");
 				int defaultFontSize = new Control().GetFontSize("font_size");
-				DrawString(defaultFont, new Vector2(64, 64), "Hello world", HALIGN_LEFT, -1, defaultFontSize);
+				DrawString(defaultFont, new Vector2(64, 64), "Hello world", HORIZONTAL_ALIGNMENT_LEFT, -1, defaultFontSize);
 				[/csharp]
 				[/codeblocks]
 				See also [method Font.draw_string].

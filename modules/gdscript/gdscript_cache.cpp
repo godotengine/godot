@@ -117,7 +117,7 @@ void GDScriptCache::remove_script(const String &p_path) {
 Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptParserRef::Status p_status, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->lock);
 	Ref<GDScriptParserRef> ref;
-	if (p_owner != String()) {
+	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 	if (singleton->parser_map.has(p_path)) {
@@ -163,7 +163,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 
 Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const String &p_owner) {
 	MutexLock lock(singleton->lock);
-	if (p_owner != String()) {
+	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 	if (singleton->full_gdscript_cache.has(p_path)) {
@@ -186,13 +186,21 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->lock);
 
-	if (p_owner != String()) {
+	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 
 	r_error = OK;
 	if (singleton->full_gdscript_cache.has(p_path)) {
-		return singleton->full_gdscript_cache[p_path];
+		Ref<GDScript> script = singleton->full_gdscript_cache[p_path];
+#ifdef TOOLS_ENABLED
+		uint64_t mt = FileAccess::get_modified_time(p_path);
+		if (script->get_last_modified_time() == mt) {
+			return script;
+		}
+#else
+		return script;
+#endif //TOOLS_ENABLED
 	}
 
 	Ref<GDScript> script = get_shallow_script(p_path);

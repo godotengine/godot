@@ -682,7 +682,7 @@ TileSetEditor::TileSetEditor() {
 	split_container_left_side->add_child(sources_list);
 
 	HBoxContainer *sources_bottom_actions = memnew(HBoxContainer);
-	sources_bottom_actions->set_alignment(HBoxContainer::ALIGN_END);
+	sources_bottom_actions->set_alignment(BoxContainer::ALIGNMENT_END);
 	split_container_left_side->add_child(sources_bottom_actions);
 
 	sources_delete_button = memnew(Button);
@@ -722,8 +722,8 @@ TileSetEditor::TileSetEditor() {
 	no_source_selected_label->set_text(TTR("No TileSet source selected. Select or create a TileSet source."));
 	no_source_selected_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	no_source_selected_label->set_v_size_flags(SIZE_EXPAND_FILL);
-	no_source_selected_label->set_align(Label::ALIGN_CENTER);
-	no_source_selected_label->set_valign(Label::VALIGN_CENTER);
+	no_source_selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	no_source_selected_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	split_container_right_side->add_child(no_source_selected_label);
 
 	// Atlases editor.

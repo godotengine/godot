@@ -753,8 +753,14 @@ VARIANT_ACCESSOR_NUMBER(uint32_t)
 VARIANT_ACCESSOR_NUMBER(int64_t)
 VARIANT_ACCESSOR_NUMBER(uint64_t)
 VARIANT_ACCESSOR_NUMBER(char32_t)
+
+// Bind enums to allow using them as return types.
 VARIANT_ACCESSOR_NUMBER(Error)
 VARIANT_ACCESSOR_NUMBER(Side)
+VARIANT_ACCESSOR_NUMBER(Vector2::Axis)
+VARIANT_ACCESSOR_NUMBER(Vector2i::Axis)
+VARIANT_ACCESSOR_NUMBER(Vector3::Axis)
+VARIANT_ACCESSOR_NUMBER(Vector3i::Axis)
 
 template <>
 struct VariantInternalAccessor<Basis::EulerOrder> {
@@ -1020,6 +1026,10 @@ INITIALIZER_INT(int64_t)
 INITIALIZER_INT(char32_t)
 INITIALIZER_INT(Error)
 INITIALIZER_INT(ObjectID)
+INITIALIZER_INT(Vector2::Axis)
+INITIALIZER_INT(Vector2i::Axis)
+INITIALIZER_INT(Vector3::Axis)
+INITIALIZER_INT(Vector3i::Axis)
 
 template <>
 struct VariantInitializer<double> {

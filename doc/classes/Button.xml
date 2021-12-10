@@ -64,8 +64,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_text_align" getter="get_text_align" enum="Button.TextAlign" default="1">
-			Text alignment policy for the button's text, use one of the [enum TextAlign] constants.
+		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" enum="HorizontalAlignment" default="1">
+			Text alignment policy for the button's text, use one of the [enum @GlobalScope.HorizontalAlignment] constants.
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" default="false">
 			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text.
@@ -80,8 +80,8 @@
 			Button's icon, if text is present the icon will be placed before the text.
 			To edit margin and spacing of the icon, use [theme_item hseparation] theme property and [code]content_margin_*[/code] properties of the used [StyleBox]es.
 		</member>
-		<member name="icon_align" type="int" setter="set_icon_align" getter="get_icon_align" enum="Button.TextAlign" default="0">
-			Specifies if the icon should be aligned to the left, right, or center of a button. Uses the same [enum TextAlign] constants as the text alignment. If centered, text will draw on top of the icon.
+		<member name="icon_alignment" type="int" setter="set_icon_alignment" getter="get_icon_alignment" enum="HorizontalAlignment" default="0">
+			Specifies if the icon should be aligned to the left, right, or center of a button. Uses the same [enum @GlobalScope.HorizontalAlignment] constants as the text alignment. If centered, text will draw on top of the icon.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -93,17 +93,6 @@
 			Base text writing direction.
 		</member>
 	</members>
-	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="TextAlign">
-			Align the text to the left.
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="TextAlign">
-			Align the text to the center.
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="TextAlign">
-			Align the text to the right.
-		</constant>
-	</constants>
 	<theme_items>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Default text [Color] of the [Button].

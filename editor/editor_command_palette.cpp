@@ -128,7 +128,7 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		String shortcut_text = entries[i].shortcut_text == "None" ? "" : entries[i].shortcut_text;
 		ti->set_text(0, entries[i].display_name);
 		ti->set_metadata(0, entries[i].key_name);
-		ti->set_text_align(1, TreeItem::TextAlign::ALIGN_RIGHT);
+		ti->set_text_alignment(1, HORIZONTAL_ALIGNMENT_RIGHT);
 		ti->set_text(1, shortcut_text);
 		Color c = Color(1, 1, 1, 0.5);
 		ti->set_custom_color(1, c);
@@ -164,7 +164,7 @@ void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 void EditorCommandPalette::_confirmed() {
 	TreeItem *selected_option = search_options->get_selected();
 	String command_key = selected_option != nullptr ? selected_option->get_metadata(0) : "";
-	if (command_key != "") {
+	if (!command_key.is_empty()) {
 		hide();
 		execute_command(command_key);
 	}

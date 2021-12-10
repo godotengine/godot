@@ -74,7 +74,7 @@ void EditorLayoutsDialog::ok_pressed() {
 		for (int i = 0; i < selected_items.size(); ++i) {
 			emit_signal(SNAME("name_confirmed"), layout_names->get_item_text(selected_items[i]));
 		}
-	} else if (name->is_visible() && name->get_text() != "") {
+	} else if (name->is_visible() && !name->get_text().is_empty()) {
 		emit_signal(SNAME("name_confirmed"), name->get_text());
 	}
 }

@@ -142,7 +142,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 void Slider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {

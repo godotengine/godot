@@ -38,11 +38,11 @@ class TabBar : public Control {
 	GDCLASS(TabBar, Control);
 
 public:
-	enum TabAlign {
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_MAX
+	enum AlignmentMode {
+		ALIGNMENT_LEFT,
+		ALIGNMENT_CENTER,
+		ALIGNMENT_RIGHT,
+		ALIGNMENT_MAX,
 	};
 
 	enum CloseButtonDisplayPolicy {
@@ -83,7 +83,7 @@ private:
 	Vector<Tab> tabs;
 	int current = 0;
 	int previous = 0;
-	TabAlign tab_align = ALIGN_CENTER;
+	AlignmentMode tab_alignment = ALIGNMENT_CENTER;
 	bool clip_tabs = true;
 	int rb_hover = -1;
 	bool rb_pressing = false;
@@ -145,8 +145,8 @@ public:
 	void set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button);
 	Ref<Texture2D> get_tab_right_button(int p_tab) const;
 
-	void set_tab_align(TabAlign p_align);
-	TabAlign get_tab_align() const;
+	void set_tab_alignment(AlignmentMode p_alignment);
+	AlignmentMode get_tab_alignment() const;
 
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
@@ -189,7 +189,7 @@ public:
 	TabBar();
 };
 
-VARIANT_ENUM_CAST(TabBar::TabAlign);
+VARIANT_ENUM_CAST(TabBar::AlignmentMode);
 VARIANT_ENUM_CAST(TabBar::CloseButtonDisplayPolicy);
 
 #endif // TAB_BAR_H

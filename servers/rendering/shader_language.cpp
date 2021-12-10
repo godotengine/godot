@@ -914,8 +914,10 @@ void ShaderLanguage::clear() {
 	completion_type = COMPLETION_NONE;
 	completion_block = nullptr;
 	completion_function = StringName();
-	completion_class = SubClassTag::TAG_GLOBAL;
+	completion_class = TAG_GLOBAL;
 	completion_struct = StringName();
+	completion_base = TYPE_VOID;
+	completion_base_array = false;
 
 	unknown_varying_usages.clear();
 
@@ -2999,7 +3001,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 		}
 
 		FunctionNode *pfunc = shader->functions[i].function;
-		if (arg_list == "") {
+		if (arg_list.is_empty()) {
 			for (int j = 0; j < pfunc->arguments.size(); j++) {
 				if (j > 0) {
 					arg_list += ", ";
@@ -3233,6 +3235,10 @@ bool ShaderLanguage::is_token_operator_assign(TokenType p_type) {
 			p_type == TK_OP_ASSIGN_BIT_AND ||
 			p_type == TK_OP_ASSIGN_BIT_OR ||
 			p_type == TK_OP_ASSIGN_BIT_XOR);
+}
+
+bool ShaderLanguage::is_token_hint(TokenType p_type) {
+	return int(p_type) > int(TK_RENDER_MODE) && int(p_type) < int(TK_SHADER_TYPE);
 }
 
 bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value) {
@@ -7236,7 +7242,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (tk.type == TK_SEMICOLON) {
 				//all is good
 				if (b->parent_function->return_type != TYPE_VOID) {
-					_set_error("Expected return with an expression of type '" + (return_struct_name != "" ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string + "'");
+					_set_error("Expected return with an expression of type '" + (!return_struct_name.is_empty() ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string + "'");
 					return ERR_PARSE_ERROR;
 				}
 			} else {
@@ -7248,7 +7254,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 
 				if (b->parent_function->return_type != expr->get_datatype() || b->parent_function->return_array_size != expr->get_array_size() || return_struct_name != expr->get_datatype_name()) {
-					_set_error("Expected return with an expression of type '" + (return_struct_name != "" ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string + "'");
+					_set_error("Expected return with an expression of type '" + (!return_struct_name.is_empty() ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string + "'");
 					return ERR_PARSE_ERROR;
 				}
 
@@ -7370,7 +7376,7 @@ String ShaderLanguage::_get_shader_type_list(const Set<String> &p_shader_types) 
 	// Return a list of shader types as an human-readable string
 	String valid_types;
 	for (const Set<String>::Element *E = p_shader_types.front(); E; E = E->next()) {
-		if (valid_types != String()) {
+		if (!valid_types.is_empty()) {
 			valid_types += ", ";
 		}
 
@@ -7829,9 +7835,19 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					int custom_instance_index = -1;
 
 					if (tk.type == TK_COLON) {
+						completion_type = COMPLETION_HINT;
+						completion_base = type;
+						completion_base_array = uniform2.array_size > 0;
+
 						//hint
 						do {
 							tk = _get_token();
+							completion_line = tk.line;
+
+							if (!is_token_hint(tk.type)) {
+								_set_error("Expected valid type hint after ':'.");
+								return ERR_PARSE_ERROR;
+							}
 
 							if (uniform2.array_size > 0) {
 								if (tk.type != TK_HINT_COLOR) {
@@ -8001,8 +8017,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								uniform2.repeat = REPEAT_DISABLE;
 							} else if (tk.type == TK_REPEAT_ENABLE) {
 								uniform2.repeat = REPEAT_ENABLE;
-							} else {
-								_set_error("Expected valid type hint after ':'.");
 							}
 
 							if (uniform2.hint != ShaderNode::Uniform::HINT_RANGE && uniform2.hint != ShaderNode::Uniform::HINT_NONE && uniform2.hint != ShaderNode::Uniform::HINT_COLOR && type <= TYPE_MAT4) {
@@ -8069,6 +8083,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						_set_error("Expected ';'");
 						return ERR_PARSE_ERROR;
 					}
+
+					completion_type = COMPLETION_NONE;
 				} else { // varying
 					ShaderNode::Varying varying;
 					varying.type = type;
@@ -8933,7 +8949,7 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 			break;
 
 		} else if (p_code[i] <= 32) {
-			if (cur_identifier != String()) {
+			if (!cur_identifier.is_empty()) {
 				if (!reading_type) {
 					if (cur_identifier != "shader_type") {
 						return String();
@@ -8993,17 +9009,17 @@ uint32_t ShaderLanguage::get_warning_flags() const {
 }
 #endif // DEBUG_ENABLED
 
-Error ShaderLanguage::compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func) {
+Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_info) {
 	clear();
 
 	code = p_code;
-	global_var_get_type_func = p_global_variable_type_func;
-	varying_function_names = p_varying_function_names;
+	global_var_get_type_func = p_info.global_variable_type_func;
+	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
 
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_functions, p_render_modes, p_shader_types);
+	Error err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
 
 #ifdef DEBUG_ENABLED
 	if (check_warnings) {
@@ -9017,17 +9033,17 @@ Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Functi
 	return OK;
 }
 
-Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
+Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
 	clear();
 
 	code = p_code;
-	varying_function_names = p_varying_function_names;
+	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
-	global_var_get_type_func = p_global_variable_type_func;
+	global_var_get_type_func = p_info.global_variable_type_func;
 
 	shader = alloc_node<ShaderNode>();
-	_parse_shader(p_functions, p_render_modes, p_shader_types);
+	_parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
 
 	switch (completion_type) {
 		case COMPLETION_NONE: {
@@ -9035,8 +9051,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			return OK;
 		} break;
 		case COMPLETION_RENDER_MODE: {
-			for (int i = 0; i < p_render_modes.size(); i++) {
-				ScriptCodeCompletionOption option(p_render_modes[i], ScriptCodeCompletionOption::KIND_ENUM);
+			for (int i = 0; i < p_info.render_modes.size(); i++) {
+				ScriptCodeCompletionOption option(p_info.render_modes[i], ScriptCodeCompletionOption::KIND_ENUM);
 				r_options->push_back(option);
 			}
 
@@ -9054,7 +9070,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			return OK;
 		} break;
 		case COMPLETION_MAIN_FUNCTION: {
-			for (const KeyValue<StringName, FunctionInfo> &E : p_functions) {
+			for (const KeyValue<StringName, FunctionInfo> &E : p_info.functions) {
 				ScriptCodeCompletionOption option(E.key, ScriptCodeCompletionOption::KIND_FUNCTION);
 				r_options->push_back(option);
 			}
@@ -9090,8 +9106,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				}
 
 				if (comp_ident) {
-					if (p_functions.has("global")) {
-						for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["global"].built_ins) {
+					if (p_info.functions.has("global")) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["global"].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
 							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
@@ -9100,8 +9116,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						}
 					}
 
-					if (p_functions.has("constants")) {
-						for (const KeyValue<StringName, BuiltInInfo> &E : p_functions["constants"].built_ins) {
+					if (p_info.functions.has("constants")) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["constants"].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
 							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
@@ -9110,8 +9126,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						}
 					}
 
-					if (skip_function != StringName() && p_functions.has(skip_function)) {
-						for (const KeyValue<StringName, BuiltInInfo> &E : p_functions[skip_function].built_ins) {
+					if (skip_function != StringName() && p_info.functions.has(skip_function)) {
+						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions[skip_function].built_ins) {
 							ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
 							if (E.value.constant) {
 								kind = ScriptCodeCompletionOption::KIND_CONSTANT;
@@ -9425,6 +9441,57 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				r_options->push_back(ScriptCodeCompletionOption(String::chr(coordt[i]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT));
 			}
 
+		} break;
+		case COMPLETION_HINT: {
+			if (completion_base == DataType::TYPE_VEC4) {
+				ScriptCodeCompletionOption option("hint_color", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				r_options->push_back(option);
+			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
+				ScriptCodeCompletionOption option("hint_range", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+
+				if (completion_base == DataType::TYPE_INT) {
+					option.insert_text = "hint_range(0, 100, 1)";
+				} else {
+					option.insert_text = "hint_range(0.0, 1.0, 0.1)";
+				}
+
+				r_options->push_back(option);
+			} else if ((int(completion_base) > int(TYPE_MAT4) && int(completion_base) < int(TYPE_STRUCT)) && !completion_base_array) {
+				static Vector<String> options;
+
+				if (options.is_empty()) {
+					options.push_back("filter_linear");
+					options.push_back("filter_linear_mipmap");
+					options.push_back("filter_linear_mipmap_aniso");
+					options.push_back("filter_nearest");
+					options.push_back("filter_nearest_mipmap");
+					options.push_back("filter_nearest_mipmap_aniso");
+					options.push_back("hint_albedo");
+					options.push_back("hint_aniso");
+					options.push_back("hint_black");
+					options.push_back("hint_black_albedo");
+					options.push_back("hint_normal");
+					options.push_back("hint_roughness_a");
+					options.push_back("hint_roughness_b");
+					options.push_back("hint_roughness_g");
+					options.push_back("hint_roughness_gray");
+					options.push_back("hint_roughness_normal");
+					options.push_back("hint_roughness_r");
+					options.push_back("hint_white");
+					options.push_back("repeat_enable");
+					options.push_back("repeat_disable");
+				}
+
+				for (int i = 0; i < options.size(); i++) {
+					ScriptCodeCompletionOption option(options[i], ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+					r_options->push_back(option);
+				}
+			}
+			if (!completion_base_array) {
+				ScriptCodeCompletionOption option("instance_index", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				option.insert_text = "instance_index(0)";
+				r_options->push_back(option);
+			}
 		} break;
 	}
 

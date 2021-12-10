@@ -718,7 +718,7 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with
 		String name = split[0];
 		String override_for = split.size() > 1 ? split[1] : String();
 
-		if (override_for != String() && OS::get_singleton()->has_feature(override_for)) {
+		if (!override_for.is_empty() && OS::get_singleton()->has_feature(override_for)) {
 			builtins_with_overrides[name].push_back(override_for);
 		}
 	}
@@ -730,12 +730,12 @@ const OrderedHashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with
 		String name = split[0];
 		String override_for = split.size() > 1 ? split[1] : String();
 
-		if (builtins_with_overrides.has(name) && override_for == String()) {
+		if (builtins_with_overrides.has(name) && override_for.is_empty()) {
 			// Builtin has an override but this particular one is not an override, so skip.
 			continue;
 		}
 
-		if (override_for != String() && !OS::get_singleton()->has_feature(override_for)) {
+		if (!override_for.is_empty() && !OS::get_singleton()->has_feature(override_for)) {
 			// OS does not support this override - skip.
 			continue;
 		}
