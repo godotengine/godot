@@ -129,6 +129,9 @@
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
 			Each particle's initial color. To have particle display color in a [SpatialMaterial] make sure to set [member SpatialMaterial.vertex_color_use_as_albedo] to [code]true[/code].
 		</member>
+		<member name="color_initial_ramp" type="Gradient" setter="set_color_initial_ramp" getter="get_color_initial_ramp">
+			Each particle's initial color will vary along this [GradientTexture] (multiplied with [member color]).
+		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
 			Each particle's color will vary along this [GradientTexture] over its lifetime (multiplied with [member color]).
 		</member>

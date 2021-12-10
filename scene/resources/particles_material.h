@@ -80,6 +80,7 @@ private:
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
+			uint32_t texture_initial_color : 1;
 			uint32_t flags : 4;
 			uint32_t emission_shape : 3;
 			uint32_t trail_size_texture : 1;
@@ -119,6 +120,7 @@ private:
 		}
 
 		mk.texture_color = color_ramp.is_valid() ? 1 : 0;
+		mk.texture_initial_color = color_initial_ramp.is_valid() ? 1 : 0;
 		mk.emission_shape = emission_shape;
 		mk.trail_color_texture = trail_color_modifier.is_valid() ? 1 : 0;
 		mk.trail_size_texture = trail_size_modifier.is_valid() ? 1 : 0;
@@ -174,6 +176,7 @@ private:
 
 		StringName color;
 		StringName color_ramp;
+		StringName color_initial_ramp;
 
 		StringName emission_sphere_radius;
 		StringName emission_box_extents;
@@ -214,6 +217,7 @@ private:
 	Ref<Texture> tex_parameters[PARAM_MAX];
 	Color color;
 	Ref<Texture> color_ramp;
+	Ref<Texture> color_initial_ramp;
 
 	bool flags[FLAG_MAX];
 
@@ -270,6 +274,9 @@ public:
 
 	void set_color_ramp(const Ref<Texture> &p_texture);
 	Ref<Texture> get_color_ramp() const;
+
+	void set_color_initial_ramp(const Ref<Texture> &p_texture);
+	Ref<Texture> get_color_initial_ramp() const;
 
 	void set_flag(Flags p_flag, bool p_enable);
 	bool get_flag(Flags p_flag) const;
