@@ -225,6 +225,10 @@ bool VehicleWheel3D::is_in_contact() const {
 	return m_raycastInfo.m_isInContact;
 }
 
+Node3D *VehicleWheel3D::get_contact_body() const {
+	return m_raycastInfo.m_groundObject;
+}
+
 void VehicleWheel3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "length"), &VehicleWheel3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &VehicleWheel3D::get_radius);
@@ -257,6 +261,7 @@ void VehicleWheel3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_friction_slip"), &VehicleWheel3D::get_friction_slip);
 
 	ClassDB::bind_method(D_METHOD("is_in_contact"), &VehicleWheel3D::is_in_contact);
+	ClassDB::bind_method(D_METHOD("get_contact_body"), &VehicleWheel3D::get_contact_body);
 
 	ClassDB::bind_method(D_METHOD("set_roll_influence", "roll_influence"), &VehicleWheel3D::set_roll_influence);
 	ClassDB::bind_method(D_METHOD("get_roll_influence"), &VehicleWheel3D::get_roll_influence);
@@ -413,9 +418,8 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 	ray_params.exclude = exclude;
 	ray_params.collision_mask = get_collision_mask();
 
-	bool col = ss->intersect_ray(ray_params, rr);
-
 	wheel.m_raycastInfo.m_groundObject = nullptr;
+	bool col = ss->intersect_ray(ray_params, rr);
 
 	if (col) {
 		param = source.distance_to(rr.position) / source.distance_to(target);
