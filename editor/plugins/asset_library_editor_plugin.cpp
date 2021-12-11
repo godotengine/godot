@@ -231,6 +231,7 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_a
 	description->pop();
 	description->add_text("\n" + TTR("Description:") + "\n\n");
 	description->append_text(p_description);
+	description->set_selection_enabled(true);
 	set_title(p_title);
 }
 
