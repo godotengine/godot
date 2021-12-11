@@ -65,8 +65,6 @@ void BoneAttachment3D::_validate_property(PropertyInfo &property) const {
 bool BoneAttachment3D::_set(const StringName &p_path, const Variant &p_value) {
 	if (p_path == SNAME("override_pose")) {
 		set_override_pose(p_value);
-	} else if (p_path == SNAME("override_mode")) {
-		set_override_mode(p_value);
 	} else if (p_path == SNAME("use_external_skeleton")) {
 		set_use_external_skeleton(p_value);
 	} else if (p_path == SNAME("external_skeleton")) {
@@ -79,8 +77,6 @@ bool BoneAttachment3D::_set(const StringName &p_path, const Variant &p_value) {
 bool BoneAttachment3D::_get(const StringName &p_path, Variant &r_ret) const {
 	if (p_path == SNAME("override_pose")) {
 		r_ret = get_override_pose();
-	} else if (p_path == SNAME("override_mode")) {
-		r_ret = get_override_mode();
 	} else if (p_path == SNAME("use_external_skeleton")) {
 		r_ret = get_use_external_skeleton();
 	} else if (p_path == SNAME("external_skeleton")) {
@@ -92,9 +88,6 @@ bool BoneAttachment3D::_get(const StringName &p_path, Variant &r_ret) const {
 
 void BoneAttachment3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::BOOL, "override_pose", PROPERTY_HINT_NONE, ""));
-	if (override_pose) {
-		p_list->push_back(PropertyInfo(Variant::INT, "override_mode", PROPERTY_HINT_ENUM, "Global Pose Override, Local Pose Override, Custom Pose"));
-	}
 
 	p_list->push_back(PropertyInfo(Variant::BOOL, "use_external_skeleton", PROPERTY_HINT_NONE, ""));
 	if (use_external_skeleton) {
@@ -213,11 +206,7 @@ void BoneAttachment3D::_transform_changed() {
 			our_trans = sk->world_transform_to_global_pose(get_global_transform());
 		}
 
-		if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
-			sk->set_bone_global_pose_override(bone_idx, our_trans, 1.0, true);
-		} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
-			sk->set_bone_local_pose_override(bone_idx, sk->global_pose_to_local_pose(bone_idx, our_trans), 1.0, true);
-		}
+		sk->set_bone_global_pose_override(bone_idx, our_trans, 1);
 	}
 }
 
@@ -269,11 +258,7 @@ void BoneAttachment3D::set_override_pose(bool p_override) {
 	if (!override_pose) {
 		Skeleton3D *sk = _get_skeleton3d();
 		if (sk) {
-			if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
-				sk->set_bone_global_pose_override(bone_idx, Transform3D(), 0.0, false);
-			} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
-				sk->set_bone_local_pose_override(bone_idx, Transform3D(), 0.0, false);
-			}
+			sk->clear_bone_pose_override(bone_idx);
 		}
 		_transform_changed();
 	}
@@ -282,27 +267,6 @@ void BoneAttachment3D::set_override_pose(bool p_override) {
 
 bool BoneAttachment3D::get_override_pose() const {
 	return override_pose;
-}
-
-void BoneAttachment3D::set_override_mode(int p_mode) {
-	if (override_pose) {
-		Skeleton3D *sk = _get_skeleton3d();
-		if (sk) {
-			if (override_mode == OVERRIDE_MODES::MODE_GLOBAL_POSE) {
-				sk->set_bone_global_pose_override(bone_idx, Transform3D(), 0.0, false);
-			} else if (override_mode == OVERRIDE_MODES::MODE_LOCAL_POSE) {
-				sk->set_bone_local_pose_override(bone_idx, Transform3D(), 0.0, false);
-			}
-		}
-		override_mode = p_mode;
-		_transform_changed();
-		return;
-	}
-	override_mode = p_mode;
-}
-
-int BoneAttachment3D::get_override_mode() const {
-	return override_mode;
 }
 
 void BoneAttachment3D::set_use_external_skeleton(bool p_use_external) {
@@ -391,8 +355,6 @@ void BoneAttachment3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_override_pose", "override_pose"), &BoneAttachment3D::set_override_pose);
 	ClassDB::bind_method(D_METHOD("get_override_pose"), &BoneAttachment3D::get_override_pose);
-	ClassDB::bind_method(D_METHOD("set_override_mode", "override_mode"), &BoneAttachment3D::set_override_mode);
-	ClassDB::bind_method(D_METHOD("get_override_mode"), &BoneAttachment3D::get_override_mode);
 
 	ClassDB::bind_method(D_METHOD("set_use_external_skeleton", "use_external_skeleton"), &BoneAttachment3D::set_use_external_skeleton);
 	ClassDB::bind_method(D_METHOD("get_use_external_skeleton"), &BoneAttachment3D::get_use_external_skeleton);

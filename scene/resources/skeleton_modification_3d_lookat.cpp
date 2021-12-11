@@ -96,7 +96,7 @@ void SkeletonModification3DLookAt::_execute(real_t p_delta) {
 	if (_print_execution_error(bone_idx <= -1, "Bone index is invalid. Cannot execute modification!")) {
 		return;
 	}
-	Transform3D new_bone_trans = stack->skeleton->get_bone_local_pose_override(bone_idx);
+	Transform3D new_bone_trans = stack->skeleton->get_bone_pose_override(bone_idx);
 	if (new_bone_trans == Transform3D()) {
 		new_bone_trans = stack->skeleton->get_bone_pose(bone_idx);
 	}
@@ -124,7 +124,7 @@ void SkeletonModification3DLookAt::_execute(real_t p_delta) {
 	new_bone_trans.basis.rotate_local(Vector3(0, 1, 0), additional_rotation.y);
 	new_bone_trans.basis.rotate_local(Vector3(0, 0, 1), additional_rotation.z);
 
-	stack->skeleton->set_bone_local_pose_override(bone_idx, new_bone_trans, stack->strength, true);
+	stack->skeleton->set_bone_pose_override(bone_idx, new_bone_trans, stack->strength);
 	stack->skeleton->force_update_bone_children_transforms(bone_idx);
 
 	// If we completed it successfully, then we can set execution_error_found to false

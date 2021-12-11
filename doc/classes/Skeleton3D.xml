@@ -29,22 +29,23 @@
 				This is useful for using the bone transform in calculations with transforms from [Node3D]-based nodes.
 			</description>
 		</method>
+		<method name="clear_bone_pose_override">
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Removes the pose override on the bone at [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="clear_bone_pose_overrides">
+			<return type="void" />
+			<description>
+				Removes the pose override on all bones in the skeleton.
+			</description>
+		</method>
 		<method name="clear_bones">
 			<return type="void" />
 			<description>
 				Clear all the bones in this skeleton.
-			</description>
-		</method>
-		<method name="clear_bones_global_pose_override">
-			<return type="void" />
-			<description>
-				Removes the global pose override on all bones in the skeleton.
-			</description>
-		</method>
-		<method name="clear_bones_local_pose_override">
-			<return type="void" />
-			<description>
-				Removes the local pose override on all bones in the skeleton.
 			</description>
 		</method>
 		<method name="create_skin_from_rest_transforms">
@@ -113,13 +114,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_bone_local_pose_override" qualifiers="const">
-			<return type="Transform3D" />
-			<argument index="0" name="bone_idx" type="int" />
-			<description>
-				Returns the local pose override transform for [code]bone_idx[/code].
-			</description>
-		</method>
 		<method name="get_bone_name" qualifiers="const">
 			<return type="String" />
 			<argument index="0" name="bone_idx" type="int" />
@@ -140,6 +134,20 @@
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
 				Returns the pose transform of the specified bone. Pose is applied on top of the custom pose, which is applied on top the rest pose.
+			</description>
+		</method>
+		<method name="get_bone_pose_no_override" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose without override transform for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="get_bone_pose_override" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose override transform for [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="get_bone_pose_position" qualifiers="const">
@@ -185,7 +193,7 @@
 			<argument index="1" name="global_pose" type="Transform3D" />
 			<description>
 				Takes the passed-in global pose and converts it to local pose transform.
-				This can be used to easily convert a global pose from [method get_bone_global_pose] to a global transform in [method set_bone_local_pose_override].
+				This can be used to easily convert a global pose from [method get_bone_global_pose] to a global transform in [method set_bone_pose_override].
 			</description>
 		</method>
 		<method name="global_pose_to_world_transform">
@@ -210,6 +218,12 @@
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
 				Returns whether the bone pose for the bone at [code]bone_idx[/code] is enabled.
+			</description>
+		</method>
+		<method name="is_bone_pose_overridden" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="local_pose_to_global_pose">
@@ -294,23 +308,9 @@
 			<argument index="0" name="bone_idx" type="int" />
 			<argument index="1" name="pose" type="Transform3D" />
 			<argument index="2" name="amount" type="float" />
-			<argument index="3" name="persistent" type="bool" default="false" />
 			<description>
 				Sets the global pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a global pose! Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to a global pose.
-			</description>
-		</method>
-		<method name="set_bone_local_pose_override">
-			<return type="void" />
-			<argument index="0" name="bone_idx" type="int" />
-			<argument index="1" name="pose" type="Transform3D" />
-			<argument index="2" name="amount" type="float" />
-			<argument index="3" name="persistent" type="bool" default="false" />
-			<description>
-				Sets the local pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
-				[b]Note:[/b] The pose transform needs to be a local pose! Use [method global_pose_to_local_pose] to convert a global pose to a local pose.
 			</description>
 		</method>
 		<method name="set_bone_name">
@@ -327,6 +327,16 @@
 			<description>
 				Sets the bone index [code]parent_idx[/code] as the parent of the bone at [code]bone_idx[/code]. If -1, then bone has no parent.
 				[b]Note:[/b] [code]parent_idx[/code] must be less than [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="set_bone_pose_override">
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="pose" type="Transform3D" />
+			<argument index="2" name="amount" type="float" />
+			<description>
+				Sets the local pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
+				[b]Note:[/b] The pose transform needs to be a local pose! Use [method global_pose_to_local_pose] to convert a global pose to a local pose.
 			</description>
 		</method>
 		<method name="set_bone_pose_position">

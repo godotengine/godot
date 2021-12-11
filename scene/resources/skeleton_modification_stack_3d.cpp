@@ -174,7 +174,7 @@ void SkeletonModificationStack3D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
 
 	if (!enabled && is_setup && skeleton != nullptr) {
-		skeleton->clear_bones_local_pose_override();
+		skeleton->clear_bone_pose_overrides();
 	}
 }
 

@@ -172,7 +172,7 @@ void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D
 		return;
 	}
 
-	Transform3D bone_local_pos = stack->skeleton->get_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx);
+	Transform3D bone_local_pos = stack->skeleton->get_bone_pose_override(jiggle_data_chain[p_joint_idx].bone_idx);
 	if (bone_local_pos == Transform3D()) {
 		bone_local_pos = stack->skeleton->get_bone_pose(jiggle_data_chain[p_joint_idx].bone_idx);
 	}
@@ -237,7 +237,7 @@ void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D
 	new_bone_trans.basis.rotate_local(forward_vector, jiggle_data_chain[p_joint_idx].roll);
 
 	new_bone_trans = stack->skeleton->global_pose_to_local_pose(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans);
-	stack->skeleton->set_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans, stack->strength, true);
+	stack->skeleton->set_bone_pose_override(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans, stack->strength);
 	stack->skeleton->force_update_bone_children_transforms(jiggle_data_chain[p_joint_idx].bone_idx);
 }
 
@@ -264,7 +264,7 @@ void SkeletonModification3DJiggle::_setup_modification(SkeletonModificationStack
 			for (uint32_t i = 0; i < jiggle_data_chain.size(); i++) {
 				int bone_idx = jiggle_data_chain[i].bone_idx;
 				if (bone_idx > 0 && bone_idx < stack->skeleton->get_bone_count()) {
-					jiggle_data_chain[i].dynamic_position = stack->skeleton->local_pose_to_global_pose(bone_idx, stack->skeleton->get_bone_local_pose_override(bone_idx)).origin;
+					jiggle_data_chain[i].dynamic_position = stack->skeleton->get_bone_global_pose_override(bone_idx).origin;
 				}
 			}
 		}

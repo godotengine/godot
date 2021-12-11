@@ -129,9 +129,7 @@ void SkeletonModification3DCCDIK::_execute(real_t p_delta) {
 
 	// Reset the local bone overrides for CCDIK affected nodes
 	for (uint32_t i = 0; i < ccdik_data_chain.size(); i++) {
-		stack->skeleton->set_bone_local_pose_override(ccdik_data_chain[i].bone_idx,
-				stack->skeleton->get_bone_local_pose_override(ccdik_data_chain[i].bone_idx),
-				0.0, false);
+		stack->skeleton->clear_bone_pose_override(ccdik_data_chain[i].bone_idx);
 	}
 
 	Node3D *node_target = Object::cast_to<Node3D>(ObjectDB::get_instance(target_node_cache));
@@ -228,7 +226,7 @@ void SkeletonModification3DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node3D *
 		bone_trans.basis.set_axis_angle(rotation_axis, rotation_angle);
 	}
 
-	stack->skeleton->set_bone_local_pose_override(ccdik_data.bone_idx, bone_trans, stack->strength, true);
+	stack->skeleton->set_bone_pose_override(ccdik_data.bone_idx, bone_trans, stack->strength);
 	stack->skeleton->force_update_bone_children_transforms(ccdik_data.bone_idx);
 }
 

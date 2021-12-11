@@ -254,7 +254,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		// Before skipping, make sure we undo the global pose overrides
 		ChainItem *ci(&p_task->chain.chain_root);
 		while (ci) {
-			p_task->skeleton->set_bone_global_pose_override(ci->bone, ci->initial_transform, 0.0, false);
+			p_task->skeleton->clear_bone_pose_override(ci->bone);
 
 			if (!ci->children.is_empty()) {
 				ci = &ci->children.write[0];
@@ -269,7 +269,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 	// Update the initial root transform so its synced with any animation changes
 	_update_chain(p_task->skeleton, &p_task->chain.chain_root);
 
-	p_task->skeleton->set_bone_global_pose_override(p_task->chain.chain_root.bone, Transform3D(), 0.0, false);
+	p_task->skeleton->clear_bone_pose_override(p_task->chain.chain_root.bone);
 	Vector3 origin_pos = p_task->skeleton->get_bone_global_pose(p_task->chain.chain_root.bone).origin;
 
 	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse(), blending_delta);
@@ -305,7 +305,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		new_bone_pose.basis.orthonormalize();
 		new_bone_pose.basis.scale(p_task->skeleton->get_bone_global_pose(ci->bone).basis.get_scale());
 
-		p_task->skeleton->set_bone_global_pose_override(ci->bone, new_bone_pose, 1.0, true);
+		p_task->skeleton->set_bone_global_pose_override(ci->bone, new_bone_pose, 1);
 
 		if (!ci->children.is_empty()) {
 			ci = &ci->children.write[0];
@@ -527,7 +527,7 @@ void SkeletonIK3D::start(bool p_one_time) {
 void SkeletonIK3D::stop() {
 	set_process_internal(false);
 	if (skeleton) {
-		skeleton->clear_bones_global_pose_override();
+		skeleton->clear_bone_pose_overrides();
 	}
 }
 

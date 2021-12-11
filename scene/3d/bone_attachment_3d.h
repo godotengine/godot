@@ -41,13 +41,7 @@ class BoneAttachment3D : public Node3D {
 	int bone_idx = -1;
 
 	bool override_pose = false;
-	int override_mode = 0;
 	bool _override_dirty = false;
-
-	enum OVERRIDE_MODES {
-		MODE_GLOBAL_POSE,
-		MODE_LOCAL_POSE,
-	};
 
 	bool use_external_skeleton = false;
 	NodePath external_skeleton_node;
@@ -80,8 +74,6 @@ public:
 
 	void set_override_pose(bool p_override);
 	bool get_override_pose() const;
-	void set_override_mode(int p_mode);
-	int get_override_mode() const;
 
 	void set_use_external_skeleton(bool p_external_skeleton);
 	bool get_use_external_skeleton() const;

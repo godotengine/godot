@@ -178,11 +178,11 @@ void SkeletonModification3DTwoBoneIK::_execute(real_t p_delta) {
 		}
 		Transform3D pole_trans = stack->skeleton->world_transform_to_global_pose(pole->get_global_transform());
 
-		Transform3D bone_one_local_pos = stack->skeleton->get_bone_local_pose_override(joint_one_bone_idx);
+		Transform3D bone_one_local_pos = stack->skeleton->get_bone_pose_override(joint_one_bone_idx);
 		if (bone_one_local_pos == Transform3D()) {
 			bone_one_local_pos = stack->skeleton->get_bone_pose(joint_one_bone_idx);
 		}
-		Transform3D bone_two_local_pos = stack->skeleton->get_bone_local_pose_override(joint_two_bone_idx);
+		Transform3D bone_two_local_pos = stack->skeleton->get_bone_pose_override(joint_two_bone_idx);
 		if (bone_two_local_pos == Transform3D()) {
 			bone_two_local_pos = stack->skeleton->get_bone_pose(joint_two_bone_idx);
 		}
@@ -192,7 +192,7 @@ void SkeletonModification3DTwoBoneIK::_execute(real_t p_delta) {
 		bone_one_trans.basis = stack->skeleton->global_pose_z_forward_to_bone_forward(joint_one_bone_idx, bone_one_trans.basis);
 		stack->skeleton->update_bone_rest_forward_vector(joint_one_bone_idx);
 		bone_one_trans.basis.rotate_local(stack->skeleton->get_bone_axis_forward_vector(joint_one_bone_idx), joint_one_roll);
-		stack->skeleton->set_bone_local_pose_override(joint_one_bone_idx, stack->skeleton->global_pose_to_local_pose(joint_one_bone_idx, bone_one_trans), stack->strength, true);
+		stack->skeleton->set_bone_global_pose_override(joint_one_bone_idx, bone_one_trans, stack->strength);
 		stack->skeleton->force_update_bone_children_transforms(joint_one_bone_idx);
 
 		bone_two_trans = stack->skeleton->local_pose_to_global_pose(joint_two_bone_idx, bone_two_local_pos);
@@ -200,14 +200,14 @@ void SkeletonModification3DTwoBoneIK::_execute(real_t p_delta) {
 		bone_two_trans.basis = stack->skeleton->global_pose_z_forward_to_bone_forward(joint_two_bone_idx, bone_two_trans.basis);
 		stack->skeleton->update_bone_rest_forward_vector(joint_two_bone_idx);
 		bone_two_trans.basis.rotate_local(stack->skeleton->get_bone_axis_forward_vector(joint_two_bone_idx), joint_two_roll);
-		stack->skeleton->set_bone_local_pose_override(joint_two_bone_idx, stack->skeleton->global_pose_to_local_pose(joint_two_bone_idx, bone_two_trans), stack->strength, true);
+		stack->skeleton->set_bone_global_pose_override(joint_two_bone_idx, bone_two_trans, stack->strength);
 		stack->skeleton->force_update_bone_children_transforms(joint_two_bone_idx);
 	} else {
-		Transform3D bone_one_local_pos = stack->skeleton->get_bone_local_pose_override(joint_one_bone_idx);
+		Transform3D bone_one_local_pos = stack->skeleton->get_bone_pose_override(joint_one_bone_idx);
 		if (bone_one_local_pos == Transform3D()) {
 			bone_one_local_pos = stack->skeleton->get_bone_pose(joint_one_bone_idx);
 		}
-		Transform3D bone_two_local_pos = stack->skeleton->get_bone_local_pose_override(joint_two_bone_idx);
+		Transform3D bone_two_local_pos = stack->skeleton->get_bone_pose_override(joint_two_bone_idx);
 		if (bone_two_local_pos == Transform3D()) {
 			bone_two_local_pos = stack->skeleton->get_bone_pose(joint_two_bone_idx);
 		}
@@ -269,12 +269,12 @@ void SkeletonModification3DTwoBoneIK::_execute(real_t p_delta) {
 	// Apply the rotation to the first joint
 	bone_one_trans = stack->skeleton->global_pose_to_local_pose(joint_one_bone_idx, bone_one_trans);
 	bone_one_trans.origin = Vector3(0, 0, 0);
-	stack->skeleton->set_bone_local_pose_override(joint_one_bone_idx, bone_one_trans, stack->strength, true);
+	stack->skeleton->set_bone_pose_override(joint_one_bone_idx, bone_one_trans, stack->strength);
 	stack->skeleton->force_update_bone_children_transforms(joint_one_bone_idx);
 
 	if (use_pole_node) {
 		// Update bone_two_trans so its at the latest position, with the rotation of bone_one_trans taken into account, then look at the target.
-		bone_two_trans = stack->skeleton->local_pose_to_global_pose(joint_two_bone_idx, stack->skeleton->get_bone_local_pose_override(joint_two_bone_idx));
+		bone_two_trans = stack->skeleton->local_pose_to_global_pose(joint_two_bone_idx, stack->skeleton->get_bone_pose_override(joint_two_bone_idx));
 		stack->skeleton->update_bone_rest_forward_vector(joint_two_bone_idx);
 		Vector3 forward_vector = stack->skeleton->get_bone_axis_forward_vector(joint_two_bone_idx);
 		bone_two_trans.basis.rotate_to_align(forward_vector, bone_two_trans.origin.direction_to(target_trans.origin));
@@ -283,7 +283,7 @@ void SkeletonModification3DTwoBoneIK::_execute(real_t p_delta) {
 		bone_two_trans.basis.rotate_local(stack->skeleton->get_bone_axis_forward_vector(joint_two_bone_idx), joint_two_roll);
 
 		bone_two_trans = stack->skeleton->global_pose_to_local_pose(joint_two_bone_idx, bone_two_trans);
-		stack->skeleton->set_bone_local_pose_override(joint_two_bone_idx, bone_two_trans, stack->strength, true);
+		stack->skeleton->set_bone_pose_override(joint_two_bone_idx, bone_two_trans, stack->strength);
 		stack->skeleton->force_update_bone_children_transforms(joint_two_bone_idx);
 	} else {
 		// Calculate the angles for the second joint using the law of cosigns, make a quaternion with the delta rotation needed to rotate the joint into
@@ -299,7 +299,7 @@ void SkeletonModification3DTwoBoneIK::_execute(real_t p_delta) {
 
 		bone_two_trans = stack->skeleton->global_pose_to_local_pose(joint_two_bone_idx, bone_two_trans);
 		bone_two_trans.origin = Vector3(0, 0, 0);
-		stack->skeleton->set_bone_local_pose_override(joint_two_bone_idx, bone_two_trans, stack->strength, true);
+		stack->skeleton->set_bone_pose_override(joint_two_bone_idx, bone_two_trans, stack->strength);
 		stack->skeleton->force_update_bone_children_transforms(joint_two_bone_idx);
 	}
 }

@@ -315,7 +315,7 @@ void Skeleton3D::_notification(int p_what) {
 				for (uint32_t i = 0; i < bind_count; i++) {
 					uint32_t bone_index = E->get()->skin_bone_indices_ptrs[i];
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
-					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].pose_global * skin->get_bind_pose(i));
+					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].global_pose_cache * skin->get_bind_pose(i));
 				}
 			}
 #ifdef TOOLS_ENABLED
@@ -362,27 +362,58 @@ void Skeleton3D::_notification(int p_what) {
 	}
 }
 
-void Skeleton3D::clear_bones_global_pose_override() {
-	for (int i = 0; i < bones.size(); i += 1) {
-		bones.write[i].global_pose_override_amount = 0;
-		bones.write[i].global_pose_override_reset = true;
+void Skeleton3D::clear_bone_pose_overrides() {
+	const int bone_size = bones.size();
+	for (int i = 0; i < bone_size; i += 1) {
+		bones.write[i].is_override_enabled = false;
+		bones.write[i].pose_override = Transform3D();
+		bones.write[i].pose_cache_dirty = true;
 	}
 	_make_dirty();
 }
 
-void Skeleton3D::set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent) {
+void Skeleton3D::clear_bone_pose_override(int p_bone) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
-	bones.write[p_bone].global_pose_override_amount = p_amount;
-	bones.write[p_bone].global_pose_override = p_pose;
-	bones.write[p_bone].global_pose_override_reset = !p_persistent;
+	bones.write[p_bone].is_override_enabled = false;
+	bones.write[p_bone].pose_override = Transform3D();
+	bones.write[p_bone].pose_cache_dirty = true;
+	_make_dirty();
+}
+
+bool Skeleton3D::is_bone_pose_overridden(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, false);
+	return bones[p_bone].is_override_enabled;
+}
+
+Transform3D Skeleton3D::get_bone_pose_override(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
+	return bones[p_bone].pose_override;
+}
+
+void Skeleton3D::set_bone_pose_override(int p_bone, const Transform3D &p_pose, float p_amount) {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX(p_bone, bone_size);
+	bones.write[p_bone].is_override_enabled = true;
+	bones.write[p_bone].pose_override = get_bone_pose_no_override(p_bone).interpolate_with(p_pose, p_amount);
+	bones.write[p_bone].pose_cache_dirty = true;
 	_make_dirty();
 }
 
 Transform3D Skeleton3D::get_bone_global_pose_override(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
-	return bones[p_bone].global_pose_override;
+	if (dirty) {
+		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+	}
+	return const_cast<Skeleton3D *>(this)->local_pose_to_global_pose(p_bone, bones[p_bone].pose_override);
+}
+
+void Skeleton3D::set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, float p_amount) {
+	Transform3D tr = global_pose_to_local_pose(p_bone, p_pose);
+	set_bone_pose_override(p_bone, tr, p_amount);
 }
 
 Transform3D Skeleton3D::get_bone_global_pose(int p_bone) const {
@@ -391,7 +422,7 @@ Transform3D Skeleton3D::get_bone_global_pose(int p_bone) const {
 	if (dirty) {
 		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
 	}
-	return bones[p_bone].pose_global;
+	return bones[p_bone].global_pose_cache;
 }
 
 Transform3D Skeleton3D::get_bone_global_pose_no_override(int p_bone) const {
@@ -400,29 +431,7 @@ Transform3D Skeleton3D::get_bone_global_pose_no_override(int p_bone) const {
 	if (dirty) {
 		const_cast<Skeleton3D *>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
 	}
-	return bones[p_bone].pose_global_no_override;
-}
-
-void Skeleton3D::clear_bones_local_pose_override() {
-	for (int i = 0; i < bones.size(); i += 1) {
-		bones.write[i].local_pose_override_amount = 0;
-	}
-	_make_dirty();
-}
-
-void Skeleton3D::set_bone_local_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent) {
-	const int bone_size = bones.size();
-	ERR_FAIL_INDEX(p_bone, bone_size);
-	bones.write[p_bone].local_pose_override_amount = p_amount;
-	bones.write[p_bone].local_pose_override = p_pose;
-	bones.write[p_bone].local_pose_override_reset = !p_persistent;
-	_make_dirty();
-}
-
-Transform3D Skeleton3D::get_bone_local_pose_override(int p_bone) const {
-	const int bone_size = bones.size();
-	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
-	return bones[p_bone].local_pose_override;
+	return bones[p_bone].global_pose_no_override;
 }
 
 void Skeleton3D::update_bone_rest_forward_vector(int p_bone, bool p_force_update) {
@@ -743,6 +752,12 @@ Transform3D Skeleton3D::get_bone_pose(int p_bone) const {
 	return bones[p_bone].pose_cache;
 }
 
+Transform3D Skeleton3D::get_bone_pose_no_override(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, Transform3D());
+	return bones[p_bone].pose;
+}
+
 void Skeleton3D::_make_dirty() {
 	if (dirty) {
 		return;
@@ -1041,44 +1056,23 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 
 		if (bone_enabled) {
 			b.update_pose_cache();
-			Transform3D pose = b.pose_cache;
+			Transform3D current_pose = b.pose_cache;
 
 			if (b.parent >= 0) {
-				b.pose_global = bonesptr[b.parent].pose_global * pose;
-				b.pose_global_no_override = b.pose_global;
+				b.global_pose_cache = bonesptr[b.parent].global_pose_cache * current_pose;
+				b.global_pose_no_override = bonesptr[b.parent].global_pose_no_override * b.pose;
 			} else {
-				b.pose_global = pose;
-				b.pose_global_no_override = b.pose_global;
+				b.global_pose_cache = current_pose;
+				b.global_pose_no_override = b.pose;
 			}
 		} else {
 			if (b.parent >= 0) {
-				b.pose_global = bonesptr[b.parent].pose_global * b.rest;
-				b.pose_global_no_override = b.pose_global;
+				b.global_pose_cache = bonesptr[b.parent].global_pose_cache * b.rest;
+				b.global_pose_no_override = bonesptr[b.parent].global_pose_no_override * b.rest;
 			} else {
-				b.pose_global = b.rest;
-				b.pose_global_no_override = b.pose_global;
+				b.global_pose_cache = b.rest;
+				b.global_pose_no_override = b.rest;
 			}
-		}
-
-		if (b.local_pose_override_amount >= CMP_EPSILON) {
-			Transform3D override_local_pose;
-			if (b.parent >= 0) {
-				override_local_pose = bonesptr[b.parent].pose_global * b.local_pose_override;
-			} else {
-				override_local_pose = b.local_pose_override;
-			}
-			b.pose_global = b.pose_global.interpolate_with(override_local_pose, b.local_pose_override_amount);
-		}
-
-		if (b.global_pose_override_amount >= CMP_EPSILON) {
-			b.pose_global = b.pose_global.interpolate_with(b.global_pose_override, b.global_pose_override_amount);
-		}
-
-		if (b.local_pose_override_reset) {
-			b.local_pose_override_amount = 0.0;
-		}
-		if (b.global_pose_override_reset) {
-			b.global_pose_override_amount = 0.0;
 		}
 
 		// Add the bone's children to the list of bones to be processed.
@@ -1118,7 +1112,7 @@ Transform3D Skeleton3D::local_pose_to_global_pose(int p_bone_idx, Transform3D p_
 	ERR_FAIL_INDEX_V(p_bone_idx, bone_size, Transform3D());
 	if (bones[p_bone_idx].parent >= 0) {
 		int parent_bone_idx = bones[p_bone_idx].parent;
-		return bones[parent_bone_idx].pose_global * p_local_pose;
+		return bones[parent_bone_idx].global_pose_cache * p_local_pose;
 	} else {
 		return p_local_pose;
 	}
@@ -1215,7 +1209,15 @@ void Skeleton3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear_bones"), &Skeleton3D::clear_bones);
 
+	ClassDB::bind_method(D_METHOD("is_bone_enabled", "bone_idx"), &Skeleton3D::is_bone_enabled);
+	ClassDB::bind_method(D_METHOD("set_bone_enabled", "bone_idx", "enabled"), &Skeleton3D::set_bone_enabled, DEFVAL(true));
+
 	ClassDB::bind_method(D_METHOD("get_bone_pose", "bone_idx"), &Skeleton3D::get_bone_pose);
+	ClassDB::bind_method(D_METHOD("get_bone_pose_no_override", "bone_idx"), &Skeleton3D::get_bone_pose_no_override);
+
+	ClassDB::bind_method(D_METHOD("get_bone_global_pose", "bone_idx"), &Skeleton3D::get_bone_global_pose);
+	ClassDB::bind_method(D_METHOD("get_bone_global_pose_no_override", "bone_idx"), &Skeleton3D::get_bone_global_pose_no_override);
+
 	ClassDB::bind_method(D_METHOD("set_bone_pose_position", "bone_idx", "position"), &Skeleton3D::set_bone_pose_position);
 	ClassDB::bind_method(D_METHOD("set_bone_pose_rotation", "bone_idx", "rotation"), &Skeleton3D::set_bone_pose_rotation);
 	ClassDB::bind_method(D_METHOD("set_bone_pose_scale", "bone_idx", "scale"), &Skeleton3D::set_bone_pose_scale);
@@ -1224,18 +1226,16 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone_pose_rotation", "bone_idx"), &Skeleton3D::get_bone_pose_rotation);
 	ClassDB::bind_method(D_METHOD("get_bone_pose_scale", "bone_idx"), &Skeleton3D::get_bone_pose_scale);
 
-	ClassDB::bind_method(D_METHOD("is_bone_enabled", "bone_idx"), &Skeleton3D::is_bone_enabled);
-	ClassDB::bind_method(D_METHOD("set_bone_enabled", "bone_idx", "enabled"), &Skeleton3D::set_bone_enabled, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("clear_bone_pose_overrides"), &Skeleton3D::clear_bone_pose_overrides);
 
-	ClassDB::bind_method(D_METHOD("clear_bones_global_pose_override"), &Skeleton3D::clear_bones_global_pose_override);
-	ClassDB::bind_method(D_METHOD("set_bone_global_pose_override", "bone_idx", "pose", "amount", "persistent"), &Skeleton3D::set_bone_global_pose_override, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("clear_bone_pose_override", "bone_idx"), &Skeleton3D::clear_bone_pose_override);
+	ClassDB::bind_method(D_METHOD("is_bone_pose_overridden", "bone_idx"), &Skeleton3D::is_bone_pose_overridden);
+
+	ClassDB::bind_method(D_METHOD("set_bone_pose_override", "bone_idx", "pose", "amount"), &Skeleton3D::set_bone_pose_override);
+	ClassDB::bind_method(D_METHOD("get_bone_pose_override", "bone_idx"), &Skeleton3D::get_bone_pose_override);
+
+	ClassDB::bind_method(D_METHOD("set_bone_global_pose_override", "bone_idx", "pose", "amount"), &Skeleton3D::set_bone_global_pose_override);
 	ClassDB::bind_method(D_METHOD("get_bone_global_pose_override", "bone_idx"), &Skeleton3D::get_bone_global_pose_override);
-	ClassDB::bind_method(D_METHOD("get_bone_global_pose", "bone_idx"), &Skeleton3D::get_bone_global_pose);
-	ClassDB::bind_method(D_METHOD("get_bone_global_pose_no_override", "bone_idx"), &Skeleton3D::get_bone_global_pose_no_override);
-
-	ClassDB::bind_method(D_METHOD("clear_bones_local_pose_override"), &Skeleton3D::clear_bones_local_pose_override);
-	ClassDB::bind_method(D_METHOD("set_bone_local_pose_override", "bone_idx", "pose", "amount", "persistent"), &Skeleton3D::set_bone_local_pose_override, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_bone_local_pose_override", "bone_idx"), &Skeleton3D::get_bone_local_pose_override);
 
 	ClassDB::bind_method(D_METHOD("force_update_all_bone_transforms"), &Skeleton3D::force_update_all_bone_transforms);
 	ClassDB::bind_method(D_METHOD("force_update_bone_child_transform", "bone_idx"), &Skeleton3D::force_update_bone_children_transforms);
