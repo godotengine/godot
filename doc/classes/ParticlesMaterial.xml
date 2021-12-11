@@ -83,13 +83,13 @@
 			Minimum angle.
 		</member>
 		<member name="angular_velocity_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
-			Each particle's angular velocity will vary along this [CurveTexture].
+			Each particle's angular velocity (rotation speed) will vary along this [CurveTexture] over its lifetime.
 		</member>
 		<member name="angular_velocity_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
-			Maximum angular velocity.
+			Maximum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
 		</member>
 		<member name="angular_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
-			Minimum angular velocity.
+			Minimum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
 		</member>
 		<member name="anim_offset_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's animation offset will vary along this [CurveTexture].
