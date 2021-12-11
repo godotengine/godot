@@ -6,7 +6,7 @@
 	<description>
 		The VisibilityEnabler will disable [RigidBody] and [AnimationPlayer] nodes when they are not visible. It will only affect other nodes within the same scene as the VisibilityEnabler itself.
 		If you just want to receive notifications, use [VisibilityNotifier] instead.
-		[b]Note:[/b] VisibilityEnabler uses an approximate heuristic for performance reasons. It doesn't take walls and other occlusion into account. The heuristic is an implementation detail and may change in future versions. If you need precise visibility checking, use another method such as adding an [Area] node as a child of a [Camera] node and/or [method Vector3.dot].
+		[b]Note:[/b] VisibilityEnabler uses an approximate heuristic for performance reasons. It doesn't take walls and other occlusion into account (unless you are using [Portal]s). The heuristic is an implementation detail and may change in future versions. If you need precise visibility checking, use another method such as adding an [Area] node as a child of a [Camera] node and/or [method Vector3.dot].
 		[b]Note:[/b] VisibilityEnabler will not affect nodes added after scene initialization.
 	</description>
 	<tutorials>
