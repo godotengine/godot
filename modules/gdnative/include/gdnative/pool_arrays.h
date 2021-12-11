@@ -275,6 +275,8 @@ godot_error GDAPI godot_pool_string_array_insert(godot_pool_string_array *p_self
 
 void GDAPI godot_pool_string_array_invert(godot_pool_string_array *p_self);
 
+godot_string GDAPI godot_pool_string_array_join(godot_pool_string_array *p_self, const godot_string *p_delimiter);
+
 void GDAPI godot_pool_string_array_push_back(godot_pool_string_array *p_self, const godot_string *p_data);
 
 void GDAPI godot_pool_string_array_remove(godot_pool_string_array *p_self, const godot_int p_idx);
