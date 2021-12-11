@@ -10,6 +10,7 @@
 		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
 		Also, viewports can be assigned to different screens in case the devices have multiple screens.
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
+		[b]Note:[/b] By default, a newly created Viewport in Godot 3.x will appear to be upside down. Enabling [member render_target_v_flip] will display the Viewport with the correct orientation.
 	</description>
 	<tutorials>
 		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/3.4/tutorials/2d/2d_transforms.html</link>
@@ -250,7 +251,7 @@
 			The update mode when viewport used as a render target.
 		</member>
 		<member name="render_target_v_flip" type="bool" setter="set_vflip" getter="get_vflip" default="false">
-			If [code]true[/code], the result of rendering will be flipped vertically.
+			If [code]true[/code], the result of rendering will be flipped vertically. Since Viewports in Godot 3.x render upside-down, it's recommended to set this to [code]true[/code] in most situations.
 		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
 			The subdivision amount of the first quadrant on the shadow atlas.
