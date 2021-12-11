@@ -203,19 +203,24 @@ public:
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override;
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const override;
 
-	virtual void body_set_applied_force(RID p_body, const Vector3 &p_force) override;
-	virtual Vector3 body_get_applied_force(RID p_body) const override;
-
-	virtual void body_set_applied_torque(RID p_body, const Vector3 &p_torque) override;
-	virtual Vector3 body_get_applied_torque(RID p_body) const override;
-
-	virtual void body_add_central_force(RID p_body, const Vector3 &p_force) override;
-	virtual void body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
-	virtual void body_add_torque(RID p_body, const Vector3 &p_torque) override;
-
 	virtual void body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) override;
 	virtual void body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) override;
 	virtual void body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) override;
+
+	virtual void body_apply_central_force(RID p_body, const Vector3 &p_force) override;
+	virtual void body_apply_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
+	virtual void body_apply_torque(RID p_body, const Vector3 &p_torque) override;
+
+	virtual void body_add_constant_central_force(RID p_body, const Vector3 &p_force) override;
+	virtual void body_add_constant_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
+	virtual void body_add_constant_torque(RID p_body, const Vector3 &p_torque) override;
+
+	virtual void body_set_constant_force(RID p_body, const Vector3 &p_force) override;
+	virtual Vector3 body_get_constant_force(RID p_body) const override;
+
+	virtual void body_set_constant_torque(RID p_body, const Vector3 &p_torque) override;
+	virtual Vector3 body_get_constant_torque(RID p_body) const override;
+
 	virtual void body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) override;
 
 	virtual void body_set_axis_lock(RID p_body, BodyAxis p_axis, bool p_lock) override;

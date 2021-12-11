@@ -292,15 +292,19 @@ public:
 	void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2());
 	void apply_torque_impulse(real_t p_torque);
 
-	void set_applied_force(const Vector2 &p_force);
-	Vector2 get_applied_force() const;
+	void apply_central_force(const Vector2 &p_force);
+	void apply_force(const Vector2 &p_force, const Vector2 &p_position = Vector2());
+	void apply_torque(real_t p_torque);
 
-	void set_applied_torque(const real_t p_torque);
-	real_t get_applied_torque() const;
+	void add_constant_central_force(const Vector2 &p_force);
+	void add_constant_force(const Vector2 &p_force, const Vector2 &p_position = Vector2());
+	void add_constant_torque(real_t p_torque);
 
-	void add_central_force(const Vector2 &p_force);
-	void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2());
-	void add_torque(real_t p_torque);
+	void set_constant_force(const Vector2 &p_force);
+	Vector2 get_constant_force() const;
+
+	void set_constant_torque(real_t p_torque);
+	real_t get_constant_torque() const;
 
 	TypedArray<Node2D> get_colliding_bodies() const; //function for script
 

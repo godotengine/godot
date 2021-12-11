@@ -65,12 +65,23 @@ public:
 
 	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const = 0;
 
-	virtual void add_central_force(const Vector3 &p_force) = 0;
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
-	virtual void add_torque(const Vector3 &p_torque) = 0;
 	virtual void apply_central_impulse(const Vector3 &p_impulse) = 0;
 	virtual void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
 	virtual void apply_torque_impulse(const Vector3 &p_impulse) = 0;
+
+	virtual void apply_central_force(const Vector3 &p_force) = 0;
+	virtual void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
+	virtual void apply_torque(const Vector3 &p_torque) = 0;
+
+	virtual void add_constant_central_force(const Vector3 &p_force) = 0;
+	virtual void add_constant_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
+	virtual void add_constant_torque(const Vector3 &p_torque) = 0;
+
+	virtual void set_constant_force(const Vector3 &p_force) = 0;
+	virtual Vector3 get_constant_force() const = 0;
+
+	virtual void set_constant_torque(const Vector3 &p_torque) = 0;
+	virtual Vector3 get_constant_torque() const = 0;
 
 	virtual void set_sleep_state(bool p_sleep) = 0;
 	virtual bool is_sleeping() const = 0;
@@ -434,20 +445,24 @@ public:
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) = 0;
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const = 0;
 
-	//do something about it
-	virtual void body_set_applied_force(RID p_body, const Vector3 &p_force) = 0;
-	virtual Vector3 body_get_applied_force(RID p_body) const = 0;
-
-	virtual void body_set_applied_torque(RID p_body, const Vector3 &p_torque) = 0;
-	virtual Vector3 body_get_applied_torque(RID p_body) const = 0;
-
-	virtual void body_add_central_force(RID p_body, const Vector3 &p_force) = 0;
-	virtual void body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
-	virtual void body_add_torque(RID p_body, const Vector3 &p_torque) = 0;
-
 	virtual void body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) = 0;
 	virtual void body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
 	virtual void body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) = 0;
+
+	virtual void body_apply_central_force(RID p_body, const Vector3 &p_force) = 0;
+	virtual void body_apply_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
+	virtual void body_apply_torque(RID p_body, const Vector3 &p_torque) = 0;
+
+	virtual void body_add_constant_central_force(RID p_body, const Vector3 &p_force) = 0;
+	virtual void body_add_constant_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
+	virtual void body_add_constant_torque(RID p_body, const Vector3 &p_torque) = 0;
+
+	virtual void body_set_constant_force(RID p_body, const Vector3 &p_force) = 0;
+	virtual Vector3 body_get_constant_force(RID p_body) const = 0;
+
+	virtual void body_set_constant_torque(RID p_body, const Vector3 &p_torque) = 0;
+	virtual Vector3 body_get_constant_torque(RID p_body) const = 0;
+
 	virtual void body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) = 0;
 
 	enum BodyAxis {

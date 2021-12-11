@@ -22,28 +22,36 @@
 				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it works in addition to the usual physics behavior, but the [member custom_integrator] property allows you to disable the default behavior and do fully custom force integration for a body.
 			</description>
 		</method>
-		<method name="add_central_force">
+		<method name="add_constant_central_force">
 			<return type="void" />
 			<argument index="0" name="force" type="Vector3" />
 			<description>
-				Adds a constant directional force (i.e. acceleration) without affecting rotation.
-				This is equivalent to [code]add_force(force, Vector3(0,0,0))[/code].
+				Adds a constant directional force without affecting rotation that keeps being applied over time until cleared with [code]constant_force = Vector3(0, 0, 0)[/code].
+				This is equivalent to using [method add_constant_force] at the body's center of mass.
 			</description>
 		</method>
-		<method name="add_force">
+		<method name="add_constant_force">
 			<return type="void" />
 			<argument index="0" name="force" type="Vector3" />
 			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
-				Adds a constant directional force (i.e. acceleration).
-				The position uses the rotation of the global coordinate system, but is centered at the object's origin.
+				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]constant_force = Vector3(0, 0, 0)[/code].
+				[code]position[/code] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
-		<method name="add_torque">
+		<method name="add_constant_torque">
 			<return type="void" />
 			<argument index="0" name="torque" type="Vector3" />
 			<description>
-				Adds a constant rotational force (i.e. a motor) without affecting position.
+				Adds a constant rotational force without affecting position that keeps being applied over time until cleared with [code]constant_torque = Vector3(0, 0, 0)[/code].
+			</description>
+		</method>
+		<method name="apply_central_force">
+			<return type="void" />
+			<argument index="0" name="force" type="Vector3" />
+			<description>
+				Applies a directional force without affecting rotation. A force is time dependent and meant to be applied every physics update.
+				This is equivalent to using [method apply_force] at the body's center of mass.
 			</description>
 		</method>
 		<method name="apply_central_impulse">
@@ -51,7 +59,17 @@
 			<argument index="0" name="impulse" type="Vector3" />
 			<description>
 				Applies a directional impulse without affecting rotation.
-				This is equivalent to [code]apply_impulse(Vector3(0,0,0), impulse)[/code].
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				This is equivalent to using [method apply_impulse] at the body's center of mass.
+			</description>
+		</method>
+		<method name="apply_force">
+			<return type="void" />
+			<argument index="0" name="force" type="Vector3" />
+			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<description>
+				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
+				[code]position[/code] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -59,14 +77,24 @@
 			<argument index="0" name="impulse" type="Vector3" />
 			<argument index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
-				Applies a positioned impulse to the body. An impulse is time independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason it should only be used when simulating one-time impacts. The position uses the rotation of the global coordinate system, but is centered at the object's origin.
+				Applies a positioned impulse to the body.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				[code]position[/code] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="apply_torque">
+			<return type="void" />
+			<argument index="0" name="torque" type="Vector3" />
+			<description>
+				Applies a rotational force without affecting position. A force is time dependent and meant to be applied every physics update.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
 			<return type="void" />
 			<argument index="0" name="impulse" type="Vector3" />
 			<description>
-				Applies a torque impulse which will be affected by the body mass and shape. This will rotate the body around the [code]impulse[/code] vector passed.
+				Applies a rotational impulse to the body without affecting the position.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
@@ -110,6 +138,14 @@
 		</member>
 		<member name="center_of_mass_mode" type="int" setter="set_center_of_mass_mode" getter="get_center_of_mass_mode" enum="RigidDynamicBody3D.CenterOfMassMode" default="0">
 			Defines the way the body's center of mass is set. See [enum CenterOfMassMode] for possible values.
+		</member>
+		<member name="constant_force" type="Vector3" setter="set_constant_force" getter="get_constant_force" default="Vector3(0, 0, 0)">
+			The body's total constant positional forces applied during each physics update.
+			See [method add_constant_force] and [method add_constant_central_force].
+		</member>
+		<member name="constant_torque" type="Vector3" setter="set_constant_torque" getter="get_constant_torque" default="Vector3(0, 0, 0)">
+			The body's total constant rotational forces applied during each physics update.
+			See [method add_constant_torque].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
 			If [code]true[/code], the RigidDynamicBody3D will emit signals when it collides with another RigidDynamicBody3D. See also [member contacts_reported].
@@ -162,7 +198,7 @@
 			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
-			If [code]true[/code], the body will not move and will not calculate forces until woken up by another body through, for example, a collision, or by using the [method apply_impulse] or [method add_force] methods.
+			If [code]true[/code], the body will not move and will not calculate forces until woken up by another body through, for example, a collision, or by using the [method apply_impulse] or [method apply_force] methods.
 		</member>
 	</members>
 	<signals>
