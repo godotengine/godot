@@ -2,7 +2,7 @@
 [vertex]
 
 #if defined(IS_UBERSHADER)
-uniform highp int ubershader_flags;
+uniform highp uint ubershader_flags;
 #endif
 
 #define M_PI 3.14159265359
@@ -645,7 +645,7 @@ VERTEX_SHADER_CODE
 [fragment]
 
 #if defined(IS_UBERSHADER)
-uniform highp int ubershader_flags;
+uniform highp uint ubershader_flags;
 // These are more performant and make the ubershaderification simpler
 #define VCT_QUALITY_HIGH
 #define USE_LIGHTMAP_FILTER_BICUBIC
@@ -1649,7 +1649,12 @@ uniform mediump vec4[12] lightmap_captures;
 
 #ifdef USE_GI_PROBES //ubershader-skip
 
+#if !defined(IS_UBERSHADER)
 uniform mediump sampler3D gi_probe1; //texunit:-10
+#else
+uniform mediump sampler3D gi_probe1_uber; //texunit:-12
+#define gi_probe1 gi_probe1_uber
+#endif
 uniform highp mat4 gi_probe_xform1;
 uniform highp vec3 gi_probe_bounds1;
 uniform highp vec3 gi_probe_cell_size1;
@@ -1658,7 +1663,12 @@ uniform highp float gi_probe_bias1;
 uniform highp float gi_probe_normal_bias1;
 uniform bool gi_probe_blend_ambient1;
 
+#if !defined(IS_UBERSHADER)
 uniform mediump sampler3D gi_probe2; //texunit:-11
+#else
+uniform mediump sampler3D gi_probe2_uber; //texunit:-13
+#define gi_probe2 gi_probe2_uber
+#endif
 uniform highp mat4 gi_probe_xform2;
 uniform highp vec3 gi_probe_bounds2;
 uniform highp vec3 gi_probe_cell_size2;

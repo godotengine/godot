@@ -2,7 +2,7 @@
 [vertex]
 
 #if defined(IS_UBERSHADER)
-uniform highp int ubershader_flags;
+uniform highp uint ubershader_flags;
 #endif
 
 layout(location = 0) in highp vec4 color;
@@ -222,7 +222,7 @@ VERTEX_SHADER_CODE
 [fragment]
 
 #if defined(IS_UBERSHADER)
-uniform highp int ubershader_flags;
+uniform highp uint ubershader_flags;
 #endif
 
 // any code here is never executed, stuff is filled just so it works
