@@ -1136,27 +1136,20 @@ PREAMBLE(void)::batch_initialize() {
 	bdata.settings_light_max_join_items = CLAMP(bdata.settings_light_max_join_items, 0, 65535);
 	bdata.settings_item_reordering_lookahead = CLAMP(bdata.settings_item_reordering_lookahead, 0, 65535);
 
-	// for debug purposes, output a string with the batching options
-	String batching_options_string = "OpenGL ES Batching: ";
+	// For debug purposes, output a string with the batching options.
 	if (bdata.settings_use_batching) {
-		batching_options_string += "ON";
-
-		if (OS::get_singleton()->is_stdout_verbose()) {
-			batching_options_string += "\n\tOPTIONS\n";
-			batching_options_string += "\tmax_join_item_commands " + itos(bdata.settings_max_join_item_commands) + "\n";
-			batching_options_string += "\tcolored_vertex_format_threshold " + String(Variant(bdata.settings_colored_vertex_format_threshold)) + "\n";
-			batching_options_string += "\tbatch_buffer_size " + itos(bdata.settings_batch_buffer_num_verts) + "\n";
-			batching_options_string += "\tlight_scissor_area_threshold " + String(Variant(bdata.settings_scissor_threshold)) + "\n";
-
-			batching_options_string += "\titem_reordering_lookahead " + itos(bdata.settings_item_reordering_lookahead) + "\n";
-			batching_options_string += "\tlight_max_join_items " + itos(bdata.settings_light_max_join_items) + "\n";
-			batching_options_string += "\tsingle_rect_fallback " + String(Variant(bdata.settings_use_single_rect_fallback)) + "\n";
-
-			batching_options_string += "\tdebug_flash " + String(Variant(bdata.settings_flash_batching)) + "\n";
-			batching_options_string += "\tdiagnose_frame " + String(Variant(bdata.settings_diagnose_frame));
-		}
-
-		print_line(batching_options_string);
+		String batching_options_string = "OpenGL ES 2D Batching: ON\n";
+		batching_options_string += "Batching Options:\n";
+		batching_options_string += "\tmax_join_item_commands " + itos(bdata.settings_max_join_item_commands) + "\n";
+		batching_options_string += "\tcolored_vertex_format_threshold " + String(Variant(bdata.settings_colored_vertex_format_threshold)) + "\n";
+		batching_options_string += "\tbatch_buffer_size " + itos(bdata.settings_batch_buffer_num_verts) + "\n";
+		batching_options_string += "\tlight_scissor_area_threshold " + String(Variant(bdata.settings_scissor_threshold)) + "\n";
+		batching_options_string += "\titem_reordering_lookahead " + itos(bdata.settings_item_reordering_lookahead) + "\n";
+		batching_options_string += "\tlight_max_join_items " + itos(bdata.settings_light_max_join_items) + "\n";
+		batching_options_string += "\tsingle_rect_fallback " + String(Variant(bdata.settings_use_single_rect_fallback)) + "\n";
+		batching_options_string += "\tdebug_flash " + String(Variant(bdata.settings_flash_batching)) + "\n";
+		batching_options_string += "\tdiagnose_frame " + String(Variant(bdata.settings_diagnose_frame));
+		print_verbose(batching_options_string);
 	}
 
 	// special case, for colored vertex format threshold.
