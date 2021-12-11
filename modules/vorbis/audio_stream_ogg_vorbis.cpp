@@ -56,7 +56,7 @@ int AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 		todo -= mixed;
 		frames_mixed += mixed;
 		start_buffer += mixed;
-		if (!have_packets_left) {
+		if (!have_packets_left && !have_samples_left) {
 			//end of file!
 			bool is_not_empty = mixed > 0 || vorbis_stream->get_length() > 0;
 			if (vorbis_stream->loop && is_not_empty) {
