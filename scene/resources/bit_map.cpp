@@ -667,11 +667,13 @@ void BitMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_true_bit_count"), &BitMap::get_true_bit_count);
 
 	ClassDB::bind_method(D_METHOD("get_size"), &BitMap::get_size);
+	ClassDB::bind_method(D_METHOD("resize", "new_size"), &BitMap::resize);
 
 	ClassDB::bind_method(D_METHOD("_set_data"), &BitMap::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &BitMap::_get_data);
 
 	ClassDB::bind_method(D_METHOD("grow_mask", "pixels", "rect"), &BitMap::grow_mask);
+	ClassDB::bind_method(D_METHOD("convert_to_image"), &BitMap::convert_to_image);
 	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0));
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
