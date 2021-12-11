@@ -9,6 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="convert_to_image" qualifiers="const">
+			<return type="Image" />
+			<description>
+				Returns an image of the same size as the bitmap and with a [enum Image.Format] of type [code]FORMAT_L8[/code]. [code]true[/code] bits of the bitmap are being converted into white pixels, and [code]false[/code] bits into black.
+			</description>
+		</method>
 		<method name="create">
 			<return type="void" />
 			<argument index="0" name="size" type="Vector2" />
@@ -56,6 +62,13 @@
 			<argument index="0" name="rect" type="Rect2" />
 			<argument index="1" name="epsilon" type="float" default="2.0" />
 			<description>
+			</description>
+		</method>
+		<method name="resize">
+			<return type="void" />
+			<argument index="0" name="new_size" type="Vector2" />
+			<description>
+				Resizes the image to [code]new_size[/code].
 			</description>
 		</method>
 		<method name="set_bit">
