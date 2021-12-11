@@ -123,7 +123,7 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 		AudioFrame y2 = internal_buffer[idx - 1];
 		AudioFrame y3 = internal_buffer[idx - 0];
 
-		if (idx <= internal_buffer_end && idx >= internal_buffer_end && mixed_frames_total == p_frames) {
+		if (idx >= internal_buffer_end && mixed_frames_total == p_frames) {
 			// The internal buffer ends somewhere in this range, and we haven't yet recorded the number of good frames we have.
 			mixed_frames_total = i;
 		}
