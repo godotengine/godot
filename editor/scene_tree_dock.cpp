@@ -3157,8 +3157,9 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 					states_stack_ready = true;
 				}
 
-				Variant orig = PropertyUtils::get_property_default_value(p_node, E.name, &states_stack);
-				if (!PropertyUtils::is_property_value_different(v, orig)) {
+				bool is_valid_default = false;
+				Variant orig = PropertyUtils::get_property_default_value(p_node, E.name, &is_valid_default, &states_stack);
+				if (is_valid_default && !PropertyUtils::is_property_value_different(v, orig)) {
 					continue;
 				}
 
