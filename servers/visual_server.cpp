@@ -2733,6 +2733,7 @@ VisualServer::VisualServer() {
 #endif
 	GLOBAL_DEF("rendering/gles3/shaders/shader_compilation_mode", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles3/shaders/shader_compilation_mode", PropertyInfo(Variant::INT, "rendering/gles3/shaders/shader_compilation_mode", PROPERTY_HINT_ENUM, "Synchronous,Asynchronous,Asynchronous + Cache"));
+	GLOBAL_DEF("rendering/gles3/shaders/shader_compilation_mode.mobile", 0);
 	GLOBAL_DEF("rendering/gles3/shaders/max_simultaneous_compiles", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles3/shaders/max_simultaneous_compiles", PropertyInfo(Variant::INT, "rendering/gles3/shaders/max_simultaneous_compiles", PROPERTY_HINT_RANGE, "1,8,1"));
 	GLOBAL_DEF("rendering/gles3/shaders/max_simultaneous_compiles.mobile", 1);

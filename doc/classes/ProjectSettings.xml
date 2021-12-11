@@ -1306,6 +1306,10 @@
 			To reduce loading times after the project has been launched at least once, you can use [code]Asynchronous + Cache[/code]. This also causes the ubershaders to be cached into storage so they can be ready faster next time they are used (provided the platform provides support for it).
 			[b]Note:[/b] Asynchronous compilation is currently only supported for spatial (3D) and particle materials/shaders. CanvasItem (2D) shaders will not use asynchronous compilation even if this setting is set to [code]Asynchronous[/code] or [code]Asynchronous + Cache[/code].
 		</member>
+		<member name="rendering/gles3/shaders/shader_compilation_mode.mobile" type="int" setter="" getter="" default="0">
+			An override for [code]rendering/gles3/shaders/shader_compilation_mode[/code], so asynchronous compilation can be disabled for mobile.
+			You may want to do that since mobile GPUs generally won't support ubershaders due to their complexity.
+		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
 			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
 		</member>
