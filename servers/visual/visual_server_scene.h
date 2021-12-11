@@ -324,7 +324,7 @@ public:
 		List<Instance *> lightmap_captures;
 
 		InstanceGeometryData() {
-			lighting_dirty = false;
+			lighting_dirty = true;
 			reflection_dirty = true;
 			can_cast_shadows = true;
 			material_is_animated = true;
