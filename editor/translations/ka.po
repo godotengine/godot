@@ -2157,12 +2157,28 @@ msgstr ""
 msgid "Theme Properties"
 msgstr ""
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
 msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -8548,18 +8564,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -13257,11 +13261,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14271,146 +14295,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#, fuzzy
-#~ msgid "Package Contents:"
-#~ msgstr "პაკეტების დამყენებელი"
-
-#, fuzzy
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "ყველას ჩანაცვლება"
-
-#, fuzzy
-#~ msgid "Clipboard is empty"
-#~ msgstr "ბუფერი ცარიელია"
-
-#, fuzzy
-#~ msgid "Add initial export..."
-#~ msgstr "საყვარლები:"
-
-#~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "შეცვლილია %d დამთხვევები."
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "აღწერა:"
-
-#, fuzzy
-#~ msgid "Class Description"
-#~ msgstr "აღწერა:"
-
-#, fuzzy
-#~ msgid "Class Description:"
-#~ msgstr "აღწერა:"
-
-#, fuzzy
-#~ msgid "Property Descriptions:"
-#~ msgstr "აღწერა:"
-
-#, fuzzy
-#~ msgid "Method Descriptions:"
-#~ msgstr "აღწერა:"
-
-#~ msgid "Unknown font format."
-#~ msgstr "უცნობი ფონტის ფორმატი."
-
-#~ msgid "Error loading font."
-#~ msgstr "შეცდომა ფონტის ჩატვირთვისას."
-
-#~ msgid "Invalid font size."
-#~ msgstr "არასწორი ფონტის ზომა."
-
-#~ msgid "Line:"
-#~ msgstr "ხაზი:"
-
-#~ msgid "Col:"
-#~ msgstr "სვეტი:"
-
-#, fuzzy
-#~ msgid "Zoom out"
-#~ msgstr "ზუმის დაპატარავება"
-
-#, fuzzy
-#~ msgid "Zoom in"
-#~ msgstr "ზუმის გაზრდა"
-
-#, fuzzy
-#~ msgid "Zoom:"
-#~ msgstr "ზუმის გაზრდა"
-
-#, fuzzy
-#~ msgid "Whole words"
-#~ msgstr "მთლიანი სიტყვები"
-
-#, fuzzy
-#~ msgid "Match case"
-#~ msgstr "საქმის დამთხვევა"
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "ანიმაციის თრექის ზემოთ გადაადგილება"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "ანიმაციის თრექის ქვემოთ გადაადგილება"
-
-#~ msgid "Anim Track Change Interpolation"
-#~ msgstr "ანიმაციის თრექის ინტერპოლაციის ცვლილება"
-
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "ანიმაციის თრექის მნიშვნელობის რეჟიმის ცვლილება"
-
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "ანიმაციის თრექის გადატანის რეჟიმის ცვლილება"
-
-#~ msgid "Anim Add Key"
-#~ msgstr "ანიმაციის გასაღების დამატება"
-
-#~ msgid "In"
-#~ msgstr "შიგნით"
-
-#~ msgid "Out"
-#~ msgstr "გარეთ"
-
-#~ msgid "In-Out"
-#~ msgstr "შიგნიდან-გარეთ"
-
-#~ msgid "Out-In"
-#~ msgstr "გარედან-შიგნით"
-
-#~ msgid "Anim Create Typed Value Key"
-#~ msgstr "ანიმაციის ტიპირებული გასაღების შექმნა"
-
-#~ msgid "Anim Add Call Track"
-#~ msgstr "ანიმაციის გამოძახების თრექის დამატება"
-
-#~ msgid "Length (s):"
-#~ msgstr "ხანგრძლივობა (წამი):"
-
-#~ msgid "Cursor step snap (in seconds)."
-#~ msgstr "კურსორის ნაბიჯის მიახლოებით მიერთება (წამებში)."
-
-#~ msgid "Enable/Disable looping in animation."
-#~ msgstr "ანიმაციის განმეორებადობის ჩართვა/გამორთვა."
-
-#~ msgid "Add new tracks."
-#~ msgstr "ახალი თრექების ჩამატება."
-
-#~ msgid "Move current track up."
-#~ msgstr "მიმდინარე თრექის ზემოთ გადაადგილება."
-
-#~ msgid "Move current track down."
-#~ msgstr "მიმდინარე თრექის ქვემოთ გადაადგილება."
-
-#~ msgid "Track tools"
-#~ msgstr "თრექის იარაღები"
-
-#~ msgid "Enable editing of individual keys by clicking them."
-#~ msgstr "ინდივიდუალური გასაღებების მათზე დაჭერით ცვლილების ჩართვა."
-
-#~ msgid "Key"
-#~ msgstr "გასაღები"
-
-#~ msgid "Call Functions in Which Node?"
-#~ msgstr "რომელ კვანძში გამოვიძახოთ ფუნქციები?"
-
-#~ msgid "Thanks!"
-#~ msgstr "მადლობა!"

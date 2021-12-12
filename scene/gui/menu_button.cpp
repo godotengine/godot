@@ -207,7 +207,7 @@ void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_count"), &MenuButton::get_item_count);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
-	ADD_ARRAY_COUNT("Items", "items_count", "set_item_count", "get_item_count", "popup/item_");
+	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
 }

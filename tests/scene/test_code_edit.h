@@ -3235,7 +3235,7 @@ TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
 	code_edit->insert_text_at_caret("line 1\nline 2\nline 3");
 	code_edit->select_all();
 	code_edit->backspace();
-	CHECK(code_edit->get_text() == "");
+	CHECK(code_edit->get_text().is_empty());
 
 	/* Backspace at the beginning without selection has no effect. */
 	code_edit->set_text("");

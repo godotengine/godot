@@ -1003,7 +1003,7 @@ bool TextServerExtension::shaped_text_add_string(RID p_shaped, const String &p_t
 	return false;
 }
 
-bool TextServerExtension::shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align, int p_length) {
+bool TextServerExtension::shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length) {
 	bool ret;
 	if (GDVIRTUAL_CALL(_shaped_text_add_object, p_shaped, p_key, p_size, p_inline_align, p_length, ret)) {
 		return ret;
@@ -1011,7 +1011,7 @@ bool TextServerExtension::shaped_text_add_object(RID p_shaped, Variant p_key, co
 	return false;
 }
 
-bool TextServerExtension::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
+bool TextServerExtension::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align) {
 	bool ret;
 	if (GDVIRTUAL_CALL(_shaped_text_resize_object, p_shaped, p_key, p_size, p_inline_align, ret)) {
 		return ret;

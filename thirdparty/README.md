@@ -201,7 +201,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 3.1.1 (cd5c6cd0419ac5e4de975d6c476fb760bf06d2ce, 2021)
+- Version: 3.1.2 (8aed5c21a31eece6a9f3cd775fda8facb6c28b9b, 2021)
 - License: MIT
 
 Files extracted from upstream source:
@@ -357,6 +357,19 @@ An [experimental upstream feature](https://github.com/zeux/meshoptimizer/tree/si
 has been backported. On top of that, it was modified to report only distance error metrics 
 instead of a combination of distance and attribute errors. Patches for both changes can be
 found in the `patches` directory.
+
+
+## minimp3
+
+- Upstream: https://github.com/lieff/minimp3
+- Version: git (afb604c06bc8beb145fecd42c0ceb5bda8795144, 2021)
+- License: CC0 1.0
+
+Files extracted from upstream repository:
+
+- `minimp3.h`
+- `minimp3_ex.h`
+- `LICENSE`
 
 
 ## miniupnpc

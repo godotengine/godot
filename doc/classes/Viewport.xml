@@ -25,13 +25,13 @@
 		<method name="find_world_2d" qualifiers="const">
 			<return type="World2D" />
 			<description>
-				Returns the 2D world of the viewport.
+				Returns the first valid [World2D] for this viewport, searching the [member world_2d] property of itself and any Viewport ancestor.
 			</description>
 		</method>
 		<method name="find_world_3d" qualifiers="const">
 			<return type="World3D" />
 			<description>
-				Returns the 3D world of the viewport, or if none the world of the parent viewport.
+				Returns the first valid [World3D] for this viewport, searching the [member world_3d] property of itself and any Viewport ancestor.
 			</description>
 		</method>
 		<method name="get_camera_2d" qualifiers="const">

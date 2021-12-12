@@ -809,32 +809,44 @@ void RigidDynamicBody2D::apply_torque_impulse(real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_apply_torque_impulse(get_rid(), p_torque);
 }
 
-void RigidDynamicBody2D::set_applied_force(const Vector2 &p_force) {
-	PhysicsServer2D::get_singleton()->body_set_applied_force(get_rid(), p_force);
-};
-
-Vector2 RigidDynamicBody2D::get_applied_force() const {
-	return PhysicsServer2D::get_singleton()->body_get_applied_force(get_rid());
-};
-
-void RigidDynamicBody2D::set_applied_torque(const real_t p_torque) {
-	PhysicsServer2D::get_singleton()->body_set_applied_torque(get_rid(), p_torque);
-};
-
-real_t RigidDynamicBody2D::get_applied_torque() const {
-	return PhysicsServer2D::get_singleton()->body_get_applied_torque(get_rid());
-};
-
-void RigidDynamicBody2D::add_central_force(const Vector2 &p_force) {
-	PhysicsServer2D::get_singleton()->body_add_central_force(get_rid(), p_force);
+void RigidDynamicBody2D::apply_central_force(const Vector2 &p_force) {
+	PhysicsServer2D::get_singleton()->body_apply_central_force(get_rid(), p_force);
 }
 
-void RigidDynamicBody2D::add_force(const Vector2 &p_force, const Vector2 &p_position) {
-	PhysicsServer2D::get_singleton()->body_add_force(get_rid(), p_force, p_position);
+void RigidDynamicBody2D::apply_force(const Vector2 &p_force, const Vector2 &p_position) {
+	PhysicsServer2D::get_singleton()->body_apply_force(get_rid(), p_force, p_position);
 }
 
-void RigidDynamicBody2D::add_torque(const real_t p_torque) {
-	PhysicsServer2D::get_singleton()->body_add_torque(get_rid(), p_torque);
+void RigidDynamicBody2D::apply_torque(real_t p_torque) {
+	PhysicsServer2D::get_singleton()->body_apply_torque(get_rid(), p_torque);
+}
+
+void RigidDynamicBody2D::add_constant_central_force(const Vector2 &p_force) {
+	PhysicsServer2D::get_singleton()->body_add_constant_central_force(get_rid(), p_force);
+}
+
+void RigidDynamicBody2D::add_constant_force(const Vector2 &p_force, const Vector2 &p_position) {
+	PhysicsServer2D::get_singleton()->body_add_constant_force(get_rid(), p_force, p_position);
+}
+
+void RigidDynamicBody2D::add_constant_torque(const real_t p_torque) {
+	PhysicsServer2D::get_singleton()->body_add_constant_torque(get_rid(), p_torque);
+}
+
+void RigidDynamicBody2D::set_constant_force(const Vector2 &p_force) {
+	PhysicsServer2D::get_singleton()->body_set_constant_force(get_rid(), p_force);
+}
+
+Vector2 RigidDynamicBody2D::get_constant_force() const {
+	return PhysicsServer2D::get_singleton()->body_get_constant_force(get_rid());
+}
+
+void RigidDynamicBody2D::set_constant_torque(real_t p_torque) {
+	PhysicsServer2D::get_singleton()->body_set_constant_torque(get_rid(), p_torque);
+}
+
+real_t RigidDynamicBody2D::get_constant_torque() const {
+	return PhysicsServer2D::get_singleton()->body_get_constant_torque(get_rid());
 }
 
 void RigidDynamicBody2D::set_continuous_collision_detection_mode(CCDMode p_mode) {
@@ -979,15 +991,19 @@ void RigidDynamicBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &RigidDynamicBody2D::apply_impulse, Vector2());
 	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "torque"), &RigidDynamicBody2D::apply_torque_impulse);
 
-	ClassDB::bind_method(D_METHOD("set_applied_force", "force"), &RigidDynamicBody2D::set_applied_force);
-	ClassDB::bind_method(D_METHOD("get_applied_force"), &RigidDynamicBody2D::get_applied_force);
+	ClassDB::bind_method(D_METHOD("apply_central_force", "force"), &RigidDynamicBody2D::apply_central_force);
+	ClassDB::bind_method(D_METHOD("apply_force", "force", "position"), &RigidDynamicBody2D::apply_force, Vector2());
+	ClassDB::bind_method(D_METHOD("apply_torque", "torque"), &RigidDynamicBody2D::apply_torque);
 
-	ClassDB::bind_method(D_METHOD("set_applied_torque", "torque"), &RigidDynamicBody2D::set_applied_torque);
-	ClassDB::bind_method(D_METHOD("get_applied_torque"), &RigidDynamicBody2D::get_applied_torque);
+	ClassDB::bind_method(D_METHOD("add_constant_central_force", "force"), &RigidDynamicBody2D::add_constant_central_force);
+	ClassDB::bind_method(D_METHOD("add_constant_force", "force", "position"), &RigidDynamicBody2D::add_constant_force, Vector2());
+	ClassDB::bind_method(D_METHOD("add_constant_torque", "torque"), &RigidDynamicBody2D::add_constant_torque);
 
-	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &RigidDynamicBody2D::add_central_force);
-	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &RigidDynamicBody2D::add_force, Vector2());
-	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &RigidDynamicBody2D::add_torque);
+	ClassDB::bind_method(D_METHOD("set_constant_force", "force"), &RigidDynamicBody2D::set_constant_force);
+	ClassDB::bind_method(D_METHOD("get_constant_force"), &RigidDynamicBody2D::get_constant_force);
+
+	ClassDB::bind_method(D_METHOD("set_constant_torque", "torque"), &RigidDynamicBody2D::set_constant_torque);
+	ClassDB::bind_method(D_METHOD("get_constant_torque"), &RigidDynamicBody2D::get_constant_torque);
 
 	ClassDB::bind_method(D_METHOD("set_sleeping", "sleeping"), &RigidDynamicBody2D::set_sleeping);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &RigidDynamicBody2D::is_sleeping);
@@ -1032,9 +1048,9 @@ void RigidDynamicBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
-	ADD_GROUP("Applied Forces", "applied_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "applied_force"), "set_applied_force", "get_applied_force");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "applied_torque"), "set_applied_torque", "get_applied_torque");
+	ADD_GROUP("Constant Forces", "constant_");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "constant_force"), "set_constant_force", "get_constant_force");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "constant_torque"), "set_constant_torque", "get_constant_torque");
 
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));

@@ -591,7 +591,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 		if (vsnode->is_use_prop_slots()) {
 			String error = vsnode->get_warning(visual_shader->get_mode(), p_type);
-			if (error != String()) {
+			if (!error.is_empty()) {
 				Label *error_label = memnew(Label);
 				error_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 				error_label->set_text(error);
@@ -877,7 +877,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	node->add_child(offset);
 
 	String error = vsnode->get_warning(visual_shader->get_mode(), p_type);
-	if (error != String()) {
+	if (!error.is_empty()) {
 		Label *error_label = memnew(Label);
 		error_label->add_theme_color_override("font_color", VisualShaderEditor::get_singleton()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		error_label->set_text(error);
@@ -1191,7 +1191,7 @@ void VisualShaderEditor::update_custom_nodes() {
 			category = category.rstrip("/");
 			category = category.lstrip("/");
 			category = "Addons/" + category;
-			if (subcategory != "") {
+			if (!subcategory.is_empty()) {
 				category += "/" + subcategory;
 			}
 
@@ -1687,7 +1687,7 @@ void VisualShaderEditor::_change_input_port_name(const String &p_text, Object *p
 	ERR_FAIL_COND(!line_edit);
 
 	String validated_name = visual_shader->validate_port_name(p_text, node.ptr(), p_port_id, false);
-	if (validated_name == String() || prev_name == validated_name) {
+	if (validated_name.is_empty() || prev_name == validated_name) {
 		line_edit->set_text(node->get_input_port_name(p_port_id));
 		return;
 	}
@@ -1715,7 +1715,7 @@ void VisualShaderEditor::_change_output_port_name(const String &p_text, Object *
 	ERR_FAIL_COND(!line_edit);
 
 	String validated_name = visual_shader->validate_port_name(p_text, node.ptr(), p_port_id, true);
-	if (validated_name == String() || prev_name == validated_name) {
+	if (validated_name.is_empty() || prev_name == validated_name) {
 		line_edit->set_text(node->get_output_port_name(p_port_id));
 		return;
 	}
@@ -2078,6 +2078,7 @@ void VisualShaderEditor::_comment_desc_popup_show(const Point2 &p_position, int 
 	}
 	comment_desc_change_edit->set_text(node->get_description());
 	comment_desc_change_popup->set_meta("id", p_node_id);
+	comment_desc_change_popup->reset_size();
 	comment_desc_change_popup->popup();
 	comment_desc_change_popup->set_position(p_position);
 }
@@ -2409,7 +2410,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 
 	bool is_custom = add_options[p_idx].is_custom;
 
-	if (!is_custom && add_options[p_idx].type != String()) {
+	if (!is_custom && !add_options[p_idx].type.is_empty()) {
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(add_options[p_idx].type));
 		ERR_FAIL_COND(!vsn);
 
@@ -3165,7 +3166,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			menu_point = graph->get_local_mouse_position();
-			Point2 gpos = Input::get_singleton()->get_mouse_position();
+			Point2 gpos = get_screen_position() + get_local_mouse_position();
 			popup_menu->set_position(gpos);
 			popup_menu->reset_size();
 			popup_menu->popup();
@@ -3184,28 +3185,21 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 		saved_node_pos_dirty = true;
 		saved_node_pos = graph->get_local_mouse_position();
 
-		Point2 gpos = Input::get_singleton()->get_mouse_position();
-		members_dialog->popup();
+		Point2 gpos = get_screen_position() + get_local_mouse_position();
 		members_dialog->set_position(gpos);
 	} else {
-		members_dialog->popup();
 		saved_node_pos_dirty = false;
-		members_dialog->set_position(graph->get_global_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
+		members_dialog->set_position(graph->get_screen_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
 	}
+	members_dialog->popup();
 
-	// keep dialog within window bounds
-	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
+	// Keep dialog within window bounds.
+	Rect2 window_rect = Rect2(DisplayServer::get_singleton()->window_get_position(), DisplayServer::get_singleton()->window_get_size());
 	Rect2 dialog_rect = Rect2(members_dialog->get_position(), members_dialog->get_size());
-	if (dialog_rect.position.y + dialog_rect.size.y > window_size.y) {
-		int difference = dialog_rect.position.y + dialog_rect.size.y - window_size.y;
-		members_dialog->set_position(members_dialog->get_position() - Point2(0, difference));
-	}
-	if (dialog_rect.position.x + dialog_rect.size.x > window_size.x) {
-		int difference = dialog_rect.position.x + dialog_rect.size.x - window_size.x;
-		members_dialog->set_position(members_dialog->get_position() - Point2(difference, 0));
-	}
+	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
+	members_dialog->set_position(members_dialog->get_position() - difference);
 
-	node_filter->call_deferred(SNAME("grab_focus")); // still not visible
+	node_filter->call_deferred(SNAME("grab_focus")); // Still not visible.
 	node_filter->select_all();
 }
 
@@ -3781,10 +3775,10 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 			_convert_constants_to_uniforms(true);
 			break;
 		case NodeMenuOptions::SET_COMMENT_TITLE:
-			_comment_title_popup_show(get_global_mouse_position(), selected_comment);
+			_comment_title_popup_show(get_screen_position() + get_local_mouse_position(), selected_comment);
 			break;
 		case NodeMenuOptions::SET_COMMENT_DESCRIPTION:
-			_comment_desc_popup_show(get_global_mouse_position(), selected_comment);
+			_comment_desc_popup_show(get_screen_position() + get_local_mouse_position(), selected_comment);
 			break;
 		default:
 			break;
@@ -3949,9 +3943,15 @@ void VisualShaderEditor::_update_preview() {
 
 	preview_text->set_text(code);
 
+	ShaderLanguage::ShaderCompileInfo info;
+	info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode()));
+	info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode()));
+	info.shader_types = ShaderTypes::get_singleton()->get_types();
+	info.global_variable_type_func = _get_global_variable_type;
+
 	ShaderLanguage sl;
 
-	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode())), ShaderLanguage::VaryingFunctionNames(), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type);
+	Error err = sl.compile(code, info);
 
 	for (int i = 0; i < preview_text->get_line_count(); i++) {
 		preview_text->set_line_background_color(i, Color(0, 0, 0, 0));
@@ -4247,8 +4247,8 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	alert = memnew(AcceptDialog);
 	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD);
-	alert->get_label()->set_align(Label::ALIGN_CENTER);
-	alert->get_label()->set_valign(Label::VALIGN_CENTER);
+	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(400, 60) * EDSCALE);
 	add_child(alert);
 
@@ -4556,6 +4556,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("ATan", "Scalar", "Functions", "VisualShaderNodeFloatFunc", TTR("Returns the arc-tangent of the parameter."), VisualShaderNodeFloatFunc::FUNC_ATAN, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("ATan2", "Scalar", "Functions", "VisualShaderNodeFloatOp", TTR("Returns the arc-tangent of the parameters."), VisualShaderNodeFloatOp::OP_ATAN2, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("ATanH", "Scalar", "Functions", "VisualShaderNodeFloatFunc", TTR("Returns the inverse hyperbolic tangent of the parameter."), VisualShaderNodeFloatFunc::FUNC_ATANH, VisualShaderNode::PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption("BitwiseNOT", "Scalar", "Functions", "VisualShaderNodeIntFunc", TTR("Returns the result of bitwise NOT (~a) operation on the integer."), VisualShaderNodeIntFunc::FUNC_BITWISE_NOT, VisualShaderNode::PORT_TYPE_SCALAR_INT));
 	add_options.push_back(AddOption("Ceil", "Scalar", "Functions", "VisualShaderNodeFloatFunc", TTR("Finds the nearest integer that is greater than or equal to the parameter."), VisualShaderNodeFloatFunc::FUNC_CEIL, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Clamp", "Scalar", "Functions", "VisualShaderNodeClamp", TTR("Constrains a value to lie between two further values."), VisualShaderNodeClamp::OP_TYPE_FLOAT, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Clamp", "Scalar", "Functions", "VisualShaderNodeClamp", TTR("Constrains a value to lie between two further values."), VisualShaderNodeClamp::OP_TYPE_INT, VisualShaderNode::PORT_TYPE_SCALAR_INT));
@@ -4595,6 +4596,11 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	add_options.push_back(AddOption("Add", "Scalar", "Operators", "VisualShaderNodeFloatOp", TTR("Sums two floating-point scalars."), VisualShaderNodeFloatOp::OP_ADD, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Add", "Scalar", "Operators", "VisualShaderNodeIntOp", TTR("Sums two integer scalars."), VisualShaderNodeIntOp::OP_ADD, VisualShaderNode::PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption("BitwiseAND", "Scalar", "Operators", "VisualShaderNodeIntOp", TTR("Returns the result of bitwise AND (a & b) operation for two integers."), VisualShaderNodeIntOp::OP_BITWISE_AND, VisualShaderNode::PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption("BitwiseLeftShift", "Scalar", "Operators", "VisualShaderNodeIntOp", TTR("Returns the result of bitwise left shift (a << b) operation on the integer."), VisualShaderNodeIntOp::OP_BITWISE_LEFT_SHIFT, VisualShaderNode::PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption("BitwiseOR", "Scalar", "Operators", "VisualShaderNodeIntOp", TTR("Returns the result of bitwise OR (a | b) operation for two integers."), VisualShaderNodeIntOp::OP_BITWISE_OR, VisualShaderNode::PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption("BitwiseRightShift", "Scalar", "Operators", "VisualShaderNodeIntOp", TTR("Returns the result of bitwise right shift (a >> b) operation on the integer."), VisualShaderNodeIntOp::OP_BITWISE_RIGHT_SHIFT, VisualShaderNode::PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption("BitwiseXOR", "Scalar", "Operators", "VisualShaderNodeIntOp", TTR("Returns the result of bitwise XOR (a ^ b) operation on the integer."), VisualShaderNodeIntOp::OP_BITWISE_XOR, VisualShaderNode::PORT_TYPE_SCALAR_INT));
 	add_options.push_back(AddOption("Divide", "Scalar", "Operators", "VisualShaderNodeFloatOp", TTR("Divides two floating-point scalars."), VisualShaderNodeFloatOp::OP_DIV, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Divide", "Scalar", "Operators", "VisualShaderNodeIntOp", TTR("Divides two integer scalars."), VisualShaderNodeIntOp::OP_DIV, VisualShaderNode::PORT_TYPE_SCALAR_INT));
 	add_options.push_back(AddOption("Multiply", "Scalar", "Operators", "VisualShaderNodeFloatOp", TTR("Multiplies two floating-point scalars."), VisualShaderNodeFloatOp::OP_MUL, VisualShaderNode::PORT_TYPE_SCALAR));

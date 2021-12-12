@@ -209,8 +209,7 @@
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
 			if [code]true[/code], the mouse's scroll wheel can be used to navigate the scroll view.
 		</member>
-		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabBar.TabAlign" default="1">
-			The alignment of all tabs. See [enum TabAlign] for details.
+		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="1">
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
 			Sets when the close button will appear on the tabs. See [enum CloseButtonDisplayPolicy] for details.
@@ -264,17 +263,13 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="TabAlign">
-			Align the tabs to the left.
+		<constant name="ALIGNMENT_LEFT" value="0" enum="AlignmentMode">
 		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="TabAlign">
-			Align the tabs to the center.
+		<constant name="ALIGNMENT_CENTER" value="1" enum="AlignmentMode">
 		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="TabAlign">
-			Align the tabs to the right.
+		<constant name="ALIGNMENT_RIGHT" value="2" enum="AlignmentMode">
 		</constant>
-		<constant name="ALIGN_MAX" value="3" enum="TabAlign">
-			Represents the size of the [enum TabAlign] enum.
+		<constant name="ALIGNMENT_MAX" value="3" enum="AlignmentMode">
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
 			Never show the close buttons.
@@ -290,24 +285,6 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="close" data_type="icon" type="Texture2D">
-			The icon for the close button (see [member tab_close_display_policy]).
-		</theme_item>
-		<theme_item name="close_bg_highlight" data_type="style" type="StyleBox">
-			Background of the close button when it's being hovered with the cursor.
-		</theme_item>
-		<theme_item name="close_bg_pressed" data_type="style" type="StyleBox">
-			Background of the close button when it's being pressed.
-		</theme_item>
-		<theme_item name="decrement" data_type="icon" type="Texture2D">
-			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
-		</theme_item>
-		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
-			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			The font used to draw tab names.
-		</theme_item>
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.9, 0.9, 0.9, 0.2)">
 			Font color of disabled tabs.
 		</theme_item>
@@ -317,14 +294,29 @@
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			Font color of the currently selected tab.
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the tab names.
-		</theme_item>
 		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.69, 0.69, 0.69, 1)">
 			Font color of the other, unselected tabs.
 		</theme_item>
 		<theme_item name="hseparation" data_type="constant" type="int" default="4">
 			The horizontal separation between the elements inside tabs.
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the tab text outline.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			The font used to draw tab names.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the tab names.
+		</theme_item>
+		<theme_item name="close" data_type="icon" type="Texture2D">
+			The icon for the close button (see [member tab_close_display_policy]).
+		</theme_item>
+		<theme_item name="decrement" data_type="icon" type="Texture2D">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
 		<theme_item name="increment" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.
@@ -332,8 +324,11 @@
 		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
-			The size of the tab text outline.
+		<theme_item name="close_bg_highlight" data_type="style" type="StyleBox">
+			Background of the close button when it's being hovered with the cursor.
+		</theme_item>
+		<theme_item name="close_bg_pressed" data_type="style" type="StyleBox">
+			Background of the close button when it's being pressed.
 		</theme_item>
 		<theme_item name="tab_disabled" data_type="style" type="StyleBox">
 			The style of disabled tabs.

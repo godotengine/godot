@@ -310,7 +310,7 @@ StringName::StringName(const String &p_name, bool p_static) {
 
 	ERR_FAIL_COND(!configured);
 
-	if (p_name == String()) {
+	if (p_name.is_empty()) {
 		return;
 	}
 
@@ -434,7 +434,7 @@ StringName StringName::search(const char32_t *p_name) {
 }
 
 StringName StringName::search(const String &p_name) {
-	ERR_FAIL_COND_V(p_name == "", StringName());
+	ERR_FAIL_COND_V(p_name.is_empty(), StringName());
 
 	MutexLock lock(mutex);
 

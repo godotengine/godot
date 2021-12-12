@@ -54,6 +54,10 @@ static const int XR_HAND_TRACKING_NONE = 0;
 static const int XR_HAND_TRACKING_OPTIONAL = 1;
 static const int XR_HAND_TRACKING_REQUIRED = 2;
 
+// Supported XR hand tracking frequencies.
+static const int XR_HAND_TRACKING_FREQUENCY_LOW = 0;
+static const int XR_HAND_TRACKING_FREQUENCY_HIGH = 1;
+
 // Supported XR passthrough modes.
 static const int XR_PASSTHROUGH_NONE = 0;
 static const int XR_PASSTHROUGH_OPTIONAL = 1;

@@ -50,7 +50,7 @@ public:
 	template <class T>
 	struct Channel {
 		Interpolation interpolation;
-		Vector<float> times;
+		Vector<real_t> times;
 		Vector<T> values;
 	};
 
@@ -58,7 +58,7 @@ public:
 		Channel<Vector3> position_track;
 		Channel<Quaternion> rotation_track;
 		Channel<Vector3> scale_track;
-		Vector<Channel<float>> weight_tracks;
+		Vector<Channel<real_t>> weight_tracks;
 	};
 
 public:

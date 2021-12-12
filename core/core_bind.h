@@ -161,6 +161,7 @@ public:
 	int get_low_processor_usage_mode_sleep_usec() const;
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
+	void crash(const String &p_message);
 
 	String get_executable_path() const;
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false);
@@ -443,7 +444,10 @@ public:
 class Directory : public RefCounted {
 	GDCLASS(Directory, RefCounted);
 	DirAccess *d;
+
 	bool dir_open = false;
+	bool include_navigational = false;
+	bool include_hidden = false;
 
 protected:
 	static void _bind_methods();
@@ -453,11 +457,19 @@ public:
 
 	bool is_open() const;
 
-	Error list_dir_begin(bool p_show_navigational = false, bool p_show_hidden = false); // This starts dir listing.
+	Error list_dir_begin();
 	String get_next();
 	bool current_is_dir() const;
-
 	void list_dir_end();
+
+	PackedStringArray get_files();
+	PackedStringArray get_directories();
+	PackedStringArray _get_contents(bool p_directories);
+
+	void set_include_navigational(bool p_enable);
+	bool get_include_navigational() const;
+	void set_include_hidden(bool p_enable);
+	bool get_include_hidden() const;
 
 	int get_drive_count();
 	String get_drive(int p_drive);
@@ -480,10 +492,6 @@ public:
 
 	Directory();
 	virtual ~Directory();
-
-private:
-	bool _list_skip_navigational = false;
-	bool _list_skip_hidden = false;
 };
 
 class Marshalls : public Object {

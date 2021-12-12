@@ -36,5 +36,10 @@
 				Emitted when the [member frame] changes.
 			</description>
 		</signal>
+		<signal name="texture_changed">
+			<description>
+				Emitted when the [member texture] changes.
+			</description>
+		</signal>
 	</signals>
 </class>

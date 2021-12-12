@@ -220,7 +220,7 @@ void ShaderCreateDialog::_language_changed(int p_language) {
 	String path = file_path->get_text();
 	String extension = "";
 
-	if (path != "") {
+	if (!path.is_empty()) {
 		if (path.find(".") != -1) {
 			extension = path.get_extension();
 		}
@@ -303,7 +303,7 @@ void ShaderCreateDialog::_path_changed(const String &p_path) {
 	is_new_shader_created = true;
 
 	String path_error = _validate_path(p_path);
-	if (path_error != "") {
+	if (!path_error.is_empty()) {
 		_msg_path_valid(false, path_error);
 		_update_dialog();
 		return;
@@ -324,8 +324,8 @@ void ShaderCreateDialog::_path_submitted(const String &p_path) {
 	ok_pressed();
 }
 
-void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_mode) {
-	if (p_base_path != "") {
+void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_type, int p_preferred_mode) {
+	if (!p_base_path.is_empty()) {
 		initial_base_path = p_base_path.get_basename();
 		file_path->set_text(initial_base_path + "." + language_data[language_menu->get_selected()].default_extension);
 		current_language = language_menu->get_selected();
@@ -337,6 +337,11 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 
 	built_in_enabled = p_built_in_enabled;
 	load_enabled = p_load_enabled;
+
+	if (p_preferred_type > -1) {
+		language_menu->select(p_preferred_type);
+		_language_changed(p_preferred_type);
+	}
 
 	if (p_preferred_mode > -1) {
 		mode_menu->select(p_preferred_mode);
@@ -350,10 +355,10 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 String ShaderCreateDialog::_validate_path(const String &p_path) {
 	String p = p_path.strip_edges();
 
-	if (p == "") {
+	if (p.is_empty()) {
 		return TTR("Path is empty.");
 	}
-	if (p.get_file().get_basename() == "") {
+	if (p.get_file().get_basename().is_empty()) {
 		return TTR("Filename is empty.");
 	}
 
@@ -625,8 +630,8 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	alert = memnew(AcceptDialog);
 	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
-	alert->get_label()->set_align(Label::ALIGN_CENTER);
-	alert->get_label()->set_valign(Label::VALIGN_CENTER);
+	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);
 	add_child(alert);
 

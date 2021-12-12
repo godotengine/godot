@@ -118,7 +118,8 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		menu->add_separator();
 		menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
-		menu->set_position(state_machine_draw->get_screen_transform().xform(mb->get_position()));
+		menu->set_position(state_machine_draw->get_screen_position() + mb->get_position());
+		menu->reset_size();
 		menu->popup();
 		add_node_pos = mb->get_position() / EDSCALE + state_machine->get_graph_offset();
 	}
@@ -151,7 +152,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				edit_rect.position -= line_sb->get_offset();
 				edit_rect.size += line_sb->get_minimum_size();
 
-				name_edit_popup->set_position(state_machine_draw->get_screen_transform().xform(edit_rect.position));
+				name_edit_popup->set_position(state_machine_draw->get_screen_position() + edit_rect.position);
 				name_edit_popup->set_size(edit_rect.size);
 				name_edit->set_text(node_rects[i].node_name);
 				name_edit_popup->popup();
@@ -437,7 +438,7 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 		return;
 	}
 
-	if (base_name == String()) {
+	if (base_name.is_empty()) {
 		base_name = node->get_class().replace_first("AnimationNode", "");
 	}
 
@@ -760,12 +761,12 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 		bool onstart = state_machine->get_start_node() == name;
 		if (onstart) {
-			state_machine_draw->draw_string(font, offset + Vector2(0, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("Start"), HALIGN_LEFT, -1, font_size, font_color);
+			state_machine_draw->draw_string(font, offset + Vector2(0, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("Start"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 		}
 
 		if (state_machine->get_end_node() == name) {
 			int endofs = nr.node.size.x - font->get_string_size(TTR("End"), font_size).x;
-			state_machine_draw->draw_string(font, offset + Vector2(endofs, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("End"), HALIGN_LEFT, -1, font_size, font_color);
+			state_machine_draw->draw_string(font, offset + Vector2(endofs, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("End"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 		}
 
 		offset.x += sb->get_offset().x;
@@ -785,7 +786,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		nr.name.position = offset + Vector2(0, (h - font->get_height(font_size)) / 2).floor();
 		nr.name.size = Vector2(strsize, font->get_height(font_size));
 
-		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent(font_size)), name, HALIGN_LEFT, -1, font_size, font_color);
+		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent(font_size)), name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 		offset.x += strsize + sep;
 
 		if (needs_editor) {
@@ -926,7 +927,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 		if (error != error_label->get_text()) {
 			error_label->set_text(error);
-			if (error != String()) {
+			if (!error.is_empty()) {
 				error_panel->show();
 			} else {
 				error_panel->hide();
@@ -1058,7 +1059,7 @@ void AnimationNodeStateMachineEditor::_removed_from_graph() {
 void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	const String &new_name = p_text;
 
-	ERR_FAIL_COND(new_name == "" || new_name.find(".") != -1 || new_name.find("/") != -1);
+	ERR_FAIL_COND(new_name.is_empty() || new_name.find(".") != -1 || new_name.find("/") != -1);
 
 	if (new_name == prev_name) {
 		return; // Nothing to do.

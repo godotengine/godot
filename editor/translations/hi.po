@@ -2122,13 +2122,29 @@ msgstr "तरीकों"
 msgid "Theme Properties"
 msgstr "थीम विशेषता"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "गणना"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "कोन्स्टन्ट"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "गणना"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8527,18 +8543,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -13248,11 +13252,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14271,169 +14295,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Singleton"
-#~ msgstr "सिन्गलटन"
-
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "प्रोफ़ाइल '%s' को मिटाएं? (इसे अंडू नहीं किया जा सकता है)"
-
-#~ msgid "Enabled Properties:"
-#~ msgstr "सक्रिय प्रोपरटिज:"
-
-#~ msgid "Enabled Features:"
-#~ msgstr "सक्रिय फ़िचर्स:"
-
-#~ msgid "Unset"
-#~ msgstr "अन्सेट"
-
-#~ msgid "Class Options"
-#~ msgstr "क्लास विकल्प"
-
-#~ msgid "Set"
-#~ msgstr "सेट करे"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "सहेजा गया% संशोधित संसाधन (एस)"
-
-#~ msgid "Q&A"
-#~ msgstr "Q&A"
-
-#~ msgid "Status:"
-#~ msgstr "स्थिति:"
-
-#~ msgid "Edit:"
-#~ msgstr "संपादित:"
-
-#~ msgid "Redownload"
-#~ msgstr "रीडाउनलोड करें"
-
-#~ msgid "(Installed)"
-#~ msgstr "(स्थापित)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(लापता)"
-
-#~ msgid "Redirect Loop."
-#~ msgstr "लूप को रीडायरेक्ट करते हैं।"
-
-#~ msgid "Download Complete."
-#~ msgstr "पूरा डाउनलोड करें।"
-
-#~ msgid "Remove Template"
-#~ msgstr "टेम्पलेट निकालें"
-
-#~ msgid "Download Templates"
-#~ msgstr "टेम्पलेट्स डाउनलोड करें"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr "सूची से दर्पण चुनें: (शिफ्ट +क्लिक: ब्राउज़र में खुला)"
-
-#~ msgid "Move to Trash"
-#~ msgstr "ट्रैश में ले जाएं"
-
-#, fuzzy
-#~ msgid "Size"
-#~ msgstr "आकार: "
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr "एक एनीमेशन खिलाड़ी खुद को चेतन नहीं कर सकता, केवल अन्य खिलाड़ी।"
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "क्लिपबोर्ड खाली है"
-
-#~ msgid "No"
-#~ msgstr "नहीं"
-
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr "इस सीन को कभी नहीं बचाया गया। दौड़ने से पहले सहेजें?"
-
-#~ msgid "Error trying to save layout!"
-#~ msgstr "लेआउट को बचाने की कोशिश कर रहा त्रुटि!"
-
-#~ msgid "Default editor layout overridden."
-#~ msgstr "डिफ़ॉल्ट संपादक लेआउट अभिभूत।"
-
-#, fuzzy
-#~ msgid "Add initial export..."
-#~ msgstr "पसंदीदा:"
-
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "फाइलसिस्टेम और इंपोर्ट डोक्स"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "निर्यात या तैनाती करते समय, परिणामी निष्पादक इस कंप्यूटर के आईपी से जुड़ने का प्रयास "
-#~ "करेगा ताकि डिबग किया जा सके।"
-
-#~ msgid "Current scene was never saved, please save it prior to running."
-#~ msgstr "वर्तमान दृश्य कभी नहीं बचाया गया था, कृपया इसे चलाने से पहले बचाने के लिए ।"
-
-#~ msgid "Revert"
-#~ msgstr "वापस लौटना"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr "इस कार्रवाई को पूर्ववत नहीं किया जा सकता । वैसे भी वापस?"
-
-#~ msgid "Issue Tracker"
-#~ msgstr "मुद्दा पर नज़र रखने वाला"
-
-#~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "बदल दिया % डी घटना (एस) ।"
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "विवरण:"
-
-#, fuzzy
-#~ msgid "Class Description"
-#~ msgstr "विवरण:"
-
-#, fuzzy
-#~ msgid "Class Description:"
-#~ msgstr "विवरण:"
-
-#, fuzzy
-#~ msgid "Property Descriptions:"
-#~ msgstr "विवरण:"
-
-#, fuzzy
-#~ msgid "Method Descriptions:"
-#~ msgstr "विवरण:"
-
-#~ msgid "Invalid font size."
-#~ msgstr "गलत फॉण्ट का आकार |"
-
-#, fuzzy
-#~ msgid "Create C# solution"
-#~ msgstr "सदस्यता बनाएं"
-
-#~ msgid "Line:"
-#~ msgstr "रेखा:"
-
-#~ msgid "Col:"
-#~ msgstr "स्तंभ:"
-
-#, fuzzy
-#~ msgid "Zoom out"
-#~ msgstr "छोटा करो"
-
-#, fuzzy
-#~ msgid "Zoom in"
-#~ msgstr "बड़ा करो"
-
-#, fuzzy
-#~ msgid "Zoom:"
-#~ msgstr "बड़ा करो"
-
-#, fuzzy
-#~ msgid "Match case"
-#~ msgstr "एक जैसा:"
-
-#~ msgid "Thanks!"
-#~ msgstr "धन्यवाद!"
-
-#~ msgid "Skip"
-#~ msgstr "छोड़ें"

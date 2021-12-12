@@ -481,10 +481,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		src_pkg_name = p_preset->get("custom_template/release");
 	}
 
-	if (src_pkg_name == "") {
+	if (src_pkg_name.is_empty()) {
 		String err;
 		src_pkg_name = find_export_template("osx.zip", &err);
-		if (src_pkg_name == "") {
+		if (src_pkg_name.is_empty()) {
 			EditorNode::add_io_error(err);
 			return ERR_FILE_NOT_FOUND;
 		}
@@ -607,7 +607,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				iconpath = ProjectSettings::get_singleton()->get("application/config/icon");
 			}
 
-			if (iconpath != "") {
+			if (!iconpath.is_empty()) {
 				if (iconpath.get_extension() == "icns") {
 					FileAccess *icon = FileAccess::open(iconpath, FileAccess::READ);
 					if (icon) {
@@ -695,7 +695,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		String ent_path = p_preset->get("codesign/entitlements/custom_file");
 		String hlp_ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + "_helper.entitlements");
-		if (sign_enabled && (ent_path == "")) {
+		if (sign_enabled && (ent_path.is_empty())) {
 			ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + ".entitlements");
 
 			FileAccess *ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
@@ -960,9 +960,10 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 
 	DirAccessRef da = DirAccess::open(dir);
 	da->list_dir_begin();
-	String f;
-	while ((f = da->get_next()) != "") {
+	String f = da->get_next();
+	while (!f.is_empty()) {
 		if (f == "." || f == "..") {
+			f = da->get_next();
 			continue;
 		}
 		if (da->is_link(f)) {
@@ -1065,6 +1066,7 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 
 			zipCloseFileInZip(p_zip);
 		}
+		f = da->get_next();
 	}
 	da->list_dir_end();
 }

@@ -1092,9 +1092,12 @@ Array TranslationServer::get_loaded_locales() const {
 		ERR_FAIL_COND_V(t.is_null(), Array());
 		String l = t->get_locale();
 
-		locales.push_back(l);
+		if (!locales.has(l)) {
+			locales.push_back(l);
+		}
 	}
 
+	locales.sort();
 	return locales;
 }
 
@@ -1287,7 +1290,7 @@ bool TranslationServer::_load_translations(const String &p_from) {
 void TranslationServer::setup() {
 	String test = GLOBAL_DEF("internationalization/locale/test", "");
 	test = test.strip_edges();
-	if (test != "") {
+	if (!test.is_empty()) {
 		set_locale(test);
 	} else {
 		set_locale(OS::get_singleton()->get_locale());

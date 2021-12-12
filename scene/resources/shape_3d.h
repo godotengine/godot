@@ -40,6 +40,7 @@ class Shape3D : public Resource {
 	OBJ_SAVE_TYPE(Shape3D);
 	RES_BASE_EXTENSION("shape");
 	RID shape;
+	real_t custom_bias = 0.0;
 	real_t margin = 0.04;
 
 	Ref<ArrayMesh> debug_mesh_cache;
@@ -61,6 +62,9 @@ public:
 	virtual real_t get_enclosing_radius() const = 0;
 
 	void add_vertices_to_array(Vector<Vector3> &array, const Transform3D &p_xform);
+
+	void set_custom_solver_bias(real_t p_bias);
+	real_t get_custom_solver_bias() const;
 
 	real_t get_margin() const;
 	void set_margin(real_t p_margin);

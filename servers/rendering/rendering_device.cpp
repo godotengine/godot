@@ -185,9 +185,13 @@ Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<
 		String error;
 
 		ShaderStage stage = ShaderStage(i);
-		Vector<uint8_t> spirv = shader_compile_spirv_from_source(stage, p_source->get_stage_source(stage), p_source->get_language(), &error, p_allow_cache);
-		bytecode->set_stage_bytecode(stage, spirv);
-		bytecode->set_stage_compile_error(stage, error);
+		String source = p_source->get_stage_source(stage);
+
+		if (!source.is_empty()) {
+			Vector<uint8_t> spirv = shader_compile_spirv_from_source(stage, source, p_source->get_language(), &error, p_allow_cache);
+			bytecode->set_stage_bytecode(stage, spirv);
+			bytecode->set_stage_compile_error(stage, error);
+		}
 	}
 	return bytecode;
 }
@@ -201,7 +205,7 @@ Vector<uint8_t> RenderingDevice::_shader_compile_binary_from_spirv(const Ref<RDS
 		ShaderStageSPIRVData sd;
 		sd.shader_stage = stage;
 		String error = p_spirv->get_stage_compile_error(stage);
-		ERR_FAIL_COND_V_MSG(error != String(), Vector<uint8_t>(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		ERR_FAIL_COND_V_MSG(!error.is_empty(), Vector<uint8_t>(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
 		sd.spir_v = p_spirv->get_stage_bytecode(stage);
 		if (sd.spir_v.is_empty()) {
 			continue;
@@ -221,7 +225,7 @@ RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv
 		ShaderStageSPIRVData sd;
 		sd.shader_stage = stage;
 		String error = p_spirv->get_stage_compile_error(stage);
-		ERR_FAIL_COND_V_MSG(error != String(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
+		ERR_FAIL_COND_V_MSG(!error.is_empty(), RID(), "Can't create a shader from an errored bytecode. Check errors in source bytecode.");
 		sd.spir_v = p_spirv->get_stage_bytecode(stage);
 		if (sd.spir_v.is_empty()) {
 			continue;

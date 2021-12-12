@@ -39,8 +39,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
-		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Attach Node Script&quot;" />
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
+		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Attach Node Script&quot;" />
 	</members>
 	<signals>
 		<signal name="script_created">

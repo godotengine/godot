@@ -162,11 +162,11 @@ void EditorLog::_clear_request() {
 void EditorLog::_copy_request() {
 	String text = log->get_selected_text();
 
-	if (text == "") {
+	if (text.is_empty()) {
 		text = log->get_text();
 	}
 
-	if (text != "") {
+	if (!text.is_empty()) {
 		DisplayServer::get_singleton()->clipboard_set(text);
 	}
 }
@@ -237,7 +237,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	// Only add the message to the log if it passes the filters.
 	bool filter_active = type_filter_map[p_message.type]->is_active();
 	String search_text = search_box->get_text();
-	bool search_match = search_text == String() || p_message.text.findn(search_text) > -1;
+	bool search_match = search_text.is_empty() || p_message.text.findn(search_text) > -1;
 
 	if (!filter_active || !search_match) {
 		return;

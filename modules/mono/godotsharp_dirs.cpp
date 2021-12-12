@@ -229,9 +229,6 @@ private:
 #endif
 	}
 
-	_GodotSharpDirs(const _GodotSharpDirs &);
-	_GodotSharpDirs &operator=(const _GodotSharpDirs &);
-
 public:
 	static _GodotSharpDirs &get_singleton() {
 		static _GodotSharpDirs singleton;

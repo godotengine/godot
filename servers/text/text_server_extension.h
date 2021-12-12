@@ -337,11 +337,11 @@ public:
 	GDVIRTUAL1RC(bool, _shaped_text_get_preserve_control, RID);
 
 	virtual bool shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "") override;
-	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1) override;
-	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER) override;
+	virtual bool shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1) override;
+	virtual bool shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) override;
 	GDVIRTUAL6R(bool, _shaped_text_add_string, RID, const String &, const Array &, int, const Dictionary &, const String &);
-	GDVIRTUAL5R(bool, _shaped_text_add_object, RID, Variant, const Size2 &, InlineAlign, int);
-	GDVIRTUAL4R(bool, _shaped_text_resize_object, RID, Variant, const Size2 &, InlineAlign);
+	GDVIRTUAL5R(bool, _shaped_text_add_object, RID, Variant, const Size2 &, InlineAlignment, int);
+	GDVIRTUAL4R(bool, _shaped_text_resize_object, RID, Variant, const Size2 &, InlineAlignment);
 
 	virtual RID shaped_text_substr(RID p_shaped, int p_start, int p_length) const override;
 	virtual RID shaped_text_get_parent(RID p_shaped) const override;

@@ -310,7 +310,7 @@ void EditorProperty::_notification(int p_what) {
 			Ref<Texture2D> pinned_icon = get_theme_icon(SNAME("Pin"), SNAME("EditorIcons"));
 			int margin_w = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 			int total_icon_w = margin_w + pinned_icon->get_width();
-			int text_w = font->get_string_size(label, font_size, rtl ? HALIGN_RIGHT : HALIGN_LEFT, text_limit - total_icon_w).x;
+			int text_w = font->get_string_size(label, font_size, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w).x;
 			int y = (size.height - pinned_icon->get_height()) / 2;
 			if (rtl) {
 				draw_texture(pinned_icon, Vector2(size.width - ofs - text_w - total_icon_w, y), color);
@@ -322,9 +322,9 @@ void EditorProperty::_notification(int p_what) {
 
 		int v_ofs = (size.height - font->get_height(font_size)) / 2;
 		if (rtl) {
-			draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HALIGN_RIGHT, text_limit, font_size, color);
+			draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
 		} else {
-			draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HALIGN_LEFT, text_limit, font_size, color);
+			draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
 		}
 
 		if (keying) {
@@ -1077,7 +1077,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 		}
 
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
-		draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HALIGN_LEFT, get_size().width, font_size, color);
+		draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HORIZONTAL_ALIGNMENT_LEFT, get_size().width, font_size, color);
 	}
 }
 
@@ -1144,7 +1144,7 @@ void EditorInspectorSection::_test_unfold() {
 void EditorInspectorSection::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			minimum_size_changed();
+			update_minimum_size();
 		} break;
 		case NOTIFICATION_SORT_CHILDREN: {
 			if (!vbox_added) {
@@ -1230,7 +1230,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			const int arrow_width = arrow.is_valid() ? arrow->get_width() : 0;
 			Color color = get_theme_color(SNAME("font_color"));
 			float text_width = get_size().width - Math::round(arrow_width + arrow_margin * EDSCALE);
-			draw_string(font, Point2(rtl ? 0 : Math::round(arrow_width + arrow_margin * EDSCALE), font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2).floor(), label, rtl ? HALIGN_RIGHT : HALIGN_LEFT, text_width, font_size, color);
+			draw_string(font, Point2(rtl ? 0 : Math::round(arrow_width + arrow_margin * EDSCALE), font->get_ascent(font_size) + (header_height - font->get_height(font_size)) / 2).floor(), label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_width, font_size, color);
 
 			if (arrow.is_valid()) {
 				if (rtl) {
@@ -1560,8 +1560,7 @@ void EditorInspectorArray::_move_button_gui_input(Ref<InputEvent> p_event, int p
 			popup_array_index_pressed = begin_array_index + p_index;
 			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
 			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);
-			const Vector2 popup_pos = get_screen_transform().xform(get_local_mouse_position());
-			rmb_popup->set_position(popup_pos);
+			rmb_popup->set_position(get_screen_position() + mb->get_position());
 			rmb_popup->reset_size();
 			rmb_popup->popup();
 		}
@@ -2002,7 +2001,7 @@ void EditorInspectorArray::_notification(int p_what) {
 			prev_page_button->set_icon(get_theme_icon(SNAME("PagePrevious"), SNAME("EditorIcons")));
 			next_page_button->set_icon(get_theme_icon(SNAME("PageNext"), SNAME("EditorIcons")));
 			last_page_button->set_icon(get_theme_icon(SNAME("PageLast"), SNAME("EditorIcons")));
-			minimum_size_changed();
+			update_minimum_size();
 		} break;
 		case NOTIFICATION_DRAG_BEGIN: {
 			Dictionary dict = get_viewport()->gui_get_drag_data();
@@ -2090,13 +2089,13 @@ EditorInspectorArray::EditorInspectorArray() {
 
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add Element"));
-	add_button->set_text_align(Button::ALIGN_CENTER);
+	add_button->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	add_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_add_button_pressed));
 	vbox->add_child(add_button);
 
 	hbox_pagination = memnew(HBoxContainer);
 	hbox_pagination->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbox_pagination->set_alignment(HBoxContainer::ALIGN_CENTER);
+	hbox_pagination->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	vbox->add_child(hbox_pagination);
 
 	first_page_button = memnew(Button);
@@ -2201,10 +2200,7 @@ void EditorInspector::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &
 	for (int i = idx; i < inspector_plugin_count - 1; i++) {
 		inspector_plugins[i] = inspector_plugins[i + 1];
 	}
-
-	if (idx == inspector_plugin_count - 1) {
-		inspector_plugins[idx] = Ref<EditorInspectorPlugin>();
-	}
+	inspector_plugins[inspector_plugin_count - 1] = Ref<EditorInspectorPlugin>();
 
 	inspector_plugin_count--;
 }
@@ -2249,7 +2245,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 					ep->property_usage = 0;
 				}
 
-				if (F.label != String()) {
+				if (!F.label.is_empty()) {
 					ep->set_label(F.label);
 				}
 
@@ -2448,7 +2444,7 @@ void EditorInspector::update_tree() {
 				}
 			}
 			if (category->icon.is_null()) {
-				if (type != String()) { // Can happen for built-in scripts.
+				if (!type.is_empty()) { // Can happen for built-in scripts.
 					category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
 				}
 			}
@@ -2469,7 +2465,7 @@ void EditorInspector::update_tree() {
 					class_descr_cache[type2] = descr;
 				}
 
-				category->set_tooltip(p.name + "::" + (class_descr_cache[type2] == "" ? "" : class_descr_cache[type2]));
+				category->set_tooltip(p.name + "::" + (class_descr_cache[type2].is_empty() ? "" : class_descr_cache[type2]));
 			}
 
 			// Add editors at the start of a category.
@@ -2539,7 +2535,7 @@ void EditorInspector::update_tree() {
 			}
 		} else {
 			// Check if we exit or not a subgroup. If there is a prefix, remove it from the property label string.
-			if (subgroup != "" && subgroup_base != "") {
+			if (!subgroup.is_empty() && !subgroup_base.is_empty()) {
 				if (path.begins_with(subgroup_base)) {
 					path = path.trim_prefix(subgroup_base);
 				} else if (subgroup_base.begins_with(path)) {
@@ -2550,7 +2546,7 @@ void EditorInspector::update_tree() {
 			}
 
 			// Check if we exit or not a group. If there is a prefix, remove it from the property label string.
-			if (group != "" && group_base != "" && subgroup == "") {
+			if (!group.is_empty() && !group_base.is_empty() && subgroup.is_empty()) {
 				if (path.begins_with(group_base)) {
 					path = path.trim_prefix(group_base);
 				} else if (group_base.begins_with(path)) {
@@ -2562,10 +2558,10 @@ void EditorInspector::update_tree() {
 			}
 
 			// Add the group and subgroup to the path.
-			if (subgroup != "") {
+			if (!subgroup.is_empty()) {
 				path = subgroup + "/" + path;
 			}
-			if (group != "") {
+			if (!group.is_empty()) {
 				path = group + "/" + path;
 			}
 		}
@@ -2594,7 +2590,7 @@ void EditorInspector::update_tree() {
 		}
 
 		// Ignore properties that do not fit the filter.
-		if (use_filter && filter != "") {
+		if (use_filter && !filter.is_empty()) {
 			if (!filter.is_subsequence_ofi(path) && !filter.is_subsequence_ofi(property_label_string) && property_prefix.to_lower().find(filter.to_lower()) == -1) {
 				continue;
 			}
@@ -2717,7 +2713,7 @@ void EditorInspector::update_tree() {
 
 			// Get the class name.
 			StringName classname = object->get_class_name();
-			if (object_class != String()) {
+			if (!object_class.is_empty()) {
 				classname = object_class;
 			}
 
@@ -2739,7 +2735,7 @@ void EditorInspector::update_tree() {
 				// Build the property description String and add it to the cache.
 				DocTools *dd = EditorHelp::get_doc_data();
 				Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(classname);
-				while (F && descr == String()) {
+				while (F && descr.is_empty()) {
 					for (int i = 0; i < F->get().properties.size(); i++) {
 						if (F->get().properties[i].name == propname.operator String()) {
 							descr = DTR(F->get().properties[i].description);
@@ -2791,7 +2787,7 @@ void EditorInspector::update_tree() {
 							//and set label?
 						}
 
-						if (F.label != String()) {
+						if (!F.label.is_empty()) {
 							ep->set_label(F.label);
 						} else {
 							// Use the existing one.
@@ -2830,7 +2826,7 @@ void EditorInspector::update_tree() {
 					ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
 					ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), varray(), CONNECT_DEFERRED);
 					ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
-					if (doc_hint != String()) {
+					if (!doc_hint.is_empty()) {
 						ep->set_tooltip(property_prefix + p.name + "::" + doc_hint);
 					} else {
 						ep->set_tooltip(property_prefix + p.name);
@@ -3060,7 +3056,7 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 		return;
 	}
 
-	if (p_property == String()) {
+	if (p_property.is_empty()) {
 		update_tree_pending = true;
 	} else {
 		pending.insert(p_property);
@@ -3550,8 +3546,7 @@ EditorInspector::EditorInspector() {
 	main_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_vbox->add_theme_constant_override("separation", 0);
 	add_child(main_vbox);
-	set_enable_h_scroll(false);
-	set_enable_v_scroll(true);
+	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
 
 	wide_editors = false;
 	show_categories = false;

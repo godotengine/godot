@@ -156,7 +156,6 @@ void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibr
 	extension->native_extension.unreference = p_extension_funcs->unreference_func;
 	extension->native_extension.class_userdata = p_extension_funcs->class_userdata;
 	extension->native_extension.create_instance = p_extension_funcs->create_instance_func;
-	extension->native_extension.set_object_instance = p_extension_funcs->object_instance_func;
 	extension->native_extension.free_instance = p_extension_funcs->free_instance_func;
 	extension->native_extension.get_virtual = p_extension_funcs->get_virtual_func;
 
@@ -398,7 +397,7 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 		}
 	}
 
-	if (library_path == String()) {
+	if (library_path.is_empty()) {
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}

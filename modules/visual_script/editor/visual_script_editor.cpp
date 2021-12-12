@@ -779,7 +779,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				for (int i = 0; i < node->get_output_sequence_port_count(); i++) {
 					Label *text2 = memnew(Label);
 					text2->set_text(node->get_output_sequence_port_text(i));
-					text2->set_align(Label::ALIGN_RIGHT);
+					text2->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 					gnode->add_child(text2);
 					gnode->set_slot(slot_idx, false, 0, Color(), true, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
 					slot_idx++;
@@ -900,7 +900,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			if (i < mixed_seq_ports) {
 				Label *text2 = memnew(Label);
 				text2->set_text(node->get_output_sequence_port_text(i));
-				text2->set_align(Label::ALIGN_RIGHT);
+				text2->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 				hbc->add_child(text2);
 			}
 
@@ -1328,7 +1328,7 @@ void VisualScriptEditor::_create_function_dialog() {
 }
 
 void VisualScriptEditor::_create_function() {
-	String name = _validate_name((func_name_box->get_text() == "") ? "new_func" : func_name_box->get_text());
+	String name = _validate_name((func_name_box->get_text().is_empty()) ? "new_func" : func_name_box->get_text());
 	selected = name;
 	Vector2 pos = _get_available_pos();
 
@@ -1506,7 +1506,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 		}
 	} else if (ti->get_parent() == root->get_first_child()) {
 		selected = ti->get_text(0);
-		function_name_edit->set_position(Input::get_singleton()->get_mouse_position() - Vector2(60, -10));
+		function_name_edit->set_position(get_screen_position() + get_local_mouse_position() - Vector2(60, -10));
 		function_name_edit->popup();
 		function_name_box->set_text(selected);
 		function_name_box->select_all();
@@ -1974,7 +1974,7 @@ void VisualScriptEditor::input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> key = p_event;
 
 	if (key.is_valid() && !key->is_pressed()) {
-		mouse_up_position = Input::get_singleton()->get_mouse_position();
+		mouse_up_position = get_screen_position() + get_local_mouse_position();
 	}
 }
 
@@ -1984,7 +1984,7 @@ void VisualScriptEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid() && key->is_pressed() && key->get_button_mask() == MouseButton::RIGHT) {
 		saved_position = graph->get_local_mouse_position();
 
-		Point2 gpos = Input::get_singleton()->get_mouse_position();
+		Point2 gpos = get_screen_position() + get_local_mouse_position();
 		_generic_search(script->get_instance_base_type(), gpos);
 	}
 }
@@ -2094,7 +2094,7 @@ Variant VisualScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 
 		String type = it->get_metadata(0);
 
-		if (type == String()) {
+		if (type.is_empty()) {
 			return Variant();
 		}
 
@@ -2622,7 +2622,7 @@ String VisualScriptEditor::get_name() {
 		name = TTR("[unsaved]");
 	} else if (script->is_built_in()) {
 		const String &script_name = script->get_name();
-		if (script_name != "") {
+		if (!script_name.is_empty()) {
 			// If the built-in script has a custom resource name defined,
 			// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
 			name = vformat("%s (%s)", script_name, name.get_slice("::", 0));
@@ -2842,7 +2842,7 @@ void VisualScriptEditor::clear_edit_menu() {
 void VisualScriptEditor::_change_base_type_callback() {
 	String bt = select_base_type->get_selected_type();
 
-	ERR_FAIL_COND(bt == String());
+	ERR_FAIL_COND(bt.is_empty());
 	undo_redo->create_action(TTR("Change Base Type"));
 	undo_redo->add_do_method(script.ptr(), "set_instance_base_type", bt);
 	undo_redo->add_undo_method(script.ptr(), "set_instance_base_type", script->get_instance_base_type());
@@ -3213,7 +3213,7 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			if (tg.type == Variant::OBJECT) {
 				if (tg.script.is_valid()) {
 					new_connect_node_select->select_from_script(tg.script, "");
-				} else if (type_string != String()) {
+				} else if (!type_string.is_empty()) {
 					new_connect_node_select->select_from_base_type(type_string);
 				} else {
 					new_connect_node_select->select_from_base_type(n->get_base_type());
@@ -3237,7 +3237,7 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 				property_info = script->get_node(port_action_node)->get_output_value_port_info(port_action_output);
 			}
 			if (tg.type == Variant::OBJECT) {
-				if (property_info.type == Variant::OBJECT && property_info.hint_string != String()) {
+				if (property_info.type == Variant::OBJECT && !property_info.hint_string.is_empty()) {
 					new_connect_node_select->select_from_action(property_info.hint_string);
 				} else {
 					new_connect_node_select->select_from_action("");
@@ -3462,7 +3462,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
 
-					if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsfc->set_base_type(base_type);
 					}
 					if (p_text == "call" || p_text == "call_deferred") {
@@ -3497,7 +3497,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
 
-					if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsp->set_base_type(base_type);
 					}
 				}
@@ -3526,7 +3526,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 				} else if (script->get_node(port_action_node).is_valid()) {
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
-					if (base_type != String() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsp->set_base_type(base_type);
 					}
 				}
@@ -3704,7 +3704,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 		Variant::construct(pinfo.type, existing, &existingp, 1, ce);
 	}
 
-	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_global_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
+	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_screen_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
 	default_value_edit->reset_size();
 
 	if (pinfo.type == Variant::NODE_PATH) {
@@ -4160,10 +4160,10 @@ void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
 	ERR_FAIL_COND(!ti);
 
 	member_popup->clear();
-	member_popup->set_position(members->get_global_position() + p_pos);
+	member_popup->set_position(members->get_screen_position() + p_pos);
 	member_popup->reset_size();
 
-	function_name_edit->set_position(members->get_global_position() + p_pos);
+	function_name_edit->set_position(members->get_screen_position() + p_pos);
 	function_name_edit->reset_size();
 
 	TreeItem *root = members->get_root();
@@ -4476,8 +4476,8 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	select_func_text = memnew(Label);
 	select_func_text->set_text(TTR("Select or create a function to edit its graph."));
-	select_func_text->set_align(Label::ALIGN_CENTER);
-	select_func_text->set_valign(Label::VALIGN_CENTER);
+	select_func_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	select_func_text->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_func_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(select_func_text);
 
@@ -4485,8 +4485,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	hint_text->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -100);
 	hint_text->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 	hint_text->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
-	hint_text->set_align(Label::ALIGN_CENTER);
-	hint_text->set_valign(Label::VALIGN_CENTER);
+	hint_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	hint_text->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	graph->add_child(hint_text);
 
 	hint_text_timer = memnew(Timer);

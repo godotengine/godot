@@ -27,13 +27,14 @@
 # ProfJack <profjackcz@gmail.com>, 2021.
 # swifterik <blaha.j502@gmail.com>, 2021.
 # Daniel <dan@ger.cz>, 2021.
+# Jakub Janšta <jansta.ja@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-27 21:45+0000\n"
-"Last-Translator: Daniel <dan@ger.cz>\n"
+"PO-Revision-Date: 2021-11-22 20:39+0000\n"
+"Last-Translator: Jakub Janšta <jansta.ja@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -41,7 +42,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -294,6 +295,7 @@ msgid "Time (s): "
 msgstr "Čas (s): "
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Toggle Track Enabled"
 msgstr "Povolit stopu"
 
@@ -307,7 +309,7 @@ msgstr "Diskrétní"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
-msgstr "Spoušť"
+msgstr "Spouštěč"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
@@ -327,6 +329,7 @@ msgid "Cubic"
 msgstr "Kubická"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Clamp Loop Interp"
 msgstr "Interpolace smyčky svorkou"
 
@@ -637,9 +640,8 @@ msgid "Use Bezier Curves"
 msgstr "Použít Bézierovy křivky"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create RESET Track(s)"
-msgstr "Vložit stopy"
+msgstr "Vytvořit RESET stopu/stopy"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -1380,9 +1382,8 @@ msgid "Bypass"
 msgstr "Obejít"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Bus Options"
-msgstr "Možnosti Busu"
+msgstr "Možnosti sběrnice"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -1403,31 +1404,31 @@ msgstr "Zvuk"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
-msgstr "Přidat Audio Bus"
+msgstr "Přidat audio sběrnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr "Master bus nelze smazat!"
+msgstr "Master sběrnici nelze smazat!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
-msgstr "Smazat Audio Bus"
+msgstr "Smazat zvukovou sběrnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Duplicate Audio Bus"
-msgstr "Duplikovat Audio Bus"
+msgstr "Duplikovat audio sběrnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Bus Volume"
-msgstr "Obnovit hlasitost Busu"
+msgstr "Obnovit hlasitost sběrnice"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
-msgstr "Přesunout Audio Bus"
+msgstr "Přesunout audio sběrnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "Uložit rozložení Audio Busu jako..."
+msgstr "Uložit rozložení audio sběrnice jako..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
@@ -1435,7 +1436,7 @@ msgstr "Umístění pro nové rozložení..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr "Otevřít rozložení Audio Busu"
+msgstr "Otevřít rozložení audio sběrnice"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
@@ -1447,7 +1448,7 @@ msgstr "Rozložení"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr "Neplatný soubor, neni to rozložení Audio Busu."
+msgstr "Neplatný soubor, není rozložení audio sběrnice."
 
 #: editor/editor_audio_buses.cpp
 msgid "Error saving file: %s"
@@ -1455,7 +1456,7 @@ msgstr "Chyba při ukládání souboru: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
-msgstr "Přidat bus"
+msgstr "Přidat sběrnici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add a new Audio Bus to this layout."
@@ -2128,13 +2129,33 @@ msgstr "Metody"
 msgid "Theme Properties"
 msgstr "Vlastnosti motivu"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Výčty"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "Barva"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Konstanty"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Fonts"
+msgstr "Font"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Icons"
+msgstr "Ikona"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "Styl"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Výčty"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -6532,9 +6553,8 @@ msgstr ""
 "Toto je nejrychlejší (ale nejméně přesná) možnost detekce kolizí."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Simplified Convex Collision Sibling"
-msgstr "Vytvořit jediného konvexního kolizního sourozence"
+msgstr "Vytvořit zjednodušeného sourozence konvexní kolize"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -7228,9 +7248,8 @@ msgid "Occluder Set Transform"
 msgstr "Promazat transformaci"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Center Node"
-msgstr "Vytvořit uzel"
+msgstr "Vycentrovat uzel"
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "AnimationTree has no path set to an AnimationPlayer"
@@ -7366,12 +7385,10 @@ msgid "Move Down"
 msgstr "Přesunout dolů"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Next Script"
 msgstr "Další skript"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Script"
 msgstr "Předchozí skript"
 
@@ -7739,9 +7756,8 @@ msgid "Reset to Rest Pose"
 msgstr "Umístit kosti do klidové pózy"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Overwrite Rest Pose"
-msgstr "Přepsat"
+msgstr "Přepsat klidovou pózu"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -7874,7 +7890,7 @@ msgstr "Posunout"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale"
-msgstr "Zvětšit"
+msgstr "Měřítko"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -8069,9 +8085,8 @@ msgid "Freelook Slow Modifier"
 msgstr "Zpomalení volného pohledu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Camera Preview"
-msgstr "Změnit velikost kamery"
+msgstr "Přepnout náhled kamery"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
@@ -8116,7 +8131,6 @@ msgstr ""
 "Polootevřené oko: Gizmo je viditelné přes neprůhledné (rentgenové) povrchy."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Nodes to Floor"
 msgstr "Přichytit uzly k podlaze"
 
@@ -8580,21 +8594,6 @@ msgstr "Oblast textury"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Colors"
-msgstr "Barva"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Fonts"
-msgstr "Font"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Icons"
-msgstr "Ikona"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Styleboxes"
 msgstr "Styl"
 
@@ -8901,18 +8900,16 @@ msgid "Edit Items"
 msgstr "Upravitelná položka"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Types:"
-msgstr "Typ:"
+msgstr "Typy:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Type:"
-msgstr "Typ:"
+msgstr "Přidat typ:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item:"
-msgstr "Přidat položku:"
+msgstr "Přidat prvek:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -13398,8 +13395,17 @@ msgstr ""
 "Chcete-li používat doplňky, musí být povoleno \"použít vlastní build\"."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"\"Hand Tracking\" je platné pouze v případě, že \"Režim Xr\" má hodnotu "
+"\"Oculus Mobile VR\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "\"Hand Tracking\" je platné pouze v případě, že \"Režim Xr\" má hodnotu "
 "\"Oculus Mobile VR\"."
@@ -13409,6 +13415,27 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"Export AAB\" je validní pouze v případě, že je povolena možnost \"Použít "
 "vlastní sestavu\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+"\"Export AAB\" je validní pouze v případě, že je povolena možnost \"Použít "
+"vlastní sestavu\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+"\"Export AAB\" je validní pouze v případě, že je povolena možnost \"Použít "
+"vlastní sestavu\"."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -14543,1067 +14570,3 @@ msgstr "Přiřazeno uniformu."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
-
-#~ msgid "Make Rest Pose (From Bones)"
-#~ msgstr "Vytvořit klidovou pózu (z kostí)"
-
-#~ msgid "Bottom"
-#~ msgstr "Dolní"
-
-#~ msgid "Left"
-#~ msgstr "Levý"
-
-#~ msgid "Right"
-#~ msgstr "Pravý"
-
-#~ msgid "Front"
-#~ msgstr "Přední"
-
-#~ msgid "Rear"
-#~ msgstr "Zadní"
-
-#~ msgid "Nameless gizmo"
-#~ msgstr "Gizmo beze jména"
-
-#~ msgid ""
-#~ "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile "
-#~ "VR\"."
-#~ msgstr ""
-#~ "\"Stupně svobody\" je platné pouze v případě, že \"Xr Mode\" je \"Oculus "
-#~ "Mobile VR\"."
-
-#~ msgid ""
-#~ "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-#~ "\"."
-#~ msgstr ""
-#~ "\"Focus Awareness\" je platné pouze v případě, že \"Režim Xr\" má hodnotu "
-#~ "\"Oculus Mobile VR\"."
-
-#~ msgid "Package Contents:"
-#~ msgstr "Obsah balíčku:"
-
-#~ msgid "Singleton"
-#~ msgstr "Singleton"
-
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "Smazat profil '%s'? (bez možnosti vrácení)"
-
-#~ msgid "Enabled Properties:"
-#~ msgstr "Aktivní vlastnosti:"
-
-#~ msgid "Enabled Features:"
-#~ msgstr "Povolené funkce:"
-
-#~ msgid "Unset"
-#~ msgstr "Odznačit"
-
-#~ msgid "Class Options"
-#~ msgstr "Možnosti třídy"
-
-#~ msgid "Set"
-#~ msgstr "Nastavit"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "Uloženo %s upravených zdrojů."
-
-#~ msgid "Q&A"
-#~ msgstr "Otázky a odpovědi"
-
-#~ msgid "Status:"
-#~ msgstr "Stav:"
-
-#~ msgid "Edit:"
-#~ msgstr "Upravit:"
-
-#~ msgid "Redownload"
-#~ msgstr "Stáhnout znovu"
-
-#~ msgid "(Installed)"
-#~ msgstr "(Instalováno)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Nenalezeno)"
-
-#~ msgid "Request Failed."
-#~ msgstr "Požadavek se nezdařil."
-
-#~ msgid "Redirect Loop."
-#~ msgstr "Zacyklené přesměrování."
-
-#~ msgid "Download Complete."
-#~ msgstr "Stahování dokončeno."
-
-#~ msgid "Remove Template"
-#~ msgstr "Odstranit šablonu"
-
-#~ msgid "Download Templates"
-#~ msgstr "Stáhnout šablony"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr "Zvolte zrcadlo ze seznamu: (Shift + Klik: Otevřit v prohlížeči)"
-
-#~ msgid "Move to Trash"
-#~ msgstr "Přesunout do koše"
-
-#~ msgid "Expand All Properties"
-#~ msgstr "Rozbalit všechny vlastnosti"
-
-#~ msgid "Collapse All Properties"
-#~ msgstr "Sbalit všechny vlastnosti"
-
-#~ msgid "Copy Params"
-#~ msgstr "Kopírovat parametry"
-
-#~ msgid "Open in Help"
-#~ msgstr "Otevřít v nápovědě"
-
-#~ msgid ""
-#~ "Game Camera Override\n"
-#~ "No game instance running."
-#~ msgstr ""
-#~ "Přepsat herní kameru\n"
-#~ "Není spuštěna žádná instance hry."
-
-#~ msgid "Drag: Rotate"
-#~ msgstr "Táhnutí: Otočit"
-
-#~ msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
-#~ msgstr ""
-#~ "Stisknutím klávesy \"V\" se upraví pivot, stisknutím kláves \"Shift+V\" "
-#~ "se posune pivot (při pohybu)."
-
-#~ msgid "Alt+RMB: Depth list selection"
-#~ msgstr "Alt+PTM: Výběr hloubkového seznamu"
-
-#~ msgid "Clone Down"
-#~ msgstr "Duplikovat dolů"
-
-#~ msgid "Yaw"
-#~ msgstr "Náklon"
-
-#~ msgid "Size"
-#~ msgstr "Velikost"
-
-#~ msgid ""
-#~ "Drag: Rotate\n"
-#~ "Alt+Drag: Move\n"
-#~ "Alt+RMB: Depth list selection"
-#~ msgstr ""
-#~ "Táhnutí: Otočit\n"
-#~ "Alt+Táhnutí: Přemístit\n"
-#~ "Alt+Pravé tlačíko myši: Výběr seznamu hloubky"
-
-#~ msgid "Sep.:"
-#~ msgstr "Oddělovač:"
-
-#~ msgid "Add All"
-#~ msgstr "Přidat vše"
-
-#~ msgid "Theme editing menu."
-#~ msgstr "Menu editace motivu."
-
-#~ msgid "Create Empty Template"
-#~ msgstr "Vytvořit prázdnou šablonu"
-
-#~ msgid "Create Empty Editor Template"
-#~ msgstr "Vytvořit prázdný motiv editoru"
-
-#~ msgid "Create From Current Editor Theme"
-#~ msgstr "Vytvořit ze současného motivu editoru"
-
-#~ msgid "Data Type:"
-#~ msgstr "Datový typ:"
-
-#~ msgid "Theme File"
-#~ msgstr "Soubor tématu"
-
-#~ msgid "Compiled"
-#~ msgstr "Zkompilovaný"
-
-#~ msgid ""
-#~ "Remove %d projects from the list?\n"
-#~ "The project folders' contents won't be modified."
-#~ msgstr ""
-#~ "Odebrat %d projekty ze seznamu?\n"
-#~ "Obsah složek projektů zůstane nedotčen."
-
-#~ msgid ""
-#~ "Remove this project from the list?\n"
-#~ "The project folder's contents won't be modified."
-#~ msgstr ""
-#~ "Odstranit projekt ze seznamu?\n"
-#~ "Obsah složky zůstane nedotčen."
-
-#~ msgid "Templates"
-#~ msgstr "Šablony"
-
-#~ msgid "Add Remapped Path"
-#~ msgstr "Přidat přemapovanou cestu"
-
-#~ msgid "Can not perform with the root node."
-#~ msgstr "Toto nelze provést s kořenovým uzlem."
-
-#~ msgid "Could not read boot splash image file:"
-#~ msgstr "Nebylo možné načíst soubor splash obrázku:"
-
-#~ msgid "Using default boot splash image."
-#~ msgstr "Používám výchozí splash obrázek."
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr ""
-#~ "Přehrávač animace nemůže animovat sám sebe, pouze ostatní přehrávače."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Schránka je prázdná"
-
-#~ msgid ""
-#~ "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-#~ msgstr "Uzel InterpolatedCamera je zastaralý a bude odstraněn v Godot 4.0."
-
-#~ msgid "No"
-#~ msgstr "Ne"
-
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr "Tato scéna nebyla nikdy uložena. Uložit před spuštěním?"
-
-#~ msgid "ADB executable not configured in the Editor Settings."
-#~ msgstr "Spustitelný ADB není nakonfigurovaný v Nastavení Editoru."
-
-#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
-#~ msgstr "OpenJDK jarsigner není nakonfigurovaný v Nastavení Editoru."
-
-#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
-#~ msgstr ""
-#~ "Vlastní sestavení vyžaduje správnou cestu k sadě Android SDK v nastavení "
-#~ "editoru."
-
-#~ msgid "%d%%"
-#~ msgstr "%d%%"
-
-#~ msgid "(Time Left: %d:%02d s)"
-#~ msgstr "(Zbývající čas: %d:%02d s)"
-
-#~ msgid "Plotting Meshes: "
-#~ msgstr "Vykreslení mřížek: "
-
-#~ msgid "Lighting Meshes: "
-#~ msgstr "Osvětlení sítí: "
-
-#~ msgid "Search complete"
-#~ msgstr "Vyhledávání dokončeno"
-
-#~ msgid "No commit message was provided"
-#~ msgstr "Nebyla poskytnuta commit message"
-
-#~ msgid "Add a commit message"
-#~ msgstr "Přidat zprávu commitu"
-
-#~ msgid "There is already file or folder with the same name in this location."
-#~ msgstr "Soubor nebo složka se stejným názvem již na tomto místě existuje."
-
-#~ msgid "Unable to complete APK alignment."
-#~ msgstr "Nelze dokončit zarovnání APK."
-
-#~ msgid "Unable to delete unaligned APK."
-#~ msgstr "Nelze odstranit nezarovnané APK."
-
-#~ msgid "Error trying to save layout!"
-#~ msgstr "Chyba při pokusu uložit rozložení!"
-
-#~ msgid "Default editor layout overridden."
-#~ msgstr "Výchozí rozložení editoru přepsáno."
-
-#~ msgid "Move pivot"
-#~ msgstr "Přemístit pivot"
-
-#~ msgid "Move anchor"
-#~ msgstr "Přesunout kotvu"
-
-#~ msgid "Resize CanvasItem"
-#~ msgstr "Změnit velikost CanvasItem"
-
-#~ msgid "Polygon->UV"
-#~ msgstr "Polygon->UV"
-
-#~ msgid "UV->Polygon"
-#~ msgstr "UV->Polygon"
-
-#, fuzzy
-#~ msgid "Add initial export..."
-#~ msgstr "Přidat vstup"
-
-#, fuzzy
-#~ msgid "Delete patch '%s' from list?"
-#~ msgstr "Odstranit"
-
-#, fuzzy
-#~ msgid "Patches"
-#~ msgstr "Shody:"
-
-#~ msgid "Pack File"
-#~ msgstr "Soubour balíčk"
-
-#, fuzzy
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "Souborový systém"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "Při exportu nebo nasazení, se výsledný spustitelný soubor pokusí připojit "
-#~ "k IP tohoto počítače, aby ho bylo možné ladit."
-
-#~ msgid "Current scene was never saved, please save it prior to running."
-#~ msgstr ""
-#~ "Aktuální scéna nebyla nikdy uložena, prosím uložte jí před spuštěním."
-
-#~ msgid "Revert"
-#~ msgstr "Vrátit zpět"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr "Tuto akci nelze vrátit zpět. Pokračovat?"
-
-#~ msgid "Revert Scene"
-#~ msgstr "Vrátit scénu"
-
-#~ msgid "Clear Script"
-#~ msgstr "Vymazat skript"
-
-#~ msgid "Issue Tracker"
-#~ msgstr "Sledování chyb"
-
-#~ msgid "Request Docs"
-#~ msgstr "Požádat o dokumentaci"
-
-#~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "Nahrazeno %d výskytů."
-
-#~ msgid ""
-#~ "There are currently no tutorials for this class, you can [color=$color]"
-#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
-#~ "$url2]request one[/url][/color]."
-#~ msgstr ""
-#~ "V současné době pro tuto třídu neexistují žádné návody, můžete nějaký "
-#~ "[color=$color][url=$url]vytvořit[/url][/color] nebo o něj [color=$color]"
-#~ "[url=$url2]zažádat[/url][/color]."
-
-#~ msgid "enum  "
-#~ msgstr "výčet  "
-
-#~ msgid "Brief Description"
-#~ msgstr "Stručný popis"
-
-#~ msgid "Class Description"
-#~ msgstr "Popis třídy"
-
-#~ msgid "Project export failed with error code %d."
-#~ msgstr "Export projektu selhal s chybovým kódem %d."
-
-#~ msgid "Password:"
-#~ msgstr "Heslo:"
-
-#~ msgid "Pause the scene"
-#~ msgstr "Pozastavit scénu"
-
-#~ msgid "Shift+"
-#~ msgstr "Shift+"
-
-#~ msgid "Alt+"
-#~ msgstr "Alt+"
-
-#~ msgid "Control+"
-#~ msgstr "Ctrl+"
-
-#, fuzzy
-#~ msgid "Snap to Grid"
-#~ msgstr "Přichytit k mřížce"
-
-#, fuzzy
-#~ msgid "Add input +"
-#~ msgstr "Přidat vstup"
-
-#~ msgid "Language"
-#~ msgstr "Jazyk"
-
-#~ msgid "Inherits"
-#~ msgstr "Dědí"
-
-#~ msgid "Base Type:"
-#~ msgstr "Základní typ:"
-
-#~ msgid "Available Nodes:"
-#~ msgstr "Dostupné uzly:"
-
-#~ msgid "Input"
-#~ msgstr "Vstup"
-
-#~ msgid "Methods:"
-#~ msgstr "Metody:"
-
-#~ msgid "Theme Properties:"
-#~ msgstr "Vlastnosti motivu:"
-
-#~ msgid "Enumerations:"
-#~ msgstr "Výčty:"
-
-#~ msgid "Constants:"
-#~ msgstr "Konstanty:"
-
-#~ msgid "Class Description:"
-#~ msgstr "Popis třídy:"
-
-#~ msgid "Property Descriptions:"
-#~ msgstr "Popis vlastnosti:"
-
-#~ msgid "Method Descriptions:"
-#~ msgstr "Popis metody:"
-
-#, fuzzy
-#~ msgid "Reverse sorting."
-#~ msgstr "Posílá se žádost..."
-
-#~ msgid "Delete Node(s)?"
-#~ msgstr "Odstranit uzel/uzly?"
-
-#~ msgid "No Matches"
-#~ msgstr "Žádné shody"
-
-#~ msgid ""
-#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
-#~ msgstr ""
-#~ "Nelze otevřít file_type_cache.cch pro zápis, cache typů souborů není "
-#~ "ukládána!"
-
-#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-#~ msgstr "Nelze přejít k '%s', protože nebylo nalezeno v souborovém systému!"
-
-#~ msgid "Error loading image:"
-#~ msgstr "Chyba při nahrávání obrázku:"
-
-#~ msgid "No pixels with transparency > 128 in image..."
-#~ msgstr "Žádný pixel s průhledností > 128 v obrázku..."
-
-#~ msgid "Error: could not load file."
-#~ msgstr "Chyba: nelze načíst soubor."
-
-#, fuzzy
-#~ msgid "Doppler Enable"
-#~ msgstr "Povolit"
-
-#~ msgid "Select Mode (Q)"
-#~ msgstr "Režim výběru (Q)"
-
-#~ msgid "Move Mode (W)"
-#~ msgstr "Režim posunu (W)"
-
-#~ msgid "Rotate Mode (E)"
-#~ msgstr "Režim otáčení (E)"
-
-#~ msgid "Scale Mode (R)"
-#~ msgstr "Režim zvětšování (R)"
-
-#~ msgid "Local Coords"
-#~ msgstr "Místní souřadnice"
-
-#~ msgid "Snap Mode (%s)"
-#~ msgstr "Režim přichycení (%s)"
-
-#~ msgid "Tool Select"
-#~ msgstr "Nástroj Výběr"
-
-#~ msgid "Tool Move"
-#~ msgstr "Nástroj Přesunout"
-
-#~ msgid "Tool Rotate"
-#~ msgstr "Nástroj Otočit"
-
-#~ msgid "Tool Scale"
-#~ msgstr "Nástroj Zvětšení"
-
-#, fuzzy
-#~ msgid ""
-#~ "Remove all missing projects from the list? (Folders contents will not be "
-#~ "modified)"
-#~ msgstr "Odstranit projekt ze seznamu? (Obsah složky zůstane nedotčen)"
-
-#~ msgid "Project List"
-#~ msgstr "Seznam projektů"
-
-#~ msgid "Exit"
-#~ msgstr "Ukončit"
-
-#~ msgid "Error initializing FreeType."
-#~ msgstr "Chyba při inicializaci FreeType."
-
-#~ msgid "Unknown font format."
-#~ msgstr "Neznámý formát fontu."
-
-#~ msgid "Error loading font."
-#~ msgstr "Chyba nahrávání fontu."
-
-#~ msgid "Invalid font size."
-#~ msgstr "Neplatná velikost fontu."
-
-#~ msgid "Previous Folder"
-#~ msgstr "Předchozí složka"
-
-#~ msgid "Next Folder"
-#~ msgstr "Další složka"
-
-#, fuzzy
-#~ msgid "Open in an external image editor."
-#~ msgstr "Otevřít další editor"
-
-#~ msgid "Reverse"
-#~ msgstr "Naopak"
-
-#~ msgid "Mirror X"
-#~ msgstr "Zrcadlit X"
-
-#~ msgid "Mirror Y"
-#~ msgstr "Zrcadlit Y"
-
-#~ msgid "Generating solution..."
-#~ msgstr "Generování řešení..."
-
-#~ msgid "Generating C# project..."
-#~ msgstr "Generování C# projektu..."
-
-#~ msgid "Failed to create solution."
-#~ msgstr "Nepodařilo se vytvořit řešení."
-
-#~ msgid "Failed to save solution."
-#~ msgstr "Nepodařilo se uložit řešení."
-
-#~ msgid "Failed to create C# project."
-#~ msgstr "Vytvoření C# projektu selhalo."
-
-#~ msgid "Mono"
-#~ msgstr "Mono"
-
-#~ msgid "About C# support"
-#~ msgstr "O podpoře C#"
-
-#~ msgid "Create C# solution"
-#~ msgstr "Vytvořit C# řešení"
-
-#~ msgid "Builds"
-#~ msgstr "Sestavení"
-
-#~ msgid "View log"
-#~ msgstr "Zobrazit logy"
-
-#, fuzzy
-#~ msgid "Enabled Classes"
-#~ msgstr "Hledat třídy"
-
-#~ msgid "Update Always"
-#~ msgstr "Aktualizovat vždy"
-
-#~ msgid "Path to Node:"
-#~ msgstr "Cesta k uzlu:"
-
-#~ msgid "Delete selected files?"
-#~ msgstr "Odstranit vybrané soubory?"
-
-#~ msgid "There is no 'res://default_bus_layout.tres' file."
-#~ msgstr "Soubor 'res://default_bus_layout.tres' neexistuje."
-
-#~ msgid "Go to parent folder"
-#~ msgstr "Jít na nadřazenou složku"
-
-#~ msgid "Open Scene(s)"
-#~ msgstr "Otevřít scénu(y)"
-
-#~ msgid "Previous Directory"
-#~ msgstr "Předchozí složka"
-
-#~ msgid "Next Directory"
-#~ msgstr "Následující složka"
-
-#, fuzzy
-#~ msgid "Ease in"
-#~ msgstr "Změnit měřítko výběru"
-
-#~ msgid "CheckBox Radio1"
-#~ msgstr "CheckBox Radio1"
-
-#~ msgid "CheckBox Radio2"
-#~ msgstr "CheckBox Radio2"
-
-#~ msgid "Create folder"
-#~ msgstr "Vytvořit složku"
-
-#~ msgid "Custom Node"
-#~ msgstr "Vlastní uzel"
-
-#~ msgid "Invalid Path"
-#~ msgstr "Neplatná cesta"
-
-#~ msgid "GridMap Duplicate Selection"
-#~ msgstr "GridMap Duplikovat výběr"
-
-#~ msgid "Create Area"
-#~ msgstr "Vytvořit plochu"
-
-#~ msgid "Edit Signal Arguments:"
-#~ msgstr "Upravit argumenty signálu:"
-
-#~ msgid "Edit Variable:"
-#~ msgstr "Upravit proměnnou:"
-
-#~ msgid "Snap (s): "
-#~ msgstr "Přichycení (s): "
-
-#~ msgid "Insert keys."
-#~ msgstr "Vložit klíče."
-
-#, fuzzy
-#~ msgid "Font Size:"
-#~ msgstr "Pohled zepředu"
-
-#~ msgid "Line:"
-#~ msgstr "Řádek:"
-
-#~ msgid "Col:"
-#~ msgstr "Sloupec:"
-
-#~ msgid "OrientedPathFollow only works when set as a child of a Path node."
-#~ msgstr "OrientedPathFollow funguje pouze když je dítětem uzlu Path."
-
-#, fuzzy
-#~ msgid "Add Split"
-#~ msgstr "Přidat bod"
-
-#, fuzzy
-#~ msgid "Invalid Split: "
-#~ msgstr "Neplatná cesta"
-
-#, fuzzy
-#~ msgid "Remove Split"
-#~ msgstr "Odstranit bod"
-
-#, fuzzy
-#~ msgid "Splits"
-#~ msgstr "Rozdělit cestu"
-
-#~ msgid "Add Node.."
-#~ msgstr "Přidat uzel.."
-
-#~ msgid "Create from scene?"
-#~ msgstr "Vytvořit ze scény?"
-
-#~ msgid "Create Poly"
-#~ msgstr "Vytvořit polygon"
-
-#, fuzzy
-#~ msgid "Zoom out"
-#~ msgstr "Oddálit"
-
-#, fuzzy
-#~ msgid "Zoom in"
-#~ msgstr "Přiblížit"
-
-#~ msgid "Create Poly3D"
-#~ msgstr "Vytvořit Poly3D"
-
-#~ msgid ""
-#~ "No OccluderPolygon2D resource on this node.\n"
-#~ "Create and assign one?"
-#~ msgstr ""
-#~ "Na tomto uzlu není žádný OccluderPolygon2D.\n"
-#~ "Vytvořit a přiřadit k tomuto uzlu?"
-
-#~ msgid "LMB: Move Point."
-#~ msgstr "LMB: Přesunout bod."
-
-#~ msgid "Ctrl+LMB: Split Segment."
-#~ msgstr "Ctrl+LMB: Rozdělit segment."
-
-#~ msgid "RMB: Erase Point."
-#~ msgstr "RMB: Vymazat bod."
-
-#~ msgid "Save Theme As"
-#~ msgstr "Uložit motiv jako"
-
-#~ msgid "<None>"
-#~ msgstr "<Žádné>"
-
-#~ msgid "Zoom:"
-#~ msgstr "Přiblížit:"
-
-#~ msgid "Class List:"
-#~ msgstr "Seznam tříd:"
-
-#~ msgid "Public Methods"
-#~ msgstr "Veřejné metody"
-
-#~ msgid "Public Methods:"
-#~ msgstr "Veřejné metody:"
-
-#~ msgid "Property: "
-#~ msgstr "Vlastnost: "
-
-#, fuzzy
-#~ msgid "Toggle folder status as Favorite."
-#~ msgstr "Zobrazit oblíbené"
-
-#, fuzzy
-#~ msgid "Show current scene file."
-#~ msgstr "Vytvořit složku"
-
-#~ msgid "Whole words"
-#~ msgstr "Celá slova"
-
-#~ msgid "Match case"
-#~ msgstr "Rozlišovat velikost písmen"
-
-#~ msgid "Ok"
-#~ msgstr "Ok"
-
-#~ msgid "Show In File System"
-#~ msgstr "Zobrazit v systému souborů"
-
-#~ msgid "Search the class hierarchy."
-#~ msgstr "Hledat v hierarchii tříd."
-
-#~ msgid "Search in files"
-#~ msgstr "Hledat v souborech"
-
-#~ msgid ""
-#~ "Built-in scripts can only be edited when the scene they belong to is "
-#~ "loaded"
-#~ msgstr ""
-#~ "Vestavěné skripty lze editovat pouze pokud scéna, které náleží, je načtená"
-
-#~ msgid "Convert To Uppercase"
-#~ msgstr "Konvertovat na velká písmena"
-
-#~ msgid "Convert To Lowercase"
-#~ msgstr "Konvertovat na malá písmena"
-
-#~ msgid "Rotate 0 degrees"
-#~ msgstr "Otočit o 0 stupňů"
-
-#~ msgid "Rotate 90 degrees"
-#~ msgstr "Otočit o 90 stupňů"
-
-#~ msgid "Rotate 180 degrees"
-#~ msgstr "Otočit o 180 stupňů"
-
-#~ msgid "Rotate 270 degrees"
-#~ msgstr "Otočit o 270 stupňů"
-
-#~ msgid "Errors:"
-#~ msgstr "Chyby:"
-
-#~ msgid "Get"
-#~ msgstr "Získat"
-
-#~ msgid "Change RGB Constant"
-#~ msgstr "Změna RGB konstanty"
-
-#~ msgid "Change RGB Operator"
-#~ msgstr "Změnit RGB operátor"
-
-#~ msgid "Change Vec Function"
-#~ msgstr "Změnit vektorovou funkci"
-
-#~ msgid "Change Default Value"
-#~ msgstr "Změnit výchozí hodnotu"
-
-#~ msgid "Change Comment"
-#~ msgstr "Změnit komentář"
-
-#~ msgid "Modify Curve Map"
-#~ msgstr "Upravit mapu křivky"
-
-#~ msgid "Connect Graph Nodes"
-#~ msgstr "Propojit uzly grafu"
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "Posun stopy animace nahoru"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "Posun stopy animace dolů"
-
-#~ msgid "Set Transitions to:"
-#~ msgstr "Změna přechodů na:"
-
-#~ msgid "Anim Track Change Interpolation"
-#~ msgstr "Animace: změna interpolace stopy"
-
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "Animace: změna typu hodnot"
-
-#, fuzzy
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "Animace: Změna režimu opakování animační stopy"
-
-#~ msgid "Edit Node Curve"
-#~ msgstr "Úprava křivky uzlu"
-
-#~ msgid "Edit Selection Curve"
-#~ msgstr "Úprava vybraných křivek"
-
-#~ msgid "Anim Add Key"
-#~ msgstr "Animace: přidat klíč"
-
-#~ msgid "In"
-#~ msgstr "In"
-
-#~ msgid "Out"
-#~ msgstr "Výstup"
-
-#~ msgid "In-Out"
-#~ msgstr "Vstup-Výstup"
-
-#~ msgid "Out-In"
-#~ msgstr "Výstup-Vstup"
-
-#~ msgid "Change Anim Len"
-#~ msgstr "Změnit délku animace"
-
-#~ msgid "Change Anim Loop"
-#~ msgstr "Změnit opakování animace"
-
-#~ msgid "Anim Create Typed Value Key"
-#~ msgstr "Animace: Vytvořit typovaný klíč"
-
-#~ msgid "Anim Add Call Track"
-#~ msgstr "Animace: přidat stopu volání"
-
-#~ msgid "Length (s):"
-#~ msgstr "Délka (s):"
-
-#~ msgid "Cursor step snap (in seconds)."
-#~ msgstr "Krokování kurzoru (v sekundách)."
-
-#~ msgid "Enable/Disable looping in animation."
-#~ msgstr "Zapnout/vypnout opakování animace."
-
-#~ msgid "Add new tracks."
-#~ msgstr "Přidat novou stopu."
-
-#~ msgid "Move current track up."
-#~ msgstr "Posunout aktuální stopu nahoru."
-
-#~ msgid "Move current track down."
-#~ msgstr "Posunout aktuální stopu dolů."
-
-#~ msgid "Track tools"
-#~ msgstr "Nástroje stopy"
-
-#~ msgid "Enable editing of individual keys by clicking them."
-#~ msgstr "Kliknutím na klíče zapnete jejich individuální úpravu."
-
-#~ msgid "Key"
-#~ msgstr "Klíč"
-
-#~ msgid "Call Functions in Which Node?"
-#~ msgstr "Ze kterého uzlu volej funkce?"
-
-#~ msgid "Thanks!"
-#~ msgstr "Díky!"
-
-#~ msgid "I see..."
-#~ msgstr "Chápu..."
-
-#~ msgid "Ugh"
-#~ msgstr "Ups"
-
-#~ msgid "Run Script"
-#~ msgstr "Spustit skript"
-
-#~ msgid "Stop Profiling"
-#~ msgstr "Zastavit profilování"
-
-#~ msgid "Start Profiling"
-#~ msgstr "Spustit profilování"
-
-#~ msgid "Load animation from disk."
-#~ msgstr "Načíst animaci z disku."
-
-#~ msgid "Load an animation from disk."
-#~ msgstr "Načíst animaci z disku."
-
-#~ msgid "Copy Animation"
-#~ msgstr "Kopírovat animaci"
-
-#~ msgid "Fetching:"
-#~ msgstr "Stahuji:"
-
-#~ msgid "prev"
-#~ msgstr "předchozí"
-
-#~ msgid "next"
-#~ msgstr "následující"
-
-#~ msgid "last"
-#~ msgstr "poslední"
-
-#~ msgid "Set pivot at mouse position"
-#~ msgstr "Nastavit střed na pozici myši"
-
-#~ msgid "OK :("
-#~ msgstr "OK :("
-
-#~ msgid "Texture Region Editor"
-#~ msgstr "Editor oblasti textury"
-
-#~ msgid "Item name or ID:"
-#~ msgstr "Název položky nebo ID:"
-
-#~ msgid "Export templates for this platform are missing/corrupted: "
-#~ msgstr "Exportní šablony pro tuto platformu chybí nebo jsou poškozené: "
-
-#~ msgid "Button 8"
-#~ msgstr "Tlačítko č. 8"
-
-#~ msgid "Button 9"
-#~ msgstr "Tlačítko č. 9"
-
-#~ msgid "Condition"
-#~ msgstr "Podmínka"
-
-#~ msgid "Sequence"
-#~ msgstr "Sekvence"
-
-#~ msgid "Iterator"
-#~ msgstr "Iterátor"
-
-#~ msgid "Return"
-#~ msgstr "Vrátit"
-
-#~ msgid "Call"
-#~ msgstr "Zavolat"
-
-#~ msgid "Edit Signal"
-#~ msgstr "Upravit signál"
-
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Nesmí obsaovat '/' nebo ':'"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Neplatný formát version.txt uvnitř šablon. Revize není platný "
-#~ "identifikátor."
-
-#~ msgid "Can't write file."
-#~ msgstr "Nelze zapsat soubor."
-
-#~ msgid "Replace By"
-#~ msgstr "Nahradit"
-
-#~ msgid "Backwards"
-#~ msgstr "Pozpátku"
-
-#~ msgid "Prompt On Replace"
-#~ msgstr "Potvrzovat nahrazení"
-
-#~ msgid "Skip"
-#~ msgstr "Přeskočit"
-
-#~ msgid "List:"
-#~ msgstr "Seznam:"
-
-#, fuzzy
-#~ msgid ""
-#~ "\n"
-#~ "Source: "
-#~ msgstr "Zdroj"
-
-#, fuzzy
-#~ msgid "Add Point to Line2D"
-#~ msgstr "Běž na řádek"
-
-#, fuzzy
-#~ msgid "Setting '"
-#~ msgstr "Testované"
-
-#, fuzzy
-#~ msgid "Selection -> Duplicate"
-#~ msgstr "Pouze výběr"
-
-#, fuzzy
-#~ msgid "Selection -> Clear"
-#~ msgstr "Pouze výběr"
-
-#~ msgid ""
-#~ "Path property must point to a valid Viewport node to work. Such Viewport "
-#~ "must be set to 'render target' mode."
-#~ msgstr ""
-#~ "Pro zajištění funkčností musí vlastnost path ukazovat na platný uzel "
-#~ "Viewport. Takový Viewport musí být nastaven do módu 'render target'."
-
-#~ msgid ""
-#~ "The Viewport set in the path property must be set as 'render target' in "
-#~ "order for this sprite to work."
-#~ msgstr ""
-#~ "Aby tento sprite mohl fungovat, Viewport nastavený ve vlastnosti path "
-#~ "musí být nastaven do módu 'render target'."
-
-#~ msgid "Method List For '%s':"
-#~ msgstr "Seznam metod '%s':"
-
-#~ msgid "Return:"
-#~ msgstr "Vrátit:"
-
-#~ msgid "Invalid font custom source."
-#~ msgstr "Nevalidní písmo z vlastního zdroje."
-
-#~ msgid "Ctrl+"
-#~ msgstr "Ctrl+"
-
-#~ msgid "just pressed"
-#~ msgstr "právě stisknuto"
-
-#, fuzzy
-#~ msgid ""
-#~ "Couldn't read the certificate file. Are the path and password both "
-#~ "correct?"
-#~ msgstr ""
-#~ "Nepodařilo se přečíst soubor certifikátu. Jsou cesta a heslo obě korektní?"
-
-#~ msgid "Error creating the package signature."
-#~ msgstr "Chyba při vytváření podpisu balíčku."
-
-#~ msgid "Path property must point to a valid Particles2D node to work."
-#~ msgstr ""
-#~ "Aby ParticleAttractor2D fungoval, musí vlastnost path ukazovat na platný "
-#~ "uzel Particles2D."
-
-#~ msgid ""
-#~ "A SampleLibrary resource must be created or set in the 'samples' property "
-#~ "in order for SamplePlayer to play sound."
-#~ msgstr ""
-#~ "Zdroj SampleLibrary musí být vytvořen nebo nastaven jako vlastnost "
-#~ "'samples', aby mohl SamplePlayer přehrát zvuk."
-
-#~ msgid ""
-#~ "A SampleLibrary resource must be created or set in the 'samples' property "
-#~ "in order for SpatialSamplePlayer to play sound."
-#~ msgstr ""
-#~ "Zdroj SampleLibrary musí být vytvořen nebo nastaven jako vlastnost "
-#~ "'samples', aby mohl SpatialSamplePlayer přehrát zvuk."
-
-#~ msgid "Replaced %d Ocurrence(s)."
-#~ msgstr "Nahrazeno %d výskytů."
-
-#, fuzzy
-#~ msgid "Create Android keystore"
-#~ msgstr "Vytvořit složku"
-
-#, fuzzy
-#~ msgid "Organization"
-#~ msgstr "Přechod"
-
-#, fuzzy
-#~ msgid "at least 6 characters"
-#~ msgstr "Platné znaky:"
-
-#~ msgid "BakedLightInstance does not contain a BakedLight resource."
-#~ msgstr "BakedLightInstance neobsahuje zdroj BakedLight."

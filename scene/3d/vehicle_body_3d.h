@@ -129,6 +129,8 @@ public:
 
 	bool is_in_contact() const;
 
+	Node3D *get_contact_body() const;
+
 	void set_roll_influence(real_t p_value);
 	real_t get_roll_influence() const;
 

@@ -42,7 +42,7 @@ void LinkButton::_shape() {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
 	TS->shaped_text_set_bidi_override(text_buf->get_rid(), structured_text_parser(st_parser, st_args, xl_text));
-	text_buf->add_string(xl_text, font, font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+	text_buf->add_string(xl_text, font, font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 void LinkButton::set_text(const String &p_text) {
@@ -52,7 +52,7 @@ void LinkButton::set_text(const String &p_text) {
 	text = p_text;
 	xl_text = atr(text);
 	_shape();
-	minimum_size_changed();
+	update_minimum_size();
 	update();
 }
 
@@ -149,7 +149,7 @@ void LinkButton::_notification(int p_what) {
 			xl_text = atr(text);
 			_shape();
 
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -157,7 +157,7 @@ void LinkButton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_DRAW: {

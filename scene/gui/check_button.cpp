@@ -107,7 +107,7 @@ void CheckButton::_notification(int p_what) {
 
 CheckButton::CheckButton() {
 	set_toggle_mode(true);
-	set_text_align(ALIGN_LEFT);
+	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	if (is_layout_rtl()) {
 		_set_internal_margin(SIDE_LEFT, get_icon_size().width);
 	} else {

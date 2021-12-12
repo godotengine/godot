@@ -80,7 +80,7 @@ public:
 
 		PinnedPoint();
 		PinnedPoint(const PinnedPoint &obj_tocopy);
-		PinnedPoint &operator=(const PinnedPoint &obj);
+		void operator=(const PinnedPoint &obj);
 	};
 
 private:

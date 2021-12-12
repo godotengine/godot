@@ -160,7 +160,7 @@ void FileAccessUnix::close() {
 		close_notification_func(path, flags);
 	}
 
-	if (save_path != "") {
+	if (!save_path.is_empty()) {
 		int rename_error = rename((save_path + ".tmp").utf8().get_data(), save_path.utf8().get_data());
 
 		if (rename_error && close_fail_notify) {
@@ -307,7 +307,8 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	if (!err) {
 		return flags.st_mtime;
 	} else {
-		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + p_file + ".");
+		print_verbose("Failed to get modified time for: " + p_file + "");
+		return 0;
 	};
 }
 

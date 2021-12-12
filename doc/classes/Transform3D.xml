@@ -152,6 +152,13 @@
 			</description>
 		</operator>
 		<operator name="operator *">
+			<return type="AABB" />
+			<argument index="0" name="right" type="AABB" />
+			<description>
+				Transforms (multiplies) the [AABB] by the given [Transform3D] matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
 			<return type="PackedVector3Array" />
 			<argument index="0" name="right" type="PackedVector3Array" />
 			<description>
@@ -163,13 +170,6 @@
 			<argument index="0" name="right" type="Transform3D" />
 			<description>
 				Composes these two transformation matrices by multiplying them together. This has the effect of transforming the second transform (the child) by the first transform (the parent).
-			</description>
-		</operator>
-		<operator name="operator *">
-			<return type="AABB" />
-			<argument index="0" name="right" type="AABB" />
-			<description>
-				Transforms (multiplies) the [AABB] by the given [Transform3D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">

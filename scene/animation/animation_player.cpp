@@ -736,7 +736,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					ba->bezier_accum = bezier;
 					ba->accum_pass = accum_pass;
 				} else {
-					ba->bezier_accum = Math::lerp(ba->bezier_accum, bezier, p_interp);
+					ba->bezier_accum = Math::lerp(ba->bezier_accum, (float)bezier, p_interp);
 				}
 
 			} break;
@@ -1416,7 +1416,7 @@ bool AnimationPlayer::is_playing() const {
 }
 
 void AnimationPlayer::set_current_animation(const String &p_anim) {
-	if (p_anim == "[stop]" || p_anim == "") {
+	if (p_anim == "[stop]" || p_anim.is_empty()) {
 		stop();
 	} else if (!is_playing() || playback.assigned != p_anim) {
 		play(p_anim);
@@ -1754,7 +1754,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::backup_animated_values(Node *p_root_o
 Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 	ERR_FAIL_COND_V(!can_apply_reset(), Ref<AnimatedValuesBackup>());
 
-	Ref<Animation> reset_anim = animation_set["RESET"].animation;
+	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
 	ERR_FAIL_COND_V(reset_anim.is_null(), Ref<AnimatedValuesBackup>());
 
 	Node *root_node = get_node_or_null(root);
@@ -1762,8 +1762,8 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 
 	AnimationPlayer *aux_player = memnew(AnimationPlayer);
 	EditorNode::get_singleton()->add_child(aux_player);
-	aux_player->add_animation("RESET", reset_anim);
-	aux_player->set_assigned_animation("RESET");
+	aux_player->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
+	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
 	// Forcing the use of the original root because the scene where original player belongs may be not the active one
 	Node *root = get_node(get_root());
 	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(root);
@@ -1785,7 +1785,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 }
 
 bool AnimationPlayer::can_apply_reset() const {
-	return has_animation("RESET") && playback.assigned != StringName("RESET");
+	return has_animation(SceneStringNames::get_singleton()->RESET) && playback.assigned != SceneStringNames::get_singleton()->RESET;
 }
 #endif
 

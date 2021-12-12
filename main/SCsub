@@ -20,12 +20,13 @@ env_main.CommandNoCache(
     env.Run(main_builders.make_splash, "Building splash screen header."),
 )
 
-env_main.Depends("#main/splash_editor.gen.h", "#main/splash_editor.png")
-env_main.CommandNoCache(
-    "#main/splash_editor.gen.h",
-    "#main/splash_editor.png",
-    env.Run(main_builders.make_splash_editor, "Building editor splash screen header."),
-)
+if not env_main["no_editor_splash"]:
+    env_main.Depends("#main/splash_editor.gen.h", "#main/splash_editor.png")
+    env_main.CommandNoCache(
+        "#main/splash_editor.gen.h",
+        "#main/splash_editor.png",
+        env.Run(main_builders.make_splash_editor, "Building editor splash screen header."),
+    )
 
 env_main.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
 env_main.CommandNoCache(

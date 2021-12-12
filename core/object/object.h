@@ -284,7 +284,6 @@ struct ObjectNativeExtension {
 
 	GDNativeExtensionClassCreateInstance create_instance;
 	GDNativeExtensionClassFreeInstance free_instance;
-	GDNativeExtensionClassObjectInstance set_object_instance;
 	GDNativeExtensionClassGetVirtual get_virtual;
 };
 
@@ -353,7 +352,7 @@ public:                                                                         
 	static String get_category_static() {                                                                                                        \
 		String category = m_inherits::get_category_static();                                                                                     \
 		if (_get_category != m_inherits::_get_category) {                                                                                        \
-			if (category != "") {                                                                                                                \
+			if (!category.is_empty()) {                                                                                                          \
 				category += "/";                                                                                                                 \
 			}                                                                                                                                    \
 			category += _get_category();                                                                                                         \

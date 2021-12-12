@@ -598,7 +598,7 @@ class BindingsGenerator {
 
 	private:
 		NameCache(const NameCache &);
-		NameCache &operator=(const NameCache &);
+		void operator=(const NameCache &);
 	};
 
 	NameCache name_cache;

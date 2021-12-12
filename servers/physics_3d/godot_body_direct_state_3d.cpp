@@ -99,21 +99,6 @@ Vector3 GodotPhysicsDirectBodyState3D::get_velocity_at_local_position(const Vect
 	return body->get_velocity_in_local_point(p_position);
 }
 
-void GodotPhysicsDirectBodyState3D::add_central_force(const Vector3 &p_force) {
-	body->wakeup();
-	body->add_central_force(p_force);
-}
-
-void GodotPhysicsDirectBodyState3D::add_force(const Vector3 &p_force, const Vector3 &p_position) {
-	body->wakeup();
-	body->add_force(p_force, p_position);
-}
-
-void GodotPhysicsDirectBodyState3D::add_torque(const Vector3 &p_torque) {
-	body->wakeup();
-	body->add_torque(p_torque);
-}
-
 void GodotPhysicsDirectBodyState3D::apply_central_impulse(const Vector3 &p_impulse) {
 	body->wakeup();
 	body->apply_central_impulse(p_impulse);
@@ -127,6 +112,58 @@ void GodotPhysicsDirectBodyState3D::apply_impulse(const Vector3 &p_impulse, cons
 void GodotPhysicsDirectBodyState3D::apply_torque_impulse(const Vector3 &p_impulse) {
 	body->wakeup();
 	body->apply_torque_impulse(p_impulse);
+}
+
+void GodotPhysicsDirectBodyState3D::apply_central_force(const Vector3 &p_force) {
+	body->wakeup();
+	body->apply_central_force(p_force);
+}
+
+void GodotPhysicsDirectBodyState3D::apply_force(const Vector3 &p_force, const Vector3 &p_position) {
+	body->wakeup();
+	body->apply_force(p_force, p_position);
+}
+
+void GodotPhysicsDirectBodyState3D::apply_torque(const Vector3 &p_torque) {
+	body->wakeup();
+	body->apply_torque(p_torque);
+}
+
+void GodotPhysicsDirectBodyState3D::add_constant_central_force(const Vector3 &p_force) {
+	body->wakeup();
+	body->add_constant_central_force(p_force);
+}
+
+void GodotPhysicsDirectBodyState3D::add_constant_force(const Vector3 &p_force, const Vector3 &p_position) {
+	body->wakeup();
+	body->add_constant_force(p_force, p_position);
+}
+
+void GodotPhysicsDirectBodyState3D::add_constant_torque(const Vector3 &p_torque) {
+	body->wakeup();
+	body->add_constant_torque(p_torque);
+}
+
+void GodotPhysicsDirectBodyState3D::set_constant_force(const Vector3 &p_force) {
+	if (!p_force.is_equal_approx(Vector3())) {
+		body->wakeup();
+	}
+	body->set_constant_force(p_force);
+}
+
+Vector3 GodotPhysicsDirectBodyState3D::get_constant_force() const {
+	return body->get_constant_force();
+}
+
+void GodotPhysicsDirectBodyState3D::set_constant_torque(const Vector3 &p_torque) {
+	if (!p_torque.is_equal_approx(Vector3())) {
+		body->wakeup();
+	}
+	body->set_constant_torque(p_torque);
+}
+
+Vector3 GodotPhysicsDirectBodyState3D::get_constant_torque() const {
+	return body->get_constant_torque();
 }
 
 void GodotPhysicsDirectBodyState3D::set_sleep_state(bool p_sleep) {

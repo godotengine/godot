@@ -98,7 +98,7 @@ static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
 struct hb_prune_langsys_context_t
 {
   hb_prune_langsys_context_t (const void         *table_,
-                              hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *script_langsys_map_,
+                              hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map_,
                               const hb_map_t     *duplicate_feature_map_,
                               hb_set_t           *new_collected_feature_indexes_)
       :table (table_),
@@ -137,7 +137,7 @@ struct hb_prune_langsys_context_t
 
   public:
   const void *table;
-  hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *script_langsys_map;
+  hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map;
   const hb_map_t     *duplicate_feature_map;
   hb_set_t           *new_feature_indexes;
 
@@ -179,14 +179,14 @@ struct hb_subset_layout_context_t :
   hb_subset_context_t *subset_context;
   const hb_tag_t table_tag;
   const hb_map_t *lookup_index_map;
-  const hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *script_langsys_map;
+  const hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map;
   const hb_map_t *feature_index_map;
   unsigned cur_script_index;
 
   hb_subset_layout_context_t (hb_subset_context_t *c_,
 			      hb_tag_t tag_,
 			      hb_map_t *lookup_map_,
-			      hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *script_langsys_map_,
+			      hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map_,
 			      hb_map_t *feature_index_map_) :
 				subset_context (c_),
 				table_tag (tag_),
@@ -1357,7 +1357,7 @@ struct Lookup
     if (unlikely (!get_subtables<TSubTable> ().sanitize (c, this, get_type ())))
       return_trace (false);
 
-    if (unlikely (get_type () == TSubTable::Extension && !c->get_edit_count ()))
+    if (unlikely (get_type () == TSubTable::Extension && subtables && !c->get_edit_count ()))
     {
       /* The spec says all subtables of an Extension lookup should
        * have the same type, which shall not be the Extension type

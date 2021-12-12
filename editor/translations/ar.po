@@ -61,7 +61,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-11 08:00+0000\n"
+"PO-Revision-Date: 2021-11-27 23:46+0000\n"
 "Last-Translator: Nabeel20 <nabeelandnizam@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
@@ -71,7 +71,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2148,13 +2148,33 @@ msgstr "الطُرق"
 msgid "Theme Properties"
 msgstr "خصائص الثِمة"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "التعدادات"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "اللون"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "الثوابت"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Fonts"
+msgstr "الخط"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Icons"
+msgstr "الأيقونة"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "الأسلوب"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "التعدادات"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -7952,9 +7972,8 @@ msgid "Translate"
 msgstr "الترجمة:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scale"
-msgstr "تكبير/تصغير:"
+msgstr "المقياس"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -8669,21 +8688,6 @@ msgstr "التعدادات:"
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "TextureRegion"
 msgstr "منطقة النقش TextureRegion"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Colors"
-msgstr "اللون"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Fonts"
-msgstr "الخط"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Icons"
-msgstr "الأيقونة"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -13572,8 +13576,17 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "يجب تفعيل \"Use Custom Build\" لإستخدام الإضافات."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"\"Hand Tracking\" تكون صالحة فقط عندما يكون وضع ال \"Xr Mode\"هو \"Oculus "
+"Mobile VR\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "\"Hand Tracking\" تكون صالحة فقط عندما يكون وضع ال \"Xr Mode\"هو \"Oculus "
 "Mobile VR\"."
@@ -13583,6 +13596,27 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 "يصبح خيار \"تصدير ABB\" صالحاً فقط عندما يتم اختيار \"استعمال تصدير مخصص "
 "Custom Build\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+"يصبح خيار \"تصدير ABB\" صالحاً فقط عندما يتم اختيار \"استعمال تصدير مخصص "
+"Custom Build\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+"يصبح خيار \"تصدير ABB\" صالحاً فقط عندما يتم اختيار \"استعمال تصدير مخصص "
+"Custom Build\"."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -14768,830 +14802,3 @@ msgstr "التعين للإنتظام."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
-
-#~ msgid "Make Rest Pose (From Bones)"
-#~ msgstr "إنشاء وضعية الراحة (من العظام)"
-
-#~ msgid "Bottom"
-#~ msgstr "الأسفل"
-
-#~ msgid "Left"
-#~ msgstr "اليسار"
-
-#~ msgid "Right"
-#~ msgstr "اليمين"
-
-#~ msgid "Front"
-#~ msgstr "الأمام"
-
-#~ msgid "Rear"
-#~ msgstr "الخلف"
-
-#~ msgid "Nameless gizmo"
-#~ msgstr "أداة (gizmo) غير مسماة"
-
-#~ msgid ""
-#~ "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile "
-#~ "VR\"."
-#~ msgstr ""
-#~ "\"Degrees Of Freedom\" تكون صالحة فقط عندما يكون وضع ال \"Xr Mode\"هو "
-#~ "\"Oculus Mobile VR\"."
-
-#~ msgid ""
-#~ "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-#~ "\"."
-#~ msgstr ""
-#~ "\"Focus Awareness\" تكون صالحة فقط عندما يكون وضع ال \"Xr Mode\"هو "
-#~ "\"Oculus Mobile VR\"."
-
-#~ msgid "Package Contents:"
-#~ msgstr "محتويات الرزمة:"
-
-#~ msgid "Singleton"
-#~ msgstr "الفردية"
-
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "مسح الملف الشخصي '%s'؟ (لا تراجع)"
-
-#~ msgid "Enabled Properties:"
-#~ msgstr "الخصائص المُمكّنة:"
-
-#~ msgid "Enabled Features:"
-#~ msgstr "الميزات المُمكّنة:"
-
-#~ msgid "Unset"
-#~ msgstr "غير مُحدد"
-
-#~ msgid "Class Options"
-#~ msgstr "إعدادات الصف Class"
-
-#~ msgid "Set"
-#~ msgstr "مجموعة"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "حفظت %s الموارد المعدلة."
-
-#~ msgid "Q&A"
-#~ msgstr "الأسئلة و الأجوبة"
-
-#~ msgid "Status:"
-#~ msgstr "الحالة:"
-
-#~ msgid "Edit:"
-#~ msgstr "تحرير:"
-
-#~ msgid "Redownload"
-#~ msgstr "إعادة التحميل"
-
-#~ msgid "(Installed)"
-#~ msgstr "(مثبت)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(مفقود)"
-
-#~ msgid "Request Failed."
-#~ msgstr "فشل الطلب."
-
-#~ msgid "Redirect Loop."
-#~ msgstr "اعادة توجيه حلقة التكرار."
-
-#~ msgid "Download Complete."
-#~ msgstr "التحميل إكتمل."
-
-#~ msgid "Remove Template"
-#~ msgstr "مسح القالب"
-
-#~ msgid "Download Templates"
-#~ msgstr "تنزيل القوالب"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr "حدد السرفر من القائمة: (Shift+Click: للفتح في المتصفح)"
-
-#~ msgid "Move to Trash"
-#~ msgstr "نقل الي سلة المحذوفات"
-
-#~ msgid "Expand All Properties"
-#~ msgstr "توسيع كل الخصائص"
-
-#~ msgid "Collapse All Properties"
-#~ msgstr "طي كل الخصائص"
-
-#~ msgid "Copy Params"
-#~ msgstr "إنسخ المُعامل"
-
-#~ msgid "Open in Help"
-#~ msgstr "إفتح في المساعدة"
-
-#~ msgid ""
-#~ "Game Camera Override\n"
-#~ "No game instance running."
-#~ msgstr ""
-#~ "تجاوز كاميرا اللعبة.\n"
-#~ "ليس هناك لعبة منمذجة قيد التشغيل."
-
-#~ msgid "Drag: Rotate"
-#~ msgstr "سحب: للتدوير"
-
-#~ msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
-#~ msgstr "إضغط 'ر' لكي تغيير المحور، 'Shift+ر' لسحب المحور (في حين التحرك)."
-
-#~ msgid "Alt+RMB: Depth list selection"
-#~ msgstr "Alt+زر الفأرة الأيمن: تحديد قائمة العمق"
-
-#~ msgid "Clone Down"
-#~ msgstr "استنساخ أدناه"
-
-#~ msgid "Yaw"
-#~ msgstr "الإنحراف Yaw"
-
-#~ msgid "Size"
-#~ msgstr "الحجم"
-
-#~ msgid ""
-#~ "Drag: Rotate\n"
-#~ "Alt+Drag: Move\n"
-#~ "Alt+RMB: Depth list selection"
-#~ msgstr ""
-#~ "السحب: تدوير.\n"
-#~ "Alt+السحب: تحريك.\n"
-#~ "Alt+ كبسة الزر الأيمن للفأرةRMB : اختيار قائمة العُمق"
-
-#~ msgid "Sep.:"
-#~ msgstr "الفاصل:"
-
-#~ msgid "Add All"
-#~ msgstr "إضافة الجميع"
-
-#~ msgid "Theme editing menu."
-#~ msgstr "قائمة تحرير الموضوع."
-
-#~ msgid "Create Empty Template"
-#~ msgstr "إنشاء قالب فارغ"
-
-#~ msgid "Create Empty Editor Template"
-#~ msgstr "إنشاء قالب مُحرر فارغ"
-
-#~ msgid "Create From Current Editor Theme"
-#~ msgstr "إنشاء مستمد من موضوع Theme المحرر الحالي"
-
-#~ msgid "Data Type:"
-#~ msgstr "نوع البيانات:"
-
-#~ msgid "Theme File"
-#~ msgstr "ملف الثيم"
-
-#~ msgid "Compiled"
-#~ msgstr "مُحولة برمجياً"
-
-#~ msgid ""
-#~ "Remove %d projects from the list?\n"
-#~ "The project folders' contents won't be modified."
-#~ msgstr ""
-#~ "إزالة %d مشاريع من القائمة؟\n"
-#~ "لن يتم تعديل محتويات مُجلدات المشاريع."
-
-#~ msgid ""
-#~ "Remove this project from the list?\n"
-#~ "The project folder's contents won't be modified."
-#~ msgstr ""
-#~ "إزالة هذا المشروع من القائمة؟\n"
-#~ "لن يتم تعديل محتوى مُجلد المشروع."
-
-#~ msgid "Templates"
-#~ msgstr "القوالب"
-
-#~ msgid "Add Remapped Path"
-#~ msgstr "إضافة مسار مُعاد تعيينه Remapped"
-
-#~ msgid "Can not perform with the root node."
-#~ msgstr "لا يمكن التنفيذ مع العُقدة الرئيسة (الجذر)."
-
-#~ msgid "Could not read boot splash image file:"
-#~ msgstr "لا يمكن قراءة ملف الإقلاع الصوري:"
-
-#~ msgid "Using default boot splash image."
-#~ msgstr "استخدام الصورة الافتراضية للشروع بالتشغيل."
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr "مشغل الحركة لا يمكنه أن يحرك نفسه, فقط الاعبين الأخرين."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "الحافظة (Clipboard) فارغة"
-
-#~ msgid "No"
-#~ msgstr "لا"
-
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr "هذا المشهد لم يتم حفظه. هل تود حفظه قبل تشغيله؟"
-
-#~ msgid "ADB executable not configured in the Editor Settings."
-#~ msgstr "لم يتم تهيئة مُنفّذ ADB في إعدادات المُحرر."
-
-#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
-#~ msgstr ""
-#~ "‌مُوقّع ملفات الجار jarsigner المفتوح الخاص بحزمة التطوير OpenJDK غير مُهيّئ "
-#~ "في إعدادات المُحرر."
-
-#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
-#~ msgstr ""
-#~ "البُنى المخصوصة تتطلب مساراً لحزمة تطوير Android SDK صالحة في إعدادات "
-#~ "المُحرر."
-
-#~ msgid "%d%%"
-#~ msgstr "%d%%"
-
-#~ msgid "(Time Left: %d:%02d s)"
-#~ msgstr "(الوقت المتبقي: %d:%02d ثانية)"
-
-#~ msgid "Plotting Meshes: "
-#~ msgstr "تخطيط المجسمات: "
-
-#~ msgid "Lighting Meshes: "
-#~ msgstr "إضاءة المجسمات: "
-
-#~ msgid "Search complete"
-#~ msgstr "إكتمل البحث"
-
-#~ msgid "No commit message was provided"
-#~ msgstr "لم يتم تقديم رسالة ارتكاب commit"
-
-#~ msgid "Add a commit message"
-#~ msgstr "إضافة رسالة إجراء"
-
-#~ msgid "There is already file or folder with the same name in this location."
-#~ msgstr "يوجد بالفعل ملف أو مجلد بنفس الاسم في هذا المكان."
-
-#~ msgid "Error trying to save layout!"
-#~ msgstr "خطآ في محاولة حفظ النسق!"
-
-#~ msgid "Default editor layout overridden."
-#~ msgstr "تخطي نسق المُحرر الإفتراضي."
-
-#~ msgid "Move pivot"
-#~ msgstr "نقل المحور"
-
-#~ msgid "Move anchor"
-#~ msgstr "نقل الإرتكاز"
-
-#~ msgid "Resize CanvasItem"
-#~ msgstr "تغير حجم العنصر القماشي"
-
-#~ msgid "Polygon->UV"
-#~ msgstr "مُضلع > UV"
-
-#~ msgid "UV->Polygon"
-#~ msgstr "UV > مُضلع"
-
-#~ msgid "Add initial export..."
-#~ msgstr "إضافة تصدير مبدئي..."
-
-#~ msgid "Add previous patches..."
-#~ msgstr "إضافة الرُقع السابقة..."
-
-#~ msgid "Delete patch '%s' from list?"
-#~ msgstr "حذف رُقعة '%s' من القائمة؟"
-
-#~ msgid "Patches"
-#~ msgstr "الرُقع Patches"
-
-#~ msgid "Make Patch"
-#~ msgstr "إنشاء رُقعة Patch"
-
-#~ msgid "Pack File"
-#~ msgstr "ملف الحِزمة"
-
-#~ msgid "No build apk generated at: "
-#~ msgstr "لم يتم توليد حزمة أندرويد apk في: "
-
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "رصيف نظام الملفات و الاستيراد"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "حينما يتم التصدير أو النشر، ملف التشغيل الناتج سوف يحاول الإتصال إلي "
-#~ "عنوان الأي بي الخاص بهذا الكمبيوتر من أجل تصحيح الأخطاء."
-
-#~ msgid "Current scene was never saved, please save it prior to running."
-#~ msgstr "المشهد الحالي لم يتم حفظه. الرجاء حفظ المشهد قبل تشغيله و اختباره."
-
-#~ msgid "Revert"
-#~ msgstr "إرجاع"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr "هذا الفعل لا يمكن إرجاعة. إرجاع علي أية حال؟"
-
-#~ msgid "Revert Scene"
-#~ msgstr "إعادة المشهد"
-
-#~ msgid "Clear Script"
-#~ msgstr "إخلاء الكود"
-
-#~ msgid "Issue Tracker"
-#~ msgstr "متتبع الأخطاء"
-
-#~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "إستبُدل %d حادثة(حوادث)."
-
-#~ msgid "Create Static Convex Body"
-#~ msgstr "أنشئ جسم محدب ثابت"
-
-#~ msgid ""
-#~ "There are currently no tutorials for this class, you can [color=$color]"
-#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
-#~ "$url2]request one[/url][/color]."
-#~ msgstr ""
-#~ "ليس هناك دروس تعليمية في هذا الفصل، يمكنك [color=$color][url=$url] "
-#~ "المساهمة في إحداها [/url][/color] أو [color=$color][url=$url2]أطلب أحداها "
-#~ "[/url][/color]."
-
-#~ msgid "enum  "
-#~ msgstr "التعداد  "
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "وصف مختصر:"
-
-#~ msgid "Class Description"
-#~ msgstr "وصف الصف"
-
-#~ msgid "Project export failed with error code %d."
-#~ msgstr "تصدير المشروع فشل, رمز الخطأ %d."
-
-#~ msgid "Password:"
-#~ msgstr "كلمة السر:"
-
-#~ msgid "Pause the scene"
-#~ msgstr "إيقاف المشهد مؤقتاً"
-
-#, fuzzy
-#~ msgid "Snap to Grid"
-#~ msgstr "الكبس إلي الشبكة"
-
-#, fuzzy
-#~ msgid "Add input +"
-#~ msgstr "أضف مدخله"
-
-#~ msgid "Input"
-#~ msgstr "إدخال"
-
-#, fuzzy
-#~ msgid "Methods:"
-#~ msgstr "قائمة الطرق"
-
-#, fuzzy
-#~ msgid "Theme Properties:"
-#~ msgstr "خصائص"
-
-#~ msgid "Constants:"
-#~ msgstr "الثوابت:"
-
-#~ msgid "Class Description:"
-#~ msgstr "وصف الصف:"
-
-#, fuzzy
-#~ msgid "Property Descriptions:"
-#~ msgstr "وصف الملكية:"
-
-#, fuzzy
-#~ msgid "Method Descriptions:"
-#~ msgstr "وصف الطريقة:"
-
-#, fuzzy
-#~ msgid "Reverse sorting."
-#~ msgstr "جار الطلب..."
-
-#~ msgid ""
-#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
-#~ msgstr ""
-#~ "لا يمكن فتح file_type_cache.cch من إجل الكتابة، لا يمكن حفظ خبأ أنواع "
-#~ "الملف!"
-
-#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-#~ msgstr "لا يمكن التنقل إلي '%s' حيث لم يتم العثور عليها في نظام الملفات!"
-
-#~ msgid "Error loading image:"
-#~ msgstr "خطأ تحميل الصورة:"
-
-#~ msgid "No pixels with transparency > 128 in image..."
-#~ msgstr "لا بيكسل بشفافية > 128 في الصورة..."
-
-#~ msgid "Parent has no solid faces to populate."
-#~ msgstr "الأب ليس لديه وجوه ثابته لكي تتزايد."
-
-#~ msgid "Couldn't map area."
-#~ msgstr "لا يمكنه تخطيط المنطقة."
-
-#~ msgid "Faces contain no area!"
-#~ msgstr "الوجوه لا تحتوي على منطقة!"
-
-#~ msgid "No faces!"
-#~ msgstr "لا وجوه!"
-
-#, fuzzy
-#~ msgid "Error: could not load file."
-#~ msgstr "لا يمكن إنشاء المجلد."
-
-#~ msgid "Select Mode (Q)"
-#~ msgstr "تحديد الوضع (ض)"
-
-#~ msgid "Snap Mode (%s)"
-#~ msgstr "وضع الكبس (%s)"
-
-#~ msgid "Error initializing FreeType."
-#~ msgstr "خطأ في معرفة النوع الحر."
-
-#~ msgid "Unknown font format."
-#~ msgstr "صيغة الخط غير معروفة."
-
-#~ msgid "Error loading font."
-#~ msgstr "حدث خطأ أثناء تحميل الخط."
-
-#~ msgid "Invalid font size."
-#~ msgstr "حجم الخط غير مناسب."
-
-#~ msgid "Previous Folder"
-#~ msgstr "المجلد السابق"
-
-#, fuzzy
-#~ msgid "Next Folder"
-#~ msgstr "المجلد اللاحق"
-
-#, fuzzy
-#~ msgid "Open in an external image editor."
-#~ msgstr "فتح في المُعدل التالي"
-
-#~ msgid "Reverse"
-#~ msgstr "عكس"
-
-#~ msgid "Generating solution..."
-#~ msgstr "إنشاء الحل..."
-
-#~ msgid "Failed to create solution."
-#~ msgstr "لا يمكن إنشاء الحد."
-
-#~ msgid "Failed to save solution."
-#~ msgstr "فشل حفظ الحل."
-
-#~ msgid "Failed to create C# project."
-#~ msgstr "فشل إنشاء مشروع C#‎."
-
-#~ msgid "Create C# solution"
-#~ msgstr "إنشاء حل C#‎"
-
-#, fuzzy
-#~ msgid "View log"
-#~ msgstr "إظهار الملفات"
-
-#, fuzzy
-#~ msgid "Enabled Classes"
-#~ msgstr "إبحث في الأصناف"
-
-#~ msgid "Update Always"
-#~ msgstr "تحديث دائماً"
-
-#~ msgid "Path to Node:"
-#~ msgstr "مسار العقدة:"
-
-#~ msgid "Delete selected files?"
-#~ msgstr "إمسح الملفات المحددة؟"
-
-#~ msgid "There is no 'res://default_bus_layout.tres' file."
-#~ msgstr "ليس هناك ملف 'res://default_bus_layout.tres'."
-
-#~ msgid "Go to parent folder"
-#~ msgstr "إذهب إلي المجلد السابق"
-
-#~ msgid "Open Scene(s)"
-#~ msgstr "فتح مشهد (مشاهد)"
-
-#~ msgid "Previous Directory"
-#~ msgstr "المجلد السابق"
-
-#~ msgid "Next Directory"
-#~ msgstr "المجلد التالي"
-
-#~ msgid "Ease in"
-#~ msgstr "تخفيف للداخل"
-
-#~ msgid "Ease out"
-#~ msgstr "تخفيف للخارج"
-
-#~ msgid "Create Convex Static Body"
-#~ msgstr "أنشئ جسم محدب ثابت"
-
-#, fuzzy
-#~ msgid "CheckBox Radio1"
-#~ msgstr "صندوق تأشير ١"
-
-#, fuzzy
-#~ msgid "CheckBox Radio2"
-#~ msgstr "صندوق تأشير٢"
-
-#~ msgid "Create folder"
-#~ msgstr "إنشاء مجلد"
-
-#, fuzzy
-#~ msgid "Custom Node"
-#~ msgstr "إنشاء عقدة"
-
-#, fuzzy
-#~ msgid "Insert keys."
-#~ msgstr "أدخل مفاتيح"
-
-#~ msgid "Instance the selected scene(s) as child of the selected node."
-#~ msgstr "نمذج المشهد(المشاهد) المحددة كطفل للعقدة المحددة."
-
-#, fuzzy
-#~ msgid "Font Size:"
-#~ msgstr "حجم الخطوط:"
-
-#~ msgid "Line:"
-#~ msgstr "الخط:"
-
-#~ msgid "Col:"
-#~ msgstr "العمود:"
-
-#, fuzzy
-#~ msgid "Add Split"
-#~ msgstr "إضافة نقطة"
-
-#, fuzzy
-#~ msgid "Remove Split"
-#~ msgstr "مسح النقطة"
-
-#, fuzzy
-#~ msgid "Poly"
-#~ msgstr "تعديل البولي"
-
-#~ msgid "Create Poly"
-#~ msgstr "إنشاء بولي"
-
-#~ msgid "Create a new polygon from scratch"
-#~ msgstr "إنشاء مُضلع جديد من الصفر"
-
-#, fuzzy
-#~ msgid "Zoom out"
-#~ msgstr "إبعاد"
-
-#, fuzzy
-#~ msgid "Zoom in"
-#~ msgstr "تقريب"
-
-#~ msgid "Create Poly3D"
-#~ msgstr "إنشاء بولي 3d"
-
-#~ msgid ""
-#~ "No OccluderPolygon2D resource on this node.\n"
-#~ "Create and assign one?"
-#~ msgstr ""
-#~ "لا مصدر شكل مُطبق 2D في هذه العقدة.\n"
-#~ "أنشئ و ضع واحدة؟"
-
-#~ msgid "LMB: Move Point."
-#~ msgstr "زر الفأرة الأوسط: تحريك النقطة."
-
-#~ msgid "Ctrl+LMB: Split Segment."
-#~ msgstr "Ctrl+ زر الفأرة الأوسط: فصل المقطع."
-
-#~ msgid "RMB: Erase Point."
-#~ msgstr "زر الفأرة الأيمن: مسح النقطة."
-
-#, fuzzy
-#~ msgid "Zoom:"
-#~ msgstr "تقريب"
-
-#~ msgid "Class List:"
-#~ msgstr "قائمة الأصناف:"
-
-#~ msgid "Public Methods"
-#~ msgstr "الطرق العامة"
-
-#~ msgid "Public Methods:"
-#~ msgstr "الطرق العامة:"
-
-#~ msgid "GUI Theme Items:"
-#~ msgstr "عناصر ثيم واجهة المستخدم:"
-
-#, fuzzy
-#~ msgid "Property: "
-#~ msgstr "خصائص"
-
-#, fuzzy
-#~ msgid "Toggle folder status as Favorite."
-#~ msgstr "تبديل حالة المجلد كما المفضلة"
-
-#, fuzzy
-#~ msgid "Show current scene file."
-#~ msgstr "حفظ العنوان الفرعي الذي يتم تعديله حاليا."
-
-#, fuzzy
-#~ msgid "Whole words"
-#~ msgstr "كل الكلمات"
-
-#, fuzzy
-#~ msgid "Match case"
-#~ msgstr "قضية تشابه"
-
-#~ msgid "Ok"
-#~ msgstr "حسنا"
-
-#~ msgid "Search the class hierarchy."
-#~ msgstr "إبحث في هرمية الأصناف."
-
-#, fuzzy
-#~ msgid "Search in files"
-#~ msgstr "إبحث في الأصناف"
-
-#~ msgid "Bake!"
-#~ msgstr "طبخ!"
-
-#~ msgid "Bake the navigation mesh."
-#~ msgstr "طبخ ميش المحاور."
-
-#~ msgid "Modify Color Ramp"
-#~ msgstr "تعديل منحدر اللون"
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "رفع مسار التحريك"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "إنزال مسار التحريك"
-
-#~ msgid "Set Transitions to:"
-#~ msgstr "تحديد التحويلات لـ:"
-
-#~ msgid "Anim Track Change Interpolation"
-#~ msgstr "تغيير إقحام مسار التحريك"
-
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "تغيير صيغة القيمة لمسار التحريك"
-
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "تغيير صيغة الغلاف لمسار التحريك"
-
-#~ msgid "Edit Selection Curve"
-#~ msgstr "تحرير منحنى الإختيار"
-
-#~ msgid "Anim Add Key"
-#~ msgstr "مفتاح إضافة تحريك"
-
-#~ msgid "In"
-#~ msgstr "داخل"
-
-#~ msgid "Out"
-#~ msgstr "خارج"
-
-#~ msgid "In-Out"
-#~ msgstr "داخل-خارج"
-
-#~ msgid "Out-In"
-#~ msgstr "خارج-داخل"
-
-#~ msgid "Anim Create Typed Value Key"
-#~ msgstr "أنشي مفتاح حركة ذا قيمة مكتوبة"
-
-#~ msgid "Anim Add Call Track"
-#~ msgstr "أضف خانة مسار حركة"
-
-#~ msgid "Length (s):"
-#~ msgstr "الطول (ثانية):"
-
-#~ msgid "Cursor step snap (in seconds)."
-#~ msgstr "المؤشر خطوة خطوة (بالثواني)."
-
-#~ msgid "Enable/Disable looping in animation."
-#~ msgstr "تمكين/تعطيل التكرار في الحركة."
-
-#~ msgid "Add new tracks."
-#~ msgstr "أضف مسارات جديدة."
-
-#~ msgid "Move current track up."
-#~ msgstr "تحريك المسار الحالي للأعلى."
-
-#~ msgid "Move current track down."
-#~ msgstr "تحريك المسار الحالي للاسفل."
-
-#~ msgid "Track tools"
-#~ msgstr "أدوات المسار"
-
-#~ msgid "Enable editing of individual keys by clicking them."
-#~ msgstr "السماح بتعديل ازرار منفصلة بالضغط عليها."
-
-#~ msgid "Key"
-#~ msgstr "مفتاح"
-
-#~ msgid "Call Functions in Which Node?"
-#~ msgstr "إستدعاء وظائف في أي عقدة؟"
-
-#~ msgid "Thanks!"
-#~ msgstr "شكراً!"
-
-#~ msgid "I see..."
-#~ msgstr "أنا أري..."
-
-#~ msgid "Ugh"
-#~ msgstr "آخخ"
-
-#~ msgid "Stop Profiling"
-#~ msgstr "إيقاف التنميط"
-
-#~ msgid "Start Profiling"
-#~ msgstr "بدء التنميط"
-
-#~ msgid "Default (Same as Editor)"
-#~ msgstr "الإفتراضي (تماماً مثل المحرر)"
-
-#~ msgid "Create new animation in player."
-#~ msgstr "إنشاء حركة جديد في المُشغل."
-
-#~ msgid "Load animation from disk."
-#~ msgstr "تحميل الحركة من الذاكرة."
-
-#~ msgid "Load an animation from disk."
-#~ msgstr "تحميل حركة من الذاكرة."
-
-#~ msgid "Save the current animation"
-#~ msgstr "حفظ الحركة الحالية"
-
-#~ msgid "Edit Target Blend Times"
-#~ msgstr "تعديل هدف الدمج بالوقت"
-
-#~ msgid "Copy Animation"
-#~ msgstr "نسخ الحركة"
-
-#~ msgid "Fetching:"
-#~ msgstr "يجلب:"
-
-#~ msgid "prev"
-#~ msgstr "السابق"
-
-#~ msgid "next"
-#~ msgstr "التالي"
-
-#~ msgid "last"
-#~ msgstr "الأخير"
-
-#~ msgid "Edit IK Chain"
-#~ msgstr "تعديل سلسلة IK"
-
-#~ msgid "Drag pivot from mouse position"
-#~ msgstr "سحب المحور من مكان الفأرة"
-
-#~ msgid "Set pivot at mouse position"
-#~ msgstr "ضع المحور في مكان مؤشر الماوس"
-
-#~ msgid "Add/Remove Color Ramp Point"
-#~ msgstr "إضافة/مسح نقطة منحدر اللون"
-
-#~ msgid "OK :("
-#~ msgstr "حسناً :("
-
-#~ msgid "Call"
-#~ msgstr "نداء"
-
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "لا يمكن أن يحتوي علي '/' أو ':'"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "صيغة غير صالحة لـ version.txt داخل القالب. المراجعة ليست معرفاً صالحاً."
-
-#~ msgid "Can't write file."
-#~ msgstr "لا يمكن كتابة الملف."
-
-#~ msgid "Replace By"
-#~ msgstr "إستبدلت بـ"
-
-#~ msgid "Backwards"
-#~ msgstr "إلي الخلف"
-
-#~ msgid "Prompt On Replace"
-#~ msgstr "تأكيد عند الإستبدال"
-
-#~ msgid "Skip"
-#~ msgstr "تخطي"
-
-#~ msgid "Move Add Key"
-#~ msgstr "مفتاح إضافة الحركة"
-
-#~ msgid "List:"
-#~ msgstr "القائمة:"
-
-#~ msgid "Method List For '%s':"
-#~ msgstr "قائمة الطرق لـ '%s':"
-
-#~ msgid "Return:"
-#~ msgstr "العودة:"
-
-#~ msgid "Added:"
-#~ msgstr "تم إضافته:"
-
-#~ msgid "Could not save atlas subtexture:"
-#~ msgstr "لا يمكن حفظ النسيج الفرعي للأطلس:"
-
-#~ msgid "The quick brown fox jumps over the lazy dog."
-#~ msgstr "أبجد هوز حطي كلمن صعفص قرشت ثخذ ضظغ."

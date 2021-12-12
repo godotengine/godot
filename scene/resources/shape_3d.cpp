@@ -48,6 +48,15 @@ void Shape3D::add_vertices_to_array(Vector<Vector3> &array, const Transform3D &p
 	}
 }
 
+void Shape3D::set_custom_solver_bias(real_t p_bias) {
+	custom_bias = p_bias;
+	PhysicsServer3D::get_singleton()->shape_set_custom_solver_bias(shape, custom_bias);
+}
+
+real_t Shape3D::get_custom_solver_bias() const {
+	return custom_bias;
+}
+
 real_t Shape3D::get_margin() const {
 	return margin;
 }
@@ -99,11 +108,15 @@ void Shape3D::_update_shape() {
 }
 
 void Shape3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_custom_solver_bias", "bias"), &Shape3D::set_custom_solver_bias);
+	ClassDB::bind_method(D_METHOD("get_custom_solver_bias"), &Shape3D::get_custom_solver_bias);
+
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &Shape3D::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &Shape3D::get_margin);
 
 	ClassDB::bind_method(D_METHOD("get_debug_mesh"), &Shape3D::get_debug_mesh);
 
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_solver_bias", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_custom_solver_bias", "get_custom_solver_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_margin", "get_margin");
 }
 

@@ -57,6 +57,7 @@ public:
 		TK_FALSE,
 		TK_FLOAT_CONSTANT,
 		TK_INT_CONSTANT,
+		TK_UINT_CONSTANT,
 		TK_TYPE_VOID,
 		TK_TYPE_BOOL,
 		TK_TYPE_BVEC2,
@@ -168,7 +169,7 @@ public:
 		TK_HINT_ROUGHNESS_B,
 		TK_HINT_ROUGHNESS_A,
 		TK_HINT_ROUGHNESS_GRAY,
-		TK_HINT_ANISO_TEXTURE,
+		TK_HINT_ANISOTROPY_TEXTURE,
 		TK_HINT_ALBEDO_TEXTURE,
 		TK_HINT_BLACK_ALBEDO_TEXTURE,
 		TK_HINT_COLOR,
@@ -287,6 +288,7 @@ public:
 		OP_CONSTRUCT,
 		OP_STRUCT,
 		OP_INDEX,
+		OP_EMPTY,
 		OP_MAX
 	};
 
@@ -680,7 +682,7 @@ public:
 				HINT_ROUGHNESS_GRAY,
 				HINT_BLACK,
 				HINT_WHITE,
-				HINT_ANISO,
+				HINT_ANISOTROPY,
 				HINT_MAX
 			};
 
@@ -747,6 +749,7 @@ public:
 		COMPLETION_CALL_ARGUMENTS,
 		COMPLETION_INDEX,
 		COMPLETION_STRUCT,
+		COMPLETION_HINT,
 	};
 
 	struct Token {
@@ -754,6 +757,9 @@ public:
 		StringName text;
 		double constant;
 		uint16_t line;
+		bool is_integer_constant() const {
+			return type == TK_INT_CONSTANT || type == TK_UINT_CONSTANT;
+		}
 	};
 
 	static String get_operator_text(Operator p_op);
@@ -771,6 +777,7 @@ public:
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
 	static bool is_token_operator_assign(TokenType p_type);
+	static bool is_token_hint(TokenType p_type);
 
 	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = nullptr);
 	static DataType get_scalar_type(DataType p_type);
@@ -965,16 +972,20 @@ private:
 	int completion_line;
 	BlockNode *completion_block;
 	DataType completion_base;
+	bool completion_base_array;
 	SubClassTag completion_class;
 	StringName completion_function;
 	StringName completion_struct;
 	int completion_argument;
+
 	const Map<StringName, FunctionInfo> *stages = nullptr;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 	static const BuiltinFuncConstArgs builtin_func_const_args[];
+
+	static bool is_const_suffix_lut_initialized;
 
 	Error _validate_datatype(DataType p_type);
 	bool _compare_datatypes(DataType p_datatype_a, String p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, String p_datatype_name_b, int p_array_size_b);
@@ -989,7 +1000,7 @@ private:
 	bool _check_node_constness(const Node *p_node) const;
 
 	Node *_parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, int &r_array_size);
-	Error _parse_global_array_size(int &r_array_size);
+	Error _parse_global_array_size(int &r_array_size, const FunctionInfo &p_function_info);
 	Error _parse_local_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, ArrayDeclarationNode *p_node, ArrayDeclarationNode::Declaration *p_decl, int &r_array_size, bool &r_is_unknown_size);
 
 	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
@@ -1023,8 +1034,17 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
-	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func);
-	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const VaryingFunctionNames &p_varying_function_names, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
+
+	struct ShaderCompileInfo {
+		Map<StringName, FunctionInfo> functions;
+		Vector<StringName> render_modes;
+		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
+		Set<String> shader_types;
+		GlobalVariableGetTypeFunc global_variable_type_func = nullptr;
+	};
+
+	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
+	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();

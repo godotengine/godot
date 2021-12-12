@@ -310,7 +310,7 @@ void CryptoMbedTLS::load_default_certificates(String p_path) {
 	default_certs = memnew(X509CertificateMbedTLS);
 	ERR_FAIL_COND(default_certs == nullptr);
 
-	if (p_path != "") {
+	if (!p_path.is_empty()) {
 		// Use certs defined in project settings.
 		default_certs->load(p_path);
 	}

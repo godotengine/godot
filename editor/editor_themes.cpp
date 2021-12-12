@@ -1553,7 +1553,7 @@ Ref<Theme> create_custom_theme(const Ref<Theme> p_theme) {
 	Ref<Theme> theme = create_editor_theme(p_theme);
 
 	const String custom_theme_path = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
-	if (custom_theme_path != "") {
+	if (!custom_theme_path.is_empty()) {
 		Ref<Theme> custom_theme = ResourceLoader::load(custom_theme_path);
 		if (custom_theme.is_valid()) {
 			theme->merge_with(custom_theme);

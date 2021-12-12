@@ -82,7 +82,7 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
 
-	if (rcedit_path == String()) {
+	if (rcedit_path.is_empty()) {
 		return;
 	}
 
@@ -95,12 +95,12 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 	// On non-Windows we need WINE to run rcedit
 	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
 
-	if (wine_path != String() && !FileAccess::exists(wine_path)) {
+	if (!wine_path.is_empty() && !FileAccess::exists(wine_path)) {
 		ERR_PRINT("Could not find wine executable at " + wine_path + ", no icon or app information data will be included.");
 		return;
 	}
 
-	if (wine_path == String()) {
+	if (wine_path.is_empty()) {
 		wine_path = "wine"; // try to run wine from PATH
 	}
 #endif
@@ -117,39 +117,39 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 
 	List<String> args;
 	args.push_back(p_path);
-	if (icon_path != String()) {
+	if (!icon_path.is_empty()) {
 		args.push_back("--set-icon");
 		args.push_back(icon_path);
 	}
-	if (file_verion != String()) {
+	if (!file_verion.is_empty()) {
 		args.push_back("--set-file-version");
 		args.push_back(file_verion);
 	}
-	if (product_version != String()) {
+	if (!product_version.is_empty()) {
 		args.push_back("--set-product-version");
 		args.push_back(product_version);
 	}
-	if (company_name != String()) {
+	if (!company_name.is_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("CompanyName");
 		args.push_back(company_name);
 	}
-	if (product_name != String()) {
+	if (!product_name.is_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("ProductName");
 		args.push_back(product_name);
 	}
-	if (file_description != String()) {
+	if (!file_description.is_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("FileDescription");
 		args.push_back(file_description);
 	}
-	if (copyright != String()) {
+	if (!copyright.is_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("LegalCopyright");
 		args.push_back(copyright);
 	}
-	if (trademarks != String()) {
+	if (!trademarks.is_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("LegalTrademarks");
 		args.push_back(trademarks);
@@ -169,20 +169,20 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 
 #ifdef WINDOWS_ENABLED
 	String signtool_path = EditorSettings::get_singleton()->get("export/windows/signtool");
-	if (signtool_path != String() && !FileAccess::exists(signtool_path)) {
+	if (!signtool_path.is_empty() && !FileAccess::exists(signtool_path)) {
 		ERR_PRINT("Could not find signtool executable at " + signtool_path + ", aborting.");
 		return ERR_FILE_NOT_FOUND;
 	}
-	if (signtool_path == String()) {
+	if (signtool_path.is_empty()) {
 		signtool_path = "signtool"; // try to run signtool from PATH
 	}
 #else
 	String signtool_path = EditorSettings::get_singleton()->get("export/windows/osslsigncode");
-	if (signtool_path != String() && !FileAccess::exists(signtool_path)) {
+	if (!signtool_path.is_empty() && !FileAccess::exists(signtool_path)) {
 		ERR_PRINT("Could not find osslsigncode executable at " + signtool_path + ", aborting.");
 		return ERR_FILE_NOT_FOUND;
 	}
-	if (signtool_path == String()) {
+	if (signtool_path.is_empty()) {
 		signtool_path = "osslsigncode"; // try to run signtool from PATH
 	}
 #endif

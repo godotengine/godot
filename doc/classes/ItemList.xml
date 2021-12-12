@@ -374,14 +374,14 @@
 			The size all icons will be adjusted to.
 			If either X or Y component is not greater than zero, icon size won't be affected.
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="icon_mode" type="int" setter="set_icon_mode" getter="get_icon_mode" enum="ItemList.IconMode" default="1">
 			The icon position, whether above or to the left of the text. See the [enum IconMode] constants.
 		</member>
 		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale" default="1.0">
 			The scale of icon applied after [member fixed_icon_size] and transposing takes effect.
 		</member>
-		<member name="items_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
+		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items currently in the list.
 		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" default="1">
@@ -393,7 +393,7 @@
 			Maximum lines of text allowed in each item. Space will be reserved even when there is not enough lines of text to display.
 			[b]Note:[/b] This property takes effect only when [member icon_mode] is [constant ICON_MODE_TOP]. To make the text wrap, [member fixed_column_width] should be greater than zero.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
+		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width" default="false">
 			Whether all columns will have the same width.
 			If [code]true[/code], the width is equal to the largest column width of all columns.
@@ -463,21 +463,6 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="bg" data_type="style" type="StyleBox">
-			Default [StyleBox] for the [ItemList], i.e. used when the control is not being focused.
-		</theme_item>
-		<theme_item name="bg_focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [ItemList] is being focused.
-		</theme_item>
-		<theme_item name="cursor" data_type="style" type="StyleBox">
-			[StyleBox] used for the cursor, when the [ItemList] is being focused.
-		</theme_item>
-		<theme_item name="cursor_unfocused" data_type="style" type="StyleBox">
-			[StyleBox] used for the cursor, when the [ItemList] is not being focused.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			[Font] of the item's text.
-		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.63, 0.63, 0.63, 1)">
 			Default text [Color] of the item.
 		</theme_item>
@@ -486,9 +471,6 @@
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the item is selected.
-		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the item's text.
 		</theme_item>
 		<theme_item name="guide_color" data_type="color" type="Color" default="Color(0, 0, 0, 0.1)">
 			[Color] of the guideline. The guideline is a line drawn between each row of items.
@@ -505,14 +487,32 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the item text outline.
 		</theme_item>
+		<theme_item name="vseparation" data_type="constant" type="int" default="2">
+			The vertical spacing between items.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] of the item's text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the item's text.
+		</theme_item>
+		<theme_item name="bg" data_type="style" type="StyleBox">
+			Default [StyleBox] for the [ItemList], i.e. used when the control is not being focused.
+		</theme_item>
+		<theme_item name="bg_focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [ItemList] is being focused.
+		</theme_item>
+		<theme_item name="cursor" data_type="style" type="StyleBox">
+			[StyleBox] used for the cursor, when the [ItemList] is being focused.
+		</theme_item>
+		<theme_item name="cursor_unfocused" data_type="style" type="StyleBox">
+			[StyleBox] used for the cursor, when the [ItemList] is not being focused.
+		</theme_item>
 		<theme_item name="selected" data_type="style" type="StyleBox">
 			[StyleBox] for the selected items, used when the [ItemList] is not being focused.
 		</theme_item>
 		<theme_item name="selected_focus" data_type="style" type="StyleBox">
 			[StyleBox] for the selected items, used when the [ItemList] is being focused.
-		</theme_item>
-		<theme_item name="vseparation" data_type="constant" type="int" default="2">
-			The vertical spacing between items.
 		</theme_item>
 	</theme_items>
 </class>

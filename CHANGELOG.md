@@ -4,6 +4,428 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [4.0] - TBD
+
+### Added
+
+#### Animation
+
+- [Revamped 3D animation storage.](https://godotengine.org/article/animation-data-redesign-40)
+  - [New blend shape track to adjust blend shapes in animations more efficiently.](https://github.com/godotengine/godot/pull/53865)
+  - [New expression-based transitions in AnimationTree state machines.](https://github.com/godotengine/godot/pull/54327)
+  - [Support for animation compression to improve performance with long animations such as cutscenes.](https://github.com/godotengine/godot/pull/54050)
+  - [Replaced transform tracks by position, rotation and scale tracks.](https://github.com/godotengine/godot/pull/53689)
+  - [Removed the animation dependency on bone rests.](https://github.com/godotengine/godot/pull/53765)
+    - Better compatibility with models that use non-uniform scaling in animations.
+    - Better compatibility with models exported from Maya and 3DS Max.
+    - Easier animation reuse across different models.
+    - Easier procedural generation of animations.
+
+#### Core
+
+- New TileMap and TileSet resources.
+- New Vector2i, Vector3i and Rect2i types.
+  - These are integer variants of Vector2, Vector3 and Rect2.
+- Callable type for first-class functions (can be created with lambdas in GDScript).
+- The Euler rotation order can now be adjusted in Node3D.
+- [New `Array.map()`, `Array.filter()` and `Array.reduce()` methods that can be used with Callables.](https://github.com/godotengine/godot/pull/38645)
+- [Rewritten Tween with more functionality](https://github.com/godotengine/godot/pull/41794).
+  - Tween is no longer a node.
+  - Easier chaining of tweens.
+  - Low-level tweening option to get an interpolated value directly.
+  - *Existing projects will have to be modified to account for this, as automatic conversion isn't feasible.*
+- [New and improved IK in Skeleton2D](https://github.com/godotengine/godot/pull/40347).
+  - New classes: SkeletonModifier2D, SkeletonModifierStack2D, SkeletonModification2DLookAt, SkeletonModification2DCCDIK, SkeletonModification2DFABRIK, SkeletonModification2DJiggle, SkeletonModification2DTwoBoneIK, PhysicalBone2D, SkeletonModification2DPhysicalBones, SkeletonModification2DStackHolder.
+  - New `Transform2D.looking_at()` function.
+- [New and improved IK in Skeleton3D](https://github.com/godotengine/godot/pull/39353).
+  - New classes: SkeletonModifier3D, SkeletonModifierStack3D, SkeletonModifier3DLookAt, SkeletonModification3DCCDIK, SkeletonModification3DFABRIK, SkeletonModification3DJiggle, SkeletonModification3DTwoBoneIK, SkeletonModification3DStackHolder.
+  - The Bone struct now includes a local_pose_override.
+  - The Bone struct now keeps track of its children bones, if it has any.
+  - Added functions to Skeleton3D for getting the forward vector using the information stored in the rest pose for the bones.
+  - New `Basis.rotate_to_align()` function.
+  - Refactored the BoneAttachment3D node.
+  - Removed the `process_list` functions.
+- [New GradientTexture2D resource (useful for 2D lights, particles, …)](https://github.com/godotengine/godot/pull/53234).
+- [Support for gettext PO template generation from scene and script files.](https://github.com/godotengine/godot/pull/39415)
+  - Translation parser plugins can be written to allow extracting strings from custom file types.
+- [New Time singleton to replace date/time handling methods in the OS singleton.](https://github.com/godotengine/godot/pull/49123)
+  - Includes new methods to handle ISO 8601 timestamp conversion.
+- [Support for custom performance monitors](https://github.com/godotengine/godot/pull/39302).
+- New `randi_range()` global scope function to return a random *integer* number within a range.
+- New `randfn()` global scope function to return a floating-point number along a normal gaussian distribution.
+- [New `pingpong()` global scope function to return a floating-point number that increments then decrements in a "sawtooth" fashion.](https://github.com/godotengine/godot/pull/46346)
+- Vectors and Colors can now be clamped between two values their respective `clamp()` methods.
+- New `Vector3.limit_length()` method as a Vector3 counterpart to `Vector2.limit_length()` (formerly `Vector2.clamped()`).
+- New PackedArrays to replace PoolArrays.
+  - 64-bit integer and float arrays are now available in addition to the existing 32-bit ones.
+- New `ConfigFile.parse(data: String)` method to load a string as if it was a ConfigFile on disk.
+- New `Image.save_png_to_buffer()` method to save a PNG image to memory as a PackedByteArray (instead of saving to disk).
+- [New File API to check, read and write symbolic links on macOS and Linux.](https://github.com/godotengine/godot/pull/46866)
+- [Replaced GDNative with GDExtension](https://godotengine.org/article/introducing-gd-extensions).
+  - Easier setup and compilation for various platforms.
+  - Code structure is more similar to [statically compiled C++ modules](https://docs.godotengine.org/en/stable/development/cpp/custom_modules_in_cpp.html).
+  - Lower performance overhead compared to GDNative.
+
+#### Editor
+
+- New TileMap and TileSet editors with better usability.
+- Support for multiple windows.
+  - Docks can be moved out of the main window into separate windows.
+  - Single-window mode can be enabled in the Editor Settings to revert to the old behavior.
+- Movement and scaling handles in the 2D editor (similar to the 3D editor).
+- New Replace in Files dialog in the script editor to complement Find in Files.
+- **macOS:** More built-in mouse cursors are now exposed (such as diagonal resize cursors).
+- **macOS:** Support for building Godot with Clang sanitizers.
+- **HTML5:** [Support for profiling projects exported to HTML5.](https://godotengine.org/article/html5-export-profiling)
+
+#### Export
+
+- **macOS:** Projects can now optionally be exported to a application bundle contained within a ZIP archive.
+  - Previously, a DMG image was always used when exporting from macOS.
+- **macOS:** DMG images can now be codesigned after exporting.
+
+#### GDScript
+
+- GDScript was rewritten from scratch with a cleaner approach.
+  - Annotations to replace keywords in certain cases (`@export`, `@onready`, `@rpc()`, `@tool`, `@warning_ignore()`, …).
+  - Typed arrays (`var array_of_nodes: Array[Node]`). Any type can be used, including custom classes.
+  - See individual progress reports for more information:
+    [#1](https://godotengine.org/article/gdscript-progress-report-writing-tokenizer),
+    [#2](https://godotengine.org/article/gdscript-progress-report-writing-new-parser),
+    [#3](https://godotengine.org/article/gdscript-progress-report-type-checking-back).
+- [New documentation generation system](https://github.com/godotengine/godot/pull/41095).
+  - Comments starting with `##` are considered documentation comments.
+  - Documentation comments be placed before any member variable, constant, enum or function declaration, or at the top of a file.
+  - Documentation comments appear in the editor help and when hovering exported properties in the inspector.
+
+#### GUI
+
+- Support for multiple windows on desktop platforms. Projects can spawn additional windows, each with their own viewport.
+  - Added `NOTIFICATION_APPLICATION_FOCUS_IN` and `NOTIFICATION_APPLICATION_FOCUS_OUT` notifications for "global" project focus changes (separate from `NOTIFICATION_WM_FOCUS_IN` and `NOTIFICATION_WM_FOCUS_OUT`).
+- RichTextLabel property `fit_content_height` to make the label's height fit its content automatically (not always reliable).
+- RichTextLabel's `img` tag now supports an optional `color` attribute to modulate the image.
+- `get_char_size()` is now exposed in Font, making it usable in DynamicFont rather than being limited to BitmapFont.
+- [Tree can now highlight relationship lines for the currently selected item, its parents and direct children.](https://github.com/godotengine/godot/pull/48546)
+  - This is used in the scene tree dock in the editor.
+
+#### Import
+
+- Support for importing lights from glTF scenes.
+
+#### Input
+
+- Support for physical (keyboard layout-independent) key codes.
+  - This can be used to provide <kbd>W</kbd>/<kbd>A</kbd>/<kbd>S</kbd>/<kbd>D</kbd> controls that work on any keyboard layout.
+- `DisplayServer.keyboard_get_current_layout()` and `DisplayServer.keyboard_get_layout_*()` methods to get information about keyboard layouts.
+- New `Input.MOUSE_MODE_CONFINED_HIDDEN` mouse mode to combine the confined and hidden mouse modes.
+
+#### Mono/C#
+
+- Support for exporting C# projects to iOS and HTML5.
+- [C# events can now be used to implement Godot signals](https://godotengine.org/article/csharp-ios-signals-events).
+- [New Visual Studio and Visual Studio Code add-ons.](https://godotengine.org/article/csharp-vs-and-vscode)
+
+#### Navigation
+
+- [New NavigationServer.](https://godotengine.org/article/navigation-server-godot-4-0)
+  - Support for dynamic obstacle avoidance.
+
+#### Networking
+
+- [Support for DTLS encryption in UDP and ENet.](https://godotengine.org/article/enet-dtls-encryption)
+
+#### Porting
+
+- New DisplayServer abstraction, allowing for the creation of multiple windows.
+  - This is used in the editor for detachable docks, but can also be used in projects.
+- **Android:** [Allow basic user data backup. This can be disabled in the export preset if needed.](https://github.com/godotengine/godot/pull/49069)
+- **Android:** [Support for changing the mouse cursor shape (no custom images)](https://github.com/godotengine/godot/pull/44201).
+- **iOS:** [The targeted device family (iPhone, iPad, iPhone and iPad) can now be specified in the export preset.](https://github.com/godotengine/godot/pull/49137)
+
+#### Physics
+
+- New CharacterBody node to supersede KinematicBody.
+  - Some KinematicBody features were moved to PhysicsBody.
+
+#### Porting
+
+- **Android:** Clients of the Godot library can now add their own command line arguments.
+
+#### Rendering
+
+- New Vulkan renderer.
+- [New OpenGL renderer, using OpenGL 3.3/OpenGL ES 3.0/WebGL 2.0 as a baseline.](https://github.com/godotengine/godot/pull/53150)
+  - Designed to target mobile/web platforms first, but also usable on desktop platforms.
+  - Uses a low-end-friendly approach to maximize performance in simple scenes.
+  - Currently supports 2D rendering only.
+  - OpenGL 3D rendering is planned for a future 4.x release.
+- Support for specular mapping when using 2D lighting.
+- [New DirectionalLight2D node for 2D lighting.](https://github.com/godotengine/godot/pull/43297)
+- CanvasGroup node to modulate several 2D nodes as a group (or apply shaders to them).
+- Support for clipping in CanvasItem, replacing the use of Light2D as masks in a more convenient manner.
+- [Support for light projectors/"cookies" in OmniLight3D and SpotLight3D.](https://github.com/godotengine/godot/pull/37887)
+  - Only supported for lights with shadows enabled.
+- 3D lights now have a Size property which can be set to simulate area lights.
+  - This property also affects how fast shadow penumbras will grow over distance.
+  - A shadow blur property is also available to set a constant blurring factor on a per-light basis.
+- Shadow mapping with improved filtering and PCSS-like penumbra simulation.
+  - Shadow normal offset bias is now implemented to avoid issues with shadow acne or peter-panning.
+- [New Decal node to project textures onto 3D surfaces.](https://github.com/godotengine/godot/pull/37861)
+- New fully real-time VoxelGI (formerly GIProbe).
+  - Dynamic lights and emissive can emit GI that's updated every frame (instead of only updating sporadically).
+  - Dynamic objects can receive GI and contribute to it.
+- [New signed distance field-based global illumination](https://godotengine.org/article/godot-40-gets-sdf-based-real-time-global-illumination) (SDFGI) for open world lighting.
+  - Enabled in the WorldEnvironment. No node required, no baking.
+  - Semi-realtime: dynamic objects can receive GI, but not contribute to it.
+- [Volumetric fog](https://github.com/godotengine/godot/pull/41213) with optional GI contribution.
+- [Fog volumes to locally apply volumetric fog (or subtract to global fog using negative density).](https://github.com/godotengine/godot/pull/53353)
+- More physically accurate exponential fog to replace the old distance-based fog.
+- New Aerial Scattering property in distance-based fog to fade out to the background sky instead of a fixed color.
+  - Also available in volumetric fog with the Ambient Inject property.
+- [New GPU-based lightmapper.](https://godotengine.org/article/godot-40-will-get-new-modernized-lightmapper)
+  - When using a dedicated GPU, this results in much faster bake speeds compared to the CPU lightmapper.
+  - Optional support for storing directional lighting information and rough reflections using spherical harmonics.
+  - Improved support for lighting dynamic objects with better performance and quality.
+  - In addition to automatic generation, LightmapProbe nodes can now be placed manually to provide better lighting information for dynamic objects where needed.
+- [Physical sky material and custom sky shaders](https://godotengine.org/article/custom-sky-shaders-godot-4-0), both supporting real-time updates.
+- [Global and per-instance shader uniforms.](https://godotengine.org/article/godot-40-gets-global-and-instance-shader-uniforms)
+  - This can be used to better reuse shaders, leading to improved performance.
+- Support for automatically generating and using mesh LODs to improve performance.
+  - Several LOD levels are generated for imported 3D scenes by default.
+  - LODs are automatically used for mesh rendering using a pixel coverage-based selection algorithm.
+  - Uses the [meshoptimizer](https://github.com/zeux/meshoptimizer) library.
+- Support for LOD visibility ranges in GeometryInstance3D.
+  - Manually authored LODs can be configured using distance and hysteresis cutoffs.
+  - Can be used for <abbr title="Hierarchical Level of Detail">HLOD</abbr> setups to reduce draw calls while preserving culling opportunities when up close.
+- [Support for GeometryInstance3D distance fade to make distant meshes disappear smoothly without having to modify their material.](https://github.com/godotengine/godot/pull/54222)
+- Support for automatically generating and using shadow meshes to improve performance.
+  - The generated shadow meshes are welded aggressively to improve performance with no difference in visual quality.
+  - To further improve performance, hand-made shadow meshes can be specified in the inspector in MeshInstance nodes.
+- [Support for rendering a viewport's 3D contents at a lower resolution to improve performance](https://github.com/godotengine/godot/pull/51870).
+  - 2D elements remain at full resolution to improve perceived sharpness.
+  - A scaling factor above 1.0 can be used for supersampling, which is useful to maximize quality for offline rendering.
+- See individual progress reports for more information:
+  [#1](https://godotengine.org/article/vulkan-progress-report-1),
+  [#2](https://godotengine.org/article/vulkan-progress-report-2),
+  [#3](https://godotengine.org/article/vulkan-progress-report-3),
+  [#4](https://godotengine.org/article/vulkan-progress-report-4),
+  [#5](https://godotengine.org/article/vulkan-progress-report-5),
+  [#6](https://godotengine.org/article/vulkan-progress-report-6),
+  [#7](https://godotengine.org/article/vulkan-progress-report-7).
+
+#### Shaders
+
+- New shader compiler rewritten from scratch.
+  - [Support for uniform arrays (including sampler arrays).](https://github.com/godotengine/godot/pull/49485)
+  - [Arrays can now be passed as function parameters (including arrays of structs).](https://github.com/godotengine/godot/pull/48933)
+  - [The return type of a function can now be an array (including arrays of structs).](https://github.com/godotengine/godot/pull/48933)
+  - [Array size can now be optionally written before the identifier (`int[2] array;` instead of `int array[2]`).](https://github.com/godotengine/godot/pull/53527)
+    - This eases porting shaders from GLSL.
+  - [Array constructors can now be called at any time after initialization.](https://github.com/godotengine/godot/pull/44705)
+    - For example, `int array[3]; array = {1, 2, 3}` is now valid.
+  - [New `fma()` (fused multiply-add) built-in function to optimize shaders in a low-level way.](https://github.com/godotengine/godot/pull/36225)
+  - [New built-in data (un)packing functions to optimize shaders in a low-level way.](https://github.com/godotengine/godot/pull/53066)
+  - Warning system for common issues such as floating-point comparison and unused variables.
+  - Argument names now appear in code completion tooltips.
+  - More information in the [progress report](https://godotengine.org/article/improvements-shaders-visual-shaders-godot-4).
+- [Add Billboard mode to visual shaders.](https://github.com/godotengine/godot/pull/49157)
+- [The constants `PI`, `TAU` and `E` are now available in the shader language.](https://github.com/godotengine/godot/pull/48837)
+
+#### Miscellaneous
+
+- The engine is now unit-tested using [doctest](https://github.com/onqtam/doctest).
+  - [GDScript also now has integration tests.](https://docs.godotengine.org/en/latest/development/cpp/unit_testing.html#integration-tests-for-gdscript)
+- Switched from Travis CI and AppVeyor to GitHub Actions.
+- A Fish shell completion file is now available for the Godot editor's command line interface.
+
+### Changed
+
+#### Audio
+
+- [Increased the default AudioStreamPlayer3D unit size to (1 → 10) to make sounds more audible while setting up the node.](https://github.com/godotengine/godot/pull/38224)
+- Renamed the audio-related `FFT_Size` enum to `FFTSize` for consistency.
+
+#### Core
+
+- Tweaked the output strings to be more human-readable when printing various built-in Variant and Object types.
+- Renamed File's `endian_swap` property to `big_endian` for consistency with ResourceSaver and StreamPeer.
+- [Renamed File's `get_len()` method to `get_length()`.](https://github.com/godotengine/godot/pull/49061)
+- [Renamed Object's `PROPERTY_USAGE_NOEDITOR` to `PROPERTY_USAGE_NO_EDITOR`.](https://github.com/godotengine/godot/pull/54571)
+- Renamed `Vector2.clamped()` to `Vector2.limit_length()` to differentiate it from the new `Vector2.clamp()`.
+- Renamed `rand_range()` to `randf_range()` to avoid ambiguity with the new `randi_range()` and make its return type more obvious.
+- Replaced `Node.add_child_below_node()` with `Node.add_sibling()`.
+- Replaced `Directory.list_dir_begin()`'s `skip_navigational` and `skip_hidden` arguments with `show_navigational` and `show_hidden`.
+  - Both arguments are `false` by default, which means the default behavior is now to exclude both navigational and hidden files from the returned list.
+- Renamed the built-in Quat type to Quaternion.
+- Renamed the built-in Transform type to Transform3D.
+- Renamed Node3D's `translation` property to `position` for consistency with Node2D.
+- Moved YSort functionality to a Node2D property.
+- Viewports now use a size of 512×512 by default to make them visible out of the box.
+- [Screen orientation is now represented as an enum in the Project Settings.](https://github.com/godotengine/godot/pull/48939)
+- [Renamed 3D nodes to contain an explicit "3D" prefix for clarity and consistency](https://github.com/godotengine/godot/pull/37340).
+- Renamed various nodes:
+  - Spatial → Node3D
+  - GIProbe → VoxelGI
+  - BakedLightmap → LightmapGI
+  - Light2D -> PointLight2D
+  - VisibilityNotifier2D -> VisibleOnScreenNotifier2D
+  - VisibilityNotifier3D -> VisibleOnScreenNotifier3D
+  - VisibilityEnabler2D -> VisibleOnScreenEnabler2D
+  - VisibilityEnabler3D -> VisibleOnScreenEnabler3D
+- Renamed various resources:
+  - GradientTexture -> GradientTexture1D
+- Old node and resource names are automatically converted when loading scenes from Godot 3.x.
+
+#### Editor
+
+- Renewed the editor theme for a more modern design.
+  - [Increased icon saturation by 30% when using a dark theme.](https://github.com/godotengine/godot/pull/48644)
+    - Icon saturation can now be adjusted in the Editor Settings.
+- [Improved the audio bus editor appearance.](https://github.com/godotengine/godot/pull/49130)
+- Improved layout and texts of the Manage Editor Features dialog.
+- Improved the Video RAM debugger usability.
+  - The Video RAM tab is now refreshed automatically when switching to it.
+- Hovering layer checkboxes in the inspector now results in visual feedback.
+  - Clicking between two checkboxes will now enable the checkbox that was last highlighted instead of doing nothing.
+- CSV profiler measures can now be saved anywhere on the filesystem, not just in the project folder.
+- Improved the 2D zooming algorithm to always visit powers of two (50%, 100%, 200%, …) and avoid floating-point precision issues.
+- Times are now displayed as milliseconds in the profiler and performance monitors (instead of seconds).
+- Improved the batch rename dialog usability and design consistency.
+  - Clarified error messages when there are regular expression errors.
+- Optimized editor icon generation to speed up editor startup.
+- Script editor autocompletion now displays previews next to color constant suggestions.
+- The number of replaced results now appears in place of the matches counter when replacing text in the script editor.
+- Pressing <kbd>Enter</kbd> (or <kbd>Shift + Enter</kbd>) in the script editor replacement dialog now performs a forwards (or backwards) replacement operation.
+- Pressing <kbd>Ctrl + F</kbd> now focuses the search field in the AssetLib tab.
+- Pressing <kbd>G</kbd> now switches to the Pan mode in the 2D editor.
+  - The TileMap editor's Bucket Fill shortcut was moved to <kbd>B</kbd> to cater for this change.
+- Mouse wheel behavior for zooming in the animation behavior is now inverted.
+- The Sync Scene Changes and Sync Script Changes settings' values now persist on a per-project basis instead of being always enabled by default.
+- Various tooltips have been added or modified to clarify the editor operation.
+- Various visual and formatting changes to the editor help to improve readability and be closer to the online class reference.
+- Tweaked Camera2D editor line colors for better visibility.
+- Light theme presets now use a negative contrast rate by default for a more logical preview of UI elevation.
+- Increased the use of bold fonts throughout the editor.
+- Revised icons for the Gradient and GradientTexture resources.
+- Renamed "Identifier" to "Bundle Identifier" in the macOS and iOS export presets for clarity.
+- Renamed the script editor's "Adaptive" syntax theme to "Default" and "Default" to "Godot 2", for consistency with the editor theme presets.
+- Flipped the 2D editor icon to match Godot's coordinate handedness.
+
+#### GUI
+
+- Improved drive letter handling in EditorFileDialog and FileDialog.
+- Container nodes (except PanelContainer) now use the Pass mouse mode by default.
+- Pressing the left/right arrows while having selected text will now move the cursor to the beginning/end of the selection in LineEdit (while unselecting the text as usual).
+- TextEdit's `search()` method now returns a Dictionary instead of a PackedIntArray.
+- **macOS:** The <kbd>Ctrl + A</kbd> and <kbd>Ctrl + E</kbd> navigation shortcuts now work in LineEdit.
+
+#### Input
+
+- Renamed InputEventKey's `scancode` to `keycode`.
+- Renamed InputMap's `get_action_list()` to `get_action_events()`.
+
+#### Networking
+
+- Optimized bandwidth usage in the high-level multiplayer API.
+
+#### Physics
+
+- Split KinematicBody into the new CharacterBody node and PhysicsBody.
+- RayCast nodes are now enabled by default.
+  - The `disabled` property was renamed to `enabled` with its behavior inverted.
+- Renamed PlaneShape to WorldBoundaryShape.
+
+#### Rendering
+
+- Some Environment settings such as depth of field have been moved to a CameraEffects resource which is assigned to individual Camera nodes.
+- [The ACES Fitted tonemapping algoirthm is now used in place of the old ACES algorithm.](https://github.com/godotengine/godot/pull/52476)
+  - The old non-fitted ACES tonemapping algorithm was removed.
+- Quality settings have been moved from individual nodes and resources to the Project Settings for better centralization.
+- Quality settings now have performance hints in their values' names, such as "Fast" or "Slow".
+
+#### Shaders
+
+- Renamed the `.shader` file extension to `.gdshader`.
+  - Existing text-based shader files will have to be renamed before loading the project in a new engine version.
+
+#### Miscellaneous
+
+- Renamed the `x11` platform to `linuxbsd` to prepare for Wayland support.
+- The engine is now written in C++17.
+- Python 3.6 and SCons 3.1 are now required to build Godot from source.
+
+### Removed
+
+#### Buildsystem
+
+- Removed the `server` platform in favor of disabling specific DisplayServers at build-time (e.g. `vulkan=no`).
+
+#### Core
+
+- Removed the YSort node in favor of the Node2D YSort property.
+- Removed the deprecated `Color.gray()` method.
+  - Use `Color.v()` for a better grayscale approximation instead.
+- Removed built-in HQ2X implementation (used for crude hiDPI support in the default project theme).
+  - This helps with binary size as HQ2X is made of particularly large functions.
+
+#### Editor
+
+- Removed the **Dim Dialog on Editor Popup** editor setting since it was made obsolete by the multi-window paradigm.
+
+#### GUI
+
+- [Removed the ToolButton node in favor of Button.](https://github.com/godotengine/godot/pull/39690)
+  - Existing ToolButton nodes from Godot 3.x projects will be converted to Button nodes.
+
+#### Input
+
+- Removed the `DisplayServer.get_latin_keyboard_variant()` method (replaced by the more flexible `DisplayServer.keyboard_get_current_layout()`).
+
+#### Networking
+
+- Removed the deprecated `allow_object_decoding` property from PacketPeer.
+- Removed the deprecated `sync` and `slave` high-level multiplayer keywords.
+
+#### Export
+
+- **iOS:** [Remove redundant orientation export setting in favor of the orientation project setting.](https://github.com/godotengine/godot/pull/48939)
+
+#### Physics
+
+- Removed the deprecated PhysicsBody `friction` and `bounce` properties (replaced by PhysicsMaterial).
+
+#### Rendering
+
+- Removed OpenGL ES 2.0 renderer (replaced by the new mobile-oriented OpenGL 3 renderer).
+  - Vulkan, OpenGL 3.3, OpenGL ES 3.0 or WebGL 2.0 support is now required to run Godot.
+- [Removed support for 16× MSAA due to driver bugs and low performance.](https://github.com/godotengine/godot/pull/49063)
+  - For high-quality offline rendering, using supersampling together with 8× MSAA is a better option anyway.
+
+### Fixed
+
+#### Core
+
+- The positional command line argument now considers `.res` and `.tres` files as runnable scene formats.
+  - This fixes Godot not running the main scene or a custom scene if they were saved with a `.res` or `.tres` extension.
+- **macOS/Linux:** Fix the result of `Directory.get_space_left()`.
+- **Windows:** Godot can now kill its own PID using `OS.kill()`.
+
+#### Editor
+
+- The Android exporter no longer reports progress on each file, greatly speeding up the exporting process.
+- Searching with the Whole Words option enabled in the script editor is no longer exceedingly slow.
+
+#### GUI
+
+- Fixed OptionButton minimum size.
+- TabContainer is no longer too large when tabs are hidden.
+- ScrollBar now allows using `scroll_to_line()` when Scroll Active is disabled.
+- DynamicFont outlines now have antialiasing disabled if it was disabled on the font itself.
+
+#### Porting
+
+- **Windows:** `OS.execute()` now only quotes command line arguments if they contain special characters.
+
 ## [3.2] - 2020-01-29
 
 ### Added

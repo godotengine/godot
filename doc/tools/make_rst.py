@@ -40,15 +40,15 @@ class TypeName:
 
 class PropertyDef:
     def __init__(
-        self, name, type_name, setter, getter, text, default_value, overridden
-    ):  # type: (str, TypeName, Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
+        self, name, type_name, setter, getter, text, default_value, overrides
+    ):  # type: (str, TypeName, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         self.name = name
         self.type_name = type_name
         self.setter = setter
         self.getter = getter
         self.text = text
         self.default_value = default_value
-        self.overridden = overridden
+        self.overrides = overrides
 
 
 class ParameterDef:
@@ -162,10 +162,10 @@ class State:
                 default_value = property.get("default") or None
                 if default_value is not None:
                     default_value = "``{}``".format(default_value)
-                overridden = property.get("override") or False
+                overrides = property.get("overrides") or None
 
                 property_def = PropertyDef(
-                    property_name, type_name, setter, getter, property.text, default_value, overridden
+                    property_name, type_name, setter, getter, property.text, default_value, overrides
                 )
                 class_def.properties[property_name] = property_def
 
@@ -520,8 +520,9 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
         for property_def in class_def.properties.values():
             type_rst = property_def.type_name.to_rst(state)
             default = property_def.default_value
-            if default is not None and property_def.overridden:
-                ml.append((type_rst, property_def.name, default + " *(parent override)*"))
+            if default is not None and property_def.overrides:
+                ref = ":ref:`{1}<class_{1}_property_{0}>`".format(property_def.name, property_def.overrides)
+                ml.append((type_rst, property_def.name, default + " (overrides " + ref + ")"))
             else:
                 ref = ":ref:`{0}<class_{1}_property_{0}>`".format(property_def.name, class_name)
                 ml.append((type_rst, ref, default))
@@ -624,12 +625,12 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             f.write("\n\n")
 
     # Property descriptions
-    if any(not p.overridden for p in class_def.properties.values()) > 0:
+    if any(not p.overrides for p in class_def.properties.values()) > 0:
         f.write(make_heading("Property Descriptions", "-"))
         index = 0
 
         for property_def in class_def.properties.values():
-            if property_def.overridden:
+            if property_def.overrides:
                 continue
 
             if index != 0:

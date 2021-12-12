@@ -125,16 +125,16 @@
 		</method>
 		<method name="direction_to" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="b" type="Vector2" />
+			<argument index="0" name="to" type="Vector2" />
 			<description>
-				Returns the normalized vector pointing from this vector to [code]b[/code]. This is equivalent to using [code](b - a).normalized()[/code].
+				Returns the normalized vector pointing from this vector to [code]to[/code]. This is equivalent to using [code](b - a).normalized()[/code].
 			</description>
 		</method>
 		<method name="distance_squared_to" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="to" type="Vector2" />
 			<description>
-				Returns the squared distance between this vector and [code]b[/code].
+				Returns the squared distance between this vector and [code]to[/code].
 				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
@@ -214,12 +214,24 @@
 				Returns the vector with a maximum length by limiting its length to [code]length[/code].
 			</description>
 		</method>
+		<method name="max_axis_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
+			</description>
+		</method>
+		<method name="min_axis_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Y].
+			</description>
+		</method>
 		<method name="move_toward" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="to" type="Vector2" />
 			<argument index="1" name="delta" type="float" />
 			<description>
-				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount.
+				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount. Will not go past the final value.
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
@@ -315,10 +327,10 @@
 	</members>
 	<constants>
 		<constant name="AXIS_X" value="0">
-			Enumerated value for the X axis.
+			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="AXIS_Y" value="1">
-			Enumerated value for the Y axis.
+			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="ZERO" value="Vector2(0, 0)">
 			Zero vector, a vector with all components set to [code]0[/code].
@@ -358,19 +370,19 @@
 		</operator>
 		<operator name="operator *">
 			<return type="Vector2" />
+			<argument index="0" name="right" type="Transform2D" />
+			<description>
+				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2" />
 			<argument index="0" name="right" type="Vector2" />
 			<description>
 				Multiplies each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
 				print(Vector2(10, 20) * Vector2(3, 4)) # Prints "(30, 80)"
 				[/codeblock]
-			</description>
-		</operator>
-		<operator name="operator *">
-			<return type="Vector2" />
-			<argument index="0" name="right" type="Transform2D" />
-			<description>
-				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator *">

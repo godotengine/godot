@@ -99,7 +99,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		HANDLE f = FindFirstFileW((LPCWSTR)(path.utf16().get_data()), &d);
 		if (f != INVALID_HANDLE_VALUE) {
 			String fname = String::utf16((const char16_t *)(d.cFileName));
-			if (fname != String()) {
+			if (!fname.is_empty()) {
 				String base_file = path.get_file();
 				if (base_file != fname && base_file.findn(fname) == 0) {
 					WARN_PRINT("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
@@ -142,7 +142,7 @@ void FileAccessWindows::close() {
 	fclose(f);
 	f = nullptr;
 
-	if (save_path != "") {
+	if (!save_path.is_empty()) {
 		bool rename_error = true;
 		int attempts = 4;
 		while (rename_error && attempts) {
@@ -335,7 +335,8 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	if (rv == 0) {
 		return st.st_mtime;
 	} else {
-		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + file + ".");
+		print_verbose("Failed to get modified time for: " + p_file + "");
+		return 0;
 	}
 }
 

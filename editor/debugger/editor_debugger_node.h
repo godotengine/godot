@@ -188,8 +188,9 @@ public:
 	void set_camera_override(CameraOverride p_override);
 	CameraOverride get_camera_override();
 
-	Error start(const String &p_uri = "tcp://");
+	String get_server_uri() const;
 
+	Error start(const String &p_uri = "tcp://");
 	void stop();
 
 	void add_debugger_plugin(const Ref<Script> &p_script);

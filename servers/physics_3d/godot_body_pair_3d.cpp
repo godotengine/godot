@@ -44,11 +44,6 @@ void GodotBodyPair3D::_contact_added_callback(const Vector3 &p_point_A, int p_in
 }
 
 void GodotBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B) {
-	// check if we already have the contact
-
-	//Vector3 local_A = A->get_inv_transform().xform(p_point_A);
-	//Vector3 local_B = B->get_inv_transform().xform(p_point_B);
-
 	Vector3 local_A = A->get_inv_transform().basis.xform(p_point_A);
 	Vector3 local_B = B->get_inv_transform().basis.xform(p_point_B - offset_B);
 
@@ -57,19 +52,14 @@ void GodotBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_ind
 	ERR_FAIL_COND(new_index >= (MAX_CONTACTS + 1));
 
 	Contact contact;
-
-	contact.acc_normal_impulse = 0;
-	contact.acc_bias_impulse = 0;
-	contact.acc_bias_impulse_center_of_mass = 0;
-	contact.acc_tangent_impulse = Vector3();
 	contact.index_A = p_index_A;
 	contact.index_B = p_index_B;
 	contact.local_A = local_A;
 	contact.local_B = local_B;
 	contact.normal = (p_point_A - p_point_B).normalized();
-	contact.mass_normal = 0; // will be computed in setup()
+	contact.used = true;
 
-	// attempt to determine if the contact will be reused
+	// Attempt to determine if the contact will be reused.
 	real_t contact_recycle_radius = space->get_contact_recycle_radius();
 
 	for (int i = 0; i < contact_count; i++) {
@@ -80,23 +70,34 @@ void GodotBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_ind
 			contact.acc_bias_impulse = c.acc_bias_impulse;
 			contact.acc_bias_impulse_center_of_mass = c.acc_bias_impulse_center_of_mass;
 			contact.acc_tangent_impulse = c.acc_tangent_impulse;
-			new_index = i;
-			break;
+			c = contact;
+			return;
 		}
 	}
 
-	// figure out if the contact amount must be reduced to fit the new contact
-
+	// Figure out if the contact amount must be reduced to fit the new contact.
 	if (new_index == MAX_CONTACTS) {
-		// remove the contact with the minimum depth
+		// Remove the contact with the minimum depth.
+
+		const Basis &basis_A = A->get_transform().basis;
+		const Basis &basis_B = B->get_transform().basis;
 
 		int least_deep = -1;
-		real_t min_depth = 1e10;
+		real_t min_depth;
 
-		for (int i = 0; i <= contact_count; i++) {
-			Contact &c = (i == contact_count) ? contact : contacts[i];
-			Vector3 global_A = A->get_transform().basis.xform(c.local_A);
-			Vector3 global_B = B->get_transform().basis.xform(c.local_B) + offset_B;
+		// Start with depth for new contact.
+		{
+			Vector3 global_A = basis_A.xform(contact.local_A);
+			Vector3 global_B = basis_B.xform(contact.local_B) + offset_B;
+
+			Vector3 axis = global_A - global_B;
+			min_depth = axis.dot(contact.normal);
+		}
+
+		for (int i = 0; i < contact_count; i++) {
+			const Contact &c = contacts[i];
+			Vector3 global_A = basis_A.xform(c.local_A);
+			Vector3 global_B = basis_B.xform(c.local_B) + offset_B;
 
 			Vector3 axis = global_A - global_B;
 			real_t depth = axis.dot(c.normal);
@@ -107,10 +108,8 @@ void GodotBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_ind
 			}
 		}
 
-		ERR_FAIL_COND(least_deep == -1);
-
-		if (least_deep < contact_count) { //replace the last deep contact by the new one
-
+		if (least_deep > -1) {
+			// Replace the least deep contact by the new one.
 			contacts[least_deep] = contact;
 		}
 
@@ -118,29 +117,41 @@ void GodotBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_ind
 	}
 
 	contacts[new_index] = contact;
-
-	if (new_index == contact_count) {
-		contact_count++;
-	}
+	contact_count++;
 }
 
 void GodotBodyPair3D::validate_contacts() {
-	//make sure to erase contacts that are no longer valid
+	// Make sure to erase contacts that are no longer valid.
+	real_t max_separation = space->get_contact_max_separation();
+	real_t max_separation2 = max_separation * max_separation;
 
-	real_t contact_max_separation = space->get_contact_max_separation();
+	const Basis &basis_A = A->get_transform().basis;
+	const Basis &basis_B = B->get_transform().basis;
+
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
 
-		Vector3 global_A = A->get_transform().basis.xform(c.local_A);
-		Vector3 global_B = B->get_transform().basis.xform(c.local_B) + offset_B;
-		Vector3 axis = global_A - global_B;
-		real_t depth = axis.dot(c.normal);
+		bool erase = false;
+		if (!c.used) {
+			// Was left behind in previous frame.
+			erase = true;
+		} else {
+			c.used = false;
 
-		if (depth < -contact_max_separation || (global_B + c.normal * depth - global_A).length() > contact_max_separation) {
-			// contact no longer needed, remove
+			Vector3 global_A = basis_A.xform(c.local_A);
+			Vector3 global_B = basis_B.xform(c.local_B) + offset_B;
+			Vector3 axis = global_A - global_B;
+			real_t depth = axis.dot(c.normal);
 
+			if (depth < -max_separation || (global_B + c.normal * depth - global_A).length_squared() > max_separation2) {
+				erase = true;
+			}
+		}
+
+		if (erase) {
+			// Contact no longer needed, remove.
 			if ((i + 1) < contact_count) {
-				// swap with the last one
+				// Swap with the last one.
 				SWAP(contacts[i], contacts[contact_count - 1]);
 			}
 
@@ -161,21 +172,26 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 
 	real_t min, max;
 	p_A->get_shape(p_shape_A)->project_range(mnormal, p_xform_A, min, max);
-	bool fast_object = mlen > (max - min) * 0.3; //going too fast in that direction
 
-	if (!fast_object) { //did it move enough in this direction to even attempt raycast? let's say it should move more than 1/3 the size of the object in that axis
+	// Did it move enough in this direction to even attempt raycast?
+	// Let's say it should move more than 1/3 the size of the object in that axis.
+	bool fast_object = mlen > (max - min) * 0.3;
+	if (!fast_object) {
 		return false;
 	}
 
-	//cast a segment from support in motion normal, in the same direction of motion by motion length
-	//support is the worst case collision point, so real collision happened before
+	// Going too fast in that direction.
+
+	// Cast a segment from support in motion normal, in the same direction of motion by motion length.
+	// Support is the worst case collision point, so real collision happened before.
 	Vector3 s = p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform(mnormal).normalized());
 	Vector3 from = p_xform_A.xform(s);
 	Vector3 to = from + motion;
 
 	Transform3D from_inv = p_xform_B.affine_inverse();
 
-	Vector3 local_from = from_inv.xform(from - mnormal * mlen * 0.1); //start from a little inside the bounding box
+	// Start from a little inside the bounding box.
+	Vector3 local_from = from_inv.xform(from - mnormal * mlen * 0.1);
 	Vector3 local_to = from_inv.xform(to);
 
 	Vector3 rpos, rnorm;
@@ -183,7 +199,8 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		return false;
 	}
 
-	//shorten the linear velocity so it does not hit, but gets close enough, next frame will hit softly or soft enough
+	// Shorten the linear velocity so it does not hit, but gets close enough,
+	// next frame will hit softly or soft enough.
 	Vector3 hitpos = p_xform_B.xform(rpos);
 
 	real_t newlen = hitpos.distance_to(from) - (max - min) * 0.01;
@@ -201,6 +218,8 @@ real_t combine_friction(GodotBody3D *A, GodotBody3D *B) {
 }
 
 bool GodotBodyPair3D::setup(real_t p_step) {
+	check_ccd = false;
+
 	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
@@ -237,14 +256,14 @@ bool GodotBodyPair3D::setup(real_t p_step) {
 	collided = GodotCollisionSolver3D::solve_static(shape_A_ptr, xform_A, shape_B_ptr, xform_B, _contact_added_callback, this, &sep_axis);
 
 	if (!collided) {
-		//test ccd (currently just a raycast)
-
 		if (A->is_continuous_collision_detection_enabled() && collide_A) {
-			_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B);
+			check_ccd = true;
+			return true;
 		}
 
 		if (B->is_continuous_collision_detection_enabled() && collide_B) {
-			_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A);
+			check_ccd = true;
+			return true;
 		}
 
 		return false;
@@ -255,12 +274,30 @@ bool GodotBodyPair3D::setup(real_t p_step) {
 
 bool GodotBodyPair3D::pre_solve(real_t p_step) {
 	if (!collided) {
+		if (check_ccd) {
+			const Vector3 &offset_A = A->get_transform().get_origin();
+			Transform3D xform_Au = Transform3D(A->get_transform().basis, Vector3());
+			Transform3D xform_A = xform_Au * A->get_shape_transform(shape_A);
+
+			Transform3D xform_Bu = B->get_transform();
+			xform_Bu.origin -= offset_A;
+			Transform3D xform_B = xform_Bu * B->get_shape_transform(shape_B);
+
+			if (A->is_continuous_collision_detection_enabled() && collide_A) {
+				_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B);
+			}
+
+			if (B->is_continuous_collision_detection_enabled() && collide_B) {
+				_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A);
+			}
+		}
+
 		return false;
 	}
 
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
 
-	real_t bias = (real_t)0.3;
+	real_t bias = 0.8;
 
 	GodotShape3D *shape_A_ptr = A->get_shape(shape_A);
 	GodotShape3D *shape_B_ptr = B->get_shape(shape_B);
@@ -353,8 +390,6 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 		if (collide_B) {
 			B->apply_impulse(j_vec, c.rB + B->get_center_of_mass());
 		}
-		c.acc_bias_impulse = 0;
-		c.acc_bias_impulse_center_of_mass = 0;
 
 		c.bounce = combine_bounce(A, B);
 		if (c.bounce) {
@@ -538,14 +573,10 @@ void GodotBodySoftBodyPair3D::contact_added_callback(const Vector3 &p_point_A, i
 	Contact contact;
 	contact.index_A = p_index_A;
 	contact.index_B = p_index_B;
-	contact.acc_normal_impulse = 0;
-	contact.acc_bias_impulse = 0;
-	contact.acc_bias_impulse_center_of_mass = 0;
-	contact.acc_tangent_impulse = Vector3();
 	contact.local_A = local_A;
 	contact.local_B = local_B;
 	contact.normal = (p_point_A - p_point_B).normalized();
-	contact.mass_normal = 0;
+	contact.used = true;
 
 	// Attempt to determine if the contact will be reused.
 	real_t contact_recycle_radius = space->get_contact_recycle_radius();
@@ -571,20 +602,33 @@ void GodotBodySoftBodyPair3D::contact_added_callback(const Vector3 &p_point_A, i
 
 void GodotBodySoftBodyPair3D::validate_contacts() {
 	// Make sure to erase contacts that are no longer valid.
-	const Transform3D &transform_A = body->get_transform();
+	real_t max_separation = space->get_contact_max_separation();
+	real_t max_separation2 = max_separation * max_separation;
 
-	real_t contact_max_separation = space->get_contact_max_separation();
+	const Transform3D &transform_A = body->get_transform();
 
 	uint32_t contact_count = contacts.size();
 	for (uint32_t contact_index = 0; contact_index < contact_count; ++contact_index) {
 		Contact &c = contacts[contact_index];
 
-		Vector3 global_A = transform_A.xform(c.local_A);
-		Vector3 global_B = soft_body->get_node_position(c.index_B) + c.local_B;
-		Vector3 axis = global_A - global_B;
-		real_t depth = axis.dot(c.normal);
+		bool erase = false;
+		if (!c.used) {
+			// Was left behind in previous frame.
+			erase = true;
+		} else {
+			c.used = false;
 
-		if (depth < -contact_max_separation || (global_B + c.normal * depth - global_A).length() > contact_max_separation) {
+			Vector3 global_A = transform_A.xform(c.local_A);
+			Vector3 global_B = soft_body->get_node_position(c.index_B) + c.local_B;
+			Vector3 axis = global_A - global_B;
+			real_t depth = axis.dot(c.normal);
+
+			if (depth < -max_separation || (global_B + c.normal * depth - global_A).length_squared() > max_separation2) {
+				erase = true;
+			}
+		}
+
+		if (erase) {
 			// Contact no longer needed, remove.
 			if ((contact_index + 1) < contact_count) {
 				// Swap with the last one.
@@ -640,7 +684,7 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
 
-	real_t bias = (real_t)0.3;
+	real_t bias = space->get_contact_bias();
 
 	GodotShape3D *shape_A_ptr = body->get_shape(body_shape);
 
@@ -723,8 +767,6 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 		if (soft_body_collides) {
 			soft_body->apply_node_impulse(c.index_B, j_vec);
 		}
-		c.acc_bias_impulse = 0;
-		c.acc_bias_impulse_center_of_mass = 0;
 
 		c.bounce = body->get_bounce();
 

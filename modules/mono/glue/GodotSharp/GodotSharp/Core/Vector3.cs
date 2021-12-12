@@ -17,7 +17,7 @@ namespace Godot
     {
         /// <summary>
         /// Enumerated index values for the axes.
-        /// Returned by <see cref="MaxAxis"/> and <see cref="MinAxis"/>.
+        /// Returned by <see cref="MaxAxisIndex"/> and <see cref="MinAxisIndex"/>.
         /// </summary>
         public enum Axis
         {
@@ -170,17 +170,17 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the cross product of this vector and <paramref name="b"/>.
+        /// Returns the cross product of this vector and <paramref name="with"/>.
         /// </summary>
-        /// <param name="b">The other vector.</param>
+        /// <param name="with">The other vector.</param>
         /// <returns>The cross product vector.</returns>
-        public Vector3 Cross(Vector3 b)
+        public Vector3 Cross(Vector3 with)
         {
             return new Vector3
             (
-                (y * b.z) - (z * b.y),
-                (z * b.x) - (x * b.z),
-                (x * b.y) - (y * b.x)
+                (y * with.z) - (z * with.y),
+                (z * with.x) - (x * with.z),
+                (x * with.y) - (y * with.x)
             );
         }
 
@@ -212,46 +212,46 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the normalized vector pointing from this vector to <paramref name="b"/>.
+        /// Returns the normalized vector pointing from this vector to <paramref name="to"/>.
         /// </summary>
-        /// <param name="b">The other vector to point towards.</param>
-        /// <returns>The direction from this vector to <paramref name="b"/>.</returns>
-        public Vector3 DirectionTo(Vector3 b)
+        /// <param name="to">The other vector to point towards.</param>
+        /// <returns>The direction from this vector to <paramref name="to"/>.</returns>
+        public Vector3 DirectionTo(Vector3 to)
         {
-            return new Vector3(b.x - x, b.y - y, b.z - z).Normalized();
+            return new Vector3(to.x - x, to.y - y, to.z - z).Normalized();
         }
 
         /// <summary>
-        /// Returns the squared distance between this vector and <paramref name="b"/>.
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
         /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
         /// you need to compare vectors or need the squared distance for some formula.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="to">The other vector to use.</param>
         /// <returns>The squared distance between the two vectors.</returns>
-        public real_t DistanceSquaredTo(Vector3 b)
+        public real_t DistanceSquaredTo(Vector3 to)
         {
-            return (b - this).LengthSquared();
+            return (to - this).LengthSquared();
         }
 
         /// <summary>
-        /// Returns the distance between this vector and <paramref name="b"/>.
+        /// Returns the distance between this vector and <paramref name="to"/>.
         /// </summary>
         /// <seealso cref="DistanceSquaredTo(Vector3)"/>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="to">The other vector to use.</param>
         /// <returns>The distance between the two vectors.</returns>
-        public real_t DistanceTo(Vector3 b)
+        public real_t DistanceTo(Vector3 to)
         {
-            return (b - this).Length();
+            return (to - this).Length();
         }
 
         /// <summary>
-        /// Returns the dot product of this vector and <paramref name="b"/>.
+        /// Returns the dot product of this vector and <paramref name="with"/>.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="with">The other vector to use.</param>
         /// <returns>The dot product of the two vectors.</returns>
-        public real_t Dot(Vector3 b)
+        public real_t Dot(Vector3 with)
         {
-            return (x * b.x) + (y * b.y) + (z * b.z);
+            return (x * with.x) + (y * with.y) + (z * with.z);
         }
 
         /// <summary>
@@ -364,21 +364,21 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the axis of the vector's largest value. See <see cref="Axis"/>.
+        /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
-        /// <returns>The index of the largest axis.</returns>
-        public Axis MaxAxis()
+        /// <returns>The index of the highest axis.</returns>
+        public Axis MaxAxisIndex()
         {
             return x < y ? (y < z ? Axis.Z : Axis.Y) : (x < z ? Axis.Z : Axis.X);
         }
 
         /// <summary>
-        /// Returns the axis of the vector's smallest value. See <see cref="Axis"/>.
+        /// Returns the axis of the vector's lowest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.Z"/>.
         /// </summary>
-        /// <returns>The index of the smallest axis.</returns>
-        public Axis MinAxis()
+        /// <returns>The index of the lowest axis.</returns>
+        public Axis MinAxisIndex()
         {
             return x < y ? (x < z ? Axis.X : Axis.Z) : (y < z ? Axis.Y : Axis.Z);
         }
@@ -412,16 +412,16 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the outer product with <paramref name="b"/>.
+        /// Returns the outer product with <paramref name="with"/>.
         /// </summary>
-        /// <param name="b">The other vector.</param>
+        /// <param name="with">The other vector.</param>
         /// <returns>A <see cref="Basis"/> representing the outer product matrix.</returns>
-        public Basis Outer(Vector3 b)
+        public Basis Outer(Vector3 with)
         {
             return new Basis(
-                x * b.x, x * b.y, x * b.z,
-                y * b.x, y * b.y, y * b.z,
-                z * b.x, z * b.y, z * b.z
+                x * with.x, x * with.y, x * with.z,
+                y * with.x, y * with.y, y * with.z,
+                z * with.x, z * with.y, z * with.z
             );
         }
 

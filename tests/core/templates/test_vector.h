@@ -238,7 +238,7 @@ TEST_CASE("[Vector] To byte array") {
 	CHECK(byte_array[15] == 59);
 }
 
-TEST_CASE("[Vector] Subarray") {
+TEST_CASE("[Vector] Slice") {
 	Vector<int> vector;
 	vector.push_back(0);
 	vector.push_back(1);
@@ -246,27 +246,27 @@ TEST_CASE("[Vector] Subarray") {
 	vector.push_back(3);
 	vector.push_back(4);
 
-	Vector<int> subarray1 = vector.subarray(1, 2);
-	CHECK(subarray1.size() == 2);
-	CHECK(subarray1[0] == 1);
-	CHECK(subarray1[1] == 2);
+	Vector<int> slice1 = vector.slice(1, 3);
+	CHECK(slice1.size() == 2);
+	CHECK(slice1[0] == 1);
+	CHECK(slice1[1] == 2);
 
-	Vector<int> subarray2 = vector.subarray(1, -1);
-	CHECK(subarray2.size() == 4);
-	CHECK(subarray2[0] == 1);
-	CHECK(subarray2[1] == 2);
-	CHECK(subarray2[2] == 3);
-	CHECK(subarray2[3] == 4);
+	Vector<int> slice2 = vector.slice(1, -1);
+	CHECK(slice2.size() == 4);
+	CHECK(slice2[0] == 1);
+	CHECK(slice2[1] == 2);
+	CHECK(slice2[2] == 3);
+	CHECK(slice2[3] == 4);
 
-	Vector<int> subarray3 = vector.subarray(-2, -1);
-	CHECK(subarray3.size() == 2);
-	CHECK(subarray3[0] == 3);
-	CHECK(subarray3[1] == 4);
+	Vector<int> slice3 = vector.slice(3, -1);
+	CHECK(slice3.size() == 2);
+	CHECK(slice3[0] == 3);
+	CHECK(slice3[1] == 4);
 
-	Vector<int> subarray4 = vector.subarray(-3, 3);
-	CHECK(subarray4.size() == 2);
-	CHECK(subarray4[0] == 2);
-	CHECK(subarray4[1] == 3);
+	Vector<int> slice4 = vector.slice(2, -2);
+	CHECK(slice4.size() == 2);
+	CHECK(slice4[0] == 2);
+	CHECK(slice4[1] == 3);
 }
 
 TEST_CASE("[Vector] Find, has") {

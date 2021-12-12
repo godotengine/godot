@@ -487,7 +487,8 @@ void EditorAudioBus::_effect_edited() {
 	if (effect->get_metadata(0) == Variant()) {
 		Rect2 area = effects->get_item_rect(effect);
 
-		effect_options->set_position(effects->get_global_position() + area.position + Vector2(0, area.size.y));
+		effect_options->set_position(effects->get_screen_position() + area.position + Vector2(0, area.size.y));
+		effect_options->reset_size();
 		effect_options->popup();
 		//add effect
 	} else {
@@ -535,8 +536,8 @@ void EditorAudioBus::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-		Vector2 pos = mb->get_position();
-		bus_popup->set_position(get_global_position() + pos);
+		bus_popup->set_position(get_screen_position() + mb->get_position());
+		bus_popup->reset_size();
 		bus_popup->popup();
 	}
 }
@@ -737,7 +738,8 @@ void EditorAudioBus::_effect_rmb(const Vector2 &p_pos) {
 		return;
 	}
 
-	delete_effect_popup->set_position(get_global_mouse_position());
+	delete_effect_popup->set_position(get_screen_position() + get_local_mouse_position());
+	delete_effect_popup->reset_size();
 	delete_effect_popup->popup();
 }
 
@@ -1296,8 +1298,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	bus_scroll->set_enable_h_scroll(true);
-	bus_scroll->set_enable_v_scroll(false);
+	bus_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	add_child(bus_scroll);
 	bus_hb = memnew(HBoxContainer);
 	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1421,7 +1422,7 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 					Vector2((line_length + label_space) * EDSCALE,
 							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
 					String::num(Math::abs(n.db_value)) + "dB",
-					HALIGN_LEFT, -1, font_size,
+					HORIZONTAL_ALIGNMENT_LEFT, -1, font_size,
 					notch_color);
 		}
 	}

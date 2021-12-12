@@ -2120,14 +2120,30 @@ msgstr ""
 msgid "Theme Properties"
 msgstr "Paste yer Node"
 
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Enumerations"
-msgstr "Yer functions:"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Enumerations"
+msgstr "Yer functions:"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8534,18 +8550,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -13308,11 +13312,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14319,152 +14343,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Set"
-#~ msgstr "Set"
-
-#, fuzzy
-#~ msgid "Edit:"
-#~ msgstr "Edit"
-
-#, fuzzy
-#~ msgid "Remove Template"
-#~ msgstr "Discharge ye' Variable"
-
-#, fuzzy
-#~ msgid "Move to Trash"
-#~ msgstr "Forge yer Node!"
-
-#, fuzzy
-#~ msgid "Expand All Properties"
-#~ msgstr "Add yer Getter Property"
-
-#, fuzzy
-#~ msgid "Theme File"
-#~ msgstr "Paste yer Node"
-
-#, fuzzy
-#~ msgid "Templates"
-#~ msgstr "Discharge ye' Variable"
-
-#, fuzzy
-#~ msgid "Move pivot"
-#~ msgstr "Discharge ye' Signal"
-
-#, fuzzy
-#~ msgid "Add initial export..."
-#~ msgstr "Add Signal"
-
-#, fuzzy
-#~ msgid "Class Description"
-#~ msgstr "Yar, Blow th' Selected Down!"
-
-#~ msgid "Available Nodes:"
-#~ msgstr "yer Nodes doing nothin':"
-
-#, fuzzy
-#~ msgid "Theme Properties:"
-#~ msgstr "Paste yer Node"
-
-#, fuzzy
-#~ msgid "Class Description:"
-#~ msgstr "Yar, Blow th' Selected Down!"
-
-#, fuzzy
-#~ msgid "Select Mode (Q)"
-#~ msgstr "Slit th' Node"
-
-#, fuzzy
-#~ msgid "Tool Select"
-#~ msgstr "Yar, Blow th' Selected Down!"
-
-#~ msgid "Error initializing FreeType."
-#~ msgstr "Cant Load the FreeType Captain."
-
-#~ msgid "Unknown font format."
-#~ msgstr "Unknown Calligraphy format."
-
-#~ msgid "Error loading font."
-#~ msgstr "Error loading yer Calligraphy Pen."
-
-#~ msgid "Invalid font size."
-#~ msgstr "Yer Calligraphy be wrongly sized."
-
-#, fuzzy
-#~ msgid "Custom Node"
-#~ msgstr "Slit th' Node"
-
-#~ msgid "Edit Signal Arguments:"
-#~ msgstr "Edit ye Signal Arguments:"
-
-#~ msgid "Edit Variable:"
-#~ msgstr "Edit yer Variable:"
-
-#, fuzzy
-#~ msgid "Add Split"
-#~ msgstr "Add Signal"
-
-#, fuzzy
-#~ msgid "Invalid Split: "
-#~ msgstr ": Evil arguments: "
-
-#, fuzzy
-#~ msgid "Remove Split"
-#~ msgstr "Discharge ye' Signal"
-
-#, fuzzy
-#~ msgid "Add Node.."
-#~ msgstr "Add Node"
-
-#, fuzzy
-#~ msgid "Show current scene file."
-#~ msgstr "Slit th' Node"
-
-#~ msgid "Get"
-#~ msgstr "Get"
-
-#, fuzzy
-#~ msgid "Set pivot at mouse position"
-#~ msgstr "Discharge ye' Signal"
-
-#~ msgid "Condition"
-#~ msgstr "Condition"
-
-#~ msgid "Sequence"
-#~ msgstr "Sequence"
-
-#~ msgid "Iterator"
-#~ msgstr "Iterator"
-
-#~ msgid "While"
-#~ msgstr "While"
-
-#~ msgid "Return"
-#~ msgstr "Return"
-
-#~ msgid "Call"
-#~ msgstr "Call"
-
-#~ msgid "Move Add Key"
-#~ msgstr "Move yer Add Key"
-
-#~ msgid "just pressed"
-#~ msgstr "just smashed"
-
-#, fuzzy
-#~ msgid ""
-#~ "Couldn't read the certificate file. Are the path and password both "
-#~ "correct?"
-#~ msgstr ""
-#~ "Blimey! I can't read th' certificate file! Are yer path n' password "
-#~ "trusty?"
-
-#~ msgid "Error creating the package signature."
-#~ msgstr "Blimey! I can't create th' package signature."
-
-#~ msgid ""
-#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
-#~ "'user://', or 'local://'"
-#~ msgstr ""
-#~ "Avast! Ye cannot steer yer ship with a '/'! Yer need t' start wit' "
-#~ "'res://', 'user://', or 'local://' ye knave!"

@@ -262,9 +262,9 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 	// The margin values below were determined by empirical testing.
 	if (is_layout_rtl()) {
 		stylebox->set_default_margin(SIDE_LEFT, 0);
-		stylebox->set_default_margin(SIDE_RIGHT, (get_label() != String() ? 23 : 16) * EDSCALE);
+		stylebox->set_default_margin(SIDE_RIGHT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
 	} else {
-		stylebox->set_default_margin(SIDE_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
+		stylebox->set_default_margin(SIDE_LEFT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
 		stylebox->set_default_margin(SIDE_RIGHT, 0);
 	}
 
@@ -308,7 +308,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 		lc = fc;
 	}
 
-	if (flat && label != String()) {
+	if (flat && !label.is_empty()) {
 		Color label_bg_color = get_theme_color(SNAME("dark_color_3"), SNAME("Editor"));
 		if (rtl) {
 			draw_rect(Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)), label_bg_color);
@@ -323,9 +323,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 
 	if (rtl) {
-		draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HALIGN_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HORIZONTAL_ALIGNMENT_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 	} else {
-		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HALIGN_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 	}
 
 	int suffix_start = numstr.length();
@@ -371,17 +371,24 @@ void EditorSpinSlider::_draw_spin_slider() {
 			grabber->hide();
 		}
 	} else if (!hide_slider) {
-		int grabber_w = 4 * EDSCALE;
-		int width = size.width - sb->get_minimum_size().width - grabber_w;
-		int ofs = sb->get_offset().x;
-		int svofs = (size.height + vofs) / 2 - 1;
+		const int grabber_w = 4 * EDSCALE;
+		const int width = size.width - sb->get_minimum_size().width - grabber_w;
+		const int ofs = sb->get_offset().x;
+		const int svofs = (size.height + vofs) / 2 - 1;
 		Color c = fc;
-		c.a = 0.2;
 
+		// Draw the horizontal slider's background.
+		c.a = 0.2;
 		draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
-		int gofs = get_as_ratio() * width;
+
+		// Draw the horizontal slider's filled part on the left.
+		const int gofs = get_as_ratio() * width;
+		c.a = 0.45;
+		draw_rect(Rect2(ofs, svofs + 1, gofs, 2 * EDSCALE), c);
+
+		// Draw the horizontal slider's grabber.
 		c.a = 0.9;
-		Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
+		const Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
 		draw_rect(grabber_rect, c);
 
 		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
