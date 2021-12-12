@@ -349,18 +349,15 @@ CameraMatrix WebXRInterfaceJS::get_projection_for_eye(ARVRInterface::Eyes p_eye,
 	return eye;
 }
 
-unsigned int WebXRInterfaceJS::get_external_texture_for_eye(ARVRInterface::Eyes p_eye) {
-	if (!initialized) {
-		return 0;
-	}
-	return godot_webxr_get_external_texture_for_eye(p_eye);
-}
-
 void WebXRInterfaceJS::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
 	if (!initialized) {
 		return;
 	}
-	godot_webxr_commit_for_eye(p_eye);
+
+	RID texture = VSG::storage->render_target_get_texture(p_render_target);
+	uint32_t texture_id = VSG::storage->texture_get_texid(texture);
+
+	godot_webxr_commit_for_eye(p_eye, texture_id);
 };
 
 void WebXRInterfaceJS::process() {

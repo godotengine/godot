@@ -33,9 +33,6 @@ const GodotWebXR = {
 	$GodotWebXR: {
 		gl: null,
 
-		texture_ids: [null, null],
-		textures: [null, null],
-
 		session: null,
 		space: null,
 		frame: null,
@@ -371,22 +368,6 @@ const GodotWebXR = {
 				.catch((e) => { });
 		}
 
-		// Clean-up the textures we allocated for each view.
-		const gl = GodotWebXR.gl;
-		for (let i = 0; i < GodotWebXR.textures.length; i++) {
-			const texture = GodotWebXR.textures[i];
-			if (texture !== null) {
-				gl.deleteTexture(texture);
-			}
-			GodotWebXR.textures[i] = null;
-
-			const texture_id = GodotWebXR.texture_ids[i];
-			if (texture_id !== null) {
-				GL.textures[texture_id] = null;
-			}
-			GodotWebXR.texture_ids[i] = null;
-		}
-
 		GodotWebXR.session = null;
 		GodotWebXR.space = null;
 		GodotWebXR.frame = null;
@@ -461,50 +442,9 @@ const GodotWebXR = {
 		return buf;
 	},
 
-	godot_webxr_get_external_texture_for_eye__proxy: 'sync',
-	godot_webxr_get_external_texture_for_eye__sig: 'ii',
-	godot_webxr_get_external_texture_for_eye: function (p_eye) {
-		if (!GodotWebXR.session) {
-			return 0;
-		}
-
-		const view_index = (p_eye === 2 /* ARVRInterface::EYE_RIGHT */) ? 1 : 0;
-		if (GodotWebXR.texture_ids[view_index]) {
-			return GodotWebXR.texture_ids[view_index];
-		}
-
-		// Check pose separately and after returning the cached texture id,
-		// because we won't get a pose in some cases if we lose tracking, and
-		// we don't want to return 0 just because tracking was lost.
-		if (!GodotWebXR.pose) {
-			return 0;
-		}
-
-		const glLayer = GodotWebXR.session.renderState.baseLayer;
-		const view = GodotWebXR.pose.views[view_index];
-		const viewport = glLayer.getViewport(view);
-		const gl = GodotWebXR.gl;
-
-		const texture = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, viewport.width, viewport.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-
-		const texture_id = GL.getNewId(GL.textures);
-		GL.textures[texture_id] = texture;
-		GodotWebXR.textures[view_index] = texture;
-		GodotWebXR.texture_ids[view_index] = texture_id;
-		return texture_id;
-	},
-
 	godot_webxr_commit_for_eye__proxy: 'sync',
-	godot_webxr_commit_for_eye__sig: 'vi',
-	godot_webxr_commit_for_eye: function (p_eye) {
+	godot_webxr_commit_for_eye__sig: 'vii',
+	godot_webxr_commit_for_eye: function (p_eye, p_texture_id) {
 		if (!GodotWebXR.session || !GodotWebXR.pose) {
 			return;
 		}
@@ -522,7 +462,7 @@ const GodotWebXR = {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, glLayer.framebuffer);
 		gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
 
-		GodotWebXR.blitTexture(gl, GodotWebXR.textures[view_index]);
+		GodotWebXR.blitTexture(gl, GL.textures[p_texture_id]);
 
 		// Restore state.
 		gl.bindFramebuffer(gl.FRAMEBUFFER, orig_framebuffer);
