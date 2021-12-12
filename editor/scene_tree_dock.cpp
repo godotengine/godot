@@ -594,8 +594,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
-			editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
-			editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+			editor_data->get_undo_redo().add_do_method(this, "update_script_button");
+			editor_data->get_undo_redo().add_undo_method(this, "update_script_button");
 
 			editor_data->get_undo_redo().commit_action();
 		} break;
@@ -1944,14 +1944,14 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		Ref<Script> existing = E->get_script();
 		editor_data->get_undo_redo().add_do_method(E, "set_script", p_script);
 		editor_data->get_undo_redo().add_undo_method(E, "set_script", existing);
-		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
-		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+		editor_data->get_undo_redo().add_do_method(this, "update_script_button");
+		editor_data->get_undo_redo().add_undo_method(this, "update_script_button");
 	}
 
 	editor_data->get_undo_redo().commit_action();
 
 	editor->push_item(p_script.operator->());
-	_update_script_button();
+	update_script_button();
 }
 
 void SceneTreeDock::_shader_created(Ref<Shader> p_shader) {
@@ -2106,7 +2106,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	EditorNode::get_singleton()->get_inspector_dock()->call("_prepare_history");
 }
 
-void SceneTreeDock::_update_script_button() {
+void SceneTreeDock::update_script_button() {
 	if (!profile_allow_script_editing) {
 		button_create_script->hide();
 		button_detach_script->hide();
@@ -2147,7 +2147,7 @@ void SceneTreeDock::_selection_changed() {
 		editor->push_item(nullptr);
 	}
 
-	_update_script_button();
+	update_script_button();
 }
 
 void SceneTreeDock::_do_create(Node *p_parent) {
@@ -2596,8 +2596,8 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 		editor_data->get_undo_redo().create_action(TTR("Attach Script"));
 		editor_data->get_undo_redo().add_do_method(n, "set_script", scr);
 		editor_data->get_undo_redo().add_undo_method(n, "set_script", n->get_script());
-		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
-		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+		editor_data->get_undo_redo().add_do_method(this, "update_script_button");
+		editor_data->get_undo_redo().add_undo_method(this, "update_script_button");
 		editor_data->get_undo_redo().commit_action();
 	}
 }
@@ -3125,7 +3125,7 @@ void SceneTreeDock::_feature_profile_changed() {
 		profile_allow_script_editing = true;
 	}
 
-	_update_script_button();
+	update_script_button();
 }
 
 void SceneTreeDock::_clear_clipboard() {
@@ -3201,7 +3201,7 @@ void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_
 void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_owners"), &SceneTreeDock::_set_owners);
 
-	ClassDB::bind_method(D_METHOD("_update_script_button"), &SceneTreeDock::_update_script_button);
+	ClassDB::bind_method(D_METHOD("update_script_button"), &SceneTreeDock::update_script_button);
 
 	ClassDB::bind_method(D_METHOD("instantiate"), &SceneTreeDock::instantiate);
 	ClassDB::bind_method(D_METHOD("get_tree_editor"), &SceneTreeDock::get_tree_editor);

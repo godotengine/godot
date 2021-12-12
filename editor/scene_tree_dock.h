@@ -229,7 +229,6 @@ class SceneTreeDock : public VBoxContainer {
 	bool _validate_no_foreign();
 	bool _validate_no_instance();
 	void _selection_changed();
-	void _update_script_button();
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, Map<Node *, NodePath> *p_renames);
 
@@ -307,6 +306,8 @@ public:
 
 	void open_add_child_dialog();
 	void open_instance_child_dialog();
+
+	void update_script_button();
 
 	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 
