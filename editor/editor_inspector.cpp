@@ -1548,6 +1548,11 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 			array_elements[p_index].panel->accept_event();
 		}
 	}
+}
+
+void EditorInspectorArray::_move_button_gui_input(Ref<InputEvent> p_event, int p_index)
+{
+	ERR_FAIL_INDEX(p_index, (int)array_elements.size());
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
@@ -1555,7 +1560,8 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 			popup_array_index_pressed = begin_array_index + p_index;
 			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
 			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);
-			rmb_popup->set_position(mb->get_global_position());
+			const Vector2 popup_pos = get_screen_transform().xform(get_local_mouse_position());
+			rmb_popup->set_position(popup_pos);
 			rmb_popup->reset_size();
 			rmb_popup->popup();
 		}
@@ -1903,6 +1909,7 @@ void EditorInspectorArray::_setup() {
 		if (is_inside_tree()) {
 			ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 		}
+		ae.move_texture_rect->connect("gui_input", callable_bind(callable_mp(this, &EditorInspectorArray::_move_button_gui_input), i));
 		ae.hbox->add_child(ae.move_texture_rect);
 
 		// Right vbox.

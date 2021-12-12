@@ -371,6 +371,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 	void _panel_draw(int p_index);
 	void _panel_gui_input(Ref<InputEvent> p_event, int p_index);
+	void _move_button_gui_input(Ref<InputEvent> p_event, int p_index);
 	void _move_element(int p_element_index, int p_to_pos);
 	void _clear_array();
 	void _resize_array(int p_size);
