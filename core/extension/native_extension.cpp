@@ -405,7 +405,7 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 		return RES();
 	}
 
-	if (!library_path.is_resource_file()) {
+	if (!library_path.is_resource_file() && !library_path.is_absolute_path()) {
 		library_path = p_path.get_base_dir().plus_file(library_path);
 	}
 
