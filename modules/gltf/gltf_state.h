@@ -31,9 +31,12 @@
 #ifndef GLTF_STATE_H
 #define GLTF_STATE_H
 
+#include "core/map.h"
 #include "core/resource.h"
 #include "core/vector.h"
-#include "editor_scene_importer_gltf.h"
+#include "scene/animation/animation_player.h"
+#include "scene/resources/texture.h"
+
 #include "gltf_accessor.h"
 #include "gltf_animation.h"
 #include "gltf_buffer_view.h"
@@ -45,13 +48,6 @@
 #include "gltf_skeleton.h"
 #include "gltf_skin.h"
 #include "gltf_texture.h"
-
-#include "core/map.h"
-#include "core/pair.h"
-#include "core/resource.h"
-#include "core/vector.h"
-#include "scene/animation/animation_player.h"
-#include "scene/resources/texture.h"
 
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
@@ -176,20 +172,6 @@ public:
 	int get_animation_players_count(int idx);
 
 	AnimationPlayer *get_animation_player(int idx);
-
-	//void set_scene_nodes(Map<GLTFNodeIndex, Node *> p_scene_nodes) {
-	//	this->scene_nodes = p_scene_nodes;
-	//}
-
-	//void set_animation_players(Vector<AnimationPlayer *> p_animation_players) {
-	//	this->animation_players = p_animation_players;
-	//}
-
-	//Map<Ref<Material>, GLTFMaterialIndex> get_material_cache() {
-	//	return this->material_cache;
-	//}
-	//void set_material_cache(Map<Ref<Material>, GLTFMaterialIndex> p_material_cache) {
-	//	this->material_cache = p_material_cache;
-	//}
 };
+
 #endif // GLTF_STATE_H

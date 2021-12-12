@@ -42,10 +42,8 @@
 #include "gltf_state.h"
 #include "gltf_texture.h"
 
-#include "core/bind/core_bind.h"
+#include "core/bind/core_bind.h" // FIXME: Shouldn't use _Directory but DirAccess.
 #include "core/crypto/crypto_core.h"
-#include "core/error_list.h"
-#include "core/error_macros.h"
 #include "core/io/json.h"
 #include "core/math/disjoint_set.h"
 #include "core/os/file_access.h"
@@ -53,13 +51,10 @@
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
-#include "editor/import/resource_importer_scene.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment.h"
-#include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/multimesh_instance.h"
-#include "scene/3d/skeleton.h"
 #include "scene/3d/spatial.h"
 #include "scene/animation/animation_player.h"
 #include "scene/main/node.h"
@@ -76,10 +71,6 @@
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif // MODULE_REGEX_ENABLED
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits>
 
 Error GLTFDocument::serialize(Ref<GLTFState> state, Node *p_root, const String &p_path) {
 	uint64_t begin_time = OS::get_singleton()->get_ticks_usec();

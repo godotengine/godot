@@ -4,7 +4,6 @@ Import("env")
 Import("env_modules")
 
 env_gltf = env_modules.Clone()
-env_gltf.Prepend(CPPPATH=["."])
 
 # Godot's own source files
 env_gltf.add_source_files(env.modules_sources, "*.cpp")

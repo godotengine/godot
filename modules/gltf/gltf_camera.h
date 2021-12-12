@@ -55,4 +55,5 @@ public:
 	float get_znear() const { return znear; }
 	void set_znear(float p_val) { znear = p_val; }
 };
+
 #endif // GLTF_CAMERA_H
