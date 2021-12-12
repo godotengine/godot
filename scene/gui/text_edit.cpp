@@ -2047,6 +2047,7 @@ void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
 
 	bool first_line = false;
 	if (!p_split_current_line) {
+		deselect();
 		if (p_above) {
 			if (caret.line > 0) {
 				set_caret_line(caret.line - 1, false);
