@@ -127,7 +127,7 @@
 			Defines how [member angular_damp] is applied. See [enum DampMode] for possible values.
 		</member>
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3(0, 0, 0)">
-			RigidDynamicBody3D's rotational velocity.
+			The RigidDynamicBody3D's rotational velocity in [i]radians[/i] per second.
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body can enter sleep mode when there is no movement. See [member sleeping].
@@ -185,7 +185,7 @@
 			Defines how [member linear_damp] is applied. See [enum DampMode] for possible values.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
-			The body's linear velocity. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
+			The body's linear velocity in units per second. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
 		</member>
 		<member name="lock_rotation" type="bool" setter="set_lock_rotation_enabled" getter="is_lock_rotation_enabled" default="false">
 			If [code]true[/code], the body cannot rotate. Gravity and forces only apply linear movement.
