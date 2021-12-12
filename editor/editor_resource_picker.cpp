@@ -45,6 +45,7 @@ void EditorResourcePicker::clear_caches() {
 void EditorResourcePicker::_update_resource() {
 	preview_rect->set_texture(Ref<Texture2D>());
 	assign_button->set_custom_minimum_size(Size2(1, 1));
+	EditorNode::get_singleton()->get_scene_tree_dock()->update_script_button();
 
 	if (edited_resource == RES()) {
 		assign_button->set_icon(Ref<Texture2D>());
