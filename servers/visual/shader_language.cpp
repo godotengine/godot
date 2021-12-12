@@ -3694,7 +3694,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			if (tk.type == TK_CURSOR) {
 				//do nothing
-			} else if (tk.type == TK_IDENTIFIER) {
 			} else if (tk.type == TK_PERIOD) {
 				DataType dt = expr->get_datatype();
 				String st = expr->get_datatype_name();
@@ -5071,7 +5070,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				block->parent_block = p_block;
 				cf->blocks.push_back(block);
 				err = _parse_block(block, p_builtin_types, true, p_can_break, p_can_continue);
-
+				if (err) {
+					return err;
+				}
 			} else {
 				_set_tkpos(pos); //rollback
 			}
