@@ -194,7 +194,7 @@ public:
 	String code;
 	int line;
 	int index;
-	int SIZE;
+	int size;
 	Vector<PPToken> generated;
 
 private:
@@ -203,7 +203,7 @@ private:
 	}
 
 	CharType next() {
-		if (index < SIZE) {
+		if (index < size) {
 			return code[index++];
 		}
 		return 0;
@@ -214,7 +214,7 @@ public:
 		code = p_code;
 		line = 0;
 		index = 0;
-		SIZE = code.size();
+		size = code.size();
 	}
 
 	int get_line() {
@@ -243,7 +243,7 @@ public:
 	}
 
 	CharType peek() {
-		if (index < SIZE) {
+		if (index < size) {
 			return code[index];
 		}
 		return 0;
@@ -252,7 +252,7 @@ public:
 	Vector<PPToken> advance(CharType p_what) {
 		Vector<PPToken> tokens;
 
-		while (index < SIZE) {
+		while (index < size) {
 			CharType c = code[index++];
 
 			tokens.push_back(PPToken(c, line));
@@ -314,7 +314,7 @@ public:
 	}
 
 	PPToken get_token() {
-		while (index < SIZE) {
+		while (index < size) {
 			const CharType c = code[index++];
 			const PPToken t = PPToken(c, line);
 
@@ -840,9 +840,9 @@ bool ShaderPreprocessor::find_match(const String &p_string, const String &p_valu
 }
 
 bool ShaderPreprocessor::is_char_word(const CharType p_char) {
-	if (p_char >= '0' && p_char <= '9' ||
-			p_char >= 'a' && p_char <= 'z' ||
-			p_char >= 'A' && p_char <= 'Z' ||
+	if ((p_char >= '0' && p_char <= '9') ||
+			(p_char >= 'a' && p_char <= 'z') ||
+			(p_char >= 'A' && p_char <= 'Z') ||
 			p_char == '_') {
 		return true;
 	}
@@ -980,6 +980,16 @@ int ShaderDependencyNode::GetContext(int p_line, ShaderDependencyNode **r_contex
 	return p_line - include_offset;
 }
 
+int ShaderDependencyNode::num_deps() {
+	int deps = 0;
+	deps += dependencies.size();
+	for (ShaderDependencyNode *node : dependencies) {
+		deps += node->num_deps();
+	}
+
+	return deps;
+}
+
 ShaderDependencyNode::~ShaderDependencyNode() {
 	for (ShaderDependencyNode *node : dependencies) {
 		memdelete(node);
@@ -1108,6 +1118,16 @@ void ShaderDependencyGraph::clear() {
 	cyclic_dep_tracker.clear();
 	nodes.clear();
 	visited_shaders.clear();
+}
+
+int ShaderDependencyGraph::size() {
+	int count = 0;
+	for (ShaderDependencyNode *node : nodes) {
+		count++;
+		count += node->num_deps();
+	}
+
+	return count;
 }
 
 void ShaderDependencyGraph::update_shaders(ShaderDependencyNode *p_node) {

@@ -151,6 +151,8 @@ struct ShaderDependencyNode {
 		return total_lines;
 	}
 
+	int num_deps();
+
 	~ShaderDependencyNode();
 
 	friend bool operator<(ShaderDependencyNode p_left, ShaderDependencyNode p_right);
@@ -168,6 +170,9 @@ public:
 	void populate(String p_path, String p_code);
 	void update_shaders();
 	void clear();
+
+	// gets size of graph -- total nodes/deps in tree.
+	int size();
 
 private:
 	List<ShaderDependencyNode *> cyclic_dep_tracker;

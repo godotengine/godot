@@ -76,6 +76,10 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader, String cod
 	_line_col_changed();
 }
 
+void ShaderTextEditor::load_theme_settings() {
+	_load_theme_settings();
+}
+
 void ShaderTextEditor::reload_text() {
 	ERR_FAIL_COND(shader.is_null());
 
@@ -132,6 +136,16 @@ void ShaderTextEditor::_load_theme_settings() {
 			}
 		}
 		marked_line_color = updated_marked_line_color;
+	}
+
+	float updated_preprocessor_inactive_color_intensity = EDITOR_GET("text_editor/theme/highlighting/preprocessor_inactive_color_intensity");
+	if (updated_preprocessor_inactive_color_intensity != preprocessor_inactive_color_intensity) {
+		for (int i = 0; i < text_editor->get_line_count(); i++) {
+			if (text_editor->get_line_font_color_intensity(i) == preprocessor_inactive_color_intensity) {
+				text_editor->set_line_font_color_intensity(i, updated_preprocessor_inactive_color_intensity);
+			}
+		}
+		preprocessor_inactive_color_intensity = updated_preprocessor_inactive_color_intensity;
 	}
 
 	syntax_highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
@@ -204,8 +218,8 @@ void ShaderTextEditor::_load_theme_settings() {
 	List<String> preprocessor_keywords;
 	ShaderPreprocessor::get_keyword_list(&preprocessor_keywords);
 
-	for (List<String>::Element *E = preprocessor_keywords.front(); E; E = E->next()) {
-		syntax_highlighter->add_keyword_color(E->get(), keyword_color);
+	for (const String &E : preprocessor_keywords) {
+		syntax_highlighter->add_keyword_color(E, keyword_color);
 	}
 
 	//colorize preprocessor include strings
@@ -387,8 +401,7 @@ void ShaderTextEditor::_validate_script() {
 				}
 
 				for (int i = cond->start_line; i < cond->end_line; i++) {
-					// TODO expose unevaluated macro conditional block intensity in editor settings
-					get_text_editor()->set_line_font_color_intensity(i, 0.5f);
+					get_text_editor()->set_line_font_color_intensity(i, preprocessor_inactive_color_intensity);
 				}
 			}
 		}
@@ -602,6 +615,13 @@ void ShaderEditor::_menu_option(int p_option) {
 		case HELP_DOCS: {
 			OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/shader_reference/index.html", VERSION_DOCS_URL));
 		} break;
+		case VIEW_SHADER_DEPENDENCIES: {
+			if (shader_dependency_tree->is_visible()) {
+				shader_dependency_tree->hide();
+			} else {
+				shader_dependency_tree->show();
+			}
+		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
 		shader_editor->get_text_editor()->call_deferred(SNAME("grab_focus"));
@@ -615,6 +635,7 @@ void ShaderEditor::_notification(int p_what) {
 }
 
 void ShaderEditor::_editor_settings_changed() {
+	shader_editor->load_theme_settings();
 	shader_editor->update_editor_settings();
 
 	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/appearance/whitespace/line_spacing"));
@@ -739,6 +760,13 @@ void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 	shader_rolling_code.clear();
 	shader_dependencies.populate(shader);
 	_update_shader_dependency_tree();
+
+	// show and hide dep tree based on amount of deps. If 1 dep, don't show.
+	if (shader_dependencies.size() > 1) {
+		shader_dependency_tree->show();
+	} else {
+		shader_dependency_tree->hide();
+	}
 
 	shader_rolling_code[shader->get_path()] = p_shader->get_code();
 
@@ -1033,6 +1061,14 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &ShaderEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &ShaderEditor::_bookmark_item_pressed));
 
+	view_menu = memnew(MenuButton);
+	view_menu->set_shortcut_context(this);
+	view_menu->set_text(TTR("View"));
+	view_menu->set_switch_on_hover(true);
+
+	view_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_theme_icon(SNAME("Tree"), SNAME("EditorIcons")), TTR("Shader Dependencies"), VIEW_SHADER_DEPENDENCIES);
+	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
+
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
@@ -1044,6 +1080,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	hbc->add_child(search_menu);
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
+	hbc->add_child(view_menu);
 	hbc->add_child(help_menu);
 	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
 

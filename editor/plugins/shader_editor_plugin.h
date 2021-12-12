@@ -50,6 +50,7 @@ class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
 	Color marked_line_color = Color(1, 1, 1);
+	float preprocessor_inactive_color_intensity = 0.5f;
 
 	struct WarningsComparator {
 		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const { return (p_a.get_line() < p_b.get_line()); }
@@ -78,6 +79,7 @@ public:
 	virtual void _validate_script() override;
 	virtual void goto_error() override;
 
+	void load_theme_settings();
 	void reload_text();
 	void set_warnings_panel(RichTextLabel *p_warnings_panel);
 
@@ -118,12 +120,14 @@ class ShaderEditor : public PanelContainer {
 		BOOKMARK_GOTO_NEXT,
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
+		VIEW_SHADER_DEPENDENCIES,
 		HELP_DOCS,
 	};
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
 	PopupMenu *bookmarks_menu;
+	MenuButton *view_menu;
 	MenuButton *help_menu;
 	PopupMenu *context_menu;
 	RichTextLabel *warnings_panel = nullptr;
