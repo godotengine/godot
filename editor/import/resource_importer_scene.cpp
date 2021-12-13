@@ -30,9 +30,10 @@
 
 #include "resource_importer_scene.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/resource_saver.h"
+#include "core/object/object.h"
 #include "editor/editor_node.h"
-
 #include "editor/import/scene_import_settings.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/collision_shape_3d.h"
@@ -73,24 +74,6 @@ void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const
 	ERR_FAIL();
 }
 
-Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
-	Object *ret;
-	if (GDVIRTUAL_CALL(_import_scene, p_path, p_flags, p_bake_fps, ret)) {
-		return Object::cast_to<Node>(ret);
-	}
-
-	ERR_FAIL_V(nullptr);
-}
-
-Ref<Animation> EditorSceneFormatImporter::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
-	Ref<Animation> ret;
-	if (GDVIRTUAL_CALL(_import_animation, p_path, p_flags, p_bake_fps, ret)) {
-		return ret;
-	}
-
-	ERR_FAIL_V(nullptr);
-}
-
 void EditorSceneFormatImporter::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
 	GDVIRTUAL_CALL(_get_import_options, p_path);
 }
@@ -101,27 +84,13 @@ Variant EditorSceneFormatImporter::get_option_visibility(const String &p_path, c
 	return ret;
 }
 
-//for documenters, these functions are useful when an importer calls an external conversion helper (like, fbx2gltf),
-//and you want to load the resulting file
-
-Node *EditorSceneFormatImporter::import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps) {
-	return ResourceImporterScene::get_singleton()->import_scene_from_other_importer(this, p_path, p_flags, p_bake_fps);
-}
-
-Ref<Animation> EditorSceneFormatImporter::import_animation_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps) {
-	return ResourceImporterScene::get_singleton()->import_animation_from_other_importer(this, p_path, p_flags, p_bake_fps);
-}
-
 void EditorSceneFormatImporter::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("import_scene_from_other_importer", "path", "flags", "bake_fps"), &EditorSceneFormatImporter::import_scene_from_other_importer);
-	ClassDB::bind_method(D_METHOD("import_animation_from_other_importer", "path", "flags", "bake_fps"), &EditorSceneFormatImporter::import_animation_from_other_importer);
-
 	GDVIRTUAL_BIND(_get_import_flags);
 	GDVIRTUAL_BIND(_get_extensions);
-	GDVIRTUAL_BIND(_import_scene, "path", "flags", "bake_fps");
-	GDVIRTUAL_BIND(_import_animation, "path", "flags", "bake_fps");
 	GDVIRTUAL_BIND(_get_import_options, "path");
-	GDVIRTUAL_BIND(_get_option_visibility, "path", "option");
+	GDVIRTUAL_BIND(_get_option_visibility, "path", "option");	
+	GDVIRTUAL_BIND(_import_scene, "path", "flags", "options", "bake_fps")
+	GDVIRTUAL_BIND(_import_animation, "path", "flags", "options", "bake_fps")
 
 	BIND_CONSTANT(IMPORT_SCENE);
 	BIND_CONSTANT(IMPORT_ANIMATION);
@@ -1473,12 +1442,15 @@ void ResourceImporterScene::_replace_owner(Node *p_node, Node *p_scene, Node *p_
 	}
 }
 
-Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
 	Ref<EditorSceneFormatImporter> importer;
 	String ext = p_path.get_extension().to_lower();
 
 	for (Set<Ref<EditorSceneFormatImporter>>::Element *E = importers.front(); E; E = E->next()) {
 		if (E->get().ptr() == p_exception) {
+			continue;
+		}
+		if (E->get().is_null()) {
 			continue;
 		}
 		List<String> extensions;
@@ -1497,13 +1469,16 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneFormatI
 	}
 
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
-
-	List<String> missing;
-	Error err;
-	return importer->import_scene(p_path, p_flags, p_bake_fps, &missing, &err);
+	List<String> deps;
+	Error err = FAILED;
+	Node *ret = importer->import_scene(p_path, p_flags, p_options, p_bake_fps, &deps, &err);
+	if (err != OK) {
+		return nullptr;
+	}
+	return ret;
 }
 
-Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
 	Ref<EditorSceneFormatImporter> importer;
 	String ext = p_path.get_extension().to_lower();
 
@@ -1528,7 +1503,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
-	return importer->import_animation(p_path, p_flags, p_bake_fps);
+	return importer->import_animation(p_path, p_flags, p_options, p_bake_fps);
 }
 
 void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches) {
@@ -1610,7 +1585,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 					}
 				}
 
-				if (generate_lods) {
+				if (false && generate_lods) {
 					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle);
 				}
 
@@ -1886,7 +1861,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
 	Error err = OK;
-	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, 15, nullptr, &err);
+	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, Map<StringName, Variant>(), 15, nullptr, &err);
 	if (!scene || err != OK) {
 		return nullptr;
 	}
@@ -1944,7 +1919,8 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	Error err = OK;
 	List<String> missing_deps; // for now, not much will be done with this
-	Node *scene = importer->import_scene(src_path, import_flags, fps, &missing_deps, &err);
+	Map<StringName, Variant> options;
+	Node *scene = importer->import_scene(src_path, import_flags, options, fps, &missing_deps, &err);
 	if (!scene || err != OK) {
 		return err;
 	}
@@ -2121,7 +2097,7 @@ void EditorSceneFormatImporterESCN::get_extensions(List<String> *r_extensions) c
 	r_extensions->push_back("escn");
 }
 
-Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 	Error error;
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
 	ERR_FAIL_COND_V_MSG(!ps.is_valid(), nullptr, "Cannot load scene as text resource from path '" + p_path + "'.");
@@ -2132,6 +2108,38 @@ Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t
 	return scene;
 }
 
-Ref<Animation> EditorSceneFormatImporterESCN::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Ref<Animation> EditorSceneFormatImporterESCN::import_animation(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
 	ERR_FAIL_V(Ref<Animation>());
 }
+
+// Ref<Animation> EditorSceneFormatImporter::_import_animation(const String &p_path, uint32_t p_flags, Dictionary p_options, int p_bake_fps) {
+// 	Map<StringName, Variant> options;
+// 	Array keys = p_options.keys();
+// 	for (int32_t key_i = 0; key_i < keys.size(); key_i++) {
+// 		Variant elem = keys[key_i];
+// 		if (elem.get_type() != Variant::STRING_NAME) {
+// 			continue;
+// 		}
+// 		options[elem] = options[elem];
+// 	}
+// 	return import_animation(p_path, p_flags, options, p_bake_fps);
+// }
+
+// Node *EditorSceneFormatImporter::_import_scene(const String &p_path, uint32_t p_flags, Dictionary p_options, int p_bake_fps) {
+// 	Map<StringName, Variant> options;
+// 	Array keys = p_options.keys();
+// 	for (int32_t key_i = 0; key_i < keys.size(); key_i++) {
+// 		Variant elem = keys[key_i];
+// 		if (elem.get_type() != Variant::STRING_NAME) {
+// 			continue;
+// 		}
+// 		options[elem] = options[elem];
+// 	}
+// 	List<String> deps;
+// 	Error err = FAILED;
+// 	Node *ret = import_scene(p_path, p_flags, options, p_bake_fps, &deps, &err);
+// 	if (err != OK) {
+// 		return nullptr;
+// 	}
+// 	return ret;
+// }

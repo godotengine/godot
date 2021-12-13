@@ -1755,7 +1755,7 @@ void EditorSceneFormatImporterCollada::get_extensions(List<String> *r_extensions
 	r_extensions->push_back("dae");
 }
 
-Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 	if (r_err) {
 		*r_err = OK;
 	}
@@ -1811,7 +1811,7 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 	return state.scene;
 }
 
-Ref<Animation> EditorSceneFormatImporterCollada::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Ref<Animation> EditorSceneFormatImporterCollada::import_animation(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
 	ColladaImport state;
 
 	state.use_mesh_builtin_materials = false;
