@@ -83,7 +83,7 @@ uint32_t EditorSceneFormatImporterFBX::get_import_flags() const {
 	return IMPORT_SCENE;
 }
 
-Node3D *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps,
+Node3D *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
 	// done for performance when re-importing lots of files when testing importer in verbose only!
 	if (OS::get_singleton()->is_stdout_verbose()) {
@@ -1469,7 +1469,7 @@ void EditorSceneFormatImporterFBX::BuildDocumentNodes(
 	}
 }
 Ref<Animation> EditorSceneFormatImporterFBX::import_animation(const String &p_path,
-		uint32_t p_flags, const Map<StringName, Variant> &p_options,
+		uint32_t p_flags, const Dictionary &p_options,
 		int p_bake_fps) {
 	return Ref<Animation>();
 }

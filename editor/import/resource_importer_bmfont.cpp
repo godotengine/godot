@@ -56,7 +56,7 @@ String ResourceImporterBMFont::get_resource_type() const {
 	return "FontData";
 }
 
-bool ResourceImporterBMFont::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterBMFont::get_option_visibility(const String &p_path, const String &p_option, const Dictionary &p_options) const {
 	return true;
 }
 
@@ -339,7 +339,7 @@ void _convert_mono_4bit(Ref<FontData> &r_font, Ref<Image> &p_source, int p_page,
 	r_font->set_texture_image(0, Vector2i(p_sz, p_ol), p_page, img_o);
 }
 
-Error ResourceImporterBMFont::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterBMFont::import(const String &p_source_file, const String &p_save_path, const Dictionary &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing BMFont font from: " + p_source_file);
 
 	Ref<FontData> font;

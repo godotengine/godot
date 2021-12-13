@@ -153,7 +153,7 @@ String ResourceImporterTexture::get_resource_type() const {
 	return "StreamTexture2D";
 }
 
-bool ResourceImporterTexture::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterTexture::get_option_visibility(const String &p_path, const String &p_option, const Dictionary &p_options) const {
 	if (p_option == "compress/lossy_quality") {
 		int compress_mode = int(p_options["compress/mode"]);
 		if (compress_mode != COMPRESS_LOSSY && compress_mode != COMPRESS_VRAM_COMPRESSED) {
@@ -389,7 +389,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 	memdelete(f);
 }
 
-Error ResourceImporterTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterTexture::import(const String &p_source_file, const String &p_save_path, const Dictionary &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	CompressMode compress_mode = CompressMode(int(p_options["compress/mode"]));
 	float lossy = p_options["compress/lossy_quality"];
 	int pack_channels = p_options["compress/channel_pack"];

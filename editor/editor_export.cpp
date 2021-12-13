@@ -42,6 +42,7 @@
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
 #include "core/object/script_language.h"
+#include "core/variant/dictionary.h"
 #include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -1698,7 +1699,7 @@ void EditorExport::update_export_presets() {
 			List<EditorExportPlatform::ExportOption> options = platform_options[preset->get_platform()->get_name()];
 
 			// Copy the previous preset values
-			Map<StringName, Variant> previous_values = preset->values;
+			Dictionary previous_values = preset->values;
 
 			// Clear the preset properties and values prior to reloading
 			preset->properties.clear();

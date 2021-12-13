@@ -66,8 +66,6 @@ protected:
 	GDVIRTUAL0RC(Vector<String>, _get_extensions)
 	GDVIRTUAL1(_get_import_options, String)
 	GDVIRTUAL2RC(Variant, _get_option_visibility, String, String)
-	GDVIRTUAL4R(Object *, _import_scene, String, uint32_t, Dictionary, uint32_t)
-	GDVIRTUAL4R(Ref<Animation>, _import_animation, String, uint32_t, Dictionary, uint32_t)
 public:
 	enum ImportFlags {
 		IMPORT_SCENE = 1,
@@ -80,11 +78,11 @@ public:
 
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, Dictionary p_options, int p_bake_fps);
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, Dictionary p_options, int p_bake_fps);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr);
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps);
 
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
-	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options);
+	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const Dictionary &p_options);
 
 	EditorSceneFormatImporter() {}
 };
@@ -121,8 +119,7 @@ public:
 	};
 
 private:
-	mutable const Map<StringName, Variant> *current_options = nullptr;
-	mutable const Dictionary *current_options_dict = nullptr;
+	mutable const Dictionary *current_options = nullptr;
 	List<ResourceImporter::ImportOption> *current_option_list = nullptr;
 	InternalImportCategory current_category = INTERNAL_IMPORT_CATEGORY_MAX;
 
@@ -144,16 +141,16 @@ public:
 	void add_import_option_advanced(Variant::Type p_type, const String &p_name, Variant p_default_value, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(), int p_usage_flags = PROPERTY_USAGE_DEFAULT);
 
 	virtual void get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options);
-	virtual Variant get_internal_option_visibility(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
-	virtual Variant get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual Variant get_internal_option_visibility(InternalImportCategory p_category, const String &p_option, const Dictionary &p_options) const;
+	virtual Variant get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const Dictionary &p_options) const;
 
 	virtual void internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, RES p_resource, const Dictionary &p_options);
 
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
-	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const Dictionary &p_options) const;
 
-	virtual void pre_process(Node *p_scene, const Map<StringName, Variant> &p_options);
-	virtual void post_process(Node *p_scene, const Map<StringName, Variant> &p_options);
+	virtual void pre_process(Node *p_scene, const Dictionary &p_options);
+	virtual void post_process(Node *p_scene, const Dictionary &p_options);
 
 	EditorScenePostImportPlugin() {}
 };
@@ -271,11 +268,11 @@ public:
 	};
 
 	void get_internal_import_options(InternalImportCategory p_category, List<ImportOption> *r_options) const;
-	bool get_internal_option_visibility(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
-	bool get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const Map<StringName, Variant> &p_options) const;
+	bool get_internal_option_visibility(InternalImportCategory p_category, const String &p_option, const Dictionary &p_options) const;
+	bool get_internal_option_update_view_required(InternalImportCategory p_category, const String &p_option, const Dictionary &p_options) const;
 
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
-	virtual bool get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual bool get_option_visibility(const String &p_path, const String &p_option, const Dictionary &p_options) const override;
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
 
@@ -288,10 +285,10 @@ public:
 	void _compress_animations(AnimationPlayer *anim, int p_page_size_kb);
 
 	Node *pre_import(const String &p_source_file);
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Dictionary &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-	Node *import_scene_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps);
-	Ref<Animation> import_animation_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps);
+	Node *import_scene_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps);
+	Ref<Animation> import_animation_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps);
 
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;
@@ -313,8 +310,8 @@ class EditorSceneFormatImporterESCN : public EditorSceneFormatImporter {
 public:
 	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps) override;
 };
 
 #include "scene/resources/box_shape_3d.h"
