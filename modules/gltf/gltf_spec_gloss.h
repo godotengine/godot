@@ -64,4 +64,5 @@ public:
 	Ref<Image> get_spec_gloss_img();
 	void set_spec_gloss_img(Ref<Image> p_spec_gloss_img);
 };
+
 #endif // GLTF_SPEC_GLOSS_H

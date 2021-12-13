@@ -31,8 +31,10 @@
 #ifndef EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
 #define EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
 
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_plugin.h"
-#include "editor_scene_importer_gltf.h"
+
+#include "packed_scene_gltf.h"
 
 class SceneExporterGLTFPlugin : public EditorPlugin {
 	GDCLASS(SceneExporterGLTFPlugin, EditorPlugin);

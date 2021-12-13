@@ -32,6 +32,7 @@
 #define GLTF_BUFFER_VIEW_H
 
 #include "core/resource.h"
+
 #include "gltf_document.h"
 
 class GLTFBufferView : public Resource {
@@ -65,4 +66,5 @@ public:
 	void set_indices(bool p_indices);
 	// matrices need to be transformed to this
 };
+
 #endif // GLTF_BUFFER_VIEW_H

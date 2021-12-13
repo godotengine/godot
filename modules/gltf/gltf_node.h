@@ -32,6 +32,7 @@
 #define GLTF_NODE_H
 
 #include "core/resource.h"
+
 #include "gltf_document.h"
 
 class GLTFNode : public Resource {
@@ -98,4 +99,5 @@ public:
 	GLTFLightIndex get_light();
 	void set_light(GLTFLightIndex p_light);
 };
+
 #endif // GLTF_NODE_H

@@ -32,6 +32,7 @@
 #define GLTF_ACCESSOR_H
 
 #include "core/resource.h"
+
 #include "gltf_document.h"
 
 struct GLTFAccessor : public Resource {
@@ -44,8 +45,7 @@ private:
 	int component_type = 0;
 	bool normalized = false;
 	int count = 0;
-	GLTFDocument::GLTFType
-			type = GLTFDocument::TYPE_SCALAR;
+	GLTFDocument::GLTFType type = GLTFDocument::TYPE_SCALAR;
 	PoolVector<float> min;
 	PoolVector<float> max;
 	int sparse_count = 0;
@@ -101,4 +101,5 @@ public:
 	int get_sparse_values_byte_offset();
 	void set_sparse_values_byte_offset(int p_sparse_values_byte_offset);
 };
+
 #endif // GLTF_ACCESSOR_H
