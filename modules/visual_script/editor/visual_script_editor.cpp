@@ -3704,7 +3704,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 		Variant::construct(pinfo.type, existing, &existingp, 1, ce);
 	}
 
-	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_screen_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
+	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_screen_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y) * graph->get_zoom());
 	default_value_edit->reset_size();
 
 	if (pinfo.type == Variant::NODE_PATH) {
