@@ -305,12 +305,12 @@ class DisplayServerWindows : public DisplayServer {
 	Point2i center;
 
 #if defined(GLES3_ENABLED)
-	GLManager_Windows *gl_manager;
+	GLManager_Windows *gl_manager = nullptr;
 #endif
 
 #if defined(VULKAN_ENABLED)
-	VulkanContextWindows *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
+	VulkanContextWindows *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
 
 	Map<int, Vector2> touch_state;
