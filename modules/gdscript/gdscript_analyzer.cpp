@@ -484,7 +484,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			result = parser->head->get_datatype();
 		} else {
 			Ref<GDScriptParserRef> ref = get_parser_for(ScriptServer::get_global_class_path(first));
-			if (ref->raise_status(GDScriptParserRef::INTERFACE_SOLVED) != OK) {
+			if (!ref.is_valid() || ref->raise_status(GDScriptParserRef::INTERFACE_SOLVED) != OK) {
 				push_error(vformat(R"(Could not parse global class "%s" from "%s".)", first, ScriptServer::get_global_class_path(first)), p_type);
 				return GDScriptParser::DataType();
 			}
@@ -3956,7 +3956,9 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::get_parser_for(const String &p_path) {
 	} else {
 		Error err = OK;
 		ref = GDScriptCache::get_parser(p_path, GDScriptParserRef::EMPTY, err, parser->script_path);
-		depended_parsers[p_path] = ref;
+		if (ref.is_valid()) {
+			depended_parsers[p_path] = ref;
+		}
 	}
 
 	return ref;
