@@ -4026,12 +4026,15 @@
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 		</constant>
-		<constant name="SKY_MODE_QUALITY" value="1" enum="SkyMode">
+		<constant name="SKY_MODE_QUALITY_ONCE" value="1" enum="SkyMode">
+			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. Run-time updates are disabled to improve performance (at the cost of the radiance map being incorrect if the sky changes too much). Swapping the sky resource for another one will force the radiance map to update (but changing its properties won't). If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/reflections/sky_reflections/ggx_samples].
+		</constant>
+		<constant name="SKY_MODE_QUALITY" value="2" enum="SkyMode">
 			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/reflections/sky_reflections/ggx_samples].
 		</constant>
-		<constant name="SKY_MODE_INCREMENTAL" value="2" enum="SkyMode">
+		<constant name="SKY_MODE_INCREMENTAL" value="3" enum="SkyMode">
 		</constant>
-		<constant name="SKY_MODE_REALTIME" value="3" enum="SkyMode">
+		<constant name="SKY_MODE_REALTIME" value="4" enum="SkyMode">
 			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times.
 			[b]Note:[/b] The fast filtering algorithm is limited to 256x256 cubemaps, so [member Sky.radiance_size] must be set to [constant Sky.RADIANCE_SIZE_256].
 		</constant>

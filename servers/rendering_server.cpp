@@ -2295,6 +2295,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sky_bake_panorama", "sky", "energy", "bake_irradiance", "size"), &RenderingServer::sky_bake_panorama);
 
 	BIND_ENUM_CONSTANT(SKY_MODE_AUTOMATIC);
+	BIND_ENUM_CONSTANT(SKY_MODE_QUALITY_ONCE);
 	BIND_ENUM_CONSTANT(SKY_MODE_QUALITY);
 	BIND_ENUM_CONSTANT(SKY_MODE_INCREMENTAL);
 	BIND_ENUM_CONSTANT(SKY_MODE_REALTIME);

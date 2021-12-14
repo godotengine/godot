@@ -1228,7 +1228,8 @@ void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraM
 
 	float multiplier = p_env->bg_energy;
 
-	bool update_single_frame = sky->mode == RS::SKY_MODE_REALTIME || sky->mode == RS::SKY_MODE_QUALITY;
+	bool should_update_sky = sky->reflection.dirty && sky->mode != RS::SKY_MODE_QUALITY_ONCE;
+	bool update_single_frame = sky->mode == RS::SKY_MODE_REALTIME || sky->mode == RS::SKY_MODE_QUALITY || sky->mode == RS::SKY_MODE_QUALITY_ONCE;
 	RS::SkyMode sky_mode = sky->mode;
 
 	if (sky_mode == RS::SKY_MODE_AUTOMATIC) {
@@ -1244,16 +1245,23 @@ void RendererSceneSkyRD::update(RendererSceneEnvironmentRD *p_env, const CameraM
 		}
 	}
 
-	if (sky->processing_layer == 0 && sky_mode == RS::SKY_MODE_INCREMENTAL) {
-		// On the first frame after creating sky, rebuild in single frame
-		update_single_frame = true;
-		sky_mode = RS::SKY_MODE_QUALITY;
+	if (sky->processing_layer == 0) {
+		if (sky_mode == RS::SKY_MODE_QUALITY_ONCE) {
+			// Only update the sky once after it was created.
+			should_update_sky = true;
+		}
+
+		if (sky_mode == RS::SKY_MODE_INCREMENTAL) {
+			// On the first frame after creating sky, rebuild in single frame
+			update_single_frame = true;
+			sky_mode = RS::SKY_MODE_QUALITY;
+		}
 	}
 
 	int max_processing_layer = sky_use_cubemap_array ? sky->reflection.layers.size() : sky->reflection.layers[0].mipmaps.size();
 
 	// Update radiance cubemap
-	if (sky->reflection.dirty && (sky->processing_layer >= max_processing_layer || update_single_frame)) {
+	if (should_update_sky && (sky->processing_layer >= max_processing_layer || update_single_frame)) {
 		static const Vector3 view_normals[6] = {
 			Vector3(+1, 0, 0),
 			Vector3(-1, 0, 0),
