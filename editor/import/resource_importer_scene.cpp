@@ -88,7 +88,7 @@ void EditorSceneFormatImporter::_bind_methods() {
 	GDVIRTUAL_BIND(_get_import_flags);
 	GDVIRTUAL_BIND(_get_extensions);
 	GDVIRTUAL_BIND(_get_import_options, "path");
-	GDVIRTUAL_BIND(_get_option_visibility, "path", "option");	
+	GDVIRTUAL_BIND(_get_option_visibility, "path", "option");
 	GDVIRTUAL_BIND(_import_scene, "path", "flags", "options", "bake_fps")
 	GDVIRTUAL_BIND(_import_animation, "path", "flags", "options", "bake_fps")
 
@@ -2102,4 +2102,20 @@ Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t
 
 Ref<Animation> EditorSceneFormatImporterESCN::import_animation(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps) {
 	ERR_FAIL_V(Ref<Animation>());
+}
+
+Ref<Animation> EditorSceneFormatImporter::import_animation(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps) {
+	Ref<Animation> ret;
+	if (!GDVIRTUAL_CALL(_import_animation, p_path, p_flags, p_options, p_bake_fps, ret)) {
+		return nullptr;
+	}
+	return ret;
+}
+
+Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+	Object *ret;
+	if (!GDVIRTUAL_CALL(_import_scene, p_path, p_flags, p_options, p_bake_fps, ret)) {
+		return nullptr;
+	}
+	return cast_to<Node>(ret);
 }

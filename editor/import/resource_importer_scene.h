@@ -60,12 +60,12 @@ class EditorSceneFormatImporter : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL4R(Object *, _import_scene, String, uint32_t, Dictionary, uint32_t)
-	GDVIRTUAL4R(Ref<Animation>, _import_animation, String, uint32_t, Dictionary, uint32_t)
 	GDVIRTUAL0RC(int, _get_import_flags)
 	GDVIRTUAL0RC(Vector<String>, _get_extensions)
 	GDVIRTUAL1(_get_import_options, String)
 	GDVIRTUAL2RC(Variant, _get_option_visibility, String, String)
+	GDVIRTUAL4R(Object *, _import_scene, String, uint32_t, Dictionary, uint32_t)
+	GDVIRTUAL4R(Ref<Animation>, _import_animation, String, uint32_t, Dictionary, uint32_t)
 public:
 	enum ImportFlags {
 		IMPORT_SCENE = 1,
@@ -77,12 +77,8 @@ public:
 
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr) {
-		return nullptr;
-	}
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps) {
-		return Ref<Animation>();
-	}
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr);
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps);
 
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const Dictionary &p_options);
