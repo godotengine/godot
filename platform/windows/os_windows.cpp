@@ -2839,7 +2839,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		modstr.write[i] = cmdline[i];
 	}
 
-	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, 0, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, NULL, NULL, si_w, &pi.pi);
+	DWORD creation_flags = NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW;
+	if (p_path == get_executable_path() && GetConsoleWindow() != NULL) {
+		creation_flags |= CREATE_NEW_CONSOLE;
+	}
+
+	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, 0, creation_flags, NULL, NULL, si_w, &pi.pi);
 	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
 
 	if (p_blocking) {
