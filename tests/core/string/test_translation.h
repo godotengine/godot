@@ -34,6 +34,7 @@
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 #include "core/string/translation_po.h"
+#include "core/variant/dictionary.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/import/resource_importer_csv_translation.h"
@@ -154,7 +155,7 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 TEST_CASE("[Translation] CSV import") {
 	Ref<ResourceImporterCSVTranslation> import_csv_translation = memnew(ResourceImporterCSVTranslation);
 
-	Map<StringName, Variant> options;
+	Dictionary options;
 	options["compress"] = false;
 	options["delimiter"] = 0;
 

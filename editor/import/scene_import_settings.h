@@ -31,6 +31,7 @@
 #ifndef SCENEIMPORTSETTINGS_H
 #define SCENEIMPORTSETTINGS_H
 
+#include "core/variant/dictionary.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_inspector.h"
 #include "editor/import/resource_importer_scene.h"
@@ -103,7 +104,7 @@ class SceneImportSettings : public ConfirmationDialog {
 		float cam_rot_y = -Math_PI / 4;
 		float cam_zoom = 1;
 
-		Map<StringName, Variant> settings;
+		Dictionary settings;
 	};
 	Map<String, MaterialData> material_map;
 
@@ -116,21 +117,21 @@ class SceneImportSettings : public ConfirmationDialog {
 		float cam_rot_x = -Math_PI / 4;
 		float cam_rot_y = -Math_PI / 4;
 		float cam_zoom = 1;
-		Map<StringName, Variant> settings;
+		Dictionary settings;
 	};
 	Map<String, MeshData> mesh_map;
 
 	struct AnimationData {
 		Ref<Animation> animation;
 		TreeItem *scene_node;
-		Map<StringName, Variant> settings;
+		Dictionary settings;
 	};
 	Map<String, AnimationData> animation_map;
 
 	struct NodeData {
 		Node *node;
 		TreeItem *scene_node;
-		Map<StringName, Variant> settings;
+		Dictionary settings;
 	};
 	Map<String, NodeData> node_map;
 
@@ -187,7 +188,7 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	Dictionary base_subresource_settings;
 
-	void _load_default_subresource_settings(Map<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category);
+	void _load_default_subresource_settings(Dictionary &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category);
 
 protected:
 	void _notification(int p_what);

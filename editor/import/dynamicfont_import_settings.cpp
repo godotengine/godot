@@ -30,6 +30,7 @@
 
 #include "dynamicfont_import_settings.h"
 
+#include "core/error/error_macros.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
@@ -1319,8 +1320,10 @@ void DynamicFontImportSettings::_re_import() {
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("Import settings:");
-		for (Map<StringName, Variant>::Element *E = main_settings.front(); E; E = E->next()) {
-			print_line(String("    ") + String(E->key()).utf8().get_data() + " == " + String(E->get()).utf8().get_data());
+		Array keys = main_settings.keys();
+		for (int32_t key_i = 0; keys.size(); key_i++) {
+			Variant elem = keys[key_i];
+			print_line(String("    ") + String(main_settings[elem]).utf8().get_data() + " == " + String(main_settings[elem]).utf8().get_data());
 		}
 	}
 
