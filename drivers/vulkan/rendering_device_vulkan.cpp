@@ -2242,6 +2242,22 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 	return _texture_update(p_texture, p_layer, p_data, p_post_barrier, false);
 }
 
+static _ALWAYS_INLINE_ void _copy_region(uint8_t const *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_x, uint32_t p_src_y, uint32_t p_src_w, uint32_t p_src_h, uint32_t p_src_full_w, uint32_t p_unit_size) {
+	uint32_t src_offset = (p_src_y * p_src_full_w + p_src_x) * p_unit_size;
+	uint32_t dst_offset = 0;
+	for (uint32_t y = p_src_h; y > 0; y--) {
+		uint8_t const *__restrict src = p_src + src_offset;
+		uint8_t *__restrict dst = p_dst + dst_offset;
+		for (uint32_t x = p_src_w * p_unit_size; x > 0; x--) {
+			*dst = *src;
+			src++;
+			dst++;
+		}
+		src_offset += p_src_full_w * p_unit_size;
+		dst_offset += p_src_w * p_unit_size;
+	}
+}
+
 Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier, bool p_use_setup_queue) {
 	_THREAD_SAFE_METHOD_
 
@@ -2327,8 +2343,8 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 
 			const uint8_t *read_ptr = read_ptr_mipmap + image_size * z / depth;
 
-			for (uint32_t x = 0; x < width; x += region_size) {
-				for (uint32_t y = 0; y < height; y += region_size) {
+			for (uint32_t y = 0; y < height; y += region_size) {
+				for (uint32_t x = 0; x < width; x += region_size) {
 					uint32_t region_w = MIN(region_size, width - x);
 					uint32_t region_h = MIN(region_size, height - y);
 
@@ -2371,31 +2387,11 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 						//uint32_t hb = height / block_h;
 						uint32_t region_wb = region_w / block_w;
 						uint32_t region_hb = region_h / block_h;
-						for (uint32_t xr = 0; xr < region_wb; xr++) {
-							for (uint32_t yr = 0; yr < region_hb; yr++) {
-								uint32_t src_offset = ((yr + yb) * wb + xr + xb) * block_size;
-								uint32_t dst_offset = (yr * region_wb + xr) * block_size;
-								//copy block
-								for (uint32_t i = 0; i < block_size; i++) {
-									write_ptr[dst_offset + i] = read_ptr[src_offset + i];
-								}
-							}
-						}
-
+						_copy_region(read_ptr, write_ptr, xb, yb, region_wb, region_hb, wb, block_size);
 					} else {
 						//regular image (pixels)
 						//must copy a pixel region
-
-						for (uint32_t xr = 0; xr < region_w; xr++) {
-							for (uint32_t yr = 0; yr < region_h; yr++) {
-								uint32_t src_offset = ((yr + y) * width + xr + x) * pixel_size;
-								uint32_t dst_offset = (yr * region_w + xr) * pixel_size;
-								//copy block
-								for (uint32_t i = 0; i < pixel_size; i++) {
-									write_ptr[dst_offset + i] = read_ptr[src_offset + i];
-								}
-							}
-						}
+						_copy_region(read_ptr, write_ptr, x, y, region_w, region_h, width, pixel_size);
 					}
 
 					{ //unmap
