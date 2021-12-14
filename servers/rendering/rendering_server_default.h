@@ -376,6 +376,8 @@ public:
 	FUNC2(reflection_probe_set_resolution, RID, int)
 	FUNC2(reflection_probe_set_lod_threshold, RID, float)
 
+	FUNC1(reflection_probe_queue_update, RID)
+
 	/* DECAL API */
 
 	FUNCRIDSPLIT(decal)

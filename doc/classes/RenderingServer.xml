@@ -3764,10 +3764,13 @@
 		<constant name="SHADOW_QUALITY_MAX" value="6" enum="ShadowQuality">
 		</constant>
 		<constant name="REFLECTION_PROBE_UPDATE_ONCE" value="0" enum="ReflectionProbeUpdateMode">
-			Reflection probe will update reflections once and then stop.
+			Reflection probe will update reflections once and then stop. This is the fastest update mode in terms of performance.
 		</constant>
-		<constant name="REFLECTION_PROBE_UPDATE_ALWAYS" value="1" enum="ReflectionProbeUpdateMode">
-			Reflection probe will update each frame. This mode is necessary to capture moving objects.
+		<constant name="REFLECTION_PROBE_UPDATE_ALWAYS_INCREMENTAL" value="1" enum="ReflectionProbeUpdateMode">
+			Reflection probe will update incrementally over 6 frames, even when there are no changes made to the ReflectionProbe itself. This mode provides the best result when capturing slow-moving dynamic objects.
+		</constant>
+		<constant name="REFLECTION_PROBE_UPDATE_ALWAYS_FULL" value="2" enum="ReflectionProbeUpdateMode">
+			Reflection probe will update each frame. This mode provides the best result when capturing fast-moving dynamic objects.
 		</constant>
 		<constant name="REFLECTION_PROBE_AMBIENT_DISABLED" value="0" enum="ReflectionProbeAmbientMode">
 		</constant>

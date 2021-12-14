@@ -3350,7 +3350,8 @@ void RendererSceneCull::render_probes() {
 		RID base = ref_probe->self()->owner->base;
 
 		switch (RSG::storage->reflection_probe_get_update_mode(base)) {
-			case RS::REFLECTION_PROBE_UPDATE_ONCE: {
+			case RS::REFLECTION_PROBE_UPDATE_ONCE:
+			case RS::REFLECTION_PROBE_UPDATE_ALWAYS_INCREMENTAL: {
 				if (busy) { //already rendering something
 					break;
 				}
@@ -3364,7 +3365,7 @@ void RendererSceneCull::render_probes() {
 
 				busy = true; //do not render another one of this kind
 			} break;
-			case RS::REFLECTION_PROBE_UPDATE_ALWAYS: {
+			case RS::REFLECTION_PROBE_UPDATE_ALWAYS_FULL: {
 				int step = 0;
 				bool done = false;
 				while (!done) {

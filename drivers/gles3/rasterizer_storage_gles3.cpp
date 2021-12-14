@@ -2283,13 +2283,6 @@ void RasterizerStorageGLES3::mesh_instance_check_for_update(RID p_mesh_instance)
 void RasterizerStorageGLES3::update_mesh_instances() {
 }
 
-void RasterizerStorageGLES3::reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) {
-}
-
-float RasterizerStorageGLES3::reflection_probe_get_lod_threshold(RID p_probe) const {
-	return 0.0;
-}
-
 void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) {
 }
 
@@ -2612,6 +2605,12 @@ void RasterizerStorageGLES3::reflection_probe_set_cull_mask(RID p_probe, uint32_
 void RasterizerStorageGLES3::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
 }
 
+void RasterizerStorageGLES3::reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) {
+}
+
+void RasterizerStorageGLES3::reflection_probe_queue_update(RID p_probe) {
+}
+
 AABB RasterizerStorageGLES3::reflection_probe_get_aabb(RID p_probe) const {
 	return AABB();
 }
@@ -2638,6 +2637,10 @@ float RasterizerStorageGLES3::reflection_probe_get_origin_max_distance(RID p_pro
 
 bool RasterizerStorageGLES3::reflection_probe_renders_shadows(RID p_probe) const {
 	return false;
+}
+
+float RasterizerStorageGLES3::reflection_probe_get_lod_threshold(RID p_probe) const {
+	return 0.0;
 }
 
 void RasterizerStorageGLES3::base_update_dependency(RID p_base, DependencyTracker *p_instance) {

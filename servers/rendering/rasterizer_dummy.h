@@ -327,8 +327,6 @@ public:
 	void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override {}
 	void mesh_instance_check_for_update(RID p_mesh_instance) override {}
 	void update_mesh_instances() override {}
-	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) override {}
-	float reflection_probe_get_lod_threshold(RID p_probe) const override { return 0.0; }
 
 	void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override {}
 
@@ -451,6 +449,9 @@ public:
 	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override {}
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override {}
 	void reflection_probe_set_resolution(RID p_probe, int p_resolution) override {}
+	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) override {}
+
+	void reflection_probe_queue_update(RID p_probe) override {}
 
 	AABB reflection_probe_get_aabb(RID p_probe) const override { return AABB(); }
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override { return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE; }
@@ -459,6 +460,7 @@ public:
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const override { return Vector3(); }
 	float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
 	bool reflection_probe_renders_shadows(RID p_probe) const override { return false; }
+	float reflection_probe_get_lod_threshold(RID p_probe) const override { return 0.0; }
 
 	void base_update_dependency(RID p_base, DependencyTracker *p_instance) override {}
 	void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override {}

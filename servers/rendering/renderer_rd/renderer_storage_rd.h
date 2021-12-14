@@ -1957,6 +1957,8 @@ public:
 	void reflection_probe_set_resolution(RID p_probe, int p_resolution);
 	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio);
 
+	void reflection_probe_queue_update(RID p_probe);
+
 	AABB reflection_probe_get_aabb(RID p_probe) const;
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
 	uint32_t reflection_probe_get_cull_mask(RID p_probe) const;

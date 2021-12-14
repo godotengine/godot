@@ -6886,6 +6886,13 @@ void RendererStorageRD::reflection_probe_set_lod_threshold(RID p_probe, float p_
 	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
+void RendererStorageRD::reflection_probe_queue_update(RID p_probe) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->dependency.changed_notify(DEPENDENCY_CHANGED_REFLECTION_PROBE);
+}
+
 AABB RendererStorageRD::reflection_probe_get_aabb(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, AABB());
@@ -6899,7 +6906,7 @@ AABB RendererStorageRD::reflection_probe_get_aabb(RID p_probe) const {
 
 RS::ReflectionProbeUpdateMode RendererStorageRD::reflection_probe_get_update_mode(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_COND_V(!reflection_probe, RS::REFLECTION_PROBE_UPDATE_ALWAYS);
+	ERR_FAIL_COND_V(!reflection_probe, RS::REFLECTION_PROBE_UPDATE_ALWAYS_FULL);
 
 	return reflection_probe->update_mode;
 }

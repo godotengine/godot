@@ -632,7 +632,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_needs_redraw(RID p_instanc
 		return true;
 	}
 
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
+	if (storage->reflection_probe_get_update_mode(rpi->probe) != RS::REFLECTION_PROBE_UPDATE_ONCE) {
 		return true;
 	}
 
@@ -656,12 +656,12 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 
 	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
 
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->size != 256) {
-		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
+	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS_FULL && atlas->reflection.is_valid() && atlas->size != 256) {
+		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS_FULL must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
 		reflection_atlas_set_size(p_reflection_atlas, 256, atlas->count);
 	}
 
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8) {
+	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS_FULL && atlas->reflection.is_valid() && atlas->reflections[0].data.layers[0].mipmaps.size() != 8) {
 		// Invalidate reflection atlas, need to regenerate
 		RD::get_singleton()->free(atlas->reflection);
 		atlas->reflection = RID();
@@ -678,7 +678,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 
 	if (atlas->reflection.is_null()) {
 		int mipmaps = MIN(sky.roughness_layers, Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1);
-		mipmaps = storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
+		mipmaps = storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS_FULL ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
 		{
 			//reflection atlas was unused, create:
 			RD::TextureFormat tf;
@@ -702,7 +702,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_begin_render(RID p_instanc
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(storage, atlas->size, mipmaps, false, atlas->reflection, i * 6, storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS, sky.roughness_layers, _render_buffers_get_color_format());
+			atlas->reflections.write[i].data.update_reflection_data(storage, atlas->size, mipmaps, false, atlas->reflection, i * 6, storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS_FULL, sky.roughness_layers, _render_buffers_get_color_format());
 			for (int j = 0; j < 6; j++) {
 				atlas->reflections.write[i].fbs[j] = reflection_probe_create_framebuffer(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j], atlas->depth_buffer);
 			}
@@ -770,7 +770,7 @@ bool RendererSceneRenderRD::reflection_probe_instance_postprocess_step(RID p_ins
 		return false;
 	}
 
-	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS) {
+	if (storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS_FULL) {
 		// Using real time reflections, all roughness is done in one step
 		atlas->reflections.write[rpi->atlas_index].data.create_reflection_fast_filter(storage, false);
 		rpi->rendering = false;

@@ -39,7 +39,8 @@ class ReflectionProbe : public VisualInstance3D {
 public:
 	enum UpdateMode {
 		UPDATE_ONCE,
-		UPDATE_ALWAYS,
+		UPDATE_ALWAYS_INCREMENTAL,
+		UPDATE_ALWAYS_FULL,
 	};
 
 	enum AmbientMode {
@@ -111,6 +112,8 @@ public:
 
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
+
+	void queue_update();
 
 	virtual AABB get_aabb() const override;
 	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
