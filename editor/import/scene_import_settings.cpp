@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "scene_import_settings.h"
+#include "core/variant/dictionary.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
@@ -38,9 +39,9 @@
 class SceneImportSettingsData : public Object {
 	GDCLASS(SceneImportSettingsData, Object)
 	friend class SceneImportSettings;
-	Map<StringName, Variant> *settings = nullptr;
-	Map<StringName, Variant> current;
-	Map<StringName, Variant> defaults;
+	Dictionary *settings = nullptr;
+	Dictionary current;
+	Dictionary defaults;
 	List<ResourceImporter::ImportOption> options;
 
 	ResourceImporterScene::InternalImportCategory category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX;
@@ -761,7 +762,7 @@ void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 }
 
 void SceneImportSettings::_re_import() {
-	Map<StringName, Variant> main_settings;
+	Dictionary main_settings;
 
 	main_settings = defaults;
 	main_settings.erase("_subresources");

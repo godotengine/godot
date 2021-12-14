@@ -34,8 +34,8 @@ class ImportDefaultsEditorSettings : public Object {
 	GDCLASS(ImportDefaultsEditorSettings, Object)
 	friend class ImportDefaultsEditor;
 	List<PropertyInfo> properties;
-	Map<StringName, Variant> values;
-	Map<StringName, Variant> default_values;
+	Dictionary values;
+	Dictionary default_values;
 
 	Ref<ResourceImporter> importer;
 
@@ -84,13 +84,7 @@ void ImportDefaultsEditor::_reset() {
 
 void ImportDefaultsEditor::_save() {
 	if (settings->importer.is_valid()) {
-		Dictionary modified;
-
-		for (const KeyValue<StringName, Variant> &E : settings->values) {
-			if (E.value != settings->default_values[E.key]) {
-				modified[E.key] = E.value;
-			}
-		}
+		Dictionary modified = settings->values;
 
 		if (modified.size()) {
 			ProjectSettings::get_singleton()->set("importer_defaults/" + settings->importer->get_importer_name(), modified);

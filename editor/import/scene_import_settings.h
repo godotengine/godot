@@ -156,7 +156,7 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
 
-	Map<StringName, Variant> defaults;
+	Dictionary defaults;
 
 	SceneImportSettingsData *scene_import_settings_data;
 

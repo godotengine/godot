@@ -1234,7 +1234,7 @@ void DynamicFontImportSettings::_notification(int p_what) {
 }
 
 void DynamicFontImportSettings::_re_import() {
-	Map<StringName, Variant> main_settings;
+	Dictionary main_settings;
 
 	main_settings["antialiased"] = import_settings_data->get("antialiased");
 	main_settings["multichannel_signed_distance_field"] = import_settings_data->get("multichannel_signed_distance_field");

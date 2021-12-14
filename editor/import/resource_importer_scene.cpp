@@ -1853,7 +1853,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
 	Error err = OK;
-	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, Map<StringName, Variant>(), 15, nullptr, &err);
+	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, Dictionary(), 15, nullptr, &err);
 	if (!scene || err != OK) {
 		return nullptr;
 	}
@@ -1911,7 +1911,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	Error err = OK;
 	List<String> missing_deps; // for now, not much will be done with this
-	Map<StringName, Variant> options;
+	Dictionary options;
 	Node *scene = importer->import_scene(src_path, import_flags, options, fps, &missing_deps, &err);
 	if (!scene || err != OK) {
 		return err;
@@ -2103,35 +2103,3 @@ Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t
 Ref<Animation> EditorSceneFormatImporterESCN::import_animation(const String &p_path, uint32_t p_flags, const Dictionary &p_options, int p_bake_fps) {
 	ERR_FAIL_V(Ref<Animation>());
 }
-
-// Ref<Animation> EditorSceneFormatImporter::_import_animation(const String &p_path, uint32_t p_flags, Dictionary p_options, int p_bake_fps) {
-// 	Map<StringName, Variant> options;
-// 	Array keys = p_options.keys();
-// 	for (int32_t key_i = 0; key_i < keys.size(); key_i++) {
-// 		Variant elem = keys[key_i];
-// 		if (elem.get_type() != Variant::STRING_NAME) {
-// 			continue;
-// 		}
-// 		options[elem] = options[elem];
-// 	}
-// 	return import_animation(p_path, p_flags, options, p_bake_fps);
-// }
-
-// Node *EditorSceneFormatImporter::_import_scene(const String &p_path, uint32_t p_flags, Dictionary p_options, int p_bake_fps) {
-// 	Map<StringName, Variant> options;
-// 	Array keys = p_options.keys();
-// 	for (int32_t key_i = 0; key_i < keys.size(); key_i++) {
-// 		Variant elem = keys[key_i];
-// 		if (elem.get_type() != Variant::STRING_NAME) {
-// 			continue;
-// 		}
-// 		options[elem] = options[elem];
-// 	}
-// 	List<String> deps;
-// 	Error err = FAILED;
-// 	Node *ret = import_scene(p_path, p_flags, options, p_bake_fps, &deps, &err);
-// 	if (err != OK) {
-// 		return nullptr;
-// 	}
-// 	return ret;
-// }

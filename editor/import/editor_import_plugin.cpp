@@ -147,14 +147,8 @@ void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceI
 }
 
 bool EditorImportPlugin::get_option_visibility(const String &p_path, const String &p_option, const Dictionary &p_options) const {
-	Dictionary d;
-	Map<StringName, Variant>::Element *E = p_options.front();
-	while (E) {
-		d[E->key()] = E->get();
-		E = E->next();
-	}
 	bool visible;
-	if (GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, d, visible)) {
+	if (GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, p_options, visible)) {
 		return visible;
 	}
 
@@ -165,14 +159,8 @@ Error EditorImportPlugin::import(const String &p_source_file, const String &p_sa
 	Dictionary options;
 	Array platform_variants, gen_files;
 
-	Map<StringName, Variant>::Element *E = p_options.front();
-	while (E) {
-		options[E->key()] = E->get();
-		E = E->next();
-	}
-
 	int err;
-	if (GDVIRTUAL_CALL(_import, p_source_file, p_save_path, options, platform_variants, gen_files, err)) {
+	if (GDVIRTUAL_CALL(_import, p_source_file, p_save_path, p_options, platform_variants, gen_files, err)) {
 		Error ret_err = Error(err);
 
 		for (int i = 0; i < platform_variants.size(); i++) {

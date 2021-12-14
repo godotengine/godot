@@ -1772,7 +1772,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	return err;
 }
 
-void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName, Variant> *p_custom_options, const String &p_custom_importer) {
+void EditorFileSystem::_reimport_file(const String &p_file, const Dictionary *p_custom_options, const String &p_custom_importer) {
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 	bool found = _find_file(p_file, &fs, cpos);
@@ -1780,7 +1780,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 
 	//try to obtain existing params
 
-	Map<StringName, Variant> params;
+	Dictionary params;
 	String importer_name; //empty by default though
 
 	if (!p_custom_importer.is_empty()) {
@@ -2030,7 +2030,7 @@ void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, Map<Str
 	}
 }
 
-void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const Map<StringName, Variant> &p_custom_params) {
+void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const Dictionary &p_custom_params) {
 	_reimport_file(p_file, &p_custom_params, p_importer);
 }
 

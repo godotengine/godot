@@ -37,6 +37,7 @@
 #include "core/templates/safe_refcount.h"
 #include "core/templates/set.h"
 #include "core/templates/thread_work_pool.h"
+#include "core/variant/dictionary.h"
 #include "scene/main/node.h"
 
 class FileAccess;
@@ -209,7 +210,7 @@ class EditorFileSystem : public Node {
 
 	void _update_extensions();
 
-	void _reimport_file(const String &p_file, const Map<StringName, Variant> *p_custom_options = nullptr, const String &p_custom_importer = String());
+	void _reimport_file(const String &p_file, const Dictionary *p_custom_options = nullptr, const String &p_custom_importer = String());
 	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
 
 	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
@@ -279,7 +280,7 @@ public:
 
 	void reimport_files(const Vector<String> &p_files);
 
-	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const Map<StringName, Variant> &p_custom_params);
+	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const Dictionary &p_custom_params);
 
 	void update_script_classes();
 
