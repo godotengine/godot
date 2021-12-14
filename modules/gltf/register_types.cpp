@@ -53,6 +53,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scene_exporter_gltf_plugin.h"
 #include "editor/editor_scene_importer_blend.h"
+#include "editor/editor_scene_importer_fbx.h"
 #include "editor/editor_scene_importer_gltf.h"
 #include "editor/editor_settings.h"
 
@@ -62,6 +63,7 @@ static void _editor_init() {
 	ResourceImporterScene::get_singleton()->add_importer(import_gltf);
 
 	// Blend to glTF importer.
+
 	bool blend_enabled = GLOBAL_GET("filesystem/import/blend/enabled");
 	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
 	String blender_path = EDITOR_DEF_RST("filesystem/import/blend/blender_path", "");
@@ -79,6 +81,26 @@ static void _editor_init() {
 			ResourceImporterScene::get_singleton()->add_importer(importer);
 		}
 	}
+
+	// FBX to glTF importer.
+
+	bool fbx_enabled = GLOBAL_GET("filesystem/import/fbx/enabled");
+	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
+	String fbx2gltf_path = EDITOR_DEF_RST("filesystem/import/fbx/fbx2gltf_path", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
+			"filesystem/import/fbx/fbx2gltf_path", PROPERTY_HINT_GLOBAL_FILE));
+	if (fbx_enabled) {
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (fbx2gltf_path.is_empty()) {
+			WARN_PRINT("FBX file import is enabled, but no FBX2glTF path is configured. FBX files will not be imported.");
+		} else if (!da->file_exists(fbx2gltf_path)) {
+			WARN_PRINT("FBX file import is enabled, but the FBX2glTF path doesn't point to a valid FBX2glTF executable. FBX files will not be imported.");
+		} else {
+			Ref<EditorSceneFormatImporterFBX> importer;
+			importer.instantiate();
+			ResourceImporterScene::get_singleton()->add_importer(importer);
+		}
+	}
 }
 #endif // TOOLS_ENABLED
 
@@ -92,6 +114,7 @@ void register_gltf_types() {
 	GDREGISTER_CLASS(GLTFDocumentExtension);
 	GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
 	GDREGISTER_CLASS(GLTFLight);
+	GDREGISTER_CLASS(GLTFMesh);
 	GDREGISTER_CLASS(GLTFNode);
 	GDREGISTER_CLASS(GLTFSkeleton);
 	GDREGISTER_CLASS(GLTFSkin);
@@ -104,13 +127,14 @@ void register_gltf_types() {
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
 
-	GDREGISTER_CLASS(GLTFMesh);
 	GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
 	EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 
-	// Blend to glTF importer.
-	GLOBAL_DEF_RST("filesystem/import/blend/enabled", false); // Defined here to catch in docs.
+	// Project settings defined here so doctool finds them.
+	GLOBAL_DEF_RST("filesystem/import/blend/enabled", true);
+	GLOBAL_DEF_RST("filesystem/import/fbx/enabled", true);
 	GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
+	GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
 
 	ClassDB::set_current_api(prev_api);
 	EditorNode::add_init_callback(_editor_init);

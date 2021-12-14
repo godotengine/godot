@@ -36,7 +36,6 @@
 #include "../gltf_state.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/json.h"
 #include "editor/editor_settings.h"
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
@@ -52,26 +51,12 @@ void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,
 		const Map<StringName, Variant> &p_options, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
-	// Parse JSON config.
+	// Get global paths for source and sink.
 
-	const String source_global = ProjectSettings::get_singleton()->globalize_path(p_path).c_escape();
+	const String source_global = ProjectSettings::get_singleton()->globalize_path(p_path);
 	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().plus_file(
 			vformat("%s-%s.gltf", p_path.get_file().get_basename(), p_path.md5_text()));
-	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink).c_escape();
-	const String json_parameters = vformat("{\"source\": \"%s\", \"sink\": \"%s\"}", source_global, sink_global);
-
-	Ref<JSON> json;
-	json.instantiate();
-	Error err = json->parse(json_parameters);
-	if (err != OK) {
-		if (r_err) {
-			*r_err = err;
-		}
-		ERR_PRINT(vformat("Blend config can't be read at line %s with error: %s",
-				json->get_error_line(), json->get_error_message()));
-		return nullptr;
-	}
-	Dictionary parameters = json->get_data();
+	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink);
 
 	// Handle configuration options.
 
@@ -170,14 +155,14 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 
 	// Prepare Blender export script.
 
-	String common_args = vformat("filepath='%s',", parameters["sink"]) +
+	String common_args = vformat("filepath='%s',", sink_global) +
 			"export_format='GLTF_SEPARATE',"
 			"export_yup=True," +
 			parameters_arg;
 	String script =
 			String("import bpy, sys;") +
 			"print('Blender 3.0 or higher is required.', file=sys.stderr) if bpy.app.version < (3, 0, 0) else None;" +
-			vformat("bpy.ops.wm.open_mainfile(filepath='%s');", parameters["source"]) +
+			vformat("bpy.ops.wm.open_mainfile(filepath='%s');", source_global) +
 			unpack_all +
 			vformat("bpy.ops.export_scene.gltf(export_keep_originals=True,%s);", common_args);
 	print_verbose(script);
@@ -192,20 +177,22 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	args.push_back(script);
 
 	String standard_out;
-	int32_t ret = OS::get_singleton()->execute(blender_path, args, &standard_out, &ret, true);
+	int ret;
+	OS::get_singleton()->execute(blender_path, args, &standard_out, &ret, true);
+	print_verbose(blender_path);
 	print_verbose(standard_out);
 
-	if (ret != OK) {
+	if (ret != 0) {
 		if (r_err) {
 			*r_err = ERR_SCRIPT_FAILED;
 		}
-		ERR_PRINT(vformat("Blend import failed with error: %d.", ret));
+		ERR_PRINT(vformat("Blend export to glTF failed with error: %d.", ret));
 		return nullptr;
 	}
 
 	// Import the generated glTF.
 
-	// Use GLTFDocument instead of gltf importer to keep image references.
+	// Use GLTFDocument instead of glTF importer to keep image references.
 	Ref<GLTFDocument> gltf;
 	gltf.instantiate();
 	Ref<GLTFState> state;
@@ -214,7 +201,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
 		base_dir = sink.get_base_dir();
 	}
-	err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, p_bake_fps, base_dir);
+	Error err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, p_bake_fps, base_dir);
 	if (err != OK) {
 		if (r_err) {
 			*r_err = FAILED;
