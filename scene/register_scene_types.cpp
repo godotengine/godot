@@ -882,6 +882,14 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("GIProbeData", "VoxelGIData");
 	ClassDB::add_compatibility_class("BakedLightmap", "LightmapGI");
 	ClassDB::add_compatibility_class("BakedLightmapData", "LightmapGIData");
+	// Portal and room occlusion was replaced by raster occlusion (OccluderInstance3D node).
+	ClassDB::add_compatibility_class("Portal", "Node3D");
+	ClassDB::add_compatibility_class("Room", "Node3D");
+	ClassDB::add_compatibility_class("RoomManager", "Node3D");
+	ClassDB::add_compatibility_class("RoomGroup", "Node3D");
+	ClassDB::add_compatibility_class("Occluder", "Node3D");
+	// The OccluderShapeSphere resource (used in the old Occluder node) is not present anymore.
+	ClassDB::add_compatibility_class("OccluderShapeSphere", "Resource");
 
 	// Renamed in 4.0.
 	// Keep alphabetical ordering to easily locate classes and avoid duplicates.
