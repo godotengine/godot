@@ -261,7 +261,9 @@
 			The [SceneTree]'s root [Viewport].
 		</member>
 		<member name="use_font_oversampling" type="bool" setter="set_use_font_oversampling" getter="is_using_font_oversampling" default="false">
-			If [code]true[/code], font oversampling is used.
+			If [code]true[/code], font oversampling is enabled. This means that [DynamicFont]s will be rendered at higher or lower size than configured based on the viewport's scaling ratio. For example, in a viewport scaled with a factor 1.5, a font configured with size 14 would be rendered with size 21 ([code]14 * 1.5[/code]).
+			[b]Note:[/b] Font oversampling is only used if the viewport stretch mode is [constant STRETCH_MODE_VIEWPORT], and if the stretch aspect mode is different from [constant STRETCH_ASPECT_IGNORE].
+			[b]Note:[/b] This property is set automatically for the active [SceneTree] when the project starts based on the configuration of [code]rendering/quality/dynamic_fonts/use_oversampling[/code] in [ProjectSettings]. The property can however be overridden at runtime as needed.
 		</member>
 	</members>
 	<signals>
