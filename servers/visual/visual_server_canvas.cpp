@@ -476,7 +476,7 @@ void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 
 		// 90 degrees
 		side = Vector2(-side.y, side.x);
-		side *= p_width;
+		side *= p_width * 0.5;
 
 		points.set(0, p_from + side);
 		points.set(1, p_from - side);
