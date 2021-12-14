@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_scene_importer_gltf.cpp                                       */
+/*  editor_scene_importer_blend.h                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,45 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef EDITOR_SCENE_IMPORTER_BLEND_H
+#define EDITOR_SCENE_IMPORTER_BLEND_H
+
 #ifdef TOOLS_ENABLED
 
-#include "editor_scene_importer_gltf.h"
+#include "editor/import/resource_importer_scene.h"
 
-#include "../gltf_document.h"
-#include "../gltf_state.h"
+class Animation;
+class Node;
 
-#include "scene/main/node.h"
-#include "scene/resources/animation.h"
+class EditorSceneFormatImporterBlend : public EditorSceneFormatImporter {
+	GDCLASS(EditorSceneFormatImporterBlend, EditorSceneFormatImporter);
 
-uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
-	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
-}
+public:
+	enum {
+		BLEND_VISIBLE_VISIBLE_ONLY,
+		BLEND_VISIBLE_RENDERABLE,
+		BLEND_VISIBLE_ALL
+	};
+	enum {
+		BLEND_BONE_INFLUENCES_NONE,
+		BLEND_BONE_INFLUENCES_COMPATIBLE,
+		BLEND_BONE_INFLUENCES_ALL
+	};
+	enum {
+		BLEND_MODIFIERS_NONE,
+		BLEND_MODIFIERS_ALL
+	};
 
-void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("gltf");
-	r_extensions->push_back("glb");
-}
-
-Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t p_flags,
-		const Map<StringName, Variant> &p_options, int p_bake_fps,
-		List<String> *r_missing_deps, Error *r_err) {
-	Ref<GLTFDocument> doc;
-	doc.instantiate();
-	Ref<GLTFState> state;
-	state.instantiate();
-	Error err = doc->append_from_file(p_path, state, p_flags, p_bake_fps);
-	if (err != OK) {
-		if (r_err) {
-			*r_err = err;
-		}
-		return nullptr;
-	}
-	return doc->generate_scene(state, p_bake_fps);
-}
-
-Ref<Animation> EditorSceneFormatImporterGLTF::import_animation(const String &p_path,
-		uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) {
-	return Ref<Animation>();
-}
+	virtual uint32_t get_import_flags() const override;
+	virtual void get_extensions(List<String> *r_extensions) const override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
+			const Map<StringName, Variant> &p_options, int p_bake_fps,
+			List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags,
+			const Map<StringName, Variant> &p_options, int p_bake_fps) override;
+	virtual void get_import_options(const String &p_path,
+			List<ResourceImporter::ImportOption> *r_options) override;
+	virtual Variant get_option_visibility(const String &p_path, const String &p_option,
+			const Map<StringName, Variant> &p_options) override;
+};
 
 #endif // TOOLS_ENABLED
+
+#endif // EDITOR_SCENE_IMPORTER_BLEND_H

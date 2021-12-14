@@ -6758,8 +6758,8 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 }
 
 void GLTFDocument::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "bake_fps"),
-			&GLTFDocument::append_from_file, DEFVAL(0), DEFVAL(30));
+	ClassDB::bind_method(D_METHOD("append_from_file", "path", "state", "flags", "bake_fps", "base_path"),
+			&GLTFDocument::append_from_file, DEFVAL(0), DEFVAL(30), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("append_from_buffer", "bytes", "base_path", "state", "flags", "bake_fps"),
 			&GLTFDocument::append_from_buffer, DEFVAL(0), DEFVAL(30));
 	ClassDB::bind_method(D_METHOD("append_from_scene", "node", "state", "flags", "bake_fps"),
@@ -7024,20 +7024,22 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_sear
 	return OK;
 }
 
-Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags, int32_t p_bake_fps) {
+Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags, int32_t p_bake_fps, String p_base_path) {
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	if (r_state == Ref<GLTFState>()) {
 		r_state.instantiate();
 	}
 	r_state->filename = p_path.get_file().get_basename();
-	r_state->use_named_skin_binds =
-			p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	r_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
 	ERR_FAIL_NULL_V(f, ERR_FILE_CANT_OPEN);
-
-	err = _parse(r_state, p_path.get_base_dir(), f, p_bake_fps);
+	String base_path = p_base_path;
+	if (base_path.is_empty()) {
+		base_path = p_path.get_base_dir();
+	}
+	err = _parse(r_state, base_path, f, p_bake_fps);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 	return err;
 }
