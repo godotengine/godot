@@ -173,11 +173,7 @@ void EditorToaster::_error_handler(void *p_self, const char *p_func, const char 
 		}
 
 		Severity severity = (p_type == ERR_HANDLER_WARNING) ? SEVERITY_WARNING : SEVERITY_ERROR;
-		if (Thread::get_caller_id() != Thread::get_main_id()) {
-			EditorToaster::get_singleton()->call_deferred(SNAME("popup_str"), err_str, severity, tooltip_str);
-		} else {
-			EditorToaster::get_singleton()->popup_str(err_str, severity, tooltip_str);
-		}
+		EditorToaster::get_singleton()->popup_str(err_str, severity, tooltip_str);
 	}
 }
 
@@ -387,6 +383,12 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 }
 
 void EditorToaster::popup_str(String p_message, Severity p_severity, String p_tooltip) {
+	// Since "_popup_str" adds nodes to the tree, and since the "add_child" method is not
+	// thread-safe, it's better to defer the call to the next cycle to be thread-safe.
+	call_deferred(SNAME("_popup_str"), p_message, p_severity, p_tooltip);
+}
+
+void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_tooltip) {
 	// Check if we already have a popup with the given message.
 	Control *control = nullptr;
 	for (KeyValue<Control *, Toast> element : toasts) {
@@ -438,6 +440,11 @@ void EditorToaster::close(Control *p_control) {
 
 EditorToaster *EditorToaster::get_singleton() {
 	return singleton;
+}
+
+void EditorToaster::_bind_methods() {
+	// Binding method to make it defer-able.
+	ClassDB::bind_method(D_METHOD("_popup_str", "message", "severity", "tooltip"), &EditorToaster::_popup_str);
 }
 
 EditorToaster::EditorToaster() {

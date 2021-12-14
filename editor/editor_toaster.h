@@ -94,9 +94,11 @@ private:
 
 	void _set_notifications_enabled(bool p_enabled);
 	void _repop_old();
+	void _popup_str(String p_message, Severity p_severity, String p_tooltip);
 
 protected:
 	static EditorToaster *singleton;
+	static void _bind_methods();
 
 	void _notification(int p_what);
 
