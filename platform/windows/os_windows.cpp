@@ -484,6 +484,9 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 #ifndef DEBUG_ENABLED
 	dwCreationFlags |= CREATE_NO_WINDOW;
 #endif
+	if (p_path == get_executable_path() && GetConsoleWindow() != nullptr) {
+		dwCreationFlags |= CREATE_NEW_CONSOLE;
+	}
 
 	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, dwCreationFlags, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
