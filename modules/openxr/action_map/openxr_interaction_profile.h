@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main.h                                                               */
+/*  openxr_interaction_profile.h                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,62 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef OPENXR_INTERACTION_PROFILE_H
+#define OPENXR_INTERACTION_PROFILE_H
 
-#include "core/error/error_list.h"
-#include "core/os/thread.h"
-#include "core/typedefs.h"
+#include "core/io/resource.h"
 
-class Main {
-	static void print_help(const char *p_binary);
-	static uint64_t last_ticks;
-	static uint32_t frames;
-	static uint32_t frame;
-	static bool force_redraw_requested;
-	static int iterating;
-	static bool agile_input_event_flushing;
+#include "openxr_action.h"
+
+class OpenXRIPBinding : public Resource {
+	GDCLASS(OpenXRIPBinding, Resource);
+
+private:
+	Ref<OpenXRAction> action;
+	PackedStringArray paths;
+
+protected:
+	static void _bind_methods();
 
 public:
-	static bool is_cmdline_tool();
-	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
-	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
-	static Error setup2(Thread::ID p_main_tid_override = 0);
-	static String get_rendering_driver_name();
-#ifdef TESTS_ENABLED
-	static Error test_setup();
-	static void test_cleanup();
-#endif
-	static bool start();
+	static Ref<OpenXRIPBinding> new_binding(const Ref<OpenXRAction> p_action, const char *p_paths);
 
-	static bool iteration();
-	static void force_redraw();
+	void set_action(const Ref<OpenXRAction> p_action);
+	Ref<OpenXRAction> get_action() const;
 
-	static bool is_iterating();
+	void set_paths(const PackedStringArray p_paths);
+	PackedStringArray get_paths() const;
 
-	static void cleanup(bool p_force = false);
+	void parse_paths(const String p_paths);
+
+	~OpenXRIPBinding();
 };
 
-// Test main override is for the testing behaviour.
-#define TEST_MAIN_OVERRIDE                                         \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
+class OpenXRInteractionProfile : public Resource {
+	GDCLASS(OpenXRInteractionProfile, Resource);
 
-#define TEST_MAIN_PARAM_OVERRIDE(argc, argv)                       \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
+private:
+	String interaction_profile_path;
+	Array bindings;
 
-#endif // MAIN_H
+protected:
+	static void _bind_methods();
+
+public:
+	static Ref<OpenXRInteractionProfile> new_profile(const char *p_input_profile_path);
+
+	void set_interaction_profile_path(const String p_input_profile_path);
+	String get_interaction_profile_path() const;
+
+	void set_bindings(Array p_bindings);
+	Array get_bindings() const;
+
+	void add_binding(Ref<OpenXRIPBinding> p_binding);
+	void remove_binding(Ref<OpenXRIPBinding> p_binding);
+
+	void add_new_binding(const Ref<OpenXRAction> p_action, const char *p_paths);
+
+	~OpenXRInteractionProfile();
+};
+
+#endif // !OPENXR_INTERACTION_PROFILE_H

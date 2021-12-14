@@ -1915,8 +1915,23 @@
 		</member>
 		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
-		<member name="rendering/xr/enabled" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], XR support is enabled in Godot, this ensures required shaders are compiled.
+		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://default_action_map.tres&quot;">
+			Action map configuration to load by default.
+		</member>
+		<member name="xr/openxr/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] Godot will setup and initialise OpenXR on startup.
+		</member>
+		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
+			Specify whether OpenXR should be configured for an HMD or a hand held device.
+		</member>
+		<member name="xr/openxr/reference_space" type="int" setter="" getter="" default="&quot;1&quot;">
+			Specify the default reference space.
+		</member>
+		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;">
+			Specify the view configuration with which to configure OpenXR settting up either Mono or Stereo rendering.
+		</member>
+		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], Godot will compile shaders required for XR.
 		</member>
 	</members>
 </class>

@@ -500,6 +500,7 @@ public:
 
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>()) = 0;
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture) = 0;
+	virtual RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, uint64_t p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) = 0;
 
 	enum TextureSliceType {
 		TEXTURE_SLICE_2D,

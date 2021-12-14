@@ -45,6 +45,8 @@
 #include <vulkan/vulkan.h>
 #endif
 
+#include "vulkan_hooks.h"
+
 class VulkanContext {
 public:
 	struct SubgroupCapabilities {
@@ -86,6 +88,7 @@ private:
 		FRAME_LAG = 2
 	};
 
+	static VulkanHooks *vulkan_hooks;
 	VkInstance inst = VK_NULL_HANDLE;
 	VkPhysicalDevice gpu = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_props;
@@ -266,6 +269,8 @@ public:
 	int get_swapchain_image_count() const;
 	VkQueue get_graphics_queue() const;
 	uint32_t get_graphics_queue_family_index() const;
+
+	static void set_vulkan_hooks(VulkanHooks *p_vulkan_hooks) { vulkan_hooks = p_vulkan_hooks; };
 
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);

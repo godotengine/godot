@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main.h                                                               */
+/*  openxr_android_extension.cpp                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_H
-#define MAIN_H
+#include "openxr_android_extension.h"
 
-#include "core/error/error_list.h"
-#include "core/os/thread.h"
-#include "core/typedefs.h"
+#include <openxr/openxr.h>
+#include <openxr/openxr_platform.h>
 
-class Main {
-	static void print_help(const char *p_binary);
-	static uint64_t last_ticks;
-	static uint32_t frames;
-	static uint32_t frame;
-	static bool force_redraw_requested;
-	static int iterating;
-	static bool agile_input_event_flushing;
+OpenXRAndroidExtension *OpenXRAndroidExtension::singleton = nullptr;
 
-public:
-	static bool is_cmdline_tool();
-	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
-	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
-	static Error setup2(Thread::ID p_main_tid_override = 0);
-	static String get_rendering_driver_name();
-#ifdef TESTS_ENABLED
-	static Error test_setup();
-	static void test_cleanup();
-#endif
-	static bool start();
+OpenXRAndroidExtension *OpenXRAndroidExtension::get_singleton() {
+	return singleton;
+}
 
-	static bool iteration();
-	static void force_redraw();
+OpenXRAndroidExtension::OpenXRAndroidExtension(OpenXRAPI *p_openxr_api) :
+		OpenXRExtensionWrapper(p_openxr_api) {
+	singleton = this;
 
-	static bool is_iterating();
+	request_extensions[XR_KHR_ANDROID_THREAD_SETTINGS_EXTENSION_NAME] = nullptr; // must be available
 
-	static void cleanup(bool p_force = false);
-};
+	// Initialize the loader
+	PFN_xrInitializeLoaderKHR xrInitializeLoaderKHR;
+	result = xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction *)(&xrInitializeLoaderKHR));
+	ERR_FAIL_COND_MSG(XR_FAILED(result), "Failed to retrieve pointer to xrInitializeLoaderKHR");
 
-// Test main override is for the testing behaviour.
-#define TEST_MAIN_OVERRIDE                                         \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
+	// TODO fix this code, this is still code from GDNative!
+	JNIEnv *env = android_api->godot_android_get_env();
+	JavaVM *vm;
+	env->GetJavaVM(&vm);
+	jobject activity_object = env->NewGlobalRef(android_api->godot_android_get_activity());
 
-#define TEST_MAIN_PARAM_OVERRIDE(argc, argv)                       \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
+	XrLoaderInitInfoAndroidKHR loader_init_info_android = {
+		.type = XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR,
+		.next = nullptr,
+		.applicationVM = vm,
+		.applicationContext = activity_object
+	};
+	xrInitializeLoaderKHR((const XrLoaderInitInfoBaseHeaderKHR *)&loader_init_info_android);
+	ERR_FAIL_COND_MSG(XR_FAILED(result), "Failed to call xrInitializeLoaderKHR");
+}
 
-#endif // MAIN_H
+OpenXRAndroidExtension::~OpenXRAndroidExtension() {
+	singleton = nullptr;
+}

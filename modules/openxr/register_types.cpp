@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main.h                                                               */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,64 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_H
-#define MAIN_H
+#include "register_types.h"
+#include "main/main.h"
 
-#include "core/error/error_list.h"
-#include "core/os/thread.h"
-#include "core/typedefs.h"
+#include "openxr_interface.h"
 
-class Main {
-	static void print_help(const char *p_binary);
-	static uint64_t last_ticks;
-	static uint32_t frames;
-	static uint32_t frame;
-	static bool force_redraw_requested;
-	static int iterating;
-	static bool agile_input_event_flushing;
+#include "action_map/openxr_action.h"
+#include "action_map/openxr_action_map.h"
+#include "action_map/openxr_action_set.h"
+#include "action_map/openxr_interaction_profile.h"
 
-public:
-	static bool is_cmdline_tool();
-	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
-	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
-	static Error setup2(Thread::ID p_main_tid_override = 0);
-	static String get_rendering_driver_name();
-#ifdef TESTS_ENABLED
-	static Error test_setup();
-	static void test_cleanup();
-#endif
-	static bool start();
+OpenXRAPI *openxr_api = nullptr;
+Ref<OpenXRInterface> openxr_interface;
 
-	static bool iteration();
-	static void force_redraw();
+void preregister_openxr_types() {
+	// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
 
-	static bool is_iterating();
+	OpenXRAPI::setup_global_defs();
+	openxr_api = OpenXRAPI::get_singleton();
+	if (openxr_api) {
+		if (!openxr_api->initialise(Main::get_rendering_driver_name())) {
+			return;
+		}
+	}
+}
 
-	static void cleanup(bool p_force = false);
-};
+void register_openxr_types() {
+	GDREGISTER_CLASS(OpenXRInterface);
 
-// Test main override is for the testing behaviour.
-#define TEST_MAIN_OVERRIDE                                         \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
+	GDREGISTER_CLASS(OpenXRAction);
+	GDREGISTER_CLASS(OpenXRActionSet);
+	GDREGISTER_CLASS(OpenXRActionMap);
+	GDREGISTER_CLASS(OpenXRIPBinding);
+	GDREGISTER_CLASS(OpenXRInteractionProfile);
+
+	XRServer *xr_server = XRServer::get_singleton();
+	if (xr_server) {
+		openxr_interface.instantiate();
+		xr_server->add_interface(openxr_interface);
+
+		if (openxr_interface->initialise_on_startup()) {
+			openxr_interface->initialize();
+		}
+	}
+}
+
+void unregister_openxr_types() {
+	if (openxr_interface.is_valid()) {
+		// unregister our interface from the XR server
+		if (XRServer::get_singleton()) {
+			XRServer::get_singleton()->remove_interface(openxr_interface);
+		}
+
+		// and release
+		openxr_interface.unref();
 	}
 
-#define TEST_MAIN_PARAM_OVERRIDE(argc, argv)                       \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
+	if (openxr_api) {
+		openxr_api->finish();
+		memdelete(openxr_api);
 	}
-
-#endif // MAIN_H
+}

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main.h                                                               */
+/*  openxr_action.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef OPENXR_ACTION_H
+#define OPENXR_ACTION_H
 
-#include "core/error/error_list.h"
-#include "core/os/thread.h"
-#include "core/typedefs.h"
+#include "core/io/resource.h"
 
-class Main {
-	static void print_help(const char *p_binary);
-	static uint64_t last_ticks;
-	static uint32_t frames;
-	static uint32_t frame;
-	static bool force_redraw_requested;
-	static int iterating;
-	static bool agile_input_event_flushing;
+class OpenXRAction : public Resource {
+	GDCLASS(OpenXRAction, Resource);
 
 public:
-	static bool is_cmdline_tool();
-	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
-	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
-	static Error setup2(Thread::ID p_main_tid_override = 0);
-	static String get_rendering_driver_name();
-#ifdef TESTS_ENABLED
-	static Error test_setup();
-	static void test_cleanup();
-#endif
-	static bool start();
+	enum ActionType {
+		OPENXR_ACTION_BOOL,
+		OPENXR_ACTION_FLOAT,
+		OPENXR_ACTION_VECTOR2,
+		OPENXR_ACTION_POSE,
+		OPENXR_ACTION_HAPTIC,
+	};
 
-	static bool iteration();
-	static void force_redraw();
+private:
+	String localized_name;
+	ActionType action_type = OPENXR_ACTION_FLOAT;
 
-	static bool is_iterating();
+	PackedStringArray toplevel_paths;
 
-	static void cleanup(bool p_force = false);
+protected:
+	static void _bind_methods();
+
+public:
+	static Ref<OpenXRAction> new_action(const char *p_name, const char *p_localized_name, const ActionType p_action_type, const char *p_toplevel_paths);
+
+	void set_localized_name(const String p_localized_name);
+	String get_localized_name() const;
+
+	void set_action_type(const ActionType p_action_type);
+	ActionType get_action_type() const;
+
+	void set_toplevel_paths(const PackedStringArray p_toplevel_paths);
+	PackedStringArray get_toplevel_paths() const;
+
+	void parse_toplevel_paths(const String p_toplevel_paths);
 };
 
-// Test main override is for the testing behaviour.
-#define TEST_MAIN_OVERRIDE                                         \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
+VARIANT_ENUM_CAST(OpenXRAction::ActionType);
 
-#define TEST_MAIN_PARAM_OVERRIDE(argc, argv)                       \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
-
-#endif // MAIN_H
+#endif // !OPENXR_ACTION_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main.h                                                               */
+/*  openxr_action_map.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef OPENXR_ACTION_SETS_H
+#define OPENXR_ACTION_SETS_H
 
-#include "core/error/error_list.h"
-#include "core/os/thread.h"
-#include "core/typedefs.h"
+#include "core/io/resource.h"
 
-class Main {
-	static void print_help(const char *p_binary);
-	static uint64_t last_ticks;
-	static uint32_t frames;
-	static uint32_t frame;
-	static bool force_redraw_requested;
-	static int iterating;
-	static bool agile_input_event_flushing;
+#include "openxr_action_set.h"
+#include "openxr_interaction_profile.h"
+
+class OpenXRActionMap : public Resource {
+	GDCLASS(OpenXRActionMap, Resource);
+
+private:
+	Array action_sets;
+	Array interaction_profiles;
+
+protected:
+	static void _bind_methods();
 
 public:
-	static bool is_cmdline_tool();
-	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
-	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
-	static Error setup2(Thread::ID p_main_tid_override = 0);
-	static String get_rendering_driver_name();
-#ifdef TESTS_ENABLED
-	static Error test_setup();
-	static void test_cleanup();
-#endif
-	static bool start();
+	void set_action_sets(Array p_action_sets);
+	Array get_action_sets() const;
 
-	static bool iteration();
-	static void force_redraw();
+	void add_action_set(Ref<OpenXRActionSet> p_action_set);
+	void remove_action_set(Ref<OpenXRActionSet> p_action_set);
 
-	static bool is_iterating();
+	void set_interaction_profiles(Array p_interaction_profiles);
+	Array get_interaction_profiles() const;
 
-	static void cleanup(bool p_force = false);
+	void add_interaction_profile(Ref<OpenXRInteractionProfile> p_interaction_profile);
+	void remove_interaction_profile(Ref<OpenXRInteractionProfile> p_interaction_profile);
+
+	void create_default_action_sets();
+	void create_editor_action_sets();
+
+	~OpenXRActionMap();
 };
 
-// Test main override is for the testing behaviour.
-#define TEST_MAIN_OVERRIDE                                         \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
-
-#define TEST_MAIN_PARAM_OVERRIDE(argc, argv)                       \
-	bool run_test = false;                                         \
-	int return_code = Main::test_entrypoint(argc, argv, run_test); \
-	if (run_test) {                                                \
-		return return_code;                                        \
-	}
-
-#endif // MAIN_H
+#endif // !OPENXR_ACTION_SETS_H

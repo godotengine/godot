@@ -332,7 +332,7 @@ void EffectsRD::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 }
 
-void EffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_alpha_to_zero, bool p_srgb, RID p_secondary) {
+void EffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_alpha_to_zero, bool p_srgb, RID p_secondary, bool p_multiview) {
 	memset(&copy_to_fb.push_constant, 0, sizeof(CopyToFbPushConstant));
 
 	if (p_flip_y) {
@@ -348,10 +348,18 @@ void EffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer,
 		copy_to_fb.push_constant.srgb = true;
 	}
 
+	CopyToFBMode mode;
+	if (p_multiview) {
+		mode = p_secondary.is_valid() ? COPY_TO_FB_MULTIVIEW_WITH_DEPTH : COPY_TO_FB_MULTIVIEW;
+	} else {
+		mode = p_secondary.is_valid() ? COPY_TO_FB_COPY2 : COPY_TO_FB_COPY;
+	}
+
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, p_rect);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[p_secondary.is_valid() ? COPY_TO_FB_COPY2 : COPY_TO_FB_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
 	if (p_secondary.is_valid()) {
+		// TODO may need to do this differently when reading from depth buffer for multiview
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_secondary), 1);
 	}
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
@@ -2367,15 +2375,26 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		copy_modes.push_back("\n");
 		copy_modes.push_back("\n#define MODE_PANORAMA_TO_DP\n");
 		copy_modes.push_back("\n#define MODE_TWO_SOURCES\n");
+		copy_modes.push_back("\n#define MULTIVIEW\n");
+		copy_modes.push_back("\n#define MULTIVIEW\n#define MODE_TWO_SOURCES\n");
 
 		copy_to_fb.shader.initialize(copy_modes);
+
+		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+			copy_to_fb.shader.set_variant_enabled(COPY_TO_FB_MULTIVIEW, false);
+			copy_to_fb.shader.set_variant_enabled(COPY_TO_FB_MULTIVIEW_WITH_DEPTH, false);
+		}
 
 		copy_to_fb.shader_version = copy_to_fb.shader.version_create();
 
 		//use additive
 
 		for (int i = 0; i < COPY_TO_FB_MAX; i++) {
-			copy_to_fb.pipelines[i].setup(copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+			if (copy_to_fb.shader.is_variant_enabled(i)) {
+				copy_to_fb.pipelines[i].setup(copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+			} else {
+				copy_to_fb.pipelines[i].clear();
+			}
 		}
 	}
 

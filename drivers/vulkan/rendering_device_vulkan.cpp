@@ -2118,6 +2118,124 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	return id;
 }
 
+RID RenderingDeviceVulkan::texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, uint64_t p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) {
+	_THREAD_SAFE_METHOD_
+	// This method creates a texture object using a VkImage created by an extension, module or other external source (OpenXR uses this).
+	VkImage image = (VkImage)p_image;
+
+	Texture texture;
+	texture.image = image;
+	// if we leave texture.allocation as a nullptr, would that be enough to detect we don't "own" the image?
+	// also leave texture.allocation_info alone
+	// we'll set texture.view later on
+	texture.type = p_type;
+	texture.format = p_format;
+	texture.samples = p_samples;
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.depth = p_depth;
+	texture.layers = p_layers;
+	texture.mipmaps = 0; // maybe make this settable too?
+	texture.usage_flags = p_flags;
+	texture.base_mipmap = 0;
+	texture.base_layer = 0;
+	texture.allowed_shared_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_UNORM);
+	texture.allowed_shared_formats.push_back(RD::DATA_FORMAT_R8G8B8A8_SRGB);
+
+	// Do we need to do something with texture.layout ?
+
+	if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+		texture.read_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		texture.barrier_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+		// if (format_has_stencil(p_format.format)) {
+		// 	texture.barrier_aspect_mask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		// }
+	} else {
+		texture.read_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+		texture.barrier_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	// Create a view for us to use
+
+	VkImageViewCreateInfo image_view_create_info;
+	image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	image_view_create_info.pNext = nullptr;
+	image_view_create_info.flags = 0;
+	image_view_create_info.image = texture.image;
+
+	static const VkImageViewType view_types[TEXTURE_TYPE_MAX] = {
+		VK_IMAGE_VIEW_TYPE_1D,
+		VK_IMAGE_VIEW_TYPE_2D,
+		VK_IMAGE_VIEW_TYPE_3D,
+		VK_IMAGE_VIEW_TYPE_CUBE,
+		VK_IMAGE_VIEW_TYPE_1D_ARRAY,
+		VK_IMAGE_VIEW_TYPE_2D_ARRAY,
+		VK_IMAGE_VIEW_TYPE_CUBE_ARRAY,
+	};
+
+	image_view_create_info.viewType = view_types[texture.type];
+	image_view_create_info.format = vulkan_formats[texture.format];
+
+	static const VkComponentSwizzle component_swizzles[TEXTURE_SWIZZLE_MAX] = {
+		VK_COMPONENT_SWIZZLE_IDENTITY,
+		VK_COMPONENT_SWIZZLE_ZERO,
+		VK_COMPONENT_SWIZZLE_ONE,
+		VK_COMPONENT_SWIZZLE_R,
+		VK_COMPONENT_SWIZZLE_G,
+		VK_COMPONENT_SWIZZLE_B,
+		VK_COMPONENT_SWIZZLE_A
+	};
+
+	// hardcode for now, maybe make this settable from outside..
+	image_view_create_info.components.r = component_swizzles[TEXTURE_SWIZZLE_R];
+	image_view_create_info.components.g = component_swizzles[TEXTURE_SWIZZLE_G];
+	image_view_create_info.components.b = component_swizzles[TEXTURE_SWIZZLE_B];
+	image_view_create_info.components.a = component_swizzles[TEXTURE_SWIZZLE_A];
+
+	image_view_create_info.subresourceRange.baseMipLevel = 0;
+	image_view_create_info.subresourceRange.levelCount = texture.mipmaps;
+	image_view_create_info.subresourceRange.baseArrayLayer = 0;
+	image_view_create_info.subresourceRange.layerCount = texture.layers;
+	if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	} else {
+		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	VkResult err = vkCreateImageView(device, &image_view_create_info, nullptr, &texture.view);
+
+	if (err) {
+		// vmaDestroyImage(allocator, texture.image, texture.allocation);
+		ERR_FAIL_V_MSG(RID(), "vkCreateImageView failed with error " + itos(err) + ".");
+	}
+
+	//barrier to set layout
+	{
+		VkImageMemoryBarrier image_memory_barrier;
+		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		image_memory_barrier.pNext = nullptr;
+		image_memory_barrier.srcAccessMask = 0;
+		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		image_memory_barrier.newLayout = texture.layout;
+		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		image_memory_barrier.image = texture.image;
+		image_memory_barrier.subresourceRange.aspectMask = texture.barrier_aspect_mask;
+		image_memory_barrier.subresourceRange.baseMipLevel = 0;
+		image_memory_barrier.subresourceRange.levelCount = texture.mipmaps;
+		image_memory_barrier.subresourceRange.baseArrayLayer = 0;
+		image_memory_barrier.subresourceRange.layerCount = texture.layers;
+
+		vkCmdPipelineBarrier(frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+	}
+
+	RID id = texture_owner.make_rid(texture);
+
+	return id;
+}
+
 RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type) {
 	_THREAD_SAFE_METHOD_
 

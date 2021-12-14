@@ -41,12 +41,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
-			The degree to which the controller vibrates. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code]. If changed, updates [member XRPositionalTracker.rumble] accordingly.
-			This is a useful property to animate if you want the controller to vibrate for a limited duration.
-		</member>
-	</members>
 	<signals>
 		<signal name="button_pressed">
 			<argument index="0" name="name" type="String" />
