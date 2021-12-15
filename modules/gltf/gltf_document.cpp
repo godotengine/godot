@@ -4889,7 +4889,8 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 
 		if (d.has("name")) {
 			const String name = d["name"];
-			if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
+			const String name_lower = name.to_lower();
+			if (name_lower.begins_with("loop") || name_lower.ends_with("loop") || name_lower.begins_with("cycle") || name_lower.ends_with("cycle")) {
 				animation->set_loop(true);
 			}
 			animation->set_name(_gen_unique_animation_name(state, name));
