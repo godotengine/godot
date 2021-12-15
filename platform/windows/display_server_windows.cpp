@@ -1204,8 +1204,11 @@ void DisplayServerWindows::console_set_visible(bool p_enabled) {
 	if (console_visible == p_enabled) {
 		return;
 	}
-	ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
-	console_visible = p_enabled;
+	if (!((OS_Windows *)OS::get_singleton())->_is_win11_terminal()) {
+		// GetConsoleWindow is not supported by the Windows Terminal.
+		ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
+		console_visible = p_enabled;
+	}
 }
 
 bool DisplayServerWindows::is_console_visible() const {
