@@ -325,7 +325,6 @@
 			<argument index="0" name="body" type="RID" />
 			<description>
 				Returns the physics layer or layers a body can collide with.
--
 			</description>
 		</method>
 		<method name="body_get_direct_state">
