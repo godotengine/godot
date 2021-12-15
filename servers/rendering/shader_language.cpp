@@ -214,8 +214,8 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"FILTER_LINEAR",
 	"FILTER_NEAREST_MIPMAP",
 	"FILTER_LINEAR_MIPMAP",
-	"FILTER_NEAREST_MIPMAP_ANISO",
-	"FILTER_LINEAR_MIPMAP_ANISO",
+	"FILTER_NEAREST_MIPMAP_ANISOTROPY",
+	"FILTER_LINEAR_MIPMAP_ANISOTROPY",
 	"REPEAT_ENABLE",
 	"REPEAT_DISABLE",
 	"SHADER_TYPE",
@@ -328,8 +328,8 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_FILTER_LINEAR, "filter_linear" },
 	{ TK_FILTER_NEAREST_MIPMAP, "filter_nearest_mipmap" },
 	{ TK_FILTER_LINEAR_MIPMAP, "filter_linear_mipmap" },
-	{ TK_FILTER_NEAREST_MIPMAP_ANISO, "filter_nearest_mipmap_aniso" },
-	{ TK_FILTER_LINEAR_MIPMAP_ANISO, "filter_linear_mipmap_aniso" },
+	{ TK_FILTER_NEAREST_MIPMAP_ANISOTROPY, "filter_nearest_mipmap_anisotropy" },
+	{ TK_FILTER_LINEAR_MIPMAP_ANISOTROPY, "filter_linear_mipmap_anisotropy" },
 	{ TK_REPEAT_ENABLE, "repeat_enable" },
 	{ TK_REPEAT_DISABLE, "repeat_disable" },
 	{ TK_SHADER_TYPE, "shader_type" },
@@ -8082,10 +8082,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								uniform2.filter = FILTER_NEAREST_MIPMAP;
 							} else if (tk.type == TK_FILTER_LINEAR_MIPMAP) {
 								uniform2.filter = FILTER_LINEAR_MIPMAP;
-							} else if (tk.type == TK_FILTER_NEAREST_MIPMAP_ANISO) {
-								uniform2.filter = FILTER_NEAREST_MIPMAP_ANISO;
-							} else if (tk.type == TK_FILTER_LINEAR_MIPMAP_ANISO) {
-								uniform2.filter = FILTER_LINEAR_MIPMAP_ANISO;
+							} else if (tk.type == TK_FILTER_NEAREST_MIPMAP_ANISOTROPY) {
+								uniform2.filter = FILTER_NEAREST_MIPMAP_ANISOTROPY;
+							} else if (tk.type == TK_FILTER_LINEAR_MIPMAP_ANISOTROPY) {
+								uniform2.filter = FILTER_LINEAR_MIPMAP_ANISOTROPY;
 							} else if (tk.type == TK_REPEAT_DISABLE) {
 								uniform2.repeat = REPEAT_DISABLE;
 							} else if (tk.type == TK_REPEAT_ENABLE) {
@@ -9535,10 +9535,10 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				if (options.is_empty()) {
 					options.push_back("filter_linear");
 					options.push_back("filter_linear_mipmap");
-					options.push_back("filter_linear_mipmap_aniso");
+					options.push_back("filter_linear_mipmap_anisotropy");
 					options.push_back("filter_nearest");
 					options.push_back("filter_nearest_mipmap");
-					options.push_back("filter_nearest_mipmap_aniso");
+					options.push_back("filter_nearest_mipmap_anisotropy");
 					options.push_back("hint_albedo");
 					options.push_back("hint_anisotropy");
 					options.push_back("hint_black");
