@@ -206,7 +206,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	uint64_t staging_buffer_max_size = 0;
 	bool staging_buffer_used = false;
 
-	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment = true, bool p_on_draw_command_buffer = false);
+	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment = true);
 	Error _insert_staging_block();
 
 	struct Buffer {
