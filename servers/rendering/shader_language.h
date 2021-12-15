@@ -576,7 +576,7 @@ public:
 
 		virtual DataType get_datatype() const override { return datatype; }
 		virtual String get_datatype_name() const override { return String(struct_name); }
-		virtual int get_array_size() const override { return array_size; }
+		virtual int get_array_size() const override { return (index_expression || call_expression) ? 0 : array_size; }
 		virtual bool is_indexed() const override { return index_expression != nullptr || call_expression != nullptr; }
 
 		MemberNode() :
