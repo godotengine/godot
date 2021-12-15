@@ -527,7 +527,7 @@ void ShaderPreprocessor::process_else(PreproprocessorTokenizer *p_tokenizer) {
 	p_tokenizer->advance('\n');
 
 	bool skip = state->skip_stack_else[state->skip_stack_else.size() - 1];
-	state->skip_stack_else.remove(state->skip_stack_else.size() - 1);
+	state->skip_stack_else.remove_at(state->skip_stack_else.size() - 1);
 
 	Vector<SkippedPreprocessorCondition *> vec = state->skipped_conditions[state->current_include];
 	int index = vec.size() - 1;
@@ -744,7 +744,7 @@ String ShaderPreprocessor::expand_macros(const String &p_string, int p_line, Vec
 
 		if (expanded) {
 			// remove expanded macro and recursively replace remaining.
-			p_defines.remove(i);
+			p_defines.remove_at(i);
 			return expand_macros(result, p_line, p_defines);
 		}
 	}
