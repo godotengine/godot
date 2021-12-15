@@ -1996,7 +1996,7 @@ void ThemeTypeDialog::_dialog_about_to_show() {
 }
 
 void ThemeTypeDialog::ok_pressed() {
-	emit_signal(SNAME("type_selected"), add_type_filter->get_text().strip_edges());
+	_add_type_selected(add_type_filter->get_text().strip_edges());
 }
 
 void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
@@ -2042,12 +2042,25 @@ void ThemeTypeDialog::_add_type_options_cbk(int p_index) {
 }
 
 void ThemeTypeDialog::_add_type_dialog_entered(const String &p_value) {
-	emit_signal(SNAME("type_selected"), p_value.strip_edges());
-	hide();
+	_add_type_selected(p_value.strip_edges());
 }
 
 void ThemeTypeDialog::_add_type_dialog_activated(int p_index) {
-	emit_signal(SNAME("type_selected"), add_type_options->get_item_text(p_index));
+	_add_type_selected(add_type_options->get_item_text(p_index));
+}
+
+void ThemeTypeDialog::_add_type_selected(const String &p_type_name) {
+	pre_submitted_value = p_type_name;
+	if (p_type_name.is_empty()) {
+		add_type_confirmation->popup_centered();
+		return;
+	}
+
+	_add_type_confirmed();
+}
+
+void ThemeTypeDialog::_add_type_confirmed() {
+	emit_signal(SNAME("type_selected"), pre_submitted_value);
 	hide();
 }
 
@@ -2082,11 +2095,13 @@ void ThemeTypeDialog::set_include_own_types(bool p_enable) {
 }
 
 ThemeTypeDialog::ThemeTypeDialog() {
+	set_hide_on_ok(false);
+
 	VBoxContainer *add_type_vb = memnew(VBoxContainer);
 	add_child(add_type_vb);
 
 	Label *add_type_filter_label = memnew(Label);
-	add_type_filter_label->set_text(TTR("Name:"));
+	add_type_filter_label->set_text(TTR("Filter the list of types or create a new custom type:"));
 	add_type_vb->add_child(add_type_filter_label);
 
 	add_type_filter = memnew(LineEdit);
@@ -2095,7 +2110,7 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_filter->connect("text_submitted", callable_mp(this, &ThemeTypeDialog::_add_type_dialog_entered));
 
 	Label *add_type_options_label = memnew(Label);
-	add_type_options_label->set_text(TTR("Node Types:"));
+	add_type_options_label->set_text(TTR("Available Node-based types:"));
 	add_type_vb->add_child(add_type_options_label);
 
 	add_type_options = memnew(ItemList);
@@ -2103,6 +2118,12 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_vb->add_child(add_type_options);
 	add_type_options->connect("item_selected", callable_mp(this, &ThemeTypeDialog::_add_type_options_cbk));
 	add_type_options->connect("item_activated", callable_mp(this, &ThemeTypeDialog::_add_type_dialog_activated));
+
+	add_type_confirmation = memnew(ConfirmationDialog);
+	add_type_confirmation->set_title(TTR("Type name is empty!"));
+	add_type_confirmation->set_text(TTR("Are you sure you want to create an empty type?"));
+	add_type_confirmation->connect("confirmed", callable_mp(this, &ThemeTypeDialog::_add_type_confirmed));
+	add_child(add_type_confirmation);
 }
 
 VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
@@ -2603,6 +2624,7 @@ void ThemeTypeEditor::_list_type_selected(int p_index) {
 void ThemeTypeEditor::_add_type_button_cbk() {
 	add_type_mode = ADD_THEME_TYPE;
 	add_type_dialog->set_title(TTR("Add Item Type"));
+	add_type_dialog->get_ok_button()->set_text(TTR("Add Type"));
 	add_type_dialog->set_include_own_types(false);
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
 }
@@ -2969,7 +2991,8 @@ void ThemeTypeEditor::_type_variation_changed(const String p_value) {
 
 void ThemeTypeEditor::_add_type_variation_cbk() {
 	add_type_mode = ADD_VARIATION_BASE;
-	add_type_dialog->set_title(TTR("Add Variation Base Type"));
+	add_type_dialog->set_title(TTR("Set Variation Base Type"));
+	add_type_dialog->get_ok_button()->set_text(TTR("Set Base Type"));
 	add_type_dialog->set_include_own_types(true);
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
 }
