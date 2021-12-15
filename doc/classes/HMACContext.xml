@@ -5,49 +5,49 @@
 	</brief_description>
 	<description>
 		The HMACContext class is useful for advanced HMAC use cases, such as streaming the message as it supports creating the message over time rather than providing it all at once.
-	[codeblock]
-	extends Node
-	var ctx = HMACContext.new()
+		[codeblock]
+		extends Node
+		var ctx = HMACContext.new()
 
-	func _ready():
-	    var key = "supersecret".to_utf8()
-	    var err = ctx.start(HashingContext.HASH_SHA256, key)
-	    assert(err == OK)
-	    var msg1 = "this is ".to_utf8()
-	    var msg2 = "vewy vewy secret".to_utf8()
-	    err = ctx.update(msg1)
-	    assert(err == OK)
-	    err = ctx.update(msg2)
-	    assert(err == OK)
-	    var hmac = ctx.finish()
-	    print(hmac.hex_encode())
-	[/codeblock]
+		func _ready():
+		    var key = "supersecret".to_utf8()
+		    var err = ctx.start(HashingContext.HASH_SHA256, key)
+		    assert(err == OK)
+		    var msg1 = "this is ".to_utf8()
+		    var msg2 = "vewy vewy secret".to_utf8()
+		    err = ctx.update(msg1)
+		    assert(err == OK)
+		    err = ctx.update(msg2)
+		    assert(err == OK)
+		    var hmac = ctx.finish()
+		    print(hmac.hex_encode())
+		[/codeblock]
 		And in C# we can use the following.
-	[codeblock]
-	using Godot;
-	using System;
-	using System.Diagnostics;
+		[codeblock]
+		using Godot;
+		using System;
+		using System.Diagnostics;
 
-	public class CryptoNode : Node
-	{
-	    private HMACContext ctx = new HMACContext();
-	    public override void _Ready()
-	    {
-	        PoolByteArray key = String("supersecret").to_utf8();
-	        Error err = ctx.Start(HashingContext.HASH_SHA256, key);
-	        GD.Assert(err == OK);
-	        PoolByteArray msg1 = String("this is ").to_utf8();
-	        PoolByteArray msg2 = String("vewy vew secret").to_utf8();
-	        err = ctx.Update(msg1);
-	        GD.Assert(err == OK);
-	        err = ctx.Update(msg2);
-	        GD.Assert(err == OK);
-	        PoolByteArray hmac = ctx.Finish();
-	        GD.Print(hmac.HexEncode());
-	    }
-	}
-	[/codeblock]
-	[b]Note:[/b] Not available in HTML5 exports.
+		public class CryptoNode : Node
+		{
+		    private HMACContext ctx = new HMACContext();
+		    public override void _Ready()
+		    {
+		        PoolByteArray key = String("supersecret").to_utf8();
+		        Error err = ctx.Start(HashingContext.HASH_SHA256, key);
+		        GD.Assert(err == OK);
+		        PoolByteArray msg1 = String("this is ").to_utf8();
+		        PoolByteArray msg2 = String("vewy vew secret").to_utf8();
+		        err = ctx.Update(msg1);
+		        GD.Assert(err == OK);
+		        err = ctx.Update(msg2);
+		        GD.Assert(err == OK);
+		        PoolByteArray hmac = ctx.Finish();
+		        GD.Print(hmac.HexEncode());
+		    }
+		}
+		[/codeblock]
+		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
 	</tutorials>
