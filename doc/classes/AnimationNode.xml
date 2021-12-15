@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Base resource for [AnimationTree] nodes. In general, it's not used directly, but you can create custom ones with custom blending formulas.
-	Inherit this when creating nodes mainly for use in [AnimationNodeBlendTree], otherwise [AnimationRootNode] should be used instead.
+		Inherit this when creating nodes mainly for use in [AnimationNodeBlendTree], otherwise [AnimationRootNode] should be used instead.
 	</description>
 	<tutorials>
 		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
