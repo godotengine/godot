@@ -68,8 +68,8 @@
 #define HB_MAX_FEATURE_INDICES	1500
 #endif
 
-#ifndef HB_MAX_LOOKUP_INDICES
-#define HB_MAX_LOOKUP_INDICES	20000
+#ifndef HB_MAX_LOOKUP_VISIT_COUNT
+#define HB_MAX_LOOKUP_VISIT_COUNT	35000
 #endif
 
 
@@ -173,7 +173,7 @@ struct hb_subset_layout_context_t :
   bool visitLookupIndex()
   {
     lookup_index_count++;
-    return lookup_index_count < HB_MAX_LOOKUP_INDICES;
+    return lookup_index_count < HB_MAX_LOOKUP_VISIT_COUNT;
   }
 
   hb_subset_context_t *subset_context;

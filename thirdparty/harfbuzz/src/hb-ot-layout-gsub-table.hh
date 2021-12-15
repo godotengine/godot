@@ -566,7 +566,7 @@ struct AlternateSet
     {
       /* Maybe we can do better than unsafe-to-break all; but since we are
        * changing random state, it would be hard to track that.  Good 'nough. */
-      c->buffer->unsafe_to_break_all ();
+      c->buffer->unsafe_to_break (0, c->buffer->len);
       alt_index = c->random_number () % count + 1;
     }
 

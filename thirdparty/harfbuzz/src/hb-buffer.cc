@@ -396,52 +396,6 @@ hb_buffer_t::set_masks (hb_mask_t    value,
 }
 
 void
-hb_buffer_t::reverse_range (unsigned int start,
-			    unsigned int end)
-{
-  if (end - start < 2)
-    return;
-
-  hb_array_t<hb_glyph_info_t> (info, len).reverse (start, end);
-
-  if (have_positions) {
-    hb_array_t<hb_glyph_position_t> (pos, len).reverse (start, end);
-  }
-}
-
-void
-hb_buffer_t::reverse ()
-{
-  if (unlikely (!len))
-    return;
-
-  reverse_range (0, len);
-}
-
-void
-hb_buffer_t::reverse_clusters ()
-{
-  unsigned int i, start, count, last_cluster;
-
-  if (unlikely (!len))
-    return;
-
-  reverse ();
-
-  count = len;
-  start = 0;
-  last_cluster = info[0].cluster;
-  for (i = 1; i < count; i++) {
-    if (last_cluster != info[i].cluster) {
-      reverse_range (start, i);
-      start = i;
-      last_cluster = info[i].cluster;
-    }
-  }
-  reverse_range (start, i);
-}
-
-void
 hb_buffer_t::merge_clusters_impl (unsigned int start,
 				  unsigned int end)
 {
@@ -543,7 +497,7 @@ void
 hb_buffer_t::unsafe_to_break_impl (unsigned int start, unsigned int end)
 {
   unsigned int cluster = UINT_MAX;
-  cluster = _unsafe_to_break_find_min_cluster (info, start, end, cluster);
+  cluster = _infos_find_min_cluster (info, start, end, cluster);
   _unsafe_to_break_set_mask (info, start, end, cluster);
 }
 void
@@ -559,8 +513,9 @@ hb_buffer_t::unsafe_to_break_from_outbuffer (unsigned int start, unsigned int en
   assert (idx <= end);
 
   unsigned int cluster = UINT_MAX;
-  cluster = _unsafe_to_break_find_min_cluster (out_info, start, out_len, cluster);
-  cluster = _unsafe_to_break_find_min_cluster (info, idx, end, cluster);
+  cluster = _infos_find_min_cluster (out_info, start, out_len, cluster);
+  cluster = _infos_find_min_cluster (info, idx, end, cluster);
+
   _unsafe_to_break_set_mask (out_info, start, out_len, cluster);
   _unsafe_to_break_set_mask (info, idx, end, cluster);
 }

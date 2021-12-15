@@ -118,7 +118,13 @@ struct ValueFormat : HBUINT16
     if (!format) return ret;
 
     hb_font_t *font = c->font;
-    bool horizontal = HB_DIRECTION_IS_HORIZONTAL (c->direction);
+    bool horizontal =
+#ifndef HB_NO_VERTICAL
+      HB_DIRECTION_IS_HORIZONTAL (c->direction)
+#else
+      true
+#endif
+      ;
 
     if (format & xPlacement) glyph_pos.x_offset  += font->em_scale_x (get_short (values++, &ret));
     if (format & yPlacement) glyph_pos.y_offset  += font->em_scale_y (get_short (values++, &ret));

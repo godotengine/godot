@@ -118,6 +118,7 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
   }
 }
 
+#ifndef HB_NO_VERTICAL
 static void
 hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
 			    unsigned count,
@@ -137,7 +138,9 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
     first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
   }
 }
+#endif
 
+#ifndef HB_NO_VERTICAL
 static hb_bool_t
 hb_ot_get_glyph_v_origin (hb_font_t *font,
 			  void *font_data,
@@ -150,14 +153,12 @@ hb_ot_get_glyph_v_origin (hb_font_t *font,
 
   *x = font->get_glyph_h_advance (glyph) / 2;
 
-#ifndef HB_NO_OT_FONT_CFF
   const OT::VORG &VORG = *ot_face->VORG;
   if (VORG.has_data ())
   {
     *y = font->em_scale_y (VORG.get_y_origin (glyph));
     return true;
   }
-#endif
 
   hb_glyph_extents_t extents = {0};
   if (ot_face->glyf->get_extents (font, glyph, &extents))
@@ -174,6 +175,7 @@ hb_ot_get_glyph_v_origin (hb_font_t *font,
 
   return true;
 }
+#endif
 
 static hb_bool_t
 hb_ot_get_glyph_extents (hb_font_t *font,
@@ -242,6 +244,7 @@ hb_ot_get_font_h_extents (hb_font_t *font,
 	 _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP, &metrics->line_gap);
 }
 
+#ifndef HB_NO_VERTICAL
 static hb_bool_t
 hb_ot_get_font_v_extents (hb_font_t *font,
 			  void *font_data HB_UNUSED,
@@ -252,6 +255,7 @@ hb_ot_get_font_v_extents (hb_font_t *font,
 	 _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_VERTICAL_DESCENDER, &metrics->descender) &&
 	 _hb_ot_metrics_get_position_common (font, HB_OT_METRICS_TAG_VERTICAL_LINE_GAP, &metrics->line_gap);
 }
+#endif
 
 static inline void free_static_ot_funcs ();
 
@@ -261,17 +265,23 @@ static struct hb_ot_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loader_t<hb_ot
   {
     hb_font_funcs_t *funcs = hb_font_funcs_create ();
 
-    hb_font_funcs_set_font_h_extents_func (funcs, hb_ot_get_font_h_extents, nullptr, nullptr);
-    hb_font_funcs_set_font_v_extents_func (funcs, hb_ot_get_font_v_extents, nullptr, nullptr);
     hb_font_funcs_set_nominal_glyph_func (funcs, hb_ot_get_nominal_glyph, nullptr, nullptr);
     hb_font_funcs_set_nominal_glyphs_func (funcs, hb_ot_get_nominal_glyphs, nullptr, nullptr);
     hb_font_funcs_set_variation_glyph_func (funcs, hb_ot_get_variation_glyph, nullptr, nullptr);
+
+    hb_font_funcs_set_font_h_extents_func (funcs, hb_ot_get_font_h_extents, nullptr, nullptr);
     hb_font_funcs_set_glyph_h_advances_func (funcs, hb_ot_get_glyph_h_advances, nullptr, nullptr);
-    hb_font_funcs_set_glyph_v_advances_func (funcs, hb_ot_get_glyph_v_advances, nullptr, nullptr);
     //hb_font_funcs_set_glyph_h_origin_func (funcs, hb_ot_get_glyph_h_origin, nullptr, nullptr);
+
+#ifndef HB_NO_VERTICAL
+    hb_font_funcs_set_font_v_extents_func (funcs, hb_ot_get_font_v_extents, nullptr, nullptr);
+    hb_font_funcs_set_glyph_v_advances_func (funcs, hb_ot_get_glyph_v_advances, nullptr, nullptr);
     hb_font_funcs_set_glyph_v_origin_func (funcs, hb_ot_get_glyph_v_origin, nullptr, nullptr);
+#endif
+
     hb_font_funcs_set_glyph_extents_func (funcs, hb_ot_get_glyph_extents, nullptr, nullptr);
     //hb_font_funcs_set_glyph_contour_point_func (funcs, hb_ot_get_glyph_contour_point, nullptr, nullptr);
+
 #ifndef HB_NO_OT_FONT_GLYPH_NAMES
     hb_font_funcs_set_glyph_name_func (funcs, hb_ot_get_glyph_name, nullptr, nullptr);
     hb_font_funcs_set_glyph_from_name_func (funcs, hb_ot_get_glyph_from_name, nullptr, nullptr);
