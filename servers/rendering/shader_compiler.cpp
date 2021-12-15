@@ -1344,7 +1344,7 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 	info.global_variable_type_func = _get_variable_type;
-	
+
 	// cheat the context here for now.
 	ShaderDependencyGraph graph;
 	graph.populate(p_code);
