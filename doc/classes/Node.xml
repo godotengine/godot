@@ -571,7 +571,8 @@
 			<description>
 				Replaces a node in a scene by the given one. Subscriptions that pass through this node will be lost.
 				If [code]keep_groups[/code] is [code]true[/code], the [code]node[/code] is added to the same groups that the replaced node is in.
-				Note that the replaced node is not automatically freed, so you either need to keep it in a variable for later use or free it using [method Object.free].
+				[b]Note:[/b] The given node will become the new parent of any child nodes that the replaced node had.
+				[b]Note:[/b] The replaced node is not automatically freed, so you either need to keep it in a variable for later use or free it using [method Object.free].
 			</description>
 		</method>
 		<method name="request_ready">
