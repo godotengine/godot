@@ -242,15 +242,14 @@ void WSLPeer::poll() {
 Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	ERR_FAIL_COND_V(!is_connected_to_host(), FAILED);
 	ERR_FAIL_COND_V(_out_pkt_size && (wslay_event_get_queued_msg_count(_data->ctx) >= (1ULL << _out_pkt_size)), ERR_OUT_OF_MEMORY);
-	ERR_FAIL_COND_V(_out_buf_size && (wslay_event_get_queued_msg_length(_data->ctx) >= (1ULL << _out_buf_size)), ERR_OUT_OF_MEMORY);
+	ERR_FAIL_COND_V(_out_buf_size && (wslay_event_get_queued_msg_length(_data->ctx) + p_buffer_size >= (1ULL << _out_buf_size)), ERR_OUT_OF_MEMORY);
 
-	struct wslay_event_msg msg; // Should I use fragmented?
+	struct wslay_event_msg msg;
 	msg.opcode = write_mode == WRITE_MODE_TEXT ? WSLAY_TEXT_FRAME : WSLAY_BINARY_FRAME;
 	msg.msg = p_buffer;
 	msg.msg_length = p_buffer_size;
 
-	wslay_event_queue_msg(_data->ctx, &msg);
-	if (wslay_event_send(_data->ctx) < 0) {
+	if (wslay_event_queue_msg(_data->ctx, &msg) != 0 || wslay_event_send(_data->ctx) != 0) {
 		close_now();
 		return FAILED;
 	}
