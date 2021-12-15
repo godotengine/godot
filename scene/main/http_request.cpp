@@ -31,6 +31,7 @@
 #include "http_request.h"
 #include "core/io/compression.h"
 #include "scene/main/timer.h"
+#include "core/io/dir_access.h"
 
 void HTTPRequest::_redirect_request(const String &p_new_url) {
 }
@@ -198,9 +199,11 @@ void HTTPRequest::cancel_request() {
 	}
 
 	if (file) {
+		file->close();
 		memdelete(file);
 		file = nullptr;
 	}
+
 	client->close();
 	body.resize(0);
 	got_response = false;
@@ -444,21 +447,72 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 
 	const PackedByteArray *data = nullptr;
 
-	if (accept_gzip && is_compressed && p_data.size() > 0) {
-		// Decompress request body
-		PackedByteArray *decompressed = memnew(PackedByteArray);
-		int result = Compression::decompress_dynamic(decompressed, body_size_limit, p_data.ptr(), p_data.size(), mode);
-		if (result == OK) {
-			data = decompressed;
-		} else if (result == -5) {
-			WARN_PRINT("Decompressed size of HTTP response body exceeded body_size_limit");
-			p_status = RESULT_BODY_SIZE_LIMIT_EXCEEDED;
-			// Just return the raw data if we failed to decompress it
-			data = &p_data;
+	if (accept_gzip && is_compressed) {
+		// Handle in-memory body decompression
+		if (p_data.size() > 0) {
+			// Decompress request body
+			PackedByteArray *decompressed = memnew(PackedByteArray);
+			int result = Compression::decompress_dynamic(decompressed, body_size_limit, p_data.ptr(), p_data.size(), mode);
+			if (result == OK) {
+				data = decompressed;
+			} else if (result == -5) {
+				WARN_PRINT("Decompressed size of HTTP response body exceeded body_size_limit");
+				p_status = RESULT_BODY_SIZE_LIMIT_EXCEEDED;
+				// Just return the raw data if we failed to decompress it
+				data = &p_data;
+			} else {
+				WARN_PRINT("Failed to decompress HTTP response body");
+				p_status = RESULT_BODY_DECOMPRESS_FAILED;
+				// Just return the raw data if we failed to decompress it
+				data = &p_data;
+			}
+		}
+		// Handle download to file decompression
+		else if (!download_to_file.is_empty()) {
+			String temp_file_name = download_to_file + ".temp";
+
+			int result = Compression::decompress_file(temp_file_name, body_size_limit, download_to_file, mode);
+
+			if (result == OK) {
+				// Delete the original compressed file
+				DirAccess *d = DirAccess::create_for_path(download_to_file);
+				Error err = d->remove(download_to_file);
+				if (err != OK)
+					WARN_PRINT("Failed to delete compressed file: " + download_to_file);
+				memdelete(d);
+
+				// Rename temp file to original
+				d = DirAccess::create_for_path(temp_file_name);
+				err = d->rename(temp_file_name, download_to_file);
+				if (err != OK)
+					WARN_PRINT("Failed to move decompressed file: " + temp_file_name);
+				memdelete(d);
+			} else {
+				if (result == -5) {
+					WARN_PRINT("Decompressed size of HTTP response body exceeded body_size_limit");
+				} else {
+					WARN_PRINT("Failed to decompress HTTP response body");
+				}
+
+				p_status = RESULT_BODY_DECOMPRESS_FAILED;
+
+				// Delete both files
+				DirAccess *d = DirAccess::create_for_path(download_to_file);
+				Error err = d->remove(download_to_file);
+				if (err != OK)
+					WARN_PRINT("Failed to delete compressed file: " + download_to_file);
+				memdelete(d);
+
+				d = DirAccess::create_for_path(temp_file_name);
+				err = d->remove(temp_file_name);
+				if (err != OK)
+					WARN_PRINT("Failed to move decompressed file: " + temp_file_name);
+				memdelete(d);
+			}
+
+			// Return empty mem buffer for the body
+			data = memnew(PackedByteArray);
 		} else {
-			WARN_PRINT("Failed to decompress HTTP response body");
-			p_status = RESULT_BODY_DECOMPRESS_FAILED;
-			// Just return the raw data if we failed to decompress it
 			data = &p_data;
 		}
 	} else {
