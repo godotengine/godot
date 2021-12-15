@@ -119,13 +119,19 @@
 			<return type="String" />
 			<argument index="0" name="idx" type="int" />
 			<description>
-				On Windows, returns the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]). On other platforms, or if the requested drive does not exist, the method returns an empty String.
+				On Windows, returns the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]).
+				On macOS, returns the path to the mounted volume passed as an argument.
+				On Linux, returns the path to the mounted volume or GTK 3 bookmark passed as an argument.
+				On other platforms, or if the requested drive does not exist, the method returns an empty String.
 			</description>
 		</method>
 		<method name="get_drive_count">
 			<return type="int" />
 			<description>
-				On Windows, returns the number of drives (partitions) mounted on the current filesystem. On other platforms, the method returns 0.
+				On Windows, returns the number of drives (partitions) mounted on the current filesystem.
+				On macOS, returns the number of mounted volumes.
+				On Linux, returns the number of mounted volumes and GTK 3 bookmarks.
+				On other platforms, the method returns 0.
 			</description>
 		</method>
 		<method name="get_files">
