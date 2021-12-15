@@ -327,7 +327,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 		// Draw the horizontal slider's grabber.
 		c.a = 0.9;
-		const Rect2 grabber_rect = Rect2(ofs + gofs, svofs + 1, grabber_w, 2 * EDSCALE);
+		const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
 		draw_rect(grabber_rect, c);
 
 		bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !value_input->is_visible();
