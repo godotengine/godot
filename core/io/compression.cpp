@@ -269,6 +269,87 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_s
 	return Z_OK;
 }
 
+int Compression::decompress_file(const String dst_file_path, int p_max_dst_size, const String src_file_path, Mode p_mode) {
+	FileAccess *src_file = FileAccess::open(src_file_path, FileAccess::READ);
+	FileAccess *dst_file = FileAccess::open(dst_file_path, FileAccess::WRITE);
+
+	int ret;
+	z_stream strm;
+
+	// This function only supports GZip and Deflate
+	int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
+	ERR_FAIL_COND_V(p_mode != MODE_DEFLATE && p_mode != MODE_GZIP, Z_ERRNO);
+
+	// Initialize the stream
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = Z_NULL;
+
+	int err = inflateInit2(&strm, window_bits);
+	ERR_FAIL_COND_V(err != Z_OK, -1);
+
+	const int CHUNK = 16384;
+	unsigned char *in = new unsigned char[CHUNK];
+	unsigned char *out = new unsigned char[CHUNK];
+
+	int total_out = 0;
+	// Keep reading compressed chunks, then pass the compressed
+	// chunk to the inner loop, to decompress it and write it to the new file
+	do {
+		// Read in compressed chunk
+		strm.avail_in = src_file->get_buffer(in, CHUNK);
+		strm.next_in = (Bytef *)in;
+
+		if (strm.avail_in == 0) {
+			break;
+		}
+
+		// run inflate() on input until output buffer not full, finish
+		// compression if all of source has been consumed
+		do {
+			strm.avail_out = CHUNK;
+			strm.next_out = out;
+
+			ret = inflate(&strm, Z_NO_FLUSH);
+			switch (ret) {
+				case Z_NEED_DICT:
+					ret = Z_DATA_ERROR;
+					[[fallthrough]];
+				case Z_DATA_ERROR:
+				case Z_MEM_ERROR:
+					break;
+			}
+
+			int out_Size = CHUNK - strm.avail_out;
+			total_out += out_Size;
+
+			dst_file->store_buffer(out, out_Size);
+		} while (strm.avail_out == 0 && total_out <= p_max_dst_size);
+
+		// Break if exceeded max allowed size
+		if (p_max_dst_size > -1 && total_out > p_max_dst_size) {
+			ret = Z_BUF_ERROR;
+			break;
+		}
+
+		// Finish when input stream is complete
+	} while (ret != Z_STREAM_END);
+
+	src_file->close();
+
+	dst_file->flush();
+	dst_file->close();
+
+	inflateEnd(&strm);
+
+	delete[] in;
+	delete[] out;
+
+	return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+}
+
 int Compression::zlib_level = Z_DEFAULT_COMPRESSION;
 int Compression::gzip_level = Z_DEFAULT_COMPRESSION;
 int Compression::zstd_level = 3;
