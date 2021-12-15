@@ -146,6 +146,10 @@ void WebRTCMultiplayerPeer::_find_next_peer() {
 	}
 	// After last.
 	while (E) {
+		if (!E->get()->connected) {
+			E = E->next();
+			continue;
+		}
 		for (const Ref<WebRTCDataChannel> &F : E->get()->channels) {
 			if (F->get_available_packet_count()) {
 				next_packet_peer = E->key();
@@ -157,6 +161,10 @@ void WebRTCMultiplayerPeer::_find_next_peer() {
 	E = peer_map.front();
 	// Before last
 	while (E) {
+		if (!E->get()->connected) {
+			E = E->next();
+			continue;
+		}
 		for (const Ref<WebRTCDataChannel> &F : E->get()->channels) {
 			if (F->get_available_packet_count()) {
 				next_packet_peer = E->key();
@@ -378,6 +386,9 @@ int WebRTCMultiplayerPeer::get_available_packet_count() const {
 	}
 	int size = 0;
 	for (const KeyValue<int, Ref<ConnectedPeer>> &E : peer_map) {
+		if (!E.value->connected) {
+			continue;
+		}
 		for (const Ref<WebRTCDataChannel> &F : E.value->channels) {
 			size += F->get_available_packet_count();
 		}
