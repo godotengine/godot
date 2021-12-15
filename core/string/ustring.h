@@ -356,6 +356,7 @@ public:
 
 	String left(int p_pos) const;
 	String right(int p_pos) const;
+	String indent(const String &p_prefix) const;
 	String dedent() const;
 	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
