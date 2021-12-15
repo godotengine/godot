@@ -84,9 +84,9 @@ private:
 	Packet current_packet;
 
 	void _pop_current_packet();
-	bool _poll_server();
-	bool _poll_client();
-	bool _poll_mesh();
+	bool _parse_server_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event);
+	bool _parse_client_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event);
+	bool _parse_mesh_event(ENetConnection::EventType p_event_type, ENetConnection::Event &p_event, int p_peer_id);
 	void _relay(int p_from, int p_to, enet_uint8 p_channel, ENetPacket *p_packet);
 	void _notify_peers(int p_id, bool p_connected);
 	void _destroy_unused(ENetPacket *p_packet);
