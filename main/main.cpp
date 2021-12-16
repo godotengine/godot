@@ -83,6 +83,7 @@
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_translation.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
 #ifndef NO_EDITOR_SPLASH
@@ -1937,7 +1938,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 
 	_start_success = true;
-	locale = String();
 
 	ClassDB::set_current_api(ClassDB::API_NONE); //no more APIs are registered at this point
 
@@ -2048,6 +2048,11 @@ bool Main::start() {
 	if (!doc_tool_path.is_empty()) {
 		// Needed to instance editor-only classes for their default values
 		Engine::get_singleton()->set_editor_hint(true);
+
+		// Translate the class reference only when `-l LOCALE` parameter is given.
+		if (!locale.is_empty() && locale != "en") {
+			load_doc_translations(locale);
+		}
 
 		{
 			DirAccessRef da = DirAccess::open(doc_tool_path);

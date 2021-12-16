@@ -33,21 +33,17 @@
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/io/certs_compressed.gen.h"
-#include "core/io/compression.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_memory.h"
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/io/translation_loader_po.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
-#include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_translations.gen.h"
+#include "editor/editor_translation.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -369,16 +365,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 
 		String best;
-		EditorTranslationList *etl = _editor_translations;
-
-		while (etl->data) {
-			const String &locale = etl->lang;
-
+		for (const String &locale : get_editor_locales()) {
 			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
 			String lang_code = locale.get_slice("_", 0);
 			if (locales_to_skip.find(lang_code) != -1) {
-				etl++;
 				continue;
 			}
 
@@ -392,8 +383,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			if (best.is_empty() && host_lang.begins_with(locale)) {
 				best = locale;
 			}
-
-			etl++;
 		}
 
 		if (best.is_empty()) {
@@ -922,50 +911,10 @@ void EditorSettings::setup_language() {
 		return; // Default, nothing to do.
 	}
 	// Load editor translation for configured/detected locale.
-	EditorTranslationList *etl = _editor_translations;
-	while (etl->data) {
-		if (etl->lang == lang) {
-			Vector<uint8_t> data;
-			data.resize(etl->uncomp_size);
-			Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
-
-			FileAccessMemory *fa = memnew(FileAccessMemory);
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_tool_translation(tr);
-				break;
-			}
-		}
-
-		etl++;
-	}
+	load_editor_translations(lang);
 
 	// Load class reference translation.
-	DocTranslationList *dtl = _doc_translations;
-	while (dtl->data) {
-		if (dtl->lang == lang) {
-			Vector<uint8_t> data;
-			data.resize(dtl->uncomp_size);
-			Compression::decompress(data.ptrw(), dtl->uncomp_size, dtl->data, dtl->comp_size, Compression::MODE_DEFLATE);
-
-			FileAccessMemory *fa = memnew(FileAccessMemory);
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(dtl->lang);
-				TranslationServer::get_singleton()->set_doc_translation(tr);
-				break;
-			}
-		}
-
-		dtl++;
-	}
+	load_doc_translations(lang);
 }
 
 void EditorSettings::setup_network() {
