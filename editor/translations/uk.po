@@ -22,7 +22,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-18 15:35+0000\n"
+"PO-Revision-Date: 2021-12-11 06:25+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -32,7 +32,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2152,9 +2152,8 @@ msgid "Icons"
 msgstr "Піктограми"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Styles"
-msgstr "Стиль"
+msgstr "Стилі"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -13422,20 +13421,18 @@ msgstr ""
 "«Використовувати нетипову збірку»."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
 msgstr ""
 "«Стеженням за руками» можна скористатися, лише якщо «Режим Xr» дорівнює "
-"«Oculus Mobile VR»."
+"«Oculus Mobile VR» або «OpenXR»."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "«Стеженням за руками» можна скористатися, лише якщо «Режим Xr» дорівнює "
-"«Oculus Mobile VR»."
+"«OpenXR»."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
@@ -13444,25 +13441,23 @@ msgstr ""
 "нетипове збирання»."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
-"Пункт «Експортувати AAB» є чинним, лише якщо увімкнено «Використовувати "
-"нетипове збирання»."
+"Пункт «Мін. SDK» є чинним, лише якщо увімкнено «Використовувати нетипове "
+"збирання»."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
 "enabled."
 msgstr ""
-"Пункт «Експортувати AAB» є чинним, лише якщо увімкнено «Використовувати "
-"нетипове збирання»."
+"Пункт «SDK цілі» є чинним, лише якщо увімкнено «Використовувати нетипове "
+"збирання»."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
-msgstr ""
+msgstr "Версія «SDK цілі» має бути більшою або рівною за версію «Мін. SDK»."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""

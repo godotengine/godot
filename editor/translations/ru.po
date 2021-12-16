@@ -106,7 +106,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-22 20:39+0000\n"
+"PO-Revision-Date: 2021-12-14 15:28+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -2226,9 +2226,8 @@ msgid "Icons"
 msgstr "Иконки"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Styles"
-msgstr "Стиль"
+msgstr "Стили"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -13465,20 +13464,18 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "«Use Custom Build» должен быть включен для использования плагинов."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
 msgstr ""
-"«Отслеживание рук» действует только тогда, когда «Xr Mode» - это «Oculus "
-"Mobile VR»."
+"«Hand Tracking» действителен только тогда, когда «Xr Mode» установлен в "
+"«Oculus Mobile VrApi» или «OpenXR»."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
-"«Отслеживание рук» действует только тогда, когда «Xr Mode» - это «Oculus "
-"Mobile VR»."
+"«Passthrough» действителен только тогда, когда «Xr Mode» установлен в "
+"«OpenXR»."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
@@ -13487,25 +13484,23 @@ msgstr ""
 "пользовательскую сборку»."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
-"«Export AAB» действителен только при включённой опции «Использовать "
+"Изменение «Min Sdk» действительно только если включён параметр «Использовать "
 "пользовательскую сборку»."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
 "enabled."
 msgstr ""
-"«Export AAB» действителен только при включённой опции «Использовать "
-"пользовательскую сборку»."
+"Изменение «Target Sdk» действительно только если включён параметр "
+"«Использовать пользовательскую сборку»."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
-msgstr ""
+msgstr "Версия «Target Sdk» должна быть больше или равна версии «Min Sdk»."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""

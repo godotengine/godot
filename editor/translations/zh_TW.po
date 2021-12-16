@@ -33,8 +33,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-02 20:24+0000\n"
-"Last-Translator: Chia-Hsiang Cheng <cche0109@student.monash.edu>\n"
+"PO-Revision-Date: 2021-12-14 15:28+0000\n"
+"Last-Translator: anthonychen <anton1554970211@126.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -2119,7 +2119,6 @@ msgid "Icons"
 msgstr "圖示"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Styles"
 msgstr "樣式"
 
@@ -13110,41 +13109,35 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "「使用自定建置」必須啟用以使用本外掛。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
 msgstr ""
 "「Hand Tracking」（手部追蹤）僅可在「Xr Mode」（XR 模式）設為「Oculus Mobile "
-"VR」時可用。"
+"VR」或「OpenXR」時可用。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
-msgstr ""
-"「Hand Tracking」（手部追蹤）僅可在「Xr Mode」（XR 模式）設為「Oculus Mobile "
-"VR」時可用。"
+msgstr "「Passthrough」僅可在「Xr Mode」（XR 模式）設為「OpenXR」時可用。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr "「Export AAB」僅於「Use Custom Build」啟用時可用。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
-msgstr "「Export AAB」僅於「Use Custom Build」啟用時可用。"
+msgstr "對「Min Sdk」的修改僅在「Use Custom Build」啟用時有效。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
 "enabled."
-msgstr "「Export AAB」僅於「Use Custom Build」啟用時可用。"
+msgstr "對「Target Sdk」的修改僅於「Use Custom Build」啟用時有效。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
-msgstr ""
+msgstr "「Target Sdk」版本必須高於或于「Min Sdk」版本一致。"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""

@@ -56,13 +56,14 @@
 # Hafid Talbi <atalbiie@gmail.com>, 2021.
 # Hareth Mohammed <harethpy@gmail.com>, 2021.
 # Mohammed Mubarak <modymu9@gmail.com>, 2021.
+# Spirit <i8bou3@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-27 23:46+0000\n"
-"Last-Translator: Nabeel20 <nabeelandnizam@gmail.com>\n"
+"PO-Revision-Date: 2021-12-14 15:28+0000\n"
+"Last-Translator: Spirit <i8bou3@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -1805,7 +1806,6 @@ msgstr ""
 "الملفات."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(current)"
 msgstr "(الحالي)"
 
@@ -6632,6 +6632,9 @@ msgid ""
 "This is similar to single collision shape, but can result in a simpler "
 "geometry in some cases, at the cost of accuracy."
 msgstr ""
+"إنشاء شكل تصادم محدب مبسط.\n"
+"هذا مشابه لشكل واحد من أشكال التصادم، ولكن يمكن أن ينتج عنه هندسة أبسط ولكن "
+"أقل دقة."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Multiple Convex Collision Siblings"
@@ -7927,12 +7930,12 @@ msgstr "منظوري"
 #. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [auto]"
-msgstr ""
+msgstr " [auto]"
 
 #. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
-msgstr ""
+msgstr " [portals active]"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -8002,7 +8005,7 @@ msgstr "حدّة"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw:"
-msgstr ""
+msgstr "ياو:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8241,7 +8244,7 @@ msgstr "استخدام المحاذاة"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Converts rooms for portal culling."
-msgstr ""
+msgstr "تحويل الغرف لبورتال كالينق."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -8269,15 +8272,15 @@ msgstr "الواجهة View اليُمنى"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Down"
-msgstr ""
+msgstr "تحريك المسار للأسفل"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Left"
-msgstr ""
+msgstr "تحريك المسار لليسار"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View Right"
-msgstr ""
+msgstr "تحريك المسار لليمين"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8286,7 +8289,7 @@ msgstr "الواجهة View الأمامية"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orbit View 180"
-msgstr ""
+msgstr "درجة عرض المدار 180°"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
@@ -8733,7 +8736,7 @@ msgstr "لم يوجد!"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} stylebox(es)"
-msgstr ""
+msgstr "{num} ستايلبوكس"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -10832,7 +10835,7 @@ msgstr "نص"
 
 #: editor/project_export.cpp
 msgid "Compiled Bytecode (Faster Loading)"
-msgstr ""
+msgstr "التعليمات المتوسطة المستوى (البايتكود) المُجمَّعة (تحميل أسرع)"
 
 #: editor/project_export.cpp
 msgid "Encrypted (Provide Key Below)"
@@ -13617,6 +13620,8 @@ msgstr ""
 #: platform/android/export/export_plugin.cpp
 msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
+"إصدار \"حزمة التطوير البرمجية المستهدفة\" يجب أن يكون أعلى من أو يساوي إصدار "
+"\"Min Sdk\"."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -14326,6 +14331,8 @@ msgid ""
 "longer has any effect.\n"
 "To remove this warning, disable the GIProbe's Compress property."
 msgstr ""
+"تم إيقاف خاصية GIProbe Compress بسبب أخطاء معروفة ولم يعد لها أي تأثير.\n"
+"لإزالة هذا التحذير عطّل خاصية GIProbe's Compress."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -14346,11 +14353,11 @@ msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
-msgstr ""
+msgstr "لم يتم تعيين أي شكل."
 
 #: scene/3d/occluder.cpp
 msgid "Only uniform scales are supported."
-msgstr ""
+msgstr "المعايير الموحدة هي المدعومة فقط."
 
 #: scene/3d/particles.cpp
 msgid ""
