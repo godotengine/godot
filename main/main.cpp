@@ -75,6 +75,7 @@
 #include "editor/doc/doc_data_class_path.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_translation.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
 #ifndef NO_EDITOR_SPLASH
@@ -1498,7 +1499,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	VisualServer::get_singleton()->callbacks_register(visual_server_callbacks);
 
 	_start_success = true;
-	locale = String();
 
 	ClassDB::set_current_api(ClassDB::API_NONE); //no more api is registered at this point
 
@@ -1605,6 +1605,11 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 	if (doc_tool_path != "") {
 		Engine::get_singleton()->set_editor_hint(true); // Needed to instance editor-only classes for their default values
+
+		// Translate the class reference only when `-l LOCALE` parameter is given.
+		if (!locale.empty() && locale != "en") {
+			load_doc_translations(locale);
+		}
 
 		{
 			DirAccessRef da = DirAccess::open(doc_tool_path);
