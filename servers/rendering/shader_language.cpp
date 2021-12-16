@@ -4850,11 +4850,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			if (shader->structs.has(identifier)) {
 				pstruct = shader->structs[identifier].shader_struct;
-#ifdef DEBUG_ENABLED
-				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_STRUCT_FLAG) && used_structs.has(identifier)) {
-					used_structs[identifier].used = true;
-				}
-#endif // DEBUG_ENABLED
 				struct_init = true;
 			}
 
@@ -6420,6 +6415,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			String struct_name = "";
 			if (is_struct) {
 				struct_name = tk.text;
+#ifdef DEBUG_ENABLED
+				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_STRUCT_FLAG) && used_structs.has(struct_name)) {
+					used_structs[struct_name].used = true;
+				}
+#endif // DEBUG_ENABLED
 			}
 
 			bool is_const = false;
@@ -7638,6 +7638,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					if (shader->structs.has(tk.text)) {
 						struct_name = tk.text;
+#ifdef DEBUG_ENABLED
+						if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_STRUCT_FLAG) && used_structs.has(struct_name)) {
+							used_structs[struct_name].used = true;
+						}
+#endif // DEBUG_ENABLED
 						struct_dt = true;
 						if (use_precision) {
 							_set_error("Precision modifier cannot be used on structs.");
@@ -8745,6 +8750,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					if (shader->structs.has(tk.text)) {
 						is_struct = true;
 						param_struct_name = tk.text;
+#ifdef DEBUG_ENABLED
+						if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_STRUCT_FLAG) && used_structs.has(param_struct_name)) {
+							used_structs[param_struct_name].used = true;
+						}
+#endif // DEBUG_ENABLED
 						if (use_precision) {
 							_set_error("Precision modifier cannot be used on structs.");
 							return ERR_PARSE_ERROR;
