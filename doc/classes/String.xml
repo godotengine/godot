@@ -241,7 +241,7 @@
 		<method name="dedent">
 			<return type="String" />
 			<description>
-				Returns a copy of the string with indentation (leading tabs and spaces) removed.
+				Returns a copy of the string with indentation (leading tabs and spaces) removed. See also [method indent] to add indentation.
 			</description>
 		</method>
 		<method name="empty">
@@ -391,6 +391,15 @@
 				var size = String.humanize_size(bytes)
 				print(size) # prints "127.5 MiB"
 				[/codeblock]
+			</description>
+		</method>
+		<method name="indent">
+			<return type="String" />
+			<argument index="0" name="prefix" type="String" />
+			<description>
+				Returns a copy of the string with lines indented with [code]prefix[/code].
+				For example, the string can be indented with two tabs using [code]"\t\t"[/code], or four spaces using [code]"    "[/code]. The prefix can be any string so it can also be used to comment out strings with e.g. [code]"# "[/code]. See also [method dedent] to remove indentation.
+				[b]Note:[/b] Empty lines are kept empty.
 			</description>
 		</method>
 		<method name="insert">
