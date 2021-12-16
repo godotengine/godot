@@ -867,7 +867,9 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, c
 
 	Ref<Font> font = sampled_font;
 
-	font->draw(canvas_item, pos, sampled_text);
+	const Color c = GLOBAL_GET("rendering/environment/default_clear_color");
+	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
+	font->draw(canvas_item, pos, sampled_text, Color(fg, fg, fg));
 
 	preview_done.clear();
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
