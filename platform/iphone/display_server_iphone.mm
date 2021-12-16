@@ -293,7 +293,6 @@ void DisplayServerIPhone::update_gyroscope(float p_x, float p_y, float p_z) {
 
 bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		// case FEATURE_CONSOLE_WINDOW:
 		// case FEATURE_CURSOR_SHAPE:
 		// case FEATURE_CUSTOM_CURSOR_SHAPE:
 		// case FEATURE_GLOBAL_MENU:

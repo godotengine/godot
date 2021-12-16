@@ -497,13 +497,13 @@ Error OS_OSX::create_instance(const List<String> &p_arguments, ProcessID *r_chil
 	if (nsappname != nil) {
 		String path;
 		path.parse_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
-		return create_process(path, p_arguments, r_child_id);
+		return create_process(path, p_arguments, r_child_id, false);
 	} else {
-		return create_process(get_executable_path(), p_arguments, r_child_id);
+		return create_process(get_executable_path(), p_arguments, r_child_id, false);
 	}
 }
 
-Error OS_OSX::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error OS_OSX::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	if (@available(macOS 10.15, *)) {
 		// Use NSWorkspace if path is an .app bundle.
 		NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
@@ -542,10 +542,10 @@ Error OS_OSX::create_process(const String &p_path, const List<String> &p_argumen
 
 			return err;
 		} else {
-			return OS_Unix::create_process(p_path, p_arguments, r_child_id);
+			return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
 		}
 	} else {
-		return OS_Unix::create_process(p_path, p_arguments, r_child_id);
+		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
 	}
 }
 

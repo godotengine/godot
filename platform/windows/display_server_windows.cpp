@@ -68,7 +68,6 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_CLIPBOARD:
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
-		case FEATURE_CONSOLE_WINDOW:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:
@@ -1196,23 +1195,6 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 	cps.ptCurrentPos.y = wd.im_position.y;
 	ImmSetCompositionWindow(himc, &cps);
 	ImmReleaseContext(wd.hWnd, himc);
-}
-
-void DisplayServerWindows::console_set_visible(bool p_enabled) {
-	_THREAD_SAFE_METHOD_
-
-	if (console_visible == p_enabled) {
-		return;
-	}
-	if (!((OS_Windows *)OS::get_singleton())->_is_win11_terminal()) {
-		// GetConsoleWindow is not supported by the Windows Terminal.
-		ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
-		console_visible = p_enabled;
-	}
-}
-
-bool DisplayServerWindows::is_console_visible() const {
-	return console_visible;
 }
 
 void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
@@ -3246,7 +3228,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	shift_mem = false;
 	control_mem = false;
 	meta_mem = false;
-	console_visible = IsWindowVisible(GetConsoleWindow());
 	hInstance = ((OS_Windows *)OS::get_singleton())->get_hinstance();
 
 	pressrc = 0;

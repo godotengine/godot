@@ -2852,11 +2852,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			DisplayServer::get_singleton()->window_set_mode(DisplayServer::get_singleton()->window_get_mode() == DisplayServer::WINDOW_MODE_FULLSCREEN ? DisplayServer::WINDOW_MODE_WINDOWED : DisplayServer::WINDOW_MODE_FULLSCREEN);
 
 		} break;
-		case SETTINGS_TOGGLE_CONSOLE: {
-			bool was_visible = DisplayServer::get_singleton()->is_console_visible();
-			DisplayServer::get_singleton()->console_set_visible(!was_visible);
-			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", was_visible);
-		} break;
 		case EDITOR_SCREENSHOT: {
 			screenshot_timer->start();
 		} break;
@@ -6500,11 +6495,6 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/fullscreen_mode", "macos", KeyModifierMask::CMD | KeyModifierMask::CTRL | Key::F);
 	p->add_shortcut(ED_GET_SHORTCUT("editor/fullscreen_mode"), SETTINGS_TOGGLE_FULLSCREEN);
 
-#if defined(WINDOWS_ENABLED) && defined(WINDOWS_SUBSYSTEM_CONSOLE)
-	// The console can only be toggled if the application was built for the console subsystem,
-	// not the GUI subsystem.
-	p->add_item(TTR("Toggle System Console"), SETTINGS_TOGGLE_CONSOLE);
-#endif
 	p->add_separator();
 
 	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {

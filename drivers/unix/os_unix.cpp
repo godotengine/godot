@@ -249,7 +249,7 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_JavaScript.
@@ -318,7 +318,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 #endif
 }
 
-Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_JavaScript.

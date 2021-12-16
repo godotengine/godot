@@ -105,7 +105,6 @@ public:
 		FEATURE_CURSOR_SHAPE,
 		FEATURE_CUSTOM_CURSOR_SHAPE,
 		FEATURE_NATIVE_DIALOG,
-		FEATURE_CONSOLE_WINDOW,
 		FEATURE_IME,
 		FEATURE_WINDOW_TRANSPARENCY,
 		FEATURE_HIDPI,
@@ -303,9 +302,6 @@ public:
 
 	virtual Point2i ime_get_selection() const;
 	virtual String ime_get_text() const;
-
-	virtual void console_set_visible(bool p_enabled);
-	virtual bool is_console_visible() const;
 
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void virtual_keyboard_hide();

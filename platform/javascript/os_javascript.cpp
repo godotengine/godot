@@ -107,11 +107,11 @@ void OS_JavaScript::finalize() {
 
 // Miscellaneous
 
-Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	return create_process(p_path, p_arguments);
 }
 
-Error OS_JavaScript::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error OS_JavaScript::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	Array args;
 	for (const String &E : p_arguments) {
 		args.push_back(E);
