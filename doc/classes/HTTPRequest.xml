@@ -121,6 +121,24 @@
 				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
 			</description>
 		</method>
+		<method name="set_http_proxy">
+			<return type="void" />
+			<argument index="0" name="host" type="String" />
+			<argument index="1" name="port" type="int" />
+			<description>
+				Sets the proxy server for HTTP requests.
+				The proxy server is unset if [code]host[/code] is empty or [code]port[/code] is -1.
+			</description>
+		</method>
+		<method name="set_https_proxy">
+			<return type="void" />
+			<argument index="0" name="host" type="String" />
+			<argument index="1" name="port" type="int" />
+			<description>
+				Sets the proxy server for HTTPS requests.
+				The proxy server is unset if [code]host[/code] is empty or [code]port[/code] is -1.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
