@@ -55,6 +55,7 @@ public:
 	PoolRealArray get_map_data() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines();
+	virtual real_t get_enclosing_radius() const;
 
 	HeightMapShape();
 };

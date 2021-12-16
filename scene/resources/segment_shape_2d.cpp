@@ -74,6 +74,10 @@ Rect2 SegmentShape2D::get_rect() const {
 	return rect;
 }
 
+real_t SegmentShape2D::get_enclosing_radius() const {
+	return (a + b).length();
+}
+
 void SegmentShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_a", "a"), &SegmentShape2D::set_a);
 	ClassDB::bind_method(D_METHOD("get_a"), &SegmentShape2D::get_a);
@@ -124,6 +128,10 @@ Rect2 RayShape2D::get_rect() const {
 	rect.expand_to(Vector2(0, length));
 	rect = rect.grow(Math_SQRT12 * 4);
 	return rect;
+}
+
+real_t RayShape2D::get_enclosing_radius() const {
+	return length;
 }
 
 void RayShape2D::_bind_methods() {

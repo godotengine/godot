@@ -4,62 +4,50 @@
 		2D navigation and pathfinding node.
 	</brief_description>
 	<description>
-		Navigation2D provides navigation and pathfinding within a 2D area, specified as a collection of [NavigationPolygon] resources. By default, these are automatically collected from child [NavigationPolygonInstance] nodes, but they can also be added on the fly with [method navpoly_add].
-		[b]Note:[/b] The current navigation system has many known issues and will not always return optimal paths as expected. These issues will be fixed in Godot 4.0.
+		Navigation2D provides navigation and pathfinding within a 2D area, specified as a collection of [NavigationPolygon] resources. By default, these are automatically collected from child [NavigationPolygonInstance] nodes.
 	</description>
 	<tutorials>
 		<link title="2D Navigation Demo">https://godotengine.org/asset-library/asset/117</link>
 	</tutorials>
 	<methods>
-		<method name="get_closest_point">
+		<method name="get_closest_point" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="to_point" type="Vector2" />
 			<description>
 				Returns the navigation point closest to the point given. Points are in local coordinate space.
 			</description>
 		</method>
-		<method name="get_closest_point_owner">
-			<return type="Object" />
+		<method name="get_closest_point_owner" qualifiers="const">
+			<return type="RID" />
 			<argument index="0" name="to_point" type="Vector2" />
 			<description>
-				Returns the owner of the [NavigationPolygon] which contains the navigation point closest to the point given. This is usually a [NavigationPolygonInstance]. For polygons added via [method navpoly_add], returns the owner that was given (or [code]null[/code] if the [code]owner[/code] parameter was omitted).
+				Returns the owner of the [NavigationPolygon] which contains the navigation point closest to the point given. This is usually a [NavigationPolygonInstance].
 			</description>
 		</method>
-		<method name="get_simple_path">
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the object's [RID].
+			</description>
+		</method>
+		<method name="get_simple_path" qualifiers="const">
 			<return type="PoolVector2Array" />
 			<argument index="0" name="start" type="Vector2" />
 			<argument index="1" name="end" type="Vector2" />
 			<argument index="2" name="optimize" type="bool" default="true" />
 			<description>
 				Returns the path between two given points. Points are in local coordinate space. If [code]optimize[/code] is [code]true[/code] (the default), the path is smoothed by merging path segments where possible.
-				[b]Note:[/b] This method has known issues and will often return non-optimal paths. These issues will be fixed in Godot 4.0.
-			</description>
-		</method>
-		<method name="navpoly_add">
-			<return type="int" />
-			<argument index="0" name="mesh" type="NavigationPolygon" />
-			<argument index="1" name="xform" type="Transform2D" />
-			<argument index="2" name="owner" type="Object" default="null" />
-			<description>
-				Adds a [NavigationPolygon]. Returns an ID for use with [method navpoly_remove] or [method navpoly_set_transform]. If given, a [Transform2D] is applied to the polygon. The optional [code]owner[/code] is used as return value for [method get_closest_point_owner].
-			</description>
-		</method>
-		<method name="navpoly_remove">
-			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<description>
-				Removes the [NavigationPolygon] with the given ID.
-			</description>
-		</method>
-		<method name="navpoly_set_transform">
-			<return type="void" />
-			<argument index="0" name="id" type="int" />
-			<argument index="1" name="xform" type="Transform2D" />
-			<description>
-				Sets the transform applied to the [NavigationPolygon] with the given ID.
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="10.0">
+			The XY plane cell size to use for fields.
+		</member>
+		<member name="edge_connection_margin" type="float" setter="set_edge_connection_margin" getter="get_edge_connection_margin" default="100.0">
+			This value is used to detect the near edges to connect compatible regions.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

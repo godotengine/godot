@@ -51,6 +51,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
+#include "servers/navigation_server.h"
 
 // Used to test for GLES3 support.
 #ifndef SERVER_ENABLED
@@ -2375,6 +2376,7 @@ ProjectManager::ProjectManager() {
 	}
 
 	// Turn off some servers we aren't going to be using in the Project Manager.
+	NavigationServer::get_singleton()->set_active(false);
 	PhysicsServer::get_singleton()->set_active(false);
 	Physics2DServer::get_singleton()->set_active(false);
 
