@@ -57,6 +57,9 @@ void EditorHelpSearch::_update_results() {
 	if (hierarchy_button->is_pressed()) {
 		search_flags |= SEARCH_SHOW_HIERARCHY;
 	}
+	if (hidden_button->is_pressed()) {
+		search_flags |= SEARCH_HIDDEN;
+	}
 
 	search = Ref<Runner>(memnew(Runner(results_tree, results_tree, term, search_flags)));
 	set_process(true);
@@ -85,6 +88,10 @@ void EditorHelpSearch::_search_box_text_changed(const String &p_text) {
 }
 
 void EditorHelpSearch::_filter_combo_item_selected(int p_option) {
+	_update_results();
+}
+
+void EditorHelpSearch::_hidden_button_toggled(bool p_button_pressed) {
 	_update_results();
 }
 
@@ -235,6 +242,11 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
 	filter_combo->connect("item_selected", callable_mp(this, &EditorHelpSearch::_filter_combo_item_selected));
 	hbox->add_child(filter_combo);
+
+	hidden_button = memnew(CheckButton);
+	hidden_button->set_text(TTR("Hidden Items"));
+	hidden_button->connect("toggled", callable_mp(this, &EditorHelpSearch::_hidden_button_toggled));
+	hbox->add_child(hidden_button);
 
 	// Create the results tree.
 	results_tree = memnew(Tree);
@@ -422,7 +434,7 @@ bool EditorHelpSearch::Runner::_phase_class_items() {
 			_create_class_hierarchy(match);
 		}
 	} else {
-		if (match.name) {
+		if (match.name && (match.doc->hidden ? (search_flags & SEARCH_HIDDEN) : true)) {
 			_create_class_item(root_item, match.doc, false);
 		}
 	}
@@ -507,6 +519,9 @@ void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_tex
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_match) {
+	if (!(p_match.doc->hidden ? (search_flags & SEARCH_HIDDEN) : true)) {
+		return nullptr;
+	}
 	if (class_items.has(p_match.doc->name)) {
 		return class_items[p_match.doc->name];
 	}
@@ -522,6 +537,9 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 		}
 	}
 
+	if (parent == nullptr) {
+		return nullptr;
+	}
 	TreeItem *class_item = _create_class_item(parent, p_match.doc, !p_match.name);
 	class_items[p_match.doc->name] = class_item;
 	return class_item;

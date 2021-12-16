@@ -165,6 +165,7 @@ public:
 		Vector<PropertyDoc> properties;
 		Vector<ThemeItemDoc> theme_properties;
 		bool is_script_doc = false;
+		bool hidden = false;
 		String script_path;
 		bool operator<(const ClassDoc &p_class) const {
 			return name < p_class.name;

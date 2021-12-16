@@ -316,6 +316,7 @@ void DocTools::generate(bool p_basic_types) {
 		DocData::ClassDoc &c = class_list[cname];
 		c.name = cname;
 		c.inherits = ClassDB::get_parent_class(name);
+		c.hidden = ClassDB::is_hidden_class(name);
 
 		List<PropertyInfo> properties;
 		List<PropertyInfo> own_properties;

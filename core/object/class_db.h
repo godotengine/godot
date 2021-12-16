@@ -118,6 +118,7 @@ public:
 		StringName name;
 		bool disabled = false;
 		bool exposed = false;
+		bool hidden = false;
 		Object *(*creation_func)() = nullptr;
 
 		ClassInfo() {}
@@ -147,6 +148,7 @@ private:
 	// Non-locking variants of get_parent_class and is_parent_class.
 	static StringName _get_parent_class(const StringName &p_class);
 	static bool _is_parent_class(const StringName &p_class, const StringName &p_inherits);
+	static bool _is_hidden_class(const StringName &p_class);
 
 public:
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
@@ -175,6 +177,33 @@ public:
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->exposed = true;
+		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
+		//nothing
+	}
+
+	template <class T>
+	static void register_hidden_class() {
+		GLOBAL_LOCK_FUNCTION;
+		T::initialize_class();
+		ClassInfo *t = classes.getptr(T::get_class_static());
+		ERR_FAIL_COND(!t);
+		t->creation_func = &creator<T>;
+		t->exposed = true;
+		t->hidden = true;
+		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
+		T::register_custom_data_to_otdb();
+	}
+
+	template <class T>
+	static void register_virtual_hidden_class() {
+		GLOBAL_LOCK_FUNCTION;
+		T::initialize_class();
+		ClassInfo *t = classes.getptr(T::get_class_static());
+		ERR_FAIL_COND(!t);
+		t->exposed = true;
+		t->hidden = true;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
 		//nothing
@@ -209,6 +238,7 @@ public:
 	static StringName get_compatibility_remapped_class(const StringName &p_class);
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
+	static bool is_hidden_class(const StringName &p_class);
 	static bool can_instantiate(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
 	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
@@ -439,6 +469,14 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 #define GDREGISTER_VIRTUAL_CLASS(m_class)             \
 	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {  \
 		::ClassDB::register_virtual_class<m_class>(); \
+	}
+#define GDREGISTER_HIDDEN_CLASS(m_class)             \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) { \
+		::ClassDB::register_hidden_class<m_class>(); \
+	}
+#define GDREGISTER_VIRTUAL_HIDDEN_CLASS(m_class)             \
+	if (!GD_IS_DEFINED(ClassDB_Disable_##m_class)) {         \
+		::ClassDB::register_virtual_hidden_class<m_class>(); \
 	}
 
 #include "core/disabled_classes.gen.h"

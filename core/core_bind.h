@@ -609,6 +609,7 @@ public:
 	StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
 	bool is_class_enabled(StringName p_class) const;
+	bool is_hidden_class(StringName p_class) const;
 
 	ClassDB() {}
 	~ClassDB() {}

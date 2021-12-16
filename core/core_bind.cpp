@@ -2153,12 +2153,17 @@ bool ClassDB::is_class_enabled(StringName p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
 
+bool ClassDB::is_hidden_class(StringName p_class) const {
+	return ::ClassDB::is_hidden_class(p_class);
+}
+
 void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("get_class_list"), &ClassDB::get_class_list);
 	::ClassDB::bind_method(D_METHOD("get_inheriters_from_class", "class"), &ClassDB::get_inheriters_from_class);
 	::ClassDB::bind_method(D_METHOD("get_parent_class", "class"), &ClassDB::get_parent_class);
 	::ClassDB::bind_method(D_METHOD("class_exists", "class"), &ClassDB::class_exists);
 	::ClassDB::bind_method(D_METHOD("is_parent_class", "class", "inherits"), &ClassDB::is_parent_class);
+	::ClassDB::bind_method(D_METHOD("is_hidden_class", "class"), &ClassDB::is_hidden_class);
 	::ClassDB::bind_method(D_METHOD("can_instantiate", "class"), &ClassDB::can_instantiate);
 	::ClassDB::bind_method(D_METHOD("instantiate", "class"), &ClassDB::instantiate);
 

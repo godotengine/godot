@@ -190,6 +190,13 @@
 				Returns whether this [code]class[/code] is enabled or not.
 			</description>
 		</method>
+		<method name="is_hidden_class" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="class" type="StringName" />
+			<description>
+				Returns whether this [code]class[/code] is hidden or not.
+			</description>
+		</method>
 		<method name="is_parent_class" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="class" type="StringName" />

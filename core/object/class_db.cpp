@@ -254,10 +254,24 @@ bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_in
 	return false;
 }
 
+bool ClassDB::_is_hidden_class(const StringName &p_class) {
+	if (!classes.has(p_class)) {
+		return false;
+	}
+
+	return classes[p_class].hidden;
+}
+
 bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inherits) {
 	OBJTYPE_RLOCK;
 
 	return _is_parent_class(p_class, p_inherits);
+}
+
+bool ClassDB::is_hidden_class(const StringName &p_class) {
+	OBJTYPE_RLOCK;
+
+	return _is_hidden_class(p_class);
 }
 
 void ClassDB::get_class_list(List<StringName> *p_classes) {
