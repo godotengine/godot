@@ -731,6 +731,14 @@ Vector2 GraphNode::get_position_offset() const {
 	return position_offset;
 }
 
+Vector2 GraphNode::get_position_offset_in_graphedit() const {
+	if (get_parent()->is_class("GraphEdit")) {
+		return position_offset * get_parent()->get_zoom() + get_parent()->get_scroll_ofs();
+	} else {
+		return position_offset;
+	}
+}
+
 void GraphNode::set_selected(bool p_selected) {
 	selected = p_selected;
 	update();
@@ -839,6 +847,14 @@ Vector2 GraphNode::get_connection_input_position(int p_idx) {
 	return pos;
 }
 
+Vector2 GraphNode::get_connection_input_position_in_graphedit(int p_idx) {
+	if (get_parent()->is_class("GraphEdit")) {
+		return get_connection_input_position(p_idx) * get_parent()->get_zoom() + get_parent()->get_scroll_ofs();
+	} else {
+		return get_connection_input_position(p_idx);
+	}
+}
+
 int GraphNode::get_connection_input_type(int p_idx) {
 	if (connpos_dirty) {
 		_connpos_update();
@@ -867,6 +883,14 @@ Vector2 GraphNode::get_connection_output_position(int p_idx) {
 	pos.x *= get_scale().x;
 	pos.y *= get_scale().y;
 	return pos;
+}
+
+Vector2 GraphNode::get_connection_output_position_in_graphedit(int p_idx) {
+	if (get_parent()->is_class("GraphEdit")) {
+		return get_connection_output_position(p_idx) * get_parent()->get_zoom() + get_parent()->get_scroll_ofs();
+	} else {
+		return get_connection_output_position(p_idx);
+	}
 }
 
 int GraphNode::get_connection_output_type(int p_idx) {
@@ -958,6 +982,13 @@ void GraphNode::set_resizable(bool p_enable) {
 bool GraphNode::is_resizable() const {
 	return resizable;
 }
+
+Vector2 GraphNode::get_size_in_graphedit() const {
+	if (get_parent()->is_class("GraphEdit")) {
+		return get_size() * get_parent()->get_zoom();
+	} else {
+		return get_size();
+	}
 
 void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &GraphNode::set_title);

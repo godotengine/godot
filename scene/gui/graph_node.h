@@ -152,6 +152,7 @@ public:
 
 	void set_position_offset(const Vector2 &p_offset);
 	Vector2 get_position_offset() const;
+	Vector2 get_position_offset_in_graphedit() const;
 
 	void set_selected(bool p_selected);
 	bool is_selected();
@@ -165,9 +166,11 @@ public:
 	int get_connection_input_count();
 	int get_connection_output_count();
 	Vector2 get_connection_input_position(int p_idx);
+	Vector2 get_connection_input_position_in_graphedit(int p_idx);
 	int get_connection_input_type(int p_idx);
 	Color get_connection_input_color(int p_idx);
 	Vector2 get_connection_output_position(int p_idx);
+	Vector2 get_connection_output_position_in_graphedit(int p_idx);
 	int get_connection_output_type(int p_idx);
 	Color get_connection_output_color(int p_idx);
 
@@ -179,6 +182,7 @@ public:
 
 	void set_resizable(bool p_enable);
 	bool is_resizable() const;
+	Vector2 get_position_offset_in_graphedit() const;
 
 	virtual Size2 get_minimum_size() const override;
 
