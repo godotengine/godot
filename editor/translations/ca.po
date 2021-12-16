@@ -21,7 +21,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-20 22:06+0000\n"
+"PO-Revision-Date: 2021-12-14 15:28+0000\n"
 "Last-Translator: roger <616steam@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9.1\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2068,7 +2068,7 @@ msgstr "Commutar visibilitat dels fitxers ocults."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
-msgstr "Visualitza en una graella de miniatures."
+msgstr "Visualitza en una quadrícula de miniatures."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a list."
@@ -4157,35 +4157,32 @@ msgid "Collapse All"
 msgstr "Col·lapsar tot"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort files"
-msgstr "Cerca Fitxers"
+msgstr "Ordenar fitxers"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Ascending)"
-msgstr ""
+msgstr "Ordenar per Nom (Ascendent)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Name (Descending)"
-msgstr ""
+msgstr "Ordenar per Nom (Descendent)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Ascending)"
-msgstr ""
+msgstr "Ordenar per Tipus (Ascendent)"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Type (Descending)"
-msgstr ""
+msgstr "Ordenar per Tipus (Descendent)"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort by Last Modified"
-msgstr "Última modificació"
+msgstr "Ordenar per Última Modificació"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Sort by First Modified"
-msgstr "Última modificació"
+msgstr "Ordenar per Primera Modificació"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
@@ -5559,14 +5556,12 @@ msgid "Name (Z-A)"
 msgstr "Nom (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Llicència"
+msgstr "Llicència (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Llicència"
+msgstr "Llicència (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -5701,11 +5696,11 @@ msgstr "Configurar Ajustament"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Offset:"
-msgstr "òfset de la graella:"
+msgstr "òfset de la quadrícula:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Step:"
-msgstr "Pas de la Graella:"
+msgstr "Pas de la Quadrícula:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
@@ -6076,24 +6071,20 @@ msgid "Ruler Mode"
 msgstr "Mode Regla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle smart snapping."
-msgstr "Commutar Ajustament."
+msgstr "Commutar Ajustament Intel·ligent."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Smart Snap"
-msgstr "Utilitzar Ajustament"
+msgstr "Utilitzar Ajustament Intel·ligent"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle grid snapping."
-msgstr "Commutar Ajustament."
+msgstr "Commutar Ajustament a la Quadrícula."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Grid Snap"
-msgstr "Ajustar a la quadrícula"
+msgstr "Utilitzar Ajustament a la Quadrícula"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
@@ -6104,9 +6095,8 @@ msgid "Use Rotation Snap"
 msgstr "Utilitzar Ajustament de Rotació"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Scale Snap"
-msgstr "Utilitzar Ajustament"
+msgstr "Utilitzar Ajustament d'Escalat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -6192,9 +6182,8 @@ msgid "View"
 msgstr "Vista"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Always Show Grid"
-msgstr "Mostra la graella"
+msgstr "Mostra la Quadrícula Sempre"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
@@ -6294,11 +6283,11 @@ msgstr "Instància les Escenes"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
-msgstr "Multiplica l'increment de la graella per 2"
+msgstr "Multiplica l'increment de la quadrícula per 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Divide grid step by 2"
-msgstr "Divideix l'increment de la graella per 2"
+msgstr "Divideix l'increment de la quadrícula per 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -7300,7 +7289,7 @@ msgstr "Quadrícula"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Show Grid"
-msgstr "Mostra la graella"
+msgstr "Mostra la Quadrícula"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Configure Grid:"
@@ -7308,19 +7297,19 @@ msgstr "Configurar Quadrícula:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Offset X:"
-msgstr "Desplaçament X de la quadrícula:"
+msgstr "Desplaçament X de la Quadrícula:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Offset Y:"
-msgstr "Desplaçament Y de la quadrícula:"
+msgstr "Desplaçament Y de la Quadrícula:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Step X:"
-msgstr "Pas X de la quadrícula:"
+msgstr "Pas X de la Quadrícula:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Step Y:"
-msgstr "Pas Y de la quadrícula:"
+msgstr "Pas Y de la Quadrícula:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Sync Bones to Polygon"
@@ -7452,7 +7441,6 @@ msgid "Error Importing"
 msgstr "Error en Importar"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "New Text File..."
 msgstr "Nou Fitxer de Text..."
 
@@ -7562,9 +7550,8 @@ msgid "Open..."
 msgstr "Obrir..."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Reopen Closed Script"
-msgstr "Obrir Script"
+msgstr "Reobrir Script Tancat"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -8439,7 +8426,7 @@ msgstr "Mostra l'Origen"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Grid"
-msgstr "Mostra la Graella"
+msgstr "Mostra la Quadrícula"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -8759,7 +8746,7 @@ msgstr "Ajustament de Píxels"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
-msgstr "Ajustar a la quadrícula"
+msgstr "Ajustar a la Quadrícula"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
@@ -11340,9 +11327,8 @@ msgid "Project Manager"
 msgstr "Gestor del Projecte"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Local Projects"
-msgstr "Projecte"
+msgstr "Projectes Locals"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -11430,9 +11416,8 @@ msgstr ""
 "Us agradaria explorar projectes d'exemple oficials a la biblioteca d'actius?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Filter projects"
-msgstr "Filtra les propietats"
+msgstr "Filtrar projectes"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -12663,9 +12648,8 @@ msgid "Profiler"
 msgstr "Perfilador"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Network Profiler"
-msgstr "Profiler de xarxa"
+msgstr "Perfilador de Xarxa"
 
 #: editor/script_editor_debugger.cpp
 msgid "Monitor"
@@ -12733,9 +12717,8 @@ msgid "Set From Tree"
 msgstr "Estableix des de l'Arbre"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export measures as CSV"
-msgstr "Exporta les mesures com a CSV"
+msgstr "Exportar les mesures com a CSV"
 
 #: editor/settings_config_dialog.cpp
 msgid "Erase Shortcut"
@@ -13162,7 +13145,7 @@ msgstr "Establint la Configuració..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
-msgstr "Calculant la mida de la graella..."
+msgstr "Calculant la mida de la quadrícula..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."

@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-28 22:09+0000\n"
+"PO-Revision-Date: 2021-12-11 06:25+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2132,9 +2132,8 @@ msgid "Icons"
 msgstr "Kuvakkeet"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Styles"
-msgstr "Tyyli"
+msgstr "Tyylit"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -13366,20 +13365,18 @@ msgstr ""
 "käyttää."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
 msgstr ""
-"\"Hand Tracking\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
-"\"Oculus Mobile VR\"."
+"\"Hand Tracking\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetuksen "
+"arvo on \"Oculus Mobile VrAPI\" tai \"OpenXR\"."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
-"\"Hand Tracking\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetus on "
-"\"Oculus Mobile VR\"."
+"\"Passthrough\" on käyttökelpoinen ainoastaan kun \"Xr Mode\" asetuksen arvo "
+"on \"OpenXR\"."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
@@ -13388,25 +13385,25 @@ msgstr ""
 "päällä."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
-"\"Export AAB\" on käyttökelpoinen vain, kun \"Use Custom Build\" asetus on "
-"päällä."
+"\"Min Sdk\" vaihtaminen on mahdollista vain, kun \"Use Custom Build\" asetus "
+"on päällä."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
 "enabled."
 msgstr ""
-"\"Export AAB\" on käyttökelpoinen vain, kun \"Use Custom Build\" asetus on "
-"päällä."
+"\"Target Sdk\" vaihtaminen on mahdollista vain, kun \"Use Custom Build\" "
+"asetus on päällä."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
+"\"Target Sdk\" versionumeron on oltava suurempi tai yhtä suuri kuin \"Min Sdk"
+"\" versionumeron."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
