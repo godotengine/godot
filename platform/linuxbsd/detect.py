@@ -2,6 +2,7 @@ import os
 import platform
 import sys
 from methods import get_compiler_version, using_gcc
+from platform_methods import detect_arch
 
 
 def is_active():
@@ -52,10 +53,21 @@ def get_opts():
 
 
 def get_flags():
-    return []
+    return [
+        ("arch", detect_arch()),
+    ]
 
 
 def configure(env):
+    # Validate arch.
+    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64"]
+    if env["arch"] not in supported_arches:
+        print(
+            'Unsupported CPU architecture "%s" for Linux / *BSD. Supported architectures are: %s.'
+            % (env["arch"], ", ".join(supported_arches))
+        )
+        sys.exit()
+
     ## Build type
 
     if env["target"] == "release":
@@ -80,23 +92,7 @@ def configure(env):
         env.Prepend(CCFLAGS=["-g3"])
         env.Append(LINKFLAGS=["-rdynamic"])
 
-    ## Architecture
-
-    is64 = sys.maxsize > 2**32
-    if env["bits"] == "default":
-        env["bits"] = "64" if is64 else "32"
-
-    machines = {
-        "riscv64": "rv64",
-        "ppc64le": "ppc64",
-        "ppc64": "ppc64",
-        "ppcle": "ppc",
-        "ppc": "ppc",
-    }
-
-    if env["arch"] == "" and platform.machine() in machines:
-        env["arch"] = machines[platform.machine()]
-
+    # CPU architecture flags.
     if env["arch"] == "rv64":
         # G = General-purpose extensions, C = Compression extension (very common).
         env.Append(CCFLAGS=["-march=rv64gc"])
@@ -262,8 +258,7 @@ def configure(env):
         env["builtin_libvorbis"] = False  # Needed to link against system libtheora
         env.ParseConfig("pkg-config theora theoradec --cflags --libs")
     else:
-        list_of_x86 = ["x86_64", "x86", "i386", "i586"]
-        if any(platform.machine() in s for s in list_of_x86):
+        if env["arch"] in ["x86_64", "x86_32"]:
             env["x86_libtheora_opt_gcc"] = True
 
     if not env["builtin_libvorbis"]:
@@ -405,11 +400,12 @@ def configure(env):
                 env.Append(LINKFLAGS=["-T", "platform/linuxbsd/pck_embed.legacy.ld"])
 
     ## Cross-compilation
-
-    if is64 and env["bits"] == "32":
+    # TODO: Support cross-compilation on architectures other than x86.
+    host_is_64_bit = sys.maxsize > 2**32
+    if host_is_64_bit and env["arch"] == "x86_32":
         env.Append(CCFLAGS=["-m32"])
         env.Append(LINKFLAGS=["-m32", "-L/usr/lib/i386-linux-gnu"])
-    elif not is64 and env["bits"] == "64":
+    elif not host_is_64_bit and env["arch"] == "x86_64":
         env.Append(CCFLAGS=["-m64"])
         env.Append(LINKFLAGS=["-m64", "-L/usr/lib/i686-linux-gnu"])
 

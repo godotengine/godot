@@ -1,6 +1,7 @@
 import os
 import sys
 from methods import detect_darwin_sdk_path
+from platform_methods import detect_arch
 
 
 def is_active():
@@ -37,6 +38,7 @@ def get_opts():
 
 def get_flags():
     return [
+        ("arch", detect_arch()),
         ("use_volk", False),
     ]
 
@@ -71,6 +73,15 @@ def get_mvk_sdk_path():
 
 
 def configure(env):
+    # Validate arch.
+    supported_arches = ["x86_64", "arm64"]
+    if env["arch"] not in supported_arches:
+        print(
+            'Unsupported CPU architecture "%s" for macOS. Supported architectures are: %s.'
+            % (env["arch"], ", ".join(supported_arches))
+        )
+        sys.exit()
+
     ## Build type
 
     if env["target"] == "release":
@@ -96,25 +107,20 @@ def configure(env):
         env.Prepend(CCFLAGS=["-g3"])
         env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
 
-    ## Architecture
-
-    # macOS no longer runs on 32-bit since 10.7 which is unsupported since 2014
-    # As such, we only support 64-bit
-    env["bits"] = "64"
-
     ## Compiler configuration
 
     # Save this in environment for use by other modules
     if "OSXCROSS_ROOT" in os.environ:
         env["osxcross"] = True
 
+    # CPU architecture.
     if env["arch"] == "arm64":
-        print("Building for macOS 11.0+, platform arm64.")
+        print("Building for macOS 11.0+.")
         env.Append(ASFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
         env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
-    else:
-        print("Building for macOS 10.12+, platform x86_64.")
+    elif env["arch"] == "x86_64":
+        print("Building for macOS 10.12+.")
         env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
         env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
@@ -185,9 +191,8 @@ def configure(env):
 
     ## Dependencies
 
-    if env["builtin_libtheora"]:
-        if env["arch"] != "arm64":
-            env["x86_libtheora_opt_gcc"] = True
+    if env["builtin_libtheora"] and env["arch"] == "x86_64":
+        env["x86_libtheora_opt_gcc"] = True
 
     ## Flags
 

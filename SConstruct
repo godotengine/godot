@@ -55,6 +55,7 @@ _helper_module("modules.modules_builders", "modules/modules_builders.py")
 import methods
 import glsl_builders
 import gles3_builders
+from platform_methods import architectures, architecture_aliases
 
 if methods.get_cmdline_bool("tools", True):
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -161,12 +162,11 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-opts.Add("p", "Platform (alias for 'platform')", "")
 opts.Add("platform", "Target platform (%s)" % ("|".join(platform_list),), "")
+opts.Add("p", "Platform (alias for 'platform')", "")
 opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
-opts.Add("arch", "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)", "")
-opts.Add(EnumVariable("bits", "Target platform bits", "default", ("default", "32", "64")))
+opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
 opts.Add(EnumVariable("float", "Floating-point precision", "default", ("default", "32", "64")))
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size", "none")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
@@ -502,11 +502,16 @@ if selected_platform in platform_list:
     # Platform specific flags
     flag_list = platform_flags[selected_platform]
     for f in flag_list:
-        if not (f[0] in ARGUMENTS):  # allow command line to override platform flags
+        if not (f[0] in ARGUMENTS) or ARGUMENTS[f[0]] == "auto":  # Allow command line to override platform flags
             env[f[0]] = f[1]
 
     # Must happen after the flags' definition, so that they can be used by platform detect
     detect.configure(env)
+
+    print(
+        'Building for platform "%s", architecture "%s", %s, target "%s".'
+        % (selected_platform, env["arch"], "editor" if env["tools"] else "template", env["target"])
+    )
 
     # Set our C and C++ standard requirements.
     # C++17 is required as we need guaranteed copy elision as per GH-36436.
@@ -693,13 +698,7 @@ if selected_platform in platform_list:
             )
             suffix += ".debug"
 
-    if env["arch"] != "":
-        suffix += "." + env["arch"]
-    elif env["bits"] == "32":
-        suffix += ".32"
-    elif env["bits"] == "64":
-        suffix += ".64"
-
+    suffix += "." + env["arch"]
     suffix += env.extra_suffix
 
     sys.path.remove(tmppath)

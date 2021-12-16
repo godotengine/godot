@@ -18,7 +18,7 @@ def configure(env, env_mono):
     # is_android = env["platform"] == "android"
     # is_javascript = env["platform"] == "javascript"
     # is_ios = env["platform"] == "ios"
-    # is_ios_sim = is_ios and env["arch"] in ["x86", "x86_64"]
+    # is_ios_sim = is_ios and env["arch"] in ["x86_32", "x86_64"]
 
     tools_enabled = env["tools"]
 
@@ -128,26 +128,22 @@ def find_dotnet_app_host_dir(env):
 
 
 def determine_runtime_identifier(env):
+    # The keys are Godot's names, the values are the Microsoft's names.
+    # List: https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
     names_map = {
         "windows": "win",
         "macos": "osx",
         "linuxbsd": "linux",
     }
-
-    # .NET RID architectures: x86, x64, arm, or arm64
-
+    arch_map = {
+        "x86_64": "x64",
+        "x86_32": "x86",
+        "arm64": "arm64",
+        "arm32": "arm",
+    }
     platform = env["platform"]
-
     if is_desktop(platform):
-        if env["arch"] in ["arm", "arm32"]:
-            rid = "arm"
-        elif env["arch"] == "arm64":
-            rid = "arm64"
-        else:
-            bits = env["bits"]
-            bit_arch_map = {"64": "x64", "32": "x86"}
-            rid = bit_arch_map[bits]
-        return "%s-%s" % (names_map[platform], rid)
+        return "%s-%s" % (names_map[platform], arch_map[env["arch"]])
     else:
         raise NotImplementedError()
 
