@@ -2967,7 +2967,7 @@ String OS_OSX::get_executable_path() const {
 	}
 }
 
-Error OS_OSX::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_OSX::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	if (@available(macOS 10.15, *)) {
 		NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 		// If executable is bundled, always execute editor instances using NSWorkspace to ensure app window is registered and activated correctly.
@@ -3014,10 +3014,10 @@ Error OS_OSX::execute(const String &p_path, const List<String> &p_arguments, boo
 
 			return err;
 		} else {
-			return OS_Unix::execute(p_path, p_arguments, p_blocking, r_child_id, r_pipe, r_exitcode, read_stderr, p_pipe_mutex);
+			return OS_Unix::execute(p_path, p_arguments, p_blocking, r_child_id, r_pipe, r_exitcode, read_stderr, p_pipe_mutex, p_open_console);
 		}
 	} else {
-		return OS_Unix::execute(p_path, p_arguments, p_blocking, r_child_id, r_pipe, r_exitcode, read_stderr, p_pipe_mutex);
+		return OS_Unix::execute(p_path, p_arguments, p_blocking, r_child_id, r_pipe, r_exitcode, read_stderr, p_pipe_mutex, p_open_console);
 	}
 }
 

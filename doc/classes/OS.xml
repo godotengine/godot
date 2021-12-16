@@ -92,12 +92,14 @@
 			<argument index="2" name="blocking" type="bool" default="true" />
 			<argument index="3" name="output" type="Array" default="[  ]" />
 			<argument index="4" name="read_stderr" type="bool" default="false" />
+			<argument index="5" name="open_console" type="bool" default="false" />
 			<description>
 				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
 				The arguments are used in the given order and separated by a space, so [code]OS.execute("ping", ["-w", "3", "godotengine.org"], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
 				This method has slightly different behavior based on whether the [code]blocking[/code] mode is enabled.
 				If [code]blocking[/code] is [code]true[/code], the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
 				If [code]blocking[/code] is [code]false[/code], the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
+				On Windows, if [code]open_console[/code] is [code]true[/code] and process is console app, new terminal window will be opened, it's ignored on other platforms.
 				The return value also depends on the blocking mode. When blocking, the method will return an exit code of the process. When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return [code]-1[/code] or another exit code.
 				Example of blocking mode and retrieving the shell output:
 				[codeblock]

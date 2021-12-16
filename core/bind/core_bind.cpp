@@ -36,6 +36,7 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry.h"
+#include "core/method_bind_ext.gen.inc"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -471,7 +472,7 @@ Error _OS::shell_open(String p_uri) {
 	return OS::get_singleton()->shell_open(p_uri);
 };
 
-int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output, bool p_read_stderr) {
+int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output, bool p_read_stderr, bool p_open_console) {
 	OS::ProcessID pid = -2;
 	int exitcode = 0;
 	List<String> args;
@@ -479,7 +480,7 @@ int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p
 		args.push_back(p_arguments[i]);
 	}
 	String pipe;
-	Error err = OS::get_singleton()->execute(p_path, args, p_blocking, &pid, &pipe, &exitcode, p_read_stderr);
+	Error err = OS::get_singleton()->execute(p_path, args, p_blocking, &pid, &pipe, &exitcode, p_read_stderr, nullptr, p_open_console);
 	p_output.clear();
 	p_output.push_back(pipe);
 	if (err != OK) {
@@ -1311,7 +1312,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &_OS::get_processor_count);
 
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &_OS::get_executable_path);
-	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "blocking", "output", "read_stderr"), &_OS::execute, DEFVAL(true), DEFVAL(Array()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "blocking", "output", "read_stderr", "open_console"), &_OS::execute, DEFVAL(true), DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &_OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &_OS::shell_open);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &_OS::get_process_id);

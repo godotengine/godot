@@ -2089,10 +2089,6 @@ bool Main::start() {
 		}
 
 		if (project_manager || editor) {
-			// Hide console window if requested (Windows-only).
-			bool hide_console = EditorSettings::get_singleton()->get_setting("interface/editor/hide_console_window");
-			OS::get_singleton()->set_console_visible(!hide_console);
-
 			// Load SSL Certificates from Editor Settings (or builtin)
 			Crypto::load_default_certificates(EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String());
 		}

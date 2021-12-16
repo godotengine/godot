@@ -108,69 +108,17 @@ static String format_error_message(DWORD id) {
 extern HINSTANCE godot_hinstance;
 
 void RedirectIOToConsole() {
-	int hConHandle;
+	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+		FILE *fpstdin = stdin;
+		FILE *fpstdout = stdout;
+		FILE *fpstderr = stderr;
 
-	intptr_t lStdHandle;
+		freopen_s(&fpstdin, "CONIN$", "r", stdin);
+		freopen_s(&fpstdout, "CONOUT$", "w", stdout);
+		freopen_s(&fpstderr, "CONOUT$", "w", stderr);
 
-	CONSOLE_SCREEN_BUFFER_INFO coninfo;
-
-	FILE *fp;
-
-	// allocate a console for this app
-
-	AllocConsole();
-
-	// set the screen buffer to be big enough to let us scroll text
-
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),
-
-			&coninfo);
-
-	coninfo.dwSize.Y = MAX_CONSOLE_LINES;
-
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),
-
-			coninfo.dwSize);
-
-	// redirect unbuffered STDOUT to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_OUTPUT_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "w");
-
-	*stdout = *fp;
-
-	setvbuf(stdout, NULL, _IONBF, 0);
-
-	// redirect unbuffered STDIN to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_INPUT_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "r");
-
-	*stdin = *fp;
-
-	setvbuf(stdin, NULL, _IONBF, 0);
-
-	// redirect unbuffered STDERR to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_ERROR_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "w");
-
-	*stderr = *fp;
-
-	setvbuf(stderr, NULL, _IONBF, 0);
-
-	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
-
-	// point to console as well
+		printf("\n"); // Make sure our output is starting from the new line.
+	}
 }
 
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
@@ -210,7 +158,8 @@ void OS_Windows::initialize_core() {
 	last_button_state = 0;
 	restore_mouse_trails = 0;
 
-	//RedirectIOToConsole();
+	RedirectIOToConsole();
+
 	maximized = false;
 	minimized = false;
 	borderless = false;
@@ -2247,31 +2196,6 @@ bool OS_Windows::is_window_focused() const {
 	return window_focused;
 }
 
-bool OS_Windows::_is_win11_terminal() const {
-	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD dwMode = 0;
-	if (GetConsoleMode(hStdOut, &dwMode)) {
-		return ((dwMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-	} else {
-		return false;
-	}
-}
-
-void OS_Windows::set_console_visible(bool p_enabled) {
-	if (console_visible == p_enabled)
-		return;
-
-	if (!_is_win11_terminal()) {
-		// GetConsoleWindow is not supported by the Windows Terminal.
-		ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
-		console_visible = p_enabled;
-	}
-}
-
-bool OS_Windows::is_console_visible() const {
-	return console_visible;
-}
-
 bool OS_Windows::get_window_per_pixel_transparency_enabled() const {
 	if (!is_layered_allowed())
 		return false;
@@ -2815,42 +2739,8 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	return p_text;
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	String path = p_path.replace("/", "\\");
-
-	if (p_blocking && r_pipe) {
-		String argss = _quote_command_line_argument(path);
-		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-			argss += " " + _quote_command_line_argument(E->get());
-		}
-
-		if (read_stderr) {
-			argss += " 2>&1"; // Read stderr too
-		}
-		// Note: _wpopen is calling command as "cmd.exe /c argss", instead of executing it directly, add extra quotes around full command, to prevent it from stripping quotes in the command.
-		argss = _quote_command_line_argument(argss);
-
-		FILE *f = _wpopen(argss.c_str(), L"r");
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
-
-		char buf[65535];
-		while (fgets(buf, 65535, f)) {
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
-			}
-			(*r_pipe) += String::utf8(buf);
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
-			}
-		}
-
-		int rv = _pclose(f);
-		if (r_exitcode) {
-			*r_exitcode = rv;
-		}
-
-		return OK;
-	}
 
 	String cmdline = _quote_command_line_argument(path);
 	const List<String>::Element *I = p_arguments.front();
@@ -2871,17 +2761,62 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		modstr.write[i] = cmdline[i];
 	}
 
-	DWORD creation_flags = NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW;
-	if (p_path == get_executable_path() && GetConsoleWindow() != NULL && _is_win11_terminal()) {
-		// Open a new terminal as a workaround for Windows Terminal bug.
-		creation_flags |= CREATE_NEW_CONSOLE;
+	bool inherit_handles = false;
+	HANDLE pipe[2] = { NULL, NULL };
+	if (p_blocking && r_pipe) {
+		// Create pipe for StdOut and StdErr.
+		SECURITY_ATTRIBUTES sa;
+		sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+		sa.bInheritHandle = true;
+		sa.lpSecurityDescriptor = NULL;
+
+		ERR_FAIL_COND_V(!CreatePipe(&pipe[0], &pipe[1], &sa, 0), ERR_CANT_FORK);
+		ERR_FAIL_COND_V(!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0), ERR_CANT_FORK); // Read handle is for host process only and should not be inherited.
+
+		pi.si.dwFlags |= STARTF_USESTDHANDLES;
+		pi.si.hStdOutput = pipe[1];
+		if (read_stderr) {
+			pi.si.hStdError = pipe[1];
+		}
+		inherit_handles = true;
+	}
+	DWORD creaton_flags = NORMAL_PRIORITY_CLASS;
+	if (p_open_console) {
+		creaton_flags |= CREATE_NEW_CONSOLE;
+	} else {
+		creaton_flags |= CREATE_NO_WINDOW;
 	}
 
-	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, 0, creation_flags, NULL, NULL, si_w, &pi.pi);
+	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, inherit_handles, creaton_flags, NULL, NULL, si_w, &pi.pi);
+	if (!ret && r_pipe) {
+		CloseHandle(pipe[0]); // Cleanup pipe handles.
+		CloseHandle(pipe[1]);
+	}
 	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
 
 	if (p_blocking) {
-		WaitForSingleObject(pi.pi.hProcess, INFINITE);
+		if (r_pipe) {
+			CloseHandle(pipe[1]); // Close pipe write handle (only child process is writing).
+			char buf[4096];
+			DWORD read = 0;
+			for (;;) { // Read StdOut and StdErr from pipe.
+				bool success = ReadFile(pipe[0], buf, 4096, &read, NULL);
+				if (!success || read == 0) {
+					break;
+				}
+				if (p_pipe_mutex) {
+					p_pipe_mutex->lock();
+				}
+				(*r_pipe) += String::utf8(buf, read);
+				if (p_pipe_mutex) {
+					p_pipe_mutex->unlock();
+				}
+			};
+			CloseHandle(pipe[0]); // Close pipe read handle.
+		} else {
+			WaitForSingleObject(pi.pi.hProcess, INFINITE);
+		}
+
 		if (r_exitcode) {
 			DWORD ret2;
 			GetExitCodeProcess(pi.pi.hProcess, &ret2);
@@ -3689,7 +3624,6 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	minimized = false;
 	was_maximized = false;
 	window_focused = true;
-	console_visible = IsWindowVisible(GetConsoleWindow());
 
 	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
