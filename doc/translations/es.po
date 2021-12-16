@@ -165,8 +165,8 @@ msgid ""
 msgstr ""
 "Devuelve el arco coseno de [code]s[/code] en radianes. Se usa para obtener "
 "el ángulo del coseno de [code]s[/code]. [code]s[/code] debe estar entre "
-"[code]-1.0[/code] y [code]1.0[/code] (inclusive), en otro caso, [method acos]"
-" devolverá [constant NAN].\n"
+"[code]-1.0[/code] y [code]1.0[/code] (inclusive), en otro caso, [method "
+"acos] devolverá [constant NAN].\n"
 "[codeblock]\n"
 "# c es 0.523599 o 30 grados si se convierte con rad2deg(s)\n"
 "c = acos(0.866025)\n"
@@ -184,9 +184,9 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 "Devuelve el arcoseno de [code]s[/code] en radianes. Se usa para obtener el "
-"ángulo del seno de [code]s[/code]. [code]s[/code] debe estar entre [code]-1."
-"0[/code] y [code]1.0[/code] (inclusive), en otro caso, [method asin] "
-"devolverá [constant NAN].\n"
+"ángulo del seno de [code]s[/code]. [code]s[/code] debe estar entre "
+"[code]-1.0[/code] y [code]1.0[/code] (inclusive), en otro caso, [method "
+"asin] devolverá [constant NAN].\n"
 "[codeblock]\n"
 "# s es 0.523599 o 30 grados si se convierte conrad2deg(s)\n"
 "s = asin(0.5)\n"
@@ -240,8 +240,8 @@ msgstr ""
 "assert(speed >= 0) # Falso, el programa se detendrá\n"
 "assert(speed >= 0 and speed < 20) # También puedes combinar las dos "
 "declaraciones condicionales en un sola comprobación \n"
-"assert(speed < 20, \"speed = %f, pero el límite de velocidad es 20\" % speed)"
-" # Muestra un mensaje detallado\n"
+"assert(speed < 20, \"speed = %f, pero el límite de velocidad es 20\" % "
+"speed) # Muestra un mensaje detallado\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:95
@@ -355,8 +355,8 @@ msgid ""
 "a = clamp(15, 1, 20)   # a is 15\n"
 "[/codeblock]"
 msgstr ""
-"Acota [code]value[/code] y devuelve un valor que no es menor que "
-"[code]min[/code] y no mayor que [code]max[/code]\n"
+"Acota [code]value[/code] y devuelve un valor que no es menor que [code]min[/"
+"code] y no mayor que [code]max[/code]\n"
 "[codeblock]\n"
 "a = clamp(1000, 1, 20) # a es 20\n"
 "a = clamp(-10, 1, 20)  # a es 1\n"
@@ -937,8 +937,8 @@ msgstr ""
 "[codeblock]\n"
 "# Carga una escena llamada main localizada en la raíz del directorio del "
 "proyecto y la almacena en caché en una variable.\n"
-"var main = load(\"res://main.tscn\") # main contendrá un recurso PackedScene."
-"\n"
+"var main = load(\"res://main.tscn\") # main contendrá un recurso "
+"PackedScene.\n"
 "[/codeblock]\n"
 "[b]Importante:[/b] La ruta debe ser absoluta, una ruta local solo devolverá "
 "[code]null[/code].\n"
@@ -1164,8 +1164,8 @@ msgid ""
 "pow(2, 5) # Returns 32.0\n"
 "[/codeblock]"
 msgstr ""
-"Devuelve el resultado de [code]base[/code] elevado a la potencia "
-"[code]exp[/code].\n"
+"Devuelve el resultado de [code]base[/code] elevado a la potencia [code]exp[/"
+"code].\n"
 "[codeblock]\n"
 "pow(2, 5) # Devuelve 32.0\n"
 "[/codeblock]"
@@ -1331,8 +1331,8 @@ msgstr ""
 "[/codeblock]\n"
 "[b]Nota:[/b] Los errores imprimidos de esta manera no pausaran la ejecución "
 "del proyecto. Para imprimir un mensaje de error y pausar la ejecución del "
-"proyecto en compilaciones de depuración, usa [code]assert(false, \"test "
-"error\")[/code] en su lugar."
+"proyecto en compilaciones de depuración, usa [code]assert(false, \"test error"
+"\")[/code] en su lugar."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:769
 msgid ""
@@ -1484,9 +1484,9 @@ msgstr ""
 "puede tener un argumento [code]N[/code] (0 a [code]N[/code] - 1), dos "
 "argumentos ([code]initial[/code], [code]final - 1[/code]) o tres argumentos "
 "([code]initial[/code], [code]final - 1[/code], [code]increment[/code]). "
-"[code]increment[/code] puede ser negativo, y en tal caso, [code]final - "
-"1[/code] llega a ser [code]final + 1[/code]. También, el valor incial debe "
-"ser mayor que el valor final para que se ejecute la iteración.\n"
+"[code]increment[/code] puede ser negativo, y en tal caso, [code]final - 1[/"
+"code] llega a ser [code]final + 1[/code]. También, el valor incial debe ser "
+"mayor que el valor final para que se ejecute la iteración.\n"
 "Devuelve una formación vacía si el rango no es válido (por ejemplo, "
 "[code]range(2, 5, -1)[/code] o [code]range(5, 5, 1)[/code]).\n"
 "[codeblock]\n"
@@ -5191,8 +5191,8 @@ msgstr ""
 "[AnimationPlayer] o [AnimatedSprite2D], no es un [Node], pero tiene la "
 "ventaja de ser utilizable en cualquier lugar donde se pueda usar un recurso "
 "[Textura2D], por ejemplo en un [TileSet].\n"
-"La reproducción de la animación está controlada por la propiedad [member fps]"
-", así como por el retardo opcional de cada fotograma (ver [method "
+"La reproducción de la animación está controlada por la propiedad [member "
+"fps], así como por el retardo opcional de cada fotograma (ver [method "
 "set_frame_delay]). La animación se repite, es decir, se reiniciará en el "
 "fotograma 0 automáticamente después de reproducir el último fotograma.\n"
 "[AnimatedTexture] actualmente requiere que todas las texturas de los cuadros "
@@ -7543,8 +7543,8 @@ msgid ""
 "The animations will progress during the physics frame (i.e. [method Node."
 "_physics_process])."
 msgstr ""
-"Las animaciones progresarán durante el fotograma de la física (es decir, ["
-"method Node._physics_process])."
+"Las animaciones progresarán durante el fotograma de la física (es decir, "
+"[method Node._physics_process])."
 
 #: doc/classes/AnimationTree.xml:59
 msgid ""
@@ -8034,11 +8034,11 @@ msgid ""
 "damping) and route audio to custom audio buses."
 msgstr ""
 "Área 3D que detecta nodos [CollisionObject] superpuestos, entrando o "
-"saliendo. También puede alterar o anular los parámetros de la física local ("
-"gravedad, amortiguación)."
+"saliendo. También puede alterar o anular los parámetros de la física local "
+"(gravedad, amortiguación)."
 
 #: doc/classes/Area.xml:11 doc/classes/QuadMesh.xml:10
-#: doc/classes/Viewport.xml:17 doc/classes/ViewportTexture.xml:11
+#: doc/classes/Viewport.xml:18 doc/classes/ViewportTexture.xml:11
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/127"
 msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
@@ -9169,14 +9169,14 @@ msgstr ""
 "mostrado.\n"
 "Ver tambien [ImmediateGeometry], [MeshDataTool] y [SurfaceTool] para "
 "generacion de geometria procedimental.\n"
-"[b]Nota:[/b] Godot [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]"
-"usa orden en el sentido del reloj[url] para las cara frontales de los modos "
-"primitivos de triangulo."
+"[b]Nota:[/b] Godot [url=https://learnopengl.com/Advanced-OpenGL/Face-"
+"culling]usa orden en el sentido del reloj[url] para las cara frontales de "
+"los modos primitivos de triangulo."
 
 #: doc/classes/ArrayMesh.xml:29
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/content/procedural_geometry/"
+"https://docs.godotengine.org/en/3.4/tutorials/3d/procedural_geometry/"
 "arraymesh.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/tutorials/content/procedural_geometry/"
@@ -9488,8 +9488,8 @@ msgstr ""
 "El punto [ARVRAnchor] es un nodo espacial que mapea una ubicación en el "
 "mundo real identificada por la plataforma AR a una posición dentro del mundo "
 "del juego. Por ejemplo, mientras la detección de aviones en ARKit esté "
-"activada, ARKit identificará y actualizará la posición de los aviones ("
-"mesas, pisos, etc.) y creará anclajes para ellos.\n"
+"activada, ARKit identificará y actualizará la posición de los aviones "
+"(mesas, pisos, etc.) y creará anclajes para ellos.\n"
 "Este nodo se asigna a una de las anclas a través de su identificación única. "
 "Cuando reciba la señal de que un nuevo ancla está disponible, deberá añadir "
 "este nodo a su escena para ese ancla. Puedes predefinir los nodos y "
@@ -14399,17 +14399,16 @@ msgid ""
 "    can_shoot = true\n"
 "[/codeblock]"
 msgstr ""
-"El booleano es un tipo incorporado. Hay dos valores booleanos: "
-"[code]true[/code] y [code]false[/code]. Puedes pensar en ello como un "
-"interruptor con un ajuste de encendido o apagado (1 o 0). Los valores "
-"booleanos se usan en la programación de la lógica de las declaraciones de "
-"condición, como las declaraciones [code]if[/code].\n"
-"Los booleanos se pueden utilizar directamente en las sentencias "
-"[code]if[/code]. El código que se muestra a continuación lo demuestra en la "
-"línea [code]if puede_disparar:[/code]. No es necesario usar [code]== "
-"true[/code], sólo necesitas [code]if puede_disparar:[/code]. De manera "
-"similar, usa [code]if not puede_dispara:[/code] en lugar de [code]== "
-"false[/code].\n"
+"El booleano es un tipo incorporado. Hay dos valores booleanos: [code]true[/"
+"code] y [code]false[/code]. Puedes pensar en ello como un interruptor con un "
+"ajuste de encendido o apagado (1 o 0). Los valores booleanos se usan en la "
+"programación de la lógica de las declaraciones de condición, como las "
+"declaraciones [code]if[/code].\n"
+"Los booleanos se pueden utilizar directamente en las sentencias [code]if[/"
+"code]. El código que se muestra a continuación lo demuestra en la línea "
+"[code]if puede_disparar:[/code]. No es necesario usar [code]== true[/code], "
+"sólo necesitas [code]if puede_disparar:[/code]. De manera similar, usa "
+"[code]if not puede_dispara:[/code] en lugar de [code]== false[/code].\n"
 "[codeblock]\n"
 "var puede_disparar = true\n"
 "\n"
@@ -14418,8 +14417,8 @@ msgstr ""
 "        pass # Realizar acciones de disparo aquí.\n"
 "[/codeblock]\n"
 "El siguiente código sólo creará una bala si se cumplen ambas condiciones: se "
-"pulsa la acción \"disparar\" y si [code]puede_disparar[/code] es "
-"[code]true[/code].\n"
+"pulsa la acción \"disparar\" y si [code]puede_disparar[/code] es [code]true[/"
+"code].\n"
 "[b]Nota:[/b] [code]Input.is_action_pressed(\"disparar\")[/code] es también "
 "un booleano que es [code]true[/code] cuando se pulsa \"disparar\" y "
 "[code]false[/code] cuando no se pulsa \"disparar\".\n"
@@ -15135,11 +15134,11 @@ msgid ""
 "objects affect how Audio is perceived (changing the Audio's [code]pitch "
 "shift[/code])."
 msgstr ""
-"Simular el [url=https://en.wikipedia.org/wiki/Doppler_effect]efecto "
-"Doppler[/url] rastreando las posiciones de los objetos que se cambian en el "
+"Simular el [url=https://en.wikipedia.org/wiki/Doppler_effect]efecto Doppler[/"
+"url] rastreando las posiciones de los objetos que se cambian en el "
 "[code]_process[/code]. Los cambios en la velocidad relativa de esta cámara "
-"comparada con esos objetos afectan a la forma en que se percibe el Audio ("
-"cambiando el [code]pitch shift[/code] del Audio)."
+"comparada con esos objetos afectan a la forma en que se percibe el Audio "
+"(cambiando el [code]pitch shift[/code] del Audio)."
 
 #: doc/classes/Camera.xml:209
 msgid ""
@@ -15756,8 +15755,8 @@ msgstr ""
 "dibujará detrás de todo. Este comportamiento puede ser cambiado por cada "
 "elemento.\n"
 "Un [CanvasItem] también puede ser escondido, lo que también esconderá a sus "
-"hijos. Proporciona muchas maneras de cambiar parámetros como la modulación ("
-"para sí mismo y sus hijos) y la auto-modulación (sólo para sí mismo), así "
+"hijos. Proporciona muchas maneras de cambiar parámetros como la modulación "
+"(para sí mismo y sus hijos) y la auto-modulación (sólo para sí mismo), así "
 "como su modo de mezcla.\n"
 "En última instancia, se puede solicitar una notificación de transformación, "
 "que notificará al nodo que su posición global ha cambiado en caso de que el "
@@ -15768,7 +15767,7 @@ msgstr ""
 "deg2rad]."
 
 #: doc/classes/CanvasItem.xml:15 doc/classes/CanvasLayer.xml:10
-#: doc/classes/InputEvent.xml:11 doc/classes/Viewport.xml:15
+#: doc/classes/InputEvent.xml:11 doc/classes/Viewport.xml:16
 #, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/2d/2d_transforms.html"
 msgstr "https://docs.godotengine.org/es/latest/tutorials/2d/2d_transforms.html"
@@ -16563,8 +16562,7 @@ msgstr ""
 #: doc/classes/RichTextLabel.xml:15
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/gui/bbcode_in_richtextlabel."
-"html"
+"https://docs.godotengine.org/en/3.4/tutorials/ui/bbcode_in_richtextlabel.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/tutorials/gui/bbcode_in_richtextlabel."
 "html"
@@ -17274,8 +17272,8 @@ msgid ""
 "through code using the [code]shape_owner_*[/code] methods."
 msgstr ""
 "CollisionObject3D es la clase base de los objetos de física. Puede contener "
-"cualquier número de colisiones [Shape]. Cada forma debe ser asignada a un [i]"
-"propietario de la forma[/i]. El CollisionObject3D puede tener cualquier "
+"cualquier número de colisiones [Shape]. Cada forma debe ser asignada a un "
+"[i]propietario de la forma[/i]. El CollisionObject3D puede tener cualquier "
 "número de propietarios de formas. Los propietarios de formas no son nodos y "
 "no aparecen en el editor, pero son accesibles a través del código usando los "
 "métodos [code]shape_owner_*[/code]."
@@ -17292,8 +17290,8 @@ msgstr ""
 "Acepta [InputEvent]s no manipulados. [code]click_position[/code] es la "
 "ubicación seleccionada en el espacio del mundo y [code]click_normal[/code] "
 "es el vector normal que se extiende desde la superficie seleccionada de la "
-"[Shape] en [code]shape_idx[/code]. Conéctese a la señal "
-"[code]input_event[/code] para recoger fácilmente estos eventos."
+"[Shape] en [code]shape_idx[/code]. Conéctese a la señal [code]input_event[/"
+"code] para recoger fácilmente estos eventos."
 
 #: doc/classes/CollisionObject.xml:27 doc/classes/CollisionObject2D.xml:25
 msgid ""
@@ -17473,8 +17471,8 @@ msgstr ""
 "Acepta [InputEvent]s no manipulados. [code]click_position[/code] es la "
 "ubicación seleccionada en el espacio del mundo y [code]click_normal[/code] "
 "es el vector normal que se extiende desde la superficie seleccionada de la "
-"[Shape] en [code]shape_idx[/code]. Conéctese a la señal "
-"[code]input_event[/code] para recoger fácilmente estos eventos."
+"[Shape] en [code]shape_idx[/code]. Conéctese a la señal [code]input_event[/"
+"code] para recoger fácilmente estos eventos."
 
 #: doc/classes/CollisionObject.xml:201
 msgid "Emitted when the mouse pointer enters any of this object's shapes."
@@ -17846,9 +17844,9 @@ msgstr ""
 "Servicio de edición para crear y editar formas de colisión en el espacio 2D. "
 "Puede usar este nodo para representar todo tipo de formas de colisión, por "
 "ejemplo, añadirlo a un [Area2D] para darle una forma de detección, o "
-"añadirlo a un [PhysicsBody2D] para crear un objeto sólido. [b]IMPORTANTE[/b]:"
-" este es un ayudante sólo para el editor para crear formas, usa el [method "
-"CollisionObject2D.shape_owner_get_shape] para obtener la forma real."
+"añadirlo a un [PhysicsBody2D] para crear un objeto sólido. [b]IMPORTANTE[/"
+"b]: este es un ayudante sólo para el editor para crear formas, usa el "
+"[method CollisionObject2D.shape_owner_get_shape] para obtener la forma real."
 
 #: doc/classes/CollisionShape2D.xml:13 doc/classes/KinematicBody2D.xml:14
 #: doc/classes/RectangleShape2D.xml:11 doc/classes/TileMap.xml:17
@@ -19212,8 +19210,8 @@ msgid ""
 "with [KinematicBody] or [RigidBody] with a mode other than Static."
 msgstr ""
 "Recurso de forma poligonal cóncava, que se puede establecer en un "
-"[PhysicsBody] o área. Esta forma se crea alimentando una lista de triángulos."
-"\n"
+"[PhysicsBody] o área. Esta forma se crea alimentando una lista de "
+"triángulos.\n"
 "Nota: cuando se usa para la colisión, [ConcavePolygonShape] está pensado "
 "para trabajar con nodos estáticos [PhysicsBody] como [StaticBody] y no "
 "funcionará con [KinematicBody] o [RigidBody] con un modo distinto al "
@@ -19734,8 +19732,8 @@ msgstr ""
 "un rectángulo delimitador que define su extensión, una posición de anclaje "
 "relativa a su control padre o a la vista actual, y márgenes que representan "
 "un desplazamiento al ancla. Los márgenes se actualizan automáticamente "
-"cuando el nodo, cualquiera de sus padres o el tamaño de la pantalla cambian."
-"\n"
+"cuando el nodo, cualquiera de sus padres o el tamaño de la pantalla "
+"cambian.\n"
 "Para obtener más información sobre el sistema de interfaz de usuario de "
 "Godot, los anclajes, los márgenes y los contenedores, consulte los "
 "tutoriales relacionados en el manual. Para construir interfaces flexibles, "
@@ -19763,13 +19761,13 @@ msgstr ""
 
 #: doc/classes/Control.xml:17
 #, fuzzy
-msgid "https://docs.godotengine.org/en/3.4/tutorials/gui/index.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/ui/index.html"
 msgstr "https://docs.godotengine.org/es/latest/tutorials/gui/index.html"
 
 #: doc/classes/Control.xml:19
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/gui/control_node_gallery.html"
+"https://docs.godotengine.org/en/3.4/tutorials/ui/control_node_gallery.html"
 msgstr "https://docs.godotengine.org/es/latest/tutorials/gui/index.html"
 
 #: doc/classes/Control.xml:20
@@ -20483,9 +20481,9 @@ msgid ""
 "would get value 0.5."
 msgstr ""
 "Establece el ancla identificada por la constante [code]margin[/code] del "
-"enum [enum Margin] al valor [code]anchor[/code]. Un método de fijación para ["
-"member anchor_bottom], [member anchor_left], [member anchor_right] y [member "
-"anchor_top].\n"
+"enum [enum Margin] al valor [code]anchor[/code]. Un método de fijación para "
+"[member anchor_bottom], [member anchor_left], [member anchor_right] y "
+"[member anchor_top].\n"
 "Si [code]keep_margin[/code] es [code]true[/code], los márgenes no se "
 "actualizan después de esta operación.\n"
 "Si [code]push_opposite_anchor[/code] es [code]true[/code] y el ancla opuesta "
@@ -21087,7 +21085,7 @@ msgid ""
 "purposes. Text inside the Control will look pixelated or blurry when the "
 "Control is scaled. To support multiple resolutions in your project, use an "
 "appropriate viewport stretch mode as described in the [url=https://docs."
-"godotengine.org/en/3.4/tutorials/viewports/multiple_resolutions."
+"godotengine.org/en/3.4/tutorials/rendering/multiple_resolutions."
 "html]documentation[/url] instead of scaling Controls individually.\n"
 "[b]Note:[/b] If the Control node is a child of a [Container] node, the scale "
 "will be reset to [code]Vector2(1, 1)[/code] when the scene is instanced. To "
@@ -22851,8 +22849,8 @@ msgstr ""
 "# Genera una clave de 4096 bits RSA.\n"
 "var clave = criptografia.generate_rsa(4096)\n"
 "# Genera un certificado autofirmado usando la clave.\n"
-"var certificado = criptografia.generate_self_signed_certificate(key, \"CN"
-"=example.com,O=A Game Company,C=IT\")\n"
+"var certificado = criptografia.generate_self_signed_certificate(key, "
+"\"CN=example.com,O=A Game Company,C=IT\")\n"
 "[/codeblock]"
 
 #: doc/classes/Crypto.xml:107
@@ -24344,9 +24342,9 @@ msgid ""
 "the path would have. In the case of a curve controlling a [PathFollow], this "
 "tilt is an offset over the natural tilt the [PathFollow] calculates."
 msgstr ""
-"Establece el ángulo de inclinación en radianes para el punto [code]idx[/code]"
-". Si el índice está fuera de los límites, la función envía un error a la "
-"consola.\n"
+"Establece el ángulo de inclinación en radianes para el punto [code]idx[/"
+"code]. Si el índice está fuera de los límites, la función envía un error a "
+"la consola.\n"
 "La inclinación controla la rotación a lo largo del eje de observación que "
 "tendría un objeto que viajara por el camino. En el caso de una curva que "
 "controla un [PathFollow], esta inclinación es un desplazamiento sobre la "
@@ -24646,10 +24644,10 @@ msgstr ""
 "[/codeblock]\n"
 "Puede acceder a los valores de un diccionario haciendo referencia a la clave "
 "adecuada. En el ejemplo anterior, [code]puntos_dict[\"Blanco\"][/code] "
-"devolverá [code]50[/code]. También puede escribir [code]puntos_dict."
-"Blanco[/code], que es equivalente. Sin embargo, tendrá que usar la sintaxis "
-"de corchetes si la clave con la que accede al diccionario no es una cadena "
-"fija (como un número o una variable).\n"
+"devolverá [code]50[/code]. También puede escribir [code]puntos_dict.Blanco[/"
+"code], que es equivalente. Sin embargo, tendrá que usar la sintaxis de "
+"corchetes si la clave con la que accede al diccionario no es una cadena fija "
+"(como un número o una variable).\n"
 "[codeblock]\n"
 "export (String, \"Blanco\", \"Amarillo\", \"Naranja\") var my_color\n"
 "var puntos_dict = {\"Blanco\": 50, \"Amarillo\": 75, \"Naranja\": 100}\n"
@@ -24660,8 +24658,8 @@ msgstr ""
 "    var puntos = puntos_dict[my_color]\n"
 "[/codeblock]\n"
 "En el código anterior, a los [code]puntos[/code] se les asignará el valor "
-"que se empareja con el color apropiado seleccionado en [code]my_color[/code]."
-"\n"
+"que se empareja con el color apropiado seleccionado en [code]my_color[/"
+"code].\n"
 "Los diccionarios pueden contener datos más complejos:\n"
 "[codeblock]\n"
 "my_dict = {\"First Array\": [1, 2, 3, 4]} # Asigna una matriz a una clave de "
@@ -24717,7 +24715,7 @@ msgstr ""
 #: doc/classes/Dictionary.xml:87
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/"
+"https://docs.godotengine.org/en/3.4/tutorials/scripting/gdscript/"
 "gdscript_basics.html#dictionary"
 msgstr ""
 "https://docs.godotengine.org/es/latest/getting_started/scripting/gdscript/"
@@ -25044,12 +25042,9 @@ msgstr ""
 
 #: doc/classes/Directory.xml:28 doc/classes/File.xml:28
 #, fuzzy
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/step_by_step/filesystem."
-"html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/filesystem.html"
 msgstr ""
-"https://docs.godotengine.org/es/latest/getting_started/step_by_step/"
-"filesystem.html"
+"https://docs.godotengine.org/es/latest/tutorials/2d/particle_systems_2d.html"
 
 #: doc/classes/Directory.xml:35
 msgid ""
@@ -26405,8 +26400,8 @@ msgstr ""
 "EditorImportPlugins proporcionan una forma de ampliar la funcionalidad de "
 "importación de recursos del editor. Utilícelos para importar recursos de "
 "archivos personalizados o para proporcionar alternativas a los importadores "
-"existentes del editor. Registra tu [EditorPlugin] con el [method EditorPlugin"
-".add_import_plugin].\n"
+"existentes del editor. Registra tu [EditorPlugin] con el [method "
+"EditorPlugin.add_import_plugin].\n"
 "Los EditorImportPlugins funcionan asociándose a extensiones de archivo "
 "específicas y a un tipo de recurso. Ver [method get_recognized_extensions] y "
 "[method get_resource_type]. Opcionalmente, pueden especificar algunos "
@@ -27773,8 +27768,8 @@ msgid ""
 "[method EditorInspectorPlugin.parse_property]), then this will return the "
 "property."
 msgstr ""
-"Obtiene la propiedad editada. Si tu editor es para una sola propiedad ("
-"añadida mediante el método [method EditorInspectorPlugin.parse_property]), "
+"Obtiene la propiedad editada. Si tu editor es para una sola propiedad "
+"(añadida mediante el método [method EditorInspectorPlugin.parse_property]), "
 "entonces esto devolverá la propiedad."
 
 #: doc/classes/EditorProperty.xml:44
@@ -28231,7 +28226,7 @@ msgstr ""
 #: doc/classes/EditorScenePostImport.xml:29
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/workflow/assets/"
+"https://docs.godotengine.org/en/3.4/tutorials/assets_pipeline/"
 "importing_scenes.html#custom-script"
 msgstr ""
 "https://docs.godotengine.org/es/latest/getting_started/workflow/assets/"
@@ -28798,8 +28793,8 @@ msgid ""
 "The [Camera] is also provided so screen coordinates can be converted to "
 "raycasts."
 msgstr ""
-"Esta función se utiliza cuando el usuario arrastra un manejador gizmo ("
-"previamente añadido con [method add_handles]) en las coordenadas de la "
+"Esta función se utiliza cuando el usuario arrastra un manejador gizmo "
+"(previamente añadido con [method add_handles]) en las coordenadas de la "
 "pantalla.\n"
 "También se proporciona la [Camera] para que las coordenadas de la pantalla "
 "puedan ser convertidas a raycasts."
@@ -28818,8 +28813,8 @@ msgid ""
 "Sets the reference [Spatial] node for the gizmo. [code]node[/code] must "
 "inherit from [Spatial]."
 msgstr ""
-"Establece el nodo de referencia [Spatial] para el aparato. El "
-"[code]node[/code] debe heredar de [Spatial]."
+"Establece el nodo de referencia [Spatial] para el aparato. El [code]node[/"
+"code] debe heredar de [Spatial]."
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml:4
 #, fuzzy
@@ -28921,9 +28916,9 @@ msgid ""
 msgstr ""
 "Crea un material sin sombras con sus variantes (seleccionadas y/o editables) "
 "y las añade a la lista de material interno. A continuación, se puede acceder "
-"a ellos con [method get_material] y utilizarlos en [method EditorSpatialGizmo"
-".add_mesh] y [method EditorSpatialGizmo.add_lines]. No deben ser "
-"sobreescrito."
+"a ellos con [method get_material] y utilizarlos en [method "
+"EditorSpatialGizmo.add_mesh] y [method EditorSpatialGizmo.add_lines]. No "
+"deben ser sobreescrito."
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml:80
 msgid ""
@@ -28949,8 +28944,8 @@ msgid ""
 "variant (selected and/or editable)."
 msgstr ""
 "Obtiene el material de la lista interna de materiales. Si se proporciona un "
-"[EditorSpatialGizmo], intentará obtener la variable correspondiente ("
-"seleccionada y/o editable)."
+"[EditorSpatialGizmo], intentará obtener la variable correspondiente "
+"(seleccionada y/o editable)."
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml:102
 msgid ""
@@ -32373,9 +32368,9 @@ msgstr ""
 "Devuelve un conjunto de [Plane]s que delimita estrechamente un cilindro "
 "facetado centrado en el origen con radio [code]radius[/code] y altura "
 "[code]height[/code]. El parámetro [code]sides[/code] define cuántos planos "
-"se generarán para la parte redonda del cilindro. El parámetro "
-"[code]axis[/code] describe el eje a lo largo del cual se orienta el cilindro "
-"(0 para X, 1 para Y, 2 para Z)."
+"se generarán para la parte redonda del cilindro. El parámetro [code]axis[/"
+"code] describe el eje a lo largo del cual se orienta el cilindro (0 para X, "
+"1 para Y, 2 para Z)."
 
 #: doc/classes/Geometry.xml:45
 msgid ""
@@ -36367,8 +36362,8 @@ msgid ""
 "Returns the current status of the underlying [HTTPClient]. See [enum "
 "HTTPClient.Status]."
 msgstr ""
-"Devuelve el estado actual del [HTTPClient] subyacente. Véase [enum HTTPClient"
-".Status]."
+"Devuelve el estado actual del [HTTPClient] subyacente. Véase [enum "
+"HTTPClient.Status]."
 
 #: doc/classes/HTTPRequest.xml:107
 #, fuzzy
@@ -36534,7 +36529,7 @@ msgstr ""
 #: doc/classes/Image.xml:12 doc/classes/ImageTexture.xml:31
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/workflow/assets/"
+"https://docs.godotengine.org/en/3.4/tutorials/assets_pipeline/"
 "importing_images.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/getting_started/workflow/assets/"
@@ -37434,8 +37429,8 @@ msgid ""
 "INTERPOLATE_BILINEAR], at the cost of being slower."
 msgstr ""
 "Realiza una interpolación cúbica. Si se cambia el tamaño de la imagen, será "
-"borrosa. Este modo a menudo da mejores resultados en comparación con ["
-"constant INTERPOLATE_BILINEAR], a costa de ser más lento."
+"borrosa. Este modo a menudo da mejores resultados en comparación con "
+"[constant INTERPOLATE_BILINEAR], a costa de ser más lento."
 
 #: doc/classes/Image.xml:564
 #, fuzzy
@@ -37671,9 +37666,9 @@ msgstr ""
 "datos de malla que cambian cada cuadro. Será lenta cuando se manejen grandes "
 "cantidades de datos de malla. Si los datos de la malla no cambian a menudo, "
 "use [ArrayMesh], [MeshDataTool] o [SurfaceTool] en su lugar.\n"
-"[b]Nota:[/b] Godot usa el sentido de las agujas del reloj "
-"[url=https://learnopengl.com/Advanced-OpenGL/Face-culling]orden de giro[/url]"
-" para las caras frontales de los modos primitivos de los triángulos."
+"[b]Nota:[/b] Godot usa el sentido de las agujas del reloj [url=https://"
+"learnopengl.com/Advanced-OpenGL/Face-culling]orden de giro[/url] para las "
+"caras frontales de los modos primitivos de los triángulos."
 
 #: doc/classes/ImmediateGeometry.xml:23
 msgid ""
@@ -37698,8 +37693,8 @@ msgid ""
 msgstr ""
 "Comienza a dibujar (y opcionalmente pasa una anulación de la textura). "
 "Cuando termine, llame a [method end]. Para más información sobre cómo "
-"funciona, busca las referencias [code]glBegin()[/code] y "
-"[code]glEnd()[/code].\n"
+"funciona, busca las referencias [code]glBegin()[/code] y [code]glEnd()[/"
+"code].\n"
 "Para el tipo de primitivo, ver el enum [enum Mesh.PrimitiveType]."
 
 #: doc/classes/ImmediateGeometry.xml:45
@@ -38441,7 +38436,8 @@ msgstr "Evento de entrada genérico."
 
 #: doc/classes/InputEvent.xml:7
 msgid "Base class of all sort of input event. See [method Node._input]."
-msgstr "Clase base de todo tipo de evento de entrada. Ver [method Node._input]."
+msgstr ""
+"Clase base de todo tipo de evento de entrada. Ver [method Node._input]."
 
 #: doc/classes/InputEvent.xml:10 doc/classes/InputEventJoypadButton.xml:10
 #: doc/classes/InputEventJoypadMotion.xml:10 doc/classes/InputEventKey.xml:10
@@ -38598,8 +38594,8 @@ msgid ""
 "[b]Project > Project Settings[/b] menu. See [method Node._input]."
 msgstr ""
 "Contiene una acción genérica que puede ser dirigida desde varios tipos de "
-"entradas. Las acciones pueden crearse desde la pestaña [b]Mapa de entrada[/b]"
-" del menú [b]Proyecto > Configuración del proyecto[/b]. Ver [method Node."
+"entradas. Las acciones pueden crearse desde la pestaña [b]Mapa de entrada[/"
+"b] del menú [b]Proyecto > Configuración del proyecto[/b]. Ver [method Node."
 "_input]."
 
 #: doc/classes/InputEventAction.xml:10
@@ -38984,7 +38980,8 @@ msgstr ""
 
 #: doc/classes/InputEventScreenDrag.xml:7
 msgid "Contains screen drag information. See [method Node._input]."
-msgstr "Contiene información de arrastre de pantalla. Ver [method Node._input]."
+msgstr ""
+"Contiene información de arrastre de pantalla. Ver [method Node._input]."
 
 #: doc/classes/InputEventScreenDrag.xml:16
 msgid "The drag event index in the case of a multi-drag event."
@@ -39519,8 +39516,8 @@ msgstr ""
 msgid ""
 "Invalid ID constant. Returned if [constant RESOLVER_MAX_QUERIES] is exceeded."
 msgstr ""
-"Constante de identificación inválida. Devuelta si se supera la constant ["
-"constant RESOLVER_MAX_QUERIES]."
+"Constante de identificación inválida. Devuelta si se supera la constant "
+"[constant RESOLVER_MAX_QUERIES]."
 
 #: doc/classes/IP.xml:113
 msgid "Address type: None."
@@ -40115,8 +40112,8 @@ msgstr ""
 #: doc/classes/JavaScript.xml:11
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/workflow/export/"
-"exporting_for_web.html#calling-javascript-from-script"
+"https://docs.godotengine.org/en/3.4/tutorials/export/exporting_for_web."
+"html#calling-javascript-from-script"
 msgstr ""
 "https://docs.godotengine.org/es/latest/getting_started/workflow/export/"
 "exporting_for_web.html#calling-javascript-from-script"
@@ -40242,8 +40239,8 @@ msgstr ""
 #: doc/classes/JNISingleton.xml:10
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/plugins/android/android_plugin."
-"html"
+"https://docs.godotengine.org/en/3.4/tutorials/platform/android/"
+"android_plugin.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/tutorials/plugins/editor/"
 "import_plugins.html"
@@ -40452,9 +40449,9 @@ msgid ""
 msgstr ""
 "Una [Variant] que contiene el JSON analizado. Utilice [method @GDScript."
 "typeof] o la palabra clave [code]is[/code] para comprobar si es lo que "
-"espera. Por ejemplo, si la fuente de JSON comienza con llaves rizadas "
-"([code]{}[/code]), se devolverá un [Dictionary]. Si la fuente de JSON "
-"comienza con paréntesis ([code][][/code]), se devolverá un [Array].\n"
+"espera. Por ejemplo, si la fuente de JSON comienza con llaves rizadas ([code]"
+"{}[/code]), se devolverá un [Dictionary]. Si la fuente de JSON comienza con "
+"paréntesis ([code][][/code]), se devolverá un [Array].\n"
 "[b]Nota:[/b] La especificación JSON no define los tipos enteros o reales, "
 "sino sólo un tipo [i]number[/i]. Por lo tanto, el análisis sintáctico de un "
 "texto JSON convertirá todos los valores numéricos a tipos [float].\n"
@@ -40656,8 +40653,8 @@ msgid ""
 msgstr ""
 "Devuelve un [KinematicCollision], que contiene información acerca de una "
 "colisión que ocurrió durante la última llamada del [method move_and_slide]. "
-"Dado que el cuerpo puede colisionar varias veces en una sola llamada a ["
-"method move_and_slide], debes especificar el índice de la colisión en el "
+"Dado que el cuerpo puede colisionar varias veces en una sola llamada a "
+"[method move_and_slide], debes especificar el índice de la colisión en el "
 "rango 0 a ([method get_slide_count] - 1)."
 
 #: doc/classes/KinematicBody.xml:61 doc/classes/KinematicBody2D.xml:59
@@ -40781,8 +40778,8 @@ msgstr ""
 "Si [code]stop_on_slope[/code] es [code]true[/code], el cuerpo no se "
 "deslizará en las pendientes cuando incluyas la gravedad en "
 "[code]linear_velocity[/code] y el cuerpo se quede quieto.\n"
-"Si el cuerpo colisiona, cambiará de dirección un máximo de "
-"[code]max_slides[/code] veces antes de detenerse.\n"
+"Si el cuerpo colisiona, cambiará de dirección un máximo de [code]max_slides[/"
+"code] veces antes de detenerse.\n"
 "[code]floor_max_angle[/code] es el ángulo máximo (en radianes) en el que una "
 "pendiente se considera todavía un suelo (o un techo), en lugar de una pared. "
 "El valor por defecto es igual a 45 grados.\n"
@@ -41066,8 +41063,8 @@ msgstr ""
 "Si [code]stop_on_slope[/code] es [code]true[/code], el cuerpo no se "
 "deslizará por las pendientes cuando incluyas la gravedad en "
 "[code]linear_velocity[/code] y el cuerpo se quede quieto.\n"
-"Si el cuerpo colisiona, cambiará de dirección un máximo de "
-"[code]max_slides[/code] veces antes de detenerse.\n"
+"Si el cuerpo colisiona, cambiará de dirección un máximo de [code]max_slides[/"
+"code] veces antes de detenerse.\n"
 "[code]floor_max_angle[/code] es el ángulo máximo (en radianes) en el que una "
 "pendiente se considera todavía un suelo (o un techo), en lugar de una pared. "
 "El valor por defecto es igual a 45 grados.\n"
@@ -42968,9 +42965,9 @@ msgid ""
 msgstr ""
 "Llamada a cada fotograma ocioso con el tiempo desde el último fotograma "
 "ocioso como argumento (en segundos). Equivalente a [method Node._process].\n"
-"Si se implementa, el método debe devolver un valor booleano. "
-"[code]true[/code] termina el bucle principal, mientras que [code]false[/code]"
-" le permite pasar al siguiente fotograma."
+"Si se implementa, el método debe devolver un valor booleano. [code]true[/"
+"code] termina el bucle principal, mientras que [code]false[/code] le permite "
+"pasar al siguiente fotograma."
 
 #: doc/classes/MainLoop.xml:79
 msgid "Called once during initialization."
@@ -43366,8 +43363,8 @@ msgid ""
 msgstr ""
 "Establece el [Material] que se usará para la siguiente pasada. Esto hace que "
 "el objeto vuelva a utilizar un material diferente.\n"
-"[b]Nota:[/b] sólo se aplica a los [StandardMaterial] y a los [ShaderMaterial]"
-"s con el tipo \"Espacial\"."
+"[b]Nota:[/b] sólo se aplica a los [StandardMaterial] y a los "
+"[ShaderMaterial]s con el tipo \"Espacial\"."
 
 #: doc/classes/Material.xml:21
 #, fuzzy
@@ -43850,12 +43847,12 @@ msgid ""
 "OpenGL/Face-culling]winding order[/url] for front faces of triangle "
 "primitive modes."
 msgstr ""
-"La MeshDataTool proporciona acceso a los vértices individuales de una [Mesh]"
-". Permite a los usuarios leer y editar los datos de los vértices de las "
-"mallas. También crea un conjunto de caras y bordes.\n"
+"La MeshDataTool proporciona acceso a los vértices individuales de una "
+"[Mesh]. Permite a los usuarios leer y editar los datos de los vértices de "
+"las mallas. También crea un conjunto de caras y bordes.\n"
 "Para usar MeshDataTool, cargue una malla con [method create_from_surface]. "
-"Cuando termines de editar los datos, confirma los datos a una malla con ["
-"method commit_to_surface].\n"
+"Cuando termines de editar los datos, confirma los datos a una malla con "
+"[method commit_to_surface].\n"
 "A continuación se muestra un ejemplo de cómo se puede usar MeshDataTool.\n"
 "[codeblock]\n"
 "var herramientaDeDatosDeMalla = MeshDataTool.new()\n"
@@ -44513,8 +44510,8 @@ msgstr ""
 "miles de nodos [MeshInstance] puede ser lento, ya que cada objeto se somete "
 "a la GPU y luego se dibuja individualmente.\n"
 "MultiMesh es mucho más rápido ya que puede dibujar miles de instancias con "
-"una sola llamada de dibujo, lo que resulta en una menor sobrecarga de la API."
-"\n"
+"una sola llamada de dibujo, lo que resulta en una menor sobrecarga de la "
+"API.\n"
 "Como desventaja, si las instancias están demasiado lejos unas de otras, el "
 "rendimiento puede reducirse ya que cada instancia individual siempre se "
 "renderizará (se indexan espacialmente como una sola, para todo el objeto).\n"
@@ -44524,7 +44521,7 @@ msgstr ""
 #: doc/classes/MultiMesh.xml:13 doc/classes/MultiMeshInstance.xml:11
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/vertex_animation/"
+"https://docs.godotengine.org/en/3.4/tutorials/performance/vertex_animation/"
 "animating_thousands_of_fish.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/tutorials/3d/vertex_animation/"
@@ -44533,7 +44530,7 @@ msgstr ""
 #: doc/classes/MultiMesh.xml:14 doc/classes/MultiMeshInstance.xml:13
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/optimization/using_multimesh."
+"https://docs.godotengine.org/en/3.4/tutorials/performance/using_multimesh."
 "html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/tutorials/optimization/"
@@ -45081,8 +45078,8 @@ msgstr ""
 #: doc/classes/Thread.xml:11
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/threads/using_multiple_threads."
-"html"
+"https://docs.godotengine.org/en/3.4/tutorials/performance/threads/"
+"using_multiple_threads.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/tutorials/threads/"
 "using_multiple_threads.html"
@@ -46544,11 +46541,11 @@ msgstr ""
 "flexibilidad en la arquitectura y el modelo de datos de los proyectos de "
 "Godot.\n"
 "[b]Árbol de escenas:[/b] El [SceneTree] contiene el árbol activo de nodos. "
-"Cuando se agrega un nodo al árbol de la escena, recibe la notificación ["
-"constant NOTIFICATION_ENTER_TREE] constante y se activa su devolución de "
-"llamada [method _enter_tree]. Los nodos secundarios siempre se agregan [i]"
-"después de[/i] su nodo principal, es decir, la devolución de llamada del ["
-"method _enter_tree] de un nodo principal se activará antes que su nodo "
+"Cuando se agrega un nodo al árbol de la escena, recibe la notificación "
+"[constant NOTIFICATION_ENTER_TREE] constante y se activa su devolución de "
+"llamada [method _enter_tree]. Los nodos secundarios siempre se agregan "
+"[i]después de[/i] su nodo principal, es decir, la devolución de llamada del "
+"[method _enter_tree] de un nodo principal se activará antes que su nodo "
 "principal.\n"
 "Una vez que se han agregado todos los nodos en el árbol de escenas, reciben "
 "la notificación [constant NOTIFICATION_READY] y se activan sus respectivas "
@@ -46562,12 +46559,12 @@ msgstr ""
 "escenas).\n"
 "[b]Procesamiento:[/b] Los nodos pueden anular el estado de \"proceso\", para "
 "que reciban una devolución de llamada en cada marco solicitándoles que "
-"procesen (hagan algo). El procesamiento normal (devolución de llamada ["
-"method _process], conmutado con [method set_process]) ocurre lo más rápido "
+"procesen (hagan algo). El procesamiento normal (devolución de llamada "
+"[method _process], conmutado con [method set_process]) ocurre lo más rápido "
 "posible y depende de la velocidad de fotogramas, por lo que el tiempo de "
 "procesamiento [i]delta[/i] se pasa como argumento. El procesamiento de "
-"física (devolución de llamada [method _physics_process], alternado con ["
-"method set_physics_process]) ocurre un número fijo de veces por segundo (60 "
+"física (devolución de llamada [method _physics_process], alternado con "
+"[method set_physics_process]) ocurre un número fijo de veces por segundo (60 "
 "por defecto) y es útil para el código relacionado con el motor de física.\n"
 "Los nodos también pueden procesar eventos de entrada. Cuando esté presente, "
 "se llamará a la función [method _input] para cada entrada que reciba el "
@@ -46603,7 +46600,7 @@ msgstr ""
 #, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/step_by_step/"
-"scenes_and_nodes.html"
+"nodes_and_scenes.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/getting_started/step_by_step/"
 "scenes_and_nodes.html"
@@ -46735,8 +46732,8 @@ msgid ""
 msgstr ""
 "Llamado durante la etapa de procesamiento del bucle principal. El "
 "procesamiento se realiza en cada fotograma y lo más rápido posible, por lo "
-"que el tiempo [code]delta[/code] desde el fotograma anterior no es constante."
-"\n"
+"que el tiempo [code]delta[/code] desde el fotograma anterior no es "
+"constante.\n"
 "Sólo se llama si el procesamiento está habilitado, lo que se hace "
 "automáticamente si este método es anulado, y puede ser conmutado con [method "
 "set_process].\n"
@@ -46766,9 +46763,9 @@ msgstr ""
 "sus hijos han entrado en el árbol de la escena. Si el nodo tiene hijos, sus "
 "llamadas [method _ready] se activan primero, y el nodo padre recibirá la "
 "notificación de listo después.\n"
-"Corresponde a la notificación [constant NOTIFICATION_READY] en [method Object"
-"._notification]. Véase también la palabra clave [code]onready[/code] para "
-"las variables.\n"
+"Corresponde a la notificación [constant NOTIFICATION_READY] en [method "
+"Object._notification]. Véase también la palabra clave [code]onready[/code] "
+"para las variables.\n"
 "Normalmente se utiliza para la inicialización. Para una inicialización aún "
 "más temprana, se puede utilizar [method Object._init]. Véase también [method "
 "_enter_tree].\n"
@@ -47624,8 +47621,8 @@ msgid ""
 "using an unreliable protocol (see [method NetworkedMultiplayerPeer."
 "set_target_peer]). Returns an empty [Variant]."
 msgstr ""
-"Envía un [method rpc] a un par específico identificado por "
-"[code]peer_id[/code] utilizando un protocolo poco fiable (véase [method "
+"Envía un [method rpc] a un par específico identificado por [code]peer_id[/"
+"code] utilizando un protocolo poco fiable (véase [method "
 "NetworkedMultiplayerPeer.set_target_peer]). Devuelve una [Variant] vacía."
 
 #: doc/classes/Node.xml:577
@@ -48416,8 +48413,8 @@ msgstr ""
 "([code]:[/code]) como separador, es decir, el lado derecho del primer punto "
 "del recorrido de un nodo.\n"
 "[codeblock]\n"
-"var ruta_nodo = NodePath(\"Path2D/PathFollow2D/Sprite2D:texture:load_path\")"
-"\n"
+"var ruta_nodo = NodePath(\"Path2D/PathFollow2D/Sprite2D:texture:load_path"
+"\")\n"
 "print(ruta_nodo.get_concatenated_subnames()) #textura:texture:load_path\n"
 "[/codeblock]"
 
@@ -48638,16 +48635,16 @@ msgstr ""
 "\"Construct Object\" en VisualScript.\n"
 "Los objetos no administran la memoria. Si una clase hereda de Object, "
 "tendrás que eliminar manualmente las instancias de la misma. Para ello, "
-"llama al método [method free] desde tu script o elimina la instancia desde "
-"C++.\n"
+"llama al método [method free] desde tu script o elimina la instancia desde C+"
+"+.\n"
 "Algunas clases que extienden a Object añaden gestión de memoria. Este es el "
 "caso de [Reference], que cuenta las referencias y se borra a sí misma "
 "automáticamente cuando deja de estar referenciada. [Node], otro tipo "
 "fundamental, borra todos sus hijos cuando se libera de la memoria.\n"
 "Los objetos exportan propiedades, que son principalmente útiles para el "
 "almacenamiento y la edición, pero no tanto en la programación. Las "
-"propiedades se exportan en [method _get_property_list] y se manejan en ["
-"method _get] y [method _set]. Sin embargo, los lenguajes de scripting y C++ "
+"propiedades se exportan en [method _get_property_list] y se manejan en "
+"[method _get] y [method _set]. Sin embargo, los lenguajes de scripting y C++ "
 "tienen medios más sencillos para exportarlas.\n"
 "La pertenencia de las propiedades puede ser probada directamente en GDScript "
 "usando [code]en[/code]:\n"
@@ -48670,7 +48667,7 @@ msgstr ""
 #: doc/classes/Resource.xml:12
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/workflow/best_practices/"
+"https://docs.godotengine.org/en/3.4/tutorials/best_practices/"
 "node_alternatives.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/getting_started/workflow/"
@@ -48679,7 +48676,7 @@ msgstr ""
 #: doc/classes/Object.xml:25
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/"
+"https://docs.godotengine.org/en/3.4/tutorials/scripting/gdscript/"
 "gdscript_exports.html#advanced-exports"
 msgstr ""
 "https://docs.godotengine.org/es/latest/getting_started/scripting/gdscript/"
@@ -50070,9 +50067,9 @@ msgstr ""
 "conjunto de strings. La resolución de la ruta de la plataforma tendrá lugar. "
 "El archivo resuelto debe existir y ser ejecutable.\n"
 "Los argumentos se utilizan en el orden dado y separados por un espacio, así "
-"que [code]OS.execute(\"ping\", [\"-w\", \"3\", \"godotengine.org\"], "
-"false)[/code] resolverá a [code]ping -w 3 godotengine.org[/code] en el shell "
-"del sistema.\n"
+"que [code]OS.execute(\"ping\", [\"-w\", \"3\", \"godotengine.org\"], false)[/"
+"code] resolverá a [code]ping -w 3 godotengine.org[/code] en el shell del "
+"sistema.\n"
 "Este método tiene un comportamiento ligeramente diferente basado en si el "
 "modo [code]blocking[/code] está activado.\n"
 "Si [code]blocking[/code] es [code]true[/code], el hilo de Godot detendrá su "
@@ -50086,8 +50083,8 @@ msgstr ""
 "el método devolverá un código de salida del proceso. Cuando no se bloquea, "
 "el método devuelve un ID de proceso, que puedes usar para monitorizar el "
 "proceso (y potencialmente terminarlo con [method kill]). Si el proceso se "
-"bifurca (sin bloquear) o se abre (bloquea), el método devolverá "
-"[code]-1[/code] u otro código de salida.\n"
+"bifurca (sin bloquear) o se abre (bloquea), el método devolverá [code]-1[/"
+"code] u otro código de salida.\n"
 "Ejemplo de modo de bloqueo y recuperación de la salida del shell:\n"
 "[codeblock]\n"
 "var output = []\n"
@@ -50778,8 +50775,8 @@ msgid ""
 "supported in the currently running instance, depending on the platform, "
 "build etc. Can be used to check whether you're currently running a debug "
 "build, on a certain platform or arch, etc. Refer to the [url=https://docs."
-"godotengine.org/en/3.4/getting_started/workflow/export/feature_tags."
-"html]Feature Tags[/url] documentation for more details.\n"
+"godotengine.org/en/3.4/tutorials/export/feature_tags.html]Feature Tags[/url] "
+"documentation for more details.\n"
 "[b]Note:[/b] Tag names are case-sensitive."
 msgstr ""
 "Devuelve [code]true[/code] si la característica para la etiqueta de la "
@@ -52375,7 +52372,7 @@ msgstr ""
 #: doc/classes/Particles.xml:13
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/vertex_animation/"
+"https://docs.godotengine.org/en/3.4/tutorials/performance/vertex_animation/"
 "controlling_thousands_of_fish.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/tutorials/3d/vertex_animation/"
@@ -53970,8 +53967,8 @@ msgstr ""
 "[code]collider[/code]: El objeto que colisiona.\n"
 "[code]collider_id[/code]: El ID del objeto que colisiona.\n"
 "[code]metadata[/code]: Los metadatos de la forma que se intersecta. Estos "
-"metadatos son diferentes de [method Object.get_meta], y se establecen con ["
-"method Physics2DServer.shape_set_data].\n"
+"metadatos son diferentes de [method Object.get_meta], y se establecen con "
+"[method Physics2DServer.shape_set_data].\n"
 "[code]rid[/code]: El objeto que se intersecta es [RID].\n"
 "[code]shape[/code]: El índice de la forma de la forma que colisiona.\n"
 "El número de intersecciones puede ser limitado con el parámetro "
@@ -55243,8 +55240,9 @@ msgstr ""
 "una forma, se selecciona la más cercana. El objeto devuelto es un "
 "diccionario que contiene los siguientes campos:\n"
 "[code]collider_id[/code]: El ID del objeto que colisiona.\n"
-"[code]linear_velocity[/code]: La velocidad del objeto que colisiona [Vector3]"
-". Si el objeto es un [Area], el resultado es [code](0, 0, 0)[/code].\n"
+"[code]linear_velocity[/code]: La velocidad del objeto que colisiona "
+"[Vector3]. Si el objeto es un [Area], el resultado es [code](0, 0, 0)[/"
+"code].\n"
 "[code]normal[/code]: La normalidad de la superficie del objeto en el punto "
 "de intersección.\n"
 "[code]point[/code]: El punto de intersección.\n"
@@ -56126,8 +56124,8 @@ msgid ""
 "This class contains the shape and other parameters for 3D intersection/"
 "collision queries."
 msgstr ""
-"Esta clase contiene la forma y otros parámetros para consultas de intersecció"
-"n/colisión en 3D. Ver también [PhysicsShapeQueryResult]."
+"Esta clase contiene la forma y otros parámetros para consultas de "
+"intersección/colisión en 3D. Ver también [PhysicsShapeQueryResult]."
 
 #: doc/classes/PhysicsShapeQueryParameters.xml:16
 #, fuzzy
@@ -56465,10 +56463,9 @@ msgstr ""
 "sistemas de partículas, pero pueden ser usados como una forma barata de "
 "renderizar sprites de tamaño constante (por ejemplo en una nube de puntos).\n"
 "PointMeshes, debe ser usado con un material que tenga un tamaño de punto. El "
-"tamaño de punto puede ser accedido en un sombreador con "
-"[code]POINT_SIZE[/code], o en un [SpatialMaterial] estableciendo [member "
-"SpatialMaterial.use_point_size] y la variable [member SpatialMaterial."
-"point_size].\n"
+"tamaño de punto puede ser accedido en un sombreador con [code]POINT_SIZE[/"
+"code], o en un [SpatialMaterial] estableciendo [member SpatialMaterial."
+"use_point_size] y la variable [member SpatialMaterial.point_size].\n"
 "Al usar PointMeshes, las propiedades que normalmente alteran los vértices "
 "serán ignoradas, incluyendo el modo de cartelera, el crecimiento y la cara "
 "de selección."
@@ -58305,13 +58302,13 @@ msgid ""
 "Project Settings dialog.\n"
 "[b]Feature tags:[/b] Project settings can be overridden for specific "
 "platforms and configurations (debug, release, ...) using [url=https://docs."
-"godotengine.org/en/latest/tutorials/export/feature_tags.html]feature tags[/"
+"godotengine.org/en/3.4/tutorials/export/feature_tags.html]feature tags[/"
 "url].\n"
 "[b]Overriding:[/b] Any project setting can be overridden by creating a file "
 "named [code]override.cfg[/code] in the project's root directory. This can "
 "also be used in exported projects by placing this file in the same directory "
 "as the project binary. Overriding will still take the base project "
-"settings' [url=https://docs.godotengine.org/en/latest/tutorials/export/"
+"settings' [url=https://docs.godotengine.org/en/3.4/tutorials/export/"
 "feature_tags.html]feature tags[/url] in account. Therefore, make sure to "
 "[i]also[/i] override the setting with the desired feature tags if you want "
 "them to override base project settings on all platforms and configurations."
@@ -61027,9 +61024,10 @@ msgid ""
 "programmatically, use [method VisualServer.set_default_clear_color]."
 msgstr ""
 "Color de fondo claro por defecto. Sobrescribible por el [Viewport] usando su "
-"[Environment]. Vea [member Environment.background_mode] y [member Environment"
-".background_color] en particular. Para cambiar este color predeterminado de "
-"forma programada, utilice el [method VisualServer.set_default_clear_color]."
+"[Environment]. Vea [member Environment.background_mode] y [member "
+"Environment.background_color] en particular. Para cambiar este color "
+"predeterminado de forma programada, utilice el [method VisualServer."
+"set_default_clear_color]."
 
 #: doc/classes/ProjectSettings.xml:1225
 msgid ""
@@ -61831,7 +61829,7 @@ msgstr ""
 "cartelería. A diferencia de [PlaneMesh], esta malla no proporciona opciones "
 "de subdivisión."
 
-#: doc/classes/QuadMesh.xml:11 doc/classes/Viewport.xml:19
+#: doc/classes/QuadMesh.xml:11 doc/classes/Viewport.xml:20
 #: doc/classes/ViewportTexture.xml:13
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/129"
@@ -62342,8 +62340,8 @@ msgstr ""
 "RayCast3D puede ignorar algunos objetos añadiéndolos a la lista de "
 "excepciones mediante [code]add_exception[/code] o estableciendo un filtrado "
 "adecuado con capas y máscaras de colisión.\n"
-"RayCast3D puede ser configurado para reportar colisiones con [Area]s (["
-"member collide_with_areas]) y/o [PhysicsBody]s ([member "
+"RayCast3D puede ser configurado para reportar colisiones con [Area]s "
+"([member collide_with_areas]) y/o [PhysicsBody]s ([member "
 "collide_with_bodies]).\n"
 "Sólo las emisiones de rayos habilitadas podrán consultar el espacio e "
 "informar de las colisiones.\n"
@@ -63124,10 +63122,10 @@ msgstr ""
 "Una expresión regular (o regex) es un lenguaje compacto que puede utilizarse "
 "para reconocer cadenas que siguen un patrón específico, como URL, "
 "direcciones de correo electrónico, frases completas, etc. Por ejemplo, una "
-"regex de [code]ab[0-9][/code] encontraría cualquier string que sea "
-"[code]ab[/code] seguida de cualquier número desde [code]0[/code] hasta "
-"[code]9[/code]. Para una mirada más profunda, puedes encontrar fácilmente "
-"varios tutoriales y explicaciones detalladas en Internet.\n"
+"regex de [code]ab[0-9][/code] encontraría cualquier string que sea [code]ab[/"
+"code] seguida de cualquier número desde [code]0[/code] hasta [code]9[/code]. "
+"Para una mirada más profunda, puedes encontrar fácilmente varios tutoriales "
+"y explicaciones detalladas en Internet.\n"
 "Para empezar, el objeto RegEx necesita ser compilado con el patrón de "
 "búsqueda usando [method compile] antes de que pueda ser usado.\n"
 "[codeblock]\n"
@@ -63137,12 +63135,12 @@ msgstr ""
 "El patrón de búsqueda debe escaparse primero para el GDScript antes de que "
 "se escape para la expresión. Por ejemplo, [code]compile(\"\\\\d+\")[/code] "
 "sería leído por RegEx como [code]\\d+[/code]. De manera similar, "
-"[code]compile(\"\\\"(?:\\\\\\N-[^^])*[^]\"[/code] sería leído como [code]\""
-"(?:\\N-[^]])*\"[/code].\n"
+"[code]compile(\"\\\"(?:\\\\\\N-[^^])*[^]\"[/code] sería leído como "
+"[code]\"(?:\\N-[^]])*\"[/code].\n"
 "Usando [method search], puedes encontrar el patrón dentro del texto dado. Si "
 "se encuentra un patrón, se devuelve [RegExMatch] y se pueden recuperar los "
-"detalles de los resultados usando métodos como [method RegExMatch.get_string]"
-" y [method RegExMatch.get_start].\n"
+"detalles de los resultados usando métodos como [method RegExMatch."
+"get_string] y [method RegExMatch.get_start].\n"
 "[codeblock]\n"
 "var regex = RegEx.new()\n"
 "regex.compile(\"\\\\w-(\\\\d+)\")\n"
@@ -63151,10 +63149,10 @@ msgstr ""
 "    print(result.get_string()) # Se imprimiría el n-0123\n"
 "[/codeblock]\n"
 "Los resultados de la captura de grupos [code]()[/code] pueden ser "
-"recuperados pasando el número de grupo a los diversos métodos en [RegExMatch]"
-". El grupo 0 es el predeterminado y siempre se referirá al patrón completo. "
-"En el ejemplo anterior, llamando a [code]result.get_string(1)[/code] "
-"obtendríamos [code]0123[/code].\n"
+"recuperados pasando el número de grupo a los diversos métodos en "
+"[RegExMatch]. El grupo 0 es el predeterminado y siempre se referirá al "
+"patrón completo. En el ejemplo anterior, llamando a [code]result."
+"get_string(1)[/code] obtendríamos [code]0123[/code].\n"
 "Esta versión de RegEx también soporta grupos de captura con nombre, y los "
 "nombres pueden ser usados para recuperar los resultados. Si dos o más grupos "
 "tienen el mismo nombre, el nombre sólo se referiría al primero con una "
@@ -63179,8 +63177,7 @@ msgstr ""
 "var regex = RegEx.new()\n"
 "regex.compile(\"\\\\N-S+\") # Clase de personaje de espacio blanco negado.\n"
 "var results = []\n"
-"for match in regex.search_all(\"Uno Dos  \\n"
-"\\tTres\"):\n"
+"for match in regex.search_all(\"Uno Dos  \\n\\tTres\"):\n"
 "    results.push_back(match.get_string())\n"
 "# El `results` ahora contiene \"Uno\", \"Dos\", \"Tres\".\n"
 "[/codeblock]\n"
@@ -63487,12 +63484,8 @@ msgstr ""
 
 #: doc/classes/Resource.xml:11
 #, fuzzy
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/step_by_step/resources."
-"html"
-msgstr ""
-"https://docs.godotengine.org/es/latest/getting_started/step_by_step/"
-"resources.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/resources.html"
+msgstr "https://docs.godotengine.org/es/latest/tutorials/i18n/locales.html"
 
 #: doc/classes/Resource.xml:18
 msgid ""
@@ -64797,15 +64790,15 @@ msgid ""
 "[CollisionShape] centers."
 msgstr ""
 "Este es el nodo que implementa la física 3D completa. Esto significa que no "
-"controlas un RigidBody directamente. En su lugar, puedes aplicarle fuerzas ("
-"gravedad, impulsos, etc.), y la simulación física calculará el movimiento "
+"controlas un RigidBody directamente. En su lugar, puedes aplicarle fuerzas "
+"(gravedad, impulsos, etc.), y la simulación física calculará el movimiento "
 "resultante, la colisión, el rebote, la rotación, etc.\n"
 "Un RigidBody tiene 4 comportamientos [member mode]s: Rígido, Estático, "
 "Carácter y Cinemático.\n"
 "[b]Nota:[/b] No cambies la posición de un RigidBody cada fotograma o muy a "
 "menudo. Los cambios esporádicos funcionan bien, pero la física funciona con "
-"una granularidad (Hz fijos) diferente a la de la representación habitual ("
-"llamada de proceso) y tal vez incluso en un hilo separado, por lo que "
+"una granularidad (Hz fijos) diferente a la de la representación habitual "
+"(llamada de proceso) y tal vez incluso en un hilo separado, por lo que "
 "cambiar esto de un bucle de proceso puede dar lugar a un comportamiento "
 "extraño. Si necesitas afectar directamente el estado del cuerpo, usa [method "
 "_integrate_forces], que te permite acceder directamente al estado de la "
@@ -66282,17 +66275,13 @@ msgstr ""
 
 #: doc/classes/SceneTree.xml:12
 #, fuzzy
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/step_by_step/scene_tree."
-"html"
-msgstr ""
-"https://docs.godotengine.org/es/latest/getting_started/step_by_step/"
-"scene_tree.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/scene_tree.html"
+msgstr "https://docs.godotengine.org/es/latest/tutorials/shading/index.html"
 
 #: doc/classes/SceneTree.xml:13
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/viewports/multiple_resolutions."
+"https://docs.godotengine.org/en/3.4/tutorials/rendering/multiple_resolutions."
 "html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/tutorials/viewports/"
@@ -66465,8 +66454,8 @@ msgid ""
 "Queues the given object for deletion, delaying the call to [method Object."
 "free] to after the current frame."
 msgstr ""
-"Pone en cola el objeto dado para su eliminación, retrasando la llamada al ["
-"method Object.free] hasta después del fotograma actual."
+"Pone en cola el objeto dado para su eliminación, retrasando la llamada al "
+"[method Object.free] hasta después del fotograma actual."
 
 #: doc/classes/SceneTree.xml:166
 #, fuzzy
@@ -66643,11 +66632,22 @@ msgid "The [SceneTree]'s root [Viewport]."
 msgstr "La ventana de raíz del [SceneTree]."
 
 #: doc/classes/SceneTree.xml:264
-#, fuzzy
-msgid "If [code]true[/code], font oversampling is used."
-msgstr "Si [code]true[/code], se habilita el mapeado normal."
+msgid ""
+"If [code]true[/code], font oversampling is enabled. This means that "
+"[DynamicFont]s will be rendered at higher or lower size than configured "
+"based on the viewport's scaling ratio. For example, in a viewport scaled "
+"with a factor 1.5, a font configured with size 14 would be rendered with "
+"size 21 ([code]14 * 1.5[/code]).\n"
+"[b]Note:[/b] Font oversampling is only used if the viewport stretch mode is "
+"[constant STRETCH_MODE_VIEWPORT], and if the stretch aspect mode is "
+"different from [constant STRETCH_ASPECT_IGNORE].\n"
+"[b]Note:[/b] This property is set automatically for the active [SceneTree] "
+"when the project starts based on the configuration of [code]rendering/"
+"quality/dynamic_fonts/use_oversampling[/code] in [ProjectSettings]. The "
+"property can however be overridden at runtime as needed."
+msgstr ""
 
-#: doc/classes/SceneTree.xml:270
+#: doc/classes/SceneTree.xml:272
 msgid ""
 "Emitted whenever this [SceneTree]'s [member network_peer] successfully "
 "connected to a server. Only emitted on clients."
@@ -66655,7 +66655,7 @@ msgstr ""
 "Emitido siempre que el [SceneTree] de este [member network_peer] se conectó "
 "con éxito a un servidor. Sólo se emite en los clientes."
 
-#: doc/classes/SceneTree.xml:275
+#: doc/classes/SceneTree.xml:277
 msgid ""
 "Emitted whenever this [SceneTree]'s [member network_peer] fails to establish "
 "a connection to a server. Only emitted on clients."
@@ -66663,7 +66663,7 @@ msgstr ""
 "Emitido siempre que el [member network_peer] de este [SceneTree] no logre "
 "establecer una conexión con un servidor. Sólo se emite en los clientes."
 
-#: doc/classes/SceneTree.xml:282
+#: doc/classes/SceneTree.xml:284
 msgid ""
 "Emitted when files are dragged from the OS file manager and dropped in the "
 "game window. The arguments are a list of file paths and the identifier of "
@@ -66674,12 +66674,12 @@ msgstr ""
 "son una lista de las rutas de los archivos y el identificador de la pantalla "
 "donde se originó el arrastre."
 
-#: doc/classes/SceneTree.xml:289
+#: doc/classes/SceneTree.xml:291
 #, fuzzy
 msgid "Emitted whenever global menu item is clicked."
 msgstr "Emitido cuando se selecciona un elemento."
 
-#: doc/classes/SceneTree.xml:294
+#: doc/classes/SceneTree.xml:296
 msgid ""
 "Emitted immediately before [method Node._process] is called on every node in "
 "the [SceneTree]."
@@ -66687,7 +66687,7 @@ msgstr ""
 "Emitido inmediatamente antes de que se llame a [method Node._process] en "
 "cada nodo del [SceneTree]."
 
-#: doc/classes/SceneTree.xml:300
+#: doc/classes/SceneTree.xml:302
 msgid ""
 "Emitted whenever this [SceneTree]'s [member network_peer] connects with a "
 "new peer. ID is the peer ID of the new peer. Clients get notified when other "
@@ -66699,7 +66699,7 @@ msgstr ""
 "cuando otros clientes se conectan al mismo servidor. Al conectarse a un "
 "servidor, un cliente también recibe esta señal para el servidor (con ID 1)."
 
-#: doc/classes/SceneTree.xml:306
+#: doc/classes/SceneTree.xml:308
 msgid ""
 "Emitted whenever this [SceneTree]'s [member network_peer] disconnects from a "
 "peer. Clients get notified when other clients disconnect from the same "
@@ -66709,11 +66709,11 @@ msgstr ""
 "desconecta de un par. Los clientes son notificados cuando otros clientes se "
 "desconectan del mismo servidor."
 
-#: doc/classes/SceneTree.xml:312
+#: doc/classes/SceneTree.xml:314
 msgid "Emitted whenever a node is added to the [SceneTree]."
 msgstr "Se emite cada vez que se añade un nodo al [SceneTree]."
 
-#: doc/classes/SceneTree.xml:318
+#: doc/classes/SceneTree.xml:320
 msgid ""
 "Emitted when a node's configuration changed. Only emitted in [code]tool[/"
 "code] mode."
@@ -66721,15 +66721,15 @@ msgstr ""
 "Emitido cuando la configuración de un nodo cambió. Sólo se emite en el modo "
 "[code]tool[/code]."
 
-#: doc/classes/SceneTree.xml:324
+#: doc/classes/SceneTree.xml:326
 msgid "Emitted whenever a node is removed from the [SceneTree]."
 msgstr "Se emite cada vez que se quita un nodo del [SceneTree]."
 
-#: doc/classes/SceneTree.xml:330
+#: doc/classes/SceneTree.xml:332
 msgid "Emitted whenever a node is renamed."
 msgstr "Emitido cada vez que un nodo es renombrado."
 
-#: doc/classes/SceneTree.xml:335
+#: doc/classes/SceneTree.xml:337
 msgid ""
 "Emitted immediately before [method Node._physics_process] is called on every "
 "node in the [SceneTree]."
@@ -66737,13 +66737,13 @@ msgstr ""
 "Emitido inmediatamente antes de que [method Node._physics_process] sea "
 "llamado en cada nodo del [SceneTree]."
 
-#: doc/classes/SceneTree.xml:340
+#: doc/classes/SceneTree.xml:342
 msgid ""
 "Emitted when the screen resolution (fullscreen) or window size (windowed) "
 "changes."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:345
+#: doc/classes/SceneTree.xml:347
 msgid ""
 "Emitted whenever this [SceneTree]'s [member network_peer] disconnected from "
 "server. Only emitted on clients."
@@ -66751,7 +66751,7 @@ msgstr ""
 "Emitido cada vez que el [SceneTree] de este [member network_peer] se "
 "desconecta del servidor. Sólo se emite en los clientes."
 
-#: doc/classes/SceneTree.xml:350
+#: doc/classes/SceneTree.xml:352
 msgid ""
 "Emitted whenever the [SceneTree] hierarchy changed (children being moved or "
 "renamed, etc.)."
@@ -66759,65 +66759,65 @@ msgstr ""
 "Emitido cada vez que la jerarquía [SceneTree] cambiaba (los niños eran "
 "movidos o renombrados, etc.)."
 
-#: doc/classes/SceneTree.xml:356
+#: doc/classes/SceneTree.xml:358
 msgid "Call a group with no flags (default)."
 msgstr "Llama a un grupo sin flags (por defecto)."
 
-#: doc/classes/SceneTree.xml:359
+#: doc/classes/SceneTree.xml:361
 msgid "Call a group in reverse scene order."
 msgstr "Llama a un grupo en orden inverso al de la escena."
 
-#: doc/classes/SceneTree.xml:362
+#: doc/classes/SceneTree.xml:364
 msgid "Call a group immediately (calls are normally made on idle)."
 msgstr ""
 "Llama a un grupo inmediatamente (las llamadas se hacen normalmente en "
 "reposo)."
 
-#: doc/classes/SceneTree.xml:365
+#: doc/classes/SceneTree.xml:367
 msgid "Call a group only once even if the call is executed many times."
 msgstr ""
 "Llama a un grupo sólo una vez aunque la llamada se ejecute muchas veces."
 
-#: doc/classes/SceneTree.xml:368
+#: doc/classes/SceneTree.xml:370
 #, fuzzy
 msgid "No stretching."
 msgstr "Para de escuchar."
 
-#: doc/classes/SceneTree.xml:371
+#: doc/classes/SceneTree.xml:373
 msgid "Render stretching in higher resolution (interpolated)."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:374
+#: doc/classes/SceneTree.xml:376
 msgid ""
 "Keep the specified display resolution. No interpolation. Content may appear "
 "pixelated."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:377
+#: doc/classes/SceneTree.xml:379
 msgid ""
 "Fill the window with the content stretched to cover excessive space. Content "
 "may appear stretched."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:380
+#: doc/classes/SceneTree.xml:382
 msgid ""
 "Retain the same aspect ratio by padding with black bars on either axis. This "
 "prevents distortion."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:383
+#: doc/classes/SceneTree.xml:385
 msgid ""
 "Expand vertically. Left/right black bars may appear if the window is too "
 "wide."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:386
+#: doc/classes/SceneTree.xml:388
 msgid ""
 "Expand horizontally. Top/bottom black bars may appear if the window is too "
 "tall."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:389
+#: doc/classes/SceneTree.xml:391
 msgid ""
 "Expand in both directions, retaining the same aspect ratio. This prevents "
 "distortion while avoiding black bars."
@@ -66884,12 +66884,8 @@ msgstr ""
 
 #: doc/classes/Script.xml:11
 #, fuzzy
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/step_by_step/scripting."
-"html"
-msgstr ""
-"https://docs.godotengine.org/es/latest/getting_started/step_by_step/"
-"scripting.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/index.html"
+msgstr "https://docs.godotengine.org/es/latest/tutorials/shading/index.html"
 
 #: doc/classes/Script.xml:17
 msgid "Returns [code]true[/code] if the script can be instanced."
@@ -67124,10 +67120,18 @@ msgstr ""
 #: doc/classes/ScrollContainer.xml:16
 msgid ""
 "Ensures the given [code]control[/code] is visible (must be a direct or "
-"indirect child of the ScrollContainer). Used by [member follow_focus]."
+"indirect child of the ScrollContainer). Used by [member follow_focus].\n"
+"[b]Note:[/b] This will not work on a node that was just added during the "
+"same frame. If you want to scroll to a newly added child, you must wait "
+"until the next frame using [signal SceneTree.idle_frame]:\n"
+"[codeblock]\n"
+"add_child(child_node)\n"
+"yield(get_tree(), \"idle_frame\")\n"
+"ensure_control_visible(child_node)\n"
+"[/codeblock]"
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:22
+#: doc/classes/ScrollContainer.xml:28
 msgid ""
 "Returns the horizontal scrollbar [HScrollBar] of this [ScrollContainer].\n"
 "[b]Warning:[/b] This is a required internal node, removing and freeing it "
@@ -67136,7 +67140,7 @@ msgid ""
 "its [member CanvasItem.visible] property."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:29
+#: doc/classes/ScrollContainer.xml:35
 msgid ""
 "Returns the vertical scrollbar [VScrollBar] of this [ScrollContainer].\n"
 "[b]Warning:[/b] This is a required internal node, removing and freeing it "
@@ -67145,7 +67149,7 @@ msgid ""
 "its [member CanvasItem.visible] property."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:36
+#: doc/classes/ScrollContainer.xml:42
 msgid ""
 "If [code]true[/code], the ScrollContainer will automatically scroll to "
 "focused children (including indirect children) to make sure they are fully "
@@ -67155,31 +67159,31 @@ msgstr ""
 "hijos enfocados (incluyendo los niños indirectos) para asegurarse de que son "
 "completamente visibles."
 
-#: doc/classes/ScrollContainer.xml:42
+#: doc/classes/ScrollContainer.xml:48
 msgid "The current horizontal scroll value."
 msgstr "El valor actual de desplazamiento horizontal."
 
-#: doc/classes/ScrollContainer.xml:45
+#: doc/classes/ScrollContainer.xml:51
 msgid "If [code]true[/code], enables horizontal scrolling."
 msgstr "Si [code]true[/code], permite el desplazamiento horizontal."
 
-#: doc/classes/ScrollContainer.xml:48
+#: doc/classes/ScrollContainer.xml:54
 msgid "The current vertical scroll value."
 msgstr "El valor actual de scroll vertical."
 
-#: doc/classes/ScrollContainer.xml:51
+#: doc/classes/ScrollContainer.xml:57
 msgid "If [code]true[/code], enables vertical scrolling."
 msgstr "Si [code]true[/code], permite el desplazamiento vertical."
 
-#: doc/classes/ScrollContainer.xml:57
+#: doc/classes/ScrollContainer.xml:63
 msgid "Emitted when scrolling stops."
 msgstr "Emitido cuando el scroll se detiene."
 
-#: doc/classes/ScrollContainer.xml:62
+#: doc/classes/ScrollContainer.xml:68
 msgid "Emitted when scrolling is started."
 msgstr "Emitido cuando se inicia el scrolling."
 
-#: doc/classes/ScrollContainer.xml:70
+#: doc/classes/ScrollContainer.xml:76
 msgid "The background [StyleBox] of the [ScrollContainer]."
 msgstr "El fondo [StyleBox] del [ScrollContainer]."
 
@@ -67268,17 +67272,16 @@ msgstr ""
 
 #: doc/classes/Shader.xml:10 doc/classes/ShaderMaterial.xml:11
 #, fuzzy
-msgid "https://docs.godotengine.org/en/3.4/tutorials/shading/index.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/shaders/index.html"
 msgstr "https://docs.godotengine.org/es/latest/tutorials/shading/index.html"
 
 #: doc/classes/Shader.xml:11
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/shading/your_first_shader/"
-"what_are_shaders.html"
+"https://docs.godotengine.org/en/3.4/tutorials/shaders/"
+"introduction_to_shaders.html"
 msgstr ""
-"https://docs.godotengine.org/es/latest/tutorials/shading/your_first_shader/"
-"what_are_shaders.html"
+"https://docs.godotengine.org/es/latest/tutorials/3d/introduction_to_3d.html"
 
 #: doc/classes/Shader.xml:18
 msgid ""
@@ -68889,8 +68892,8 @@ msgid ""
 "between two different albedo/normal textures."
 msgstr ""
 "Si [code]true[/code], permite la superposición de detalles. El detalle es "
-"una segunda textura que se mezcla sobre la superficie del objeto basada en ["
-"member detail_mask]. Esto puede ser usado para añadir variación a los "
+"una segunda textura que se mezcla sobre la superficie del objeto basada en "
+"[member detail_mask]. Esto puede ser usado para añadir variación a los "
 "objetos, o para mezclar entre dos diferentes texturas de albedo/normal."
 
 #: doc/classes/SpatialMaterial.xml:138
@@ -69944,8 +69947,9 @@ msgstr ""
 "Se utiliza para sistemas de partículas cuando se asigna a los nodos "
 "[GPUParticles] y [CPUParticles]. Habilita las propiedades de "
 "[code]partículas_anim_*[/code].\n"
-"El [member ParticlesMaterial.anim_speed] o [member CPUParticles3D.anim_speed]"
-" también debe tener un valor positivo para que la animación se reproduzca."
+"El [member ParticlesMaterial.anim_speed] o [member CPUParticles3D."
+"anim_speed] también debe tener un valor positivo para que la animación se "
+"reproduzca."
 
 #: doc/classes/SpatialMaterial.xml:610
 msgid "Used to read from the red channel of a texture."
@@ -70243,8 +70247,8 @@ msgid ""
 "the light will never reach anything outside this range."
 msgstr ""
 "El máximo rango que puede ser alcanzado por el foco. Tenga en cuenta que el "
-"área efectivamente iluminada puede parecer más pequeña dependiendo del ["
-"member spot_attenuation] en uso. No importa el [member spot_attenuation] en "
+"área efectivamente iluminada puede parecer más pequeña dependiendo del "
+"[member spot_attenuation] en uso. No importa el [member spot_attenuation] en "
 "uso, la luz nunca alcanzará nada fuera de este rango."
 
 #: doc/classes/SpringArm.xml:4
@@ -71223,7 +71227,7 @@ msgstr ""
 #: doc/classes/String.xml:10
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/"
+"https://docs.godotengine.org/en/3.4/tutorials/scripting/gdscript/"
 "gdscript_format_string.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/getting_started/scripting/gdscript/"
@@ -75024,8 +75028,8 @@ msgid ""
 "and [member radial_fill_degrees] to control the way the bar fills up."
 msgstr ""
 "Convierte el nodo en una barra radial. El [member texture_progress] se llena "
-"en el sentido de las agujas del reloj. Vea [member radial_center_offset], ["
-"member radial_initial_angle] y [member radial_fill_degrees] para controlar "
+"en el sentido de las agujas del reloj. Vea [member radial_center_offset], "
+"[member radial_initial_angle] y [member radial_fill_degrees] para controlar "
 "la forma en que la barra se llena."
 
 #: doc/classes/TextureProgress.xml:96
@@ -75151,7 +75155,7 @@ msgstr ""
 
 #: doc/classes/Theme.xml:11
 #, fuzzy
-msgid "https://docs.godotengine.org/en/3.4/tutorials/gui/gui_skinning.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/ui/gui_skinning.html"
 msgstr "https://docs.godotengine.org/es/latest/tutorials/gui/gui_skinning.html"
 
 #: doc/classes/Theme.xml:17
@@ -75671,7 +75675,8 @@ msgstr ""
 #: doc/classes/Thread.xml:12
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/threads/thread_safe_apis.html"
+"https://docs.godotengine.org/en/3.4/tutorials/performance/threads/"
+"thread_safe_apis.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/tutorials/threads/thread_safe_apis."
 "html"
@@ -79089,12 +79094,12 @@ msgid ""
 "pending connection is defined via [member max_pending_connections]."
 msgstr ""
 "Llame a este método a intervalos regulares (por ejemplo, dentro de [method "
-"Node._process]) para procesar nuevos paquetes. Y el paquete del par direcció"
-"n/puerto conocido será entregado al [PacketPeerUDP] apropiado, cualquier "
-"paquete recibido de un par dirección/puerto desconocido será añadido como "
-"una conexión pendiente (ver [method is_connection_available], [method "
-"take_connection]). El número máximo de conexiones pendientes se define "
-"mediante [member max_pending_connections]."
+"Node._process]) para procesar nuevos paquetes. Y el paquete del par "
+"dirección/puerto conocido será entregado al [PacketPeerUDP] apropiado, "
+"cualquier paquete recibido de un par dirección/puerto desconocido será "
+"añadido como una conexión pendiente (ver [method is_connection_available], "
+"[method take_connection]). El número máximo de conexiones pendientes se "
+"define mediante [member max_pending_connections]."
 
 #: doc/classes/UDPServer.xml:87
 msgid ""
@@ -80742,8 +80747,8 @@ msgid ""
 msgstr ""
 "Acelera el vehículo aplicando la fuerza de un motor. El vehículo sólo se "
 "acelera si las ruedas que tienen [member VehicleWheel3D.use_as_traction] "
-"ajustadas a [code]true[/code] y están en contacto con una superficie. El ["
-"member RigidBody.mass] del vehículo tiene un efecto en la aceleración del "
+"ajustadas a [code]true[/code] y están en contacto con una superficie. El "
+"[member RigidBody.mass] del vehículo tiene un efecto en la aceleración del "
 "vehículo. Para un vehículo con una masa establecida en 1000, pruebe un valor "
 "en el rango 25 - 50 para la aceleración.\n"
 "[b]Nota:[/b] La simulación no tiene en cuenta el efecto de los engranajes, "
@@ -80928,9 +80933,9 @@ msgid ""
 "engine_force] value instead."
 msgstr ""
 "Si [code]true[/code], esta rueda transfiere la fuerza del motor al suelo "
-"para impulsar el vehículo hacia adelante. Este valor se usa en conjunto con ["
-"member VehicleBody.engine_force] y se ignora si se usa el valor por rueda ["
-"member engine_force] en su lugar."
+"para impulsar el vehículo hacia adelante. Este valor se usa en conjunto con "
+"[member VehicleBody.engine_force] y se ignora si se usa el valor por rueda "
+"[member engine_force] en su lugar."
 
 #: doc/classes/VehicleWheel.xml:67
 msgid ""
@@ -81230,7 +81235,10 @@ msgid ""
 "Also, viewports can be assigned to different screens in case the devices "
 "have multiple screens.\n"
 "Finally, viewports can also behave as render targets, in which case they "
-"will not be visible unless the associated texture is used to draw."
+"will not be visible unless the associated texture is used to draw.\n"
+"[b]Note:[/b] By default, a newly created Viewport in Godot 3.x will appear "
+"to be upside down. Enabling [member render_target_v_flip] will display the "
+"Viewport with the correct orientation."
 msgstr ""
 "Un Viewport crea una vista diferente en la pantalla, o una sub-vista dentro "
 "de otro Viewport. Los nodos 2D de los hijos aparecerán en él, y los nodos 3D "
@@ -81247,32 +81255,32 @@ msgstr ""
 "renderización, en cuyo caso no serán visibles a menos que se utilice la "
 "textura asociada para dibujar."
 
-#: doc/classes/Viewport.xml:16
+#: doc/classes/Viewport.xml:17
 #, fuzzy
-msgid "https://docs.godotengine.org/en/3.4/tutorials/viewports/index.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/viewports/index.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/rendering/index.html"
+msgstr "https://docs.godotengine.org/es/latest/tutorials/shading/index.html"
 
-#: doc/classes/Viewport.xml:18 doc/classes/ViewportTexture.xml:12
+#: doc/classes/Viewport.xml:19 doc/classes/ViewportTexture.xml:12
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/128"
 msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
 
-#: doc/classes/Viewport.xml:20
+#: doc/classes/Viewport.xml:21
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/130"
 msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
 
-#: doc/classes/Viewport.xml:21
+#: doc/classes/Viewport.xml:22
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/541"
 msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
 
-#: doc/classes/Viewport.xml:22 doc/classes/ViewportTexture.xml:14
+#: doc/classes/Viewport.xml:23 doc/classes/ViewportTexture.xml:14
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/586"
 msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
 
-#: doc/classes/Viewport.xml:28
+#: doc/classes/Viewport.xml:29
 #, fuzzy
 msgid ""
 "Returns the first valid [World] for this viewport, searching the [member "
@@ -81280,7 +81288,7 @@ msgid ""
 msgstr ""
 "Devuelve el mundo 3D del viewport, o si no, el mundo del viewport del padre."
 
-#: doc/classes/Viewport.xml:34
+#: doc/classes/Viewport.xml:35
 #, fuzzy
 msgid ""
 "Returns the first valid [World2D] for this viewport, searching the [member "
@@ -81288,38 +81296,38 @@ msgid ""
 msgstr ""
 "Devuelve el mundo 3D del viewport, o si no, el mundo del viewport del padre."
 
-#: doc/classes/Viewport.xml:40
+#: doc/classes/Viewport.xml:41
 msgid "Returns the active 3D camera."
 msgstr "Devuelve la cámara 3D activa."
 
-#: doc/classes/Viewport.xml:46
+#: doc/classes/Viewport.xml:47
 msgid "Returns the total transform of the viewport."
 msgstr "Devuelve la transformada total de la vista."
 
-#: doc/classes/Viewport.xml:52
+#: doc/classes/Viewport.xml:53
 #, fuzzy
 msgid "Returns the topmost modal in the stack."
 msgstr "Devuelve la posición en el [AudioStream]."
 
-#: doc/classes/Viewport.xml:58
+#: doc/classes/Viewport.xml:59
 msgid "Returns the mouse position relative to the viewport."
 msgstr "Devuelve la posición del ratón en relación con la viewport."
 
-#: doc/classes/Viewport.xml:65
+#: doc/classes/Viewport.xml:66
 msgid "Returns information about the viewport from the rendering pipeline."
 msgstr "Devuelve la información sobre el viewport del pipeline de renderizado."
 
-#: doc/classes/Viewport.xml:72
+#: doc/classes/Viewport.xml:73
 msgid "Returns the [enum ShadowAtlasQuadrantSubdiv] of the specified quadrant."
 msgstr ""
 "Devuelve el [enum ShadowAtlasQuadrantSubdiv] del cuadrante especificado."
 
-#: doc/classes/Viewport.xml:78
+#: doc/classes/Viewport.xml:79
 #, fuzzy
 msgid "Returns the size override set with [method set_size_override]."
 msgstr "Devuelve el texto de error si el [method parse] ha fallado."
 
-#: doc/classes/Viewport.xml:84
+#: doc/classes/Viewport.xml:85
 #, fuzzy
 msgid ""
 "Returns the viewport's texture.\n"
@@ -81341,15 +81349,15 @@ msgstr ""
 "img.flip_y()\n"
 "[/codeblock]"
 
-#: doc/classes/Viewport.xml:95
+#: doc/classes/Viewport.xml:96
 msgid "Returns the viewport's RID from the [VisualServer]."
 msgstr "Devuelve el RID del viewport del [VisualServer]."
 
-#: doc/classes/Viewport.xml:101
+#: doc/classes/Viewport.xml:102
 msgid "Returns the visible rectangle in global screen coordinates."
 msgstr "Devuelve el RID del viewport del [VisualServer]."
 
-#: doc/classes/Viewport.xml:107
+#: doc/classes/Viewport.xml:108
 msgid ""
 "Returns the drag data from the GUI, that was previously returned by [method "
 "Control.get_drag_data]."
@@ -81357,12 +81365,12 @@ msgstr ""
 "Devuelve los datos de arrastre de la GUI, que fueron previamente devueltos "
 "por [method Control.get_drag_data]."
 
-#: doc/classes/Viewport.xml:113
+#: doc/classes/Viewport.xml:114
 #, fuzzy
 msgid "Returns [code]true[/code] if there are visible modals on-screen."
 msgstr "Devuelve [code]true[/code] si el archivo de la escena tiene nodos."
 
-#: doc/classes/Viewport.xml:119
+#: doc/classes/Viewport.xml:120
 msgid ""
 "Returns [code]true[/code] if the viewport is currently performing a drag "
 "operation."
@@ -81370,7 +81378,7 @@ msgstr ""
 "Devuelve [code]true[/code] si el viewport está realizando actualmente una "
 "operación de arrastre."
 
-#: doc/classes/Viewport.xml:136
+#: doc/classes/Viewport.xml:137
 #, fuzzy
 msgid ""
 "Returns [code]true[/code] if the size override is enabled. See [method "
@@ -81379,7 +81387,7 @@ msgstr ""
 "Devuelve [code]true[/code] si el nodo está configurado como de nivel "
 "superior. Ver [method set_as_toplevel]."
 
-#: doc/classes/Viewport.xml:143
+#: doc/classes/Viewport.xml:144
 msgid ""
 "Attaches this [Viewport] to the root [Viewport] with the specified "
 "rectangle. This bypasses the need for another node to display this "
@@ -81387,11 +81395,11 @@ msgid ""
 "[Viewport] manually."
 msgstr ""
 
-#: doc/classes/Viewport.xml:149
+#: doc/classes/Viewport.xml:150
 msgid "Stops the input from propagating further down the [SceneTree]."
 msgstr "Evita que la entrada se propague más abajo en el [SceneTree]."
 
-#: doc/classes/Viewport.xml:157
+#: doc/classes/Viewport.xml:158
 msgid ""
 "Sets the number of subdivisions to use in the specified quadrant. A higher "
 "number of subdivisions allows you to have more shadows in the scene at once, "
@@ -81405,7 +81413,7 @@ msgstr ""
 "práctica es tener cuadrantes con un número variable de subdivisiones y tener "
 "el menor número posible de subdivisiones."
 
-#: doc/classes/Viewport.xml:166
+#: doc/classes/Viewport.xml:167
 msgid ""
 "Sets the size override of the viewport. If the [code]enable[/code] parameter "
 "is [code]true[/code] the override is used, otherwise it uses the default "
@@ -81413,28 +81421,28 @@ msgid ""
 "size."
 msgstr ""
 
-#: doc/classes/Viewport.xml:178
+#: doc/classes/Viewport.xml:179
 msgid "Forces update of the 2D and 3D worlds."
 msgstr "Fuerza la actualización de los mundos 2D y 3D."
 
-#: doc/classes/Viewport.xml:185
+#: doc/classes/Viewport.xml:186
 msgid "Warps the mouse to a position relative to the viewport."
 msgstr "Desplaza el ratón a una posición relativa al viewport."
 
-#: doc/classes/Viewport.xml:191
+#: doc/classes/Viewport.xml:192
 #, fuzzy
 msgid "If [code]true[/code], the viewport will be used in AR/VR process."
 msgstr "Si [code]true[/code], el sub-viewport se usará en el proceso AR/VR."
 
-#: doc/classes/Viewport.xml:194
+#: doc/classes/Viewport.xml:195
 msgid "If [code]true[/code], the viewport will process 2D audio streams."
 msgstr "Si [code]true[/code], el viewport procesará streams de audio en 2D."
 
-#: doc/classes/Viewport.xml:197
+#: doc/classes/Viewport.xml:198
 msgid "If [code]true[/code], the viewport will process 3D audio streams."
 msgstr "Si [code]true[/code], el viewport procesará streams de audio en 3D."
 
-#: doc/classes/Viewport.xml:200
+#: doc/classes/Viewport.xml:201
 msgid ""
 "The canvas transform of the viewport, useful for changing the on-screen "
 "positions of all child [CanvasItem]s. This is relative to the global canvas "
@@ -81444,7 +81452,7 @@ msgstr ""
 "pantalla de todos los [CanvasItem]s hijos. Esto es relativo a la "
 "transformada global del canvas del viewport."
 
-#: doc/classes/Viewport.xml:203
+#: doc/classes/Viewport.xml:204
 msgid ""
 "If [code]true[/code], uses a fast post-processing filter to make banding "
 "significantly less visible. In some cases, debanding may introduce a "
@@ -81455,13 +81463,13 @@ msgid ""
 "[code]true[/code] for debanding to be effective."
 msgstr ""
 
-#: doc/classes/Viewport.xml:207
+#: doc/classes/Viewport.xml:208
 msgid "The overlay mode for test rendered geometry in debug purposes."
 msgstr ""
 "El modo de superposición para la prueba renderizó la geometría con fines de "
 "depuración."
 
-#: doc/classes/Viewport.xml:210
+#: doc/classes/Viewport.xml:211
 #, fuzzy
 msgid ""
 "If [code]true[/code], the viewport will disable 3D rendering. For actual "
@@ -81470,7 +81478,7 @@ msgstr ""
 "Si [code]true[/code], la etiqueta subraya las metaetiquetas como [code][url]"
 "{text}[/url][/code]."
 
-#: doc/classes/Viewport.xml:213
+#: doc/classes/Viewport.xml:214
 #, fuzzy
 msgid ""
 "Enables fast approximate antialiasing. FXAA is a popular screen-space "
@@ -81485,7 +81493,7 @@ msgstr ""
 "la imagen se vea borrosa, especialmente en resoluciones más bajas. Puede "
 "funcionar relativamente bien en resoluciones grandes como 1440p y 4K."
 
-#: doc/classes/Viewport.xml:216
+#: doc/classes/Viewport.xml:217
 msgid ""
 "The global canvas transform of the viewport. The canvas transform is "
 "relative to this."
@@ -81493,12 +81501,12 @@ msgstr ""
 "La transformación del canvas global del viewport. La transformada del canvas "
 "es relativa a esto."
 
-#: doc/classes/Viewport.xml:219
+#: doc/classes/Viewport.xml:220
 #, fuzzy
 msgid "If [code]true[/code], the viewport will not receive input events."
 msgstr "Si [code]true[/code], el viewport no recibirá el evento de entrada."
 
-#: doc/classes/Viewport.xml:222
+#: doc/classes/Viewport.xml:223
 msgid ""
 "If [code]true[/code], the GUI controls on the viewport will lay pixel "
 "perfectly."
@@ -81506,7 +81514,7 @@ msgstr ""
 "Si [code]true[/code], los controles GUI en el viewport colocarán los píxeles "
 "perfectamente."
 
-#: doc/classes/Viewport.xml:227
+#: doc/classes/Viewport.xml:228
 msgid ""
 "If [code]true[/code], the viewport rendering will receive benefits from High "
 "Dynamic Range algorithm. High Dynamic Range allows the viewport to receive "
@@ -81516,7 +81524,7 @@ msgid ""
 "[constant USAGE_3D_NO_EFFECTS], since HDR is not supported for 2D."
 msgstr ""
 
-#: doc/classes/Viewport.xml:231
+#: doc/classes/Viewport.xml:232
 msgid ""
 "If [code]true[/code], the result after 3D rendering will not have a linear "
 "to sRGB color conversion applied. This is important when the viewport is "
@@ -81529,7 +81537,7 @@ msgid ""
 "require input in linear color space!"
 msgstr ""
 
-#: doc/classes/Viewport.xml:234
+#: doc/classes/Viewport.xml:235
 msgid ""
 "The multisample anti-aliasing mode. A higher number results in smoother "
 "edges at the cost of significantly worse performance. A value of 4 is best "
@@ -81539,7 +81547,7 @@ msgstr ""
 "suaves a costa de un rendimiento significativamente peor. Un valor de 4 es "
 "el mejor a menos que se trate de sistemas de muy alta gama."
 
-#: doc/classes/Viewport.xml:237
+#: doc/classes/Viewport.xml:238
 #, fuzzy
 msgid ""
 "If [code]true[/code], the viewport will use [World] defined in [code]world[/"
@@ -81548,7 +81556,7 @@ msgstr ""
 "Si [code]true[/code], el viewport utilizará el [World] definido en [member "
 "world_3d]."
 
-#: doc/classes/Viewport.xml:240
+#: doc/classes/Viewport.xml:241
 msgid ""
 "If [code]true[/code], the objects rendered by viewport become subjects of "
 "mouse picking process."
@@ -81556,7 +81564,7 @@ msgstr ""
 "Si [code]true[/code], los objetos renderizados por viewport se convierten en "
 "sujetos del proceso de selección del ratón."
 
-#: doc/classes/Viewport.xml:243
+#: doc/classes/Viewport.xml:244
 msgid ""
 "If [code]true[/code], renders the Viewport directly to the screen instead of "
 "to the root viewport. Only available in GLES2. This is a low-level "
@@ -81565,7 +81573,7 @@ msgid ""
 "information see [method VisualServer.viewport_set_render_direct_to_screen]."
 msgstr ""
 
-#: doc/classes/Viewport.xml:246
+#: doc/classes/Viewport.xml:247
 #, fuzzy
 msgid ""
 "The clear mode when viewport used as a render target.\n"
@@ -81574,40 +81582,41 @@ msgstr ""
 "El modo claro cuando el sub-viewport se utiliza como objetivo de "
 "renderización."
 
-#: doc/classes/Viewport.xml:250
+#: doc/classes/Viewport.xml:251
 #, fuzzy
 msgid "The update mode when viewport used as a render target."
 msgstr ""
 "El modo de actualización cuando el sub-viewport se utiliza como objetivo de "
 "renderización."
 
-#: doc/classes/Viewport.xml:253
-#, fuzzy
+#: doc/classes/Viewport.xml:254
 msgid ""
-"If [code]true[/code], the result of rendering will be flipped vertically."
-msgstr "Si [code]true[/code], la textura se voltea verticalmente."
+"If [code]true[/code], the result of rendering will be flipped vertically. "
+"Since Viewports in Godot 3.x render upside-down, it's recommended to set "
+"this to [code]true[/code] in most situations."
+msgstr ""
 
-#: doc/classes/Viewport.xml:256
+#: doc/classes/Viewport.xml:257
 msgid "The subdivision amount of the first quadrant on the shadow atlas."
 msgstr ""
 "La cantidad de subdivisión del primer cuadrante del atlas de las sombras."
 
-#: doc/classes/Viewport.xml:259
+#: doc/classes/Viewport.xml:260
 msgid "The subdivision amount of the second quadrant on the shadow atlas."
 msgstr ""
 "La cantidad de subdivisión del segundo cuadrante en el atlas de las sombras."
 
-#: doc/classes/Viewport.xml:262
+#: doc/classes/Viewport.xml:263
 msgid "The subdivision amount of the third quadrant on the shadow atlas."
 msgstr ""
 "La cantidad de subdivisión del tercer cuadrante en el atlas de las sombras."
 
-#: doc/classes/Viewport.xml:265
+#: doc/classes/Viewport.xml:266
 msgid "The subdivision amount of the fourth quadrant on the shadow atlas."
 msgstr ""
 "La cantidad de subdivisión del cuarto cuadrante en el atlas de las sombras."
 
-#: doc/classes/Viewport.xml:268
+#: doc/classes/Viewport.xml:269
 msgid ""
 "The shadow atlas' resolution (used for omni and spot lights). The value will "
 "be rounded up to the nearest power of 2.\n"
@@ -81621,7 +81630,7 @@ msgstr ""
 "los viewports creados por el usuario tienen por defecto el valor 0, este "
 "valor debe establecerse sobre 0 manualmente."
 
-#: doc/classes/Viewport.xml:272
+#: doc/classes/Viewport.xml:273
 msgid ""
 "If set to a value greater than [code]0.0[/code], contrast-adaptive "
 "sharpening will be applied to the 3D viewport. This has a low performance "
@@ -81630,46 +81639,46 @@ msgid ""
 "[member fxaa]."
 msgstr ""
 
-#: doc/classes/Viewport.xml:275
+#: doc/classes/Viewport.xml:276
 msgid ""
 "The width and height of viewport. Must be set to a value greater than or "
 "equal to 2 pixels on both dimensions. Otherwise, nothing will be displayed."
 msgstr ""
 
-#: doc/classes/Viewport.xml:278
+#: doc/classes/Viewport.xml:279
 #, fuzzy
 msgid "If [code]true[/code], the size override affects stretch as well."
 msgstr ""
 "Si [code]true[/code], la sobreescritura de tamaño 2D afecta también al "
 "estiramiento."
 
-#: doc/classes/Viewport.xml:281
+#: doc/classes/Viewport.xml:282
 msgid ""
 "If [code]true[/code], the viewport should render its background as "
 "transparent."
 msgstr "Si [code]true[/code], el viewport debería hacer su fondo transparente."
 
-#: doc/classes/Viewport.xml:284
+#: doc/classes/Viewport.xml:285
 #, fuzzy
 msgid "The rendering mode of viewport."
 msgstr "El modo de selección a utilizar."
 
-#: doc/classes/Viewport.xml:287
+#: doc/classes/Viewport.xml:288
 #, fuzzy
 msgid "The custom [World] which can be used as 3D environment source."
 msgstr ""
 "El [World] personalizado se puede sert utilizado como fuente de ambiente 3D."
 
-#: doc/classes/Viewport.xml:290
+#: doc/classes/Viewport.xml:291
 msgid "The custom [World2D] which can be used as 2D environment source."
 msgstr ""
 "La [World2D] personalizada que puede ser usada como fuente de entorno 2D."
 
-#: doc/classes/Viewport.xml:297
+#: doc/classes/Viewport.xml:298
 msgid "Emitted when a Control node grabs keyboard focus."
 msgstr "Se emite cuando un nodo de control toma el foco del teclado."
 
-#: doc/classes/Viewport.xml:302
+#: doc/classes/Viewport.xml:303
 #, fuzzy
 msgid ""
 "Emitted when the size of the viewport is changed, whether by [method "
@@ -81678,54 +81687,54 @@ msgstr ""
 "Se emitido cuando se cambia el tamaño del viewport, ya sea cambiando el "
 "tamaño de la ventana o por algún otro medio."
 
-#: doc/classes/Viewport.xml:308
+#: doc/classes/Viewport.xml:309
 msgid "Do not update the render target."
 msgstr "No actualiza el objetivo de renderización."
 
-#: doc/classes/Viewport.xml:311
+#: doc/classes/Viewport.xml:312
 msgid ""
 "Update the render target once, then switch to [constant UPDATE_DISABLED]."
 msgstr ""
 "Actualiza el objetivo de render una vez, luego cambia a [constant "
 "UPDATE_DISABLED]."
 
-#: doc/classes/Viewport.xml:314
+#: doc/classes/Viewport.xml:315
 msgid ""
 "Update the render target only when it is visible. This is the default value."
 msgstr ""
 "Actualice el objetivo de renderizado sólo cuando sea visible. Este es el "
 "valor predeterminado."
 
-#: doc/classes/Viewport.xml:317
+#: doc/classes/Viewport.xml:318
 msgid "Always update the render target."
 msgstr "Siempre actualiza el objetivo de renderización."
 
-#: doc/classes/Viewport.xml:320
+#: doc/classes/Viewport.xml:321
 msgid "This quadrant will not be used."
 msgstr "Este cuadrante no será utilizado."
 
-#: doc/classes/Viewport.xml:323
+#: doc/classes/Viewport.xml:324
 msgid "This quadrant will only be used by one shadow map."
 msgstr "Este cuadrante sólo será usado por un mapa de sombras."
 
-#: doc/classes/Viewport.xml:326
+#: doc/classes/Viewport.xml:327
 msgid "This quadrant will be split in 4 and used by up to 4 shadow maps."
 msgstr ""
 "Este cuadrante se dividirá en 4 y será usado por hasta 4 mapas de sombras."
 
-#: doc/classes/Viewport.xml:329
+#: doc/classes/Viewport.xml:330
 msgid "This quadrant will be split 16 ways and used by up to 16 shadow maps."
 msgstr ""
 "Este cuadrante se dividirá en 16 partes y será utilizado por hasta 16 mapas "
 "de sombras."
 
-#: doc/classes/Viewport.xml:332
+#: doc/classes/Viewport.xml:333
 msgid "This quadrant will be split 64 ways and used by up to 64 shadow maps."
 msgstr ""
 "Este cuadrante se dividirá en 64 partes y será utilizado por hasta 64 mapas "
 "de sombras."
 
-#: doc/classes/Viewport.xml:335
+#: doc/classes/Viewport.xml:336
 msgid ""
 "This quadrant will be split 256 ways and used by up to 256 shadow maps. "
 "Unless the [member shadow_atlas_size] is very high, the shadows in this "
@@ -81735,7 +81744,7 @@ msgstr ""
 "mapas de sombras. A menos que el [member shadow_atlas_size] sea muy alto, "
 "las sombras en este cuadrante serán de muy baja resolución."
 
-#: doc/classes/Viewport.xml:338
+#: doc/classes/Viewport.xml:339
 msgid ""
 "This quadrant will be split 1024 ways and used by up to 1024 shadow maps. "
 "Unless the [member shadow_atlas_size] is very high, the shadows in this "
@@ -81745,77 +81754,77 @@ msgstr ""
 "mapas de sombras. A menos que el [member shadow_atlas_size] sea muy alto, "
 "las sombras en este cuadrante serán de muy baja resolución."
 
-#: doc/classes/Viewport.xml:341
+#: doc/classes/Viewport.xml:342
 msgid "Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum."
 msgstr "Representa el tamaño del enum [enum ShadowAtlasQuadrantSubdiv]."
 
-#: doc/classes/Viewport.xml:344
+#: doc/classes/Viewport.xml:345
 msgid "Amount of objects in frame."
 msgstr "Cantidad de objetos en el fotograma."
 
-#: doc/classes/Viewport.xml:347
+#: doc/classes/Viewport.xml:348
 msgid "Amount of vertices in frame."
 msgstr "Cantidad de vértices en el fotograma."
 
-#: doc/classes/Viewport.xml:350
+#: doc/classes/Viewport.xml:351
 msgid "Amount of material changes in frame."
 msgstr "La cantidad de material que cambia en el fotograma."
 
-#: doc/classes/Viewport.xml:353
+#: doc/classes/Viewport.xml:354
 msgid "Amount of shader changes in frame."
 msgstr "La cantidad de cambios de shader en el fotograma."
 
-#: doc/classes/Viewport.xml:356
+#: doc/classes/Viewport.xml:357
 msgid "Amount of surface changes in frame."
 msgstr "La cantidad de superficie que cambia en el fotograma."
 
-#: doc/classes/Viewport.xml:359 doc/classes/Viewport.xml:365
+#: doc/classes/Viewport.xml:360 doc/classes/Viewport.xml:366
 msgid "Amount of draw calls in frame."
 msgstr "Cantidad de llamadas de dibujo en el fotograma."
 
-#: doc/classes/Viewport.xml:362
+#: doc/classes/Viewport.xml:363
 #, fuzzy
 msgid "Amount of items or joined items in frame."
 msgstr "Cantidad de objetos en el fotograma."
 
-#: doc/classes/Viewport.xml:368
+#: doc/classes/Viewport.xml:369
 msgid "Represents the size of the [enum RenderInfo] enum."
 msgstr "Representa el tamaño del enum [enum RenderInfo]."
 
-#: doc/classes/Viewport.xml:371
+#: doc/classes/Viewport.xml:372
 msgid "Objects are displayed normally."
 msgstr "Los objetos se muestran normalmente."
 
-#: doc/classes/Viewport.xml:374
+#: doc/classes/Viewport.xml:375
 msgid "Objects are displayed without light information."
 msgstr "Los objetos se muestran sin información de la luz."
 
-#: doc/classes/Viewport.xml:377
+#: doc/classes/Viewport.xml:378
 msgid ""
 "Objected are displayed semi-transparent with additive blending so you can "
 "see where they intersect."
 msgstr ""
 
-#: doc/classes/Viewport.xml:380
+#: doc/classes/Viewport.xml:381
 msgid "Objects are displayed in wireframe style."
 msgstr "Los objetos se muestran en el estilo wireframe."
 
-#: doc/classes/Viewport.xml:383
+#: doc/classes/Viewport.xml:384
 #, fuzzy
 msgid "Multisample anti-aliasing mode disabled. This is the default value."
 msgstr ""
 "Modo antialiasing de multisample desactivado. Este es el valor "
 "predeterminado, y también el ajuste más rápido."
 
-#: doc/classes/Viewport.xml:386
+#: doc/classes/Viewport.xml:387
 msgid "Use 2x Multisample Antialiasing."
 msgstr "Usar 2x Antialiasing Multisample."
 
-#: doc/classes/Viewport.xml:389
+#: doc/classes/Viewport.xml:390
 msgid "Use 4x Multisample Antialiasing."
 msgstr "Usar 4x Antialising Multisample."
 
-#: doc/classes/Viewport.xml:392
+#: doc/classes/Viewport.xml:393
 msgid ""
 "Use 8x Multisample Antialiasing. Likely unsupported on low-end and older "
 "hardware."
@@ -81823,7 +81832,7 @@ msgstr ""
 "Usar 8x Antialiasing Multisample. Probablemente sin soporte en hardware de "
 "baja gama y más antiguo."
 
-#: doc/classes/Viewport.xml:395
+#: doc/classes/Viewport.xml:396
 msgid ""
 "Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end "
 "hardware."
@@ -81831,14 +81840,14 @@ msgstr ""
 "Usar 16x Antialising Multisample. Probablemente sin soporte en hardware de "
 "gama media y baja."
 
-#: doc/classes/Viewport.xml:398
+#: doc/classes/Viewport.xml:399
 msgid ""
 "Allocates all buffers needed for drawing 2D scenes. This takes less VRAM "
 "than the 3D usage modes. Note that 3D rendering effects such as glow and HDR "
 "are not available when using this mode."
 msgstr ""
 
-#: doc/classes/Viewport.xml:401
+#: doc/classes/Viewport.xml:402
 msgid ""
 "Allocates buffers needed for 2D scenes without allocating a buffer for "
 "screen copy. Accordingly, you cannot read from the screen. Of the [enum "
@@ -81846,28 +81855,28 @@ msgid ""
 "such as glow and HDR are not available when using this mode."
 msgstr ""
 
-#: doc/classes/Viewport.xml:404
+#: doc/classes/Viewport.xml:405
 msgid ""
 "Allocates full buffers for drawing 3D scenes and all 3D effects including "
 "buffers needed for 2D scenes and effects."
 msgstr ""
 
-#: doc/classes/Viewport.xml:407
+#: doc/classes/Viewport.xml:408
 msgid ""
 "Allocates buffers needed for drawing 3D scenes. But does not allocate "
 "buffers needed for reading from the screen and post-processing effects. "
 "Saves some VRAM."
 msgstr ""
 
-#: doc/classes/Viewport.xml:410
+#: doc/classes/Viewport.xml:411
 msgid "Always clear the render target before drawing."
 msgstr "Siempre despeja el objetivo de renderizado antes de dibujar."
 
-#: doc/classes/Viewport.xml:413
+#: doc/classes/Viewport.xml:414
 msgid "Never clear the render target."
 msgstr "Nunca despejen el objetivo de renderizado."
 
-#: doc/classes/Viewport.xml:416
+#: doc/classes/Viewport.xml:417
 msgid ""
 "Clear the render target next frame, then switch to [constant "
 "CLEAR_MODE_NEVER]."
@@ -81961,24 +81970,25 @@ msgid ""
 "If you just want to receive notifications, use [VisibilityNotifier] "
 "instead.\n"
 "[b]Note:[/b] VisibilityEnabler uses an approximate heuristic for performance "
-"reasons. It doesn't take walls and other occlusion into account. The "
-"heuristic is an implementation detail and may change in future versions. If "
-"you need precise visibility checking, use another method such as adding an "
-"[Area] node as a child of a [Camera] node and/or [method Vector3.dot].\n"
+"reasons. It doesn't take walls and other occlusion into account (unless you "
+"are using [Portal]s). The heuristic is an implementation detail and may "
+"change in future versions. If you need precise visibility checking, use "
+"another method such as adding an [Area] node as a child of a [Camera] node "
+"and/or [method Vector3.dot].\n"
 "[b]Note:[/b] VisibilityEnabler will not affect nodes added after scene "
 "initialization."
 msgstr ""
 "El VisibilityEnabler deshabilitará los nodos [RigidBody] y [AnimationPlayer] "
 "cuando no sean visibles. Sólo afectará a otros nodos dentro de la misma "
 "escena que el propio VisibilityEnabler.\n"
-"Si sólo quieres recibir notificaciones, usa [VisibilityNotifier] en su lugar."
-"\n"
+"Si sólo quieres recibir notificaciones, usa [VisibilityNotifier] en su "
+"lugar.\n"
 "[b]Nota:[/b] VisibilityEnabler utiliza una heurística aproximada por razones "
 "de rendimiento. No tiene en cuenta las paredes y otras oclusiones. La "
 "heurística es un detalle de implementación y puede cambiar en futuras "
 "versiones. Si necesita una comprobación precisa de la visibilidad, utilice "
-"otro método como añadir un nodo [Area] como hijo de un nodo [Camera] y/o ["
-"method Vector3.dot].\n"
+"otro método como añadir un nodo [Area] como hijo de un nodo [Camera] y/o "
+"[method Vector3.dot].\n"
 "[b]Nota:[/b] VisibilityEnabler no afectará a los nodos añadidos después de "
 "la inicialización de la escena."
 
@@ -82110,10 +82120,11 @@ msgid ""
 "If you want nodes to be disabled automatically when they exit the screen, "
 "use [VisibilityEnabler] instead.\n"
 "[b]Note:[/b] VisibilityNotifier uses an approximate heuristic for "
-"performance reasons. It doesn't take walls and other occlusion into account. "
-"The heuristic is an implementation detail and may change in future versions. "
-"If you need precise visibility checking, use another method such as adding "
-"an [Area] node as a child of a [Camera] node and/or [method Vector3.dot]."
+"performance reasons. It doesn't take walls and other occlusion into account "
+"(unless you are using [Portal]s). The heuristic is an implementation detail "
+"and may change in future versions. If you need precise visibility checking, "
+"use another method such as adding an [Area] node as a child of a [Camera] "
+"node and/or [method Vector3.dot]."
 msgstr ""
 "El VisibilityNotifier detecta cuando es visible en la pantalla. También "
 "notifica cuando su rectángulo delimitador entra o sale de la pantalla o de "
@@ -82149,7 +82160,8 @@ msgstr "El cuadro delimitador del VisibilityNotifier."
 #: doc/classes/VisibilityNotifier.xml:31
 #, fuzzy
 msgid "Emitted when the VisibilityNotifier enters a [Camera]'s view."
-msgstr "Emitido cuando el VisibilityNotifier entra en la vista de una [Camera]."
+msgstr ""
+"Emitido cuando el VisibilityNotifier entra en la vista de una [Camera]."
 
 #: doc/classes/VisibilityNotifier.xml:37
 #, fuzzy
@@ -82287,8 +82299,8 @@ msgid ""
 "Transformed in this case means the [AABB] plus the position, rotation, and "
 "scale of the [Spatial]'s [Transform]. See also [method get_aabb]."
 msgstr ""
-"Devuelve el [AABB] transformado (también conocido como el cuadro delimitador)"
-" para este [VisualInstance].\n"
+"Devuelve el [AABB] transformado (también conocido como el cuadro "
+"delimitador) para este [VisualInstance].\n"
 "Transformado en este caso significa el [AABB] más la posición, rotación y "
 "escala de la [Transform] del [Spatial]. Ver también [method get_aabb]."
 
@@ -84521,16 +84533,16 @@ msgstr ""
 "backend de la API para todo lo visible. Todo el sistema de la escena se "
 "monta en él para mostrar.\n"
 "El servidor de renderizado es completamente opaco, los internos son "
-"completamente específicos de la implementación y no se puede acceder a ellos."
-"\n"
+"completamente específicos de la implementación y no se puede acceder a "
+"ellos.\n"
 "El servidor de renderizado puede ser usado para evitar el sistema de escenas "
 "por completo.\n"
 "Los recursos se crean usando las funciones [code]*_create[/code].\n"
 "Todos los objetos se dibujan en una vista. Se puede utilizar la [Viewport] "
 "adjunta al [SceneTree] o se puede crear una por uno mismo con el [method "
 "viewport_create]. Cuando se utiliza un escenario o lienzo personalizado, el "
-"escenario o lienzo debe adjuntarse a la ventana de visualización utilizando ["
-"method viewport_set_scenario] o [method viewport_attach_canvas].\n"
+"escenario o lienzo debe adjuntarse a la ventana de visualización utilizando "
+"[method viewport_set_scenario] o [method viewport_attach_canvas].\n"
 "En 3D, todos los objetos visuales deben estar asociados a un escenario. El "
 "escenario es una representación visual del mundo. Si se accede al servidor "
 "de renderizado desde un juego en ejecución, se puede acceder al escenario "
@@ -84553,7 +84565,7 @@ msgstr ""
 #: doc/classes/VisualServer.xml:18
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/optimization/using_servers.html"
+"https://docs.godotengine.org/en/3.4/tutorials/performance/using_servers.html"
 msgstr ""
 "https://docs.godotengine.org/es/latest/tutorials/optimization/using_servers."
 "html"
@@ -84582,8 +84594,8 @@ msgstr ""
 "Crea una cámara y la añade al VisualServer. Se puede acceder a ella con el "
 "RID que se devuelve. Este RID será usado en todas las funciones del "
 "[code]camera_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] del VisualServer."
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] del VisualServer."
 
 #: doc/classes/VisualServer.xml:53
 #, fuzzy
@@ -84660,8 +84672,8 @@ msgstr ""
 "Crea un lienzo y devuelve el [RID] asignado. Se puede acceder a él con el "
 "RID que se devuelve. Este RID se utilizará en todas las funciones del "
 "[code]canvas_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberar el RID usando el método estático ["
-"method free_rid] de VisualServer."
+"Una vez terminado el RID, querrás liberar el RID usando el método estático "
+"[method free_rid] de VisualServer."
 
 #: doc/classes/VisualServer.xml:125
 #, fuzzy
@@ -84758,8 +84770,8 @@ msgstr ""
 "Crea un lienzo y devuelve el [RID] asignado. Se puede acceder a él con el "
 "RID que se devuelve. Este RID se utilizará en todas las funciones del "
 "[code]canvas_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberar el RID usando el método estático ["
-"method free_rid] de VisualServer."
+"Una vez terminado el RID, querrás liberar el RID usando el método estático "
+"[method free_rid] de VisualServer."
 
 #: doc/classes/VisualServer.xml:317
 #, fuzzy
@@ -84887,8 +84899,8 @@ msgstr ""
 "Crea un oclusor de luz y lo añade al VisualServer. Se puede acceder a él con "
 "el RID que se devuelve. Este RID se usará en todas las funciones del "
 "[code]canvas_light_ocluder_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer."
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer."
 
 #: doc/classes/VisualServer.xml:485
 msgid "Enables or disables light occluder."
@@ -85014,8 +85026,8 @@ msgstr ""
 "Crea un nuevo polígono oclusor de luz y lo añade al VisualServer. Se puede "
 "acceder a él con el RID que se devuelve. Este RID se usará en todas las "
 "funciones del [code]canvas_occluder_polygon_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer."
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer."
 
 #: doc/classes/VisualServer.xml:678
 msgid ""
@@ -85080,8 +85092,8 @@ msgstr ""
 "Crea un entorno y lo añade al VisualServer. Se puede acceder a él con el RID "
 "que se devuelve. Este RID se usará en todas las funciones de VisualServer de "
 "[code]environment_*[/code].\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer."
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer."
 
 #: doc/classes/VisualServer.xml:747
 msgid ""
@@ -85524,8 +85536,8 @@ msgid ""
 "Sets the color to be used with next vertex. Equivalent to [method "
 "ImmediateGeometry.set_color]."
 msgstr ""
-"Establece el color que se usará con el próximo vértice. Equivalente a ["
-"method ImmediateGeometry.set_color]."
+"Establece el color que se usará con el próximo vértice. Equivalente a "
+"[method ImmediateGeometry.set_color]."
 
 #: doc/classes/VisualServer.xml:1227
 #, fuzzy
@@ -85541,8 +85553,8 @@ msgstr ""
 "Crea una geometría inmediata y la añade al VisualServer. Se puede acceder a "
 "ella con el RID que se devuelve. Este RID se usará en todas las funciones "
 "del [code]immediate_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer.\n"
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer.\n"
 "Para colocar en una escena, adjunta esta geometría inmediata a una instancia "
 "usando [method instance_set_base] usando el RID devuelto."
 
@@ -85552,8 +85564,8 @@ msgid ""
 "Ends drawing the [ImmediateGeometry] and displays it. Equivalent to [method "
 "ImmediateGeometry.end]."
 msgstr ""
-"Termina de dibujar la [ImmediateGeometry] y la muestra. Equivalente a ["
-"method ImmediateGeometry.end]."
+"Termina de dibujar la [ImmediateGeometry] y la muestra. Equivalente a "
+"[method ImmediateGeometry.end]."
 
 #: doc/classes/VisualServer.xml:1243
 #, fuzzy
@@ -85581,8 +85593,8 @@ msgid ""
 "Sets the tangent to be used with next vertex. Equivalent to [method "
 "ImmediateGeometry.set_tangent]."
 msgstr ""
-"Establece la tangente que se usará con el siguiente vértice. Equivalente a ["
-"method ImmediateGeometry.set_tangent]."
+"Establece la tangente que se usará con el siguiente vértice. Equivalente a "
+"[method ImmediateGeometry.set_tangent]."
 
 #: doc/classes/VisualServer.xml:1275
 #, fuzzy
@@ -85590,8 +85602,8 @@ msgid ""
 "Sets the UV to be used with next vertex. Equivalent to [method "
 "ImmediateGeometry.set_uv]."
 msgstr ""
-"Establece el UV para ser usado con el siguiente vértice. Equivalente a ["
-"method ImmediateGeometry.set_uv]."
+"Establece el UV para ser usado con el siguiente vértice. Equivalente a "
+"[method ImmediateGeometry.set_uv]."
 
 #: doc/classes/VisualServer.xml:1283
 #, fuzzy
@@ -85599,8 +85611,8 @@ msgid ""
 "Sets the UV2 to be used with next vertex. Equivalent to [method "
 "ImmediateGeometry.set_uv2]."
 msgstr ""
-"Establece el UV2 para ser usado con el siguiente vértice. Equivalente a ["
-"method ImmediateGeometry.set_uv2]."
+"Establece el UV2 para ser usado con el siguiente vértice. Equivalente a "
+"[method ImmediateGeometry.set_uv2]."
 
 #: doc/classes/VisualServer.xml:1291
 #, fuzzy
@@ -85947,7 +85959,8 @@ msgstr ""
 #: doc/classes/VisualServer.xml:1559
 #, fuzzy
 msgid "Sets the color of the light. Equivalent to [member Light.light_color]."
-msgstr "Establece el color de la luz. Equivalente a [member Light.light_color]."
+msgstr ""
+"Establece el color de la luz. Equivalente a [member Light.light_color]."
 
 #: doc/classes/VisualServer.xml:1567
 #, fuzzy
@@ -86037,8 +86050,8 @@ msgstr ""
 "[code]mesh_*[/code] VisualServer.\n"
 "Una vez terminado el RID, querrás liberarlo usando el método estático del "
 "VisualServer [method free_rid].\n"
-"Para colocar en una escena, adjunta esta malla a una instancia usando ["
-"method instance_set_base] usando el RID devuelto."
+"Para colocar en una escena, adjunta esta malla a una instancia usando "
+"[method instance_set_base] usando el RID devuelto."
 
 #: doc/classes/VisualServer.xml:1639
 #, fuzzy
@@ -86093,7 +86106,8 @@ msgstr ""
 msgid ""
 "Sets the \"interior\" mode for this lightmap capture. Equivalent to [member "
 "BakedLightmapData.interior]."
-msgstr "Establece el color de la luz. Equivalente a [member Light.light_color]."
+msgstr ""
+"Establece el color de la luz. Equivalente a [member Light.light_color]."
 
 #: doc/classes/VisualServer.xml:1706
 msgid ""
@@ -86140,8 +86154,8 @@ msgstr ""
 "Crea un material vacío y lo añade al VisualServer. Se puede acceder a él con "
 "el RID que se devuelve. Este RID se utilizará en todas las funciones del "
 "[code]material_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer."
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer."
 
 #: doc/classes/VisualServer.xml:1746
 msgid "Returns the value of a certain material's parameter."
@@ -86207,8 +86221,8 @@ msgstr ""
 "[code]mesh_*[/code] VisualServer.\n"
 "Una vez terminado el RID, querrás liberarlo usando el método estático del "
 "VisualServer [method free_rid].\n"
-"Para colocar en una escena, adjunta esta malla a una instancia usando ["
-"method instance_set_base] usando el RID devuelto."
+"Para colocar en una escena, adjunta esta malla a una instancia usando "
+"[method instance_set_base] usando el RID devuelto."
 
 #: doc/classes/VisualServer.xml:1835
 msgid "Returns a mesh's blend shape count."
@@ -86337,10 +86351,10 @@ msgstr ""
 "Crea un nuevo multimalla en el VisualServer y devuelve un manejador [RID]. "
 "Este RID se utilizará en todas las funciones de [code]multimesh_*[/code] "
 "VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer.\n"
-"Para colocar en una escena, adjunta este multimesh a una instancia usando ["
-"method instance_set_base] usando el RID devuelto."
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer.\n"
+"Para colocar en una escena, adjunta este multimesh a una instancia usando "
+"[method instance_set_base] usando el RID devuelto."
 
 #: doc/classes/VisualServer.xml:2040
 msgid ""
@@ -86467,8 +86481,8 @@ msgstr ""
 "funciones del [code]light_*[/code] VisualServer.\n"
 "Una vez que hayas terminado con el RID, querrás liberarlo usando el método "
 "estático [method free_rid] de VisualServer.\n"
-"Para colocar en una escena, adjunta esta luz omni a una instancia usando ["
-"method instance_set_base] usando el RID devuelto."
+"Para colocar en una escena, adjunta esta luz omni a una instancia usando "
+"[method instance_set_base] usando el RID devuelto."
 
 #: doc/classes/VisualServer.xml:2171
 #, fuzzy
@@ -86685,8 +86699,8 @@ msgid ""
 "Sets the speed scale of the particle system. Equivalent to [member Particles."
 "speed_scale]."
 msgstr ""
-"Establece la escala de velocidad del sistema de partículas. Equivalente a ["
-"member GPUParticles.speed_scale]."
+"Establece la escala de velocidad del sistema de partículas. Equivalente a "
+"[member GPUParticles.speed_scale]."
 
 #: doc/classes/VisualServer.xml:2346
 #, fuzzy
@@ -86853,8 +86867,8 @@ msgstr ""
 "Crea un escenario y lo añade al VisualServer. Se puede acceder a él con el "
 "RID que se devuelve. Este RID se utilizará en todas las funciones del "
 "[code]scenario_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer.\n"
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer.\n"
 "El escenario es el mundo 3D en el que existen todas las instancias visuales."
 
 #: doc/classes/VisualServer.xml:2476
@@ -86942,8 +86956,8 @@ msgstr ""
 "Crea un shader vacío y lo añade al VisualServer. Se puede acceder a él con "
 "el RID que se devuelve. Este RID se usará en todas las funciones del "
 "[code]shader_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer."
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer."
 
 #: doc/classes/VisualServer.xml:2554
 msgid "Returns a shader's code."
@@ -87002,8 +87016,8 @@ msgstr ""
 "Crea un esqueleto y lo añade al VisualServer. Se puede acceder a él con el "
 "RID que se devuelve. Este RID se usará en todas las funciones del "
 "[code]skeleton_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer."
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer."
 
 #: doc/classes/VisualServer.xml:2643
 msgid "Returns the number of bones allocated for this skeleton."
@@ -87070,8 +87084,8 @@ msgstr ""
 "Crea un material vacío y lo añade al VisualServer. Se puede acceder a él con "
 "el RID que se devuelve. Este RID se utilizará en todas las funciones del "
 "[code]material_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer."
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer."
 
 #: doc/classes/VisualServer.xml:2709
 msgid ""
@@ -87233,8 +87247,8 @@ msgstr ""
 "Crea un viewport vacío y lo añade al VisualServer. Se puede acceder a él con "
 "el RID que se devuelve. Este RID se utilizará en todas las funciones del "
 "[code]viewport_*[/code] VisualServer.\n"
-"Una vez terminado el RID, querrás liberarlo usando el método estático ["
-"method free_rid] de VisualServer."
+"Una vez terminado el RID, querrás liberarlo usando el método estático "
+"[method free_rid] de VisualServer."
 
 #: doc/classes/VisualServer.xml:2890
 #, fuzzy
@@ -88556,7 +88570,7 @@ msgstr ""
 #: doc/classes/VisualShaderNode.xml:10
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/shading/visual_shaders.html"
+"https://docs.godotengine.org/en/3.4/tutorials/shaders/visual_shaders.html"
 msgstr ""
 "https://docs.godotengine.org/en/latest/tutorials/shading/visual_shaders.html"
 
@@ -89692,8 +89706,8 @@ msgstr ""
 #: doc/classes/VisualShaderNodeInput.xml:9
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/shading/shading_reference/"
-"index.html"
+"https://docs.godotengine.org/en/3.4/tutorials/shaders/shader_reference/index."
+"html"
 msgstr ""
 "https://docs.godotengine.org/es/stable/tutorials/shading/shading_reference/"
 "index.html"
@@ -92352,8 +92366,8 @@ msgstr ""
 "puede instanciar un [WorldEnvironment] en una escena dada a la vez.\n"
 "El [WorldEnvironment] permite al usuario especificar los parámetros de "
 "iluminación por defecto (p.ej. iluminación ambiental), varios efectos de "
-"post-procesamiento (p.ej. SSAO, DOF, Tonemapping), y cómo dibujar el fondo ("
-"p.ej. color sólido, skybox). Normalmente, estos se añaden para mejorar el "
+"post-procesamiento (p.ej. SSAO, DOF, Tonemapping), y cómo dibujar el fondo "
+"(p.ej. color sólido, skybox). Normalmente, estos se añaden para mejorar el "
 "realismo/equilibrio de color de la escena."
 
 #: doc/classes/WorldEnvironment.xml:21
