@@ -217,20 +217,23 @@ void NetworkedMultiplayerENet::poll() {
 
 	_pop_current_packet();
 
+	if (!host || !active) { // Might be disconnected
+		return;
+	}
+
 	ENetEvent event;
-	/* Keep servicing until there are no available events left in queue. */
-	while (true) {
-		if (!host || !active) { // Might have been disconnected while emitting a notification
+	int ret = enet_host_service(host, &event, 0);
+
+	if (ret < 0) {
+		ERR_FAIL_MSG("Enet host service error");
+	} else if (ret == 0) {
+		return; // No events
+	}
+
+	/* Keep servicing until there are no available events left in the queue. */
+	do {
+		if (!host || !active) { // Check again after every event
 			return;
-		}
-
-		int ret = enet_host_service(host, &event, 0);
-
-		if (ret < 0) {
-			// Error, do something?
-			break;
-		} else if (ret == 0) {
-			break;
 		}
 
 		switch (event.type) {
@@ -436,7 +439,7 @@ void NetworkedMultiplayerENet::poll() {
 				// Do nothing
 			} break;
 		}
-	}
+	} while (enet_host_check_events(host, &event) > 0);
 }
 
 bool NetworkedMultiplayerENet::is_server() const {
@@ -546,9 +549,10 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
 			}
 			channel = SYSCH_UNRELIABLE;
+			packet_flags |= ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 		} break;
 		case TRANSFER_MODE_UNRELIABLE_ORDERED: {
-			packet_flags = 0;
+			packet_flags = ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 			channel = SYSCH_UNRELIABLE;
 		} break;
 		case TRANSFER_MODE_RELIABLE: {
@@ -560,6 +564,12 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	if (transfer_channel > SYSCH_CONFIG) {
 		channel = transfer_channel;
 	}
+
+#ifdef DEBUG_ENABLED
+	if ((packet_flags & ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT) && p_buffer_size + 8 > ENET_HOST_DEFAULT_MTU) {
+		WARN_PRINT_ONCE(vformat("Sending %d bytes unrealiably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size + 8, host->mtu));
+	}
+#endif
 
 	Map<int, ENetPeer *>::Element *E = nullptr;
 
