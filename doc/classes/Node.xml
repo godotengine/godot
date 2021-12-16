@@ -162,7 +162,7 @@
 			<argument index="1" name="recursive" type="bool" default="true" />
 			<argument index="2" name="owned" type="bool" default="true" />
 			<description>
-				Finds a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case-sensitive, but [code]"*"[/code] matches zero or more characters and [code]"?"[/code] matches any single character except [code]"."[/code]).
+				Finds a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case-sensitive, but [code]"*"[/code] matches zero or more characters and [code]"?"[/code] matches any single character except [code]"."[/code]). Returns [code]null[/code] if no matching [Node] is found.
 				[b]Note:[/b] It does not match against the full path, just against individual node names.
 				If [code]owned[/code] is [code]true[/code], this method only finds nodes whose owner is this node. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
 				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] instead. To avoid using [method find_node] too often, consider caching the node reference into a variable.
