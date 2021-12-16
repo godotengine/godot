@@ -157,6 +157,7 @@ public:
 
 	void run();
 
+	bool _is_win11_terminal() const;
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
 	virtual void disable_crash_handler() override;

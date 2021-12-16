@@ -467,6 +467,16 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	return OK;
 };
 
+bool OS_Windows::_is_win11_terminal() const {
+	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD dwMode = 0;
+	if (GetConsoleMode(hStdOut, &dwMode)) {
+		return ((dwMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+	} else {
+		return false;
+	}
+}
+
 Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
@@ -484,7 +494,8 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 #ifndef DEBUG_ENABLED
 	dwCreationFlags |= CREATE_NO_WINDOW;
 #endif
-	if (p_path == get_executable_path() && GetConsoleWindow() != nullptr) {
+	if (p_path == get_executable_path() && GetConsoleWindow() != nullptr && _is_win11_terminal()) {
+		// Open a new terminal as a workaround for Windows Terminal bug.
 		dwCreationFlags |= CREATE_NEW_CONSOLE;
 	}
 
