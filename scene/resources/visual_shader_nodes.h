@@ -1953,9 +1953,29 @@ public:
 		COLOR_DEFAULT_MAX,
 	};
 
+	enum TextureFilter {
+		FILTER_DEFAULT,
+		FILTER_NEAREST,
+		FILTER_LINEAR,
+		FILTER_NEAREST_MIPMAP,
+		FILTER_LINEAR_MIPMAP,
+		FILTER_NEAREST_MIPMAP_ANISOTROPIC,
+		FILTER_LINEAR_MIPMAP_ANISOTROPIC,
+		FILTER_MAX,
+	};
+
+	enum TextureRepeat {
+		REPEAT_DEFAULT,
+		REPEAT_ENABLED,
+		REPEAT_DISABLED,
+		REPEAT_MAX,
+	};
+
 protected:
 	TextureType texture_type = TYPE_DATA;
 	ColorDefault color_default = COLOR_DEFAULT_WHITE;
+	TextureFilter texture_filter = FILTER_DEFAULT;
+	TextureRepeat texture_repeat = REPEAT_DEFAULT;
 
 protected:
 	static void _bind_methods();
@@ -1975,6 +1995,8 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
+	virtual Map<StringName, String> get_editable_properties_names() const override;
+	virtual bool is_show_prop_names() const override;
 	virtual bool is_code_generated() const override;
 
 	Vector<StringName> get_editable_properties() const override;
@@ -1985,6 +2007,12 @@ public:
 	void set_color_default(ColorDefault p_default);
 	ColorDefault get_color_default() const;
 
+	void set_texture_filter(TextureFilter p_filter);
+	TextureFilter get_texture_filter() const;
+
+	void set_texture_repeat(TextureRepeat p_repeat);
+	TextureRepeat get_texture_repeat() const;
+
 	bool is_qualifier_supported(Qualifier p_qual) const override;
 	bool is_convertible_to_constant() const override;
 
@@ -1993,6 +2021,8 @@ public:
 
 VARIANT_ENUM_CAST(VisualShaderNodeTextureUniform::TextureType)
 VARIANT_ENUM_CAST(VisualShaderNodeTextureUniform::ColorDefault)
+VARIANT_ENUM_CAST(VisualShaderNodeTextureUniform::TextureFilter)
+VARIANT_ENUM_CAST(VisualShaderNodeTextureUniform::TextureRepeat)
 
 ///////////////////////////////////////
 
