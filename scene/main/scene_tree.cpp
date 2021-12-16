@@ -132,44 +132,6 @@ void SceneTree::node_renamed(Node *p_node) {
 	emit_signal(node_renamed_name, p_node);
 }
 
-void SceneTree::process_timers(float p_delta, bool p_physics_frame) {
-	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
-
-	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
-
-		//Check whether the timer should be process in this type of frame
-		if (!(E->get()->is_process_in_physics() == p_physics_frame)) {
-			continue;
-		}
-
-		List<Ref<SceneTreeTimer>>::Element *N = E->next();
-		if (paused && !E->get()->is_process_always()) {
-			if (E == L) {
-				break; //break on last, so if new timers were added during list traversal, ignore them.
-			}
-			E = N;
-			continue;
-		}
-
-		double time_left = E->get()->get_time_left();
-		if (E->get()->is_ignore_time_scale()) {
-			time_left -= Engine::get_singleton()->get_process_step();
-		} else {
-			time_left -= p_delta;
-		}
-		E->get()->set_time_left(time_left);
-
-		if (time_left < 0) {
-			E->get()->emit_signal(SNAME("timeout"));
-			timers.erase(E);
-		}
-		if (E == L) {
-			break; //break on last, so if new timers were added during list traversal, ignore them.
-		}
-		E = N;
-	}
-}
-
 SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
 	if (!E) {
@@ -544,6 +506,39 @@ bool SceneTree::process(double p_time) {
 #endif // TOOLS_ENABLED
 
 	return _quit;
+}
+
+void SceneTree::process_timers(float p_delta, bool p_physics_frame) {
+	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
+
+	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
+		List<Ref<SceneTreeTimer>>::Element *N = E->next();
+		// Don't process if paused or process mode doesn't match.
+		if ((paused && !E->get()->is_process_always()) || (!E->get()->is_process_in_physics() == p_physics_frame)) {
+			if (E == L) {
+				break; //break on last, so if new timers were added during list traversal, ignore them.
+			}
+			E = N;
+			continue;
+		}
+
+		double time_left = E->get()->get_time_left();
+		if (E->get()->is_ignore_time_scale()) {
+			time_left -= Engine::get_singleton()->get_process_step();
+		} else {
+			time_left -= p_delta;
+		}
+		E->get()->set_time_left(time_left);
+
+		if (time_left < 0) {
+			E->get()->emit_signal(SNAME("timeout"));
+			timers.erase(E);
+		}
+		if (E == L) {
+			break; //break on last, so if new timers were added during list traversal, ignore them.
+		}
+		E = N;
+	}
 }
 
 void SceneTree::process_tweens(float p_delta, bool p_physics) {
