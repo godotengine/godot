@@ -33,8 +33,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-22 20:39+0000\n"
-"Last-Translator: Jakub Janšta <jansta.ja@gmail.com>\n"
+"PO-Revision-Date: 2021-12-15 17:40+0000\n"
+"Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -2130,9 +2130,8 @@ msgid "Theme Properties"
 msgstr "Vlastnosti motivu"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Colors"
-msgstr "Barva"
+msgstr "Barvy"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
