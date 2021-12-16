@@ -270,7 +270,60 @@
 		<method name="get_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"macOS"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
+				Returns the name of the host OS.
+				On Windows, this is [code]"Windows"[/code] or [code]"UWP"[/code] (Universal Windows Platform) if exported thereon.
+				On macOS, this is [code]"macOS"[/code].
+				On Linux-based operating systems, this is [code]"Linux"[/code].
+				On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
+				On Android, this is [code]"Android"[/code].
+				On iOS, this is [code]"iOS"[/code].
+				On the web, this is [code]"HTML5"[/code].
+				[b]Note:[/b] Custom builds of the engine may support additional platforms, such as consoles, yielding other return values.
+				[codeblocks]
+				[gdscript]
+				match OS.get_name():
+				    "Windows", "UWP":
+				        print("Windows")
+				    "macOS":
+				        print("macOS")
+				    "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD":
+				        print("Linux/BSD")
+				    "Android":
+				        print("Android")
+				    "iOS":
+				        print("iOS")
+				    "HTML5":
+				        print("Web")
+				[/gdscript]
+				[csharp]
+				switch (OS.GetName())
+				{
+				    case "Windows":
+				    case "UWP":
+				        GD.Print("Windows");
+				        break;
+				    case "macOS":
+				        GD.Print("macOS");
+				        break;
+				    case "Linux":
+				    case "FreeBSD":
+				    case "NetBSD":
+				    case "OpenBSD"
+				    case "BSD":
+				        GD.Print("Linux/BSD");
+				        break;
+				    case "Android":
+				        GD.Print("Android");
+				        break;
+				    case "iOS":
+				        GD.Print("iOS");
+				        break;
+				    case "HTML5":
+				        GD.Print("Web");
+				        break;
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
@@ -327,11 +380,13 @@
 			<return type="String" />
 			<description>
 				Returns the absolute directory path where user data is written ([code]user://[/code]).
-				On Linux, this is [code]~/.local/share/godot/app_userdata/[project_name][/code], or [code]~/.local/share/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
+				On Windows, this is [code]%AppData%\Godot\app_userdata\[project_name][/code], or [code]%AppData%\[custom_name][/code] if [code]use_custom_user_dir[/code] is set. [code]%AppData%[/code] expands to [code]%UserProfile%\AppData\Roaming[/code].
 				On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
-				On Windows, this is [code]%APPDATA%\Godot\app_userdata\[project_name][/code], or [code]%APPDATA%\[custom_name][/code] if [code]use_custom_user_dir[/code] is set. [code]%APPDATA%[/code] expands to [code]%USERPROFILE%\AppData\Roaming[/code].
-				If the project name is empty, [code]user://[/code] falls back to [code]res://[/code].
-				Not to be confused with [method get_data_dir], which returns the [i]global[/i] (non-project-specific) user data directory.
+				On Linux and BSD, this is [code]~/.local/share/godot/app_userdata/[project_name][/code], or [code]~/.local/share/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
+				On Android and iOS, this is a sandboxed directory in either internal or external storage, depending on the user's configuration.
+				On the web, this is a virtual directory managed by the browser.
+				If the project name is empty, [code][project_name][/code] falls back to [code][unnamed project][/code].
+				Not to be confused with [method get_data_dir], which returns the [i]global[/i] (non-project-specific) user home directory.
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">
