@@ -178,6 +178,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_luminance" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the luminance of the color in the [code][0.0, 1.0][/code] range.
+				This is useful when determining light or dark color. Colors with a luminance smaller than 0.5 can be generally considered dark.
+			</description>
+		</method>
 		<method name="get_named_color" qualifiers="static">
 			<return type="Color" />
 			<argument index="0" name="idx" type="int" />

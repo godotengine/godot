@@ -1190,7 +1190,7 @@ bool EditorSettings::is_dark_theme() {
 	int LIGHT_COLOR = 2;
 	Color base_color = get("interface/theme/base_color");
 	int icon_font_color_setting = get("interface/theme/icon_and_font_color");
-	return (icon_font_color_setting == AUTO_COLOR && ((base_color.r + base_color.g + base_color.b) / 3.0) < 0.5) || icon_font_color_setting == LIGHT_COLOR;
+	return (icon_font_color_setting == AUTO_COLOR && base_color.get_luminance() < 0.5) || icon_font_color_setting == LIGHT_COLOR;
 }
 
 void EditorSettings::list_text_editor_themes() {
