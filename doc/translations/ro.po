@@ -7,12 +7,13 @@
 # f0roots <f0rootss@gmail.com>, 2020.
 # Pierre Stempin <pierre.stempin@gmail.com>, 2020.
 # FlooferLand <yunaflarf@gmail.com>, 2021.
+# N3mEee <n3mebusiness@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-11-07 09:45+0000\n"
-"Last-Translator: FlooferLand <yunaflarf@gmail.com>\n"
+"PO-Revision-Date: 2021-12-14 15:28+0000\n"
+"Last-Translator: N3mEee <n3mebusiness@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ro/>\n"
 "Language: ro\n"
@@ -21,7 +22,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -73,6 +74,9 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
+"Lista funcţiilor de bază GDScript încorporate. Funcții matematice și alte "
+"utilități. Orice altceva este oferit de obiecte. (Cuvinte cheie: "
+"încorporate, integrate, funcţii globale.)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:19
 msgid ""
