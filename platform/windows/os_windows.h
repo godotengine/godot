@@ -371,6 +371,8 @@ class OS_Windows : public OS {
 
 	CrashHandler crash_handler;
 
+	bool _is_win11_terminal() const;
+
 	void _drag_event(float p_x, float p_y, int idx);
 	void _touch_event(bool p_pressed, float p_x, float p_y, int idx);
 
