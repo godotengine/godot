@@ -3,7 +3,7 @@
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# Rémi Verschelde <remi@godotengine.org>, 2020.
+# Rémi Verschelde <remi@godotengine.org>, 2020, 2021.
 # Freyja <aerandil@gmail.com>, 2020.
 # Gol.D.eNI <eniolamy1@gmail.com>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
@@ -53,8 +53,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-10 10:42+0000\n"
-"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
+"PO-Revision-Date: 2021-12-16 12:44+0000\n"
+"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
 "Language: fr\n"
@@ -482,7 +482,7 @@ msgid ""
 "Converts a dictionary (previously created with [method inst2dict]) back to "
 "an instance. Useful for deserializing."
 msgstr ""
-"Convertit un dictionnaire (créé précédemment avec [method inst2dist]) à "
+"Convertit un dictionnaire (créé précédemment avec [method inst2dict]) à "
 "nouveau en une instance. Utile pour la désérialisation."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:256
@@ -522,7 +522,7 @@ msgstr ""
 "[/codeblock]\n"
 "[url=https ://raw.githubusercontent.com/godotengine/godot-docs/3.4/img/"
 "ease_cheatsheet.png]ease() curve values cheatsheet[/url]\n"
-"Voir également [méthode smoothstep]. Si vous avez besoin de réaliser des "
+"Voir également [method smoothstep]. Si vous avez besoin de réaliser des "
 "transitions plus avancées, utilisez [Tween] ou [AnimationPlayer]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:274
@@ -990,7 +990,7 @@ msgstr ""
 "croissance continue.\n"
 "[b]Note :[/b] Ce n'est pas la même chose que la fonction \"log\" de la "
 "plupart des calculatrices, qui utilise un logarithme en base 10.\n"
-"[bloc de code]\n"
+"[codeblock]\n"
 "log(10) # Returns 2.302585\n"
 "[/codeblock]\n"
 "[b]Note : [/b] Le logarithme de [code]0[/code] retourne [code]-inf[/code], "
@@ -1796,18 +1796,18 @@ msgid ""
 "text will convert all numerical values to [float] types.\n"
 "See also [JSON] for an alternative way to convert a [Variant] to JSON text."
 msgstr ""
-"Convertit une variante [Variant] [code] var [/code] en texte JSON et "
-"retourne le résultat. Utile pour sérialiser les données à stocker ou à "
-"envoyer sur le réseau.\n"
+"Convertit une variante [Variant] [code]var[/code] en texte JSON et retourne "
+"le résultat. Utile pour sérialiser les données à stocker ou à envoyer sur le "
+"réseau.\n"
 "[codeblock]\n"
 "# Les deux nombres ci-dessous sont des entiers.\n"
-"a = {\"a\" : 1, \"b\" : 2}\n"
-"b = to_json (a)\n"
-"print (b) # {\"a\" : 1, \"b\" : 2}\n"
+"a = {\"a\": 1, \"b\": 2}\n"
+"b = to_json(a)\n"
+"print(b) # {\"a\":1, \"b\":2}\n"
 "# Les deux nombres ci-dessus sont des nombres décimaux, même s'ils "
 "s'affichent sans décimales.\n"
-"[/ codeblock]\n"
-"[b] Remarque :[/b] La spécification JSON ne définit pas les types entier ou "
+"[/codeblock]\n"
+"[b]Remarque :[/b] La spécification JSON ne définit pas les types entier ou "
 "flottant, mais seulement un type [i]number[/i]. Par conséquent, la "
 "conversion d'un [Variant] en texte JSON convertira toutes les valeurs "
 "numériques en types [float].\n"
@@ -1880,9 +1880,9 @@ msgid ""
 "[code]true[/code] encoding objects is allowed (and can potentially include "
 "code)."
 msgstr ""
-"Encode la valeur d'une variable en un tableau d'octets(byte[]). Lorsque "
-"[code]full_objects[/code] a la valeur [code]true[/code], l'encodage d'objets "
-"est autorisé (et peut potentiellement inclure du code)."
+"Encode la valeur d'une variable en un tableau d'octets ([i]byte array[/i]). "
+"Lorsque [code]full_objects[/code] a la valeur [code]true[/code], l'encodage "
+"d'objets est autorisé (et peut potentiellement inclure du code)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1105
 msgid ""
@@ -1905,7 +1905,7 @@ msgstr ""
 "[codeblock]\n"
 "a = {\"a\": 1, \"b\": 2}\n"
 "print(var2str(a))\n"
-"[/ codeblock]\n"
+"[/codeblock]\n"
 "affiche\n"
 "[codeblock]\n"
 "{\n"
@@ -4828,7 +4828,7 @@ msgstr ""
 #: doc/classes/AcceptDialog.xml:82
 msgid "Emitted when a custom button is pressed. See [method add_button]."
 msgstr ""
-"Émis lorsqu'un bouton personnalisé est pressé. Voir [méthode add_button]."
+"Émis lorsqu'un bouton personnalisé est pressé. Voir [method add_button]."
 
 #: doc/classes/AESContext.xml:4
 msgid "Interface to low level AES encryption features."
@@ -5255,7 +5255,7 @@ msgid ""
 "paused when changing this property to [code]false[/code]."
 msgstr ""
 "Si [code]true[/code], l'animation pausera à la trame où il se trouve "
-"actuellement (c'est-à-dire à [member current frame]). L'animation continuera "
+"actuellement (c'est-à-dire à [member current_frame]). L'animation continuera "
 "d'où c'était pausé quand cette propriété est mise à [code]false[/code]."
 
 #: doc/classes/AnimatedTexture.xml:75
@@ -6950,7 +6950,7 @@ msgstr ""
 
 #: doc/classes/AnimationPlayer.xml:109
 msgid "Returns [code]true[/code] if playing an animation."
-msgstr "Retourne [code] true [/code] lors de la lecture d'une animation."
+msgstr "Retourne [code]true[/code] lors de la lecture d'une animation."
 
 #: doc/classes/AnimationPlayer.xml:119
 msgid ""
@@ -18073,7 +18073,7 @@ msgstr ""
 #, fuzzy
 msgid "Emitted when a modal [Control] is closed. See [method show_modal]."
 msgstr ""
-"Émis lorsqu'un bouton personnalisé est pressé. Voir [méthode add_button]."
+"Émis lorsqu'un bouton personnalisé est pressé. Voir [method add_button]."
 
 #: doc/classes/Control.xml:841
 msgid ""
@@ -22907,32 +22907,32 @@ msgstr ""
 
 #: doc/classes/EditorPlugin.xml:402
 msgid "Removes a custom type added by [method add_custom_type]."
-msgstr "Supprime un type personnalisé ajouté par [méthode add_custom_type]."
+msgstr "Supprime un type personnalisé ajouté par [method add_custom_type]."
 
 #: doc/classes/EditorPlugin.xml:409
 #, fuzzy
 msgid "Removes an export plugin registered by [method add_export_plugin]."
-msgstr "Supprime un type personnalisé ajouté par [méthode add_custom_type]."
+msgstr "Supprime un type personnalisé ajouté par [method add_custom_type]."
 
 #: doc/classes/EditorPlugin.xml:416
 #, fuzzy
 msgid "Removes an import plugin registered by [method add_import_plugin]."
-msgstr "Supprime un type personnalisé ajouté par [méthode add_custom_type]."
+msgstr "Supprime un type personnalisé ajouté par [method add_custom_type]."
 
 #: doc/classes/EditorPlugin.xml:423
 msgid "Removes an inspector plugin registered by [method add_import_plugin]"
-msgstr "Supprime un type personnalisé ajouté par [méthode add_custom_type]"
+msgstr "Supprime un type personnalisé ajouté par [method add_custom_type]"
 
 #: doc/classes/EditorPlugin.xml:430
 #, fuzzy
 msgid ""
 "Removes a scene importer registered by [method add_scene_import_plugin]."
-msgstr "Supprime un type personnalisé ajouté par [méthode add_custom_type]."
+msgstr "Supprime un type personnalisé ajouté par [method add_custom_type]."
 
 #: doc/classes/EditorPlugin.xml:437
 #, fuzzy
 msgid "Removes a gizmo plugin registered by [method add_spatial_gizmo_plugin]."
-msgstr "Supprime un type personnalisé ajouté par [méthode add_custom_type]."
+msgstr "Supprime un type personnalisé ajouté par [method add_custom_type]."
 
 #: doc/classes/EditorPlugin.xml:444
 msgid "Removes a menu [code]name[/code] from [b]Project > Tools[/b]."
@@ -22961,7 +22961,7 @@ msgstr ""
 
 #: doc/classes/EditorPlugin.xml:469
 msgid "Restore the state saved by [method get_state]."
-msgstr "Restaurer l’état enregistré par [méthode get_state]."
+msgstr "Restaurer l’état enregistré par [method get_state]."
 
 #: doc/classes/EditorPlugin.xml:476
 msgid "Restore the plugin GUI layout saved by [method get_window_layout]."
@@ -25512,8 +25512,7 @@ msgstr ""
 
 #: doc/classes/File.xml:410
 msgid "Uses the [url=http://fastlz.org/]FastLZ[/url] compression method."
-msgstr ""
-"Utilise la méthode de compression [url = http://fastlz.org/]FastLZ[/url]."
+msgstr "Utilise la méthode de compression [url=http://fastlz.org/]FastLZ[/url]."
 
 #: doc/classes/File.xml:413
 msgid ""
@@ -28120,7 +28119,7 @@ msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml:135
 msgid "Sets an individual bit on the [member collision_layer]."
-msgstr "Définit un bit individuel sur le [membre collision_layer]."
+msgstr "Définit un bit individuel sur le [member collision_layer]."
 
 #: modules/gridmap/doc_classes/GridMap.xml:143
 msgid "Sets an individual bit on the [member collision_mask]."
@@ -28191,7 +28190,7 @@ msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml:194
 msgid "Emitted when [member cell_size] changes."
-msgstr "Émis lorsque [membre cell_size] change."
+msgstr "Émis lorsque [member cell_size] change."
 
 #: modules/gridmap/doc_classes/GridMap.xml:200
 msgid ""
@@ -31399,8 +31398,7 @@ msgstr "Type d'événement d'entrée pour les événements de bouton de la souri
 #: doc/classes/InputEventMouseButton.xml:7
 msgid "Contains mouse click information. See [method Node._input]."
 msgstr ""
-"Contient des informations sur les clics de souris. Voir [méthode Node."
-"_input]."
+"Contient des informations sur les clics de souris. Voir [method Node._input]."
 
 #: doc/classes/InputEventMouseButton.xml:10
 #: doc/classes/InputEventMouseMotion.xml:11
@@ -33560,7 +33558,7 @@ msgstr "Constante pour accéder à [member light_energy]."
 
 #: doc/classes/Light.xml:79
 msgid "Constant for accessing [member light_indirect_energy]."
-msgstr "Constante pour accéder à [membre light_indirect_energy]."
+msgstr "Constante pour accéder à [member light_indirect_energy]."
 
 #: doc/classes/Light.xml:82
 #, fuzzy
@@ -33576,14 +33574,14 @@ msgstr ""
 msgid ""
 "Constant for accessing [member OmniLight.omni_range] or [member SpotLight."
 "spot_range]."
-msgstr "Constante pour accéder à [membre light_indirect_energy]."
+msgstr "Constante pour accéder à [member light_indirect_energy]."
 
 #: doc/classes/Light.xml:91
 #, fuzzy
 msgid ""
 "Constant for accessing [member OmniLight.omni_attenuation] or [member "
 "SpotLight.spot_attenuation]."
-msgstr "Constante pour accéder à [membre light_indirect_energy]."
+msgstr "Constante pour accéder à [member light_indirect_energy]."
 
 #: doc/classes/Light.xml:94
 #, fuzzy
@@ -40778,7 +40776,7 @@ msgstr ""
 #: doc/classes/OS.xml:980
 #, fuzzy
 msgid "If [code]true[/code], the window is fullscreen."
-msgstr "Si [code] vrai [/code], l'interpolation fait une boucle."
+msgstr "Si [code]true[/code], l'interpolation fait une boucle."
 
 #: doc/classes/OS.xml:983
 #, fuzzy
@@ -42812,7 +42810,7 @@ msgid ""
 "Assigns the area to a descendant of [Object], so it can exist in the node "
 "tree."
 msgstr ""
-"Assigne la zone à un descendant de [Objet], afin qu'il puisse exister dans "
+"Assigne la zone à un descendant de [Object], afin qu'il puisse exister dans "
 "l'arbre des nœuds."
 
 #: doc/classes/Physics2DServer.xml:41 doc/classes/PhysicsServer.xml:34
@@ -49357,7 +49355,7 @@ msgstr ""
 
 #: doc/classes/Range.xml:67
 msgid "Emitted when [member value] changes."
-msgstr "Émis lorsque [valeur de membre] change."
+msgstr "Émis lorsque [member value] change."
 
 #: doc/classes/RayCast.xml:4 doc/classes/RayCast2D.xml:4
 msgid "Query the closest object intersecting a ray."
@@ -53856,7 +53854,7 @@ msgstr ""
 #: doc/classes/SoftBody.xml:115
 #, fuzzy
 msgid "If [code]true[/code], the [SoftBody] will respond to [RayCast]s."
-msgstr "Si [code] vrai [/code], l'interpolation fait une boucle."
+msgstr "Si [code]true[/code], l'interpolation fait une boucle."
 
 #: doc/classes/SoftBody.xml:118
 msgid ""
@@ -54685,14 +54683,12 @@ msgid "Grows object vertices in the direction of their normals."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml:267
-#, fuzzy
 msgid "Currently unimplemented in Godot."
-msgstr "Actuellement non implémenté dans Godot 3.x."
+msgstr "Actuellement non implémenté dans Godot."
 
 #: doc/classes/SpatialMaterial.xml:270
-#, fuzzy
 msgid "The point size in pixels. See [member flags_use_point_size]."
-msgstr "Taille du point en pixels. Voir [membre use_point_size]."
+msgstr "Taille du point en pixels. Voir [member flags_use_point_size]."
 
 #: doc/classes/SpatialMaterial.xml:273
 msgid "The method for rendering the specular blob. See [enum SpecularMode]."
@@ -55004,14 +55000,13 @@ msgid "Use [code]UV2[/code] with the detail texture."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml:435
-#, fuzzy
 msgid "Constant for setting [member flags_transparent]."
-msgstr "Constante pour le réglage [member ao_enabled]."
+msgstr "Constante pour le réglage [member flags_transparent]."
 
 #: doc/classes/SpatialMaterial.xml:438
 #, fuzzy
 msgid "Constant for setting [member emission_enabled]."
-msgstr "Constante de paramétrage [membre émission_enabled]."
+msgstr "Constante de paramétrage [member emission_enabled]."
 
 #: doc/classes/SpatialMaterial.xml:441
 msgid "Constant for setting [member normal_enabled]."
@@ -55034,18 +55029,16 @@ msgid "Constant for setting [member ao_enabled]."
 msgstr "Constante pour le réglage [member ao_enabled]."
 
 #: doc/classes/SpatialMaterial.xml:456
-#, fuzzy
 msgid "Constant for setting [member depth_enabled]."
-msgstr "Constante pour le réglage [member detail_enabled]."
+msgstr "Constante pour le réglage [member depth_enabled]."
 
 #: doc/classes/SpatialMaterial.xml:459
 msgid "Constant for setting [member subsurf_scatter_enabled]."
 msgstr "Constante pour le réglage [member subsurf_scatter_enabled]."
 
 #: doc/classes/SpatialMaterial.xml:462
-#, fuzzy
 msgid "Constant for setting [member transmission_enabled]."
-msgstr "Constante de paramétrage [membre émission_enabled]."
+msgstr "Constante pour le réglage [member transmission_enabled]."
 
 #: doc/classes/SpatialMaterial.xml:465
 msgid "Constant for setting [member refraction_enabled]."
@@ -59099,7 +59092,7 @@ msgid ""
 "Texture to display when the node is disabled. See [member BaseButton."
 "disabled]."
 msgstr ""
-"Texture à afficher lorsque le nœud est désactivé. Voir [membre BaseButton."
+"Texture à afficher lorsque le nœud est désactivé. Voir [member BaseButton."
 "disabled]."
 
 #: doc/classes/TextureButton.xml:36
@@ -62408,7 +62401,7 @@ msgstr ""
 #: doc/classes/Tween.xml:250
 #, fuzzy
 msgid "If [code]true[/code], the tween loops."
-msgstr "Si [code] vrai [/code], l'interpolation fait une boucle."
+msgstr "Si [code]true[/code], l'interpolation fait une boucle."
 
 #: doc/classes/Tween.xml:256
 msgid "Emitted when all processes in a tween end."
@@ -66488,8 +66481,8 @@ msgid ""
 "The additional operation to perform when assigning. See [enum AssignOp] for "
 "options."
 msgstr ""
-"Le type de multiplication à effectuer sur les transforms. Voir [énumérer "
-"l'opérateur] pour les options."
+"L'opérateur additionelle à effectuer lors de l'assignation. Voir [enum "
+"AssignOp] pour les options."
 
 #: modules/visual_script/doc_classes/VisualScriptPropertySet.xml:27
 msgid ""
@@ -67585,7 +67578,7 @@ msgstr ""
 #: doc/classes/VisualServer.xml:1032
 #, fuzzy
 msgid "Returns the cell size set by [method gi_probe_set_cell_size]."
-msgstr "Restaurer l’état enregistré par [méthode get_state]."
+msgstr "Restaurer l’état enregistré par [method get_state]."
 
 #: doc/classes/VisualServer.xml:1039
 #, fuzzy
@@ -67619,7 +67612,7 @@ msgstr ""
 #: doc/classes/VisualServer.xml:1074
 #, fuzzy
 msgid "Returns the Transform set by [method gi_probe_set_to_cell_xform]."
-msgstr "Restaurer l’état enregistré par [méthode get_state]."
+msgstr "Restaurer l’état enregistré par [method get_state]."
 
 #: doc/classes/VisualServer.xml:1081
 msgid ""
@@ -68144,7 +68137,7 @@ msgstr "Retourne la matrice de transformation de la toile de cet objet."
 #: doc/classes/VisualServer.xml:1674
 #, fuzzy
 msgid "Returns [code]true[/code] if capture is in \"interior\" mode."
-msgstr "Retourne [code] true [/code] lors de la lecture d'une animation."
+msgstr "Retourne [code]true[/code] lors de la lecture d'une animation."
 
 #: doc/classes/VisualServer.xml:1682
 msgid ""
@@ -69211,7 +69204,7 @@ msgstr ""
 #: doc/classes/VisualServer.xml:2989
 #, fuzzy
 msgid "If [code]true[/code], the viewport renders to hdr."
-msgstr "Si [code] vrai [/code], l'interpolation fait une boucle."
+msgstr "Si [code]true[/code], l'interpolation fait une boucle."
 
 #: doc/classes/VisualServer.xml:2997
 msgid "If [code]true[/code], the viewport's canvas is not rendered."
@@ -71460,8 +71453,8 @@ msgid ""
 "The multiplication type to be performed on the transforms. See [enum "
 "Operator] for options."
 msgstr ""
-"Le type de multiplication à effectuer sur les transforms. Voir [énumérer "
-"l'opérateur] pour les options."
+"Le type de multiplication à effectuer sur les transforms. Voir [enum "
+"Operator] pour les options."
 
 #: doc/classes/VisualShaderNodeTransformMult.xml:20
 #, fuzzy
