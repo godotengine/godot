@@ -6343,7 +6343,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Area.xml:11 doc/classes/QuadMesh.xml:10
-#: doc/classes/Viewport.xml:17 doc/classes/ViewportTexture.xml:11
+#: doc/classes/Viewport.xml:18 doc/classes/ViewportTexture.xml:11
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/127"
 msgstr "https://docs.godotengine.org/uk/latest/tutorials/vr/index.html"
@@ -7182,7 +7182,7 @@ msgstr ""
 #: doc/classes/ArrayMesh.xml:29
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/content/procedural_geometry/"
+"https://docs.godotengine.org/en/3.4/tutorials/3d/procedural_geometry/"
 "arraymesh.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/content/procedural_geometry/"
@@ -12192,7 +12192,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasItem.xml:15 doc/classes/CanvasLayer.xml:10
-#: doc/classes/InputEvent.xml:11 doc/classes/Viewport.xml:15
+#: doc/classes/InputEvent.xml:11 doc/classes/Viewport.xml:16
 #, fuzzy
 msgid "https://docs.godotengine.org/en/3.4/tutorials/2d/2d_transforms.html"
 msgstr "https://docs.godotengine.org/uk/latest/tutorials/2d/2d_transforms.html"
@@ -12812,8 +12812,7 @@ msgstr ""
 #: doc/classes/RichTextLabel.xml:15
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/gui/bbcode_in_richtextlabel."
-"html"
+"https://docs.godotengine.org/en/3.4/tutorials/ui/bbcode_in_richtextlabel.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/gui/bbcode_in_richtextlabel."
 "html"
@@ -15289,13 +15288,13 @@ msgstr ""
 
 #: doc/classes/Control.xml:17
 #, fuzzy
-msgid "https://docs.godotengine.org/en/3.4/tutorials/gui/index.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/ui/index.html"
 msgstr "https://docs.godotengine.org/uk/latest/tutorials/gui/index.html"
 
 #: doc/classes/Control.xml:19
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/gui/control_node_gallery.html"
+"https://docs.godotengine.org/en/3.4/tutorials/ui/control_node_gallery.html"
 msgstr "https://docs.godotengine.org/uk/latest/tutorials/gui/index.html"
 
 #: doc/classes/Control.xml:20
@@ -16210,7 +16209,7 @@ msgid ""
 "purposes. Text inside the Control will look pixelated or blurry when the "
 "Control is scaled. To support multiple resolutions in your project, use an "
 "appropriate viewport stretch mode as described in the [url=https://docs."
-"godotengine.org/en/3.4/tutorials/viewports/multiple_resolutions."
+"godotengine.org/en/3.4/tutorials/rendering/multiple_resolutions."
 "html]documentation[/url] instead of scaling Controls individually.\n"
 "[b]Note:[/b] If the Control node is a child of a [Container] node, the scale "
 "will be reset to [code]Vector2(1, 1)[/code] when the scene is instanced. To "
@@ -18934,7 +18933,7 @@ msgstr ""
 #: doc/classes/Dictionary.xml:87
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/"
+"https://docs.godotengine.org/en/3.4/tutorials/scripting/gdscript/"
 "gdscript_basics.html#dictionary"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/getting_started/scripting/gdscript/"
@@ -19164,12 +19163,9 @@ msgstr ""
 
 #: doc/classes/Directory.xml:28 doc/classes/File.xml:28
 #, fuzzy
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/step_by_step/filesystem."
-"html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/filesystem.html"
 msgstr ""
-"https://docs.godotengine.org/uk/latest/getting_started/step_by_step/"
-"filesystem.html"
+"https://docs.godotengine.org/uk/latest/tutorials/2d/particle_systems_2d.html"
 
 #: doc/classes/Directory.xml:35
 msgid ""
@@ -21483,7 +21479,7 @@ msgstr ""
 #: doc/classes/EditorScenePostImport.xml:29
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/workflow/assets/"
+"https://docs.godotengine.org/en/3.4/tutorials/assets_pipeline/"
 "importing_scenes.html#custom-script"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/getting_started/workflow/assets/"
@@ -27576,7 +27572,7 @@ msgstr ""
 #: doc/classes/Image.xml:12 doc/classes/ImageTexture.xml:31
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/workflow/assets/"
+"https://docs.godotengine.org/en/3.4/tutorials/assets_pipeline/"
 "importing_images.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/getting_started/workflow/assets/"
@@ -30260,8 +30256,8 @@ msgstr ""
 #: doc/classes/JavaScript.xml:11
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/workflow/export/"
-"exporting_for_web.html#calling-javascript-from-script"
+"https://docs.godotengine.org/en/3.4/tutorials/export/exporting_for_web."
+"html#calling-javascript-from-script"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/getting_started/workflow/export/"
 "exporting_for_web.html#calling-javascript-from-script"
@@ -30376,8 +30372,8 @@ msgstr ""
 #: doc/classes/JNISingleton.xml:10
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/plugins/android/android_plugin."
-"html"
+"https://docs.godotengine.org/en/3.4/tutorials/platform/android/"
+"android_plugin.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/plugins/editor/"
 "import_plugins.html"
@@ -33614,7 +33610,7 @@ msgstr ""
 #: doc/classes/MultiMesh.xml:13 doc/classes/MultiMeshInstance.xml:11
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/vertex_animation/"
+"https://docs.godotengine.org/en/3.4/tutorials/performance/vertex_animation/"
 "animating_thousands_of_fish.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/3d/vertex_animation/"
@@ -33623,7 +33619,7 @@ msgstr ""
 #: doc/classes/MultiMesh.xml:14 doc/classes/MultiMeshInstance.xml:13
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/optimization/using_multimesh."
+"https://docs.godotengine.org/en/3.4/tutorials/performance/using_multimesh."
 "html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/optimization/"
@@ -34033,8 +34029,8 @@ msgstr ""
 #: doc/classes/Thread.xml:11
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/threads/using_multiple_threads."
-"html"
+"https://docs.godotengine.org/en/3.4/tutorials/performance/threads/"
+"using_multiple_threads.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/threads/"
 "using_multiple_threads.html"
@@ -35175,7 +35171,7 @@ msgstr ""
 #, fuzzy
 msgid ""
 "https://docs.godotengine.org/en/3.4/getting_started/step_by_step/"
-"scenes_and_nodes.html"
+"nodes_and_scenes.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/getting_started/step_by_step/"
 "scenes_and_nodes.html"
@@ -36554,7 +36550,7 @@ msgstr ""
 #: doc/classes/Resource.xml:12
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/workflow/best_practices/"
+"https://docs.godotengine.org/en/3.4/tutorials/best_practices/"
 "node_alternatives.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/getting_started/workflow/"
@@ -36563,7 +36559,7 @@ msgstr ""
 #: doc/classes/Object.xml:25
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/"
+"https://docs.godotengine.org/en/3.4/tutorials/scripting/gdscript/"
 "gdscript_exports.html#advanced-exports"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/getting_started/scripting/gdscript/"
@@ -38116,8 +38112,8 @@ msgid ""
 "supported in the currently running instance, depending on the platform, "
 "build etc. Can be used to check whether you're currently running a debug "
 "build, on a certain platform or arch, etc. Refer to the [url=https://docs."
-"godotengine.org/en/3.4/getting_started/workflow/export/feature_tags."
-"html]Feature Tags[/url] documentation for more details.\n"
+"godotengine.org/en/3.4/tutorials/export/feature_tags.html]Feature Tags[/url] "
+"documentation for more details.\n"
 "[b]Note:[/b] Tag names are case-sensitive."
 msgstr ""
 
@@ -39319,7 +39315,7 @@ msgstr ""
 #: doc/classes/Particles.xml:13
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/vertex_animation/"
+"https://docs.godotengine.org/en/3.4/tutorials/performance/vertex_animation/"
 "controlling_thousands_of_fish.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/3d/vertex_animation/"
@@ -43778,13 +43774,13 @@ msgid ""
 "Project Settings dialog.\n"
 "[b]Feature tags:[/b] Project settings can be overridden for specific "
 "platforms and configurations (debug, release, ...) using [url=https://docs."
-"godotengine.org/en/latest/tutorials/export/feature_tags.html]feature tags[/"
+"godotengine.org/en/3.4/tutorials/export/feature_tags.html]feature tags[/"
 "url].\n"
 "[b]Overriding:[/b] Any project setting can be overridden by creating a file "
 "named [code]override.cfg[/code] in the project's root directory. This can "
 "also be used in exported projects by placing this file in the same directory "
 "as the project binary. Overriding will still take the base project "
-"settings' [url=https://docs.godotengine.org/en/latest/tutorials/export/"
+"settings' [url=https://docs.godotengine.org/en/3.4/tutorials/export/"
 "feature_tags.html]feature tags[/url] in account. Therefore, make sure to "
 "[i]also[/i] override the setting with the desired feature tags if you want "
 "them to override base project settings on all platforms and configurations."
@@ -46557,7 +46553,7 @@ msgid ""
 "[PlaneMesh], this mesh doesn't provide subdivision options."
 msgstr ""
 
-#: doc/classes/QuadMesh.xml:11 doc/classes/Viewport.xml:19
+#: doc/classes/QuadMesh.xml:11 doc/classes/Viewport.xml:20
 #: doc/classes/ViewportTexture.xml:13
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/129"
@@ -47756,12 +47752,8 @@ msgstr ""
 
 #: doc/classes/Resource.xml:11
 #, fuzzy
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/step_by_step/resources."
-"html"
-msgstr ""
-"https://docs.godotengine.org/uk/latest/getting_started/step_by_step/"
-"resources.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/resources.html"
+msgstr "https://docs.godotengine.org/uk/latest/tutorials/i18n/locales.html"
 
 #: doc/classes/Resource.xml:18
 msgid ""
@@ -49900,17 +49892,13 @@ msgstr ""
 
 #: doc/classes/SceneTree.xml:12
 #, fuzzy
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/step_by_step/scene_tree."
-"html"
-msgstr ""
-"https://docs.godotengine.org/uk/latest/getting_started/step_by_step/"
-"scene_tree.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/scene_tree.html"
+msgstr "https://docs.godotengine.org/uk/latest/tutorials/shading/index.html"
 
 #: doc/classes/SceneTree.xml:13
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/viewports/multiple_resolutions."
+"https://docs.godotengine.org/en/3.4/tutorials/rendering/multiple_resolutions."
 "html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/viewports/"
@@ -50170,39 +50158,51 @@ msgid "The [SceneTree]'s root [Viewport]."
 msgstr ""
 
 #: doc/classes/SceneTree.xml:264
-msgid "If [code]true[/code], font oversampling is used."
+msgid ""
+"If [code]true[/code], font oversampling is enabled. This means that "
+"[DynamicFont]s will be rendered at higher or lower size than configured "
+"based on the viewport's scaling ratio. For example, in a viewport scaled "
+"with a factor 1.5, a font configured with size 14 would be rendered with "
+"size 21 ([code]14 * 1.5[/code]).\n"
+"[b]Note:[/b] Font oversampling is only used if the viewport stretch mode is "
+"[constant STRETCH_MODE_VIEWPORT], and if the stretch aspect mode is "
+"different from [constant STRETCH_ASPECT_IGNORE].\n"
+"[b]Note:[/b] This property is set automatically for the active [SceneTree] "
+"when the project starts based on the configuration of [code]rendering/"
+"quality/dynamic_fonts/use_oversampling[/code] in [ProjectSettings]. The "
+"property can however be overridden at runtime as needed."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:270
+#: doc/classes/SceneTree.xml:272
 msgid ""
 "Emitted whenever this [SceneTree]'s [member network_peer] successfully "
 "connected to a server. Only emitted on clients."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:275
+#: doc/classes/SceneTree.xml:277
 msgid ""
 "Emitted whenever this [SceneTree]'s [member network_peer] fails to establish "
 "a connection to a server. Only emitted on clients."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:282
+#: doc/classes/SceneTree.xml:284
 msgid ""
 "Emitted when files are dragged from the OS file manager and dropped in the "
 "game window. The arguments are a list of file paths and the identifier of "
 "the screen where the drag originated."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:289
+#: doc/classes/SceneTree.xml:291
 msgid "Emitted whenever global menu item is clicked."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:294
+#: doc/classes/SceneTree.xml:296
 msgid ""
 "Emitted immediately before [method Node._process] is called on every node in "
 "the [SceneTree]."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:300
+#: doc/classes/SceneTree.xml:302
 msgid ""
 "Emitted whenever this [SceneTree]'s [member network_peer] connects with a "
 "new peer. ID is the peer ID of the new peer. Clients get notified when other "
@@ -50210,110 +50210,110 @@ msgid ""
 "also receives this signal for the server (with ID being 1)."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:306
+#: doc/classes/SceneTree.xml:308
 msgid ""
 "Emitted whenever this [SceneTree]'s [member network_peer] disconnects from a "
 "peer. Clients get notified when other clients disconnect from the same "
 "server."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:312
+#: doc/classes/SceneTree.xml:314
 msgid "Emitted whenever a node is added to the [SceneTree]."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:318
+#: doc/classes/SceneTree.xml:320
 msgid ""
 "Emitted when a node's configuration changed. Only emitted in [code]tool[/"
 "code] mode."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:324
+#: doc/classes/SceneTree.xml:326
 msgid "Emitted whenever a node is removed from the [SceneTree]."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:330
+#: doc/classes/SceneTree.xml:332
 msgid "Emitted whenever a node is renamed."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:335
+#: doc/classes/SceneTree.xml:337
 msgid ""
 "Emitted immediately before [method Node._physics_process] is called on every "
 "node in the [SceneTree]."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:340
+#: doc/classes/SceneTree.xml:342
 msgid ""
 "Emitted when the screen resolution (fullscreen) or window size (windowed) "
 "changes."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:345
+#: doc/classes/SceneTree.xml:347
 msgid ""
 "Emitted whenever this [SceneTree]'s [member network_peer] disconnected from "
 "server. Only emitted on clients."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:350
+#: doc/classes/SceneTree.xml:352
 msgid ""
 "Emitted whenever the [SceneTree] hierarchy changed (children being moved or "
 "renamed, etc.)."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:356
+#: doc/classes/SceneTree.xml:358
 msgid "Call a group with no flags (default)."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:359
+#: doc/classes/SceneTree.xml:361
 msgid "Call a group in reverse scene order."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:362
+#: doc/classes/SceneTree.xml:364
 msgid "Call a group immediately (calls are normally made on idle)."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:365
+#: doc/classes/SceneTree.xml:367
 msgid "Call a group only once even if the call is executed many times."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:368
+#: doc/classes/SceneTree.xml:370
 msgid "No stretching."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:371
+#: doc/classes/SceneTree.xml:373
 msgid "Render stretching in higher resolution (interpolated)."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:374
+#: doc/classes/SceneTree.xml:376
 msgid ""
 "Keep the specified display resolution. No interpolation. Content may appear "
 "pixelated."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:377
+#: doc/classes/SceneTree.xml:379
 msgid ""
 "Fill the window with the content stretched to cover excessive space. Content "
 "may appear stretched."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:380
+#: doc/classes/SceneTree.xml:382
 msgid ""
 "Retain the same aspect ratio by padding with black bars on either axis. This "
 "prevents distortion."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:383
+#: doc/classes/SceneTree.xml:385
 msgid ""
 "Expand vertically. Left/right black bars may appear if the window is too "
 "wide."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:386
+#: doc/classes/SceneTree.xml:388
 msgid ""
 "Expand horizontally. Top/bottom black bars may appear if the window is too "
 "tall."
 msgstr ""
 
-#: doc/classes/SceneTree.xml:389
+#: doc/classes/SceneTree.xml:391
 msgid ""
 "Expand in both directions, retaining the same aspect ratio. This prevents "
 "distortion while avoiding black bars."
@@ -50361,12 +50361,8 @@ msgstr ""
 
 #: doc/classes/Script.xml:11
 #, fuzzy
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/step_by_step/scripting."
-"html"
-msgstr ""
-"https://docs.godotengine.org/uk/latest/getting_started/step_by_step/"
-"scripting.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/index.html"
+msgstr "https://docs.godotengine.org/uk/latest/tutorials/shading/index.html"
 
 #: doc/classes/Script.xml:17
 msgid "Returns [code]true[/code] if the script can be instanced."
@@ -50544,10 +50540,18 @@ msgstr ""
 #: doc/classes/ScrollContainer.xml:16
 msgid ""
 "Ensures the given [code]control[/code] is visible (must be a direct or "
-"indirect child of the ScrollContainer). Used by [member follow_focus]."
+"indirect child of the ScrollContainer). Used by [member follow_focus].\n"
+"[b]Note:[/b] This will not work on a node that was just added during the "
+"same frame. If you want to scroll to a newly added child, you must wait "
+"until the next frame using [signal SceneTree.idle_frame]:\n"
+"[codeblock]\n"
+"add_child(child_node)\n"
+"yield(get_tree(), \"idle_frame\")\n"
+"ensure_control_visible(child_node)\n"
+"[/codeblock]"
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:22
+#: doc/classes/ScrollContainer.xml:28
 msgid ""
 "Returns the horizontal scrollbar [HScrollBar] of this [ScrollContainer].\n"
 "[b]Warning:[/b] This is a required internal node, removing and freeing it "
@@ -50556,7 +50560,7 @@ msgid ""
 "its [member CanvasItem.visible] property."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:29
+#: doc/classes/ScrollContainer.xml:35
 msgid ""
 "Returns the vertical scrollbar [VScrollBar] of this [ScrollContainer].\n"
 "[b]Warning:[/b] This is a required internal node, removing and freeing it "
@@ -50565,38 +50569,38 @@ msgid ""
 "its [member CanvasItem.visible] property."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:36
+#: doc/classes/ScrollContainer.xml:42
 msgid ""
 "If [code]true[/code], the ScrollContainer will automatically scroll to "
 "focused children (including indirect children) to make sure they are fully "
 "visible."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:42
+#: doc/classes/ScrollContainer.xml:48
 msgid "The current horizontal scroll value."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:45
+#: doc/classes/ScrollContainer.xml:51
 msgid "If [code]true[/code], enables horizontal scrolling."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:48
+#: doc/classes/ScrollContainer.xml:54
 msgid "The current vertical scroll value."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:51
+#: doc/classes/ScrollContainer.xml:57
 msgid "If [code]true[/code], enables vertical scrolling."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:57
+#: doc/classes/ScrollContainer.xml:63
 msgid "Emitted when scrolling stops."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:62
+#: doc/classes/ScrollContainer.xml:68
 msgid "Emitted when scrolling is started."
 msgstr ""
 
-#: doc/classes/ScrollContainer.xml:70
+#: doc/classes/ScrollContainer.xml:76
 msgid "The background [StyleBox] of the [ScrollContainer]."
 msgstr ""
 
@@ -50666,17 +50670,16 @@ msgstr ""
 
 #: doc/classes/Shader.xml:10 doc/classes/ShaderMaterial.xml:11
 #, fuzzy
-msgid "https://docs.godotengine.org/en/3.4/tutorials/shading/index.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/shaders/index.html"
 msgstr "https://docs.godotengine.org/uk/latest/tutorials/shading/index.html"
 
 #: doc/classes/Shader.xml:11
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/shading/your_first_shader/"
-"what_are_shaders.html"
+"https://docs.godotengine.org/en/3.4/tutorials/shaders/"
+"introduction_to_shaders.html"
 msgstr ""
-"https://docs.godotengine.org/uk/latest/tutorials/shading/your_first_shader/"
-"what_are_shaders.html"
+"https://docs.godotengine.org/uk/latest/tutorials/3d/introduction_to_3d.html"
 
 #: doc/classes/Shader.xml:18
 msgid ""
@@ -53739,7 +53742,7 @@ msgstr ""
 #: doc/classes/String.xml:10
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/"
+"https://docs.godotengine.org/en/3.4/tutorials/scripting/gdscript/"
 "gdscript_format_string.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/getting_started/scripting/gdscript/"
@@ -56782,7 +56785,7 @@ msgstr ""
 
 #: doc/classes/Theme.xml:11
 #, fuzzy
-msgid "https://docs.godotengine.org/en/3.4/tutorials/gui/gui_skinning.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/ui/gui_skinning.html"
 msgstr "https://docs.godotengine.org/uk/latest/tutorials/gui/gui_skinning.html"
 
 #: doc/classes/Theme.xml:17
@@ -57154,7 +57157,8 @@ msgstr ""
 #: doc/classes/Thread.xml:12
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/threads/thread_safe_apis.html"
+"https://docs.godotengine.org/en/3.4/tutorials/performance/threads/"
+"thread_safe_apis.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/threads/thread_safe_apis."
 "html"
@@ -61328,76 +61332,79 @@ msgid ""
 "Also, viewports can be assigned to different screens in case the devices "
 "have multiple screens.\n"
 "Finally, viewports can also behave as render targets, in which case they "
-"will not be visible unless the associated texture is used to draw."
+"will not be visible unless the associated texture is used to draw.\n"
+"[b]Note:[/b] By default, a newly created Viewport in Godot 3.x will appear "
+"to be upside down. Enabling [member render_target_v_flip] will display the "
+"Viewport with the correct orientation."
 msgstr ""
 
-#: doc/classes/Viewport.xml:16
+#: doc/classes/Viewport.xml:17
 #, fuzzy
-msgid "https://docs.godotengine.org/en/3.4/tutorials/viewports/index.html"
-msgstr "https://docs.godotengine.org/uk/latest/tutorials/viewports/index.html"
+msgid "https://docs.godotengine.org/en/3.4/tutorials/rendering/index.html"
+msgstr "https://docs.godotengine.org/uk/latest/tutorials/shading/index.html"
 
-#: doc/classes/Viewport.xml:18 doc/classes/ViewportTexture.xml:12
+#: doc/classes/Viewport.xml:19 doc/classes/ViewportTexture.xml:12
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/128"
 msgstr "https://docs.godotengine.org/uk/latest/tutorials/vr/index.html"
 
-#: doc/classes/Viewport.xml:20
+#: doc/classes/Viewport.xml:21
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/130"
 msgstr "https://docs.godotengine.org/uk/latest/tutorials/vr/index.html"
 
-#: doc/classes/Viewport.xml:21
+#: doc/classes/Viewport.xml:22
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/541"
 msgstr "https://docs.godotengine.org/uk/latest/tutorials/vr/index.html"
 
-#: doc/classes/Viewport.xml:22 doc/classes/ViewportTexture.xml:14
+#: doc/classes/Viewport.xml:23 doc/classes/ViewportTexture.xml:14
 #, fuzzy
 msgid "https://godotengine.org/asset-library/asset/586"
 msgstr "https://docs.godotengine.org/uk/latest/tutorials/vr/index.html"
 
-#: doc/classes/Viewport.xml:28
+#: doc/classes/Viewport.xml:29
 msgid ""
 "Returns the first valid [World] for this viewport, searching the [member "
 "world] property of itself and any Viewport ancestor."
 msgstr ""
 
-#: doc/classes/Viewport.xml:34
+#: doc/classes/Viewport.xml:35
 msgid ""
 "Returns the first valid [World2D] for this viewport, searching the [member "
 "world_2d] property of itself and any Viewport ancestor."
 msgstr ""
 
-#: doc/classes/Viewport.xml:40
+#: doc/classes/Viewport.xml:41
 msgid "Returns the active 3D camera."
 msgstr ""
 
-#: doc/classes/Viewport.xml:46
+#: doc/classes/Viewport.xml:47
 msgid "Returns the total transform of the viewport."
 msgstr ""
 
-#: doc/classes/Viewport.xml:52
+#: doc/classes/Viewport.xml:53
 #, fuzzy
 msgid "Returns the topmost modal in the stack."
 msgstr "Повертає значення, яке є протилежним до значення параметра."
 
-#: doc/classes/Viewport.xml:58
+#: doc/classes/Viewport.xml:59
 msgid "Returns the mouse position relative to the viewport."
 msgstr ""
 
-#: doc/classes/Viewport.xml:65
+#: doc/classes/Viewport.xml:66
 msgid "Returns information about the viewport from the rendering pipeline."
 msgstr ""
 
-#: doc/classes/Viewport.xml:72
+#: doc/classes/Viewport.xml:73
 msgid "Returns the [enum ShadowAtlasQuadrantSubdiv] of the specified quadrant."
 msgstr ""
 
-#: doc/classes/Viewport.xml:78
+#: doc/classes/Viewport.xml:79
 msgid "Returns the size override set with [method set_size_override]."
 msgstr ""
 
-#: doc/classes/Viewport.xml:84
+#: doc/classes/Viewport.xml:85
 msgid ""
 "Returns the viewport's texture.\n"
 "[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is "
@@ -61409,38 +61416,38 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 
-#: doc/classes/Viewport.xml:95
+#: doc/classes/Viewport.xml:96
 #, fuzzy
 msgid "Returns the viewport's RID from the [VisualServer]."
 msgstr "Повертає синус параметра."
 
-#: doc/classes/Viewport.xml:101
+#: doc/classes/Viewport.xml:102
 msgid "Returns the visible rectangle in global screen coordinates."
 msgstr ""
 
-#: doc/classes/Viewport.xml:107
+#: doc/classes/Viewport.xml:108
 msgid ""
 "Returns the drag data from the GUI, that was previously returned by [method "
 "Control.get_drag_data]."
 msgstr ""
 
-#: doc/classes/Viewport.xml:113
+#: doc/classes/Viewport.xml:114
 msgid "Returns [code]true[/code] if there are visible modals on-screen."
 msgstr ""
 
-#: doc/classes/Viewport.xml:119
+#: doc/classes/Viewport.xml:120
 msgid ""
 "Returns [code]true[/code] if the viewport is currently performing a drag "
 "operation."
 msgstr ""
 
-#: doc/classes/Viewport.xml:136
+#: doc/classes/Viewport.xml:137
 msgid ""
 "Returns [code]true[/code] if the size override is enabled. See [method "
 "set_size_override]."
 msgstr ""
 
-#: doc/classes/Viewport.xml:143
+#: doc/classes/Viewport.xml:144
 msgid ""
 "Attaches this [Viewport] to the root [Viewport] with the specified "
 "rectangle. This bypasses the need for another node to display this "
@@ -61448,11 +61455,11 @@ msgid ""
 "[Viewport] manually."
 msgstr ""
 
-#: doc/classes/Viewport.xml:149
+#: doc/classes/Viewport.xml:150
 msgid "Stops the input from propagating further down the [SceneTree]."
 msgstr ""
 
-#: doc/classes/Viewport.xml:157
+#: doc/classes/Viewport.xml:158
 msgid ""
 "Sets the number of subdivisions to use in the specified quadrant. A higher "
 "number of subdivisions allows you to have more shadows in the scene at once, "
@@ -61461,7 +61468,7 @@ msgid ""
 "possible."
 msgstr ""
 
-#: doc/classes/Viewport.xml:166
+#: doc/classes/Viewport.xml:167
 msgid ""
 "Sets the size override of the viewport. If the [code]enable[/code] parameter "
 "is [code]true[/code] the override is used, otherwise it uses the default "
@@ -61469,34 +61476,34 @@ msgid ""
 "size."
 msgstr ""
 
-#: doc/classes/Viewport.xml:178
+#: doc/classes/Viewport.xml:179
 msgid "Forces update of the 2D and 3D worlds."
 msgstr ""
 
-#: doc/classes/Viewport.xml:185
+#: doc/classes/Viewport.xml:186
 msgid "Warps the mouse to a position relative to the viewport."
 msgstr ""
 
-#: doc/classes/Viewport.xml:191
+#: doc/classes/Viewport.xml:192
 msgid "If [code]true[/code], the viewport will be used in AR/VR process."
 msgstr ""
 
-#: doc/classes/Viewport.xml:194
+#: doc/classes/Viewport.xml:195
 msgid "If [code]true[/code], the viewport will process 2D audio streams."
 msgstr ""
 
-#: doc/classes/Viewport.xml:197
+#: doc/classes/Viewport.xml:198
 msgid "If [code]true[/code], the viewport will process 3D audio streams."
 msgstr ""
 
-#: doc/classes/Viewport.xml:200
+#: doc/classes/Viewport.xml:201
 msgid ""
 "The canvas transform of the viewport, useful for changing the on-screen "
 "positions of all child [CanvasItem]s. This is relative to the global canvas "
 "transform of the viewport."
 msgstr ""
 
-#: doc/classes/Viewport.xml:203
+#: doc/classes/Viewport.xml:204
 msgid ""
 "If [code]true[/code], uses a fast post-processing filter to make banding "
 "significantly less visible. In some cases, debanding may introduce a "
@@ -61507,17 +61514,17 @@ msgid ""
 "[code]true[/code] for debanding to be effective."
 msgstr ""
 
-#: doc/classes/Viewport.xml:207
+#: doc/classes/Viewport.xml:208
 msgid "The overlay mode for test rendered geometry in debug purposes."
 msgstr ""
 
-#: doc/classes/Viewport.xml:210
+#: doc/classes/Viewport.xml:211
 msgid ""
 "If [code]true[/code], the viewport will disable 3D rendering. For actual "
 "disabling use [code]usage[/code]."
 msgstr ""
 
-#: doc/classes/Viewport.xml:213
+#: doc/classes/Viewport.xml:214
 msgid ""
 "Enables fast approximate antialiasing. FXAA is a popular screen-space "
 "antialiasing method, which is fast but will make the image look blurry, "
@@ -61527,23 +61534,23 @@ msgid ""
 "sharpen_intensity])."
 msgstr ""
 
-#: doc/classes/Viewport.xml:216
+#: doc/classes/Viewport.xml:217
 msgid ""
 "The global canvas transform of the viewport. The canvas transform is "
 "relative to this."
 msgstr ""
 
-#: doc/classes/Viewport.xml:219
+#: doc/classes/Viewport.xml:220
 msgid "If [code]true[/code], the viewport will not receive input events."
 msgstr ""
 
-#: doc/classes/Viewport.xml:222
+#: doc/classes/Viewport.xml:223
 msgid ""
 "If [code]true[/code], the GUI controls on the viewport will lay pixel "
 "perfectly."
 msgstr ""
 
-#: doc/classes/Viewport.xml:227
+#: doc/classes/Viewport.xml:228
 msgid ""
 "If [code]true[/code], the viewport rendering will receive benefits from High "
 "Dynamic Range algorithm. High Dynamic Range allows the viewport to receive "
@@ -61553,7 +61560,7 @@ msgid ""
 "[constant USAGE_3D_NO_EFFECTS], since HDR is not supported for 2D."
 msgstr ""
 
-#: doc/classes/Viewport.xml:231
+#: doc/classes/Viewport.xml:232
 msgid ""
 "If [code]true[/code], the result after 3D rendering will not have a linear "
 "to sRGB color conversion applied. This is important when the viewport is "
@@ -61566,26 +61573,26 @@ msgid ""
 "require input in linear color space!"
 msgstr ""
 
-#: doc/classes/Viewport.xml:234
+#: doc/classes/Viewport.xml:235
 msgid ""
 "The multisample anti-aliasing mode. A higher number results in smoother "
 "edges at the cost of significantly worse performance. A value of 4 is best "
 "unless targeting very high-end systems."
 msgstr ""
 
-#: doc/classes/Viewport.xml:237
+#: doc/classes/Viewport.xml:238
 msgid ""
 "If [code]true[/code], the viewport will use [World] defined in [code]world[/"
 "code] property."
 msgstr ""
 
-#: doc/classes/Viewport.xml:240
+#: doc/classes/Viewport.xml:241
 msgid ""
 "If [code]true[/code], the objects rendered by viewport become subjects of "
 "mouse picking process."
 msgstr ""
 
-#: doc/classes/Viewport.xml:243
+#: doc/classes/Viewport.xml:244
 msgid ""
 "If [code]true[/code], renders the Viewport directly to the screen instead of "
 "to the root viewport. Only available in GLES2. This is a low-level "
@@ -61594,38 +61601,40 @@ msgid ""
 "information see [method VisualServer.viewport_set_render_direct_to_screen]."
 msgstr ""
 
-#: doc/classes/Viewport.xml:246
+#: doc/classes/Viewport.xml:247
 msgid ""
 "The clear mode when viewport used as a render target.\n"
 "[b]Note:[/b] This property is intended for 2D usage."
 msgstr ""
 
-#: doc/classes/Viewport.xml:250
+#: doc/classes/Viewport.xml:251
 msgid "The update mode when viewport used as a render target."
 msgstr ""
 
-#: doc/classes/Viewport.xml:253
+#: doc/classes/Viewport.xml:254
 msgid ""
-"If [code]true[/code], the result of rendering will be flipped vertically."
+"If [code]true[/code], the result of rendering will be flipped vertically. "
+"Since Viewports in Godot 3.x render upside-down, it's recommended to set "
+"this to [code]true[/code] in most situations."
 msgstr ""
 
-#: doc/classes/Viewport.xml:256
+#: doc/classes/Viewport.xml:257
 msgid "The subdivision amount of the first quadrant on the shadow atlas."
 msgstr ""
 
-#: doc/classes/Viewport.xml:259
+#: doc/classes/Viewport.xml:260
 msgid "The subdivision amount of the second quadrant on the shadow atlas."
 msgstr ""
 
-#: doc/classes/Viewport.xml:262
+#: doc/classes/Viewport.xml:263
 msgid "The subdivision amount of the third quadrant on the shadow atlas."
 msgstr ""
 
-#: doc/classes/Viewport.xml:265
+#: doc/classes/Viewport.xml:266
 msgid "The subdivision amount of the fourth quadrant on the shadow atlas."
 msgstr ""
 
-#: doc/classes/Viewport.xml:268
+#: doc/classes/Viewport.xml:269
 msgid ""
 "The shadow atlas' resolution (used for omni and spot lights). The value will "
 "be rounded up to the nearest power of 2.\n"
@@ -61634,7 +61643,7 @@ msgid ""
 "manually."
 msgstr ""
 
-#: doc/classes/Viewport.xml:272
+#: doc/classes/Viewport.xml:273
 msgid ""
 "If set to a value greater than [code]0.0[/code], contrast-adaptive "
 "sharpening will be applied to the 3D viewport. This has a low performance "
@@ -61643,182 +61652,182 @@ msgid ""
 "[member fxaa]."
 msgstr ""
 
-#: doc/classes/Viewport.xml:275
+#: doc/classes/Viewport.xml:276
 msgid ""
 "The width and height of viewport. Must be set to a value greater than or "
 "equal to 2 pixels on both dimensions. Otherwise, nothing will be displayed."
 msgstr ""
 
-#: doc/classes/Viewport.xml:278
+#: doc/classes/Viewport.xml:279
 msgid "If [code]true[/code], the size override affects stretch as well."
 msgstr ""
 
-#: doc/classes/Viewport.xml:281
+#: doc/classes/Viewport.xml:282
 msgid ""
 "If [code]true[/code], the viewport should render its background as "
 "transparent."
 msgstr ""
 
-#: doc/classes/Viewport.xml:284
+#: doc/classes/Viewport.xml:285
 msgid "The rendering mode of viewport."
 msgstr ""
 
-#: doc/classes/Viewport.xml:287
+#: doc/classes/Viewport.xml:288
 msgid "The custom [World] which can be used as 3D environment source."
 msgstr ""
 
-#: doc/classes/Viewport.xml:290
+#: doc/classes/Viewport.xml:291
 msgid "The custom [World2D] which can be used as 2D environment source."
 msgstr ""
 
-#: doc/classes/Viewport.xml:297
+#: doc/classes/Viewport.xml:298
 msgid "Emitted when a Control node grabs keyboard focus."
 msgstr ""
 
-#: doc/classes/Viewport.xml:302
+#: doc/classes/Viewport.xml:303
 msgid ""
 "Emitted when the size of the viewport is changed, whether by [method "
 "set_size_override], resize of window, or some other means."
 msgstr ""
 
-#: doc/classes/Viewport.xml:308
+#: doc/classes/Viewport.xml:309
 msgid "Do not update the render target."
 msgstr ""
 
-#: doc/classes/Viewport.xml:311
+#: doc/classes/Viewport.xml:312
 msgid ""
 "Update the render target once, then switch to [constant UPDATE_DISABLED]."
 msgstr ""
 
-#: doc/classes/Viewport.xml:314
+#: doc/classes/Viewport.xml:315
 msgid ""
 "Update the render target only when it is visible. This is the default value."
 msgstr ""
 
-#: doc/classes/Viewport.xml:317
+#: doc/classes/Viewport.xml:318
 msgid "Always update the render target."
 msgstr ""
 
-#: doc/classes/Viewport.xml:320
+#: doc/classes/Viewport.xml:321
 msgid "This quadrant will not be used."
 msgstr ""
 
-#: doc/classes/Viewport.xml:323
+#: doc/classes/Viewport.xml:324
 msgid "This quadrant will only be used by one shadow map."
 msgstr ""
 
-#: doc/classes/Viewport.xml:326
+#: doc/classes/Viewport.xml:327
 msgid "This quadrant will be split in 4 and used by up to 4 shadow maps."
 msgstr ""
 
-#: doc/classes/Viewport.xml:329
+#: doc/classes/Viewport.xml:330
 msgid "This quadrant will be split 16 ways and used by up to 16 shadow maps."
 msgstr ""
 
-#: doc/classes/Viewport.xml:332
+#: doc/classes/Viewport.xml:333
 msgid "This quadrant will be split 64 ways and used by up to 64 shadow maps."
 msgstr ""
 
-#: doc/classes/Viewport.xml:335
+#: doc/classes/Viewport.xml:336
 msgid ""
 "This quadrant will be split 256 ways and used by up to 256 shadow maps. "
 "Unless the [member shadow_atlas_size] is very high, the shadows in this "
 "quadrant will be very low resolution."
 msgstr ""
 
-#: doc/classes/Viewport.xml:338
+#: doc/classes/Viewport.xml:339
 msgid ""
 "This quadrant will be split 1024 ways and used by up to 1024 shadow maps. "
 "Unless the [member shadow_atlas_size] is very high, the shadows in this "
 "quadrant will be very low resolution."
 msgstr ""
 
-#: doc/classes/Viewport.xml:341
+#: doc/classes/Viewport.xml:342
 msgid "Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum."
 msgstr ""
 
-#: doc/classes/Viewport.xml:344
+#: doc/classes/Viewport.xml:345
 msgid "Amount of objects in frame."
 msgstr ""
 
-#: doc/classes/Viewport.xml:347
+#: doc/classes/Viewport.xml:348
 msgid "Amount of vertices in frame."
 msgstr ""
 
-#: doc/classes/Viewport.xml:350
+#: doc/classes/Viewport.xml:351
 msgid "Amount of material changes in frame."
 msgstr ""
 
-#: doc/classes/Viewport.xml:353
+#: doc/classes/Viewport.xml:354
 msgid "Amount of shader changes in frame."
 msgstr ""
 
-#: doc/classes/Viewport.xml:356
+#: doc/classes/Viewport.xml:357
 msgid "Amount of surface changes in frame."
 msgstr ""
 
-#: doc/classes/Viewport.xml:359 doc/classes/Viewport.xml:365
+#: doc/classes/Viewport.xml:360 doc/classes/Viewport.xml:366
 msgid "Amount of draw calls in frame."
 msgstr ""
 
-#: doc/classes/Viewport.xml:362
+#: doc/classes/Viewport.xml:363
 msgid "Amount of items or joined items in frame."
 msgstr ""
 
-#: doc/classes/Viewport.xml:368
+#: doc/classes/Viewport.xml:369
 msgid "Represents the size of the [enum RenderInfo] enum."
 msgstr ""
 
-#: doc/classes/Viewport.xml:371
+#: doc/classes/Viewport.xml:372
 msgid "Objects are displayed normally."
 msgstr ""
 
-#: doc/classes/Viewport.xml:374
+#: doc/classes/Viewport.xml:375
 msgid "Objects are displayed without light information."
 msgstr ""
 
-#: doc/classes/Viewport.xml:377
+#: doc/classes/Viewport.xml:378
 msgid ""
 "Objected are displayed semi-transparent with additive blending so you can "
 "see where they intersect."
 msgstr ""
 
-#: doc/classes/Viewport.xml:380
+#: doc/classes/Viewport.xml:381
 msgid "Objects are displayed in wireframe style."
 msgstr ""
 
-#: doc/classes/Viewport.xml:383
+#: doc/classes/Viewport.xml:384
 msgid "Multisample anti-aliasing mode disabled. This is the default value."
 msgstr ""
 
-#: doc/classes/Viewport.xml:386
+#: doc/classes/Viewport.xml:387
 msgid "Use 2x Multisample Antialiasing."
 msgstr ""
 
-#: doc/classes/Viewport.xml:389
+#: doc/classes/Viewport.xml:390
 msgid "Use 4x Multisample Antialiasing."
 msgstr ""
 
-#: doc/classes/Viewport.xml:392
+#: doc/classes/Viewport.xml:393
 msgid ""
 "Use 8x Multisample Antialiasing. Likely unsupported on low-end and older "
 "hardware."
 msgstr ""
 
-#: doc/classes/Viewport.xml:395
+#: doc/classes/Viewport.xml:396
 msgid ""
 "Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end "
 "hardware."
 msgstr ""
 
-#: doc/classes/Viewport.xml:398
+#: doc/classes/Viewport.xml:399
 msgid ""
 "Allocates all buffers needed for drawing 2D scenes. This takes less VRAM "
 "than the 3D usage modes. Note that 3D rendering effects such as glow and HDR "
 "are not available when using this mode."
 msgstr ""
 
-#: doc/classes/Viewport.xml:401
+#: doc/classes/Viewport.xml:402
 msgid ""
 "Allocates buffers needed for 2D scenes without allocating a buffer for "
 "screen copy. Accordingly, you cannot read from the screen. Of the [enum "
@@ -61826,28 +61835,28 @@ msgid ""
 "such as glow and HDR are not available when using this mode."
 msgstr ""
 
-#: doc/classes/Viewport.xml:404
+#: doc/classes/Viewport.xml:405
 msgid ""
 "Allocates full buffers for drawing 3D scenes and all 3D effects including "
 "buffers needed for 2D scenes and effects."
 msgstr ""
 
-#: doc/classes/Viewport.xml:407
+#: doc/classes/Viewport.xml:408
 msgid ""
 "Allocates buffers needed for drawing 3D scenes. But does not allocate "
 "buffers needed for reading from the screen and post-processing effects. "
 "Saves some VRAM."
 msgstr ""
 
-#: doc/classes/Viewport.xml:410
+#: doc/classes/Viewport.xml:411
 msgid "Always clear the render target before drawing."
 msgstr ""
 
-#: doc/classes/Viewport.xml:413
+#: doc/classes/Viewport.xml:414
 msgid "Never clear the render target."
 msgstr ""
 
-#: doc/classes/Viewport.xml:416
+#: doc/classes/Viewport.xml:417
 msgid ""
 "Clear the render target next frame, then switch to [constant "
 "CLEAR_MODE_NEVER]."
@@ -61912,10 +61921,11 @@ msgid ""
 "If you just want to receive notifications, use [VisibilityNotifier] "
 "instead.\n"
 "[b]Note:[/b] VisibilityEnabler uses an approximate heuristic for performance "
-"reasons. It doesn't take walls and other occlusion into account. The "
-"heuristic is an implementation detail and may change in future versions. If "
-"you need precise visibility checking, use another method such as adding an "
-"[Area] node as a child of a [Camera] node and/or [method Vector3.dot].\n"
+"reasons. It doesn't take walls and other occlusion into account (unless you "
+"are using [Portal]s). The heuristic is an implementation detail and may "
+"change in future versions. If you need precise visibility checking, use "
+"another method such as adding an [Area] node as a child of a [Camera] node "
+"and/or [method Vector3.dot].\n"
 "[b]Note:[/b] VisibilityEnabler will not affect nodes added after scene "
 "initialization."
 msgstr ""
@@ -62021,10 +62031,11 @@ msgid ""
 "If you want nodes to be disabled automatically when they exit the screen, "
 "use [VisibilityEnabler] instead.\n"
 "[b]Note:[/b] VisibilityNotifier uses an approximate heuristic for "
-"performance reasons. It doesn't take walls and other occlusion into account. "
-"The heuristic is an implementation detail and may change in future versions. "
-"If you need precise visibility checking, use another method such as adding "
-"an [Area] node as a child of a [Camera] node and/or [method Vector3.dot]."
+"performance reasons. It doesn't take walls and other occlusion into account "
+"(unless you are using [Portal]s). The heuristic is an implementation detail "
+"and may change in future versions. If you need precise visibility checking, "
+"use another method such as adding an [Area] node as a child of a [Camera] "
+"node and/or [method Vector3.dot]."
 msgstr ""
 
 #: doc/classes/VisibilityNotifier.xml:17
@@ -63952,7 +63963,7 @@ msgstr ""
 #: doc/classes/VisualServer.xml:18
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/optimization/using_servers.html"
+"https://docs.godotengine.org/en/3.4/tutorials/performance/using_servers.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/optimization/using_servers."
 "html"
@@ -67073,7 +67084,7 @@ msgstr ""
 #: doc/classes/VisualShaderNode.xml:10
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/shading/visual_shaders.html"
+"https://docs.godotengine.org/en/3.4/tutorials/shaders/visual_shaders.html"
 msgstr ""
 "https://docs.godotengine.org/uk/latest/tutorials/shading/visual_shaders.html"
 
@@ -67868,8 +67879,8 @@ msgstr ""
 #: doc/classes/VisualShaderNodeInput.xml:9
 #, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/shading/shading_reference/"
-"index.html"
+"https://docs.godotengine.org/en/3.4/tutorials/shaders/shader_reference/index."
+"html"
 msgstr ""
 "https://docs.godotengine.org/uk/stable/tutorials/shading/shading_reference/"
 "index.html"
