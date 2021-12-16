@@ -4,6 +4,152 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.4.1] - TBD
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-4-1) for details.
+
+### Added
+
+#### Editor
+
+- Expose `ScriptEditor::edit` to scripting ([GH-55709](https://github.com/godotengine/godot/pull/55709)).
+
+#### GUI
+
+- TextEdit: Allow toggling bookmark gutter ([GH-55197](https://github.com/godotengine/godot/pull/55197)).
+- TextEdit: Add methods to get position from column and line ([GH-55416](https://github.com/godotengine/godot/pull/55416)).
+
+#### Input
+
+- Add `Input.is_physical_key_pressed()` method ([GH-55251](https://github.com/godotengine/godot/pull/55251)).
+
+#### Physics
+
+- Expose `intersect_point` in 3D physics server ([GH-54577](https://github.com/godotengine/godot/pull/54577)).
+- BVH: Add option for expanded AABBs in leaves ([GH-55096](https://github.com/godotengine/godot/pull/55096)).
+
+#### Porting
+
+- Android: Add configs to specify the min and target sdk versions ([GH-55735](https://github.com/godotengine/godot/pull/55735)).
+- Android: Add support for configuring the XR hand tracking frequency mode ([GH-55768](https://github.com/godotengine/godot/pull/55768)).
+
+#### XR
+
+- Add support for OpenXR export configurations ([GH-55158](https://github.com/godotengine/godot/pull/55158)).
+
+### Changed
+
+#### Editor
+
+- Clamp rotation for up/down orbiting shortcuts ([GH-54788](https://github.com/godotengine/godot/pull/54788)).
+- Improve project export and MeshLibrary export checkboxes ([GH-55215](https://github.com/godotengine/godot/pull/55215)).
+- Remove editor splash screen with sponsors logo ([GH-55467](https://github.com/godotengine/godot/pull/55467)).
+- Sort and group theme properties in docs, improve formatting for theme and enums ([GH-55526](https://github.com/godotengine/godot/pull/55526)).
+
+#### GUI
+
+- Viewport: Show tooltips even when paused or `time_scale` is 0 ([GH-55224](https://github.com/godotengine/godot/pull/55224)).
+
+#### Porting
+
+- iOS: Capture and display `xcodebuild` output ([GH-54711](https://github.com/godotengine/godot/pull/54711)).
+- macOS: Read and ZIP project files in 16K chunks instead of reading the whole file at once ([GH-54673](https://github.com/godotengine/godot/pull/54673)).
+
+#### Thirdparty
+
+- libogg updated to 1.3.5.
+- libvorbis updated to 1.3.7.
+- minimp3 updated to 2021-11-30 git snapshot.
+- CA root certificates updated to 2021-11-01 bundle from Mozilla.
+- SDL GameControllerDB updated to 2021-12-14 git snapshot.
+
+### Fixed
+
+#### 2D
+
+- Camera2D: Fix condition on 'jump to limits' logic ([GH-55417](https://github.com/godotengine/godot/pull/55417)).
+- Tiles: Fix TileSet editor workspace breaking ([GH-55059](https://github.com/godotengine/godot/pull/55059)).
+- Tiles: Only add light occlusion for visible TileMaps ([GH-54435](https://github.com/godotengine/godot/pull/54435)).
+- Tiles: Fix selecting next/previous subtile in TileSet editor ([GH-55261](https://github.com/godotengine/godot/pull/55261)).
+
+#### Core
+
+- Fix `Color.v` integer assignment ([GH-55963](https://github.com/godotengine/godot/pull/55963)).
+
+#### Editor
+
+- Fix swapped rest pose action names in the Skeleton2D editor ([GH-54851](https://github.com/godotengine/godot/pull/54851)).
+- Fix Theme Editor crash when clicking the element picker ([GH-55186](https://github.com/godotengine/godot/pull/55186)).
+- Fix `EditorPlugin.remove_inspector_plugin()` instance cleanup ([GH-55658](https://github.com/godotengine/godot/pull/55658)).
+
+#### GDScript
+
+- Don't ignore the type mismatch in setter function ([GH-54117](https://github.com/godotengine/godot/pull/54117)).
+- Support multiline indexing with `[]` ([GH-54227](https://github.com/godotengine/godot/pull/54227)).
+- Prevent LSP adding signal callbacks to non GDScripts ([GH-55624](https://github.com/godotengine/godot/pull/55624)).
+
+#### GUI
+
+- RichTextLabel: Fix right alignment regression ([GH-55439](https://github.com/godotengine/godot/pull/55439)).
+- RichTextLabel: Fix min/max line width calculation ([GH-55440](https://github.com/godotengine/godot/pull/55440)).
+- Tabs: Prevent hidden tab close buttons from intercepting input ([GH-55453](https://github.com/godotengine/godot/pull/55453)).
+- TextureProgress: Fix position of reference cross with `progress_offset` ([GH-55377](https://github.com/godotengine/godot/pull/55377)).
+- Theme: Make default/project theme wait for modules before initializing (fixes WebP support for custom themes) ([GH-55484](https://github.com/godotengine/godot/pull/55484)).
+
+#### Import
+
+- Prevent OBJ importer from printing misleading error ([GH-54694](https://github.com/godotengine/godot/pull/54694)).
+- Fix incorrect glTF cubic spline interpolation times/values size error ([GH-54805](https://github.com/godotengine/godot/pull/54805)).
+- Fix support for CSG and GridMap in glTF scene export ([GH-54911](https://github.com/godotengine/godot/pull/54911)).
+- Fix texture atlas generation when source sprite is larger than generated atlas ([GH-55094](https://github.com/godotengine/godot/pull/55094)).
+- Fix crash when exporting meshes to glTF that have no skin ([GH-55246](https://github.com/godotengine/godot/pull/55246)).
+
+#### Input
+
+- Fix regression in UI navigation with joysticks ([GH-55480](https://github.com/godotengine/godot/pull/55480)).
+- Fixed event spam when using the Nintendo Switch controller ([GH-55997](https://github.com/godotengine/godot/pull/55997)).
+- Fixed detecting the Valve Streaming Gamepad ([GH-55980](https://github.com/godotengine/godot/pull/55980)).
+
+#### Networking
+
+- Fix WebSocket buffer size checks in `put_packet()`, silent failures/connection hangs ([GH-54381](https://github.com/godotengine/godot/pull/54381)).
+- Fix HTTP request headers being included in response ([GH-54683](https://github.com/godotengine/godot/pull/54683)).
+- Fix potential infinite loop when connecting HTTPClient ([GH-55358](https://github.com/godotengine/godot/pull/55358)).
+- Fix WebRTC returning packets from peers too early ([GH-55953](https://github.com/godotengine/godot/pull/55953)).
+
+#### Physics
+
+- Fix the volume calculation for cylinders in GodotPhysics ([GH-54642](https://github.com/godotengine/godot/pull/54642)).
+- Fix errors in KinematicBody when floor is destroyed or removed ([GH-54819](https://github.com/godotengine/godot/pull/54819)).
+- Fix `test_move` reporting collision when touching another body ([GH-54845](https://github.com/godotengine/godot/pull/54845)).
+- BVH: Fix pairing for teleported or fast moving objects ([GH-54925](https://github.com/godotengine/godot/pull/54925)).
+- BVH: Detect shrinkage within expanded bounds ([GH-55050](https://github.com/godotengine/godot/pull/55050)).
+
+#### Porting
+
+- Android: Fix `get_screen_orientation()` not returning valid values ([GH-55210](https://github.com/godotengine/godot/pull/55210)).
+- HTML5: Fix input not focusing canvas, check Gamepad API errors ([GH-55111](https://github.com/godotengine/godot/pull/55111), [GH-55342](https://github.com/godotengine/godot/pull/55342)).
+- HTML5: Fix multi-touch input handling ([GH-55466](https://github.com/godotengine/godot/pull/55466)).
+- HTML5: Use absolute path for JS lib/pre/externs for compatibility with latest Emscripten ([GH-55347](https://github.com/godotengine/godot/pull/55347)).
+- HTML5: Use compatibility function for `glGetBufferSubData` to preserve support for older Emscripten ([GH-55354](https://github.com/godotengine/godot/pull/55354)).
+- HTML5: Fix `files_dropped` in exported Mono builds ([GH-55594](https://github.com/godotengine/godot/pull/55594)).
+- macOS: Enable multithreaded OpenGL engine flag when using multithreaded VisualServer ([GH-54526](https://github.com/godotengine/godot/pull/54526)).
+- macOS: Fix crash on DualShock 4 joypad removal ([GH-55034](https://github.com/godotengine/godot/pull/55034)).
+- macOS: Fix driver crash when enabling per-pixel transparency on M1 macs ([GH-55464](https://github.com/godotengine/godot/pull/55464)).
+- macOS: Fix crash handler not printing function names on M1 Macs ([GH-55019](https://github.com/godotengine/godot/pull/55019)).
+- Windows: Open a new console window for the editor instances on Windows 11 ([GH-55925](https://github.com/godotengine/godot/pull/55925), [GH-55967](https://github.com/godotengine/godot/pull/55967)).
+  * This is needed to workaround a design change in Windows 11's new Windows Terminal, which broke Godot ([GH-54076](https://github.com/godotengine/godot/issues/54076)).
+
+#### Rendering
+
+- Fix for double use of seed in random Particles shader variables ([GH-55607](https://github.com/godotengine/godot/pull/55607)).
+- Fix vertex attribute specification for octahedral compression ([GH-54768](https://github.com/godotengine/godot/pull/54768)).
+- Update CanvasItem when MultiMesh instance transform changes ([GH-54899](https://github.com/godotengine/godot/pull/54899)).
+- Portals: Allow user to set roaming expansion margin ([GH-54921](https://github.com/godotengine/godot/pull/54921)).
+- Fix incorrect VisualServer RID cleanup in various locations ([GH-55673](https://github.com/godotengine/godot/pull/55673), [GH-55669](https://github.com/godotengine/godot/pull/55669), [GH-55701](https://github.com/godotengine/godot/pull/55701), [GH-54650](https://github.com/godotengine/godot/pull/54650)).
+- Fix occasional dangling OmniLight RID ([GH-41360](https://github.com/godotengine/godot/issues/41360)).
+- GLES3: Fix incompatible addition in auto exposure shader ([GH-55983](https://github.com/godotengine/godot/pull/55983)).
+
 ## [3.4] - 2021-11-05
 
 See the [release announcement](https://godotengine.org/article/godot-3-4-is-released) for details.
@@ -2137,6 +2283,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - HTML5 export using asm.js.
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
+[3.4.1]: https://downloads.tuxfamily.org/godotengine/3.4.1/Godot_v3.4.1-stable_changelog_chrono.txt
 [3.4]: https://downloads.tuxfamily.org/godotengine/3.4/Godot_v3.4-stable_changelog_chrono.txt
 [3.3]: https://downloads.tuxfamily.org/godotengine/3.3/Godot_v3.3-stable_changelog_chrono.txt
 [3.2.3]: https://downloads.tuxfamily.org/godotengine/3.2.3/Godot_v3.2.3-stable_changelog_chrono.txt
