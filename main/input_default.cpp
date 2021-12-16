@@ -811,7 +811,8 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 
 	Joypad &joy = joy_names[p_device];
 
-	if (joy.last_axis[p_axis] == p_value.value) {
+	const float MIN_AXIS_CHANGE = 0.05f;
+	if (fabs(joy.last_axis[p_axis] - p_value.value) <= MIN_AXIS_CHANGE) {
 		return;
 	}
 
