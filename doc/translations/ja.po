@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-06 21:43+0000\n"
-"Last-Translator: Tarou Yamada <mizuningyou@yahoo.co.jp>\n"
+"PO-Revision-Date: 2021-12-16 09:50+0000\n"
+"Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ja/>\n"
 "Language: ja\n"
@@ -51,7 +51,7 @@ msgstr "シグナル"
 
 #: doc/tools/make_rst.py
 msgid "Enumerations"
-msgstr "列挙"
+msgstr "列挙型"
 
 #: doc/tools/make_rst.py
 msgid "Constants"
@@ -364,7 +364,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:190
-#, fuzzy
 msgid ""
 "Returns the cosine of angle [code]s[/code] in radians.\n"
 "[codeblock]\n"
@@ -372,13 +371,13 @@ msgid ""
 "a = cos(PI)  # a is -1.0\n"
 "[/codeblock]"
 msgstr ""
-"角度 [code]s[/code] のサインをラジアンで返します。\n"
+"角度 [code]s[/code] のコサインをラジアンで返します。\n"
 "[codeblock]\n"
-"sin(0.523599) # 返り値は 0.5\n"
+"a = cos(TAU) # a は 1.0\n"
+"a = cos(PI)  # a は -1.0\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:201
-#, fuzzy
 msgid ""
 "Returns the hyperbolic cosine of [code]s[/code] in radians.\n"
 "[codeblock]\n"
@@ -387,8 +386,7 @@ msgid ""
 msgstr ""
 "[code]s[/code] のハイパボリック コサインをラジアンで返します。\n"
 "[codeblock]\n"
-"# 1.543081 と表示\n"
-"print(cosh(1))\n"
+"print(cosh(1)) # 1.543081 と表示\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:211
@@ -397,7 +395,7 @@ msgstr "デシベルからリニア エネルギーに変換します (オーデ
 
 #: modules/gdscript/doc_classes/@GDScript.xml:218
 msgid "Deprecated alias for [method step_decimals]."
-msgstr ""
+msgstr "[method step_decimals] の非推奨なエイリアス。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:227
 #, fuzzy
@@ -1187,6 +1185,14 @@ msgid ""
 "distinguishes them from print messages used for debugging purposes, while "
 "also displaying a stack trace when an error or warning is printed."
 msgstr ""
+"任意の型の1つまたは複数の引数を、可能な限り最適な方法で文字列に変換し、コンソールに表示します。\n"
+"[codeblock]\n"
+"a = [1, 2, 3]\n"
+"print(\"a\", \"=\", a) # a=[1, 2, 3] と表示\n"
+"[/codeblock]\n"
+"[b]注：[/b] エラーや警告メッセージの表示には、[method print]の代わりに、[method push_error]や[method pu"
+"sh_warning]の使用を検討してください。これにより、デバッグ用のメッセージと区別することができ、また、エラーや警告が表示されたときにスタックトレー"
+"スを表示することができます。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:702
 msgid "Like [method print], but prints only when used in debug mode."
@@ -2028,6 +2034,12 @@ msgid ""
 "code] will not result in [constant INF] and will result in a run-time error "
 "instead."
 msgstr ""
+"正の浮動小数点数の無限大。これは、除数が[code]0.0[/code] "
+"における浮動小数点数除算の結果です。負の無限大の場合は、[code]-INF[/code]を使用します。[code]-0.0[/code] "
+"で割ると、分子が正なら負の無限大になるため、[code]0.0[/code] で割るのは、[code]-0.0[/code] "
+"で割るのと同じではありません（[code]0.0 == -0.0[/code] が[code]true[/code] であることは無関係）。\n"
+"[b] 注:[/b] 数値の無限大は浮動小数点数のみにある概念であり、整数には相当するものがありません。整数値を [code]0[/code] "
+"で割っても [constant INF] にはならず、代わりにランタイムエラーが発生します。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:1217
 msgid ""
@@ -2041,6 +2053,11 @@ msgid ""
 "[code]0[/code] will not result in [constant NAN] and will result in a run-"
 "time error instead."
 msgstr ""
+"\"Not a Number\"、無効な浮動小数点値です。[constant NAN] は、それ自身と等しくない ([code]NAN == "
+"NAN[/code] は [code]false[/code] を返す) など特殊な性質を持っています。浮動小数点の [code]0.0[/code] "
+"を [code]0.0[/code] で割るといった、一部の無効な操作をしたときに出力されます。\n"
+"[b] 注意:[/b] \"Not a Number\"は浮動小数点数だけの概念で、整数には相当するものはありません。整数 [code]0[/code] "
+"を [code]0[/code] で割っても [constant NAN] にはならず、ランタイムエラーが発生します。"
 
 #: doc/classes/@GlobalScope.xml:4
 msgid "Global scope constants and variables."
@@ -2522,7 +2539,7 @@ msgstr "右方向キー。"
 #: doc/classes/@GlobalScope.xml:341
 msgid ""
 "Media back key. Not to be confused with the Back button on an Android device."
-msgstr ""
+msgstr "メディア バックキー。Android端末の「戻る」ボタンと混同しないでください。"
 
 #: doc/classes/@GlobalScope.xml:344
 #, fuzzy
@@ -4460,6 +4477,9 @@ msgid ""
 "[b]Note:[/b] Unlike [Rect2], [AABB] does not have a variant that uses "
 "integer coordinates."
 msgstr ""
+"[AABB]は、位置、サイズ、およびいくつかのユーティリティ関数から構成されています。これは通常、高速な重なりテストに使用されます。\n"
+"浮動小数点座標を使用します。[AABB]に対応する2Dの図形は[Rect2]です。\n"
+"[b]注:[/b] [Rect2]とは異なり、[AABB]には整数値座標を使用するバリエーションはありません。"
 
 #: doc/classes/AABB.xml:12 doc/classes/Basis.xml:13 doc/classes/Plane.xml:10
 #: doc/classes/Rect2.xml:12 doc/classes/Transform.xml:11
@@ -4512,6 +4532,14 @@ msgid ""
 "var box2 = box.expand(Vector3(0, -1, 2))\n"
 "[/codeblock]"
 msgstr ""
+"指定された点を含むように拡張された [AABB] のコピーを返します。\n"
+"[b]例:[/b]\n"
+"[codeblock]\n"
+"# 位置(-3, 2, 0), サイズ(1, 1, 1)\n"
+"var box = AABB(Vector3(-3, 2, 0), Vector3(1, 1, 1))\n"
+"# 位置(-3, -1, 0), サイズ(3, 4, 2), これで元のAABB と Vector3(0, -1, 2) にあわせる\n"
+"var box2 = box.expand(Vector3(0, -1, 2))\n"
+"[/codeblock]"
 
 #: doc/classes/AABB.xml:55
 msgid "Returns the volume of the [AABB]."
@@ -4690,6 +4718,9 @@ msgid ""
 "may cause a crash. If you wish to hide it or any of its children, use their "
 "[member CanvasItem.visible] property."
 msgstr ""
+"内蔵テキストに使用されているラベルを返します。\n"
+"[b]警告:[/b] これは必須の内部ノードで、削除したり解放したりするとクラッシュする可能性があります。このノードやその子ノードを隠したい場合は、["
+"member CanvasItem.visible]プロパティを使用します。"
 
 #: doc/classes/AcceptDialog.xml:41
 msgid ""
