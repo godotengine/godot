@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A class stored as a resource. A script extends the functionality of all objects that instance it.
+		This is the base class for all scripts and should not be used directly. Trying to create a new script with this class will result in an error.
 		The [code]new[/code] method of a script subclass creates a new instance. [method Object.set_script] extends an existing object, if that object's class matches one of the script's base classes.
 	</description>
 	<tutorials>
