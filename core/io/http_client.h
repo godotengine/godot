@@ -160,8 +160,14 @@ private:
 	Status status;
 	IP::ResolverID resolving;
 	Array ip_candidates;
-	int conn_port;
+	int conn_port; // Server to make requests to.
 	String conn_host;
+	int server_port; // Server to connect to (might be a proxy server).
+	String server_host;
+	int http_proxy_port; // Proxy server for http requests.
+	String http_proxy_host;
+	int https_proxy_port; // Proxy server for https requests.
+	String https_proxy_host;
 	bool ssl;
 	bool ssl_verify_host;
 	bool blocking;
@@ -180,6 +186,7 @@ private:
 
 	Ref<StreamPeerTCP> tcp_connection;
 	Ref<StreamPeer> connection;
+	Ref<HTTPClient> proxy_client;
 
 	int response_num;
 	Vector<String> response_headers;
@@ -226,6 +233,10 @@ public:
 	Error poll();
 
 	String query_string_from_dict(const Dictionary &p_dict);
+
+	// Use empty string or -1 to unset.
+	void set_http_proxy(const String &p_host, int p_port);
+	void set_https_proxy(const String &p_host, int p_port);
 
 	HTTPClient();
 	~HTTPClient();

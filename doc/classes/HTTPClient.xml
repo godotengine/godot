@@ -149,6 +149,24 @@
 				Sends the body data raw, as a byte array and does not encode it in any way.
 			</description>
 		</method>
+		<method name="set_http_proxy">
+			<return type="void" />
+			<argument index="0" name="host" type="String" />
+			<argument index="1" name="port" type="int" />
+			<description>
+				Sets the proxy server for HTTP requests.
+				The proxy server is unset if [code]host[/code] is empty or [code]port[/code] is -1.
+			</description>
+		</method>
+		<method name="set_https_proxy">
+			<return type="void" />
+			<argument index="0" name="host" type="String" />
+			<argument index="1" name="port" type="int" />
+			<description>
+				Sets the proxy server for HTTPS requests.
+				The proxy server is unset if [code]host[/code] is empty or [code]port[/code] is -1.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="blocking_mode_enabled" type="bool" setter="set_blocking_mode" getter="is_blocking_mode_enabled" default="false">
