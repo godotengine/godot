@@ -790,6 +790,7 @@ void GraphNode::_connpos_update() {
 			if (slot_info[idx].enable_left) {
 				ConnCache cc;
 				cc.pos = Point2i(edgeofs, y + h / 2);
+				cc.height = h;
 				cc.type = slot_info[idx].type_left;
 				cc.color = slot_info[idx].color_left;
 				conn_input_cache.push_back(cc);
@@ -797,6 +798,7 @@ void GraphNode::_connpos_update() {
 			if (slot_info[idx].enable_right) {
 				ConnCache cc;
 				cc.pos = Point2i(get_size().width - edgeofs, y + h / 2);
+				cc.height = h;
 				cc.type = slot_info[idx].type_right;
 				cc.color = slot_info[idx].color_right;
 				conn_output_cache.push_back(cc);
@@ -839,6 +841,15 @@ Vector2 GraphNode::get_connection_input_position(int p_idx) {
 	return pos;
 }
 
+int GraphNode::get_connection_input_height(int p_idx) {
+	if (connpos_dirty) {
+		_connpos_update();
+	}
+
+	ERR_FAIL_INDEX_V(p_idx, conn_input_cache.size(), 0);
+	return conn_input_cache[p_idx].height;
+}
+
 int GraphNode::get_connection_input_type(int p_idx) {
 	if (connpos_dirty) {
 		_connpos_update();
@@ -867,6 +878,15 @@ Vector2 GraphNode::get_connection_output_position(int p_idx) {
 	pos.x *= get_scale().x;
 	pos.y *= get_scale().y;
 	return pos;
+}
+
+int GraphNode::get_connection_output_height(int p_idx) {
+	if (connpos_dirty) {
+		_connpos_update();
+	}
+
+	ERR_FAIL_INDEX_V(p_idx, conn_output_cache.size(), 0);
+	return conn_output_cache[p_idx].height;
 }
 
 int GraphNode::get_connection_output_type(int p_idx) {

@@ -351,6 +351,9 @@
 		</theme_item>
 		<theme_item name="layout" data_type="icon" type="Texture2D">
 		</theme_item>
+		<theme_item name="reset" type="Texture2D">
+			The icon for the zoom reset button.
+		</theme_item>
 		<theme_item name="minimap" data_type="icon" type="Texture2D">
 		</theme_item>
 		<theme_item name="minus" data_type="icon" type="Texture2D">
