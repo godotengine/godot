@@ -811,10 +811,7 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 
 	Joypad &joy = joy_names[p_device];
 
-	// Make sure that we don't generate events for up to 5% jitter
-	// This is needed for Nintendo Switch Pro controllers, which jitter at rest
-	const float MIN_AXIS_CHANGE = 0.05f;
-	if (fabs(joy.last_axis[p_axis] - p_value.value) < MIN_AXIS_CHANGE) {
+	if (joy.last_axis[p_axis] == p_value.value) {
 		return;
 	}
 
