@@ -112,6 +112,7 @@ private:
 	Size2i content_scale_size;
 	ContentScaleMode content_scale_mode = CONTENT_SCALE_MODE_DISABLED;
 	ContentScaleAspect content_scale_aspect = CONTENT_SCALE_ASPECT_IGNORE;
+	real_t content_scale_factor = 1.0;
 
 	void _make_window();
 	void _clear_window();
@@ -229,6 +230,9 @@ public:
 
 	void set_content_scale_aspect(ContentScaleAspect p_aspect);
 	ContentScaleAspect get_content_scale_aspect() const;
+
+	void set_content_scale_factor(real_t p_factor);
+	real_t get_content_scale_factor() const;
 
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;
