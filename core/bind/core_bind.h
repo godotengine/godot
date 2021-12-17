@@ -263,6 +263,7 @@ public:
 	void keyboard_set_current_layout(int p_index);
 	String keyboard_get_layout_language(int p_index) const;
 	String keyboard_get_layout_name(int p_index) const;
+	uint32_t keyboard_get_scancode_from_physical(uint32_t p_scancode) const;
 
 	String get_model_name() const;
 
