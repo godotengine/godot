@@ -34,6 +34,7 @@
 #include "core/message_queue.h"
 #include "scene/3d/light.h"
 #include "scene/resources/mesh_library.h"
+#include "scene/resources/physics_material.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
 #include "servers/navigation_server.h"
@@ -183,6 +184,15 @@ bool GridMap::get_collision_layer_bit(int p_bit) const {
 	return get_collision_layer() & (1 << p_bit);
 }
 
+void GridMap::set_physics_material(Ref<PhysicsMaterial> p_material) {
+	physics_material = p_material;
+	_recreate_octant_data();
+}
+
+Ref<PhysicsMaterial> GridMap::get_physics_material() const {
+	return physics_material;
+}
+
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	if (!mesh_library.is_null()) {
 		mesh_library->unregister_owner(this);
@@ -300,6 +310,10 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 		PhysicsServer::get_singleton()->body_attach_object_instance_id(g->static_body, get_instance_id());
 		PhysicsServer::get_singleton()->body_set_collision_layer(g->static_body, collision_layer);
 		PhysicsServer::get_singleton()->body_set_collision_mask(g->static_body, collision_mask);
+		if (physics_material.is_valid()) {
+			PhysicsServer::get_singleton()->body_set_param(g->static_body, PhysicsServer::BODY_PARAM_FRICTION, physics_material->get_friction());
+			PhysicsServer::get_singleton()->body_set_param(g->static_body, PhysicsServer::BODY_PARAM_BOUNCE, physics_material->get_bounce());
+		}
 		SceneTree *st = SceneTree::get_singleton();
 
 		if (st && st->is_debugging_collisions_hint()) {
@@ -815,6 +829,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &GridMap::set_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &GridMap::get_collision_layer_bit);
 
+	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &GridMap::set_physics_material);
+	ClassDB::bind_method(D_METHOD("get_physics_material"), &GridMap::get_physics_material);
+
 	ClassDB::bind_method(D_METHOD("set_mesh_library", "mesh_library"), &GridMap::set_mesh_library);
 	ClassDB::bind_method(D_METHOD("get_mesh_library"), &GridMap::get_mesh_library);
 
@@ -861,6 +878,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_in_baked_light"), &GridMap::get_use_in_baked_light);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_in_baked_light"), "set_use_in_baked_light", "get_use_in_baked_light");
 	ADD_GROUP("Cell", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size"), "set_cell_size", "get_cell_size");

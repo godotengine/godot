@@ -39,6 +39,8 @@
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
 
+class PhysicsMaterial;
+
 class GridMap : public Spatial {
 	GDCLASS(GridMap, Spatial);
 
@@ -132,6 +134,7 @@ class GridMap : public Spatial {
 
 	uint32_t collision_layer;
 	uint32_t collision_mask;
+	Ref<PhysicsMaterial> physics_material;
 
 	Transform last_transform;
 
@@ -218,6 +221,9 @@ public:
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
+
+	void set_physics_material(Ref<PhysicsMaterial> p_material);
+	Ref<PhysicsMaterial> get_physics_material() const;
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;

@@ -183,6 +183,9 @@
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
 		</member>
+		<member name="physics_material" type="PhysicsMaterial" setter="set_physics_material" getter="get_physics_material">
+			Overrides the default friction and bounce physics properties for the whole [GridMap].
+		</member>
 		<member name="use_in_baked_light" type="bool" setter="set_use_in_baked_light" getter="get_use_in_baked_light" default="false">
 			Controls whether this GridMap will be baked in a [BakedLightmap] or not.
 		</member>
