@@ -9,7 +9,11 @@
 		- Glow
 		- Tonemap (Auto Exposure)
 		- Adjustments
-		These effects will only apply when the [Viewport]'s intended usage is "3D" or "3D Without Effects". This can be configured for the root Viewport with [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation], or for specific Viewports via the [member Viewport.usage] property.
+		In "2D Without Sampling", all post-processing effects will be turned off. In "3D Without Effects", these options will be invalid:
+		-Ssao
+		-Ss reflections
+		This can be done using [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation] or via the [member Viewport.usage] property to configure the root viewport for a specific viewport.
+		Note that [member ProjectSettings.rendering/quality/intended_usage/framebuffer_allocation.mobile] uses "3D Without Effects" by default, which will improve the performance on mobile devices, but at the same time affect the screen display on mobile devices.
 	</description>
 	<tutorials>
 		<link title="Environment and post-processing">$DOCS_URL/tutorials/3d/environment_and_post_processing.html</link>
