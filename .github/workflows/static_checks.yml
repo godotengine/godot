@@ -12,7 +12,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
+      # Security Checks [If modified this should be triple checked]
+      - name: Check for bidi characters [trojan code check]
+        id: bidi_check
+        uses: HL7/bidi-checker-action@v1.5
+      # Report check runtime in ms
+      - name: Get the output time
+        run: echo "The time was ${{ steps.bidi_check.outputs.time }}"
+      # End Security Checks
       # Azure repositories are not reliable, we need to prevent Azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
@@ -52,9 +59,3 @@ jobs:
         run: |
           doc/tools/make_rst.py --dry-run doc/classes modules
           # Run the check for bidi characters.
-      - name: Check for bidi characters [trojan code check]
-        id: bidi_check
-        uses: HL7/bidi-checker-action@v1.5
-      # Report check runtime in ms
-      - name: Get the output time
-        run: echo "The time was ${{ steps.bidi_check.outputs.time }}"
