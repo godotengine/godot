@@ -51,3 +51,10 @@ jobs:
       - name: Documentation checks
         run: |
           doc/tools/make_rst.py --dry-run doc/classes modules
+          # Run the check for bidi characters.
+      - name: Check for bidi characters [trojan code check]
+        id: bidi_check
+        uses: HL7/bidi-checker-action@v1.5
+      # Report check runtime in ms
+      - name: Get the output time
+        run: echo "The time was ${{ steps.bidi_check.outputs.time }}"
