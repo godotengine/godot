@@ -1644,6 +1644,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Color, lightened, sarray("amount"), varray());
 	bind_method(Color, darkened, sarray("amount"), varray());
 	bind_method(Color, blend, sarray("over"), varray());
+	bind_method(Color, get_luminance, sarray(), varray());
 
 	bind_method(Color, is_equal_approx, sarray("to"), varray());
 
