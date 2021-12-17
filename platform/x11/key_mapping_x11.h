@@ -45,6 +45,7 @@ class KeyMappingX11 {
 
 public:
 	static unsigned int get_keycode(KeySym p_keysym);
+	static unsigned int get_xlibcode(unsigned int p_keysym);
 	static unsigned int get_scancode(unsigned int p_code);
 	static KeySym get_keysym(unsigned int p_code);
 	static unsigned int get_unicode_from_keysym(KeySym p_keysym);

@@ -215,6 +215,10 @@ int OS::get_virtual_keyboard_height() const {
 	return 0;
 }
 
+uint32_t OS::keyboard_get_scancode_from_physical(uint32_t p_scancode) const {
+	return p_scancode;
+}
+
 void OS::set_cursor_shape(CursorShape p_shape) {
 }
 

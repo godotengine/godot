@@ -711,6 +711,14 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="keyboard_get_scancode_from_physical" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="scancode" type="int" />
+			<description>
+				Converts a physical (US QWERTY) [code]scancode[/code] to one in the active keyboard layout.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="keyboard_set_current_layout">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />

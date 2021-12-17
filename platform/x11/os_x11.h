@@ -361,6 +361,7 @@ public:
 	virtual void keyboard_set_current_layout(int p_index);
 	virtual String keyboard_get_layout_language(int p_index) const;
 	virtual String keyboard_get_layout_name(int p_index) const;
+	virtual uint32_t keyboard_get_scancode_from_physical(uint32_t p_scancode) const;
 
 	void update_real_mouse_position();
 	OS_X11();

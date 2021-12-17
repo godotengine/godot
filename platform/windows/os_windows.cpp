@@ -3237,6 +3237,42 @@ String OS_Windows::keyboard_get_layout_language(int p_index) const {
 	return String(buf).substr(0, 2);
 }
 
+uint32_t OS_Windows::keyboard_get_scancode_from_physical(uint32_t p_scancode) const {
+	unsigned int modifiers = p_scancode & KEY_MODIFIER_MASK;
+	uint32_t scancode_no_mod = (uint32_t)(p_scancode & KEY_CODE_MASK);
+
+	if (scancode_no_mod == KEY_PRINT ||
+			scancode_no_mod == KEY_KP_ADD ||
+			scancode_no_mod == KEY_KP_5 ||
+			(scancode_no_mod >= KEY_0 && scancode_no_mod <= KEY_9)) {
+		return p_scancode;
+	}
+
+	unsigned int scancode = KeyMappingWindows::get_scancode(scancode_no_mod);
+	if (scancode == 0) {
+		return p_scancode;
+	}
+
+	HKL current_layout = GetKeyboardLayout(0);
+	UINT vk = MapVirtualKeyEx(scancode, MAPVK_VSC_TO_VK, current_layout);
+	if (vk == 0) {
+		return p_scancode;
+	}
+
+	UINT char_code = MapVirtualKeyEx(vk, MAPVK_VK_TO_CHAR, current_layout) & 0x7FFF;
+	// Unlike a similar Linux/BSD check which matches full Latin-1 range,
+	// we limit these to ASCII to fix some layouts, including Arabic ones
+	if (char_code >= 32 && char_code <= 127) {
+		// Godot uses 'braces' instead of 'brackets'
+		if (char_code == KEY_BRACKETLEFT || char_code == KEY_BRACKETRIGHT) {
+			char_code += 32;
+		}
+		return (uint32_t)(char_code | modifiers);
+	}
+
+	return (uint32_t)(KeyMappingWindows::get_keysym(vk) | modifiers);
+}
+
 String _get_full_layout_name_from_registry(HKL p_layout) {
 	String id = "SYSTEM\\CurrentControlSet\\Control\\Keyboard Layouts\\" + String::num_int64((int64_t)p_layout, 16, false).lpad(8, "0");
 	String ret;
