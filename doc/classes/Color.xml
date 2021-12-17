@@ -111,6 +111,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_luminance">
+			<return type="float" />
+			<description>
+				Returns the luminance of the color in the [code][0.0, 1.0][/code] range.
+				This is useful when determining light or dark color. Colors with a luminance smaller than 0.5 can be generally considered dark.
+			</description>
+		</method>
 		<method name="gray">
 			<return type="float" />
 			<description>
