@@ -52,6 +52,12 @@ private:
 		MAX_KEY = 767, // Hack because <linux/input.h> can't be included here
 	};
 
+	struct JoypadEvent {
+		uint16_t type;
+		uint16_t code;
+		int32_t value;
+	};
+
 	struct Joypad {
 		float curr_axis[MAX_ABS];
 		int key_map[MAX_KEY];
@@ -66,6 +72,8 @@ private:
 		int ff_effect_id;
 		uint64_t ff_effect_timestamp;
 
+		LocalVector<JoypadEvent> events;
+
 		Joypad();
 		~Joypad();
 		void reset();
@@ -74,29 +82,39 @@ private:
 #ifdef UDEV_ENABLED
 	bool use_udev;
 #endif
-	SafeFlag exit_monitor;
-	Mutex joy_mutex;
-	Thread joy_thread;
 	InputDefault *input;
+
+	SafeFlag monitor_joypads_exit;
+	SafeFlag joypad_events_exit;
+	Thread monitor_joypads_thread;
+	Thread joypad_events_thread;
+
 	Joypad joypads[JOYPADS_MAX];
+	Mutex joypads_mutex[JOYPADS_MAX];
+
 	Vector<String> attached_devices;
 
-	static void joy_thread_func(void *p_user);
+	static void monitor_joypads_thread_func(void *p_user);
+	void monitor_joypads_thread_run();
 
-	int get_joy_from_path(String p_path) const;
+	void open_joypad(const char *p_path);
+	void setup_joypad_properties(Joypad &p_joypad);
 
-	void setup_joypad_properties(int p_id);
-	void close_joypad(int p_id = -1);
+	void close_joypads();
+	void close_joypad(const char *p_devpath);
+	void close_joypad(Joypad &p_joypad, int p_id);
+
 #ifdef UDEV_ENABLED
 	void enumerate_joypads(struct udev *p_udev);
 	void monitor_joypads(struct udev *p_udev);
 #endif
 	void monitor_joypads();
-	void run_joypad_thread();
-	void open_joypad(const char *p_path);
 
-	void joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
-	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
+	void joypad_vibration_start(Joypad &p_joypad, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
+	void joypad_vibration_stop(Joypad &p_joypad, uint64_t p_timestamp);
+
+	static void joypad_events_thread_func(void *p_user);
+	void joypad_events_thread_run();
 
 	float axis_correct(const input_absinfo *p_abs, int p_value) const;
 };
