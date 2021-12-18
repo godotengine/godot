@@ -538,12 +538,12 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 
 #ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_destroy(p_window);
 	}
 #endif
 #ifdef GLES3_ENABLED
-	if (rendering_driver == "opengl3") {
+	if (gl_manager) {
 		gl_manager->window_destroy(p_window);
 	}
 #endif
@@ -828,12 +828,12 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	wd.height = h;
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_resize(p_window, w, h);
 	}
 #endif
 #if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl3") {
+	if (gl_manager) {
 		gl_manager->window_resize(p_window, w, h);
 	}
 #endif
@@ -2646,7 +2646,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					windows[window_id].height = window_h;
 
 #if defined(VULKAN_ENABLED)
-					if ((rendering_driver == "vulkan") && window_created) {
+					if (context_vulkan && window_created) {
 						context_vulkan->window_resize(window_id, windows[window_id].width, windows[window_id].height);
 					}
 #endif
@@ -3108,7 +3108,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 
 #ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			if (context_vulkan->window_create(id, p_vsync_mode, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) == -1) {
 				memdelete(context_vulkan);
 				context_vulkan = nullptr;
@@ -3119,7 +3119,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 #endif
 
 #ifdef GLES3_ENABLED
-		if (rendering_driver == "opengl3") {
+		if (gl_manager) {
 			Error err = gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
 		}
@@ -3458,7 +3458,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 	if (windows.has(MAIN_WINDOW_ID)) {
 #ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			context_vulkan->window_destroy(MAIN_WINDOW_ID);
 		}
 #endif
@@ -3470,14 +3470,15 @@ DisplayServerWindows::~DisplayServerWindows() {
 	}
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan)
-			memdelete(context_vulkan);
+	if (context_vulkan) {
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 

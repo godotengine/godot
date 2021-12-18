@@ -167,12 +167,12 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 
 #if defined(GLES3_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl3") {
+	if (DS_OSX->gl_manager) {
 		DS_OSX->gl_manager->window_destroy(window_id);
 	}
 #endif
 #ifdef VULKAN_ENABLED
-	if (DS_OSX->rendering_driver == "vulkan") {
+	if (DS_OSX->context_vulkan) {
 		DS_OSX->context_vulkan->window_destroy(window_id);
 	}
 #endif
@@ -272,12 +272,12 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 
 #if defined(GLES3_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl3") {
+	if (DS_OSX->gl_manager) {
 		DS_OSX->gl_manager->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (DS_OSX->rendering_driver == "vulkan") {
+	if (DS_OSX->context_vulkan) {
 		DS_OSX->context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
@@ -403,7 +403,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 - (CALayer *)makeBackingLayer {
 #if defined(VULKAN_ENABLED)
-	if (DS_OSX->rendering_driver == "vulkan") {
+	if (DS_OSX->context_vulkan) {
 		CALayer *layer = [[CAMetalLayer class] layer];
 		return layer;
 	}
@@ -413,12 +413,12 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 - (void)updateLayer {
 #if defined(GLES3_ENABLED)
-	if (DS_OSX->rendering_driver == "opengl3") {
+	if (DS_OSX->gl_manager) {
 		DS_OSX->gl_manager->window_update(window_id);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (DS_OSX->rendering_driver == "vulkan") {
+	if (DS_OSX->context_vulkan) {
 		[super updateLayer];
 	}
 #endif
@@ -2577,12 +2577,12 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 				[layer setOpaque:NO];
 			}
 #if defined(VULKAN_ENABLED)
-			if (rendering_driver == "vulkan") {
+			if (context_vulkan) {
 				//TODO - implement transparency for Vulkan
 			}
 #endif
 #if defined(GLES3_ENABLED)
-			if (rendering_driver == "opengl3") {
+			if (gl_manager) {
 				//TODO - reimplement OpenGLES
 			}
 #endif
@@ -2596,24 +2596,24 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 				[layer setOpaque:YES];
 			}
 #if defined(VULKAN_ENABLED)
-			if (rendering_driver == "vulkan") {
+			if (context_vulkan) {
 				//TODO - implement transparency for Vulkan
 			}
 #endif
 #if defined(GLES3_ENABLED)
-			if (rendering_driver == "opengl3") {
+			if (gl_manager) {
 				//TODO - reimplement OpenGLES
 			}
 #endif
 			wd.layered_window = false;
 		}
 #if defined(GLES3_ENABLED)
-		if (rendering_driver == "opengl3") {
+		if (gl_manager) {
 			//TODO - reimplement OpenGLES
 		}
 #endif
 #if defined(VULKAN_ENABLED)
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			//TODO - implement transparency for Vulkan
 		}
 #endif
@@ -3451,12 +3451,12 @@ void DisplayServerOSX::set_icon(const Ref<Image> &p_icon) {
 void DisplayServerOSX::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl3") {
+	if (gl_manager) {
 		gl_manager->swap_buffers();
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
 	}
 #endif
@@ -3465,12 +3465,12 @@ void DisplayServerOSX::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 DisplayServer::VSyncMode DisplayServerOSX::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl3") {
+	if (gl_manager) {
 		return (gl_manager->is_using_vsync() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		return context_vulkan->get_vsync_mode(p_window);
 	}
 #endif
@@ -3586,19 +3586,15 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 		}
 
 #if defined(VULKAN_ENABLED)
-		if (rendering_driver == "vulkan") {
-			if (context_vulkan) {
-				Error err = context_vulkan->window_create(window_id_counter, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
-				ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan context");
-			}
+		if (context_vulkan) {
+			Error err = context_vulkan->window_create(window_id_counter, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan context");
 		}
 #endif
 #if defined(GLES3_ENABLED)
-		if (rendering_driver == "opengl3") {
-			if (gl_manager) {
-				Error err = gl_manager->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
-				ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
-			}
+		if (gl_manager) {
+			Error err = gl_manager->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
 		}
 #endif
 		id = window_id_counter++;
@@ -3618,12 +3614,12 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 	}
 
 #if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl3") {
+	if (gl_manager) {
 		gl_manager->window_resize(id, wd.size.width, wd.size.height);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_resize(id, wd.size.width, wd.size.height);
 	}
 #endif
