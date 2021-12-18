@@ -824,6 +824,7 @@ bool EditorFontPreviewPlugin::handles(const String &p_type) const {
 
 Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
 	RES res = ResourceLoader::load(p_path);
+	ERR_FAIL_COND_V(res.is_null(), Ref<Texture2D>());
 	Ref<Font> sampled_font;
 	if (res->is_class("Font")) {
 		sampled_font = res->duplicate();
