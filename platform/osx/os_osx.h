@@ -78,6 +78,7 @@ public:
 	int key_event_pos;
 
 	bool force_quit;
+	bool is_resizing = false;
 	//  rasterizer seems to no longer be given to visual server, its using GLES3 directly?
 	//Rasterizer *rasterizer;
 	VisualServer *visual_server;

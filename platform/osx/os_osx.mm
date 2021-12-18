@@ -371,6 +371,14 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 }
 
+- (void)windowWillStartLiveResize:(NSNotification *)notification {
+	OS_OSX::singleton->is_resizing = true;
+}
+
+- (void)windowDidEndLiveResize:(NSNotification *)notification {
+	OS_OSX::singleton->is_resizing = false;
+}
+
 - (void)windowDidResize:(NSNotification *)notification {
 	[OS_OSX::singleton->context update];
 
@@ -1676,11 +1684,6 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	CGLSetParameter((CGLContextObj)[context CGLContextObj], kCGLCPSurfaceBackingSize, &dim[0]);
 	CGLEnable((CGLContextObj)[context CGLContextObj], kCGLCESurfaceBackingSize);
 
-	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		CGLError err = CGLEnable((CGLContextObj)[context CGLContextObj], kCGLCEMPEngine); // Enable multithreading.
-		ERR_FAIL_COND_V(err != kCGLNoError, ERR_UNAVAILABLE);
-	}
-
 	set_use_vsync(p_desired.use_vsync);
 
 	if (!is_no_window_mode_enabled()) {
@@ -2440,7 +2443,7 @@ bool OS_OSX::is_offscreen_gl_available() const {
 
 void OS_OSX::set_offscreen_gl_current(bool p_current) {
 	if (p_current) {
-		[context makeCurrentContext];
+		[context_offscreen makeCurrentContext];
 	} else {
 		[NSOpenGLContext clearCurrentContext];
 	}
@@ -3309,8 +3312,9 @@ void OS_OSX::force_process_input() {
 
 void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
 	// Prevent main loop from sleeping and redraw window during resize / modal popups.
+	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates triggered by window view resize.
 
-	if (get_singleton()->get_main_loop()) {
+	if (get_singleton()->get_main_loop() && (get_singleton()->get_render_thread_mode() != RENDER_SEPARATE_THREAD || !OS_OSX::singleton->is_resizing)) {
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
