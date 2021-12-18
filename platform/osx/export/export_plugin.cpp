@@ -435,6 +435,101 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	return OK;
 }
 
+Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path,
+		const String &p_ent_path, bool p_should_error_on_non_code) {
+#ifdef OSX_ENABLED
+	static Vector<String> extensions_to_sign;
+
+	if (extensions_to_sign.is_empty()) {
+		extensions_to_sign.push_back("dylib");
+		extensions_to_sign.push_back("framework");
+	}
+
+	Error dir_access_error;
+	DirAccessRef dir_access{ DirAccess::open(p_path, &dir_access_error) };
+
+	if (dir_access_error != OK) {
+		return dir_access_error;
+	}
+
+	dir_access->list_dir_begin();
+	String current_file{ dir_access->get_next() };
+	while (!current_file.is_empty()) {
+		String current_file_path{ p_path.plus_file(current_file) };
+
+		if (current_file == ".." || current_file == ".") {
+			current_file = dir_access->get_next();
+			continue;
+		}
+
+		if (extensions_to_sign.find(current_file.get_extension()) > -1) {
+			Error code_sign_error{ _code_sign(p_preset, current_file_path, p_ent_path) };
+			if (code_sign_error != OK) {
+				return code_sign_error;
+			}
+		} else if (dir_access->current_is_dir()) {
+			Error code_sign_error{ _code_sign_directory(p_preset, current_file_path, p_ent_path, p_should_error_on_non_code) };
+			if (code_sign_error != OK) {
+				return code_sign_error;
+			}
+		} else if (p_should_error_on_non_code) {
+			ERR_PRINT(vformat("Cannot sign file %s.", current_file));
+			return Error::FAILED;
+		}
+
+		current_file = dir_access->get_next();
+	}
+#endif
+
+	return OK;
+}
+
+Error EditorExportPlatformOSX::_copy_and_sign_files(DirAccessRef &dir_access, const String &p_src_path,
+		const String &p_in_app_path, bool p_sign_enabled,
+		const Ref<EditorExportPreset> &p_preset, const String &p_ent_path,
+		bool p_should_error_on_non_code_sign) {
+	Error err{ OK };
+	if (dir_access->dir_exists(p_src_path)) {
+#ifndef UNIX_ENABLED
+		WARN_PRINT("Relative symlinks are not supported, exported " + p_src_path.get_file() + " might be broken!");
+#endif
+		print_verbose("export framework: " + p_src_path + " -> " + p_in_app_path);
+		err = dir_access->make_dir_recursive(p_in_app_path);
+		if (err == OK) {
+			err = dir_access->copy_dir(p_src_path, p_in_app_path, -1, true);
+		}
+	} else {
+		print_verbose("export dylib: " + p_src_path + " -> " + p_in_app_path);
+		err = dir_access->copy(p_src_path, p_in_app_path);
+	}
+	if (err == OK && p_sign_enabled) {
+		if (dir_access->dir_exists(p_src_path) && p_src_path.get_extension().is_empty()) {
+			// If it is a directory, find and sign all dynamic libraries.
+			err = _code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_should_error_on_non_code_sign);
+		} else {
+			err = _code_sign(p_preset, p_in_app_path, p_ent_path);
+		}
+	}
+	return err;
+}
+
+Error EditorExportPlatformOSX::_export_osx_plugins_for(Ref<EditorExportPlugin> p_editor_export_plugin,
+		const String &p_app_path_name, DirAccessRef &dir_access,
+		bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
+		const String &p_ent_path) {
+	Error error{ OK };
+	const Vector<String> &osx_plugins{ p_editor_export_plugin->get_osx_plugin_files() };
+	for (int i = 0; i < osx_plugins.size(); ++i) {
+		String src_path{ ProjectSettings::get_singleton()->globalize_path(osx_plugins[i]) };
+		String path_in_app{ p_app_path_name + "/Contents/PlugIns/" + src_path.get_file() };
+		error = _copy_and_sign_files(dir_access, src_path, path_in_app, p_sign_enabled, p_preset, p_ent_path, false);
+		if (error != OK) {
+			break;
+		}
+	}
+	return error;
+}
+
 Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name) {
 	List<String> args;
 
@@ -860,26 +955,22 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				FileAccess::set_unix_permissions(tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), 0755);
 			}
 		}
-
 		if (err == OK) {
 			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
 				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
-				if (da->dir_exists(src_path)) {
-#ifndef UNIX_ENABLED
-					WARN_PRINT("Relative symlinks are not supported, exported " + src_path.get_file() + " might be broken!");
-#endif
-					print_verbose("export framework: " + src_path + " -> " + tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file());
-					err = da->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file());
-					if (err == OK) {
-						err = da->copy_dir(src_path, tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file(), -1, true);
-					}
-				} else {
-					print_verbose("export dylib: " + src_path + " -> " + tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file());
-					err = da->copy(src_path, tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file());
+				String path_in_app{ tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file() };
+				err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, true);
+				if (err != OK) {
+					break;
 				}
-				if (err == OK && sign_enabled) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file(), ent_path);
+			}
+
+			Vector<Ref<EditorExportPlugin>> export_plugins{ EditorExport::get_singleton()->get_export_plugins() };
+			for (int i = 0; i < export_plugins.size(); ++i) {
+				err = _export_osx_plugins_for(export_plugins[i], tmp_app_path_name, da, sign_enabled, p_preset, ent_path);
+				if (err != OK) {
+					break;
 				}
 			}
 		}

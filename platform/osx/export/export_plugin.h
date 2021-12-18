@@ -58,6 +58,13 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 
 	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path);
+	Error _code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_should_error_on_non_code = true);
+	Error _copy_and_sign_files(DirAccessRef &dir_access, const String &p_src_path, const String &p_in_app_path,
+			bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset, const String &p_ent_path,
+			bool p_should_error_on_non_code_sign);
+	Error _export_osx_plugins_for(Ref<EditorExportPlugin> p_editor_export_plugin, const String &p_app_path_name,
+			DirAccessRef &dir_access, bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
+			const String &p_ent_path);
 	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
 	void _zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);
 
