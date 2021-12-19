@@ -286,14 +286,14 @@ int AABB::get_longest_axis_index() const {
 
 Vector3 AABB::get_shortest_axis() const {
 	Vector3 axis(1, 0, 0);
-	real_t max_size = size.x;
+	real_t min_size = size.x;
 
-	if (size.y < max_size) {
+	if (size.y < min_size) {
 		axis = Vector3(0, 1, 0);
-		max_size = size.y;
+		min_size = size.y;
 	}
 
-	if (size.z < max_size) {
+	if (size.z < min_size) {
 		axis = Vector3(0, 0, 1);
 	}
 
@@ -302,14 +302,14 @@ Vector3 AABB::get_shortest_axis() const {
 
 int AABB::get_shortest_axis_index() const {
 	int axis = 0;
-	real_t max_size = size.x;
+	real_t min_size = size.x;
 
-	if (size.y < max_size) {
+	if (size.y < min_size) {
 		axis = 1;
-		max_size = size.y;
+		min_size = size.y;
 	}
 
-	if (size.z < max_size) {
+	if (size.z < min_size) {
 		axis = 2;
 	}
 
