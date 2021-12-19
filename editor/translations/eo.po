@@ -2115,13 +2115,30 @@ msgstr "Metodoj"
 msgid "Theme Properties"
 msgstr "Etosaj atributoj"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeracioj"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "Elekti koloron"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Konstantoj"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeracioj"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8600,19 +8617,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Colors"
-msgstr "Elekti koloron"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -13304,11 +13308,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14318,161 +14342,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstantoj ne povas esti modifitaj."
-
-#~ msgid "Singleton"
-#~ msgstr "Unuopo"
-
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "Viŝi profilon '%s'? (ne malfaro)"
-
-#~ msgid "Enabled Properties:"
-#~ msgstr "Ŝaltitaj atributoj:"
-
-#~ msgid "Unset"
-#~ msgstr "Malagordi"
-
-#~ msgid "Class Options"
-#~ msgstr "Agordoj de klaso"
-
-#~ msgid "Set"
-#~ msgstr "Agordi"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "Konservis %s modifikita(j)n risurco(j)n."
-
-#~ msgid "Q&A"
-#~ msgstr "Demandoj kaj respondoj"
-
-#~ msgid "Status:"
-#~ msgstr "Stato:"
-
-#~ msgid "Edit:"
-#~ msgstr "Redakti:"
-
-#~ msgid "Redownload"
-#~ msgstr "Reelŝuti"
-
-#~ msgid "(Installed)"
-#~ msgstr "(Instalita)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Manka)"
-
-#~ msgid "Request Failed."
-#~ msgstr "Demando eraris."
-
-#~ msgid "Redirect Loop."
-#~ msgstr "Alidirekta iteracio."
-
-#~ msgid "Download Complete."
-#~ msgstr "Elŝuto kompleta."
-
-#~ msgid "Remove Template"
-#~ msgstr "Forigi ŝablonon"
-
-#~ msgid "Download Templates"
-#~ msgstr "Elŝutilo de ŝablonoj"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr ""
-#~ "Elekti spegulon el listo: (Majuskliga klavo+Alklako: Malfermi en "
-#~ "retumilon)"
-
-#~ msgid "Move to Trash"
-#~ msgstr "Movi al rubujo"
-
-#~ msgid "Expand All Properties"
-#~ msgstr "Etendi ĉiajn atributojn"
-
-#~ msgid "Copy Params"
-#~ msgstr "Kopii parametrojn"
-
-#~ msgid "Open in Help"
-#~ msgstr "Malfermi en helpo"
-
-#~ msgid ""
-#~ "Game Camera Override\n"
-#~ "No game instance running."
-#~ msgstr ""
-#~ "Transpaso de la luda fotilo\n"
-#~ "Ne luda ekzemplo ruliĝas."
-
-#~ msgid "Drag: Rotate"
-#~ msgstr "Ŝovado: Rotacii"
-
-#~ msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
-#~ msgstr ""
-#~ "Premi 'V' por ŝanĝi pivoton, 'Majuskliga klavo+V' por ŝovi pivoton (dum "
-#~ "movado)."
-
-#~ msgid "Alt+RMB: Depth list selection"
-#~ msgstr "Alt-klavo+dekstra musbutono: Elektado el profunda listo"
-
-#~ msgid "Templates"
-#~ msgstr "Ŝablonoj"
-
-#~ msgid "Add Remapped Path"
-#~ msgstr "Aldoni dosierindikon de remapo"
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr "Animado legilo ne volas animi si mem, nur aliajn ludantojn."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Tondujo estas malplena"
-
-#~ msgid "No"
-#~ msgstr "Ne"
-
-#, fuzzy
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr "Ĉi tiu sceno konservis neniam. Konservi antaŭ ruli?"
-
-#~ msgid "Search complete"
-#~ msgstr "Serĉo finiĝis"
-
-#, fuzzy
-#~ msgid "Default editor layout overridden."
-#~ msgstr "Automatan aranĝon de editilo transpasis."
-
-#, fuzzy
-#~ msgid "Pack File"
-#~ msgstr "Malfermi dosieron"
-
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "Dosiersistema kaj enporta dokoj"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "Kiam eksportas aŭ malfaldas, la rezulta plenumebla provos konekti al la "
-#~ "IP de ĉi tiu komputilo por estos sencimigita."
-
-#~ msgid "Revert"
-#~ msgstr "Malfari"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr "Tiun ĉi agon ne povos malfari. Certe daŭrigi?"
-
-#, fuzzy
-#~ msgid "Help improve the Godot documentation by giving feedback."
-#~ msgstr "Helpi plibonigi la Godotan dokumentadon per doni reagon."
-
-#~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "Anstataŭigis %d apero(j)n."
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "Priskribo:"
-
-#~ msgid "Input"
-#~ msgstr "Enigo"
-
-#~ msgid "No Matches"
-#~ msgstr "Ne Rezultoj"
-
-#~ msgid "Unknown font format."
-#~ msgstr "Nekonata tipara formo."
-
-#~ msgid "Invalid font size."
-#~ msgstr "Nevalida tipara grando."

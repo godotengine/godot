@@ -308,7 +308,7 @@ def configure_msvc(env, manual_msvc_config):
 
     # Sanitizers
     if env["use_asan"]:
-        env.extra_suffix += ".s"
+        env.extra_suffix += ".san"
         env.Append(LINKFLAGS=["/INFERASANLIBS"])
         env.Append(CCFLAGS=["/fsanitize=address"])
 

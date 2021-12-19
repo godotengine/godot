@@ -2127,13 +2127,29 @@ msgstr "Metódy"
 msgid "Theme Properties"
 msgstr "Vlastnosti Témy"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Výpočty"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Konštanty"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Výpočty"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8645,18 +8661,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -13443,11 +13447,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14480,289 +14504,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Singleton"
-#~ msgstr "Singleton"
-
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "Vymazať profil '%s'? (Nedá sa vrátiť späť)"
-
-#~ msgid "Enabled Properties:"
-#~ msgstr "Povolené Vlastnosti:"
-
-#~ msgid "Unset"
-#~ msgstr "Unset"
-
-#~ msgid "Class Options"
-#~ msgstr "Možnosti pre Class"
-
-#~ msgid "Set"
-#~ msgstr "Nastaviť"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "Uložené %s upravené zdroje."
-
-#~ msgid "Q&A"
-#~ msgstr "Q&A"
-
-#~ msgid "Status:"
-#~ msgstr "Status:"
-
-#~ msgid "Edit:"
-#~ msgstr "Edit:"
-
-#~ msgid "Redownload"
-#~ msgstr "Preinštalovať"
-
-#~ msgid "(Installed)"
-#~ msgstr "(Nainštalované)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Chýba)"
-
-#~ msgid "Request Failed."
-#~ msgstr "Žiadosť Zlihala."
-
-#~ msgid "Redirect Loop."
-#~ msgstr "Presmerovanie \"Loop-u\"."
-
-#~ msgid "Download Complete."
-#~ msgstr "Inštalácia je Dokončená."
-
-#~ msgid "Remove Template"
-#~ msgstr "Vymazať Šablónu"
-
-#~ msgid "Download Templates"
-#~ msgstr "Stiahnuť Šablónu"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr "Vybrať zrkadlo z listu: (Shift+Click: Open in Browser)"
-
-#~ msgid "Move to Trash"
-#~ msgstr "Presunúť do odpadkov"
-
-#~ msgid "Expand All Properties"
-#~ msgstr "Expandovať Všetky Vlastnosti"
-
-#~ msgid "Copy Params"
-#~ msgstr "Skopírovať Parametre"
-
-#~ msgid "Open in Help"
-#~ msgstr "Otvoriť v Pomoci"
-
-#~ msgid ""
-#~ "Game Camera Override\n"
-#~ "No game instance running."
-#~ msgstr ""
-#~ "Prepísanie Hernej Kamery\n"
-#~ "Nieje spustená žiadna herná inštancia."
-
-#~ msgid "Drag: Rotate"
-#~ msgstr "Potiahnutím: Otáčenie"
-
-#~ msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
-#~ msgstr ""
-#~ "Stačte 'v' pre Zmenu Pivot-a, 'Shift+v' pre hýbanie s Pivot-om (keď sa "
-#~ "hýbe)."
-
-#~ msgid "Alt+RMB: Depth list selection"
-#~ msgstr "Alt+RMB: Výber hĺbkového zoznamu"
-
-#, fuzzy
-#~ msgid "Size"
-#~ msgstr "Veľkosť: "
-
-#, fuzzy
-#~ msgid "Theme File"
-#~ msgstr "Otvoriť súbor"
-
-#, fuzzy
-#~ msgid "Templates"
-#~ msgstr "Všetky vybrané"
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr "Animation player sa nemôže naanimovať sám, iba ostatné player-y."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Schránka je prázdna"
-
-#~ msgid "No"
-#~ msgstr "Nie"
-
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr ""
-#~ "Táto scéna ešte nikdy nebola uložená. Chcete ju uložiť predtým ako ju "
-#~ "zapnete?"
-
-#~ msgid "Search complete"
-#~ msgstr "Vyhľadávanie bolo dokončené"
-
-#~ msgid "There is already file or folder with the same name in this location."
-#~ msgstr "Už tu je súbor alebo priečinok pomenovaný rovnako."
-
-#~ msgid "Error trying to save layout!"
-#~ msgstr "Error pri ukladaní layout-i!"
-
-#~ msgid "Default editor layout overridden."
-#~ msgstr "Predvolený editor layout je prepísaný."
-
-#~ msgid "Move pivot"
-#~ msgstr "Presunúť pivot"
-
-#~ msgid "Move anchor"
-#~ msgstr "Presunúť kovadlinu"
-
-#~ msgid "Resize CanvasItem"
-#~ msgstr "Zmeniť Veľkosť CanvasItem-u"
-
-#, fuzzy
-#~ msgid "Add initial export..."
-#~ msgstr "Signály:"
-
-#, fuzzy
-#~ msgid "Pack File"
-#~ msgstr "Súbor:"
-
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "Systém súborov a Import Dock-y"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "Pri exportovaní alebo deploy-ovaní, súbor resulting executable sa pokúsi "
-#~ "o pripojenie do IP vášho počítača aby mohol byť debugg-ovaný."
-
-#~ msgid "Current scene was never saved, please save it prior to running."
-#~ msgstr "Aktuálna scéna sa nikdy neuložila, prosím uložte ju pred spustením."
-
-#~ msgid "Revert"
-#~ msgstr "Revert"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr "Túto akciu nie je možné vrátiť späť. Chcete Revertovatť aj tak?"
-
-#, fuzzy
-#~ msgid "Clear Script"
-#~ msgstr "Popis:"
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "Popis:"
-
-#, fuzzy
-#~ msgid "Class Description"
-#~ msgstr "Popis:"
-
-#~ msgid "Shift+"
-#~ msgstr "Shift+"
-
-#~ msgid "Alt+"
-#~ msgstr "Alt+"
-
-#, fuzzy
-#~ msgid "Theme Properties:"
-#~ msgstr "Filter:"
-
-#, fuzzy
-#~ msgid "Enumerations:"
-#~ msgstr "Popis:"
-
-#~ msgid "Constants:"
-#~ msgstr "Konštanty:"
-
-#, fuzzy
-#~ msgid "Class Description:"
-#~ msgstr "Popis:"
-
-#, fuzzy
-#~ msgid "Property Descriptions:"
-#~ msgstr "Popis:"
-
-#, fuzzy
-#~ msgid "Method Descriptions:"
-#~ msgstr "Popis:"
-
-#, fuzzy
-#~ msgid "Tool Select"
-#~ msgstr "Všetky vybrané"
-
-#~ msgid "Invalid font size."
-#~ msgstr "Nesprávna veľkosť písma."
-
-#, fuzzy
-#~ msgid "Previous Folder"
-#~ msgstr "Vytvoriť adresár"
-
-#, fuzzy
-#~ msgid "Next Folder"
-#~ msgstr "Vytvoriť adresár"
-
-#, fuzzy
-#~ msgid "View log"
-#~ msgstr "Súbor:"
-
-#~ msgid "Delete selected files?"
-#~ msgstr "Odstrániť vybraté súbory?"
-
-#~ msgid "There is no 'res://default_bus_layout.tres' file."
-#~ msgstr "Neexistuje žiadny súbor \"res://default_bus_layout.tres\"."
-
-#, fuzzy
-#~ msgid "Ease in"
-#~ msgstr "Všetky vybrané"
-
-#, fuzzy
-#~ msgid "Create folder"
-#~ msgstr "Vytvoriť adresár"
-
-#, fuzzy
-#~ msgid "Create Area"
-#~ msgstr "Vytvoriť adresár"
-
-#, fuzzy
-#~ msgid "Add Split"
-#~ msgstr "Signály:"
-
-#, fuzzy
-#~ msgid "Remove Split"
-#~ msgstr "Všetky vybrané"
-
-#~ msgid "Class List:"
-#~ msgstr "Zoznam tried:"
-
-#, fuzzy
-#~ msgid "Show current scene file."
-#~ msgstr "Vytvoriť adresár"
-
-#~ msgid "In"
-#~ msgstr "V"
-
-#~ msgid "Out"
-#~ msgstr "Von"
-
-#, fuzzy
-#~ msgid "In-Out"
-#~ msgstr "V-Von"
-
-#, fuzzy
-#~ msgid "Out-In"
-#~ msgstr "Von-V"
-
-#, fuzzy
-#~ msgid "Set pivot at mouse position"
-#~ msgstr "Všetky vybrané"
-
-#, fuzzy
-#~ msgid "Can't write file."
-#~ msgstr "Popis:"
-
-#~ msgid "Meta+"
-#~ msgstr "Meta+"
-
-#~ msgid "Ctrl+"
-#~ msgstr "Ctrl+"
-
-#, fuzzy
-#~ msgid "Create Android keystore"
-#~ msgstr "Vytvoriť adresár"

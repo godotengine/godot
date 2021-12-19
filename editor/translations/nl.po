@@ -51,13 +51,14 @@
 # tobeqz <vanveenjorik+tobeqz@gmail.com>, 2021.
 # Edgar <Edgar@anotherfoxguy.com>, 2021.
 # Daan van Luijk <daanvl@outlook.be>, 2021.
+# Dani Verschoor <daniverschoor@outlook.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-07 22:23+0000\n"
-"Last-Translator: Daan van Luijk <daanvl@outlook.be>\n"
+"PO-Revision-Date: 2021-11-20 22:07+0000\n"
+"Last-Translator: Dani Verschoor <daniverschoor@outlook.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -65,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.9.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1307,7 +1308,6 @@ msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "Fout bij het openen van het pakketbestand, geen zip-formaat."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (already exists)"
 msgstr "%s (bestaat al)"
 
@@ -1792,7 +1792,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Provides built-in access to the Asset Library."
-msgstr ""
+msgstr "Geeft ingebouwde toegang tot de asset bibliotheek."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows editing the node hierarchy in the Scene dock."
@@ -1825,6 +1825,7 @@ msgstr "(geen)"
 #: editor/editor_feature_profile.cpp
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
 msgstr ""
+"Verwijder huidig geselecteerde profiel, '%s'? Kan niet worden ongedaan."
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
@@ -1855,19 +1856,16 @@ msgid "Enable Contextual Editor"
 msgstr "Open de Contextbewuste Editor"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Properties:"
-msgstr "Eigenschappen:"
+msgstr "Klas Eigenschappen:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Main Features:"
-msgstr "Functionaliteiten"
+msgstr "Voornaamste Functionaliteiten:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Nodes and Classes:"
-msgstr "Ingeschakelde Klassen:"
+msgstr "Knopen en Klassen:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
@@ -1886,7 +1884,6 @@ msgid "Error saving profile to path: '%s'."
 msgstr "Error bij het opslaan van profiel naar pad: '%s'."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Reset to Default"
 msgstr "Reset naar standaard waarden"
 
@@ -1895,14 +1892,12 @@ msgid "Current Profile:"
 msgstr "Huidig Profiel:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Create Profile"
-msgstr "Wis Profiel"
+msgstr "Creëer Profiel"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Remove Profile"
-msgstr "Verwijder Tile"
+msgstr "Verwijder Profiel"
 
 #: editor/editor_feature_profile.cpp
 msgid "Available Profiles:"
@@ -1922,18 +1917,18 @@ msgid "Export"
 msgstr "Exporteren"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Configure Selected Profile:"
-msgstr "Huidig Profiel:"
+msgstr "Configureer Huidig Profiel:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Extra Options:"
-msgstr "Klasse opties:"
+msgstr "Extra Opties:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Create or import a profile to edit available classes and properties."
 msgstr ""
+"Creëer of importeer een profiel om beschikbare klassen en eigenschappen aan "
+"te passen."
 
 #: editor/editor_feature_profile.cpp
 msgid "New profile name:"
@@ -1960,9 +1955,8 @@ msgid "Select Current Folder"
 msgstr "Huidige map selecteren"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "File exists, overwrite?"
-msgstr "Bestand Bestaat, Overschrijven?"
+msgstr "Bestand bestaat, overschrijven?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select This Folder"
@@ -2168,13 +2162,33 @@ msgstr "Methoden"
 msgid "Theme Properties"
 msgstr "Thema-eigenschappen"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeraties"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "Kleur"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Constanten"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Fonts"
+msgstr "Lettertype"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Icons"
+msgstr "Icoon"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Styles"
+msgstr "Stijl"
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeraties"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -2360,6 +2374,9 @@ msgid ""
 "Update Continuously is enabled, which can increase power usage. Click to "
 "disable it."
 msgstr ""
+"Draait wanneer het editorvenster opnieuw wordt getekend.\n"
+"Continu bijwerken is ingeschakeld, wat het stroomverbruik kan verhogen. Klik "
+"om het uit te schakelen."
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
@@ -2458,9 +2475,8 @@ msgstr ""
 "(instanties of erfelijkheden) niet voldaan worden."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Could not save one or more scenes!"
-msgstr "Kon het subproces niet opstarten!"
+msgstr "Kon één of meerdere scènes niet opslaan!"
 
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
@@ -2604,13 +2620,16 @@ msgstr "Sla wijzigen aan '%s' op voor het afsluiten?"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr ""
+msgstr "%s bestaat niet meer! Geef een nieuwe opslaglocatie op."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
 msgstr ""
+"De huidige scène heeft geen wortelknoop, maar %d gewijzigde externe "
+"bron(nen) zijn toch opgeslagen."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -8710,21 +8729,6 @@ msgstr "TextureRegion"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Colors"
-msgstr "Kleur"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Fonts"
-msgstr "Lettertype"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Icons"
-msgstr "Icoon"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Styleboxes"
 msgstr "Stijl"
 
@@ -13591,8 +13595,17 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "\"Use Custom Build\" moet geactiveerd zijn om plugins te gebruiken."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+"\"Hand Tracking\" is alleen geldig als \"Xr Mode\" op \"Oculus Mobile VR\" "
+"staat."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 "\"Hand Tracking\" is alleen geldig als \"Xr Mode\" op \"Oculus Mobile VR\" "
 "staat."
@@ -13600,6 +13613,23 @@ msgstr ""
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr "\"Export AAB\" is alleen geldig als \"Use Custom Build\" aan staat."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr "\"Export AAB\" is alleen geldig als \"Use Custom Build\" aan staat."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr "\"Export AAB\" is alleen geldig als \"Use Custom Build\" aan staat."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -14759,1198 +14789,3 @@ msgstr "Toewijzing aan uniform."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constanten kunnen niet worden aangepast."
-
-#~ msgid "Make Rest Pose (From Bones)"
-#~ msgstr "Maak Rustpose (van Botten)"
-
-#~ msgid "Bottom"
-#~ msgstr "Onder"
-
-#~ msgid "Left"
-#~ msgstr "Links"
-
-#~ msgid "Right"
-#~ msgstr "Rechts"
-
-#~ msgid "Front"
-#~ msgstr "Voor"
-
-#~ msgid "Rear"
-#~ msgstr "Achter"
-
-#~ msgid "Nameless gizmo"
-#~ msgstr "Naamloze gizmo"
-
-#~ msgid ""
-#~ "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile "
-#~ "VR\"."
-#~ msgstr ""
-#~ "\"Degrees Of Freedom\" is alleen geldig als \"Xr Mode\" op \"Oculus "
-#~ "Mobile VR\" staat."
-
-#~ msgid ""
-#~ "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-#~ "\"."
-#~ msgstr ""
-#~ "\"Focus Awareness\" is alleen geldig als \"Xr Mode\" op \"Oculus Mobile VR"
-#~ "\" staat."
-
-#~ msgid "Package Contents:"
-#~ msgstr "Pakketinhoud:"
-
-#~ msgid "Singleton"
-#~ msgstr "Singleton"
-
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "Profiel '%s' verwijderen? (Onomkeerbaar)"
-
-#~ msgid "Enabled Properties:"
-#~ msgstr "Ingeschakelde Eigenschappen:"
-
-#~ msgid "Enabled Features:"
-#~ msgstr "Ingeschakelde Functionaliteit:"
-
-#~ msgid "Unset"
-#~ msgstr "Ongezet"
-
-#~ msgid "Class Options"
-#~ msgstr "Klasse-opties"
-
-#~ msgid "Set"
-#~ msgstr "Zet"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "%s gewijzigde bron(nen) opgeslagen."
-
-#~ msgid "Q&A"
-#~ msgstr "Vragen en antwoorden"
-
-#~ msgid "Status:"
-#~ msgstr "Staat:"
-
-#~ msgid "Edit:"
-#~ msgstr "Bewerken:"
-
-#~ msgid "Redownload"
-#~ msgstr "Opnieuw downloaden"
-
-#~ msgid "(Installed)"
-#~ msgstr "(Geïnstalleerd)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Missend)"
-
-#~ msgid "Request Failed."
-#~ msgstr "Aanvraag Mislukt."
-
-#~ msgid "Redirect Loop."
-#~ msgstr "Blijft omleiden."
-
-#~ msgid "Download Complete."
-#~ msgstr "Download voltooid."
-
-#~ msgid "Remove Template"
-#~ msgstr "Verwijder Sjabloon"
-
-#~ msgid "Download Templates"
-#~ msgstr "Download Sjablonen"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr "Selecteer mirror uit lijst: (Shift-klik: In Browser openen)"
-
-#~ msgid "Move to Trash"
-#~ msgstr "Naar prullenbak verplaatsen"
-
-#~ msgid "Expand All Properties"
-#~ msgstr "Klap alle eigenschappen uit"
-
-#~ msgid "Collapse All Properties"
-#~ msgstr "Klap alle eigenschappen in"
-
-#~ msgid "Copy Params"
-#~ msgstr "Kopieer Parameters"
-
-#~ msgid "Open in Help"
-#~ msgstr "Open in Help"
-
-#~ msgid ""
-#~ "Game Camera Override\n"
-#~ "No game instance running."
-#~ msgstr ""
-#~ "Game Camera Overschrijven\n"
-#~ "Geen spelinstantie actief."
-
-#~ msgid "Drag: Rotate"
-#~ msgstr "Sleep: Roteer"
-
-#~ msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
-#~ msgstr ""
-#~ "Druk 'v' om het draaipunt aan te passen, 'Shift+v' om het draaipunt te "
-#~ "slepen (tijdens het bewegen)."
-
-#~ msgid "Alt+RMB: Depth list selection"
-#~ msgstr "Alt + RMB: Diepte lijst selectie"
-
-#~ msgid "Clone Down"
-#~ msgstr "Kloon Omlaag"
-
-#~ msgid "Yaw"
-#~ msgstr "Yaw"
-
-#~ msgid "Size"
-#~ msgstr "Grootte"
-
-#~ msgid ""
-#~ "Drag: Rotate\n"
-#~ "Alt+Drag: Move\n"
-#~ "Alt+RMB: Depth list selection"
-#~ msgstr ""
-#~ "Slepen: Roteren\n"
-#~ "Atl+Slepen: Verplaatsen\n"
-#~ "Alt+RMB: Diepte selectie"
-
-#~ msgid "Sep.:"
-#~ msgstr "Scheiding:"
-
-#~ msgid "Add All"
-#~ msgstr "Allen Toevoegen"
-
-#~ msgid "Theme editing menu."
-#~ msgstr "Thema Bewerkingsmenu."
-
-#~ msgid "Create Empty Template"
-#~ msgstr "Creëer Leeg Sjabloon"
-
-#~ msgid "Create Empty Editor Template"
-#~ msgstr "Creëer Lege Sjabloon Editor"
-
-#~ msgid "Create From Current Editor Theme"
-#~ msgstr "Creëer Derivatie Huidig Editor Thema"
-
-#~ msgid "Data Type:"
-#~ msgstr "Data Type:"
-
-#~ msgid "Theme File"
-#~ msgstr "Theme Bestand"
-
-#~ msgid "Compiled"
-#~ msgstr "Gecompileerd"
-
-#~ msgid ""
-#~ "Remove %d projects from the list?\n"
-#~ "The project folders' contents won't be modified."
-#~ msgstr ""
-#~ "%d projecten uit de lijst verwijderen?\n"
-#~ "De inhoud van de projectmappen wordt niet gewijzigd."
-
-#~ msgid ""
-#~ "Remove this project from the list?\n"
-#~ "The project folder's contents won't be modified."
-#~ msgstr ""
-#~ "Project uit de lijst verwijderen?\n"
-#~ "De inhoud van de projectmap wordt niet gewijzigd."
-
-#~ msgid "Templates"
-#~ msgstr "Sjablonen"
-
-#~ msgid "Add Remapped Path"
-#~ msgstr "Bronpadomleiding toevoegen"
-
-#~ msgid "Can not perform with the root node."
-#~ msgstr "Kan deze operatie niet uitvoeren met de wortelknoop."
-
-#~ msgid "Could not read boot splash image file:"
-#~ msgstr "Kon de opstartafbeelding niet lezen:"
-
-#~ msgid "Using default boot splash image."
-#~ msgstr "Gebruik de standaard opstartafbeelding."
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr ""
-#~ "Een animatiespeler kan zichzelf niet animeren, alleen andere spelers."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Klembord is leeg"
-
-#~ msgid "No"
-#~ msgstr "Nee"
-
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr "Deze scene is nooit opgeslagen. Sla op voor het uitvoeren?"
-
-#~ msgid "ADB executable not configured in the Editor Settings."
-#~ msgstr "ADB niet ingesteld in Editor Settings."
-
-#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
-#~ msgstr "OpenJDK niet ingesteld in Editor Settings."
-
-#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
-#~ msgstr ""
-#~ "Eigen build vereist een geldige Android SDK pad in de Editorinstellingen."
-
-#~ msgid "%d%%"
-#~ msgstr "%d%%"
-
-#~ msgid "(Time Left: %d:%02d s)"
-#~ msgstr "(Tijd resterend: %d:%02d s)"
-
-#~ msgid "Plotting Meshes: "
-#~ msgstr "Plotten Meshes: "
-
-#~ msgid "Lighting Meshes: "
-#~ msgstr "Light Meshes: "
-
-#~ msgid "Search complete"
-#~ msgstr "Zoek Compleet"
-
-#~ msgid "No commit message was provided"
-#~ msgstr "Geen commitbericht was gegeven"
-
-#~ msgid "Add a commit message"
-#~ msgstr "Voeg een vastleggingsbericht toe"
-
-#~ msgid "There is already file or folder with the same name in this location."
-#~ msgstr "Er is al een bestand of map met dezelfde naam op dit pad."
-
-#~ msgid "Error trying to save layout!"
-#~ msgstr "Fout bij het opslaan van indeling!"
-
-#~ msgid "Default editor layout overridden."
-#~ msgstr "Standaardeditorindeling overschreven."
-
-#~ msgid "Move pivot"
-#~ msgstr "Draaipunt verplaatsen"
-
-#~ msgid "Move anchor"
-#~ msgstr "Anker verplaatsen"
-
-#~ msgid "Resize CanvasItem"
-#~ msgstr "Formaat van CanvasItem wijzigen"
-
-#~ msgid "Polygon->UV"
-#~ msgstr "Polygon→UV"
-
-#~ msgid "UV->Polygon"
-#~ msgstr "UV→Polygon"
-
-#~ msgid "Add initial export..."
-#~ msgstr "Voer initiële export toe..."
-
-#~ msgid "Add previous patches..."
-#~ msgstr "Voeg vorige patches toe..."
-
-#~ msgid "Delete patch '%s' from list?"
-#~ msgstr "Verwijder patch '%s' van lijst?"
-
-#~ msgid "Patches"
-#~ msgstr "Patches"
-
-#~ msgid "Make Patch"
-#~ msgstr "Maak Patch"
-
-#~ msgid "Pack File"
-#~ msgstr "Pakket Bestand"
-
-#~ msgid "No build apk generated at: "
-#~ msgstr "Geen build APK gegeneerd op: "
-
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "Bestandssysteem- en Importtablad"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "Na het exporteren of opstarten van het programma zal het proberen "
-#~ "verbinding maken met het IP-adres van deze computer zodat het gedebugd "
-#~ "kan worden."
-
-#~ msgid "Current scene was never saved, please save it prior to running."
-#~ msgstr ""
-#~ "De huidige scène is nooit opgeslagen, sla het op voor het uitvoeren."
-
-#~ msgid "Revert"
-#~ msgstr "Herstellen"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr ""
-#~ "Deze actie kan niet ongedaan gemaakt worden. WIlt u desondanks "
-#~ "terugzetten?"
-
-#~ msgid "Revert Scene"
-#~ msgstr "Scène terugzetten"
-
-#~ msgid "Clear Script"
-#~ msgstr "Script wissen"
-
-#~ msgid "Issue Tracker"
-#~ msgstr "Issue Tracker"
-
-#~ msgid "Request Docs"
-#~ msgstr "Verzoek documentatie"
-
-#~ msgid "Help improve the Godot documentation by giving feedback."
-#~ msgstr "Help de Godot-documentatie te verbeteren door feedback te geven."
-
-#~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "%d voorgekomen waarde(s) vervangen."
-
-#~ msgid "Create Static Convex Body"
-#~ msgstr "Creëer een statisch convex lichaam"
-
-#~ msgid "Failed creating shapes!"
-#~ msgstr "Shapes maken mislukt!"
-
-#~ msgid ""
-#~ "There are currently no tutorials for this class, you can [color=$color]"
-#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
-#~ "$url2]request one[/url][/color]."
-#~ msgstr ""
-#~ "Er is momenteel geen handleiding voor deze methode. Help ons alsjeblieft "
-#~ "door [color=$color][url=$url]een toe te voegen[/url][/color] of [color="
-#~ "$color][url=$url2]een aan te vragen[/url][/color]."
-
-#~ msgid "enum  "
-#~ msgstr "enum  "
-
-#~ msgid "Brief Description"
-#~ msgstr "Korte Omschrijving"
-
-#~ msgid "Class Description"
-#~ msgstr "Klassebeschrijving"
-
-#~ msgid "Project export failed with error code %d."
-#~ msgstr "Project exporteren faalt door foutcode %d."
-
-#~ msgid "Password:"
-#~ msgstr "Wachtwoord:"
-
-#~ msgid "Pause the scene"
-#~ msgstr "Pauzeer de scene"
-
-#~ msgid "Shift+"
-#~ msgstr "Shift+"
-
-#~ msgid "Alt+"
-#~ msgstr "Alt+"
-
-#~ msgid "Control+"
-#~ msgstr "Control+"
-
-#, fuzzy
-#~ msgid "Snap to Grid"
-#~ msgstr "Uitlijnen op raster"
-
-#, fuzzy
-#~ msgid "Add input +"
-#~ msgstr "Voeg invoer toe"
-
-#~ msgid "Language"
-#~ msgstr "Taal"
-
-#~ msgid "Inherits"
-#~ msgstr "Erft"
-
-#~ msgid "Base Type:"
-#~ msgstr "Basis Type:"
-
-#~ msgid "Available Nodes:"
-#~ msgstr "Beschikbare Nodes:"
-
-#~ msgid "Input"
-#~ msgstr "Invoer"
-
-#~ msgid "Methods:"
-#~ msgstr "Methodes:"
-
-#~ msgid "Theme Properties:"
-#~ msgstr "Thema Eigenschappen:"
-
-#~ msgid "Enumerations:"
-#~ msgstr "Enumeraties:"
-
-#~ msgid "Constants:"
-#~ msgstr "Constanten:"
-
-#~ msgid "Class Description:"
-#~ msgstr "Klassebeschrijving:"
-
-#, fuzzy
-#~ msgid "Property Descriptions:"
-#~ msgstr "Eigenschap Beschrijving:"
-
-#, fuzzy
-#~ msgid "Method Descriptions:"
-#~ msgstr "Methode Beschrijving:"
-
-#, fuzzy
-#~ msgid "Reverse sorting."
-#~ msgstr "Opvragen..."
-
-#~ msgid "Delete Node(s)?"
-#~ msgstr "Verwijder knooppunt(en)?"
-
-#~ msgid "No Matches"
-#~ msgstr "Geen Overeenkomsten"
-
-#~ msgid ""
-#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
-#~ msgstr ""
-#~ "Kan niet schrijven in file_type_cache.cch, de bestandstype cache wordt "
-#~ "niet bewaard!"
-
-#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-#~ msgstr ""
-#~ "Kan niet naar '%s' navigeren omdat het niet in het bestandssysteem "
-#~ "gevonden is!"
-
-#~ msgid "Error loading image:"
-#~ msgstr "Error bij het laden van afbeelding:"
-
-#~ msgid "No pixels with transparency > 128 in image..."
-#~ msgstr "Geen pixels met transparantie > 128 in afbeelding..."
-
-#, fuzzy
-#~ msgid "Parent has no solid faces to populate."
-#~ msgstr "Ouder heeft geen vaste vlakken om te bevolken."
-
-#~ msgid "Couldn't map area."
-#~ msgstr "Kon het gebied niet mappen."
-
-#~ msgid "Faces contain no area!"
-#~ msgstr "Vlakken bevatten geen gebied!"
-
-#~ msgid "No faces!"
-#~ msgstr "Geen vlakken!"
-
-#, fuzzy
-#~ msgid "Error: could not load file."
-#~ msgstr "Map kon niet gemaakt worden."
-
-#, fuzzy
-#~ msgid "Error could not load file."
-#~ msgstr "Map kon niet gemaakt worden."
-
-#~ msgid "Doppler Enable"
-#~ msgstr "Inschakelen Doppler"
-
-#~ msgid "Select Mode (Q)"
-#~ msgstr "Selectiestand (Q)"
-
-#~ msgid "Move Mode (W)"
-#~ msgstr "Beweegstand (W)"
-
-#~ msgid "Rotate Mode (E)"
-#~ msgstr "Rotatiestand (E)"
-
-#~ msgid "Scale Mode (R)"
-#~ msgstr "Schaalstand (R)"
-
-#~ msgid "Local Coords"
-#~ msgstr "Lokale Coördinaten"
-
-#, fuzzy
-#~ msgid "Snap Mode (%s)"
-#~ msgstr "Op hulplijnen uitlijnen"
-
-#~ msgid "Tool Select"
-#~ msgstr "Gereedschappen"
-
-#~ msgid "Tool Move"
-#~ msgstr "Beweeg Gereedschap"
-
-#~ msgid "Tool Rotate"
-#~ msgstr "Roteer Gereedschap"
-
-#~ msgid "Tool Scale"
-#~ msgstr "Verschalen Gereedschap"
-
-#, fuzzy
-#~ msgid ""
-#~ "Remove all missing projects from the list? (Folders contents will not be "
-#~ "modified)"
-#~ msgstr ""
-#~ "Project uit de lijst verwijderen? (Inhoud van map wordt niet gewijzigd)"
-
-#~ msgid "Project List"
-#~ msgstr "Projectlijst"
-
-#~ msgid "Exit"
-#~ msgstr "Sluiten"
-
-#~ msgid "Could not execute PVRTC tool:"
-#~ msgstr "Kan PVRTC tool niet uitvoeren:"
-
-#~ msgid "Can't load back converted image using PVRTC tool:"
-#~ msgstr "Kan geconverteerd beeld niet laden met de PVRTC tool:"
-
-#~ msgid "Error initializing FreeType."
-#~ msgstr "Error bij het initialiseren van FreeType."
-
-#~ msgid "Unknown font format."
-#~ msgstr "Onbekende lettertype formaat."
-
-#~ msgid "Error loading font."
-#~ msgstr "Fout bij het laden van lettertype."
-
-#~ msgid "Invalid font size."
-#~ msgstr "Ongeldige lettertype grootte."
-
-#~ msgid "Previous Folder"
-#~ msgstr "Vorige Folder"
-
-#~ msgid "Next Folder"
-#~ msgstr "Volgende Folder"
-
-#, fuzzy
-#~ msgid "Open in an external image editor."
-#~ msgstr "Open de volgende Editor"
-
-#~ msgid "Reverse"
-#~ msgstr "Omkeren"
-
-#~ msgid "Mirror X"
-#~ msgstr "Spiegel X"
-
-#~ msgid "Mirror Y"
-#~ msgstr "Spiegel Y"
-
-#, fuzzy
-#~ msgid "Failed to create solution."
-#~ msgstr "Mislukt om resource te laden."
-
-#, fuzzy
-#~ msgid "Failed to save solution."
-#~ msgstr "Mislukt om resource te laden."
-
-#, fuzzy
-#~ msgid "Failed to create C# project."
-#~ msgstr "Mislukt om resource te laden."
-
-#, fuzzy
-#~ msgid "Create C# solution"
-#~ msgstr "Subscriptie Maken"
-
-#, fuzzy
-#~ msgid "Build Project"
-#~ msgstr "Project"
-
-#, fuzzy
-#~ msgid "View log"
-#~ msgstr "Bekijk Bestanden"
-
-#, fuzzy
-#~ msgid "Enabled Classes"
-#~ msgstr "Zoek Klasses"
-
-#~ msgid "Update Always"
-#~ msgstr "Altijd Updaten"
-
-#~ msgid "Raw Mode"
-#~ msgstr "Raw-modus"
-
-#~ msgid "Path to Node:"
-#~ msgstr "Pad naar Node:"
-
-#~ msgid "Delete selected files?"
-#~ msgstr "Verwijder geselecteerde bestanden?"
-
-#~ msgid "There is no 'res://default_bus_layout.tres' file."
-#~ msgstr "Er is geen 'res://default_bus_layout.tres' bestand."
-
-#~ msgid "Go to parent folder"
-#~ msgstr "Ga naar bovenliggende folder"
-
-#~ msgid "Open Scene(s)"
-#~ msgstr "Scene(s) Openen"
-
-#~ msgid "Previous Directory"
-#~ msgstr "Vorige Map"
-
-#~ msgid "Next Directory"
-#~ msgstr "Volgende Map"
-
-#~ msgid "Ease in"
-#~ msgstr "Rustig Aanzetten"
-
-#~ msgid "Ease out"
-#~ msgstr "Rustig Afzetten"
-
-#~ msgid "Create Convex Static Body"
-#~ msgstr "Creëer Convex Statisch Lichaam"
-
-#, fuzzy
-#~ msgid "Create folder"
-#~ msgstr "Map Maken"
-
-#, fuzzy
-#~ msgid "Custom Node"
-#~ msgstr "Knip Nodes"
-
-#~ msgid "Invalid Path"
-#~ msgstr "Ongeldig Path"
-
-#, fuzzy
-#~ msgid "GridMap Duplicate Selection"
-#~ msgstr "Dupliceer Selectie"
-
-#, fuzzy
-#~ msgid "Create Area"
-#~ msgstr "Nieuwe Maken"
-
-#~ msgid "Edit Signal Arguments:"
-#~ msgstr "Signaal Argumenten Bewerken:"
-
-#~ msgid "Edit Variable:"
-#~ msgstr "Variabele Bewerken:"
-
-#, fuzzy
-#~ msgid "Snap (s): "
-#~ msgstr "Stap(pen):"
-
-#, fuzzy
-#~ msgid "Insert keys."
-#~ msgstr "Voer Sleutels In"
-
-#~ msgid "Instance the selected scene(s) as child of the selected node."
-#~ msgstr ""
-#~ "Maak een nieuwe kopie van de geselecteerde scene(s) als kind van de "
-#~ "geselecteerde knoop."
-
-#~ msgid "Font Size:"
-#~ msgstr "Lettertypegrootte:"
-
-#~ msgid "Line:"
-#~ msgstr "Regel:"
-
-#~ msgid "Col:"
-#~ msgstr "Kolom:"
-
-#, fuzzy
-#~ msgid "OrientedPathFollow only works when set as a child of a Path node."
-#~ msgstr ""
-#~ "PathFollow2D werkt alleen wanneer het een kind van een Path2D node is."
-
-#, fuzzy
-#~ msgid "Add Split"
-#~ msgstr "Punt toevoegen"
-
-#, fuzzy
-#~ msgid "Invalid Split: "
-#~ msgstr "Ongeldig Pad."
-
-#, fuzzy
-#~ msgid "Remove Split"
-#~ msgstr "Punt verwijderen"
-
-#, fuzzy
-#~ msgid "Poly"
-#~ msgstr "Bewerk Poly"
-
-#, fuzzy
-#~ msgid "Splits"
-#~ msgstr "Splits Pad"
-
-#, fuzzy
-#~ msgid "Add Node.."
-#~ msgstr "Node Toevoegen"
-
-#~ msgid "Create from scene?"
-#~ msgstr "Creëer vanuit scene?"
-
-#~ msgid "Create Poly"
-#~ msgstr "Creëer Poly"
-
-#~ msgid "Create a new polygon from scratch"
-#~ msgstr "Begin een nieuwe polygoon"
-
-#, fuzzy
-#~ msgid "Zoom out"
-#~ msgstr "Uitzoomen"
-
-#, fuzzy
-#~ msgid "Zoom in"
-#~ msgstr "Inzoomen"
-
-#~ msgid "Create Poly3D"
-#~ msgstr "Maak Poly3D"
-
-#~ msgid ""
-#~ "No OccluderPolygon2D resource on this node.\n"
-#~ "Create and assign one?"
-#~ msgstr ""
-#~ "Geen OccluderPolygon2D resource op deze node.\n"
-#~ "Creëer en wijs één toe?"
-
-#~ msgid "LMB: Move Point."
-#~ msgstr "LMB: Verplaats Punt."
-
-#~ msgid "Ctrl+LMB: Split Segment."
-#~ msgstr "Ctrl+LMB: Splits Segment."
-
-#~ msgid "RMB: Erase Point."
-#~ msgstr "RMB: Verwijder Punt."
-
-#, fuzzy
-#~ msgid "New TextFile"
-#~ msgstr "Bekijk Bestanden"
-
-#~ msgid "Save Theme As"
-#~ msgstr "Thema Opslaan Als"
-
-#~ msgid "<None>"
-#~ msgstr "<Geen>"
-
-#, fuzzy
-#~ msgid "Zoom:"
-#~ msgstr "Inzoomen"
-
-#~ msgid "Class List:"
-#~ msgstr "Klasse Lijst:"
-
-#~ msgid "Public Methods"
-#~ msgstr "Publieke Methodes"
-
-#~ msgid "Public Methods:"
-#~ msgstr "Publieke Methodes:"
-
-#~ msgid "GUI Theme Items:"
-#~ msgstr "GUI Thema Items:"
-
-#, fuzzy
-#~ msgid "Property: "
-#~ msgstr "Eigenschappen:"
-
-#, fuzzy
-#~ msgid "Toggle folder status as Favorite."
-#~ msgstr "Schakel folder status als Favoriet"
-
-#, fuzzy
-#~ msgid "Show current scene file."
-#~ msgstr "Selecteer zojuist bewerkte sub-tegel."
-
-#, fuzzy
-#~ msgid "Whole words"
-#~ msgstr "Hele Woorden"
-
-#, fuzzy
-#~ msgid "Match case"
-#~ msgstr "Hoofdlettergevoelig"
-
-#~ msgid "Ok"
-#~ msgstr "Oké"
-
-#~ msgid "Search the class hierarchy."
-#~ msgstr "Zoek in de klasse hiërarchie."
-
-#, fuzzy
-#~ msgid "Search in files"
-#~ msgstr "Zoek Klasses"
-
-#~ msgid ""
-#~ "Built-in scripts can only be edited when the scene they belong to is "
-#~ "loaded"
-#~ msgstr ""
-#~ "Ingebouwde scripts kunnen alleen ge-edit worden wanneer de bijbehorende "
-#~ "scène geladen is"
-
-#~ msgid "Convert To Uppercase"
-#~ msgstr "Converteer Naar Hoofdletters"
-
-#~ msgid "Convert To Lowercase"
-#~ msgstr "Converteer Naar Kleine Letters"
-
-#~ msgid "Rotate 0 degrees"
-#~ msgstr "0 Graden Roteren"
-
-#~ msgid "Rotate 90 degrees"
-#~ msgstr "90 Graden Roteren"
-
-#~ msgid "Rotate 180 degrees"
-#~ msgstr "180 Graden Roteren"
-
-#~ msgid "Rotate 270 degrees"
-#~ msgstr "270 Graden Roteren"
-
-#~ msgid "Bake!"
-#~ msgstr "Bakken!"
-
-#~ msgid "Bake the navigation mesh."
-#~ msgstr "Bak de navigatie mesh."
-
-#~ msgid "Get"
-#~ msgstr "Krijg"
-
-#~ msgid "Change RGB Constant"
-#~ msgstr "Verander RGB Constante"
-
-#~ msgid "Change Vec Scalar Operator"
-#~ msgstr "Verander Vec Scalar Operator"
-
-#~ msgid "Change RGB Operator"
-#~ msgstr "Verander RGB Operator"
-
-#~ msgid "Toggle Rot Only"
-#~ msgstr "Aan/Uit Alleen Rot"
-
-#~ msgid "Change Vec Function"
-#~ msgstr "Verander Vec Functie"
-
-#~ msgid "Change RGB Uniform"
-#~ msgstr "Verander RGB Uniform"
-
-#~ msgid "Change Default Value"
-#~ msgstr "Verander Standaardwaarde"
-
-#~ msgid "Change XForm Uniform"
-#~ msgstr "Verander XForm Uniform"
-
-#~ msgid "Change Cubemap Uniform"
-#~ msgstr "Verander Cubemap Uniform"
-
-#~ msgid "Change Comment"
-#~ msgstr "Verander Commentaar"
-
-#~ msgid "Add/Remove to Color Ramp"
-#~ msgstr "Voeg Toe/Verwijder van Kleur Helling"
-
-#, fuzzy
-#~ msgid "Modify Color Ramp"
-#~ msgstr "Wijzig Kleuren Helling"
-
-#~ msgid "Add/Remove to Curve Map"
-#~ msgstr "Voeg Toe/Verwijder van Curve Map"
-
-#~ msgid "Modify Curve Map"
-#~ msgstr "Wijzig Curve Map"
-
-#~ msgid "Connect Graph Nodes"
-#~ msgstr "Verbind Graaf Knooppunten"
-
-#~ msgid "Remove Shader Graph Node"
-#~ msgstr "Verwijder Shader Graaf Knooppunten"
-
-#~ msgid "Move Shader Graph Node"
-#~ msgstr "Verplaats Shader Graaf Knooppunten"
-
-#~ msgid "Error: Cyclic Connection Link"
-#~ msgstr "Fout: Cyclische Connectie Link"
-
-#~ msgid "Error: Missing Input Connections"
-#~ msgstr "Fout: Ontbrekende Input Connecties"
-
-#~ msgid "Add Shader Graph Node"
-#~ msgstr "Voeg Shader Graaf Knooppunt Toe"
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "Verplaats Anim Track Omhoog"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "Verplaats Anim Track Omlaag"
-
-#~ msgid "Set Transitions to:"
-#~ msgstr "Zet Overgangen Naar:"
-
-#~ msgid "Anim Track Change Interpolation"
-#~ msgstr "Anim Track Wijzig Interpolatie"
-
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "Anim Track Wijzig Waarde Modus"
-
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "Anim Track Wijzig Wikkel Modus"
-
-#~ msgid "Edit Node Curve"
-#~ msgstr "Wijzig Node Curve"
-
-#~ msgid "Edit Selection Curve"
-#~ msgstr "Wijzig Selectie Curve"
-
-#~ msgid "Anim Add Key"
-#~ msgstr "Anim Key Toevoegen"
-
-#~ msgid "In"
-#~ msgstr "In"
-
-#~ msgid "Out"
-#~ msgstr "Uit"
-
-#~ msgid "In-Out"
-#~ msgstr "In-Uit"
-
-#~ msgid "Out-In"
-#~ msgstr "Uit-In"
-
-#~ msgid "Change Anim Loop"
-#~ msgstr "Wijzig Anim Lus"
-
-#~ msgid "Anim Create Typed Value Key"
-#~ msgstr "Anim Getypeerd Waarde Key Aanmaken"
-
-#~ msgid "Anim Add Call Track"
-#~ msgstr "Anim Aanroep Track Toevoegen"
-
-#~ msgid "Length (s):"
-#~ msgstr "Lengte(s):"
-
-#~ msgid "Cursor step snap (in seconds)."
-#~ msgstr "Cursor stap snap (in seconden)."
-
-#~ msgid "Enable/Disable looping in animation."
-#~ msgstr "In- en uitschakelen van loopen in animatie."
-
-#~ msgid "Add new tracks."
-#~ msgstr "Nieuwe tracks toevoegen."
-
-#~ msgid "Move current track up."
-#~ msgstr "Verplaats huidige track naar boven."
-
-#~ msgid "Move current track down."
-#~ msgstr "Verplaats huidige track naar beneden."
-
-#~ msgid "Track tools"
-#~ msgstr "Spoorgereedschappen"
-
-#~ msgid "Enable editing of individual keys by clicking them."
-#~ msgstr ""
-#~ "Schakel het individueel aanpassen van keys in door op ze te klikken."
-
-#~ msgid "Key"
-#~ msgstr "Sleutel"
-
-#~ msgid "Call Functions in Which Node?"
-#~ msgstr "Roep Functies Aan in Welke Node?"
-
-#~ msgid "Thanks!"
-#~ msgstr "Bedankt!"
-
-#~ msgid "I see..."
-#~ msgstr "Ik snap het..."
-
-#~ msgid "Ugh"
-#~ msgstr "Oeps"
-
-#~ msgid "Stop Profiling"
-#~ msgstr "Stop Profilering"
-
-#~ msgid "Start Profiling"
-#~ msgstr "Start Profilering"
-
-#~ msgid "Default (Same as Editor)"
-#~ msgstr "Standaard (Dezelfde als Editor)"
-
-#~ msgid "Create new animation in player."
-#~ msgstr "Maak een nieuwe animatie in speler."
-
-#~ msgid "Load animation from disk."
-#~ msgstr "Laad animatie vanuit schijf."
-
-#~ msgid "Load an animation from disk."
-#~ msgstr "Laad een animatie vanuit schijf."
-
-#~ msgid "Save the current animation"
-#~ msgstr "Sla de huidige animatie op"
-
-#~ msgid "Edit Target Blend Times"
-#~ msgstr "Bewerk Doel Mengtijden"
-
-#~ msgid "Copy Animation"
-#~ msgstr "Kopieer Animatie"
-
-#~ msgid "Fetching:"
-#~ msgstr "Ophalen:"
-
-#~ msgid "prev"
-#~ msgstr "vorige"
-
-#~ msgid "next"
-#~ msgstr "volgende"
-
-#~ msgid "last"
-#~ msgstr "laatste"
-
-#~ msgid "Edit IK Chain"
-#~ msgstr "Bewerk IK Ketting"
-
-#~ msgid "Drag pivot from mouse position"
-#~ msgstr "Versleep draaipunt vanaf muispositie"
-
-#~ msgid "Set pivot at mouse position"
-#~ msgstr "Plaats pivot bij muispositie"
-
-#~ msgid "Add/Remove Color Ramp Point"
-#~ msgstr "Voeg Toe/Verwijder Kleur Hellingspunt"
-
-#~ msgid "OK :("
-#~ msgstr "OK :("
-
-#~ msgid "Texture Region Editor"
-#~ msgstr "Textuur Regio Editor"
-
-#~ msgid "Erase selection"
-#~ msgstr "Verwijder Selectie"
-
-#~ msgid "Item name or ID:"
-#~ msgstr "Item naam of identificatiecode:"
-
-#~ msgid "Export templates for this platform are missing/corrupted: "
-#~ msgstr "Exportsjablonen voor dit platform zijn vermist/corrupt: "
-
-#~ msgid "Condition"
-#~ msgstr "Conditie"
-
-#~ msgid "Sequence"
-#~ msgstr "Sequentie"
-
-#~ msgid "Iterator"
-#~ msgstr "Iterator"
-
-#~ msgid "While"
-#~ msgstr "Terwijl"
-
-#~ msgid "Return"
-#~ msgstr "Teruggave"
-
-#~ msgid "Call"
-#~ msgstr "Aanroep"
-
-#, fuzzy
-#~ msgid "Edit Signal"
-#~ msgstr "Signaal Bewerken:"
-
-#, fuzzy
-#~ msgid "Can't contain '/' or ':'"
-#~ msgstr "Kan niet verbinden met host:"
-
-#~ msgid ""
-#~ "Invalid version.txt format inside templates. Revision is not a valid "
-#~ "identifier."
-#~ msgstr ""
-#~ "Ongeldig version.txt formaat in sjablonen. Revisie is geen geldig "
-#~ "identificatienummer."
-
-#~ msgid "Can't write file."
-#~ msgstr "Kan niet naar bestand schrijven."
-
-#~ msgid "Replace By"
-#~ msgstr "Vervangen Door"
-
-#~ msgid "Backwards"
-#~ msgstr "Achterwaarts"
-
-#~ msgid "Prompt On Replace"
-#~ msgstr "Vragen Bij Vervangen"
-
-#~ msgid "Skip"
-#~ msgstr "Overslaan"
-
-#, fuzzy
-#~ msgid "preview"
-#~ msgstr "Preview:"
-
-#~ msgid "Move Add Key"
-#~ msgstr "Verplaats Key Toevoegen"
-
-#~ msgid "List:"
-#~ msgstr "Lijst:"
-
-#, fuzzy
-#~ msgid "Add Point to Line2D"
-#~ msgstr "Ga naar Regel"
-
-#~ msgid "Meta+"
-#~ msgstr "Meta+"
-
-#, fuzzy
-#~ msgid "Setting '"
-#~ msgstr "Aan Het Opzetten..."
-
-#, fuzzy
-#~ msgid "Selection -> Duplicate"
-#~ msgstr "Alleen Selectie"
-
-#, fuzzy
-#~ msgid "Selection -> Clear"
-#~ msgstr "Alleen Selectie"
-
-#~ msgid ""
-#~ "Path property must point to a valid Viewport node to work. Such Viewport "
-#~ "must be set to 'render target' mode."
-#~ msgstr ""
-#~ "Path eigenschap moet verwijzen naar een geldige Viewport node om te "
-#~ "werken. Zo een Viewport moet in 'render target' modus gezet worden."
-
-#~ msgid ""
-#~ "The Viewport set in the path property must be set as 'render target' in "
-#~ "order for this sprite to work."
-#~ msgstr ""
-#~ "De Viewport gegeven in de pad eigenschap moet als 'render target' "
-#~ "ingesteld zijn om deze sprite te laten werken."
-
-#~ msgid "' parsing of config failed."
-#~ msgstr "' te activeren. Het configuratiebestand kon niet gelezen worden."
-
-#~ msgid "Method List For '%s':"
-#~ msgstr "Methodelijst voor '%s':"
-
-#~ msgid "Return:"
-#~ msgstr "Teruggave:"
-
-#~ msgid "Added:"
-#~ msgstr "Toegevoegd:"
-
-#~ msgid "Could not save atlas subtexture:"
-#~ msgstr "Kon atlas subtexture niet opslaan:"
-
-#~ msgid "Setting Up..."
-#~ msgstr "Aan Het Opzetten..."
-
-#~ msgid "Re-Importing"
-#~ msgstr "Aan Het Herimporteren"
-
-#, fuzzy
-#~ msgid "Tiles"
-#~ msgstr "Bestand:"
-
-#~ msgid "Ctrl+"
-#~ msgstr "Ctrl+"
-
-#~ msgid "just pressed"
-#~ msgstr "reeds ingedrukt"
-
-#, fuzzy
-#~ msgid ""
-#~ "Couldn't read the certificate file. Are the path and password both "
-#~ "correct?"
-#~ msgstr ""
-#~ "Kon het certificaat bestand niet lezen. Zijn het pad en wachtwoord beide "
-#~ "correct?"
-
-#~ msgid "Error creating the package signature."
-#~ msgstr "Error bij het maken van het pakket signatuur."
-
-#~ msgid "Node From Scene"
-#~ msgstr "Node Uit Scene"
-
-#~ msgid "Path property must point to a valid Particles2D node to work."
-#~ msgstr ""
-#~ "Path eigenschap moet verwijzen naar een geldige Particles2D node om te "
-#~ "werken."
-
-#~ msgid ""
-#~ "A SampleLibrary resource must be created or set in the 'samples' property "
-#~ "in order for SamplePlayer to play sound."
-#~ msgstr ""
-#~ "Een SampleLibrary resource moet gemaakt of gegeven worden in de 'samples' "
-#~ "eigenschap om SamplePlayer geluid af te laten spelen."
-
-#~ msgid ""
-#~ "A SampleLibrary resource must be created or set in the 'samples' property "
-#~ "in order for SpatialSamplePlayer to play sound."
-#~ msgstr ""
-#~ "Een SampleLibrary resource moet gemaakt of gegeven worden in de 'samples' "
-#~ "eigenschap om SpatialSamplePlayer geluid te laten afspelen."
-
-#, fuzzy
-#~ msgid "Replaced %d Ocurrence(s)."
-#~ msgstr "%d Voorgekomen Waarde(s) Vervangen."

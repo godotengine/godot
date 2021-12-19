@@ -14,19 +14,20 @@
 # test test <ugbdvwpeikvyzwaadt@awdrt.org>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
 # Daniel Kariv <danielkariv98@gmail.com>, 2020.
-# Ziv D <wizdavid@gmail.com>, 2020.
-# yariv benj <yariv4400@gmail.com>, 2020.
+# Ziv D <wizdavid@gmail.com>, 2020, 2021.
+# yariv benj <yariv4400@gmail.com>, 2020, 2021.
 # Guy Dadon <guydadon14@gmail.com>, 2020.
 # bruvzg <bruvzg13@gmail.com>, 2020.
 # Omer I.S. <omeritzicschwartz@gmail.com>, 2021.
 # Ram Tourgeman <ramtorgeman@gmail.com>, 2021.
+# Shailee Eliyahu <dev.sle.il@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-05-14 11:20+0000\n"
-"Last-Translator: Ram Tourgeman <ramtorgeman@gmail.com>\n"
+"PO-Revision-Date: 2021-11-29 20:38+0000\n"
+"Last-Translator: Shailee Eliyahu <dev.sle.il@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 4.7-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -383,13 +384,11 @@ msgstr "הוסף הנפשה"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "node '%s'"
-msgstr "מצב הצמדה (%s)"
+msgstr "המפרק '%s'"
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "animation"
 msgstr "הנפשה"
 
@@ -399,27 +398,24 @@ msgstr "נגן ההנפשות לא יכול להנפיש את עצמו, רק ש�
 
 #. TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "property '%s'"
-msgstr "לא קיים מאפיין ‚%s’."
+msgstr "מאפיין '%s'"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
 msgstr "יצירה והוספה של הנפשה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Insert Track & Key"
-msgstr "הכנס טראק & מפתח לאנימציה"
+msgstr "הכנס רצועה & מפתח לאנימציה"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
 msgstr "הכנס מפתח לאנימציה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "ניקוי ההנפשה"
+msgstr "שנה מרווח הנפשה"
 
 #: editor/animation_track_editor.cpp
 msgid "Rearrange Tracks"
@@ -427,7 +423,7 @@ msgstr "סדר רצועות מחדש"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr ""
+msgstr "רצועות שינוי-צורה חלות רק על מפרקים מבוססי-מרחב."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -451,39 +447,35 @@ msgstr "אי אפשר להוסיף רצועה חדשה בלי שורש"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "רצועה לא תקינה עבור Bezier (תת מאפיינים אינם תואמים)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "הוספת רצועת בזייה"
+msgstr "הוספת רצועת Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "נתיב הרצועה אינו תקין, לכן אי אפשר להוסיף מפתח."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "רצועה אינה מסוג מרחבי, אין אפשרות להכניס מפתח"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "התמרה"
+msgstr "הוסף מפתח שינוי צורה לרצועה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "הוספת רצועות חדשות."
+msgstr "הוספת מפתח רצועה"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr "הנתיב לרצועה אינו תקין, ולכן מפתח לשיטה (מתודה) לא יכל להתווסף"
+msgstr "נתיב הרצועה אינו תקין, לכן לא ניתן להוסיף מפתח שיטה."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "הוספת רצועות חדשות."
+msgstr "הוסף מפתח רצועת שיטה"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -613,9 +605,8 @@ msgid "Go to Previous Step"
 msgstr "מעבר לצעד הקודם"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Apply Reset"
-msgstr "איפוס התקריב"
+msgstr "החל איפוס"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -634,9 +625,8 @@ msgid "Use Bezier Curves"
 msgstr "שימוש בעקומות בזייה"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Create RESET Track(s)"
-msgstr "הדבקת רצועות"
+msgstr "יצירת רצועה(ות) איפוס"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -925,9 +915,8 @@ msgid "Disconnect"
 msgstr "ניתוק"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect a Signal to a Method"
-msgstr "שגיאת חיבור"
+msgstr "חבר אות לשיטה (מתודה)"
 
 #: editor/connections_dialog.cpp
 msgid "Edit Connection:"
@@ -942,27 +931,24 @@ msgid "Signals"
 msgstr "אותות"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "מאפייני פריט."
+msgstr "סנן אותות"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "האם אתה בטוח שאתה רוצה להסיר את כל החיבורים מהאות הזה?"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect All"
-msgstr "ניתוק"
+msgstr "נתק הכל"
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
 msgstr "עריכה..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go to Method"
-msgstr "מעבר למתודה"
+msgstr "מעבר לשיטה (מתודה)"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -982,7 +968,7 @@ msgstr "אין תוצאות עבור \"%s\"."
 
 #: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
-msgstr ""
+msgstr "לא קיים תיאור עבור %s."
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -1082,12 +1068,13 @@ msgid "Owners Of:"
 msgstr "בעלים של:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
-msgstr "להסיר את הקבצים הנבחרים מהמיזם? (אי אפשר לשחזר)"
+msgstr ""
+"להסיר את הקבצים שנבחרו מהפרוייקט? (זו פעולה בלתי הפיכה)\n"
+"בהתאם להגדרות מערכת הקבצים שלך, הקבצים יועברו לסל המחזור או יימחקו לצמיתות."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1097,6 +1084,9 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
+"הקבצים שברצונך למחוק נדרשים לשימוש ע\"י משאבים אחרים לפעולתם התקינה.\n"
+"למחוק אותם בכל מקרה? (זו פעולה בלתי הפיכה)\n"
+"בהתאם להגדרות מערכת הקבצים שלך, הקבצים יועברו לסל המחזור או יימחקו לצמיתות."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -1107,9 +1097,8 @@ msgid "Error loading:"
 msgstr "שגיאה בטעינה:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Load failed due to missing dependencies:"
-msgstr "טעינת הסצנה נכשלה עקב תלויות חסרות:"
+msgstr "הטעינה נכשלה עקב תלויות חסרות:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
@@ -1129,12 +1118,11 @@ msgstr "שגיאה בטעינה!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr ""
+msgstr "למחוק לצמיתות d% פריט(ים)? (בלתי הפיך!)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "תלויות"
+msgstr "הצג תלויות"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
@@ -1170,7 +1158,7 @@ msgstr "תודה רבה מקהילת Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "לחץ להעתקה."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1208,18 +1196,16 @@ msgid "Gold Sponsors"
 msgstr "מממני זהב"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
 msgstr "תורמים בדרגת כסף"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
 msgstr "תורמים בדרגת ארד"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr "מממנים זעירים"
+msgstr "מממנים קטנים"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
@@ -1252,6 +1238,9 @@ msgid ""
 "is an exhaustive list of all such third-party components with their "
 "respective copyright statements and license terms."
 msgstr ""
+"מנוע Godot מסתמך על מספר ספריות צד-שלישי חינמיות בעלות קוד פתוח, כולן תואמות "
+"את דרישות רישיון ה MIT של המנוע. לפניכם רשימה ממצה של כל רכיבי הצד-שלישי "
+"במנוע עם הצהרות זכויות היוצרים ותנאי הרישיון שלהם."
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -1266,43 +1255,36 @@ msgid "Licenses"
 msgstr "רישיונות"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "פתיחת קובץ החבילה נכשלה, המבנה אינו zip."
+msgstr "שגיאה בפתיחת קובץ המשאב עבור \"%s\" (אינו בפורמט ZIP)."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "%s (already exists)"
 msgstr "%s (כבר קיים)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr ""
+msgstr "תוכן המשאב \"%s\" - %d קובץ(ים) מתנגשים עם הפרוייקט שלך:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr ""
+msgstr "תוכן המשאב \"%s\" -אין התנגשויות עם הפרוייקט שלך:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr ""
+msgstr "פורס משאבים"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr ""
-"הקבצים הבאים הם חדשים בכונן.\n"
-"באילו פעולות לנקוט?:"
+msgstr "הקבצים הבאים נכשלו בחילוצם מהמשאב \"%s\":"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "(and %s more files)"
-msgstr "%d קבצים נוספים"
+msgstr "(וגם %s קבצים נוספים)"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset \"%s\" installed successfully!"
-msgstr "החבילה הותקנה בהצלחה!"
+msgstr "המשאב \"%s\" הותקן בהצלחה!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1314,9 +1296,8 @@ msgid "Install"
 msgstr "התקנה"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset Installer"
-msgstr "מתקין החבילות"
+msgstr "מתקין המשאבים"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -1336,7 +1317,7 @@ msgstr "שינוי עצמה לאפיק שמע"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr ""
+msgstr "מתג אפיק שמע בודד"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
@@ -1344,11 +1325,11 @@ msgstr "החלפת מצב השתקה על אפיק שמע"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr ""
+msgstr "מתג אפקטיי מעקף באפיק שמע"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr ""
+msgstr "בחר שליחת אפיק שמע"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
@@ -1363,13 +1344,12 @@ msgid "Delete Bus Effect"
 msgstr "מחיקת אפקט אפיק"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Drag & drop to rearrange."
-msgstr "אפיק שמע, יש לגרור ולשחרר כדי לסדר מחדש."
+msgstr "גרור ושחרר לסידור מחדש."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
-msgstr ""
+msgstr "יחיד"
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
@@ -1380,7 +1360,6 @@ msgid "Bypass"
 msgstr "מעקף"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Bus Options"
 msgstr "אפשרויות אפיק"
 
@@ -1439,20 +1418,19 @@ msgstr "פתיחת פריסת אפיקי שמע"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
-msgstr ""
+msgstr "קובץ '%s' אינו קיים."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
-msgstr ""
+msgstr "פריסה"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
 msgstr "קובץ שגוי, לא פריסה של אפיקי שמע."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "שגיאה בשמירה"
+msgstr "שגיאה בשמירת קובץ: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1501,23 +1479,20 @@ msgid "Valid characters:"
 msgstr "תווים תקפים:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing engine class name."
-msgstr "שם שגוי. לא יכול לחפוף לשם מחלקת מנוע קיימת."
+msgstr "אינו יכול להתנגש עם שם מחלקה קיימת במנוע."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
-msgstr "שם שגוי. לא יכול לחפוף לשם סוג מובנה קיים."
+msgstr "אינו יכול להתנגש עם סוג שם מובנה שכבר קיים."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing global constant name."
-msgstr "שם שגוי. לא יכול לחפוף לשם קבוע גלובלי קיים."
+msgstr "אינו יכול להתנגש עם שם קבוע גלובלי שכבר קיים."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
-msgstr ""
+msgstr "מילת המפתח לא יכולה לתפקד כשם שנטען-אוטומטית."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -1529,7 +1504,7 @@ msgstr "שינוי שם טעינה אוטומטית"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr ""
+msgstr "מתג משתנים גלובאליים נטענים-אוטומטית"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
@@ -1549,16 +1524,15 @@ msgstr "סידור טעינות אוטומטית מחדש"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "לא ניתן להוסיף טעינה-אוטומטית:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "%s is an invalid path. File does not exist."
-msgstr "הקובץ לא קיים."
+msgstr "הנתיב %s אינו תקין. קובץ לא קיים."
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. Not in resource path (res://)."
-msgstr ""
+msgstr "הנתיב %s אינו תקין. אינו בנתיב המשאב (res://)."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1582,9 +1556,8 @@ msgid "Name"
 msgstr "שם"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Global Variable"
-msgstr "שינוי שם משתנה"
+msgstr "משתנה גלובלי"
 
 #: editor/editor_data.cpp
 msgid "Paste Params"
@@ -1611,9 +1584,8 @@ msgid "[unsaved]"
 msgstr "[לא נשמר]"
 
 #: editor/editor_dir_dialog.cpp
-#, fuzzy
 msgid "Please select a base directory first."
-msgstr "נא לבחור את תיקיית הבסיס תחילה"
+msgstr "נא לבחור תחילה את תיקיית הבסיס."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1647,23 +1619,27 @@ msgstr "קובץ אחסון:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr ""
+msgstr "לא נמצאה תבנית ייצוא בנתיב המצופה:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
-msgstr "אריזה"
+msgstr "אורז"
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
+"פלטפורמת היעד דורשת דחיסת מרקם 'ETC' בשביל GLES2. הפעל 'ייבוא Etc' בהגדרות "
+"הפרויקט."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
+"פלטפורמת היעד דורשת דחיסת מרקם 'ETC2' בשביל GLES3. הפעל את 'יבוא Etc 2' "
+"בהגדרות הפרויקט."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1672,18 +1648,24 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"פלטפורמת היעד דורשת דחיסת מרקם 'ETC' בכדי לאפשר נסיגת דרייבר ל GLES2.\n"
+"הפעל את 'יבוא Etc' בהגדרות הפרויקט, או השבת את 'הפעל נסיגת דרייבר'."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
+"פלטפורמת היעד דורשת דחיסת מרקם 'PVRTC' עבור GLES2. הפעל את 'ייבוא Pvrtc' "
+"בהגדרות הפרויקט."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
+"פלטפורמת היעד דורשת דחיסת מרקם 'ETC2' או 'PVRTC' עבור GLES3. הפעל את 'ייבוא "
+"Etc 2' או 'ייבוא Pvrtc' בהגדרות הפרויקט."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1692,6 +1674,8 @@ msgid ""
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"פלטפורמת היעד דורשת דחיסת מרקם 'PVRTC' בכדי לאפשר נסיגת דרייבר ל GLES2.\n"
+"הפעל את 'יבוא Pvrtc' בהגדרות הפרויקט, או השבת את 'הפעל נסיגת דרייבר'."
 
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1703,7 +1687,7 @@ msgstr "תבנית ניפוי שגיאות מותאמת אישית לא נמצא
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "תבנית שחרור מותאמת-אישית לא נמצאה."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -1711,17 +1695,15 @@ msgstr "קובץ התבנית לא נמצא:"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr ""
+msgstr "בייצוא ארכיטקטורת 32 ביט, ה PCK המובנה לא יכול לחרוג מעבר ל 4 GiB."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "3D Editor"
-msgstr "עורך"
+msgstr "עורך תלת-מימד"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Script Editor"
-msgstr "פתיחת עורך סקריפטים"
+msgstr "עורך סקריפטים"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
@@ -1729,159 +1711,143 @@ msgstr "ספריית משאבים"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
-msgstr ""
+msgstr "עריכת עץ הסצנות"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
-msgstr "שם המפרק:"
+msgstr "חלון איברים"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
-msgstr "מערכת קבצים"
+msgstr "חלון מערכת הקבצים"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Dock"
-msgstr "ייבוא"
+msgstr "חלון ייבוא"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
-msgstr ""
+msgstr "מאפשר צפייה ועריכה של סצנות תלת-מימד."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
-msgstr ""
+msgstr "מאפשר עריכת סקריפטים בעזרת עורך הסקריפטים המובנה."
 
 #: editor/editor_feature_profile.cpp
 msgid "Provides built-in access to the Asset Library."
-msgstr ""
+msgstr "מספק גישה מובנית לספריית המשאבים."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows editing the node hierarchy in the Scene dock."
-msgstr ""
+msgstr "מאפשר עריכה של היררכיית המפרקים בחלון הסצנה."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Allows to work with signals and groups of the node selected in the Scene "
 "dock."
-msgstr ""
+msgstr "מאפשר לעבוד עם אותות וקבוצות של המפרק שנבחר בחלון הסצנה."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to browse the local file system via a dedicated dock."
-msgstr ""
+msgstr "מאפשר עיון בקבצי המערכת המקומית ע\"י שימוש בחלון ייעודי."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Allows to configure import settings for individual assets. Requires the "
 "FileSystem dock to function."
 msgstr ""
+"מאפשר התאמת הגדרות ייבוא עבור משאבים בודדים. דורש את השימוש בחלון מערכת-"
+"הקבצים."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(current)"
 msgstr "(נוכחי)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(none)"
-msgstr ""
+msgstr "(ריק)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
-msgstr ""
+msgstr "להסיר את הפרופיל שנבחר, '%s'? זו פעולה בלתי הפיכה."
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
-msgstr ""
+msgstr "הפרופיל חייב להיות שם קובץ תקין ואינו יכול להכיל '.'"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Profile with this name already exists."
-msgstr "כבר קיימים קובץ או תיקייה בשם הזה."
+msgstr "פרופיל בשם זה כבר קיים."
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled, Properties Disabled)"
-msgstr ""
+msgstr "(העורך הושבת, המאפיינים הושבתו)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Properties Disabled)"
-msgstr "מאפיינים"
+msgstr "(המאפיינים הושבתו)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "(Editor Disabled)"
-msgstr "מושבת"
+msgstr "(העורך הושבת)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options:"
-msgstr "תיאור:"
+msgstr "אפשרויות מחלקה:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Enable Contextual Editor"
-msgstr "פתיחת העורך הבא"
+msgstr "הפעל עורף מבוסס הקשר"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Properties:"
-msgstr "צמצום כל המאפיינים"
+msgstr "מאפייני מחלקה:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Main Features:"
-msgstr "ניהול תכונות העורך..."
+msgstr "תכונות מרכזיות:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Nodes and Classes:"
-msgstr "חיפוש במחלקות"
+msgstr "איברים ומחלקות:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
-msgstr ""
+msgstr "פורמט קובץ 's%' אינו תקין, הייבוא בוטל."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
-msgstr ""
+msgstr "הפרופיל '%s' כבר קיים. הסר אותו תחילה לפני הייבוא, הייבוא בוטל."
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
 msgstr "שגיאה בשמירת פרופיל לנתיב '%s'."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Reset to Default"
-msgstr "טעינת בררת המחדל"
+msgstr "איפוס לברירת מחדל"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile:"
-msgstr "גרסה נוכחית:"
+msgstr "פרופיל נוכחי:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Create Profile"
-msgstr "מחיקת שטח"
+msgstr "צור פרופיל"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Remove Profile"
-msgstr "הסרת תבנית"
+msgstr "הסר פרופיל"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles:"
-msgstr "מאפיינים"
+msgstr "פרופילים זמינים:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Make Current"
-msgstr "(נוכחי)"
+msgstr "הפוך לנוכחי"
 
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
@@ -1893,51 +1859,44 @@ msgid "Export"
 msgstr "ייצוא"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Configure Selected Profile:"
-msgstr "גרסה נוכחית:"
+msgstr "הגדר את הפרופיל הנבחר:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Extra Options:"
-msgstr "תיאור:"
+msgstr "אפשרויות נוספות:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Create or import a profile to edit available classes and properties."
-msgstr ""
+msgstr "צור או ייבא פרופיל כדי לערוך מחלקות ומאפיינים זמינים."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "New profile name:"
-msgstr "שם המפרק:"
+msgstr "שם פרופיל חדש:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Godot Feature Profile"
-msgstr "ניהול תבניות ייצוא"
+msgstr "פרופיל התכונות של Godot"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
-msgstr ""
+msgstr "ייבוא פרופיל(ים)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Export Profile"
-msgstr "ייצוא מיזם"
+msgstr "ייצא פרופיל"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Manage Editor Feature Profiles"
-msgstr "ניהול תבניות ייצוא"
+msgstr "נהל פרופילי תכונות העורך"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
 msgstr "נא לבחור את התיקייה הנוכחית"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "File exists, overwrite?"
-msgstr "הקובץ קיים, לשכתב?"
+msgstr "הקובץ קיים, האם להחליף?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
@@ -2142,13 +2101,30 @@ msgstr "מתודות"
 msgid "Theme Properties"
 msgstr "מאפייני ערכת עיצוב"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "מונים"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Colors"
+msgstr "בחירת צבע"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "קבועים"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "מונים"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8714,19 +8690,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Colors"
-msgstr "בחירת צבע"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -10815,9 +10778,8 @@ msgid "Feature List:"
 msgstr ""
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script"
-msgstr "הרצת סקריפט"
+msgstr "סקריפט"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -13524,11 +13486,32 @@ msgstr "חובה לאפשר ״שימוש בבניה מותאמת אישית״ כ
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr "\"Hand Tracking\" תקף רק כאשר \"מצב Xr\" הוא \"Oculus Mobile VR\"."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr "\"Hand Tracking\" תקף רק כאשר \"מצב Xr\" הוא \"Oculus Mobile VR\"."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14646,522 +14629,3 @@ msgstr "השמה ל-uniform."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "אי אפשר לשנות קבועים."
-
-#~ msgid "Bottom"
-#~ msgstr "מתחת"
-
-#~ msgid "Left"
-#~ msgstr "שמאל"
-
-#~ msgid "Right"
-#~ msgstr "ימין"
-
-#~ msgid "Front"
-#~ msgstr "קדמי"
-
-#~ msgid "Rear"
-#~ msgstr "אחורי"
-
-#, fuzzy
-#~ msgid ""
-#~ "\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile "
-#~ "VR\"."
-#~ msgstr "\"דרגות של חופש\" תקף רק כאשר \"מצב Xr\" הוא \"Oculus Mobile VR\"."
-
-#, fuzzy
-#~ msgid ""
-#~ "\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
-#~ "\"."
-#~ msgstr ""
-#~ "\"Focus Awareness\" תקף רק כאשר \"מצב Xr\" הוא \"Oculus Mobile VR\"."
-
-#~ msgid "Package Contents:"
-#~ msgstr "תוכן החבילה:"
-
-#~ msgid "Singleton"
-#~ msgstr "יחידני"
-
-#, fuzzy
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "להחליף הכול"
-
-#, fuzzy
-#~ msgid "Enabled Properties:"
-#~ msgstr "מאפיינים"
-
-#, fuzzy
-#~ msgid "Class Options"
-#~ msgstr "תיאור"
-
-#~ msgid "Set"
-#~ msgstr "קבע"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "נשמרו %s משאבים שהשתנו."
-
-#~ msgid "Q&A"
-#~ msgstr "שאלות ותשובות נפוצות"
-
-#~ msgid "Status:"
-#~ msgstr "מצב:"
-
-#~ msgid "Edit:"
-#~ msgstr "עריכה:"
-
-#, fuzzy
-#~ msgid "Redownload"
-#~ msgstr "הורדה מחדש"
-
-#~ msgid "(Installed)"
-#~ msgstr "(מותקן)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(חסר)"
-
-#~ msgid "Request Failed."
-#~ msgstr "הבקשה נכשלה."
-
-#~ msgid "Redirect Loop."
-#~ msgstr "לולאת הפניות."
-
-#~ msgid "Download Complete."
-#~ msgstr "ההורדה הושלמה."
-
-#~ msgid "Remove Template"
-#~ msgstr "הסרת תבנית"
-
-#~ msgid "Download Templates"
-#~ msgstr "הורדת תבניות"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr "בחר אתר חלופי מהרשימה: (Shift+Click: פתיחה בדפדפן)"
-
-#, fuzzy
-#~ msgid "Move to Trash"
-#~ msgstr "הזזת טעינה אוטומטית"
-
-#, fuzzy
-#~ msgid "Expand All Properties"
-#~ msgstr "הרחבת כל המאפיינים"
-
-#~ msgid "Copy Params"
-#~ msgstr "העתקת משתנים"
-
-#~ msgid "Open in Help"
-#~ msgstr "פתיחה בעזרה"
-
-#~ msgid "Clone Down"
-#~ msgstr "לשכפל למטה"
-
-#~ msgid ""
-#~ "Drag: Rotate\n"
-#~ "Alt+Drag: Move\n"
-#~ "Alt+RMB: Depth list selection"
-#~ msgstr ""
-#~ "גרירה: הטיה\n"
-#~ "Alt+גרירה: הזזה\n"
-#~ "Alt+כפתור ימני: בחירת רשימת עומק"
-
-#, fuzzy
-#~ msgid "Theme File"
-#~ msgstr "פתיחת קובץ"
-
-#~ msgid "Templates"
-#~ msgstr "תבניות"
-
-#~ msgid "Can not perform with the root node."
-#~ msgstr "לא ניתן לביצוע עם מפרק השורש."
-
-#~ msgid "Could not read boot splash image file:"
-#~ msgstr "לא ניתן לקרוא קובץ תמונת פתיח:"
-
-#~ msgid "Using default boot splash image."
-#~ msgstr "נעשה שימוש בתמונת הפתיח כבררת מחדל."
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr "נגן הנפשה אינו יכול להנפיש את עצמו, רק שחקנים אחרים."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "לוח העתקה ריק"
-
-#~ msgid "No"
-#~ msgstr "לא"
-
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr "סצנה זאת מעולם לא נשמרה. לשמור לפני ההרצה?"
-
-#~ msgid "ADB executable not configured in the Editor Settings."
-#~ msgstr "קובץ ההפעלה של ADB לא נקבע בהגדרות העורך."
-
-#~ msgid "OpenJDK jarsigner not configured in the Editor Settings."
-#~ msgstr "OpenJDK jarsigner לא נקבע בהגדרות העורך."
-
-#~ msgid "Custom build requires a valid Android SDK path in Editor Settings."
-#~ msgstr ""
-#~ "בנייה מותאמת אישית דורשת נתיב חוקי של ערכת פיתוח לאנדרואיד בהגדרות העורך."
-
-#~ msgid "%d%%"
-#~ msgstr "%d%%"
-
-#~ msgid "(Time Left: %d:%02d s)"
-#~ msgstr "(זמן שנותר: %d:%02d שנ׳)"
-
-#~ msgid "Plotting Meshes: "
-#~ msgstr "מדפיס רשתות: "
-
-#~ msgid "Lighting Meshes: "
-#~ msgstr "רשתות תאורה: "
-
-#, fuzzy
-#~ msgid "Search complete"
-#~ msgstr "חיפוש טקסט"
-
-#, fuzzy
-#~ msgid "No commit message was provided"
-#~ msgstr "לא צוין שם"
-
-#, fuzzy
-#~ msgid "There is already file or folder with the same name in this location."
-#~ msgstr "כבר קיימים קובץ או תיקייה בשם הזה."
-
-#~ msgid "Error trying to save layout!"
-#~ msgstr "שמירת הפריסה נכשלה!"
-
-#~ msgid "Default editor layout overridden."
-#~ msgstr "ברירת המחדל של עורך הפריסה נדרסה."
-
-#, fuzzy
-#~ msgid "Move pivot"
-#~ msgstr "העברה למעלה"
-
-#, fuzzy
-#~ msgid "Move anchor"
-#~ msgstr "העברה למטה"
-
-#, fuzzy
-#~ msgid "Add initial export..."
-#~ msgstr "מועדפים:"
-
-#~ msgid "Pack File"
-#~ msgstr "קובץ ארכיון"
-
-#~ msgid "No build apk generated at: "
-#~ msgstr "לא נוצר apk ב: "
-
-#, fuzzy
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "מערכת קבצים"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "בעת ייצוא או הטמעה, קובץ ההפעלה ינסה להתחבר לכתובת ה־IP של המחשב הזה "
-#~ "לצורך ניפוי שגיאות."
-
-#~ msgid "Current scene was never saved, please save it prior to running."
-#~ msgstr "הסצנה הנוכחית מעולם לא נשמרה, נא לשמור אותה בטרם ההרצה."
-
-#~ msgid "Revert"
-#~ msgstr "שחזור"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr "לא ניתן לבטל פעולה זו. לשחזר בכל זאת?"
-
-#~ msgid "Issue Tracker"
-#~ msgstr "עוקב תקלות"
-
-#~ msgid "enum  "
-#~ msgstr "מונה  "
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "תיאור קצר:"
-
-#, fuzzy
-#~ msgid "Class Description"
-#~ msgstr "תיאור"
-
-#~ msgid "Password:"
-#~ msgstr "ססמה:"
-
-#~ msgid "Pause the scene"
-#~ msgstr "השהיית הסצנה"
-
-#, fuzzy
-#~ msgid "Add input +"
-#~ msgstr "הוספת אירוע"
-
-#, fuzzy
-#~ msgid "Methods:"
-#~ msgstr "שיטות"
-
-#, fuzzy
-#~ msgid "Theme Properties:"
-#~ msgstr "מאפיינים"
-
-#~ msgid "Constants:"
-#~ msgstr "קבועים:"
-
-#, fuzzy
-#~ msgid "Class Description:"
-#~ msgstr "תיאור:"
-
-#, fuzzy
-#~ msgid "Property Descriptions:"
-#~ msgstr "תיאור המאפיין:"
-
-#, fuzzy
-#~ msgid "Method Descriptions:"
-#~ msgstr "תיאור השיטה:"
-
-#, fuzzy
-#~ msgid "Reverse sorting."
-#~ msgstr "מוגשת בקשה…"
-
-#~ msgid ""
-#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
-#~ msgstr ""
-#~ "לא ניתן לפתוח את file_type_cache.cch לכתיבה, מטמון סוג הקבצים לא יישמר!"
-
-#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-#~ msgstr "לא ניתן לנווט אל ‚%s’ כיוון שלא נמצא במערכת הקבצים!"
-
-#, fuzzy
-#~ msgid "Error: could not load file."
-#~ msgstr "לא ניתן ליצור תיקייה."
-
-#~ msgid "Select Mode (Q)"
-#~ msgstr "בחירת מצב (Q)"
-
-#~ msgid "Move Mode (W)"
-#~ msgstr "מצב הזזה (W)"
-
-#~ msgid "Rotate Mode (E)"
-#~ msgstr "מצב הטיה (E)"
-
-#~ msgid "Scale Mode (R)"
-#~ msgstr "מצב שינוי קנה מידה (R)"
-
-#~ msgid "Local Coords"
-#~ msgstr "נקודות ציון מקומיות"
-
-#~ msgid "Project List"
-#~ msgstr "רשימת המיזמים"
-
-#~ msgid "Exit"
-#~ msgstr "יציאה"
-
-#~ msgid "Unknown font format."
-#~ msgstr "מבנה הגופן לא ידוע."
-
-#~ msgid "Error loading font."
-#~ msgstr "שגיאה בטעינת הגופן."
-
-#~ msgid "Invalid font size."
-#~ msgstr "גודל הגופן שגוי."
-
-#, fuzzy
-#~ msgid "Previous Folder"
-#~ msgstr "המישור הקודם"
-
-#, fuzzy
-#~ msgid "Next Folder"
-#~ msgstr "יצירת תיקייה"
-
-#, fuzzy
-#~ msgid "Open in an external image editor."
-#~ msgstr "פתיחת העורך הבא"
-
-#~ msgid "Generating solution..."
-#~ msgstr "הפתרון נוצר…"
-
-#~ msgid "Generating C# project..."
-#~ msgstr "נוצר מיזם C#‎…"
-
-#~ msgid "Failed to create solution."
-#~ msgstr "יצירת הפתרון נכשלה."
-
-#~ msgid "Failed to save solution."
-#~ msgstr "שמירת הפתרון נכשלה."
-
-#~ msgid "Failed to create C# project."
-#~ msgstr "יצירת מיזם C#‎ נכשלה."
-
-#~ msgid "Create C# solution"
-#~ msgstr "יצירת פתרון C#‎"
-
-#, fuzzy
-#~ msgid "Enabled Classes"
-#~ msgstr "חיפוש במחלקות"
-
-#~ msgid "Update Always"
-#~ msgstr "לעדכן תמיד"
-
-#~ msgid "Path to Node:"
-#~ msgstr "נתיב המפרק:"
-
-#~ msgid "Delete selected files?"
-#~ msgstr "למחוק את הקבצים הנבחרים?"
-
-#~ msgid "There is no 'res://default_bus_layout.tres' file."
-#~ msgstr "אין קובץ ‚res://default_bus_layout.tres’."
-
-#~ msgid "Go to parent folder"
-#~ msgstr "מעבר לתיקייה שמעל"
-
-#~ msgid "Open Scene(s)"
-#~ msgstr "פתיחת סצנות"
-
-#~ msgid "Previous Directory"
-#~ msgstr "התיקייה הקודמת"
-
-#~ msgid "Next Directory"
-#~ msgstr "התיקייה הבאה"
-
-#, fuzzy
-#~ msgid "Custom Node"
-#~ msgstr "גזירת מפרקים"
-
-#~ msgid "Create Area"
-#~ msgstr "יצירת שטח"
-
-#~ msgid "Create Exterior Connector"
-#~ msgstr "יצירת מחבר חיצוני"
-
-#, fuzzy
-#~ msgid "Snap (s): "
-#~ msgstr "צעד/ים:"
-
-#~ msgid "Line:"
-#~ msgstr "שורה:"
-
-#~ msgid "Col:"
-#~ msgstr "עמודה:"
-
-#, fuzzy
-#~ msgid "OrientedPathFollow only works when set as a child of a Path node."
-#~ msgstr "PathFollow2D עובד רק כאשר הוא מוגדר כצאצא של מפרק Path2D."
-
-#, fuzzy
-#~ msgid "Remove Split"
-#~ msgstr "הסרת תבנית"
-
-#, fuzzy
-#~ msgid "Poly"
-#~ msgstr "עריכת מצולע"
-
-#, fuzzy
-#~ msgid "Splits"
-#~ msgstr "פיצול נתיב"
-
-#~ msgid "Create Poly"
-#~ msgstr "יצירת מצולע"
-
-#~ msgid "Create a new polygon from scratch"
-#~ msgstr "יצירת מצולע חדש מאפס"
-
-#, fuzzy
-#~ msgid "Zoom out"
-#~ msgstr "להתרחק"
-
-#, fuzzy
-#~ msgid "Zoom in"
-#~ msgstr "להתקרב"
-
-#~ msgid "Save Theme As"
-#~ msgstr "שמירת ערכת העיצוב בשם"
-
-#, fuzzy
-#~ msgid "Zoom:"
-#~ msgstr "להתקרב"
-
-#~ msgid "Class List:"
-#~ msgstr "רשימת מחלקות:"
-
-#~ msgid "Public Methods"
-#~ msgstr "שיטות ציבוריות"
-
-#~ msgid "Public Methods:"
-#~ msgstr "שיטות ציבוריות:"
-
-#, fuzzy
-#~ msgid "Toggle folder status as Favorite."
-#~ msgstr "החלפת מצב התיקייה כמועדפת"
-
-#, fuzzy
-#~ msgid "Whole words"
-#~ msgstr "מילים שלמות"
-
-#, fuzzy
-#~ msgid "Match case"
-#~ msgstr "התאמת רישיות"
-
-#~ msgid "Search the class hierarchy."
-#~ msgstr "חיפוש בהיררכיית המחלקות."
-
-#, fuzzy
-#~ msgid "Search in files"
-#~ msgstr "חיפוש במחלקות"
-
-#~ msgid ""
-#~ "Built-in scripts can only be edited when the scene they belong to is "
-#~ "loaded"
-#~ msgstr "ניתן לערוך סקריפטים מובנים רק כאשר הסצנה אליהם הם שייכים נטענה"
-
-#~ msgid "Convert To Uppercase"
-#~ msgstr "המרה לאותיות גדולות"
-
-#~ msgid "Convert To Lowercase"
-#~ msgstr "המרה לאותיות קטנות"
-
-#~ msgid "Error: Missing Input Connections"
-#~ msgstr "שגיאה: חסרים חיבורי קלט"
-
-#~ msgid "In"
-#~ msgstr "כניסה"
-
-#~ msgid "Out"
-#~ msgstr "יציאה"
-
-#~ msgid "In-Out"
-#~ msgstr "כניסה-יציאה"
-
-#~ msgid "Out-In"
-#~ msgstr "יציאה-כניסה"
-
-#~ msgid "Key"
-#~ msgstr "מפתח"
-
-#~ msgid "Thanks!"
-#~ msgstr "תודה!"
-
-#~ msgid "I see..."
-#~ msgstr "אני רואה…"
-
-#~ msgid "Default (Same as Editor)"
-#~ msgstr "בררת מחדל (כמו העורך)"
-
-#~ msgid "OK :("
-#~ msgstr "בסדר :("
-
-#~ msgid "Button 8"
-#~ msgstr "כפתור 8"
-
-#~ msgid "Button 9"
-#~ msgstr "כפתור 9"
-
-#~ msgid "Can't write file."
-#~ msgstr "לא ניתן לכתוב קובץ."
-
-#~ msgid "Replace By"
-#~ msgstr "להחליף ב־"
-
-#~ msgid "Backwards"
-#~ msgstr "אחורה"
-
-#~ msgid "Prompt On Replace"
-#~ msgstr "להודיע על החלפה"
-
-#~ msgid "Skip"
-#~ msgstr "לדלג"

@@ -875,19 +875,6 @@ int RigidDynamicBody3D::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
-void RigidDynamicBody3D::add_central_force(const Vector3 &p_force) {
-	PhysicsServer3D::get_singleton()->body_add_central_force(get_rid(), p_force);
-}
-
-void RigidDynamicBody3D::add_force(const Vector3 &p_force, const Vector3 &p_position) {
-	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
-	singleton->body_add_force(get_rid(), p_force, p_position);
-}
-
-void RigidDynamicBody3D::add_torque(const Vector3 &p_torque) {
-	PhysicsServer3D::get_singleton()->body_add_torque(get_rid(), p_torque);
-}
-
 void RigidDynamicBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
 }
@@ -899,6 +886,48 @@ void RigidDynamicBody3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &
 
 void RigidDynamicBody3D::apply_torque_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->body_apply_torque_impulse(get_rid(), p_impulse);
+}
+
+void RigidDynamicBody3D::apply_central_force(const Vector3 &p_force) {
+	PhysicsServer3D::get_singleton()->body_apply_central_force(get_rid(), p_force);
+}
+
+void RigidDynamicBody3D::apply_force(const Vector3 &p_force, const Vector3 &p_position) {
+	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
+	singleton->body_apply_force(get_rid(), p_force, p_position);
+}
+
+void RigidDynamicBody3D::apply_torque(const Vector3 &p_torque) {
+	PhysicsServer3D::get_singleton()->body_apply_torque(get_rid(), p_torque);
+}
+
+void RigidDynamicBody3D::add_constant_central_force(const Vector3 &p_force) {
+	PhysicsServer3D::get_singleton()->body_add_constant_central_force(get_rid(), p_force);
+}
+
+void RigidDynamicBody3D::add_constant_force(const Vector3 &p_force, const Vector3 &p_position) {
+	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
+	singleton->body_add_constant_force(get_rid(), p_force, p_position);
+}
+
+void RigidDynamicBody3D::add_constant_torque(const Vector3 &p_torque) {
+	PhysicsServer3D::get_singleton()->body_add_constant_torque(get_rid(), p_torque);
+}
+
+void RigidDynamicBody3D::set_constant_force(const Vector3 &p_force) {
+	PhysicsServer3D::get_singleton()->body_set_constant_force(get_rid(), p_force);
+}
+
+Vector3 RigidDynamicBody3D::get_constant_force() const {
+	return PhysicsServer3D::get_singleton()->body_get_constant_force(get_rid());
+}
+
+void RigidDynamicBody3D::set_constant_torque(const Vector3 &p_torque) {
+	PhysicsServer3D::get_singleton()->body_set_constant_torque(get_rid(), p_torque);
+}
+
+Vector3 RigidDynamicBody3D::get_constant_torque() const {
+	return PhysicsServer3D::get_singleton()->body_get_constant_torque(get_rid());
 }
 
 void RigidDynamicBody3D::set_use_continuous_collision_detection(bool p_enable) {
@@ -1024,13 +1053,23 @@ void RigidDynamicBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidDynamicBody3D::set_axis_velocity);
 
-	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &RigidDynamicBody3D::add_central_force);
-	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &RigidDynamicBody3D::add_force, Vector3());
-	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &RigidDynamicBody3D::add_torque);
-
 	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidDynamicBody3D::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &RigidDynamicBody3D::apply_impulse, Vector3());
 	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &RigidDynamicBody3D::apply_torque_impulse);
+
+	ClassDB::bind_method(D_METHOD("apply_central_force", "force"), &RigidDynamicBody3D::apply_central_force);
+	ClassDB::bind_method(D_METHOD("apply_force", "force", "position"), &RigidDynamicBody3D::apply_force, Vector3());
+	ClassDB::bind_method(D_METHOD("apply_torque", "torque"), &RigidDynamicBody3D::apply_torque);
+
+	ClassDB::bind_method(D_METHOD("add_constant_central_force", "force"), &RigidDynamicBody3D::add_constant_central_force);
+	ClassDB::bind_method(D_METHOD("add_constant_force", "force", "position"), &RigidDynamicBody3D::add_constant_force, Vector3());
+	ClassDB::bind_method(D_METHOD("add_constant_torque", "torque"), &RigidDynamicBody3D::add_constant_torque);
+
+	ClassDB::bind_method(D_METHOD("set_constant_force", "force"), &RigidDynamicBody3D::set_constant_force);
+	ClassDB::bind_method(D_METHOD("get_constant_force"), &RigidDynamicBody3D::get_constant_force);
+
+	ClassDB::bind_method(D_METHOD("set_constant_torque", "torque"), &RigidDynamicBody3D::set_constant_torque);
+	ClassDB::bind_method(D_METHOD("get_constant_torque"), &RigidDynamicBody3D::get_constant_torque);
 
 	ClassDB::bind_method(D_METHOD("set_sleeping", "sleeping"), &RigidDynamicBody3D::set_sleeping);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &RigidDynamicBody3D::is_sleeping);
@@ -1075,6 +1114,9 @@ void RigidDynamicBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
+	ADD_GROUP("Constant Forces", "constant_");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_force"), "set_constant_force", "get_constant_force");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_torque"), "set_constant_torque", "get_constant_torque");
 
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));

@@ -2120,13 +2120,29 @@ msgstr "Kaedah"
 msgid "Theme Properties"
 msgstr "Sifat Tema"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Penghitungan"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Pemalar"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Penghitungan"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8545,18 +8561,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -13184,11 +13188,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14193,97 +14217,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Singleton"
-#~ msgstr "Singleton"
-
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "Padamkan profil '%s'? (tidak boleh buat asal)"
-
-#~ msgid "Enabled Properties:"
-#~ msgstr "Ciri-ciri Diaktifkan:"
-
-#~ msgid "Unset"
-#~ msgstr "Nyahtetap"
-
-#~ msgid "Class Options"
-#~ msgstr "Pilihan Kelas"
-
-#~ msgid "Set"
-#~ msgstr "Tetapkan"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "Sumber %s yang diubahsuai telah disimpan."
-
-#~ msgid "Q&A"
-#~ msgstr "Soal Jawab"
-
-#~ msgid "Status:"
-#~ msgstr "Status:"
-
-#~ msgid "Edit:"
-#~ msgstr "Sunting:"
-
-#~ msgid "Redownload"
-#~ msgstr "Muat turun semula"
-
-#~ msgid "(Installed)"
-#~ msgstr "(Dipasang)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Hilang)"
-
-#~ msgid "Redirect Loop."
-#~ msgstr "Ubah Hala Gelung."
-
-#~ msgid "Download Complete."
-#~ msgstr "Muat Turun Selesai."
-
-#~ msgid "Remove Template"
-#~ msgstr "Alih Keluar Templat"
-
-#~ msgid "Download Templates"
-#~ msgstr "Muat Turun Templat-templat"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr "Pilih cermin daripada senarai: (Shift+Click: Buka dalam Pelayar)"
-
-#~ msgid "Move to Trash"
-#~ msgstr "Pindah ke Tong Sampah"
-
-#~ msgid "Expand All Properties"
-#~ msgstr "Kembangkan Semua Sifat-sifat"
-
-#~ msgid "Copy Params"
-#~ msgstr "Salin Parameter-parameter"
-
-#~ msgid "Open in Help"
-#~ msgstr "Buka dalam Bantuan"
-
-#~ msgid "Size"
-#~ msgstr "Saiz"
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr ""
-#~ "Pemain animasi tidak boleh animasikan dirinya sendiri, hanya pemain lain."
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Papan klip kosong"
-
-#~ msgid "No"
-#~ msgstr "Tidak"
-
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr "Adegan ini tidak pernah disimpan. Simpan sebelum menjalankan?"
-
-#~ msgid "Error trying to save layout!"
-#~ msgstr "Ralat semasa menyimpan susun atur!"
-
-#~ msgid "Default editor layout overridden."
-#~ msgstr "Susun atur lalai telah diganti."
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "Ubah Trek Anim Ke Atas"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "Ubah Trek Anim Ke Bawah"

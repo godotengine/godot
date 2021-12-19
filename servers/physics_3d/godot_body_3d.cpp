@@ -628,9 +628,8 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 		if (!omit_force_integration) {
 			//overridden by direct state query
 
-			Vector3 force = gravity * mass;
-			force += applied_force;
-			Vector3 torque = applied_torque;
+			Vector3 force = gravity * mass + applied_force + constant_force;
+			Vector3 torque = applied_torque + constant_torque;
 
 			real_t damp = 1.0 - p_step * total_linear_damp;
 

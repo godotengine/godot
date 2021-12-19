@@ -54,6 +54,8 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 #if defined(GLES3_ENABLED)
 	// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented
 	// again,
+	// Note that we should be checking "opengl3" as the driver, might never enable this seeing OpenGL is deprecated on iOS
+	// We are hardcoding the rendering_driver to "vulkan" down below
 
 	if (rendering_driver == "opengl_es") {
 		bool gl_initialization_error = false;
@@ -131,18 +133,16 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 
 DisplayServerIPhone::~DisplayServerIPhone() {
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-			rendering_device_vulkan = nullptr;
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan) {
-			context_vulkan->window_destroy(MAIN_WINDOW_ID);
-			memdelete(context_vulkan);
-			context_vulkan = nullptr;
-		}
+	if (context_vulkan) {
+		context_vulkan->window_destroy(MAIN_WINDOW_ID);
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 }
@@ -565,10 +565,8 @@ void DisplayServerIPhone::resize_window(CGSize viewSize) {
 	Size2i size = Size2i(viewSize.width, viewSize.height) * screen_get_max_scale();
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (context_vulkan) {
-			context_vulkan->window_resize(MAIN_WINDOW_ID, size.x, size.y);
-		}
+	if (context_vulkan) {
+		context_vulkan->window_resize(MAIN_WINDOW_ID, size.x, size.y);
 	}
 #endif
 

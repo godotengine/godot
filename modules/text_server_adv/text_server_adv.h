@@ -269,6 +269,7 @@ class TextServerAdvanced : public TextServer {
 
 	int _convert_pos(const ShapedTextDataAdvanced *p_sd, int p_pos) const;
 	int _convert_pos_inv(const ShapedTextDataAdvanced *p_sd, int p_pos) const;
+	bool _shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int p_start, int p_length) const;
 	void _shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_start, int32_t p_end, hb_script_t p_script, hb_direction_t p_direction, Vector<RID> p_fonts, int p_span, int p_fb_index);
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, RID p_font, int p_font_size);
 

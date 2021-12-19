@@ -93,6 +93,9 @@ class GodotBody3D : public GodotCollisionObject3D {
 	Vector3 applied_force;
 	Vector3 applied_torque;
 
+	Vector3 constant_force;
+	Vector3 constant_torque;
+
 	SelfList<GodotBody3D> active_list;
 	SelfList<GodotBody3D> mass_properties_update_list;
 	SelfList<GodotBody3D> direct_state_query_list;
@@ -244,18 +247,37 @@ public:
 		biased_angular_velocity += _inv_inertia_tensor.xform(p_impulse);
 	}
 
-	_FORCE_INLINE_ void add_central_force(const Vector3 &p_force) {
+	_FORCE_INLINE_ void apply_central_force(const Vector3 &p_force) {
 		applied_force += p_force;
 	}
 
-	_FORCE_INLINE_ void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) {
+	_FORCE_INLINE_ void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) {
 		applied_force += p_force;
 		applied_torque += (p_position - center_of_mass).cross(p_force);
 	}
 
-	_FORCE_INLINE_ void add_torque(const Vector3 &p_torque) {
+	_FORCE_INLINE_ void apply_torque(const Vector3 &p_torque) {
 		applied_torque += p_torque;
 	}
+
+	_FORCE_INLINE_ void add_constant_central_force(const Vector3 &p_force) {
+		constant_force += p_force;
+	}
+
+	_FORCE_INLINE_ void add_constant_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) {
+		constant_force += p_force;
+		constant_torque += (p_position - center_of_mass).cross(p_force);
+	}
+
+	_FORCE_INLINE_ void add_constant_torque(const Vector3 &p_torque) {
+		constant_torque += p_torque;
+	}
+
+	void set_constant_force(const Vector3 &p_force) { constant_force = p_force; }
+	Vector3 get_constant_force() const { return constant_force; }
+
+	void set_constant_torque(const Vector3 &p_torque) { constant_torque = p_torque; }
+	Vector3 get_constant_torque() const { return constant_torque; }
 
 	void set_active(bool p_active);
 	_FORCE_INLINE_ bool is_active() const { return active; }
@@ -275,12 +297,6 @@ public:
 
 	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer3D::BodyState p_state) const;
-
-	void set_applied_force(const Vector3 &p_force) { applied_force = p_force; }
-	Vector3 get_applied_force() const { return applied_force; }
-
-	void set_applied_torque(const Vector3 &p_torque) { applied_torque = p_torque; }
-	Vector3 get_applied_torque() const { return applied_torque; }
 
 	_FORCE_INLINE_ void set_continuous_collision_detection(bool p_enable) { continuous_cd = p_enable; }
 	_FORCE_INLINE_ bool is_continuous_collision_detection_enabled() const { return continuous_cd; }

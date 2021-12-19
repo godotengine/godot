@@ -107,36 +107,36 @@
 			<description>
 				Waits for a packet to arrive on the bound address. See [method bind].
 				[b]Note:[/b] [method wait] can't be interrupted once it has been called. This can be worked around by allowing the other party to send a specific "death pill" packet like this:
-		[codeblocks]
-		[gdscript]
-		socket = PacketPeerUDP.new()
-		# Server
-		socket.set_dest_address("127.0.0.1", 789)
-		socket.put_packet("Time to stop".to_ascii())
+				[codeblocks]
+				[gdscript]
+				socket = PacketPeerUDP.new()
+				# Server
+				socket.set_dest_address("127.0.0.1", 789)
+				socket.put_packet("Time to stop".to_ascii())
 
-		# Client
-		while socket.wait() == OK:
-		    var data = socket.get_packet().get_string_from_ascii()
-		    if data == "Time to stop":
-		        return
-		[/gdscript]
-		[csharp]
-		var socket = new PacketPeerUDP();
-		// Server
-		socket.SetDestAddress("127.0.0.1", 789);
-		socket.PutPacket("Time to stop".ToAscii());
+				# Client
+				while socket.wait() == OK:
+				    var data = socket.get_packet().get_string_from_ascii()
+				    if data == "Time to stop":
+				        return
+				[/gdscript]
+				[csharp]
+				var socket = new PacketPeerUDP();
+				// Server
+				socket.SetDestAddress("127.0.0.1", 789);
+				socket.PutPacket("Time to stop".ToAscii());
 
-		// Client
-		while (socket.Wait() == OK)
-		{
-		    string data = socket.GetPacket().GetStringFromASCII();
-		    if (data == "Time to stop")
-		    {
-		        return;
-		    }
-		}
-		[/csharp]
-		[/codeblocks]
+				// Client
+				while (socket.Wait() == OK)
+				{
+				    string data = socket.GetPacket().GetStringFromASCII();
+				    if (data == "Time to stop")
+				    {
+				        return;
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 	</methods>

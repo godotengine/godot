@@ -192,15 +192,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 
 	r_error = OK;
 	if (singleton->full_gdscript_cache.has(p_path)) {
-		Ref<GDScript> script = singleton->full_gdscript_cache[p_path];
-#ifdef TOOLS_ENABLED
-		uint64_t mt = FileAccess::get_modified_time(p_path);
-		if (script->get_last_modified_time() == mt) {
-			return script;
-		}
-#else
-		return script;
-#endif //TOOLS_ENABLED
+		return singleton->full_gdscript_cache[p_path];
 	}
 
 	Ref<GDScript> script = get_shallow_script(p_path);

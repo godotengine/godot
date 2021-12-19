@@ -57,6 +57,7 @@ public:
 		TK_FALSE,
 		TK_FLOAT_CONSTANT,
 		TK_INT_CONSTANT,
+		TK_UINT_CONSTANT,
 		TK_TYPE_VOID,
 		TK_TYPE_BOOL,
 		TK_TYPE_BVEC2,
@@ -168,7 +169,7 @@ public:
 		TK_HINT_ROUGHNESS_B,
 		TK_HINT_ROUGHNESS_A,
 		TK_HINT_ROUGHNESS_GRAY,
-		TK_HINT_ANISO_TEXTURE,
+		TK_HINT_ANISOTROPY_TEXTURE,
 		TK_HINT_ALBEDO_TEXTURE,
 		TK_HINT_BLACK_ALBEDO_TEXTURE,
 		TK_HINT_COLOR,
@@ -178,8 +179,8 @@ public:
 		TK_FILTER_LINEAR,
 		TK_FILTER_NEAREST_MIPMAP,
 		TK_FILTER_LINEAR_MIPMAP,
-		TK_FILTER_NEAREST_MIPMAP_ANISO,
-		TK_FILTER_LINEAR_MIPMAP_ANISO,
+		TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC,
+		TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC,
 		TK_REPEAT_ENABLE,
 		TK_REPEAT_DISABLE,
 		TK_SHADER_TYPE,
@@ -321,8 +322,8 @@ public:
 		FILTER_LINEAR,
 		FILTER_NEAREST_MIPMAP,
 		FILTER_LINEAR_MIPMAP,
-		FILTER_NEAREST_MIPMAP_ANISO,
-		FILTER_LINEAR_MIPMAP_ANISO,
+		FILTER_NEAREST_MIPMAP_ANISOTROPIC,
+		FILTER_LINEAR_MIPMAP_ANISOTROPIC,
 		FILTER_DEFAULT,
 	};
 
@@ -575,7 +576,7 @@ public:
 
 		virtual DataType get_datatype() const override { return datatype; }
 		virtual String get_datatype_name() const override { return String(struct_name); }
-		virtual int get_array_size() const override { return array_size; }
+		virtual int get_array_size() const override { return (index_expression || call_expression) ? 0 : array_size; }
 		virtual bool is_indexed() const override { return index_expression != nullptr || call_expression != nullptr; }
 
 		MemberNode() :
@@ -681,7 +682,7 @@ public:
 				HINT_ROUGHNESS_GRAY,
 				HINT_BLACK,
 				HINT_WHITE,
-				HINT_ANISO,
+				HINT_ANISOTROPY,
 				HINT_MAX
 			};
 
@@ -756,6 +757,9 @@ public:
 		StringName text;
 		double constant;
 		uint16_t line;
+		bool is_integer_constant() const {
+			return type == TK_INT_CONSTANT || type == TK_UINT_CONSTANT;
+		}
 	};
 
 	static String get_operator_text(Operator p_op);
@@ -981,6 +985,8 @@ private:
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 	static const BuiltinFuncConstArgs builtin_func_const_args[];
 
+	static bool is_const_suffix_lut_initialized;
+
 	Error _validate_datatype(DataType p_type);
 	bool _compare_datatypes(DataType p_datatype_a, String p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, String p_datatype_name_b, int p_array_size_b);
 	bool _compare_datatypes_in_nodes(Node *a, Node *b);
@@ -995,7 +1001,7 @@ private:
 
 	Node *_parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, int &r_array_size);
 	Error _parse_global_array_size(int &r_array_size, const FunctionInfo &p_function_info);
-	Error _parse_local_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, ArrayDeclarationNode *p_node, ArrayDeclarationNode::Declaration *p_decl, int &r_array_size, bool &r_is_unknown_size);
+	Error _parse_local_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, Node *&r_size_expression, int &r_array_size, bool &r_is_unknown_size);
 
 	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info);

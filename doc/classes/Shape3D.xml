@@ -18,6 +18,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias" default="0.0">
+			The shape's custom solver bias. Defines how much bodies react to enforce contact separation when this shape is involved.
+			When set to [code]0[/code], the default value from [member ProjectSettings.physics/3d/solver/default_contact_bias] is used.
+		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">
 			The collision margin for the shape. Used in Bullet Physics only.
 			Collision margins allow collision detection to be more efficient by adding an extra shell around shapes. Collision algorithms are more expensive when objects overlap by more than their margin, so a higher value for margins is better for performance, at the cost of accuracy around edges as it makes them less sharp.

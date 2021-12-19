@@ -484,7 +484,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			result = parser->head->get_datatype();
 		} else {
 			Ref<GDScriptParserRef> ref = get_parser_for(ScriptServer::get_global_class_path(first));
-			if (ref->raise_status(GDScriptParserRef::INTERFACE_SOLVED) != OK) {
+			if (!ref.is_valid() || ref->raise_status(GDScriptParserRef::INTERFACE_SOLVED) != OK) {
 				push_error(vformat(R"(Could not parse global class "%s" from "%s".)", first, ScriptServer::get_global_class_path(first)), p_type);
 				return GDScriptParser::DataType();
 			}
@@ -3691,8 +3691,26 @@ bool GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 bool GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context) {
 	const StringName &name = p_local->name;
 	GDScriptParser::DataType base = parser->current_class->get_datatype();
-
 	GDScriptParser::ClassNode *base_class = base.class_type;
+
+	{
+		List<MethodInfo> gdscript_funcs;
+		GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
+
+		for (MethodInfo &info : gdscript_funcs) {
+			if (info.name == name) {
+				parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
+				return true;
+			}
+		}
+		if (Variant::has_utility_function(name)) {
+			parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
+			return true;
+		} else if (ClassDB::class_exists(name)) {
+			parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "global class");
+			return true;
+		}
+	}
 
 	while (base_class != nullptr) {
 		if (base_class->has_member(name)) {
@@ -3938,7 +3956,9 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::get_parser_for(const String &p_path) {
 	} else {
 		Error err = OK;
 		ref = GDScriptCache::get_parser(p_path, GDScriptParserRef::EMPTY, err, parser->script_path);
-		depended_parsers[p_path] = ref;
+		if (ref.is_valid()) {
+			depended_parsers[p_path] = ref;
+		}
 	}
 
 	return ref;

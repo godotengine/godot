@@ -54,8 +54,8 @@ class DisplayServerIPhone : public DisplayServer {
 	_THREAD_SAFE_CLASS_
 
 #if defined(VULKAN_ENABLED)
-	VulkanContextIPhone *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
+	VulkanContextIPhone *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
 
 	DisplayServer::ScreenOrientation screen_orientation;

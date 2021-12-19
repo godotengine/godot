@@ -207,19 +207,24 @@ public:
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override;
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const override;
 
-	virtual void body_set_applied_force(RID p_body, const Vector2 &p_force) override;
-	virtual Vector2 body_get_applied_force(RID p_body) const override;
-
-	virtual void body_set_applied_torque(RID p_body, real_t p_torque) override;
-	virtual real_t body_get_applied_torque(RID p_body) const override;
-
-	virtual void body_add_central_force(RID p_body, const Vector2 &p_force) override;
-	virtual void body_add_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position = Vector2()) override;
-	virtual void body_add_torque(RID p_body, real_t p_torque) override;
-
 	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) override;
 	virtual void body_apply_torque_impulse(RID p_body, real_t p_torque) override;
 	virtual void body_apply_impulse(RID p_body, const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) override;
+
+	virtual void body_apply_central_force(RID p_body, const Vector2 &p_force) override;
+	virtual void body_apply_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position = Vector2()) override;
+	virtual void body_apply_torque(RID p_body, real_t p_torque) override;
+
+	virtual void body_add_constant_central_force(RID p_body, const Vector2 &p_force) override;
+	virtual void body_add_constant_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position = Vector2()) override;
+	virtual void body_add_constant_torque(RID p_body, real_t p_torque) override;
+
+	virtual void body_set_constant_force(RID p_body, const Vector2 &p_force) override;
+	virtual Vector2 body_get_constant_force(RID p_body) const override;
+
+	virtual void body_set_constant_torque(RID p_body, real_t p_torque) override;
+	virtual real_t body_get_constant_torque(RID p_body) const override;
+
 	virtual void body_set_axis_velocity(RID p_body, const Vector2 &p_axis_velocity) override;
 
 	virtual void body_add_collision_exception(RID p_body, RID p_body_b) override;

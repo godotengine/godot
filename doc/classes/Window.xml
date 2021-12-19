@@ -287,6 +287,8 @@
 		</member>
 		<member name="content_scale_aspect" type="int" setter="set_content_scale_aspect" getter="get_content_scale_aspect" enum="Window.ContentScaleAspect" default="0">
 		</member>
+		<member name="content_scale_factor" type="float" setter="set_content_scale_factor" getter="get_content_scale_factor" default="1.0">
+		</member>
 		<member name="content_scale_mode" type="int" setter="set_content_scale_mode" getter="get_content_scale_mode" enum="Window.ContentScaleMode" default="0">
 		</member>
 		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i(0, 0)">

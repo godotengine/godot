@@ -147,6 +147,11 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 	download_templates->set_download_file(EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_templates.tpz"));
 	download_templates->set_use_threads(true);
 
+	const String proxy_host = EDITOR_DEF("network/http_proxy/host", "");
+	const int proxy_port = EDITOR_DEF("network/http_proxy/port", -1);
+	download_templates->set_http_proxy(proxy_host, proxy_port);
+	download_templates->set_https_proxy(proxy_host, proxy_port);
+
 	Error err = download_templates->request(p_url);
 	if (err != OK) {
 		_set_current_progress_status(TTR("Error requesting URL:") + " " + p_url, true);

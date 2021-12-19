@@ -827,24 +827,9 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_proper
 		return nullptr;
 	}
 
-	GDScriptParser::IdentifierNode *identifier = parse_identifier();
-
-#ifdef DEBUG_ENABLED
-	List<MethodInfo> gdscript_funcs;
-	GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
-	for (MethodInfo &info : gdscript_funcs) {
-		if (info.name == identifier->name) {
-			push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "local variable", identifier->name, "built-in function");
-		}
-	}
-	if (Variant::has_utility_function(identifier->name)) {
-		push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "local variable", identifier->name, "built-in function");
-	}
-#endif
-
 	VariableNode *variable = alloc_node<VariableNode>();
-	variable->identifier = identifier;
-	variable->export_info.name = identifier->name;
+	variable->identifier = parse_identifier();
+	variable->export_info.name = variable->identifier->name;
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		if (check(GDScriptTokenizer::Token::NEWLINE)) {
@@ -1097,24 +1082,8 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 		return nullptr;
 	}
 
-	GDScriptParser::IdentifierNode *identifier = parse_identifier();
-#ifdef DEBUG_ENABLED
-	List<MethodInfo> gdscript_funcs;
-	GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
-	for (MethodInfo &info : gdscript_funcs) {
-		if (info.name == identifier->name) {
-			push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "parameter", identifier->name, "built-in function");
-		}
-	}
-	if (Variant::has_utility_function(identifier->name)) {
-		push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "parameter", identifier->name, "built-in function");
-	} else if (ClassDB::class_exists(identifier->name)) {
-		push_warning(identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, "parameter", identifier->name, "global class");
-	}
-#endif
-
 	ParameterNode *parameter = alloc_node<ParameterNode>();
-	parameter->identifier = identifier;
+	parameter->identifier = parse_identifier();
 
 	if (match(GDScriptTokenizer::Token::COLON)) {
 		if (check((GDScriptTokenizer::Token::EQUAL))) {

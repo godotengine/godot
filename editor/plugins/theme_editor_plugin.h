@@ -31,6 +31,7 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
+#include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
@@ -270,8 +271,11 @@ class ThemeTypeDialog : public ConfirmationDialog {
 	Ref<Theme> edited_theme;
 	bool include_own_types = false;
 
+	String pre_submitted_value;
+
 	LineEdit *add_type_filter;
 	ItemList *add_type_options;
+	ConfirmationDialog *add_type_confirmation;
 
 	void _dialog_about_to_show();
 	void ok_pressed() override;
@@ -282,6 +286,9 @@ class ThemeTypeDialog : public ConfirmationDialog {
 	void _add_type_options_cbk(int p_index);
 	void _add_type_dialog_entered(const String &p_value);
 	void _add_type_dialog_activated(int p_index);
+
+	void _add_type_selected(const String &p_type_name);
+	void _add_type_confirmed();
 
 protected:
 	void _notification(int p_what);

@@ -942,7 +942,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 
 	FontGlyph chr;
 	chr.found = true;
-	chr.advance = advance.round();
+	chr.advance = advance;
 
 	if (shape.validate() && shape.contours.size() > 0) {
 		int w = (bounds.r - bounds.l);
@@ -1095,12 +1095,12 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 	}
 
 	FontGlyph chr;
-	chr.advance = (advance * p_data->scale / p_data->oversampling).round();
+	chr.advance = advance * p_data->scale / p_data->oversampling;
 	chr.texture_idx = tex_pos.index;
 	chr.found = true;
 
 	chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w, h);
-	chr.rect.position = (Vector2(xofs, -yofs) * p_data->scale / p_data->oversampling).round();
+	chr.rect.position = Vector2(xofs, -yofs) * p_data->scale / p_data->oversampling;
 	chr.rect.size = chr.uv_rect.size * p_data->scale / p_data->oversampling;
 	return chr;
 }
@@ -1270,7 +1270,8 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 			}
 			FT_Select_Size(fd->face, best_match);
 		} else {
-			FT_Set_Pixel_Sizes(fd->face, 0, fd->size.x * fd->oversampling);
+			FT_Set_Pixel_Sizes(fd->face, 0, float(fd->size.x * fd->oversampling));
+			fd->scale = ((float)fd->size.x * fd->oversampling) / (float)fd->face->size->metrics.y_ppem;
 		}
 
 		fd->hb_handle = hb_ft_font_create(fd->face, nullptr);
@@ -2670,7 +2671,7 @@ void TextServerAdvanced::font_draw_glyph(RID p_font_rid, RID p_canvas, int p_siz
 	Vector2i size = _get_size(fd, p_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 	if (!_ensure_glyph(fd, size, p_index)) {
-		return; // // Invalid or non graphicl glyph, do not display errors, nothing to draw.
+		return; // Invalid or non-graphical glyph, do not display errors, nothing to draw.
 	}
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[p_index];
@@ -2692,9 +2693,9 @@ void TextServerAdvanced::font_draw_glyph(RID p_font_rid, RID p_canvas, int p_siz
 					Size2 csize = gl.rect.size * (float)p_size / (float)fd->msdf_source_size;
 					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, 0, fd->msdf_range);
 				} else {
-					Point2i cpos = p_pos;
+					Point2 cpos = p_pos.floor();
 					cpos += gl.rect.position;
-					Size2i csize = gl.rect.size;
+					Size2 csize = gl.rect.size;
 					RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, false, false);
 				}
 			}
@@ -2710,7 +2711,7 @@ void TextServerAdvanced::font_draw_glyph_outline(RID p_font_rid, RID p_canvas, i
 	Vector2i size = _get_size_outline(fd, Vector2i(p_size, p_outline_size));
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 	if (!_ensure_glyph(fd, size, p_index)) {
-		return; // // Invalid or non graphicl glyph, do not display errors, nothing to draw.
+		return; // Invalid or non-graphical glyph, do not display errors, nothing to draw.
 	}
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[p_index];
@@ -2732,9 +2733,9 @@ void TextServerAdvanced::font_draw_glyph_outline(RID p_font_rid, RID p_canvas, i
 					Size2 csize = gl.rect.size * (float)p_size / (float)fd->msdf_source_size;
 					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, p_outline_size * 2, fd->msdf_range);
 				} else {
-					Point2i cpos = p_pos;
+					Point2 cpos = p_pos.floor();
 					cpos += gl.rect.position;
-					Size2i csize = gl.rect.size;
+					Size2 csize = gl.rect.size;
 					RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, false, false);
 				}
 			}
@@ -3156,7 +3157,7 @@ bool TextServerAdvanced::shaped_text_add_object(RID p_shaped, Variant p_key, con
 	}
 
 	ShapedTextDataAdvanced::Span span;
-	span.start = sd->text.length();
+	span.start = sd->start + sd->text.length();
 	span.end = span.start + p_length;
 	span.embedded_key = p_key;
 
@@ -3322,60 +3323,72 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 	ERR_FAIL_COND_V(sd->end < p_start + p_length, RID());
 
 	ShapedTextDataAdvanced *new_sd = memnew(ShapedTextDataAdvanced);
-
-	new_sd->hb_buffer = hb_buffer_create();
 	new_sd->parent = p_shaped;
 	new_sd->start = p_start;
 	new_sd->end = p_start + p_length;
-
 	new_sd->orientation = sd->orientation;
 	new_sd->direction = sd->direction;
 	new_sd->custom_punct = sd->custom_punct;
 	new_sd->para_direction = sd->para_direction;
-	new_sd->line_breaks_valid = sd->line_breaks_valid;
-	new_sd->justification_ops_valid = sd->justification_ops_valid;
-	new_sd->sort_valid = false;
-	new_sd->upos = sd->upos;
-	new_sd->uthk = sd->uthk;
+
+	if (!_shape_substr(new_sd, sd, p_start, p_length)) {
+		memdelete(new_sd);
+		return RID();
+	}
+	return shaped_owner.make_rid(new_sd);
+}
+
+bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int p_start, int p_length) const {
+	if (p_new_sd->valid) {
+		return true;
+	}
+
+	p_new_sd->hb_buffer = hb_buffer_create();
+
+	p_new_sd->line_breaks_valid = p_sd->line_breaks_valid;
+	p_new_sd->justification_ops_valid = p_sd->justification_ops_valid;
+	p_new_sd->sort_valid = false;
+	p_new_sd->upos = p_sd->upos;
+	p_new_sd->uthk = p_sd->uthk;
 
 	if (p_length > 0) {
-		new_sd->text = sd->text.substr(p_start, p_length);
-		new_sd->utf16 = new_sd->text.utf16();
-		new_sd->script_iter = memnew(ScriptIterator(new_sd->text, 0, new_sd->text.length()));
+		p_new_sd->text = p_sd->text.substr(p_start - p_sd->start, p_length);
+		p_new_sd->utf16 = p_new_sd->text.utf16();
+		p_new_sd->script_iter = memnew(ScriptIterator(p_new_sd->text, 0, p_new_sd->text.length()));
 
-		int sd_size = sd->glyphs.size();
-		const Glyph *sd_glyphs = sd->glyphs.ptr();
-		for (int ov = 0; ov < sd->bidi_override.size(); ov++) {
+		int sd_size = p_sd->glyphs.size();
+		const Glyph *sd_glyphs = p_sd->glyphs.ptr();
+		for (int ov = 0; ov < p_sd->bidi_override.size(); ov++) {
 			UErrorCode err = U_ZERO_ERROR;
 
-			if (sd->bidi_override[ov].x >= p_start + p_length || sd->bidi_override[ov].y <= p_start) {
+			if (p_sd->bidi_override[ov].x >= p_start + p_length || p_sd->bidi_override[ov].y <= p_start) {
 				continue;
 			}
-			int start = _convert_pos_inv(sd, MAX(0, p_start - sd->bidi_override[ov].x));
-			int end = _convert_pos_inv(sd, MIN(p_start + p_length, sd->bidi_override[ov].y) - sd->bidi_override[ov].x);
+			int start = _convert_pos_inv(p_sd, MAX(0, p_start - p_sd->bidi_override[ov].x));
+			int end = _convert_pos_inv(p_sd, MIN(p_start + p_length, p_sd->bidi_override[ov].y) - p_sd->bidi_override[ov].x);
 
-			ERR_FAIL_COND_V_MSG((start < 0 || end - start > new_sd->utf16.length()), RID(), "Invalid BiDi override range.");
+			ERR_FAIL_COND_V_MSG((start < 0 || end - start > p_new_sd->utf16.length()), false, "Invalid BiDi override range.");
 
 			// Create temporary line bidi & shape.
 			UBiDi *bidi_iter = ubidi_openSized(end - start, 0, &err);
-			ERR_FAIL_COND_V_MSG(U_FAILURE(err), RID(), u_errorName(err));
-			ubidi_setLine(sd->bidi_iter[ov], start, end, bidi_iter, &err);
+			ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
+			ubidi_setLine(p_sd->bidi_iter[ov], start, end, bidi_iter, &err);
 			if (U_FAILURE(err)) {
 				ubidi_close(bidi_iter);
-				ERR_FAIL_V_MSG(RID(), u_errorName(err));
+				ERR_FAIL_V_MSG(false, u_errorName(err));
 			}
-			new_sd->bidi_iter.push_back(bidi_iter);
+			p_new_sd->bidi_iter.push_back(bidi_iter);
 
 			err = U_ZERO_ERROR;
 			int bidi_run_count = ubidi_countRuns(bidi_iter, &err);
-			ERR_FAIL_COND_V_MSG(U_FAILURE(err), RID(), u_errorName(err));
+			ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
 			for (int i = 0; i < bidi_run_count; i++) {
 				int32_t _bidi_run_start = 0;
 				int32_t _bidi_run_length = 0;
 				ubidi_getVisualRun(bidi_iter, i, &_bidi_run_start, &_bidi_run_length);
 
-				int32_t bidi_run_start = _convert_pos(sd, sd->bidi_override[ov].x + start + _bidi_run_start);
-				int32_t bidi_run_end = _convert_pos(sd, sd->bidi_override[ov].x + start + _bidi_run_start + _bidi_run_length);
+				int32_t bidi_run_start = _convert_pos(p_sd, p_sd->bidi_override[ov].x + start + _bidi_run_start);
+				int32_t bidi_run_end = _convert_pos(p_sd, p_sd->bidi_override[ov].x + start + _bidi_run_start + _bidi_run_length);
 
 				for (int j = 0; j < sd_size; j++) {
 					if ((sd_glyphs[j].start >= bidi_run_start) && (sd_glyphs[j].end <= bidi_run_end)) {
@@ -3384,67 +3397,67 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 						Variant key;
 						bool find_embedded = false;
 						if (gl.count == 1) {
-							for (const KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : sd->objects) {
+							for (const KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : p_sd->objects) {
 								if (E.value.pos == gl.start) {
 									find_embedded = true;
 									key = E.key;
-									new_sd->objects[key] = E.value;
+									p_new_sd->objects[key] = E.value;
 									break;
 								}
 							}
 						}
 						if (find_embedded) {
-							if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
-								new_sd->objects[key].rect.position.x = new_sd->width;
-								new_sd->width += new_sd->objects[key].rect.size.x;
+							if (p_new_sd->orientation == ORIENTATION_HORIZONTAL) {
+								p_new_sd->objects[key].rect.position.x = p_new_sd->width;
+								p_new_sd->width += p_new_sd->objects[key].rect.size.x;
 							} else {
-								new_sd->objects[key].rect.position.y = new_sd->width;
-								new_sd->width += new_sd->objects[key].rect.size.y;
+								p_new_sd->objects[key].rect.position.y = p_new_sd->width;
+								p_new_sd->width += p_new_sd->objects[key].rect.size.y;
 							}
 						} else {
 							if (gl.font_rid.is_valid()) {
-								if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
-									new_sd->ascent = MAX(new_sd->ascent, MAX(font_get_ascent(gl.font_rid, gl.font_size), -gl.y_off));
-									new_sd->descent = MAX(new_sd->descent, MAX(font_get_descent(gl.font_rid, gl.font_size), gl.y_off));
+								if (p_new_sd->orientation == ORIENTATION_HORIZONTAL) {
+									p_new_sd->ascent = MAX(p_new_sd->ascent, MAX(font_get_ascent(gl.font_rid, gl.font_size), -gl.y_off));
+									p_new_sd->descent = MAX(p_new_sd->descent, MAX(font_get_descent(gl.font_rid, gl.font_size), gl.y_off));
 								} else {
-									new_sd->ascent = MAX(new_sd->ascent, Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
-									new_sd->descent = MAX(new_sd->descent, Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
+									p_new_sd->ascent = MAX(p_new_sd->ascent, Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
+									p_new_sd->descent = MAX(p_new_sd->descent, Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
 								}
-							} else if (new_sd->preserve_invalid || (new_sd->preserve_control && is_control(gl.index))) {
+							} else if (p_new_sd->preserve_invalid || (p_new_sd->preserve_control && is_control(gl.index))) {
 								// Glyph not found, replace with hex code box.
-								if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
-									new_sd->ascent = MAX(new_sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y);
+								if (p_new_sd->orientation == ORIENTATION_HORIZONTAL) {
+									p_new_sd->ascent = MAX(p_new_sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y);
 								} else {
-									new_sd->ascent = MAX(new_sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f));
-									new_sd->descent = MAX(new_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f));
+									p_new_sd->ascent = MAX(p_new_sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f));
+									p_new_sd->descent = MAX(p_new_sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5f));
 								}
 							}
-							new_sd->width += gl.advance * gl.repeat;
+							p_new_sd->width += gl.advance * gl.repeat;
 						}
-						new_sd->glyphs.push_back(gl);
+						p_new_sd->glyphs.push_back(gl);
 					}
 				}
 			}
 		}
 
 		// Align embedded objects to baseline.
-		float full_ascent = new_sd->ascent;
-		float full_descent = new_sd->descent;
-		for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : new_sd->objects) {
-			if ((E.value.pos >= new_sd->start) && (E.value.pos < new_sd->end)) {
-				if (sd->orientation == ORIENTATION_HORIZONTAL) {
+		float full_ascent = p_new_sd->ascent;
+		float full_descent = p_new_sd->descent;
+		for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : p_new_sd->objects) {
+			if ((E.value.pos >= p_new_sd->start) && (E.value.pos < p_new_sd->end)) {
+				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
 						case INLINE_ALIGNMENT_TO_TOP: {
-							E.value.rect.position.y = -new_sd->ascent;
+							E.value.rect.position.y = -p_new_sd->ascent;
 						} break;
 						case INLINE_ALIGNMENT_TO_CENTER: {
-							E.value.rect.position.y = (-new_sd->ascent + new_sd->descent) / 2;
+							E.value.rect.position.y = (-p_new_sd->ascent + p_new_sd->descent) / 2;
 						} break;
 						case INLINE_ALIGNMENT_TO_BASELINE: {
 							E.value.rect.position.y = 0;
 						} break;
 						case INLINE_ALIGNMENT_TO_BOTTOM: {
-							E.value.rect.position.y = new_sd->descent;
+							E.value.rect.position.y = p_new_sd->descent;
 						} break;
 					}
 					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
@@ -3463,16 +3476,16 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 				} else {
 					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
 						case INLINE_ALIGNMENT_TO_TOP: {
-							E.value.rect.position.x = -new_sd->ascent;
+							E.value.rect.position.x = -p_new_sd->ascent;
 						} break;
 						case INLINE_ALIGNMENT_TO_CENTER: {
-							E.value.rect.position.x = (-new_sd->ascent + new_sd->descent) / 2;
+							E.value.rect.position.x = (-p_new_sd->ascent + p_new_sd->descent) / 2;
 						} break;
 						case INLINE_ALIGNMENT_TO_BASELINE: {
 							E.value.rect.position.x = 0;
 						} break;
 						case INLINE_ALIGNMENT_TO_BOTTOM: {
-							E.value.rect.position.x = new_sd->descent;
+							E.value.rect.position.x = p_new_sd->descent;
 						} break;
 					}
 					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
@@ -3491,12 +3504,12 @@ RID TextServerAdvanced::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 				}
 			}
 		}
-		new_sd->ascent = full_ascent;
-		new_sd->descent = full_descent;
+		p_new_sd->ascent = full_ascent;
+		p_new_sd->descent = full_descent;
 	}
-	new_sd->valid = true;
+	p_new_sd->valid = true;
 
-	return shaped_owner.make_rid(new_sd);
+	return true;
 }
 
 RID TextServerAdvanced::shaped_text_get_parent(RID p_shaped) const {
@@ -4225,8 +4238,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 		for (int i = p_start; i < p_end; i++) {
 			if (p_sd->preserve_invalid || (p_sd->preserve_control && is_control(p_sd->text[i]))) {
 				Glyph gl;
-				gl.start = i;
-				gl.end = i + 1;
+				gl.start = i + p_sd->start;
+				gl.end = i + 1 + p_sd->start;
 				gl.count = 1;
 				gl.index = p_sd->text[i];
 				gl.font_size = fs;
@@ -4252,6 +4265,9 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 
 	RID f = p_fonts[p_fb_index];
 	hb_font_t *hb_font = _font_get_hb_handle(f, fs);
+	float scale = font_get_scale(f, fs);
+	float sp_sp = font_get_spacing(f, fs, SPACING_SPACE);
+	float sp_gl = font_get_spacing(f, fs, SPACING_GLYPH);
 	ERR_FAIL_COND(hb_font == nullptr);
 
 	hb_buffer_clear_contents(p_sd->hb_buffer);
@@ -4335,7 +4351,6 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {
-				float scale = font_get_scale(f, fs);
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					gl.advance = Math::round(glyph_pos[i].x_advance / (64.0 / scale));
 				} else {
@@ -4344,10 +4359,10 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 				gl.x_off = Math::round(glyph_pos[i].x_offset / (64.0 / scale));
 				gl.y_off = -Math::round(glyph_pos[i].y_offset / (64.0 / scale));
 			}
-			if (font_get_spacing(f, fs, SPACING_SPACE) && is_whitespace(p_sd->text[glyph_info[i].cluster])) {
-				gl.advance += font_get_spacing(f, fs, SPACING_SPACE);
+			if (sp_sp && is_whitespace(p_sd->text[glyph_info[i].cluster])) {
+				gl.advance += sp_sp;
 			} else {
-				gl.advance += font_get_spacing(f, fs, SPACING_GLYPH);
+				gl.advance += sp_gl;
 			}
 
 			if (p_sd->preserve_control) {
@@ -4385,10 +4400,13 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 						p_sd->ascent = MAX(p_sd->ascent, -w[i + j].y_off);
 						p_sd->descent = MAX(p_sd->descent, w[i + j].y_off);
 					} else {
-						p_sd->ascent = MAX(p_sd->ascent, Math::round(font_get_glyph_advance(f, fs, w[i + j].index).x * 0.5));
-						p_sd->descent = MAX(p_sd->descent, Math::round(font_get_glyph_advance(f, fs, w[i + j].index).x * 0.5));
+						float gla = Math::round(font_get_glyph_advance(f, fs, w[i + j].index).x * 0.5);
+						p_sd->ascent = MAX(p_sd->ascent, gla);
+						p_sd->descent = MAX(p_sd->descent, gla);
 					}
 					p_sd->width += w[i + j].advance;
+					w[i + j].start += p_sd->start;
+					w[i + j].end += p_sd->start;
 					p_sd->glyphs.push_back(w[i + j]);
 				}
 			} else {
@@ -4421,10 +4439,14 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 		return true;
 	}
 
-	if (sd->parent != RID()) {
-		full_copy(sd);
-	}
 	invalidate(sd);
+	if (sd->parent != RID()) {
+		shaped_text_shape(sd->parent);
+		ShapedTextDataAdvanced *parent_sd = shaped_owner.get_or_null(sd->parent);
+		ERR_FAIL_COND_V(!parent_sd->valid, false);
+		ERR_FAIL_COND_V(!_shape_substr(sd, parent_sd, sd->start, sd->end - sd->start), false);
+		return true;
+	}
 
 	if (sd->text.length() == 0) {
 		sd->valid = true;
@@ -4440,15 +4462,17 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 	}
 
 	if (sd->bidi_override.is_empty()) {
-		sd->bidi_override.push_back(Vector2i(0, sd->end));
+		sd->bidi_override.push_back(Vector2i(sd->start, sd->end));
 	}
 
 	for (int ov = 0; ov < sd->bidi_override.size(); ov++) {
 		// Create BiDi iterator.
-		int start = _convert_pos_inv(sd, sd->bidi_override[ov].x);
-		int end = _convert_pos_inv(sd, sd->bidi_override[ov].y);
+		int start = _convert_pos_inv(sd, sd->bidi_override[ov].x - sd->start);
+		int end = _convert_pos_inv(sd, sd->bidi_override[ov].y - sd->start);
 
-		ERR_FAIL_COND_V_MSG((start < 0 || end - start > sd->utf16.length()), false, "Invalid BiDi override range.");
+		if (start < 0 || end - start > sd->utf16.length()) {
+			continue;
+		}
 
 		UErrorCode err = U_ZERO_ERROR;
 		UBiDi *bidi_iter = ubidi_openSized(end, 0, &err);
@@ -4502,8 +4526,8 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 				}
 			}
 
-			int32_t bidi_run_start = _convert_pos(sd, sd->bidi_override[ov].x + _bidi_run_start);
-			int32_t bidi_run_end = _convert_pos(sd, sd->bidi_override[ov].x + _bidi_run_start + _bidi_run_length);
+			int32_t bidi_run_start = _convert_pos(sd, sd->bidi_override[ov].x - sd->start + _bidi_run_start);
+			int32_t bidi_run_end = _convert_pos(sd, sd->bidi_override[ov].x - sd->start + _bidi_run_start + _bidi_run_length);
 
 			// Shape runs.
 
@@ -4525,7 +4549,7 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 
 					for (int k = spn_from; k != spn_to; k += spn_delta) {
 						const ShapedTextDataAdvanced::Span &span = sd->spans[k];
-						if (span.start >= script_run_end || span.end <= script_run_start) {
+						if (span.start - sd->start >= script_run_end || span.end - sd->start <= script_run_start) {
 							continue;
 						}
 						if (span.embedded_key != Variant()) {
@@ -4566,7 +4590,7 @@ bool TextServerAdvanced::shaped_text_shape(RID p_shaped) {
 							}
 							fonts.append_array(fonts_scr_only);
 							fonts.append_array(fonts_no_match);
-							_shape_run(sd, MAX(sd->spans[k].start, script_run_start), MIN(sd->spans[k].end, script_run_end), sd->script_iter->script_ranges[j].script, bidi_run_direction, fonts, k, 0);
+							_shape_run(sd, MAX(sd->spans[k].start - sd->start, script_run_start), MIN(sd->spans[k].end - sd->start, script_run_end), sd->script_iter->script_ranges[j].script, bidi_run_direction, fonts, k, 0);
 						}
 					}
 				}

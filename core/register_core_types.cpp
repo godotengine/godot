@@ -199,7 +199,7 @@ void register_core_types() {
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
 	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeer);
-	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeerExtension);
+	GDREGISTER_CLASS(MultiplayerPeerExtension);
 	GDREGISTER_VIRTUAL_CLASS(MultiplayerReplicator);
 	GDREGISTER_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MainLoop);

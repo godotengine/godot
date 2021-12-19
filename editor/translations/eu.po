@@ -2078,13 +2078,29 @@ msgstr "Metodoak"
 msgid "Theme Properties"
 msgstr "Azalaren propietateak"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumerazioak"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Konstanteak"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumerazioak"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8324,18 +8340,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -12927,11 +12931,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -13931,40 +13955,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Q&A"
-#~ msgstr "Galdera-erantzunak"
-
-#~ msgid "Redownload"
-#~ msgstr "Berriro jaitsi"
-
-#~ msgid "(Installed)"
-#~ msgstr "(Instalatuta)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Falta da)"
-
-#~ msgid "Download Complete."
-#~ msgstr "Jaitsiera osatuta."
-
-#~ msgid "Remove Template"
-#~ msgstr "Kendu txantiloia"
-
-#~ msgid "Download Templates"
-#~ msgstr "Jaitsi txantiloiak"
-
-#~ msgid "Theme editing menu."
-#~ msgstr "Azalaren edizio menua."
-
-#~ msgid "Create From Current Editor Theme"
-#~ msgstr "Sortu editorearen uneko azaletik"
-
-#~ msgid "Theme File"
-#~ msgstr "Azal fitxategia"
-
-#~ msgid "Compiled"
-#~ msgstr "Konpilatuta"
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr ""
-#~ "Animazio irakurgailua ezin da norbera animatu, bakarrik beste batzuk."

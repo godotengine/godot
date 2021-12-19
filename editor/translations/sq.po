@@ -2154,13 +2154,29 @@ msgstr "Metodat"
 msgid "Theme Properties"
 msgstr "Vetitë e Temës"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Enumeracionet"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Konstantet"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Enumeracionet"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -8654,18 +8670,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -13371,11 +13375,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14385,213 +14409,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Singleton"
-#~ msgstr "Vetmitar"
-
-#, fuzzy
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "Zëvendëso të gjitha (pa kthim pas)"
-
-#, fuzzy
-#~ msgid "Enabled Properties:"
-#~ msgstr "Vetitë:"
-
-#~ msgid "Set"
-#~ msgstr "Vendos"
-
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "U ruajtën resurset e modifikuara të %s."
-
-#~ msgid "Q&A"
-#~ msgstr "Pyetje&Përgjigje"
-
-#~ msgid "Status:"
-#~ msgstr "Statusi:"
-
-#~ msgid "Edit:"
-#~ msgstr "Modifiko:"
-
-#, fuzzy
-#~ msgid "Redownload"
-#~ msgstr "Ri-Shkarko"
-
-#~ msgid "(Installed)"
-#~ msgstr "(E Instaluar)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Mungon)"
-
-#~ msgid "Request Failed."
-#~ msgstr "Kërkimi Dështoi."
-
-#~ msgid "Redirect Loop."
-#~ msgstr "Ridrejto Ciklin."
-
-#~ msgid "Download Complete."
-#~ msgstr "Shkarkimi u Plotësua."
-
-#~ msgid "Remove Template"
-#~ msgstr "Hiq Shabllonin"
-
-#~ msgid "Download Templates"
-#~ msgstr "Shkarko Shabllonet"
-
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr "Zgjidh pasqyrën nga lista: (Shift+Kliko: Për ta hapur në shfletues)"
-
-#, fuzzy
-#~ msgid "Move to Trash"
-#~ msgstr "Lëviz Autoload-in"
-
-#~ msgid "Expand All Properties"
-#~ msgstr "Zgjero Të Gjitha Vetitë"
-
-#~ msgid "Collapse All Properties"
-#~ msgstr "Zvogëlo Të Gjitha Vetitë"
-
-#~ msgid "Copy Params"
-#~ msgstr "Kopjo Parametrat"
-
-#~ msgid "Open in Help"
-#~ msgstr "Hap në Ndihmë"
-
-#, fuzzy
-#~ msgid "Size"
-#~ msgstr "Madhësia: "
-
-#~ msgid "Clipboard is empty"
-#~ msgstr "Clipboard-i është bosh"
-
-#~ msgid "No"
-#~ msgstr "Jo"
-
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr "Kjo skenë nuk është ruajtur më parë. Ruaje para se të fillosh?"
-
-#~ msgid "Search complete"
-#~ msgstr "Kërkimi u kompletua"
-
-#~ msgid "There is already file or folder with the same name in this location."
-#~ msgstr ""
-#~ "Ekziston që më parë një skedar ose folder me të njëjtin emër në këtë "
-#~ "vendndodhje."
-
-#~ msgid "Error trying to save layout!"
-#~ msgstr "Gabim duke provuar të ruaj faqosjen!"
-
-#~ msgid "Default editor layout overridden."
-#~ msgstr "Faqosja e parazgjedhur e editorit u mbishkel."
-
-#, fuzzy
-#~ msgid "Add initial export..."
-#~ msgstr "Shto te të preferuarat"
-
-#, fuzzy
-#~ msgid "Pack File"
-#~ msgstr " Skedarët"
-
-#, fuzzy
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "FileSystem"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "Kur eksporton ose dorëzon, rezultati i ekzekutueshëm do të tentoj të "
-#~ "lidhet me IP-në e këtij kompjuteri në mënyrë që të rregullohet."
-
-#~ msgid "Current scene was never saved, please save it prior to running."
-#~ msgstr ""
-#~ "Skena aktuale nuk është ruajtur më parë, ju lutem ruajeni para se të "
-#~ "filloni."
-
-#~ msgid "Revert"
-#~ msgstr "Rikthe"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr "Ky veprim nuk mund të çbëhet. Rikthe gjithsesi?"
-
-#~ msgid "Issue Tracker"
-#~ msgstr "Gjurmuesi i Problemeve"
-
-#~ msgid ""
-#~ "There are currently no tutorials for this class, you can [color=$color]"
-#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
-#~ "$url2]request one[/url][/color]."
-#~ msgstr ""
-#~ "Nuk ka për momentin tutoriale për këtë klas, ti mund të [color=$color]"
-#~ "[url=$url]contribute one[/url][/color] ose [color=$color][url="
-#~ "$url2]request one[/url][/color]."
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "Përshkrim i Shkurtër:"
-
-#~ msgid "Class Description"
-#~ msgstr "Përshkrimi i Klasës"
-
-#~ msgid "Project export failed with error code %d."
-#~ msgstr "Eksportimi i projektit dështoi me kodin e gabimit %d."
-
-#~ msgid "Password:"
-#~ msgstr "Fjalëkalimi:"
-
-#~ msgid "Pause the scene"
-#~ msgstr "Pusho skenën"
-
-#~ msgid "Methods:"
-#~ msgstr "Metodat:"
-
-#~ msgid "Theme Properties:"
-#~ msgstr "Vetitë e Temës:"
-
-#~ msgid "Constants:"
-#~ msgstr "Konstantet:"
-
-#~ msgid "Class Description:"
-#~ msgstr "Përshkrimi i Klasës:"
-
-#~ msgid "Property Descriptions:"
-#~ msgstr "Përshkrimi i Vetive:"
-
-#~ msgid "Method Descriptions:"
-#~ msgstr "Përshkrimi i Metodes:"
-
-#, fuzzy
-#~ msgid "Reverse sorting."
-#~ msgstr "Duke bër kërkesën..."
-
-#~ msgid ""
-#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
-#~ msgstr ""
-#~ "Nuk mund të hapi file_type_catche.cch për të shkruajtur, skedari nuk do "
-#~ "të ruhet!"
-
-#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-#~ msgstr ""
-#~ "Nuk mund të navigoj te '%s' sepse nuk është gjetur në sistemin e "
-#~ "skedarëve!"
-
-#~ msgid "Previous Folder"
-#~ msgstr "Folderi i Mëparshëm"
-
-#, fuzzy
-#~ msgid "Open in an external image editor."
-#~ msgstr "Hap Editorin tjetër"
-
-#~ msgid "Update Always"
-#~ msgstr "Përditëso Gjithmonë"
-
-#~ msgid "Delete selected files?"
-#~ msgstr "Fshi skedarët e zgjedhur?"
-
-#~ msgid "Open Scene(s)"
-#~ msgstr "Hap Skenat"
-
-#~ msgid "Previous Directory"
-#~ msgstr "Direktoria e Mëparshme"
-
-#~ msgid "Next Directory"
-#~ msgstr "Direktoria Tjetër"

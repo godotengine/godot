@@ -18,6 +18,43 @@
 				Virtual method which can be overridden to customize how connections are drawn.
 			</description>
 		</method>
+		<method name="_is_in_input_hotzone" qualifiers="virtual">
+			<return type="bool" />
+			<argument index="0" name="graph_node" type="Object" />
+			<argument index="1" name="slot_index" type="int" />
+			<argument index="2" name="mouse_position" type="Vector2" />
+			<description>
+				Returns whether the [code]mouse_position[/code] is in the input hot zone.
+				By default, a hot zone is a [Rect2] positioned such that its center is at [code]graph_node[/code].[method GraphNode.get_connection_input_position]([code]slot_index[/code]) (For output's case, call [method GraphNode.get_connection_output_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
+				Below is a sample code to help get started:
+				[codeblock]
+				func _is_in_input_hotzone(graph_node, slot_index, mouse_position):
+				    var slot_size : Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+				    var slot_pos : Vector2 = graph_node.get_position() + graph_node.get_connection_input_position(slot_index) - slot_size / 2
+				    var rect = Rect2(slot_pos, slot_size)
+
+				    return rect.has_point(mouse_position)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="_is_in_output_hotzone" qualifiers="virtual">
+			<return type="bool" />
+			<argument index="0" name="graph_node" type="Object" />
+			<argument index="1" name="slot_index" type="int" />
+			<argument index="2" name="mouse_position" type="Vector2" />
+			<description>
+				Returns whether the [code]mouse_position[/code] is in the output hot zone. For more information on hot zones, see [method _is_in_input_hotzone].
+				Below is a sample code to help get started:
+				[codeblock]
+				func _is_in_output_hotzone(graph_node, slot_index, mouse_position):
+				    var slot_size : Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+				    var slot_pos : Vector2 = graph_node.get_position() + graph_node.get_connection_output_position(slot_index) - slot_size / 2
+				    var rect = Rect2(slot_pos, slot_size)
+
+				    return rect.has_point(mouse_position)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="add_valid_connection_type">
 			<return type="void" />
 			<argument index="0" name="from_type" type="int" />
