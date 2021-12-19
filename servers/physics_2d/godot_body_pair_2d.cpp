@@ -160,7 +160,7 @@ void GodotBodyPair2D::_validate_contacts() {
 	}
 }
 
-bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, const Transform2D &p_xform_A, GodotBody2D *p_B, int p_shape_B, const Transform2D &p_xform_B, bool p_swap_result) {
+bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, const Transform2D &p_xform_A, GodotBody2D *p_B, int p_shape_B, const Transform2D &p_xform_B) {
 	Vector2 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
 	if (mlen < CMP_EPSILON) {
@@ -171,14 +171,18 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 
 	real_t min, max;
 	p_A->get_shape(p_shape_A)->project_rangev(mnormal, p_xform_A, min, max);
-	bool fast_object = mlen > (max - min) * 0.3; //going too fast in that direction
 
-	if (!fast_object) { //did it move enough in this direction to even attempt raycast? let's say it should move more than 1/3 the size of the object in that axis
+	// Did it move enough in this direction to even attempt raycast?
+	// Let's say it should move more than 1/3 the size of the object in that axis.
+	bool fast_object = mlen > (max - min) * 0.3;
+	if (!fast_object) {
 		return false;
 	}
 
-	//cast a segment from support in motion normal, in the same direction of motion by motion length
-	//support is the worst case collision point, so real collision happened before
+	// Going too fast in that direction.
+
+	// Cast a segment from support in motion normal, in the same direction of motion by motion length.
+	// Support is the worst case collision point, so real collision happened before.
 	int a;
 	Vector2 s[2];
 	p_A->get_shape(p_shape_A)->get_supports(p_xform_A.basis_xform(mnormal).normalized(), s, a);
@@ -187,7 +191,8 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 
 	Transform2D from_inv = p_xform_B.affine_inverse();
 
-	Vector2 local_from = from_inv.xform(from - mnormal * mlen * 0.1); //start from a little inside the bounding box
+	// Start from a little inside the bounding box.
+	Vector2 local_from = from_inv.xform(from - mnormal * mlen * 0.1);
 	Vector2 local_to = from_inv.xform(to);
 
 	Vector2 rpos, rnorm;
@@ -195,20 +200,22 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 		return false;
 	}
 
-	//ray hit something
+	// Check one-way collision based on motion direction.
+	if (p_A->get_shape(p_shape_A)->allows_one_way_collision() && p_B->is_shape_set_as_one_way_collision(p_shape_B)) {
+		Vector2 direction = p_xform_B.get_axis(1).normalized();
+		if (direction.dot(mnormal) < CMP_EPSILON) {
+			collided = false;
+			oneway_disabled = true;
+			return false;
+		}
+	}
 
+	// Shorten the linear velocity so it does not hit, but gets close enough,
+	// next frame will hit softly or soft enough.
 	Vector2 hitpos = p_xform_B.xform(rpos);
 
-	Vector2 contact_A = to;
-	Vector2 contact_B = hitpos;
-
-	//create a contact
-
-	if (p_swap_result) {
-		_contact_added_callback(contact_B, contact_A);
-	} else {
-		_contact_added_callback(contact_A, contact_B);
-	}
+	real_t newlen = hitpos.distance_to(from) - (max - min) * 0.01;
+	p_A->set_linear_velocity(mnormal * (newlen / p_step));
 
 	return true;
 }
@@ -222,6 +229,8 @@ real_t combine_friction(GodotBody2D *A, GodotBody2D *B) {
 }
 
 bool GodotBodyPair2D::setup(real_t p_step) {
+	check_ccd = false;
+
 	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
@@ -269,24 +278,19 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 
 	collided = GodotCollisionSolver2D::solve(shape_A_ptr, xform_A, motion_A, shape_B_ptr, xform_B, motion_B, _add_contact, this, &sep_axis);
 	if (!collided) {
-		//test ccd (currently just a raycast)
+		oneway_disabled = false;
 
 		if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_A) {
-			if (_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B)) {
-				collided = true;
-			}
+			check_ccd = true;
+			return true;
 		}
 
 		if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_B) {
-			if (_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A, true)) {
-				collided = true;
-			}
+			check_ccd = true;
+			return true;
 		}
 
-		if (!collided) {
-			oneway_disabled = false;
-			return false;
-		}
+		return false;
 	}
 
 	if (oneway_disabled) {
@@ -335,7 +339,29 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 }
 
 bool GodotBodyPair2D::pre_solve(real_t p_step) {
-	if (!collided || oneway_disabled) {
+	if (oneway_disabled) {
+		return false;
+	}
+
+	if (!collided) {
+		if (check_ccd) {
+			const Vector2 &offset_A = A->get_transform().get_origin();
+			Transform2D xform_Au = A->get_transform().untranslated();
+			Transform2D xform_A = xform_Au * A->get_shape_transform(shape_A);
+
+			Transform2D xform_Bu = B->get_transform();
+			xform_Bu.elements[2] -= offset_A;
+			Transform2D xform_B = xform_Bu * B->get_shape_transform(shape_B);
+
+			if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_A) {
+				_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B);
+			}
+
+			if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_B) {
+				_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A);
+			}
+		}
+
 		return false;
 	}
 

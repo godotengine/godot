@@ -4,14 +4,14 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Muhammad Ali <ali@codeonion.com>, 2016.
-#
+# Faisal Rehman <faisalurrehman234@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:44+0100\n"
-"Last-Translator: Muhammad Ali <ali@codeonion.com>\n"
+"PO-Revision-Date: 2021-11-26 18:51+0000\n"
+"Last-Translator: Faisal Rehman <faisalurrehman234@gmail.com>\n"
 "Language-Team: Urdu (Pakistan) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/ur_PK/>\n"
 "Language: ur_PK\n"
@@ -19,10 +19,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
+#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
 ".استمال کیجۓ TYPE_* constants .کے لیے غلط ہیں  convert() دیے گئے ارگمنٹس."
@@ -43,7 +44,7 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "self استعمال نہیں کیا جا سکتا کیونکہ مثال null ہے (پاس نہیں ہوئی)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -58,10 +59,8 @@ msgid "Invalid named index '%s' for base type %s"
 msgstr ""
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
-".استمال کیجۓ TYPE_* constants .کے لیے غلط ہیں  convert() دیے گئے ارگمنٹس."
+msgstr "'%s' کی تعمیر کے لیے غلط دلائل"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -344,7 +343,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "انیم ٹریک ہٹائیں"
 
 #. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
@@ -916,7 +915,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr ""
+msgstr "سگنلز"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -1832,7 +1831,7 @@ msgstr ""
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Import"
-msgstr ""
+msgstr "درآمد"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -2083,20 +2082,36 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr ""
+msgstr "طریقے"
 
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Theme Properties"
 msgstr ".تمام کا انتخاب"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
 msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
+msgstr "مستقل"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
 msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "گنتی"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2256,7 +2271,7 @@ msgstr ""
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
-msgstr ""
+msgstr "نوڈ"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
@@ -4788,9 +4803,8 @@ msgid "No animation to copy!"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "No animation resource on clipboard!"
-msgstr ".یہ ریسورس فائل پر مبنی نہی ہے"
+msgstr "کلپ بورڈ پر کوئی حرکت پذیری وسیلہ نہیں!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
@@ -6195,7 +6209,7 @@ msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 1"
-msgstr ""
+msgstr "فلیٹ 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
@@ -8453,18 +8467,6 @@ msgstr ".تمام کا انتخاب"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "TextureRegion"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -11533,14 +11535,12 @@ msgid "Make node as Root"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr ".اینیمیشن کی کیز کو ڈیلیٹ کرو"
+msgstr "%d نوڈس اور کوئی بچہ حذف کریں؟"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes?"
-msgstr ".اینیمیشن کی کیز کو ڈیلیٹ کرو"
+msgstr "%d نوڈس حذف کریں؟"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete the root node \"%s\"?"
@@ -11551,9 +11551,8 @@ msgid "Delete node \"%s\" and its children?"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete node \"%s\"?"
-msgstr ".اینیمیشن کی کیز کو ڈیلیٹ کرو"
+msgstr "نوڈ \"%s\" کو حذف کریں؟"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -11992,9 +11991,8 @@ msgid "Attach Node Script"
 msgstr "سب سکریپشن بنائیں"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote "
-msgstr ".تمام کا انتخاب"
+msgstr "ریموٹ "
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -13170,11 +13168,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -13253,9 +13271,8 @@ msgid "Could not export project files to gradle project\n"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not write expansion package file!"
-msgstr "سب سکریپشن بنائیں"
+msgstr "توسیعی پیکیج فائل نہیں لکھی جا سکی!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Building Android Project (gradle)"
@@ -14174,67 +14191,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#, fuzzy
-#~ msgid "Remove Template"
-#~ msgstr ".تمام کا انتخاب"
-
-#, fuzzy
-#~ msgid "Move to Trash"
-#~ msgstr "ایکشن منتقل کریں"
-
-#, fuzzy
-#~ msgid "Templates"
-#~ msgstr ".تمام کا انتخاب"
-
-#, fuzzy
-#~ msgid "Move pivot"
-#~ msgstr "ایکشن منتقل کریں"
-
-#, fuzzy
-#~ msgid "Move anchor"
-#~ msgstr "ایکشن منتقل کریں"
-
-#, fuzzy
-#~ msgid "Clear Script"
-#~ msgstr "سب سکریپشن بنائیں"
-
-#, fuzzy
-#~ msgid "Class Description"
-#~ msgstr "سب سکریپشن بنائیں"
-
-#, fuzzy
-#~ msgid "Class Description:"
-#~ msgstr "سب سکریپشن بنائیں"
-
-#, fuzzy
-#~ msgid "Property Descriptions:"
-#~ msgstr "سب سکریپشن بنائیں"
-
-#, fuzzy
-#~ msgid "Method Descriptions:"
-#~ msgstr "سب سکریپشن بنائیں"
-
-#, fuzzy
-#~ msgid "Tool Select"
-#~ msgstr ".تمام کا انتخاب"
-
-#, fuzzy
-#~ msgid "Create C# solution"
-#~ msgstr "سب سکریپشن بنائیں"
-
-#, fuzzy
-#~ msgid "Ease in"
-#~ msgstr ".تمام کا انتخاب"
-
-#, fuzzy
-#~ msgid "Remove Split"
-#~ msgstr ".تمام کا انتخاب"
-
-#, fuzzy
-#~ msgid "Set pivot at mouse position"
-#~ msgstr ".تمام کا انتخاب"
-
-#, fuzzy
-#~ msgid "Can't write file."
-#~ msgstr "سب سکریپشن بنائیں"

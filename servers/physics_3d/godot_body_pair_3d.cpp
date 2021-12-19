@@ -172,21 +172,26 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 
 	real_t min, max;
 	p_A->get_shape(p_shape_A)->project_range(mnormal, p_xform_A, min, max);
-	bool fast_object = mlen > (max - min) * 0.3; //going too fast in that direction
 
-	if (!fast_object) { //did it move enough in this direction to even attempt raycast? let's say it should move more than 1/3 the size of the object in that axis
+	// Did it move enough in this direction to even attempt raycast?
+	// Let's say it should move more than 1/3 the size of the object in that axis.
+	bool fast_object = mlen > (max - min) * 0.3;
+	if (!fast_object) {
 		return false;
 	}
 
-	//cast a segment from support in motion normal, in the same direction of motion by motion length
-	//support is the worst case collision point, so real collision happened before
+	// Going too fast in that direction.
+
+	// Cast a segment from support in motion normal, in the same direction of motion by motion length.
+	// Support is the worst case collision point, so real collision happened before.
 	Vector3 s = p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform(mnormal).normalized());
 	Vector3 from = p_xform_A.xform(s);
 	Vector3 to = from + motion;
 
 	Transform3D from_inv = p_xform_B.affine_inverse();
 
-	Vector3 local_from = from_inv.xform(from - mnormal * mlen * 0.1); //start from a little inside the bounding box
+	// Start from a little inside the bounding box.
+	Vector3 local_from = from_inv.xform(from - mnormal * mlen * 0.1);
 	Vector3 local_to = from_inv.xform(to);
 
 	Vector3 rpos, rnorm;
@@ -194,7 +199,8 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		return false;
 	}
 
-	//shorten the linear velocity so it does not hit, but gets close enough, next frame will hit softly or soft enough
+	// Shorten the linear velocity so it does not hit, but gets close enough,
+	// next frame will hit softly or soft enough.
 	Vector3 hitpos = p_xform_B.xform(rpos);
 
 	real_t newlen = hitpos.distance_to(from) - (max - min) * 0.01;
@@ -212,6 +218,8 @@ real_t combine_friction(GodotBody3D *A, GodotBody3D *B) {
 }
 
 bool GodotBodyPair3D::setup(real_t p_step) {
+	check_ccd = false;
+
 	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
@@ -248,14 +256,14 @@ bool GodotBodyPair3D::setup(real_t p_step) {
 	collided = GodotCollisionSolver3D::solve_static(shape_A_ptr, xform_A, shape_B_ptr, xform_B, _contact_added_callback, this, &sep_axis);
 
 	if (!collided) {
-		//test ccd (currently just a raycast)
-
 		if (A->is_continuous_collision_detection_enabled() && collide_A) {
-			_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B);
+			check_ccd = true;
+			return true;
 		}
 
 		if (B->is_continuous_collision_detection_enabled() && collide_B) {
-			_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A);
+			check_ccd = true;
+			return true;
 		}
 
 		return false;
@@ -266,6 +274,24 @@ bool GodotBodyPair3D::setup(real_t p_step) {
 
 bool GodotBodyPair3D::pre_solve(real_t p_step) {
 	if (!collided) {
+		if (check_ccd) {
+			const Vector3 &offset_A = A->get_transform().get_origin();
+			Transform3D xform_Au = Transform3D(A->get_transform().basis, Vector3());
+			Transform3D xform_A = xform_Au * A->get_shape_transform(shape_A);
+
+			Transform3D xform_Bu = B->get_transform();
+			xform_Bu.origin -= offset_A;
+			Transform3D xform_B = xform_Bu * B->get_shape_transform(shape_B);
+
+			if (A->is_continuous_collision_detection_enabled() && collide_A) {
+				_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B);
+			}
+
+			if (B->is_continuous_collision_detection_enabled() && collide_B) {
+				_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A);
+			}
+		}
+
 		return false;
 	}
 

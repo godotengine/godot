@@ -1415,7 +1415,7 @@ void RasterizerCanvasGLES3::_legacy_canvas_render_item(Item *p_ci, RenderItemSta
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK: {
 							glBindTexture(GL_TEXTURE_2D, storage->resources.black_tex);
 						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISOTROPY: {
 							glBindTexture(GL_TEXTURE_2D, storage->resources.aniso_tex);
 						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {

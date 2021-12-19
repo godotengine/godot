@@ -30,13 +30,15 @@
 		<method name="get_camera_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the camera position.
+				Returns the camera's [code]position[/code] (the tracked point the camera attempts to follow), relative to the origin.
+				[b]Note:[/b] The returned value is not the same as [member Node2D.position] or [member Node2D.global_position], as it is affected by the [code]drag[/code] properties.
 			</description>
 		</method>
 		<method name="get_camera_screen_center" qualifiers="const">
 			<return type="Vector2" />
 			<description>
 				Returns the location of the [Camera2D]'s screen-center, relative to the origin.
+				[b]Note:[/b] The real [code]position[/code] of the camera may be different, see [method get_camera_position].
 			</description>
 		</method>
 		<method name="get_drag_margin" qualifiers="const">
@@ -57,7 +59,7 @@
 			<return type="void" />
 			<description>
 				Sets the camera's position immediately to its current smoothing destination.
-				This has no effect if smoothing is disabled.
+				This method has no effect if [member smoothing_enabled] is [code]false[/code].
 			</description>
 		</method>
 		<method name="set_drag_margin">
@@ -95,7 +97,7 @@
 		</member>
 		<member name="drag_horizontal_offset" type="float" setter="set_drag_horizontal_offset" getter="get_drag_horizontal_offset" default="0.0">
 			The relative horizontal drag offset of the camera between the right ([code]-1[/code]) and left ([code]1[/code]) drag margins.
-			[b]Note:[/b] Used to set the initial horizontal drag offset; determine the current offset; or force the current offset. It's not automatically updated when the horizontal drag margin is enabled or the drag margins are changed.
+			[b]Note:[/b] Used to set the initial horizontal drag offset; determine the current offset; or force the current offset. It's not automatically updated when [member drag_horizontal_enabled] is [code]true[/code] or the drag margins are changed.
 		</member>
 		<member name="drag_left_margin" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
 			Left margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the left edge of the screen.
@@ -111,7 +113,7 @@
 		</member>
 		<member name="drag_vertical_offset" type="float" setter="set_drag_vertical_offset" getter="get_drag_vertical_offset" default="0.0">
 			The relative vertical drag offset of the camera between the bottom ([code]-1[/code]) and top ([code]1[/code]) drag margins.
-			[b]Note:[/b] Used to set the initial vertical drag offset; determine the current offset; or force the current offset. It's not automatically updated when the vertical drag margin is enabled or the drag margins are changed.
+			[b]Note:[/b] Used to set the initial vertical drag offset; determine the current offset; or force the current offset. It's not automatically updated when [member drag_vertical_enabled] is [code]true[/code] or the drag margins are changed.
 		</member>
 		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled" default="false">
 			If [code]true[/code], draws the camera's drag margin rectangle in the editor.
@@ -133,7 +135,7 @@
 		</member>
 		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled" default="false">
 			If [code]true[/code], the camera smoothly stops when reaches its limits.
-			This has no effect if smoothing is disabled.
+			This property has no effect if [member smoothing_enabled] is [code]false[/code].
 			[b]Note:[/b] To immediately update the camera's position to be within limits without smoothing, even with this setting enabled, invoke [method reset_smoothing].
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit" default="-10000000">
@@ -146,7 +148,7 @@
 			The camera's process callback. See [enum Camera2DProcessCallback].
 		</member>
 		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating" default="false">
-			If [code]true[/code], the camera rotates with the target.
+			If [code]true[/code], the camera view rotates with the target.
 		</member>
 		<member name="smoothing_enabled" type="bool" setter="set_enable_follow_smoothing" getter="is_follow_smoothing_enabled" default="false">
 			If [code]true[/code], the camera smoothly moves towards the target at [member smoothing_speed].

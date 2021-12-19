@@ -1132,6 +1132,25 @@ TEST_CASE("[String] c-escape/unescape") {
 	CHECK(s.c_escape().c_unescape() == s);
 }
 
+TEST_CASE("[String] indent") {
+	static const char *input[] = {
+		"",
+		"aaa\nbbb",
+		"\tcontains\n\tindent",
+		"empty\n\nline",
+	};
+	static const char *expected[] = {
+		"",
+		"\taaa\n\tbbb",
+		"\t\tcontains\n\t\tindent",
+		"\tempty\n\n\tline",
+	};
+
+	for (int i = 0; i < 3; i++) {
+		CHECK(String(input[i]).indent("\t") == expected[i]);
+	}
+}
+
 TEST_CASE("[String] dedent") {
 	String s = "      aaa\n    bbb";
 	String t = "aaa\nbbb";

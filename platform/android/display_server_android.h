@@ -70,8 +70,8 @@ class DisplayServerAndroid : public DisplayServer {
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
 #if defined(VULKAN_ENABLED)
-	VulkanContextAndroid *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
+	VulkanContextAndroid *context_vulkan = nullptr;
+	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
 
 	ObjectID window_attached_instance_id;

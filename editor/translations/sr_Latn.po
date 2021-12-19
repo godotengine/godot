@@ -2082,12 +2082,28 @@ msgstr ""
 msgid "Theme Properties"
 msgstr ""
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
 msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -8376,18 +8392,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -13021,11 +13025,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14019,36 +14043,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "Pomjeri Kanal Animacije Gore"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "Pomjeri Kanal Animacije Dole"
-
-#~ msgid "Anim Track Change Interpolation"
-#~ msgstr "Animacija Promjeni Interpolaciju Kanala"
-
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "Animacija Promjeni Vrijednosni Režim Kanala"
-
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "Animacija Promjeni Režim Omotavanja Kanala"
-
-#~ msgid "Anim Add Key"
-#~ msgstr "Animacija Dodaj Ključ"
-
-#~ msgid "In"
-#~ msgstr "U"
-
-#~ msgid "Out"
-#~ msgstr "Izvan"
-
-#~ msgid "In-Out"
-#~ msgstr "U-Izvan"
-
-#~ msgid "Out-In"
-#~ msgstr "Izvan-U"
-
-#~ msgid "Anim Create Typed Value Key"
-#~ msgstr "Animacija Napravit Tip Vrijednosni Ključ"

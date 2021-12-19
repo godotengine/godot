@@ -64,12 +64,23 @@ public:
 
 	virtual Vector2 get_velocity_at_local_position(const Vector2 &p_position) const = 0;
 
-	virtual void add_central_force(const Vector2 &p_force) = 0;
-	virtual void add_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) = 0;
-	virtual void add_torque(real_t p_torque) = 0;
 	virtual void apply_central_impulse(const Vector2 &p_impulse) = 0;
 	virtual void apply_torque_impulse(real_t p_torque) = 0;
 	virtual void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) = 0;
+
+	virtual void apply_central_force(const Vector2 &p_force) = 0;
+	virtual void apply_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) = 0;
+	virtual void apply_torque(real_t p_torque) = 0;
+
+	virtual void add_constant_central_force(const Vector2 &p_force) = 0;
+	virtual void add_constant_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) = 0;
+	virtual void add_constant_torque(real_t p_torque) = 0;
+
+	virtual void set_constant_force(const Vector2 &p_force) = 0;
+	virtual Vector2 get_constant_force() const = 0;
+
+	virtual void set_constant_torque(real_t p_torque) = 0;
+	virtual real_t get_constant_torque() const = 0;
 
 	virtual void set_sleep_state(bool p_enable) = 0;
 	virtual bool is_sleeping() const = 0;
@@ -419,20 +430,24 @@ public:
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) = 0;
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const = 0;
 
-	//do something about it
-	virtual void body_set_applied_force(RID p_body, const Vector2 &p_force) = 0;
-	virtual Vector2 body_get_applied_force(RID p_body) const = 0;
-
-	virtual void body_set_applied_torque(RID p_body, real_t p_torque) = 0;
-	virtual real_t body_get_applied_torque(RID p_body) const = 0;
-
-	virtual void body_add_central_force(RID p_body, const Vector2 &p_force) = 0;
-	virtual void body_add_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position = Vector2()) = 0;
-	virtual void body_add_torque(RID p_body, real_t p_torque) = 0;
-
 	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) = 0;
 	virtual void body_apply_torque_impulse(RID p_body, real_t p_torque) = 0;
 	virtual void body_apply_impulse(RID p_body, const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) = 0;
+
+	virtual void body_apply_central_force(RID p_body, const Vector2 &p_force) = 0;
+	virtual void body_apply_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position = Vector2()) = 0;
+	virtual void body_apply_torque(RID p_body, real_t p_torque) = 0;
+
+	virtual void body_add_constant_central_force(RID p_body, const Vector2 &p_force) = 0;
+	virtual void body_add_constant_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position = Vector2()) = 0;
+	virtual void body_add_constant_torque(RID p_body, real_t p_torque) = 0;
+
+	virtual void body_set_constant_force(RID p_body, const Vector2 &p_force) = 0;
+	virtual Vector2 body_get_constant_force(RID p_body) const = 0;
+
+	virtual void body_set_constant_torque(RID p_body, real_t p_torque) = 0;
+	virtual real_t body_get_constant_torque(RID p_body) const = 0;
+
 	virtual void body_set_axis_velocity(RID p_body, const Vector2 &p_axis_velocity) = 0;
 
 	//fix

@@ -1150,7 +1150,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 
 #ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_destroy(p_id);
 	}
 #endif
@@ -2927,7 +2927,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	wd.size = new_rect.size;
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
@@ -4672,12 +4672,12 @@ DisplayServerX11::~DisplayServerX11() {
 	//destroy all windows
 	for (KeyValue<WindowID, WindowData> &E : windows) {
 #ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			context_vulkan->window_destroy(E.key);
 		}
 #endif
 #ifdef GLES3_ENABLED
-		if (rendering_driver == "opengl3") {
+		if (gl_manager) {
 			gl_manager->window_destroy(E.key);
 		}
 #endif
@@ -4693,15 +4693,15 @@ DisplayServerX11::~DisplayServerX11() {
 
 	//destroy drivers
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan) {
-			memdelete(context_vulkan);
-		}
+	if (context_vulkan) {
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 

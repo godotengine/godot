@@ -1411,6 +1411,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, get_basename, sarray(), varray());
 	bind_method(String, plus_file, sarray("file"), varray());
 	bind_method(String, unicode_at, sarray("at"), varray());
+	bind_method(String, indent, sarray("prefix"), varray());
 	bind_method(String, dedent, sarray(), varray());
 	bind_method(String, hash, sarray(), varray());
 	bind_method(String, md5_text, sarray(), varray());
@@ -1643,6 +1644,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Color, lightened, sarray("amount"), varray());
 	bind_method(Color, darkened, sarray("amount"), varray());
 	bind_method(Color, blend, sarray("over"), varray());
+	bind_method(Color, get_luminance, sarray(), varray());
 
 	bind_method(Color, is_equal_approx, sarray("to"), varray());
 

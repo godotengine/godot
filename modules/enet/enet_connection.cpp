@@ -117,6 +117,47 @@ Ref<ENetPacketPeer> ENetConnection::connect_to_host(const String &p_address, int
 	return out;
 }
 
+ENetConnection::EventType ENetConnection::_parse_event(const ENetEvent &p_event, Event &r_event) {
+	switch (p_event.type) {
+		case ENET_EVENT_TYPE_CONNECT: {
+			if (p_event.peer->data == nullptr) {
+				Ref<ENetPacketPeer> pp = memnew(ENetPacketPeer(p_event.peer));
+				peers.push_back(pp);
+			}
+			r_event.peer = Ref<ENetPacketPeer>((ENetPacketPeer *)p_event.peer->data);
+			r_event.data = p_event.data;
+			return EVENT_CONNECT;
+		} break;
+		case ENET_EVENT_TYPE_DISCONNECT: {
+			// A peer disconnected.
+			if (p_event.peer->data != nullptr) {
+				Ref<ENetPacketPeer> pp = Ref<ENetPacketPeer>((ENetPacketPeer *)p_event.peer->data);
+				pp->_on_disconnect();
+				peers.erase(pp);
+				r_event.peer = pp;
+				r_event.data = p_event.data;
+				return EVENT_DISCONNECT;
+			}
+			return EVENT_ERROR;
+		} break;
+		case ENET_EVENT_TYPE_RECEIVE: {
+			// Packet reveived.
+			if (p_event.peer->data != nullptr) {
+				Ref<ENetPacketPeer> pp = Ref<ENetPacketPeer>((ENetPacketPeer *)p_event.peer->data);
+				r_event.peer = Ref<ENetPacketPeer>((ENetPacketPeer *)p_event.peer->data);
+				r_event.channel_id = p_event.channelID;
+				r_event.packet = p_event.packet;
+				return EVENT_RECEIVE;
+			}
+			return EVENT_ERROR;
+		} break;
+		case ENET_EVENT_TYPE_NONE:
+			return EVENT_NONE;
+		default:
+			return EVENT_NONE;
+	}
+}
+
 ENetConnection::EventType ENetConnection::service(int p_timeout, Event &r_event) {
 	ERR_FAIL_COND_V_MSG(!host, EVENT_ERROR, "The ENetConnection instance isn't currently active.");
 	ERR_FAIL_COND_V(r_event.peer.is_valid(), EVENT_ERROR);
@@ -140,44 +181,19 @@ ENetConnection::EventType ENetConnection::service(int p_timeout, Event &r_event)
 	} else if (ret == 0) {
 		return EVENT_NONE;
 	}
-	switch (event.type) {
-		case ENET_EVENT_TYPE_CONNECT: {
-			if (event.peer->data == nullptr) {
-				Ref<ENetPacketPeer> pp = memnew(ENetPacketPeer(event.peer));
-				peers.push_back(pp);
-			}
-			r_event.peer = Ref<ENetPacketPeer>((ENetPacketPeer *)event.peer->data);
-			r_event.data = event.data;
-			return EVENT_CONNECT;
-		} break;
-		case ENET_EVENT_TYPE_DISCONNECT: {
-			// A peer disconnected.
-			if (event.peer->data != nullptr) {
-				Ref<ENetPacketPeer> pp = Ref<ENetPacketPeer>((ENetPacketPeer *)event.peer->data);
-				pp->_on_disconnect();
-				peers.erase(pp);
-				r_event.peer = pp;
-				r_event.data = event.data;
-				return EVENT_DISCONNECT;
-			}
-			return EVENT_ERROR;
-		} break;
-		case ENET_EVENT_TYPE_RECEIVE: {
-			// Packet reveived.
-			if (event.peer->data != nullptr) {
-				Ref<ENetPacketPeer> pp = Ref<ENetPacketPeer>((ENetPacketPeer *)event.peer->data);
-				r_event.peer = Ref<ENetPacketPeer>((ENetPacketPeer *)event.peer->data);
-				r_event.channel_id = event.channelID;
-				r_event.packet = event.packet;
-				return EVENT_RECEIVE;
-			}
-			return EVENT_ERROR;
-		} break;
-		case ENET_EVENT_TYPE_NONE:
-			return EVENT_NONE;
-		default:
-			return EVENT_NONE;
+	return _parse_event(event, r_event);
+}
+
+int ENetConnection::check_events(EventType &r_type, Event &r_event) {
+	ERR_FAIL_COND_V_MSG(!host, -1, "The ENetConnection instance isn't currently active.");
+	ENetEvent event;
+	int ret = enet_host_check_events(host, &event);
+	if (ret < 0) {
+		r_type = EVENT_ERROR;
+		return ret;
 	}
+	r_type = _parse_event(event, r_event);
+	return ret;
 }
 
 void ENetConnection::flush() {

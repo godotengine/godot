@@ -824,6 +824,7 @@ bool EditorFontPreviewPlugin::handles(const String &p_type) const {
 
 Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
 	RES res = ResourceLoader::load(p_path);
+	ERR_FAIL_COND_V(res.is_null(), Ref<Texture2D>());
 	Ref<Font> sampled_font;
 	if (res->is_class("Font")) {
 		sampled_font = res->duplicate();
@@ -851,7 +852,9 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	Ref<Font> font = sampled_font;
 
-	font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(1, 1, 1));
+	const Color c = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
+	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
+	font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(fg, fg, fg));
 
 	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_generate_frame_started), Vector<Variant>(), Object::CONNECT_ONESHOT);
 

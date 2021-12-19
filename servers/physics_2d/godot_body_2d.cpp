@@ -569,9 +569,8 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 		if (!omit_force_integration) {
 			//overridden by direct state query
 
-			Vector2 force = gravity * mass;
-			force += applied_force;
-			real_t torque = applied_torque;
+			Vector2 force = gravity * mass + applied_force + constant_force;
+			real_t torque = applied_torque + constant_torque;
 
 			real_t damp = 1.0 - p_step * total_linear_damp;
 
@@ -598,7 +597,10 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 		}
 	}
 
-	biased_angular_velocity = 0;
+	applied_force = Vector2();
+	applied_torque = 0.0;
+
+	biased_angular_velocity = 0.0;
 	biased_linear_velocity = Vector2();
 
 	if (do_motion) { //shapes temporarily extend for raycast

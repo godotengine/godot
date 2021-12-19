@@ -213,18 +213,24 @@ public:
 	FUNC3(body_set_state, RID, BodyState, const Variant &);
 	FUNC2RC(Variant, body_get_state, RID, BodyState);
 
-	FUNC2(body_set_applied_force, RID, const Vector2 &);
-	FUNC1RC(Vector2, body_get_applied_force, RID);
-
-	FUNC2(body_set_applied_torque, RID, real_t);
-	FUNC1RC(real_t, body_get_applied_torque, RID);
-
-	FUNC2(body_add_central_force, RID, const Vector2 &);
-	FUNC3(body_add_force, RID, const Vector2 &, const Vector2 &);
-	FUNC2(body_add_torque, RID, real_t);
 	FUNC2(body_apply_central_impulse, RID, const Vector2 &);
 	FUNC2(body_apply_torque_impulse, RID, real_t);
 	FUNC3(body_apply_impulse, RID, const Vector2 &, const Vector2 &);
+
+	FUNC2(body_apply_central_force, RID, const Vector2 &);
+	FUNC3(body_apply_force, RID, const Vector2 &, const Vector2 &);
+	FUNC2(body_apply_torque, RID, real_t);
+
+	FUNC2(body_add_constant_central_force, RID, const Vector2 &);
+	FUNC3(body_add_constant_force, RID, const Vector2 &, const Vector2 &);
+	FUNC2(body_add_constant_torque, RID, real_t);
+
+	FUNC2(body_set_constant_force, RID, const Vector2 &);
+	FUNC1RC(Vector2, body_get_constant_force, RID);
+
+	FUNC2(body_set_constant_torque, RID, real_t);
+	FUNC1RC(real_t, body_get_constant_torque, RID);
+
 	FUNC2(body_set_axis_velocity, RID, const Vector2 &);
 
 	FUNC2(body_add_collision_exception, RID, RID);

@@ -2821,7 +2821,7 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 						case ShaderLanguage::ShaderNode::Uniform::HINT_NONE: {
 							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
 						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
+						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISOTROPY: {
 							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_ANISO);
 						} break;
 						default: {

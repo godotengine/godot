@@ -102,6 +102,7 @@
 			<description>
 				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_min_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
+				[b]Note:[/b] This method will not be called when the script is attached to a [Control] node that already overrides its minimum size (e.g. [Label], [Button], [PanelContainer] etc.). It can only be used with most basic GUI nodes, like [Control], [Container], [Panel] etc.
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">

@@ -37,6 +37,8 @@
 #include "editor/editor_node.h"
 
 void ResourceImporterTexture::_texture_reimport_roughness(const Ref<StreamTexture2D> &p_tex, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_channel) {
+	ERR_FAIL_COND(p_tex.is_null());
+
 	MutexLock lock(singleton->mutex);
 
 	StringName path = p_tex->get_path();
@@ -51,6 +53,8 @@ void ResourceImporterTexture::_texture_reimport_roughness(const Ref<StreamTextur
 }
 
 void ResourceImporterTexture::_texture_reimport_3d(const Ref<StreamTexture2D> &p_tex) {
+	ERR_FAIL_COND(p_tex.is_null());
+
 	MutexLock lock(singleton->mutex);
 
 	StringName path = p_tex->get_path();
@@ -63,6 +67,8 @@ void ResourceImporterTexture::_texture_reimport_3d(const Ref<StreamTexture2D> &p
 }
 
 void ResourceImporterTexture::_texture_reimport_normal(const Ref<StreamTexture2D> &p_tex) {
+	ERR_FAIL_COND(p_tex.is_null());
+
 	MutexLock lock(singleton->mutex);
 
 	StringName path = p_tex->get_path();

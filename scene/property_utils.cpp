@@ -50,7 +50,7 @@ bool PropertyUtils::is_property_value_different(const Variant &p_a, const Varian
 	}
 }
 
-Variant PropertyUtils::get_property_default_value(const Object *p_object, const StringName &p_property, const Vector<SceneState::PackState> *p_states_stack_cache, bool p_update_exports, const Node *p_owner, bool *r_is_class_default) {
+Variant PropertyUtils::get_property_default_value(const Object *p_object, const StringName &p_property, bool *r_is_valid, const Vector<SceneState::PackState> *p_states_stack_cache, bool p_update_exports, const Node *p_owner, bool *r_is_class_default) {
 	// This function obeys the way property values are set when an object is instantiated,
 	// which is the following (the latter wins):
 	// 1. Default value from builtin class
@@ -59,6 +59,9 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 
 	if (r_is_class_default) {
 		*r_is_class_default = false;
+	}
+	if (r_is_valid) {
+		*r_is_valid = false;
 	}
 
 	Ref<Script> topmost_script;
@@ -71,6 +74,9 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 			bool found = false;
 			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found);
 			if (found) {
+				if (r_is_valid) {
+					*r_is_valid = true;
+				}
 				return value_in_ancestor;
 			}
 			// Save script for later
@@ -97,6 +103,9 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 		}
 		Variant default_value;
 		if (topmost_script->get_property_default_value(p_property, default_value)) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
 			return default_value;
 		}
 	}
@@ -105,7 +114,7 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 	if (r_is_class_default) {
 		*r_is_class_default = true;
 	}
-	return ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property);
+	return ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property, r_is_valid);
 }
 
 // Like SceneState::PackState, but using a raw pointer to avoid the cost of

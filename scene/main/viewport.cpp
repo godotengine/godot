@@ -462,6 +462,10 @@ void Viewport::_notification(int p_what) {
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (!get_tree()) {
+				return;
+			}
+
 			if (get_tree()->is_debugging_collisions_hint() && contact_2d_debug.is_valid()) {
 				RenderingServer::get_singleton()->canvas_item_clear(contact_2d_debug);
 				RenderingServer::get_singleton()->canvas_item_set_draw_index(contact_2d_debug, 0xFFFFF); //very high index
@@ -1183,7 +1187,7 @@ void Viewport::_gui_show_tooltip() {
 	Control *tooltip_owner = nullptr;
 	String tooltip_text = _gui_get_tooltip(
 			gui.tooltip_control,
-			gui.tooltip_control->get_screen_transform().xform_inv(gui.last_mouse_pos),
+			gui.tooltip_control->get_global_transform().xform_inv(gui.last_mouse_pos),
 			&tooltip_owner);
 	tooltip_text = tooltip_text.strip_edges();
 	if (tooltip_text.is_empty()) {
@@ -1712,7 +1716,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				if (gui.tooltip_popup) {
 					if (gui.tooltip_control) {
-						String tooltip = _gui_get_tooltip(over, gui.tooltip_control->get_screen_transform().xform_inv(mpos));
+						String tooltip = _gui_get_tooltip(over, gui.tooltip_control->get_global_transform().xform_inv(mpos));
 
 						if (tooltip.length() == 0) {
 							_gui_cancel_tooltip();

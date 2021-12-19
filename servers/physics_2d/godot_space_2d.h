@@ -82,7 +82,7 @@ private:
 	GodotPhysicsDirectSpaceState2D *direct_access = nullptr;
 	RID self;
 
-	GodotBroadPhase2D *broadphase;
+	GodotBroadPhase2D *broadphase = nullptr;
 	SelfList<GodotBody2D>::List active_list;
 	SelfList<GodotBody2D>::List mass_properties_update_list;
 	SelfList<GodotBody2D>::List state_query_list;
@@ -96,13 +96,13 @@ private:
 
 	GodotArea2D *area = nullptr;
 
-	int solver_iterations = 16;
+	int solver_iterations = 0;
 
-	real_t contact_recycle_radius = 1.0;
-	real_t contact_max_separation = 1.5;
-	real_t contact_max_allowed_penetration = 0.3;
-	real_t contact_bias = 0.8;
-	real_t constraint_bias = 0.2;
+	real_t contact_recycle_radius = 0.0;
+	real_t contact_max_separation = 0.0;
+	real_t contact_max_allowed_penetration = 0.0;
+	real_t contact_bias = 0.0;
+	real_t constraint_bias = 0.0;
 
 	enum {
 		INTERSECTION_QUERY_MAX = 2048

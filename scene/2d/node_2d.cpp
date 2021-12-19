@@ -42,9 +42,9 @@ Dictionary Node2D::_edit_get_state() const {
 }
 
 void Node2D::_edit_set_state(const Dictionary &p_state) {
-	pos = p_state["position"];
-	angle = p_state["rotation"];
-	_scale = p_state["scale"];
+	position = p_state["position"];
+	rotation = p_state["rotation"];
+	scale = p_state["scale"];
 	skew = p_state["skew"];
 
 	_update_transform();
@@ -55,7 +55,7 @@ void Node2D::_edit_set_position(const Point2 &p_position) {
 }
 
 Point2 Node2D::_edit_get_position() const {
-	return pos;
+	return position;
 }
 
 void Node2D::_edit_set_scale(const Size2 &p_scale) {
@@ -63,16 +63,16 @@ void Node2D::_edit_set_scale(const Size2 &p_scale) {
 }
 
 Size2 Node2D::_edit_get_scale() const {
-	return _scale;
+	return scale;
 }
 
 void Node2D::_edit_set_rotation(real_t p_rotation) {
-	angle = p_rotation;
+	rotation = p_rotation;
 	_update_transform();
 }
 
 real_t Node2D::_edit_get_rotation() const {
-	return angle;
+	return rotation;
 }
 
 bool Node2D::_edit_use_rotation() const {
@@ -85,48 +85,44 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 	Rect2 r = _edit_get_rect();
 
 	Vector2 zero_offset;
-	if (r.size.x != 0) {
-		zero_offset.x = -r.position.x / r.size.x;
-	}
-	if (r.size.y != 0) {
-		zero_offset.y = -r.position.y / r.size.y;
-	}
-
 	Size2 new_scale(1, 1);
 
 	if (r.size.x != 0) {
+		zero_offset.x = -r.position.x / r.size.x;
 		new_scale.x = p_edit_rect.size.x / r.size.x;
 	}
+
 	if (r.size.y != 0) {
+		zero_offset.y = -r.position.y / r.size.y;
 		new_scale.y = p_edit_rect.size.y / r.size.y;
 	}
 
 	Point2 new_pos = p_edit_rect.position + p_edit_rect.size * zero_offset;
 
 	Transform2D postxf;
-	postxf.set_rotation_scale_and_skew(angle, _scale, skew);
+	postxf.set_rotation_scale_and_skew(rotation, scale, skew);
 	new_pos = postxf.xform(new_pos);
 
-	pos += new_pos;
-	_scale *= new_scale;
+	position += new_pos;
+	scale *= new_scale;
 
 	_update_transform();
 }
 #endif
 
 void Node2D::_update_xform_values() {
-	pos = _mat.elements[2];
-	angle = _mat.get_rotation();
-	_scale = _mat.get_scale();
-	skew = _mat.get_skew();
+	position = transform.elements[2];
+	rotation = transform.get_rotation();
+	scale = transform.get_scale();
+	skew = transform.get_skew();
 	_xform_dirty = false;
 }
 
 void Node2D::_update_transform() {
-	_mat.set_rotation_scale_and_skew(angle, _scale, skew);
-	_mat.elements[2] = pos;
+	transform.set_rotation_scale_and_skew(rotation, scale, skew);
+	transform.elements[2] = position;
 
-	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), _mat);
+	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), transform);
 
 	if (!is_inside_tree()) {
 		return;
@@ -139,7 +135,7 @@ void Node2D::set_position(const Point2 &p_pos) {
 	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
 	}
-	pos = p_pos;
+	position = p_pos;
 	_update_transform();
 }
 
@@ -147,7 +143,7 @@ void Node2D::set_rotation(real_t p_radians) {
 	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
 	}
-	angle = p_radians;
+	rotation = p_radians;
 	_update_transform();
 }
 
@@ -163,13 +159,13 @@ void Node2D::set_scale(const Size2 &p_scale) {
 	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
 	}
-	_scale = p_scale;
+	scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
-	if (Math::is_zero_approx(_scale.x)) {
-		_scale.x = CMP_EPSILON;
+	if (Math::is_zero_approx(scale.x)) {
+		scale.x = CMP_EPSILON;
 	}
-	if (Math::is_zero_approx(_scale.y)) {
-		_scale.y = CMP_EPSILON;
+	if (Math::is_zero_approx(scale.y)) {
+		scale.y = CMP_EPSILON;
 	}
 	_update_transform();
 }
@@ -178,7 +174,7 @@ Point2 Node2D::get_position() const {
 	if (_xform_dirty) {
 		((Node2D *)this)->_update_xform_values();
 	}
-	return pos;
+	return position;
 }
 
 real_t Node2D::get_rotation() const {
@@ -186,7 +182,7 @@ real_t Node2D::get_rotation() const {
 		((Node2D *)this)->_update_xform_values();
 	}
 
-	return angle;
+	return rotation;
 }
 
 real_t Node2D::get_skew() const {
@@ -202,11 +198,11 @@ Size2 Node2D::get_scale() const {
 		((Node2D *)this)->_update_xform_values();
 	}
 
-	return _scale;
+	return scale;
 }
 
 Transform2D Node2D::get_transform() const {
-	return _mat;
+	return transform;
 }
 
 void Node2D::rotate(real_t p_radians) {
@@ -287,10 +283,10 @@ void Node2D::set_global_scale(const Size2 &p_scale) {
 }
 
 void Node2D::set_transform(const Transform2D &p_transform) {
-	_mat = p_transform;
+	transform = p_transform;
 	_xform_dirty = true;
 
-	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), _mat);
+	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), transform);
 
 	if (!is_inside_tree()) {
 		return;

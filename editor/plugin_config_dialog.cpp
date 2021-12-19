@@ -216,6 +216,7 @@ void PluginConfigDialog::config(const String &p_config_path) {
 		active_edit->hide();
 		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 2))->hide();
 		subfolder_edit->hide();
+		subfolder_validation->hide();
 		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 2))->hide();
 		set_title(TTR("Edit a Plugin"));
 	} else {
@@ -224,6 +225,7 @@ void PluginConfigDialog::config(const String &p_config_path) {
 		active_edit->show();
 		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 2))->show();
 		subfolder_edit->show();
+		subfolder_validation->show();
 		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 2))->show();
 		set_title(TTR("Create a Plugin"));
 	}

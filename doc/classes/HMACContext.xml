@@ -5,52 +5,52 @@
 	</brief_description>
 	<description>
 		The HMACContext class is useful for advanced HMAC use cases, such as streaming the message as it supports creating the message over time rather than providing it all at once.
-	[codeblocks]
-	[gdscript]
-	extends Node
-	var ctx = HMACContext.new()
+		[codeblocks]
+		[gdscript]
+		extends Node
+		var ctx = HMACContext.new()
 
-	func _ready():
-	    var key = "supersecret".to_utf8()
-	    var err = ctx.start(HashingContext.HASH_SHA256, key)
-	    assert(err == OK)
-	    var msg1 = "this is ".to_utf8()
-	    var msg2 = "vewy vewy secret".to_utf8()
-	    err = ctx.update(msg1)
-	    assert(err == OK)
-	    err = ctx.update(msg2)
-	    assert(err == OK)
-	    var hmac = ctx.finish()
-	    print(hmac.hex_encode())
+		func _ready():
+		    var key = "supersecret".to_utf8()
+		    var err = ctx.start(HashingContext.HASH_SHA256, key)
+		    assert(err == OK)
+		    var msg1 = "this is ".to_utf8()
+		    var msg2 = "vewy vewy secret".to_utf8()
+		    err = ctx.update(msg1)
+		    assert(err == OK)
+		    err = ctx.update(msg2)
+		    assert(err == OK)
+		    var hmac = ctx.finish()
+		    print(hmac.hex_encode())
 
-	[/gdscript]
-	[csharp]
-	using Godot;
-	using System;
-	using System.Diagnostics;
+		[/gdscript]
+		[csharp]
+		using Godot;
+		using System;
+		using System.Diagnostics;
 
-	public class CryptoNode : Node
-	{
-	    private HMACContext ctx = new HMACContext();
-	    public override void _Ready()
-	    {
-	        PackedByteArray key = String("supersecret").to_utf8();
-	        Error err = ctx.Start(HashingContext.HASH_SHA256, key);
-	        GD.Assert(err == OK);
-	        PackedByteArray msg1 = String("this is ").to_utf8();
-	        PackedByteArray msg2 = String("vewy vew secret").to_utf8();
-	        err = ctx.Update(msg1);
-	        GD.Assert(err == OK);
-	        err = ctx.Update(msg2);
-	        GD.Assert(err == OK);
-	        PackedByteArray hmac = ctx.Finish();
-	        GD.Print(hmac.HexEncode());
-	    }
-	}
+		public class CryptoNode : Node
+		{
+		    private HMACContext ctx = new HMACContext();
+		    public override void _Ready()
+		    {
+		        PackedByteArray key = String("supersecret").to_utf8();
+		        Error err = ctx.Start(HashingContext.HASH_SHA256, key);
+		        GD.Assert(err == OK);
+		        PackedByteArray msg1 = String("this is ").to_utf8();
+		        PackedByteArray msg2 = String("vewy vew secret").to_utf8();
+		        err = ctx.Update(msg1);
+		        GD.Assert(err == OK);
+		        err = ctx.Update(msg2);
+		        GD.Assert(err == OK);
+		        PackedByteArray hmac = ctx.Finish();
+		        GD.Print(hmac.HexEncode());
+		    }
+		}
 
-	[/csharp]
-	[/codeblocks]
-	[b]Note:[/b] Not available in HTML5 exports.
+		[/csharp]
+		[/codeblocks]
+		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -4275,7 +4275,10 @@ double TextEdit::get_scroll_pos_for_line(int p_line, int p_wrap_index) const {
 		return p_line;
 	}
 
-	double new_line_scroll_pos = get_visible_line_count_in_range(0, CLAMP(p_line, 0, text.size() - 1));
+	double new_line_scroll_pos = 0.0;
+	if (p_line > 0) {
+		new_line_scroll_pos = get_visible_line_count_in_range(0, MIN(p_line - 1, text.size() - 1));
+	}
 	new_line_scroll_pos += p_wrap_index;
 	return new_line_scroll_pos;
 }
@@ -4339,7 +4342,7 @@ int TextEdit::get_visible_line_count_in_range(int p_from_line, int p_to_line) co
 
 	/* Returns the total number of (lines + wrapped - hidden). */
 	if (!_is_hiding_enabled() && get_line_wrapping_mode() == LineWrappingMode::LINE_WRAPPING_NONE) {
-		return p_to_line - p_from_line;
+		return (p_to_line - p_from_line) + 1;
 	}
 
 	int total_rows = 0;

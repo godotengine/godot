@@ -2115,12 +2115,28 @@ msgstr ""
 msgid "Theme Properties"
 msgstr ""
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
 msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
 msgstr ""
 
 #: editor/editor_help.cpp
@@ -8525,18 +8541,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -13240,11 +13244,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14258,108 +14282,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
-
-#~ msgid "Status:"
-#~ msgstr "Statusas:"
-
-#, fuzzy
-#~ msgid "Edit:"
-#~ msgstr "Redaguoti"
-
-#, fuzzy
-#~ msgid "Redownload"
-#~ msgstr "Atsiųsti iš naujo"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Nerasta)"
-
-#, fuzzy
-#~ msgid "Move to Trash"
-#~ msgstr "Mix Nodas"
-
-#, fuzzy
-#~ msgid "Theme File"
-#~ msgstr "Atidaryti"
-
-#~ msgid "An animation player can't animate itself, only other players."
-#~ msgstr "Animacijos grotuvas negali animuoti savęs, tik kitus grotuvus."
-
-#, fuzzy
-#~ msgid "Add initial export..."
-#~ msgstr "Mėgstamiausi:"
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "Aprašymas:"
-
-#, fuzzy
-#~ msgid "Class Description"
-#~ msgstr "Aprašymas:"
-
-#, fuzzy
-#~ msgid "Class Description:"
-#~ msgstr "Aprašymas:"
-
-#, fuzzy
-#~ msgid "Property Descriptions:"
-#~ msgstr "Aprašymas:"
-
-#, fuzzy
-#~ msgid "Method Descriptions:"
-#~ msgstr "Aprašymas:"
-
-#, fuzzy
-#~ msgid "Select Mode (Q)"
-#~ msgstr "Pasirinkite Nodus, kuriuos norite importuoti"
-
-#~ msgid "Error initializing FreeType."
-#~ msgstr "Klaida inicijuojant FreeType."
-
-#~ msgid "Unknown font format."
-#~ msgstr "Nežinomas šrifto formatas."
-
-#~ msgid "Error loading font."
-#~ msgstr "Įvyko klaida kraunant šriftą."
-
-#~ msgid "Invalid font size."
-#~ msgstr "Netinkamas šrifto dydis."
-
-#~ msgid "Path to Node:"
-#~ msgstr "Kelias iki Nodo:"
-
-#~ msgid "Line:"
-#~ msgstr "Linija:"
-
-#~ msgid "Col:"
-#~ msgstr "Stulpelis:"
-
-#, fuzzy
-#~ msgid "Zoom out"
-#~ msgstr "Nutolinti"
-
-#, fuzzy
-#~ msgid "Zoom in"
-#~ msgstr "Priartinti"
-
-#, fuzzy
-#~ msgid "Zoom:"
-#~ msgstr "Priartinti"
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "Animacija: Perkelti Takelį Aukštyn"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "Animacija: Perkelti Takelį Žemyn"
-
-#, fuzzy
-#~ msgid "Anim Add Call Track"
-#~ msgstr "Animacija: Pridėti Takelio Iškvietimą"
-
-#~ msgid "Length (s):"
-#~ msgstr "Ilgis (sek.):"
-
-#~ msgid "Stop Profiling"
-#~ msgstr "Baigti Profiliavimą"
-
-#~ msgid "last"
-#~ msgstr "paskutinis"

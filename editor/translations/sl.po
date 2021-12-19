@@ -2209,13 +2209,29 @@ msgstr "Metode"
 msgid "Theme Properties"
 msgstr "Lastnosti"
 
-#: editor/editor_help.cpp
-msgid "Enumerations"
-msgstr "Oštevilčenja"
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Colors"
+msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
 msgstr "Konstante"
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Fonts"
+msgstr ""
+
+#: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Icons"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Styles"
+msgstr ""
+
+#: editor/editor_help.cpp
+msgid "Enumerations"
+msgstr "Oštevilčenja"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -8928,18 +8944,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Colors"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Fonts"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Icons"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Styleboxes"
 msgstr ""
 
@@ -13801,11 +13805,31 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"or \"OpenXR\"."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
+"enabled."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
@@ -14857,562 +14881,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstante ni možno spreminjati."
-
-#, fuzzy
-#~ msgid "Package Contents:"
-#~ msgstr "Vsebina:"
-
-#~ msgid "Singleton"
-#~ msgstr "Posameznik"
-
-#, fuzzy
-#~ msgid "Erase profile '%s'? (no undo)"
-#~ msgstr "Zamenjaj Vse"
-
-#, fuzzy
-#~ msgid "Enabled Properties:"
-#~ msgstr "Lastnosti"
-
-#, fuzzy
-#~ msgid "Class Options"
-#~ msgstr "Opis"
-
-#, fuzzy
-#~ msgid "Saved %s modified resource(s)."
-#~ msgstr "Napaka pri nalaganju vira."
-
-#~ msgid "Q&A"
-#~ msgstr "V&O"
-
-#~ msgid "Status:"
-#~ msgstr "Stanje:"
-
-#, fuzzy
-#~ msgid "Edit:"
-#~ msgstr "Uredi"
-
-#, fuzzy
-#~ msgid "Redownload"
-#~ msgstr "Ponovno Prenesi"
-
-#~ msgid "(Installed)"
-#~ msgstr "(Nameščeno)"
-
-#~ msgid "(Missing)"
-#~ msgstr "(Manjkajoče)"
-
-#~ msgid "Request Failed."
-#~ msgstr "Zahteva Ni Uspela."
-
-#~ msgid "Redirect Loop."
-#~ msgstr "Preusmeritev Zanke."
-
-#~ msgid "Download Complete."
-#~ msgstr "Prenos je Dokončan."
-
-#~ msgid "Remove Template"
-#~ msgstr "Odstrani Predlogo"
-
-#~ msgid "Download Templates"
-#~ msgstr "Prenesi Predloge"
-
-#, fuzzy
-#~ msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-#~ msgstr "Izberi vire s seznama: "
-
-#, fuzzy
-#~ msgid "Move to Trash"
-#~ msgstr "Premakni SamodejnoNalaganje"
-
-#, fuzzy
-#~ msgid "Expand All Properties"
-#~ msgstr "Razširi vse lastnosti"
-
-#~ msgid "Copy Params"
-#~ msgstr "Kopiraj Parametre"
-
-#~ msgid "Open in Help"
-#~ msgstr "Odpri v Pomoči"
-
-#~ msgid "Drag: Rotate"
-#~ msgstr "Povleci: Vrtenje"
-
-#~ msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
-#~ msgstr ""
-#~ "Pritisni 'v' za Spremembo Točke in 'Shift+v' za Vleko Točke (med "
-#~ "premikanjem)."
-
-#~ msgid "Alt+RMB: Depth list selection"
-#~ msgstr "Alt+RMB: Izbira globine"
-
-#~ msgid ""
-#~ "Drag: Rotate\n"
-#~ "Alt+Drag: Move\n"
-#~ "Alt+RMB: Depth list selection"
-#~ msgstr ""
-#~ "Povlecite: Zavrtite\n"
-#~ "Alt+Drag: Premaknite\n"
-#~ "Alt+RMB: Izbira globine"
-
-#, fuzzy
-#~ msgid "Theme File"
-#~ msgstr "Odpri v Datoteki"
-
-#~ msgid "Templates"
-#~ msgstr "Predloge"
-
-#~ msgid "No"
-#~ msgstr "Ne"
-
-#~ msgid "This scene has never been saved. Save before running?"
-#~ msgstr "Ta scena ni bila nikoli shranjena. Shranim pred zagonom?"
-
-#, fuzzy
-#~ msgid "Search complete"
-#~ msgstr "Išči Besedilo"
-
-#, fuzzy
-#~ msgid "No commit message was provided"
-#~ msgstr "Ime ni na voljo"
-
-#, fuzzy
-#~ msgid "There is already file or folder with the same name in this location."
-#~ msgstr "Datoteka ali mapa s tem imenom že obstaja."
-
-#~ msgid "Error trying to save layout!"
-#~ msgstr "Napaka pri shranjevanju postavitev!"
-
-#~ msgid "Default editor layout overridden."
-#~ msgstr "Privzeti urejevalnik postavitev je bil prepisan."
-
-#, fuzzy
-#~ msgid "Move pivot"
-#~ msgstr "Premakni Točko"
-
-#, fuzzy
-#~ msgid "Move anchor"
-#~ msgstr "Premakni Dejanje"
-
-#, fuzzy
-#~ msgid "Resize CanvasItem"
-#~ msgstr "Uredi Platno Stvari"
-
-#, fuzzy
-#~ msgid "Add initial export..."
-#~ msgstr "Dodaj Vnos"
-
-#, fuzzy
-#~ msgid "Pack File"
-#~ msgstr " Datoteke"
-
-#, fuzzy
-#~ msgid "FileSystem and Import Docks"
-#~ msgstr "DatotečniSistem"
-
-#~ msgid ""
-#~ "When exporting or deploying, the resulting executable will attempt to "
-#~ "connect to the IP of this computer in order to be debugged."
-#~ msgstr ""
-#~ "Pri izvažanju ali uvajanju se bo končna izvršljiva datoteka "
-#~ "razhroščevala, tako da se bo skušala povezati z IP-jem tega računalnika."
-
-#~ msgid "Current scene was never saved, please save it prior to running."
-#~ msgstr "Trenutna scena ni bila shranjena, shranite jo pred zagonom."
-
-#~ msgid "Revert"
-#~ msgstr "Povrni"
-
-#~ msgid "This action cannot be undone. Revert anyway?"
-#~ msgstr "Tega dejanja ni mogoče razveljaviti. Vseeno povrni?"
-
-#~ msgid "Issue Tracker"
-#~ msgstr "Sledilnik Napak"
-
-#~ msgid "Replaced %d occurrence(s)."
-#~ msgstr "Zamenjana %d ponovitev/e."
-
-#~ msgid ""
-#~ "There are currently no tutorials for this class, you can [color=$color]"
-#~ "[url=$url]contribute one[/url][/color] or [color=$color][url="
-#~ "$url2]request one[/url][/color]."
-#~ msgstr ""
-#~ "Trenutno ni vaj za ta razred, lahko ga [color=$color][url="
-#~ "$url]prispevate[/url][/color] ali [color=$color][url=$url2]zahtevate "
-#~ "enega[/url][/color]."
-
-#~ msgid "enum  "
-#~ msgstr "oštevil  "
-
-#, fuzzy
-#~ msgid "Brief Description"
-#~ msgstr "Kratek Opis:"
-
-#, fuzzy
-#~ msgid "Class Description"
-#~ msgstr "Opis"
-
-#~ msgid "Project export failed with error code %d."
-#~ msgstr "Izvoz projekta ni uspelo s kodno napako %d."
-
-#~ msgid "Password:"
-#~ msgstr "Geslo:"
-
-#~ msgid "Pause the scene"
-#~ msgstr "Zaustavi prizor"
-
-#, fuzzy
-#~ msgid "Snap to Grid"
-#~ msgstr "Pripni na mrežo"
-
-#, fuzzy
-#~ msgid "Add input +"
-#~ msgstr "Dodaj Vnos"
-
-#~ msgid "Available Nodes:"
-#~ msgstr "Na voljo Nodes:"
-
-#, fuzzy
-#~ msgid "Input"
-#~ msgstr "Dodaj Vnos"
-
-#, fuzzy
-#~ msgid "Methods:"
-#~ msgstr "Metode"
-
-#, fuzzy
-#~ msgid "Theme Properties:"
-#~ msgstr "Lastnosti"
-
-#~ msgid "Constants:"
-#~ msgstr "Konstante:"
-
-#, fuzzy
-#~ msgid "Class Description:"
-#~ msgstr "Opis:"
-
-#, fuzzy
-#~ msgid "Property Descriptions:"
-#~ msgstr "Opis lastnosti:"
-
-#, fuzzy
-#~ msgid "Method Descriptions:"
-#~ msgstr "Opis Metode:"
-
-#, fuzzy
-#~ msgid "Reverse sorting."
-#~ msgstr "Zahtevam..."
-
-#~ msgid ""
-#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
-#~ msgstr ""
-#~ "Za pisanje ni mogoče odpreti file_type_cache.cch, ne da bi shranili "
-#~ "predpomnilnik tipa datoteke!"
-
-#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-#~ msgstr ""
-#~ "Ne morem se postaviti na mesto '%s', ker ni bilo najdeno v datotečnem "
-#~ "sistemu!"
-
-#, fuzzy
-#~ msgid "Error: could not load file."
-#~ msgstr "Mape ni mogoče ustvariti."
-
-#~ msgid "Select Mode (Q)"
-#~ msgstr "Izberite Način (Q)"
-
-#~ msgid "Move Mode (W)"
-#~ msgstr "Način Premika (W)"
-
-#~ msgid "Rotate Mode (E)"
-#~ msgstr "Način Vrtenja (E)"
-
-#~ msgid "Scale Mode (R)"
-#~ msgstr "Način Obsega (R)"
-
-#~ msgid "Tool Select"
-#~ msgstr "Izbira Orodja"
-
-#~ msgid "Project List"
-#~ msgstr "Seznam Projektov"
-
-#~ msgid "Exit"
-#~ msgstr "Izhod"
-
-#~ msgid "Error initializing FreeType."
-#~ msgstr "Napaka pri inicializaciji FreeType."
-
-#~ msgid "Unknown font format."
-#~ msgstr "Neznani format pisave."
-
-#~ msgid "Error loading font."
-#~ msgstr "Napaka nalaganja pisave."
-
-#~ msgid "Invalid font size."
-#~ msgstr "Neveljavna velikost pisave."
-
-#, fuzzy
-#~ msgid "Previous Folder"
-#~ msgstr "Prejšnji zavihek"
-
-#, fuzzy
-#~ msgid "Next Folder"
-#~ msgstr "Ustvarite Mapo"
-
-#, fuzzy
-#~ msgid "Open in an external image editor."
-#~ msgstr "Odpri naslednji Urejevalnik"
-
-#~ msgid "Reverse"
-#~ msgstr "Obrni"
-
-#, fuzzy
-#~ msgid "View log"
-#~ msgstr "Ogled datotek"
-
-#, fuzzy
-#~ msgid "Enabled Classes"
-#~ msgstr "Išči Razrede"
-
-#~ msgid "Update Always"
-#~ msgstr "Posodobi Vedno"
-
-#~ msgid "Raw Mode"
-#~ msgstr "Neobdelan način"
-
-#~ msgid "Path to Node:"
-#~ msgstr "Pot do Gradnika:"
-
-#~ msgid "Delete selected files?"
-#~ msgstr "Izbrišem izbrane datoteke?"
-
-#~ msgid "There is no 'res://default_bus_layout.tres' file."
-#~ msgstr "Datoteka 'res://default_bus_layout.tres' ne obstaja."
-
-#~ msgid "Go to parent folder"
-#~ msgstr "Pojdi v nadrejeno mapo"
-
-#~ msgid "Open Scene(s)"
-#~ msgstr "Odpri Prizor(e)"
-
-#~ msgid "Previous Directory"
-#~ msgstr "Prejšna Mapa"
-
-#~ msgid "Next Directory"
-#~ msgstr "Naslednja Mapa"
-
-#~ msgid "Create folder"
-#~ msgstr "Ustvarite mapo"
-
-#~ msgid "Invalid Path"
-#~ msgstr "Neveljavna Pot"
-
-#~ msgid "Edit Signal Arguments:"
-#~ msgstr "Uredi Argumente Signala:"
-
-#~ msgid "Edit Variable:"
-#~ msgstr "Uredi Spremenljivko:"
-
-#~ msgid "Line:"
-#~ msgstr "Vrstica:"
-
-#~ msgid "Col:"
-#~ msgstr "Stolpec:"
-
-#, fuzzy
-#~ msgid "Add Split"
-#~ msgstr "Dodaj točko"
-
-#, fuzzy
-#~ msgid "Remove Split"
-#~ msgstr "Odstrani točko"
-
-#, fuzzy
-#~ msgid "Poly"
-#~ msgstr "Uredi Poligon"
-
-#, fuzzy
-#~ msgid "Add Node.."
-#~ msgstr "Dodaj vozlišče"
-
-#~ msgid "Create Poly"
-#~ msgstr "Ustvarite Poligon"
-
-#~ msgid "Create a new polygon from scratch"
-#~ msgstr "Ustvari nov poligon od začetka"
-
-#, fuzzy
-#~ msgid "Zoom out"
-#~ msgstr "Oddalji"
-
-#, fuzzy
-#~ msgid "Zoom in"
-#~ msgstr "Približaj"
-
-#, fuzzy
-#~ msgid "Zoom:"
-#~ msgstr "Približaj"
-
-#~ msgid "Class List:"
-#~ msgstr "Seznam Razredov:"
-
-#~ msgid "Public Methods"
-#~ msgstr "Javne Metode"
-
-#~ msgid "Public Methods:"
-#~ msgstr "Javne Metode:"
-
-#~ msgid "GUI Theme Items:"
-#~ msgstr "Elementi GUI Teme:"
-
-#, fuzzy
-#~ msgid "Toggle folder status as Favorite."
-#~ msgstr "Nastavi mapo status kot Priljubljeno"
-
-#, fuzzy
-#~ msgid "Show current scene file."
-#~ msgstr "Izberi trenutno pod-ploščo v urejanju."
-
-#, fuzzy
-#~ msgid "Whole words"
-#~ msgstr "Cele Besede"
-
-#, fuzzy
-#~ msgid "Match case"
-#~ msgstr "Ujemanje Velikih Črk"
-
-#, fuzzy
-#~ msgid "Search in files"
-#~ msgstr "Išči Razrede"
-
-#~ msgid "Move Anim Track Up"
-#~ msgstr "Premakni animacijsko sled gor"
-
-#~ msgid "Move Anim Track Down"
-#~ msgstr "Premakni animacijsko sled dol"
-
-#~ msgid "Set Transitions to:"
-#~ msgstr "Nastavi prehode na:"
-
-#~ msgid "Anim Track Change Interpolation"
-#~ msgstr "Animacija Spremeni interpolacijo sledi"
-
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "Animacija Spremeni način vrednosti sledi"
-
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "Animacija Spremeni način ovijanja sledi"
-
-#~ msgid "Edit Selection Curve"
-#~ msgstr "Uredi Krivulje izbora"
-
-#~ msgid "Anim Add Key"
-#~ msgstr "Animacija Dodaj ključ"
-
-#~ msgid "In"
-#~ msgstr "V"
-
-#~ msgid "Out"
-#~ msgstr "Ven"
-
-#~ msgid "Anim Create Typed Value Key"
-#~ msgstr "V Animaciji Ustvari Vneseno Vrednost Ključa"
-
-#~ msgid "Anim Add Call Track"
-#~ msgstr "Dodaj Klicajočo Sled v Animacijo"
-
-#~ msgid "Length (s):"
-#~ msgstr "Dolžina (s):"
-
-#~ msgid "Cursor step snap (in seconds)."
-#~ msgstr "Korak postavitve kazalca (v sekundah)."
-
-#~ msgid "Enable/Disable looping in animation."
-#~ msgstr "Omogoči/Onemogoči zankanje v animaciji."
-
-#~ msgid "Add new tracks."
-#~ msgstr "Dodaj Novo Sled."
-
-#~ msgid "Move current track up."
-#~ msgstr "Trenutno sled premakni gor."
-
-#~ msgid "Move current track down."
-#~ msgstr "Trenutno sled premakni dol."
-
-#~ msgid "Track tools"
-#~ msgstr "Orodja sledi"
-
-#~ msgid "Enable editing of individual keys by clicking them."
-#~ msgstr "S klikom na posamezne ključe omogočite njihovo urejanje."
-
-#~ msgid "Key"
-#~ msgstr "Črka"
-
-#~ msgid "Call Functions in Which Node?"
-#~ msgstr "Klic funkcije v katerem gradniku?"
-
-#~ msgid "Thanks!"
-#~ msgstr "Hvala!"
-
-#~ msgid "I see..."
-#~ msgstr "Vidim..."
-
-#~ msgid "Ugh"
-#~ msgstr "Uh"
-
-#~ msgid "Stop Profiling"
-#~ msgstr "Ustavi Modeliranje"
-
-#~ msgid "Start Profiling"
-#~ msgstr "Začni Modeliranje"
-
-#~ msgid "Default (Same as Editor)"
-#~ msgstr "Privzeto (Enako kot Urejevalnik)"
-
-#~ msgid "Create new animation in player."
-#~ msgstr "Ustvari novo animacijo v predvajalniku."
-
-#~ msgid "Load animation from disk."
-#~ msgstr "Naloži animacijo z diska."
-
-#~ msgid "Load an animation from disk."
-#~ msgstr "Naloži animacijo z diska."
-
-#~ msgid "Save the current animation"
-#~ msgstr "Shrani trenutno animacijo"
-
-#~ msgid "Edit Target Blend Times"
-#~ msgstr "Uredi čas mešanice cilja"
-
-#~ msgid "Copy Animation"
-#~ msgstr "Kopiraj Animacijo"
-
-#~ msgid "Fetching:"
-#~ msgstr "Pridobivanje:"
-
-#~ msgid "prev"
-#~ msgstr "prejšnji"
-
-#~ msgid "next"
-#~ msgstr "naslednji"
-
-#~ msgid "last"
-#~ msgstr "zadnji"
-
-#~ msgid "Edit IK Chain"
-#~ msgstr "Uredi Verigo IK"
-
-#~ msgid "Set pivot at mouse position"
-#~ msgstr "Nastavite točko na položaj miške"
-
-#~ msgid "Edit Signal"
-#~ msgstr "Uredi Signal"
-
-#~ msgid "Replace By"
-#~ msgstr "Zamenjaj Z"
-
-#~ msgid ""
-#~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "
-#~ "unsequenced ports were specified."
-#~ msgstr ""
-#~ "Custom node nima _get_output_port_unsequenced(idx,wmem), vendar "
-#~ "nezaporedni porti so bili določeni."

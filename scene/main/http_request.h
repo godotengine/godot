@@ -154,6 +154,9 @@ public:
 	int get_downloaded_bytes() const;
 	int get_body_size() const;
 
+	void set_http_proxy(const String &p_host, int p_port);
+	void set_https_proxy(const String &p_host, int p_port);
+
 	HTTPRequest();
 	~HTTPRequest();
 };

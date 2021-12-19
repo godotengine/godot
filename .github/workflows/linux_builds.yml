@@ -37,7 +37,7 @@ jobs:
             sconsflags: float=64 use_asan=yes use_ubsan=yes
             proj-test: true
             godot-cpp-test: true
-            bin: "./bin/godot.linuxbsd.double.tools.64s"
+            bin: "./bin/godot.linuxbsd.double.tools.64.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false

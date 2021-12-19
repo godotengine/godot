@@ -37,9 +37,16 @@
 static ErrorHandlerList *error_handler_list = nullptr;
 
 void add_error_handler(ErrorHandlerList *p_handler) {
+	// If p_handler is already in error_handler_list
+	// we'd better remove it first then we can add it.
+	// This prevent cyclic redundancy.
+	remove_error_handler(p_handler);
+
 	_global_lock();
+
 	p_handler->next = error_handler_list;
 	error_handler_list = p_handler;
+
 	_global_unlock();
 }
 

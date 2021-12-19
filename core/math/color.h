@@ -94,6 +94,10 @@ struct Color {
 	void invert();
 	Color inverted() const;
 
+	_FORCE_INLINE_ float get_luminance() const {
+		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	}
+
 	_FORCE_INLINE_ Color lerp(const Color &p_to, float p_weight) const {
 		Color res = *this;
 

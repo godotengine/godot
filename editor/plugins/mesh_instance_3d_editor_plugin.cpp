@@ -398,7 +398,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 	}
 
 	if (mesh->get_surface_count() == 0) {
-		err_dialog->set_text(TTR("Mesh has not surface to create outlines from."));
+		err_dialog->set_text(TTR("Mesh has no surface to create outlines from."));
 		err_dialog->popup_centered();
 		return;
 	} else if (mesh->get_surface_count() == 1 && mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
