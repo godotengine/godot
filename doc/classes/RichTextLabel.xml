@@ -95,6 +95,7 @@
 			<return type="int" />
 			<description>
 				Returns the total number of characters from text tags. Does not include BBCodes.
+				[b]Note:[/b] This method is asynchronous. After modifying the RichTextLabel's text tags, wait one frame before calling this method. For example, use [code]yield(get_tree(), "idle_frame")[/code].
 			</description>
 		</method>
 		<method name="get_v_scroll">
