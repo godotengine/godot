@@ -57,6 +57,9 @@ void EditorHelpSearch::_update_results() {
 	if (hierarchy_button->is_pressed()) {
 		search_flags |= SEARCH_SHOW_HIERARCHY;
 	}
+	if (hidden_button->is_pressed()) {
+		search_flags |= SEARCH_HIDDEN;
+	}
 
 	search = Ref<Runner>(memnew(Runner(results_tree, results_tree, term, search_flags)));
 	set_process(true);
@@ -85,6 +88,10 @@ void EditorHelpSearch::_search_box_text_changed(const String &p_text) {
 }
 
 void EditorHelpSearch::_filter_combo_item_selected(int p_option) {
+	_update_results();
+}
+
+void EditorHelpSearch::_hidden_button_toggled(bool p_button_pressed) {
 	_update_results();
 }
 
@@ -235,6 +242,11 @@ EditorHelpSearch::EditorHelpSearch() {
 	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
 	filter_combo->connect("item_selected", callable_mp(this, &EditorHelpSearch::_filter_combo_item_selected));
 	hbox->add_child(filter_combo);
+
+	hidden_button = memnew(CheckButton);
+	hidden_button->set_text(TTR("Show All Items"));
+	hidden_button->connect("toggled", callable_mp(this, &EditorHelpSearch::_hidden_button_toggled));
+	hbox->add_child(hidden_button);
 
 	// Create the results tree.
 	results_tree = memnew(Tree);
@@ -422,7 +434,7 @@ bool EditorHelpSearch::Runner::_phase_class_items() {
 			_create_class_hierarchy(match);
 		}
 	} else {
-		if (match.name) {
+		if (match.name && (hideable_class_names.has(match.doc->name) ? (search_flags & SEARCH_HIDDEN) : true)) {
 			_create_class_item(root_item, match.doc, false);
 		}
 	}
@@ -507,6 +519,9 @@ void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_tex
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_match) {
+	if (!(hideable_class_names.has(p_match.doc->name) ? (search_flags & SEARCH_HIDDEN) : true)) {
+		return nullptr;
+	}
 	if (class_items.has(p_match.doc->name)) {
 		return class_items[p_match.doc->name];
 	}
@@ -521,7 +536,9 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 			parent = _create_class_hierarchy(base_match);
 		}
 	}
-
+	if (parent == nullptr) {
+		return nullptr;
+	}
 	TreeItem *class_item = _create_class_item(parent, p_match.doc, !p_match.name);
 	class_items[p_match.doc->name] = class_item;
 	return class_item;
@@ -649,4 +666,172 @@ EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, 
 		search_flags(p_search_flags),
 		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))),
 		disabled_color(ui_service->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"))) {
+	if (hideable_class_names.is_empty()) {
+		_init_hideable_class_names();
+	}
+}
+
+Set<String> EditorHelpSearch::Runner::hideable_class_names;
+
+void EditorHelpSearch::Runner::_init_hideable_class_names() {
+#define ADD(x) hideable_class_names.insert(#x)
+
+	// VisualShader nodes
+	{
+		ADD(VisualShaderNodeInput);
+		ADD(VisualShaderNodeOutput);
+		ADD(VisualShaderNodeResizableBase);
+		ADD(VisualShaderNodeGroupBase);
+		ADD(VisualShaderNodeConstant);
+		ADD(VisualShaderNodeComment);
+		ADD(VisualShaderNodeFloatConstant);
+		ADD(VisualShaderNodeIntConstant);
+		ADD(VisualShaderNodeBooleanConstant);
+		ADD(VisualShaderNodeColorConstant);
+		ADD(VisualShaderNodeVec3Constant);
+		ADD(VisualShaderNodeTransformConstant);
+		ADD(VisualShaderNodeFloatOp);
+		ADD(VisualShaderNodeIntOp);
+		ADD(VisualShaderNodeVectorOp);
+		ADD(VisualShaderNodeColorOp);
+		ADD(VisualShaderNodeTransformOp);
+		ADD(VisualShaderNodeTransformVecMult);
+		ADD(VisualShaderNodeFloatFunc);
+		ADD(VisualShaderNodeIntFunc);
+		ADD(VisualShaderNodeVectorFunc);
+		ADD(VisualShaderNodeColorFunc);
+		ADD(VisualShaderNodeTransformFunc);
+		ADD(VisualShaderNodeUVFunc);
+		ADD(VisualShaderNodeDotProduct);
+		ADD(VisualShaderNodeVectorLen);
+		ADD(VisualShaderNodeDeterminant);
+		ADD(VisualShaderNodeScalarDerivativeFunc);
+		ADD(VisualShaderNodeVectorDerivativeFunc);
+		ADD(VisualShaderNodeClamp);
+		ADD(VisualShaderNodeFaceForward);
+		ADD(VisualShaderNodeOuterProduct);
+		ADD(VisualShaderNodeSmoothStep);
+		ADD(VisualShaderNodeStep);
+		ADD(VisualShaderNodeVectorDistance);
+		ADD(VisualShaderNodeVectorRefract);
+		ADD(VisualShaderNodeMix);
+		ADD(VisualShaderNodeVectorCompose);
+		ADD(VisualShaderNodeTransformCompose);
+		ADD(VisualShaderNodeVectorDecompose);
+		ADD(VisualShaderNodeTransformDecompose);
+		ADD(VisualShaderNodeTexture);
+		ADD(VisualShaderNodeCurveTexture);
+		ADD(VisualShaderNodeCurveXYZTexture);
+		ADD(VisualShaderNodeSample3D);
+		ADD(VisualShaderNodeTexture2DArray);
+		ADD(VisualShaderNodeTexture3D);
+		ADD(VisualShaderNodeCubemap);
+		ADD(VisualShaderNodeUniform);
+		ADD(VisualShaderNodeUniformRef);
+		ADD(VisualShaderNodeFloatUniform);
+		ADD(VisualShaderNodeIntUniform);
+		ADD(VisualShaderNodeBooleanUniform);
+		ADD(VisualShaderNodeColorUniform);
+		ADD(VisualShaderNodeVec3Uniform);
+		ADD(VisualShaderNodeTransformUniform);
+		ADD(VisualShaderNodeTextureUniform);
+		ADD(VisualShaderNodeTextureUniformTriplanar);
+		ADD(VisualShaderNodeTexture2DArrayUniform);
+		ADD(VisualShaderNodeTexture3DUniform);
+		ADD(VisualShaderNodeCubemapUniform);
+		ADD(VisualShaderNodeIf);
+		ADD(VisualShaderNodeSwitch);
+		ADD(VisualShaderNodeFresnel);
+		ADD(VisualShaderNodeExpression);
+		ADD(VisualShaderNodeGlobalExpression);
+		ADD(VisualShaderNodeIs);
+		ADD(VisualShaderNodeCompare);
+		ADD(VisualShaderNodeMultiplyAdd);
+		ADD(VisualShaderNodeBillboard);
+		ADD(VisualShaderNodeSDFToScreenUV);
+		ADD(VisualShaderNodeScreenUVToSDF);
+		ADD(VisualShaderNodeTextureSDF);
+		ADD(VisualShaderNodeTextureSDFNormal);
+		ADD(VisualShaderNodeSDFRaymarch);
+		ADD(VisualShaderNodeParticleOutput);
+		ADD(VisualShaderNodeParticleEmitter);
+		ADD(VisualShaderNodeParticleSphereEmitter);
+		ADD(VisualShaderNodeParticleBoxEmitter);
+		ADD(VisualShaderNodeParticleRingEmitter);
+		ADD(VisualShaderNodeParticleMeshEmitter);
+		ADD(VisualShaderNodeParticleMultiplyByAxisAngle);
+		ADD(VisualShaderNodeParticleConeVelocity);
+		ADD(VisualShaderNodeParticleRandomness);
+		ADD(VisualShaderNodeParticleAccelerator);
+		ADD(VisualShaderNodeParticleEmit);
+	}
+
+	// VisualScript nodes
+	{
+		ADD(VisualScriptFunctionState);
+		ADD(VisualScriptFunction);
+		ADD(VisualScriptLists);
+		ADD(VisualScriptComposeArray);
+		ADD(VisualScriptOperator);
+		ADD(VisualScriptVariableSet);
+		ADD(VisualScriptVariableGet);
+		ADD(VisualScriptConstant);
+		ADD(VisualScriptIndexGet);
+		ADD(VisualScriptIndexSet);
+		ADD(VisualScriptGlobalConstant);
+		ADD(VisualScriptClassConstant);
+		ADD(VisualScriptMathConstant);
+		ADD(VisualScriptBasicTypeConstant);
+		ADD(VisualScriptEngineSingleton);
+		ADD(VisualScriptSceneNode);
+		ADD(VisualScriptSceneTree);
+		ADD(VisualScriptResourcePath);
+		ADD(VisualScriptSelf);
+		ADD(VisualScriptCustomNode);
+		ADD(VisualScriptSubCall);
+		ADD(VisualScriptComment);
+		ADD(VisualScriptConstructor);
+		ADD(VisualScriptLocalVar);
+		ADD(VisualScriptLocalVarSet);
+		ADD(VisualScriptInputAction);
+		ADD(VisualScriptDeconstruct);
+		ADD(VisualScriptPreload);
+		ADD(VisualScriptTypeCast);
+		ADD(VisualScriptFunctionCall);
+		ADD(VisualScriptPropertySet);
+		ADD(VisualScriptPropertyGet);
+		ADD(VisualScriptEmitSignal);
+		ADD(VisualScriptReturn);
+		ADD(VisualScriptCondition);
+		ADD(VisualScriptWhile);
+		ADD(VisualScriptIterator);
+		ADD(VisualScriptSequence);
+		ADD(VisualScriptSwitch);
+		ADD(VisualScriptSelect);
+		ADD(VisualScriptYield);
+		ADD(VisualScriptYieldSignal);
+		ADD(VisualScriptBuiltinFunc);
+		ADD(VisualScriptExpression);
+	}
+
+	// GLTF nodes
+	{
+		ADD(GLTFAccessor);
+		ADD(GLTFAnimation);
+		ADD(GLTFBufferView);
+		ADD(GLTFCamera);
+		ADD(GLTFDocument);
+		ADD(GLTFLight);
+		ADD(GLTFMesh);
+		ADD(GLTFNode);
+		ADD(GLTFSkeleton);
+		ADD(GLTFSkin);
+		ADD(GLTFSpecGloss);
+		ADD(GLTFState);
+		ADD(GLTFTexture);
+		ADD(GLTFDocumentExtension);
+		ADD(GLTFDocumentExtensionConvertImporterMesh);
+	}
+
+#undef ADD
 }

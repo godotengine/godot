@@ -50,6 +50,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 		SEARCH_CONSTANTS = 1 << 5,
 		SEARCH_PROPERTIES = 1 << 6,
 		SEARCH_THEME_ITEMS = 1 << 7,
+		SEARCH_HIDDEN = 1 << 8,
 		SEARCH_ALL = SEARCH_CLASSES | SEARCH_CONSTRUCTORS | SEARCH_METHODS | SEARCH_OPERATORS | SEARCH_SIGNALS | SEARCH_CONSTANTS | SEARCH_PROPERTIES | SEARCH_THEME_ITEMS,
 		SEARCH_CASE_SENSITIVE = 1 << 29,
 		SEARCH_SHOW_HIERARCHY = 1 << 30
@@ -59,6 +60,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 	Button *case_sensitive_button;
 	Button *hierarchy_button;
 	OptionButton *filter_combo;
+	CheckButton *hidden_button;
 	Tree *results_tree;
 	bool old_search;
 	String old_term;
@@ -72,6 +74,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 	void _search_box_gui_input(const Ref<InputEvent> &p_event);
 	void _search_box_text_changed(const String &p_text);
 	void _filter_combo_item_selected(int p_option);
+	void _hidden_button_toggled(bool p_button_pressed);
 	void _confirmed();
 
 protected:
@@ -151,6 +154,9 @@ class EditorHelpSearch::Runner : public RefCounted {
 	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
 	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc);
 	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip);
+
+	static Set<String> hideable_class_names;
+	static void _init_hideable_class_names();
 
 public:
 	bool work(uint64_t slot = 100000);
