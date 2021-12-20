@@ -75,6 +75,7 @@ public:
 	Vector<Gradient::Point> &get_points();
 	void set_interpolation_mode(Gradient::InterpolationMode p_interp_mode);
 	Gradient::InterpolationMode get_interpolation_mode();
+	ColorPicker *get_picker();
 
 	virtual Size2 get_minimum_size() const override;
 
