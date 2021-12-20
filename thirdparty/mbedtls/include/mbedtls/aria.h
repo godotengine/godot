@@ -77,16 +77,20 @@
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)
 #define MBEDTLS_ERR_ARIA_INVALID_KEY_LENGTH   MBEDTLS_DEPRECATED_NUMERIC_CONSTANT( -0x005C )
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
-#define MBEDTLS_ERR_ARIA_BAD_INPUT_DATA -0x005C /**< Bad input data. */
+/** Bad input data. */
+#define MBEDTLS_ERR_ARIA_BAD_INPUT_DATA -0x005C
 
-#define MBEDTLS_ERR_ARIA_INVALID_INPUT_LENGTH -0x005E /**< Invalid data input length. */
+/** Invalid data input length. */
+#define MBEDTLS_ERR_ARIA_INVALID_INPUT_LENGTH -0x005E
 
 /* MBEDTLS_ERR_ARIA_FEATURE_UNAVAILABLE is deprecated and should not be used.
  */
-#define MBEDTLS_ERR_ARIA_FEATURE_UNAVAILABLE  -0x005A  /**< Feature not available. For example, an unsupported ARIA key size. */
+/** Feature not available. For example, an unsupported ARIA key size. */
+#define MBEDTLS_ERR_ARIA_FEATURE_UNAVAILABLE  -0x005A
 
 /* MBEDTLS_ERR_ARIA_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_ARIA_HW_ACCEL_FAILED      -0x0058  /**< ARIA hardware accelerator failed. */
+/** ARIA hardware accelerator failed. */
+#define MBEDTLS_ERR_ARIA_HW_ACCEL_FAILED      -0x0058
 
 #ifdef __cplusplus
 extern "C" {
