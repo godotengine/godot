@@ -197,6 +197,16 @@
 				Returns an array of references to node's children.
 			</description>
 		</method>
+		<method name="get_children_of_type" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="type" type="String" />
+			<argument index="1" name="recursive" type="bool" default="false" />
+			<description>
+				Returns an array of the node's children that match or inherit from [code]type[/code].
+				[code]type[/code] could be a native type, [code]class_name[/code] type, or [code]resource_path[/code] type, similarly to the [code]extends[/code] keyword.
+				If [code]recursive[/code] is [code]true[/code], then all descendants will be checked.
+			</description>
+		</method>
 		<method name="get_groups" qualifiers="const">
 			<return type="Array" />
 			<description>

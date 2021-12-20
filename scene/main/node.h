@@ -254,6 +254,7 @@ public:
 
 	int get_child_count() const;
 	Node *get_child(int p_index) const;
+	Array get_children_of_type(const String &p_type, bool p_recursive = false) const;
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;

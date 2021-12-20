@@ -1228,6 +1228,35 @@ Node *Node::get_child(int p_index) const {
 	return data.children[p_index];
 }
 
+Array Node::get_children_of_type(const String &p_type, bool p_recursive) const {
+	Array ret;
+	ERR_FAIL_COND_V(p_type.empty(), ret);
+
+	Node *const *cptr = data.children.ptr();
+	int ccount = data.children.size();
+	for (int i = 0; i < ccount; i++) {
+		if (p_recursive) {
+			ret.append_array(cptr[i]->get_children_of_type(p_type, p_recursive));
+		}
+
+		if (cptr[i]->is_class(p_type)) {
+			ret.push_back(cptr[i]);
+		} else if (cptr[i]->get_script_instance()) {
+			Ref<Script> script = cptr[i]->get_script_instance()->get_script();
+			while (script.is_valid()) {
+				if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == script->get_path()) || p_type == script->get_path()) {
+					ret.push_back(cptr[i]);
+					break;
+				}
+
+				script = script->get_base_script();
+			}
+		}
+	}
+
+	return ret;
+}
+
 Node *Node::_get_child_by_name(const StringName &p_name) const {
 	int cc = data.children.size();
 	Node *const *cd = data.children.ptr();
@@ -2755,6 +2784,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
 	ClassDB::bind_method(D_METHOD("get_child", "idx"), &Node::get_child);
+	ClassDB::bind_method(D_METHOD("get_children_of_type", "type", "recursive"), &Node::get_children_of_type, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
