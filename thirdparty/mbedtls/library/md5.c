@@ -458,8 +458,7 @@ static const unsigned char md5_test_buf[7][81] =
     { "message digest" },
     { "abcdefghijklmnopqrstuvwxyz" },
     { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" },
-    { "12345678901234567890123456789012345678901234567890123456789012"
-      "345678901234567890" }
+    { "12345678901234567890123456789012345678901234567890123456789012345678901234567890" }
 };
 
 static const size_t md5_test_buflen[7] =
