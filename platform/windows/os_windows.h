@@ -144,6 +144,8 @@ public:
 	virtual int get_processor_count() const override;
 	virtual String get_processor_name() const override;
 
+	virtual uint64_t get_embedded_pck_offset() const override;
+
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;

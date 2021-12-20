@@ -54,16 +54,23 @@ Error EditorExportPlatformWindows::_export_debug_script(const Ref<EditorExportPr
 }
 
 Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
-	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, p_path, p_flags);
-
-	if (err != OK) {
-		return err;
+	String pck_path = p_path;
+	if (p_preset->get("binary_format/embed_pck")) {
+		pck_path = p_path.get_basename() + ".tmp";
 	}
-
-	_rcedit_add_data(p_preset, p_path);
-
+	Error err = EditorExportPlatformPC::prepare_template(p_preset, p_debug, pck_path, p_flags);
+	if (p_preset->get("application/modify_resources") && err == OK) {
+		err = _rcedit_add_data(p_preset, pck_path);
+	}
+	if (err == OK) {
+		err = EditorExportPlatformPC::export_project_data(p_preset, p_debug, pck_path, p_flags);
+	}
 	if (p_preset->get("codesign/enable") && err == OK) {
-		err = _code_sign(p_preset, p_path);
+		err = _code_sign(p_preset, pck_path);
+	}
+	if (p_preset->get("binary_format/embed_pck") && err == OK) {
+		Ref<DirAccess> tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
+		err = tmp_dir->rename(pck_path, p_path);
 	}
 
 	String app_name;
@@ -117,6 +124,7 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/description"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/modify_resources"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "1.0.0.0"), ""));
@@ -127,17 +135,20 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/trademarks"), ""));
 }
 
-void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
+Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
 
 	if (rcedit_path.is_empty()) {
 		WARN_PRINT("The rcedit tool is not configured in the Editor Settings (Export > Windows > Rcedit). No custom icon or app information data will be embedded in the exported executable.");
-		return;
+		return ERR_FILE_NOT_FOUND;
 	}
 
 	if (!FileAccess::exists(rcedit_path)) {
 		ERR_PRINT("Could not find rcedit executable at " + rcedit_path + ", no icon or app information data will be included.");
-		return;
+		return ERR_FILE_NOT_FOUND;
+	}
+	if (rcedit_path.is_empty()) {
+		rcedit_path = "rcedit"; // try to run signtool from PATH
 	}
 
 #ifndef WINDOWS_ENABLED
@@ -146,7 +157,7 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 
 	if (!wine_path.is_empty() && !FileAccess::exists(wine_path)) {
 		ERR_PRINT("Could not find wine executable at " + wine_path + ", no icon or app information data will be included.");
-		return;
+		return ERR_FILE_NOT_FOUND;
 	}
 
 	if (wine_path.is_empty()) {
@@ -204,13 +215,22 @@ void EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset>
 		args.push_back(trademarks);
 	}
 
-#ifdef WINDOWS_ENABLED
-	OS::get_singleton()->execute(rcedit_path, args);
-#else
+#ifndef WINDOWS_ENABLED
 	// On non-Windows we need WINE to run rcedit
 	args.push_front(rcedit_path);
-	OS::get_singleton()->execute(wine_path, args);
+	rcedit_path = wine_path;
 #endif
+
+	String str;
+	Error err = OS::get_singleton()->execute(rcedit_path, args, &str, nullptr, true);
+	ERR_FAIL_COND_V(err != OK, err);
+	print_line("rcedit (" + p_path + "): " + str);
+
+	if (str.find("Fatal error") != -1) {
+		return FAILED;
+	}
+
+	return OK;
 }
 
 Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
@@ -416,6 +436,10 @@ bool EditorExportPlatformWindows::can_export(const Ref<EditorExportPreset> &p_pr
 
 Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const {
 	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data
+
+	if (p_embedded_size + p_embedded_start >= 0x100000000) { // Check for total executable size
+		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Windows executables cannot be >= 4 GiB.");
+	}
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	if (f.is_null()) {
