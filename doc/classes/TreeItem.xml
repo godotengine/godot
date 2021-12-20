@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Control for a single item inside a [Tree]. May have child [TreeItem]s and be styled as well as contain buttons.
-		You can remove a [TreeItem] by using [method Object.free].
+		You can remove a [TreeItem] by using [method Object.free]. Remember to call [method CanvasItem.update] on the [Tree] node afterwards, to make sure the item immediately disappears from display.
 	</description>
 	<tutorials>
 	</tutorials>
