@@ -96,10 +96,14 @@
 #include "threading.h"
 #endif
 
-#define MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED        -0x0034  /**< The entropy source failed. */
-#define MBEDTLS_ERR_CTR_DRBG_REQUEST_TOO_BIG              -0x0036  /**< The requested random buffer length is too big. */
-#define MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG                -0x0038  /**< The input (entropy + additional data) is too large. */
-#define MBEDTLS_ERR_CTR_DRBG_FILE_IO_ERROR                -0x003A  /**< Read or write error in file. */
+/** The entropy source failed. */
+#define MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED        -0x0034
+/** The requested random buffer length is too big. */
+#define MBEDTLS_ERR_CTR_DRBG_REQUEST_TOO_BIG              -0x0036
+/** The input (entropy + additional data) is too large. */
+#define MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG                -0x0038
+/** Read or write error in file. */
+#define MBEDTLS_ERR_CTR_DRBG_FILE_IO_ERROR                -0x003A
 
 #define MBEDTLS_CTR_DRBG_BLOCKSIZE          16 /**< The block size used by the cipher. */
 

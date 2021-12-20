@@ -490,10 +490,6 @@
 #error "MBEDTLS_PLATFORM_STD_CALLOC defined, but not all prerequisites"
 #endif
 
-#if defined(MBEDTLS_PLATFORM_STD_CALLOC) && !defined(MBEDTLS_PLATFORM_MEMORY)
-#error "MBEDTLS_PLATFORM_STD_CALLOC defined, but not all prerequisites"
-#endif
-
 #if defined(MBEDTLS_PLATFORM_STD_FREE) && !defined(MBEDTLS_PLATFORM_MEMORY)
 #error "MBEDTLS_PLATFORM_STD_FREE defined, but not all prerequisites"
 #endif

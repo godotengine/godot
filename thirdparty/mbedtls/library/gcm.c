@@ -111,6 +111,20 @@
 }
 #endif
 
+#ifndef PUT_UINT64_BE
+#define PUT_UINT64_BE( n, b, i )                                 \
+{                                                                \
+    ( b )[( i )    ] = (unsigned char) ( ( (n) >> 56 ) & 0xff ); \
+    ( b )[( i ) + 1] = (unsigned char) ( ( (n) >> 48 ) & 0xff ); \
+    ( b )[( i ) + 2] = (unsigned char) ( ( (n) >> 40 ) & 0xff ); \
+    ( b )[( i ) + 3] = (unsigned char) ( ( (n) >> 32 ) & 0xff ); \
+    ( b )[( i ) + 4] = (unsigned char) ( ( (n) >> 24 ) & 0xff ); \
+    ( b )[( i ) + 5] = (unsigned char) ( ( (n) >> 16 ) & 0xff ); \
+    ( b )[( i ) + 6] = (unsigned char) ( ( (n) >> 8  ) & 0xff ); \
+    ( b )[( i ) + 7] = (unsigned char) ( ( (n)       ) & 0xff ); \
+}
+#endif
+
 /*
  * Initialize a context
  */
@@ -309,6 +323,7 @@ int mbedtls_gcm_starts( mbedtls_gcm_context *ctx,
     size_t i;
     const unsigned char *p;
     size_t use_len, olen = 0;
+    uint64_t iv_bits;
 
     GCM_VALIDATE_RET( ctx != NULL );
     GCM_VALIDATE_RET( iv != NULL );
@@ -338,7 +353,8 @@ int mbedtls_gcm_starts( mbedtls_gcm_context *ctx,
     else
     {
         memset( work_buf, 0x00, 16 );
-        PUT_UINT32_BE( iv_len * 8, work_buf, 12 );
+        iv_bits = (uint64_t)iv_len * 8;
+        PUT_UINT64_BE( iv_bits, work_buf, 8 );
 
         p = iv;
         while( iv_len > 0 )

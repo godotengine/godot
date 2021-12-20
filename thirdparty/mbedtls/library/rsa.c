@@ -2148,9 +2148,13 @@ int mbedtls_rsa_rsassa_pkcs1_v15_sign( mbedtls_rsa_context *ctx,
     memcpy( sig, sig_try, ctx->len );
 
 cleanup:
+    mbedtls_platform_zeroize( sig_try, ctx->len );
+    mbedtls_platform_zeroize( verif, ctx->len );
     mbedtls_free( sig_try );
     mbedtls_free( verif );
 
+    if( ret != 0 )
+        memset( sig, '!', ctx->len );
     return( ret );
 }
 #endif /* MBEDTLS_PKCS1_V15 */

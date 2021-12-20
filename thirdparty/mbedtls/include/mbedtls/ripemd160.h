@@ -60,7 +60,8 @@
 
 /* MBEDTLS_ERR_RIPEMD160_HW_ACCEL_FAILED is deprecated and should not be used.
  */
-#define MBEDTLS_ERR_RIPEMD160_HW_ACCEL_FAILED             -0x0031  /**< RIPEMD160 hardware accelerator failed */
+/** RIPEMD160 hardware accelerator failed */
+#define MBEDTLS_ERR_RIPEMD160_HW_ACCEL_FAILED             -0x0031
 
 #ifdef __cplusplus
 extern "C" {

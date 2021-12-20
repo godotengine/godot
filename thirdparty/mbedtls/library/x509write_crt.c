@@ -203,7 +203,7 @@ int mbedtls_x509write_crt_set_basic_constraints( mbedtls_x509write_cert *ctx,
     return(
         mbedtls_x509write_crt_set_extension( ctx, MBEDTLS_OID_BASIC_CONSTRAINTS,
                              MBEDTLS_OID_SIZE( MBEDTLS_OID_BASIC_CONSTRAINTS ),
-                             0, buf + sizeof(buf) - len, len ) );
+                             is_ca, buf + sizeof(buf) - len, len ) );
 }
 
 #if defined(MBEDTLS_SHA1_C)
