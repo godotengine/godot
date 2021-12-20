@@ -66,8 +66,10 @@
 #include <stdint.h>
 
 /* MBEDTLS_ERR_SHA1_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_SHA1_HW_ACCEL_FAILED                  -0x0035  /**< SHA-1 hardware accelerator failed */
-#define MBEDTLS_ERR_SHA1_BAD_INPUT_DATA                   -0x0073  /**< SHA-1 input data was malformed. */
+/** SHA-1 hardware accelerator failed */
+#define MBEDTLS_ERR_SHA1_HW_ACCEL_FAILED                  -0x0035
+/** SHA-1 input data was malformed. */
+#define MBEDTLS_ERR_SHA1_BAD_INPUT_DATA                   -0x0073
 
 #ifdef __cplusplus
 extern "C" {

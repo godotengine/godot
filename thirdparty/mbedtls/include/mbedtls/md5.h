@@ -63,7 +63,8 @@
 #include <stdint.h>
 
 /* MBEDTLS_ERR_MD5_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_MD5_HW_ACCEL_FAILED                   -0x002F  /**< MD5 hardware accelerator failed */
+/** MD5 hardware accelerator failed */
+#define MBEDTLS_ERR_MD5_HW_ACCEL_FAILED                   -0x002F
 
 #ifdef __cplusplus
 extern "C" {
