@@ -3,13 +3,7 @@
  *  only
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -22,27 +16,6 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 /*
  * Definition of Key Wrapping:
@@ -54,16 +27,14 @@
  * the wrapping and unwrapping operation than the definition in NIST SP 800-38F.
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_NIST_KW_C)
 
 #include "mbedtls/nist_kw.h"
 #include "mbedtls/platform_util.h"
+#include "mbedtls/error.h"
+#include "mbedtls/constant_time.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -82,50 +53,10 @@
 #define KW_SEMIBLOCK_LENGTH    8
 #define MIN_SEMIBLOCKS_COUNT   3
 
-/* constant-time buffer comparison */
-static inline unsigned char mbedtls_nist_kw_safer_memcmp( const void *a, const void *b, size_t n )
-{
-    size_t i;
-    volatile const unsigned char *A = (volatile const unsigned char *) a;
-    volatile const unsigned char *B = (volatile const unsigned char *) b;
-    volatile unsigned char diff = 0;
-
-    for( i = 0; i < n; i++ )
-    {
-        /* Read volatile data in order before computing diff.
-         * This avoids IAR compiler warning:
-         * 'the order of volatile accesses is undefined ..' */
-        unsigned char x = A[i], y = B[i];
-        diff |= x ^ y;
-    }
-
-    return( diff );
-}
-
 /*! The 64-bit default integrity check value (ICV) for KW mode. */
 static const unsigned char NIST_KW_ICV1[] = {0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6, 0xA6};
 /*! The 32-bit default integrity check value (ICV) for KWP mode. */
 static const  unsigned char NIST_KW_ICV2[] = {0xA6, 0x59, 0x59, 0xA6};
-
-#ifndef GET_UINT32_BE
-#define GET_UINT32_BE(n,b,i)                            \
-do {                                                    \
-    (n) = ( (uint32_t) (b)[(i)    ] << 24 )             \
-        | ( (uint32_t) (b)[(i) + 1] << 16 )             \
-        | ( (uint32_t) (b)[(i) + 2] <<  8 )             \
-        | ( (uint32_t) (b)[(i) + 3]       );            \
-} while( 0 )
-#endif
-
-#ifndef PUT_UINT32_BE
-#define PUT_UINT32_BE(n,b,i)                            \
-do {                                                    \
-    (b)[(i)    ] = (unsigned char) ( (n) >> 24 );       \
-    (b)[(i) + 1] = (unsigned char) ( (n) >> 16 );       \
-    (b)[(i) + 2] = (unsigned char) ( (n) >>  8 );       \
-    (b)[(i) + 3] = (unsigned char) ( (n)       );       \
-} while( 0 )
-#endif
 
 /*
  * Initialize context
@@ -141,7 +72,7 @@ int mbedtls_nist_kw_setkey( mbedtls_nist_kw_context *ctx,
                             unsigned int keybits,
                             const int is_wrap )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     const mbedtls_cipher_info_t *cipher_info;
 
     cipher_info = mbedtls_cipher_info_from_values( cipher,
@@ -273,7 +204,7 @@ int mbedtls_nist_kw_wrap( mbedtls_nist_kw_context *ctx,
         }
 
         memcpy( output, NIST_KW_ICV2, KW_SEMIBLOCK_LENGTH / 2 );
-        PUT_UINT32_BE( ( in_len & 0xffffffff ), output,
+        MBEDTLS_PUT_UINT32_BE( ( in_len & 0xffffffff ), output,
                        KW_SEMIBLOCK_LENGTH / 2 );
 
         memcpy( output + KW_SEMIBLOCK_LENGTH, input, in_len );
@@ -448,7 +379,7 @@ int mbedtls_nist_kw_unwrap( mbedtls_nist_kw_context *ctx,
             goto cleanup;
 
         /* Check ICV in "constant-time" */
-        diff = mbedtls_nist_kw_safer_memcmp( NIST_KW_ICV1, A, KW_SEMIBLOCK_LENGTH );
+        diff = mbedtls_ct_memcmp( NIST_KW_ICV1, A, KW_SEMIBLOCK_LENGTH );
 
         if( diff != 0 )
         {
@@ -497,14 +428,14 @@ int mbedtls_nist_kw_unwrap( mbedtls_nist_kw_context *ctx,
         }
 
         /* Check ICV in "constant-time" */
-        diff = mbedtls_nist_kw_safer_memcmp( NIST_KW_ICV2, A, KW_SEMIBLOCK_LENGTH / 2 );
+        diff = mbedtls_ct_memcmp( NIST_KW_ICV2, A, KW_SEMIBLOCK_LENGTH / 2 );
 
         if( diff != 0 )
         {
             ret = MBEDTLS_ERR_CIPHER_AUTH_FAILED;
         }
 
-        GET_UINT32_BE( Plen, A, KW_SEMIBLOCK_LENGTH / 2 );
+        Plen = MBEDTLS_GET_UINT32_BE( A, KW_SEMIBLOCK_LENGTH / 2 );
 
         /*
          * Plen is the length of the plaintext, when the input is valid.

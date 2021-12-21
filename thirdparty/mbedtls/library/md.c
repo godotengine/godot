@@ -1,18 +1,12 @@
 /**
- * \file mbedtls_md.c
+ * \file md.c
  *
  * \brief Generic message digest wrapper for mbed TLS
  *
  * \author Adriaan de Jong <dejong@fox-it.com>
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -25,40 +19,24 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_MD_C)
 
 #include "mbedtls/md.h"
 #include "mbedtls/md_internal.h"
 #include "mbedtls/platform_util.h"
+#include "mbedtls/error.h"
+
+#include "mbedtls/md2.h"
+#include "mbedtls/md4.h"
+#include "mbedtls/md5.h"
+#include "mbedtls/ripemd160.h"
+#include "mbedtls/sha1.h"
+#include "mbedtls/sha256.h"
+#include "mbedtls/sha512.h"
 
 #if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
@@ -74,6 +52,85 @@
 #include <stdio.h>
 #endif
 
+#if defined(MBEDTLS_MD2_C)
+const mbedtls_md_info_t mbedtls_md2_info = {
+    "MD2",
+    MBEDTLS_MD_MD2,
+    16,
+    16,
+};
+#endif
+
+#if defined(MBEDTLS_MD4_C)
+const mbedtls_md_info_t mbedtls_md4_info = {
+    "MD4",
+    MBEDTLS_MD_MD4,
+    16,
+    64,
+};
+#endif
+
+#if defined(MBEDTLS_MD5_C)
+const mbedtls_md_info_t mbedtls_md5_info = {
+    "MD5",
+    MBEDTLS_MD_MD5,
+    16,
+    64,
+};
+#endif
+
+#if defined(MBEDTLS_RIPEMD160_C)
+const mbedtls_md_info_t mbedtls_ripemd160_info = {
+    "RIPEMD160",
+    MBEDTLS_MD_RIPEMD160,
+    20,
+    64,
+};
+#endif
+
+#if defined(MBEDTLS_SHA1_C)
+const mbedtls_md_info_t mbedtls_sha1_info = {
+    "SHA1",
+    MBEDTLS_MD_SHA1,
+    20,
+    64,
+};
+#endif
+
+#if defined(MBEDTLS_SHA256_C)
+const mbedtls_md_info_t mbedtls_sha224_info = {
+    "SHA224",
+    MBEDTLS_MD_SHA224,
+    28,
+    64,
+};
+
+const mbedtls_md_info_t mbedtls_sha256_info = {
+    "SHA256",
+    MBEDTLS_MD_SHA256,
+    32,
+    64,
+};
+#endif
+
+#if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
+const mbedtls_md_info_t mbedtls_sha384_info = {
+    "SHA384",
+    MBEDTLS_MD_SHA384,
+    48,
+    128,
+};
+#endif
+
+const mbedtls_md_info_t mbedtls_sha512_info = {
+    "SHA512",
+    MBEDTLS_MD_SHA512,
+    64,
+    128,
+};
+#endif
+
 /*
  * Reminder: update profiles in x509_crt.c when adding a new hash!
  */
@@ -81,7 +138,9 @@ static const int supported_digests[] = {
 
 #if defined(MBEDTLS_SHA512_C)
         MBEDTLS_MD_SHA512,
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
         MBEDTLS_MD_SHA384,
+#endif
 #endif
 
 #if defined(MBEDTLS_SHA256_C)
@@ -150,8 +209,10 @@ const mbedtls_md_info_t *mbedtls_md_info_from_string( const char *md_name )
         return mbedtls_md_info_from_type( MBEDTLS_MD_SHA256 );
 #endif
 #if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
     if( !strcmp( "SHA384", md_name ) )
         return mbedtls_md_info_from_type( MBEDTLS_MD_SHA384 );
+#endif
     if( !strcmp( "SHA512", md_name ) )
         return mbedtls_md_info_from_type( MBEDTLS_MD_SHA512 );
 #endif
@@ -189,8 +250,10 @@ const mbedtls_md_info_t *mbedtls_md_info_from_type( mbedtls_md_type_t md_type )
             return( &mbedtls_sha256_info );
 #endif
 #if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
         case MBEDTLS_MD_SHA384:
             return( &mbedtls_sha384_info );
+#endif
         case MBEDTLS_MD_SHA512:
             return( &mbedtls_sha512_info );
 #endif
@@ -210,7 +273,54 @@ void mbedtls_md_free( mbedtls_md_context_t *ctx )
         return;
 
     if( ctx->md_ctx != NULL )
-        ctx->md_info->ctx_free_func( ctx->md_ctx );
+    {
+        switch( ctx->md_info->type )
+        {
+#if defined(MBEDTLS_MD2_C)
+            case MBEDTLS_MD_MD2:
+                mbedtls_md2_free( ctx->md_ctx );
+                break;
+#endif
+#if defined(MBEDTLS_MD4_C)
+            case MBEDTLS_MD_MD4:
+                mbedtls_md4_free( ctx->md_ctx );
+                break;
+#endif
+#if defined(MBEDTLS_MD5_C)
+            case MBEDTLS_MD_MD5:
+                mbedtls_md5_free( ctx->md_ctx );
+                break;
+#endif
+#if defined(MBEDTLS_RIPEMD160_C)
+            case MBEDTLS_MD_RIPEMD160:
+                mbedtls_ripemd160_free( ctx->md_ctx );
+                break;
+#endif
+#if defined(MBEDTLS_SHA1_C)
+            case MBEDTLS_MD_SHA1:
+                mbedtls_sha1_free( ctx->md_ctx );
+                break;
+#endif
+#if defined(MBEDTLS_SHA256_C)
+            case MBEDTLS_MD_SHA224:
+            case MBEDTLS_MD_SHA256:
+                mbedtls_sha256_free( ctx->md_ctx );
+                break;
+#endif
+#if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
+            case MBEDTLS_MD_SHA384:
+#endif
+            case MBEDTLS_MD_SHA512:
+                mbedtls_sha512_free( ctx->md_ctx );
+                break;
+#endif
+            default:
+                /* Shouldn't happen */
+                break;
+        }
+        mbedtls_free( ctx->md_ctx );
+    }
 
     if( ctx->hmac_ctx != NULL )
     {
@@ -232,7 +342,50 @@ int mbedtls_md_clone( mbedtls_md_context_t *dst,
         return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
     }
 
-    dst->md_info->clone_func( dst->md_ctx, src->md_ctx );
+    switch( src->md_info->type )
+    {
+#if defined(MBEDTLS_MD2_C)
+        case MBEDTLS_MD_MD2:
+            mbedtls_md2_clone( dst->md_ctx, src->md_ctx );
+            break;
+#endif
+#if defined(MBEDTLS_MD4_C)
+        case MBEDTLS_MD_MD4:
+            mbedtls_md4_clone( dst->md_ctx, src->md_ctx );
+            break;
+#endif
+#if defined(MBEDTLS_MD5_C)
+        case MBEDTLS_MD_MD5:
+            mbedtls_md5_clone( dst->md_ctx, src->md_ctx );
+            break;
+#endif
+#if defined(MBEDTLS_RIPEMD160_C)
+        case MBEDTLS_MD_RIPEMD160:
+            mbedtls_ripemd160_clone( dst->md_ctx, src->md_ctx );
+            break;
+#endif
+#if defined(MBEDTLS_SHA1_C)
+        case MBEDTLS_MD_SHA1:
+            mbedtls_sha1_clone( dst->md_ctx, src->md_ctx );
+            break;
+#endif
+#if defined(MBEDTLS_SHA256_C)
+        case MBEDTLS_MD_SHA224:
+        case MBEDTLS_MD_SHA256:
+            mbedtls_sha256_clone( dst->md_ctx, src->md_ctx );
+            break;
+#endif
+#if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
+        case MBEDTLS_MD_SHA384:
+#endif
+        case MBEDTLS_MD_SHA512:
+            mbedtls_sha512_clone( dst->md_ctx, src->md_ctx );
+            break;
+#endif
+        default:
+            return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
+    }
 
     return( 0 );
 }
@@ -244,35 +397,127 @@ int mbedtls_md_init_ctx( mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_
 }
 #endif
 
+#define ALLOC( type )                                                   \
+    do {                                                                \
+        ctx->md_ctx = mbedtls_calloc( 1, sizeof( mbedtls_##type##_context ) ); \
+        if( ctx->md_ctx == NULL )                                       \
+            return( MBEDTLS_ERR_MD_ALLOC_FAILED );                      \
+        mbedtls_##type##_init( ctx->md_ctx );                           \
+    }                                                                   \
+    while( 0 )
+
 int mbedtls_md_setup( mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_info, int hmac )
 {
     if( md_info == NULL || ctx == NULL )
         return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
 
-    if( ( ctx->md_ctx = md_info->ctx_alloc_func() ) == NULL )
-        return( MBEDTLS_ERR_MD_ALLOC_FAILED );
+    ctx->md_info = md_info;
+    ctx->md_ctx = NULL;
+    ctx->hmac_ctx = NULL;
+
+    switch( md_info->type )
+    {
+#if defined(MBEDTLS_MD2_C)
+        case MBEDTLS_MD_MD2:
+            ALLOC( md2 );
+            break;
+#endif
+#if defined(MBEDTLS_MD4_C)
+        case MBEDTLS_MD_MD4:
+            ALLOC( md4 );
+            break;
+#endif
+#if defined(MBEDTLS_MD5_C)
+        case MBEDTLS_MD_MD5:
+            ALLOC( md5 );
+            break;
+#endif
+#if defined(MBEDTLS_RIPEMD160_C)
+        case MBEDTLS_MD_RIPEMD160:
+            ALLOC( ripemd160 );
+            break;
+#endif
+#if defined(MBEDTLS_SHA1_C)
+        case MBEDTLS_MD_SHA1:
+            ALLOC( sha1 );
+            break;
+#endif
+#if defined(MBEDTLS_SHA256_C)
+        case MBEDTLS_MD_SHA224:
+        case MBEDTLS_MD_SHA256:
+            ALLOC( sha256 );
+            break;
+#endif
+#if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
+        case MBEDTLS_MD_SHA384:
+#endif
+        case MBEDTLS_MD_SHA512:
+            ALLOC( sha512 );
+            break;
+#endif
+        default:
+            return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
+    }
 
     if( hmac != 0 )
     {
         ctx->hmac_ctx = mbedtls_calloc( 2, md_info->block_size );
         if( ctx->hmac_ctx == NULL )
         {
-            md_info->ctx_free_func( ctx->md_ctx );
+            mbedtls_md_free( ctx );
             return( MBEDTLS_ERR_MD_ALLOC_FAILED );
         }
     }
 
-    ctx->md_info = md_info;
-
     return( 0 );
 }
+#undef ALLOC
 
 int mbedtls_md_starts( mbedtls_md_context_t *ctx )
 {
     if( ctx == NULL || ctx->md_info == NULL )
         return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
 
-    return( ctx->md_info->starts_func( ctx->md_ctx ) );
+    switch( ctx->md_info->type )
+    {
+#if defined(MBEDTLS_MD2_C)
+        case MBEDTLS_MD_MD2:
+            return( mbedtls_md2_starts_ret( ctx->md_ctx ) );
+#endif
+#if defined(MBEDTLS_MD4_C)
+        case MBEDTLS_MD_MD4:
+            return( mbedtls_md4_starts_ret( ctx->md_ctx ) );
+#endif
+#if defined(MBEDTLS_MD5_C)
+        case MBEDTLS_MD_MD5:
+            return( mbedtls_md5_starts_ret( ctx->md_ctx ) );
+#endif
+#if defined(MBEDTLS_RIPEMD160_C)
+        case MBEDTLS_MD_RIPEMD160:
+            return( mbedtls_ripemd160_starts_ret( ctx->md_ctx ) );
+#endif
+#if defined(MBEDTLS_SHA1_C)
+        case MBEDTLS_MD_SHA1:
+            return( mbedtls_sha1_starts_ret( ctx->md_ctx ) );
+#endif
+#if defined(MBEDTLS_SHA256_C)
+        case MBEDTLS_MD_SHA224:
+            return( mbedtls_sha256_starts_ret( ctx->md_ctx, 1 ) );
+        case MBEDTLS_MD_SHA256:
+            return( mbedtls_sha256_starts_ret( ctx->md_ctx, 0 ) );
+#endif
+#if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
+        case MBEDTLS_MD_SHA384:
+            return( mbedtls_sha512_starts_ret( ctx->md_ctx, 1 ) );
+#endif
+        case MBEDTLS_MD_SHA512:
+            return( mbedtls_sha512_starts_ret( ctx->md_ctx, 0 ) );
+#endif
+        default:
+            return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
+    }
 }
 
 int mbedtls_md_update( mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen )
@@ -280,7 +525,43 @@ int mbedtls_md_update( mbedtls_md_context_t *ctx, const unsigned char *input, si
     if( ctx == NULL || ctx->md_info == NULL )
         return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
 
-    return( ctx->md_info->update_func( ctx->md_ctx, input, ilen ) );
+    switch( ctx->md_info->type )
+    {
+#if defined(MBEDTLS_MD2_C)
+        case MBEDTLS_MD_MD2:
+            return( mbedtls_md2_update_ret( ctx->md_ctx, input, ilen ) );
+#endif
+#if defined(MBEDTLS_MD4_C)
+        case MBEDTLS_MD_MD4:
+            return( mbedtls_md4_update_ret( ctx->md_ctx, input, ilen ) );
+#endif
+#if defined(MBEDTLS_MD5_C)
+        case MBEDTLS_MD_MD5:
+            return( mbedtls_md5_update_ret( ctx->md_ctx, input, ilen ) );
+#endif
+#if defined(MBEDTLS_RIPEMD160_C)
+        case MBEDTLS_MD_RIPEMD160:
+            return( mbedtls_ripemd160_update_ret( ctx->md_ctx, input, ilen ) );
+#endif
+#if defined(MBEDTLS_SHA1_C)
+        case MBEDTLS_MD_SHA1:
+            return( mbedtls_sha1_update_ret( ctx->md_ctx, input, ilen ) );
+#endif
+#if defined(MBEDTLS_SHA256_C)
+        case MBEDTLS_MD_SHA224:
+        case MBEDTLS_MD_SHA256:
+            return( mbedtls_sha256_update_ret( ctx->md_ctx, input, ilen ) );
+#endif
+#if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
+        case MBEDTLS_MD_SHA384:
+#endif
+        case MBEDTLS_MD_SHA512:
+            return( mbedtls_sha512_update_ret( ctx->md_ctx, input, ilen ) );
+#endif
+        default:
+            return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
+    }
 }
 
 int mbedtls_md_finish( mbedtls_md_context_t *ctx, unsigned char *output )
@@ -288,7 +569,43 @@ int mbedtls_md_finish( mbedtls_md_context_t *ctx, unsigned char *output )
     if( ctx == NULL || ctx->md_info == NULL )
         return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
 
-    return( ctx->md_info->finish_func( ctx->md_ctx, output ) );
+    switch( ctx->md_info->type )
+    {
+#if defined(MBEDTLS_MD2_C)
+        case MBEDTLS_MD_MD2:
+            return( mbedtls_md2_finish_ret( ctx->md_ctx, output ) );
+#endif
+#if defined(MBEDTLS_MD4_C)
+        case MBEDTLS_MD_MD4:
+            return( mbedtls_md4_finish_ret( ctx->md_ctx, output ) );
+#endif
+#if defined(MBEDTLS_MD5_C)
+        case MBEDTLS_MD_MD5:
+            return( mbedtls_md5_finish_ret( ctx->md_ctx, output ) );
+#endif
+#if defined(MBEDTLS_RIPEMD160_C)
+        case MBEDTLS_MD_RIPEMD160:
+            return( mbedtls_ripemd160_finish_ret( ctx->md_ctx, output ) );
+#endif
+#if defined(MBEDTLS_SHA1_C)
+        case MBEDTLS_MD_SHA1:
+            return( mbedtls_sha1_finish_ret( ctx->md_ctx, output ) );
+#endif
+#if defined(MBEDTLS_SHA256_C)
+        case MBEDTLS_MD_SHA224:
+        case MBEDTLS_MD_SHA256:
+            return( mbedtls_sha256_finish_ret( ctx->md_ctx, output ) );
+#endif
+#if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
+        case MBEDTLS_MD_SHA384:
+#endif
+        case MBEDTLS_MD_SHA512:
+            return( mbedtls_sha512_finish_ret( ctx->md_ctx, output ) );
+#endif
+        default:
+            return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
+    }
 }
 
 int mbedtls_md( const mbedtls_md_info_t *md_info, const unsigned char *input, size_t ilen,
@@ -297,13 +614,51 @@ int mbedtls_md( const mbedtls_md_info_t *md_info, const unsigned char *input, si
     if( md_info == NULL )
         return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
 
-    return( md_info->digest_func( input, ilen, output ) );
+    switch( md_info->type )
+    {
+#if defined(MBEDTLS_MD2_C)
+        case MBEDTLS_MD_MD2:
+            return( mbedtls_md2_ret( input, ilen, output ) );
+#endif
+#if defined(MBEDTLS_MD4_C)
+        case MBEDTLS_MD_MD4:
+            return( mbedtls_md4_ret( input, ilen, output ) );
+#endif
+#if defined(MBEDTLS_MD5_C)
+        case MBEDTLS_MD_MD5:
+            return( mbedtls_md5_ret( input, ilen, output ) );
+#endif
+#if defined(MBEDTLS_RIPEMD160_C)
+        case MBEDTLS_MD_RIPEMD160:
+            return( mbedtls_ripemd160_ret( input, ilen, output ) );
+#endif
+#if defined(MBEDTLS_SHA1_C)
+        case MBEDTLS_MD_SHA1:
+            return( mbedtls_sha1_ret( input, ilen, output ) );
+#endif
+#if defined(MBEDTLS_SHA256_C)
+        case MBEDTLS_MD_SHA224:
+            return( mbedtls_sha256_ret( input, ilen, output, 1 ) );
+        case MBEDTLS_MD_SHA256:
+            return( mbedtls_sha256_ret( input, ilen, output, 0 ) );
+#endif
+#if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
+        case MBEDTLS_MD_SHA384:
+            return( mbedtls_sha512_ret( input, ilen, output, 1 ) );
+#endif
+        case MBEDTLS_MD_SHA512:
+            return( mbedtls_sha512_ret( input, ilen, output, 0 ) );
+#endif
+        default:
+            return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
+    }
 }
 
 #if defined(MBEDTLS_FS_IO)
 int mbedtls_md_file( const mbedtls_md_info_t *md_info, const char *path, unsigned char *output )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     FILE *f;
     size_t n;
     mbedtls_md_context_t ctx;
@@ -320,17 +675,17 @@ int mbedtls_md_file( const mbedtls_md_info_t *md_info, const char *path, unsigne
     if( ( ret = mbedtls_md_setup( &ctx, md_info, 0 ) ) != 0 )
         goto cleanup;
 
-    if( ( ret = md_info->starts_func( ctx.md_ctx ) ) != 0 )
+    if( ( ret = mbedtls_md_starts( &ctx ) ) != 0 )
         goto cleanup;
 
     while( ( n = fread( buf, 1, sizeof( buf ), f ) ) > 0 )
-        if( ( ret = md_info->update_func( ctx.md_ctx, buf, n ) ) != 0 )
+        if( ( ret = mbedtls_md_update( &ctx, buf, n ) ) != 0 )
             goto cleanup;
 
     if( ferror( f ) != 0 )
         ret = MBEDTLS_ERR_MD_FILE_IO_ERROR;
     else
-        ret = md_info->finish_func( ctx.md_ctx, output );
+        ret = mbedtls_md_finish( &ctx, output );
 
 cleanup:
     mbedtls_platform_zeroize( buf, sizeof( buf ) );
@@ -343,7 +698,7 @@ cleanup:
 
 int mbedtls_md_hmac_starts( mbedtls_md_context_t *ctx, const unsigned char *key, size_t keylen )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char sum[MBEDTLS_MD_MAX_SIZE];
     unsigned char *ipad, *opad;
     size_t i;
@@ -353,11 +708,11 @@ int mbedtls_md_hmac_starts( mbedtls_md_context_t *ctx, const unsigned char *key,
 
     if( keylen > (size_t) ctx->md_info->block_size )
     {
-        if( ( ret = ctx->md_info->starts_func( ctx->md_ctx ) ) != 0 )
+        if( ( ret = mbedtls_md_starts( ctx ) ) != 0 )
             goto cleanup;
-        if( ( ret = ctx->md_info->update_func( ctx->md_ctx, key, keylen ) ) != 0 )
+        if( ( ret = mbedtls_md_update( ctx, key, keylen ) ) != 0 )
             goto cleanup;
-        if( ( ret = ctx->md_info->finish_func( ctx->md_ctx, sum ) ) != 0 )
+        if( ( ret = mbedtls_md_finish( ctx, sum ) ) != 0 )
             goto cleanup;
 
         keylen = ctx->md_info->size;
@@ -376,10 +731,10 @@ int mbedtls_md_hmac_starts( mbedtls_md_context_t *ctx, const unsigned char *key,
         opad[i] = (unsigned char)( opad[i] ^ key[i] );
     }
 
-    if( ( ret = ctx->md_info->starts_func( ctx->md_ctx ) ) != 0 )
+    if( ( ret = mbedtls_md_starts( ctx ) ) != 0 )
         goto cleanup;
-    if( ( ret = ctx->md_info->update_func( ctx->md_ctx, ipad,
-                                           ctx->md_info->block_size ) ) != 0 )
+    if( ( ret = mbedtls_md_update( ctx, ipad,
+                                   ctx->md_info->block_size ) ) != 0 )
         goto cleanup;
 
 cleanup:
@@ -393,12 +748,12 @@ int mbedtls_md_hmac_update( mbedtls_md_context_t *ctx, const unsigned char *inpu
     if( ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL )
         return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
 
-    return( ctx->md_info->update_func( ctx->md_ctx, input, ilen ) );
+    return( mbedtls_md_update( ctx, input, ilen ) );
 }
 
 int mbedtls_md_hmac_finish( mbedtls_md_context_t *ctx, unsigned char *output )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char tmp[MBEDTLS_MD_MAX_SIZE];
     unsigned char *opad;
 
@@ -407,22 +762,22 @@ int mbedtls_md_hmac_finish( mbedtls_md_context_t *ctx, unsigned char *output )
 
     opad = (unsigned char *) ctx->hmac_ctx + ctx->md_info->block_size;
 
-    if( ( ret = ctx->md_info->finish_func( ctx->md_ctx, tmp ) ) != 0 )
+    if( ( ret = mbedtls_md_finish( ctx, tmp ) ) != 0 )
         return( ret );
-    if( ( ret = ctx->md_info->starts_func( ctx->md_ctx ) ) != 0 )
+    if( ( ret = mbedtls_md_starts( ctx ) ) != 0 )
         return( ret );
-    if( ( ret = ctx->md_info->update_func( ctx->md_ctx, opad,
-                                           ctx->md_info->block_size ) ) != 0 )
+    if( ( ret = mbedtls_md_update( ctx, opad,
+                                   ctx->md_info->block_size ) ) != 0 )
         return( ret );
-    if( ( ret = ctx->md_info->update_func( ctx->md_ctx, tmp,
-                                           ctx->md_info->size ) ) != 0 )
+    if( ( ret = mbedtls_md_update( ctx, tmp,
+                                   ctx->md_info->size ) ) != 0 )
         return( ret );
-    return( ctx->md_info->finish_func( ctx->md_ctx, output ) );
+    return( mbedtls_md_finish( ctx, output ) );
 }
 
 int mbedtls_md_hmac_reset( mbedtls_md_context_t *ctx )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char *ipad;
 
     if( ctx == NULL || ctx->md_info == NULL || ctx->hmac_ctx == NULL )
@@ -430,10 +785,9 @@ int mbedtls_md_hmac_reset( mbedtls_md_context_t *ctx )
 
     ipad = (unsigned char *) ctx->hmac_ctx;
 
-    if( ( ret = ctx->md_info->starts_func( ctx->md_ctx ) ) != 0 )
+    if( ( ret = mbedtls_md_starts( ctx ) ) != 0 )
         return( ret );
-    return( ctx->md_info->update_func( ctx->md_ctx, ipad,
-                                       ctx->md_info->block_size ) );
+    return( mbedtls_md_update( ctx, ipad, ctx->md_info->block_size ) );
 }
 
 int mbedtls_md_hmac( const mbedtls_md_info_t *md_info,
@@ -442,7 +796,7 @@ int mbedtls_md_hmac( const mbedtls_md_info_t *md_info,
                      unsigned char *output )
 {
     mbedtls_md_context_t ctx;
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     if( md_info == NULL )
         return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
@@ -470,7 +824,43 @@ int mbedtls_md_process( mbedtls_md_context_t *ctx, const unsigned char *data )
     if( ctx == NULL || ctx->md_info == NULL )
         return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
 
-    return( ctx->md_info->process_func( ctx->md_ctx, data ) );
+    switch( ctx->md_info->type )
+    {
+#if defined(MBEDTLS_MD2_C)
+        case MBEDTLS_MD_MD2:
+            return( mbedtls_internal_md2_process( ctx->md_ctx ) );
+#endif
+#if defined(MBEDTLS_MD4_C)
+        case MBEDTLS_MD_MD4:
+            return( mbedtls_internal_md4_process( ctx->md_ctx, data ) );
+#endif
+#if defined(MBEDTLS_MD5_C)
+        case MBEDTLS_MD_MD5:
+            return( mbedtls_internal_md5_process( ctx->md_ctx, data ) );
+#endif
+#if defined(MBEDTLS_RIPEMD160_C)
+        case MBEDTLS_MD_RIPEMD160:
+            return( mbedtls_internal_ripemd160_process( ctx->md_ctx, data ) );
+#endif
+#if defined(MBEDTLS_SHA1_C)
+        case MBEDTLS_MD_SHA1:
+            return( mbedtls_internal_sha1_process( ctx->md_ctx, data ) );
+#endif
+#if defined(MBEDTLS_SHA256_C)
+        case MBEDTLS_MD_SHA224:
+        case MBEDTLS_MD_SHA256:
+            return( mbedtls_internal_sha256_process( ctx->md_ctx, data ) );
+#endif
+#if defined(MBEDTLS_SHA512_C)
+#if !defined(MBEDTLS_SHA512_NO_SHA384)
+        case MBEDTLS_MD_SHA384:
+#endif
+        case MBEDTLS_MD_SHA512:
+            return( mbedtls_internal_sha512_process( ctx->md_ctx, data ) );
+#endif
+        default:
+            return( MBEDTLS_ERR_MD_BAD_INPUT_DATA );
+    }
 }
 
 unsigned char mbedtls_md_get_size( const mbedtls_md_info_t *md_info )

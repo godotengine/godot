@@ -2,13 +2,7 @@
  *  DTLS cookie callbacks implementation
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -21,38 +15,13 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 /*
  * These session callbacks use a simple chained list
  * to store and retrieve the session information.
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_SSL_COOKIE_C)
 
@@ -65,7 +34,9 @@
 
 #include "mbedtls/ssl_cookie.h"
 #include "mbedtls/ssl_internal.h"
+#include "mbedtls/error.h"
 #include "mbedtls/platform_util.h"
+#include "mbedtls/constant_time.h"
 
 #include <string.h>
 
@@ -129,7 +100,7 @@ int mbedtls_ssl_cookie_setup( mbedtls_ssl_cookie_ctx *ctx,
                       int (*f_rng)(void *, unsigned char *, size_t),
                       void *p_rng )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char key[COOKIE_MD_OUTLEN];
 
     if( ( ret = f_rng( p_rng, key, sizeof( key ) ) ) != 0 )
@@ -181,7 +152,7 @@ int mbedtls_ssl_cookie_write( void *p_ctx,
                       unsigned char **p, unsigned char *end,
                       const unsigned char *cli_id, size_t cli_id_len )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_ssl_cookie_ctx *ctx = (mbedtls_ssl_cookie_ctx *) p_ctx;
     unsigned long t;
 
@@ -196,15 +167,12 @@ int mbedtls_ssl_cookie_write( void *p_ctx,
     t = ctx->serial++;
 #endif
 
-    (*p)[0] = (unsigned char)( t >> 24 );
-    (*p)[1] = (unsigned char)( t >> 16 );
-    (*p)[2] = (unsigned char)( t >>  8 );
-    (*p)[3] = (unsigned char)( t       );
+    MBEDTLS_PUT_UINT32_BE(t, *p, 0);
     *p += 4;
 
 #if defined(MBEDTLS_THREADING_C)
     if( ( ret = mbedtls_mutex_lock( &ctx->mutex ) ) != 0 )
-        return( MBEDTLS_ERR_SSL_INTERNAL_ERROR + ret );
+        return( MBEDTLS_ERROR_ADD( MBEDTLS_ERR_SSL_INTERNAL_ERROR, ret ) );
 #endif
 
     ret = ssl_cookie_hmac( &ctx->hmac_ctx, *p - 4,
@@ -212,8 +180,8 @@ int mbedtls_ssl_cookie_write( void *p_ctx,
 
 #if defined(MBEDTLS_THREADING_C)
     if( mbedtls_mutex_unlock( &ctx->mutex ) != 0 )
-        return( MBEDTLS_ERR_SSL_INTERNAL_ERROR +
-                MBEDTLS_ERR_THREADING_MUTEX_ERROR );
+        return( MBEDTLS_ERROR_ADD( MBEDTLS_ERR_SSL_INTERNAL_ERROR,
+                MBEDTLS_ERR_THREADING_MUTEX_ERROR ) );
 #endif
 
     return( ret );
@@ -240,7 +208,7 @@ int mbedtls_ssl_cookie_check( void *p_ctx,
 
 #if defined(MBEDTLS_THREADING_C)
     if( ( ret = mbedtls_mutex_lock( &ctx->mutex ) ) != 0 )
-        return( MBEDTLS_ERR_SSL_INTERNAL_ERROR + ret );
+        return( MBEDTLS_ERROR_ADD( MBEDTLS_ERR_SSL_INTERNAL_ERROR, ret ) );
 #endif
 
     if( ssl_cookie_hmac( &ctx->hmac_ctx, cookie,
@@ -250,14 +218,16 @@ int mbedtls_ssl_cookie_check( void *p_ctx,
 
 #if defined(MBEDTLS_THREADING_C)
     if( mbedtls_mutex_unlock( &ctx->mutex ) != 0 )
-        ret = ( MBEDTLS_ERR_SSL_INTERNAL_ERROR +
-                MBEDTLS_ERR_THREADING_MUTEX_ERROR );
+    {
+        ret = MBEDTLS_ERROR_ADD( MBEDTLS_ERR_SSL_INTERNAL_ERROR,
+                                 MBEDTLS_ERR_THREADING_MUTEX_ERROR );
+    }
 #endif
 
     if( ret != 0 )
         goto exit;
 
-    if( mbedtls_ssl_safer_memcmp( cookie + 4, ref_hmac, sizeof( ref_hmac ) ) != 0 )
+    if( mbedtls_ct_memcmp( cookie + 4, ref_hmac, sizeof( ref_hmac ) ) != 0 )
     {
         ret = -1;
         goto exit;

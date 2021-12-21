@@ -2,13 +2,7 @@
  *  Diffie-Hellman-Merkle key exchange
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -21,27 +15,6 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 /*
  *  The following sources were referenced in the design of this implementation
@@ -52,16 +25,13 @@
  *
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_DHM_C)
 
 #include "mbedtls/dhm.h"
 #include "mbedtls/platform_util.h"
+#include "mbedtls/error.h"
 
 #include <string.h>
 
@@ -109,7 +79,7 @@ static int dhm_read_bignum( mbedtls_mpi *X,
         return( MBEDTLS_ERR_DHM_BAD_INPUT_DATA );
 
     if( ( ret = mbedtls_mpi_read_binary( X, *p, n ) ) != 0 )
-        return( MBEDTLS_ERR_DHM_READ_PARAMS_FAILED + ret );
+        return( MBEDTLS_ERROR_ADD( MBEDTLS_ERR_DHM_READ_PARAMS_FAILED, ret ) );
 
     (*p) += n;
 
@@ -161,7 +131,7 @@ int mbedtls_dhm_read_params( mbedtls_dhm_context *ctx,
                      unsigned char **p,
                      const unsigned char *end )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     DHM_VALIDATE_RET( ctx != NULL );
     DHM_VALIDATE_RET( p != NULL && *p != NULL );
     DHM_VALIDATE_RET( end != NULL );
@@ -185,20 +155,10 @@ int mbedtls_dhm_read_params( mbedtls_dhm_context *ctx,
 static int dhm_random_below( mbedtls_mpi *R, const mbedtls_mpi *M,
                 int (*f_rng)(void *, unsigned char *, size_t), void *p_rng )
 {
-    int ret, count;
-    size_t m_size = mbedtls_mpi_size( M );
-    size_t m_bitlen = mbedtls_mpi_bitlen( M );
+    int ret;
 
-    count = 0;
-    do
-    {
-        if( count++ > 30 )
-            return( MBEDTLS_ERR_MPI_NOT_ACCEPTABLE );
-
-        MBEDTLS_MPI_CHK( mbedtls_mpi_fill_random( R, m_size, f_rng, p_rng ) );
-        MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( R, ( m_size * 8 ) - m_bitlen ) );
-    }
-    while( dhm_check_range( R, M ) != 0 );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_random( R, 3, M, f_rng, p_rng ) );
+    MBEDTLS_MPI_CHK( mbedtls_mpi_sub_int( R, R, 1 ) );
 
 cleanup:
     return( ret );
@@ -271,8 +231,8 @@ int mbedtls_dhm_make_params( mbedtls_dhm_context *ctx, int x_size,
         MBEDTLS_MPI_CHK( mbedtls_mpi_write_binary( ( X ),               \
                                                    p + 2,               \
                                                    ( n ) ) );           \
-        *p++ = (unsigned char)( ( n ) >> 8 );                           \
-        *p++ = (unsigned char)( ( n )      );                           \
+        *p++ = MBEDTLS_BYTE_1( n );                                     \
+        *p++ = MBEDTLS_BYTE_0( n );                                     \
         p += ( n );                                                     \
     } while( 0 )
 
@@ -291,7 +251,7 @@ int mbedtls_dhm_make_params( mbedtls_dhm_context *ctx, int x_size,
 
 cleanup:
     if( ret != 0 && ret > -128 )
-        return( MBEDTLS_ERR_DHM_MAKE_PARAMS_FAILED + ret );
+        ret = MBEDTLS_ERROR_ADD( MBEDTLS_ERR_DHM_MAKE_PARAMS_FAILED, ret );
     return( ret );
 }
 
@@ -302,7 +262,7 @@ int mbedtls_dhm_set_group( mbedtls_dhm_context *ctx,
                            const mbedtls_mpi *P,
                            const mbedtls_mpi *G )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     DHM_VALIDATE_RET( ctx != NULL );
     DHM_VALIDATE_RET( P != NULL );
     DHM_VALIDATE_RET( G != NULL );
@@ -310,7 +270,7 @@ int mbedtls_dhm_set_group( mbedtls_dhm_context *ctx,
     if( ( ret = mbedtls_mpi_copy( &ctx->P, P ) ) != 0 ||
         ( ret = mbedtls_mpi_copy( &ctx->G, G ) ) != 0 )
     {
-        return( MBEDTLS_ERR_DHM_SET_GROUP_FAILED + ret );
+        return( MBEDTLS_ERROR_ADD( MBEDTLS_ERR_DHM_SET_GROUP_FAILED, ret ) );
     }
 
     ctx->len = mbedtls_mpi_size( &ctx->P );
@@ -323,7 +283,7 @@ int mbedtls_dhm_set_group( mbedtls_dhm_context *ctx,
 int mbedtls_dhm_read_public( mbedtls_dhm_context *ctx,
                      const unsigned char *input, size_t ilen )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     DHM_VALIDATE_RET( ctx != NULL );
     DHM_VALIDATE_RET( input != NULL );
 
@@ -331,7 +291,7 @@ int mbedtls_dhm_read_public( mbedtls_dhm_context *ctx,
         return( MBEDTLS_ERR_DHM_BAD_INPUT_DATA );
 
     if( ( ret = mbedtls_mpi_read_binary( &ctx->GY, input, ilen ) ) != 0 )
-        return( MBEDTLS_ERR_DHM_READ_PUBLIC_FAILED + ret );
+        return( MBEDTLS_ERROR_ADD( MBEDTLS_ERR_DHM_READ_PUBLIC_FAILED, ret ) );
 
     return( 0 );
 }
@@ -362,8 +322,7 @@ int mbedtls_dhm_make_public( mbedtls_dhm_context *ctx, int x_size,
 
 cleanup:
     if( ret != 0 && ret > -128 )
-        return( MBEDTLS_ERR_DHM_MAKE_PUBLIC_FAILED + ret );
-
+        ret = MBEDTLS_ERROR_ADD( MBEDTLS_ERR_DHM_MAKE_PUBLIC_FAILED, ret );
     return( ret );
 }
 
@@ -443,7 +402,7 @@ int mbedtls_dhm_calc_secret( mbedtls_dhm_context *ctx,
                      int (*f_rng)(void *, unsigned char *, size_t),
                      void *p_rng )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_mpi GYb;
     DHM_VALIDATE_RET( ctx != NULL );
     DHM_VALIDATE_RET( output != NULL );
@@ -487,7 +446,7 @@ cleanup:
     mbedtls_mpi_free( &GYb );
 
     if( ret != 0 )
-        return( MBEDTLS_ERR_DHM_CALC_SECRET_FAILED + ret );
+        return( MBEDTLS_ERROR_ADD( MBEDTLS_ERR_DHM_CALC_SECRET_FAILED, ret ) );
 
     return( 0 );
 }
@@ -521,7 +480,7 @@ void mbedtls_dhm_free( mbedtls_dhm_context *ctx )
 int mbedtls_dhm_parse_dhm( mbedtls_dhm_context *dhm, const unsigned char *dhmin,
                    size_t dhminlen )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len;
     unsigned char *p, *end;
 #if defined(MBEDTLS_PEM_PARSE_C)
@@ -569,7 +528,7 @@ int mbedtls_dhm_parse_dhm( mbedtls_dhm_context *dhm, const unsigned char *dhmin,
     if( ( ret = mbedtls_asn1_get_tag( &p, end, &len,
             MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE ) ) != 0 )
     {
-        ret = MBEDTLS_ERR_DHM_INVALID_FORMAT + ret;
+        ret = MBEDTLS_ERROR_ADD( MBEDTLS_ERR_DHM_INVALID_FORMAT, ret );
         goto exit;
     }
 
@@ -578,7 +537,7 @@ int mbedtls_dhm_parse_dhm( mbedtls_dhm_context *dhm, const unsigned char *dhmin,
     if( ( ret = mbedtls_asn1_get_mpi( &p, end, &dhm->P  ) ) != 0 ||
         ( ret = mbedtls_asn1_get_mpi( &p, end, &dhm->G ) ) != 0 )
     {
-        ret = MBEDTLS_ERR_DHM_INVALID_FORMAT + ret;
+        ret = MBEDTLS_ERROR_ADD( MBEDTLS_ERR_DHM_INVALID_FORMAT, ret );
         goto exit;
     }
 
@@ -592,13 +551,13 @@ int mbedtls_dhm_parse_dhm( mbedtls_dhm_context *dhm, const unsigned char *dhmin,
         mbedtls_mpi_free( &rec );
         if ( ret != 0 )
         {
-            ret = MBEDTLS_ERR_DHM_INVALID_FORMAT + ret;
+            ret = MBEDTLS_ERROR_ADD( MBEDTLS_ERR_DHM_INVALID_FORMAT, ret );
             goto exit;
         }
         if ( p != end )
         {
-            ret = MBEDTLS_ERR_DHM_INVALID_FORMAT +
-                MBEDTLS_ERR_ASN1_LENGTH_MISMATCH;
+            ret = MBEDTLS_ERROR_ADD( MBEDTLS_ERR_DHM_INVALID_FORMAT,
+                MBEDTLS_ERR_ASN1_LENGTH_MISMATCH );
             goto exit;
         }
     }
@@ -675,7 +634,7 @@ static int load_file( const char *path, unsigned char **buf, size_t *n )
  */
 int mbedtls_dhm_parse_dhmfile( mbedtls_dhm_context *dhm, const char *path )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t n;
     unsigned char *buf;
     DHM_VALIDATE_RET( dhm != NULL );
@@ -727,7 +686,7 @@ static const size_t mbedtls_test_dhm_params_len = sizeof( mbedtls_test_dhm_param
  */
 int mbedtls_dhm_self_test( int verbose )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_dhm_context dhm;
 
     mbedtls_dhm_init( &dhm );
