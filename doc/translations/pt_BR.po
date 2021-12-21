@@ -30,12 +30,14 @@
 # Fernando H. Rosa <ferhrosa@gmail.com>, 2021.
 # Alefy San <alefyferreiradeoliveira@outlook.com>, 2021.
 # Supernova Files <filessupernova@gmail.com>, 2021.
+# Leo Lamas <leoslamas@gmail.com>, 2021.
+# Vinicius A. Portela <vinicius@simpx.net>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-02 20:24+0000\n"
-"Last-Translator: Supernova Files <filessupernova@gmail.com>\n"
+"PO-Revision-Date: 2021-12-19 17:31+0000\n"
+"Last-Translator: Vinicius A. Portela <vinicius@simpx.net>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -43,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -461,7 +463,6 @@ msgstr ""
 "inst2dict]), de volta em uma instância. Útil para desserialização."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns an \"eased\" value of [code]x[/code] based on an easing function "
 "defined with [code]curve[/code]. This easing function is based on an "
@@ -489,14 +490,14 @@ msgstr ""
 "[codeblock]\n"
 "- Menor que -1.0 (exclusivo): Ease in-out\n"
 "- 1.0: Linear\n"
-"- Entre -1.0 and 0.0 (exclusivo): Ease out-in\n"
+"- Entre -1.0 e 0.0 (exclusivo): Ease out-in\n"
 "- 0.0: Constant\n"
-"- Entre 0.0 to 1.0 (exclusivo): Ease in\n"
+"- Entre 0.0 e 1.0 (exclusivo): Ease in\n"
 "- 1.0: Linear\n"
 "- Maior que 1.0 (exclusivo): Ease out\n"
 "[/codeblock]\n"
 "[url=https://raw.githubusercontent.com/godotengine/godot-docs/3.4/img/"
-"ease_cheatsheet.png]ease() curve values cheatsheet[/url]\n"
+"ease_cheatsheet.png]tabela de exemplos para ease() curve[/url]\n"
 "Veja também [method smoothstep]. Se você precisa fazer transições mais "
 "avançadas, use [Tween] ou [AnimationPlayer]."
 
@@ -537,10 +538,11 @@ msgstr ""
 "Arredonda [code]s[/code] para baixo (em direção ao infinito negativo), "
 "retornando o maior número inteiro que não seja superior a [code]s[/code].\n"
 "[codeblock]\n"
-"a = floor(2.45)  # a é 2.0\n"
-"a = floor(2.99)  # a é 2.0\n"
+"a = floor(2.45) # a é 2.0\n"
+"a = floor(2.99) # a é 2.0\n"
 "a = floor(-2.99) # a é -3.0\n"
 "[/codeblock]\n"
+"Veja também [method ceil], [method round], [method stepify], e [int].\n"
 "[b]Nota:[/b] Este método retorna uma float. Se você precisar de um inteiro e "
 "[code]s[/code] não é um número negativo, você pode usar [code]int(s)[/code] "
 "diretamente."
@@ -903,7 +905,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Loads a resource from the filesystem located at [code]path[/code]. The "
 "resource is loaded on the method call (unless it's referenced already "
@@ -941,7 +942,9 @@ msgstr ""
 "PackedScene.\n"
 "[/codeblock]\n"
 "[b]Importante:[/b] O caminho deve ser absoluto, um caminho local irá "
-"retornar [code]null[/code]."
+"retornar [code]null[/code].\n"
+"Esse método é uma versão simplificada de [method ResourceLoader.load], que "
+"pode ser usado em situações mais avançadas."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1120,7 +1123,6 @@ msgstr ""
 "coordenadas cartesiano (Eixos X e Y)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the integer modulus of [code]a/b[/code] that wraps equally in "
 "positive and negative.\n"
@@ -1142,28 +1144,21 @@ msgstr ""
 "Retorna o módulo inteiro de [code]a/b[/code] que segue na mesma direção no "
 "positivo e negativo.\n"
 "[codeblock]\n"
-"var i = -6\n"
-"while i < 5:\n"
-"    prints(i, posmod(i, 3))\n"
-"    i += 1\n"
+"for i in range(-3, 4):\n"
+"    print(\"%2d %2d %2d\" % [i, i % 3, posmod(i, 3)])\n"
 "[/codeblock]\n"
 "Produz:\n"
 "[codeblock]\n"
-"-6 0\n"
-"-5 1\n"
-"-4 2\n"
-"-3 0\n"
-"-2 1\n"
-"-1 2\n"
-"0 0\n"
-"1 1\n"
-"2 2\n"
-"3 0\n"
-"4 1\n"
+"-3  0  0\n"
+"-2 -2  1\n"
+"-1 -1  2\n"
+" 0  0  0\n"
+" 1  1  1\n"
+" 2  2  2\n"
+" 3  0  0\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the result of [code]base[/code] raised to the power of [code]exp[/"
 "code].\n"
@@ -1171,7 +1166,8 @@ msgid ""
 "pow(2, 5) # Returns 32.0\n"
 "[/codeblock]"
 msgstr ""
-"Retorna o resultado de [code]x[/code] elevado à potência [code]y[/code].\n"
+"Retorna o resultado de [code]base[/code] elevado à potência [code]exp[/"
+"code].\n"
 "[codeblock]\n"
 "pow(2, 5) # Retorna 32\n"
 "[/codeblock]"
@@ -1316,7 +1312,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Pushes an error message to Godot's built-in debugger and to the OS "
 "terminal.\n"
@@ -1333,7 +1328,10 @@ msgstr ""
 "[codeblock]\n"
 "push_error(\"test error\") # Imprime \"test error\" para o depurador e o "
 "terminal como uma chamada de erro\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Nota:[/b] Erros impressos desse jeito não pausam a execução do projeto. "
+"Para imprimir uma mensagem de erro e pausar a execução do projeto em builds "
+"de debug, use [code]assert(false, \"test error\")[/code] em seu lugar."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1352,7 +1350,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Converts an angle expressed in radians to degrees.\n"
 "[codeblock]\n"
@@ -1361,7 +1358,7 @@ msgid ""
 msgstr ""
 "Converte um ângulo representado em radianos para graus.\n"
 "[codeblock]\n"
-"rad2deg(0.523599) # Retorna 30\n"
+"rad2deg(0.523599) # Retorna 30.0\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -1932,6 +1929,25 @@ msgid ""
 "[code]wrapf[/code] is more flexible than using the [method fposmod] approach "
 "by giving the user control over the minimum value."
 msgstr ""
+"Envolve [code]value[/code] de ponto flutuante entre [code]min[/code] e "
+"[code]max[/code].\n"
+"Útil para criar comportamentos como loops e superfícies infinitas.\n"
+"[codeblock]\n"
+"# Loop infinito entre 5.0 e 9.9\n"
+"value = wrapf(value + 0.1, 5.0, 10.0)\n"
+"[/codeblock]\n"
+"[codeblock]\n"
+"# Rotação infinita (em radianos)\n"
+"angle = wrapf(angle + 0.1, 0.0, TAU)\n"
+"[/codeblock]\n"
+"[codeblock]\n"
+"# Rotação infinita (em radianos)\n"
+"angle = wrapf(angle + 0.1, -PI, PI)\n"
+"[/codeblock]\n"
+"[b]Nota:[/b] Se [code]min[/code] for [code]0[/code], isso é equivalente a "
+"[method fposmod], então prefira o seu uso.\n"
+"[code]wrapf[/code] é mais flexível que usar [method fposmod] dando ao "
+"usuário o controle sobre o valor mínimo."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1951,6 +1967,21 @@ msgid ""
 "[code]wrapi[/code] is more flexible than using the [method posmod] approach "
 "by giving the user control over the minimum value."
 msgstr ""
+"Envolve um [code]value[/code] inteiro entre [code]min[/code] e [code]max[/"
+"code].\n"
+"Útil para a criação de loops ou superfícies infinitas.\n"
+"[codeblock]\n"
+"# Loop infinito entre 5 e 9\n"
+"frame = wrapi(frame + 1, 5, 10)\n"
+"[/codeblock]\n"
+"[codeblock]\n"
+"# o resultado é -2\n"
+"var resultado = wrapi(-6, -5, -1)\n"
+"[/codeblock]\n"
+"[b]Nota:[/b] Se [code]min[/code] for [code]0[/code], isso é equivalente a "
+"[method posmod], então prefira o seu uso.\n"
+"[code]wrapi[/code] é mais flexível que usar [method posmod] dando ao usuário "
+"o controle sobre o valor mínimo."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1996,6 +2027,47 @@ msgid ""
 "[code]GDScriptFunctionState[/code]. Notice [code]yield(get_tree(), "
 "\"idle_frame\")[/code] from the above example."
 msgstr ""
+"Para a execução da função e retorna o atual estado suspenso para a função de "
+"chamada.\n"
+"Da função de chamada, chama [method GDScriptFunctionState.resume] no estado "
+"para resumir a execução. Isso invalida o estado. De dentro da função "
+"retomada, [code]yield()[/code] retorna o que quer que tenha sido passado na "
+"chamada de [code]resume()[/code].\n"
+"Se passados um objeto e um sinal, a execução é retomada quando o objeto "
+"emite o sinal passado. Nesse caso, [code]yield()[/code] retorna o argumento "
+"passado em [code]emit_signal()[/code] se o sinal receber somente um "
+"argumento, ou um array contendo todos os argumentos passados para "
+"[code]emit_signal()[/code] se o sinal receber múltiplos argumentos.\n"
+"Você também pode usar [code]yield[/code] para esperar uma função terminar:\n"
+"[codeblock]\n"
+"func _ready():\n"
+"    yield(countdown(), \"completed\") # esperando até que a função "
+"countdown() termine\n"
+"    print('Ready')\n"
+"\n"
+"func countdown():\n"
+"    yield(get_tree(), \"idle_frame\") # retorna um objeto "
+"GDScriptFunctionState para _ready()\n"
+"    print(3)\n"
+"    yield(get_tree().create_timer(1.0), \"timeout\")\n"
+"    print(2)\n"
+"    yield(get_tree().create_timer(1.0), \"timeout\")\n"
+"    print(1)\n"
+"    yield(get_tree().create_timer(1.0), \"timeout\")\n"
+"\n"
+"# imprime:\n"
+"# 3\n"
+"# 2\n"
+"# 1\n"
+"# Ready\n"
+"[/codeblock]\n"
+"Quando estiver usando yield() numa função, o sinal [code]completed[/code] "
+"será emitido automaticamente quando a função retornar. Isso pode, portanto, "
+"ser usado como parâmetro para o [code]signal[/code] do método [code]yield[/"
+"code] que está sendo retomado.\n"
+"Para usar yield() em uma função, a função resultante também precisa retornar "
+"um [code]GDScriptFunctionState[/code]. Note o [code]yield(get_tree(), "
+"\"idle_frame\")[/code] no exemplo acima."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -2026,6 +2098,16 @@ msgid ""
 "code] will not result in [constant INF] and will result in a run-time error "
 "instead."
 msgstr ""
+"Ponto flutuante positivo infinito. Esse é o resultado de uma divisão em "
+"ponto flutuante quando o divisor é [code]0.0[/code]. Para infinito negativo, "
+"use [code]-INF[/code]. Dividir por [code]-0.0[/code] irá resultar em um "
+"infinito negativo se o numerador for positivo, então, dividir por [code]0.0[/"
+"code] não é o mesmo que dividir por [code]-0.0[/code] (mesmo que [code]0.0 "
+"== -0.0[/code] retorne [code]true[/code]).\n"
+"[b]Note:[/b] Infinito numérico é apenas um conceito para números em ponto "
+"flutuante, e não tem equivalente para inteiros. Dividir um número inteiro "
+"por [code]0[/code] não resultará em [constant INF] e resultará em um erro em "
+"tempo de execução."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -2039,6 +2121,15 @@ msgid ""
 "[code]0[/code] will not result in [constant NAN] and will result in a run-"
 "time error instead."
 msgstr ""
+"\"Not a Number\" (Não é um número), um valor de ponto-flutuante inválido. "
+"[constant NAN] tem propriedades especiais, incluindo que ele não é igual a "
+"ele mesmo ([code]NAN == NAN[/code] retorna [code]false[/code]). Ele é o "
+"retorno de algumas operações inválidas, como dividir o ponto flutuante "
+"[code]0.0[/code] por [code]0.0[/code].\n"
+"[b]Nota:[/b] \"Not a Number\" é apenas um conceito com números de ponto "
+"flutuante, e não tem equivalência para inteiros. Dividir um inteiro [code]0[/"
+"code] por [code]0[/code] não vai resultar [constant NAN] ao invés disso "
+"resultará num erro de execução."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Global scope constants and variables."
@@ -2529,7 +2620,7 @@ msgstr "Tecla de direção direita."
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Media back key. Not to be confused with the Back button on an Android device."
-msgstr ""
+msgstr "Tecla Voltar Media. Não confundir com tecla Voltar no device Android."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -3488,11 +3579,11 @@ msgstr "Botão A do controlador de jogo SDL."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Grip (side) buttons on a VR controller."
-msgstr ""
+msgstr "Botões laterais em um controle VR."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Push down on the touchpad or main joystick on a VR controller."
-msgstr ""
+msgstr "Aperte o touchpad ou o joystick principal em um controle VR."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Trigger on a VR controller."
@@ -3503,20 +3594,26 @@ msgid ""
 "A button on the right Oculus Touch controller, X button on the left "
 "controller (also when used in OpenVR)."
 msgstr ""
+"Um botão no controle Oculus Touch direto, botão X no controle esquerdo "
+"(também quando usado no OpenVR)."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "B button on the right Oculus Touch controller, Y button on the left "
 "controller (also when used in OpenVR)."
 msgstr ""
+"Botão B no lado direito do controle Oculus Touch, botão Y no lado esquerdo "
+"do controle (também usado no OpenVR)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Menu button on either Oculus Touch controller."
-msgstr ""
+msgstr "Botão menu em ambos os controles Oculus Touch."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Menu button in OpenVR (Except when Oculus Touch controllers are used)."
 msgstr ""
+"Botão menu no OpenVR (Exceto quando os controles Oculus Touch estão sendo "
+"usados)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button Select."
@@ -3528,19 +3625,19 @@ msgstr "Botão Start do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad DPad up."
-msgstr ""
+msgstr "Botão cima no direcional do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad DPad down."
-msgstr ""
+msgstr "Botão baixo no direcional do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad DPad left."
-msgstr ""
+msgstr "Botão esquerdo no direcional do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad DPad right."
-msgstr ""
+msgstr "Botão direito no direcional do controle."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -3549,7 +3646,7 @@ msgstr "Guia de botões do controlador de jogo SDL."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad SDL miscellaneous button."
-msgstr ""
+msgstr "Botão diverso SDL do controle."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -3583,11 +3680,11 @@ msgstr "Guia de botões do controlador de jogo SDL."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left trigger."
-msgstr ""
+msgstr "Gatilho esquerdo do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left stick click."
-msgstr ""
+msgstr "Clique na alavanca esquerda do controle."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -3596,67 +3693,67 @@ msgstr "Botão direito do mouse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right trigger."
-msgstr ""
+msgstr "Gatilho direito do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right stick click."
-msgstr ""
+msgstr "Clique na alavanca direita do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left stick horizontal axis."
-msgstr ""
+msgstr "Eixo horizontal da alavanca esquerda do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left stick vertical axis."
-msgstr ""
+msgstr "Eixo vertical da alavanca esquerda do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right stick horizontal axis."
-msgstr ""
+msgstr "Eixo horizontal da alavanca direita do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right stick vertical axis."
-msgstr ""
+msgstr "Eixo vertical da alavanca direita do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Generic gamepad axis 4."
-msgstr ""
+msgstr "Eixo 4 do controle genérico."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Generic gamepad axis 5."
-msgstr ""
+msgstr "Eixo 5 do controle genérico."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left trigger analog axis."
-msgstr ""
+msgstr "Eixo analógico do gatilho esquerdo do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right trigger analog axis."
-msgstr ""
+msgstr "Eixo analógico do gatilho direito do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Generic gamepad axis 8."
-msgstr ""
+msgstr "Eixo 8 do controle genérico."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Generic gamepad axis 9."
-msgstr ""
+msgstr "Eixo 9 do controle genérico."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Represents the maximum number of joystick axes supported."
-msgstr ""
+msgstr "Representa o número máximo de eixos suportados no joystick."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad left analog trigger."
-msgstr ""
+msgstr "Gatilho analógico esquerdo do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad right analog trigger."
-msgstr ""
+msgstr "Gatilho analógico direito do controle."
 
 #: doc/classes/@GlobalScope.xml
 msgid "VR Controller analog trigger."
-msgstr ""
+msgstr "Gatilho analógico do controle VR."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy

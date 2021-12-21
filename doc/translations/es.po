@@ -32,7 +32,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-16 12:46+0000\n"
+"PO-Revision-Date: 2021-12-16 20:56+0000\n"
 "Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/es/>\n"
@@ -41,7 +41,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -15480,7 +15480,7 @@ msgstr "La cámara se actualiza con la llamada [code]_physics_process[/code]."
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
 msgid "The camera updates with the [code]_process[/code] callback."
-msgstr "La cámara se actualiza con la llamada de [code]process[/code]."
+msgstr "La cámara se actualiza con la llamada de [code]_process[/code]."
 
 #: doc/classes/CameraFeed.xml
 msgid ""
