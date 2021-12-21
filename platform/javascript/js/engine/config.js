@@ -107,6 +107,13 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		experimentalVK: false,
 		/**
+		 * The progressive web app service worker to install.
+		 * @memberof EngineConfig
+		 * @default
+		 * @type {string}
+		 */
+		serviceWorker: '',
+		/**
 		 * @ignore
 		 * @type {Array.<string>}
 		 */
@@ -249,6 +256,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.persistentDrops = parse('persistentDrops', this.persistentDrops);
 		this.experimentalVK = parse('experimentalVK', this.experimentalVK);
 		this.focusCanvas = parse('focusCanvas', this.focusCanvas);
+		this.serviceWorker = parse('serviceWorker', this.serviceWorker);
 		this.gdnativeLibs = parse('gdnativeLibs', this.gdnativeLibs);
 		this.fileSizes = parse('fileSizes', this.fileSizes);
 		this.args = parse('args', this.args);
