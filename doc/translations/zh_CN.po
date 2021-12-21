@@ -452,6 +452,27 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
+"Compares two values by checking their actual contents, recursing into any "
+"`Array` or `Dictionary` up to its deepest level.\n"
+"This compares to [code]==[/code] in a number of ways:\n"
+"- For [code]null[/code], [code]int[/code], [code]float[/code], [code]String[/"
+"code], [code]Object[/code] and [code]RID[/code] both [code]deep_equal[/code] "
+"and [code]==[/code] work the same.\n"
+"- For [code]Dictionary[/code], [code]==[/code] considers equality if, and "
+"only if, both variables point to the very same [code]Dictionary[/code], with "
+"no recursion or awareness of the contents at all.\n"
+"- For [code]Array[/code], [code]==[/code] considers equality if, and only "
+"if, each item in the first [code]Array[/code] is equal to its counterpart in "
+"the second [code]Array[/code], as told by [code]==[/code] itself. That "
+"implies that [code]==[/code] recurses into [code]Array[/code], but not into "
+"[code]Dictionary[/code].\n"
+"In short, whenever a [code]Dictionary[/code] is potentially involved, if you "
+"want a true content-aware comparison, you have to use [code]deep_equal[/"
+"code]."
+msgstr ""
+
+#: modules/gdscript/doc_classes/@GDScript.xml
+msgid ""
 "Converts an angle expressed in degrees to radians.\n"
 "[codeblock]\n"
 "r = deg2rad(180) # r is 3.141593\n"
@@ -2171,6 +2192,11 @@ msgstr "[ResourceLoader]单例。"
 #: doc/classes/@GlobalScope.xml
 msgid "The [ResourceSaver] singleton."
 msgstr "[ResourceSaver] 单例。"
+
+#: doc/classes/@GlobalScope.xml
+#, fuzzy
+msgid "The [Time] singleton."
+msgstr "[Engine] 单例。"
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [TranslationServer] singleton."
@@ -4378,11 +4404,14 @@ msgid "Axis-Aligned Bounding Box."
 msgstr "轴对齐包围盒。"
 
 #: doc/classes/AABB.xml
+#, fuzzy
 msgid ""
 "[AABB] consists of a position, a size, and several utility functions. It is "
 "typically used for fast overlap tests.\n"
 "It uses floating-point coordinates. The 2D counterpart to [AABB] is "
 "[Rect2].\n"
+"Negative values for [member size] are not supported and will not work for "
+"most methods. Use [method abs] to get an AABB with a positive size.\n"
 "[b]Note:[/b] Unlike [Rect2], [AABB] does not have a variant that uses "
 "integer coordinates."
 msgstr ""
@@ -4393,19 +4422,18 @@ msgstr ""
 #: doc/classes/AABB.xml doc/classes/Basis.xml doc/classes/Plane.xml
 #: doc/classes/Rect2.xml doc/classes/Transform.xml doc/classes/Transform2D.xml
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/math/index.html"
-msgstr "https://docs.godotengine.org/zh_CN/stable/tutorials/math/index.html"
-
-#: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
-#: doc/classes/Vector3.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/math/vector_math.html"
+msgid "$DOCS_URL/tutorials/math/index.html"
 msgstr ""
-"https://docs.godotengine.org/zh_CN/stable/tutorials/math/vector_math.html"
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/math/vectors_advanced.html"
+msgid "$DOCS_URL/tutorials/math/vector_math.html"
+msgstr ""
+
+#: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
+#: doc/classes/Vector3.xml
+#, fuzzy
+msgid "$DOCS_URL/tutorials/math/vectors_advanced.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/math/vectors_advanced."
 "html"
@@ -4450,6 +4478,12 @@ msgstr ""
 #: doc/classes/AABB.xml
 msgid "Returns the volume of the [AABB]."
 msgstr "返回该 [AABB] 的体积。"
+
+#: doc/classes/AABB.xml
+msgid ""
+"Returns the center of the [AABB], which is equal to [member position] + "
+"([member size] / 2)."
+msgstr ""
 
 #: doc/classes/AABB.xml
 msgid "Gets the position of the 8 endpoints of the [AABB] in space."
@@ -4841,8 +4875,8 @@ msgstr ""
 
 #: doc/classes/AnimatedSprite.xml doc/classes/AnimatedSprite3D.xml
 #: doc/classes/AnimationPlayer.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/2d/2d_sprite_animation.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/2d/2d_sprite_animation.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/2d/2d_sprite_animation."
 "html"
@@ -4856,10 +4890,6 @@ msgstr ""
 #: doc/classes/VisibilityNotifier2D.xml
 msgid "https://godotengine.org/asset-library/asset/515"
 msgstr "https://godotengine.org/asset-library/asset/515"
-
-#: doc/classes/AnimatedSprite.xml doc/classes/AnimatedSprite3D.xml
-msgid "Returns [code]true[/code] if an animation is currently being played."
-msgstr "当前正在播放动画时返回 [code]true[/code] 。"
 
 #: doc/classes/AnimatedSprite.xml
 msgid ""
@@ -4944,6 +4974,10 @@ msgid ""
 "configured in the editor via the SpriteFrames panel."
 msgstr ""
 "动画能够使用一个 [SpriteFrames] 资源创建，可以在编辑器的动画帧面板配置。"
+
+#: doc/classes/AnimatedSprite3D.xml
+msgid "Returns [code]true[/code] if an animation is currently being played."
+msgstr "当前正在播放动画时返回 [code]true[/code] 。"
 
 #: doc/classes/AnimatedSprite3D.xml
 msgid ""
@@ -5133,9 +5167,8 @@ msgstr ""
 "TrackType] 查看可用类型。"
 
 #: doc/classes/Animation.xml doc/classes/AnimationPlayer.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/animation/index.html"
+msgid "$DOCS_URL/tutorials/animation/index.html"
 msgstr ""
-"https://docs.godotengine.org/zh_CN/stable/tutorials/animation/index.html"
 
 #: doc/classes/Animation.xml
 msgid "Adds a track to the Animation."
@@ -5653,8 +5686,8 @@ msgstr ""
 #: doc/classes/AnimationNodeTimeScale.xml doc/classes/AnimationNodeTimeSeek.xml
 #: doc/classes/AnimationNodeTransition.xml doc/classes/AnimationTree.xml
 #: doc/classes/AnimationTreePlayer.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/animation/animation_tree.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/animation/animation_tree.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/animation/animation_tree."
 "html"
@@ -6490,13 +6523,14 @@ msgid ""
 msgstr "按照最短路径从当前状态过渡到另一个状态。"
 
 #: doc/classes/AnimationNodeStateMachineTransition.xml
+#, fuzzy
 msgid ""
 "Turn on auto advance when this condition is set. The provided name will "
 "become a boolean parameter on the [AnimationTree] that can be controlled "
-"from code (see [url=https://docs.godotengine.org/en/3.4/tutorials/animation/"
-"animation_tree.html#controlling-from-code][/url]). For example, if [member "
-"AnimationTree.tree_root] is an [AnimationNodeStateMachine] and [member "
-"advance_condition] is set to [code]\"idle\"[/code]:\n"
+"from code (see [url=$DOCS_URL/tutorials/animation/animation_tree."
+"html#controlling-from-code][/url]). For example, if [member AnimationTree."
+"tree_root] is an [AnimationNodeStateMachine] and [member advance_condition] "
+"is set to [code]\"idle\"[/code]:\n"
 "[codeblock]\n"
 "$animation_tree[\"parameters/conditions/idle\"] = is_on_floor and "
 "(linear_velocity.x == 0)\n"
@@ -7862,8 +7896,8 @@ msgstr ""
 "参数（重力、阻尼），并将音频路由到一个自定义的音频总线。"
 
 #: doc/classes/Area2D.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/physics/using_area_2d.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/physics/using_area_2d.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/physics/using_area_2d."
 "html"
@@ -8738,9 +8772,8 @@ msgstr ""
 "learnopengl.com/Advanced-OpenGL/Face-culling]环绕顺序[/url]。"
 
 #: doc/classes/ArrayMesh.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/procedural_geometry/"
-"arraymesh.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/procedural_geometry/arraymesh.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/procedural_geometry/"
 "arraymesh.html"
@@ -9106,8 +9139,8 @@ msgstr ""
 #: doc/classes/ARVRCamera.xml doc/classes/ARVRController.xml
 #: doc/classes/ARVRInterface.xml doc/classes/ARVROrigin.xml
 #: doc/classes/ARVRPositionalTracker.xml doc/classes/ARVRServer.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/vr/index.html"
-msgstr "https://docs.godotengine.org/zh_CN/stable/tutorials/vr/index.html"
+msgid "$DOCS_URL/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/ARVRController.xml
 msgid "A spatial node representing a spatially-tracked controller."
@@ -10887,7 +10920,8 @@ msgstr ""
 #: doc/classes/AudioEffectDistortion.xml doc/classes/AudioEffectFilter.xml
 #: doc/classes/AudioEffectHighShelfFilter.xml
 #: doc/classes/AudioEffectLowShelfFilter.xml doc/classes/AudioServer.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/audio/audio_buses.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/audio/audio_buses.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/audio/audio_buses.html"
 
@@ -11369,9 +11403,8 @@ msgstr ""
 "缩）。它检查录音是否处于活动状态，如果是，则记录声音。然后返回记录的样本。"
 
 #: doc/classes/AudioEffectRecord.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/audio/"
-"recording_with_microphone.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/audio/recording_with_microphone.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/audio/"
 "recording_with_microphone.html"
@@ -11781,7 +11814,8 @@ msgstr ""
 
 #: doc/classes/AudioStream.xml doc/classes/AudioStreamPlayer.xml
 #: doc/classes/AudioStreamPlayer2D.xml doc/classes/AudioStreamPlayer3D.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/audio/audio_streams.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/audio/audio_streams.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/audio/audio_streams.html"
 
@@ -12524,7 +12558,8 @@ msgstr ""
 "看到效果。"
 
 #: doc/classes/BakedLightmap.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/baked_lightmaps.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/baked_lightmaps.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/baked_lightmaps.html"
 
@@ -13045,15 +13080,15 @@ msgstr ""
 "更多信息请阅读文档中的《矩阵和变换》一文。"
 
 #: doc/classes/Basis.xml doc/classes/Transform.xml doc/classes/Transform2D.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/math/matrices_and_transforms."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/math/matrices_and_transforms.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/math/"
 "matrices_and_transforms.html"
 
 #: doc/classes/Basis.xml doc/classes/Transform.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/using_transforms.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/using_transforms.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/using_transforms.html"
 
@@ -14227,24 +14262,26 @@ msgstr ""
 "（默认）。"
 
 #: doc/classes/Camera.xml
+#, fuzzy
 msgid ""
 "Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/"
 "url] by tracking positions of objects that are changed in [code]_process[/"
 "code]. Changes in the relative velocity of this camera compared to those "
-"objects affect how Audio is perceived (changing the Audio's [code]pitch "
-"shift[/code])."
+"objects affect how audio is perceived (changing the audio's [member "
+"AudioStreamPlayer3D.pitch_scale])."
 msgstr ""
 "通过跟踪在 [code]_process[/code] 中改变的物体位置来模拟[url=https://en."
 "wikipedia.org/wiki/Doppler_effect]多普勒效应[/url]。与这些物体相比，该相机的"
 "相对速度的变化会影响音频的感知方式（改变音频的 [code]pitch shift[/code]）。"
 
 #: doc/classes/Camera.xml
+#, fuzzy
 msgid ""
 "Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/"
 "url] by tracking positions of objects that are changed in "
 "[code]_physics_process[/code]. Changes in the relative velocity of this "
-"camera compared to those objects affect how Audio is perceived (changing the "
-"Audio's [code]pitch shift[/code])."
+"camera compared to those objects affect how audio is perceived (changing the "
+"audio's [member AudioStreamPlayer3D.pitch_scale])."
 msgstr ""
 "通过跟踪在 [code]_process[/code] 中改变的物体位置来模拟[url=https://en."
 "wikipedia.org/wiki/Doppler_effect]多普勒效应[/url]。与这些物体相比，该相机的"
@@ -14304,14 +14341,21 @@ msgid "Forces the camera to update scroll immediately."
 msgstr "强制相机立即更新滚动。"
 
 #: doc/classes/Camera2D.xml
-msgid "Returns the camera position."
-msgstr "返回相机的位置。"
+msgid ""
+"Returns the camera's [code]position[/code] (the tracked point the camera "
+"attempts to follow), relative to the origin.\n"
+"[b]Note:[/b] The returned value is not the same as [member Node2D.position] "
+"or [member Node2D.global_position], as it is affected by the [code]drag[/"
+"code] properties."
+msgstr ""
 
 #: doc/classes/Camera2D.xml
 msgid ""
 "Returns the location of the [Camera2D]'s screen-center, relative to the "
-"origin."
-msgstr "返回[Camera2D]的屏幕中心相对于原点的位置。"
+"origin.\n"
+"[b]Note:[/b] The real [code]position[/code] of the camera may be different, "
+"see [method get_camera_position]."
+msgstr ""
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -14336,10 +14380,12 @@ msgid ""
 msgstr "使之成为场景（视窗和图层）的当前2D相机，以防场景中有很多相机。"
 
 #: doc/classes/Camera2D.xml
+#, fuzzy
 msgid ""
 "Sets the camera's position immediately to its current smoothing "
 "destination.\n"
-"This has no effect if smoothing is disabled."
+"This method has no effect if [member smoothing_enabled] is [code]false[/"
+"code]."
 msgstr ""
 "将相机的位置立即设置为其当前平滑的目标位置。\n"
 "如果禁用了平滑功能，则没有效果。"
@@ -14461,9 +14507,11 @@ msgid ""
 msgstr "以像素为单位的右滚动限制。当达到这个值时，相机停止移动。"
 
 #: doc/classes/Camera2D.xml
+#, fuzzy
 msgid ""
 "If [code]true[/code], the camera smoothly stops when reaches its limits.\n"
-"This has no effect if smoothing is disabled.\n"
+"This property has no effect if [member smoothing_enabled] is [code]false[/"
+"code].\n"
 "[b]Note:[/b] To immediately update the camera's position to be within limits "
 "without smoothing, even with this setting enabled, invoke [method "
 "reset_smoothing]."
@@ -14508,7 +14556,8 @@ msgid "The camera's process callback. See [enum Camera2DProcessMode]."
 msgstr "相机的过程回调。请参阅[enum Camera2DProcessMode]。"
 
 #: doc/classes/Camera2D.xml
-msgid "If [code]true[/code], the camera rotates with the target."
+#, fuzzy
+msgid "If [code]true[/code], the camera view rotates with the target."
 msgstr "如果[code]true[/code]，则相机随目标旋转。"
 
 #: doc/classes/Camera2D.xml
@@ -14767,13 +14816,12 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml doc/classes/CanvasLayer.xml
 #: doc/classes/InputEvent.xml doc/classes/Viewport.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/2d/2d_transforms.html"
+msgid "$DOCS_URL/tutorials/2d/2d_transforms.html"
 msgstr ""
-"https://docs.godotengine.org/zh_CN/stable/tutorials/2d/2d_transforms.html"
 
 #: doc/classes/CanvasItem.xml doc/classes/Control.xml doc/classes/Node2D.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/2d/custom_drawing_in_2d.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/2d/custom_drawing_in_2d.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/2d/custom_drawing_in_2d."
 "html"
@@ -15340,9 +15388,8 @@ msgstr ""
 "中）或背景（在-1层或更低层中）非常有用。"
 
 #: doc/classes/CanvasLayer.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/2d/canvas_layers.html"
+msgid "$DOCS_URL/tutorials/2d/canvas_layers.html"
 msgstr ""
-"https://docs.godotengine.org/zh_CN/stable/tutorials/2d/canvas_layers.html"
 
 #: doc/classes/CanvasLayer.xml
 msgid "Returns the RID of the canvas used by this layer."
@@ -15480,8 +15527,8 @@ msgstr ""
 
 #: doc/classes/CharFXTransform.xml doc/classes/RichTextEffect.xml
 #: doc/classes/RichTextLabel.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/ui/bbcode_in_richtextlabel.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/ui/"
 "bbcode_in_richtextlabel.html"
@@ -16059,12 +16106,12 @@ msgid "If [code]true[/code], the camera stops on contact with [PhysicsBody]s."
 msgstr "如果[code]true[/code]，相机在接触[PhysicsBody]时停止。"
 
 #: doc/classes/ClippedCamera.xml
+#, fuzzy
 msgid ""
 "The camera's collision mask. Only objects in at least one collision layer "
-"matching the mask will be detected. See [url=https://docs.godotengine.org/"
-"en/3.4/tutorials/physics/physics_introduction.html#collision-layers-and-"
-"masks]Collision layers and masks[/url] in the documentation for more "
-"information."
+"matching the mask will be detected. See [url=$DOCS_URL/tutorials/physics/"
+"physics_introduction.html#collision-layers-and-masks]Collision layers and "
+"masks[/url] in the documentation for more information."
 msgstr ""
 "相机的碰撞遮罩。只有在对象有至少一个碰撞层和碰撞这招匹对时才能被检测到。详细"
 "信息请参阅文档[url=https://docs.godotengine.org/zh_CN/stable/tutorials/"
@@ -16223,14 +16270,15 @@ msgid "Sets the [Transform] of the given shape owner."
 msgstr "设置给定形状所有者的[Transform]。"
 
 #: doc/classes/CollisionObject.xml
+#, fuzzy
 msgid ""
 "The physics layers this CollisionObject3D is in. Collision objects can exist "
 "in one or more of 32 different layers. See also [member collision_mask].\n"
 "[b]Note:[/b] A contact is detected if object A is in any of the layers that "
-"object B scans, or object B is in any layers that object A scans. See "
-"[url=https://docs.godotengine.org/en/latest/tutorials/physics/"
-"physics_introduction.html#collision-layers-and-masks]Collision layers and "
-"masks[/url] in the documentation for more information."
+"object B scans, or object B is in any layers that object A scans. See [url="
+"$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "CollisionObject3D 所在的物理层。碰撞对象可以存在于 32 个不同层中的一个或多"
 "个。另见 [member collision_mask]。\n"
@@ -16240,14 +16288,15 @@ msgstr ""
 "and-masks] 碰撞层和掩码[/url]。"
 
 #: doc/classes/CollisionObject.xml
+#, fuzzy
 msgid ""
 "The physics layers this CollisionObject3D scans. Collision objects can scan "
 "one or more of 32 different layers. See also [member collision_layer].\n"
 "[b]Note:[/b] A contact is detected if object A is in any of the layers that "
-"object B scans, or object B is in any layers that object A scans. See "
-"[url=https://docs.godotengine.org/en/latest/tutorials/physics/"
-"physics_introduction.html#collision-layers-and-masks]Collision layers and "
-"masks[/url] in the documentation for more information."
+"object B scans, or object B is in any layers that object A scans. See [url="
+"$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "CollisionObject3D 扫描的物理层。碰撞对象可以扫描 32 个不同层中的一个或多个。"
 "另见 [member collision_layer]]。\n"
@@ -16375,14 +16424,15 @@ msgid "Sets the [Transform2D] of the given shape owner."
 msgstr "设置给定形状所有者的[Transform2D]。"
 
 #: doc/classes/CollisionObject2D.xml
+#, fuzzy
 msgid ""
 "The physics layers this CollisionObject2D is in. Collision objects can exist "
 "in one or more of 32 different layers. See also [member collision_mask].\n"
 "[b]Note:[/b] A contact is detected if object A is in any of the layers that "
-"object B scans, or object B is in any layers that object A scans. See "
-"[url=https://docs.godotengine.org/en/latest/tutorials/physics/"
-"physics_introduction.html#collision-layers-and-masks]Collision layers and "
-"masks[/url] in the documentation for more information."
+"object B scans, or object B is in any layers that object A scans. See [url="
+"$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "这个CollisionObject2D所在的物理层。碰撞对象可以存在于32个不同层中的一个或多"
 "个。也见[member collision_mask]。\n"
@@ -16392,14 +16442,15 @@ msgstr ""
 "层和掩码[/url]。"
 
 #: doc/classes/CollisionObject2D.xml
+#, fuzzy
 msgid ""
 "The physics layers this CollisionObject2D scans. Collision objects can scan "
 "one or more of 32 different layers. See also [member collision_layer].\n"
 "[b]Note:[/b] A contact is detected if object A is in any of the layers that "
-"object B scans, or object B is in any layers that object A scans. See "
-"[url=https://docs.godotengine.org/en/latest/tutorials/physics/"
-"physics_introduction.html#collision-layers-and-masks]Collision layers and "
-"masks[/url] in the documentation for more information."
+"object B scans, or object B is in any layers that object A scans. See [url="
+"$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "这个CollisionObject2D所扫描的物理层。碰撞对象可以扫描32个不同层中的一个或多"
 "个。也见[member collision_layer]。\n"
@@ -16570,9 +16621,8 @@ msgstr ""
 #: doc/classes/PhysicsBody2D.xml doc/classes/PhysicsDirectBodyState.xml
 #: doc/classes/PhysicsDirectSpaceState.xml doc/classes/RigidBody.xml
 #: doc/classes/Shape.xml doc/classes/Shape2D.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/physics/physics_introduction.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/physics/"
 "physics_introduction.html"
@@ -16817,6 +16867,13 @@ msgstr ""
 "var c = Color.from_hsv(0.58, 0.5, 0.79, 0.8) # Equivalent to HSV(210, 50, "
 "79, 0.8) or Color8(100, 151, 201, 0.8)\n"
 "[/codeblock]"
+
+#: doc/classes/Color.xml
+msgid ""
+"Returns the luminance of the color in the [code][0.0, 1.0][/code] range.\n"
+"This is useful when determining light or dark color. Colors with a luminance "
+"smaller than 0.5 can be generally considered dark."
+msgstr ""
 
 #: doc/classes/Color.xml
 msgid ""
@@ -18433,12 +18490,12 @@ msgstr ""
 "[method get_stylebox]，以及这个类提供的 [code]add_*_override[/code] 方法。"
 
 #: doc/classes/Control.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/ui/index.html"
-msgstr "https://docs.godotengine.org/zh_CN/stable/tutorials/ui/index.html"
+msgid "$DOCS_URL/tutorials/ui/index.html"
+msgstr ""
 
 #: doc/classes/Control.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/ui/control_node_gallery.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/ui/control_node_gallery.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/ui/control_node_gallery."
 "html"
@@ -18461,12 +18518,17 @@ msgstr ""
 "如果未覆盖，则默认为 [code]false[/code]。"
 
 #: doc/classes/Control.xml
+#, fuzzy
 msgid ""
 "Virtual method to be implemented by the user. Returns the minimum size for "
 "this control. Alternative to [member rect_min_size] for controlling minimum "
 "size via code. The actual minimum size will be the max value of these two "
 "(in each axis separately).\n"
-"If not overridden, defaults to [constant Vector2.ZERO]."
+"If not overridden, defaults to [constant Vector2.ZERO].\n"
+"[b]Note:[/b] This method will not be called when the script is attached to a "
+"[Control] node that already overrides its minimum size (e.g. [Label], "
+"[Button], [PanelContainer] etc.). It can only be used with most basic GUI "
+"nodes, like [Control], [Container], [Panel] etc."
 msgstr ""
 "用户要实现的虚方法。返回此控件的最小大小。 [member rect_min_size] 的替代方"
 "法，用于通过代码控制最小大小。实际的最小尺寸将是这两个的最大值（分别在每个轴"
@@ -19739,6 +19801,7 @@ msgstr ""
 "的位置。"
 
 #: doc/classes/Control.xml
+#, fuzzy
 msgid ""
 "The node's scale, relative to its [member rect_size]. Change this property "
 "to scale the node around its [member rect_pivot_offset]. The Control's "
@@ -19746,9 +19809,9 @@ msgid ""
 "[b]Note:[/b] This property is mainly intended to be used for animation "
 "purposes. Text inside the Control will look pixelated or blurry when the "
 "Control is scaled. To support multiple resolutions in your project, use an "
-"appropriate viewport stretch mode as described in the [url=https://docs."
-"godotengine.org/en/3.4/tutorials/rendering/multiple_resolutions."
-"html]documentation[/url] instead of scaling Controls individually.\n"
+"appropriate viewport stretch mode as described in the [url=$DOCS_URL/"
+"tutorials/rendering/multiple_resolutions.html]documentation[/url] instead of "
+"scaling Controls individually.\n"
 "[b]Note:[/b] If the Control node is a child of a [Container] node, the scale "
 "will be reset to [code]Vector2(1, 1)[/code] when the scene is instanced. To "
 "set the Control's scale when it's instanced, wait for one frame using "
@@ -20551,6 +20614,14 @@ msgstr ""
 "[member SpatialMaterial.vertex_color_use_as_albedo] 设置为 [code]true[/"
 "code]。"
 
+#: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
+#: doc/classes/ParticlesMaterial.xml
+#, fuzzy
+msgid ""
+"Each particle's initial color will vary along this [GradientTexture] "
+"(multiplied with [member color])."
+msgstr "每个粒子的颜色将随着这个[Gradient]变化，即与[member color]相乘。"
+
 #: doc/classes/CPUParticles.xml doc/classes/ParticlesMaterial.xml
 msgid ""
 "Each particle's color will vary along this [GradientTexture] over its "
@@ -21071,8 +21142,8 @@ msgstr ""
 "[b]注意：[/b] 其与[Particles2D]不同，可见性矩形是即时生成的，不需要用户配置。"
 
 #: doc/classes/CPUParticles2D.xml doc/classes/Particles2D.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/2d/particle_systems_2d.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/2d/particle_systems_2d.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/2d/particle_systems_2d."
 "html"
@@ -21798,6 +21869,7 @@ msgstr ""
 "均被忽略。"
 
 #: modules/csg/doc_classes/CSGShape.xml
+#, fuzzy
 msgid ""
 "The physics layers this area is in.\n"
 "Collidable objects can exist in any of 32 different layers. These layers "
@@ -21805,10 +21877,10 @@ msgid ""
 "layers to select with which objects it can collide, using the collision_mask "
 "property.\n"
 "A contact is detected if object A is in any of the layers that object B "
-"scans, or object B is in any layer scanned by object A. See [url=https://"
-"docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction."
-"html#collision-layers-and-masks]Collision layers and masks[/url] in the "
-"documentation for more information."
+"scans, or object B is in any layer scanned by object A. See [url=$DOCS_URL/"
+"tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "这个区域所处的物理层。\n"
 "可碰撞的物体可以存在于32个不同层中的任何一个。这些层的工作就像一个标签系统，"
@@ -21820,11 +21892,12 @@ msgstr ""
 "url]。"
 
 #: modules/csg/doc_classes/CSGShape.xml
+#, fuzzy
 msgid ""
-"The physics layers this CSG shape scans for collisions. See [url=https://"
-"docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction."
-"html#collision-layers-and-masks]Collision layers and masks[/url] in the "
-"documentation for more information."
+"The physics layers this CSG shape scans for collisions. See [url=$DOCS_URL/"
+"tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "此 CSG 形状将要扫描碰撞的物理层。有关更多信息，请参阅文档中的 [url=https://"
 "docs.godotengine.org/zh_CN/stable/tutorials/physics/physics_introduction."
@@ -21958,9 +22031,8 @@ msgstr ""
 "另请参阅[GodotSharp]。"
 
 #: modules/mono/doc_classes/CSharpScript.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/scripting/c_sharp/index."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/getting_started/scripting/c_sharp/index.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/getting_started/scripting/c_sharp/"
 "index.html"
@@ -23109,9 +23181,8 @@ msgstr ""
 "一个数值。"
 
 #: doc/classes/Dictionary.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/scripting/gdscript/"
-"gdscript_basics.html#dictionary"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#dictionary"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/scripting/gdscript/"
 "gdscript_basics.html#dictionary"
@@ -23237,8 +23308,8 @@ msgstr ""
 
 #: doc/classes/DirectionalLight.xml doc/classes/Light.xml
 #: doc/classes/OmniLight.xml doc/classes/SpotLight.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/lights_and_shadows.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/lights_and_shadows.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/lights_and_shadows."
 "html"
@@ -23409,7 +23480,8 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/Directory.xml doc/classes/File.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/filesystem.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/scripting/filesystem.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/scripting/filesystem.html"
 
@@ -23478,18 +23550,27 @@ msgstr ""
 "动器的名称。"
 
 #: doc/classes/Directory.xml
+#, fuzzy
 msgid ""
 "On Windows, returns the name of the drive (partition) passed as an argument "
-"(e.g. [code]C:[/code]). On other platforms, or if the requested drive does "
-"not exist, the method returns an empty String."
+"(e.g. [code]C:[/code]).\n"
+"On macOS, returns the path to the mounted volume passed as an argument.\n"
+"On Linux, returns the path to the mounted volume or GTK 3 bookmark passed as "
+"an argument.\n"
+"On other platforms, or if the requested drive does not exist, the method "
+"returns an empty String."
 msgstr ""
 "在Windows上，返回作为参数传递的驱动器即分区的名称，例如，[code]C:[/code]。在"
 "其他平台上，如果请求的驱动器不存在，该方法返回一个空的字符串。"
 
 #: doc/classes/Directory.xml
+#, fuzzy
 msgid ""
 "On Windows, returns the number of drives (partitions) mounted on the current "
-"filesystem. On other platforms, the method returns 0."
+"filesystem.\n"
+"On macOS, returns the number of mounted volumes.\n"
+"On Linux, returns the number of mounted volumes and GTK 3 bookmarks.\n"
+"On other platforms, the method returns 0."
 msgstr ""
 "在Windows上，返回挂载在当前文件系统上的驱动器（分区）数量。在其他平台上，该方"
 "法返回0。"
@@ -24712,9 +24793,8 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/EditorImportPlugin.xml doc/classes/ResourceImporter.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/import_plugins."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/plugins/editor/import_plugins.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/plugins/editor/"
 "import_plugins.html"
@@ -24954,9 +25034,8 @@ msgstr ""
 "在这些调用中，每一个都可以调用 \"add\"函数。"
 
 #: doc/classes/EditorInspectorPlugin.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/"
-"inspector_plugins.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/plugins/editor/inspector_plugins.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/plugins/editor/"
 "inspector_plugins.html"
@@ -25276,7 +25355,8 @@ msgstr ""
 "件和导出插件。另请参阅[EditorScript]向编辑器添加函数。"
 
 #: doc/classes/EditorPlugin.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/index.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/plugins/editor/index.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/plugins/editor/index.html"
 
@@ -26087,6 +26167,15 @@ msgstr "如果你想用一个单一的值来键入一个属性，请触发它。
 
 #: doc/classes/EditorProperty.xml
 msgid ""
+"Emit it if you want to mark (or unmark) the value of a property for being "
+"saved regardless of being equal to the default value.\n"
+"The default value is the one the property will get when the node is just "
+"instantiated and can come from an ancestor scene in the inheritance/"
+"instancing chain, a script or a builtin class."
+msgstr ""
+
+#: doc/classes/EditorProperty.xml
+msgid ""
 "If you want a sub-resource to be edited, emit this signal with the resource."
 msgstr "如果你想编辑一个子资源，请将此信号与资源一起发出。"
 
@@ -26445,9 +26534,8 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/EditorScenePostImport.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/assets_pipeline/"
-"importing_scenes.html#custom-script"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html#custom-script"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/assets_pipeline/"
 "importing_scenes.html#custom-script"
@@ -26996,9 +27084,8 @@ msgstr ""
 "[EditorSpatialGizmoPlugin] 类型。有关更多信息，请参阅文档中的教程。"
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/spatial_gizmos."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/plugins/editor/spatial_gizmos.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/plugins/editor/"
 "spatial_gizmos.html"
@@ -27547,6 +27634,7 @@ msgid ""
 msgstr "如果游戏在游戏循环的固定过程和物理阶段内，返回 [code]true[/code]。"
 
 #: doc/classes/Engine.xml
+#, fuzzy
 msgid ""
 "If [code]true[/code], the script is currently running inside the editor. "
 "This is useful for [code]tool[/code] scripts to conditionally draw editor "
@@ -27558,9 +27646,8 @@ msgid ""
 "else:\n"
 "    simulate_physics()\n"
 "[/codeblock]\n"
-"See [url=https://docs.godotengine.org/en/3.4/tutorials/misc/"
-"running_code_in_the_editor.html]Running code in the editor[/url] in the "
-"documentation for more information.\n"
+"See [url=$DOCS_URL/tutorials/misc/running_code_in_the_editor.html]Running "
+"code in the editor[/url] in the documentation for more information.\n"
 "[b]Note:[/b] To detect whether the script is run from an editor [i]build[/i] "
 "(e.g. when pressing [code]F5[/code]), use [method OS.has_feature] with the "
 "[code]\"editor\"[/code] argument instead. [code]OS.has_feature(\"editor\")[/"
@@ -27704,16 +27791,15 @@ msgstr ""
 "usage] 调整。"
 
 #: doc/classes/Environment.xml doc/classes/WorldEnvironment.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/"
-"environment_and_post_processing.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/environment_and_post_processing.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/"
 "environment_and_post_processing.html"
 
 #: doc/classes/Environment.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/high_dynamic_range.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/high_dynamic_range.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/high_dynamic_range."
 "html"
@@ -28559,6 +28645,7 @@ msgid "Type to handle file reading and writing operations."
 msgstr "用于处理文件读写操作的类型。"
 
 #: doc/classes/File.xml
+#, fuzzy
 msgid ""
 "File type. This is used to permanently store data into the user device's "
 "file system and to read from it. This can be used to store game save data or "
@@ -28579,8 +28666,8 @@ msgid ""
 "    return content\n"
 "[/codeblock]\n"
 "In the example above, the file will be saved in the user data folder as "
-"specified in the [url=https://docs.godotengine.org/en/3.4/tutorials/io/"
-"data_paths.html]Data paths[/url] documentation.\n"
+"specified in the [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/"
+"url] documentation.\n"
 "[b]Note:[/b] To access project resources once exported, it is recommended to "
 "use [ResourceLoader] instead of the [File] API, as some files are converted "
 "to engine-specific formats and their original source files might not be "
@@ -29598,17 +29685,15 @@ msgstr ""
 "个平台和架构进行编译。"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/plugins/gdnative/gdnative-c-"
-"example.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/plugins/gdnative/gdnative-c-example.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/plugins/gdnative/"
 "gdnative-c-example.html"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/plugins/gdnative/gdnative-cpp-"
-"example.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/plugins/gdnative/gdnative-cpp-example.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/plugins/gdnative/"
 "gdnative-cpp-example.html"
@@ -29704,9 +29789,8 @@ msgstr ""
 "[method Object.set_script] 会扩展该对象。"
 
 #: modules/gdscript/doc_classes/GDScript.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/scripting/gdscript/index."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/getting_started/scripting/gdscript/index.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/getting_started/scripting/gdscript/"
 "index.html"
@@ -30839,6 +30923,17 @@ msgstr ""
 "[b]注意：[/b] 这个属性目前没有任何作用。"
 
 #: doc/classes/GeometryInstance.xml
+#, fuzzy
+msgid ""
+"The material overlay for the whole geometry.\n"
+"If a material is assigned to this property, it will be rendered on top of "
+"any other active material for all the surfaces."
+msgstr ""
+"整个几何体的材质覆盖。\n"
+"如果一个材质被分配给这个属性，它将会被用来代替在网格的任何材质槽中设置的任何"
+"材质。"
+
+#: doc/classes/GeometryInstance.xml
 msgid ""
 "The material override for the whole geometry.\n"
 "If a material is assigned to this property, it will be used instead of any "
@@ -30970,8 +31065,8 @@ msgstr ""
 "发光。只有发射型的[SpatialMaterial]可以在[GIProbe]中发射光线。"
 
 #: doc/classes/GIProbe.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/gi_probes.html"
-msgstr "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/gi_probes.html"
+msgid "$DOCS_URL/tutorials/3d/gi_probes.html"
+msgstr ""
 
 #: doc/classes/GIProbe.xml
 msgid ""
@@ -32073,7 +32168,8 @@ msgstr ""
 "GridMap 就都不会被相关的灯光照亮。"
 
 #: modules/gridmap/doc_classes/GridMap.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/using_gridmaps.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/using_gridmaps.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/using_gridmaps.html"
 
@@ -32207,11 +32303,12 @@ msgstr ""
 "它们碰撞的物理体的影响。"
 
 #: modules/gridmap/doc_classes/GridMap.xml
+#, fuzzy
 msgid ""
-"The physics layers this GridMap detects collisions in. See [url=https://docs."
-"godotengine.org/en/3.4/tutorials/physics/physics_introduction.html#collision-"
-"layers-and-masks]Collision layers and masks[/url] in the documentation for "
-"more information."
+"The physics layers this GridMap detects collisions in. See [url=$DOCS_URL/"
+"tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "此 GridMap 检测碰撞的物理层。参阅 [url=https://docs.godotengine.org/zh_CN/"
 "stable/tutorials/physics/physics_introduction.html#collision-layers-and-"
@@ -32813,18 +32910,16 @@ msgstr ""
 "是有效的，就可以接受。如果这是个问题，你可能想使用自动管理的有效期短的证书。"
 
 #: doc/classes/HTTPClient.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/networking/http_client_class."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/networking/http_client_class.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/networking/"
 "http_client_class.html"
 
 #: doc/classes/HTTPClient.xml doc/classes/HTTPRequest.xml
 #: doc/classes/StreamPeerSSL.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/networking/ssl_certificates."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/networking/ssl_certificates.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/networking/"
 "ssl_certificates.html"
@@ -33021,6 +33116,20 @@ msgstr ""
 "[code]host:port[/code]。\n"
 "头信息是HTTP请求头信息。关于可用的HTTP方法，参阅[enum Method]。\n"
 "以字节数组的形式发送原始正文数据，不以任何方式进行编码。"
+
+#: doc/classes/HTTPClient.xml doc/classes/HTTPRequest.xml
+msgid ""
+"Sets the proxy server for HTTP requests.\n"
+"The proxy server is unset if [code]host[/code] is empty or [code]port[/code] "
+"is -1."
+msgstr ""
+
+#: doc/classes/HTTPClient.xml doc/classes/HTTPRequest.xml
+msgid ""
+"Sets the proxy server for HTTPS requests.\n"
+"The proxy server is unset if [code]host[/code] is empty or [code]port[/code] "
+"is -1."
+msgstr ""
 
 #: doc/classes/HTTPClient.xml
 msgid ""
@@ -33883,9 +33992,8 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/HTTPRequest.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/networking/http_request_class."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/networking/http_request_class.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/networking/"
 "http_request_class.html"
@@ -34071,9 +34179,8 @@ msgstr ""
 "能无法导入。"
 
 #: doc/classes/Image.xml doc/classes/ImageTexture.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/assets_pipeline/"
-"importing_images.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/assets_pipeline/importing_images.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/assets_pipeline/"
 "importing_images.html"
@@ -34210,8 +34317,14 @@ msgid ""
 msgstr "拉伸图像并将其放大2倍，不进行插值。"
 
 #: doc/classes/Image.xml
-msgid "Fills the image with a given [Color]."
+#, fuzzy
+msgid "Fills the image with [code]color[/code]."
 msgstr "用给定的 [Color] 填充图像。"
+
+#: doc/classes/Image.xml
+#, fuzzy
+msgid "Fills [code]rect[/code] with [code]color[/code]."
+msgstr "将选项卡从 [code]from[/code] 移动到 [code]to[/code]。"
 
 #: doc/classes/Image.xml
 msgid "Blends low-alpha pixels with nearby pixels."
@@ -34328,11 +34441,11 @@ msgstr ""
 "任何像素的不透明度（alpha）高于 0，则返回 [code]false[/code]。"
 
 #: doc/classes/Image.xml
+#, fuzzy
 msgid ""
-"Loads an image from file [code]path[/code]. See [url=https://docs."
-"godotengine.org/en/3.4/tutorials/assets_pipeline/importing_images."
-"html#supported-image-formats]Supported image formats[/url] for a list of "
-"supported image formats and limitations.\n"
+"Loads an image from file [code]path[/code]. See [url=$DOCS_URL/tutorials/"
+"assets_pipeline/importing_images.html#supported-image-formats]Supported "
+"image formats[/url] for a list of supported image formats and limitations.\n"
 "[b]Warning:[/b] This method should only be used in the editor or in cases "
 "when you need to load external images at run-time, such as images located at "
 "the [code]user://[/code] directory, and may not work in exported projects.\n"
@@ -35238,8 +35351,8 @@ msgstr ""
 "件。"
 
 #: doc/classes/Input.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/inputs/index.html"
-msgstr "https://docs.godotengine.org/zh_CN/stable/tutorials/inputs/index.html"
+msgid "$DOCS_URL/tutorials/inputs/index.html"
+msgstr ""
 
 #: doc/classes/Input.xml
 msgid ""
@@ -35923,7 +36036,8 @@ msgstr "各种输入事件的基类。请参阅 [method Node._input]。"
 #: doc/classes/InputEventMouse.xml doc/classes/InputEventScreenDrag.xml
 #: doc/classes/InputEventScreenTouch.xml
 #: doc/classes/InputEventWithModifiers.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/inputs/inputevent.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/inputs/inputevent.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/inputs/inputevent.html"
 
@@ -36082,8 +36196,8 @@ msgstr ""
 "菜单中的[b]键位映射[/b]选项卡中创建。请参阅 [method Node._input]。"
 
 #: doc/classes/InputEventAction.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/inputs/inputevent.html#actions"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/inputs/inputevent.html#actions"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/inputs/inputevent."
 "html#actions"
@@ -36316,9 +36430,8 @@ msgid "Contains mouse click information. See [method Node._input]."
 msgstr "包含鼠标点击信息。见[method Node._input]。"
 
 #: doc/classes/InputEventMouseButton.xml doc/classes/InputEventMouseMotion.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/inputs/"
-"mouse_and_input_coordinates.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/inputs/mouse_and_input_coordinates.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/inputs/"
 "mouse_and_input_coordinates.html"
@@ -36517,8 +36630,8 @@ msgstr ""
 "改。请参阅 [method Node._input]。"
 
 #: doc/classes/InputMap.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/inputs/inputevent.html#inputmap"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/inputs/inputevent.html#inputmap"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/inputs/inputevent."
 "html#inputmap"
@@ -37392,15 +37505,16 @@ msgid ""
 msgstr "在 HTML5 导出中将引擎与浏览器的 JavaScript 上下文连接的单例。"
 
 #: doc/classes/JavaScript.xml
+#, fuzzy
 msgid ""
 "The JavaScript singleton is implemented only in the HTML5 export. It's used "
 "to access the browser's JavaScript context. This allows interaction with "
 "embedding pages or calling third-party JavaScript APIs.\n"
 "[b]Note:[/b] This singleton can be disabled at build-time to improve "
 "security. By default, the JavaScript singleton is enabled. Official export "
-"templates also have the JavaScript singleton enabled. See [url=https://docs."
-"godotengine.org/en/3.4/development/compiling/compiling_for_web."
-"html]Compiling for the Web[/url] in the documentation for more information."
+"templates also have the JavaScript singleton enabled. See [url=$DOCS_URL/"
+"development/compiling/compiling_for_web.html]Compiling for the Web[/url] in "
+"the documentation for more information."
 msgstr ""
 "JavaScript 单例仅在 HTML5 导出中实现。它用于访问浏览器的 JavaScript 上下文。"
 "这允许与嵌入页面交互或调用第三方 JavaScript API。\n"
@@ -37410,9 +37524,10 @@ msgstr ""
 "compiling_for_web.html]为 Web平台编译[/url]。"
 
 #: doc/classes/JavaScript.xml
+#, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/export/exporting_for_web."
-"html#calling-javascript-from-script"
+"$DOCS_URL/tutorials/export/exporting_for_web.html#calling-javascript-from-"
+"script"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/export/exporting_for_web."
 "html#calling-javascript-from-script"
@@ -37584,9 +37699,8 @@ msgstr ""
 "接口维基百科。"
 
 #: doc/classes/JNISingleton.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/platform/android/"
-"android_plugin.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/platform/android/android_plugin.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/platform/android/"
 "android_plugin.html"
@@ -37946,9 +38060,8 @@ msgstr ""
 "们在实现对世界进行碰撞，但不需要高级物理的角色时非常有用。"
 
 #: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/physics/kinematic_character_2d."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/physics/kinematic_character_2d.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/physics/"
 "kinematic_character_2d.html"
@@ -38262,9 +38375,8 @@ msgstr ""
 "们在实现对世界进行碰撞，但不需要高级物理的角色时非常有用。"
 
 #: doc/classes/KinematicBody2D.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/physics/"
-"using_kinematic_body_2d.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/physics/using_kinematic_body_2d.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/physics/"
 "using_kinematic_body_2d.html"
@@ -39020,8 +39132,8 @@ msgstr ""
 "[b]注意：[/b] Light2D也可以作为一个遮罩使用。"
 
 #: doc/classes/Light2D.xml doc/classes/LightOccluder2D.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/2d/2d_lights_and_shadows.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/2d/2d_lights_and_shadows."
 "html"
@@ -39310,9 +39422,10 @@ msgid ""
 msgstr "圆形接头和盖子的平滑度。仅当盖子或接头设置为圆形时才使用此选项。"
 
 #: doc/classes/Line2D.xml
+#, fuzzy
 msgid ""
 "The direction difference in radians between vector points. This value is "
-"only used if [code]joint mode[/code] is set to [constant LINE_JOINT_SHARP]."
+"only used if [member joint_mode] is set to [constant LINE_JOINT_SHARP]."
 msgstr ""
 "向量点之间弧度的方向差。仅当 [code]joint mode[/code] 设置为 [constant "
 "LINE_JOINT_SHARP] 时，才使用此值。"
@@ -41221,8 +41334,8 @@ msgstr ""
 "\"创建Mesh2D\"。"
 
 #: doc/classes/MeshInstance2D.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/2d/2d_meshes.html"
-msgstr "https://docs.godotengine.org/zh_CN/stable/tutorials/2d/2d_meshes.html"
+msgid "$DOCS_URL/tutorials/2d/2d_meshes.html"
+msgstr ""
 
 #: doc/classes/MeshInstance2D.xml
 msgid "The [Mesh] that will be drawn by the [MeshInstance2D]."
@@ -41498,17 +41611,17 @@ msgstr ""
 "由于实例可能具有任何行为，用于可见性的AABB必须由用户提供。"
 
 #: doc/classes/MultiMesh.xml doc/classes/MultiMeshInstance.xml
+#, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/performance/vertex_animation/"
-"animating_thousands_of_fish.html"
+"$DOCS_URL/tutorials/performance/vertex_animation/animating_thousands_of_fish."
+"html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/performance/"
 "vertex_animation/animating_thousands_of_fish.html"
 
 #: doc/classes/MultiMesh.xml doc/classes/MultiMeshInstance.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/performance/using_multimesh."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/performance/using_multimesh.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/performance/"
 "using_multimesh.html"
@@ -41686,9 +41799,8 @@ msgstr ""
 "这对于优化给定网格的大量实例的渲染是非常有用的（例如，森林中的树木或草丛）。"
 
 #: doc/classes/MultiMeshInstance.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/using_multi_mesh_instance."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/using_multi_mesh_instance.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/"
 "using_multi_mesh_instance.html"
@@ -42012,9 +42124,8 @@ msgstr ""
 "是，要注意避免死锁。"
 
 #: doc/classes/Mutex.xml doc/classes/Semaphore.xml doc/classes/Thread.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/performance/threads/"
-"using_multiple_threads.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/performance/threads/using_multiple_threads.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/performance/threads/"
 "using_multiple_threads.html"
@@ -42743,9 +42854,8 @@ msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
 #: doc/classes/NetworkedMultiplayerPeer.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/networking/"
-"high_level_multiplayer.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/networking/high_level_multiplayer.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/networking/"
 "high_level_multiplayer.html"
@@ -43455,9 +43565,8 @@ msgstr ""
 "外，请参阅高级网络教程和相应的演示。"
 
 #: doc/classes/Node.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/step_by_step/"
-"nodes_and_scenes.html"
+#, fuzzy
+msgid "$DOCS_URL/getting_started/step_by_step/nodes_and_scenes.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/getting_started/step_by_step/"
 "nodes_and_scenes.html"
@@ -43879,12 +43988,13 @@ msgid ""
 msgstr "返回此节点的网络主节点的对等 ID。请参阅 [method set_network_master]。"
 
 #: doc/classes/Node.xml
+#, fuzzy
 msgid ""
 "Fetches a node. The [NodePath] can be either a relative path (from the "
 "current node) or an absolute path (in the scene tree) to a node. If the path "
-"does not exist, a [code]null instance[/code] is returned and an error is "
-"logged. Attempts to access methods on the return value will result in an "
-"\"Attempt to call <method> on a null instance.\" error.\n"
+"does not exist, [code]null[/code] is returned and an error is logged. "
+"Attempts to access methods on the return value will result in an \"Attempt "
+"to call <method> on a null instance.\" error.\n"
 "[b]Note:[/b] Fetching absolute paths only works when the node is inside the "
 "scene tree (see [method is_inside_tree]).\n"
 "[b]Example:[/b] Assume your current node is Character and the following "
@@ -43978,9 +44088,10 @@ msgstr ""
 "记录错误。"
 
 #: doc/classes/Node.xml
+#, fuzzy
 msgid ""
-"Returns the parent node of the current node, or a [code]null instance[/code] "
-"if the node lacks a parent."
+"Returns the parent node of the current node, or [code]null[/code] if the "
+"node lacks a parent."
 msgstr ""
 "返回当前节点的父节点，如果节点缺少父节点，则返回[code]null instance[/code]。"
 
@@ -44302,11 +44413,15 @@ msgstr ""
 "将一个节点从一个组中移除。参阅描述中的注释，以及[SceneTree]中的组方法。"
 
 #: doc/classes/Node.xml
+#, fuzzy
 msgid ""
 "Replaces a node in a scene by the given one. Subscriptions that pass through "
 "this node will be lost.\n"
-"Note that the replaced node is not automatically freed, so you either need "
-"to keep it in a variable for later use or free it using [method Object.free]."
+"[b]Note:[/b] The given node will become the new parent of any child nodes "
+"that the replaced node had.\n"
+"[b]Note:[/b] The replaced node is not automatically freed, so you either "
+"need to keep it in a variable for later use or free it using [method Object."
+"free]."
 msgstr ""
 "将场景中的某个节点替换为给定的节点。经过该节点的订阅会丢失。\n"
 "请注意，被替换的节点不会被自动释放，所以你需要将它放入变量以备后续使用，或者"
@@ -45350,17 +45465,16 @@ msgstr ""
 "Object本身，而不是它的任何子类，如[Reference]。"
 
 #: doc/classes/Object.xml doc/classes/Reference.xml doc/classes/Resource.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/best_practices/"
-"node_alternatives.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/best_practices/node_alternatives.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/best_practices/"
 "node_alternatives.html"
 
 #: doc/classes/Object.xml
+#, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/scripting/gdscript/"
-"gdscript_exports.html#advanced-exports"
+"$DOCS_URL/tutorials/scripting/gdscript/gdscript_exports.html#advanced-exports"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/scripting/gdscript/"
 "gdscript_exports.html#advanced-exports"
@@ -46569,6 +46683,15 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid ""
+"Crashes the engine (or the editor if called within a [code]tool[/code] "
+"script). This should [i]only[/i] be used for testing the system's crash "
+"handler, not for any other purpose. For general error reporting, use (in "
+"order of preference) [method @GDScript.assert], [method @GDScript."
+"push_error] or [method alert]. See also [method kill]."
+msgstr ""
+
+#: doc/classes/OS.xml
+msgid ""
 "Delays execution of the current thread by [code]msec[/code] milliseconds. "
 "[code]msec[/code] must be greater than or equal to [code]0[/code]. "
 "Otherwise, [method delay_msec] will do nothing and will print an error "
@@ -46737,14 +46860,14 @@ msgid "Returns the audio driver name for the given index."
 msgstr "返回给定索引的音频驱动程序名称。"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
 "Returns the [i]global[/i] cache data directory according to the operating "
 "system's standards. On desktop platforms, this path can be overridden by "
 "setting the [code]XDG_CACHE_HOME[/code] environment variable before starting "
-"the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/"
-"data_paths.html]File paths in Godot projects[/url] in the documentation for "
-"more information. See also [method get_config_dir] and [method "
-"get_data_dir].\n"
+"the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in "
+"Godot projects[/url] in the documentation for more information. See also "
+"[method get_config_dir] and [method get_data_dir].\n"
 "Not to be confused with [method get_user_data_dir], which returns the "
 "[i]project-specific[/i] user data path."
 msgstr ""
@@ -46795,14 +46918,14 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
 "Returns the [i]global[/i] user configuration directory according to the "
 "operating system's standards. On desktop platforms, this path can be "
 "overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable "
-"before starting the project. See [url=https://docs.godotengine.org/en/latest/"
-"tutorials/io/data_paths.html]File paths in Godot projects[/url] in the "
-"documentation for more information. See also [method get_cache_dir] and "
-"[method get_data_dir].\n"
+"before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths."
+"html]File paths in Godot projects[/url] in the documentation for more "
+"information. See also [method get_cache_dir] and [method get_data_dir].\n"
 "Not to be confused with [method get_user_data_dir], which returns the "
 "[i]project-specific[/i] user data path."
 msgstr ""
@@ -46832,14 +46955,14 @@ msgid ""
 msgstr "返回当前使用的视频驱动程序，使用[enum VideoDriver]中的一个值。"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
 "Returns the [i]global[/i] user data directory according to the operating "
 "system's standards. On desktop platforms, this path can be overridden by "
 "setting the [code]XDG_DATA_HOME[/code] environment variable before starting "
-"the project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/"
-"data_paths.html]File paths in Godot projects[/url] in the documentation for "
-"more information. See also [method get_cache_dir] and [method "
-"get_config_dir].\n"
+"the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in "
+"Godot projects[/url] in the documentation for more information. See also "
+"[method get_cache_dir] and [method get_config_dir].\n"
 "Not to be confused with [method get_user_data_dir], which returns the "
 "[i]project-specific[/i] user data path."
 msgstr ""
@@ -46851,7 +46974,9 @@ msgstr ""
 "不要与[method get_user_data_dir]混淆，后者返回[i]项目专用[/i]用户数据路径。"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
+"Deprecated, use [method Time.get_date_dict_from_system] instead.\n"
 "Returns current date as a dictionary of keys: [code]year[/code], "
 "[code]month[/code], [code]day[/code], [code]weekday[/code], [code]dst[/code] "
 "(Daylight Savings Time)."
@@ -46860,7 +46985,9 @@ msgstr ""
 "code]， [code]weekday[/code]， [code]dst[/code](夏令时)。"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
+"Deprecated, use [method Time.get_datetime_dict_from_system] instead.\n"
 "Returns current datetime as a dictionary of keys: [code]year[/code], "
 "[code]month[/code], [code]day[/code], [code]weekday[/code], [code]dst[/code] "
 "(Daylight Savings Time), [code]hour[/code], [code]minute[/code], "
@@ -46871,7 +46998,9 @@ msgstr ""
 "[code]hour[/code]， [code]minute[/code]， [code]second[/code]。"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
+"Deprecated, use [method Time.get_datetime_dict_from_unix_time] instead.\n"
 "Gets a dictionary of time values corresponding to the given UNIX epoch time "
 "(in seconds).\n"
 "The returned Dictionary's values will be the same as [method get_datetime], "
@@ -47000,6 +47129,16 @@ msgstr ""
 "当您不需要有关国家/地区代码或变体的附加信息时，这可用于将完全指定的区域设置字"
 "符串缩小为“通用”语言代码。例如，对于使用 [code]fr_CA[/code] 语言环境的加拿大"
 "法语用户，这将返回 [code]fr[/code]。"
+
+#: doc/classes/OS.xml
+#, fuzzy
+msgid ""
+"Returns the ID of the main thread. See [method get_thread_caller_id].\n"
+"[b]Note:[/b] Thread IDs are not deterministic and may be reused across "
+"application restarts."
+msgstr ""
+"返回当前线程的 ID。这可用于日志，以简化多线程应用程序的调试。\n"
+"[b]注：[/b] 线程 ID 不是确定的，也许会在应用程序重新启动时被重复使用。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -47239,17 +47378,24 @@ msgstr ""
 "[b]注：[/b] 线程 ID 不是确定的，也许会在应用程序重新启动时被重复使用。"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
+"Deprecated, use [method Time.get_ticks_msec] instead.\n"
 "Returns the amount of time passed in milliseconds since the engine started."
 msgstr "返回引擎启动后经过的时间(以毫秒为单位)。"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
+"Deprecated, use [method Time.get_ticks_usec] instead.\n"
 "Returns the amount of time passed in microseconds since the engine started."
 msgstr "返回引擎启动后经过的时间(以微秒为单位)。"
 
 #: doc/classes/OS.xml
-msgid "Returns current time as a dictionary of keys: hour, minute, second."
+#, fuzzy
+msgid ""
+"Deprecated, use [method Time.get_time_dict_from_system] instead.\n"
+"Returns current time as a dictionary of keys: hour, minute, second."
 msgstr "以字典形式返回当前的时间，所包含的键：hour、minute、second。"
 
 #: doc/classes/OS.xml
@@ -47424,13 +47570,14 @@ msgstr ""
 "Windows 之外的所有平台上都区分大小写。"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the feature for the given feature tag is "
 "supported in the currently running instance, depending on the platform, "
 "build etc. Can be used to check whether you're currently running a debug "
-"build, on a certain platform or arch, etc. Refer to the [url=https://docs."
-"godotengine.org/en/3.4/tutorials/export/feature_tags.html]Feature Tags[/url] "
-"documentation for more details.\n"
+"build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/"
+"tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more "
+"details.\n"
 "[b]Note:[/b] Tag names are case-sensitive."
 msgstr ""
 "如果给定的特征标签的特征在当前运行的实例中得到支持，则返回 [code]true[/"
@@ -47562,9 +47709,11 @@ msgstr ""
 "[b]注：[/b]此方法可在Linux、macOS和Windows上实现。"
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
 "Kill (terminate) the process identified by the given process ID ([code]pid[/"
-"code]), e.g. the one returned by [method execute] in non-blocking mode.\n"
+"code]), e.g. the one returned by [method execute] in non-blocking mode. See "
+"also [method crash].\n"
 "[b]Note:[/b] This method can also be used to kill processes that were not "
 "spawned by the game.\n"
 "[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and "
@@ -48411,6 +48560,17 @@ msgstr ""
 "编辑状态。\n"
 "[b]注意：[/b] 只在编辑器构建中可用。"
 
+#: doc/classes/PackedScene.xml
+#, fuzzy
+msgid ""
+"It's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the "
+"scene is being instantiated to be the base of another one.\n"
+"[b]Note:[/b] Only available in editor builds."
+msgstr ""
+"如果传递给[method instance]，向本地场景提供本地场景资源。只有主场景应该接收主"
+"编辑状态。\n"
+"[b]注意：[/b] 只在编辑器构建中可用。"
+
 #: doc/classes/PacketPeer.xml
 msgid "Abstraction and base class for packet-based protocols."
 msgstr "基于包的协议的抽象和基类。"
@@ -48969,8 +49129,9 @@ msgstr ""
 "见 AABB[/b]。否则，粒子可能会由于相机位置和角度的改变突然消失。"
 
 #: doc/classes/Particles.xml
+#, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/performance/vertex_animation/"
+"$DOCS_URL/tutorials/performance/vertex_animation/"
 "controlling_thousands_of_fish.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/performance/"
@@ -50002,7 +50163,8 @@ msgstr ""
 #: doc/classes/PhysicsDirectBodyState.xml
 #: doc/classes/PhysicsDirectSpaceState.xml doc/classes/RayCast.xml
 #: doc/classes/RayCast2D.xml doc/classes/World.xml doc/classes/World2D.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/physics/ray-casting.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/physics/ray-casting.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/physics/ray-casting.html"
 
@@ -50372,12 +50534,12 @@ msgstr ""
 "值来确定射线是否应该分别与 [PhysicsBody2D] 或 [Area2D] 发生碰撞。"
 
 #: doc/classes/Physics2DDirectSpaceState.xml
+#, fuzzy
 msgid ""
 "Checks the intersections of a shape, given through a "
-"[Physics2DShapeQueryParameters] object, against the space.\n"
-"[b]Note:[/b] This method does not take into account the [code]motion[/code] "
-"property of the object. The intersected shapes are returned in an array "
-"containing dictionaries with the following fields:\n"
+"[Physics2DShapeQueryParameters] object, against the space. The intersected "
+"shapes are returned in an array containing dictionaries with the following "
+"fields:\n"
 "[code]collider[/code]: The colliding object.\n"
 "[code]collider_id[/code]: The colliding object's ID.\n"
 "[code]metadata[/code]: The intersecting shape's metadata. This metadata is "
@@ -51292,11 +51454,12 @@ msgstr "如果[code]true[/code]，查询将考虑[PhysicsBody2D]。"
 
 #: doc/classes/Physics2DShapeQueryParameters.xml
 #: doc/classes/PhysicsShapeQueryParameters.xml
+#, fuzzy
 msgid ""
 "The physics layer(s) the query will take into account (as a bitmask). See "
-"[url=https://docs.godotengine.org/en/3.4/tutorials/physics/"
-"physics_introduction.html#collision-layers-and-masks]Collision layers and "
-"masks[/url] in the documentation for more information."
+"[url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-"
+"and-masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "查询将考虑的物理层（作为位掩码）。有关更多信息，请参阅文档中的 [url=https://"
 "docs.godotengine.org/zh_CN/stable/tutorials/physics/physics_introduction."
@@ -52160,22 +52323,25 @@ msgstr ""
 "当校正轴旋转中的极限交叉时，该误差容限因子定义了校正的减慢程度。越低越慢。"
 
 #: doc/classes/PhysicsServer.xml
-msgid ""
-"If [code]set[/code] there is linear motion possible within the given limits."
-msgstr "如果[code]set[/code]，则在给定的限度内可能存在线性运动。"
+#, fuzzy
+msgid "If set, linear motion is possible within the given limits."
+msgstr "如果启用，在给定范围内可以进行线性运动。"
 
 #: doc/classes/PhysicsServer.xml
-msgid "If [code]set[/code] there is rotational motion possible."
+#, fuzzy
+msgid "If set, rotational motion is possible."
 msgstr "如果[code]set[/code]，则可能存在旋转运动。"
 
 #: doc/classes/PhysicsServer.xml
-msgid "If [code]set[/code] there is a rotational motor across these axes."
-msgstr "如果[code]set[/code]，则这些轴上有一个旋转电机。"
+#, fuzzy
+msgid "If set, there is a rotational motor across these axes."
+msgstr "如果启用，就有一个跨这些轴的旋转马达。"
 
 #: doc/classes/PhysicsServer.xml
+#, fuzzy
 msgid ""
-"If [code]set[/code] there is a linear motor on this axis that targets a "
-"specific velocity."
+"If set, there is a linear motor on this axis that targets a specific "
+"velocity."
 msgstr "如果[code]set[/code]，则此轴上有一个以特定速度为目标的线性电机。"
 
 #: doc/classes/PhysicsServer.xml
@@ -54176,6 +54342,7 @@ msgid "Contains global variables accessible from everywhere."
 msgstr "包含全局变量，可以从任何地方访问。"
 
 #: doc/classes/ProjectSettings.xml
+#, fuzzy
 msgid ""
 "Contains global variables accessible from everywhere. Use [method "
 "get_setting], [method set_setting] or [method has_setting] to access them. "
@@ -54187,17 +54354,16 @@ msgid ""
 "code] for the project name. Category and property names can be viewed in the "
 "Project Settings dialog.\n"
 "[b]Feature tags:[/b] Project settings can be overridden for specific "
-"platforms and configurations (debug, release, ...) using [url=https://docs."
-"godotengine.org/en/3.4/tutorials/export/feature_tags.html]feature tags[/"
-"url].\n"
+"platforms and configurations (debug, release, ...) using [url=$DOCS_URL/"
+"tutorials/export/feature_tags.html]feature tags[/url].\n"
 "[b]Overriding:[/b] Any project setting can be overridden by creating a file "
 "named [code]override.cfg[/code] in the project's root directory. This can "
 "also be used in exported projects by placing this file in the same directory "
 "as the project binary. Overriding will still take the base project "
-"settings' [url=https://docs.godotengine.org/en/3.4/tutorials/export/"
-"feature_tags.html]feature tags[/url] in account. Therefore, make sure to "
-"[i]also[/i] override the setting with the desired feature tags if you want "
-"them to override base project settings on all platforms and configurations."
+"settings' [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/"
+"url] in account. Therefore, make sure to [i]also[/i] override the setting "
+"with the desired feature tags if you want them to override base project "
+"settings on all platforms and configurations."
 msgstr ""
 "包含全局变量，可以从任何地方访问。使用 [method get_setting]、[method "
 "set_setting]、[method has_setting] 访问。存储在 [code]project.godot[/code] 中"
@@ -54281,13 +54447,14 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/ProjectSettings.xml
+#, fuzzy
 msgid ""
 "Returns the absolute, native OS path corresponding to the localized "
 "[code]path[/code] (starting with [code]res://[/code] or [code]user://[/"
 "code]). The returned path will vary depending on the operating system and "
-"user preferences. See [url=https://docs.godotengine.org/en/3.4/tutorials/io/"
-"data_paths.html]File paths in Godot projects[/url] to see what those paths "
-"convert to. See also [method localize_path].\n"
+"user preferences. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths "
+"in Godot projects[/url] to see what those paths convert to. See also [method "
+"localize_path].\n"
 "[b]Note:[/b] [method globalize_path] with [code]res://[/code] will not work "
 "in an exported project. Instead, prepend the executable's base directory to "
 "the path when running from an exported project:\n"
@@ -54454,22 +54621,36 @@ msgid "Background color for the boot splash."
 msgstr "启动界面的背景色。"
 
 #: doc/classes/ProjectSettings.xml
+#, fuzzy
 msgid ""
-"If [code]true[/code], scale the boot splash image to the full window length "
-"when engine starts. If [code]false[/code], the engine will leave it at the "
-"default pixel size."
+"If [code]true[/code], scale the boot splash image to the full window size "
+"(preserving the aspect ratio) when the engine starts. If [code]false[/code], "
+"the engine will leave it at the default pixel size."
 msgstr ""
 "如果为 [code]true[/code]，引擎启动时会将启动图片扩展到整个窗口长度。如果为 "
 "[code]false[/code]，引擎将保持其默认像素大小。"
 
 #: doc/classes/ProjectSettings.xml
-msgid "Path to an image used as the boot splash."
-msgstr "用作启动画面的图片路径。"
+msgid ""
+"Path to an image used as the boot splash. If left empty, the default Godot "
+"Engine splash will be displayed instead.\n"
+"[b]Note:[/b] Only effective if [member application/boot_splash/show_image] "
+"is [code]true[/code]."
+msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
+"If [code]true[/code], displays the image specified in [member application/"
+"boot_splash/image] when the engine starts. If [code]false[/code], only "
+"displays the plain color specified in [member application/boot_splash/"
+"bg_color]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+#, fuzzy
+msgid ""
 "If [code]true[/code], applies linear filtering when scaling the image "
-"(recommended for high resolution artwork). If [code]false[/code], uses "
+"(recommended for high-resolution artwork). If [code]false[/code], uses "
 "nearest-neighbor interpolation (recommended for pixel art)."
 msgstr ""
 "如果[code]true[/code]，则在缩放图像时应用线性过滤(推荐用于高分辨率图稿)。如果"
@@ -54515,6 +54696,7 @@ msgstr ""
 "通过调用[method OS.set_native_icon]自动完成。"
 
 #: doc/classes/ProjectSettings.xml
+#, fuzzy
 msgid ""
 "The project's name. It is used both by the Project Manager and by exporters. "
 "The project name can be translated by translating its value in localization "
@@ -54524,9 +54706,8 @@ msgid ""
 "path if [member application/config/use_custom_user_dir] is [code]false[/"
 "code]. After renaming the project, you will no longer be able to access "
 "existing data in [code]user://[/code] unless you rename the old folder to "
-"match the new project name. See [url=https://docs.godotengine.org/en/3.4/"
-"tutorials/io/data_paths.html]Data paths[/url] in the documentation for more "
-"information."
+"match the new project name. See [url=$DOCS_URL/tutorials/io/data_paths."
+"html]Data paths[/url] in the documentation for more information."
 msgstr ""
 "项目名称。它由项目经理和出口商使用。可以通过翻译本地化文件中的值来翻译项目名"
 "称。窗口标题将设置为在启动时自动匹配项目名称。\n"
@@ -55255,16 +55436,16 @@ msgstr ""
 "[b]注意：[/b] 此设置在 iOS、Android 和 HTML5 上被忽略。"
 
 #: doc/classes/ProjectSettings.xml
+#, fuzzy
 msgid ""
 "Sets the main window to full screen when the project starts. Note that this "
 "is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless "
 "window is used to emulate fullscreen. On macOS, a new desktop is used to "
 "display the running project.\n"
 "Regardless of the platform, enabling fullscreen will change the window size "
-"to match the monitor's size. Therefore, make sure your project supports "
-"[url=https://docs.godotengine.org/en/3.4/tutorials/rendering/"
-"multiple_resolutions.html]multiple resolutions[/url] when enabling "
-"fullscreen mode.\n"
+"to match the monitor's size. Therefore, make sure your project supports [url="
+"$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple "
+"resolutions[/url] when enabling fullscreen mode.\n"
 "[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5."
 msgstr ""
 "项目启动时将主窗口设置为全屏。请注意，这不是 [i] 独立 的[/i] 全屏显示。在 "
@@ -56108,6 +56289,18 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
+"The policy to use for unhandled Mono (C#) exceptions. The default "
+"\"Terminate Application\" exits the project as soon as an unhandled "
+"exception is thrown. \"Log Error\" logs an error message to the console "
+"instead, and will not interrupt the project execution when an unhandled "
+"exception is thrown.\n"
+"[b]Note:[/b] The unhandled exception policy is always set to \"Log Error\" "
+"in the editor, which also includes C# [code]tool[/code] scripts running "
+"within the editor as well as editor plugin code."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
 "Maximum amount of characters allowed to send as output from the debugger. "
 "Over this value, content is dropped. This helps not to stall the debugger "
 "connection."
@@ -56948,6 +57141,96 @@ msgstr ""
 "如果 [code]true[/code] 并且在目标 Android 设备上可用，则为 GLES2 中的所有着色"
 "器计算启用高浮点精度。\n"
 "[b]警告：[/b] 高浮点精度在旧设备上可能非常慢，而且通常根本不可用。谨慎使用。"
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"If [code]true[/code], every time an asynchronous shader compilation or an "
+"asynchronous shader reconstruction from cache starts or finishes, a line "
+"will be logged telling how many of those are happening.\n"
+"If the platform doesn't support parallel shader compile, but only the "
+"compile queue via a secondary GL context, what the message will tell is the "
+"number of shader compiles currently queued.\n"
+"[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/"
+"shaders/shader_compilation_mode[/code] is [b]not[/b] [code]Synchronous[/"
+"code]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"This is the maximum number of shaders that can be compiled (or reconstructed "
+"from cache) at the same time.\n"
+"At runtime, while that count is reached, other shaders that can be "
+"asynchronously compiled will just use their fallback, without their setup "
+"being started until the count gets lower.\n"
+"This is a way to balance the CPU work between running the game and compiling "
+"the shaders. The goal is to have as many asynchronous compiles in flight as "
+"possible without impacting the responsiveness of the game, which beyond some "
+"point would destroy the benefits of asynchronous compilation. In other "
+"words, you may be able to afford that the FPS lowers a bit, and that will "
+"already be better than the stalling that synchronous compilation could "
+"cause.\n"
+"The default value is a conservative one, so you are advised to tweak it "
+"according to the hardware you are targeting.\n"
+"[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/"
+"shaders/shader_compilation_mode[/code] is [b]not[/b] [code]Synchronous[/"
+"code]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"The default is a very conservative override for [code]rendering/gles3/"
+"shaders/max_concurrent_compiles[/code].\n"
+"Depending on the specific devices you are targeting, you may want to raise "
+"it.\n"
+"[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/"
+"shaders/shader_compilation_mode[/code] is [b]not[/b] [code]Synchronous[/"
+"code]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"The maximum size, in megabytes, that the ubershader cache can grow up to. On "
+"startup, the least recently used entries will be deleted until the total "
+"size is within bounds.\n"
+"[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/"
+"shaders/shader_compilation_mode[/code] is set to [code]Asynchronous + Cache[/"
+"code]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"An override for [code]rendering/gles3/shaders/ubershader_cache_size_mb[/"
+"code], so a smaller maximum size can be configured for mobile platforms, "
+"where storage space is more limited.\n"
+"[b]Note:[/b] This setting is only meaningful if [code]rendering/gles3/"
+"shaders/shader_compilation_mode[/code] is set to [code]Asynchronous + Cache[/"
+"code]."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"If set to [code]Asynchronous[/code] and available on the target device, "
+"asynchronous compilation of shaders is enabled (in contrast to "
+"[code]Asynchronous[/code]).\n"
+"That means that when a shader is first used under some new rendering "
+"situation, the game won't stall while such shader is being compiled. "
+"Instead, a fallback will be used and the real shader will be compiled in the "
+"background. Once the actual shader is compiled, it will be used the next "
+"times it's used to draw a frame.\n"
+"Depending on the async mode configured for a given material/shader, the "
+"fallback will be an \"ubershader\" (the default) or just skip rendering any "
+"item it is applied to.\n"
+"An ubershader is a very complex shader, slow but suited to any rendering "
+"situation, that the engine generates internally so it can be used from the "
+"beginning while the traditional conditioned, optimized version of it is "
+"being compiled.\n"
+"In order to save some loading time, you can use [code]Asynchronous + Cache[/"
+"code], which also causes the ubershaders to be cached into storage so they "
+"can be ready faster next time they are used (provided the platform provides "
+"support for it).\n"
+"[b]Warning:[/b] Async. compilation is currently only supported for spatial "
+"and particle materials/shaders."
+msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -57803,9 +58086,9 @@ msgstr ""
 "加有效，并且对浮点错误有很强的抵抗力。"
 
 #: doc/classes/Quat.xml
+#, fuzzy
 msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/using_transforms."
-"html#interpolating-with-quaternions"
+"$DOCS_URL/tutorials/3d/using_transforms.html#interpolating-with-quaternions"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/using_transforms."
 "html#interpolating-with-quaternions"
@@ -58019,9 +58302,8 @@ msgstr ""
 "不是实际的默认种子。"
 
 #: doc/classes/RandomNumberGenerator.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/math/random_number_generation."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/math/random_number_generation.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/math/"
 "random_number_generation.html"
@@ -58380,12 +58662,12 @@ msgid "If [code]true[/code], collision with [PhysicsBody]s will be reported."
 msgstr "如果 [code]true[/code]，将反馈与 [PhysicsBody] 的碰撞。"
 
 #: doc/classes/RayCast.xml doc/classes/RayCast2D.xml
+#, fuzzy
 msgid ""
 "The ray's collision mask. Only objects in at least one collision layer "
-"enabled in the mask will be detected. See [url=https://docs.godotengine.org/"
-"en/3.4/tutorials/physics/physics_introduction.html#collision-layers-and-"
-"masks]Collision layers and masks[/url] in the documentation for more "
-"information."
+"enabled in the mask will be detected. See [url=$DOCS_URL/tutorials/physics/"
+"physics_introduction.html#collision-layers-and-masks]Collision layers and "
+"masks[/url] in the documentation for more information."
 msgstr ""
 "光线的碰撞遮罩。只有在遮罩中启用至少一个碰撞层中物体，才会被检测到。有关更多"
 "信息，请参阅文档中的 [url=https://docs.godotengine.org/zh_CN/stable/"
@@ -58530,11 +58812,14 @@ msgid "2D axis-aligned bounding box."
 msgstr "2D 轴对齐边界框。"
 
 #: doc/classes/Rect2.xml
+#, fuzzy
 msgid ""
 "[Rect2] consists of a position, a size, and several utility functions. It is "
 "typically used for fast overlap tests.\n"
 "It uses floating-point coordinates.\n"
-"The 3D counterpart to [Rect2] is [AABB]."
+"The 3D counterpart to [Rect2] is [AABB].\n"
+"Negative values for [member size] are not supported and will not work for "
+"most methods. Use [method abs] to get a Rect2 with a positive size."
 msgstr ""
 "[Rect2] 由一个坐标、一个大小和几个实用函数组成。它通常用于快速重叠测试。\n"
 "它使用浮点坐标。\n"
@@ -58589,6 +58874,13 @@ msgstr ""
 #: doc/classes/Rect2.xml
 msgid "Returns the area of the [Rect2]."
 msgstr "返回 [Rect2] 面积。"
+
+#: doc/classes/Rect2.xml
+#, fuzzy
+msgid ""
+"Returns the center of the [Rect2], which is equal to [member position] + "
+"([member size] / 2)."
+msgstr "返回这个向量的长宽比，即[member x] 与[member y]的比例。"
 
 #: doc/classes/Rect2.xml
 msgid ""
@@ -58804,7 +59096,8 @@ msgstr ""
 "把跨越多个反射探针的大网格分割成小网格。"
 
 #: doc/classes/ReflectionProbe.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/reflection_probes.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/reflection_probes.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/reflection_probes.html"
 
@@ -59326,7 +59619,8 @@ msgstr ""
 "行，并释放不再使用的资源。这意味着未使用的资源在被删除之前会停留一段时间。"
 
 #: doc/classes/Resource.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/resources.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/scripting/resources.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/scripting/resources.html"
 
@@ -61897,9 +62191,8 @@ msgstr ""
 "RootMotionView[/code]。此外，它不能是 [code]@tool[/code] 脚本。"
 
 #: doc/classes/RootMotionView.xml
-msgid ""
-"https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree."
-"html#root-motion"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/animation/animation_tree.html#root-motion"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/latest/tutorials/animation/animation_tree."
 "html#root-motion"
@@ -62117,6 +62410,17 @@ msgstr ""
 "景应该接收主编辑状态。\n"
 "[b]注意：[/b] 只在编辑器构建中可用。"
 
+#: doc/classes/SceneState.xml
+#, fuzzy
+msgid ""
+"If passed to [method PackedScene.instance], it's similar to [constant "
+"GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated "
+"to be the base of another one.\n"
+"[b]Note:[/b] Only available in editor builds."
+msgstr ""
+"如果传递给[method PackedScene.instance]，提供继承的场景资源给本地场景。\n"
+"[b]注意：[/b] 只在编辑器构建中可用。"
+
 #: doc/classes/SceneTree.xml
 msgid "Manages the game loop via a hierarchy of nodes."
 msgstr "通过节点层次结构管理游戏循环。"
@@ -62143,14 +62447,14 @@ msgstr ""
 "[SceneTree] 是场景所使用的默认 [MainLoop] 实现，因此掌控着游戏循环。"
 
 #: doc/classes/SceneTree.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/scene_tree.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/scripting/scene_tree.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/scripting/scene_tree.html"
 
 #: doc/classes/SceneTree.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/rendering/multiple_resolutions."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/rendering/multiple_resolutions.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/rendering/"
 "multiple_resolutions.html"
@@ -62741,9 +63045,8 @@ msgstr ""
 "的基类之一相匹配，[method Object.set_script] 会扩展该对象。"
 
 #: doc/classes/Script.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/scripting/index.html"
+msgid "$DOCS_URL/tutorials/scripting/index.html"
 msgstr ""
-"https://docs.godotengine.org/zh_CN/stable/tutorials/scripting/index.html"
 
 #: doc/classes/Script.xml
 msgid "Returns [code]true[/code] if the script can be instanced."
@@ -63107,13 +63410,12 @@ msgstr ""
 "链接的教程。"
 
 #: doc/classes/Shader.xml doc/classes/ShaderMaterial.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/shaders/index.html"
-msgstr "https://docs.godotengine.org/zh_CN/stable/tutorials/shaders/index.html"
+msgid "$DOCS_URL/tutorials/shaders/index.html"
+msgstr ""
 
 #: doc/classes/Shader.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/shaders/"
-"introduction_to_shaders.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/shaders/introduction_to_shaders.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/shaders/"
 "introduction_to_shaders.html"
@@ -63518,8 +63820,8 @@ msgstr ""
 "对其子项的放松姿势的引用，并作为对其骨骼的单一访问点。"
 
 #: doc/classes/Skeleton2D.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/animation/2d_skeletons.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/animation/2d_skeletons.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/animation/2d_skeletons."
 "html"
@@ -63914,7 +64216,8 @@ msgid ""
 msgstr "可变形的物理体。用于创建弹性或可变形的物体，如布、橡胶或其他柔性材质。"
 
 #: doc/classes/SoftBody.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/physics/soft_body.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/physics/soft_body.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/physics/soft_body.html"
 
@@ -63937,6 +64240,7 @@ msgstr ""
 "个空间。"
 
 #: doc/classes/SoftBody.xml
+#, fuzzy
 msgid ""
 "The physics layers this SoftBody is in.\n"
 "Collidable objects can exist in any of 32 different layers. These layers "
@@ -63944,10 +64248,10 @@ msgid ""
 "layers to select with which objects it can collide, using the collision_mask "
 "property.\n"
 "A contact is detected if object A is in any of the layers that object B "
-"scans, or object B is in any layer scanned by object A. See [url=https://"
-"docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction."
-"html#collision-layers-and-masks]Collision layers and masks[/url] in the "
-"documentation for more information."
+"scans, or object B is in any layer scanned by object A. See [url=$DOCS_URL/"
+"tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "这个 SoftBody 所处的物理层。\n"
 "可碰撞的物体可以存在于 32 个不同层中的任何一个。这些层的工作就像一个标签系"
@@ -63959,11 +64263,12 @@ msgstr ""
 "and-masks]碰撞层和掩码[/url]。"
 
 #: doc/classes/SoftBody.xml
+#, fuzzy
 msgid ""
-"The physics layers this SoftBody scans for collisions. See [url=https://docs."
-"godotengine.org/en/3.4/tutorials/physics/physics_introduction.html#collision-"
-"layers-and-masks]Collision layers and masks[/url] in the documentation for "
-"more information."
+"The physics layers this SoftBody scans for collisions. See [url=$DOCS_URL/"
+"tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "此 SoftBody 扫描碰撞的物理层。更多信息请参阅文档中的[url=https://docs."
 "godotengine.org/zh_CN/stable/tutorials/physics/physics_introduction."
@@ -64025,8 +64330,8 @@ msgstr ""
 "使用 [method @GDScript.deg2rad] 将度数转换为弧度。"
 
 #: doc/classes/Spatial.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/3d/introduction_to_3d.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/introduction_to_3d.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/introduction_to_3d."
 "html"
@@ -64379,7 +64684,8 @@ msgstr ""
 "下面的教程。"
 
 #: doc/classes/SpatialMaterial.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/3d/spatial_material.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/3d/spatial_material.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/3d/spatial_material.html"
 
@@ -64507,6 +64813,14 @@ msgstr ""
 "指定 [member ao_texture] 的通道，其中存储环境遮挡信息。当您在一个纹理中存储多"
 "个效果的信息时，这很有用。例如，如果您将金属效果存储在R通道中，将粗糙度存储在"
 "B通道中，将环境遮挡存储在G通道中，就可以减少您使用的纹理数量。"
+
+#: doc/classes/SpatialMaterial.xml
+msgid ""
+"If [member ProjectSettings.rendering/gles3/shaders/shader_compilation_mode] "
+"is [code]Synchronous[/code] (with or without cache), this determines how "
+"this material must behave in regards to asynchronous shader compilation.\n"
+"[constant ASYNC_MODE_VISIBLE] is the default and the best for most cases."
+msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
 msgid ""
@@ -65637,6 +65951,25 @@ msgstr ""
 "素，在不启用透明度的情况下平滑淡化。在某些硬件上，这可能比[constant "
 "DISTANCE_FADE_PIXEL_ALPHA]更快。"
 
+#: doc/classes/SpatialMaterial.xml
+msgid ""
+"The real conditioned shader needed on each situation will be sent for "
+"background compilation. In the meantime, a very complex shader that adapts "
+"to every situation will be used (\"ubershader\"). This ubershader is much "
+"slower to render, but will keep the game running without stalling to "
+"compile. Once shader compilation is done, the ubershader is replaced by the "
+"traditional optimized shader."
+msgstr ""
+
+#: doc/classes/SpatialMaterial.xml
+msgid ""
+"Anything with this material applied won't be rendered while this material's "
+"shader is being compiled.\n"
+"This is useful for optimization, in cases where the visuals won't suffer "
+"from having certain non-essential elements missing during the short time "
+"their shaders are being compiled."
+msgstr ""
+
 #: doc/classes/SphereMesh.xml
 msgid "Class representing a spherical [PrimitiveMesh]."
 msgstr "表示球形 [PrimitiveMesh] 的类。"
@@ -65913,11 +66246,12 @@ msgid ""
 msgstr "从碰撞检查排除的 [PhysicsBody] 对象列表中删除指定的 [RID]。"
 
 #: doc/classes/SpringArm.xml
+#, fuzzy
 msgid ""
-"The layers against which the collision check shall be done. See [url=https://"
-"docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction."
-"html#collision-layers-and-masks]Collision layers and masks[/url] in the "
-"documentation for more information."
+"The layers against which the collision check shall be done. See [url="
+"$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "碰撞检测的目标层。更多信息请参阅文档中的[url=https://docs.godotengine.org/"
 "zh_CN/stable/tutorials/physics/physics_introduction.html#collision-layers-"
@@ -66762,9 +67096,8 @@ msgstr ""
 "进行传递的成本很低。"
 
 #: doc/classes/String.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/scripting/gdscript/"
-"gdscript_format_string.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/scripting/gdscript/"
 "gdscript_format_string.html"
@@ -67074,6 +67407,19 @@ msgstr ""
 #: doc/classes/String.xml
 msgid "If the string is a valid file path, returns the filename."
 msgstr "字符串为有效文件路径时，返回文件名。"
+
+#: doc/classes/String.xml
+msgid ""
+"Splits a string using a [code]delimiter[/code] and returns a substring at "
+"index [code]slice[/code]. Returns an empty string if the index doesn't "
+"exist.\n"
+"This is a more performant alternative to [method split] for cases when you "
+"need only one element from the array at a fixed index.\n"
+"Example:\n"
+"[codeblock]\n"
+"print(\"i/am/example/string\".get_slice(\"/\", 2)) # Prints 'example'.\n"
+"[/codeblock]"
+msgstr ""
 
 #: doc/classes/String.xml
 msgid "Hashes the string and returns a 32-bit integer."
@@ -67521,12 +67867,15 @@ msgid "Returns a simplified canonical path."
 msgstr "返回简化的规范路径。"
 
 #: doc/classes/String.xml
+#, fuzzy
 msgid ""
 "Splits the string by a [code]delimiter[/code] string and returns an array of "
 "the substrings. The [code]delimiter[/code] can be of any length.\n"
 "If [code]maxsplit[/code] is specified, it defines the number of splits to do "
 "from the left up to [code]maxsplit[/code]. The default value of [code]0[/"
 "code] means that all items are split.\n"
+"If you need only one element from the array at a specific index, [method "
+"get_slice] is a more performant option.\n"
 "Example:\n"
 "[codeblock]\n"
 "var some_string = \"One,Two,Three,Four\"\n"
@@ -70464,9 +70813,8 @@ msgstr ""
 "还可以通过编写 [code].theme[/code] 文件加载主题资源，更多信息见文档。"
 
 #: doc/classes/Theme.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/ui/gui_skinning.html"
+msgid "$DOCS_URL/tutorials/ui/gui_skinning.html"
 msgstr ""
-"https://docs.godotengine.org/zh_CN/stable/tutorials/ui/gui_skinning.html"
 
 #: doc/classes/Theme.xml
 msgid "Clears all values on the theme."
@@ -70946,9 +71294,8 @@ msgstr ""
 "限制。"
 
 #: doc/classes/Thread.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/performance/threads/"
-"thread_safe_apis.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/performance/threads/thread_safe_apis.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/performance/threads/"
 "thread_safe_apis.html"
@@ -71052,7 +71399,8 @@ msgstr ""
 "处的单元格坐标会被编码为 [code]metadata[/code]。"
 
 #: doc/classes/TileMap.xml doc/classes/TileSet.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/2d/using_tilemaps.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/2d/using_tilemaps.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/2d/using_tilemaps.html"
 
@@ -71315,22 +71663,24 @@ msgid ""
 msgstr "静态体碰撞的摩擦值，参阅[code]collision_use_kinematic[/code]。"
 
 #: doc/classes/TileMap.xml
+#, fuzzy
 msgid ""
-"The collision layer(s) for all colliders in the TileMap. See [url=https://"
-"docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction."
-"html#collision-layers-and-masks]Collision layers and masks[/url] in the "
-"documentation for more information."
+"The collision layer(s) for all colliders in the TileMap. See [url=$DOCS_URL/"
+"tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "图块地图中所有碰撞器的碰撞层。更多信息请参阅文档中的[url=https://docs."
 "godotengine.org/zh_CN/stable/tutorials/physics/physics_introduction."
 "html#collision-layers-and-masks]碰撞层和掩码[/url]。"
 
 #: doc/classes/TileMap.xml
+#, fuzzy
 msgid ""
-"The collision mask(s) for all colliders in the TileMap. See [url=https://"
-"docs.godotengine.org/en/3.4/tutorials/physics/physics_introduction."
-"html#collision-layers-and-masks]Collision layers and masks[/url] in the "
-"documentation for more information."
+"The collision mask(s) for all colliders in the TileMap. See [url=$DOCS_URL/"
+"tutorials/physics/physics_introduction.html#collision-layers-and-"
+"masks]Collision layers and masks[/url] in the documentation for more "
+"information."
 msgstr ""
 "图块地图中所有碰撞器的碰撞掩码。更多信息请参阅文档中的[url=https://docs."
 "godotengine.org/zh_CN/stable/tutorials/physics/physics_introduction."
@@ -71825,6 +72175,324 @@ msgstr "设置图块的[enum TileMode]。"
 #: doc/classes/TileSet.xml
 msgid "Sets the tile's drawing index."
 msgstr "设置图块的绘制索引。"
+
+#: doc/classes/Time.xml
+msgid "Time singleton for working with time."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"The Time singleton allows converting time between various formats and also "
+"getting time information from the system.\n"
+"This class conforms with as many of the ISO 8601 standards as possible. All "
+"dates follow the Proleptic Gregorian calendar. As such, the day before "
+"[code]1582-10-15[/code] is [code]1582-10-14[/code], not [code]1582-10-04[/"
+"code]. The year before 1 AD (aka 1 BC) is number [code]0[/code], with the "
+"year before that (2 BC) being [code]-1[/code], etc.\n"
+"Conversion methods assume \"the same timezone\", and do not handle timezone "
+"conversions or DST automatically. Leap seconds are also not handled, they "
+"must be done manually if desired. Suffixes such as \"Z\" are not handled, "
+"you need to strip them away manually.\n"
+"When getting time information from the system, the time can either be in the "
+"local timezone or UTC depending on the [code]utc[/code] parameter. However, "
+"the [method get_unix_time_from_system] method always returns the time in "
+"UTC.\n"
+"[b]Important:[/b] The [code]_from_system[/code] methods use the system clock "
+"that the user can manually set. [b]Never use[/b] this method for precise "
+"time calculation since its results are subject to automatic adjustments by "
+"the user or the operating system. [b]Always use[/b] [method get_ticks_usec] "
+"or [method get_ticks_msec] for precise time calculation instead, since they "
+"are guaranteed to be monotonic (i.e. never decrease)."
+msgstr ""
+
+#: doc/classes/Time.xml
+#, fuzzy
+msgid ""
+"Returns the current date as a dictionary of keys: [code]year[/code], "
+"[code]month[/code], [code]day[/code], [code]weekday[/code], and [code]dst[/"
+"code] (Daylight Savings Time).\n"
+"The returned values are in the system's local time when [code]utc[/code] is "
+"false, otherwise they are in UTC."
+msgstr ""
+"返回当前日期时间作为关键字字典:[code]year[/code]， [code]month[/code]， "
+"[code]day[/code]， [code]weekday[/code]， [code]dst[/code](夏令时)，"
+"[code]hour[/code]， [code]minute[/code]， [code]second[/code]。"
+
+#: doc/classes/Time.xml
+#, fuzzy
+msgid ""
+"Converts the given Unix timestamp to a dictionary of keys: [code]year[/"
+"code], [code]month[/code], [code]day[/code], and [code]weekday[/code]."
+msgstr ""
+"返回当前日期作为键的字典:[code]year[/code]， [code]month[/code]， [code]day[/"
+"code]， [code]weekday[/code]， [code]dst[/code](夏令时)。"
+
+#: doc/classes/Time.xml
+msgid ""
+"Returns the current date as an ISO 8601 date string (YYYY-MM-DD).\n"
+"The returned values are in the system's local time when [code]utc[/code] is "
+"false, otherwise they are in UTC."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"Converts the given Unix timestamp to an ISO 8601 date string (YYYY-MM-DD)."
+msgstr ""
+
+#: doc/classes/Time.xml
+#, fuzzy
+msgid ""
+"Converts the given ISO 8601 date and time string (YYYY-MM-DDTHH:MM:SS) to a "
+"dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], "
+"[code]weekday[/code], [code]hour[/code], [code]minute[/code], and "
+"[code]second[/code].\n"
+"If [code]weekday[/code] is false, then the [code]weekday[/code] entry is "
+"excluded (the calculation is relatively expensive)."
+msgstr ""
+"返回当前日期时间作为关键字字典:[code]year[/code]， [code]month[/code]， "
+"[code]day[/code]， [code]weekday[/code]， [code]dst[/code](夏令时)，"
+"[code]hour[/code]， [code]minute[/code]， [code]second[/code]。"
+
+#: doc/classes/Time.xml
+#, fuzzy
+msgid ""
+"Returns the current date as a dictionary of keys: [code]year[/code], "
+"[code]month[/code], [code]day[/code], [code]weekday[/code], [code]hour[/"
+"code], [code]minute[/code], and [code]second[/code]."
+msgstr ""
+"返回当前日期时间作为关键字字典:[code]year[/code]， [code]month[/code]， "
+"[code]day[/code]， [code]weekday[/code]， [code]dst[/code](夏令时)，"
+"[code]hour[/code]， [code]minute[/code]， [code]second[/code]。"
+
+#: doc/classes/Time.xml
+#, fuzzy
+msgid ""
+"Converts the given Unix timestamp to a dictionary of keys: [code]year[/"
+"code], [code]month[/code], [code]day[/code], and [code]weekday[/code].\n"
+"The returned Dictionary's values will be the same as the [method "
+"get_datetime_dict_from_system] if the Unix timestamp is the current time, "
+"with the exception of Daylight Savings Time as it cannot be determined from "
+"the epoch."
+msgstr ""
+"获取与给定UNIX历元时间(以秒为单位)对应的时间值字典。\n"
+"返回的Dictionary值将与[method get_datetime]相同，除了Daylight Savings Time，"
+"因为它不能从epoch确定。"
+
+#: doc/classes/Time.xml
+#, fuzzy
+msgid ""
+"Converts the given dictionary of keys to an ISO 8601 date and time string "
+"(YYYY-MM-DDTHH:MM:SS).\n"
+"The given dictionary can be populated with the following keys: [code]year[/"
+"code], [code]month[/code], [code]day[/code], [code]hour[/code], "
+"[code]minute[/code], and [code]second[/code]. Any other entries (including "
+"[code]dst[/code]) are ignored.\n"
+"If the dictionary is empty, [code]0[/code] is returned. If some keys are "
+"omitted, they default to the equivalent values for the Unix epoch timestamp "
+"0 (1970-01-01 at 00:00:00).\n"
+"If [code]use_space[/code] is true, use a space instead of the letter T in "
+"the middle."
+msgstr ""
+"从时间值字典中获取纪元时间值。\n"
+"[code]datetime[/code] 必须填充以下键:[code]year[/code]、[code]month[/code]、"
+"[code]day[/code]、[code]hour[/code]、[code]minute[/code]、[code]second[/"
+"code]。\n"
+"如果字典为空，则返回 [code]0[/code]。如果某些键被省略，它们默认为 UNIX 纪元时"
+"间戳 0（1970-01-01 在 00:00:00 UTC）的等效值。\n"
+"你可以将 [method get_datetime_from_unix_time] 的输出直接传递给此函数。夏令时 "
+"([code]dst[/code])（如果存在）将被忽略。"
+
+#: doc/classes/Time.xml
+msgid ""
+"Returns the current date and time as an ISO 8601 date and time string (YYYY-"
+"MM-DDTHH:MM:SS).\n"
+"The returned values are in the system's local time when [code]utc[/code] is "
+"false, otherwise they are in UTC.\n"
+"If [code]use_space[/code] is true, use a space instead of the letter T in "
+"the middle."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"Converts the given Unix timestamp to an ISO 8601 date and time string (YYYY-"
+"MM-DDTHH:MM:SS).\n"
+"If [code]use_space[/code] is true, use a space instead of the letter T in "
+"the middle."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"Returns the amount of time passed in milliseconds since the engine started.\n"
+"Will always be positive or 0 and uses a 64-bit value (it will wrap after "
+"roughly 500 million years)."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"Returns the amount of time passed in microseconds since the engine started.\n"
+"Will always be positive or 0 and uses a 64-bit value (it will wrap after "
+"roughly half a million years)."
+msgstr ""
+
+#: doc/classes/Time.xml
+#, fuzzy
+msgid ""
+"Returns the current time as a dictionary of keys: [code]hour[/code], "
+"[code]minute[/code], and [code]second[/code].\n"
+"The returned values are in the system's local time when [code]utc[/code] is "
+"false, otherwise they are in UTC."
+msgstr ""
+"返回当前日期作为键的字典:[code]year[/code]， [code]month[/code]， [code]day[/"
+"code]， [code]weekday[/code]， [code]dst[/code](夏令时)。"
+
+#: doc/classes/Time.xml
+#, fuzzy
+msgid ""
+"Converts the given time to a dictionary of keys: [code]hour[/code], "
+"[code]minute[/code], and [code]second[/code]."
+msgstr ""
+"返回当前日期作为键的字典:[code]year[/code]， [code]month[/code]， [code]day[/"
+"code]， [code]weekday[/code]， [code]dst[/code](夏令时)。"
+
+#: doc/classes/Time.xml
+msgid ""
+"Returns the current time as an ISO 8601 time string (HH:MM:SS).\n"
+"The returned values are in the system's local time when [code]utc[/code] is "
+"false, otherwise they are in UTC."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"Converts the given Unix timestamp to an ISO 8601 time string (HH:MM:SS)."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"Returns the current time zone as a dictionary of keys: [code]bias[/code] and "
+"[code]name[/code]. The [code]bias[/code] value is the offset from UTC in "
+"minutes, since not all time zones are multiples of an hour from UTC."
+msgstr ""
+
+#: doc/classes/Time.xml
+#, fuzzy
+msgid ""
+"Converts a dictionary of time values to a Unix timestamp.\n"
+"The given dictionary can be populated with the following keys: [code]year[/"
+"code], [code]month[/code], [code]day[/code], [code]hour[/code], "
+"[code]minute[/code], and [code]second[/code]. Any other entries (including "
+"[code]dst[/code]) are ignored.\n"
+"If the dictionary is empty, [code]0[/code] is returned. If some keys are "
+"omitted, they default to the equivalent values for the Unix epoch timestamp "
+"0 (1970-01-01 at 00:00:00).\n"
+"You can pass the output from [method get_datetime_dict_from_unix_time] "
+"directly into this function and get the same as what was put in.\n"
+"[b]Note:[/b] Unix timestamps are often in UTC. This method does not do any "
+"timezone conversion, so the timestamp will be in the same timezone as the "
+"given datetime dictionary."
+msgstr ""
+"从时间值字典中获取纪元时间值。\n"
+"[code]datetime[/code] 必须填充以下键:[code]year[/code]、[code]month[/code]、"
+"[code]day[/code]、[code]hour[/code]、[code]minute[/code]、[code]second[/"
+"code]。\n"
+"如果字典为空，则返回 [code]0[/code]。如果某些键被省略，它们默认为 UNIX 纪元时"
+"间戳 0（1970-01-01 在 00:00:00 UTC）的等效值。\n"
+"你可以将 [method get_datetime_from_unix_time] 的输出直接传递给此函数。夏令时 "
+"([code]dst[/code])（如果存在）将被忽略。"
+
+#: doc/classes/Time.xml
+msgid ""
+"Converts the given ISO 8601 date and/or time string to a Unix timestamp. The "
+"string can contain a date only, a time only, or both.\n"
+"[b]Note:[/b] Unix timestamps are often in UTC. This method does not do any "
+"timezone conversion, so the timestamp will be in the same timezone as the "
+"given datetime string."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"Returns the current Unix timestamp in seconds based on the system time in "
+"UTC. This method is implemented by the operating system and always returns "
+"the time in UTC."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of January, represented numerically as [code]01[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of February, represented numerically as [code]02[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of March, represented numerically as [code]03[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of April, represented numerically as [code]04[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of May, represented numerically as [code]05[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of June, represented numerically as [code]06[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of July, represented numerically as [code]07[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of August, represented numerically as [code]08[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of September, represented numerically as [code]09[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of October, represented numerically as [code]10[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of November, represented numerically as [code]11[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The month of December, represented numerically as [code]12[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The day of the week Sunday, represented numerically as [code]0[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The day of the week Monday, represented numerically as [code]1[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The day of the week Tuesday, represented numerically as [code]2[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"The day of the week Wednesday, represented numerically as [code]3[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"The day of the week Thursday, represented numerically as [code]4[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid "The day of the week Friday, represented numerically as [code]5[/code]."
+msgstr ""
+
+#: doc/classes/Time.xml
+msgid ""
+"The day of the week Saturday, represented numerically as [code]6[/code]."
+msgstr ""
 
 #: doc/classes/Timer.xml
 msgid "A countdown timer."
@@ -72425,16 +73093,15 @@ msgid ""
 msgstr "翻译是可以按需加载和卸载的资源，将一个字符串映射到另一个字符串。"
 
 #: doc/classes/Translation.xml doc/classes/TranslationServer.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/i18n/internationalizing_games."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/i18n/internationalizing_games.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/i18n/"
 "internationalizing_games.html"
 
 #: doc/classes/Translation.xml doc/classes/TranslationServer.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/i18n/locales.html"
-msgstr "https://docs.godotengine.org/zh_CN/stable/tutorials/i18n/locales.html"
+msgid "$DOCS_URL/tutorials/i18n/locales.html"
+msgstr ""
 
 #: doc/classes/Translation.xml
 msgid "Virtual method to override [method get_message]."
@@ -72569,10 +73236,6 @@ msgstr ""
 "要遍历一个[Tree]对象中的所有[TreeItem]对象，在通过[method get_root]获得根之"
 "后，使用[method TreeItem.get_next]和[method TreeItem.get_children]方法。你可"
 "以对一个[TreeItem]使用[method Object.free]来把它从[Tree]中移除。"
-
-#: doc/classes/Tree.xml
-msgid "Returns [code]true[/code] if the column titles are being shown."
-msgstr "如果显示列标题，则返回[code]true[/code]。"
 
 #: doc/classes/Tree.xml
 msgid "Clears the tree. This removes all items."
@@ -72773,10 +73436,6 @@ msgid "Sets the title of a column."
 msgstr "设置一个列的标题。"
 
 #: doc/classes/Tree.xml
-msgid "If [code]true[/code], column titles are visible."
-msgstr "如果[code]true[/code]，列标题可见。"
-
-#: doc/classes/Tree.xml
 msgid ""
 "If [code]true[/code], the currently selected cell may be selected again."
 msgstr "如果[code]true[/code]，可以再次选择当前选定的单元。"
@@ -72784,6 +73443,10 @@ msgstr "如果[code]true[/code]，可以再次选择当前选定的单元。"
 #: doc/classes/Tree.xml
 msgid "If [code]true[/code], a right mouse button click can select items."
 msgstr "如果[code]true[/code]，鼠标右键点击可以选择项目。"
+
+#: doc/classes/Tree.xml
+msgid "If [code]true[/code], column titles are visible."
+msgstr "如果[code]true[/code]，列标题可见。"
 
 #: doc/classes/Tree.xml
 msgid "The number of columns."
@@ -74953,7 +75616,8 @@ msgstr ""
 "[Mutex] 来锁定它。"
 
 #: doc/classes/Variant.xml
-msgid "https://docs.godotengine.org/en/3.4/development/cpp/variant_class.html"
+#, fuzzy
+msgid "$DOCS_URL/development/cpp/variant_class.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/development/cpp/variant_class.html"
 
@@ -75062,7 +75726,9 @@ msgid ""
 msgstr "返回所有分量四舍五入后的向量，朝正无穷大。"
 
 #: doc/classes/Vector2.xml
+#, fuzzy
 msgid ""
+"Deprecated, please use [method limit_length] instead.\n"
 "Returns the vector with a maximum length by limiting its length to "
 "[code]length[/code]."
 msgstr "通过限制其长度为[code]length[/code]，返回具有最大长度的向量。"
@@ -75160,6 +75826,12 @@ msgstr ""
 "返回这个向量的平方长度，即平方大小。\n"
 "这个方法比[method length]运行得更快，所以如果你需要比较向量或需要一些公式的平"
 "方距离时，更喜欢用它。"
+
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
+msgid ""
+"Returns the vector with a maximum length by limiting its length to "
+"[code]length[/code]."
+msgstr "通过限制其长度为[code]length[/code]，返回具有最大长度的向量。"
 
 #: doc/classes/Vector2.xml
 msgid ""
@@ -75629,6 +76301,15 @@ msgstr ""
 "如果你想要先进的车辆物理，须使用另一个[PhysicsBody]类来编写你自己的物理集成。"
 
 #: doc/classes/VehicleWheel.xml
+msgid ""
+"Returns the contacting body node if valid in the tree, as [Spatial]. At the "
+"moment, [GridMap] is not supported so the node will be always of type "
+"[PhysicsBody].\n"
+"Returns [code]null[/code] if the wheel is not in contact with a surface, or "
+"the contact body is not a [PhysicsBody]."
+msgstr ""
+
+#: doc/classes/VehicleWheel.xml
 msgid "Returns the rotational speed of the wheel in revolutions per minute."
 msgstr "返回轮子的旋转速度，单位为每分钟转数。"
 
@@ -76055,9 +76736,8 @@ msgstr ""
 "[member render_target_v_flip] 可以使该 Viewport 使用正确的朝向显示。"
 
 #: doc/classes/Viewport.xml
-msgid "https://docs.godotengine.org/en/3.4/tutorials/rendering/index.html"
+msgid "$DOCS_URL/tutorials/rendering/index.html"
 msgstr ""
-"https://docs.godotengine.org/zh_CN/stable/tutorials/rendering/index.html"
 
 #: doc/classes/Viewport.xml doc/classes/ViewportTexture.xml
 msgid "https://godotengine.org/asset-library/asset/128"
@@ -77054,9 +77734,8 @@ msgstr ""
 "您最有可能通过 Visual Script 编辑器或在为其编写插件时使用此类。"
 
 #: modules/visual_script/doc_classes/VisualScript.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/getting_started/scripting/visual_script/"
-"index.html"
+#, fuzzy
+msgid "$DOCS_URL/getting_started/scripting/visual_script/index.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/getting_started/scripting/"
 "visual_script/index.html"
@@ -79064,8 +79743,8 @@ msgstr ""
 "视窗的画布的子项，或者它需要是最终连接到画布的另一个画布项的子项。"
 
 #: doc/classes/VisualServer.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/performance/using_servers.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/performance/using_servers.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/performance/"
 "using_servers.html"
@@ -80062,6 +80741,16 @@ msgid ""
 "more details."
 msgstr ""
 "设置给定的[enum InstanceFlags]标志。更多细节请参阅[enum InstanceFlags]。"
+
+#: doc/classes/VisualServer.xml
+#, fuzzy
+msgid ""
+"Sets a material that will be rendered for all surfaces on top of active "
+"materials for the mesh associated with this instance. Equivalent to [member "
+"GeometryInstance.material_overlay]."
+msgstr ""
+"设置一个材质，覆盖与此实例关联的网格上的所有表面的材质。相当于[member "
+"GeometryInstance.material_override]。"
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -81108,6 +81797,17 @@ msgid ""
 "Sets the default clear color which is used when a specific clear color has "
 "not been selected."
 msgstr "设置未选择特定透明色时使用的默认透明色。"
+
+#: doc/classes/VisualServer.xml
+msgid ""
+"If asynchronous shader compilation is enabled, this controls whether "
+"[constant SpatialMaterial.ASYNC_MODE_HIDDEN] is obeyed.\n"
+"For instance, you may want to enable this temporarily before taking a "
+"screenshot. This ensures everything is visible even if shaders with async "
+"mode [i]hidden[/i] are not ready yet.\n"
+"Reflection probes use this internally to ensure they capture everything "
+"regardless the shaders are ready or not."
+msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid ""
@@ -82584,8 +83284,8 @@ msgstr ""
 "并控制着色器的流程。"
 
 #: doc/classes/VisualShaderNode.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/shaders/visual_shaders.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/shaders/visual_shaders.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/shaders/visual_shaders."
 "html"
@@ -83156,9 +83856,8 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/VisualShaderNodeCustom.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/plugins/editor/"
-"visual_shader_plugins.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/plugins/editor/visual_shader_plugins.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/plugins/editor/"
 "visual_shader_plugins.html"
@@ -83586,9 +84285,8 @@ msgstr ""
 "表，请参阅着色器参考，即查看[code]Tutorials[/code]教程部分的链接。"
 
 #: doc/classes/VisualShaderNodeInput.xml
-msgid ""
-"https://docs.godotengine.org/en/3.4/tutorials/shaders/shader_reference/index."
-"html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/shaders/shader_reference/index.html"
 msgstr ""
 "https://docs.godotengine.org/zh_CN/stable/tutorials/shaders/shader_reference/"
 "index.html"
