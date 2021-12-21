@@ -4,6 +4,43 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.4.2] - TBD
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-4-2) for details.
+
+### Changed
+
+#### Thirdparty
+
+- mbedtls updated to 2.16.12 ([GH-56098](https://github.com/godotengine/godot/pull/56098)).
+
+### Fixed
+
+#### GUI
+
+- Fix BaseButton's localization for tooltip text with shortcut ([GH-56109](https://github.com/godotengine/godot/pull/56109)).
+
+#### Input
+
+- Revert #55997 "Fixed event spam when using the Nintendo Switch controller" ([GH-56029](https://github.com/godotengine/godot/pull/56029)).
+  * This reverts a change introduced in 3.4.1 which drastically reduced the sensitivity for analog joysticks.
+
+#### Mono (C#)
+
+- Check that a `.csproj` exists before trying to edit it ([GH-56101](https://github.com/godotengine/godot/pull/56101)).
+
+#### Porting
+
+- macOS: Fix OpenGL flickering regression ([GH-56059](https://github.com/godotengine/godot/pull/56059)).
+
+#### Rendering
+
+- GLES2: Fix `trunc` shader function compilation on Android ([GH-56061](https://github.com/godotengine/godot/pull/56061)).
+
+#### XR
+
+- Fix size issue for ARVR managed viewport ([GH-56072](https://github.com/godotengine/godot/pull/56072)).
+
 ## [3.4.1] - 2021-12-17
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-4-1) for details.
@@ -57,10 +94,10 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 
 #### Thirdparty
 
-- libogg updated to 1.3.5.
-- libvorbis updated to 1.3.7.
-- minimp3 updated to 2021-11-30 git snapshot.
-- CA root certificates updated to 2021-11-01 bundle from Mozilla.
+- libogg updated to 1.3.5 ([GH-55119](https://github.com/godotengine/godot/pull/55119)).
+- libvorbis updated to 1.3.7 ([GH-55129](https://github.com/godotengine/godot/pull/55129)).
+- minimp3 updated to 2021-11-30 git snapshot ([GH-55502](https://github.com/godotengine/godot/pull/55502)).
+- CA root certificates updated to 2021-11-01 bundle from Mozilla ([GH-55137](https://github.com/godotengine/godot/pull/55137)).
 - SDL GameControllerDB updated to 2021-12-14 git snapshot.
 
 ### Fixed
@@ -2283,6 +2320,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - HTML5 export using asm.js.
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
+[3.4.2]: https://downloads.tuxfamily.org/godotengine/3.4.2/Godot_v3.4.2-stable_changelog_chrono.txt
 [3.4.1]: https://downloads.tuxfamily.org/godotengine/3.4.1/Godot_v3.4.1-stable_changelog_chrono.txt
 [3.4]: https://downloads.tuxfamily.org/godotengine/3.4/Godot_v3.4-stable_changelog_chrono.txt
 [3.3]: https://downloads.tuxfamily.org/godotengine/3.3/Godot_v3.3-stable_changelog_chrono.txt
