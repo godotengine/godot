@@ -2,13 +2,7 @@
  *  FIPS-180-1 compliant SHA-1 implementation
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -21,27 +15,6 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 /*
  *  The SHA-1 standard was published by NIST in 1993.
@@ -49,16 +22,13 @@
  *  http://www.itl.nist.gov/fipspubs/fip180-1.htm
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_SHA1_C)
 
 #include "mbedtls/sha1.h"
 #include "mbedtls/platform_util.h"
+#include "mbedtls/error.h"
 
 #include <string.h>
 
@@ -77,29 +47,6 @@
 #define SHA1_VALIDATE(cond)  MBEDTLS_INTERNAL_VALIDATE( cond )
 
 #if !defined(MBEDTLS_SHA1_ALT)
-
-/*
- * 32-bit integer manipulation macros (big endian)
- */
-#ifndef GET_UINT32_BE
-#define GET_UINT32_BE(n,b,i)                            \
-{                                                       \
-    (n) = ( (uint32_t) (b)[(i)    ] << 24 )             \
-        | ( (uint32_t) (b)[(i) + 1] << 16 )             \
-        | ( (uint32_t) (b)[(i) + 2] <<  8 )             \
-        | ( (uint32_t) (b)[(i) + 3]       );            \
-}
-#endif
-
-#ifndef PUT_UINT32_BE
-#define PUT_UINT32_BE(n,b,i)                            \
-{                                                       \
-    (b)[(i)    ] = (unsigned char) ( (n) >> 24 );       \
-    (b)[(i) + 1] = (unsigned char) ( (n) >> 16 );       \
-    (b)[(i) + 2] = (unsigned char) ( (n) >>  8 );       \
-    (b)[(i) + 3] = (unsigned char) ( (n)       );       \
-}
-#endif
 
 void mbedtls_sha1_init( mbedtls_sha1_context *ctx )
 {
@@ -163,22 +110,22 @@ int mbedtls_internal_sha1_process( mbedtls_sha1_context *ctx,
     SHA1_VALIDATE_RET( ctx != NULL );
     SHA1_VALIDATE_RET( (const unsigned char *)data != NULL );
 
-    GET_UINT32_BE( local.W[ 0], data,  0 );
-    GET_UINT32_BE( local.W[ 1], data,  4 );
-    GET_UINT32_BE( local.W[ 2], data,  8 );
-    GET_UINT32_BE( local.W[ 3], data, 12 );
-    GET_UINT32_BE( local.W[ 4], data, 16 );
-    GET_UINT32_BE( local.W[ 5], data, 20 );
-    GET_UINT32_BE( local.W[ 6], data, 24 );
-    GET_UINT32_BE( local.W[ 7], data, 28 );
-    GET_UINT32_BE( local.W[ 8], data, 32 );
-    GET_UINT32_BE( local.W[ 9], data, 36 );
-    GET_UINT32_BE( local.W[10], data, 40 );
-    GET_UINT32_BE( local.W[11], data, 44 );
-    GET_UINT32_BE( local.W[12], data, 48 );
-    GET_UINT32_BE( local.W[13], data, 52 );
-    GET_UINT32_BE( local.W[14], data, 56 );
-    GET_UINT32_BE( local.W[15], data, 60 );
+    local.W[ 0] = MBEDTLS_GET_UINT32_BE( data,  0 );
+    local.W[ 1] = MBEDTLS_GET_UINT32_BE( data,  4 );
+    local.W[ 2] = MBEDTLS_GET_UINT32_BE( data,  8 );
+    local.W[ 3] = MBEDTLS_GET_UINT32_BE( data, 12 );
+    local.W[ 4] = MBEDTLS_GET_UINT32_BE( data, 16 );
+    local.W[ 5] = MBEDTLS_GET_UINT32_BE( data, 20 );
+    local.W[ 6] = MBEDTLS_GET_UINT32_BE( data, 24 );
+    local.W[ 7] = MBEDTLS_GET_UINT32_BE( data, 28 );
+    local.W[ 8] = MBEDTLS_GET_UINT32_BE( data, 32 );
+    local.W[ 9] = MBEDTLS_GET_UINT32_BE( data, 36 );
+    local.W[10] = MBEDTLS_GET_UINT32_BE( data, 40 );
+    local.W[11] = MBEDTLS_GET_UINT32_BE( data, 44 );
+    local.W[12] = MBEDTLS_GET_UINT32_BE( data, 48 );
+    local.W[13] = MBEDTLS_GET_UINT32_BE( data, 52 );
+    local.W[14] = MBEDTLS_GET_UINT32_BE( data, 56 );
+    local.W[15] = MBEDTLS_GET_UINT32_BE( data, 60 );
 
 #define S(x,n) (((x) << (n)) | (((x) & 0xFFFFFFFF) >> (32 - (n))))
 
@@ -340,7 +287,7 @@ int mbedtls_sha1_update_ret( mbedtls_sha1_context *ctx,
                              const unsigned char *input,
                              size_t ilen )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t fill;
     uint32_t left;
 
@@ -401,7 +348,7 @@ void mbedtls_sha1_update( mbedtls_sha1_context *ctx,
 int mbedtls_sha1_finish_ret( mbedtls_sha1_context *ctx,
                              unsigned char output[20] )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     uint32_t used;
     uint32_t high, low;
 
@@ -438,8 +385,8 @@ int mbedtls_sha1_finish_ret( mbedtls_sha1_context *ctx,
          | ( ctx->total[1] <<  3 );
     low  = ( ctx->total[0] <<  3 );
 
-    PUT_UINT32_BE( high, ctx->buffer, 56 );
-    PUT_UINT32_BE( low,  ctx->buffer, 60 );
+    MBEDTLS_PUT_UINT32_BE( high, ctx->buffer, 56 );
+    MBEDTLS_PUT_UINT32_BE( low,  ctx->buffer, 60 );
 
     if( ( ret = mbedtls_internal_sha1_process( ctx, ctx->buffer ) ) != 0 )
         return( ret );
@@ -447,11 +394,11 @@ int mbedtls_sha1_finish_ret( mbedtls_sha1_context *ctx,
     /*
      * Output final state
      */
-    PUT_UINT32_BE( ctx->state[0], output,  0 );
-    PUT_UINT32_BE( ctx->state[1], output,  4 );
-    PUT_UINT32_BE( ctx->state[2], output,  8 );
-    PUT_UINT32_BE( ctx->state[3], output, 12 );
-    PUT_UINT32_BE( ctx->state[4], output, 16 );
+    MBEDTLS_PUT_UINT32_BE( ctx->state[0], output,  0 );
+    MBEDTLS_PUT_UINT32_BE( ctx->state[1], output,  4 );
+    MBEDTLS_PUT_UINT32_BE( ctx->state[2], output,  8 );
+    MBEDTLS_PUT_UINT32_BE( ctx->state[3], output, 12 );
+    MBEDTLS_PUT_UINT32_BE( ctx->state[4], output, 16 );
 
     return( 0 );
 }
@@ -473,7 +420,7 @@ int mbedtls_sha1_ret( const unsigned char *input,
                       size_t ilen,
                       unsigned char output[20] )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_sha1_context ctx;
 
     SHA1_VALIDATE_RET( ilen == 0 || input != NULL );
