@@ -81,17 +81,22 @@
 #define MBEDTLS_AES_DECRYPT     0 /**< AES decryption. */
 
 /* Error codes in range 0x0020-0x0022 */
-#define MBEDTLS_ERR_AES_INVALID_KEY_LENGTH                -0x0020  /**< Invalid key length. */
-#define MBEDTLS_ERR_AES_INVALID_INPUT_LENGTH              -0x0022  /**< Invalid data input length. */
+/** Invalid key length. */
+#define MBEDTLS_ERR_AES_INVALID_KEY_LENGTH                -0x0020
+/** Invalid data input length. */
+#define MBEDTLS_ERR_AES_INVALID_INPUT_LENGTH              -0x0022
 
 /* Error codes in range 0x0021-0x0025 */
-#define MBEDTLS_ERR_AES_BAD_INPUT_DATA                    -0x0021  /**< Invalid input data. */
+/** Invalid input data. */
+#define MBEDTLS_ERR_AES_BAD_INPUT_DATA                    -0x0021
 
 /* MBEDTLS_ERR_AES_FEATURE_UNAVAILABLE is deprecated and should not be used. */
-#define MBEDTLS_ERR_AES_FEATURE_UNAVAILABLE               -0x0023  /**< Feature not available. For example, an unsupported AES key size. */
+/** Feature not available. For example, an unsupported AES key size. */
+#define MBEDTLS_ERR_AES_FEATURE_UNAVAILABLE               -0x0023
 
 /* MBEDTLS_ERR_AES_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_AES_HW_ACCEL_FAILED                   -0x0025  /**< AES hardware accelerator failed. */
+/** AES hardware accelerator failed. */
+#define MBEDTLS_ERR_AES_HW_ACCEL_FAILED                   -0x0025
 
 #if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
     !defined(inline) && !defined(__cplusplus)
@@ -532,10 +537,6 @@ int mbedtls_aes_crypt_ofb( mbedtls_aes_context *ctx,
 /**
  * \brief      This function performs an AES-CTR encryption or decryption
  *             operation.
- *
- *             This function performs the operation defined in the \p mode
- *             parameter (encrypt/decrypt), on the input data buffer
- *             defined in the \p input parameter.
  *
  *             Due to the nature of CTR, you must use the same key schedule
  *             for both encryption and decryption operations. Therefore, you

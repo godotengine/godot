@@ -66,7 +66,8 @@ extern "C" {
 #endif
 
 /* MBEDTLS_ERR_CMAC_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_CMAC_HW_ACCEL_FAILED -0x007A  /**< CMAC hardware accelerator failed. */
+/** CMAC hardware accelerator failed. */
+#define MBEDTLS_ERR_CMAC_HW_ACCEL_FAILED -0x007A
 
 #define MBEDTLS_AES_BLOCK_SIZE          16
 #define MBEDTLS_DES3_BLOCK_SIZE         8
@@ -100,9 +101,17 @@ struct mbedtls_cmac_context_t
 #endif /* !MBEDTLS_CMAC_ALT */
 
 /**
- * \brief               This function sets the CMAC key, and prepares to authenticate
+ * \brief               This function starts a new CMAC computation
+ *                      by setting the CMAC key, and preparing to authenticate
  *                      the input data.
- *                      Must be called with an initialized cipher context.
+ *                      It must be called with an initialized cipher context.
+ *
+ *                      Once this function has completed, data can be supplied
+ *                      to the CMAC computation by calling
+ *                      mbedtls_cipher_cmac_update().
+ *
+ *                      To start a CMAC computation using the same key as a previous
+ *                      CMAC computation, use mbedtls_cipher_cmac_finish().
  *
  * \param ctx           The cipher context used for the CMAC operation, initialized
  *                      as one of the following types: MBEDTLS_CIPHER_AES_128_ECB,
@@ -122,9 +131,15 @@ int mbedtls_cipher_cmac_starts( mbedtls_cipher_context_t *ctx,
  * \brief               This function feeds an input buffer into an ongoing CMAC
  *                      computation.
  *
- *                      It is called between mbedtls_cipher_cmac_starts() or
- *                      mbedtls_cipher_cmac_reset(), and mbedtls_cipher_cmac_finish().
- *                      Can be called repeatedly.
+ *                      The CMAC computation must have previously been started
+ *                      by calling mbedtls_cipher_cmac_starts() or
+ *                      mbedtls_cipher_cmac_reset().
+ *
+ *                      Call this function as many times as needed to input the
+ *                      data to be authenticated.
+ *                      Once all of the required data has been input,
+ *                      call mbedtls_cipher_cmac_finish() to obtain the result
+ *                      of the CMAC operation.
  *
  * \param ctx           The cipher context used for the CMAC operation.
  * \param input         The buffer holding the input data.
@@ -138,12 +153,13 @@ int mbedtls_cipher_cmac_update( mbedtls_cipher_context_t *ctx,
                                 const unsigned char *input, size_t ilen );
 
 /**
- * \brief               This function finishes the CMAC operation, and writes
- *                      the result to the output buffer.
+ * \brief               This function finishes an ongoing CMAC operation, and
+ *                      writes the result to the output buffer.
  *
- *                      It is called after mbedtls_cipher_cmac_update().
- *                      It can be followed by mbedtls_cipher_cmac_reset() and
- *                      mbedtls_cipher_cmac_update(), or mbedtls_cipher_free().
+ *                      It should be followed either by
+ *                      mbedtls_cipher_cmac_reset(), which starts another CMAC
+ *                      operation with the same key, or mbedtls_cipher_free(),
+ *                      which clears the cipher context.
  *
  * \param ctx           The cipher context used for the CMAC operation.
  * \param output        The output buffer for the CMAC checksum result.
@@ -156,12 +172,14 @@ int mbedtls_cipher_cmac_finish( mbedtls_cipher_context_t *ctx,
                                 unsigned char *output );
 
 /**
- * \brief               This function prepares the authentication of another
- *                      message with the same key as the previous CMAC
- *                      operation.
+ * \brief               This function starts a new CMAC operation with the same
+ *                      key as the previous one.
  *
- *                      It is called after mbedtls_cipher_cmac_finish()
- *                      and before mbedtls_cipher_cmac_update().
+ *                      It should be called after finishing the previous CMAC
+ *                      operation with mbedtls_cipher_cmac_finish().
+ *                      After calling this function,
+ *                      call mbedtls_cipher_cmac_update() to supply the new
+ *                      CMAC operation with data.
  *
  * \param ctx           The cipher context used for the CMAC operation.
  *
