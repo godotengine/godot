@@ -124,8 +124,11 @@ task zipCustomBuild(type: Zip) {
 def templateExcludedBuildTask() {
     // We exclude these gradle tasks so we can run the scons command manually.
     def excludedTasks = []
-    for (String buildType : supportedTargets) {
-        excludedTasks += ":lib:" + getSconsTaskName(buildType)
+    if (!isAndroidStudio()) {
+        logger.lifecycle("Excluding Android studio build tasks")
+        for (String buildType : supportedTargets) {
+            excludedTasks += ":lib:" + getSconsTaskName(buildType)
+        }
     }
     return excludedTasks
 }
@@ -153,6 +156,11 @@ def templateBuildTasks() {
     }
 
     return tasks
+}
+
+def isAndroidStudio() {
+    def sysProps = System.getProperties()
+    return sysProps != null && sysProps['idea.platform.prefix'] != null
 }
 
 /**
