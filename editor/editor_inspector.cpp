@@ -329,17 +329,21 @@ bool EditorProperty::is_read_only() const {
 	return read_only;
 }
 
-Variant EditorPropertyRevert::get_property_revert_value(Object *p_object, const StringName &p_property) {
+Variant EditorPropertyRevert::get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid) {
 	if (p_object->has_method("property_can_revert") && p_object->call("property_can_revert", p_property)) {
+		if (r_is_valid) {
+			*r_is_valid = true;
+		}
 		return p_object->call("property_get_revert", p_property);
 	}
 
-	return PropertyUtils::get_property_default_value(p_object, p_property);
+	return PropertyUtils::get_property_default_value(p_object, p_property, r_is_valid);
 }
 
 bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringName &p_property) {
-	Variant revert_value = EditorPropertyRevert::get_property_revert_value(p_object, p_property);
-	if (revert_value.get_type() == Variant::NIL) {
+	bool is_valid_revert = false;
+	Variant revert_value = EditorPropertyRevert::get_property_revert_value(p_object, p_property, &is_valid_revert);
+	if (!is_valid_revert) {
 		return false;
 	}
 	Variant current_value = p_object->get(p_property);
@@ -522,7 +526,9 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (revert_rect.has_point(mb->get_position())) {
-			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property);
+			bool is_valid_revert = false;
+			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
+			ERR_FAIL_COND(!is_valid_revert);
 			emit_changed(property, revert_value);
 			update_property();
 		}
@@ -611,8 +617,9 @@ static bool _is_value_potential_override(Node *p_node, const String &p_property)
 	if (states_stack.size()) {
 		return true;
 	} else {
+		bool is_valid_default = false;
 		bool is_class_default = false;
-		PropertyUtils::get_property_default_value(p_node, p_property, &states_stack, false, nullptr, &is_class_default);
+		PropertyUtils::get_property_default_value(p_node, p_property, &is_valid_default, &states_stack, false, nullptr, &is_class_default);
 		return !is_class_default;
 	}
 }

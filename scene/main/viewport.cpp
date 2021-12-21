@@ -362,6 +362,10 @@ void Viewport::_notification(int p_what) {
 			VS::get_singleton()->viewport_set_active(viewport, false);
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (!get_tree()) {
+				return;
+			}
+
 			if (get_tree()->is_debugging_collisions_hint() && contact_2d_debug.is_valid()) {
 				VisualServer::get_singleton()->canvas_item_clear(contact_2d_debug);
 				VisualServer::get_singleton()->canvas_item_set_draw_index(contact_2d_debug, 0xFFFFF); //very high index

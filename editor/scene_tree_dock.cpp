@@ -428,7 +428,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_CUT:
 		case TOOL_COPY: {
-			if (!edited_scene || !_validate_no_foreign()) {
+			if (!edited_scene || (p_tool == TOOL_CUT && !_validate_no_foreign())) {
 				break;
 			}
 
@@ -3106,8 +3106,9 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 					states_stack_ready = true;
 				}
 
-				Variant orig = PropertyUtils::get_property_default_value(p_node, E->get().name, &states_stack);
-				if (!PropertyUtils::is_property_value_different(v, orig)) {
+				bool is_valid_default = false;
+				Variant orig = PropertyUtils::get_property_default_value(p_node, E->get().name, &is_valid_default, &states_stack);
+				if (is_valid_default && !PropertyUtils::is_property_value_different(v, orig)) {
 					continue;
 				}
 
