@@ -389,7 +389,8 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 		CGLEnable((CGLContextObj)[OS_OSX::singleton->context CGLContextObj], kCGLCESurfaceBackingSize);
 	}
 
-	if (OS_OSX::singleton->main_loop) {
+	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates triggered by window view resize.
+	if (OS_OSX::singleton->main_loop && (OS_OSX::singleton->get_render_thread_mode() != OS::RENDER_SEPARATE_THREAD)) {
 		Main::force_redraw();
 		//Event retrieval blocks until resize is over. Call Main::iteration() directly.
 		if (!Main::is_iterating()) { //avoid cyclic loop
@@ -1681,11 +1682,6 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	dim[1] = window_size.height;
 	CGLSetParameter((CGLContextObj)[context CGLContextObj], kCGLCPSurfaceBackingSize, &dim[0]);
 	CGLEnable((CGLContextObj)[context CGLContextObj], kCGLCESurfaceBackingSize);
-
-	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		CGLError err = CGLEnable((CGLContextObj)[context CGLContextObj], kCGLCEMPEngine); // Enable multithreading.
-		ERR_FAIL_COND_V(err != kCGLNoError, ERR_UNAVAILABLE);
-	}
 
 	set_use_vsync(p_desired.use_vsync);
 
