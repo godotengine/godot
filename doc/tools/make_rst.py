@@ -19,6 +19,28 @@ GODOT_DOCS_PATTERN = re.compile(r"^\$DOCS_URL/(.*)\.html(#.*)?$")
 MARKUP_ALLOWED_PRECEDENT = " -:/'\"<([{"
 MARKUP_ALLOWED_SUBSEQUENT = " -.,:;!?\\/'\")]}>"
 
+# Used to translate the section headings when required with --lang argument.
+# The HEADINGS list should be synced with what we actually write with `make_heading`,
+# and also hardcoded in `doc/translations/extract.py`.
+HEADINGS = [
+    "Description",
+    "Tutorials",
+    "Properties",
+    "Constructors",
+    "Methods",
+    "Operators",
+    "Theme Properties",
+    "Signals",
+    "Enumerations",
+    "Constants",
+    "Property Descriptions",
+    "Constructor Descriptions",
+    "Method Descriptions",
+    "Operator Descriptions",
+    "Theme Property Descriptions",
+]
+headings_l10n = {}
+
 
 def print_error(error, state):  # type: (str, State) -> None
     print("ERROR: {}".format(error))
@@ -367,6 +389,7 @@ def main():  # type: () -> None
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
     parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
+    parser.add_argument("--lang", "-l", default="en", help="Language to use for section headings.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--output", "-o", default=".", help="The directory to save output .rst files in.")
     group.add_argument(
@@ -375,6 +398,25 @@ def main():  # type: () -> None
         help="If passed, no output will be generated and XML files are only checked for errors.",
     )
     args = parser.parse_args()
+
+    # Retrieve heading translations for the given language.
+    if not args.dry_run and args.lang != "en":
+        lang_file = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "..", "translations", "{}.po".format(args.lang)
+        )
+        if os.path.exists(lang_file):
+            try:
+                import polib
+            except ImportError:
+                print("Section heading localization requires `polib`.")
+                exit(1)
+
+            pofile = polib.pofile(lang_file)
+            for entry in pofile.translated_entries():
+                if entry.msgid in HEADINGS:
+                    headings_l10n[entry.msgid] = entry.msgstr
+        else:
+            print("No PO file at '{}' for language '{}'.".format(lang_file, args.lang))
 
     print("Checking for errors in the XML class reference...")
 
@@ -467,7 +509,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     f.write(".. The source is found in doc/classes or modules/<name>/doc_classes.\n\n")
 
     f.write(".. _class_" + class_name + ":\n\n")
-    f.write(make_heading(class_name, "="))
+    f.write(make_heading(class_name, "=", False))
 
     # Inheritance tree
     # Ascendants
@@ -1261,7 +1303,11 @@ def make_method_signature(
     return ret_type, out
 
 
-def make_heading(title, underline):  # type: (str, str) -> str
+def make_heading(title, underline, l10n=True):  # type: (str, str, bool) -> str
+    if l10n:
+        if title in headings_l10n:
+            title = headings_l10n.get(title)
+            underline *= 2  # Double length to handle wide chars.
     return title + "\n" + (underline * len(title)) + "\n\n"
 
 
