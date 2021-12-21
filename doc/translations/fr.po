@@ -48,13 +48,15 @@
 # syns <jpo.drt@gmail.com>, 2021.
 # Gallonigher <meduse1500@ovh.fr>, 2021.
 # Timothée MB <timothee.me@gmail.com>, 2021.
+# Florent <fnuttens@dabao.fr>, 2021.
+# Benjamin Peter <benji.peter@hotmail.fr>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-16 12:44+0000\n"
-"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
+"PO-Revision-Date: 2021-12-19 17:31+0000\n"
+"Last-Translator: Benjamin Peter <benji.peter@hotmail.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
 "Language: fr\n"
@@ -62,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -486,7 +488,6 @@ msgstr ""
 "nouveau en une instance. Utile pour la désérialisation."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns an \"eased\" value of [code]x[/code] based on an easing function "
 "defined with [code]curve[/code]. This easing function is based on an "
@@ -516,11 +517,11 @@ msgstr ""
 "- 1.0: Linéaire\n"
 "- Entre -1.0 et 0.0 (exclusif): Ease out-in\n"
 "- 0.0: Constante\n"
-"- Entre 0.0 à 1.0 (exclusif): Ease in\n"
+"- Entre 0.0 et 1.0 (exclusif): Ease in\n"
 "- 1.0: Linéaire\n"
 "- Supérieur à 1.0 (exclusif): Ease out\n"
 "[/codeblock]\n"
-"[url=https ://raw.githubusercontent.com/godotengine/godot-docs/3.4/img/"
+"[url=https://raw.githubusercontent.com/godotengine/godot-docs/3.4/img/"
 "ease_cheatsheet.png]ease() curve values cheatsheet[/url]\n"
 "Voir également [method smoothstep]. Si vous avez besoin de réaliser des "
 "transitions plus avancées, utilisez [Tween] ou [AnimationPlayer]."
@@ -3546,7 +3547,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Trigger on a VR controller."
-msgstr ""
+msgstr "Déclencheur sur un contrôleur VR."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3571,6 +3572,8 @@ msgstr "Bouton \"menu\" sur l'un des contrôleurs Oculus Touch."
 #: doc/classes/@GlobalScope.xml
 msgid "Menu button in OpenVR (Except when Oculus Touch controllers are used)."
 msgstr ""
+"Bouton de menu dans OpenVR (sauf lorsque les contrôleurs Oculus Touch sont "
+"utilisés)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button Select."
@@ -3578,7 +3581,7 @@ msgstr "Bouton Select de la manette."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button Start."
-msgstr ""
+msgstr "Bouton Start de la manette."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad DPad up."
