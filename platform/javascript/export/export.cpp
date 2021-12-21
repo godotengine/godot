@@ -464,8 +464,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	}
 	if (p_preset->get("progressive_web_app/enabled")) {
 		head_include += "<link rel='manifest' href='" + p_name + ".manifest.json'>\n";
-		head_include += "<script type='application/javascript'>window.addEventListener('load', () => {if ('serviceWorker' in navigator) {navigator.serviceWorker.register('" +
-				p_name + ".service.worker.js');}});</script>\n";
+		config["serviceWorker"] = p_name + ".service.worker.js";
 	}
 
 	// Replaces HTML string
@@ -513,35 +512,46 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 }
 
 Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects) {
+	String proj_name = ProjectSettings::get_singleton()->get_setting("application/config/name");
+	if (proj_name.empty()) {
+		proj_name = "Godot Game";
+	}
+
 	// Service worker
 	const String dir = p_path.get_base_dir();
 	const String name = p_path.get_file().get_basename();
 	const ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
 	Map<String, String> replaces;
-	replaces["@GODOT_VERSION@"] = "1";
-	replaces["@GODOT_NAME@"] = name;
+	replaces["@GODOT_VERSION@"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
+	replaces["@GODOT_NAME@"] = proj_name.substr(0, 16);
 	replaces["@GODOT_OFFLINE_PAGE@"] = name + ".offline.html";
-	Array files;
-	replaces["@GODOT_OPT_CACHE@"] = JSON::print(files);
-	files.push_back(name + ".html");
-	files.push_back(name + ".js");
-	files.push_back(name + ".wasm");
-	files.push_back(name + ".pck");
-	files.push_back(name + ".offline.html");
+
+	// Files cached during worker install.
+	Array cache_files;
+	cache_files.push_back(name + ".html");
+	cache_files.push_back(name + ".js");
+	cache_files.push_back(name + ".offline.html");
 	if (p_preset->get("html/export_icon")) {
-		files.push_back(name + ".icon.png");
-		files.push_back(name + ".apple-touch-icon.png");
+		cache_files.push_back(name + ".icon.png");
+		cache_files.push_back(name + ".apple-touch-icon.png");
 	}
 	if (mode == EXPORT_MODE_THREADS) {
-		files.push_back(name + ".worker.js");
-		files.push_back(name + ".audio.worklet.js");
-	} else if (mode == EXPORT_MODE_GDNATIVE) {
-		files.push_back(name + ".side.wasm");
+		cache_files.push_back(name + ".worker.js");
+		cache_files.push_back(name + ".audio.worklet.js");
+	}
+	replaces["@GODOT_CACHE@"] = JSON::print(cache_files);
+
+	// Heavy files that are cached on demand.
+	Array opt_cache_files;
+	opt_cache_files.push_back(name + ".wasm");
+	opt_cache_files.push_back(name + ".pck");
+	if (mode == EXPORT_MODE_GDNATIVE) {
+		opt_cache_files.push_back(name + ".side.wasm");
 		for (int i = 0; i < p_shared_objects.size(); i++) {
-			files.push_back(p_shared_objects[i].path.get_file());
+			opt_cache_files.push_back(p_shared_objects[i].path.get_file());
 		}
 	}
-	replaces["@GODOT_CACHE@"] = JSON::print(files);
+	replaces["@GODOT_OPT_CACHE@"] = JSON::print(opt_cache_files);
 
 	const String sw_path = dir.plus_file(name + ".service.worker.js");
 	Vector<uint8_t> sw;
@@ -581,10 +591,6 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	const int orientation = CLAMP(int(p_preset->get("progressive_web_app/orientation")), 0, 3);
 
 	Dictionary manifest;
-	String proj_name = ProjectSettings::get_singleton()->get_setting("application/config/name");
-	if (proj_name.empty()) {
-		proj_name = "Godot Game";
-	}
 	manifest["name"] = proj_name;
 	manifest["start_url"] = "./" + name + ".html";
 	manifest["display"] = String::utf8(modes[display]);
