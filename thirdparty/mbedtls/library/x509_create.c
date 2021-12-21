@@ -2,13 +2,7 @@
  *  X.509 base functions for creating certificates / CSRs
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -21,39 +15,15 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_X509_CREATE_C)
 
 #include "mbedtls/x509.h"
 #include "mbedtls/asn1write.h"
+#include "mbedtls/error.h"
 #include "mbedtls/oid.h"
 
 #include <string.h>
@@ -266,7 +236,7 @@ int mbedtls_x509_set_extension( mbedtls_asn1_named_data **head, const char *oid,
  */
 static int x509_write_name( unsigned char **p, unsigned char *start, mbedtls_asn1_named_data* cur_name)
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
     const char *oid             = (const char*)cur_name->oid.p;
     size_t oid_len              = cur_name->oid.len;
@@ -299,7 +269,7 @@ static int x509_write_name( unsigned char **p, unsigned char *start, mbedtls_asn
 int mbedtls_x509_write_names( unsigned char **p, unsigned char *start,
                               mbedtls_asn1_named_data *first )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
     mbedtls_asn1_named_data *cur = first;
 
@@ -320,7 +290,7 @@ int mbedtls_x509_write_sig( unsigned char **p, unsigned char *start,
                     const char *oid, size_t oid_len,
                     unsigned char *sig, size_t size )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
     if( *p < start || (size_t)( *p - start ) < size )
@@ -350,7 +320,7 @@ int mbedtls_x509_write_sig( unsigned char **p, unsigned char *start,
 static int x509_write_extension( unsigned char **p, unsigned char *start,
                                  mbedtls_asn1_named_data *ext )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
     MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_raw_buffer( p, start, ext->val.p + 1,
@@ -388,7 +358,7 @@ static int x509_write_extension( unsigned char **p, unsigned char *start,
 int mbedtls_x509_write_extensions( unsigned char **p, unsigned char *start,
                            mbedtls_asn1_named_data *first )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
     mbedtls_asn1_named_data *cur_ext = first;
 

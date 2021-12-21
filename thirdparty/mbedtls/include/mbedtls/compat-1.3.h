@@ -8,13 +8,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -27,31 +21,10 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
@@ -1275,9 +1248,9 @@
 #define POLARSSL_KEY_EXCHANGE_PSK MBEDTLS_KEY_EXCHANGE_PSK
 #define POLARSSL_KEY_EXCHANGE_RSA MBEDTLS_KEY_EXCHANGE_RSA
 #define POLARSSL_KEY_EXCHANGE_RSA_PSK MBEDTLS_KEY_EXCHANGE_RSA_PSK
-#define POLARSSL_KEY_EXCHANGE__SOME__ECDHE_ENABLED MBEDTLS_KEY_EXCHANGE__SOME__ECDHE_ENABLED
-#define POLARSSL_KEY_EXCHANGE__SOME__PSK_ENABLED MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED
-#define POLARSSL_KEY_EXCHANGE__WITH_CERT__ENABLED MBEDTLS_KEY_EXCHANGE__WITH_CERT__ENABLED
+#define POLARSSL_KEY_EXCHANGE__SOME__ECDHE_ENABLED MBEDTLS_KEY_EXCHANGE_SOME_ECDHE_ENABLED
+#define POLARSSL_KEY_EXCHANGE__SOME__PSK_ENABLED MBEDTLS_KEY_EXCHANGE_SOME_PSK_ENABLED
+#define POLARSSL_KEY_EXCHANGE__WITH_CERT__ENABLED MBEDTLS_KEY_EXCHANGE_WITH_CERT_ENABLED
 #define POLARSSL_KEY_LENGTH_DES MBEDTLS_KEY_LENGTH_DES
 #define POLARSSL_KEY_LENGTH_DES_EDE MBEDTLS_KEY_LENGTH_DES_EDE
 #define POLARSSL_KEY_LENGTH_DES_EDE3 MBEDTLS_KEY_LENGTH_DES_EDE3

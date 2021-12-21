@@ -6,13 +6,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -25,40 +19,19 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 #ifndef MBEDTLS_PLATFORM_UTIL_H
 #define MBEDTLS_PLATFORM_UTIL_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
 #include <stddef.h>
 #if defined(MBEDTLS_HAVE_TIME_DATE)
-#include "platform_time.h"
+#include "mbedtls/platform_time.h"
 #include <time.h>
 #endif /* MBEDTLS_HAVE_TIME_DATE */
 
@@ -158,6 +131,95 @@ MBEDTLS_DEPRECATED typedef int mbedtls_deprecated_numeric_constant_t;
 #define MBEDTLS_DEPRECATED_NUMERIC_CONSTANT( VAL ) VAL
 #endif /* MBEDTLS_DEPRECATED_WARNING */
 #endif /* MBEDTLS_DEPRECATED_REMOVED */
+
+/* Implementation of the check-return facility.
+ * See the user documentation in config.h.
+ *
+ * Do not use this macro directly to annotate function: instead,
+ * use one of MBEDTLS_CHECK_RETURN_CRITICAL or MBEDTLS_CHECK_RETURN_TYPICAL
+ * depending on how important it is to check the return value.
+ */
+#if !defined(MBEDTLS_CHECK_RETURN)
+#if defined(__GNUC__)
+#define MBEDTLS_CHECK_RETURN __attribute__((__warn_unused_result__))
+#elif defined(_MSC_VER) && _MSC_VER >= 1700
+#include <sal.h>
+#define MBEDTLS_CHECK_RETURN _Check_return_
+#else
+#define MBEDTLS_CHECK_RETURN
+#endif
+#endif
+
+/** Critical-failure function
+ *
+ * This macro appearing at the beginning of the declaration of a function
+ * indicates that its return value should be checked in all applications.
+ * Omitting the check is very likely to indicate a bug in the application
+ * and will result in a compile-time warning if #MBEDTLS_CHECK_RETURN
+ * is implemented for the compiler in use.
+ *
+ * \note  The use of this macro is a work in progress.
+ *        This macro may be added to more functions in the future.
+ *        Such an extension is not considered an API break, provided that
+ *        there are near-unavoidable circumstances under which the function
+ *        can fail. For example, signature/MAC/AEAD verification functions,
+ *        and functions that require a random generator, are considered
+ *        return-check-critical.
+ */
+#define MBEDTLS_CHECK_RETURN_CRITICAL MBEDTLS_CHECK_RETURN
+
+/** Ordinary-failure function
+ *
+ * This macro appearing at the beginning of the declaration of a function
+ * indicates that its return value should be generally be checked in portable
+ * applications. Omitting the check will result in a compile-time warning if
+ * #MBEDTLS_CHECK_RETURN is implemented for the compiler in use and
+ * #MBEDTLS_CHECK_RETURN_WARNING is enabled in the compile-time configuration.
+ *
+ * You can use #MBEDTLS_IGNORE_RETURN to explicitly ignore the return value
+ * of a function that is annotated with #MBEDTLS_CHECK_RETURN.
+ *
+ * \note  The use of this macro is a work in progress.
+ *        This macro will be added to more functions in the future.
+ *        Eventually this should appear before most functions returning
+ *        an error code (as \c int in the \c mbedtls_xxx API or
+ *        as ::psa_status_t in the \c psa_xxx API).
+ */
+#if defined(MBEDTLS_CHECK_RETURN_WARNING)
+#define MBEDTLS_CHECK_RETURN_TYPICAL MBEDTLS_CHECK_RETURN
+#else
+#define MBEDTLS_CHECK_RETURN_TYPICAL
+#endif
+
+/** Benign-failure function
+ *
+ * This macro appearing at the beginning of the declaration of a function
+ * indicates that it is rarely useful to check its return value.
+ *
+ * This macro has an empty expansion. It exists for documentation purposes:
+ * a #MBEDTLS_CHECK_RETURN_OPTIONAL annotation indicates that the function
+ * has been analyzed for return-check usefuless, whereas the lack of
+ * an annotation indicates that the function has not been analyzed and its
+ * return-check usefulness is unknown.
+ */
+#define MBEDTLS_CHECK_RETURN_OPTIONAL
+
+/** \def MBEDTLS_IGNORE_RETURN
+ *
+ * Call this macro with one argument, a function call, to suppress a warning
+ * from #MBEDTLS_CHECK_RETURN due to that function call.
+ */
+#if !defined(MBEDTLS_IGNORE_RETURN)
+/* GCC doesn't silence the warning with just (void)(result).
+ * (void)!(result) is known to work up at least up to GCC 10, as well
+ * as with Clang and MSVC.
+ *
+ * https://gcc.gnu.org/onlinedocs/gcc-3.4.6/gcc/Non_002dbugs.html
+ * https://stackoverflow.com/questions/40576003/ignoring-warning-wunused-result
+ * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425#c34
+ */
+#define MBEDTLS_IGNORE_RETURN(result) ( (void) !( result ) )
+#endif
 
 /**
  * \brief       Securely zeroize a buffer

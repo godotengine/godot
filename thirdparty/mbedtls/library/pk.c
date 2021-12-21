@@ -2,13 +2,7 @@
  *  Public Key abstraction layer
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -21,40 +15,16 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_PK_C)
 #include "mbedtls/pk.h"
 #include "mbedtls/pk_internal.h"
 
 #include "mbedtls/platform_util.h"
+#include "mbedtls/error.h"
 
 #if defined(MBEDTLS_RSA_C)
 #include "mbedtls/rsa.h"
@@ -64,6 +34,10 @@
 #endif
 #if defined(MBEDTLS_ECDSA_C)
 #include "mbedtls/ecdsa.h"
+#endif
+
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
+#include "mbedtls/psa_util.h"
 #endif
 
 #include <limits.h>
@@ -172,6 +146,42 @@ int mbedtls_pk_setup( mbedtls_pk_context *ctx, const mbedtls_pk_info_t *info )
     return( 0 );
 }
 
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
+/*
+ * Initialise a PSA-wrapping context
+ */
+int mbedtls_pk_setup_opaque( mbedtls_pk_context *ctx,
+                             const psa_key_id_t key )
+{
+    const mbedtls_pk_info_t * const info = &mbedtls_pk_opaque_info;
+    psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+    psa_key_id_t *pk_ctx;
+    psa_key_type_t type;
+
+    if( ctx == NULL || ctx->pk_info != NULL )
+        return( MBEDTLS_ERR_PK_BAD_INPUT_DATA );
+
+    if( PSA_SUCCESS != psa_get_key_attributes( key, &attributes ) )
+        return( MBEDTLS_ERR_PK_BAD_INPUT_DATA );
+    type = psa_get_key_type( &attributes );
+    psa_reset_key_attributes( &attributes );
+
+    /* Current implementation of can_do() relies on this. */
+    if( ! PSA_KEY_TYPE_IS_ECC_KEY_PAIR( type ) )
+        return( MBEDTLS_ERR_PK_FEATURE_UNAVAILABLE) ;
+
+    if( ( ctx->pk_ctx = info->ctx_alloc_func() ) == NULL )
+        return( MBEDTLS_ERR_PK_ALLOC_FAILED );
+
+    ctx->pk_info = info;
+
+    pk_ctx = (psa_key_id_t *) ctx->pk_ctx;
+    *pk_ctx = key;
+
+    return( 0 );
+}
+#endif /* MBEDTLS_USE_PSA_CRYPTO */
+
 #if defined(MBEDTLS_PK_RSA_ALT_SUPPORT)
 /*
  * Initialize an RSA-alt context
@@ -231,7 +241,7 @@ static inline int pk_hashlen_helper( mbedtls_md_type_t md_alg, size_t *hash_len 
     if( ( md_info = mbedtls_md_info_from_type( md_alg ) ) == NULL )
         return( -1 );
 
-    if ( *hash_len != 0 && *hash_len < mbedtls_md_get_size( md_info ) )
+    if ( *hash_len != 0 && *hash_len != mbedtls_md_get_size( md_info ) )
         return ( -1 );
 
     *hash_len = mbedtls_md_get_size( md_info );
@@ -286,7 +296,7 @@ int mbedtls_pk_verify_restartable( mbedtls_pk_context *ctx,
         mbedtls_ecp_restart_is_enabled() &&
         ctx->pk_info->verify_rs_func != NULL )
     {
-        int ret;
+        int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
         if( ( ret = pk_restart_setup( rs_ctx, ctx->pk_info ) ) != 0 )
             return( ret );
@@ -343,7 +353,7 @@ int mbedtls_pk_verify_ext( mbedtls_pk_type_t type, const void *options,
     if( type == MBEDTLS_PK_RSASSA_PSS )
     {
 #if defined(MBEDTLS_RSA_C) && defined(MBEDTLS_PKCS1_V21)
-        int ret;
+        int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
         const mbedtls_pk_rsassa_pss_options *pss_opts;
 
 #if SIZE_MAX > UINT_MAX
@@ -409,7 +419,7 @@ int mbedtls_pk_sign_restartable( mbedtls_pk_context *ctx,
         mbedtls_ecp_restart_is_enabled() &&
         ctx->pk_info->sign_rs_func != NULL )
     {
-        int ret;
+        int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
         if( ( ret = pk_restart_setup( rs_ctx, ctx->pk_info ) ) != 0 )
             return( ret );
@@ -500,11 +510,13 @@ int mbedtls_pk_check_pair( const mbedtls_pk_context *pub, const mbedtls_pk_conte
     PK_VALIDATE_RET( prv != NULL );
 
     if( pub->pk_info == NULL ||
-        prv->pk_info == NULL ||
-        prv->pk_info->check_pair_func == NULL )
+        prv->pk_info == NULL )
     {
         return( MBEDTLS_ERR_PK_BAD_INPUT_DATA );
     }
+
+    if( prv->pk_info->check_pair_func == NULL )
+        return( MBEDTLS_ERR_PK_FEATURE_UNAVAILABLE );
 
     if( prv->pk_info->type == MBEDTLS_PK_RSA_ALT )
     {
@@ -571,4 +583,60 @@ mbedtls_pk_type_t mbedtls_pk_get_type( const mbedtls_pk_context *ctx )
     return( ctx->pk_info->type );
 }
 
+#if defined(MBEDTLS_USE_PSA_CRYPTO)
+/*
+ * Load the key to a PSA key slot,
+ * then turn the PK context into a wrapper for that key slot.
+ *
+ * Currently only works for EC private keys.
+ */
+int mbedtls_pk_wrap_as_opaque( mbedtls_pk_context *pk,
+                               psa_key_id_t *key,
+                               psa_algorithm_t hash_alg )
+{
+#if !defined(MBEDTLS_ECP_C)
+    ((void) pk);
+    ((void) key);
+    ((void) hash_alg);
+    return( MBEDTLS_ERR_PK_TYPE_MISMATCH );
+#else
+    const mbedtls_ecp_keypair *ec;
+    unsigned char d[MBEDTLS_ECP_MAX_BYTES];
+    size_t d_len;
+    psa_ecc_family_t curve_id;
+    psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+    psa_key_type_t key_type;
+    size_t bits;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+
+    /* export the private key material in the format PSA wants */
+    if( mbedtls_pk_get_type( pk ) != MBEDTLS_PK_ECKEY )
+        return( MBEDTLS_ERR_PK_TYPE_MISMATCH );
+
+    ec = mbedtls_pk_ec( *pk );
+    d_len = ( ec->grp.nbits + 7 ) / 8;
+    if( ( ret = mbedtls_mpi_write_binary( &ec->d, d, d_len ) ) != 0 )
+        return( ret );
+
+    curve_id = mbedtls_ecc_group_to_psa( ec->grp.id, &bits );
+    key_type = PSA_KEY_TYPE_ECC_KEY_PAIR( curve_id );
+
+    /* prepare the key attributes */
+    psa_set_key_type( &attributes, key_type );
+    psa_set_key_bits( &attributes, bits );
+    psa_set_key_usage_flags( &attributes, PSA_KEY_USAGE_SIGN_HASH );
+    psa_set_key_algorithm( &attributes, PSA_ALG_ECDSA(hash_alg) );
+
+    /* import private key into PSA */
+    if( PSA_SUCCESS != psa_import_key( &attributes, d, d_len, key ) )
+        return( MBEDTLS_ERR_PK_HW_ACCEL_FAILED );
+
+    /* make PK context wrap the key slot */
+    mbedtls_pk_free( pk );
+    mbedtls_pk_init( pk );
+
+    return( mbedtls_pk_setup_opaque( pk, *key ) );
+#endif /* MBEDTLS_ECP_C */
+}
+#endif /* MBEDTLS_USE_PSA_CRYPTO */
 #endif /* MBEDTLS_PK_C */

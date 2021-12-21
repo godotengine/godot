@@ -2,13 +2,7 @@
  *  Blowfish implementation
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -21,27 +15,6 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 /*
  *  The Blowfish block cipher was designed by Bruce Schneier in 1993.
@@ -50,11 +23,7 @@
  *
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_BLOWFISH_C)
 
@@ -70,29 +39,6 @@
     MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_BLOWFISH_BAD_INPUT_DATA )
 #define BLOWFISH_VALIDATE( cond )                                           \
     MBEDTLS_INTERNAL_VALIDATE( cond )
-
-/*
- * 32-bit integer manipulation macros (big endian)
- */
-#ifndef GET_UINT32_BE
-#define GET_UINT32_BE(n,b,i)                            \
-{                                                       \
-    (n) = ( (uint32_t) (b)[(i)    ] << 24 )             \
-        | ( (uint32_t) (b)[(i) + 1] << 16 )             \
-        | ( (uint32_t) (b)[(i) + 2] <<  8 )             \
-        | ( (uint32_t) (b)[(i) + 3]       );            \
-}
-#endif
-
-#ifndef PUT_UINT32_BE
-#define PUT_UINT32_BE(n,b,i)                            \
-{                                                       \
-    (b)[(i)    ] = (unsigned char) ( (n) >> 24 );       \
-    (b)[(i) + 1] = (unsigned char) ( (n) >> 16 );       \
-    (b)[(i) + 2] = (unsigned char) ( (n) >>  8 );       \
-    (b)[(i) + 3] = (unsigned char) ( (n)       );       \
-}
-#endif
 
 static const uint32_t P[MBEDTLS_BLOWFISH_ROUNDS + 2] = {
         0x243F6A88L, 0x85A308D3L, 0x13198A2EL, 0x03707344L,
@@ -110,13 +56,13 @@ static uint32_t F( mbedtls_blowfish_context *ctx, uint32_t x )
    unsigned short a, b, c, d;
    uint32_t  y;
 
-   d = (unsigned short)(x & 0xFF);
+   d = MBEDTLS_BYTE_0( x );
    x >>= 8;
-   c = (unsigned short)(x & 0xFF);
+   c = MBEDTLS_BYTE_0( x );
    x >>= 8;
-   b = (unsigned short)(x & 0xFF);
+   b = MBEDTLS_BYTE_0( x );
    x >>= 8;
-   a = (unsigned short)(x & 0xFF);
+   a = MBEDTLS_BYTE_0( x );
    y = ctx->S[0][a] + ctx->S[1][b];
    y = y ^ ctx->S[2][c];
    y = y + ctx->S[3][d];
@@ -273,8 +219,8 @@ int mbedtls_blowfish_crypt_ecb( mbedtls_blowfish_context *ctx,
     BLOWFISH_VALIDATE_RET( input  != NULL );
     BLOWFISH_VALIDATE_RET( output != NULL );
 
-    GET_UINT32_BE( X0, input,  0 );
-    GET_UINT32_BE( X1, input,  4 );
+    X0 = MBEDTLS_GET_UINT32_BE( input,  0 );
+    X1 = MBEDTLS_GET_UINT32_BE( input,  4 );
 
     if( mode == MBEDTLS_BLOWFISH_DECRYPT )
     {
@@ -285,8 +231,8 @@ int mbedtls_blowfish_crypt_ecb( mbedtls_blowfish_context *ctx,
         blowfish_enc( ctx, &X0, &X1 );
     }
 
-    PUT_UINT32_BE( X0, output,  0 );
-    PUT_UINT32_BE( X1, output,  4 );
+    MBEDTLS_PUT_UINT32_BE( X0, output,  0 );
+    MBEDTLS_PUT_UINT32_BE( X1, output,  4 );
 
     return( 0 );
 }

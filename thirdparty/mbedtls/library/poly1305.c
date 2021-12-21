@@ -4,13 +4,7 @@
  * \brief Poly1305 authentication algorithm.
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -23,38 +17,14 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_POLY1305_C)
 
 #include "mbedtls/poly1305.h"
 #include "mbedtls/platform_util.h"
+#include "mbedtls/error.h"
 
 #include <string.h>
 
@@ -81,13 +51,6 @@
     MBEDTLS_INTERNAL_VALIDATE( cond )
 
 #define POLY1305_BLOCK_SIZE_BYTES ( 16U )
-
-#define BYTES_TO_U32_LE( data, offset )                           \
-    ( (uint32_t) (data)[offset]                                     \
-          | (uint32_t) ( (uint32_t) (data)[( offset ) + 1] << 8 )   \
-          | (uint32_t) ( (uint32_t) (data)[( offset ) + 2] << 16 )  \
-          | (uint32_t) ( (uint32_t) (data)[( offset ) + 3] << 24 )  \
-    )
 
 /*
  * Our implementation is tuned for 32-bit platforms with a 64-bit multiplier.
@@ -159,10 +122,10 @@ static void poly1305_process( mbedtls_poly1305_context *ctx,
     for( i = 0U; i < nblocks; i++ )
     {
         /* The input block is treated as a 128-bit little-endian integer */
-        d0   = BYTES_TO_U32_LE( input, offset + 0  );
-        d1   = BYTES_TO_U32_LE( input, offset + 4  );
-        d2   = BYTES_TO_U32_LE( input, offset + 8  );
-        d3   = BYTES_TO_U32_LE( input, offset + 12 );
+        d0   = MBEDTLS_GET_UINT32_LE( input, offset + 0  );
+        d1   = MBEDTLS_GET_UINT32_LE( input, offset + 4  );
+        d2   = MBEDTLS_GET_UINT32_LE( input, offset + 8  );
+        d3   = MBEDTLS_GET_UINT32_LE( input, offset + 12 );
 
         /* Compute: acc += (padded) block as a 130-bit integer */
         d0  += (uint64_t) acc0;
@@ -287,22 +250,10 @@ static void poly1305_compute_mac( const mbedtls_poly1305_context *ctx,
     acc3 += ctx->s[3] + (uint32_t) ( d >> 32U );
 
     /* Compute MAC (128 least significant bits of the accumulator) */
-    mac[ 0] = (unsigned char)( acc0       );
-    mac[ 1] = (unsigned char)( acc0 >>  8 );
-    mac[ 2] = (unsigned char)( acc0 >> 16 );
-    mac[ 3] = (unsigned char)( acc0 >> 24 );
-    mac[ 4] = (unsigned char)( acc1       );
-    mac[ 5] = (unsigned char)( acc1 >>  8 );
-    mac[ 6] = (unsigned char)( acc1 >> 16 );
-    mac[ 7] = (unsigned char)( acc1 >> 24 );
-    mac[ 8] = (unsigned char)( acc2       );
-    mac[ 9] = (unsigned char)( acc2 >>  8 );
-    mac[10] = (unsigned char)( acc2 >> 16 );
-    mac[11] = (unsigned char)( acc2 >> 24 );
-    mac[12] = (unsigned char)( acc3       );
-    mac[13] = (unsigned char)( acc3 >>  8 );
-    mac[14] = (unsigned char)( acc3 >> 16 );
-    mac[15] = (unsigned char)( acc3 >> 24 );
+    MBEDTLS_PUT_UINT32_LE( acc0, mac,  0 );
+    MBEDTLS_PUT_UINT32_LE( acc1, mac,  4 );
+    MBEDTLS_PUT_UINT32_LE( acc2, mac,  8 );
+    MBEDTLS_PUT_UINT32_LE( acc3, mac, 12 );
 }
 
 void mbedtls_poly1305_init( mbedtls_poly1305_context *ctx )
@@ -327,15 +278,15 @@ int mbedtls_poly1305_starts( mbedtls_poly1305_context *ctx,
     POLY1305_VALIDATE_RET( key != NULL );
 
     /* r &= 0x0ffffffc0ffffffc0ffffffc0fffffff */
-    ctx->r[0] = BYTES_TO_U32_LE( key, 0 )  & 0x0FFFFFFFU;
-    ctx->r[1] = BYTES_TO_U32_LE( key, 4 )  & 0x0FFFFFFCU;
-    ctx->r[2] = BYTES_TO_U32_LE( key, 8 )  & 0x0FFFFFFCU;
-    ctx->r[3] = BYTES_TO_U32_LE( key, 12 ) & 0x0FFFFFFCU;
+    ctx->r[0] = MBEDTLS_GET_UINT32_LE( key, 0 )  & 0x0FFFFFFFU;
+    ctx->r[1] = MBEDTLS_GET_UINT32_LE( key, 4 )  & 0x0FFFFFFCU;
+    ctx->r[2] = MBEDTLS_GET_UINT32_LE( key, 8 )  & 0x0FFFFFFCU;
+    ctx->r[3] = MBEDTLS_GET_UINT32_LE( key, 12 ) & 0x0FFFFFFCU;
 
-    ctx->s[0] = BYTES_TO_U32_LE( key, 16 );
-    ctx->s[1] = BYTES_TO_U32_LE( key, 20 );
-    ctx->s[2] = BYTES_TO_U32_LE( key, 24 );
-    ctx->s[3] = BYTES_TO_U32_LE( key, 28 );
+    ctx->s[0] = MBEDTLS_GET_UINT32_LE( key, 16 );
+    ctx->s[1] = MBEDTLS_GET_UINT32_LE( key, 20 );
+    ctx->s[2] = MBEDTLS_GET_UINT32_LE( key, 24 );
+    ctx->s[3] = MBEDTLS_GET_UINT32_LE( key, 28 );
 
     /* Initial accumulator state */
     ctx->acc[0] = 0U;
@@ -448,7 +399,7 @@ int mbedtls_poly1305_mac( const unsigned char key[32],
                           unsigned char mac[16] )
 {
     mbedtls_poly1305_context ctx;
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     POLY1305_VALIDATE_RET( key != NULL );
     POLY1305_VALIDATE_RET( mac != NULL );
     POLY1305_VALIDATE_RET( ilen == 0 || input != NULL );
@@ -537,6 +488,9 @@ static const unsigned char test_mac[2][16] =
     }
 };
 
+/* Make sure no other definition is already present. */
+#undef ASSERT
+
 #define ASSERT( cond, args )            \
     do                                  \
     {                                   \
@@ -554,7 +508,7 @@ int mbedtls_poly1305_self_test( int verbose )
 {
     unsigned char mac[16];
     unsigned i;
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     for( i = 0U; i < 2U; i++ )
     {
