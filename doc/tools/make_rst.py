@@ -14,6 +14,11 @@ from collections import OrderedDict
 # $DOCS_URL/path/to/page.html(#fragment-tag)
 GODOT_DOCS_PATTERN = re.compile(r"^\$DOCS_URL/(.*)\.html(#.*)?$")
 
+# Based on reStructedText inline markup recognition rules
+# https://docutils.sourceforge.io/docs/ref/rst/restructuredtext.html#inline-markup-recognition-rules
+MARKUP_ALLOWED_PRECEDENT = " -:/'\"<([{"
+MARKUP_ALLOWED_SUBSEQUENT = " -.,:;!?\\/'\")]}>"
+
 
 def print_error(error, state):  # type: (str, State) -> None
     print("ERROR: {}".format(error))
@@ -844,12 +849,12 @@ def rstize_text(text, state):  # type: (str, State) -> str
             if result is None:
                 return ""
             text = pre_text + result[0]
-            pos += result[1]
+            pos += result[1] - indent_level
 
         # Handle normal text
         else:
             text = pre_text + "\n\n" + post_text
-            pos += 2
+            pos += 2 - indent_level
 
     next_brac_pos = text.find("[")
     text = escape_rst(text, next_brac_pos)
@@ -872,6 +877,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
         post_text = text[endq_pos + 1 :]
         tag_text = text[pos + 1 : endq_pos]
 
+        escape_pre = False
         escape_post = False
 
         if tag_text in state.classes:
@@ -880,6 +886,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 tag_text = "``{}``".format(tag_text)
             else:
                 tag_text = make_type(tag_text, state)
+            escape_pre = True
             escape_post = True
         else:  # command
             cmd = tag_text
@@ -1010,7 +1017,14 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 tag_text = make_link(link_url, link_title)
 
                 pre_text = text[:pos]
-                text = pre_text + tag_text + text[endurl_pos + 6 :]
+                post_text = text[endurl_pos + 6 :]
+
+                if pre_text and pre_text[-1] not in MARKUP_ALLOWED_PRECEDENT:
+                    pre_text += "\ "
+                if post_text and post_text[0] not in MARKUP_ALLOWED_SUBSEQUENT:
+                    post_text = "\ " + post_text
+
+                text = pre_text + tag_text + post_text
                 pos = len(pre_text) + len(tag_text)
                 previous_pos = pos
                 continue
@@ -1047,40 +1061,53 @@ def rstize_text(text, state):  # type: (str, State) -> str
             elif cmd == "i" or cmd == "/i":
                 if cmd == "/i":
                     tag_depth -= 1
+                    escape_post = True
                 else:
                     tag_depth += 1
+                    escape_pre = True
                 tag_text = "*"
             elif cmd == "b" or cmd == "/b":
                 if cmd == "/b":
                     tag_depth -= 1
+                    escape_post = True
                 else:
                     tag_depth += 1
+                    escape_pre = True
                 tag_text = "**"
             elif cmd == "u" or cmd == "/u":
                 if cmd == "/u":
                     tag_depth -= 1
+                    escape_post = True
                 else:
                     tag_depth += 1
+                    escape_pre = True
                 tag_text = ""
             elif cmd == "code":
                 tag_text = "``"
                 tag_depth += 1
                 inside_code = True
+                escape_pre = True
             elif cmd == "kbd":
                 tag_text = ":kbd:`"
                 tag_depth += 1
+                escape_pre = True
             elif cmd == "/kbd":
                 tag_text = "`"
                 tag_depth -= 1
+                escape_post = True
             elif cmd.startswith("enum "):
                 tag_text = make_enum(cmd[5:], state)
+                escape_pre = True
                 escape_post = True
             else:
                 tag_text = make_type(tag_text, state)
+                escape_pre = True
                 escape_post = True
 
         # Properly escape things like `[Node]s`
-        if escape_post and post_text and (post_text[0].isalnum() or post_text[0] == "("):  # not punctuation, escape
+        if escape_pre and pre_text and pre_text[-1] not in MARKUP_ALLOWED_PRECEDENT:
+            pre_text += "\ "
+        if escape_post and post_text and post_text[0] not in MARKUP_ALLOWED_SUBSEQUENT:
             post_text = "\ " + post_text
 
         next_brac_pos = post_text.find("[", 0)
