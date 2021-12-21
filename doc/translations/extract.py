@@ -26,7 +26,7 @@ msgstr ""
 """
 # Some strings used by make_rst.py are normally part of the editor translations,
 # so we need to include them manually here for the online docs.
-BASE_STRINGS = [
+HEADINGS = [
     "Description",
     "Tutorials",
     "Properties",
@@ -37,6 +37,7 @@ BASE_STRINGS = [
     "Constants",
     "Property Descriptions",
     "Method Descriptions",
+    "Theme Property Descriptions",
 ]
 
 ## <xml-line-number-hack from="https://stackoverflow.com/a/36430270/10846399">
@@ -224,12 +225,12 @@ def _make_translation_catalog(classes):
 def _generate_translation_catalog_file(unique_msgs, output, location_line=False):
     with open(output, "w", encoding="utf8") as f:
         f.write(HEADER)
-        for msg in BASE_STRINGS:
+        for msg in HEADINGS:
             f.write("#: doc/tools/make_rst.py\n")
             f.write('msgid "{}"\n'.format(msg))
             f.write('msgstr ""\n\n')
         for msg in unique_msgs:
-            if len(msg) == 0 or msg in BASE_STRINGS:
+            if len(msg) == 0 or msg in HEADINGS:
                 continue
 
             f.write("#:")
