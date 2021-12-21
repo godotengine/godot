@@ -1603,6 +1603,24 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		display_server->screen_set_orientation(window_orientation);
 	}
 
+	if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
+		// Print requested V-Sync mode at startup to diagnose the printed FPS not going above the monitor refresh rate.
+		switch (window_vsync_mode) {
+			case DisplayServer::VSyncMode::VSYNC_DISABLED:
+				print_line("Requested V-Sync mode: Disabled");
+				break;
+			case DisplayServer::VSyncMode::VSYNC_ENABLED:
+				print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+				break;
+			case DisplayServer::VSyncMode::VSYNC_ADAPTIVE:
+				print_line("Requested V-Sync mode: Adaptive");
+				break;
+			case DisplayServer::VSyncMode::VSYNC_MAILBOX:
+				print_line("Requested V-Sync mode: Mailbox");
+				break;
+		}
+	}
+
 	/* Initialize Pen Tablet Driver */
 
 	{
