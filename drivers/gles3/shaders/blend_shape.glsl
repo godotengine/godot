@@ -25,10 +25,18 @@ ARRAY_INDEX=8,
 
 layout(location = 0) in highp VFORMAT vertex_attrib;
 /* clang-format on */
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+layout(location = 2) in vec4 normal_tangent_attrib;
+#else
 layout(location = 1) in vec3 normal_attrib;
+#endif
 
 #ifdef ENABLE_TANGENT
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+// packed into normal_attrib zw component
+#else
 layout(location = 2) in vec4 tangent_attrib;
+#endif
 #endif
 
 #ifdef ENABLE_COLOR
@@ -109,19 +117,36 @@ out vec4 weight_out; //tfb:ENABLE_SKELETON
 
 uniform float blend_amount;
 
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+vec3 oct_to_vec3(vec2 e) {
+	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
+	float t = max(-v.z, 0.0);
+	v.xy += t * -sign(v.xy);
+	return normalize(v);
+}
+#endif
+
 void main() {
 #ifdef ENABLE_BLEND
 
 	vertex_out = vertex_attrib_blend + vertex_attrib * blend_amount;
 
 #ifdef ENABLE_NORMAL
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+	normal_out = normal_attrib_blend + oct_to_vec3(normal_tangent_attrib.xy) * blend_amount;
+#else
 	normal_out = normal_attrib_blend + normal_attrib * blend_amount;
+#endif
 #endif
 
 #ifdef ENABLE_TANGENT
-
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+	tangent_out.xyz = tangent_attrib_blend.xyz + oct_to_vec3(vec2(normal_tangent_attrib.z, abs(normal_tangent_attrib.w) * 2.0 - 1.0)) * blend_amount;
+	tangent_out.w = sign(tangent_attrib_blend.w);
+#else
 	tangent_out.xyz = tangent_attrib_blend.xyz + tangent_attrib.xyz * blend_amount;
 	tangent_out.w = tangent_attrib_blend.w; //just copy, no point in blending his
+#endif
 #endif
 
 #ifdef ENABLE_COLOR
@@ -150,13 +175,21 @@ void main() {
 	vertex_out = vertex_attrib * blend_amount;
 
 #ifdef ENABLE_NORMAL
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+	normal_out = oct_to_vec3(normal_tangent_attrib.xy) * blend_amount;
+#else
 	normal_out = normal_attrib * blend_amount;
+#endif
 #endif
 
 #ifdef ENABLE_TANGENT
-
+#ifdef ENABLE_OCTAHEDRAL_COMPRESSION
+	tangent_out.xyz = oct_to_vec3(vec2(normal_tangent_attrib.z, abs(normal_tangent_attrib.w) * 2.0 - 1.0)) * blend_amount;
+	tangent_out.w = sign(normal_tangent_attrib.w);
+#else
 	tangent_out.xyz = tangent_attrib.xyz * blend_amount;
 	tangent_out.w = tangent_attrib.w; //just copy, no point in blending his
+#endif
 #endif
 
 #ifdef ENABLE_COLOR
