@@ -26,7 +26,7 @@ msgstr ""
 """
 # Some strings used by make_rst.py are normally part of the editor translations,
 # so we need to include them manually here for the online docs.
-HEADINGS = [
+BASE_STRINGS = [
     "Description",
     "Tutorials",
     "Properties",
@@ -38,6 +38,19 @@ HEADINGS = [
     "Property Descriptions",
     "Method Descriptions",
     "Theme Property Descriptions",
+    "Inherits:",
+    "Inherited By:",
+    "(overrides %s)",
+    "Default",
+    "Setter",
+    "value",
+    "Getter",
+    "This method should typically be overridden by the user to have any effect.",
+    "This method has no side effects. It doesn't modify any of the instance's member variables.",
+    "This method accepts any number of arguments after the ones described here.",
+    "This method is used to construct a type.",
+    "This method doesn't need an instance to be called, so it can be called directly using the class name.",
+    "This method describes a valid operator to use with this type as left-hand operand.",
 ]
 
 ## <xml-line-number-hack from="https://stackoverflow.com/a/36430270/10846399">
@@ -225,12 +238,12 @@ def _make_translation_catalog(classes):
 def _generate_translation_catalog_file(unique_msgs, output, location_line=False):
     with open(output, "w", encoding="utf8") as f:
         f.write(HEADER)
-        for msg in HEADINGS:
+        for msg in BASE_STRINGS:
             f.write("#: doc/tools/make_rst.py\n")
             f.write('msgid "{}"\n'.format(msg))
             f.write('msgstr ""\n\n')
         for msg in unique_msgs:
-            if len(msg) == 0 or msg in HEADINGS:
+            if len(msg) == 0 or msg in BASE_STRINGS:
                 continue
 
             f.write("#:")
