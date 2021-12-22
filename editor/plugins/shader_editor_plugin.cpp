@@ -138,8 +138,18 @@ void ShaderTextEditor::_load_theme_settings() {
 			}
 		}
 
-		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())).size(); i++) {
-			built_ins.push_back(ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()))[i]);
+		const Vector<ShaderLanguage::ModeInfo> &modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
+
+		for (int i = 0; i < modes.size(); i++) {
+			const ShaderLanguage::ModeInfo &info = modes[i];
+
+			if (!info.options.is_empty()) {
+				for (int j = 0; j < info.options.size(); j++) {
+					built_ins.push_back(String(info.name) + "_" + String(info.options[j]));
+				}
+			} else {
+				built_ins.push_back(String(info.name));
+			}
 		}
 	}
 

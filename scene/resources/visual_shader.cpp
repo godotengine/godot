@@ -1085,16 +1085,6 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 	return name;
 }
 
-VisualShader::RenderModeEnums VisualShader::render_mode_enums[] = {
-	{ Shader::MODE_SPATIAL, "blend" },
-	{ Shader::MODE_SPATIAL, "depth_draw" },
-	{ Shader::MODE_SPATIAL, "cull" },
-	{ Shader::MODE_SPATIAL, "diffuse" },
-	{ Shader::MODE_SPATIAL, "specular" },
-	{ Shader::MODE_CANVAS_ITEM, "blend" },
-	{ Shader::MODE_CANVAS_ITEM, nullptr }
-};
-
 static const char *type_string[VisualShader::TYPE_MAX] = {
 	"vertex",
 	"fragment",
@@ -1261,27 +1251,25 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	Map<String, String> blend_mode_enums;
 	Set<String> toggles;
 
-	for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
-		String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
-		int idx = 0;
-		bool in_enum = false;
-		while (render_mode_enums[idx].string) {
-			if (mode.begins_with(render_mode_enums[idx].string)) {
-				String begin = render_mode_enums[idx].string;
-				String option = mode.replace_first(begin + "_", "");
+	const Vector<ShaderLanguage::ModeInfo> &rmodes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode));
+
+	for (int i = 0; i < rmodes.size(); i++) {
+		const ShaderLanguage::ModeInfo &info = rmodes[i];
+
+		if (!info.options.is_empty()) {
+			const String begin = String(info.name);
+
+			for (int j = 0; j < info.options.size(); j++) {
+				const String option = String(info.options[j]);
+
 				if (!blend_mode_enums.has(begin)) {
 					blend_mode_enums[begin] = option;
 				} else {
 					blend_mode_enums[begin] += "," + option;
 				}
-				in_enum = true;
-				break;
 			}
-			idx++;
-		}
-
-		if (!in_enum) {
-			toggles.insert(mode);
+		} else {
+			toggles.insert(String(info.name));
 		}
 	}
 
@@ -1653,40 +1641,32 @@ void VisualShader::_update_shader() const {
 	String render_mode;
 
 	{
-		//fill render mode enums
-		int idx = 0;
-		while (render_mode_enums[idx].string) {
-			if (shader_mode == render_mode_enums[idx].mode) {
-				if (modes.has(render_mode_enums[idx].string)) {
-					int which = modes[render_mode_enums[idx].string];
-					int count = 0;
-					for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
-						String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
-						if (mode.begins_with(render_mode_enums[idx].string)) {
-							if (count == which) {
-								if (!render_mode.is_empty()) {
-									render_mode += ", ";
-								}
-								render_mode += mode;
-								break;
-							}
-							count++;
-						}
+		const Vector<ShaderLanguage::ModeInfo> &rmodes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode));
+		Vector<String> flag_names;
+
+		// Add enum modes first.
+		for (int i = 0; i < rmodes.size(); i++) {
+			const ShaderLanguage::ModeInfo &info = rmodes[i];
+			const String temp = String(info.name);
+
+			if (!info.options.is_empty()) {
+				if (modes.has(temp) && modes[temp] < info.options.size()) {
+					if (!render_mode.is_empty()) {
+						render_mode += ", ";
 					}
+					render_mode += temp + "_" + info.options[modes[temp]];
 				}
+			} else if (flags.has(temp)) {
+				flag_names.push_back(temp);
 			}
-			idx++;
 		}
 
-		//fill render mode flags
-		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
-			String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
-			if (flags.has(mode)) {
-				if (!render_mode.is_empty()) {
-					render_mode += ", ";
-				}
-				render_mode += mode;
+		// Add flags afterward.
+		for (int i = 0; i < flag_names.size(); i++) {
+			if (!render_mode.is_empty()) {
+				render_mode += ", ";
 			}
+			render_mode += flag_names[i];
 		}
 	}
 

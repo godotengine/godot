@@ -7510,7 +7510,7 @@ Error ShaderLanguage::_validate_datatype(DataType p_type) {
 	return OK;
 }
 
-Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types) {
+Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Set<String> &p_shader_types) {
 	Token tk = _get_token();
 	TkPos prev_pos;
 
@@ -7554,6 +7554,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	stages = &p_functions;
 	const FunctionInfo &constants = p_functions.has("constants") ? p_functions["constants"] : FunctionInfo();
 
+	Map<String, String> defined_modes;
+
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
 			case TK_RENDER_MODE: {
@@ -7566,13 +7568,40 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						return ERR_PARSE_ERROR;
 					}
 
-					if (p_render_modes.find(mode) == -1) {
-						_set_error("Invalid render mode: '" + String(mode) + "'");
+					const String smode = String(mode);
+
+					if (shader->render_modes.find(mode) != -1) {
+						_set_error(vformat("Duplicated render mode: '%s'.", smode));
 						return ERR_PARSE_ERROR;
 					}
 
-					if (shader->render_modes.find(mode) != -1) {
-						_set_error("Duplicate render mode: '" + String(mode) + "'");
+					bool found = false;
+
+					for (int i = 0; i < p_render_modes.size(); i++) {
+						const ModeInfo &info = p_render_modes[i];
+						const String name = String(info.name);
+
+						if (smode.begins_with(name)) {
+							if (!info.options.is_empty()) {
+								if (info.options.find(smode.substr(name.length() + 1)) != -1) {
+									found = true;
+
+									if (defined_modes.has(name)) {
+										_set_error(vformat("Redefinition of render mode: '%s'. The %s mode has already been set to '%s'.", smode, name, defined_modes[name]));
+										return ERR_PARSE_ERROR;
+									}
+									defined_modes.insert(name, smode);
+									break;
+								}
+							} else {
+								found = true;
+								break;
+							}
+						}
+					}
+
+					if (!found) {
+						_set_error(vformat("Invalid render mode: '%s'.", smode));
 						return ERR_PARSE_ERROR;
 					}
 
@@ -9159,8 +9188,31 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		} break;
 		case COMPLETION_RENDER_MODE: {
 			for (int i = 0; i < p_info.render_modes.size(); i++) {
-				ScriptCodeCompletionOption option(p_info.render_modes[i], ScriptCodeCompletionOption::KIND_ENUM);
-				r_options->push_back(option);
+				const ModeInfo &info = p_info.render_modes[i];
+
+				if (!info.options.is_empty()) {
+					bool found = false;
+
+					for (int j = 0; j < info.options.size(); j++) {
+						if (shader->render_modes.has(String(info.name) + "_" + String(info.options[j]))) {
+							found = true;
+						}
+					}
+
+					if (!found) {
+						for (int j = 0; j < info.options.size(); j++) {
+							ScriptCodeCompletionOption option(String(info.name) + "_" + String(info.options[j]), ScriptCodeCompletionOption::KIND_ENUM);
+							r_options->push_back(option);
+						}
+					}
+				} else {
+					const String name = String(info.name);
+
+					if (!shader->render_modes.has(name)) {
+						ScriptCodeCompletionOption option(name, ScriptCodeCompletionOption::KIND_ENUM);
+						r_options->push_back(option);
+					}
+				}
 			}
 
 			return OK;

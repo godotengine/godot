@@ -341,8 +341,8 @@ MainLoop *test() {
 	dt["fragment"].built_ins["ALBEDO"] = SL::TYPE_VEC3;
 	dt["fragment"].can_discard = true;
 
-	Vector<StringName> rm;
-	rm.push_back("popo");
+	Vector<SL::ModeInfo> rm;
+	rm.push_back({ "popo" });
 	Set<String> types;
 	types.insert("spatial");
 
