@@ -1999,6 +1999,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR_MIPMAPS);
 	BIND_ENUM_CONSTANT(DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC);
 
+	/* GI API (affects VoxelGI and SDFGI) */
+
+	ClassDB::bind_method(D_METHOD("gi_set_use_half_resolution", "half_resolution"), &RenderingServer::gi_set_use_half_resolution);
+
 	/* VOXEL GI API */
 
 	ClassDB::bind_method(D_METHOD("voxel_gi_create"), &RenderingServer::voxel_gi_create);

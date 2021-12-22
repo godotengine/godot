@@ -1245,6 +1245,13 @@
 				Returns the id of a white texture. Creates one if none exists.
 			</description>
 		</method>
+		<method name="gi_set_use_half_resolution">
+			<return type="void" />
+			<argument index="0" name="half_resolution" type="bool" />
+			<description>
+				If [code]half_resolution[/code] is [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. See also [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
+			</description>
+		</method>
 		<method name="global_variable_add">
 			<return type="void" />
 			<argument index="0" name="name" type="StringName" />
