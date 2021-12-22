@@ -1042,6 +1042,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 if class_param != state.current_class:
                     repl_text = "{}.{}".format(class_param, method_param)
                 tag_text = ":ref:`{}<class_{}{}_{}>`".format(repl_text, class_param, ref_type, method_param)
+                escape_pre = True
                 escape_post = True
             elif cmd.find("image=") == 0:
                 tag_text = ""  # '![](' + cmd[6:] + ')'
