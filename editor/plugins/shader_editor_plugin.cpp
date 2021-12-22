@@ -293,15 +293,20 @@ void ShaderTextEditor::_update_warning_panel() {
 		}
 
 		warning_count++;
+		int line = w.get_line();
 
 		// First cell.
 		warnings_panel->push_cell();
-		warnings_panel->push_meta(w.get_line() - 1);
 		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-		warnings_panel->add_text(TTR("Line") + " " + itos(w.get_line()));
-		warnings_panel->add_text(" (" + w.get_name() + "):");
+		if (line != -1) {
+			warnings_panel->push_meta(line - 1);
+			warnings_panel->add_text(TTR("Line") + " " + itos(line));
+			warnings_panel->add_text(" (" + w.get_name() + "):");
+			warnings_panel->pop(); // Meta goto.
+		} else {
+			warnings_panel->add_text(w.get_name() + ":");
+		}
 		warnings_panel->pop(); // Color.
-		warnings_panel->pop(); // Meta goto.
 		warnings_panel->pop(); // Cell.
 
 		// Second cell.

@@ -787,7 +787,7 @@ public:
 	static bool is_sampler_type(DataType p_type);
 	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
-	static uint32_t get_type_size(DataType p_type);
+	static uint32_t get_datatype_size(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
 	static bool is_control_flow_keyword(String p_keyword);
@@ -919,11 +919,14 @@ private:
 	bool check_warnings = false;
 	uint32_t warning_flags;
 
-	void _add_line_warning(ShaderWarning::Code p_code, const StringName &p_subject = "") {
-		warnings.push_back(ShaderWarning(p_code, tk_line, p_subject));
+	void _add_line_warning(ShaderWarning::Code p_code, const StringName &p_subject = "", const Vector<Variant> &p_extra_args = Vector<Variant>()) {
+		warnings.push_back(ShaderWarning(p_code, tk_line, p_subject, p_extra_args));
 	}
-	void _add_warning(ShaderWarning::Code p_code, int p_line, const StringName &p_subject = "") {
-		warnings.push_back(ShaderWarning(p_code, p_line, p_subject));
+	void _add_global_warning(ShaderWarning::Code p_code, const StringName &p_subject = "", const Vector<Variant> &p_extra_args = Vector<Variant>()) {
+		warnings.push_back(ShaderWarning(p_code, -1, p_subject, p_extra_args));
+	}
+	void _add_warning(ShaderWarning::Code p_code, int p_line, const StringName &p_subject = "", const Vector<Variant> &p_extra_args = Vector<Variant>()) {
+		warnings.push_back(ShaderWarning(p_code, p_line, p_subject, p_extra_args));
 	}
 	void _check_warning_accums();
 #endif // DEBUG_ENABLED

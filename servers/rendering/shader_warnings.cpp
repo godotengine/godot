@@ -63,6 +63,8 @@ String ShaderWarning::get_message() const {
 			return vformat("The local variable '%s' is declared but never used.", subject);
 		case FORMATTING_ERROR:
 			return subject;
+		case DEVICE_LIMIT_EXCEEDED:
+			return vformat("The total size of the %s for this shader on this device has been exceeded (%s/%s). The shader may not work correctly.", subject, (int)extra_args[0], (int)extra_args[1]);
 		default:
 			break;
 	}
@@ -71,6 +73,10 @@ String ShaderWarning::get_message() const {
 
 String ShaderWarning::get_name() const {
 	return get_name_from_code(code);
+}
+
+Vector<Variant> ShaderWarning::get_extra_args() const {
+	return extra_args;
 }
 
 String ShaderWarning::get_name_from_code(Code p_code) {
@@ -85,6 +91,7 @@ String ShaderWarning::get_name_from_code(Code p_code) {
 		"UNUSED_VARYING",
 		"UNUSED_LOCAL_VARIABLE",
 		"FORMATTING_ERROR",
+		"DEVICE_LIMIT_EXCEEDED",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
@@ -114,6 +121,7 @@ static void init_code_to_flags_map() {
 	code_to_flags_map->insert(ShaderWarning::UNUSED_VARYING, ShaderWarning::UNUSED_VARYING_FLAG);
 	code_to_flags_map->insert(ShaderWarning::UNUSED_LOCAL_VARIABLE, ShaderWarning::UNUSED_LOCAL_VARIABLE_FLAG);
 	code_to_flags_map->insert(ShaderWarning::FORMATTING_ERROR, ShaderWarning::FORMATTING_ERROR_FLAG);
+	code_to_flags_map->insert(ShaderWarning::DEVICE_LIMIT_EXCEEDED, ShaderWarning::DEVICE_LIMIT_EXCEEDED_FLAG);
 }
 
 ShaderWarning::CodeFlags ShaderWarning::get_flags_from_codemap(const Map<Code, bool> &p_map) {
@@ -132,8 +140,8 @@ ShaderWarning::CodeFlags ShaderWarning::get_flags_from_codemap(const Map<Code, b
 	return (CodeFlags)result;
 }
 
-ShaderWarning::ShaderWarning(Code p_code, int p_line, const StringName &p_subject) :
-		code(p_code), line(p_line), subject(p_subject) {
+ShaderWarning::ShaderWarning(Code p_code, int p_line, const StringName &p_subject, const Vector<Variant> &p_extra_args) :
+		code(p_code), line(p_line), subject(p_subject), extra_args(p_extra_args) {
 }
 
 #endif // DEBUG_ENABLED
