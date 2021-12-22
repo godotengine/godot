@@ -19,10 +19,11 @@ GODOT_DOCS_PATTERN = re.compile(r"^\$DOCS_URL/(.*)\.html(#.*)?$")
 MARKUP_ALLOWED_PRECEDENT = " -:/'\"<([{"
 MARKUP_ALLOWED_SUBSEQUENT = " -.,:;!?\\/'\")]}>"
 
-# Used to translate the section headings when required with --lang argument.
-# The HEADINGS list should be synced with what we actually write with `make_heading`,
-# and also hardcoded in `doc/translations/extract.py`.
-HEADINGS = [
+# Used to translate section headings and other hardcoded strings when required with
+# the --lang argument. The BASE_STRINGS list should be synced with what we actually
+# write in this script (check `translate()` uses), and also hardcoded in
+# `doc/translations/extract.py` to include them in the source POT file.
+BASE_STRINGS = [
     "Description",
     "Tutorials",
     "Properties",
@@ -38,8 +39,21 @@ HEADINGS = [
     "Method Descriptions",
     "Operator Descriptions",
     "Theme Property Descriptions",
+    "Inherits:",
+    "Inherited By:",
+    "(overrides %s)",
+    "Default",
+    "Setter",
+    "value",
+    "Getter",
+    "This method should typically be overridden by the user to have any effect.",
+    "This method has no side effects. It doesn't modify any of the instance's member variables.",
+    "This method accepts any number of arguments after the ones described here.",
+    "This method is used to construct a type.",
+    "This method doesn't need an instance to be called, so it can be called directly using the class name.",
+    "This method describes a valid operator to use with this type as left-hand operand.",
 ]
-headings_l10n = {}
+strings_l10n = {}
 
 
 def print_error(error, state):  # type: (str, State) -> None
@@ -408,13 +422,13 @@ def main():  # type: () -> None
             try:
                 import polib
             except ImportError:
-                print("Section heading localization requires `polib`.")
+                print("Base template strings localization requires `polib`.")
                 exit(1)
 
             pofile = polib.pofile(lang_file)
             for entry in pofile.translated_entries():
-                if entry.msgid in HEADINGS:
-                    headings_l10n[entry.msgid] = entry.msgstr
+                if entry.msgid in BASE_STRINGS:
+                    strings_l10n[entry.msgid] = entry.msgstr
         else:
             print("No PO file at '{}' for language '{}'.".format(lang_file, args.lang))
 
@@ -494,6 +508,14 @@ def main():  # type: () -> None
         exit(1)
 
 
+def translate(string):  # type: (str) -> str
+    """Translate a string based on translations sourced from `doc/translations/*.po`
+    for a language if defined via the --lang command line argument.
+    Returns the original string if no translation exists.
+    """
+    return strings_l10n.get(string, string)
+
+
 def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, State, bool, str) -> None
     class_name = class_def.name
 
@@ -515,7 +537,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Ascendants
     if class_def.inherits:
         inh = class_def.inherits.strip()
-        f.write("**Inherits:** ")
+        f.write("**" + translate("Inherits:") + "** ")
         first = True
         while inh in state.classes:
             if not first:
@@ -538,7 +560,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             inherited.append(c.name)
 
     if len(inherited):
-        f.write("**Inherited By:** ")
+        f.write("**" + translate("Inherited By:") + "** ")
         for i, child in enumerate(inherited):
             if i > 0:
                 f.write(", ")
@@ -569,7 +591,8 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             default = property_def.default_value
             if default is not None and property_def.overrides:
                 ref = ":ref:`{1}<class_{1}_property_{0}>`".format(property_def.name, property_def.overrides)
-                ml.append((type_rst, property_def.name, default + " (overrides " + ref + ")"))
+                # Not using translate() for now as it breaks table formatting.
+                ml.append((type_rst, property_def.name, default + " " + "(overrides %s)" % ref))
             else:
                 ref = ":ref:`{0}<class_{1}_property_{0}>`".format(property_def.name, class_name)
                 ml.append((type_rst, ref, default))
@@ -687,12 +710,13 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             f.write("- {} **{}**\n\n".format(property_def.type_name.to_rst(state), property_def.name))
 
             info = []
+            # Not using translate() for now as it breaks table formatting.
             if property_def.default_value is not None:
-                info.append(("*Default*", property_def.default_value))
+                info.append(("*" + "Default" + "*", property_def.default_value))
             if property_def.setter is not None and not property_def.setter.startswith("_"):
-                info.append(("*Setter*", property_def.setter + "(value)"))
+                info.append(("*" + "Setter" + "*", property_def.setter + "(" + "value" + ")"))
             if property_def.getter is not None and not property_def.getter.startswith("_"):
-                info.append(("*Getter*", property_def.getter + "()"))
+                info.append(("*" + "Getter" + "*", property_def.getter + "()"))
 
             if len(info) > 0:
                 format_table(f, info)
@@ -781,7 +805,8 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
 
             info = []
             if theme_item_def.default_value is not None:
-                info.append(("*Default*", theme_item_def.default_value))
+                # Not using translate() for now as it breaks table formatting.
+                info.append(("*" + "Default" + "*", theme_item_def.default_value))
 
             if len(info) > 0:
                 format_table(f, info)
@@ -1305,8 +1330,9 @@ def make_method_signature(
 
 def make_heading(title, underline, l10n=True):  # type: (str, str, bool) -> str
     if l10n:
-        if title in headings_l10n:
-            title = headings_l10n.get(title)
+        new_title = translate(title)
+        if new_title != title:
+            title = new_title
             underline *= 2  # Double length to handle wide chars.
     return title + "\n" + (underline * len(title)) + "\n\n"
 
@@ -1316,12 +1342,12 @@ def make_footer():  # type: () -> str
     # This way, we avoid bloating the generated rST with duplicate abbreviations.
     # fmt: off
     return (
-        ".. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`\n"
-        ".. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`\n"
-        ".. |vararg| replace:: :abbr:`vararg (This method accepts any number of arguments after the ones described here.)`\n"
-        ".. |constructor| replace:: :abbr:`constructor (This method is used to construct a type.)`\n"
-        ".. |static| replace:: :abbr:`static (This method doesn't need an instance to be called, so it can be called directly using the class name.)`\n"
-        ".. |operator| replace:: :abbr:`operator (This method describes a valid operator to use with this type as left-hand operand.)`\n"
+        ".. |virtual| replace:: :abbr:`virtual (" + translate("This method should typically be overridden by the user to have any effect.") + ")`\n"
+        ".. |const| replace:: :abbr:`const (" + translate("This method has no side effects. It doesn't modify any of the instance's member variables.") + ")`\n"
+        ".. |vararg| replace:: :abbr:`vararg (" + translate("This method accepts any number of arguments after the ones described here.") + ")`\n"
+        ".. |constructor| replace:: :abbr:`constructor (" + translate("This method is used to construct a type.") + ")`\n"
+        ".. |static| replace:: :abbr:`static (" + translate("This method doesn't need an instance to be called, so it can be called directly using the class name.") + ")`\n"
+        ".. |operator| replace:: :abbr:`operator (" + translate("This method describes a valid operator to use with this type as left-hand operand.") + ")`\n"
     )
     # fmt: on
 
