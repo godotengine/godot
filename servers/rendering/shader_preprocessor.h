@@ -41,7 +41,7 @@
 #include "core/os/os.h"
 #include "scene/resources/shader.h"
 
-class PreproprocessorTokenizer;
+class PreprocessorTokenizer;
 struct PPToken;
 
 typedef char CharType;
@@ -66,6 +66,7 @@ struct PreprocessorState {
 	String error;
 	int error_line;
 	Map<String, Vector<SkippedPreprocessorCondition *>> skipped_conditions;
+	bool disabled;
 };
 
 class ShaderPreprocessor {
@@ -83,19 +84,21 @@ public:
 	static void refresh_shader_dependencies(Ref<Shader> p_shader);
 
 private:
-	void process_directive(PreproprocessorTokenizer *p_tokenizer);
+	void process_directive(PreprocessorTokenizer *p_tokenizer);
 
-	void process_if(PreproprocessorTokenizer *p_tokenizer);
-	void process_ifdef(PreproprocessorTokenizer *p_tokenizer);
-	void process_ifndef(PreproprocessorTokenizer *p_tokenizer);
-	void start_branch_condition(PreproprocessorTokenizer *p_tokenizer, bool p_success);
+	void process_if(PreprocessorTokenizer *p_tokenizer);
+	void process_ifdef(PreprocessorTokenizer *p_tokenizer);
+	void process_ifndef(PreprocessorTokenizer *p_tokenizer);
+	void start_branch_condition(PreprocessorTokenizer *p_tokenizer, bool p_success);
 
-	void process_else(PreproprocessorTokenizer *p_tokenizer);
-	void process_endif(PreproprocessorTokenizer *p_tokenizer);
+	void process_else(PreprocessorTokenizer *p_tokenizer);
+	void process_endif(PreprocessorTokenizer *p_tokenizer);
 
-	void process_define(PreproprocessorTokenizer *p_tokenizer);
-	void process_undef(PreproprocessorTokenizer *p_tokenizer);
-	void process_include(PreproprocessorTokenizer *p_tokenizer);
+	void process_define(PreprocessorTokenizer *p_tokenizer);
+	void process_undef(PreprocessorTokenizer *p_tokenizer);
+	void process_include(PreprocessorTokenizer *p_tokenizer);
+
+	void process_pragma(PreprocessorTokenizer *p_tokenizer);
 
 	void expand_output_macros(int p_start, int p_line);
 	String expand_macros(const String &p_string, int p_line);
@@ -106,7 +109,7 @@ private:
 
 	String evaluate_internal_conditions(const String &p_string, int p_line);
 
-	String next_directive(PreproprocessorTokenizer *p_tokenizer, const Vector<String> &p_directives);
+	String next_directive(PreprocessorTokenizer *p_tokenizer, const Vector<String> &p_directives);
 	void add_to_output(const String &p_str);
 	void set_error(const String &p_error, int p_line);
 

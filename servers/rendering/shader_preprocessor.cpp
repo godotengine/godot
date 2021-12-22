@@ -189,7 +189,7 @@ public:
 };
 
 //The real preprocessor that understands basic shader and preprocessor language syntax
-class PreproprocessorTokenizer {
+class PreprocessorTokenizer {
 public:
 	String code;
 	int line;
@@ -210,7 +210,7 @@ private:
 	}
 
 public:
-	PreproprocessorTokenizer(String p_code) {
+	PreprocessorTokenizer(String p_code) {
 		code = p_code;
 		line = 0;
 		index = 0;
@@ -363,7 +363,7 @@ String ShaderPreprocessor::preprocess(PreprocessorState *p_state) {
 		return "<error>";
 	}
 
-	PreproprocessorTokenizer p_tokenizer(stripped);
+	PreprocessorTokenizer p_tokenizer(stripped);
 	int last_size = 0;
 
 	while (1) {
@@ -378,6 +378,13 @@ String ShaderPreprocessor::preprocess(PreprocessorState *p_state) {
 
 		if (t.text == 0) {
 			break;
+		}
+
+		if (state->disabled) {
+			// preprocessor was disabled
+			// read the rest of the file into the output.
+			output.push_back(t.text);
+			continue;
 		}
 
 		if (t.text == '#') { //TODO check if at the beginning of line
@@ -402,7 +409,7 @@ String ShaderPreprocessor::preprocess(PreprocessorState *p_state) {
 	return result;
 }
 
-void ShaderPreprocessor::process_directive(PreproprocessorTokenizer *p_tokenizer) {
+void ShaderPreprocessor::process_directive(PreprocessorTokenizer *p_tokenizer) {
 	String directive = p_tokenizer->get_identifier();
 
 	if (directive == "if") {
@@ -421,12 +428,14 @@ void ShaderPreprocessor::process_directive(PreproprocessorTokenizer *p_tokenizer
 		process_undef(p_tokenizer);
 	} else if (directive == "include") {
 		process_include(p_tokenizer);
+	} else if (directive == "pragma") {
+		process_pragma(p_tokenizer);
 	} else {
 		set_error("Unknown directive", p_tokenizer->get_line());
 	}
 }
 
-void ShaderPreprocessor::process_if(PreproprocessorTokenizer *p_tokenizer) {
+void ShaderPreprocessor::process_if(PreprocessorTokenizer *p_tokenizer) {
 	int line = p_tokenizer->get_line();
 
 	String body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
@@ -458,7 +467,7 @@ void ShaderPreprocessor::process_if(PreproprocessorTokenizer *p_tokenizer) {
 	start_branch_condition(p_tokenizer, success);
 }
 
-void ShaderPreprocessor::process_ifdef(PreproprocessorTokenizer *p_tokenizer) {
+void ShaderPreprocessor::process_ifdef(PreprocessorTokenizer *p_tokenizer) {
 	const int line = p_tokenizer->get_line();
 
 	String label = p_tokenizer->get_identifier();
@@ -478,7 +487,7 @@ void ShaderPreprocessor::process_ifdef(PreproprocessorTokenizer *p_tokenizer) {
 	start_branch_condition(p_tokenizer, success);
 }
 
-void ShaderPreprocessor::process_ifndef(PreproprocessorTokenizer *p_tokenizer) {
+void ShaderPreprocessor::process_ifndef(PreprocessorTokenizer *p_tokenizer) {
 	const int line = p_tokenizer->get_line();
 
 	String label = p_tokenizer->get_identifier();
@@ -498,7 +507,7 @@ void ShaderPreprocessor::process_ifndef(PreproprocessorTokenizer *p_tokenizer) {
 	start_branch_condition(p_tokenizer, success);
 }
 
-void ShaderPreprocessor::start_branch_condition(PreproprocessorTokenizer *p_tokenizer, bool p_success) {
+void ShaderPreprocessor::start_branch_condition(PreprocessorTokenizer *p_tokenizer, bool p_success) {
 	state->condition_depth++;
 
 	if (p_success) {
@@ -519,7 +528,7 @@ void ShaderPreprocessor::start_branch_condition(PreproprocessorTokenizer *p_toke
 	}
 }
 
-void ShaderPreprocessor::process_else(PreproprocessorTokenizer *p_tokenizer) {
+void ShaderPreprocessor::process_else(PreprocessorTokenizer *p_tokenizer) {
 	if (state->skip_stack_else.is_empty()) {
 		set_error("Unmatched else", p_tokenizer->get_line());
 		return;
@@ -545,7 +554,7 @@ void ShaderPreprocessor::process_else(PreproprocessorTokenizer *p_tokenizer) {
 	}
 }
 
-void ShaderPreprocessor::process_endif(PreproprocessorTokenizer *p_tokenizer) {
+void ShaderPreprocessor::process_endif(PreprocessorTokenizer *p_tokenizer) {
 	state->condition_depth--;
 	if (state->condition_depth < 0) {
 		set_error("Unmatched endif", p_tokenizer->get_line());
@@ -564,7 +573,7 @@ void ShaderPreprocessor::process_endif(PreproprocessorTokenizer *p_tokenizer) {
 	p_tokenizer->advance('\n');
 }
 
-void ShaderPreprocessor::process_define(PreproprocessorTokenizer *p_tokenizer) {
+void ShaderPreprocessor::process_define(PreprocessorTokenizer *p_tokenizer) {
 	const int line = p_tokenizer->get_line();
 
 	String label = p_tokenizer->get_identifier();
@@ -613,7 +622,7 @@ void ShaderPreprocessor::process_define(PreproprocessorTokenizer *p_tokenizer) {
 	}
 }
 
-void ShaderPreprocessor::process_undef(PreproprocessorTokenizer *p_tokenizer) {
+void ShaderPreprocessor::process_undef(PreprocessorTokenizer *p_tokenizer) {
 	const int line = p_tokenizer->get_line();
 	const String label = p_tokenizer->get_identifier();
 	if (label.is_empty()) {
@@ -631,7 +640,7 @@ void ShaderPreprocessor::process_undef(PreproprocessorTokenizer *p_tokenizer) {
 	state->defines.erase(label);
 }
 
-void ShaderPreprocessor::process_include(PreproprocessorTokenizer *p_tokenizer) {
+void ShaderPreprocessor::process_include(PreprocessorTokenizer *p_tokenizer) {
 	const int line = p_tokenizer->get_line();
 
 	p_tokenizer->advance('"');
@@ -683,14 +692,13 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *p_tokenizer) 
 		return;
 	}
 
-	//Remove "shader_type xyz;" prefix from included files
-	//included = included.substr(type_end + 1, included.length());
+	//Replace shader_type line with a comment. Easy to maintain total lines this way.
 	included = included.replace("shader_type ", "//shader_type ");
 
 	String old_include = state->current_include;
 	state->current_include = real_path;
 	ShaderPreprocessor processor(included);
-	String result = processor.preprocess(state); // .replace("\n", " "); //To preserve line numbers cram everything into a single line
+	String result = processor.preprocess(state);
 	add_to_output(result);
 
 	// reset to last include if there are no errors. We want to use this as context.
@@ -698,12 +706,24 @@ void ShaderPreprocessor::process_include(PreproprocessorTokenizer *p_tokenizer) 
 		state->current_include = old_include;
 	}
 
-	if (!state->error.is_empty() && state_owner) {
-		//This is the root file, so force the line number to match this instead of the included file
-		// state->error_line = line + 1;
+	state->include_depth--;
+}
+
+void ShaderPreprocessor::process_pragma(PreprocessorTokenizer *p_tokenizer) {
+	const int line = p_tokenizer->get_line();
+	const String label = p_tokenizer->get_identifier();
+	if (label.is_empty()) {
+		set_error("Invalid pragma value", line);
+		return;
 	}
 
-	state->include_depth--;
+	// explicitly handle pragma values here.
+	// if more pragma options are created, then refactor into a more defined structure.
+	if (label == "disable_preprocessor") {
+		state->disabled = true;
+	}
+
+	p_tokenizer->advance('\n');
 }
 
 void ShaderPreprocessor::expand_output_macros(int p_start, int p_line_number) {
@@ -850,7 +870,7 @@ bool ShaderPreprocessor::is_char_word(const CharType p_char) {
 	return false;
 }
 
-String ShaderPreprocessor::next_directive(PreproprocessorTokenizer *p_tokenizer, const Vector<String> &p_directives) {
+String ShaderPreprocessor::next_directive(PreprocessorTokenizer *p_tokenizer, const Vector<String> &p_directives) {
 	const int line = p_tokenizer->get_line();
 	int nesting = 0;
 
@@ -925,6 +945,7 @@ PreprocessorState *ShaderPreprocessor::create_state() {
 	new_state->include_depth = 0;
 	new_state->error = "";
 	new_state->error_line = -1;
+	new_state->disabled = false;
 
 	OS *os = OS::get_singleton();
 
@@ -946,6 +967,7 @@ void ShaderPreprocessor::get_keyword_list(List<String> *r_keywords) {
 	r_keywords->push_back("ifndef");
 	//keywords->push_back("else"); //Already a keyword
 	r_keywords->push_back("endif");
+	r_keywords->push_back("pragma");
 }
 
 void ShaderPreprocessor::refresh_shader_dependencies(Ref<Shader> p_shader) {
@@ -1045,7 +1067,7 @@ void ShaderDependencyGraph::populate(ShaderDependencyNode *p_node) {
 		code = CommentRemover(p_node->code).strip();
 	}
 
-	PreproprocessorTokenizer p_tokenizer(code);
+	PreprocessorTokenizer p_tokenizer(code);
 	while (1) {
 		if (!p_tokenizer.advance('#').is_empty()) {
 			String directive = p_tokenizer.get_identifier();
