@@ -14,7 +14,7 @@
 	</methods>
 	<members>
 		<member name="absolute_index" type="int" setter="set_absolute_index" getter="get_absolute_index" default="0">
-			The index of the current character (starting from 0). Setting this property won't affect drawing.
+			The index of the current character (starting from 0) for the [RichTextLabel]'s BBCode text. Setting this property won't affect drawing.
 		</member>
 		<member name="character" type="int" setter="set_character" getter="get_character" default="0">
 			The Unicode codepoint the character will use. This only affects non-whitespace characters. [method @GDScript.ord] can be useful here. For example, the following will replace all characters with asterisks:
@@ -42,7 +42,7 @@
 			The position offset the character will be drawn with (in pixels).
 		</member>
 		<member name="relative_index" type="int" setter="set_relative_index" getter="get_relative_index" default="0">
-			The index of the current character (starting from 0). Setting this property won't affect drawing.
+			The index of the current character (starting from 0) for this [RichTextEffect] custom block. Setting this property won't affect drawing.
 		</member>
 		<member name="visible" type="bool" setter="set_visibility" getter="is_visible" default="true">
 			If [code]true[/code], the character will be drawn. If [code]false[/code], the character will be hidden. Characters around hidden characters will reflow to take the space of hidden characters. If this is not desired, set their [member color] to [code]Color(1, 1, 1, 0)[/code] instead.
