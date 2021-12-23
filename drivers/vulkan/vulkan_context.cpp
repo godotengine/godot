@@ -636,7 +636,7 @@ Error VulkanContext::_create_physical_device() {
 		/*pApplicationName*/ cs.get_data(),
 		/*applicationVersion*/ 0,
 		/*pEngineName*/ namecs.get_data(),
-		/*engineVersion*/ 0,
+		/*engineVersion*/ VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH),
 		/*apiVersion*/ VK_MAKE_VERSION(vulkan_major, vulkan_minor, 0)
 	};
 	VkInstanceCreateInfo inst_info{};
