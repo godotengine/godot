@@ -557,28 +557,16 @@ void TabContainer::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	bool first = false;
+	call_deferred("_repaint");
+	update();
 
-	if (get_tab_count() != 1) {
-		c->hide();
-	} else {
-		c->show();
-		//call_deferred("set_current_tab",0);
-		first = true;
+	bool first = (get_tab_count() == 1);
+
+	if (first) {
 		current = 0;
 		previous = 0;
 	}
-	c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	if (tabs_visible) {
-		c->set_margin(MARGIN_TOP, _get_top_margin());
-	}
-	Ref<StyleBox> sb = get_stylebox("panel");
-	c->set_margin(MARGIN_TOP, c->get_margin(MARGIN_TOP) + sb->get_margin(MARGIN_TOP));
-	c->set_margin(MARGIN_LEFT, c->get_margin(MARGIN_LEFT) + sb->get_margin(MARGIN_LEFT));
-	c->set_margin(MARGIN_RIGHT, c->get_margin(MARGIN_RIGHT) - sb->get_margin(MARGIN_RIGHT));
-	c->set_margin(MARGIN_BOTTOM, c->get_margin(MARGIN_BOTTOM) - sb->get_margin(MARGIN_BOTTOM));
 
-	update();
 	p_child->connect("renamed", this, "_child_renamed_callback");
 	if (first) {
 		emit_signal("tab_changed", current);
@@ -1069,6 +1057,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
 
 	ClassDB::bind_method(D_METHOD("_child_renamed_callback"), &TabContainer::_child_renamed_callback);
+	ClassDB::bind_method(D_METHOD("_repaint"), &TabContainer::_repaint);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
 	ClassDB::bind_method(D_METHOD("_on_mouse_exited"), &TabContainer::_on_mouse_exited);
 	ClassDB::bind_method(D_METHOD("_update_current_tab"), &TabContainer::_update_current_tab);
