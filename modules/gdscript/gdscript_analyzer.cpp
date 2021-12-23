@@ -3753,6 +3753,7 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 	// Unary version.
 	GDScriptParser::DataType nil_type;
 	nil_type.builtin_type = Variant::NIL;
+	nil_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 	return get_operation_type(p_operation, p_a, nil_type, r_valid, p_source);
 }
 
@@ -3762,19 +3763,30 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 
 	Variant::Type a_type = p_a.builtin_type;
 	Variant::Type b_type = p_b.builtin_type;
-
 	Variant::ValidatedOperatorEvaluator op_eval = Variant::get_validated_operator_evaluator(p_operation, a_type, b_type);
 
-	if (op_eval == nullptr) {
+	bool hard_operation = p_a.is_hard_type() && p_b.is_hard_type();
+	bool validated = op_eval != nullptr;
+
+	if (hard_operation && !validated) {
 		r_valid = false;
 		return result;
+	} else if (hard_operation && validated) {
+		r_valid = true;
+		result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+		result.kind = GDScriptParser::DataType::BUILTIN;
+		result.builtin_type = Variant::get_operator_return_type(p_operation, a_type, b_type);
+	} else if (!hard_operation && !validated) {
+		r_valid = true;
+		result.type_source = GDScriptParser::DataType::UNDETECTED;
+		result.kind = GDScriptParser::DataType::VARIANT;
+		result.builtin_type = Variant::NIL;
+	} else if (!hard_operation && validated) {
+		r_valid = true;
+		result.type_source = GDScriptParser::DataType::INFERRED;
+		result.kind = GDScriptParser::DataType::BUILTIN;
+		result.builtin_type = Variant::get_operator_return_type(p_operation, a_type, b_type);
 	}
-
-	r_valid = true;
-	result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
-
-	result.kind = GDScriptParser::DataType::BUILTIN;
-	result.builtin_type = Variant::get_operator_return_type(p_operation, a_type, b_type);
 
 	return result;
 }
