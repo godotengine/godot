@@ -2818,11 +2818,14 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
 							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_BLACK);
 						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_NONE: {
-							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
-						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISOTROPY: {
 							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_ANISO);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
+							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL: {
+							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
 						} break;
 						default: {
 							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
