@@ -628,14 +628,12 @@ Error VulkanContext::_create_physical_device() {
 	}
 
 	CharString cs = ProjectSettings::get_singleton()->get("application/config/name").operator String().utf8();
-	String name = "GodotEngine " + String(VERSION_FULL_NAME);
-	CharString namecs = name.utf8();
 	const VkApplicationInfo app = {
 		/*sType*/ VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		/*pNext*/ nullptr,
 		/*pApplicationName*/ cs.get_data(),
 		/*applicationVersion*/ 0,
-		/*pEngineName*/ namecs.get_data(),
+		/*pEngineName*/ VERSION_NAME,
 		/*engineVersion*/ VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH),
 		/*apiVersion*/ VK_MAKE_VERSION(vulkan_major, vulkan_minor, 0)
 	};
