@@ -67,23 +67,17 @@ public:
 	void set_bind_name(int p_index, const StringName &p_name);
 
 	inline int get_bind_bone(int p_index) const {
-#ifdef DEBUG_ENABLED
 		ERR_FAIL_INDEX_V(p_index, bind_count, -1);
-#endif
 		return binds_ptr[p_index].bone;
 	}
 
 	inline StringName get_bind_name(int p_index) const {
-#ifdef DEBUG_ENABLED
 		ERR_FAIL_INDEX_V(p_index, bind_count, StringName());
-#endif
 		return binds_ptr[p_index].name;
 	}
 
 	inline Transform3D get_bind_pose(int p_index) const {
-#ifdef DEBUG_ENABLED
 		ERR_FAIL_INDEX_V(p_index, bind_count, Transform3D());
-#endif
 		return binds_ptr[p_index].pose;
 	}
 
