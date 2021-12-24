@@ -1094,6 +1094,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					is_in_setter = has_setter && setter_function == codegen.function_name;
 					member.mode = GDScriptCodeGenerator::Address::MEMBER;
 					member.address = codegen.script->member_indices[var_name].index;
+					member.type = codegen.script->member_indices[var_name].data_type;
 				}
 
 				GDScriptCodeGenerator::Address target;
