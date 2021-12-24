@@ -258,7 +258,7 @@ void ProjectSettingsEditor::_device_input_add() {
 	int idx = edit_idx;
 	Dictionary old_val = ProjectSettings::get_singleton()->get(name);
 	Dictionary action = old_val.duplicate();
-	Array events = action["events"];
+	Array events = action["events"].duplicate();
 
 	switch (add_type) {
 		case INPUT_MOUSE_BUTTON: {
@@ -383,7 +383,7 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 
 	Dictionary old_val = ProjectSettings::get_singleton()->get(name);
 	Dictionary action = old_val.duplicate();
-	Array events = action["events"];
+	Array events = action["events"].duplicate();
 
 	for (int i = 0; i < events.size(); i++) {
 		Ref<InputEventKey> aie = events[i];
@@ -654,7 +654,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 			Dictionary action = old_val.duplicate();
 			int idx = ti->get_metadata(0);
 
-			Array events = action["events"];
+			Array events = action["events"].duplicate();
 			ERR_FAIL_INDEX(idx, events.size());
 			events.remove(idx);
 			action["events"] = events;
