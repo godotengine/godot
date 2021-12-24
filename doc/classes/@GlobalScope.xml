@@ -2663,31 +2663,31 @@
 		<constant name="TYPE_ARRAY" value="25" enum="Variant.Type">
 			Variable is of type [Array].
 		</constant>
-		<constant name="TYPE_RAW_ARRAY" value="26" enum="Variant.Type">
+		<constant name="TYPE_PACKED_BYTE_ARRAY" value="26" enum="Variant.Type">
 			Variable is of type [PackedByteArray].
 		</constant>
-		<constant name="TYPE_INT32_ARRAY" value="27" enum="Variant.Type">
+		<constant name="TYPE_PACKED_INT32_ARRAY" value="27" enum="Variant.Type">
 			Variable is of type [PackedInt32Array].
 		</constant>
-		<constant name="TYPE_INT64_ARRAY" value="28" enum="Variant.Type">
+		<constant name="TYPE_PACKED_INT64_ARRAY" value="28" enum="Variant.Type">
 			Variable is of type [PackedInt64Array].
 		</constant>
-		<constant name="TYPE_FLOAT32_ARRAY" value="29" enum="Variant.Type">
+		<constant name="TYPE_PACKED_FLOAT32_ARRAY" value="29" enum="Variant.Type">
 			Variable is of type [PackedFloat32Array].
 		</constant>
-		<constant name="TYPE_FLOAT64_ARRAY" value="30" enum="Variant.Type">
+		<constant name="TYPE_PACKED_FLOAT64_ARRAY" value="30" enum="Variant.Type">
 			Variable is of type [PackedFloat64Array].
 		</constant>
-		<constant name="TYPE_STRING_ARRAY" value="31" enum="Variant.Type">
+		<constant name="TYPE_PACKED_STRING_ARRAY" value="31" enum="Variant.Type">
 			Variable is of type [PackedStringArray].
 		</constant>
-		<constant name="TYPE_VECTOR2_ARRAY" value="32" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR2_ARRAY" value="32" enum="Variant.Type">
 			Variable is of type [PackedVector2Array].
 		</constant>
-		<constant name="TYPE_VECTOR3_ARRAY" value="33" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR3_ARRAY" value="33" enum="Variant.Type">
 			Variable is of type [PackedVector3Array].
 		</constant>
-		<constant name="TYPE_COLOR_ARRAY" value="34" enum="Variant.Type">
+		<constant name="TYPE_PACKED_COLOR_ARRAY" value="34" enum="Variant.Type">
 			Variable is of type [PackedColorArray].
 		</constant>
 		<constant name="TYPE_MAX" value="35" enum="Variant.Type">
