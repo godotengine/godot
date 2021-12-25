@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[i]Root motion[/i] refers to an animation technique where a mesh's skeleton is used to give impulse to a character. When working with 3D animations, a popular technique is for animators to use the root skeleton bone to give motion to the rest of the skeleton. This allows animating characters in a way where steps actually match the floor below. It also allows precise interaction with objects during cinematics. See also [AnimationTree].
-		[b]Note:[/b] [RootMotionView] is only visible in the editor. It will be hidden automatically in the running project, and will also be converted to a plain [Node] in the running project. This means a script attached to a [RootMotionView] node [i]must[/i] have [code]extends Node[/code] instead of [code]extends RootMotionView[/code]. Additionally, it must not be a [code]@tool[/code] script.
+		[b]Note:[/b] [RootMotionView] is only visible in the editor. It will be hidden automatically in the running project, and will also be converted to a plain [Node] in the running project. This means a script attached to a [RootMotionView] node [i]must[/i] have [code]extends Node[/code] instead of [code]extends RootMotionView[/code]. Additionally, it must not be a [code]tool[/code] script.
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree - Root motion">$DOCS_URL/tutorials/animation/animation_tree.html#root-motion</link>
