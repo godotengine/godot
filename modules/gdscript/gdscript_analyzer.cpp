@@ -1865,7 +1865,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	if (assignee_type.has_no_type() || assigned_value_type.is_variant()) {
 		mark_node_unsafe(p_assignment);
-		if (assignee_type.is_hard_type()) {
+		if (assignee_type.is_hard_type() && !assignee_type.is_variant()) {
 			p_assignment->use_conversion_assign = true;
 		}
 	}
