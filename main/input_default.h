@@ -132,11 +132,6 @@ public:
 		JOYPADS_MAX = 16,
 	};
 
-	struct JoyAxis {
-		int min;
-		float value;
-	};
-
 private:
 	enum JoyType {
 		TYPE_BUTTON,
@@ -284,7 +279,7 @@ public:
 
 	void parse_mapping(String p_mapping);
 	void joy_button(int p_device, int p_button, bool p_pressed);
-	void joy_axis(int p_device, int p_axis, const JoyAxis &p_value);
+	void joy_axis(int p_device, int p_axis, float p_value);
 	void joy_hat(int p_device, int p_val);
 
 	virtual void add_joy_mapping(String p_mapping, bool p_update_existing = false);
