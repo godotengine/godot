@@ -61,13 +61,9 @@ JoypadLinux::Joypad::~Joypad() {
 void JoypadLinux::Joypad::reset() {
 	dpad = HatMask::CENTER;
 	fd = -1;
-
-	Input::JoyAxisValue jx;
-	jx.min = -1;
-	jx.value = 0.0f;
 	for (int i = 0; i < MAX_ABS; i++) {
 		abs_map[i] = -1;
-		curr_axis[i] = jx;
+		curr_axis[i] = 0;
 	}
 }
 
@@ -429,23 +425,11 @@ void JoypadLinux::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 	joy.ff_effect_timestamp = p_timestamp;
 }
 
-Input::JoyAxisValue JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
+float JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
 	int min = p_abs->minimum;
 	int max = p_abs->maximum;
-	Input::JoyAxisValue jx;
-
-	if (min < 0) {
-		jx.min = -1;
-		if (p_value < 0) {
-			jx.value = (float)-p_value / min;
-		} else {
-			jx.value = (float)p_value / max;
-		}
-	} else if (min == 0) {
-		jx.min = 0;
-		jx.value = 0.0f + (float)p_value / max;
-	}
-	return jx;
+	// Convert to a value between -1.0f and 1.0f.
+	return 2.0f * (p_value - min) / (max - min) - 1.0f;
 }
 
 void JoypadLinux::process_joypads() {
@@ -514,7 +498,7 @@ void JoypadLinux::process_joypads() {
 									return;
 								}
 								if (joy->abs_map[ev.code] != -1 && joy->abs_info[ev.code]) {
-									Input::JoyAxisValue value = axis_correct(joy->abs_info[ev.code], ev.value);
+									float value = axis_correct(joy->abs_info[ev.code], ev.value);
 									joy->curr_axis[joy->abs_map[ev.code]] = value;
 								}
 								break;
