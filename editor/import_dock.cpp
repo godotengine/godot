@@ -31,6 +31,7 @@
 #include "import_dock.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
+#include "editor_scale.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);
@@ -135,6 +136,8 @@ void ImportDock::set_edit_path(const String &p_path) {
 	_set_dirty(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
+	content->show();
+	select_a_resource->hide();
 
 	imported->set_text(p_path.get_file());
 }
@@ -423,6 +426,8 @@ void ImportDock::clear() {
 	params->properties.clear();
 	params->update();
 	preset->get_popup()->clear();
+	content->hide();
+	select_a_resource->show();
 }
 
 static bool _find_owners(EditorFileSystemDirectory *efsd, const String &p_path) {
@@ -600,12 +605,18 @@ void ImportDock::initialize_import_options() const {
 
 ImportDock::ImportDock() {
 	set_name("Import");
+
+	content = memnew(VBoxContainer);
+	content->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(content);
+	content->hide();
+
 	imported = memnew(Label);
 	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
 	imported->set_clip_text(true);
-	add_child(imported);
+	content->add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
-	add_margin_child(TTR("Import As:"), hb);
+	content->add_margin_child(TTR("Import As:"), hb);
 	import_as = memnew(OptionButton);
 	import_as->set_disabled(true);
 	import_as->connect("item_selected", callable_mp(this, &ImportDock::_importer_selected));
@@ -618,13 +629,13 @@ ImportDock::ImportDock() {
 	hb->add_child(preset);
 
 	import_opts = memnew(EditorInspector);
-	add_child(import_opts);
+	content->add_child(import_opts);
 	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
 	import_opts->connect("property_edited", callable_mp(this, &ImportDock::_property_edited));
 	import_opts->connect("property_toggled", callable_mp(this, &ImportDock::_property_toggled));
 
 	hb = memnew(HBoxContainer);
-	add_child(hb);
+	content->add_child(hb);
 	import = memnew(Button);
 	import->set_text(TTR("Reimport"));
 	import->set_disabled(true);
@@ -652,7 +663,7 @@ ImportDock::ImportDock() {
 
 	reimport_confirm = memnew(ConfirmationDialog);
 	reimport_confirm->get_ok_button()->set_text(TTR("Save Scenes, Re-Import, and Restart"));
-	add_child(reimport_confirm);
+	content->add_child(reimport_confirm);
 	reimport_confirm->connect("confirmed", callable_mp(this, &ImportDock::_reimport_and_restart));
 
 	VBoxContainer *vbc_confirm = memnew(VBoxContainer());
@@ -662,6 +673,15 @@ ImportDock::ImportDock() {
 	reimport_confirm->add_child(vbc_confirm);
 
 	params = memnew(ImportDockParameters);
+
+	select_a_resource = memnew(Label);
+	select_a_resource->set_text(TTR("Select a resource file in the filesystem or in the inspector to adjust import settings."));
+	select_a_resource->set_autowrap_mode(Label::AUTOWRAP_WORD);
+	select_a_resource->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	select_a_resource->set_v_size_flags(SIZE_EXPAND_FILL);
+	select_a_resource->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	select_a_resource->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	add_child(select_a_resource);
 }
 
 ImportDock::~ImportDock() {
