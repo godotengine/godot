@@ -159,7 +159,7 @@
 		</member>
 		<member name="print_error_messages" type="bool" setter="set_print_error_messages" getter="is_printing_error_messages" default="true">
 			If [code]false[/code], stops printing error and warning messages to the console and editor Output log. This can be used to hide error and warning messages during unit test suite runs. This property is equivalent to the [member ProjectSettings.application/run/disable_stderr] project setting.
-			[b]Warning:[/b] If you set this to [code]false[/code] anywhere in the project, important error messages may be hidden even if they are emitted from other scripts. If this is set to [code]false[/code] in a [code]@tool[/code] script, this will also impact the editor itself. Do [i]not[/i] report bugs before ensuring error messages are enabled (as they are by default).
+			[b]Warning:[/b] If you set this to [code]false[/code] anywhere in the project, important error messages may be hidden even if they are emitted from other scripts. If this is set to [code]false[/code] in a [code]tool[/code] script, this will also impact the editor itself. Do [i]not[/i] report bugs before ensuring error messages are enabled (as they are by default).
 			[b]Note:[/b] This property does not impact the editor's Errors tab when running a project from the editor.
 		</member>
 		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps" default="0">
