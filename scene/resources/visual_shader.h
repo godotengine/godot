@@ -102,8 +102,6 @@ private:
 	HashMap<String, int> modes;
 	Set<StringName> flags;
 
-	static RenderModeEnums render_mode_enums[];
-
 	mutable SafeFlag dirty;
 	void _queue_update();
 

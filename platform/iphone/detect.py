@@ -62,16 +62,9 @@ def configure(env):
         env.Append(LINKFLAGS=["-flto"])
 
     ## Architecture
-    if env["arch"] == "x86":  # i386
-        env["bits"] = "32"
-    elif env["arch"] == "x86_64":
-        env["bits"] = "64"
-    elif env["arch"] == "arm" or env["arch"] == "arm32" or env["arch"] == "armv7" or env["bits"] == "32":  # arm
-        env["arch"] = "arm"
-        env["bits"] = "32"
-    else:  # armv64
+    env["bits"] = "64"
+    if env["arch"] != "x86_64":
         env["arch"] = "arm64"
-        env["bits"] = "64"
 
     ## Compiler configuration
 
@@ -108,27 +101,14 @@ def configure(env):
         detect_darwin_sdk_path("iphone", env)
         env.Append(CCFLAGS=["-miphoneos-version-min=11.0"])
 
-    if env["arch"] == "x86" or env["arch"] == "x86_64":
+    if env["arch"] == "x86_64":
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
-        arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
         env.Append(
             CCFLAGS=(
-                "-fobjc-arc -arch "
-                + arch_flag
-                + " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks"
+                "-fobjc-arc -arch x86_64"
+                " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks"
                 " -fasm-blocks -isysroot $IPHONESDK"
             ).split()
-        )
-    elif env["arch"] == "arm":
-        env.Append(
-            CCFLAGS=(
-                "-fobjc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing"
-                " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
-                " -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb"
-                ' "-DIBOutlet=__attribute__((iboutlet))"'
-                ' "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))"'
-                ' "-DIBAction=void)__attribute__((ibaction)" -MMD -MT dependencies'.split()
-            )
         )
     elif env["arch"] == "arm64":
         env.Append(

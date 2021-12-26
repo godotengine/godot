@@ -819,6 +819,57 @@ public:
 		DataType return_type = TYPE_VOID;
 	};
 
+	struct ModeInfo {
+		StringName name;
+		Vector<StringName> options;
+
+		ModeInfo() {}
+
+		ModeInfo(const StringName &p_name) :
+				name(p_name) {
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+			options.push_back(p_arg3);
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+			options.push_back(p_arg3);
+			options.push_back(p_arg4);
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4, const StringName &p_arg5) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+			options.push_back(p_arg3);
+			options.push_back(p_arg4);
+			options.push_back(p_arg5);
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4, const StringName &p_arg5, const StringName &p_arg6) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+			options.push_back(p_arg3);
+			options.push_back(p_arg4);
+			options.push_back(p_arg5);
+			options.push_back(p_arg6);
+		}
+	};
+
 	struct FunctionInfo {
 		Map<StringName, BuiltInInfo> built_ins;
 		Map<StringName, StageFunctionInfo> stage_functions;
@@ -1013,7 +1064,7 @@ private:
 	String _get_shader_type_list(const Set<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
+	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Set<String> &p_shader_types);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
@@ -1037,7 +1088,7 @@ public:
 
 	struct ShaderCompileInfo {
 		Map<StringName, FunctionInfo> functions;
-		Vector<StringName> render_modes;
+		Vector<ModeInfo> render_modes;
 		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
 		Set<String> shader_types;
 		GlobalVariableGetTypeFunc global_variable_type_func = nullptr;

@@ -233,12 +233,12 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 			const int *top_heights = bitmaps[i].top_heights.ptr();
 			const int *bottom_heights = bitmaps[i].bottom_heights.ptr();
 
-			for (int j = 0; j < atlas_w - w; j++) {
+			for (int j = 0; j <= atlas_w - w; j++) {
 				int height = 0;
 
 				for (int k = 0; k < w; k++) {
 					int pixmap_h = bottom_heights[k];
-					if (pixmap_h == -1) {
+					if (pixmap_h == 0x7FFFFFFF) {
 						continue; //no pixel here, anything is fine
 					}
 

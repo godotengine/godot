@@ -692,7 +692,9 @@ public:
 	virtual void update_memory_info() override {}
 	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) override { return 0; }
 
-	bool has_os_feature(const String &p_feature) const override { return false; }
+	bool has_os_feature(const String &p_feature) const override {
+		return p_feature == "rgtc" || p_feature == "bptc" || p_feature == "s3tc" || p_feature == "etc" || p_feature == "etc2";
+	}
 
 	void update_dirty_resources() override {}
 

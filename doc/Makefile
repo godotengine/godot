@@ -3,6 +3,8 @@ CLASSES = $(BASEDIR)/classes/ $(BASEDIR)/../modules/
 OUTPUTDIR = $(BASEDIR)/_build
 TOOLSDIR = $(BASEDIR)/tools
 JSDIR = $(BASEDIR)/../platform/javascript
+LANGARG ?= en
+LANGCMD = -l $(LANGARG)
 
 .ONESHELL:
 
@@ -17,7 +19,7 @@ doxygen:
 rst:
 	rm -rf $(OUTPUTDIR)/rst
 	mkdir -p $(OUTPUTDIR)/rst
-	python3 $(TOOLSDIR)/make_rst.py -o $(OUTPUTDIR)/rst $(CLASSES)
+	python3 $(TOOLSDIR)/make_rst.py -o $(OUTPUTDIR)/rst $(LANGCMD) $(CLASSES)
 
 rstjs:
 	rm -rf $(OUTPUTDIR)/rstjs

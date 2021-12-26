@@ -68,15 +68,18 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA         -0x0051 /**< Invalid input parameter(s). */
+/** Invalid input parameter(s). */
+#define MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA         -0x0051
 
 /* MBEDTLS_ERR_CHACHA20_FEATURE_UNAVAILABLE is deprecated and should not be
  * used. */
-#define MBEDTLS_ERR_CHACHA20_FEATURE_UNAVAILABLE    -0x0053 /**< Feature not available. For example, s part of the API is not implemented. */
+/** Feature not available. For example, s part of the API is not implemented. */
+#define MBEDTLS_ERR_CHACHA20_FEATURE_UNAVAILABLE    -0x0053
 
 /* MBEDTLS_ERR_CHACHA20_HW_ACCEL_FAILED is deprecated and should not be used.
  */
-#define MBEDTLS_ERR_CHACHA20_HW_ACCEL_FAILED        -0x0055  /**< Chacha20 hardware accelerator failed. */
+/** Chacha20 hardware accelerator failed. */
+#define MBEDTLS_ERR_CHACHA20_HW_ACCEL_FAILED        -0x0055
 
 #ifdef __cplusplus
 extern "C" {

@@ -81,16 +81,24 @@
 #define inline __inline
 #endif
 
-#define MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE  -0x6080  /**< The selected feature is not available. */
-#define MBEDTLS_ERR_CIPHER_BAD_INPUT_DATA       -0x6100  /**< Bad input parameters. */
-#define MBEDTLS_ERR_CIPHER_ALLOC_FAILED         -0x6180  /**< Failed to allocate memory. */
-#define MBEDTLS_ERR_CIPHER_INVALID_PADDING      -0x6200  /**< Input data contains invalid padding and is rejected. */
-#define MBEDTLS_ERR_CIPHER_FULL_BLOCK_EXPECTED  -0x6280  /**< Decryption of block requires a full block. */
-#define MBEDTLS_ERR_CIPHER_AUTH_FAILED          -0x6300  /**< Authentication failed (for AEAD modes). */
-#define MBEDTLS_ERR_CIPHER_INVALID_CONTEXT      -0x6380  /**< The context is invalid. For example, because it was freed. */
+/** The selected feature is not available. */
+#define MBEDTLS_ERR_CIPHER_FEATURE_UNAVAILABLE  -0x6080
+/** Bad input parameters. */
+#define MBEDTLS_ERR_CIPHER_BAD_INPUT_DATA       -0x6100
+/** Failed to allocate memory. */
+#define MBEDTLS_ERR_CIPHER_ALLOC_FAILED         -0x6180
+/** Input data contains invalid padding and is rejected. */
+#define MBEDTLS_ERR_CIPHER_INVALID_PADDING      -0x6200
+/** Decryption of block requires a full block. */
+#define MBEDTLS_ERR_CIPHER_FULL_BLOCK_EXPECTED  -0x6280
+/** Authentication failed (for AEAD modes). */
+#define MBEDTLS_ERR_CIPHER_AUTH_FAILED          -0x6300
+/** The context is invalid. For example, because it was freed. */
+#define MBEDTLS_ERR_CIPHER_INVALID_CONTEXT      -0x6380
 
 /* MBEDTLS_ERR_CIPHER_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_CIPHER_HW_ACCEL_FAILED      -0x6400  /**< Cipher hardware accelerator failed. */
+/** Cipher hardware accelerator failed. */
+#define MBEDTLS_ERR_CIPHER_HW_ACCEL_FAILED      -0x6400
 
 #define MBEDTLS_CIPHER_VARIABLE_IV_LEN     0x01    /**< Cipher accepts IVs of variable length. */
 #define MBEDTLS_CIPHER_VARIABLE_KEY_LEN    0x02    /**< Cipher accepts keys of variable length. */
