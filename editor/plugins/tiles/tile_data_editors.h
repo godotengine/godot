@@ -306,6 +306,7 @@ class TileDataCollisionEditor : public TileDataDefaultEditor {
 	Map<StringName, EditorProperty *> property_editors;
 
 	void _property_value_changed(StringName p_property, Variant p_value, StringName p_field);
+	void _property_selected(StringName p_path, int p_focusable);
 	void _polygons_changed();
 
 	virtual Variant _get_painted_value() override;
