@@ -969,17 +969,19 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				// Perform operator if any.
 				if (assignment->operation != GDScriptParser::AssignmentNode::OP_NONE) {
+					GDScriptCodeGenerator::Address op_result = codegen.add_temporary(_gdtype_from_datatype(assignment->get_datatype()));
 					GDScriptCodeGenerator::Address value = codegen.add_temporary(_gdtype_from_datatype(subscript->get_datatype()));
 					if (subscript->is_attribute) {
 						gen->write_get_named(value, name, prev_base);
 					} else {
 						gen->write_get(value, key, prev_base);
 					}
-					gen->write_binary_operator(value, assignment->variant_op, value, assigned);
+					gen->write_binary_operator(op_result, assignment->variant_op, value, assigned);
+					gen->pop_temporary();
 					if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
 					}
-					assigned = value;
+					assigned = op_result;
 				}
 
 				// Perform assignment.
@@ -1035,8 +1037,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				StringName name = static_cast<GDScriptParser::IdentifierNode *>(assignment->assignee)->name;
 
 				if (has_operation) {
-					GDScriptCodeGenerator::Address op_result = codegen.add_temporary();
-					GDScriptCodeGenerator::Address member = codegen.add_temporary();
+					GDScriptCodeGenerator::Address op_result = codegen.add_temporary(_gdtype_from_datatype(assignment->get_datatype()));
+					GDScriptCodeGenerator::Address member = codegen.add_temporary(_gdtype_from_datatype(assignment->assignee->get_datatype()));
 					gen->write_get_member(member, name);
 					gen->write_binary_operator(op_result, assignment->variant_op, member, assigned_value);
 					gen->pop_temporary(); // Pop member temp.
@@ -1092,7 +1094,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				bool has_operation = assignment->operation != GDScriptParser::AssignmentNode::OP_NONE;
 				if (has_operation) {
 					// Perform operation.
-					GDScriptCodeGenerator::Address op_result = codegen.add_temporary();
+					GDScriptCodeGenerator::Address op_result = codegen.add_temporary(_gdtype_from_datatype(assignment->get_datatype()));
 					GDScriptCodeGenerator::Address og_value = _parse_expression(codegen, r_error, assignment->assignee);
 					gen->write_binary_operator(op_result, assignment->variant_op, og_value, assigned_value);
 					to_assign = op_result;
