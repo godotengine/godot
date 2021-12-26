@@ -810,7 +810,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				//late init for performance
 				color_picker = memnew(ColorPicker);
 				color_picker->set_deferred_mode(true);
-				add_child(color_picker);
+				value_vbox->add_child(color_picker);
 				color_picker->hide();
 				color_picker->connect("color_changed", callable_mp(this, &CustomPropertyEditor::_color_changed));
 
