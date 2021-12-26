@@ -93,7 +93,7 @@ void Label::_shape() {
 		int font_size = get_theme_font_size(SNAME("font_size"));
 		ERR_FAIL_COND(font.is_null());
 		String text = (uppercase) ? xl_text.to_upper() : xl_text;
-		if (visible_chars >= 0) {
+		if (visible_chars >= 0 && visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
 			text = text.substr(0, visible_chars);
 		}
 		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
@@ -316,12 +316,19 @@ void Label::_notification(int p_what) {
 		}
 
 		int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
+		bool trim_chars = (visible_chars >= 0) && (visible_chars_behavior == VC_CHARS_AFTER_SHAPING);
+		bool trim_glyphs_ltr = (visible_chars >= 0) && ((visible_chars_behavior == VC_GLYPHS_LTR) || ((visible_chars_behavior == VC_GLYPHS_AUTO) && !rtl_layout));
+		bool trim_glyphs_rtl = (visible_chars >= 0) && ((visible_chars_behavior == VC_GLYPHS_RTL) || ((visible_chars_behavior == VC_GLYPHS_AUTO) && rtl_layout));
 
 		// Get real total height.
+		int total_glyphs = 0;
 		total_h = 0;
 		for (int64_t i = lines_skipped; i < last_line; i++) {
 			total_h += TS->shaped_text_get_size(lines_rid[i]).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM) + line_spacing;
+			total_glyphs += TS->shaped_text_get_glyph_count(lines_rid[i]) + TS->shaped_text_get_ellipsis_glyph_count(lines_rid[i]);
 		}
+		int visible_glyphs = total_glyphs * percent_visible;
+		int processed_glyphs = 0;
 		total_h += style->get_margin(SIDE_TOP) + style->get_margin(SIDE_BOTTOM);
 
 		int vbegin = 0, vsep = 0;
@@ -395,14 +402,19 @@ void Label::_notification(int p_what) {
 			int ellipsis_gl_size = TS->shaped_text_get_ellipsis_glyph_count(lines_rid[i]);
 
 			// Draw outline. Note: Do not merge this into the single loop with the main text, to prevent overlaps.
+			int processed_glyphs_ol = processed_glyphs;
 			if ((outline_size > 0 && font_outline_color.a != 0) || (font_shadow_color.a != 0)) {
 				Vector2 offset = ofs;
 				// Draw RTL ellipsis string when necessary.
 				if (rtl && ellipsis_pos >= 0) {
 					for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
 						for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
+							bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 							//Draw glyph outlines and shadow.
-							draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+							if (!skip) {
+								draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+							}
+							processed_glyphs_ol++;
 							offset.x += ellipsis_glyphs[gl_idx].advance;
 						}
 					}
@@ -423,9 +435,13 @@ void Label::_notification(int p_what) {
 								}
 							}
 						}
+						bool skip = (trim_chars && glyphs[j].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 
 						// Draw glyph outlines and shadow.
-						draw_glyph_outline(glyphs[j], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+						if (!skip) {
+							draw_glyph_outline(glyphs[j], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+						}
+						processed_glyphs_ol++;
 						offset.x += glyphs[j].advance;
 					}
 				}
@@ -433,8 +449,12 @@ void Label::_notification(int p_what) {
 				if (!rtl && ellipsis_pos >= 0) {
 					for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {
 						for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
+							bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 							//Draw glyph outlines and shadow.
-							draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+							if (!skip) {
+								draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_color, font_shadow_color, font_outline_color, shadow_outline_size, outline_size, offset, shadow_ofs);
+							}
+							processed_glyphs_ol++;
 							offset.x += ellipsis_glyphs[gl_idx].advance;
 						}
 					}
@@ -447,8 +467,12 @@ void Label::_notification(int p_what) {
 			if (rtl && ellipsis_pos >= 0) {
 				for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
 					for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
+						bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
 						//Draw glyph outlines and shadow.
-						draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs);
+						if (!skip) {
+							draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs);
+						}
+						processed_glyphs++;
 						ofs.x += ellipsis_glyphs[gl_idx].advance;
 					}
 				}
@@ -469,9 +493,13 @@ void Label::_notification(int p_what) {
 							}
 						}
 					}
+					bool skip = (trim_chars && glyphs[j].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
 
 					// Draw glyph outlines and shadow.
-					draw_glyph(glyphs[j], ci, font_color, ofs);
+					if (!skip) {
+						draw_glyph(glyphs[j], ci, font_color, ofs);
+					}
+					processed_glyphs++;
 					ofs.x += glyphs[j].advance;
 				}
 			}
@@ -479,8 +507,12 @@ void Label::_notification(int p_what) {
 			if (!rtl && ellipsis_pos >= 0) {
 				for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {
 					for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
+						bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
 						//Draw glyph outlines and shadow.
-						draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs);
+						if (!skip) {
+							draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs);
+						}
+						processed_glyphs++;
 						ofs.x += ellipsis_glyphs[gl_idx].advance;
 					}
 				}
@@ -702,7 +734,9 @@ void Label::set_visible_characters(int p_amount) {
 		} else {
 			percent_visible = 1.0;
 		}
-		dirty = true;
+		if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
+			dirty = true;
+		}
 		update();
 	}
 }
@@ -720,13 +754,27 @@ void Label::set_percent_visible(float p_percent) {
 			visible_chars = get_total_character_count() * p_percent;
 			percent_visible = p_percent;
 		}
-		dirty = true;
+		if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
+			dirty = true;
+		}
 		update();
 	}
 }
 
 float Label::get_percent_visible() const {
 	return percent_visible;
+}
+
+Label::VisibleCharactersBehavior Label::get_visible_characters_behavior() const {
+	return visible_chars_behavior;
+}
+
+void Label::set_visible_characters_behavior(Label::VisibleCharactersBehavior p_behavior) {
+	if (visible_chars_behavior != p_behavior) {
+		visible_chars_behavior = p_behavior;
+		dirty = true;
+		update();
+	}
 }
 
 void Label::set_lines_skipped(int p_lines) {
@@ -836,6 +884,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_total_character_count"), &Label::get_total_character_count);
 	ClassDB::bind_method(D_METHOD("set_visible_characters", "amount"), &Label::set_visible_characters);
 	ClassDB::bind_method(D_METHOD("get_visible_characters"), &Label::get_visible_characters);
+	ClassDB::bind_method(D_METHOD("get_visible_characters_behavior"), &Label::get_visible_characters_behavior);
+	ClassDB::bind_method(D_METHOD("set_visible_characters_behavior", "behavior"), &Label::set_visible_characters_behavior);
 	ClassDB::bind_method(D_METHOD("set_percent_visible", "percent_visible"), &Label::set_percent_visible);
 	ClassDB::bind_method(D_METHOD("get_percent_visible"), &Label::get_percent_visible);
 	ClassDB::bind_method(D_METHOD("set_lines_skipped", "lines_skipped"), &Label::set_lines_skipped);
@@ -858,6 +908,12 @@ void Label::_bind_methods() {
 	BIND_ENUM_CONSTANT(OVERRUN_TRIM_ELLIPSIS);
 	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ELLIPSIS);
 
+	BIND_ENUM_CONSTANT(VC_CHARS_BEFORE_SHAPING);
+	BIND_ENUM_CONSTANT(VC_CHARS_AFTER_SHAPING);
+	BIND_ENUM_CONSTANT(VC_GLYPHS_AUTO);
+	BIND_ENUM_CONSTANT(VC_GLYPHS_LTR);
+	BIND_ENUM_CONSTANT(VC_GLYPHS_RTL);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_GROUP("Locale", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
@@ -869,6 +925,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters_behavior", PROPERTY_HINT_ENUM, "Characters Before Shaping,Characters After Shaping,Glyphs (Layout Direction),Glyphs (Left-to-Right),Glyphs (Right-to-Left)"), "set_visible_characters_behavior", "get_visible_characters_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE, "0,999,1"), "set_lines_skipped", "get_lines_skipped");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE, "-1,999,1"), "set_max_lines_visible", "get_max_lines_visible");

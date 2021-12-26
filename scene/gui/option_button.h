@@ -45,14 +45,14 @@ class OptionButton : public Button {
 	void _select(int p_which, bool p_emit = false);
 	void _select_int(int p_which);
 
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
-
 	virtual void pressed() override;
 
 protected:
 	Size2 get_minimum_size() const override;
 	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 public:
@@ -76,6 +76,7 @@ public:
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
 
+	void set_item_count(int p_count);
 	int get_item_count() const;
 
 	void add_separator();

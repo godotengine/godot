@@ -118,6 +118,9 @@ void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
 	editor->set_gradient(g);
 	add_custom_control(editor);
 
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+	editor->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+
 	reverse_btn = memnew(GradientReverseButton);
 
 	gradient_tools_hbox = memnew(HBoxContainer);

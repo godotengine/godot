@@ -62,8 +62,10 @@
 #include <stdint.h>
 
 /* MBEDTLS_ERR_SHA256_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_SHA256_HW_ACCEL_FAILED                -0x0037  /**< SHA-256 hardware accelerator failed */
-#define MBEDTLS_ERR_SHA256_BAD_INPUT_DATA                 -0x0074  /**< SHA-256 input data was malformed. */
+/** SHA-256 hardware accelerator failed */
+#define MBEDTLS_ERR_SHA256_HW_ACCEL_FAILED                -0x0037
+/** SHA-256 input data was malformed. */
+#define MBEDTLS_ERR_SHA256_BAD_INPUT_DATA                 -0x0074
 
 #ifdef __cplusplus
 extern "C" {
@@ -262,6 +264,9 @@ MBEDTLS_DEPRECATED void mbedtls_sha256_process( mbedtls_sha256_context *ctx,
  *                 be a writable buffer of length \c 32 Bytes.
  * \param is224    Determines which function to use. This must be
  *                 either \c 0 for SHA-256, or \c 1 for SHA-224.
+ *
+ * \return         \c 0 on success.
+ * \return         A negative error code on failure.
  */
 int mbedtls_sha256_ret( const unsigned char *input,
                         size_t ilen,

@@ -432,6 +432,10 @@ Gradient::InterpolationMode GradientEdit::get_interpolation_mode() {
 	return interpolation_mode;
 }
 
+ColorPicker *GradientEdit::get_picker() {
+	return picker;
+}
+
 void GradientEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }

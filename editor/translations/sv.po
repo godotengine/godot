@@ -24,13 +24,14 @@
 # Alex25820 <Alexander_sjogren@hotmail.se>, 2021.
 # Leon <joel.lundborg@gmail.com>, 2021.
 # Kent Jofur <kent.jofur@gmail.com>, 2021.
+# Alex25820 <alexs25820@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-03 13:15+0000\n"
-"Last-Translator: Kent Jofur <kent.jofur@gmail.com>\n"
+"PO-Revision-Date: 2021-12-20 18:53+0000\n"
+"Last-Translator: Alex25820 <alexs25820@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -38,7 +39,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -61,7 +62,7 @@ msgstr "Ogiltig indata %i (ej överförd) i uttrycket"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "\"self\" kan inte användas eftersom instansen är null (ej överförd)"
+msgstr "själv kan inte användas eftersom instansen är null (inte godkänt)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -2151,7 +2152,7 @@ msgstr "Färg"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
-msgstr "Konstanter"
+msgstr "Begränsningar"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 #, fuzzy

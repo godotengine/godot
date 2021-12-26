@@ -70,13 +70,16 @@
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)
 #define MBEDTLS_ERR_BLOWFISH_INVALID_KEY_LENGTH   MBEDTLS_DEPRECATED_NUMERIC_CONSTANT( -0x0016 )
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
-#define MBEDTLS_ERR_BLOWFISH_BAD_INPUT_DATA -0x0016 /**< Bad input data. */
+/** Bad input data. */
+#define MBEDTLS_ERR_BLOWFISH_BAD_INPUT_DATA -0x0016
 
-#define MBEDTLS_ERR_BLOWFISH_INVALID_INPUT_LENGTH -0x0018 /**< Invalid data input length. */
+/** Invalid data input length. */
+#define MBEDTLS_ERR_BLOWFISH_INVALID_INPUT_LENGTH -0x0018
 
 /* MBEDTLS_ERR_BLOWFISH_HW_ACCEL_FAILED is deprecated and should not be used.
  */
-#define MBEDTLS_ERR_BLOWFISH_HW_ACCEL_FAILED                   -0x0017  /**< Blowfish hardware accelerator failed. */
+/** Blowfish hardware accelerator failed. */
+#define MBEDTLS_ERR_BLOWFISH_HW_ACCEL_FAILED                   -0x0017
 
 #ifdef __cplusplus
 extern "C" {

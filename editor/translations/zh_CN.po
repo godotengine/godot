@@ -82,13 +82,14 @@
 # Sam Sun <oppositenormal@outlook.com>, 2021.
 # 苏轼 <youwanyuyu@gmail.com>, 2021.
 # nitenook <admin@alterbaum.net>, 2021.
+# jker <cxgmfy@163.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-12-11 06:25+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2021-12-20 18:53+0000\n"
+"Last-Translator: jker <cxgmfy@163.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -96,7 +97,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -247,7 +248,7 @@ msgstr "修改多个动画过渡方式"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transform"
-msgstr "动画多次修改变换量"
+msgstr "修改多个动画变换"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Value"
@@ -255,7 +256,7 @@ msgstr "修改多个动画关键帧的值"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Call"
-msgstr "修改多个回调"
+msgstr "修改多个动画回调"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -539,7 +540,7 @@ msgstr "添加方法轨道帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
-msgstr "方法未找到： "
+msgstr "对象方法未找到： "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -592,7 +593,7 @@ msgstr "选择一个 AnimationPlayer 节点以创建和编辑动画。"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr "仅显示在树中选择的节点的轨道。"
+msgstr "仅显示在树中选中节点的轨道。"
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
@@ -657,11 +658,11 @@ msgstr "删除选中项"
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Next Step"
-msgstr "前往下一步"
+msgstr "跳到下一步"
 
 #: editor/animation_track_editor.cpp
 msgid "Go to Previous Step"
-msgstr "返回上一步"
+msgstr "跳到上一步"
 
 #: editor/animation_track_editor.cpp
 msgid "Apply Reset"
@@ -677,7 +678,7 @@ msgstr "清空动画"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr "选取动画中的节点："
+msgstr "选择要设置动画的节点："
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
@@ -762,7 +763,7 @@ msgstr "修改音频轨道剪辑结束偏移"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr "修改数组大小"
+msgstr "调整数组大小"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
@@ -1424,7 +1425,7 @@ msgstr "总线选项"
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr "制作副本"
+msgstr "创建副本"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
@@ -2030,7 +2031,7 @@ msgstr "切换显示隐藏文件"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr "开关收藏"
+msgstr "切换收藏"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"

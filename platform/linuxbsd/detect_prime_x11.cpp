@@ -91,7 +91,7 @@ void create_context() {
 	};
 
 	int fbcount;
-	GLXFBConfig fbconfig = 0;
+	GLXFBConfig fbconfig = nullptr;
 	XVisualInfo *vi = nullptr;
 
 	XSetWindowAttributes swa;
@@ -100,8 +100,9 @@ void create_context() {
 	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
 
 	GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
-	if (!fbc)
+	if (!fbc) {
 		exit(1);
+	}
 
 	vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
 
@@ -120,8 +121,9 @@ void create_context() {
 	swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
 	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, 10, 10, 0, vi->depth, InputOutput, vi->visual, valuemask, &swa);
 
-	if (!x11_window)
+	if (!x11_window) {
 		exit(1);
+	}
 
 	glXMakeCurrent(x11_display, x11_window, glx_context);
 	XFree(vi);
@@ -179,8 +181,9 @@ int detect_prime() {
 
 			close(fdset[0]);
 
-			if (i)
+			if (i) {
 				setenv("DRI_PRIME", "1", 1);
+			}
 			create_context();
 
 			const char *vendor = (const char *)glGetString(GL_VENDOR);

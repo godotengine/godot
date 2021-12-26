@@ -898,7 +898,9 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
-	WARN_DEPRECATED_MSG("Mesh uses old surface format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene.");
+	WARN_DEPRECATED_MSG(vformat(
+			"Mesh uses old surface format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene. Path: \"%s\"",
+			get_path()));
 
 	int idx = sname.get_slicec('/', 1).to_int();
 	String what = sname.get_slicec('/', 2);
