@@ -154,10 +154,11 @@
 			<argument index="2" name="flip_x" type="bool" default="false" />
 			<argument index="3" name="flip_y" type="bool" default="false" />
 			<argument index="4" name="transpose" type="bool" default="false" />
+			<argument index="5" name="autotile_coord" type="Vector2" default="Vector2( 0, 0 )" />
 			<description>
 				Sets the tile index for the cell given by a Vector2.
 				An index of [code]-1[/code] clears the cell.
-				Optionally, the tile can also be flipped or transposed.
+				Optionally, the tile can also be flipped, transposed, or given autotile coordinates. The autotile coordinate refers to the column and row of the subtile.
 				[b]Note:[/b] Data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 			</description>
