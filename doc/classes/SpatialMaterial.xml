@@ -486,6 +486,9 @@
 		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 			The color of the object is multiplied by the background.
 		</constant>
+		<constant name="BLEND_MODE_DISABLED" value="4" enum="BlendMode">
+			Blending is disabled, leaving the object's color untouched.
+		</constant>
 		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
 			Default depth draw mode. Depth is drawn only for opaque objects.
 		</constant>
