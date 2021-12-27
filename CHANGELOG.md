@@ -345,6 +345,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Shaders
 
+- [`DEPTH_TEXTURE` now uses normalized device coordinates between `0.0` and `1.0` (inclusive) to match Vulkan behavior.](https://docs.godotengine.org/en/latest/tutorials/shaders/advanced_postprocessing.html#depth-texture)
+  - This requires modifying most shaders that rely on `DEPTH_TEXTURE` to make them still work as expected.
+  - Previously, coordinates would be between `-1.0` and `1.0` (inclusive) to match OpenGL behavior.
 - Renamed the `.shader` file extension to `.gdshader`.
   - Existing text-based shader files will have to be renamed before loading the project in a new engine version.
 
