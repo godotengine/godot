@@ -59,6 +59,15 @@ static String format_error_message(DWORD id) {
 	return msg;
 }
 
+static void track_mouse_leave_event(HWND hWnd) {
+	TRACKMOUSEEVENT tme;
+	tme.cbSize = sizeof(TRACKMOUSEEVENT);
+	tme.dwFlags = TME_LEAVE;
+	tme.hwndTrack = hWnd;
+	tme.dwHoverTime = HOVER_DEFAULT;
+	TrackMouseEvent(&tme);
+}
+
 bool DisplayServerWindows::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_SUBWINDOWS:
@@ -1976,6 +1985,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				// Run a timer to prevent event catching warning if the focused window is closing.
 				windows[window_id].focus_timer_id = SetTimer(windows[window_id].hWnd, 2, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
 			}
+			if (wParam != WA_INACTIVE) {
+				track_mouse_leave_event(hWnd);
+			}
 			return 0; // Return to the message loop.
 		} break;
 		case WM_GETMINMAXINFO: {
@@ -2260,12 +2272,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				outside = false;
 
 				// Once-off notification, must call again.
-				TRACKMOUSEEVENT tme;
-				tme.cbSize = sizeof(TRACKMOUSEEVENT);
-				tme.dwFlags = TME_LEAVE;
-				tme.hwndTrack = hWnd;
-				tme.dwHoverTime = HOVER_DEFAULT;
-				TrackMouseEvent(&tme);
+				track_mouse_leave_event(hWnd);
 			}
 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
@@ -2366,12 +2373,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				outside = false;
 
 				// Once-off notification, must call again.
-				TRACKMOUSEEVENT tme;
-				tme.cbSize = sizeof(TRACKMOUSEEVENT);
-				tme.dwFlags = TME_LEAVE;
-				tme.hwndTrack = hWnd;
-				tme.dwHoverTime = HOVER_DEFAULT;
-				TrackMouseEvent(&tme);
+				track_mouse_leave_event(hWnd);
 			}
 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
@@ -3126,14 +3128,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 #endif
 
 		RegisterTouchWindow(wd.hWnd, 0);
-
-		TRACKMOUSEEVENT tme;
-		tme.cbSize = sizeof(TRACKMOUSEEVENT);
-		tme.dwFlags = TME_LEAVE;
-		tme.hwndTrack = wd.hWnd;
-		tme.dwHoverTime = HOVER_DEFAULT;
-		TrackMouseEvent(&tme);
-
 		DragAcceptFiles(wd.hWnd, true);
 
 		if ((tablet_get_current_driver() == "wintab") && wintab_available) {
