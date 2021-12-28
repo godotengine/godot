@@ -2535,19 +2535,19 @@
 				Sets the intensity of the reflection probe. Intensity modulates the strength of the reflection. Equivalent to [member ReflectionProbe.intensity].
 			</description>
 		</method>
-		<method name="reflection_probe_set_lod_threshold">
-			<return type="void" />
-			<argument index="0" name="probe" type="RID" />
-			<argument index="1" name="pixels" type="float" />
-			<description>
-			</description>
-		</method>
 		<method name="reflection_probe_set_max_distance">
 			<return type="void" />
 			<argument index="0" name="probe" type="RID" />
 			<argument index="1" name="distance" type="float" />
 			<description>
 				Sets the max distance away from the probe an object can be before it is culled. Equivalent to [member ReflectionProbe.max_distance].
+			</description>
+		</method>
+		<method name="reflection_probe_set_mesh_lod_threshold">
+			<return type="void" />
+			<argument index="0" name="probe" type="RID" />
+			<argument index="1" name="pixels" type="float" />
+			<description>
 			</description>
 		</method>
 		<method name="reflection_probe_set_origin_offset">

@@ -60,7 +60,7 @@ private:
 	AmbientMode ambient_mode = AMBIENT_ENVIRONMENT;
 	Color ambient_color = Color(0, 0, 0);
 	float ambient_color_energy = 1.0;
-	float lod_threshold = 1.0;
+	float mesh_lod_threshold = 1.0;
 
 	uint32_t cull_mask = (1 << 20) - 1;
 	UpdateMode update_mode = UPDATE_ONCE;
@@ -88,8 +88,8 @@ public:
 	void set_max_distance(float p_distance);
 	float get_max_distance() const;
 
-	void set_lod_threshold(float p_pixels);
-	float get_lod_threshold() const;
+	void set_mesh_lod_threshold(float p_pixels);
+	float get_mesh_lod_threshold() const;
 
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;

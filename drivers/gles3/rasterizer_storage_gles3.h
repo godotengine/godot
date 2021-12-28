@@ -809,8 +809,8 @@ public:
 	void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override;
 	void mesh_instance_check_for_update(RID p_mesh_instance) override;
 	void update_mesh_instances() override;
-	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) override;
-	float reflection_probe_get_lod_threshold(RID p_probe) const override;
+	void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override;
+	float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;
 
 	void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override;
 
