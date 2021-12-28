@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Godot.Bridge;
 
@@ -16,22 +15,19 @@ namespace Godot.NativeInterop
                 return null;
 
             IntPtr gcHandlePtr;
-            godot_bool has_cs_script_instance = false.ToGodotBool();
+            godot_bool hasCsScriptInstance;
 
             // First try to get the tied managed instance from a CSharpInstance script instance
 
-            unsafe
-            {
-                gcHandlePtr = NativeFuncs.godotsharp_internal_unmanaged_get_script_instance_managed(
-                    unmanaged, &has_cs_script_instance);
-            }
+            gcHandlePtr = NativeFuncs.godotsharp_internal_unmanaged_get_script_instance_managed(
+                unmanaged, out hasCsScriptInstance);
 
             if (gcHandlePtr != IntPtr.Zero)
                 return (Object)GCHandle.FromIntPtr(gcHandlePtr).Target;
 
             // Otherwise, if the object has a CSharpInstance script instance, return null
 
-            if (has_cs_script_instance.ToBool())
+            if (hasCsScriptInstance.ToBool())
                 return null;
 
             // If it doesn't have a CSharpInstance script instance, try with native instance bindings
@@ -58,12 +54,9 @@ namespace Godot.NativeInterop
 
             if (type == nativeType)
             {
-                unsafe
-                {
-                    godot_string_name nativeNameAux = nativeName.NativeValue;
-                    NativeFuncs.godotsharp_internal_tie_native_managed_to_unmanaged(
-                        GCHandle.ToIntPtr(gcHandle), unmanaged, &nativeNameAux, refCounted.ToGodotBool());
-                }
+                var nativeNameSelf = (godot_string_name)nativeName.NativeValue;
+                NativeFuncs.godotsharp_internal_tie_native_managed_to_unmanaged(
+                    GCHandle.ToIntPtr(gcHandle), unmanaged, nativeNameSelf, refCounted.ToGodotBool());
             }
             else
             {
@@ -84,10 +77,10 @@ namespace Godot.NativeInterop
                 GCHandle.ToIntPtr(strongGCHandle), unmanaged);
         }
 
-        public static unsafe Object EngineGetSingleton(string name)
+        public static Object EngineGetSingleton(string name)
         {
-            using godot_string src = Marshaling.mono_string_to_godot(name);
-            return UnmanagedGetManaged(NativeFuncs.godotsharp_engine_get_singleton(&src));
+            using godot_string src = Marshaling.ConvertStringToNative(name);
+            return UnmanagedGetManaged(NativeFuncs.godotsharp_engine_get_singleton(src));
         }
     }
 }

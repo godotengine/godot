@@ -1,6 +1,6 @@
 namespace Godot
 {
-    public struct SignalInfo
+    public readonly struct SignalInfo
     {
         private readonly Object _owner;
         private readonly StringName _signalName;

@@ -18,15 +18,17 @@ namespace Godot.Bridge
                 if (godotObject == null)
                 {
                     *ret = default;
-                    (*refCallError).error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL;
+                    (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL;
                     return false.ToGodotBool();
                 }
 
-                using godot_string dest = default;
-                NativeFuncs.godotsharp_string_name_as_string(&dest, method);
-                string methodStr = Marshaling.mono_string_from_godot(dest);
+                NativeFuncs.godotsharp_string_name_as_string(out godot_string dest, CustomUnsafe.AsRef(method));
+                string methodStr;
+                using (dest)
+                    methodStr = Marshaling.ConvertStringToManaged(dest);
 
-                _ = godotObject.InternalGodotScriptCall(methodStr, args, argCount, out godot_variant retValue);
+                _ = godotObject.InternalGodotScriptCall(methodStr, new NativeVariantPtrArgs(args), argCount,
+                    out godot_variant retValue);
                 *ret = retValue;
                 return true.ToGodotBool();
             }
@@ -50,12 +52,15 @@ namespace Godot.Bridge
                     throw new InvalidOperationException();
 
                 var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
-                    NativeFuncs.godotsharp_string_name_new_copy(name));
+                    NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
-                if (godotObject.InternalGodotScriptSetFieldOrPropViaReflection(nameManaged.ToString(), value))
+                if (godotObject.InternalGodotScriptSetFieldOrPropViaReflection(
+                        nameManaged.ToString(), CustomUnsafe.AsRef(value)))
+                {
                     return true.ToGodotBool();
+                }
 
-                object valueManaged = Marshaling.variant_to_mono_object(value);
+                object valueManaged = Marshaling.ConvertVariantToManagedObject(CustomUnsafe.AsRef(value));
 
                 return godotObject._Set(nameManaged, valueManaged).ToGodotBool();
             }
@@ -79,10 +84,10 @@ namespace Godot.Bridge
                     throw new InvalidOperationException();
 
                 var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
-                    NativeFuncs.godotsharp_string_name_new_copy(name));
+                    NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
                 if (godotObject.InternalGodotScriptGetFieldOrPropViaReflection(nameManaged.ToString(),
-                    out godot_variant outRetValue))
+                        out godot_variant outRetValue))
                 {
                     *outRet = outRetValue;
                     return true.ToGodotBool();
@@ -96,7 +101,7 @@ namespace Godot.Bridge
                     return false.ToGodotBool();
                 }
 
-                *outRet = Marshaling.mono_object_to_variant(ret);
+                *outRet = Marshaling.ConvertManagedObjectToVariant(ret);
                 return true.ToGodotBool();
             }
             catch (Exception e)
@@ -148,7 +153,7 @@ namespace Godot.Bridge
                     return;
                 }
 
-                *outRes = Marshaling.mono_string_to_godot(resultStr);
+                *outRes = Marshaling.ConvertStringToNative(resultStr);
                 *outValid = true.ToGodotBool();
             }
             catch (Exception e)

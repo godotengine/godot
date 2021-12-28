@@ -51,7 +51,7 @@ namespace Godot
                     case 3:
                         return origin;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
             set
@@ -71,7 +71,7 @@ namespace Godot
                         origin = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
         }
@@ -163,7 +163,7 @@ namespace Godot
         /// <param name="target">The object to look at.</param>
         /// <param name="up">The relative up direction</param>
         /// <returns>The resulting transform.</returns>
-        public Transform3D LookingAt(Vector3 target, Vector3 up)
+        public readonly Transform3D LookingAt(Vector3 target, Vector3 up)
         {
             var t = this;
             t.SetLookAt(origin, target, up);
@@ -187,7 +187,7 @@ namespace Godot
         /// <param name="axis">The axis to rotate around. Must be normalized.</param>
         /// <param name="phi">The angle to rotate, in radians.</param>
         /// <returns>The rotated transformation matrix.</returns>
-        public Transform3D Rotated(Vector3 axis, real_t phi)
+        public readonly Transform3D Rotated(Vector3 axis, real_t phi)
         {
             return new Transform3D(new Basis(axis, phi), new Vector3()) * this;
         }
@@ -360,7 +360,7 @@ namespace Godot
             return !left.Equals(right);
         }
 
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             if (obj is Transform3D)
             {
@@ -370,7 +370,7 @@ namespace Godot
             return false;
         }
 
-        public bool Equals(Transform3D other)
+        public readonly bool Equals(Transform3D other)
         {
             return basis.Equals(other.basis) && origin.Equals(other.origin);
         }

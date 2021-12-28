@@ -1,12 +1,11 @@
 using System;
-using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 
 namespace Godot
 {
     public sealed class StringName : IDisposable
     {
-        public godot_string_name NativeValue;
+        internal godot_string_name.movable NativeValue;
 
         ~StringName()
         {
@@ -22,12 +21,12 @@ namespace Godot
         public void Dispose(bool disposing)
         {
             // Always dispose `NativeValue` even if disposing is true
-            NativeValue.Dispose();
+            NativeValue.DangerousSelfRef.Dispose();
         }
 
         private StringName(godot_string_name nativeValueToOwn)
         {
-            NativeValue = nativeValueToOwn;
+            NativeValue = (godot_string_name.movable)nativeValueToOwn;
         }
 
         // Explicit name to make it very clear
@@ -41,25 +40,24 @@ namespace Godot
         public StringName(string name)
         {
             if (!string.IsNullOrEmpty(name))
-                NativeValue = NativeFuncs.godotsharp_string_name_new_from_string(name);
+                NativeValue = (godot_string_name.movable)NativeFuncs.godotsharp_string_name_new_from_string(name);
         }
 
         public static implicit operator StringName(string from) => new StringName(from);
 
-        public static implicit operator string(StringName from) => from.ToString();
+        public static implicit operator string(StringName from) => from?.ToString();
 
-        public override unsafe string ToString()
+        public override string ToString()
         {
             if (IsEmpty)
                 return string.Empty;
 
-            godot_string dest;
-            godot_string_name src = NativeValue;
-            NativeFuncs.godotsharp_string_name_as_string(&dest, &src);
+            var src = (godot_string_name)NativeValue;
+            NativeFuncs.godotsharp_string_name_as_string(out godot_string dest, src);
             using (dest)
-                return Marshaling.mono_string_from_godot(dest);
+                return Marshaling.ConvertStringToManaged(dest);
         }
 
-        public bool IsEmpty => godot_string_name.IsEmpty(in NativeValue);
+        public bool IsEmpty => NativeValue.DangerousSelfRef.IsEmpty;
     }
 }

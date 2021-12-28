@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 
 namespace Godot
@@ -43,16 +42,13 @@ namespace Godot
             while (top != null && top != native)
             {
                 foreach (var eventSignal in top.GetEvents(
-                        BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                        BindingFlags.NonPublic | BindingFlags.Public)
-                    .Where(ev => ev.GetCustomAttributes().OfType<SignalAttribute>().Any()))
+                                 BindingFlags.DeclaredOnly | BindingFlags.Instance |
+                                 BindingFlags.NonPublic | BindingFlags.Public)
+                             .Where(ev => ev.GetCustomAttributes().OfType<SignalAttribute>().Any()))
                 {
-                    unsafe
-                    {
-                        using var eventSignalName = new StringName(eventSignal.Name);
-                        godot_string_name eventSignalNameAux = eventSignalName.NativeValue;
-                        NativeFuncs.godotsharp_internal_object_connect_event_signal(NativePtr, &eventSignalNameAux);
-                    }
+                    using var eventSignalName = new StringName(eventSignal.Name);
+                    var eventSignalNameSelf = (godot_string_name)eventSignalName.NativeValue;
+                    NativeFuncs.godotsharp_internal_object_connect_event_signal(NativePtr, eventSignalNameSelf);
                 }
 
                 top = top.BaseType;
@@ -111,11 +107,11 @@ namespace Godot
             _disposed = true;
         }
 
-        public override unsafe string ToString()
+        public override string ToString()
         {
-            using godot_string str = default;
-            NativeFuncs.godotsharp_object_to_string(GetPtr(this), &str);
-            return Marshaling.mono_string_from_godot(str);
+            NativeFuncs.godotsharp_object_to_string(GetPtr(this), out godot_string str);
+            using (str)
+                return Marshaling.ConvertStringToManaged(str);
         }
 
         /// <summary>
@@ -168,7 +164,7 @@ namespace Godot
             return assemblyName.Name == "GodotSharp" || assemblyName.Name == "GodotSharpEditor";
         }
 
-        internal unsafe bool InternalGodotScriptCallViaReflection(string method, godot_variant** args, int argCount,
+        internal bool InternalGodotScriptCallViaReflection(string method, NativeVariantPtrArgs args, int argCount,
             out godot_variant ret)
         {
             // Performance is not critical here as this will be replaced with source generators.
@@ -192,13 +188,13 @@ namespace Godot
 
                         for (int i = 0; i < paramCount; i++)
                         {
-                            invokeParams[i] = Marshaling.variant_to_mono_object_of_type(
+                            invokeParams[i] = Marshaling.ConvertVariantToManagedObjectOfType(
                                 args[i], parameters[i].ParameterType);
                         }
 
                         object retObj = methodInfo.Invoke(this, invokeParams);
 
-                        ret = Marshaling.mono_object_to_variant(retObj);
+                        ret = Marshaling.ConvertManagedObjectToVariant(retObj);
                         return true;
                     }
                 }
@@ -210,7 +206,7 @@ namespace Godot
             return false;
         }
 
-        internal unsafe bool InternalGodotScriptSetFieldOrPropViaReflection(string name, godot_variant* value)
+        internal bool InternalGodotScriptSetFieldOrPropViaReflection(string name, in godot_variant value)
         {
             // Performance is not critical here as this will be replaced with source generators.
             Type top = GetType();
@@ -224,7 +220,7 @@ namespace Godot
 
                 if (fieldInfo != null)
                 {
-                    object valueManaged = Marshaling.variant_to_mono_object_of_type(value, fieldInfo.FieldType);
+                    object valueManaged = Marshaling.ConvertVariantToManagedObjectOfType(value, fieldInfo.FieldType);
                     fieldInfo.SetValue(this, valueManaged);
 
                     return true;
@@ -236,7 +232,8 @@ namespace Godot
 
                 if (propertyInfo != null)
                 {
-                    object valueManaged = Marshaling.variant_to_mono_object_of_type(value, propertyInfo.PropertyType);
+                    object valueManaged =
+                        Marshaling.ConvertVariantToManagedObjectOfType(value, propertyInfo.PropertyType);
                     propertyInfo.SetValue(this, valueManaged);
 
                     return true;
@@ -263,7 +260,7 @@ namespace Godot
                 if (fieldInfo != null)
                 {
                     object valueManaged = fieldInfo.GetValue(this);
-                    value = Marshaling.mono_object_to_variant(valueManaged);
+                    value = Marshaling.ConvertManagedObjectToVariant(valueManaged);
                     return true;
                 }
 
@@ -274,7 +271,7 @@ namespace Godot
                 if (propertyInfo != null)
                 {
                     object valueManaged = propertyInfo.GetValue(this);
-                    value = Marshaling.mono_object_to_variant(valueManaged);
+                    value = Marshaling.ConvertManagedObjectToVariant(valueManaged);
                     return true;
                 }
 
@@ -285,7 +282,7 @@ namespace Godot
             return false;
         }
 
-        internal unsafe void InternalRaiseEventSignal(godot_string_name* eventSignalName, godot_variant** args,
+        internal unsafe void InternalRaiseEventSignal(in godot_string_name eventSignalName, NativeVariantPtrArgs args,
             int argc)
         {
             // Performance is not critical here as this will be replaced with source generators.
@@ -339,9 +336,9 @@ namespace Godot
 
                     var managedArgs = new object[argc];
 
-                    for (uint i = 0; i < argc; i++)
+                    for (int i = 0; i < argc; i++)
                     {
-                        managedArgs[i] = Marshaling.variant_to_mono_object_of_type(
+                        managedArgs[i] = Marshaling.ConvertVariantToManagedObjectOfType(
                             args[i], parameterInfos[i].ParameterType);
                     }
 
@@ -358,7 +355,8 @@ namespace Godot
             IntPtr methodBind;
             fixed (char* methodChars = method)
             {
-                methodBind = NativeFuncs.godotsharp_method_bind_get_method(ref type.NativeValue, methodChars);
+                var typeSelf = (godot_string_name)type.NativeValue;
+                methodBind = NativeFuncs.godotsharp_method_bind_get_method(typeSelf, methodChars);
             }
 
             if (methodBind == IntPtr.Zero)
@@ -370,7 +368,8 @@ namespace Godot
         internal static unsafe delegate* unmanaged<IntPtr> ClassDB_get_constructor(StringName type)
         {
             // for some reason the '??' operator doesn't support 'delegate*'
-            var nativeConstructor = NativeFuncs.godotsharp_get_class_constructor(ref type.NativeValue);
+            var typeSelf = (godot_string_name)type.NativeValue;
+            var nativeConstructor = NativeFuncs.godotsharp_get_class_constructor(typeSelf);
 
             if (nativeConstructor == null)
                 throw new NativeConstructorNotFoundException(type);

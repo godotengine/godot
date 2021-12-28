@@ -2,7 +2,7 @@ using System;
 
 namespace Godot
 {
-    public struct Callable
+    public readonly struct Callable
     {
         private readonly Object _target;
         private readonly StringName _method;

@@ -10,6 +10,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9</LangVersion>
 
+    <AnalysisMode>Recommended</AnalysisMode>
+
     <!-- Disabled temporarily as it pollutes the warnings, but we need to document public APIs. -->
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
@@ -20,6 +22,12 @@
     <PackageReference Include="ReflectionAnalyzers" Version="0.1.22-dev" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
     <!--PackageReference Include="IDisposableAnalyzers" Version="3.4.13" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" /-->
   </ItemGroup>
+  <!-- Targets for generating Godot.NativeInterop.CustomUnsafe -->
+  <Import Project="GenerateGodotCustomUnsafe.targets" />
+  <ItemGroup>
+    <None Include="GenerateGodotCustomUnsafe.targets" />
+  </ItemGroup>
+  <!-- Sources -->
   <ItemGroup>
     <Compile Include="Core\AABB.cs" />
     <Compile Include="Core\Array.cs" />
@@ -61,6 +69,7 @@
     <Compile Include="Core\NativeInterop\ExceptionUtils.cs" />
     <Compile Include="Core\NativeInterop\InteropUtils.cs" />
     <Compile Include="Core\NativeInterop\NativeFuncs.extended.cs" />
+    <Compile Include="Core\NativeInterop\NativeVariantPtrArgs.cs" />
     <Compile Include="Core\NativeInterop\VariantSpanHelpers.cs" />
     <Compile Include="Core\NativeInterop\VariantUtils.cs" />
     <Compile Include="Core\NodePath.cs" />
