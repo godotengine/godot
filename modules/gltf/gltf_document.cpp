@@ -2539,14 +2539,16 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 			if (p.has("mode")) {
 				const int mode = p["mode"];
 				ERR_FAIL_INDEX_V(mode, 7, ERR_FILE_CORRUPT);
+				// Convert mesh.primitive.mode to Godot Mesh enum. See:
+				// https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
 				static const Mesh::PrimitiveType primitives2[7] = {
-					Mesh::PRIMITIVE_POINTS,
-					Mesh::PRIMITIVE_LINES,
-					Mesh::PRIMITIVE_LINES, //loop not supported, should ce converted
-					Mesh::PRIMITIVE_LINES,
-					Mesh::PRIMITIVE_TRIANGLES,
-					Mesh::PRIMITIVE_TRIANGLE_STRIP,
-					Mesh::PRIMITIVE_TRIANGLES, //fan not supported, should be converted
+					Mesh::PRIMITIVE_POINTS, // 0 POINTS
+					Mesh::PRIMITIVE_LINES, // 1 LINES
+					Mesh::PRIMITIVE_LINES, // 2 LINE_LOOP; loop not supported, should be converted
+					Mesh::PRIMITIVE_LINE_STRIP, // 3 LINE_STRIP
+					Mesh::PRIMITIVE_TRIANGLES, // 4 TRIANGLES
+					Mesh::PRIMITIVE_TRIANGLE_STRIP, // 5 TRIANGLE_STRIP
+					Mesh::PRIMITIVE_TRIANGLES, // 6 TRIANGLE_FAN fan not supported, should be converted
 #ifndef _MSC_VER
 #warning line loop and triangle fan are not supported and need to be converted to lines and triangles
 #endif
