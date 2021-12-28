@@ -137,7 +137,7 @@
 			Texture that defines the strength of the clearcoat effect and the glossiness of the clearcoat. Strength is specified in the red channel while glossiness is specified in the green channel.
 		</member>
 		<member name="cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" enum="BaseMaterial3D.CullMode" default="0">
-			Which side of the object is not drawn when backfaces are rendered. See [enum CullMode].
+			Determines which side of the triangle to cull depending on whether the triangle faces towards or away from the camera. See [enum CullMode].
 		</member>
 		<member name="depth_draw_mode" type="int" setter="set_depth_draw_mode" getter="get_depth_draw_mode" enum="BaseMaterial3D.DepthDrawMode" default="0">
 			Determines when depth rendering takes place. See [enum DepthDrawMode]. See also [member transparency].
@@ -579,10 +579,10 @@
 			No depth draw.
 		</constant>
 		<constant name="CULL_BACK" value="0" enum="CullMode">
-			Default cull mode. The back of the object is culled when not visible.
+			Default cull mode. The back of the object is culled when not visible. Back face triangles will be culled when facing the camera. This results in only the front side of triangles being drawn. For closed-surface meshes this means that only the exterior of the mesh will be visible.
 		</constant>
 		<constant name="CULL_FRONT" value="1" enum="CullMode">
-			The front of the object is culled when not visible.
+			Front face triangles will be culled when facing the camera. This results in only the back side of triangles being drawn. For closed-surface meshes this means that the interior of the mesh will be drawn instead of the exterior.
 		</constant>
 		<constant name="CULL_DISABLED" value="2" enum="CullMode">
 			No culling is performed.
