@@ -53,9 +53,9 @@ enum {
 	VARIANT_PLANE = 13,
 	VARIANT_QUATERNION = 14,
 	VARIANT_AABB = 15,
-	VARIANT_MATRIX3 = 16,
+	VARIANT_BASIS = 16,
 	VARIANT_TRANSFORM3D = 17,
-	VARIANT_MATRIX32 = 18,
+	VARIANT_TRANSFORM2D = 18,
 	VARIANT_COLOR = 20,
 	VARIANT_NODE_PATH = 22,
 	VARIANT_RID = 23,
@@ -220,7 +220,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = v;
 
 		} break;
-		case VARIANT_MATRIX32: {
+		case VARIANT_TRANSFORM2D: {
 			Transform2D v;
 			v.elements[0].x = f->get_real();
 			v.elements[0].y = f->get_real();
@@ -231,7 +231,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = v;
 
 		} break;
-		case VARIANT_MATRIX3: {
+		case VARIANT_BASIS: {
 			Basis v;
 			v.elements[0].x = f->get_real();
 			v.elements[0].y = f->get_real();
@@ -1476,7 +1476,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::TRANSFORM2D: {
-			f->store_32(VARIANT_MATRIX32);
+			f->store_32(VARIANT_TRANSFORM2D);
 			Transform2D val = p_property;
 			f->store_real(val.elements[0].x);
 			f->store_real(val.elements[0].y);
@@ -1487,7 +1487,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::BASIS: {
-			f->store_32(VARIANT_MATRIX3);
+			f->store_32(VARIANT_BASIS);
 			Basis val = p_property;
 			f->store_real(val.elements[0].x);
 			f->store_real(val.elements[0].y);
