@@ -63,7 +63,7 @@ namespace GodotTools.Utils
             Internal.godot_icall_Utils_OS_GetPlatformName(out godot_string dest);
             using (dest)
             {
-                string platformName = Marshaling.mono_string_from_godot(dest);
+                string platformName = Marshaling.ConvertStringToManaged(dest);
                 return name.Equals(platformName, StringComparison.OrdinalIgnoreCase);
             }
         }
@@ -73,7 +73,7 @@ namespace GodotTools.Utils
             Internal.godot_icall_Utils_OS_GetPlatformName(out godot_string dest);
             using (dest)
             {
-                string platformName = Marshaling.mono_string_from_godot(dest);
+                string platformName = Marshaling.ConvertStringToManaged(dest);
                 return names.Any(p => p.Equals(platformName, StringComparison.OrdinalIgnoreCase));
             }
         }
@@ -185,7 +185,7 @@ namespace GodotTools.Utils
             return searchDirs.Select(dir => Path.Combine(dir, name))
                 .FirstOrDefault(path =>
                 {
-                    using godot_string pathIn = Marshaling.mono_string_to_godot(path);
+                    using godot_string pathIn = Marshaling.ConvertStringToNative(path);
                     return File.Exists(path) && Internal.godot_icall_Utils_OS_UnixFileHasExecutableAccess(pathIn);
                 });
         }

@@ -26,12 +26,12 @@ namespace Godot
         /// <param name="bytes">Byte array that will be decoded to a <c>Variant</c>.</param>
         /// <param name="allowObjects">If objects should be decoded.</param>
         /// <returns>The decoded <c>Variant</c>.</returns>
-        public static unsafe object Bytes2Var(byte[] bytes, bool allowObjects = false)
+        public static object Bytes2Var(byte[] bytes, bool allowObjects = false)
         {
-            using var varBytes = Marshaling.mono_array_to_PackedByteArray(bytes);
-            using godot_variant ret = default;
-            NativeFuncs.godotsharp_bytes2var(&varBytes, allowObjects.ToGodotBool(), &ret);
-            return Marshaling.variant_to_mono_object(&ret);
+            using var varBytes = Marshaling.ConvertSystemArrayToNativePackedByteArray(bytes);
+            NativeFuncs.godotsharp_bytes2var(varBytes, allowObjects.ToGodotBool(), out godot_variant ret);
+            using (ret)
+                return Marshaling.ConvertVariantToManagedObject(ret);
         }
 
         /// <summary>
@@ -49,12 +49,12 @@ namespace Godot
         /// </code>
         /// </example>
         /// <returns>The <c>Variant</c> converted to the given <paramref name="type"/>.</returns>
-        public static unsafe object Convert(object what, Variant.Type type)
+        public static object Convert(object what, Variant.Type type)
         {
-            using var whatVariant = Marshaling.mono_object_to_variant(what);
-            using godot_variant ret = default;
-            NativeFuncs.godotsharp_convert(&whatVariant, type, &ret);
-            return Marshaling.variant_to_mono_object(&ret);
+            using var whatVariant = Marshaling.ConvertManagedObjectToVariant(what);
+            NativeFuncs.godotsharp_convert(whatVariant, type, out godot_variant ret);
+            using (ret)
+                return Marshaling.ConvertVariantToManagedObject(ret);
         }
 
         /// <summary>
@@ -88,10 +88,10 @@ namespace Godot
         /// </example>
         /// <param name="var">Variable that will be hashed.</param>
         /// <returns>Hash of the variable passed.</returns>
-        public static unsafe int Hash(object var)
+        public static int Hash(object var)
         {
-            using var variant = Marshaling.mono_object_to_variant(var);
-            return NativeFuncs.godotsharp_hash(&variant);
+            using var variant = Marshaling.ConvertManagedObjectToVariant(var);
+            return NativeFuncs.godotsharp_hash(variant);
         }
 
         /// <summary>
@@ -207,10 +207,10 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="message">Error message.</param>
-        public static unsafe void PushError(string message)
+        public static void PushError(string message)
         {
-            using var godotStr = Marshaling.mono_string_to_godot(message);
-            NativeFuncs.godotsharp_pusherror(&godotStr);
+            using var godotStr = Marshaling.ConvertStringToNative(message);
+            NativeFuncs.godotsharp_pusherror(godotStr);
         }
 
         /// <summary>
@@ -220,10 +220,10 @@ namespace Godot
         /// GD.PushWarning("test warning"); // Prints "test warning" to debugger and terminal as warning call
         /// </example>
         /// <param name="message">Warning message.</param>
-        public static unsafe void PushWarning(string message)
+        public static void PushWarning(string message)
         {
-            using var godotStr = Marshaling.mono_string_to_godot(message);
-            NativeFuncs.godotsharp_pushwarning(&godotStr);
+            using var godotStr = Marshaling.ConvertStringToNative(message);
+            NativeFuncs.godotsharp_pushwarning(godotStr);
         }
 
         /// <summary>
@@ -242,11 +242,11 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static unsafe void Print(params object[] what)
+        public static void Print(params object[] what)
         {
             string str = string.Concat(GetPrintParams(what));
-            using var godotStr = Marshaling.mono_string_to_godot(str);
-            NativeFuncs.godotsharp_print(&godotStr);
+            using var godotStr = Marshaling.ConvertStringToNative(str);
+            NativeFuncs.godotsharp_print(godotStr);
         }
 
         /// <summary>
@@ -266,11 +266,11 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static unsafe void PrintErr(params object[] what)
+        public static void PrintErr(params object[] what)
         {
             string str = string.Concat(GetPrintParams(what));
-            using var godotStr = Marshaling.mono_string_to_godot(str);
-            NativeFuncs.godotsharp_printerr(&godotStr);
+            using var godotStr = Marshaling.ConvertStringToNative(str);
+            NativeFuncs.godotsharp_printerr(godotStr);
         }
 
         /// <summary>
@@ -288,11 +288,11 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static unsafe void PrintRaw(params object[] what)
+        public static void PrintRaw(params object[] what)
         {
             string str = string.Concat(GetPrintParams(what));
-            using var godotStr = Marshaling.mono_string_to_godot(str);
-            NativeFuncs.godotsharp_printraw(&godotStr);
+            using var godotStr = Marshaling.ConvertStringToNative(str);
+            NativeFuncs.godotsharp_printraw(godotStr);
         }
 
         /// <summary>
@@ -304,11 +304,11 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static unsafe void PrintS(params object[] what)
+        public static void PrintS(params object[] what)
         {
             string str = string.Join(' ', GetPrintParams(what));
-            using var godotStr = Marshaling.mono_string_to_godot(str);
-            NativeFuncs.godotsharp_prints(&godotStr);
+            using var godotStr = Marshaling.ConvertStringToNative(str);
+            NativeFuncs.godotsharp_prints(godotStr);
         }
 
         /// <summary>
@@ -320,11 +320,11 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="what">Arguments that will be printed.</param>
-        public static unsafe void PrintT(params object[] what)
+        public static void PrintT(params object[] what)
         {
             string str = string.Join('\t', GetPrintParams(what));
-            using var godotStr = Marshaling.mono_string_to_godot(str);
-            NativeFuncs.godotsharp_printt(&godotStr);
+            using var godotStr = Marshaling.ConvertStringToNative(str);
+            NativeFuncs.godotsharp_printt(godotStr);
         }
 
         /// <summary>
@@ -489,12 +489,12 @@ namespace Godot
         /// </summary>
         /// <param name="what">Arguments that will converted to string.</param>
         /// <returns>The string formed by the given arguments.</returns>
-        public static unsafe string Str(params object[] what)
+        public static string Str(params object[] what)
         {
-            using var whatGodotArray = Marshaling.mono_array_to_Array(what);
-            using godot_string ret = default;
-            NativeFuncs.godotsharp_str(&whatGodotArray, &ret);
-            return Marshaling.mono_string_from_godot(ret);
+            using var whatGodotArray = Marshaling.ConvertSystemArrayToNativeGodotArray(what);
+            NativeFuncs.godotsharp_str(whatGodotArray, out godot_string ret);
+            using (ret)
+                return Marshaling.ConvertStringToManaged(ret);
         }
 
         /// <summary>
@@ -509,12 +509,12 @@ namespace Godot
         /// </example>
         /// <param name="str">String that will be converted to Variant.</param>
         /// <returns>The decoded <c>Variant</c>.</returns>
-        public static unsafe object Str2Var(string str)
+        public static object Str2Var(string str)
         {
-            using var godotStr = Marshaling.mono_string_to_godot(str);
-            using godot_variant ret = default;
-            NativeFuncs.godotsharp_str2var(&godotStr, &ret);
-            return Marshaling.variant_to_mono_object(&ret);
+            using var godotStr = Marshaling.ConvertStringToNative(str);
+            NativeFuncs.godotsharp_str2var(godotStr, out godot_variant ret);
+            using (ret)
+                return Marshaling.ConvertVariantToManagedObject(ret);
         }
 
         /// <summary>
@@ -526,13 +526,12 @@ namespace Godot
         /// <param name="var">Variant that will be encoded.</param>
         /// <param name="fullObjects">If objects should be serialized.</param>
         /// <returns>The <c>Variant</c> encoded as an array of bytes.</returns>
-        public static unsafe byte[] Var2Bytes(object var, bool fullObjects = false)
+        public static byte[] Var2Bytes(object var, bool fullObjects = false)
         {
-            using var variant = Marshaling.mono_object_to_variant(var);
-            using godot_packed_byte_array varBytes = default;
-            NativeFuncs.godotsharp_var2bytes(&variant, fullObjects.ToGodotBool(), &varBytes);
+            using var variant = Marshaling.ConvertManagedObjectToVariant(var);
+            NativeFuncs.godotsharp_var2bytes(variant, fullObjects.ToGodotBool(), out var varBytes);
             using (varBytes)
-                return Marshaling.PackedByteArray_to_mono_array(&varBytes);
+                return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
         }
 
         /// <summary>
@@ -552,12 +551,12 @@ namespace Godot
         /// </example>
         /// <param name="var">Variant that will be converted to string.</param>
         /// <returns>The <c>Variant</c> encoded as a string.</returns>
-        public static unsafe string Var2Str(object var)
+        public static string Var2Str(object var)
         {
-            using var variant = Marshaling.mono_object_to_variant(var);
-            using godot_string ret = default;
-            NativeFuncs.godotsharp_var2str(&variant, &ret);
-            return Marshaling.mono_string_from_godot(ret);
+            using var variant = Marshaling.ConvertManagedObjectToVariant(var);
+            NativeFuncs.godotsharp_var2str(variant, out godot_string ret);
+            using (ret)
+                return Marshaling.ConvertStringToManaged(ret);
         }
 
         /// <summary>
@@ -566,7 +565,7 @@ namespace Godot
         /// <returns>The <see cref="Variant.Type"/> for the given <paramref name="type"/>.</returns>
         public static Variant.Type TypeToVariantType(Type type)
         {
-            return Marshaling.managed_to_variant_type(type, out bool _);
+            return Marshaling.ConvertManagedTypeToVariantType(type, out bool _);
         }
     }
 }

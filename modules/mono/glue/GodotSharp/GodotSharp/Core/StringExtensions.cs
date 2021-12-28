@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using Godot.NativeInterop;
+
+#nullable enable
+#pragma warning enable CA1062
 
 namespace Godot
 {
@@ -1034,10 +1036,10 @@ namespace Godot
         /// <returns>The MD5 hash of the string.</returns>
         public static unsafe byte[] MD5Buffer(this string instance)
         {
-            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
-            using godot_packed_byte_array md5Buffer = default;
-            NativeFuncs.godotsharp_string_md5_buffer(&instanceStr, &md5Buffer);
-            return Marshaling.PackedByteArray_to_mono_array(&md5Buffer);
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_md5_buffer(instanceStr, out var md5Buffer);
+            using (md5Buffer)
+                return Marshaling.ConvertNativePackedByteArrayToSystemArray(md5Buffer);
         }
 
         /// <summary>
@@ -1048,10 +1050,10 @@ namespace Godot
         /// <returns>The MD5 hash of the string.</returns>
         public static unsafe string MD5Text(this string instance)
         {
-            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
-            using godot_string md5Text = default;
-            NativeFuncs.godotsharp_string_md5_text(&instanceStr, &md5Text);
-            return Marshaling.mono_string_from_godot(md5Text);
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_md5_text(instanceStr, out var md5Text);
+            using (md5Text)
+                return Marshaling.ConvertStringToManaged(md5Text);
         }
 
         /// <summary>
@@ -1208,9 +1210,9 @@ namespace Godot
         /// <returns>The position at which the substring was found, or -1 if not found.</returns>
         public static unsafe int RFind(this string instance, string what, int from = -1)
         {
-            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
-            using godot_string whatStr = Marshaling.mono_string_to_godot(instance);
-            return NativeFuncs.godotsharp_string_rfind(&instanceStr, &whatStr, from);
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            using godot_string whatStr = Marshaling.ConvertStringToNative(instance);
+            return NativeFuncs.godotsharp_string_rfind(instanceStr, whatStr, from);
         }
 
         /// <summary>
@@ -1224,9 +1226,9 @@ namespace Godot
         /// <returns>The position at which the substring was found, or -1 if not found.</returns>
         public static unsafe int RFindN(this string instance, string what, int from = -1)
         {
-            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
-            using godot_string whatStr = Marshaling.mono_string_to_godot(instance);
-            return NativeFuncs.godotsharp_string_rfindn(&instanceStr, &whatStr, from);
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            using godot_string whatStr = Marshaling.ConvertStringToNative(instance);
+            return NativeFuncs.godotsharp_string_rfindn(instanceStr, whatStr, from);
         }
 
         /// <summary>
@@ -1281,12 +1283,12 @@ namespace Godot
         /// <seealso cref="SHA256Text(string)"/>
         /// <param name="instance">The string to hash.</param>
         /// <returns>The SHA-256 hash of the string.</returns>
-        public static unsafe byte[] SHA256Buffer(this string instance)
+        public static byte[] SHA256Buffer(this string instance)
         {
-            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
-            using godot_packed_byte_array sha256Buffer = default;
-            NativeFuncs.godotsharp_string_sha256_buffer(&instanceStr, &sha256Buffer);
-            return Marshaling.PackedByteArray_to_mono_array(&sha256Buffer);
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_sha256_buffer(instanceStr, out var sha256Buffer);
+            using (sha256Buffer)
+                return Marshaling.ConvertNativePackedByteArrayToSystemArray(sha256Buffer);
         }
 
         /// <summary>
@@ -1297,10 +1299,10 @@ namespace Godot
         /// <returns>The SHA-256 hash of the string.</returns>
         public static unsafe string SHA256Text(this string instance)
         {
-            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
-            using godot_string sha256Text = default;
-            NativeFuncs.godotsharp_string_sha256_text(&instanceStr, &sha256Text);
-            return Marshaling.mono_string_from_godot(sha256Text);
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_sha256_text(instanceStr, out var sha256Text);
+            using (sha256Text)
+                return Marshaling.ConvertStringToManaged(sha256Text);
         }
 
         /// <summary>
@@ -1351,12 +1353,12 @@ namespace Godot
         /// <summary>
         /// Returns a simplified canonical path.
         /// </summary>
-        public static unsafe string SimplifyPath(this string instance)
+        public static string SimplifyPath(this string instance)
         {
-            using godot_string instanceStr = Marshaling.mono_string_to_godot(instance);
-            using godot_string simplifiedPath = default;
-            NativeFuncs.godotsharp_string_simplify_path(&instanceStr, &simplifiedPath);
-            return Marshaling.mono_string_from_godot(simplifiedPath);
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_simplify_path(instanceStr, out godot_string simplifiedPath);
+            using (simplifiedPath)
+                return Marshaling.ConvertStringToManaged(simplifiedPath);
         }
 
         /// <summary>
@@ -1557,7 +1559,7 @@ namespace Godot
         /// <seealso cref="XMLUnescape(string)"/>
         /// <param name="instance">The string to escape.</param>
         /// <returns>The escaped string.</returns>
-        public static string XMLEscape(this string instance)
+        public static string? XMLEscape(this string instance)
         {
             return SecurityElement.Escape(instance);
         }
@@ -1569,9 +1571,9 @@ namespace Godot
         /// <seealso cref="XMLEscape(string)"/>
         /// <param name="instance">The string to unescape.</param>
         /// <returns>The unescaped string.</returns>
-        public static string XMLUnescape(this string instance)
+        public static string? XMLUnescape(this string instance)
         {
-            return SecurityElement.FromString(instance).Text;
+            return SecurityElement.FromString(instance)?.Text;
         }
     }
 }

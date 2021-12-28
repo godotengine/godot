@@ -440,6 +440,24 @@ GD_PINVOKE_EXPORT bool godotsharp_callable_get_data_for_marshalling(const Callab
 	}
 }
 
+GD_PINVOKE_EXPORT godot_variant godotsharp_callable_call(godot_callable *p_callable, const godot_variant **p_args, const int32_t p_arg_count, godot_variant_call_error *p_call_error) {
+	const Variant **args = reinterpret_cast<const Variant **>(p_args);
+	Callable::CallError *call_error = reinterpret_cast<Callable::CallError *>(p_call_error);
+
+	godot_variant ret;
+	godot_variant_new_nil(&ret);
+
+	Variant *ret_val = (Variant *)&ret;
+
+	reinterpret_cast<Callable *>(p_callable)->call(args, p_arg_count, *ret_val, *call_error);
+
+	return ret;
+}
+
+GD_PINVOKE_EXPORT void godotsharp_callable_call_deferred(godot_callable *p_callable, const godot_variant **p_args, const int32_t p_arg_count) {
+	reinterpret_cast<Callable *>(p_callable)->call_deferred(reinterpret_cast<const Variant **>(p_args), p_arg_count);
+}
+
 // GDNative functions
 
 // gdnative.h
@@ -1097,7 +1115,7 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 #endif
 
 // We need this to prevent the functions from being stripped.
-void *godotsharp_pinvoke_funcs[168] = {
+void *godotsharp_pinvoke_funcs[170] = {
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_engine_get_singleton,
@@ -1130,6 +1148,8 @@ void *godotsharp_pinvoke_funcs[168] = {
 	(void *)godotsharp_packed_string_array_add,
 	(void *)godotsharp_callable_new_with_delegate,
 	(void *)godotsharp_callable_get_data_for_marshalling,
+	(void *)godotsharp_callable_call,
+	(void *)godotsharp_callable_call_deferred,
 	(void *)godotsharp_method_bind_ptrcall,
 	(void *)godotsharp_method_bind_call,
 	(void *)godotsharp_variant_new_string_name,

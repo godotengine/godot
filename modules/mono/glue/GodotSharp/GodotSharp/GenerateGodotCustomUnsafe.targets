@@ -1,0 +1,93 @@
+<Project>
+  <!-- Generate Godot.NativeInterop.CustomUnsafe C# class-->
+
+  <!--
+  Ref structs are not allowed as generic type parameters, so we can't use Unsafe.AsPointer<T>/AsRef<T>.
+  As a workaround we generate overloads of those methods for our structs using Fody with inline IL.
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="Fody" Version="6.6.0" PrivateAssets="all" />
+    <PackageReference Include="InlineIL.Fody" Version="1.7.1" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GodotInteropStructs Include="godot_ref" />
+    <GodotInteropStructs Include="godot_variant_call_error" />
+    <GodotInteropStructs Include="godot_variant" />
+    <GodotInteropStructs Include="godot_string" />
+    <GodotInteropStructs Include="godot_string_name" />
+    <GodotInteropStructs Include="godot_node_path" />
+    <GodotInteropStructs Include="godot_signal" />
+    <GodotInteropStructs Include="godot_callable" />
+    <GodotInteropStructs Include="godot_array" />
+    <GodotInteropStructs Include="godot_dictionary" />
+    <GodotInteropStructs Include="godot_packed_byte_array" />
+    <GodotInteropStructs Include="godot_packed_int32_array" />
+    <GodotInteropStructs Include="godot_packed_int64_array" />
+    <GodotInteropStructs Include="godot_packed_float32_array" />
+    <GodotInteropStructs Include="godot_packed_float64_array" />
+    <GodotInteropStructs Include="godot_packed_string_array" />
+    <GodotInteropStructs Include="godot_packed_vector2_array" />
+    <GodotInteropStructs Include="godot_packed_vector3_array" />
+    <GodotInteropStructs Include="godot_packed_color_array" />
+  </ItemGroup>
+
+  <Target Name="GenerateGodotCustomUnsafe"
+          DependsOnTargets="_GenerateGodotCustomUnsafe"
+          BeforeTargets="PrepareForBuild;CompileDesignTime;BeforeCompile;CoreCompile">
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)CustomUnsafe.%(GodotInteropStructs.Identity).g.cs" />
+      <FileWrites Include="$(IntermediateOutputPath)CustomUnsafe.%(GodotInteropStructs.Identity).g.cs" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_GenerateGodotCustomUnsafe"
+          Inputs="$(MSBuildProjectFile);$(MSBuildThisFileDirectory);@(GodotInteropStructs)"
+          Outputs="$(IntermediateOutputPath)CustomUnsafe.%(GodotInteropStructs.Identity).g.cs">
+    <PropertyGroup>
+      <GodotInteropStruct>%(GodotInteropStructs.Identity)</GodotInteropStruct>
+      <GenerateGodotCustomUnsafeCode><![CDATA[
+using System.Runtime.CompilerServices%3b
+using InlineIL%3b
+using static InlineIL.IL.Emit%3b
+
+namespace Godot.NativeInterop
+{
+    public static partial class CustomUnsafe
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe $(GodotInteropStruct)* AsPointer(ref $(GodotInteropStruct) value)
+        {
+            Ldarg(nameof(value))%3b
+            Conv_U()%3b
+            return ($(GodotInteropStruct)*)IL.ReturnPointer()%3b
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe $(GodotInteropStruct)* ReadOnlyRefAsPointer(in $(GodotInteropStruct) value)
+        {
+            Ldarg(nameof(value))%3b
+            Conv_U()%3b
+            return ($(GodotInteropStruct)*)IL.ReturnPointer()%3b
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe ref $(GodotInteropStruct) AsRef($(GodotInteropStruct)* source)
+        {
+            return ref *source%3b
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe ref $(GodotInteropStruct) AsRef(in $(GodotInteropStruct) source)
+        {
+            return ref *ReadOnlyRefAsPointer(in source)%3b
+        }
+    }
+}
+]]></GenerateGodotCustomUnsafeCode>
+    </PropertyGroup>
+    <WriteLinesToFile Lines="$(GenerateGodotCustomUnsafeCode)"
+                      File="$(IntermediateOutputPath)CustomUnsafe.%(GodotInteropStructs.Identity).g.cs"
+                      Overwrite="True" WriteOnlyWhenDifferent="True" />
+  </Target>
+</Project>

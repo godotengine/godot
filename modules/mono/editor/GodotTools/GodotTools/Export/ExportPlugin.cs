@@ -233,11 +233,11 @@ namespace GodotTools.Export
                 }
             }
 
-            var initialAssemblies = assemblies.Duplicate();
-            godot_dictionary initialAssembliesAux = ((Godot.Collections.Dictionary)initialAssemblies).NativeValue;
-            using godot_string buildConfigAux = Marshaling.mono_string_to_godot(buildConfig);
-            using godot_string bclDirAux = Marshaling.mono_string_to_godot(bclDir);
-            godot_dictionary assembliesAux = ((Godot.Collections.Dictionary)assemblies).NativeValue;
+            // var initialAssemblies = assemblies.Duplicate();
+            // godot_dictionary initialAssembliesAux = ((Godot.Collections.Dictionary)initialAssemblies).NativeValue;
+            // using godot_string buildConfigAux = Marshaling.ConvertStringToNative(buildConfig);
+            // using godot_string bclDirAux = Marshaling.ConvertStringToNative(bclDir);
+            // godot_dictionary assembliesAux = ((Godot.Collections.Dictionary)assemblies).NativeValue;
             // TODO
             throw new NotImplementedException();
             //internal_GetExportedAssemblyDependencies(initialAssembliesAux, buildConfigAux, bclDirAux, ref assembliesAux);

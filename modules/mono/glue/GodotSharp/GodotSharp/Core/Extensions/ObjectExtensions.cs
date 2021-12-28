@@ -35,17 +35,14 @@ namespace Godot
             if (!IsInstanceValid(obj))
                 return null;
 
-            using godot_ref weakRef = default;
-
-            unsafe
+            NativeFuncs.godotsharp_weakref(GetPtr(obj), out godot_ref weakRef);
+            using (weakRef)
             {
-                NativeFuncs.godotsharp_weakref(GetPtr(obj), &weakRef);
+                if (weakRef.IsNull)
+                    return null;
+
+                return (WeakRef)InteropUtils.UnmanagedGetManaged(weakRef.Reference);
             }
-
-            if (weakRef.IsNull)
-                return null;
-
-            return (WeakRef)InteropUtils.UnmanagedGetManaged(weakRef._reference);
         }
     }
 }

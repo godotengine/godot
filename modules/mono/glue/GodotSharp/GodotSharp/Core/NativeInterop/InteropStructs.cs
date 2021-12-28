@@ -10,7 +10,10 @@ using System.Runtime.InteropServices;
 
 namespace Godot.NativeInterop
 {
-    internal static class GodotBoolExtensions
+    // NOTES:
+    // ref structs cannot implement interfaces, but they still work in `using` directives if they declare Dispose()
+
+    public static class GodotBoolExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe godot_bool ToGodotBool(this bool @bool)
@@ -35,9 +38,9 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_ref : IDisposable
+    public ref struct godot_ref
     {
-        internal IntPtr _reference;
+        private IntPtr _reference;
 
         public void Dispose()
         {
@@ -47,7 +50,17 @@ namespace Godot.NativeInterop
             _reference = IntPtr.Zero;
         }
 
-        public bool IsNull => _reference == IntPtr.Zero;
+        public readonly IntPtr Reference
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _reference;
+        }
+
+        public readonly bool IsNull
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _reference == IntPtr.Zero;
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -63,34 +76,52 @@ namespace Godot.NativeInterop
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_variant_call_error
+    public ref struct godot_variant_call_error
     {
-        public godot_variant_call_error_error error;
-        public int argument;
-        public Godot.Variant.Type expected;
+        private godot_variant_call_error_error error;
+        private int argument;
+        private Godot.Variant.Type expected;
+
+        public godot_variant_call_error_error Error
+        {
+            readonly get => error;
+            set => error = value;
+        }
+
+        public int Argument
+        {
+            readonly get => argument;
+            set => argument = value;
+        }
+
+        public Godot.Variant.Type Expected
+        {
+            readonly get => expected;
+            set => expected = value;
+        }
     }
 
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_variant : IDisposable
+    public ref struct godot_variant
     {
-        [FieldOffset(0)] public Godot.Variant.Type _type;
+        [FieldOffset(0)] private Godot.Variant.Type _type;
 
         // There's padding here
 
-        [FieldOffset(8)] internal godot_variant_data _data;
+        [FieldOffset(8)] private godot_variant_data _data;
 
         [StructLayout(LayoutKind.Explicit)]
         // ReSharper disable once InconsistentNaming
-        internal unsafe struct godot_variant_data
+        private unsafe ref struct godot_variant_data
         {
             [FieldOffset(0)] public godot_bool _bool;
             [FieldOffset(0)] public long _int;
             [FieldOffset(0)] public double _float;
-            [FieldOffset(0)] public Transform2D* _transform2d;
+            [FieldOffset(0)] public Transform2D* _transform2D;
             [FieldOffset(0)] public AABB* _aabb;
             [FieldOffset(0)] public Basis* _basis;
-            [FieldOffset(0)] public Transform3D* _transform3d;
+            [FieldOffset(0)] public Transform3D* _transform3D;
             [FieldOffset(0)] private godot_variant_data_mem _mem;
 
             // The following fields are not in the C++ union, but this is how they're stored in _mem.
@@ -115,7 +146,7 @@ namespace Godot.NativeInterop
 
             [StructLayout(LayoutKind.Sequential)]
             // ReSharper disable once InconsistentNaming
-            internal struct godot_variant_obj_data
+            public struct godot_variant_obj_data
             {
                 public UInt64 id;
                 public IntPtr obj;
@@ -123,7 +154,7 @@ namespace Godot.NativeInterop
 
             [StructLayout(LayoutKind.Sequential)]
             // ReSharper disable once InconsistentNaming
-            private struct godot_variant_data_mem
+            public struct godot_variant_data_mem
             {
 #pragma warning disable 169
                 private real_t _mem0;
@@ -132,6 +163,204 @@ namespace Godot.NativeInterop
                 private real_t _mem3;
 #pragma warning restore 169
             }
+        }
+
+        public Variant.Type Type
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _type;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _type = value;
+        }
+
+        public godot_bool Bool
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._bool;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._bool = value;
+        }
+
+        public long Int
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._int;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._int = value;
+        }
+
+        public double Float
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._float;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._float = value;
+        }
+
+        public readonly unsafe Transform2D* Transform2D
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _data._transform2D;
+        }
+
+        public readonly unsafe AABB* AABB
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _data._aabb;
+        }
+
+        public readonly unsafe Basis* Basis
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _data._basis;
+        }
+
+        public readonly unsafe Transform3D* Transform3D
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _data._transform3D;
+        }
+
+        public godot_string_name StringName
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_string_name;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_string_name = value;
+        }
+
+        public godot_string String
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_string;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_string = value;
+        }
+
+        public Vector3 Vector3
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_vector3;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_vector3 = value;
+        }
+
+        public Vector3i Vector3i
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_vector3i;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_vector3i = value;
+        }
+
+        public Vector2 Vector2
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_vector2;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_vector2 = value;
+        }
+
+        public Vector2i Vector2i
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_vector2i;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_vector2i = value;
+        }
+
+        public Rect2 Rect2
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_rect2;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_rect2 = value;
+        }
+
+        public Rect2i Rect2i
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_rect2i;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_rect2i = value;
+        }
+
+        public Plane Plane
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_plane;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_plane = value;
+        }
+
+        public Quaternion Quaternion
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_quaternion;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_quaternion = value;
+        }
+
+        public Color Color
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_color;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_color = value;
+        }
+
+        public godot_node_path NodePath
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_node_path;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_node_path = value;
+        }
+
+        public RID RID
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_rid;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_rid = value;
+        }
+
+        public godot_callable Callable
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_callable;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_callable = value;
+        }
+
+        public godot_signal Signal
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_signal;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_signal = value;
+        }
+
+        public godot_dictionary Dictionary
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_dictionary;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_dictionary = value;
+        }
+
+        public godot_array Array
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_array;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_array = value;
+        }
+
+        public readonly IntPtr Object
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _data._m_obj_data.obj;
         }
 
         public void Dispose()
@@ -158,13 +387,33 @@ namespace Godot.NativeInterop
             NativeFuncs.godotsharp_variant_destroy(ref this);
             _type = Variant.Type.Nil;
         }
+
+        [StructLayout(LayoutKind.Explicit)]
+        // ReSharper disable once InconsistentNaming
+        internal struct movable
+        {
+            [FieldOffset(0)] private Godot.Variant.Type _type;
+
+            // There's padding here
+
+            [FieldOffset(8)] private godot_variant_data.godot_variant_data_mem _data;
+
+            public static unsafe explicit operator movable(in godot_variant value)
+                => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
+
+            public static unsafe explicit operator godot_variant(movable value)
+                => *(godot_variant*)Unsafe.AsPointer(ref value);
+
+            public unsafe ref godot_variant DangerousSelfRef =>
+                ref CustomUnsafe.AsRef((godot_variant*)Unsafe.AsPointer(ref this));
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_string : IDisposable
+    public ref struct godot_string
     {
-        internal IntPtr _ptr;
+        private IntPtr _ptr;
 
         public void Dispose()
         {
@@ -174,15 +423,25 @@ namespace Godot.NativeInterop
             _ptr = IntPtr.Zero;
         }
 
+        public readonly IntPtr Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
         // Size including the null termination character
-        public unsafe int Size => _ptr != IntPtr.Zero ? *((int*)_ptr - 1) : 0;
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != IntPtr.Zero ? *((int*)_ptr - 1) : 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_string_name : IDisposable
+    public ref struct godot_string_name
     {
-        internal IntPtr _data;
+        private IntPtr _data;
 
         public void Dispose()
         {
@@ -192,18 +451,41 @@ namespace Godot.NativeInterop
             _data = IntPtr.Zero;
         }
 
-        // An static method because an instance method could result in a hidden copy if called on an `in` parameter.
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsEmpty(in godot_string_name name) =>
+        public readonly bool IsAllocated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _data != IntPtr.Zero;
+        }
+
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             // This is all that's needed to check if it's empty. Equivalent to `== StringName()` in C++.
-            name._data == IntPtr.Zero;
+            get => _data == IntPtr.Zero;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        // ReSharper disable once InconsistentNaming
+        internal struct movable
+        {
+            private IntPtr _data;
+
+            public static unsafe explicit operator movable(in godot_string_name value)
+                => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
+
+            public static unsafe explicit operator godot_string_name(movable value)
+                => *(godot_string_name*)Unsafe.AsPointer(ref value);
+
+            public unsafe ref godot_string_name DangerousSelfRef =>
+                ref CustomUnsafe.AsRef((godot_string_name*)Unsafe.AsPointer(ref this));
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_node_path : IDisposable
+    public ref struct godot_node_path
     {
-        internal IntPtr _data;
+        private IntPtr _data;
 
         public void Dispose()
         {
@@ -213,49 +495,98 @@ namespace Godot.NativeInterop
             _data = IntPtr.Zero;
         }
 
-        // An static method because an instance method could result in a hidden copy if called on an `in` parameter.
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsEmpty(in godot_node_path nodePath) =>
-            // This is all that's needed to check if it's empty. It's what the `is_empty()` C++ method does.
-            nodePath._data == IntPtr.Zero;
-    }
-
-    [StructLayout(LayoutKind.Explicit)]
-    // ReSharper disable once InconsistentNaming
-    public struct godot_signal : IDisposable
-    {
-        [FieldOffset(0)] public godot_string_name _name;
-
-        // There's padding here on 32-bit
-
-        [FieldOffset(8)] public UInt64 _objectId;
-
-        public void Dispose()
+        public readonly bool IsAllocated
         {
-            if (_name._data == IntPtr.Zero)
-                return;
-            NativeFuncs.godotsharp_signal_destroy(ref this);
-            _name._data = IntPtr.Zero;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _data != IntPtr.Zero;
+        }
+
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            // This is all that's needed to check if it's empty. It's what the `is_empty()` C++ method does.
+            get => _data == IntPtr.Zero;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        // ReSharper disable once InconsistentNaming
+        internal struct movable
+        {
+            private IntPtr _data;
+
+            public static unsafe explicit operator movable(in godot_node_path value)
+                => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
+
+            public static unsafe explicit operator godot_node_path(movable value)
+                => *(godot_node_path*)Unsafe.AsPointer(ref value);
+
+            public unsafe ref godot_node_path DangerousSelfRef =>
+                ref CustomUnsafe.AsRef((godot_node_path*)Unsafe.AsPointer(ref this));
         }
     }
 
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_callable : IDisposable
+    public ref struct godot_signal
     {
-        [FieldOffset(0)] public godot_string_name _method;
+        [FieldOffset(0)] private godot_string_name _name;
 
         // There's padding here on 32-bit
 
-        [FieldOffset(8)] public UInt64 _objectId;
-        [FieldOffset(8)] public IntPtr _custom;
+        [FieldOffset(8)] private UInt64 _objectId;
+
+        public godot_signal(godot_string_name name, ulong objectId)
+        {
+            _name = name;
+            _objectId = objectId;
+        }
+
+        public godot_string_name Name
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _name;
+        }
+
+        public UInt64 ObjectId
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _objectId;
+        }
 
         public void Dispose()
         {
-            if (_method._data == IntPtr.Zero && _custom == IntPtr.Zero)
+            if (!_name.IsAllocated)
+                return;
+            NativeFuncs.godotsharp_signal_destroy(ref this);
+            _name = default;
+        }
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    // ReSharper disable once InconsistentNaming
+    public ref struct godot_callable
+    {
+        [FieldOffset(0)] private godot_string_name _method;
+
+        // There's padding here on 32-bit
+
+        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
+        [FieldOffset(8)] private UInt64 _objectId;
+        [FieldOffset(8)] private IntPtr _custom;
+
+        public godot_callable(godot_string_name method, ulong objectId) : this()
+        {
+            _method = method;
+            _objectId = objectId;
+        }
+
+        public void Dispose()
+        {
+            // _custom needs freeing as well
+            if (!_method.IsAllocated && _custom == IntPtr.Zero)
                 return;
             NativeFuncs.godotsharp_callable_destroy(ref this);
-            _method._data = IntPtr.Zero;
+            _method = default;
             _custom = IntPtr.Zero;
         }
     }
@@ -265,29 +596,55 @@ namespace Godot.NativeInterop
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_array : IDisposable
+    public ref struct godot_array
     {
-        internal unsafe ArrayPrivate* _p;
+        private unsafe ArrayPrivate* _p;
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct ArrayPrivate
+        private struct ArrayPrivate
         {
             private uint _safeRefCount;
 
-            internal VariantVector _arrayVector;
-            // There's more here, but we don't care as we never store this in C#
+            public VariantVector _arrayVector;
+            // There are more fields here, but we don't care as we never store this in C#
+
+            public readonly int Size
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _arrayVector.Size;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct VariantVector
+        private struct VariantVector
         {
-            internal IntPtr _writeProxy;
-            internal unsafe godot_variant* _ptr;
+            private IntPtr _writeProxy;
+            public unsafe godot_variant* _ptr;
 
-            public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+            public readonly unsafe int Size
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _ptr != null ? *((int*)_ptr - 1) : 0;
+            }
         }
 
-        public unsafe int Size => _p != null ? _p->_arrayVector.Size : 0;
+        public readonly unsafe godot_variant* Elements
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _p->_arrayVector._ptr;
+        }
+
+        public readonly unsafe bool IsAllocated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _p != null;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _p != null ? _p->Size : 0;
+        }
 
         public unsafe void Dispose()
         {
@@ -295,6 +652,22 @@ namespace Godot.NativeInterop
                 return;
             NativeFuncs.godotsharp_array_destroy(ref this);
             _p = null;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        // ReSharper disable once InconsistentNaming
+        internal struct movable
+        {
+            private unsafe ArrayPrivate* _p;
+
+            public static unsafe explicit operator movable(in godot_array value)
+                => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
+
+            public static unsafe explicit operator godot_array(movable value)
+                => *(godot_array*)Unsafe.AsPointer(ref value);
+
+            public unsafe ref godot_array DangerousSelfRef =>
+                ref CustomUnsafe.AsRef((godot_array*)Unsafe.AsPointer(ref this));
         }
     }
 
@@ -304,9 +677,15 @@ namespace Godot.NativeInterop
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_dictionary : IDisposable
+    public ref struct godot_dictionary
     {
-        internal IntPtr _p;
+        private IntPtr _p;
+
+        public readonly bool IsAllocated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _p != IntPtr.Zero;
+        }
 
         public void Dispose()
         {
@@ -315,14 +694,30 @@ namespace Godot.NativeInterop
             NativeFuncs.godotsharp_dictionary_destroy(ref this);
             _p = IntPtr.Zero;
         }
+
+        [StructLayout(LayoutKind.Sequential)]
+        // ReSharper disable once InconsistentNaming
+        internal struct movable
+        {
+            private IntPtr _p;
+
+            public static unsafe explicit operator movable(in godot_dictionary value)
+                => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
+
+            public static unsafe explicit operator godot_dictionary(movable value)
+                => *(godot_dictionary*)Unsafe.AsPointer(ref value);
+
+            public unsafe ref godot_dictionary DangerousSelfRef =>
+                ref CustomUnsafe.AsRef((godot_dictionary*)Unsafe.AsPointer(ref this));
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_packed_byte_array : IDisposable
+    public ref struct godot_packed_byte_array
     {
-        internal IntPtr _writeProxy;
-        internal unsafe byte* _ptr;
+        private IntPtr _writeProxy;
+        private unsafe byte* _ptr;
 
         public unsafe void Dispose()
         {
@@ -332,15 +727,25 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
-        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+        public readonly unsafe byte* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_packed_int32_array : IDisposable
+    public ref struct godot_packed_int32_array
     {
-        internal IntPtr _writeProxy;
-        internal unsafe int* _ptr;
+        private IntPtr _writeProxy;
+        private unsafe int* _ptr;
 
         public unsafe void Dispose()
         {
@@ -350,15 +755,25 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
-        public unsafe int Size => _ptr != null ? *(_ptr - 1) : 0;
+        public readonly unsafe int* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != null ? *(_ptr - 1) : 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_packed_int64_array : IDisposable
+    public ref struct godot_packed_int64_array
     {
-        internal IntPtr _writeProxy;
-        internal unsafe long* _ptr;
+        private IntPtr _writeProxy;
+        private unsafe long* _ptr;
 
         public unsafe void Dispose()
         {
@@ -368,15 +783,25 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
-        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+        public readonly unsafe long* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_packed_float32_array : IDisposable
+    public ref struct godot_packed_float32_array
     {
-        internal IntPtr _writeProxy;
-        internal unsafe float* _ptr;
+        private IntPtr _writeProxy;
+        private unsafe float* _ptr;
 
         public unsafe void Dispose()
         {
@@ -386,15 +811,25 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
-        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+        public readonly unsafe float* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_packed_float64_array : IDisposable
+    public ref struct godot_packed_float64_array
     {
-        internal IntPtr _writeProxy;
-        internal unsafe double* _ptr;
+        private IntPtr _writeProxy;
+        private unsafe double* _ptr;
 
         public unsafe void Dispose()
         {
@@ -404,15 +839,25 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
-        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+        public readonly unsafe double* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_packed_string_array : IDisposable
+    public ref struct godot_packed_string_array
     {
-        internal IntPtr _writeProxy;
-        internal unsafe godot_string* _ptr;
+        private IntPtr _writeProxy;
+        private unsafe godot_string* _ptr;
 
         public unsafe void Dispose()
         {
@@ -422,15 +867,25 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
-        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+        public readonly unsafe godot_string* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_packed_vector2_array : IDisposable
+    public ref struct godot_packed_vector2_array
     {
-        internal IntPtr _writeProxy;
-        internal unsafe Vector2* _ptr;
+        private IntPtr _writeProxy;
+        private unsafe Vector2* _ptr;
 
         public unsafe void Dispose()
         {
@@ -440,15 +895,25 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
-        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+        public readonly unsafe Vector2* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_packed_vector3_array : IDisposable
+    public ref struct godot_packed_vector3_array
     {
-        internal IntPtr _writeProxy;
-        internal unsafe Vector3* _ptr;
+        private IntPtr _writeProxy;
+        private unsafe Vector3* _ptr;
 
         public unsafe void Dispose()
         {
@@ -458,15 +923,25 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
-        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+        public readonly unsafe Vector3* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
-    public struct godot_packed_color_array : IDisposable
+    public ref struct godot_packed_color_array
     {
-        internal IntPtr _writeProxy;
-        internal unsafe Color* _ptr;
+        private IntPtr _writeProxy;
+        private unsafe Color* _ptr;
 
         public unsafe void Dispose()
         {
@@ -476,6 +951,16 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
-        public unsafe int Size => _ptr != null ? *((int*)_ptr - 1) : 0;
+        public readonly unsafe Color* Buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr;
+        }
+
+        public readonly unsafe int Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ptr != null ? *((int*)_ptr - 1) : 0;
+        }
     }
 }

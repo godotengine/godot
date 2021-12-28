@@ -243,9 +243,9 @@ class BindingsGenerator {
 		// --- C INTERFACE ---
 
 		/**
-		 * One or more statements that manipulate the parameter before being passed as argument of a ptrcall.
+		 * One or more statements that transform the parameter before being passed as argument of a ptrcall.
 		 * If the statement adds a local that must be passed as the argument instead of the parameter,
-		 * the name of that local must be specified with [c_arg_in].
+		 * the expression with the name of that local must be specified with [c_arg_in].
 		 * Formatting elements:
 		 * %0: [c_type] of the parameter
 		 * %1: name of the parameter
@@ -255,7 +255,7 @@ class BindingsGenerator {
 		String c_in;
 
 		/**
-		 * One or more statements that manipulate the parameter before being passed as argument of a vararg call.
+		 * One or more statements that transform the parameter before being passed as argument of a vararg call.
 		 * If the statement adds a local that must be passed as the argument instead of the parameter,
 		 * the name of that local must be specified with [c_arg_in].
 		 * Formatting elements:
@@ -326,10 +326,23 @@ class BindingsGenerator {
 		 * An expression that overrides the way the parameter is passed to the internal call.
 		 * If empty, the parameter is passed as is.
 		 * Formatting elements:
-		 * %0 or %s: name of the parameter
+		 * %0: name of the parameter
+		 * %1: [c_type] of the parameter
+		 */
+		String cs_in_expr;
+		bool cs_in_expr_is_unsafe = false;
+
+		/**
+		 * One or more statements that transform the parameter before being passed to the internal call.
+		 * If the statement adds a local that must be passed as the argument instead of the parameter,
+		 * the expression with the name of that local must be specified with [cs_in_expr].
+		 * Formatting elements:
+		 * %0: [c_type] of the parameter
+		 * %1: name of the parameter
+		 * %2-4: reserved
+		 * %5: indentation text
 		 */
 		String cs_in;
-		bool cs_in_is_unsafe = false;
 
 		/**
 		 * One or more statements that determine how a variable of this type is returned from a method.

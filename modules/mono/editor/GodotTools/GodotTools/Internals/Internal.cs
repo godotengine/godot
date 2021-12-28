@@ -18,7 +18,7 @@ namespace GodotTools.Internals
             {
                 godot_icall_Internal_FullTemplatesDir(out godot_string dest);
                 using (dest)
-                    return Marshaling.mono_string_from_godot(dest);
+                    return Marshaling.ConvertStringToManaged(dest);
             }
         }
 
@@ -26,7 +26,7 @@ namespace GodotTools.Internals
 
         public static bool IsOsxAppBundleInstalled(string bundleId)
         {
-            using godot_string bundleIdIn = Marshaling.mono_string_to_godot(bundleId);
+            using godot_string bundleIdIn = Marshaling.ConvertStringToNative(bundleId);
             return godot_icall_Internal_IsOsxAppBundleInstalled(bundleIdIn);
         }
 
@@ -53,7 +53,7 @@ namespace GodotTools.Internals
             {
                 godot_icall_Internal_MonoWindowsInstallRoot(out godot_string dest);
                 using (dest)
-                    return Marshaling.mono_string_from_godot(dest);
+                    return Marshaling.ConvertStringToManaged(dest);
             }
         }
 
@@ -67,10 +67,10 @@ namespace GodotTools.Internals
         public static unsafe string[] CodeCompletionRequest(CodeCompletionRequest.CompletionKind kind,
             string scriptFile)
         {
-            using godot_string scriptFileIn = Marshaling.mono_string_to_godot(scriptFile);
+            using godot_string scriptFileIn = Marshaling.ConvertStringToNative(scriptFile);
             godot_icall_Internal_CodeCompletionRequest((int)kind, scriptFileIn, out godot_packed_string_array res);
             using (res)
-                return Marshaling.PackedStringArray_to_mono_array(&res);
+                return Marshaling.ConvertNativePackedStringArrayToSystemArray(res);
         }
 
         #region Internal

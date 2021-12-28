@@ -104,7 +104,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 	return OK;
 }
 
-extern void *godotsharp_pinvoke_funcs[168];
+extern void *godotsharp_pinvoke_funcs[170];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 #ifdef TOOLS_ENABLED
 extern void *godotsharp_editor_pinvoke_funcs[32];

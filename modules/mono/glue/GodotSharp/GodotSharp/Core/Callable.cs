@@ -1,5 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
@@ -24,7 +26,7 @@ namespace Godot
     /// }
     /// </code>
     /// </example>
-    public struct Callable
+    public readonly struct Callable
     {
         private readonly Object _target;
         private readonly StringName _method;
@@ -34,10 +36,12 @@ namespace Godot
         /// Object that contains the method.
         /// </summary>
         public Object Target => _target;
+
         /// <summary>
         /// Name of the method that will be called.
         /// </summary>
         public StringName Method => _method;
+
         /// <summary>
         /// Delegate of the method that will be called.
         /// </summary>
@@ -79,9 +83,35 @@ namespace Godot
         /// </summary>
         /// <param name="args">Arguments that will be passed to the method call.</param>
         /// <returns>The value returned by the method.</returns>
-        public object Call(params object[] args)
+        public unsafe object Call(params object[] args)
         {
-            return godot_icall_Callable_Call(ref this, args);
+            using godot_callable callable = Marshaling.ConvertCallableToNative(this);
+
+            int argc = args.Length;
+
+            Span<godot_variant.movable> argsStoreSpan = argc <= 5 ?
+                stackalloc godot_variant.movable[argc].Cleared() :
+                new godot_variant.movable[argc];
+
+            Span<IntPtr> argsSpan = argc <= 10 ?
+                stackalloc IntPtr[argc] :
+                new IntPtr[argc];
+
+            using var variantSpanDisposer = new VariantSpanDisposer(argsStoreSpan);
+
+            fixed (godot_variant* varargs = &MemoryMarshal.GetReference(argsStoreSpan).DangerousSelfRef)
+            fixed (IntPtr* argsPtr = &MemoryMarshal.GetReference(argsSpan))
+            {
+                for (int i = 0; i < argc; i++)
+                {
+                    varargs[i] = Marshaling.ConvertManagedObjectToVariant(args[i]);
+                    argsPtr[i] = new IntPtr(&varargs[i]);
+                }
+
+                using godot_variant ret = NativeFuncs.godotsharp_callable_call(callable,
+                    (godot_variant**)argsPtr, argc, out _);
+                return Marshaling.ConvertVariantToManagedObject(ret);
+            }
         }
 
         /// <summary>
@@ -89,9 +119,33 @@ namespace Godot
         /// Arguments can be passed and should match the method's signature.
         /// </summary>
         /// <param name="args">Arguments that will be passed to the method call.</param>
-        public void CallDeferred(params object[] args)
+        public unsafe void CallDeferred(params object[] args)
         {
-            godot_icall_Callable_CallDeferred(ref this, args);
+            using godot_callable callable = Marshaling.ConvertCallableToNative(this);
+
+            int argc = args.Length;
+
+            Span<godot_variant.movable> argsStoreSpan = argc <= 5 ?
+                stackalloc godot_variant.movable[argc].Cleared() :
+                new godot_variant.movable[argc];
+
+            Span<IntPtr> argsSpan = argc <= 10 ?
+                stackalloc IntPtr[argc] :
+                new IntPtr[argc];
+
+            using var variantSpanDisposer = new VariantSpanDisposer(argsStoreSpan);
+
+            fixed (godot_variant* varargs = &MemoryMarshal.GetReference(argsStoreSpan).DangerousSelfRef)
+            fixed (IntPtr* argsPtr = &MemoryMarshal.GetReference(argsSpan))
+            {
+                for (int i = 0; i < argc; i++)
+                {
+                    varargs[i] = Marshaling.ConvertManagedObjectToVariant(args[i]);
+                    argsPtr[i] = new IntPtr(&varargs[i]);
+                }
+
+                NativeFuncs.godotsharp_callable_call_deferred(callable, (godot_variant**)argsPtr, argc);
+            }
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
