@@ -13,13 +13,14 @@ using GodotTools.Internals;
 using GodotTools.ProjectEditor;
 using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
+using Environment = System.Environment;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
 using Path = System.IO.Path;
 
 namespace GodotTools
 {
-    public class GodotSharpEditor : EditorPlugin, ISerializationListener
+    public partial class GodotSharpEditor : EditorPlugin, ISerializationListener
     {
         private EditorSettings _editorSettings;
 
@@ -149,13 +150,6 @@ namespace GodotTools
             }
 
             Instance.MSBuildPanel.BuildSolution();
-        }
-
-        public override void _Ready()
-        {
-            base._Ready();
-
-            MSBuildPanel.BuildOutputView.BuildStateChanged += BuildStateChanged;
         }
 
         private enum MenuOptions
@@ -382,11 +376,36 @@ namespace GodotTools
         {
             base._EnablePlugin();
 
-            ProjectUtils.MSBuildLocatorRegisterDefaults();
-
             if (Instance != null)
                 throw new InvalidOperationException();
             Instance = this;
+
+            var dotNetSdkSearchVersion = Environment.Version;
+
+            // First we try to find the .NET Sdk ourselves to make sure we get the
+            // correct version first (`RegisterDefaults` always picks the latest).
+            if (DotNetFinder.TryFindDotNetSdk(dotNetSdkSearchVersion, out var sdkVersion, out string sdkPath))
+            {
+                if (Godot.OS.IsStdoutVerbose())
+                    Console.WriteLine($"Found .NET Sdk version '{sdkVersion}': {sdkPath}");
+
+                ProjectUtils.MSBuildLocatorRegisterMSBuildPath(sdkPath);
+            }
+            else
+            {
+                try
+                {
+                    ProjectUtils.MSBuildLocatorRegisterDefaults(out sdkVersion, out sdkPath);
+                    if (Godot.OS.IsStdoutVerbose())
+                        Console.WriteLine($"Found .NET Sdk version '{sdkVersion}': {sdkPath}");
+                }
+                catch (InvalidOperationException e)
+                {
+                    if (Godot.OS.IsStdoutVerbose())
+                        GD.PrintErr(e.ToString());
+                    GD.PushError($".NET Sdk not found. The required version is '{dotNetSdkSearchVersion}'.");
+                }
+            }
 
             var editorInterface = GetEditorInterface();
             var editorBaseControl = editorInterface.GetBaseControl();
@@ -397,6 +416,8 @@ namespace GodotTools
             editorBaseControl.AddChild(_errorDialog);
 
             MSBuildPanel = new MSBuildPanel();
+            MSBuildPanel.Ready += () =>
+                MSBuildPanel.BuildOutputView.BuildStateChanged += BuildStateChanged;
             _bottomPanelBtn = AddControlToBottomPanel(MSBuildPanel, "MSBuild".TTR());
 
             AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });

@@ -21,12 +21,8 @@ namespace Godot.Bridge
                     return false.ToGodotBool();
                 }
 
-                NativeFuncs.godotsharp_string_name_as_string(out godot_string dest, CustomUnsafe.AsRef(method));
-                string methodStr;
-                using (dest)
-                    methodStr = Marshaling.ConvertStringToManaged(dest);
-
-                bool methodInvoked = godotObject.InvokeGodotClassMethod(CustomUnsafe.AsRef(method), new NativeVariantPtrArgs(args),
+                bool methodInvoked = godotObject.InvokeGodotClassMethod(CustomUnsafe.AsRef(method),
+                    new NativeVariantPtrArgs(args),
                     argCount, out godot_variant retValue);
 
                 if (!methodInvoked)
@@ -166,6 +162,25 @@ namespace Godot.Bridge
                 ExceptionUtils.DebugPrintUnhandledException(e);
                 *outRes = default;
                 *outValid = false.ToGodotBool();
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool HasMethodUnknownParams(IntPtr godotObjectGCHandle, godot_string_name* method)
+        {
+            try
+            {
+                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                    return false.ToGodotBool();
+
+                return godotObject.HasGodotClassMethod(CustomUnsafe.AsRef(method)).ToGodotBool();
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.DebugPrintUnhandledException(e);
+                return false.ToGodotBool();
             }
         }
     }

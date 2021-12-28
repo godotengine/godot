@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Godot;
 using Godot.NativeInterop;
@@ -47,16 +46,6 @@ namespace GodotTools.Internals
 
         public static void EditorNodeShowScriptScreen() => godot_icall_Internal_EditorNodeShowScriptScreen();
 
-        public static string MonoWindowsInstallRoot
-        {
-            get
-            {
-                godot_icall_Internal_MonoWindowsInstallRoot(out godot_string dest);
-                using (dest)
-                    return Marshaling.ConvertStringToManaged(dest);
-            }
-        }
-
         public static void EditorRunPlay() => godot_icall_Internal_EditorRunPlay();
 
         public static void EditorRunStop() => godot_icall_Internal_EditorRunStop();
@@ -64,7 +53,7 @@ namespace GodotTools.Internals
         public static void ScriptEditorDebugger_ReloadScripts() =>
             godot_icall_Internal_ScriptEditorDebugger_ReloadScripts();
 
-        public static unsafe string[] CodeCompletionRequest(CodeCompletionRequest.CompletionKind kind,
+        public static string[] CodeCompletionRequest(CodeCompletionRequest.CompletionKind kind,
             string scriptFile)
         {
             using godot_string scriptFileIn = Marshaling.ConvertStringToNative(scriptFile);
@@ -79,9 +68,6 @@ namespace GodotTools.Internals
 
         [DllImport(GodotDllName)]
         public static extern void godot_icall_GodotSharpDirs_ResMetadataDir(out godot_string r_dest);
-
-        [DllImport(GodotDllName)]
-        public static extern void godot_icall_GodotSharpDirs_ResTempAssembliesBaseDir(out godot_string r_dest);
 
         [DllImport(GodotDllName)]
         public static extern void godot_icall_GodotSharpDirs_MonoUserDir(out godot_string r_dest);
@@ -142,9 +128,6 @@ namespace GodotTools.Internals
 
         [DllImport(GodotDllName)]
         private static extern void godot_icall_Internal_EditorNodeShowScriptScreen();
-
-        [DllImport(GodotDllName)]
-        private static extern void godot_icall_Internal_MonoWindowsInstallRoot(out godot_string dest);
 
         [DllImport(GodotDllName)]
         private static extern void godot_icall_Internal_EditorRunPlay();

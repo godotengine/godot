@@ -35,11 +35,36 @@
 
 #include "../godotsharp_defs.h"
 
+#ifdef WIN32
+#define GD_CLR_STDCALL __stdcall
+#else
+#define GD_CLR_STDCALL
+#endif
+
+namespace gdmono {
+
+#ifdef TOOLS_ENABLED
+struct PluginCallbacks {
+	using FuncLoadProjectAssemblyCallback = bool(GD_CLR_STDCALL *)(const char16_t *);
+	using FuncLoadToolsAssemblyCallback = Object *(GD_CLR_STDCALL *)(const char16_t *);
+	FuncLoadProjectAssemblyCallback LoadProjectAssemblyCallback = nullptr;
+	FuncLoadToolsAssemblyCallback LoadToolsAssemblyCallback = nullptr;
+};
+#endif
+
+} // namespace gdmono
+
+#undef GD_CLR_STDCALL
+
 class GDMono {
 	bool runtime_initialized;
 	bool finalizing_scripts_domain;
 
+	void *hostfxr_dll_handle = nullptr;
+
+#ifdef TOOLS_ENABLED
 	bool _load_project_assembly();
+#endif
 
 	bool _try_load_api_assemblies();
 
@@ -51,18 +76,9 @@ class GDMono {
 #endif
 	void _init_godot_api_hashes();
 
-	friend class CSharpLanguage;
-#ifdef WIN32
-#define GD_CLR_STDCALL __stdcall
-#else
-#define GD_CLR_STDCALL
+#ifdef TOOLS_ENABLED
+	gdmono::PluginCallbacks plugin_callbacks;
 #endif
-	struct PluginCallbacks {
-		using FuncLoadProjectAssemblyCallback = bool(GD_CLR_STDCALL *)(const char16_t *);
-		using FuncLoadToolsAssemblyCallback = Object *(GD_CLR_STDCALL *)(const char16_t *);
-		FuncLoadProjectAssemblyCallback LoadProjectAssemblyCallback = nullptr;
-		FuncLoadToolsAssemblyCallback LoadToolsAssemblyCallback = nullptr;
-	} plugin_callbacks;
 
 protected:
 	static GDMono *singleton;
@@ -102,12 +118,18 @@ public:
 	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized; }
 	_FORCE_INLINE_ bool is_finalizing_scripts_domain() { return finalizing_scripts_domain; }
 
+#ifdef TOOLS_ENABLED
+	const gdmono::PluginCallbacks &get_plugin_callbacks() { return plugin_callbacks; }
+#endif
+
 #ifdef GD_MONO_HOT_RELOAD
 	Error reload_scripts_domain();
 #endif
 
 	void initialize();
+#ifdef TOOLS_ENABLED
 	void initialize_load_assemblies();
+#endif
 
 	GDMono();
 	~GDMono();

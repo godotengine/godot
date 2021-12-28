@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 
 namespace GodotTools.Internals
@@ -10,16 +9,6 @@ namespace GodotTools.Internals
             get
             {
                 Internal.godot_icall_GodotSharpDirs_ResMetadataDir(out godot_string dest);
-                using (dest)
-                    return Marshaling.ConvertStringToManaged(dest);
-            }
-        }
-
-        public static string ResTempAssembliesBaseDir
-        {
-            get
-            {
-                Internal.godot_icall_GodotSharpDirs_ResTempAssembliesBaseDir(out godot_string dest);
                 using (dest)
                     return Marshaling.ConvertStringToManaged(dest);
             }

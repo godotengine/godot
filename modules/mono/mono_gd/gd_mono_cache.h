@@ -64,7 +64,6 @@ struct ManagedCallbacks {
 	using FuncScriptManagerBridge_RaiseEventSignal = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int, bool *);
 	using FuncScriptManagerBridge_GetScriptSignalList = void(GD_CLR_STDCALL *)(const CSharpScript *, Dictionary *);
 	using FuncScriptManagerBridge_HasScriptSignal = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *);
-	using FuncScriptManagerBridge_HasMethodUnknownParams = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *, bool);
 	using FuncScriptManagerBridge_ScriptIsOrInherits = bool(GD_CLR_STDCALL *)(const CSharpScript *, const CSharpScript *);
 	using FuncScriptManagerBridge_AddScriptBridge = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *);
 	using FuncScriptManagerBridge_RemoveScriptBridge = void(GD_CLR_STDCALL *)(const CSharpScript *);
@@ -75,6 +74,7 @@ struct ManagedCallbacks {
 	using FuncCSharpInstanceBridge_Get = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, Variant *);
 	using FuncCSharpInstanceBridge_CallDispose = void(GD_CLR_STDCALL *)(GCHandleIntPtr, bool);
 	using FuncCSharpInstanceBridge_CallToString = void(GD_CLR_STDCALL *)(GCHandleIntPtr, String *, bool *);
+	using FuncCSharpInstanceBridge_HasMethodUnknownParams = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *);
 	using FuncGCHandleBridge_FreeGCHandle = void(GD_CLR_STDCALL *)(GCHandleIntPtr);
 	using FuncDebuggingUtils_InstallTraceListener = void(GD_CLR_STDCALL *)();
 	using FuncDispatcher_InitializeDefaultGodotTaskScheduler = void(GD_CLR_STDCALL *)();
@@ -91,7 +91,6 @@ struct ManagedCallbacks {
 	FuncScriptManagerBridge_RaiseEventSignal ScriptManagerBridge_RaiseEventSignal;
 	FuncScriptManagerBridge_GetScriptSignalList ScriptManagerBridge_GetScriptSignalList;
 	FuncScriptManagerBridge_HasScriptSignal ScriptManagerBridge_HasScriptSignal;
-	FuncScriptManagerBridge_HasMethodUnknownParams ScriptManagerBridge_HasMethodUnknownParams;
 	FuncScriptManagerBridge_ScriptIsOrInherits ScriptManagerBridge_ScriptIsOrInherits;
 	FuncScriptManagerBridge_AddScriptBridge ScriptManagerBridge_AddScriptBridge;
 	FuncScriptManagerBridge_RemoveScriptBridge ScriptManagerBridge_RemoveScriptBridge;
@@ -102,6 +101,7 @@ struct ManagedCallbacks {
 	FuncCSharpInstanceBridge_Get CSharpInstanceBridge_Get;
 	FuncCSharpInstanceBridge_CallDispose CSharpInstanceBridge_CallDispose;
 	FuncCSharpInstanceBridge_CallToString CSharpInstanceBridge_CallToString;
+	FuncCSharpInstanceBridge_HasMethodUnknownParams CSharpInstanceBridge_HasMethodUnknownParams;
 	FuncGCHandleBridge_FreeGCHandle GCHandleBridge_FreeGCHandle;
 	FuncDebuggingUtils_InstallTraceListener DebuggingUtils_InstallTraceListener;
 	FuncDispatcher_InitializeDefaultGodotTaskScheduler Dispatcher_InitializeDefaultGodotTaskScheduler;
@@ -117,5 +117,7 @@ inline void clear_godot_api_cache() {
 	managed_callbacks = ManagedCallbacks();
 }
 } // namespace GDMonoCache
+
+#undef GD_CLR_STDCALL
 
 #endif // GD_MONO_CACHE_H

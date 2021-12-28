@@ -1,6 +1,8 @@
+using System;
+
 namespace Godot.SourceGenerators.Sample
 {
-    public partial class ScriptBoilerplate : Godot.Node
+    public partial class ScriptBoilerplate : Node
     {
         private NodePath _nodePath;
         private int _velocity;
@@ -16,6 +18,19 @@ namespace Godot.SourceGenerators.Sample
         {
             _ = name;
             return 1;
+        }
+
+        public void IgnoreThisMethodWithByRefParams(ref int a)
+        {
+            _ = a;
+        }
+    }
+
+    partial struct OuterClass
+    {
+        public partial class NesterClass : RefCounted
+        {
+            public override object _Get(StringName property) => null;
         }
     }
 }

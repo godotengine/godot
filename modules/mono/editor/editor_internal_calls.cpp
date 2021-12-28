@@ -74,10 +74,6 @@ GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_ResMetadataDir(godot_string *r
 	memnew_placement(r_dest, String(GodotSharpDirs::get_res_metadata_dir()));
 }
 
-GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_ResTempAssembliesBaseDir(godot_string *r_dest) {
-	memnew_placement(r_dest, String(GodotSharpDirs::get_res_temp_assemblies_base_dir()));
-}
-
 GD_PINVOKE_EXPORT void godot_icall_GodotSharpDirs_MonoUserDir(godot_string *r_dest) {
 	memnew_placement(r_dest, String(GodotSharpDirs::get_mono_user_dir()));
 }
@@ -189,16 +185,6 @@ GD_PINVOKE_EXPORT void godot_icall_Internal_EditorNodeShowScriptScreen() {
 	EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT);
 }
 
-GD_PINVOKE_EXPORT void godot_icall_Internal_MonoWindowsInstallRoot(godot_string *r_dest) {
-#ifdef WINDOWS_ENABLED
-	String install_root_dir = GDMono::get_singleton()->get_mono_reg_info().install_root_dir;
-	memnew_placement(r_dest, String(install_root_dir));
-#else
-	memnew_placement(r_dest, String);
-	return;
-#endif
-}
-
 GD_PINVOKE_EXPORT void godot_icall_Internal_EditorRunPlay() {
 	EditorNode::get_singleton()->run_play();
 }
@@ -267,9 +253,8 @@ GD_PINVOKE_EXPORT bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(const go
 }
 #endif
 
-void *godotsharp_editor_pinvoke_funcs[32] = {
+void *godotsharp_editor_pinvoke_funcs[30] = {
 	(void *)godot_icall_GodotSharpDirs_ResMetadataDir,
-	(void *)godot_icall_GodotSharpDirs_ResTempAssembliesBaseDir,
 	(void *)godot_icall_GodotSharpDirs_MonoUserDir,
 	(void *)godot_icall_GodotSharpDirs_BuildLogsDirs,
 	(void *)godot_icall_GodotSharpDirs_ProjectSlnPath,
@@ -288,7 +273,6 @@ void *godotsharp_editor_pinvoke_funcs[32] = {
 	(void *)godot_icall_Internal_EditorDebuggerNodeReloadScripts,
 	(void *)godot_icall_Internal_ScriptEditorEdit,
 	(void *)godot_icall_Internal_EditorNodeShowScriptScreen,
-	(void *)godot_icall_Internal_MonoWindowsInstallRoot,
 	(void *)godot_icall_Internal_EditorRunPlay,
 	(void *)godot_icall_Internal_EditorRunStop,
 	(void *)godot_icall_Internal_ScriptEditorDebugger_ReloadScripts,

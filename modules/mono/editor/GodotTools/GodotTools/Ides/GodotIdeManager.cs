@@ -8,7 +8,7 @@ using GodotTools.Internals;
 
 namespace GodotTools.Ides
 {
-    public sealed class GodotIdeManager : Node, ISerializationListener
+    public sealed partial class GodotIdeManager : Node, ISerializationListener
     {
         private MessagingServer _messagingServer;
 

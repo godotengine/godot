@@ -25,7 +25,7 @@ def configure(env, env_mono):
     if tools_enabled and not module_supports_tools_on(env["platform"]):
         raise RuntimeError("This module does not currently support building for this platform with tools enabled")
 
-    if env["tools"] or env["target"] != "release":
+    if env["tools"]:
         env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])
 
     app_host_dir = find_dotnet_app_host_dir(env)
@@ -47,29 +47,33 @@ def configure(env, env_mono):
     check_app_host_file_exists("hostfxr.h")
     check_app_host_file_exists("coreclr_delegates.h")
 
-    env.Append(LIBPATH=[app_host_dir])
     env_mono.Prepend(CPPPATH=app_host_dir)
 
-    libnethost_path = os.path.join(app_host_dir, "libnethost.lib" if os.name == "nt" else "libnethost.a")
+    env.Append(LIBPATH=[app_host_dir])
 
-    if env["platform"] == "windows":
-        env_mono.Append(CPPDEFINES=["NETHOST_USE_AS_STATIC"])
+    # Only the editor build  links nethost, which is needed to find hostfxr.
+    # Exported games don't need this logic as hostfxr is bundled with them.
+    if tools_enabled:
+        libnethost_path = os.path.join(app_host_dir, "libnethost.lib" if os.name == "nt" else "libnethost.a")
 
-        if env.msvc:
-            env.Append(LINKFLAGS="libnethost.lib")
+        if env["platform"] == "windows":
+            env_mono.Append(CPPDEFINES=["NETHOST_USE_AS_STATIC"])
+
+            if env.msvc:
+                env.Append(LINKFLAGS="libnethost.lib")
+            else:
+                env.Append(LINKFLAGS=["-Wl,-whole-archive", libnethost_path, "-Wl,-no-whole-archive"])
         else:
-            env.Append(LINKFLAGS=["-Wl,-whole-archive", libnethost_path, "-Wl,-no-whole-archive"])
-    else:
-        is_apple = env["platform"] in ["macos", "ios"]
-        # is_macos = is_apple and not is_ios
+            is_apple = env["platform"] in ["macos", "ios"]
+            # is_macos = is_apple and not is_ios
 
-        # if is_ios and not is_ios_sim:
-        #     env_mono.Append(CPPDEFINES=["IOS_DEVICE"])
+            # if is_ios and not is_ios_sim:
+            #     env_mono.Append(CPPDEFINES=["IOS_DEVICE"])
 
-        if is_apple:
-            env.Append(LINKFLAGS=["-Wl,-force_load," + libnethost_path])
-        else:
-            env.Append(LINKFLAGS=["-Wl,-whole-archive", libnethost_path, "-Wl,-no-whole-archive"])
+            if is_apple:
+                env.Append(LINKFLAGS=["-Wl,-force_load," + libnethost_path])
+            else:
+                env.Append(LINKFLAGS=["-Wl,-whole-archive", libnethost_path, "-Wl,-no-whole-archive"])
 
 
 def find_dotnet_app_host_dir(env):
@@ -156,7 +160,8 @@ def find_app_host_version(dotnet_cmd, search_version_str):
     search_version = LooseVersion(search_version_str)
 
     try:
-        lines = subprocess.check_output([dotnet_cmd, "--list-runtimes"]).splitlines()
+        env = dict(os.environ, DOTNET_CLI_UI_LANGUAGE="en-US")
+        lines = subprocess.check_output([dotnet_cmd, "--list-runtimes"], env=env).splitlines()
 
         for line_bytes in lines:
             line = line_bytes.decode("utf-8")
@@ -188,7 +193,8 @@ def find_dotnet_sdk(dotnet_cmd, search_version_str):
     search_version = LooseVersion(search_version_str)
 
     try:
-        lines = subprocess.check_output([dotnet_cmd, "--list-sdks"]).splitlines()
+        env = dict(os.environ, DOTNET_CLI_UI_LANGUAGE="en-US")
+        lines = subprocess.check_output([dotnet_cmd, "--list-sdks"], env=env).splitlines()
 
         for line_bytes in lines:
             line = line_bytes.decode("utf-8")

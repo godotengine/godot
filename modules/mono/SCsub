@@ -7,9 +7,6 @@ Import("env_modules")
 
 env_mono = env_modules.Clone()
 
-if env_mono["tools"] or env_mono["target"] != "release":
-    env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])
-
 # Configure Mono
 
 mono_configure.configure(env, env_mono)
