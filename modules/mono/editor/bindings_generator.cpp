@@ -76,8 +76,6 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CLOSE_BLOCK_L4 INDENT4 CLOSE_BLOCK
 
 #define BINDINGS_GLOBAL_SCOPE_CLASS "GD"
-#define BINDINGS_PTR_FIELD "NativePtr"
-#define BINDINGS_PENDING_PTR_FIELD "HandlePendingForNextInstance"
 #define BINDINGS_NATIVE_NAME_FIELD "NativeName"
 
 #define CS_PARAM_MEMORYOWN "memoryOwn"
@@ -87,6 +85,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CS_METHOD_CALL "Call"
 #define CS_PROPERTY_SINGLETON "Singleton"
 #define CS_METHOD_INVOKE_GODOT_CLASS_METHOD "InvokeGodotClassMethod"
+#define CS_METHOD_HAS_GODOT_CLASS_METHOD "HasGodotClassMethod"
 
 #define CS_STATIC_FIELD_NATIVE_CTOR "NativeCtor"
 #define CS_STATIC_FIELD_METHOD_BIND_PREFIX "MethodBind"
@@ -104,7 +103,6 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 #define C_CLASS_NATIVE_FUNCS "NativeFuncs"
 #define C_NS_MONOUTILS "InteropUtils"
-#define C_METHOD_TIE_MANAGED_TO_UNMANAGED C_NS_MONOUTILS ".TieManagedToUnmanaged"
 #define C_METHOD_UNMANAGED_GET_MANAGED C_NS_MONOUTILS ".UnmanagedGetManaged"
 #define C_METHOD_ENGINE_GET_SINGLETON C_NS_MONOUTILS ".EngineGetSingleton"
 
@@ -120,7 +118,6 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define C_METHOD_MANAGED_TO_SIGNAL C_NS_MONOMARSHAL ".ConvertSignalToNative"
 #define C_METHOD_MANAGED_FROM_SIGNAL C_NS_MONOMARSHAL ".ConvertSignalToManaged"
 
-typedef String string;
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
 	// any of the changes done here to the 'uint32_t' type interface as well.
@@ -1438,7 +1435,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		// Add native name static field
 
 		if (is_derived_type) {
-			output << MEMBER_BEGIN "private static readonly System.Type _cachedType = typeof(" << itype.proxy_name << ");\n";
+			output << MEMBER_BEGIN "private static readonly System.Type CachedType = typeof(" << itype.proxy_name << ");\n";
 		}
 
 		output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
@@ -1458,25 +1455,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// Add default constructor
 			if (itype.is_instantiable) {
 				output << MEMBER_BEGIN "public " << itype.proxy_name << "() : this("
-					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L2;
-
-				// The default constructor may also be called by the engine when instancing existing native objects
-				// The engine will initialize the pointer field of the managed side before calling the constructor
-				// This is why we only allocate a new native object from the constructor if the pointer field is not set
-				output << INDENT3 "var handlePending = " BINDINGS_PENDING_PTR_FIELD ";\n"
-					   << INDENT3 "if (handlePending == IntPtr.Zero)\n" OPEN_BLOCK_L3
-					   << INDENT4 "unsafe\n" INDENT4 OPEN_BLOCK
-					   << INDENT5 BINDINGS_PTR_FIELD " = " CS_STATIC_FIELD_NATIVE_CTOR "();\n"
-					   << CLOSE_BLOCK_L4
-					   << INDENT4 C_METHOD_TIE_MANAGED_TO_UNMANAGED "(this, " BINDINGS_PTR_FIELD ", "
-					   << BINDINGS_NATIVE_NAME_FIELD << ", refCounted: " << (itype.is_ref_counted ? "true" : "false")
-					   << ", ((object)this).GetType(), _cachedType);\n" CLOSE_BLOCK_L3
-					   << INDENT3 "else\n" INDENT3 OPEN_BLOCK
-					   << INDENT4 BINDINGS_PTR_FIELD " = handlePending;\n"
-					   << INDENT4 BINDINGS_PENDING_PTR_FIELD " = IntPtr.Zero;\n"
-					   << INDENT4 "InteropUtils.TieManagedToUnmanagedWithPreSetup(this, "
-					   << BINDINGS_PTR_FIELD ");\n" CLOSE_BLOCK_L3
-					   << INDENT3 "_InitializeGodotScriptInstanceInternals();\n" CLOSE_BLOCK_L2;
+					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L2
+					   << INDENT3 "unsafe\n" INDENT3 OPEN_BLOCK
+					   << INDENT4 "_ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR ", "
+					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
+					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+					   << CLOSE_BLOCK_L3 CLOSE_BLOCK_L2;
 			} else {
 				// Hide the constructor
 				output.append(MEMBER_BEGIN "internal ");
@@ -1508,9 +1492,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				"Failed to generate signal '" + isignal.name + "' for class '" + itype.name + "'.");
 	}
 
-	// Script calls
+	// Script members look-up
 
 	if (!itype.is_singleton && (is_derived_type || itype.has_virtual_methods)) {
+		// Generate method names cache fields
+
 		for (const MethodInterface &imethod : itype.methods) {
 			if (!imethod.is_virtual) {
 				continue;
@@ -1529,6 +1515,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				   << " = \"" << imethod.proxy_name << "\";\n";
 		}
 
+		// TODO: Only generate HasGodotClassMethod and InvokeGodotClassMethod if there's any method
+
+		// Generate InvokeGodotClassMethod
+
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
 			   << "NativeVariantPtrArgs args, int argCount, out godot_variant ret)\n"
@@ -1539,6 +1529,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				continue;
 			}
 
+			// We check both native names (snake_case) and proxy names (PascalCase)
 			output << INDENT3 "if ((method == " << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
 				   << " || method == " << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
 				   << ") && argCount == " << itos(imethod.arguments.size()) << ")\n"
@@ -1586,6 +1577,38 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		} else {
 			output << INDENT3 "ret = default;\n"
 				   << INDENT3 "return false;\n";
+		}
+
+		output << INDENT2 "}\n";
+
+		// Generate HasGodotClassMethod
+
+		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
+			   << " bool " CS_METHOD_HAS_GODOT_CLASS_METHOD "(in godot_string_name method)\n"
+			   << INDENT2 "{\n";
+
+		for (const MethodInterface &imethod : itype.methods) {
+			if (!imethod.is_virtual) {
+				continue;
+			}
+
+			// We check for native names (snake_case). If we detect one, we call HasGodotClassMethod
+			// again, but this time with the respective proxy name (PascalCase). It's the job of
+			// user derived classes to override the method and check for those. Our C# source
+			// generators take care of generating those override methods.
+			output << INDENT3 "if (method == " << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
+				   << ")\n" INDENT3 "{\n"
+				   << INDENT4 "if (" CS_METHOD_HAS_GODOT_CLASS_METHOD "("
+				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
+				   << ".NativeValue.DangerousSelfRef))\n" INDENT4 "{\n"
+				   << INDENT5 "return true;\n"
+				   << INDENT4 "}\n" INDENT3 "}\n";
+		}
+
+		if (is_derived_type) {
+			output << INDENT3 "return base." CS_METHOD_HAS_GODOT_CLASS_METHOD "(method);\n";
+		} else {
+			output << INDENT3 "return false;\n";
 		}
 
 		output << INDENT2 "}\n";
@@ -2159,7 +2182,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 
 		if (p_icall.is_vararg) {
 			if (i < p_icall.get_arguments_count() - 1) {
-				string c_in_vararg = arg_type->c_in_vararg;
+				String c_in_vararg = arg_type->c_in_vararg;
 
 				if (arg_type->is_object_type) {
 					c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromGodotObject(%1);\n";

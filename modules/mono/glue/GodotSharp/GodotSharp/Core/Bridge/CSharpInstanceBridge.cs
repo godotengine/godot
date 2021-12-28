@@ -21,8 +21,19 @@ namespace Godot.Bridge
                     return false.ToGodotBool();
                 }
 
-                _ = godotObject.InvokeGodotClassMethod(CustomUnsafe.AsRef(method), new NativeVariantPtrArgs(args),
+                bool methodInvoked = godotObject.InvokeGodotClassMethod(CustomUnsafe.AsRef(method),
+                    new NativeVariantPtrArgs(args),
                     argCount, out godot_variant retValue);
+
+                if (!methodInvoked)
+                {
+                    *ret = default;
+                    // This is important, as it tells Object::call that no method was called.
+                    // Otherwise, it would prevent Object::call from calling native methods.
+                    (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD;
+                    return false.ToGodotBool();
+                }
+
                 *ret = retValue;
                 return true.ToGodotBool();
             }
@@ -151,6 +162,25 @@ namespace Godot.Bridge
                 ExceptionUtils.DebugPrintUnhandledException(e);
                 *outRes = default;
                 *outValid = false.ToGodotBool();
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool HasMethodUnknownParams(IntPtr godotObjectGCHandle, godot_string_name* method)
+        {
+            try
+            {
+                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                    return false.ToGodotBool();
+
+                return godotObject.HasGodotClassMethod(CustomUnsafe.AsRef(method)).ToGodotBool();
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.DebugPrintUnhandledException(e);
+                return false.ToGodotBool();
             }
         }
     }

@@ -1,12 +1,9 @@
 using Godot;
-using Godot.NativeInterop;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using GodotTools.Build;
 using GodotTools.Core;
 using GodotTools.Internals;
@@ -18,61 +15,13 @@ using Path = System.IO.Path;
 
 namespace GodotTools.Export
 {
-    public class ExportPlugin : EditorExportPlugin
+    public partial class ExportPlugin : EditorExportPlugin
     {
-        [Flags]
-        private enum I18NCodesets : long
-        {
-            None = 0,
-            CJK = 1,
-            MidEast = 2,
-            Other = 4,
-            Rare = 8,
-            West = 16,
-            All = CJK | MidEast | Other | Rare | West
-        }
-
-        private string _maybeLastExportError;
-
-        private void AddI18NAssemblies(Godot.Collections.Dictionary<string, string> assemblies, string bclDir)
-        {
-            var codesets = (I18NCodesets)ProjectSettings.GetSetting("mono/export/i18n_codesets");
-
-            if (codesets == I18NCodesets.None)
-                return;
-
-            void AddI18NAssembly(string name) => assemblies.Add(name, Path.Combine(bclDir, $"{name}.dll"));
-
-            AddI18NAssembly("I18N");
-
-            if ((codesets & I18NCodesets.CJK) != 0)
-                AddI18NAssembly("I18N.CJK");
-            if ((codesets & I18NCodesets.MidEast) != 0)
-                AddI18NAssembly("I18N.MidEast");
-            if ((codesets & I18NCodesets.Other) != 0)
-                AddI18NAssembly("I18N.Other");
-            if ((codesets & I18NCodesets.Rare) != 0)
-                AddI18NAssembly("I18N.Rare");
-            if ((codesets & I18NCodesets.West) != 0)
-                AddI18NAssembly("I18N.West");
-        }
-
         public void RegisterExportSettings()
         {
             // TODO: These would be better as export preset options, but that doesn't seem to be supported yet
 
             GlobalDef("mono/export/include_scripts_content", false);
-            GlobalDef("mono/export/export_assemblies_inside_pck", true);
-
-            GlobalDef("mono/export/i18n_codesets", I18NCodesets.All);
-
-            ProjectSettings.AddPropertyInfo(new Godot.Collections.Dictionary
-            {
-                ["type"] = Variant.Type.Int,
-                ["name"] = "mono/export/i18n_codesets",
-                ["hint"] = PropertyHint.Flags,
-                ["hint_string"] = "CJK,MidEast,Other,Rare,West"
-            });
 
             GlobalDef("mono/export/aot/enabled", false);
             GlobalDef("mono/export/aot/full_aot", false);
@@ -86,11 +35,7 @@ namespace GodotTools.Export
             GlobalDef("mono/export/aot/android_toolchain_path", "");
         }
 
-        private void AddFile(string srcPath, string dstPath, bool remap = false)
-        {
-            // Add file to the PCK
-            AddFile(dstPath.Replace("\\", "/"), File.ReadAllBytes(srcPath), remap);
-        }
+        private string _maybeLastExportError;
 
         // With this method we can override how a file is exported in the PCK
         public override void _ExportFile(string path, string type, string[] features)
@@ -155,178 +100,84 @@ namespace GodotTools.Export
             if (!DeterminePlatformFromFeatures(features, out string platform))
                 throw new NotSupportedException("Target platform not supported");
 
+            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Server }
+                    .Contains(platform))
+            {
+                throw new NotImplementedException("Target platform not yet implemented");
+            }
+
             string outputDir = new FileInfo(path).Directory?.FullName ??
-                               throw new FileNotFoundException("Base directory not found");
+                               throw new FileNotFoundException("Output base directory not found");
 
             string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
 
-            if (!BuildManager.BuildProjectBlocking(buildConfig, platform: platform))
+            // TODO: This works for now, as we only implemented support for x86 family desktop so far, but it needs to be fixed
+            string arch = features.Contains("64") ? "x86_64" : "x86";
+
+            string ridOS = DetermineRuntimeIdentifierOS(platform);
+            string ridArch = DetermineRuntimeIdentifierArch(arch);
+            string runtimeIdentifier = $"{ridOS}-{ridArch}";
+
+            // Create temporary publish output directory
+
+            string publishOutputTempDir = Path.Combine(Path.GetTempPath(), "godot-publish-dotnet",
+                $"{Process.GetCurrentProcess().Id}-{buildConfig}-{runtimeIdentifier}");
+
+            if (!Directory.Exists(publishOutputTempDir))
+                Directory.CreateDirectory(publishOutputTempDir);
+
+            // Execute dotnet publish
+
+            if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
+                    runtimeIdentifier, publishOutputTempDir))
+            {
                 throw new Exception("Failed to build project");
-
-            // Add dependency assemblies
-
-            var assemblies = new Godot.Collections.Dictionary<string, string>();
-
-            string projectDllName = GodotSharpEditor.ProjectAssemblyName;
-            string projectDllSrcDir = Path.Combine(GodotSharpDirs.ResTempAssembliesBaseDir, buildConfig);
-            string projectDllSrcPath = Path.Combine(projectDllSrcDir, $"{projectDllName}.dll");
-
-            assemblies[projectDllName] = projectDllSrcPath;
-
-            string bclDir = DeterminePlatformBclDir(platform);
-
-            if (platform == OS.Platforms.Android)
-            {
-                string godotAndroidExtProfileDir = GetBclProfileDir("godot_android_ext");
-                string monoAndroidAssemblyPath = Path.Combine(godotAndroidExtProfileDir, "Mono.Android.dll");
-
-                if (!File.Exists(monoAndroidAssemblyPath))
-                    throw new FileNotFoundException("Assembly not found: 'Mono.Android'", monoAndroidAssemblyPath);
-
-                assemblies["Mono.Android"] = monoAndroidAssemblyPath;
-            }
-            else if (platform == OS.Platforms.HTML5)
-            {
-                // Ideally these would be added automatically since they're referenced by the wasm BCL assemblies.
-                // However, at least in the case of 'WebAssembly.Net.Http' for some reason the BCL assemblies
-                // reference a different version even though the assembly is the same, for some weird reason.
-
-                var wasmFrameworkAssemblies = new[] { "WebAssembly.Bindings", "WebAssembly.Net.WebSockets" };
-
-                foreach (string thisWasmFrameworkAssemblyName in wasmFrameworkAssemblies)
-                {
-                    string thisWasmFrameworkAssemblyPath = Path.Combine(bclDir, thisWasmFrameworkAssemblyName + ".dll");
-                    if (!File.Exists(thisWasmFrameworkAssemblyPath))
-                        throw new FileNotFoundException($"Assembly not found: '{thisWasmFrameworkAssemblyName}'",
-                            thisWasmFrameworkAssemblyPath);
-                    assemblies[thisWasmFrameworkAssemblyName] = thisWasmFrameworkAssemblyPath;
-                }
-
-                // Assemblies that can have a different name in a newer version. Newer version must come first and it has priority.
-                (string newName, string oldName)[] wasmFrameworkAssembliesOneOf = new[]
-                {
-                    ("System.Net.Http.WebAssemblyHttpHandler", "WebAssembly.Net.Http")
-                };
-
-                foreach (var thisWasmFrameworkAssemblyName in wasmFrameworkAssembliesOneOf)
-                {
-                    string thisWasmFrameworkAssemblyPath =
-                        Path.Combine(bclDir, thisWasmFrameworkAssemblyName.newName + ".dll");
-                    if (File.Exists(thisWasmFrameworkAssemblyPath))
-                    {
-                        assemblies[thisWasmFrameworkAssemblyName.newName] = thisWasmFrameworkAssemblyPath;
-                    }
-                    else
-                    {
-                        thisWasmFrameworkAssemblyPath =
-                            Path.Combine(bclDir, thisWasmFrameworkAssemblyName.oldName + ".dll");
-                        if (!File.Exists(thisWasmFrameworkAssemblyPath))
-                        {
-                            throw new FileNotFoundException(
-                                "Expected one of the following assemblies but none were found: " +
-                                $"'{thisWasmFrameworkAssemblyName.newName}' / '{thisWasmFrameworkAssemblyName.oldName}'",
-                                thisWasmFrameworkAssemblyPath);
-                        }
-
-                        assemblies[thisWasmFrameworkAssemblyName.oldName] = thisWasmFrameworkAssemblyPath;
-                    }
-                }
             }
 
-            // var initialAssemblies = assemblies.Duplicate();
-            // godot_dictionary initialAssembliesAux = ((Godot.Collections.Dictionary)initialAssemblies).NativeValue;
-            // using godot_string buildConfigAux = Marshaling.ConvertStringToNative(buildConfig);
-            // using godot_string bclDirAux = Marshaling.ConvertStringToNative(bclDir);
-            // godot_dictionary assembliesAux = ((Godot.Collections.Dictionary)assemblies).NativeValue;
-            // TODO
-            throw new NotImplementedException();
-            //internal_GetExportedAssemblyDependencies(initialAssembliesAux, buildConfigAux, bclDirAux, ref assembliesAux);
-
-            AddI18NAssemblies(assemblies, bclDir);
-
-            string outputDataDir = null;
-
-            if (PlatformHasTemplateDir(platform))
-                outputDataDir = ExportDataDirectory(features, platform, isDebug, outputDir);
-
-            string apiConfig = isDebug ? "Debug" : "Release";
-            // TODO
-            throw new NotImplementedException();
-            string resAssembliesDir = null; // Path.Combine(GodotSharpDirs.ResAssembliesBaseDir, apiConfig);
-
-            bool assembliesInsidePck = (bool)ProjectSettings.GetSetting("mono/export/export_assemblies_inside_pck") ||
-                                       outputDataDir == null;
-
-            if (!assembliesInsidePck)
+            if (!File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpEditor.ProjectAssemblyName}.dll")))
             {
-                string outputDataGameAssembliesDir = Path.Combine(outputDataDir, "Assemblies");
-                if (!Directory.Exists(outputDataGameAssembliesDir))
-                    Directory.CreateDirectory(outputDataGameAssembliesDir);
+                throw new NotSupportedException(
+                    "Publish succeeded but project assembly not found in the output directory");
             }
 
-            foreach (var assembly in assemblies)
+            // Copy all files from the dotnet publish output directory to
+            // a data directory next to the Godot output executable.
+
+            string outputDataDir = Path.Combine(outputDir, DetermineDataDirNameForProject());
+
+            if (Directory.Exists(outputDataDir))
+                Directory.Delete(outputDataDir, recursive: true); // Clean first
+
+            Directory.CreateDirectory(outputDataDir);
+
+            foreach (string dir in Directory.GetDirectories(publishOutputTempDir, "*", SearchOption.AllDirectories))
             {
-                void AddToAssembliesDir(string fileSrcPath)
-                {
-                    if (assembliesInsidePck)
-                    {
-                        string fileDstPath = Path.Combine(resAssembliesDir, fileSrcPath.GetFile());
-                        AddFile(fileSrcPath, fileDstPath);
-                    }
-                    else
-                    {
-                        Debug.Assert(outputDataDir != null);
-                        string fileDstPath = Path.Combine(outputDataDir, "Assemblies", fileSrcPath.GetFile());
-                        File.Copy(fileSrcPath, fileDstPath);
-                    }
-                }
-
-                string assemblySrcPath = assembly.Value;
-
-                string assemblyPathWithoutExtension = Path.ChangeExtension(assemblySrcPath, null);
-                string pdbSrcPath = assemblyPathWithoutExtension + ".pdb";
-
-                AddToAssembliesDir(assemblySrcPath);
-
-                if (File.Exists(pdbSrcPath))
-                    AddToAssembliesDir(pdbSrcPath);
+                Directory.CreateDirectory(Path.Combine(outputDataDir, dir.Substring(publishOutputTempDir.Length + 1)));
             }
 
-            // AOT compilation
-            bool aotEnabled = platform == OS.Platforms.iOS ||
-                              (bool)ProjectSettings.GetSetting("mono/export/aot/enabled");
-
-            if (aotEnabled)
+            foreach (string file in Directory.GetFiles(publishOutputTempDir, "*", SearchOption.AllDirectories))
             {
-                string aotToolchainPath = null;
-
-                if (platform == OS.Platforms.Android)
-                    aotToolchainPath = (string)ProjectSettings.GetSetting("mono/export/aot/android_toolchain_path");
-
-                if (aotToolchainPath == string.Empty)
-                    aotToolchainPath = null; // Don't risk it being used as current working dir
-
-                // TODO: LLVM settings are hard-coded and disabled for now
-                var aotOpts = new AotOptions
-                {
-                    EnableLLVM = false,
-                    LLVMOnly = false,
-                    LLVMPath = "",
-                    LLVMOutputPath = "",
-                    FullAot = platform == OS.Platforms.iOS ||
-                              (bool)(ProjectSettings.GetSetting("mono/export/aot/full_aot") ?? false),
-                    UseInterpreter = (bool)ProjectSettings.GetSetting("mono/export/aot/use_interpreter"),
-                    ExtraAotOptions = (string[])ProjectSettings.GetSetting("mono/export/aot/extra_aot_options") ??
-                                      Array.Empty<string>(),
-                    ExtraOptimizerOptions =
-                        (string[])ProjectSettings.GetSetting("mono/export/aot/extra_optimizer_options") ??
-                        Array.Empty<string>(),
-                    ToolchainPath = aotToolchainPath
-                };
-
-                AotBuilder.CompileAssemblies(this, aotOpts, features, platform, isDebug, bclDir, outputDir,
-                    outputDataDir, assemblies);
+                File.Copy(file, Path.Combine(outputDataDir, file.Substring(publishOutputTempDir.Length + 1)));
             }
+        }
+
+        private string DetermineRuntimeIdentifierOS(string platform)
+            => OS.DotNetOSPlatformMap[platform];
+
+        private string DetermineRuntimeIdentifierArch(string arch)
+        {
+            return arch switch
+            {
+                "x86" => "x86",
+                "x86_32" => "x86",
+                "x64" => "x64",
+                "x86_64" => "x64",
+                "armeabi-v7a" => "arm",
+                "arm64-v8a" => "arm64",
+                "armv7" => "arm",
+                "arm64" => "arm64",
+                _ => throw new ArgumentOutOfRangeException(nameof(arch), arch, "Unexpected architecture")
+            };
         }
 
         public override void _ExportEnd()
@@ -350,147 +201,16 @@ namespace GodotTools.Export
             }
         }
 
-        [return: NotNull]
-        private static string ExportDataDirectory(string[] features, string platform, bool isDebug, string outputDir)
-        {
-            string target = isDebug ? "release_debug" : "release";
-
-            // NOTE: Bits is ok for now as all platforms with a data directory only have one or two architectures.
-            // However, this may change in the future if we add arm linux or windows desktop templates.
-            string bits = features.Contains("64") ? "64" : "32";
-
-            string TemplateDirName() => $"data.mono.{platform}.{bits}.{target}";
-
-            string templateDirPath = Path.Combine(Internal.FullTemplatesDir, TemplateDirName());
-            bool validTemplatePathFound = true;
-
-            if (!Directory.Exists(templateDirPath))
-            {
-                validTemplatePathFound = false;
-
-                if (isDebug)
-                {
-                    target = "debug"; // Support both 'release_debug' and 'debug' for the template data directory name
-                    templateDirPath = Path.Combine(Internal.FullTemplatesDir, TemplateDirName());
-                    validTemplatePathFound = true;
-
-                    if (!Directory.Exists(templateDirPath))
-                        validTemplatePathFound = false;
-                }
-            }
-
-            if (!validTemplatePathFound)
-                throw new FileNotFoundException("Data template directory not found", templateDirPath);
-
-            string outputDataDir = Path.Combine(outputDir, DetermineDataDirNameForProject());
-
-            if (Directory.Exists(outputDataDir))
-                Directory.Delete(outputDataDir, recursive: true); // Clean first
-
-            Directory.CreateDirectory(outputDataDir);
-
-            foreach (string dir in Directory.GetDirectories(templateDirPath, "*", SearchOption.AllDirectories))
-            {
-                Directory.CreateDirectory(Path.Combine(outputDataDir, dir.Substring(templateDirPath.Length + 1)));
-            }
-
-            foreach (string file in Directory.GetFiles(templateDirPath, "*", SearchOption.AllDirectories))
-            {
-                File.Copy(file, Path.Combine(outputDataDir, file.Substring(templateDirPath.Length + 1)));
-            }
-
-            return outputDataDir;
-        }
-
-        private static bool PlatformHasTemplateDir(string platform)
-        {
-            // OSX export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
-            return !new[] { OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5 }
-                .Contains(platform);
-        }
-
         private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
         {
             foreach (var feature in features)
             {
-                if (OS.PlatformNameMap.TryGetValue(feature, out platform))
+                if (OS.PlatformFeatureMap.TryGetValue(feature, out platform))
                     return true;
             }
 
             platform = null;
             return false;
-        }
-
-        private static string GetBclProfileDir(string profile)
-        {
-            string templatesDir = Internal.FullTemplatesDir;
-            return Path.Combine(templatesDir, "bcl", profile);
-        }
-
-        private static string DeterminePlatformBclDir(string platform)
-        {
-            string templatesDir = Internal.FullTemplatesDir;
-            string platformBclDir = Path.Combine(templatesDir, "bcl", platform);
-
-            if (!File.Exists(Path.Combine(platformBclDir, "mscorlib.dll")))
-            {
-                string profile = DeterminePlatformBclProfile(platform);
-                platformBclDir = Path.Combine(templatesDir, "bcl", profile);
-
-                if (!File.Exists(Path.Combine(platformBclDir, "mscorlib.dll")))
-                {
-                    if (PlatformRequiresCustomBcl(platform))
-                        throw new FileNotFoundException($"Missing BCL (Base Class Library) for platform: {platform}");
-
-                    platformBclDir = typeof(object).Assembly.Location.GetBaseDir(); // Use the one we're running on
-                }
-            }
-
-            return platformBclDir;
-        }
-
-        /// <summary>
-        /// Determines whether the BCL bundled with the Godot editor can be used for the target platform,
-        /// or if it requires a custom BCL that must be distributed with the export templates.
-        /// </summary>
-        private static bool PlatformRequiresCustomBcl(string platform)
-        {
-            if (new[] { OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5 }.Contains(platform))
-                return true;
-
-            // The 'net_4_x' BCL is not compatible between Windows and the other platforms.
-            // We use the names 'net_4_x_win' and 'net_4_x' to differentiate between the two.
-
-            bool isWinOrUwp = new[]
-            {
-                OS.Platforms.Windows,
-                OS.Platforms.UWP
-            }.Contains(platform);
-
-            return OS.IsWindows ? !isWinOrUwp : isWinOrUwp;
-        }
-
-        private static string DeterminePlatformBclProfile(string platform)
-        {
-            switch (platform)
-            {
-                case OS.Platforms.Windows:
-                case OS.Platforms.UWP:
-                    return "net_4_x_win";
-                case OS.Platforms.MacOS:
-                case OS.Platforms.LinuxBSD:
-                case OS.Platforms.Server:
-                case OS.Platforms.Haiku:
-                    return "net_4_x";
-                case OS.Platforms.Android:
-                    return "monodroid";
-                case OS.Platforms.iOS:
-                    return "monotouch";
-                case OS.Platforms.HTML5:
-                    return "wasm";
-                default:
-                    throw new NotSupportedException($"Platform not supported: {platform}");
-            }
         }
 
         private static string DetermineDataDirNameForProject()

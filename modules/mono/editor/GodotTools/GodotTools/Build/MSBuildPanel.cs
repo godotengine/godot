@@ -6,7 +6,7 @@ using File = GodotTools.Utils.File;
 
 namespace GodotTools.Build
 {
-    public class MSBuildPanel : VBoxContainer
+    public partial class MSBuildPanel : VBoxContainer
     {
         public BuildOutputView BuildOutputView { get; private set; }
 
@@ -70,7 +70,7 @@ namespace GodotTools.Build
                 GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
             }
 
-            if (!BuildManager.BuildProjectBlocking("Debug", targets: new[] { "Rebuild" }))
+            if (!BuildManager.BuildProjectBlocking("Debug", rebuild: true))
                 return; // Build failed
 
             // Notify running game for hot-reload
@@ -88,7 +88,7 @@ namespace GodotTools.Build
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return; // No solution to build
 
-            BuildManager.BuildProjectBlocking("Debug", targets: new[] { "Clean" });
+            _ = BuildManager.CleanProjectBlocking("Debug");
         }
 
         private void ViewLogToggled(bool pressed) => BuildOutputView.LogVisible = pressed;

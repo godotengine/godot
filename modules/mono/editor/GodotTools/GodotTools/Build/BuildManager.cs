@@ -2,11 +2,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
-using GodotTools.Ides.Rider;
+using Godot;
 using GodotTools.Internals;
-using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
-using OS = GodotTools.Utils.OS;
 
 namespace GodotTools.Build
 {
@@ -14,13 +12,8 @@ namespace GodotTools.Build
     {
         private static BuildInfo _buildInProgress;
 
-        public const string PropNameMSBuildMono = "MSBuild (Mono)";
-        public const string PropNameMSBuildVs = "MSBuild (VS Build Tools)";
-        public const string PropNameMSBuildJetBrains = "MSBuild (JetBrains Rider)";
-        public const string PropNameDotnetCli = "dotnet CLI";
-
         public const string MsBuildIssuesFileName = "msbuild_issues.csv";
-        public const string MsBuildLogFileName = "msbuild_log.txt";
+        private const string MsBuildLogFileName = "msbuild_log.txt";
 
         public delegate void BuildLaunchFailedEventHandler(BuildInfo buildInfo, string reason);
 
@@ -62,11 +55,11 @@ namespace GodotTools.Build
 
         private static void PrintVerbose(string text)
         {
-            if (Godot.OS.IsStdoutVerbose())
-                Godot.GD.Print(text);
+            if (OS.IsStdoutVerbose())
+                GD.Print(text);
         }
 
-        public static bool Build(BuildInfo buildInfo)
+        private static bool Build(BuildInfo buildInfo)
         {
             if (_buildInProgress != null)
                 throw new InvalidOperationException("A build is already in progress");
@@ -103,7 +96,8 @@ namespace GodotTools.Build
                 }
                 catch (Exception e)
                 {
-                    BuildLaunchFailed?.Invoke(buildInfo, $"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
+                    BuildLaunchFailed?.Invoke(buildInfo,
+                        $"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
                     Console.Error.WriteLine(e);
                     return false;
                 }
@@ -148,7 +142,8 @@ namespace GodotTools.Build
                 }
                 catch (Exception e)
                 {
-                    BuildLaunchFailed?.Invoke(buildInfo, $"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
+                    BuildLaunchFailed?.Invoke(buildInfo,
+                        $"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
                     Console.Error.WriteLine(e);
                     return false;
                 }
@@ -159,18 +154,54 @@ namespace GodotTools.Build
             }
         }
 
-        public static bool BuildProjectBlocking(string config, [MaybeNull] string[] targets = null, [MaybeNull] string platform = null)
+        private static bool Publish(BuildInfo buildInfo)
         {
-            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets ?? new[] {"Build"}, config, restore: true);
+            if (_buildInProgress != null)
+                throw new InvalidOperationException("A build is already in progress");
 
-            // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
-            if (platform != null || OS.PlatformNameMap.TryGetValue(Godot.OS.GetName(), out platform))
-                buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
+            _buildInProgress = buildInfo;
 
-            if (Internal.GodotIsRealTDouble())
-                buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
+            try
+            {
+                BuildStarted?.Invoke(buildInfo);
 
-            return BuildProjectBlocking(buildInfo);
+                // Required in order to update the build tasks list
+                Internal.GodotMainIteration();
+
+                try
+                {
+                    RemoveOldIssuesFile(buildInfo);
+                }
+                catch (IOException e)
+                {
+                    BuildLaunchFailed?.Invoke(buildInfo, $"Cannot remove issues file: {GetIssuesFilePath(buildInfo)}");
+                    Console.Error.WriteLine(e);
+                }
+
+                try
+                {
+                    int exitCode = BuildSystem.Publish(buildInfo, StdOutputReceived, StdErrorReceived);
+
+                    if (exitCode != 0)
+                        PrintVerbose(
+                            $"dotnet publish exited with code: {exitCode}. Log file: {GetLogFilePath(buildInfo)}");
+
+                    BuildFinished?.Invoke(exitCode == 0 ? BuildResult.Success : BuildResult.Error);
+
+                    return exitCode == 0;
+                }
+                catch (Exception e)
+                {
+                    BuildLaunchFailed?.Invoke(buildInfo,
+                        $"The publish method threw an exception.\n{e.GetType().FullName}: {e.Message}");
+                    Console.Error.WriteLine(e);
+                    return false;
+                }
+            }
+            finally
+            {
+                _buildInProgress = null;
+            }
         }
 
         private static bool BuildProjectBlocking(BuildInfo buildInfo)
@@ -178,19 +209,96 @@ namespace GodotTools.Build
             if (!File.Exists(buildInfo.Solution))
                 return true; // No solution to build
 
-            using (var pr = new EditorProgress("mono_project_debug_build", "Building project solution...", 1))
-            {
-                pr.Step("Building project solution", 0);
+            using var pr = new EditorProgress("dotnet_build_project", "Building .NET project...", 1);
 
-                if (!Build(buildInfo))
-                {
-                    ShowBuildErrorDialog("Failed to build project solution");
-                    return false;
-                }
+            pr.Step("Building project solution", 0);
+
+            if (!Build(buildInfo))
+            {
+                ShowBuildErrorDialog("Failed to build project solution");
+                return false;
             }
 
             return true;
         }
+
+        private static bool CleanProjectBlocking(BuildInfo buildInfo)
+        {
+            if (!File.Exists(buildInfo.Solution))
+                return true; // No solution to clean
+
+            using var pr = new EditorProgress("dotnet_clean_project", "Cleaning .NET project...", 1);
+
+            pr.Step("Cleaning project solution", 0);
+
+            if (!Build(buildInfo))
+            {
+                ShowBuildErrorDialog("Failed to clean project solution");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool PublishProjectBlocking(BuildInfo buildInfo)
+        {
+            using var pr = new EditorProgress("dotnet_publish_project", "Publishing .NET project...", 1);
+
+            pr.Step("Running dotnet publish", 0);
+
+            if (!Publish(buildInfo))
+            {
+                ShowBuildErrorDialog("Failed to publish .NET project");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static BuildInfo CreateBuildInfo(string configuration, [NotNull] string platform = null,
+            bool rebuild = false, bool onlyClean = false)
+        {
+            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, configuration,
+                restore: true, rebuild, onlyClean);
+
+            // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
+            if (platform != null || Utils.OS.PlatformNameMap.TryGetValue(OS.GetName(), out platform))
+                buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
+
+            if (Internal.GodotIsRealTDouble())
+                buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
+
+            return buildInfo;
+        }
+
+        private static BuildInfo CreatePublishBuildInfo(string configuration, string platform,
+            string runtimeIdentifier, string publishOutputDir)
+        {
+            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, configuration,
+                runtimeIdentifier, publishOutputDir, restore: true, rebuild: false, onlyClean: false);
+
+            buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
+
+            if (Internal.GodotIsRealTDouble())
+                buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
+
+            return buildInfo;
+        }
+
+        public static bool BuildProjectBlocking(string configuration, [NotNull] string platform = null,
+            bool rebuild = false)
+            => BuildProjectBlocking(CreateBuildInfo(configuration, platform, rebuild));
+
+        public static bool CleanProjectBlocking(string configuration, [NotNull] string platform = null)
+            => CleanProjectBlocking(CreateBuildInfo(configuration, platform, rebuild: false));
+
+        public static bool PublishProjectBlocking(
+            [NotNull] string configuration,
+            [NotNull] string platform,
+            [NotNull] string runtimeIdentifier,
+            string publishOutputDir
+        ) => PublishProjectBlocking(CreatePublishBuildInfo(configuration,
+            platform, runtimeIdentifier, publishOutputDir));
 
         public static bool EditorBuildCallback()
         {
@@ -204,7 +312,7 @@ namespace GodotTools.Build
             }
             catch (Exception e)
             {
-                Godot.GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
+                GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
             }
 
             if (GodotSharpEditor.Instance.SkipBuildBeforePlaying)
@@ -215,47 +323,6 @@ namespace GodotTools.Build
 
         public static void Initialize()
         {
-            // Build tool settings
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-
-            BuildTool msbuildDefault;
-
-            if (OS.IsWindows)
-            {
-                if (RiderPathManager.IsExternalEditorSetToRider(editorSettings))
-                    msbuildDefault = BuildTool.JetBrainsMsBuild;
-                else
-                    msbuildDefault = !string.IsNullOrEmpty(OS.PathWhich("dotnet")) ? BuildTool.DotnetCli : BuildTool.MsBuildVs;
-            }
-            else
-            {
-                msbuildDefault = !string.IsNullOrEmpty(OS.PathWhich("dotnet")) ? BuildTool.DotnetCli : BuildTool.MsBuildMono;
-            }
-
-            EditorDef("mono/builds/build_tool", msbuildDefault);
-
-            string hintString;
-
-            if (OS.IsWindows)
-            {
-                hintString = $"{PropNameMSBuildMono}:{(int)BuildTool.MsBuildMono}," +
-                             $"{PropNameMSBuildVs}:{(int)BuildTool.MsBuildVs}," +
-                             $"{PropNameMSBuildJetBrains}:{(int)BuildTool.JetBrainsMsBuild}," +
-                             $"{PropNameDotnetCli}:{(int)BuildTool.DotnetCli}";
-            }
-            else
-            {
-                hintString = $"{PropNameMSBuildMono}:{(int)BuildTool.MsBuildMono}," +
-                             $"{PropNameDotnetCli}:{(int)BuildTool.DotnetCli}";
-            }
-
-            editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
-            {
-                ["type"] = Godot.Variant.Type.Int,
-                ["name"] = "mono/builds/build_tool",
-                ["hint"] = Godot.PropertyHint.Enum,
-                ["hint_string"] = hintString
-            });
         }
     }
 }

@@ -235,7 +235,11 @@ private:
 
 #endif
 
+#ifdef TOOLS_ENABLED
 		api_assemblies_dir = api_assemblies_base_dir.plus_file(GDMono::get_expected_api_build_config());
+#else
+		api_assemblies_dir = data_dir_root;
+#endif
 	}
 
 public:

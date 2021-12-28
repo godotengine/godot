@@ -5,7 +5,7 @@ using static GodotTools.Internals.Globals;
 
 namespace GodotTools
 {
-    public class HotReloadAssemblyWatcher : Node
+    public partial class HotReloadAssemblyWatcher : Node
     {
         private Timer _watchTimer;
 

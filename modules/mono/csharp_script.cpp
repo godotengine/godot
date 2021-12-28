@@ -107,7 +107,7 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 extern void *godotsharp_pinvoke_funcs[170];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_pinvoke_funcs;
 #ifdef TOOLS_ENABLED
-extern void *godotsharp_editor_pinvoke_funcs[32];
+extern void *godotsharp_editor_pinvoke_funcs[30];
 [[maybe_unused]] volatile void **do_not_strip_godotsharp_editor_pinvoke_funcs;
 #endif
 
@@ -137,11 +137,11 @@ void CSharpLanguage::init() {
 	gdmono = memnew(GDMono);
 	gdmono->initialize();
 
+#ifdef TOOLS_ENABLED
 	if (gdmono->is_runtime_initialized()) {
 		gdmono->initialize_load_assemblies();
 	}
 
-#ifdef TOOLS_ENABLED
 	EditorNode::add_init_callback(&_editor_init_callback);
 #endif
 }
@@ -779,6 +779,11 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	}
 
 #warning TODO ALCs after switching to .NET 6
+
+	// Try to load the project assembly if it was not yet loaded
+	// (while hot-reload is not yet implemented)
+	gdmono->initialize_load_assemblies();
+
 #if 0
 	// There is no soft reloading with Mono. It's always hard reloading.
 
@@ -1221,7 +1226,7 @@ void CSharpLanguage::_on_scripts_domain_about_to_unload() {
 void CSharpLanguage::_editor_init_callback() {
 	// Load GodotTools and initialize GodotSharpEditor
 
-	Object *editor_plugin_obj = GDMono::get_singleton()->plugin_callbacks.LoadToolsAssemblyCallback(
+	Object *editor_plugin_obj = GDMono::get_singleton()->get_plugin_callbacks().LoadToolsAssemblyCallback(
 			GodotSharpDirs::get_data_editor_tools_dir().plus_file("GodotTools.dll").utf16());
 	CRASH_COND(editor_plugin_obj == nullptr);
 
@@ -1786,11 +1791,8 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 		return false;
 	}
 
-	String method = p_method;
-	bool deep = true;
-
-	return GDMonoCache::managed_callbacks.ScriptManagerBridge_HasMethodUnknownParams(
-			script.ptr(), &method, deep);
+	return GDMonoCache::managed_callbacks.CSharpInstanceBridge_HasMethodUnknownParams(
+			gchandle.get_intptr(), &p_method);
 }
 
 Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -2894,21 +2896,9 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 }
 
 bool CSharpScript::has_method(const StringName &p_method) const {
-	if (!valid) {
-		return false;
-	}
-
-	if (!GDMonoCache::godot_api_cache_updated) {
-		return false;
-	}
-
-	String method = p_method;
-	bool deep = false;
-
-	bool found = GDMonoCache::managed_callbacks.ScriptManagerBridge_HasMethodUnknownParams(
-			this, &method, deep);
-
-	return found;
+	// The equivalent of this will be implemented once we switch to the GDExtension system
+	ERR_PRINT_ONCE("CSharpScript::has_method is not implemented");
+	return false;
 }
 
 MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
@@ -2943,6 +2933,9 @@ Error CSharpScript::reload(bool p_keep_state) {
 	reload_invalidated = false;
 
 	String script_path = get_path();
+
+	// In case it was already added by a previous reload
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_RemoveScriptBridge(this);
 
 	valid = GDMonoCache::managed_callbacks.ScriptManagerBridge_AddScriptBridge(this, &script_path);
 

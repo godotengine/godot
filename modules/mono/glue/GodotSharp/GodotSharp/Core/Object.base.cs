@@ -21,7 +21,7 @@ namespace Godot
         [ThreadStatic] internal static IntPtr HandlePendingForNextInstance;
 
         private bool _disposed = false;
-        private Type _cachedType = typeof(Object);
+        private static readonly Type CachedType = typeof(Object);
 
         internal IntPtr NativePtr;
         private bool _memoryOwn;
@@ -33,17 +33,27 @@ namespace Godot
         /// </summary>
         public Object() : this(false)
         {
+            unsafe
+            {
+                _ConstructAndInitialize(NativeCtor, NativeName, CachedType, refCounted: false);
+            }
+        }
+
+        internal unsafe void _ConstructAndInitialize(
+            delegate* unmanaged<IntPtr> nativeCtor,
+            StringName nativeName,
+            Type cachedType,
+            bool refCounted
+        )
+        {
             var handlePending = HandlePendingForNextInstance;
 
             if (handlePending == IntPtr.Zero)
             {
-                unsafe
-                {
-                    NativePtr = NativeCtor();
-                }
+                NativePtr = nativeCtor();
 
                 InteropUtils.TieManagedToUnmanaged(this, NativePtr,
-                    NativeName, refCounted: false, GetType(), _cachedType);
+                    nativeName, refCounted, GetType(), cachedType);
             }
             else
             {
@@ -207,8 +217,14 @@ namespace Godot
 
         internal static bool InternalIsClassNativeBase(Type t)
         {
-            var assemblyName = t.Assembly.GetName();
-            return assemblyName.Name == "GodotSharp" || assemblyName.Name == "GodotSharpEditor";
+            // Check whether the type is declared in the GodotSharp or GodotSharpEditor assemblies
+            var typeAssembly = t.Assembly;
+
+            if (typeAssembly == CachedType.Assembly)
+                return true;
+
+            var typeAssemblyName = t.Assembly.GetName();
+            return typeAssemblyName.Name == "GodotSharpEditor";
         }
 
         // ReSharper disable once VirtualMemberNeverOverridden.Global

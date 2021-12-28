@@ -17,6 +17,9 @@ namespace Godot.SourceGenerators
             if (context.AreGodotSourceGeneratorsDisabled())
                 return;
 
+            if (context.IsGodotToolsProject())
+                return;
+
             // NOTE: NotNullWhen diagnostics don't work on projects targeting .NET Standard 2.0
             // ReSharper disable once ReplaceWithStringIsNullOrEmpty
             if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDir", out string? godotProjectDir)
@@ -31,7 +34,7 @@ namespace Godot.SourceGenerators
                     tree.GetRoot().DescendantNodes()
                         .OfType<ClassDeclarationSyntax>()
                         // Ignore inner classes
-                        .Where(cds => !(cds.Parent is ClassDeclarationSyntax))
+                        .Where(cds => !cds.IsNested())
                         .SelectGodotScriptClasses(context.Compilation)
                         // Report and skip non-partial classes
                         .Where(x =>

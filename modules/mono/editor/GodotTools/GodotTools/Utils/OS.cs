@@ -1,11 +1,12 @@
 using Godot.NativeInterop;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Text;
 using GodotTools.Internals;
 
 namespace GodotTools.Utils
@@ -13,7 +14,7 @@ namespace GodotTools.Utils
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class OS
     {
-        public static class Names
+        private static class Names
         {
             public const string Windows = "Windows";
             public const string MacOS = "macOS";
@@ -42,6 +43,35 @@ namespace GodotTools.Utils
             public const string HTML5 = "javascript";
         }
 
+        private static class DotNetOS
+        {
+            public const string Win = "win";
+            public const string OSX = "osx";
+            public const string Linux = "linux";
+            public const string Win10 = "win10";
+            public const string Android = "android";
+            public const string iOS = "ios";
+            public const string Browser = "browser";
+        }
+
+        public static readonly Dictionary<string, string> PlatformFeatureMap = new Dictionary<string, string>(
+            // Export `features` may be in lower case
+            StringComparer.InvariantCultureIgnoreCase
+        )
+        {
+            ["Windows"] = Platforms.Windows,
+            ["macOS"] = Platforms.MacOS,
+            ["LinuxBSD"] = Platforms.LinuxBSD,
+            // "X11" for compatibility, temporarily, while we are on an outdated branch
+            ["X11"] = Platforms.LinuxBSD,
+            ["Server"] = Platforms.Server,
+            ["UWP"] = Platforms.UWP,
+            ["Haiku"] = Platforms.Haiku,
+            ["Android"] = Platforms.Android,
+            ["iOS"] = Platforms.iOS,
+            ["HTML5"] = Platforms.HTML5
+        };
+
         public static readonly Dictionary<string, string> PlatformNameMap = new Dictionary<string, string>
         {
             [Names.Windows] = Platforms.Windows,
@@ -58,7 +88,23 @@ namespace GodotTools.Utils
             [Names.HTML5] = Platforms.HTML5
         };
 
-        private static unsafe bool IsOS(string name)
+        public static readonly Dictionary<string, string> DotNetOSPlatformMap = new Dictionary<string, string>
+        {
+            [Platforms.Windows] = DotNetOS.Win,
+            [Platforms.MacOS] = DotNetOS.OSX,
+            // TODO:
+            // Does .NET 6 support BSD variants? If it does, it may need the name `unix`
+            // instead of `linux` in the runtime identifier. This would be a problem as
+            // Godot has a single export profile for both, named LinuxBSD.
+            [Platforms.LinuxBSD] = DotNetOS.Linux,
+            [Platforms.Server] = DotNetOS.Linux,
+            [Platforms.UWP] = DotNetOS.Win10,
+            [Platforms.Android] = DotNetOS.Android,
+            [Platforms.iOS] = DotNetOS.iOS,
+            [Platforms.HTML5] = DotNetOS.Browser
+        };
+
+        private static bool IsOS(string name)
         {
             Internal.godot_icall_Utils_OS_GetPlatformName(out godot_string dest);
             using (dest)
@@ -68,7 +114,7 @@ namespace GodotTools.Utils
             }
         }
 
-        private static unsafe bool IsAnyOS(IEnumerable<string> names)
+        private static bool IsAnyOS(IEnumerable<string> names)
         {
             Internal.godot_icall_Utils_OS_GetPlatformName(out godot_string dest);
             using (dest)
@@ -99,25 +145,34 @@ namespace GodotTools.Utils
         // TODO SupportedOSPlatformGuard once we target .NET 6
         // [SupportedOSPlatformGuard("windows")]
         public static bool IsWindows => _isWindows.Value || IsUWP;
+
         // [SupportedOSPlatformGuard("osx")]
         public static bool IsMacOS => _isMacOS.Value;
+
         // [SupportedOSPlatformGuard("linux")]
         public static bool IsLinuxBSD => _isLinuxBSD.Value;
+
         // [SupportedOSPlatformGuard("linux")]
         public static bool IsServer => _isServer.Value;
+
         // [SupportedOSPlatformGuard("windows")]
         public static bool IsUWP => _isUWP.Value;
+
         public static bool IsHaiku => _isHaiku.Value;
+
         // [SupportedOSPlatformGuard("android")]
         public static bool IsAndroid => _isAndroid.Value;
+
         // [SupportedOSPlatformGuard("ios")]
         public static bool IsiOS => _isiOS.Value;
+
         // [SupportedOSPlatformGuard("browser")]
         public static bool IsHTML5 => _isHTML5.Value;
         public static bool IsUnixLike => _isUnixLike.Value;
 
         public static char PathSep => IsWindows ? ';' : ':';
 
+        [return: MaybeNull]
         public static string PathWhich([NotNull] string name)
         {
             if (IsWindows)
@@ -126,6 +181,7 @@ namespace GodotTools.Utils
             return PathWhichUnix(name);
         }
 
+        [return: MaybeNull]
         private static string PathWhichWindows([NotNull] string name)
         {
             string[] windowsExts =
@@ -162,6 +218,7 @@ namespace GodotTools.Utils
                 select path + ext).FirstOrDefault(File.Exists);
         }
 
+        [return: MaybeNull]
         private static string PathWhichUnix([NotNull] string name)
         {
             string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(PathSep);
@@ -192,58 +249,111 @@ namespace GodotTools.Utils
 
         public static void RunProcess(string command, IEnumerable<string> arguments)
         {
-            // TODO: Once we move to .NET Standard 2.1 we can use ProcessStartInfo.ArgumentList instead
-            string CmdLineArgsToString(IEnumerable<string> args)
-            {
-                // Not perfect, but as long as we are careful...
-                return string.Join(" ", args.Select(arg => arg.Contains(" ") ? $@"""{arg}""" : arg));
-            }
-
-            var startInfo = new ProcessStartInfo(command, CmdLineArgsToString(arguments))
+            var startInfo = new ProcessStartInfo(command)
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false
             };
 
-            using (Process process = Process.Start(startInfo))
-            {
-                if (process == null)
-                    throw new Exception("No process was started");
+            foreach (string arg in arguments)
+                startInfo.ArgumentList.Add(arg);
 
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                if (IsWindows && process.Id > 0)
-                    User32Dll.AllowSetForegroundWindow(process.Id); // allows application to focus itself
-            }
+            using Process process = Process.Start(startInfo);
+
+            if (process == null)
+                throw new Exception("No process was started");
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            if (IsWindows && process.Id > 0)
+                User32Dll.AllowSetForegroundWindow(process.Id); // Allows application to focus itself
         }
 
         public static int ExecuteCommand(string command, IEnumerable<string> arguments)
         {
-            // TODO: Once we move to .NET Standard 2.1 we can use ProcessStartInfo.ArgumentList instead
-            string CmdLineArgsToString(IEnumerable<string> args)
+            var startInfo = new ProcessStartInfo(command)
             {
-                // Not perfect, but as long as we are careful...
-                return string.Join(" ", args.Select(arg => arg.Contains(" ") ? $@"""{arg}""" : arg));
+                // Print the output
+                RedirectStandardOutput = false,
+                RedirectStandardError = false,
+                UseShellExecute = false
+            };
+
+            foreach (string arg in arguments)
+                startInfo.ArgumentList.Add(arg);
+
+            Console.WriteLine(startInfo.GetCommandLineDisplay(new StringBuilder("Executing: ")).ToString());
+
+            using var process = new Process { StartInfo = startInfo };
+            process.Start();
+            process.WaitForExit();
+
+            return process.ExitCode;
+        }
+
+        private static void AppendProcessFileNameForDisplay(this StringBuilder builder, string fileName)
+        {
+            if (builder.Length > 0)
+                builder.Append(' ');
+
+            if (fileName.Contains(' '))
+            {
+                builder.Append('"');
+                builder.Append(fileName);
+                builder.Append('"');
+            }
+            else
+            {
+                builder.Append(fileName);
+            }
+        }
+
+        private static void AppendProcessArgumentsForDisplay(this StringBuilder builder,
+            Collection<string> argumentList)
+        {
+            // This is intended just for reading. It doesn't need to be a valid command line.
+            // E.g.: We don't handle escaping of quotes.
+
+            foreach (string argument in argumentList)
+            {
+                if (builder.Length > 0)
+                    builder.Append(' ');
+
+                if (argument.Contains(' '))
+                {
+                    builder.Append('"');
+                    builder.Append(argument);
+                    builder.Append('"');
+                }
+                else
+                {
+                    builder.Append(argument);
+                }
+            }
+        }
+
+        public static StringBuilder GetCommandLineDisplay(
+            this ProcessStartInfo startInfo,
+            StringBuilder optionalBuilder = null
+        )
+        {
+            var builder = optionalBuilder ?? new StringBuilder();
+
+            builder.AppendProcessFileNameForDisplay(startInfo.FileName);
+
+            if (startInfo.ArgumentList.Count == 0)
+            {
+                builder.Append(' ');
+                builder.Append(startInfo.Arguments);
+            }
+            else
+            {
+                builder.AppendProcessArgumentsForDisplay(startInfo.ArgumentList);
             }
 
-            var startInfo = new ProcessStartInfo(command, CmdLineArgsToString(arguments));
-
-            Console.WriteLine($"Executing: \"{startInfo.FileName}\" {startInfo.Arguments}");
-
-            // Print the output
-            startInfo.RedirectStandardOutput = false;
-            startInfo.RedirectStandardError = false;
-
-            startInfo.UseShellExecute = false;
-
-            using (var process = new Process { StartInfo = startInfo })
-            {
-                process.Start();
-                process.WaitForExit();
-
-                return process.ExitCode;
-            }
+            return builder;
         }
     }
 }

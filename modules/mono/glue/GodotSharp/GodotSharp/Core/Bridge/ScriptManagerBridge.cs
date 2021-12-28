@@ -8,7 +8,7 @@ using Godot.NativeInterop;
 
 namespace Godot.Bridge
 {
-    internal static class ScriptManagerBridge
+    public static class ScriptManagerBridge
     {
         private static System.Collections.Generic.Dictionary<string, ScriptLookupInfo> _scriptLookupMap = new();
         private static System.Collections.Generic.Dictionary<IntPtr, Type> _scriptBridgeMap = new();
@@ -209,7 +209,7 @@ namespace Godot.Bridge
 
         // Called from GodotPlugins
         // ReSharper disable once UnusedMember.Local
-        private static void LookupScriptsInAssembly(Assembly assembly)
+        public static void LookupScriptsInAssembly(Assembly assembly)
         {
             static void LookupScriptForClass(Type type)
             {
@@ -428,68 +428,6 @@ namespace Godot.Bridge
                 }
 
                 return false.ToGodotBool();
-            }
-            catch (Exception e)
-            {
-                ExceptionUtils.DebugUnhandledException(e);
-                return false.ToGodotBool();
-            }
-        }
-
-        [UnmanagedCallersOnly]
-        internal static unsafe godot_bool HasMethodUnknownParams(IntPtr scriptPtr, godot_string* method,
-            godot_bool deep)
-        {
-            try
-            {
-                // Performance is not critical here as this will be replaced with source generators.
-                if (!_scriptBridgeMap.TryGetValue(scriptPtr, out var scriptType))
-                    return false.ToGodotBool();
-
-                string methodStr = Marshaling.ConvertStringToManaged(*method);
-
-                if (deep.ToBool())
-                {
-                    Type top = scriptType;
-                    Type native = Object.InternalGetClassNativeBase(scriptType);
-
-                    while (top != null && top != native)
-                    {
-                        var methodInfo = top.GetMethod(methodStr,
-                            BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                            BindingFlags.NonPublic | BindingFlags.Public);
-
-                        if (methodInfo != null)
-                            return true.ToGodotBool();
-
-                        top = top.BaseType;
-                    }
-
-                    top = native;
-                    Type typeOfSystemObject = typeof(System.Object);
-                    while (top != null && top != typeOfSystemObject)
-                    {
-                        bool found = top.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                                                    BindingFlags.NonPublic | BindingFlags.Public)
-                            .Where(m => m.GetCustomAttributes(false).OfType<GodotMethodAttribute>()
-                                .Where(a => a.MethodName == methodStr)
-                                .Any())
-                            .Any();
-
-                        if (found)
-                            return true.ToGodotBool();
-
-                        top = top.BaseType;
-                    }
-
-                    return false.ToGodotBool();
-                }
-                else
-                {
-                    var methodInfo = scriptType.GetMethod(methodStr, BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                                                                     BindingFlags.NonPublic | BindingFlags.Public);
-                    return (methodInfo != null).ToGodotBool();
-                }
             }
             catch (Exception e)
             {
