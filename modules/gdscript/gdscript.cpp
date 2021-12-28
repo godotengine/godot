@@ -77,6 +77,17 @@ Object *GDScriptNativeClass::instance() {
 	return ClassDB::instance(name);
 }
 
+void GDScript::_clear_pending_func_states() {
+	GDScriptLanguage::get_singleton()->lock.lock();
+	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
+		// Order matters since clearing the stack may already cause
+		// the GDSCriptFunctionState to be destroyed and thus removed from the list.
+		pending_func_states.remove(E);
+		E->self()->_clear_stack();
+	}
+	GDScriptLanguage::get_singleton()->lock.unlock();
+}
+
 GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error) {
 	/* STEP 1, CREATE */
 
@@ -605,6 +616,7 @@ Error GDScript::reload(bool p_keep_state) {
 	for (Map<StringName, Ref<GDScript>>::Element *E = subclasses.front(); E; E = E->next()) {
 		_set_subclass_path(E->get(), path);
 	}
+	_clear_pending_func_states();
 
 	return OK;
 }
@@ -931,14 +943,7 @@ void GDScript::_save_orphaned_subclasses() {
 }
 
 GDScript::~GDScript() {
-	GDScriptLanguage::get_singleton()->lock.lock();
-	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-		// Order matters since clearing the stack may already cause
-		// the GDSCriptFunctionState to be destroyed and thus removed from the list.
-		pending_func_states.remove(E);
-		E->self()->_clear_stack();
-	}
-	GDScriptLanguage::get_singleton()->lock.unlock();
+	_clear_pending_func_states();
 
 	for (Map<StringName, GDScriptFunction *>::Element *E = member_functions.front(); E; E = E->next()) {
 		memdelete(E->get());

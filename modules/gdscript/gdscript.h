@@ -112,6 +112,7 @@ class GDScript : public Script {
 	SelfList<GDScript> script_list;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
+	void _clear_pending_func_states();
 
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
 
