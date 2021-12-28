@@ -104,11 +104,9 @@
     Godot scripting API is continuaslly breaking backwards compatibility even in patch releases.
     -->
     <Reference Include="GodotSharp">
-      <Private>false</Private>
       <HintPath>$(GodotProjectDir).godot\mono\assemblies\$(GodotApiConfiguration)\GodotSharp.dll</HintPath>
     </Reference>
     <Reference Include="GodotSharpEditor" Condition=" '$(Configuration)' == 'Debug' ">
-      <Private>false</Private>
       <HintPath>$(GodotProjectDir).godot\mono\assemblies\$(GodotApiConfiguration)\GodotSharpEditor.dll</HintPath>
     </Reference>
   </ItemGroup>

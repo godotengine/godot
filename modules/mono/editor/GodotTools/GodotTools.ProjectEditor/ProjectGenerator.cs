@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.Build.Construction;
@@ -45,7 +46,7 @@ namespace GodotTools.ProjectEditor
             // Save (without BOM)
             root.Save(path, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
-            return Guid.NewGuid().ToString().ToUpper();
+            return Guid.NewGuid().ToString().ToUpperInvariant();
         }
     }
 }

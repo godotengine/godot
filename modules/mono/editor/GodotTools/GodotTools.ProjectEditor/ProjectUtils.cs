@@ -19,8 +19,15 @@ namespace GodotTools.ProjectEditor
 
     public static class ProjectUtils
     {
-        public static void MSBuildLocatorRegisterDefaults()
-            => Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
+        public static void MSBuildLocatorRegisterDefaults(out Version version, out string path)
+        {
+            var instance = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults();
+            version = instance.Version;
+            path = instance.MSBuildPath;
+        }
+
+        public static void MSBuildLocatorRegisterMSBuildPath(string msbuildPath)
+            => Microsoft.Build.Locator.MSBuildLocator.RegisterMSBuildPath(msbuildPath);
 
         public static MSBuildProject Open(string path)
         {

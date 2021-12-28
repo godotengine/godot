@@ -5,7 +5,7 @@ using Godot.NativeInterop;
 namespace Godot.Bridge
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct ManagedCallbacks
+    public unsafe struct ManagedCallbacks
     {
         // @formatter:off
         public delegate* unmanaged<IntPtr, godot_variant**, int, godot_bool*, void> SignalAwaiter_SignalCallback;
@@ -19,7 +19,6 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant**, int, godot_bool*, void> ScriptManagerBridge_RaiseEventSignal;
         public delegate* unmanaged<IntPtr, godot_dictionary*, void> ScriptManagerBridge_GetScriptSignalList;
         public delegate* unmanaged<IntPtr, godot_string*, godot_bool> ScriptManagerBridge_HasScriptSignal;
-        public delegate* unmanaged<IntPtr, godot_string*, godot_bool, godot_bool> ScriptManagerBridge_HasMethodUnknownParams;
         public delegate* unmanaged<IntPtr, IntPtr, godot_bool> ScriptManagerBridge_ScriptIsOrInherits;
         public delegate* unmanaged<IntPtr, godot_string*, godot_bool> ScriptManagerBridge_AddScriptBridge;
         public delegate* unmanaged<IntPtr, void> ScriptManagerBridge_RemoveScriptBridge;
@@ -30,6 +29,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant*, godot_bool> CSharpInstanceBridge_Get;
         public delegate* unmanaged<IntPtr, godot_bool, void> CSharpInstanceBridge_CallDispose;
         public delegate* unmanaged<IntPtr, godot_string*, godot_bool*, void> CSharpInstanceBridge_CallToString;
+        public delegate* unmanaged<IntPtr, godot_string_name*, godot_bool> CSharpInstanceBridge_HasMethodUnknownParams;
         public delegate* unmanaged<IntPtr, void> GCHandleBridge_FreeGCHandle;
         public delegate* unmanaged<void> DebuggingUtils_InstallTraceListener;
         public delegate* unmanaged<void> Dispatcher_InitializeDefaultGodotTaskScheduler;
@@ -52,7 +52,6 @@ namespace Godot.Bridge
                 ScriptManagerBridge_RaiseEventSignal = &ScriptManagerBridge.RaiseEventSignal,
                 ScriptManagerBridge_GetScriptSignalList = &ScriptManagerBridge.GetScriptSignalList,
                 ScriptManagerBridge_HasScriptSignal = &ScriptManagerBridge.HasScriptSignal,
-                ScriptManagerBridge_HasMethodUnknownParams = &ScriptManagerBridge.HasMethodUnknownParams,
                 ScriptManagerBridge_ScriptIsOrInherits = &ScriptManagerBridge.ScriptIsOrInherits,
                 ScriptManagerBridge_AddScriptBridge = &ScriptManagerBridge.AddScriptBridge,
                 ScriptManagerBridge_RemoveScriptBridge = &ScriptManagerBridge.RemoveScriptBridge,
@@ -63,6 +62,7 @@ namespace Godot.Bridge
                 CSharpInstanceBridge_Get = &CSharpInstanceBridge.Get,
                 CSharpInstanceBridge_CallDispose = &CSharpInstanceBridge.CallDispose,
                 CSharpInstanceBridge_CallToString = &CSharpInstanceBridge.CallToString,
+                CSharpInstanceBridge_HasMethodUnknownParams = &CSharpInstanceBridge.HasMethodUnknownParams,
                 GCHandleBridge_FreeGCHandle = &GCHandleBridge.FreeGCHandle,
                 DebuggingUtils_InstallTraceListener = &DebuggingUtils.InstallTraceListener,
                 Dispatcher_InitializeDefaultGodotTaskScheduler = &Dispatcher.InitializeDefaultGodotTaskScheduler,
@@ -70,5 +70,8 @@ namespace Godot.Bridge
                 // @formatter:on
             };
         }
+
+        public static void Create(IntPtr outManagedCallbacks)
+            => *(ManagedCallbacks*)outManagedCallbacks = Create();
     }
 }

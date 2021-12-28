@@ -11,6 +11,13 @@
     <GodotApiAssembliesDir>$(GodotOutputDataDir)/Api/$(GodotApiConfiguration)</GodotApiAssembliesDir>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <!-- Needed for our source generators to work despite this not being a Godot game project -->
+  <PropertyGroup>
+    <IsGodotToolsProject>true</IsGodotToolsProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <CompilerVisibleProperty Include="IsGodotToolsProject" />
+  </ItemGroup>
   <PropertyGroup Condition=" Exists('$(GodotApiAssembliesDir)/GodotSharp.dll') ">
     <!-- The project is part of the Godot source tree -->
     <!-- Use the Godot source tree output folder instead of '$(ProjectDir)/bin' -->
@@ -32,6 +39,9 @@
       <HintPath>$(GodotApiAssembliesDir)/GodotSharpEditor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Godot.NET.Sdk\Godot.SourceGenerators\Godot.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GodotTools.BuildLogger\GodotTools.BuildLogger.csproj" />

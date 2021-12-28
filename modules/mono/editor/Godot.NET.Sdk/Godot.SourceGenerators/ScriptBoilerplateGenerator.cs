@@ -16,8 +16,6 @@ namespace Godot.SourceGenerators
             if (context.AreGodotSourceGeneratorsDisabled())
                 return;
 
-            // False positive for RS1024. We're already using `SymbolEqualityComparer.Default`...
-#pragma warning disable RS1024
             INamedTypeSymbol[] godotClasses = context
                 .Compilation.SyntaxTrees
                 .SelectMany(tree =>
@@ -28,7 +26,16 @@ namespace Godot.SourceGenerators
                         .Where(x =>
                         {
                             if (x.cds.IsPartial())
+                            {
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                {
+                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
+                                    return false;
+                                }
+
                                 return true;
+                            }
+
                             Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
@@ -36,7 +43,6 @@ namespace Godot.SourceGenerators
                 )
                 .Distinct<INamedTypeSymbol>(SymbolEqualityComparer.Default)
                 .ToArray();
-#pragma warning restore RS1024
 
             if (godotClasses.Length > 0)
             {
@@ -63,6 +69,8 @@ namespace Godot.SourceGenerators
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
+            bool isInnerClass = symbol.ContainingType != null;
+
             string uniqueName = hasNamespace ?
                 classNs + "." + className + "_ScriptBoilerplate_Generated" :
                 className + "_ScriptBoilerplate_Generated";
@@ -78,6 +86,22 @@ namespace Godot.SourceGenerators
                 source.Append("namespace ");
                 source.Append(classNs);
                 source.Append(" {\n\n");
+            }
+
+            if (isInnerClass)
+            {
+                var containingType = symbol.ContainingType;
+
+                while (containingType != null)
+                {
+                    source.Append("partial ");
+                    source.Append(containingType.GetDeclarationKeyword());
+                    source.Append(" ");
+                    source.Append(containingType.Name);
+                    source.Append("\n{\n");
+
+                    containingType = containingType.ContainingType;
+                }
             }
 
             source.Append("partial class ");
@@ -102,15 +126,15 @@ namespace Godot.SourceGenerators
                 .Cast<IFieldSymbol>()
                 .Where(p => !p.IsImplicitlyDeclared);
 
-            var methods = WhereHasCompatibleGodotType(methodSymbols, typeCache).ToArray();
-            var properties = WhereIsCompatibleGodotType(propertySymbols, typeCache).ToArray();
-            var fields = WhereIsCompatibleGodotType(fieldSymbols, typeCache).ToArray();
+            var godotClassMethods = WhereHasCompatibleGodotType(methodSymbols, typeCache).ToArray();
+            var godotClassProperties = WhereIsCompatibleGodotType(propertySymbols, typeCache).ToArray();
+            var godotClassFields = WhereIsCompatibleGodotType(fieldSymbols, typeCache).ToArray();
 
             source.Append("    private class GodotInternal {\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
-            foreach (var method in methods)
+            foreach (var method in godotClassMethods)
             {
                 string methodName = method.Method.Name;
                 source.Append("        public static readonly StringName MethodName_");
@@ -120,7 +144,7 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            foreach (var property in properties)
+            foreach (var property in godotClassProperties)
             {
                 string propertyName = property.Property.Name;
                 source.Append("        public static readonly StringName PropName_");
@@ -130,7 +154,7 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            foreach (var field in fields)
+            foreach (var field in godotClassFields)
             {
                 string fieldName = field.Field.Name;
                 source.Append("        public static readonly StringName PropName_");
@@ -140,14 +164,16 @@ namespace Godot.SourceGenerators
                 source.Append("\";\n");
             }
 
-            source.Append("    }\n");
+            source.Append("    }\n"); // class GodotInternal
 
-            if (methods.Length > 0)
+            // Generate InvokeGodotClassMethod
+
+            if (godotClassMethods.Length > 0)
             {
                 source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
                 source.Append("NativeVariantPtrArgs args, int argCount, out godot_variant ret)\n    {\n");
 
-                foreach (var method in methods)
+                foreach (var method in godotClassMethods)
                 {
                     GenerateMethodInvoker(method, source);
                 }
@@ -157,42 +183,64 @@ namespace Godot.SourceGenerators
                 source.Append("    }\n");
             }
 
-            if (properties.Length > 0 || fields.Length > 0)
+            // Generate Set/GetGodotClassPropertyValue
+
+            if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
             {
+                bool isFirstEntry;
+
                 // Setters
 
-                source.Append("    protected override bool SetGodotClassPropertyValue(in godot_string_name name, ");
-                source.Append("in godot_variant value)\n    {\n");
+                bool allPropertiesAreReadOnly = godotClassFields.All(fi => fi.Field.IsReadOnly) &&
+                                                godotClassProperties.All(pi => pi.Property.IsReadOnly);
 
-                foreach (var property in properties)
+                if (!allPropertiesAreReadOnly)
                 {
-                    GeneratePropertySetter(property.Property.Name,
-                        property.Property.Type.FullQualifiedName(), source);
+                    source.Append("    protected override bool SetGodotClassPropertyValue(in godot_string_name name, ");
+                    source.Append("in godot_variant value)\n    {\n");
+
+                    isFirstEntry = true;
+                    foreach (var property in godotClassProperties)
+                    {
+                        if (property.Property.IsReadOnly)
+                            continue;
+
+                        GeneratePropertySetter(property.Property.Name,
+                            property.Property.Type.FullQualifiedName(), source, isFirstEntry);
+                        isFirstEntry = false;
+                    }
+
+                    foreach (var field in godotClassFields)
+                    {
+                        if (field.Field.IsReadOnly)
+                            continue;
+
+                        GeneratePropertySetter(field.Field.Name,
+                            field.Field.Type.FullQualifiedName(), source, isFirstEntry);
+                        isFirstEntry = false;
+                    }
+
+                    source.Append("        return base.SetGodotClassPropertyValue(name, value);\n");
+
+                    source.Append("    }\n");
                 }
-
-                foreach (var field in fields)
-                {
-                    GeneratePropertySetter(field.Field.Name,
-                        field.Field.Type.FullQualifiedName(), source);
-                }
-
-                source.Append("        return base.SetGodotClassPropertyValue(name, value);\n");
-
-                source.Append("    }\n");
 
                 // Getters
 
                 source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
                 source.Append("out godot_variant value)\n    {\n");
 
-                foreach (var property in properties)
+                isFirstEntry = true;
+                foreach (var property in godotClassProperties)
                 {
-                    GeneratePropertyGetter(property.Property.Name, source);
+                    GeneratePropertyGetter(property.Property.Name, source, isFirstEntry);
+                    isFirstEntry = false;
                 }
 
-                foreach (var field in fields)
+                foreach (var field in godotClassFields)
                 {
-                    GeneratePropertyGetter(field.Field.Name, source);
+                    GeneratePropertyGetter(field.Field.Name, source, isFirstEntry);
+                    isFirstEntry = false;
                 }
 
                 source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
@@ -200,7 +248,37 @@ namespace Godot.SourceGenerators
                 source.Append("    }\n");
             }
 
-            source.Append("}\n");
+            // Generate HasGodotClassMethod
+
+            if (godotClassMethods.Length > 0)
+            {
+                source.Append("    protected override bool HasGodotClassMethod(in godot_string_name method)\n    {\n");
+
+                bool isFirstEntry = true;
+                foreach (var method in godotClassMethods)
+                {
+                    GenerateHasMethodEntry(method, source, isFirstEntry);
+                    isFirstEntry = false;
+                }
+
+                source.Append("        return base.HasGodotClassMethod(method);\n");
+
+                source.Append("    }\n");
+            }
+
+            source.Append("}\n"); // partial class
+
+            if (isInnerClass)
+            {
+                var containingType = symbol.ContainingType;
+
+                while (containingType != null)
+                {
+                    source.Append("}\n"); // outer class
+
+                    containingType = containingType.ContainingType;
+                }
+            }
 
             if (hasNamespace)
             {
@@ -269,10 +347,14 @@ namespace Godot.SourceGenerators
         private static void GeneratePropertySetter(
             string propertyMemberName,
             string propertyTypeQualifiedName,
-            StringBuilder source
+            StringBuilder source,
+            bool isFirstEntry
         )
         {
-            source.Append("        if (name == GodotInternal.PropName_");
+            source.Append("        ");
+            if (!isFirstEntry)
+                source.Append("else ");
+            source.Append("if (name == GodotInternal.PropName_");
             source.Append(propertyMemberName);
             source.Append(") {\n");
 
@@ -295,10 +377,14 @@ namespace Godot.SourceGenerators
 
         private static void GeneratePropertyGetter(
             string propertyMemberName,
-            StringBuilder source
+            StringBuilder source,
+            bool isFirstEntry
         )
         {
-            source.Append("        if (name == GodotInternal.PropName_");
+            source.Append("        ");
+            if (!isFirstEntry)
+                source.Append("else ");
+            source.Append("if (name == GodotInternal.PropName_");
             source.Append(propertyMemberName);
             source.Append(") {\n");
 
@@ -310,6 +396,22 @@ namespace Godot.SourceGenerators
             source.Append("            return true;\n");
 
             source.Append("        }\n");
+        }
+
+        private static void GenerateHasMethodEntry(
+            GodotMethodInfo method,
+            StringBuilder source,
+            bool isFirstEntry
+        )
+        {
+            string methodName = method.Method.Name;
+
+            source.Append("        ");
+            if (!isFirstEntry)
+                source.Append("else ");
+            source.Append("if (method == GodotInternal.MethodName_");
+            source.Append(methodName);
+            source.Append(") {\n           return true;\n        }\n");
         }
 
         public void Initialize(GeneratorInitializationContext context)
@@ -373,12 +475,17 @@ namespace Godot.SourceGenerators
 
                 var parameters = method.Parameters;
 
-                var paramTypes = parameters.Select(p =>
-                        MarshalUtils.ConvertManagedTypeToVariantType(p.Type, typeCache))
+                var paramTypes = parameters
+                    // Currently we don't support `ref`, `out`, `in`, `ref readonly` parameters (and we never may)
+                    .Where(p => p.RefKind == RefKind.None)
+                    // Attempt to determine the variant type
+                    .Select(p => MarshalUtils.ConvertManagedTypeToVariantType(p.Type, typeCache))
+                    // Discard parameter types that couldn't be determined (null entries)
                     .Where(t => t != null).Cast<MarshalType>().ToImmutableArray();
 
+                // If any parameter type was incompatible, it was discarded so the length won't match
                 if (parameters.Length > paramTypes.Length)
-                    continue; // Some param types weren't compatible
+                    continue; // Ignore incompatible method
 
                 yield return new GodotMethodInfo(method, paramTypes, parameters
                     .Select(p => p.Type).ToImmutableArray(), retType);
@@ -392,6 +499,10 @@ namespace Godot.SourceGenerators
         {
             foreach (var property in properties)
             {
+                // Ignore properties without a getter. Godot properties must be readable.
+                if (property.IsWriteOnly)
+                    continue;
+
                 var marshalType = MarshalUtils.ConvertManagedTypeToVariantType(property.Type, typeCache);
 
                 if (marshalType == null)

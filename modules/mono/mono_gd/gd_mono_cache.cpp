@@ -54,7 +54,6 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RaiseEventSignal);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetScriptSignalList);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, HasScriptSignal);
-	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, HasMethodUnknownParams);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, ScriptIsOrInherits);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, AddScriptBridge);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RemoveScriptBridge);
@@ -65,6 +64,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, Get);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallDispose);
 	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, CallToString);
+	CHECK_CALLBACK_NOT_NULL(CSharpInstanceBridge, HasMethodUnknownParams);
 	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, FreeGCHandle);
 	CHECK_CALLBACK_NOT_NULL(DebuggingUtils, InstallTraceListener);
 	CHECK_CALLBACK_NOT_NULL(Dispatcher, InitializeDefaultGodotTaskScheduler);

@@ -15,8 +15,6 @@ namespace GodotPlugins
         public PluginLoadContext(string pluginPath, ICollection<string> sharedAssemblies,
             AssemblyLoadContext mainLoadContext)
         {
-            Console.WriteLine(pluginPath);
-            Console.Out.Flush();
             _resolver = new AssemblyDependencyResolver(pluginPath);
             _sharedAssemblies = sharedAssemblies;
             _mainLoadContext = mainLoadContext;

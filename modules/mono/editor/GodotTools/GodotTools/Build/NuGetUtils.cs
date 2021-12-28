@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -39,7 +40,8 @@ namespace GodotTools.Build
                 // Since this can be considered pretty much a new NuGet.Config, add the default nuget.org source as well
                 XmlElement nugetOrgSourceEntry = xmlDoc.CreateElement("add");
                 nugetOrgSourceEntry.Attributes.Append(xmlDoc.CreateAttribute("key")).Value = "nuget.org";
-                nugetOrgSourceEntry.Attributes.Append(xmlDoc.CreateAttribute("value")).Value = "https://api.nuget.org/v3/index.json";
+                nugetOrgSourceEntry.Attributes.Append(xmlDoc.CreateAttribute("value")).Value =
+                    "https://api.nuget.org/v3/index.json";
                 nugetOrgSourceEntry.Attributes.Append(xmlDoc.CreateAttribute("protocolVersion")).Value = "3";
                 rootNode.AppendChild(xmlDoc.CreateElement("packageSources")).AppendChild(nugetOrgSourceEntry);
             }
@@ -99,7 +101,7 @@ namespace GodotTools.Build
             if (Utils.OS.IsWindows)
             {
                 // %APPDATA% for both
-                return new[] {Path.Combine(applicationData, "NuGet", "NuGet.Config")};
+                return new[] { Path.Combine(applicationData, "NuGet", "NuGet.Config") };
             }
 
             var paths = new string[2];
@@ -180,8 +182,8 @@ namespace GodotTools.Build
             // - The sha512 of the nupkg is base64 encoded.
             // - We can get the nuspec from the nupkg which is a Zip file.
 
-            string packageIdLower = packageId.ToLower();
-            string packageVersionLower = packageVersion.ToLower();
+            string packageIdLower = packageId.ToLowerInvariant();
+            string packageVersionLower = packageVersion.ToLowerInvariant();
 
             string destDir = Path.Combine(fallbackFolder, packageIdLower, packageVersionLower);
             string nupkgDestPath = Path.Combine(destDir, $"{packageIdLower}.{packageVersionLower}.nupkg");
@@ -226,9 +228,11 @@ namespace GodotTools.Build
                 var nuspecEntry = archive.GetEntry(packageId + ".nuspec");
 
                 if (nuspecEntry == null)
-                    throw new InvalidOperationException($"Failed to extract package {packageId}.{packageVersion}. Could not find the nuspec file.");
+                    throw new InvalidOperationException(
+                        $"Failed to extract package {packageId}.{packageVersion}. Could not find the nuspec file.");
 
-                nuspecEntry.ExtractToFile(Path.Combine(destDir, nuspecEntry.Name.ToLower().SimplifyGodotPath()));
+                nuspecEntry.ExtractToFile(Path.Combine(destDir, nuspecEntry.Name
+                    .ToLowerInvariant().SimplifyGodotPath()));
 
                 // Extract the other package files
 
