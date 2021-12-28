@@ -62,7 +62,7 @@ namespace Godot
                     case 1:
                         return y;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
             set
@@ -76,7 +76,7 @@ namespace Godot
                         y = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
         }

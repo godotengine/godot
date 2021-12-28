@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Godot.Collections;
 using Godot.NativeInterop;
 
@@ -11,7 +10,7 @@ namespace Godot
         /// Returns a list of all nodes assigned to the given <paramref name="group"/>.
         /// </summary>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
-        public unsafe Array<T> GetNodesInGroup<T>(StringName group) where T : class
+        public Array<T> GetNodesInGroup<T>(StringName group) where T : class
         {
             var array = GetNodesInGroup(group);
 
@@ -29,19 +28,18 @@ namespace Godot
                     BindingFlags.Public | BindingFlags.NonPublic);
 
                 var nativeName = (StringName)field!.GetValue(null);
-                godot_string_name nativeNameAux = nativeName.NativeValue;
-                godot_array inputAux = array.NativeValue;
-                godot_array filteredArray;
-                NativeFuncs.godotsharp_array_filter_godot_objects_by_native(
-                    &nativeNameAux, &inputAux, &filteredArray);
+                var nativeNameSelf = (godot_string_name)nativeName!.NativeValue;
+                var inputSelf = (godot_array)array.NativeValue;
+                NativeFuncs.godotsharp_array_filter_godot_objects_by_native(nativeNameSelf, inputSelf,
+                    out godot_array filteredArray);
                 return Array<T>.CreateTakingOwnershipOfDisposableValue(filteredArray);
             }
             else
             {
                 // Custom derived type
-                godot_array inputAux = array.NativeValue;
-                godot_array filteredArray;
-                NativeFuncs.godotsharp_array_filter_godot_objects_by_non_native(&inputAux, &filteredArray);
+                var inputSelf = (godot_array)array.NativeValue;
+                NativeFuncs.godotsharp_array_filter_godot_objects_by_non_native(inputSelf,
+                    out godot_array filteredArray);
 
                 var filteredArrayWrapped = Array.CreateTakingOwnershipOfDisposableValue(filteredArray);
 

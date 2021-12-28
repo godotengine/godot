@@ -3,7 +3,7 @@ namespace Godot
     /// <summary>
     /// Represents a signal defined in an object.
     /// </summary>
-    public struct SignalInfo
+    public readonly struct SignalInfo
     {
         private readonly Object _owner;
         private readonly StringName _signalName;

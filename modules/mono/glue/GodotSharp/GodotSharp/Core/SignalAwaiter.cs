@@ -8,19 +8,21 @@ namespace Godot
     {
         private bool _completed;
         private object[] _result;
-        private Action _action;
+        private Action _continuation;
 
         public SignalAwaiter(Object source, StringName signal, Object target)
         {
-            NativeFuncs.godotsharp_internal_signal_awaiter_connect(Object.GetPtr(source), ref signal.NativeValue,
+            using godot_string_name signalSrc = NativeFuncs.godotsharp_string_name_new_copy(
+                (godot_string_name)(signal?.NativeValue ?? default));
+            NativeFuncs.godotsharp_internal_signal_awaiter_connect(Object.GetPtr(source), in signalSrc,
                 Object.GetPtr(target), GCHandle.ToIntPtr(GCHandle.Alloc(this)));
         }
 
         public bool IsCompleted => _completed;
 
-        public void OnCompleted(Action action)
+        public void OnCompleted(Action continuation)
         {
-            this._action = action;
+            _continuation = continuation;
         }
 
         public object[] GetResult() => _result;
@@ -48,11 +50,11 @@ namespace Godot
                 object[] signalArgs = new object[argCount];
 
                 for (int i = 0; i < argCount; i++)
-                    signalArgs[i] = Marshaling.variant_to_mono_object(args[i]);
+                    signalArgs[i] = Marshaling.ConvertVariantToManagedObject(*args[i]);
 
                 awaiter._result = signalArgs;
 
-                awaiter._action?.Invoke();
+                awaiter._continuation?.Invoke();
             }
             catch (Exception e)
             {

@@ -48,13 +48,13 @@ namespace Godot
 
                 for (uint i = 0; i < argc; i++)
                 {
-                    managedArgs[i] = Marshaling.variant_to_mono_object_of_type(
-                        args[i], parameterInfos[i].ParameterType);
+                    managedArgs[i] = Marshaling.ConvertVariantToManagedObjectOfType(
+                        *args[i], parameterInfos[i].ParameterType);
                 }
 
                 object invokeRet = @delegate.DynamicInvoke(managedArgs);
 
-                *outRet = Marshaling.mono_object_to_variant(invokeRet);
+                *outRet = Marshaling.ConvertManagedObjectToVariant(invokeRet);
             }
             catch (Exception e)
             {

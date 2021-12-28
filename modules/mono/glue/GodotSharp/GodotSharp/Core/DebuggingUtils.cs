@@ -18,7 +18,7 @@ namespace Godot
             else
                 sb.Append(type);
 
-            sb.Append(" ");
+            sb.Append(' ');
         }
 
         [UnmanagedCallersOnly]
@@ -55,15 +55,15 @@ namespace Godot
             if (methodBase is MethodInfo)
                 sb.AppendTypeName(((MethodInfo)methodBase).ReturnType);
 
-            sb.Append(methodBase.DeclaringType.FullName);
-            sb.Append(".");
+            sb.Append(methodBase.DeclaringType?.FullName ?? "<unknown>");
+            sb.Append('.');
             sb.Append(methodBase.Name);
 
             if (methodBase.IsGenericMethod)
             {
                 Type[] genericParams = methodBase.GetGenericArguments();
 
-                sb.Append("<");
+                sb.Append('<');
 
                 for (int j = 0; j < genericParams.Length; j++)
                 {
@@ -73,10 +73,10 @@ namespace Godot
                     sb.AppendTypeName(genericParams[j]);
                 }
 
-                sb.Append(">");
+                sb.Append('>');
             }
 
-            sb.Append("(");
+            sb.Append('(');
 
             bool varArgs = (methodBase.CallingConvention & CallingConventions.VarArgs) != 0;
 
@@ -93,7 +93,7 @@ namespace Godot
                 sb.AppendTypeName(parameter[i].ParameterType);
             }
 
-            sb.Append(")");
+            sb.Append(')');
 
             methodDecl = sb.ToString();
         }
