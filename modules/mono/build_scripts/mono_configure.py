@@ -73,15 +73,19 @@ def configure(env, env_mono):
 
 
 def find_dotnet_app_host_dir(env):
+    dotnet_version = "5.0"
+
     dotnet_root = env["dotnet_root"]
 
     if not dotnet_root:
-        dotnet_exe = find_executable("dotnet")
-        if dotnet_exe:
-            dotnet_exe_realpath = os.path.realpath(dotnet_exe)  # Eliminate symbolic links
-            dotnet_root = os.path.abspath(os.path.join(dotnet_exe_realpath, os.pardir))
-        else:
-            raise RuntimeError("Cannot find .NET Core Sdk")
+        dotnet_cmd = find_executable("dotnet")
+        if dotnet_cmd:
+            sdk_path = find_dotnet_sdk(dotnet_cmd, dotnet_version)
+            if sdk_path:
+                dotnet_root = os.path.abspath(os.path.join(sdk_path, os.pardir))
+
+    if not dotnet_root:
+        raise RuntimeError("Cannot find .NET Core Sdk")
 
     print("Found .NET Core Sdk root directory: " + dotnet_root)
 
@@ -91,10 +95,9 @@ def find_dotnet_app_host_dir(env):
 
     # TODO: In the future, if it can't be found this way, we want to obtain it
     # from the runtime.{runtime_identifier}.Microsoft.NETCore.DotNetAppHost NuGet package.
-    app_host_search_version = "5.0"
-    app_host_version = find_app_host_version(dotnet_cmd, app_host_search_version)
+    app_host_version = find_app_host_version(dotnet_cmd, dotnet_version)
     if not app_host_version:
-        raise RuntimeError("Cannot find .NET app host for version: " + app_host_search_version)
+        raise RuntimeError("Cannot find .NET app host for version: " + dotnet_version)
 
     def get_runtime_path():
         return os.path.join(
@@ -146,8 +149,11 @@ def determine_runtime_identifier(env):
         raise NotImplementedError()
 
 
-def find_app_host_version(dotnet_cmd, search_version):
+def find_app_host_version(dotnet_cmd, search_version_str):
     import subprocess
+    from distutils.version import LooseVersion
+
+    search_version = LooseVersion(search_version_str)
 
     try:
         lines = subprocess.check_output([dotnet_cmd, "--list-runtimes"]).splitlines()
@@ -157,17 +163,54 @@ def find_app_host_version(dotnet_cmd, search_version):
             if not line.startswith("Microsoft.NETCore.App "):
                 continue
 
-            parts = line.split(" ")
+            parts = line.split(" ", 2)
+            if len(parts) < 3:
+                continue
+
+            version_str = parts[1]
+
+            version = LooseVersion(version_str)
+
+            if version >= search_version:
+                return version_str
+    except (subprocess.CalledProcessError, OSError) as e:
+        import sys
+
+        print(e, file=sys.stderr)
+
+    return ""
+
+
+def find_dotnet_sdk(dotnet_cmd, search_version_str):
+    import subprocess
+    from distutils.version import LooseVersion
+
+    search_version = LooseVersion(search_version_str)
+
+    try:
+        lines = subprocess.check_output([dotnet_cmd, "--list-sdks"]).splitlines()
+
+        for line_bytes in lines:
+            line = line_bytes.decode("utf-8")
+
+            parts = line.split(" ", 1)
             if len(parts) < 2:
                 continue
 
-            version = parts[1]
+            version_str = parts[0]
 
-            # Look for 6.0.0 or 6.0.0-*
-            if version.startswith(search_version + "."):
-                return version
-    except (subprocess.CalledProcessError, OSError):
-        pass
+            version = LooseVersion(version_str)
+
+            if version < search_version:
+                continue
+
+            path_part = parts[1]
+            return path_part[1 : path_part.find("]")]
+    except (subprocess.CalledProcessError, OSError) as e:
+        import sys
+
+        print(e, file=sys.stderr)
+
     return ""
 
 
