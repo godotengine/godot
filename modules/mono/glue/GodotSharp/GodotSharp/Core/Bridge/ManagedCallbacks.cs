@@ -33,6 +33,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, void> GCHandleBridge_FreeGCHandle;
         public delegate* unmanaged<void> DebuggingUtils_InstallTraceListener;
         public delegate* unmanaged<void> Dispatcher_InitializeDefaultGodotTaskScheduler;
+        public delegate* unmanaged<void> DisposablesTracker_OnGodotShuttingDown;
         // @formatter:on
 
         public static ManagedCallbacks Create()
@@ -65,6 +66,7 @@ namespace Godot.Bridge
                 GCHandleBridge_FreeGCHandle = &GCHandleBridge.FreeGCHandle,
                 DebuggingUtils_InstallTraceListener = &DebuggingUtils.InstallTraceListener,
                 Dispatcher_InitializeDefaultGodotTaskScheduler = &Dispatcher.InitializeDefaultGodotTaskScheduler,
+                DisposablesTracker_OnGodotShuttingDown = &DisposablesTracker.OnGodotShuttingDown,
                 // @formatter:on
             };
         }

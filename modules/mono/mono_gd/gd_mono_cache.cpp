@@ -68,6 +68,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(GCHandleBridge, FreeGCHandle);
 	CHECK_CALLBACK_NOT_NULL(DebuggingUtils, InstallTraceListener);
 	CHECK_CALLBACK_NOT_NULL(Dispatcher, InitializeDefaultGodotTaskScheduler);
+	CHECK_CALLBACK_NOT_NULL(DisposablesTracker, OnGodotShuttingDown);
 
 	managed_callbacks = p_managed_callbacks;
 

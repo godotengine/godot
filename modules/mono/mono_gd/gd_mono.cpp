@@ -475,24 +475,12 @@ GDMono::GDMono() {
 
 GDMono::~GDMono() {
 	if (is_runtime_initialized()) {
-#warning "TODO assembly unloading for cleanup of disposables (including managed RefCounteds)"
-#if 0
-		if (scripts_domain) {
-			Error err = _unload_scripts_domain();
-			if (err != OK) {
-				ERR_PRINT("Mono: Failed to unload scripts domain.");
-			}
+		if (GDMonoCache::godot_api_cache_updated) {
+			GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown();
 		}
-
-		print_verbose("Mono: Runtime cleanup...");
-
-		mono_jit_cleanup(root_domain);
-
-		print_verbose("Mono: Finalized");
-#endif
-
-		runtime_initialized = false;
 	}
+
+	runtime_initialized = false;
 
 #if defined(ANDROID_ENABLED)
 	gdmono::android::support::cleanup();
