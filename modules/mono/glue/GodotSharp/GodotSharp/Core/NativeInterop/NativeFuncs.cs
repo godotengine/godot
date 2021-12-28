@@ -26,7 +26,7 @@ namespace Godot.NativeInterop
 
         [DllImport(GodotDllName)]
         public static extern IntPtr godotsharp_method_bind_get_method(in godot_string_name p_classname,
-            char* p_methodname);
+            in godot_string_name p_methodname);
 
         [DllImport(GodotDllName)]
         public static extern delegate* unmanaged<IntPtr> godotsharp_get_class_constructor(

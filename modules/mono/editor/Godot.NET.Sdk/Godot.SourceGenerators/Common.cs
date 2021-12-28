@@ -14,9 +14,8 @@ namespace Godot.SourceGenerators
                 "Missing partial modifier on declaration of type '" +
                 $"{symbol.FullQualifiedName()}' which is a subclass of '{GodotClasses.Object}'";
 
-            string description = $"{message}. Subclasses of '{GodotClasses.Object}' must be " +
-                                 "declared with the partial modifier or annotated with the " +
-                                 $"attribute '{GodotClasses.DisableGodotGeneratorsAttr}'.";
+            string description = $"{message}. Subclasses of '{GodotClasses.Object}' " +
+                                 "must be declared with the partial modifier.";
 
             context.ReportDiagnostic(Diagnostic.Create(
                 new DiagnosticDescriptor(id: "GODOT-G0001",

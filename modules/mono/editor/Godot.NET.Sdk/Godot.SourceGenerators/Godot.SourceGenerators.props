@@ -2,6 +2,6 @@
   <ItemGroup>
     <!-- $(GodotProjectDir) is defined by Godot.NET.Sdk -->
     <CompilerVisibleProperty Include="GodotProjectDir" />
-    <CompilerVisibleProperty Include="GodotScriptPathAttributeGenerator" />
+    <CompilerVisibleProperty Include="EnableGodotGenerators" />
   </ItemGroup>
 </Project>

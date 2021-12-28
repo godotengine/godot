@@ -92,5 +92,51 @@ namespace Godot
         /// </summary>
         /// <returns>If the <see cref="StringName"/> is empty.</returns>
         public bool IsEmpty => NativeValue.DangerousSelfRef.IsEmpty;
+
+        public static bool operator ==(StringName left, StringName right)
+        {
+            if (left is null)
+                return right is null;
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(StringName left, StringName right)
+        {
+            return !(left == right);
+        }
+
+        public bool Equals(StringName other)
+        {
+            if (other is null)
+                return false;
+            return NativeValue.DangerousSelfRef == other.NativeValue.DangerousSelfRef;
+        }
+
+        public static bool operator ==(StringName left, in godot_string_name right)
+        {
+            if (left is null)
+                return right.IsEmpty;
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(StringName left, in godot_string_name right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator ==(in godot_string_name left, StringName right)
+        {
+            return right == left;
+        }
+
+        public static bool operator !=(in godot_string_name left, StringName right)
+        {
+            return !(right == left);
+        }
+
+        public bool Equals(in godot_string_name other)
+        {
+            return NativeValue.DangerousSelfRef == other;
+        }
     }
 }
