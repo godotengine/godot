@@ -14,13 +14,10 @@ namespace Godot.SourceGenerators
     {
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.TryGetGlobalAnalyzerProperty("GodotScriptPathAttributeGenerator", out string? toggle)
-                && toggle == "disabled")
-            {
+            if (context.AreGodotSourceGeneratorsDisabled())
                 return;
-            }
 
-            // NOTE: IsNullOrEmpty doesn't work well with nullable checks
+            // NOTE: NotNullWhen diagnostics don't work on projects targeting .NET Standard 2.0
             // ReSharper disable once ReplaceWithStringIsNullOrEmpty
             if (!context.TryGetGlobalAnalyzerProperty("GodotProjectDir", out string? godotProjectDir)
                 || godotProjectDir!.Length == 0)
@@ -28,7 +25,8 @@ namespace Godot.SourceGenerators
                 throw new InvalidOperationException("Property 'GodotProjectDir' is null or empty.");
             }
 
-            var godotClasses = context.Compilation.SyntaxTrees
+            Dictionary<INamedTypeSymbol, IEnumerable<ClassDeclarationSyntax>> godotClasses = context
+                .Compilation.SyntaxTrees
                 .SelectMany(tree =>
                     tree.GetRoot().DescendantNodes()
                         .OfType<ClassDeclarationSyntax>()
@@ -38,7 +36,7 @@ namespace Godot.SourceGenerators
                         // Report and skip non-partial classes
                         .Where(x =>
                         {
-                            if (x.cds.IsPartial() || x.symbol.HasDisableGeneratorsAttribute())
+                            if (x.cds.IsPartial())
                                 return true;
                             Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;

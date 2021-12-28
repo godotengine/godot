@@ -12,7 +12,6 @@ namespace Godot.Bridge
         {
             try
             {
-                // Performance is not critical here as this will be replaced with source generators.
                 var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
@@ -22,13 +21,8 @@ namespace Godot.Bridge
                     return false.ToGodotBool();
                 }
 
-                NativeFuncs.godotsharp_string_name_as_string(out godot_string dest, CustomUnsafe.AsRef(method));
-                string methodStr;
-                using (dest)
-                    methodStr = Marshaling.ConvertStringToManaged(dest);
-
-                _ = godotObject.InternalGodotScriptCall(methodStr, new NativeVariantPtrArgs(args), argCount,
-                    out godot_variant retValue);
+                _ = godotObject.InvokeGodotClassMethod(CustomUnsafe.AsRef(method), new NativeVariantPtrArgs(args),
+                    argCount, out godot_variant retValue);
                 *ret = retValue;
                 return true.ToGodotBool();
             }
@@ -45,20 +39,18 @@ namespace Godot.Bridge
         {
             try
             {
-                // Performance is not critical here as this will be replaced with source generators.
                 var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     throw new InvalidOperationException();
 
-                var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
-                    NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
-
-                if (godotObject.InternalGodotScriptSetFieldOrPropViaReflection(
-                        nameManaged.ToString(), CustomUnsafe.AsRef(value)))
+                if (godotObject.SetGodotClassPropertyValue(CustomUnsafe.AsRef(name), CustomUnsafe.AsRef(value)))
                 {
                     return true.ToGodotBool();
                 }
+
+                var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
+                    NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
                 object valueManaged = Marshaling.ConvertVariantToManagedObject(CustomUnsafe.AsRef(value));
 
@@ -77,21 +69,19 @@ namespace Godot.Bridge
         {
             try
             {
-                // Performance is not critical here as this will be replaced with source generators.
                 var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     throw new InvalidOperationException();
 
-                var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
-                    NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
-
-                if (godotObject.InternalGodotScriptGetFieldOrPropViaReflection(nameManaged.ToString(),
-                        out godot_variant outRetValue))
+                if (godotObject.GetGodotClassPropertyValue(CustomUnsafe.AsRef(name), out godot_variant outRetValue))
                 {
                     *outRet = outRetValue;
                     return true.ToGodotBool();
                 }
+
+                var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
+                    NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
                 object ret = godotObject._Get(nameManaged);
 

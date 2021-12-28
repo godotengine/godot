@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -12,6 +13,11 @@ namespace Godot.SourceGenerators
             this GeneratorExecutionContext context, string property, out string? value
         ) => context.AnalyzerConfigOptions.GlobalOptions
             .TryGetValue("build_property." + property, out value);
+
+        public static bool AreGodotSourceGeneratorsDisabled(this GeneratorExecutionContext context)
+            => context.TryGetGlobalAnalyzerProperty("GodotSourceGenerators", out string? toggle) &&
+               toggle != null &&
+               toggle.Equals("disabled", StringComparison.OrdinalIgnoreCase);
 
         private static bool InheritsFrom(this INamedTypeSymbol? symbol, string baseName)
         {
@@ -72,15 +78,11 @@ namespace Godot.SourceGenerators
         public static bool IsPartial(this ClassDeclarationSyntax cds)
             => cds.Modifiers.Any(SyntaxKind.PartialKeyword);
 
-        public static bool HasDisableGeneratorsAttribute(this INamedTypeSymbol symbol)
-            => symbol.GetAttributes().Any(attr =>
-                attr.AttributeClass?.ToString() == GodotClasses.DisableGodotGeneratorsAttr);
-
         private static SymbolDisplayFormat FullyQualifiedFormatOmitGlobal { get; } =
             SymbolDisplayFormat.FullyQualifiedFormat
                 .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
 
-        public static string FullQualifiedName(this INamedTypeSymbol symbol)
+        public static string FullQualifiedName(this ITypeSymbol symbol)
             => symbol.ToDisplayString(NullableFlowState.NotNull, FullyQualifiedFormatOmitGlobal);
 
         public static string FullQualifiedName(this INamespaceSymbol namespaceSymbol)
