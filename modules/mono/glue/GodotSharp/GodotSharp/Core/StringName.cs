@@ -14,6 +14,8 @@ namespace Godot
     {
         internal godot_string_name.movable NativeValue;
 
+        private WeakReference<IDisposable> _weakReferenceToSelf;
+
         ~StringName()
         {
             Dispose(false);
@@ -32,11 +34,13 @@ namespace Godot
         {
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
+            DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
         }
 
         private StringName(godot_string_name nativeValueToOwn)
         {
             NativeValue = (godot_string_name.movable)nativeValueToOwn;
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
         // Explicit name to make it very clear
@@ -57,7 +61,10 @@ namespace Godot
         public StringName(string name)
         {
             if (!string.IsNullOrEmpty(name))
+            {
                 NativeValue = (godot_string_name.movable)NativeFuncs.godotsharp_string_name_new_from_string(name);
+                _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+            }
         }
 
         /// <summary>
@@ -137,6 +144,16 @@ namespace Godot
         public bool Equals(in godot_string_name other)
         {
             return NativeValue.DangerousSelfRef == other;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ReferenceEquals(this, obj) || (obj is StringName other && Equals(other));
+        }
+
+        public override int GetHashCode()
+        {
+            return NativeValue.GetHashCode();
         }
     }
 }

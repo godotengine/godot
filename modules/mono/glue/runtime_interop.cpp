@@ -104,6 +104,7 @@ GD_PINVOKE_EXPORT void godotsharp_internal_object_disposed(Object *p_ptr) {
 			MonoGCHandleData &gchandle = script_binding.gchandle;
 			if (!gchandle.is_released()) {
 				CSharpLanguage::release_script_gchandle(nullptr, gchandle);
+				script_binding.inited = false;
 			}
 		}
 	}
@@ -151,6 +152,7 @@ GD_PINVOKE_EXPORT void godotsharp_internal_refcounted_disposed(Object *p_ptr, bo
 				MonoGCHandleData &gchandle = script_binding.gchandle;
 				if (!gchandle.is_released()) {
 					CSharpLanguage::release_script_gchandle(nullptr, gchandle);
+					script_binding.inited = false;
 				}
 			}
 		}

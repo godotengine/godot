@@ -7,18 +7,35 @@ namespace Godot
 {
     public partial class Object : IDisposable
     {
+        // The point of this thread local static field is to allow the engine to create
+        // managed instances using an existing native instance instead of creating a new one.
+        // This way user derived classes don't need to define a constructor that takes the
+        // native instance handle, which would be annoying.
+        // Previously we were using a different trick for this. We were assigning the handle
+        // field before calling the constructor. This is no longer viable now that we are
+        // using SafeHandle (or at least the IDE warns about unreachable code).
+        // Additionally, this new way will allow us to optimize the creation of new instances
+        // as we will be able to use source generators instead of reflection. It also doesn't
+        // come with the risk of  assuming undocumented compiler behavior (that fields without
+        // a value assigned in code won't be assigned a default one by the constructor).
+        [ThreadStatic] internal static IntPtr HandlePendingForNextInstance;
+
         private bool _disposed = false;
         private Type _cachedType = typeof(Object);
 
         internal IntPtr NativePtr;
-        internal bool MemoryOwn;
+        private bool _memoryOwn;
+
+        private WeakReference<Object> _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new <see cref="Object"/>.
         /// </summary>
         public Object() : this(false)
         {
-            if (NativePtr == IntPtr.Zero)
+            var handlePending = HandlePendingForNextInstance;
+
+            if (handlePending == IntPtr.Zero)
             {
                 unsafe
                 {
@@ -30,8 +47,12 @@ namespace Godot
             }
             else
             {
+                NativePtr = handlePending;
+                HandlePendingForNextInstance = IntPtr.Zero;
                 InteropUtils.TieManagedToUnmanagedWithPreSetup(this, NativePtr);
             }
+
+            _weakReferenceToSelf = DisposablesTracker.RegisterGodotObject(this);
 
             _InitializeGodotScriptInstanceInternals();
         }
@@ -60,7 +81,7 @@ namespace Godot
 
         internal Object(bool memoryOwn)
         {
-            MemoryOwn = memoryOwn;
+            _memoryOwn = memoryOwn;
         }
 
         /// <summary>
@@ -73,7 +94,12 @@ namespace Godot
             if (instance == null)
                 return IntPtr.Zero;
 
-            if (instance._disposed)
+            // We check if NativePtr is null because this may be called by the debugger.
+            // If the debugger puts a breakpoint in one of the base constructors, before
+            // NativePtr is assigned, that would result in UB or crashes when calling
+            // native functions that receive the pointer, which can happen because the
+            // debugger calls ToString() and tries to get the value of properties.
+            if (instance._disposed || instance.NativePtr == IntPtr.Zero)
                 throw new ObjectDisposedException(instance.GetType().FullName);
 
             return instance.NativePtr;
@@ -103,9 +129,8 @@ namespace Godot
 
             if (NativePtr != IntPtr.Zero)
             {
-                if (MemoryOwn)
+                if (_memoryOwn)
                 {
-                    MemoryOwn = false;
                     NativeFuncs.godotsharp_internal_refcounted_disposed(NativePtr, (!disposing).ToGodotBool());
                 }
                 else
@@ -115,6 +140,8 @@ namespace Godot
 
                 NativePtr = IntPtr.Zero;
             }
+
+            DisposablesTracker.UnregisterGodotObject(_weakReferenceToSelf);
 
             _disposed = true;
         }

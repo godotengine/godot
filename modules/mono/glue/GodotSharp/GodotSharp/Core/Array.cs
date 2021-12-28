@@ -12,9 +12,13 @@ namespace Godot.Collections
     /// interfacing with the engine. Otherwise prefer .NET collections
     /// such as <see cref="System.Array"/> or <see cref="List{T}"/>.
     /// </summary>
-    public sealed class Array : IList, IDisposable
+    public sealed class Array :
+        IList,
+        IDisposable
     {
         internal godot_array.movable NativeValue;
+
+        private WeakReference<IDisposable> _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new empty <see cref="Array"/>.
@@ -22,6 +26,7 @@ namespace Godot.Collections
         public Array()
         {
             NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
         /// <summary>
@@ -50,6 +55,8 @@ namespace Godot.Collections
                 throw new ArgumentNullException(nameof(array));
 
             NativeValue = (godot_array.movable)NativeFuncs.godotsharp_array_new();
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+
             int length = array.Length;
 
             Resize(length);
@@ -63,6 +70,7 @@ namespace Godot.Collections
             NativeValue = (godot_array.movable)(nativeValueToOwn.IsAllocated ?
                 nativeValueToOwn :
                 NativeFuncs.godotsharp_array_new());
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
         // Explicit name to make it very clear
@@ -87,6 +95,7 @@ namespace Godot.Collections
         {
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
+            DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
         }
 
         /// <summary>

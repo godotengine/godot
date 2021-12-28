@@ -75,6 +75,11 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CLOSE_BLOCK_L3 INDENT3 CLOSE_BLOCK
 #define CLOSE_BLOCK_L4 INDENT4 CLOSE_BLOCK
 
+#define BINDINGS_GLOBAL_SCOPE_CLASS "GD"
+#define BINDINGS_PTR_FIELD "NativePtr"
+#define BINDINGS_PENDING_PTR_FIELD "HandlePendingForNextInstance"
+#define BINDINGS_NATIVE_NAME_FIELD "NativeName"
+
 #define CS_PARAM_MEMORYOWN "memoryOwn"
 #define CS_PARAM_METHODBIND "method"
 #define CS_PARAM_INSTANCE "ptr"
@@ -1458,7 +1463,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				// The default constructor may also be called by the engine when instancing existing native objects
 				// The engine will initialize the pointer field of the managed side before calling the constructor
 				// This is why we only allocate a new native object from the constructor if the pointer field is not set
-				output << INDENT3 "if (" BINDINGS_PTR_FIELD " == IntPtr.Zero)\n" OPEN_BLOCK_L3
+				output << INDENT3 "var handlePending = " BINDINGS_PENDING_PTR_FIELD ";\n"
+					   << INDENT3 "if (handlePending == IntPtr.Zero)\n" OPEN_BLOCK_L3
 					   << INDENT4 "unsafe\n" INDENT4 OPEN_BLOCK
 					   << INDENT5 BINDINGS_PTR_FIELD " = " CS_STATIC_FIELD_NATIVE_CTOR "();\n"
 					   << CLOSE_BLOCK_L4
@@ -1466,6 +1472,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					   << BINDINGS_NATIVE_NAME_FIELD << ", refCounted: " << (itype.is_ref_counted ? "true" : "false")
 					   << ", ((object)this).GetType(), _cachedType);\n" CLOSE_BLOCK_L3
 					   << INDENT3 "else\n" INDENT3 OPEN_BLOCK
+					   << INDENT4 BINDINGS_PTR_FIELD " = handlePending;\n"
+					   << INDENT4 BINDINGS_PENDING_PTR_FIELD " = IntPtr.Zero;\n"
 					   << INDENT4 "InteropUtils.TieManagedToUnmanagedWithPreSetup(this, "
 					   << BINDINGS_PTR_FIELD ");\n" CLOSE_BLOCK_L3
 					   << INDENT3 "_InitializeGodotScriptInstanceInternals();\n" CLOSE_BLOCK_L2;

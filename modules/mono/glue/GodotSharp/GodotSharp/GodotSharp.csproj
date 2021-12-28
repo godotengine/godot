@@ -60,6 +60,7 @@
     <Compile Include="Core\GodotTaskScheduler.cs" />
     <Compile Include="Core\GodotTraceListener.cs" />
     <Compile Include="Core\GodotUnhandledExceptionEvent.cs" />
+    <Compile Include="Core\DisposablesTracker.cs" />
     <Compile Include="Core\Interfaces\IAwaitable.cs" />
     <Compile Include="Core\Interfaces\IAwaiter.cs" />
     <Compile Include="Core\Interfaces\ISerializationListener.cs" />

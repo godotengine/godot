@@ -78,6 +78,7 @@ struct ManagedCallbacks {
 	using FuncGCHandleBridge_FreeGCHandle = void(GD_CLR_STDCALL *)(GCHandleIntPtr);
 	using FuncDebuggingUtils_InstallTraceListener = void(GD_CLR_STDCALL *)();
 	using FuncDispatcher_InitializeDefaultGodotTaskScheduler = void(GD_CLR_STDCALL *)();
+	using FuncDisposablesTracker_OnGodotShuttingDown = void(GD_CLR_STDCALL *)();
 
 	FuncSignalAwaiter_SignalCallback SignalAwaiter_SignalCallback;
 	FuncDelegateUtils_InvokeWithVariantArgs DelegateUtils_InvokeWithVariantArgs;
@@ -104,6 +105,7 @@ struct ManagedCallbacks {
 	FuncGCHandleBridge_FreeGCHandle GCHandleBridge_FreeGCHandle;
 	FuncDebuggingUtils_InstallTraceListener DebuggingUtils_InstallTraceListener;
 	FuncDispatcher_InitializeDefaultGodotTaskScheduler Dispatcher_InitializeDefaultGodotTaskScheduler;
+	FuncDisposablesTracker_OnGodotShuttingDown DisposablesTracker_OnGodotShuttingDown;
 };
 
 extern ManagedCallbacks managed_callbacks;

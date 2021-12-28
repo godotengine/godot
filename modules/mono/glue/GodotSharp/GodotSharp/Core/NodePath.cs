@@ -43,6 +43,8 @@ namespace Godot
     {
         internal godot_node_path.movable NativeValue;
 
+        private WeakReference<IDisposable> _weakReferenceToSelf;
+
         ~NodePath()
         {
             Dispose(false);
@@ -61,11 +63,13 @@ namespace Godot
         {
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
+            DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
         }
 
         private NodePath(godot_node_path nativeValueToOwn)
         {
             NativeValue = (godot_node_path.movable)nativeValueToOwn;
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
         // Explicit name to make it very clear
@@ -111,7 +115,10 @@ namespace Godot
         public NodePath(string path)
         {
             if (!string.IsNullOrEmpty(path))
+            {
                 NativeValue = (godot_node_path.movable)NativeFuncs.godotsharp_node_path_new_from_string(path);
+                _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+            }
         }
 
         /// <summary>
