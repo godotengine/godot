@@ -11,7 +11,9 @@ namespace Godot
         private Type _cachedType = typeof(Object);
 
         internal IntPtr NativePtr;
-        internal bool MemoryOwn;
+        private bool _memoryOwn;
+
+        private WeakReference<Object> _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new <see cref="Object"/>.
@@ -33,6 +35,8 @@ namespace Godot
                 InteropUtils.TieManagedToUnmanagedWithPreSetup(this, NativePtr,
                     GetType(), _cachedType);
             }
+
+            _weakReferenceToSelf = DisposablesTracker.RegisterGodotObject(this);
 
             _InitializeGodotScriptInstanceInternals();
         }
@@ -61,7 +65,7 @@ namespace Godot
 
         internal Object(bool memoryOwn)
         {
-            MemoryOwn = memoryOwn;
+            _memoryOwn = memoryOwn;
         }
 
         /// <summary>
@@ -74,7 +78,12 @@ namespace Godot
             if (instance == null)
                 return IntPtr.Zero;
 
-            if (instance._disposed)
+            // We check if NativePtr is null because this may be called by the debugger.
+            // If the debugger puts a breakpoint in one of the base constructors, before
+            // NativePtr is assigned, that would result in UB or crashes when calling
+            // native functions that receive the pointer, which can happen because the
+            // debugger calls ToString() and tries to get the value of properties.
+            if (instance._disposed || instance.NativePtr == IntPtr.Zero)
                 throw new ObjectDisposedException(instance.GetType().FullName);
 
             return instance.NativePtr;
@@ -104,9 +113,8 @@ namespace Godot
 
             if (NativePtr != IntPtr.Zero)
             {
-                if (MemoryOwn)
+                if (_memoryOwn)
                 {
-                    MemoryOwn = false;
                     NativeFuncs.godotsharp_internal_refcounted_disposed(NativePtr, (!disposing).ToGodotBool());
                 }
                 else
@@ -116,6 +124,8 @@ namespace Godot
 
                 NativePtr = IntPtr.Zero;
             }
+
+            DisposablesTracker.UnregisterGodotObject(_weakReferenceToSelf);
 
             _disposed = true;
         }

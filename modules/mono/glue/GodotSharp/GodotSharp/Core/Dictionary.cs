@@ -18,12 +18,15 @@ namespace Godot.Collections
     {
         internal godot_dictionary.movable NativeValue;
 
+        private WeakReference<IDisposable> _weakReferenceToSelf;
+
         /// <summary>
         /// Constructs a new empty <see cref="Dictionary"/>.
         /// </summary>
         public Dictionary()
         {
             NativeValue = (godot_dictionary.movable)NativeFuncs.godotsharp_dictionary_new();
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
         /// <summary>
@@ -45,6 +48,7 @@ namespace Godot.Collections
             NativeValue = (godot_dictionary.movable)(nativeValueToOwn.IsAllocated ?
                 nativeValueToOwn :
                 NativeFuncs.godotsharp_dictionary_new());
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
 
         // Explicit name to make it very clear
@@ -69,6 +73,7 @@ namespace Godot.Collections
         {
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
+            DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
         }
 
         /// <summary>

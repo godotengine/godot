@@ -75,6 +75,10 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CLOSE_BLOCK_L3 INDENT3 CLOSE_BLOCK
 #define CLOSE_BLOCK_L4 INDENT4 CLOSE_BLOCK
 
+#define BINDINGS_GLOBAL_SCOPE_CLASS "GD"
+#define BINDINGS_PTR_FIELD "NativePtr"
+#define BINDINGS_NATIVE_NAME_FIELD "NativeName"
+
 #define CS_PARAM_MEMORYOWN "memoryOwn"
 #define CS_PARAM_METHODBIND "method"
 #define CS_PARAM_INSTANCE "ptr"

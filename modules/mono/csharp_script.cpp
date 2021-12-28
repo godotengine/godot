@@ -1581,6 +1581,7 @@ void CSharpLanguage::tie_managed_to_unmanaged_with_pre_setup(GCHandleIntPtr p_gc
 	CSharpInstance *instance = CAST_CSHARP_INSTANCE(p_unmanaged->get_script_instance());
 
 	if (!instance) {
+		// Native bindings don't need post-setup
 		return;
 	}
 

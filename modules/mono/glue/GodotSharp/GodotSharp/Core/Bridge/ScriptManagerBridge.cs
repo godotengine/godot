@@ -44,16 +44,19 @@ namespace Godot.Bridge
         internal static unsafe IntPtr CreateManagedForGodotObjectBinding(godot_string_name* nativeTypeName,
             IntPtr godotObject)
         {
+            // TODO: Optimize with source generators and delegate pointers
+
             try
             {
                 Type nativeType = TypeGetProxyClass(nativeTypeName);
                 var obj = (Object)FormatterServices.GetUninitializedObject(nativeType);
 
-                obj.NativePtr = godotObject;
-
                 var ctor = nativeType.GetConstructor(
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
                     null, Type.EmptyTypes, null);
+
+                obj.NativePtr = godotObject;
+
                 _ = ctor!.Invoke(obj, null);
 
                 return GCHandle.ToIntPtr(GCHandle.Alloc(obj));
@@ -70,13 +73,13 @@ namespace Godot.Bridge
             IntPtr godotObject,
             godot_variant** args, int argCount)
         {
+            // TODO: Optimize with source generators and delegate pointers
+
             try
             {
                 // Performance is not critical here as this will be replaced with source generators.
                 Type scriptType = _scriptBridgeMap[scriptPtr];
                 var obj = (Object)FormatterServices.GetUninitializedObject(scriptType);
-
-                obj.NativePtr = godotObject;
 
                 var ctor = scriptType
                     .GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
@@ -108,7 +111,11 @@ namespace Godot.Bridge
                         *args[i], parameters[i].ParameterType);
                 }
 
-                ctor.Invoke(obj, invokeParams);
+                obj.NativePtr = godotObject;
+
+                _ = ctor.Invoke(obj, invokeParams);
+
+
                 return true.ToGodotBool();
             }
             catch (Exception e)
