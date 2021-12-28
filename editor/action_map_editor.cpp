@@ -760,9 +760,23 @@ void ActionMapEditor::_add_action_pressed() {
 	_add_action(add_edit->get_text());
 }
 
+bool ActionMapEditor::_has_action(const String &p_name) const {
+	for (const ActionInfo &action_info : actions_cache) {
+		if (p_name == action_info.name) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void ActionMapEditor::_add_action(const String &p_name) {
 	if (p_name.is_empty() || !_is_action_name_valid(p_name)) {
 		show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+		return;
+	}
+
+	if (_has_action(p_name)) {
+		show_message(vformat(TTR("An action with the name '%s' already exists."), p_name));
 		return;
 	}
 
@@ -788,6 +802,12 @@ void ActionMapEditor::_action_edited() {
 		if (new_name.is_empty() || !_is_action_name_valid(new_name)) {
 			ti->set_text(0, old_name);
 			show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
+			return;
+		}
+
+		if (_has_action(new_name)) {
+			ti->set_text(0, old_name);
+			show_message(vformat(TTR("An action with the name '%s' already exists."), new_name));
 			return;
 		}
 
