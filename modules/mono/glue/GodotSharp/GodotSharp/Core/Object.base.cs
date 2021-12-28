@@ -184,125 +184,20 @@ namespace Godot
             return assemblyName.Name == "GodotSharp" || assemblyName.Name == "GodotSharpEditor";
         }
 
-        internal bool InternalGodotScriptCallViaReflection(string method, NativeVariantPtrArgs args, int argCount,
-            out godot_variant ret)
+        // ReSharper disable once VirtualMemberNeverOverridden.Global
+        protected internal virtual bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
         {
-            // Performance is not critical here as this will be replaced with source generators.
-            Type top = GetType();
-            Type native = InternalGetClassNativeBase(top);
-
-            while (top != null && top != native)
-            {
-                var methodInfo = top.GetMethod(method,
-                    BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                    BindingFlags.NonPublic | BindingFlags.Public);
-
-                if (methodInfo != null)
-                {
-                    var parameters = methodInfo.GetParameters();
-                    int paramCount = parameters.Length;
-
-                    if (argCount == paramCount)
-                    {
-                        object[] invokeParams = new object[paramCount];
-
-                        for (int i = 0; i < paramCount; i++)
-                        {
-                            invokeParams[i] = Marshaling.ConvertVariantToManagedObjectOfType(
-                                args[i], parameters[i].ParameterType);
-                        }
-
-                        object retObj = methodInfo.Invoke(this, invokeParams);
-
-                        ret = Marshaling.ConvertManagedObjectToVariant(retObj);
-                        return true;
-                    }
-                }
-
-                top = top.BaseType;
-            }
-
-            ret = default;
             return false;
         }
 
-        internal bool InternalGodotScriptSetFieldOrPropViaReflection(string name, in godot_variant value)
+        // ReSharper disable once VirtualMemberNeverOverridden.Global
+        protected internal virtual bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
         {
-            // Performance is not critical here as this will be replaced with source generators.
-            Type top = GetType();
-            Type native = InternalGetClassNativeBase(top);
-
-            while (top != null && top != native)
-            {
-                var fieldInfo = top.GetField(name,
-                    BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                    BindingFlags.NonPublic | BindingFlags.Public);
-
-                if (fieldInfo != null)
-                {
-                    object valueManaged = Marshaling.ConvertVariantToManagedObjectOfType(value, fieldInfo.FieldType);
-                    fieldInfo.SetValue(this, valueManaged);
-
-                    return true;
-                }
-
-                var propertyInfo = top.GetProperty(name,
-                    BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                    BindingFlags.NonPublic | BindingFlags.Public);
-
-                if (propertyInfo != null)
-                {
-                    object valueManaged =
-                        Marshaling.ConvertVariantToManagedObjectOfType(value, propertyInfo.PropertyType);
-                    propertyInfo.SetValue(this, valueManaged);
-
-                    return true;
-                }
-
-                top = top.BaseType;
-            }
-
-            return false;
-        }
-
-        internal bool InternalGodotScriptGetFieldOrPropViaReflection(string name, out godot_variant value)
-        {
-            // Performance is not critical here as this will be replaced with source generators.
-            Type top = GetType();
-            Type native = InternalGetClassNativeBase(top);
-
-            while (top != null && top != native)
-            {
-                var fieldInfo = top.GetField(name,
-                    BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                    BindingFlags.NonPublic | BindingFlags.Public);
-
-                if (fieldInfo != null)
-                {
-                    object valueManaged = fieldInfo.GetValue(this);
-                    value = Marshaling.ConvertManagedObjectToVariant(valueManaged);
-                    return true;
-                }
-
-                var propertyInfo = top.GetProperty(name,
-                    BindingFlags.DeclaredOnly | BindingFlags.Instance |
-                    BindingFlags.NonPublic | BindingFlags.Public);
-
-                if (propertyInfo != null)
-                {
-                    object valueManaged = propertyInfo.GetValue(this);
-                    value = Marshaling.ConvertManagedObjectToVariant(valueManaged);
-                    return true;
-                }
-
-                top = top.BaseType;
-            }
-
             value = default;
             return false;
         }
 
-        internal unsafe void InternalRaiseEventSignal(in godot_string_name eventSignalName, NativeVariantPtrArgs args,
+        internal void InternalRaiseEventSignal(in godot_string_name eventSignalName, NativeVariantPtrArgs args,
             int argc)
         {
             // Performance is not critical here as this will be replaced with source generators.
@@ -370,14 +265,11 @@ namespace Godot
             }
         }
 
-        internal static unsafe IntPtr ClassDB_get_method(StringName type, string method)
+        internal static IntPtr ClassDB_get_method(StringName type, StringName method)
         {
-            IntPtr methodBind;
-            fixed (char* methodChars = method)
-            {
-                var typeSelf = (godot_string_name)type.NativeValue;
-                methodBind = NativeFuncs.godotsharp_method_bind_get_method(typeSelf, methodChars);
-            }
+            var typeSelf = (godot_string_name)type.NativeValue;
+            var methodSelf = (godot_string_name)method.NativeValue;
+            IntPtr methodBind = NativeFuncs.godotsharp_method_bind_get_method(typeSelf, methodSelf);
 
             if (methodBind == IntPtr.Zero)
                 throw new NativeMethodBindNotFoundException(type + "." + method);

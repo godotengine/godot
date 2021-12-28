@@ -464,6 +464,31 @@ namespace Godot.NativeInterop
             get => _data == IntPtr.Zero;
         }
 
+        public static bool operator ==(godot_string_name left, godot_string_name right)
+        {
+            return left._data == right._data;
+        }
+
+        public static bool operator !=(godot_string_name left, godot_string_name right)
+        {
+            return !(left == right);
+        }
+
+        public bool Equals(godot_string_name other)
+        {
+            return _data == other._data;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is StringName s && s.Equals(this);
+        }
+
+        public override int GetHashCode()
+        {
+            return _data.GetHashCode();
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         // ReSharper disable once InconsistentNaming
         internal struct movable

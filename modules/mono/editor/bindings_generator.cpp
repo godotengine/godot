@@ -81,9 +81,12 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CS_STATIC_METHOD_GETINSTANCE "GetPtr"
 #define CS_METHOD_CALL "Call"
 #define CS_PROPERTY_SINGLETON "Singleton"
+#define CS_METHOD_INVOKE_GODOT_CLASS_METHOD "InvokeGodotClassMethod"
 
 #define CS_STATIC_FIELD_NATIVE_CTOR "NativeCtor"
 #define CS_STATIC_FIELD_METHOD_BIND_PREFIX "MethodBind"
+#define CS_STATIC_FIELD_METHOD_NAME_PREFIX "MethodName_"
+#define CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX "MethodProxyName_"
 #define CS_STATIC_FIELD_SIGNAL_NAME_PREFIX "SignalName_"
 
 #define ICALL_PREFIX "godot_icall_"
@@ -1500,11 +1503,27 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	// Script calls
 
 	if (!itype.is_singleton && (is_derived_type || itype.has_virtual_methods)) {
-		// TODO: string is ok for now. But should be replaced with StringName in the future for performance.
+		for (const MethodInterface &imethod : itype.methods) {
+			if (!imethod.is_virtual) {
+				continue;
+			}
 
-		output << MEMBER_BEGIN "internal " << (is_derived_type ? "override" : "virtual")
-			   << " bool InternalGodotScriptCall(string method, NativeVariantPtrArgs args, "
-			   << "int argCount, out godot_variant ret)\n"
+			output << MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n"
+				   << INDENT2 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+				   << INDENT2 "private static readonly StringName "
+				   << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
+				   << " = \"" << imethod.name << "\";\n";
+
+			output << MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n"
+				   << INDENT2 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+				   << INDENT2 "private static readonly StringName "
+				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
+				   << " = \"" << imethod.proxy_name << "\";\n";
+		}
+
+		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
+			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
+			   << "NativeVariantPtrArgs args, int argCount, out godot_variant ret)\n"
 			   << INDENT2 "{\n";
 
 		for (const MethodInterface &imethod : itype.methods) {
@@ -1512,11 +1531,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				continue;
 			}
 
-			// TODO:
-			//  Compare with cached StringName. We already have a cached StringName
-			//  field for the proxy name. We need one for the original snake_case name.
-			output << INDENT3 "if ((method == nameof(" << imethod.proxy_name << ") || method == \"" << imethod.name
-				   << "\") && argCount == " << itos(imethod.arguments.size()) << ")\n"
+			output << INDENT3 "if ((method == " << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
+				   << " || method == " << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
+				   << ") && argCount == " << itos(imethod.arguments.size()) << ")\n"
 				   << INDENT3 "{\n";
 
 			if (imethod.return_type.cname != name_cache.type_void) {
@@ -1557,9 +1574,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		if (is_derived_type) {
-			output << INDENT3 "return base.InternalGodotScriptCall(method, args, argCount, out ret);\n";
+			output << INDENT3 "return base." CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(method, args, argCount, out ret);\n";
 		} else {
-			output << INDENT3 "return InternalGodotScriptCallViaReflection(method, args, argCount, out ret);\n";
+			output << INDENT3 "ret = default;\n"
+				   << INDENT3 "return false;\n";
 		}
 
 		output << INDENT2 "}\n";
@@ -1872,8 +1890,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	// Generate method
 	{
 		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
-			p_output << MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN "private static readonly IntPtr "
-					 << method_bind_field << " = ";
+			p_output << MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+					 << INDENT2 "private static readonly IntPtr " << method_bind_field << " = ";
 
 			if (p_itype.is_singleton) {
 				// Singletons are static classes. They don't derive Godot.Object,
@@ -1905,16 +1923,6 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		if (default_args_doc.get_string_length()) {
 			p_output.append(default_args_doc.as_string());
-		}
-
-		if (!p_imethod.is_internal) {
-			// TODO: This alone adds ~0.2 MB of bloat to the core API assembly. It would be
-			// better to generate a table in the C++ glue instead. That way the strings wouldn't
-			// add that much extra bloat as they're already used in engine code. Also, it would
-			// probably be much faster than looking up the attributes when fetching methods.
-			p_output.append(MEMBER_BEGIN "[GodotMethod(\"");
-			p_output.append(p_imethod.name);
-			p_output.append("\")]");
 		}
 
 		if (p_imethod.is_deprecated) {
@@ -2077,8 +2085,9 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		// If so, we could store the pointer we get from `data_unique_pointer()` instead of allocating StringName here.
 
 		// Cached signal name (StringName)
-		p_output.append(MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN
-									 "private static readonly StringName " CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
+		p_output.append(MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n");
+		p_output.append(INDENT2 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN
+								"private static readonly StringName " CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
 		p_output.append(p_isignal.name);
 		p_output.append(" = \"");
 		p_output.append(p_isignal.name);
