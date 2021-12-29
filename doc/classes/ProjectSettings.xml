@@ -1889,10 +1889,6 @@
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm. This texture compression algorithm is only supported when using the Vulkan renderer.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
-		<member name="rendering/textures/vram_compression/import_pvrtc" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the texture importer will import VRAM-compressed textures using the PowerVR Texture Compression algorithm. This texture compression algorithm is only supported on iOS.
-			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
-		</member>
 		<member name="rendering/textures/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).

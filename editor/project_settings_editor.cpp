@@ -215,7 +215,6 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("s3tc");
 	presets.insert("etc");
 	presets.insert("etc2");
-	presets.insert("pvrtc");
 	presets.insert("debug");
 	presets.insert("release");
 	presets.insert("editor");

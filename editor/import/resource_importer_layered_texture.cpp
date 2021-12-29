@@ -450,12 +450,6 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 			formats_imported.push_back("etc2");
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc")) {
-			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, lossy, Image::COMPRESS_ETC2, csource, used_channels, mipmaps, true);
-			r_platform_variants->push_back("pvrtc");
-			formats_imported.push_back("pvrtc");
-		}
-
 		if (!ok_on_pc) {
 			EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC.");
 		}
@@ -481,7 +475,6 @@ const char *ResourceImporterLayeredTexture::compression_formats[] = {
 	"s3tc",
 	"etc",
 	"etc2",
-	"pvrtc",
 	nullptr
 };
 String ResourceImporterLayeredTexture::get_import_settings_string() const {

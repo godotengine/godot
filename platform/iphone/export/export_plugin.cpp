@@ -32,11 +32,8 @@
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-	r_features->push_back("pvrtc");
-	if (driver == "vulkan") {
-		// FIXME: Review if this is correct.
-		r_features->push_back("etc2");
-	}
+	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.
+	r_features->push_back("etc2");
 
 	Vector<String> architectures = _get_preset_architectures(p_preset);
 	for (int i = 0; i < architectures.size(); ++i) {
@@ -1766,7 +1763,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 
-	String etc_error = test_etc2_or_pvrtc();
+	const String etc_error = test_etc2();
 	if (!etc_error.is_empty()) {
 		valid = false;
 		err += etc_error;

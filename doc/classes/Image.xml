@@ -135,7 +135,7 @@
 			<return type="int" enum="Error" />
 			<description>
 				Decompresses the image if it is VRAM compressed in a supported format. Returns [constant OK] if the format is supported, otherwise [constant ERR_UNAVAILABLE].
-				[b]Note:[/b] The following formats can be decompressed: DXT, RGTC, BPTC, PVRTC1. The formats ETC1 and ETC2 are not supported.
+				[b]Note:[/b] The following formats can be decompressed: DXT, RGTC, BPTC. The formats ETC1 and ETC2 are not supported.
 			</description>
 		</method>
 		<method name="detect_alpha" qualifiers="const">
@@ -543,52 +543,38 @@
 		<constant name="FORMAT_BPTC_RGBFU" value="24" enum="Format">
 			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned floating-point RGB components.
 		</constant>
-		<constant name="FORMAT_PVRTC1_2" value="25" enum="Format">
-			Texture format used on PowerVR-supported mobile platforms, uses 2-bit color depth with no alpha. More information can be found [url=https://en.wikipedia.org/wiki/PVRTC]here[/url].
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
-		</constant>
-		<constant name="FORMAT_PVRTC1_2A" value="26" enum="Format">
-			Same as [constant FORMAT_PVRTC1_2], but with an alpha component.
-		</constant>
-		<constant name="FORMAT_PVRTC1_4" value="27" enum="Format">
-			Texture format used on PowerVR-supported mobile platforms, uses 4-bit color depth with no alpha. More information can be found [url=https://en.wikipedia.org/wiki/PVRTC]here[/url].
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
-		</constant>
-		<constant name="FORMAT_PVRTC1_4A" value="28" enum="Format">
-			Same as [constant FORMAT_PVRTC1_4], but with an alpha component.
-		</constant>
-		<constant name="FORMAT_ETC" value="29" enum="Format">
+		<constant name="FORMAT_ETC" value="25" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC1]Ericsson Texture Compression format 1[/url], also referred to as "ETC1", and is part of the OpenGL ES graphics standard. This format cannot store an alpha channel.
 		</constant>
-		<constant name="FORMAT_ETC2_R11" value="30" enum="Format">
+		<constant name="FORMAT_ETC2_R11" value="26" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]R11_EAC[/code] variant), which provides one channel of unsigned data.
 		</constant>
-		<constant name="FORMAT_ETC2_R11S" value="31" enum="Format">
+		<constant name="FORMAT_ETC2_R11S" value="27" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_R11_EAC[/code] variant), which provides one channel of signed data.
 		</constant>
-		<constant name="FORMAT_ETC2_RG11" value="32" enum="Format">
+		<constant name="FORMAT_ETC2_RG11" value="28" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RG11_EAC[/code] variant), which provides two channels of unsigned data.
 		</constant>
-		<constant name="FORMAT_ETC2_RG11S" value="33" enum="Format">
+		<constant name="FORMAT_ETC2_RG11S" value="29" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_RG11_EAC[/code] variant), which provides two channels of signed data.
 		</constant>
-		<constant name="FORMAT_ETC2_RGB8" value="34" enum="Format">
+		<constant name="FORMAT_ETC2_RGB8" value="30" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8[/code] variant), which is a follow-up of ETC1 and compresses RGB888 data.
 			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
-		<constant name="FORMAT_ETC2_RGBA8" value="35" enum="Format">
+		<constant name="FORMAT_ETC2_RGBA8" value="31" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code]variant), which compresses RGBA8888 data with full alpha support.
 			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
-		<constant name="FORMAT_ETC2_RGB8A1" value="36" enum="Format">
+		<constant name="FORMAT_ETC2_RGB8A1" value="32" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8_PUNCHTHROUGH_ALPHA1[/code] variant), which compresses RGBA data to make alpha either fully transparent or fully opaque.
 			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
-		<constant name="FORMAT_ETC2_RA_AS_RG" value="37" enum="Format">
+		<constant name="FORMAT_ETC2_RA_AS_RG" value="33" enum="Format">
 		</constant>
-		<constant name="FORMAT_DXT5_RA_AS_RG" value="38" enum="Format">
+		<constant name="FORMAT_DXT5_RA_AS_RG" value="34" enum="Format">
 		</constant>
-		<constant name="FORMAT_MAX" value="39" enum="Format">
+		<constant name="FORMAT_MAX" value="35" enum="Format">
 			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
@@ -622,16 +608,13 @@
 		<constant name="COMPRESS_S3TC" value="0" enum="CompressMode">
 			Use S3TC compression.
 		</constant>
-		<constant name="COMPRESS_PVRTC1_4" value="1" enum="CompressMode">
-			Use PVRTC1 4-bpp compression.
-		</constant>
-		<constant name="COMPRESS_ETC" value="2" enum="CompressMode">
+		<constant name="COMPRESS_ETC" value="1" enum="CompressMode">
 			Use ETC compression.
 		</constant>
-		<constant name="COMPRESS_ETC2" value="3" enum="CompressMode">
+		<constant name="COMPRESS_ETC2" value="2" enum="CompressMode">
 			Use ETC2 compression.
 		</constant>
-		<constant name="COMPRESS_BPTC" value="4" enum="CompressMode">
+		<constant name="COMPRESS_BPTC" value="3" enum="CompressMode">
 			Use BPTC compression.
 		</constant>
 		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">

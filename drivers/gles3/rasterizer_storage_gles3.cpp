@@ -55,16 +55,6 @@ GLuint RasterizerStorageGLES3::system_fbo = 0;
 #define _EXT_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT 0x8DBE
 #define _EXT_ETC1_RGB8_OES 0x8D64
 
-#define _EXT_COMPRESSED_RGB_PVRTC_4BPPV1_IMG 0x8C00
-#define _EXT_COMPRESSED_RGB_PVRTC_2BPPV1_IMG 0x8C01
-#define _EXT_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG 0x8C02
-#define _EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG 0x8C03
-
-#define _EXT_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT 0x8A54
-#define _EXT_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT 0x8A55
-#define _EXT_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT 0x8A56
-#define _EXT_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT 0x8A57
-
 #define _EXT_COMPRESSED_RGBA_BPTC_UNORM 0x8E8C
 #define _EXT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM 0x8E8D
 #define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
@@ -311,57 +301,6 @@ Ref<Image> RasterizerStorageGLES3::_get_gl_image_and_format(const Ref<Image> &p_
 			} else {
 				need_decompress = true;
 			}
-		} break;
-		case Image::FORMAT_PVRTC1_2: {
-			if (config.pvrtc_supported) {
-				r_gl_internal_format = _EXT_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
-				r_gl_format = GL_RGBA;
-				r_gl_type = GL_UNSIGNED_BYTE;
-				r_compressed = true;
-				//r_srgb = true;
-
-			} else {
-				need_decompress = true;
-			}
-		} break;
-		case Image::FORMAT_PVRTC1_2A: {
-			if (config.pvrtc_supported) {
-				r_gl_internal_format = _EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
-				r_gl_format = GL_RGBA;
-				r_gl_type = GL_UNSIGNED_BYTE;
-				r_compressed = true;
-				//r_srgb = true;
-
-			} else {
-				need_decompress = true;
-			}
-
-		} break;
-		case Image::FORMAT_PVRTC1_4: {
-			if (config.pvrtc_supported) {
-				r_gl_internal_format = _EXT_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
-				r_gl_format = GL_RGBA;
-				r_gl_type = GL_UNSIGNED_BYTE;
-				r_compressed = true;
-				//r_srgb = true;
-
-			} else {
-				need_decompress = true;
-			}
-
-		} break;
-		case Image::FORMAT_PVRTC1_4A: {
-			if (config.pvrtc_supported) {
-				r_gl_internal_format = _EXT_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
-				r_gl_format = GL_RGBA;
-				r_gl_type = GL_UNSIGNED_BYTE;
-				r_compressed = true;
-				//r_srgb = true;
-
-			} else {
-				need_decompress = true;
-			}
-
 		} break;
 		case Image::FORMAT_ETC: {
 			if (config.etc_supported) {
@@ -4085,17 +4024,17 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 }
 
 bool RasterizerStorageGLES3::has_os_feature(const String &p_feature) const {
-	if (p_feature == "pvrtc")
-		return config.pvrtc_supported;
-
-	if (p_feature == "s3tc")
+	if (p_feature == "s3tc") {
 		return config.s3tc_supported;
+	}
 
-	if (p_feature == "etc")
+	if (p_feature == "etc") {
 		return config.etc_supported;
+	}
 
-	if (p_feature == "skinning_fallback")
+	if (p_feature == "skinning_fallback") {
 		return config.use_skeleton_software;
+	}
 
 	return false;
 }
@@ -4220,7 +4159,6 @@ void RasterizerStorageGLES3::initialize() {
 #ifdef GLES_OVER_GL
 	config.float_texture_supported = true;
 	config.s3tc_supported = true;
-	config.pvrtc_supported = false;
 	config.etc_supported = false;
 	config.support_npot_repeat_mipmap = true;
 	config.depth_buffer_internalformat = GL_DEPTH_COMPONENT24;
@@ -4228,7 +4166,6 @@ void RasterizerStorageGLES3::initialize() {
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || config.extensions.has("WEBGL_compressed_texture_etc1");
-	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc") || config.extensions.has("WEBGL_compressed_texture_pvrtc");
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
 
 #ifdef JAVASCRIPT_ENABLED
@@ -4297,7 +4234,6 @@ void RasterizerStorageGLES3::initialize() {
 	config.etc_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
 	config.latc_supported = config.extensions.has("GL_EXT_texture_compression_latc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc");
-	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc");
 	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc") || config.extensions.has("EXT_texture_compression_rgtc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc") || config.extensions.has("EXT_texture_compression_bptc");
 	config.srgb_decode_supported = config.extensions.has("GL_EXT_texture_sRGB_decode");
