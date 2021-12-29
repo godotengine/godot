@@ -603,12 +603,50 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 
 		if (par->default_value) {
 			String def_val = "<unknown>";
-			if (par->default_value->type == GDScriptParser::Node::LITERAL) {
-				const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(par->default_value);
-				def_val = literal->value.get_construct_string();
-			} else if (par->default_value->type == GDScriptParser::Node::IDENTIFIER) {
-				const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(par->default_value);
-				def_val = id->name.operator String();
+			switch (par->default_value->type) {
+				case GDScriptParser::Node::LITERAL: {
+					const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(par->default_value);
+					def_val = literal->value.get_construct_string();
+				} break;
+				case GDScriptParser::Node::IDENTIFIER: {
+					const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(par->default_value);
+					def_val = id->name.operator String();
+				} break;
+				case GDScriptParser::Node::CALL: {
+					const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(par->default_value);
+					if (call->is_constant && call->reduced) {
+						def_val = call->function_name.operator String() + call->reduced_value.operator String();
+					}
+				} break;
+				case GDScriptParser::Node::ARRAY: {
+					const GDScriptParser::ArrayNode *arr = static_cast<const GDScriptParser::ArrayNode *>(par->default_value);
+					if (arr->is_constant && arr->reduced) {
+						def_val = arr->reduced_value.operator String();
+					}
+				} break;
+				case GDScriptParser::Node::DICTIONARY: {
+					const GDScriptParser::DictionaryNode *dict = static_cast<const GDScriptParser::DictionaryNode *>(par->default_value);
+					if (dict->is_constant && dict->reduced) {
+						def_val = dict->reduced_value.operator String();
+					}
+				} break;
+				case GDScriptParser::Node::SUBSCRIPT: {
+					const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(par->default_value);
+					if (sub->is_constant) {
+						if (sub->datatype.kind == GDScriptParser::DataType::ENUM_VALUE) {
+							def_val = sub->get_datatype().to_string();
+						} else if (sub->reduced) {
+							const Variant::Type vt = sub->reduced_value.get_type();
+							if (vt == Variant::Type::NIL || vt == Variant::Type::FLOAT || vt == Variant::Type::INT || vt == Variant::Type::STRING || vt == Variant::Type::STRING_NAME || vt == Variant::Type::BOOL || vt == Variant::Type::NODE_PATH) {
+								def_val = sub->reduced_value.operator String();
+							} else {
+								def_val = sub->get_datatype().to_string() + sub->reduced_value.operator String();
+							}
+						}
+					}
+				} break;
+				default:
+					break;
 			}
 			arghint += " = " + def_val;
 		}
