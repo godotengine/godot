@@ -230,7 +230,7 @@ void DisplayServerJavaScript::mouse_move_callback(double p_x, double p_y, double
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
 	Input::get_singleton()->set_mouse_position(ev->get_position());
-	ev->set_speed(Input::get_singleton()->get_last_mouse_speed());
+	ev->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 	Input::get_singleton()->parse_input_event(ev);
 }

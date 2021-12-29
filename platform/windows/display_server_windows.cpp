@@ -2067,7 +2067,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				mm->set_position(c);
 				mm->set_global_position(c);
 				Input::get_singleton()->set_mouse_position(c);
-				mm->set_speed(Vector2(0, 0));
+				mm->set_velocity(Vector2(0, 0));
 
 				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
 					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
@@ -2172,7 +2172,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 
 					Input::get_singleton()->set_mouse_position(mm->get_position());
-					mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+					mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 					if (old_invalid) {
 						old_x = mm->get_position().x;
@@ -2319,7 +2319,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			Input::get_singleton()->set_mouse_position(mm->get_position());
-			mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 			if (old_invalid) {
 				old_x = mm->get_position().x;
@@ -2425,7 +2425,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			Input::get_singleton()->set_mouse_position(mm->get_position());
-			mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 			if (old_invalid) {
 				old_x = mm->get_position().x;

@@ -271,7 +271,7 @@ class InputEventMouseMotion : public InputEventMouse {
 	Vector2 tilt;
 	float pressure = 0;
 	Vector2 relative;
-	Vector2 speed;
+	Vector2 velocity;
 
 protected:
 	static void _bind_methods();
@@ -286,8 +286,8 @@ public:
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;
 
-	void set_speed(const Vector2 &p_speed);
-	Vector2 get_speed() const;
+	void set_velocity(const Vector2 &p_velocity);
+	Vector2 get_velocity() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
@@ -388,7 +388,7 @@ class InputEventScreenDrag : public InputEventFromWindow {
 	int index = 0;
 	Vector2 pos;
 	Vector2 relative;
-	Vector2 speed;
+	Vector2 velocity;
 
 protected:
 	static void _bind_methods();
@@ -403,8 +403,8 @@ public:
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;
 
-	void set_speed(const Vector2 &p_speed);
-	Vector2 get_speed() const;
+	void set_velocity(const Vector2 &p_velocity);
+	Vector2 get_velocity() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;

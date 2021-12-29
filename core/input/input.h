@@ -117,9 +117,9 @@ private:
 
 	int mouse_from_touch_index = -1;
 
-	struct SpeedTrack {
+	struct VelocityTrack {
 		uint64_t last_tick;
-		Vector2 speed;
+		Vector2 velocity;
 		Vector2 accum;
 		float accum_t;
 		float min_ref_frame;
@@ -127,7 +127,7 @@ private:
 
 		void update(const Vector2 &p_delta_p);
 		void reset();
-		SpeedTrack();
+		VelocityTrack();
 	};
 
 	struct Joypad {
@@ -141,8 +141,8 @@ private:
 		int hat_current = 0;
 	};
 
-	SpeedTrack mouse_speed_track;
-	Map<int, SpeedTrack> touch_speed_track;
+	VelocityTrack mouse_velocity_track;
+	Map<int, VelocityTrack> touch_velocity_track;
 	Map<int, Joypad> joy_names;
 	int fallback_mapping = -1;
 
@@ -274,7 +274,7 @@ public:
 	Vector3 get_gyroscope() const;
 
 	Point2 get_mouse_position() const;
-	Point2 get_last_mouse_speed() const;
+	Vector2 get_last_mouse_velocity() const;
 	MouseButton get_mouse_button_mask() const;
 
 	void warp_mouse_position(const Vector2 &p_to);

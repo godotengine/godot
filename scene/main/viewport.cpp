@@ -1700,13 +1700,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (over) {
 			Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
 			Size2 pos = localizer.xform(mpos);
-			Vector2 speed = localizer.basis_xform(mm->get_speed());
+			Vector2 velocity = localizer.basis_xform(mm->get_velocity());
 			Vector2 rel = localizer.basis_xform(mm->get_relative());
 
 			mm = mm->xformed_by(Transform2D()); // Make a copy.
 
 			mm->set_global_position(mpos);
-			mm->set_speed(speed);
+			mm->set_velocity(velocity);
 			mm->set_relative(rel);
 
 			if (mm->get_button_mask() == MouseButton::NONE) {
@@ -1956,12 +1956,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			if (over->can_process()) {
 				Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
 				Size2 pos = localizer.xform(drag_event->get_position());
-				Vector2 speed = localizer.basis_xform(drag_event->get_speed());
+				Vector2 velocity = localizer.basis_xform(drag_event->get_velocity());
 				Vector2 rel = localizer.basis_xform(drag_event->get_relative());
 
 				drag_event = drag_event->xformed_by(Transform2D()); // Make a copy.
 
-				drag_event->set_speed(speed);
+				drag_event->set_velocity(velocity);
 				drag_event->set_relative(rel);
 				drag_event->set_position(pos);
 
