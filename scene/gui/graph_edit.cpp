@@ -772,8 +772,9 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos)
 }
 
 bool GraphEdit::is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size) {
-	if (get_script_instance() && get_script_instance()->has_method("_is_in_input_hotzone")) {
-		return get_script_instance()->call("_is_in_input_hotzone", p_graph_node, p_slot_index, p_mouse_pos);
+	bool success;
+	if (GDVIRTUAL_CALL(_is_in_input_hotzone, p_graph_node, p_slot_index, p_mouse_pos, success)) {
+		return success;
 	} else {
 		Vector2 pos = p_graph_node->get_connection_input_position(p_slot_index) + p_graph_node->get_position();
 		return is_in_port_hotzone(pos / zoom, p_mouse_pos, p_port_size, true);
@@ -781,8 +782,9 @@ bool GraphEdit::is_in_input_hotzone(GraphNode *p_graph_node, int p_slot_index, c
 }
 
 bool GraphEdit::is_in_output_hotzone(GraphNode *p_graph_node, int p_slot_index, const Vector2 &p_mouse_pos, const Vector2i &p_port_size) {
-	if (get_script_instance() && get_script_instance()->has_method("_is_in_output_hotzone")) {
-		return get_script_instance()->call("_is_in_output_hotzone", p_graph_node, p_slot_index, p_mouse_pos);
+	bool success;
+	if (GDVIRTUAL_CALL(_is_in_output_hotzone, p_graph_node, p_slot_index, p_mouse_pos, success)) {
+		return success;
 	} else {
 		Vector2 pos = p_graph_node->get_connection_output_position(p_slot_index) + p_graph_node->get_position();
 		return is_in_port_hotzone(pos / zoom, p_mouse_pos, p_port_size, false);
@@ -2216,8 +2218,8 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_right_disconnects_enabled"), &GraphEdit::is_right_disconnects_enabled);
 
 	ClassDB::bind_method(D_METHOD("_update_scroll_offset"), &GraphEdit::_update_scroll_offset);
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_is_in_input_hotzone", PropertyInfo(Variant::OBJECT, "graph_node"), PropertyInfo(Variant::INT, "slot_index"), PropertyInfo(Variant::VECTOR2, "mouse_position")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "_is_in_output_hotzone", PropertyInfo(Variant::OBJECT, "graph_node"), PropertyInfo(Variant::INT, "slot_index"), PropertyInfo(Variant::VECTOR2, "mouse_position")));
+	GDVIRTUAL_BIND(_is_in_input_hotzone, "graph_node", "slot_index", "mouse_position");
+	GDVIRTUAL_BIND(_is_in_output_hotzone, "graph_node", "slot_index", "mouse_position");
 
 	ClassDB::bind_method(D_METHOD("get_zoom_hbox"), &GraphEdit::get_zoom_hbox);
 

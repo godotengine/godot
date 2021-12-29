@@ -102,6 +102,9 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+	GDVIRTUAL1(_set_create_options, Object *)
+	GDVIRTUAL1R(bool, _handle_menu_selected, int)
+
 public:
 	static void clear_caches();
 
