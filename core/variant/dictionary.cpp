@@ -350,7 +350,7 @@ void Dictionary::operator=(const Dictionary &p_dictionary) {
 }
 
 const void *Dictionary::id() const {
-	return _p->variant_map.id();
+	return _p;
 }
 
 Dictionary::Dictionary(const Dictionary &p_from) {
