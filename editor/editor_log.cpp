@@ -280,7 +280,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->pop();
 	}
 
-	log->add_text(p_message.text);
+	log->append_text(p_message.text);
 
 	// Need to use pop() to exit out of the RichTextLabels current "push" stack.
 	// We only "push" in the above switch when message type != STD, so only pop when that is the case.
@@ -342,6 +342,7 @@ EditorLog::EditorLog() {
 	log->set_focus_mode(FOCUS_CLICK);
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	log->set_use_bbcode(true);
 	vb_left->add_child(log);
 
 	// Search box
