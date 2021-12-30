@@ -95,5 +95,5 @@ void BoxShape3D::_bind_methods() {
 
 BoxShape3D::BoxShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_BOX)) {
-	set_size(Vector3(2, 2, 2));
+	set_size(Vector3(1, 1, 1));
 }
