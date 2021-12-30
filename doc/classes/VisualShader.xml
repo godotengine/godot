@@ -146,7 +146,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="engine_version" type="Dictionary" setter="set_engine_version" getter="get_engine_version" default="{}">
+		<member name="engine_version" type="string" setter="set_engine_version" getter="get_engine_version" default="{}">
 			The Godot version this [VisualShader] was designed for, in the form of a [Dictionary] with [code]major[/code] and [code]minor[/code] keys with integer values. Example: [code]{"major": 4, "minor": 0}[/code]
 			This is used by the editor to convert visual shaders from older Godot versions.
 		</member>
