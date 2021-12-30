@@ -4,7 +4,7 @@
 		Color in RGBA format using floats on the range of 0 to 1.
 	</brief_description>
 	<description>
-		A color represented by red, green, blue, and alpha (RGBA) components. The alpha component is often used for transparency. Values are in floating-point and usually range from 0 to 1. Some properties (such as CanvasItem.modulate) may accept values greater than 1 (overbright or HDR colors).
+		A color represented by red, green, blue, and alpha (RGBA) components. The alpha component is often used for opacity. Values are in floating-point and usually range from 0 to 1. Some properties (such as CanvasItem.modulate) may accept values greater than 1 (overbright or HDR colors).
 		You can also create a color from standardized color names by using the string constructor or directly using the color constants defined here. The standardized color set is based on the [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url].
 		If you want to supply values in a range of 0 to 255, you should use [method @GDScript.Color8].
 		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it's equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
@@ -30,10 +30,10 @@
 				Constructs a [Color] from an existing color, but with a custom alpha value.
 				[codeblocks]
 				[gdscript]
-				var red = Color(Color.red, 0.5) # 50% transparent red.
+				var red = Color(Color.red, 0.2) # 20% opaque red.
 				[/gdscript]
 				[csharp]
-				var red = new Color(Colors.Red, 0.5f); // 50% transparent red.
+				var red = new Color(Colors.Red, 0.2f); // 20% opaque red.
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -405,7 +405,7 @@
 	</methods>
 	<members>
 		<member name="a" type="float" setter="" getter="" default="1.0">
-			The color's alpha (transparency) component, typically on the range of 0 to 1.
+			The color's alpha component, typically on the range of 0 to 1. A value of 0 means that the color is fully transparent. A value of 1 means that the color is fully opaque.
 		</member>
 		<member name="a8" type="int" setter="" getter="" default="255">
 			Wrapper for [member a] that uses the range 0 to 255 instead of 0 to 1.
