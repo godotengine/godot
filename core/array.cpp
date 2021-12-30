@@ -474,7 +474,7 @@ Variant Array::max() const {
 }
 
 const void *Array::id() const {
-	return _p->array.ptr();
+	return _p;
 }
 
 Array::Array(const Array &p_from) {
