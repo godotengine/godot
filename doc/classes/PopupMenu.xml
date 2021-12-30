@@ -538,19 +538,19 @@
 		<theme_item name="font_accelerator_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.8)">
 			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.
 		</theme_item>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The default text [Color] for menu items' names.
 		</theme_item>
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.4, 0.4, 0.4, 0.8)">
 			[Color] used for disabled menu items' text.
 		</theme_item>
-		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] used for the hovered text.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the menu item.
 		</theme_item>
-		<theme_item name="font_separator_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="font_separator_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] used for labeled separators' text. See [method add_separator].
 		</theme_item>
 		<theme_item name="hseparation" data_type="constant" type="int" default="4">

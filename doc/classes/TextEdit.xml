@@ -1222,22 +1222,22 @@
 		<theme_item name="caret_background_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			[Color] of the text behind the caret when using a block caret.
 		</theme_item>
-		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] of the caret. This can be set to a fully transparent color to hide the caret entirely.
 		</theme_item>
 		<theme_item name="current_line_color" data_type="color" type="Color" default="Color(0.25, 0.25, 0.26, 0.8)">
 			Background [Color] of the line containing the caret.
 		</theme_item>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Sets the font [Color].
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [TextEdit].
 		</theme_item>
-		<theme_item name="font_readonly_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 0.5)">
+		<theme_item name="font_readonly_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Sets the font [Color] when [member editable] is disabled.
 		</theme_item>
-		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Sets the [Color] of the selected text. [member override_selected_font_color] has to be enabled.
 		</theme_item>
 		<theme_item name="search_result_border_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 0.4)">
@@ -1246,10 +1246,10 @@
 		<theme_item name="search_result_color" data_type="color" type="Color" default="Color(0.3, 0.3, 0.3, 1)">
 			[Color] behind the text that matches the search query.
 		</theme_item>
-		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.5, 0.5, 0.5, 1)">
 			Sets the highlight [Color] of text selections.
 		</theme_item>
-		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color(0.8, 0.9, 0.9, 0.15)">
+		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color(0.5, 0.5, 0.5, 0.25)">
 			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
 		</theme_item>
 		<theme_item name="caret_width" data_type="constant" type="int" default="1">

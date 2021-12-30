@@ -562,8 +562,7 @@
 		<member name="gui/theme/custom_font" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
 		</member>
-		<member name="gui/theme/use_hidpi" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], makes sure the theme used works with HiDPI.
+		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).

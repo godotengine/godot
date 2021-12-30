@@ -18,7 +18,5 @@
 		<theme_item name="grabber" data_type="icon" type="Texture2D">
 			The icon used for the grabber drawn in the middle area.
 		</theme_item>
-		<theme_item name="bg" data_type="style" type="StyleBox">
-		</theme_item>
 	</theme_items>
 </class>
