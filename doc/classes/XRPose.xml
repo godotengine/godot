@@ -21,7 +21,7 @@
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3(0, 0, 0)">
 			The angular velocity for this pose.
 		</member>
-		<member name="has_tracking_data" type="bool" setter="set_has_tracking_data" getter="get_has_tracking_data" default="false">
+		<member name="has_tracking_data" type="string" setter="set_has_tracking_data" getter="get_has_tracking_data" default="false">
 			If [code]true[/code] our tracking data is up to date. If [code]false[/code] we're no longer receiving new tracking data and our state is whatever that last valid state was.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
