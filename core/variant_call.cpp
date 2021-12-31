@@ -215,6 +215,8 @@ struct _VariantCall {
 	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { reinterpret_cast<m_type *>(p_self._data._mem)->m_method(); }
 #define VCALL_LOCALMEM0R(m_type, m_method) \
 	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { r_ret = reinterpret_cast<m_type *>(p_self._data._mem)->m_method(); }
+#define VCALL_LOCALMEM0RI(m_type, m_method, m_internal_method) \
+	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { r_ret = reinterpret_cast<m_type *>(p_self._data._mem)->m_internal_method(); }
 #define VCALL_LOCALMEM1(m_type, m_method) \
 	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { reinterpret_cast<m_type *>(p_self._data._mem)->m_method(*p_args[0]); }
 #define VCALL_LOCALMEM1R(m_type, m_method) \
@@ -314,9 +316,9 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, is_valid_html_color);
 	VCALL_LOCALMEM0R(String, is_valid_ip_address);
 	VCALL_LOCALMEM0R(String, is_valid_filename);
-	VCALL_LOCALMEM0R(String, to_int);
+	VCALL_LOCALMEM0RI(String, to_int, to_int64);
 	VCALL_LOCALMEM0R(String, to_float);
-	VCALL_LOCALMEM0R(String, hex_to_int);
+	VCALL_LOCALMEM0RI(String, hex_to_int, hex_to_int64);
 	VCALL_LOCALMEM1R(String, pad_decimals);
 	VCALL_LOCALMEM1R(String, pad_zeros);
 	VCALL_LOCALMEM1R(String, trim_prefix);
