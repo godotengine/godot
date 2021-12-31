@@ -480,6 +480,17 @@
 				Returns [code]true[/code] if this string contains only a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]0.0.0.0[/code] as valid.
 			</description>
 		</method>
+		<method name="join">
+			<return type="String" />
+			<argument index="0" name="parts" type="PoolStringArray" />
+			<description>
+				Return a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
+				Example:
+				[codeblock]
+				print(", ".join(["One", "Two", "Three", "Four"]))
+				[/codeblock]
+			</description>
+		</method>
 		<method name="json_escape">
 			<return type="String" />
 			<description>

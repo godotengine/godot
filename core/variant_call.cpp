@@ -268,6 +268,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM3R(String, split);
 	VCALL_LOCALMEM3R(String, rsplit);
 	VCALL_LOCALMEM2R(String, split_floats);
+	VCALL_LOCALMEM1R(String, join);
 	VCALL_LOCALMEM0R(String, to_upper);
 	VCALL_LOCALMEM0R(String, to_lower);
 	VCALL_LOCALMEM1R(String, left);
@@ -1669,6 +1670,7 @@ void register_variant_methods() {
 	ADDFUNC3R(STRING, POOL_STRING_ARRAY, String, split, STRING, "delimiter", BOOL, "allow_empty", INT, "maxsplit", varray(true, 0));
 	ADDFUNC3R(STRING, POOL_STRING_ARRAY, String, rsplit, STRING, "delimiter", BOOL, "allow_empty", INT, "maxsplit", varray(true, 0));
 	ADDFUNC2R(STRING, POOL_REAL_ARRAY, String, split_floats, STRING, "delimiter", BOOL, "allow_empty", varray(true));
+	ADDFUNC1R(STRING, STRING, String, join, POOL_STRING_ARRAY, "parts", varray());
 
 	ADDFUNC0R(STRING, STRING, String, to_upper, varray());
 	ADDFUNC0R(STRING, STRING, String, to_lower, varray());
