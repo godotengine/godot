@@ -3639,6 +3639,35 @@ AABB SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, b
 	return bounds;
 }
 
+Node *SpatialEditorViewport::_sanitize_preview_node(Node *p_node) const {
+	Spatial *spatial = Object::cast_to<Spatial>(p_node);
+	if (spatial == nullptr) {
+		Spatial *replacement_node = memnew(Spatial);
+		replacement_node->set_name(p_node->get_name());
+		p_node->replace_by(replacement_node);
+		memdelete(p_node);
+		p_node = replacement_node;
+	} else {
+		VisualInstance *visual_instance = Object::cast_to<VisualInstance>(spatial);
+		if (visual_instance == nullptr) {
+			Spatial *replacement_node = memnew(Spatial);
+			replacement_node->set_name(spatial->get_name());
+			replacement_node->set_visible(spatial->is_visible());
+			replacement_node->set_transform(spatial->get_transform());
+			replacement_node->set_as_toplevel(spatial->is_set_as_toplevel());
+			p_node->replace_by(replacement_node);
+			memdelete(p_node);
+			p_node = replacement_node;
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_sanitize_preview_node(p_node->get_child(i));
+	}
+
+	return p_node;
+}
+
 void SpatialEditorViewport::_create_preview(const Vector<String> &files) const {
 	for (int i = 0; i < files.size(); i++) {
 		String path = files[i];
@@ -3655,6 +3684,7 @@ void SpatialEditorViewport::_create_preview(const Vector<String> &files) const {
 				if (scene.is_valid()) {
 					Node *instance = scene->instance();
 					if (instance) {
+						instance = _sanitize_preview_node(instance);
 						preview_node->add_child(instance);
 					}
 				}
