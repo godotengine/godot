@@ -273,8 +273,8 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	// Default font
 	MAKE_DEFAULT_FONT(df, String());
-	p_theme->set_default_theme_font(df); // Default theme font
-	p_theme->set_default_theme_font_size(default_font_size);
+	p_theme->set_default_font(df); // Default theme font
+	p_theme->set_default_font_size(default_font_size);
 
 	p_theme->set_font_size("main_size", "EditorFonts", default_font_size);
 	p_theme->set_font("main", "EditorFonts", df);

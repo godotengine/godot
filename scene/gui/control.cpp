@@ -1148,12 +1148,12 @@ float Control::fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		if (theme_owner && theme_owner->data.theme->has_default_theme_base_scale()) {
-			return theme_owner->data.theme->get_default_theme_base_scale();
+		if (theme_owner && theme_owner->data.theme->has_default_base_scale()) {
+			return theme_owner->data.theme->get_default_base_scale();
 		}
 
-		if (theme_owner_window && theme_owner_window->theme->has_default_theme_base_scale()) {
-			return theme_owner_window->theme->get_default_theme_base_scale();
+		if (theme_owner_window && theme_owner_window->theme->has_default_base_scale()) {
+			return theme_owner_window->theme->get_default_base_scale();
 		}
 
 		Node *parent = theme_owner ? theme_owner->get_parent() : theme_owner_window->get_parent();
@@ -1175,13 +1175,16 @@ float Control::fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_theme_base_scale()) {
-			return Theme::get_project_default()->get_default_theme_base_scale();
+		if (Theme::get_project_default()->has_default_base_scale()) {
+			return Theme::get_project_default()->get_default_base_scale();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	return Theme::get_default()->get_default_theme_base_scale();
+	if (Theme::get_default()->has_default_base_scale()) {
+		return Theme::get_default()->get_default_base_scale();
+	}
+	return Theme::get_fallback_base_scale();
 }
 
 float Control::get_theme_default_base_scale() const {
@@ -1196,12 +1199,12 @@ Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_th
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		if (theme_owner && theme_owner->data.theme->has_default_theme_font()) {
-			return theme_owner->data.theme->get_default_theme_font();
+		if (theme_owner && theme_owner->data.theme->has_default_font()) {
+			return theme_owner->data.theme->get_default_font();
 		}
 
-		if (theme_owner_window && theme_owner_window->theme->has_default_theme_font()) {
-			return theme_owner_window->theme->get_default_theme_font();
+		if (theme_owner_window && theme_owner_window->theme->has_default_font()) {
+			return theme_owner_window->theme->get_default_font();
 		}
 
 		Node *parent = theme_owner ? theme_owner->get_parent() : theme_owner_window->get_parent();
@@ -1223,13 +1226,16 @@ Ref<Font> Control::fetch_theme_default_font(Control *p_theme_owner, Window *p_th
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_theme_font()) {
-			return Theme::get_project_default()->get_default_theme_font();
+		if (Theme::get_project_default()->has_default_font()) {
+			return Theme::get_project_default()->get_default_font();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	return Theme::get_default()->get_default_theme_font();
+	if (Theme::get_default()->has_default_font()) {
+		return Theme::get_default()->get_default_font();
+	}
+	return Theme::get_fallback_font();
 }
 
 Ref<Font> Control::get_theme_default_font() const {
@@ -1244,12 +1250,12 @@ int Control::fetch_theme_default_font_size(Control *p_theme_owner, Window *p_the
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-		if (theme_owner && theme_owner->data.theme->has_default_theme_font_size()) {
-			return theme_owner->data.theme->get_default_theme_font_size();
+		if (theme_owner && theme_owner->data.theme->has_default_font_size()) {
+			return theme_owner->data.theme->get_default_font_size();
 		}
 
-		if (theme_owner_window && theme_owner_window->theme->has_default_theme_font_size()) {
-			return theme_owner_window->theme->get_default_theme_font_size();
+		if (theme_owner_window && theme_owner_window->theme->has_default_font_size()) {
+			return theme_owner_window->theme->get_default_font_size();
 		}
 
 		Node *parent = theme_owner ? theme_owner->get_parent() : theme_owner_window->get_parent();
@@ -1271,13 +1277,16 @@ int Control::fetch_theme_default_font_size(Control *p_theme_owner, Window *p_the
 
 	// Secondly, check the project-defined Theme resource.
 	if (Theme::get_project_default().is_valid()) {
-		if (Theme::get_project_default()->has_default_theme_font_size()) {
-			return Theme::get_project_default()->get_default_theme_font_size();
+		if (Theme::get_project_default()->has_default_font_size()) {
+			return Theme::get_project_default()->get_default_font_size();
 		}
 	}
 
 	// Lastly, fall back on the default Theme.
-	return Theme::get_default()->get_default_theme_font_size();
+	if (Theme::get_default()->has_default_font_size()) {
+		return Theme::get_default()->get_default_font_size();
+	}
+	return Theme::get_fallback_font_size();
 }
 
 int Control::get_theme_default_font_size() const {
