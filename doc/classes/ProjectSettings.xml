@@ -1291,8 +1291,8 @@
 			That means that when a shader is first used under some new rendering situation, the game won't stall while such shader is being compiled. Instead, a fallback will be used and the real shader will be compiled in the background. Once the actual shader is compiled, it will be used the next times it's used to draw a frame.
 			Depending on the async mode configured for a given material/shader, the fallback will be an "ubershader" (the default) or just skip rendering any item it is applied to.
 			An ubershader is a very complex shader, slow but suited to any rendering situation, that the engine generates internally so it can be used from the beginning while the traditional conditioned, optimized version of it is being compiled.
-			In order to save some loading time, you can use [code]Asynchronous + Cache[/code], which also causes the ubershaders to be cached into storage so they can be ready faster next time they are used (provided the platform provides support for it).
-			[b]Warning:[/b] Async. compilation is currently only supported for spatial and particle materials/shaders.
+			To reduce loading times after the project has been launched at least once, you can use [code]Asynchronous + Cache[/code]. This also causes the ubershaders to be cached into storage so they can be ready faster next time they are used (provided the platform provides support for it).
+			[b]Note:[/b] Asynchronous compilation is currently only supported for spatial (3D) and particle materials/shaders. CanvasItem (2D) shaders will not use asynchronous compilation even if this setting is set to [code]Asynchronous[/code] or [code]Asynchronous + Cache[/code].
 		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
 			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
