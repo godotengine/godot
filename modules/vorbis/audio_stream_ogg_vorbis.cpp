@@ -110,7 +110,7 @@ int AudioStreamPlaybackOGGVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 	if (info.channels > 1) {
 		for (int frame = 0; frame < frames; frame++) {
 			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[0][frame];
+			p_buffer[frame].r = pcm[1][frame];
 		}
 	} else {
 		for (int frame = 0; frame < frames; frame++) {
