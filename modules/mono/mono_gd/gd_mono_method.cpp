@@ -274,6 +274,8 @@ GDMonoMethod::GDMonoMethod(StringName p_name, MonoMethod *p_method) {
 
 	mono_method = p_method;
 
+	params_buffer_size = 0;
+
 	method_info_fetched = false;
 
 	attrs_fetched = false;
