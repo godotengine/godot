@@ -4170,6 +4170,11 @@ void AnimationTrackEditor::_confirm_insert_list() {
 		insert_data.pop_front();
 	}
 
+	if (insert_never_ask->is_pressed()) {
+		EditorSettings::get_singleton()->set("editors/animation/confirm_insert_track", false);
+		EditorSettings::get_singleton()->save();
+	}
+
 	undo_redo->commit_action();
 
 	if (advance) {
@@ -6745,6 +6750,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	insert_confirm_text = memnew(Label);
 	icvb->add_child(insert_confirm_text);
 	HBoxContainer *ichb = memnew(HBoxContainer);
+	ichb->set_h_size_flags(SIZE_SHRINK_CENTER);
 	icvb->add_child(ichb);
 	insert_confirm_bezier = memnew(CheckBox);
 	insert_confirm_bezier->set_text(TTR("Use Bezier Curves"));
@@ -6754,6 +6760,11 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	insert_confirm_reset->set_text(TTR("Create RESET Track(s)", ""));
 	insert_confirm_reset->set_pressed(EDITOR_GET("editors/animation/default_create_reset_tracks"));
 	ichb->add_child(insert_confirm_reset);
+	insert_never_ask = memnew(CheckBox);
+	insert_never_ask->set_text(TTR("Don't ask again"));
+	insert_never_ask->set_tooltip_text(TTR("Permanently disables this dialog. It can be enabled again in Editor Settings."));
+	insert_never_ask->set_h_size_flags(SIZE_SHRINK_CENTER);
+	icvb->add_child(insert_never_ask);
 
 	box_selection = memnew(Control);
 	add_child(box_selection);

@@ -371,6 +371,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	Label *insert_confirm_text = nullptr;
 	CheckBox *insert_confirm_bezier = nullptr;
 	CheckBox *insert_confirm_reset = nullptr;
+	CheckBox *insert_never_ask = nullptr;
 	ConfirmationDialog *insert_confirm = nullptr;
 	bool insert_queue = false;
 	List<InsertData> insert_data;
