@@ -671,9 +671,10 @@ Variant Array::get_typed_script() const {
 	return _p->typed.script;
 }
 
-Array::Array(const Array &p_from) {
-	_p = nullptr;
-	_ref(p_from);
+Array::Array(const Array &p_from) :
+		Array() {
+	_p->typed = p_from._p->typed;
+	_p->array = p_from._p->array;
 }
 
 Array::Array() {
