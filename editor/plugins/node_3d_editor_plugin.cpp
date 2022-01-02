@@ -2439,7 +2439,8 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 		_menu_option(VIEW_PERSPECTIVE);
 	}
 
-	const real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_sensitivity");
+	// Scale mouse sensitivity with camera FOV scale when zoomed in to make it easier to point at things.
+	const real_t degrees_per_pixel = real_t(EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_sensitivity")) * MIN(1.0, cursor.fov_scale);
 	const real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
 	const bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
 
