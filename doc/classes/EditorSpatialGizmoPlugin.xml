@@ -4,7 +4,8 @@
 		Used by the editor to define Spatial gizmo types.
 	</brief_description>
 	<description>
-		EditorSpatialGizmoPlugin allows you to define a new type of Gizmo. There are two main ways to do so: extending [EditorSpatialGizmoPlugin] for the simpler gizmos, or creating a new [EditorSpatialGizmo] type. See the tutorial in the documentation for more info.
+		[EditorSpatialGizmoPlugin] allows you to define a new type of Gizmo. There are two main ways to do so: extending [EditorSpatialGizmoPlugin] for the simpler gizmos, or creating a new [EditorSpatialGizmo] type. See the tutorial in the documentation for more info.
+		To use [EditorSpatialGizmoPlugin], register it using the [method EditorPlugin.add_spatial_gizmo_plugin] method first.
 	</description>
 	<tutorials>
 		<link>$DOCS_URL/tutorials/plugins/editor/spatial_gizmos.html</link>
