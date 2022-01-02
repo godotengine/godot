@@ -175,7 +175,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// These are temporary buffers on CPU memory that hold
 	// the information until the CPU fetches it and places it
 	// either on GPU buffers, or images (textures). It ensures
-	// updates are properly synchronized with whathever the
+	// updates are properly synchronized with whatever the
 	// GPU is doing.
 	//
 	// The logic here is as follows, only 3 of these

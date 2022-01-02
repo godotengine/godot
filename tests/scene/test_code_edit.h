@@ -3220,7 +3220,7 @@ TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
 	code_edit->backspace();
 	CHECK(code_edit->get_line(0) == "backspace");
 
-	/* Move caret up to the previous line on backspace if carret is at the first column. */
+	/* Move caret up to the previous line on backspace if caret is at the first column. */
 	code_edit->set_text("");
 	code_edit->insert_text_at_caret("line 1\nline 2");
 	code_edit->set_caret_line(1);

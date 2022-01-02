@@ -581,7 +581,7 @@ void main() {
 		discard;
 #endif
 
-	//lay out everything, whathever is unused is optimized away anyway
+	//lay out everything, whatever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
 	vec3 view = -normalize(vertex_interp);
 	vec3 albedo = vec3(1.0);

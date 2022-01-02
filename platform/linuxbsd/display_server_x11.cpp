@@ -3416,7 +3416,7 @@ void DisplayServerX11::process_events() {
 
 				if (mouse_mode_grab) {
 					for (const KeyValue<WindowID, WindowData> &E : windows) {
-						//dear X11, I try, I really try, but you never work, you do whathever you want.
+						//dear X11, I try, I really try, but you never work, you do whatever you want.
 						if (mouse_mode == MOUSE_MODE_CAPTURED) {
 							// Show the cursor if we're in captured mode so it doesn't look weird.
 							XUndefineCursor(x11_display, E.value.x11_window);
