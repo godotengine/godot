@@ -43,6 +43,8 @@
 #include "editor/shader_globals_editor.h"
 #include "scene/gui/tab_container.h"
 
+class FileSystemDock;
+
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
@@ -120,6 +122,7 @@ public:
 	TabContainer *get_tabs() { return tab_container; }
 
 	void queue_save();
+	void connect_filesystem_dock_signals(FileSystemDock *p_fs_dock);
 
 	ProjectSettingsEditor(EditorData *p_data);
 };

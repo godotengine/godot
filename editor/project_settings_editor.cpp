@@ -39,6 +39,10 @@
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 
+void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
+	localization_editor->connect_filesystem_dock_signals(p_fs_dock);
+}
+
 void ProjectSettingsEditor::popup_project_settings() {
 	// Restore valid window bounds or pop up at default size.
 	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "project_settings", Rect2());

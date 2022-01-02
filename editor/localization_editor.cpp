@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_translation_parser.h"
+#include "editor/filesystem_dock.h"
 #include "editor/pot_generator.h"
 #include "scene/gui/control.h"
 
@@ -376,6 +377,62 @@ void LocalizationEditor::_update_pot_file_extensions() {
 	EditorTranslationParser::get_singleton()->get_recognized_extensions(&translation_parse_file_extensions);
 	for (const String &E : translation_parse_file_extensions) {
 		pot_file_open_dialog->add_filter("*." + E);
+	}
+}
+
+void LocalizationEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
+	p_fs_dock->connect("files_moved", callable_mp(this, &LocalizationEditor::_filesystem_files_moved));
+}
+
+void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const String &p_new_file) {
+	// Update remaps if the moved file is a part of them.
+	Dictionary remaps;
+	bool remaps_changed = false;
+
+	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
+		remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+	}
+
+	// Check for the keys.
+	if (remaps.has(p_old_file)) {
+		PackedStringArray remapped_files = remaps[p_old_file];
+		remaps.erase(p_old_file);
+		remaps[p_new_file] = remapped_files;
+		remaps_changed = true;
+		print_verbose(vformat("Changed remap key \"%s\" to \"%s\" due to a moved file.", p_old_file, p_new_file));
+	}
+
+	// Check for the Array elements of the values.
+	Array remap_keys = remaps.keys();
+	for (int i = 0; i < remap_keys.size(); i++) {
+		PackedStringArray remapped_files = remaps[remap_keys[i]];
+		bool remapped_files_updated = false;
+
+		for (int j = 0; j < remapped_files.size(); j++) {
+			// Find the first ':' after 'res://'.
+			int splitter_pos = remapped_files[j].find(":", remapped_files[j].find("/"));
+			String res_path = remapped_files[j].substr(0, splitter_pos);
+
+			if (res_path == p_old_file) {
+				String locale_name = remapped_files[j].substr(splitter_pos + 1);
+				// Replace the element at that index.
+				remapped_files.insert(j, p_new_file + ":" + locale_name);
+				remapped_files.remove_at(j + 1);
+				remaps_changed = true;
+				remapped_files_updated = true;
+				print_verbose(vformat("Changed remap value \"%s\" to \"%s\" of key \"%s\" due to a moved file.", res_path + ":" + locale_name, remapped_files[j], remap_keys[i]));
+			}
+		}
+
+		if (remapped_files_updated) {
+			remaps[remap_keys[i]] = remapped_files;
+		}
+	}
+
+	if (remaps_changed) {
+		ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_remaps", remaps);
+		update_translations();
+		emit_signal("localization_changed");
 	}
 }
 
