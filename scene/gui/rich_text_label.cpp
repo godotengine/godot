@@ -4052,7 +4052,7 @@ int RichTextLabel::get_content_height() const {
 
 #ifndef DISABLE_DEPRECATED
 // People will be very angry, if their texts get erased, because of #39148. (3.x -> 4.0)
-// Altough some people may not used bbcode_text, so we only overwrite, if bbcode_text is not empty
+// Although some people may not used bbcode_text, so we only overwrite, if bbcode_text is not empty.
 bool RichTextLabel::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "bbcode_text" && !((String)p_value).is_empty()) {
 		set_text(p_value);

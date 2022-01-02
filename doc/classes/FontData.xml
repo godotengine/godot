@@ -355,7 +355,7 @@
 		<method name="is_force_autohinter" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if auto-hinting is supported and preffered over font built-in hinting. Used by dynamic fonts only.
+				Returns [code]true[/code] if auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="is_language_supported" qualifiers="const">
@@ -519,7 +519,7 @@
 			<return type="void" />
 			<argument index="0" name="force_autohinter" type="bool" />
 			<description>
-				If set to [code]true[/code] auto-hinting is preffered over font built-in hinting.
+				If set to [code]true[/code] auto-hinting is preferred over font built-in hinting.
 			</description>
 		</method>
 		<method name="set_glyph_advance">

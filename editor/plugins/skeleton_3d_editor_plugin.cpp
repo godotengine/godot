@@ -1110,7 +1110,7 @@ void fragment() {
 )");
 	selected_mat->set_shader(selected_sh);
 
-	// Regist properties in editor settings.
+	// Register properties in editor settings.
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/skeleton", Color(1, 0.8, 0.4));
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/selected_bone", Color(0.8, 0.3, 0.0));
 	EDITOR_DEF("editors/3d_gizmos/gizmo_settings/bone_axis_length", (float)0.1);

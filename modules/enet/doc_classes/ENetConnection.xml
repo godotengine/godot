@@ -50,7 +50,7 @@
 			<argument index="2" name="channels" type="int" default="0" />
 			<argument index="3" name="data" type="int" default="0" />
 			<description>
-				Initiates a connection to a foreign [code]address[/code] using the specified [code]port[/code] and allocting the requested [code]channels[/code]. Optional [code]data[/code] can be passed during connection in the form of a 32 bit integer.
+				Initiates a connection to a foreign [code]address[/code] using the specified [code]port[/code] and allocating the requested [code]channels[/code]. Optional [code]data[/code] can be passed during connection in the form of a 32 bit integer.
 				[b]Note:[/b] You must call either [method create_host] or [method create_host_bound] before calling this method.
 			</description>
 		</method>
@@ -61,7 +61,7 @@
 			<argument index="2" name="in_bandwidth" type="int" default="0" />
 			<argument index="3" name="out_bandwidth" type="int" default="0" />
 			<description>
-				Create an ENetHost that will allow up to [code]max_peers[/code] connected peers, each allocating up to [code]max_channels[/code] channels, optionally limiting bandwith to [code]in_bandwidth[/code] and [code]out_bandwidth[/code].
+				Create an ENetHost that will allow up to [code]max_peers[/code] connected peers, each allocating up to [code]max_channels[/code] channels, optionally limiting bandwidth to [code]in_bandwidth[/code] and [code]out_bandwidth[/code].
 			</description>
 		</method>
 		<method name="create_host_bound">
@@ -174,7 +174,7 @@
 			A connection request initiated by enet_host_connect has completed. The array will contain the peer which successfully connected.
 		</constant>
 		<constant name="EVENT_DISCONNECT" value="2" enum="EventType">
-			A peer has disconnected. This event is generated on a successful completion of a disconnect initiated by [method ENetPacketPeer.peer_disconnect], if a peer has timed out, or if a connection request intialized by [method connect_to_host] has timed out. The array will contain the peer which disconnected. The data field contains user supplied data describing the disconnection, or 0, if none is available.
+			A peer has disconnected. This event is generated on a successful completion of a disconnect initiated by [method ENetPacketPeer.peer_disconnect], if a peer has timed out, or if a connection request initialized by [method connect_to_host] has timed out. The array will contain the peer which disconnected. The data field contains user supplied data describing the disconnection, or 0, if none is available.
 		</constant>
 		<constant name="EVENT_RECEIVE" value="3" enum="EventType">
 			A packet has been received from a peer. The array will contain the peer which sent the packet, the channel number upon which the packet was received, and the received packet.

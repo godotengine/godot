@@ -1610,7 +1610,7 @@ FRAGMENT_SHADER_CODE
 		specular_light *= specular * metallic * albedo * 2.0;
 #else
 
-		// scales the specular reflections, needs to be be computed before lighting happens,
+		// scales the specular reflections, needs to be computed before lighting happens,
 		// but after environment and reflection probes are added
 		//TODO: this curve is not really designed for gammaspace, should be adjusted
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);

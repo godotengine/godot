@@ -1799,7 +1799,7 @@ Array EditorInspectorArray::_extract_properties_as_array(const List<PropertyInfo
 					dict[format_string] = object->get(pi.name);
 					output[array_index] = dict;
 				} else {
-					WARN_PRINT(vformat("Array element %s has an index too high. Array allocaiton failed.", pi.name));
+					WARN_PRINT(vformat("Array element %s has an index too high. Array allocation failed.", pi.name));
 				}
 			}
 		}
@@ -2766,7 +2766,7 @@ void EditorInspector::update_tree() {
 			doc_hint = descr;
 		}
 
-		// Seach for the inspector plugin that will handle the properties. Then add the correct property editor to it.
+		// Search for the inspector plugin that will handle the properties. Then add the correct property editor to it.
 		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
 

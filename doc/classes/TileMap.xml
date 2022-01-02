@@ -69,7 +69,7 @@
 			<description>
 				Triggers an update of the TileMap. If [code]layer[/code] is provided, only updates the given layer.
 				[b]Note:[/b] The TileMap node updates automatically when one of its properties is modified. A manual update is only needed if runtime modifications (implemented in [method _tile_data_runtime_update]) need to be applied.
-				[b]Warning:[/b] Updating the TileMap is a performance demanding task. Limit occurences of those updates to the minimum and limit the amount tiles they impact (by segregating tiles updated often to a dedicated layer for example).
+				[b]Warning:[/b] Updating the TileMap is a performance demanding task. Limit occurrences of those updates to the minimum and limit the amount tiles they impact (by segregating tiles updated often to a dedicated layer for example).
 			</description>
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">
@@ -103,7 +103,7 @@
 			<return type="Vector2i" />
 			<argument index="0" name="body" type="RID" />
 			<description>
-				Returns the coodinates of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
+				Returns the coordinates of the tile for given physics body RID. Such RID can be retrieved from [method KinematicCollision2D.get_collider_rid], when colliding with a tile.
 			</description>
 		</method>
 		<method name="get_layer_modulate" qualifiers="const">
@@ -144,7 +144,7 @@
 			<argument index="0" name="coords" type="Vector2i" />
 			<argument index="1" name="neighbor" type="int" enum="TileSet.CellNeighbor" />
 			<description>
-				Returns the neighboring cell to the one at coordinates [code]coords[/code], indentified by the [code]neighbor[/code] direction. This method takes into account the different layouts a TileMap can take.
+				Returns the neighboring cell to the one at coordinates [code]coords[/code], identified by the [code]neighbor[/code] direction. This method takes into account the different layouts a TileMap can take.
 			</description>
 		</method>
 		<method name="get_pattern">
@@ -195,7 +195,7 @@
 			<argument index="1" name="coords_in_pattern" type="Vector2i" />
 			<argument index="2" name="pattern" type="TileMapPattern" />
 			<description>
-				Returns for the given coodinate [code]coords_in_pattern[/code] in a [TileMapPattern] the corresponding cell coordinates if the pattern was pasted at the [code]position_in_tilemap[/code] coordinates (see [method set_pattern]). This mapping is required as in half-offset tile shapes, the mapping might not work by calculating [code]position_in_tile_map + coords_in_pattern[/code]
+				Returns for the given coordinate [code]coords_in_pattern[/code] in a [TileMapPattern] the corresponding cell coordinates if the pattern was pasted at the [code]position_in_tilemap[/code] coordinates (see [method set_pattern]). This mapping is required as in half-offset tile shapes, the mapping might not work by calculating [code]position_in_tile_map + coords_in_pattern[/code]
 			</description>
 		</method>
 		<method name="map_to_world" qualifiers="const">
@@ -229,7 +229,7 @@
 			<argument index="4" name="alternative_tile" type="int" default="-1" />
 			<description>
 				Sets the tile indentifiers for the cell on layer [code]layer[/code] at coordinates [code]coords[/code]. Each tile of the [TileSet] is identified using three parts:
-				- The source indentifier [code]source_id[/code] identifies a [TileSetSource] identifier. See [method TileSet.set_source_id],
+				- The source identifier [code]source_id[/code] identifies a [TileSetSource] identifier. See [method TileSet.set_source_id],
 				- The atlas coordinates identifier [code]atlas_coords[/code] identifies a tile coordinates in the atlas (if the source is a [TileSetAtlasSource]. For [TileSetScenesCollectionSource] it should be 0),
 				- The alternative tile identifier [code]alternative_tile[/code] identifies a tile alternative the source is a [TileSetAtlasSource], and the scene for a [TileSetScenesCollectionSource].
 			</description>

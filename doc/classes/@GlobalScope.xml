@@ -1256,13 +1256,13 @@
 			Aligns inline object (e.g. image, table) to the bottom of the text.
 		</constant>
 		<constant name="INLINE_ALIGNMENT_TOP" value="0" enum="InlineAlignment">
-			Aligns top of the inline object (e.g. image, table) to the top of the text. Equvalent to [code]INLINE_ALIGNMENT_TOP_TO | INLINE_ALIGNMENT_TO_TOP[/code].
+			Aligns top of the inline object (e.g. image, table) to the top of the text. Equivalent to [code]INLINE_ALIGNMENT_TOP_TO | INLINE_ALIGNMENT_TO_TOP[/code].
 		</constant>
 		<constant name="INLINE_ALIGNMENT_CENTER" value="5" enum="InlineAlignment">
-			Aligns center of the inline object (e.g. image, table) to the center of the text. Equvalent to [code]INLINE_ALIGNMENT_CENTER_TO | INLINE_ALIGNMENT_TO_CENTER[/code].
+			Aligns center of the inline object (e.g. image, table) to the center of the text. Equivalent to [code]INLINE_ALIGNMENT_CENTER_TO | INLINE_ALIGNMENT_TO_CENTER[/code].
 		</constant>
 		<constant name="INLINE_ALIGNMENT_BOTTOM" value="14" enum="InlineAlignment">
-			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equvalent to [code]INLINE_ALIGNMENT_BOTTOM_TO | INLINE_ALIGNMENT_TO_BOTTOM[/code].
+			Aligns bottom of the inline object (e.g. image, table) to the bottom of the text. Equivalent to [code]INLINE_ALIGNMENT_BOTTOM_TO | INLINE_ALIGNMENT_TO_BOTTOM[/code].
 		</constant>
 		<constant name="KEY_SPECIAL" value="16777216" enum="Key">
 			Keycodes with this bit applied are non-printable.

@@ -1760,7 +1760,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	}
 	int face_count = extrusions * extrusion_face_count + end_count * shape_face_count;
 
-	// Intialize variables used to create the mesh.
+	// Initialize variables used to create the mesh.
 	Ref<Material> material = get_material();
 
 	Vector<Vector3> faces;

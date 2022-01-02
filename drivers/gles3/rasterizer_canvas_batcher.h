@@ -465,7 +465,7 @@ public:
 		TransformMode orig_transform_mode;
 
 		// support for extra matrices
-		bool extra_matrix_sent; // whether sent on this item (in which case sofware transform can't be used untl end of item)
+		bool extra_matrix_sent; // whether sent on this item (in which case software transform can't be used untl end of item)
 		int transform_extra_command_number_p1; // plus one to allow fast checking against zero
 		Transform2D transform_combined; // final * extra
 	};

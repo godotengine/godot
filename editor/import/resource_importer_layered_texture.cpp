@@ -392,7 +392,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
 
 		if (can_bptc) {
-			formats_imported.push_back("bptc"); //needs to be aded anyway
+			formats_imported.push_back("bptc"); // Needs to be added anyway.
 		}
 		bool can_compress_hdr = hdr_compression > 0;
 

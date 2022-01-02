@@ -142,7 +142,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 			if (builtin_list.has(shortcut_definition.key)) {
 				// This shortcut was auto-generated from built in actions: don't save.
-				// If the builtin is overriden, it will be saved in the "builtin_action_overrides" section below.
+				// If the builtin is overridden, it will be saved in the "builtin_action_overrides" section below.
 				continue;
 			}
 

@@ -103,7 +103,7 @@ public:
 
 	virtual void poll() override;
 	virtual bool is_server() const override;
-	// Overriden so we can instrument the DTLSServer when needed.
+	// Overridden so we can instrument the DTLSServer when needed.
 	virtual void set_refuse_new_connections(bool p_enabled) override;
 
 	virtual ConnectionStatus get_connection_status() const override;

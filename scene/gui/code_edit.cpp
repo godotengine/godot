@@ -2990,7 +2990,7 @@ CodeEdit::CodeEdit() {
 	add_auto_brace_completion_pair("\"", "\"");
 	add_auto_brace_completion_pair("\'", "\'");
 
-	/* Delimiter traking */
+	/* Delimiter tracking */
 	add_string_delimiter("\"", "\"", false);
 	add_string_delimiter("\'", "\'", false);
 

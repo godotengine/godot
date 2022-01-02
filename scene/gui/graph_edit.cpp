@@ -2107,7 +2107,7 @@ void GraphEdit::arrange_nodes() {
 		} while (u != E->get());
 	}
 
-	//Compute horizontal co-ordinates individually for layers to get uniform gap
+	// Compute horizontal coordinates individually for layers to get uniform gap.
 	float start_from = origin.x;
 	float largest_node_size = 0.0f;
 

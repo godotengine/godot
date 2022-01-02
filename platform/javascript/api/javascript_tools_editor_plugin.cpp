@@ -67,7 +67,7 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	FileAccess *src_f;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
-	// Name the downloded ZIP file to contain the project name and download date for easier organization.
+	// Name the downloaded ZIP file to contain the project name and download date for easier organization.
 	// Replace characters not allowed (or risky) in Windows file names with safe characters.
 	// In the project name, all invalid characters become an empty string so that a name
 	// like "Platformer 2: Godette's Revenge" becomes "platformer_2-_godette-s_revenge".

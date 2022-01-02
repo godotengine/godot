@@ -223,7 +223,7 @@ void ShapeCast2D::_notification(int p_what) {
 				draw_col.g = g;
 				draw_col.b = g;
 			}
-			// Draw continuos chain of shapes along the cast.
+			// Draw continuous chain of shapes along the cast.
 			const int steps = MAX(2, target_position.length() / shape->get_rect().get_size().length() * 4);
 			for (int i = 0; i <= steps; ++i) {
 				Vector2 t = (real_t(i) / steps) * target_position;
