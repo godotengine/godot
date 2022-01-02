@@ -264,6 +264,7 @@ void LilyphysServer::detect_collision(RID p_body) {
             List<RID> results = solver.check_collision(body, body_owner.get(f->get()), collision_result_owner);
             body->add_collisions(results);
             body_owner.get(f->get())->add_collisions(results);
+            body_owner.get(f->get())->add_collisions(results);
             for (int i = 0; i < results.size(); i++) {
                 collisions.push_back(results[i]);
             }
