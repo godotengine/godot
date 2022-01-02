@@ -15,14 +15,14 @@
 			<return type="float" />
 			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
 			<description>
-				Return the maximum value range for the given parameter.
+				Returns the maximum value range for the given parameter.
 			</description>
 		</method>
 		<method name="get_param_min" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
 			<description>
-				Return the minimum value range for the given parameter.
+				Returns the minimum value range for the given parameter.
 			</description>
 		</method>
 		<method name="get_param_texture" qualifiers="const">

@@ -244,7 +244,7 @@
 			<return type="int" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
-				Return the width of the range around the shape between the minimum and maximum representable signed distance.
+				Returns the width of the range around the shape between the minimum and maximum representable signed distance.
 			</description>
 		</method>
 		<method name="font_get_msdf_size" qualifiers="const">
@@ -295,7 +295,7 @@
 			<return type="Array" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
-				Return list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
+				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
 			</description>
 		</method>
 		<method name="font_get_spacing" qualifiers="const">
@@ -382,7 +382,7 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="char" type="int" />
 			<description>
-				Return [code]true[/code] if a Unicode [code]char[/code] is available in the font.
+				Returns [code]true[/code] if a Unicode [code]char[/code] is available in the font.
 			</description>
 		</method>
 		<method name="font_is_antialiased" qualifiers="const">
