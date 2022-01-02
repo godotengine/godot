@@ -62,12 +62,15 @@ int SpriteFramesEditor::_sheet_preview_position_to_frame_index(const Point2 &p_p
 	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
 	int h = split_sheet_h->get_value();
 	int v = split_sheet_v->get_value();
+	int frame_width = split_sheet_width->get_value();
+	int frame_height = split_sheet_height->get_value();
+
 	if (h > texture_size.width || v > texture_size.height) {
 		return -1;
 	}
 
-	int x = int(p_position.x / sheet_zoom) / (texture_size.width / h);
-	int y = int(p_position.y / sheet_zoom) / (texture_size.height / v);
+	int x = int(p_position.x / sheet_zoom) / frame_width;
+	int y = int(p_position.y / sheet_zoom) / frame_height;
 	if (x >= h || y >= v) {
 		return -1;
 	}
@@ -75,12 +78,14 @@ int SpriteFramesEditor::_sheet_preview_position_to_frame_index(const Point2 &p_p
 }
 
 void SpriteFramesEditor::_sheet_preview_draw() {
-	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
 	int h = split_sheet_h->get_value();
 	int v = split_sheet_v->get_value();
 
-	real_t width = (texture_size.width / h) * sheet_zoom;
-	real_t height = (texture_size.height / v) * sheet_zoom;
+	int frame_width = split_sheet_width->get_value();
+	int frame_height = split_sheet_height->get_value();
+
+	real_t width = frame_width * sheet_zoom;
+	real_t height = frame_height * sheet_zoom;
 	const float a = 0.3;
 
 	real_t y_end = v * height;
@@ -215,8 +220,11 @@ void SpriteFramesEditor::_sheet_scroll_input(const Ref<InputEvent> &p_event) {
 void SpriteFramesEditor::_sheet_add_frames() {
 	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
 	int frame_count_x = split_sheet_h->get_value();
-	int frame_count_y = split_sheet_v->get_value();
-	Size2 frame_size(texture_size.width / frame_count_x, texture_size.height / frame_count_y);
+
+	int frame_width = split_sheet_width->get_value();
+	int frame_height = split_sheet_height->get_value();
+
+	Size2 frame_size(frame_width, frame_height);
 
 	undo_redo->create_action(TTR("Add Frame"));
 
@@ -292,7 +300,49 @@ void SpriteFramesEditor::_sheet_select_clear_all_frames() {
 	split_sheet_preview->update();
 }
 
+void SpriteFramesEditor::_sheet_spin_wh_changed(double) {
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
+	int h = split_sheet_h->get_value();
+	int v = split_sheet_v->get_value();
+	int frame_width = split_sheet_width->get_value();
+	int frame_height = split_sheet_height->get_value();
+
+	if (h != texture_size.width / frame_width) {
+		split_sheet_h->set_value(texture_size.width / frame_width);
+		split_sheet_width->set_value(frame_width);
+		split_sheet_height->set_value(frame_height);
+		return;
+	}
+	if (v != texture_size.height / frame_height) {
+		split_sheet_v->set_value(texture_size.height / frame_height);
+		split_sheet_width->set_value(frame_width);
+		split_sheet_height->set_value(frame_height);
+		return;
+	}
+	frames_selected.clear();
+	last_frame_selected = -1;
+	split_sheet_preview->update();
+}
+
 void SpriteFramesEditor::_sheet_spin_changed(double) {
+	Size2i texture_size = split_sheet_preview->get_texture()->get_size();
+	int h = split_sheet_h->get_value();
+	int v = split_sheet_v->get_value();
+	int frame_width = split_sheet_width->get_value();
+	int frame_height = split_sheet_height->get_value();
+
+	int width = texture_size.width / h;
+	int height = texture_size.height / v;
+
+	if (height != frame_height) {
+		split_sheet_height->set_value(height);
+		return;
+	}
+	if (width != frame_width) {
+		split_sheet_width->set_value(width);
+		return;
+	}
+
 	frames_selected.clear();
 	last_frame_selected = -1;
 	split_sheet_preview->update();
@@ -311,8 +361,9 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 	split_sheet_preview->set_texture(texture);
 	if (new_texture) {
 		//different texture, reset to 4x4
-		split_sheet_h->set_value(4);
-		split_sheet_v->set_value(4);
+		Size2i texture_size = split_sheet_preview->get_texture()->get_size();
+		split_sheet_width->set_value(texture_size.x / 4);
+		split_sheet_height->set_value(texture_size.y / 4);
 		//reset zoom
 		_sheet_zoom_reset();
 	}
@@ -1216,6 +1267,24 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_v->set_step(1);
 	split_sheet_hb->add_child(split_sheet_v);
 	split_sheet_v->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed));
+
+	ss_label = memnew(Label(TTR("Width:")));
+	split_sheet_hb->add_child(ss_label);
+	split_sheet_width = memnew(SpinBox);
+	split_sheet_width->set_min(1);
+	split_sheet_width->set_max(4096);
+	split_sheet_width->set_step(1);
+	split_sheet_hb->add_child(split_sheet_width);
+	split_sheet_width->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_wh_changed));
+
+	ss_label = memnew(Label(TTR("Height:")));
+	split_sheet_hb->add_child(ss_label);
+	split_sheet_height = memnew(SpinBox);
+	split_sheet_height->set_min(1);
+	split_sheet_height->set_max(4096);
+	split_sheet_height->set_step(1);
+	split_sheet_hb->add_child(split_sheet_height);
+	split_sheet_height->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_sheet_spin_wh_changed));
 
 	split_sheet_hb->add_spacer();
 

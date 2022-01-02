@@ -82,6 +82,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	TextureRect *split_sheet_preview;
 	SpinBox *split_sheet_h;
 	SpinBox *split_sheet_v;
+	SpinBox *split_sheet_height;
+	SpinBox *split_sheet_width;
 	Button *split_sheet_zoom_out;
 	Button *split_sheet_zoom_reset;
 	Button *split_sheet_zoom_in;
@@ -135,6 +137,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _prepare_sprite_sheet(const String &p_file);
 	int _sheet_preview_position_to_frame_index(const Vector2 &p_position);
 	void _sheet_preview_draw();
+	void _sheet_spin_wh_changed(double);
 	void _sheet_spin_changed(double);
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
 	void _sheet_scroll_input(const Ref<InputEvent> &p_event);
