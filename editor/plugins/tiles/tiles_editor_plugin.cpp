@@ -157,6 +157,17 @@ void TilesEditorPlugin::_update_editors() {
 
 	// Update the viewport.
 	CanvasItemEditor::get_singleton()->update_viewport();
+
+	// Update visibility of bottom panel buttons.
+	if (tileset_editor_button->is_pressed() && !tile_set.is_valid()) {
+		if (tile_map) {
+			editor_node->make_bottom_panel_item_visible(tilemap_editor);
+		} else {
+			editor_node->hide_bottom_panel();
+		}
+	}
+	tileset_editor_button->set_visible(tile_set.is_valid());
+	tilemap_editor_button->set_visible(tile_map);
 }
 
 void TilesEditorPlugin::_notification(int p_what) {
