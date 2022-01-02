@@ -24,6 +24,10 @@ public:
     _LilyphysServer();
     ~_LilyphysServer();
     String get_pee_storage();
+    Array get_body_collisions(RID p_body);
+    bool get_step_through();
+    void set_step_through(bool p_step_through);
+    void do_step_through();
 
     RID create_physics_body();
 };

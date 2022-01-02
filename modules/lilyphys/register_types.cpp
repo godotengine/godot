@@ -5,6 +5,7 @@
 
 #include "lilyphys_server.h"
 #include "_lilyphys_server.h"
+#include "l_collision_solver.h"
 
 #include "nodes/l_collision_object.h"
 #include "nodes/l_physics_body.h"
@@ -31,6 +32,7 @@ void register_lilyphys_types() {
     ClassDB::register_class<LCollisionShape>();
     ClassDB::register_virtual_class<LShape>();
     ClassDB::register_class<LBoxShape>();
+    ClassDB::register_class<LCollision>();
 
 #ifdef TOOLS_ENABLED
     EditorPlugins::add_by_type<LilyphysEditorPlugin>();

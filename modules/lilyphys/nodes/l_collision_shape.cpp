@@ -67,6 +67,10 @@ void LCollisionShape::_notification(int p_what) {
                 update_parent();
             }
             break;
+        case NOTIFICATION_EXIT_TREE:
+            if (shape.is_valid()) {
+                shape->unregister_owner(this);
+            }
         case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
             if (parent) {
                 update_parent(true);
@@ -91,9 +95,7 @@ void LCollisionShape::update_parent(bool p_transform_only) {
 }
 
 LCollisionShape::~LCollisionShape() {
-    if (shape.is_valid()) {
-        shape->unregister_owner(this);
-    }
+
 }
 
 void LCollisionShape::resource_changed(RES res) {

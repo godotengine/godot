@@ -32,8 +32,10 @@ protected:
 
 public:
     LICollisionObject(Type p_type);
+    ~LICollisionObject() override;
     void set_self(RID p_rid);
     RID get_self();
+    Type get_type() const { return type; }
     void set_transform(const Transform& p_transform) { transform = p_transform; }
     const Transform &get_transform() const { return transform; }
     size_t add_shape(RID p_rid);

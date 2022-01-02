@@ -5,8 +5,10 @@
 #include "li_physics_body.h"
 
 #include "../l_body_state.h"
+#include "../lilyphys_server.h"
 
 #include "core/math/math_funcs.h"
+#include "../l_collision_solver.h"
 
 LIPhysicsBody::LIPhysicsBody() : LICollisionObject(TYPE_BODY) {
     // Test data.
@@ -25,6 +27,7 @@ LIPhysicsBody::LIPhysicsBody() : LICollisionObject(TYPE_BODY) {
     tensor[2].y = 0.0f;
     tensor[2].z = 1.0f / 12.0f * get_mass() * (pow(2, 2.0f) + pow(2, 2.0f));
     set_inertia_tensor(tensor);
+    velocity_changed = true;
 }
 
 real_t LIPhysicsBody::get_inverse_mass() const {
@@ -93,9 +96,10 @@ bool LIPhysicsBody::has_finite_mass() const {
 
 void LIPhysicsBody::add_force(const Vector3 &p_force) {
     force_accum += p_force;
+    velocity_changed = true;
 }
 
-void LIPhysicsBody::integrate(float p_step) {
+void LIPhysicsBody::integrate_velocity(float p_step) {
     last_acceleration = acceleration;
     last_acceleration += force_accum * inverse_mass;
 
@@ -112,10 +116,13 @@ void LIPhysicsBody::integrate(float p_step) {
 
     velocity *= damp;
     angular_velocity *= angular_damp;
+}
 
+void LIPhysicsBody::update_position(float p_step) {
     transform.origin += velocity * p_step;
     transform.basis *= Basis(angular_velocity * p_step);
     transform.orthonormalize();
+    global_inverse_inertia_tensor = transform.basis * inv_inertia_tensor * transform.basis.transposed();
 }
 
 void LIPhysicsBody::clear_accumulators() {
@@ -161,6 +168,7 @@ void LIPhysicsBody::add_force_at_point(const Vector3 &p_force, const Vector3 &p_
     point -= transform.origin;
     force_accum += p_force;
     torque_accum += point.cross(p_force);
+    velocity_changed = true;
 }
 
 void LIPhysicsBody::add_force_at_body_point(const Vector3 &p_force, const Vector3 &p_point) {
@@ -169,4 +177,54 @@ void LIPhysicsBody::add_force_at_body_point(const Vector3 &p_force, const Vector
 
 Vector3 LIPhysicsBody::to_global(const Vector3 &p_vector) const {
     return transform.xform(p_vector);
+}
+
+void LIPhysicsBody::copy_current_state_to_old() {
+    old_transform = transform;
+    old_velocity = velocity;
+    old_angular_velocity = angular_velocity;
+}
+
+void LIPhysicsBody::restore_old_state() {
+    transform = old_transform;
+    velocity = old_velocity;
+    angular_velocity = old_angular_velocity;
+}
+
+void LIPhysicsBody::add_collisions(const List<RID> &p_collisions) {
+    for (int i = 0; i < p_collisions.size(); i++) {
+        collisions.push_back(p_collisions[i]);
+    }
+}
+
+void LIPhysicsBody::clear_collisions() {
+    collisions.clear();
+}
+
+const Basis &LIPhysicsBody::get_global_inv_inertia_tensor() const {
+    return global_inverse_inertia_tensor;
+}
+
+void LIPhysicsBody::apply_global_impulse(const Vector3 &p_impulse, const Vector3 &p_delta) {
+    if (!has_finite_mass()) {
+        return;
+    }
+    velocity += p_impulse * inverse_mass;
+    angular_velocity += global_inverse_inertia_tensor.xform(p_delta.cross(p_impulse));
+    velocity_changed = true;
+}
+
+void LIPhysicsBody::apply_negative_global_impulse(const Vector3 &p_impulse, const Vector3 &p_delta) {
+    if (!has_finite_mass()) {
+        return;
+    }
+    velocity += p_impulse * -inverse_mass;
+    angular_velocity -= global_inverse_inertia_tensor.xform(p_delta.cross(p_impulse));
+    velocity_changed = true;
+}
+
+void LIPhysicsBody::set_collisions_unsatisfied() {
+    for (int i = 0; i < collisions.size(); i++) {
+        LilyphysServer::get_singleton()->set_collision_satisfied(collisions[i], false);
+    }
 }

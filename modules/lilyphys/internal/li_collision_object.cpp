@@ -61,3 +61,7 @@ void LICollisionObject::remove_shape(RID p_rid) {
         }
     }
 }
+
+LICollisionObject::~LICollisionObject() {
+    clear_shapes();
+}

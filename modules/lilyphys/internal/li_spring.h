@@ -16,7 +16,7 @@ private:
     real_t rest_length;
 public:
     LISpring(const Vector3& p_local_connection_point, RID p_other, const Vector3& p_other_connection_point, real_t p_spring_constant, real_t p_rest_length)
-        : connection_point(p_local_connection_point), other(p_other), other_connection_point(p_other_connection_point), spring_constant(p_spring_constant), rest_length(p_rest_length) {}
+        : connection_point(p_local_connection_point), other_connection_point(p_other_connection_point), other(p_other), spring_constant(p_spring_constant), rest_length(p_rest_length) {}
     void update_force(LIPhysicsBody *p_body, real_t p_delta) override;
 };
 

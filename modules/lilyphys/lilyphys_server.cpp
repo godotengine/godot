@@ -41,46 +41,6 @@ void LilyphysServer::finish() {
     memdelete(LBodyState::singleton);
 }
 
-void LilyphysServer::step(float p_step) {
-    if (!active) {
-        return;
-    }
-
-    // Clear accumulators on all objects.
-    for (Set<RID>::Element *e = bodies.front(); e; e = e->next()) {
-        body_owner.get(e->get())->clear_accumulators();
-    }
-
-    // Update all forces.
-    for (List<Registration>::Element *E=registry.front(); E; E=E->next()) {
-        generator_owner.get(E->get().generator)->update_force(body_owner.get(E->get().body), p_step);
-    }
-
-    // Do the integration step for all physics bodies.
-    for (Set<RID>::Element *e = bodies.front(); e; e = e->next()) {
-        LIPhysicsBody *object = body_owner.get(e->get());
-        object->integrate(p_step);
-    }
-
-    // We should really...REALLY get broad phase collision...... this hurts my SOUL !
-    for (Set<RID>::Element *e = bodies.front(); e; e = e->next()) {
-        for (Set<RID>::Element *f = bodies.front(); f; f = f->next()) {
-            if (e->get() != f->get()) {
-                CollisionResult result = solver.check_collision(body_owner.get(e->get()), body_owner.get(f->get()));
-//                if (result.intersect) {
-//                    LIPhysicsBody *object = body_owner.get(e->get());
-//                }
-            }
-        }
-    }
-
-    // Send the physics state to the nodes.
-    for (Set<RID>::Element *e = bodies.front(); e; e = e->next()) {
-        LIPhysicsBody *object = body_owner.get(e->get());
-        object->perform_callback();
-    }
-}
-
 RID LilyphysServer::create_physics_body() {
     LIPhysicsBody* object = memnew(LIPhysicsBody);
     RID rid = body_owner.make_rid(object);
@@ -112,6 +72,14 @@ void LilyphysServer::register_generator(RID p_body, RID p_generator) {
 void LilyphysServer::unregister_generator(RID p_body, RID p_generator) {
     for(List<Registration>::Element *E=registry.front(); E; E=E->next()) {
         if (E->get().body == p_body && E->get().generator == p_generator) {
+            registry.erase(E);
+        }
+    }
+}
+
+void LilyphysServer::clear_registry_for_body(RID p_body) {
+    for(List<Registration>::Element *E=registry.front(); E; E=E->next()) {
+        if (E->get().body == p_body) {
             registry.erase(E);
         }
     }
@@ -195,21 +163,24 @@ bool LilyphysServer::physics_body_get_shape_exists(RID p_body, size_t p_id) {
 void LilyphysServer::free(RID p_rid) {
     if (shape_owner.owns(p_rid)) {
         LIShape* shape = shape_owner.get(p_rid);
-        while (shape->get_owners().size()) {
+        while (!shape->get_owners().empty()) {
             LICollisionObject *so = shape->get_owners().front()->key();
             so->remove_shape(shape->get_self());
         }
         shape_owner.free(p_rid);
+        shapes.erase(p_rid);
         memdelete(shape);
     }
     else if (body_owner.owns(p_rid)) {
         LIPhysicsBody* body = body_owner.get(p_rid);
+        clear_registry_for_body(p_rid);
         body->clear_shapes();
         body_owner.free(p_rid);
+        bodies.erase(p_rid);
         memdelete(body);
     }
     else {
-        ERR_FAIL_MSG("Invalid rid trying to be freed.")
+        ERR_FAIL_MSG("Invalid rid trying to be freed.");
     }
 }
 
@@ -229,4 +200,387 @@ Vector3 LilyphysServer::shape_get_support(RID p_id, Vector3 p_direction) {
     LIShape* shape = shape_owner.get(p_id);
     ERR_FAIL_COND_V(!shape, Vector3(0, 0, 0));
     return shape->get_support(p_direction);
+}
+
+void LilyphysServer::find_all_active_bodies() {
+    active_bodies.clear();
+    for (Set<RID>::Element *E = bodies.front(); E; E = E->next()) {
+        if (body_owner.get(E->get())->is_active()) {
+            active_bodies.insert(E->get());
+        }
+    }
+}
+
+void LilyphysServer::copy_all_current_state_to_old() {
+    for (Set<RID>::Element *E = bodies.front(); E; E = E->next()) {
+        LIPhysicsBody* body = body_owner.get(E->get());
+        if (body->is_active() && body->get_velocity_changed()) {
+            body->copy_current_state_to_old();
+        }
+    }
+}
+
+void LilyphysServer::restore_all_state() {
+    for (Set<RID>::Element *E = bodies.front(); E; E = E->next()) {
+        LIPhysicsBody* body = body_owner.get(E->get());
+        if (body->is_active() && body->get_velocity_changed()) {
+            body->restore_old_state();
+        }
+    }
+}
+
+void LilyphysServer::clear_all_accumulators() {
+    for (Set<RID>::Element *E = bodies.front(); E; E = E->next()) {
+        body_owner.get(E->get())->clear_accumulators();
+    }
+}
+
+void LilyphysServer::detect_all_collisions(float p_step) {
+    copy_all_current_state_to_old();
+
+    integrate_all_bodies(p_step);
+    update_all_positions(p_step);
+
+    collisions.clear();
+    for (Set<RID>::Element *e = bodies.front(); e; e = e->next()) {
+        body_owner.get(e->get())->clear_collisions();
+    }
+
+    // We should really...REALLY get broad phase collision...... this hurts my SOUL !
+    Set<RID>::Element *e = bodies.front();
+    detect_collision(e->get());
+
+//    for (Set<RID>::Element *e = bodies.front(); e; e = e->next()) {
+//        detect_collision(e->get());
+//    }
+
+    restore_all_state();
+}
+
+void LilyphysServer::detect_collision(RID p_body) {
+    LIPhysicsBody* body = body_owner.get(p_body);
+    for (Set<RID>::Element *f = bodies.front(); f; f = f->next()) {
+        if (p_body != f->get()) {
+            List<RID> results = solver.check_collision(body, body_owner.get(f->get()), collision_result_owner);
+            body->add_collisions(results);
+            body_owner.get(f->get())->add_collisions(results);
+            for (int i = 0; i < results.size(); i++) {
+                collisions.push_back(results[i]);
+            }
+        }
+    }
+}
+
+// Gets run once per collision, so we precalculate everything possible.
+void LilyphysServer::preprocess_collision(float p_step, CollisionResult* p_result) {
+    LIPhysicsBody* body0 = body_owner.get(p_result->body0);
+    LIPhysicsBody* body1 = body_owner.get(p_result->body1);
+
+    // Only process collisions between two LIPhysicsBodies, NOT areas!
+    if (!body0 || !body1) {
+        return;
+    }
+
+    p_result->satisfied = false;
+
+    // Normalized direction vector from body0 to body1;
+    const Vector3 N = body0->get_transform().origin.direction_to(body1->get_transform().origin);
+    const float timescale = p_step * (float)num_penetration_relaxation_timesteps;
+    p_result->R0 = p_result->pos - body0->get_transform().origin;
+    p_result->R1 = p_result->pos - body1->get_transform().origin;
+
+    if (!body0->has_finite_mass()) {
+        p_result->denominator = 0.0f;
+    }
+    else {
+        p_result->denominator = body0->get_inverse_mass() + N.dot(body0->get_global_inv_inertia_tensor().xform(
+                p_result->R0.cross(N)).cross(p_result->R0));
+    }
+
+    if (body1->has_finite_mass()) {
+        p_result->denominator += body1->get_inverse_mass() + N.dot(body1->get_global_inv_inertia_tensor().xform(
+                p_result->R1.cross(N)).cross(p_result->R1));
+    }
+
+    if (p_result->denominator < FLOAT_TINY) {
+        p_result->denominator = FLOAT_TINY;
+    }
+
+    if (p_result->depth > allowed_penetration) {
+        p_result->min_separation_velocity = (p_result->depth - allowed_penetration) / timescale;
+    }
+    else {
+        float approachScale = -0.1f * (p_result->depth - allowed_penetration) / (FLOAT_TINY + allowed_penetration);
+        CLAMP(approachScale, FLOAT_TINY, 1.0f);
+        p_result->min_separation_velocity = approachScale * (p_result->depth - allowed_penetration) / MAX(p_step, FLOAT_TINY);
+    }
+    if (p_result->min_separation_velocity > max_velocity_magnitude) {
+        p_result->min_separation_velocity = max_velocity_magnitude;
+    }
+
+}
+
+bool LilyphysServer::process_collision(float p_step, CollisionResult* p_result, bool p_first_contact) {
+    p_result->satisfied = true;
+
+    LIPhysicsBody* body0 = body_owner.get(p_result->body0);
+    LIPhysicsBody* body1 = body_owner.get(p_result->body1);
+
+    // Only process collisions between two LIPhysicsBodies, NOT areas!
+    if (!body0 || !body1) {
+        return false;
+    }
+
+    const Vector3 N = body0->get_transform().origin.direction_to(body1->get_transform().origin);
+    bool got_one = false;
+
+    do {
+        // I am at a loss for words. what is this.
+        Vector3 rel_velocity0 = Vector3{
+                body0->get_velocity()[0] + body0->get_angular_velocity()[1] * p_result->R0[2] -
+                body0->get_angular_velocity()[2] * p_result->R0[1],
+                body0->get_velocity()[1] + body0->get_angular_velocity()[2] * p_result->R0[0] -
+                body0->get_angular_velocity()[0] * p_result->R0[2],
+                body0->get_velocity()[2] + body0->get_angular_velocity()[0] * p_result->R0[1] -
+                body0->get_angular_velocity()[1] * p_result->R0[0],
+        };
+        Vector3 rel_velocity1 = Vector3{
+                body1->get_velocity()[0] + body1->get_angular_velocity()[1] * p_result->R1[2] -
+                body1->get_angular_velocity()[2] * p_result->R1[1],
+                body1->get_velocity()[1] + body1->get_angular_velocity()[2] * p_result->R1[0] -
+                body1->get_angular_velocity()[0] * p_result->R1[2],
+                body1->get_velocity()[2] + body1->get_angular_velocity()[0] * p_result->R1[1] -
+                body1->get_angular_velocity()[1] * p_result->R1[0],
+        };
+
+        float normal_velocity = (rel_velocity0 - rel_velocity1).dot(N);
+
+        if (normal_velocity > p_result->min_separation_velocity) {
+            break;
+        }
+
+        float final_normal_velocity = -p_result->restitution * normal_velocity;
+
+        if (final_normal_velocity < min_velocity_for_processing) {
+            final_normal_velocity = p_result->min_separation_velocity;
+        }
+
+        float delta_velocity = final_normal_velocity - normal_velocity;
+
+        if (delta_velocity <= min_velocity_for_processing) {
+            break;
+        }
+
+        float normal_impulse = delta_velocity / p_result->denominator;
+
+        got_one = true;
+        Vector3 impulse = N * normal_impulse;
+
+        body0->apply_global_impulse(impulse, p_result->R0);
+        body1->apply_negative_global_impulse(impulse, p_result->R1);
+
+        // TODO: Calculate friction(?)
+
+        if (got_one) {
+            body0->set_collisions_unsatisfied();
+            body1->set_collisions_unsatisfied();
+        }
+
+    // This is dumb, but I don't see another way of 'continuing.'
+    } while (false);
+
+    return got_one;
+}
+
+void LilyphysServer::handle_all_constraints(float p_step, int p_iterations, bool p_force_inelastic) {
+    int orig_collision_count = collisions.size();
+
+    // TODO: Prepare all constraints.
+
+    // Prepare all collisions.
+    if (p_force_inelastic) {
+        for (List<RID>::Element *E = collisions.front(); E; E = E->next()) {
+            CollisionResult* result = collision_result_owner.get(E->get());
+            ERR_FAIL_COND(!result);
+            preprocess_collision(p_step, result);
+            result->restitution = 0.0f;
+            result->satisfied = false;
+        }
+    }
+    else {
+        for (List<RID>::Element *E = collisions.front(); E; E = E->next()) {
+            CollisionResult* result = collision_result_owner.get(E->get());
+            ERR_FAIL_COND(!result);
+            preprocess_collision(p_step, result);
+        }
+    }
+
+    static int dir = 1;
+    for (int step = 0; step < p_iterations; step++) {
+        bool got_one = false;
+        int num_collisions = collisions.size();
+        dir = !dir;
+
+        for (int i = dir ? 0 : num_collisions - 1; i >= 0 && i < num_collisions; dir ? i++ : i--) {
+            CollisionResult* result = collision_result_owner.get(collisions[i]);
+            ERR_FAIL_COND(!result);
+            if (!result->satisfied) {
+                // Do something different if force inelastic? (Process contact function instead?)
+                got_one |= process_collision(p_step, result, step == 0);
+                result->satisfied = false;
+            }
+        }
+
+        // TODO: Apply constraints
+
+        // TODO: Try to activate all frozen bodies.
+        try_activate_all_frozen_bodies();
+
+        // Number of collisions might have increased when bodies get activated.
+        num_collisions = collisions.size();
+
+        // Preprocess any new collisions.
+        if (p_force_inelastic) {
+            for (int i = orig_collision_count; i < num_collisions; i++) {
+                CollisionResult* result = collision_result_owner.get(collisions[i]);
+                ERR_FAIL_COND(!result);
+                preprocess_collision(p_step, result);
+                result->restitution = 0.0f;
+                result->satisfied = false;
+            }
+        }
+        else {
+            for (int i = orig_collision_count; i < num_collisions; i++) {
+                CollisionResult* result = collision_result_owner.get(collisions[i]);
+                ERR_FAIL_COND(!result);
+                preprocess_collision(p_step, result);
+            }
+        }
+        orig_collision_count = num_collisions;
+
+        if (!got_one) {
+            break;
+        }
+    }
+}
+
+void LilyphysServer::integrate_all_bodies(float p_step) {
+    for (Set<RID>::Element *E = active_bodies.front(); E; E = E->next()) {
+        LIPhysicsBody* body = body_owner.get(E->get());
+        ERR_FAIL_COND(!body);
+        if (body->get_velocity_changed()) {
+            body->integrate_velocity(p_step);
+        }
+    }
+}
+
+void LilyphysServer::try_freeze_all_bodies() {
+
+}
+
+void LilyphysServer::update_all_positions(float p_step) {
+    for (Set<RID>::Element *E = active_bodies.front(); E; E = E->next()) {
+        body_owner.get(E->get())->update_position(p_step);
+    }
+}
+
+void LilyphysServer::perform_all_callbacks() {
+    // Send the physics state to the nodes.
+    for (Set<RID>::Element *e = bodies.front(); e; e = e->next()) {
+        LIPhysicsBody *object = body_owner.get(e->get());
+        ERR_FAIL_COND(!object);
+        object->perform_callback();
+    }
+}
+
+void LilyphysServer::step(float p_step) {
+    if (!active) {
+        return;
+    }
+
+    if (step_through && !do_step) {
+        return;
+    }
+    do_step = false;
+
+    free_queue();
+
+    clear_all_accumulators();
+
+    // Update all forces.
+    for (List<Registration>::Element *E=registry.front(); E; E=E->next()) {
+        generator_owner.get(E->get().generator)->update_force(body_owner.get(E->get().body), p_step);
+    }
+
+    find_all_active_bodies();
+
+    detect_all_collisions(p_step);
+
+    handle_all_constraints(p_step, collision_iterations, false);
+
+    integrate_all_bodies(p_step);
+
+    handle_all_constraints(p_step, collision_iterations, true);
+
+    update_all_positions(p_step);
+
+    perform_all_callbacks();
+
+
+}
+
+void LilyphysServer::try_activate_all_frozen_bodies() {
+    for (Set<RID>::Element *E = bodies.front(); E; E = E->next()) {
+        // TODO: Set criteria for activating bodies.
+        LIPhysicsBody* body = body_owner.get(E->get());
+        if (!body->is_active()) {
+            activate_body(E->get());
+        }
+    }
+}
+
+void LilyphysServer::activate_body(RID p_body) {
+    LIPhysicsBody* body = body_owner.get(p_body);
+    if (body->is_active() || !body->has_finite_mass()) {
+        return;
+    }
+
+    body->set_active(true);
+    active_bodies.insert(p_body);
+
+    detect_collision(p_body);
+    // TODO: Check if we also shouldn't activate other objects. Doesn't matter now since everything is activated.
+}
+
+void LilyphysServer::queue_free_rid(RID p_rid) {
+    deletion_queue.insert(p_rid);
+}
+
+void LilyphysServer::free_queue() {
+    for (Set<RID>::Element *E = deletion_queue.front(); E; E = E->next()) {
+        free(E->get());
+        deletion_queue.erase(E);
+    }
+}
+
+void LilyphysServer::set_collision_satisfied(RID p_collision, bool p_satisfied) {
+    CollisionResult* result = collision_result_owner.get(p_collision);
+    ERR_FAIL_COND(!result);
+    result->satisfied = p_satisfied;
+}
+
+Array LilyphysServer::get_body_collisions(RID p_body) {
+    Array array{};
+    LIPhysicsBody* body = body_owner.get(p_body);
+    ERR_FAIL_COND_V(!body, array);
+    List<RID> collisions = body->get_collisions();
+    for (List<RID>::Element *E = collisions.front(); E; E = E->next()) {
+        CollisionResult* result = collision_result_owner.get(E->get());
+        ERR_FAIL_COND_V(!result, Array{});
+        // Sooooo where does this get deleted?
+        LCollision* collision = memnew(LCollision);
+        collision->init(result->dir, result->pos, result->depth, result->body0, result->body1, result->shape_transform);
+        array.push_back(collision);
+    }
+    return array;
 }

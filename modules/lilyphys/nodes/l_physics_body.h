@@ -17,7 +17,6 @@ private:
     Vector3 acceleration{};
     Vector3 angular_velocity{};
     Basis inverse_inertia_tensor{};
-
     bool ignore_mass = false;
 protected:
     static void _bind_methods();

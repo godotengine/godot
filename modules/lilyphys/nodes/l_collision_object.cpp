@@ -71,5 +71,5 @@ void LCollisionObject::shape_owner_set_transform(size_t p_id, const Transform &p
 }
 
 LCollisionObject::~LCollisionObject() {
-    LilyphysServer::get_singleton()->free(rid);
+    LilyphysServer::get_singleton()->queue_free_rid(rid);
 }
