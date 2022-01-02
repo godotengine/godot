@@ -106,8 +106,8 @@
 			<argument index="3" name="custom_send" type="Callable" />
 			<argument index="4" name="custom_receive" type="Callable" />
 			<description>
-				Configures the MultiplayerReplicator to sync instances of the [PackedScene] identified by [code]scene_id[/code] (see [method ResourceLoader.get_resource_uid]) for the purpose of network replication at the desired [code]interval[/code] (in milliseconds). The specified [code]properties[/code] will be part of the state sync. You can optionally specify a [code]custom_send[/code] and a [code]custom_receive[/code] to override the default behaviour and customize the syncronization proecess.
-				Tip: You can use a custom property in the scene main script to return a customly optimized state representation (having a single property that returns a PackedByteArray is higly recommended when dealing with many instances).
+				Configures the MultiplayerReplicator to sync instances of the [PackedScene] identified by [code]scene_id[/code] (see [method ResourceLoader.get_resource_uid]) for the purpose of network replication at the desired [code]interval[/code] (in milliseconds). The specified [code]properties[/code] will be part of the state sync. You can optionally specify a [code]custom_send[/code] and a [code]custom_receive[/code] to override the default behaviour and customize the synchronization proecess.
+				Tip: You can use a custom property in the scene main script to return a customly optimized state representation (having a single property that returns a PackedByteArray is highly recommended when dealing with many instances).
 			</description>
 		</method>
 		<method name="track">

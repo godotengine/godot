@@ -15,7 +15,7 @@
 			<return type="float" />
 			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter" />
 			<description>
-				Return the maximum value range for the given prameter.
+				Return the maximum value range for the given parameter.
 			</description>
 		</method>
 		<method name="get_param_min" qualifiers="const">
@@ -199,7 +199,7 @@
 			Minimum initial velocity.
 		</member>
 		<member name="lifetime_randomness" type="float" setter="set_lifetime_randomness" getter="get_lifetime_randomness" default="0.0">
-			Particle lifetime randomness ratio. The lifetime will be multipled by a value interpolated between [code]1.0[/code] and a random number less than one. For example a random ratio of [code]0.4[/code] would scale the original lifetime between [code]0.4-1.0[/code] of its original value.
+			Particle lifetime randomness ratio. The lifetime will be multiplied by a value interpolated between [code]1.0[/code] and a random number less than one. For example a random ratio of [code]0.4[/code] would scale the original lifetime between [code]0.4-1.0[/code] of its original value.
 		</member>
 		<member name="linear_accel_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's linear acceleration will vary along this [CurveTexture].

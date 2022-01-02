@@ -38,7 +38,7 @@ class OptimizedTranslation : public Translation {
 
 	//this translation uses a sort of modified perfect hash algorithm
 	//it requires hashing strings twice and then does a binary search,
-	//so it's slower, but at the same time it has an extreemly high chance
+	//so it's slower, but at the same time it has an extremely high chance
 	//of catching untranslated strings
 
 	//load/store friendly types

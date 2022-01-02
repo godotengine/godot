@@ -1104,7 +1104,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_delimiter_start_key(idx) == "#");
 			CHECK(code_edit->get_delimiter_end_key(idx) == "");
 
-			/* Check nested strings are handeled correctly. */
+			/* Check nested strings are handled correctly. */
 			code_edit->set_text(" \n#  # \n ");
 
 			/* Check line above is not in string. */
@@ -1132,7 +1132,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_delimiter_start_position(2, 1) == OUTSIDE_DELIMETER);
 			CHECK(code_edit->get_delimiter_end_position(2, 1) == OUTSIDE_DELIMETER);
 
-			/* Check is in string with no column retruns true if entire line is comment excluding whitespace. */
+			/* Check is in string with no column returns true if entire line is comment excluding whitespace. */
 			code_edit->set_text(" \n  #  # \n ");
 			CHECK(code_edit->is_in_string(1) != -1);
 
@@ -1195,7 +1195,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_delimiter_start_key(idx) == "#");
 			CHECK(code_edit->get_delimiter_end_key(idx) == "");
 
-			/* Check nested comments are handeled correctly. */
+			/* Check nested comments are handled correctly. */
 			code_edit->set_text(" \n#  # \n ");
 
 			/* Check line above is not in comment. */
@@ -1223,7 +1223,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_delimiter_start_position(2, 1) == OUTSIDE_DELIMETER);
 			CHECK(code_edit->get_delimiter_end_position(2, 1) == OUTSIDE_DELIMETER);
 
-			/* Check is in comment with no column retruns true if entire line is comment excluding whitespace. */
+			/* Check is in comment with no column returns true if entire line is comment excluding whitespace. */
 			code_edit->set_text(" \n  #  # \n ");
 			CHECK(code_edit->is_in_comment(1) != -1);
 
@@ -1491,7 +1491,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_delimiter_start_key(idx) == "#");
 			CHECK(code_edit->get_delimiter_end_key(idx) == "#");
 
-			/* Check is in string with no column retruns true if entire line is string excluding whitespace. */
+			/* Check is in string with no column returns true if entire line is string excluding whitespace. */
 			code_edit->set_text(" \n # \n\n #\n ");
 			CHECK(code_edit->is_in_string(1) != -1);
 			CHECK(code_edit->is_in_string(2) != -1);
@@ -1680,7 +1680,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_delimiter_start_key(idx) == "#");
 			CHECK(code_edit->get_delimiter_end_key(idx) == "#");
 
-			/* Check is in comment with no column retruns true if entire line is comment excluding whitespace. */
+			/* Check is in comment with no column returns true if entire line is comment excluding whitespace. */
 			code_edit->set_text(" \n # \n\n #\n ");
 			CHECK(code_edit->is_in_comment(1) != -1);
 			CHECK(code_edit->is_in_comment(2) != -1);
@@ -1746,7 +1746,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_delimiter_start_key(idx) == "#");
 			CHECK(code_edit->get_delimiter_end_key(idx) == "#");
 
-			/* Check is in comment with no column retruns true as inner delimiter should not be counted. */
+			/* Check is in comment with no column returns true as inner delimiter should not be counted. */
 			CHECK(code_edit->is_in_comment(1) != -1);
 			CHECK(code_edit->is_in_comment(2) != -1);
 			CHECK(code_edit->is_in_comment(3) != -1);

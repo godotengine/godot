@@ -124,7 +124,7 @@ void MultiplayerReplicator::_process_default_sync(const ResourceUID::ID &p_id, c
 	ERR_FAIL_COND_MSG(p_packet_len < SYNC_CMD_OFFSET + 5, "Invalid spawn packet received");
 	ERR_FAIL_COND_MSG(!replications.has(p_id), "Invalid spawn ID received " + itos(p_id));
 	SceneConfig &cfg = replications[p_id];
-	ERR_FAIL_COND_MSG(cfg.mode != REPLICATION_MODE_SERVER || multiplayer->is_server(), "The defualt implementation only allows sync packets from the server");
+	ERR_FAIL_COND_MSG(cfg.mode != REPLICATION_MODE_SERVER || multiplayer->is_server(), "The default implementation only allows sync packets from the server");
 	const bool same_size = p_packet[0] & BYTE_OR_ZERO_FLAG;
 	int ofs = SYNC_CMD_OFFSET;
 	int time = p_packet[ofs];

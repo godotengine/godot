@@ -4197,7 +4197,7 @@ struct AnimationCompressionDataState {
 	};
 
 	uint32_t components = 3;
-	LocalVector<uint8_t> data; //commited packets
+	LocalVector<uint8_t> data; // Committed packets.
 	struct PacketData {
 		int32_t data[3] = { 0, 0, 0 };
 		uint32_t frame = 0;
@@ -4576,7 +4576,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 				}
 			}
 			for (int j = 0; j < 3; j++) {
-				//cant have zero
+				// Can't have zero.
 				if (aabb.size[j] < CMP_EPSILON) {
 					aabb.size[j] = CMP_EPSILON;
 				}
@@ -4596,7 +4596,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 				}
 			}
 			for (int j = 0; j < 3; j++) {
-				//cant have zero
+				// Can't have zero.
 				if (aabb.size[j] < CMP_EPSILON) {
 					aabb.size[j] = CMP_EPSILON;
 				}

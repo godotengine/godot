@@ -338,7 +338,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### Rendering
 
 - Some Environment settings such as depth of field have been moved to a CameraEffects resource which is assigned to individual Camera nodes.
-- [The ACES Fitted tonemapping algoirthm is now used in place of the old ACES algorithm.](https://github.com/godotengine/godot/pull/52476)
+- [The ACES Fitted tonemapping algorithm is now used in place of the old ACES algorithm.](https://github.com/godotengine/godot/pull/52476)
   - The old non-fitted ACES tonemapping algorithm was removed.
 - Quality settings have been moved from individual nodes and resources to the Project Settings for better centralization.
 - Quality settings now have performance hints in their values' names, such as "Fast" or "Slow".

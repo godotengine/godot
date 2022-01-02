@@ -690,7 +690,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						}
 						if (!str.is_valid_int()) {
 							if (uint_suffix_found) {
-								return _make_token(TK_ERROR, "Invalid (usigned integer) numeric constant");
+								return _make_token(TK_ERROR, "Invalid (unsigned integer) numeric constant");
 							} else {
 								return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
 							}

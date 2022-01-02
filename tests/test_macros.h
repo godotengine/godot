@@ -135,7 +135,7 @@ int register_test_command(String p_command, TestFunc p_function);
 // SEND_GUI_ACTION    - takes an object and a input map key. e.g SEND_GUI_ACTION(code_edit, "ui_text_newline").
 // SEND_GUI_KEY_EVENT - takes an object and a keycode set.   e.g SEND_GUI_KEY_EVENT(code_edit, Key::A | KeyModifierMask::CMD).
 // SEND_GUI_MOUSE_EVENT - takes an object, position, mouse button and mouse mask e.g SEND_GUI_MOUSE_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE);
-// SEND_GUI_DOUBLE_CLICK - takes an object and a postion. e.g SEND_GUI_DOUBLE_CLICK(code_edit, Vector2(50, 50));
+// SEND_GUI_DOUBLE_CLICK - takes an object and a position. e.g SEND_GUI_DOUBLE_CLICK(code_edit, Vector2(50, 50));
 
 #define SEND_GUI_ACTION(m_object, m_action)                                                           \
 	{                                                                                                 \
@@ -192,7 +192,7 @@ int register_test_command(String p_command, TestFunc p_function);
 //
 // Use SIGNAL_DISCARD("signal_name") to discard records all of the given signal, use only in placed you don't need to check.
 //
-// All signals are automaticaly discared between test/sub test cases.
+// All signals are automatically discarded between test/sub test cases.
 
 class SignalWatcher : public Object {
 private:

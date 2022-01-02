@@ -146,7 +146,7 @@ typedef struct {
 } godot_nativescript_method_argument;
 
 typedef struct {
-	// instance pointer, method data, user data, num args, args - return result as varaint
+	// instance pointer, method data, user data, num args, args - return result as variant
 	GDCALLINGCONV godot_variant (*method)(godot_object *, void *, void *, int, godot_variant **);
 	void *method_data;
 	GDCALLINGCONV void (*free_func)(void *);

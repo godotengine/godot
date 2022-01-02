@@ -70,7 +70,7 @@ public:
 		GUTTER_TYPE_CUSTOM
 	};
 
-	/* Contex Menu. */
+	/* Context Menu. */
 	enum MenuItems {
 		MENU_CUT,
 		MENU_COPY,

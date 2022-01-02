@@ -396,7 +396,7 @@
 			<return type="bool" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
-				Returns [code]true[/code] if auto-hinting is supported and preffered over font built-in hinting. Used by dynamic fonts only.
+				Returns [code]true[/code] if auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="font_is_language_supported" qualifiers="const">
@@ -541,7 +541,7 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="force_autohinter" type="bool" />
 			<description>
-				If set to [code]true[/code] auto-hinting is preffered over font built-in hinting.
+				If set to [code]true[/code] auto-hinting is preferred over font built-in hinting.
 			</description>
 		</method>
 		<method name="font_set_global_oversampling">
@@ -549,7 +549,7 @@
 			<argument index="0" name="oversampling" type="float" />
 			<description>
 				Sets oversampling factor, shared by all font in the TextServer.
-				[b]Note:[/b] This value can be automaticaly changed by display server.
+				[b]Note:[/b] This value can be automatically changed by display server.
 			</description>
 		</method>
 		<method name="font_set_glyph_advance">
@@ -1384,7 +1384,7 @@
 		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag">
 		</constant>
 		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag">
-			Grapheme is supprted by the font, and can be drawn.
+			Grapheme is supported by the font, and can be drawn.
 		</constant>
 		<constant name="GRAPHEME_IS_RTL" value="2" enum="GraphemeFlag">
 			Grapheme is part of right-to-left or bottom-to-top run.

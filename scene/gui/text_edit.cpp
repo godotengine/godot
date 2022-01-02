@@ -5048,7 +5048,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_wrapped_text", "line"), &TextEdit::get_line_wrapped_text);
 
 	/* Viewport. */
-	// Scolling.
+	// Scrolling.
 	ClassDB::bind_method(D_METHOD("set_smooth_scroll_enable", "enable"), &TextEdit::set_smooth_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("is_smooth_scroll_enabled"), &TextEdit::is_smooth_scroll_enabled);
 
@@ -5410,7 +5410,7 @@ void TextEdit::_cut_internal() {
 		set_caret_line(get_caret_line() + 1);
 	}
 
-	// Correct the visualy perceived caret column taking care of identation level of the lines.
+	// Correct the visually perceived caret column taking care of indentation level of the lines.
 	int diff_indent = indent_level - get_indent_level(get_caret_line());
 	cc += diff_indent;
 	if (diff_indent != 0) {

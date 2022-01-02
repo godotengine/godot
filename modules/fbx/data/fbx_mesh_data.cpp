@@ -167,7 +167,7 @@ ImporterMeshInstance3D *FBXMeshData::create_fbx_mesh(const ImportState &state, c
 
 	sanitize_vertex_weights(state);
 
-	// Re organize polygon vertices to to correctly take into account strange
+	// Reorganize polygon vertices to correctly take into account strange
 	// UVs.
 	reorganize_vertices(
 			polygon_indices,
