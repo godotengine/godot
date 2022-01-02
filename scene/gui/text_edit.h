@@ -546,7 +546,7 @@ private:
 
 	/* Input actions. */
 	void _swap_current_input_direction();
-	void _new_line(bool p_split_current = true, bool p_above = false);
+	void _do_new_line(bool p_split_current = true, bool p_above = false);
 	void _move_caret_left(bool p_select, bool p_move_by_word = false);
 	void _move_caret_right(bool p_select, bool p_move_by_word = false);
 	void _move_caret_up(bool p_select);
@@ -597,6 +597,7 @@ protected:
 	// Overridable actions
 	virtual void _handle_unicode_input_internal(const uint32_t p_unicode);
 	virtual void _backspace_internal();
+	virtual void _new_line_internal();
 
 	virtual void _cut_internal();
 	virtual void _copy_internal();
@@ -605,6 +606,7 @@ protected:
 
 	GDVIRTUAL1(_handle_unicode_input, int)
 	GDVIRTUAL0(_backspace)
+	GDVIRTUAL0(_new_line)
 	GDVIRTUAL0(_cut)
 	GDVIRTUAL0(_copy)
 	GDVIRTUAL0(_paste)
@@ -693,6 +695,7 @@ public:
 	// Overridable actions
 	void handle_unicode_input(const uint32_t p_unicode);
 	void backspace();
+	void new_line();
 
 	void cut();
 	void copy();

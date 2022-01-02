@@ -64,7 +64,7 @@ private:
 	int _calculate_spaces_till_next_left_indent(int p_column) const;
 	int _calculate_spaces_till_next_right_indent(int p_column) const;
 
-	void _new_line(bool p_split_current_line = true, bool p_above = false);
+	void _do_new_line(bool p_split_current_line = true, bool p_above = false);
 
 	/* Auto brace completion */
 	bool auto_brace_completion_enabled = false;

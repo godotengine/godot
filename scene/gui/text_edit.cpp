@@ -1816,17 +1816,17 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		// NEWLINES.
 		if (k->is_action("ui_text_newline_above", true)) {
-			_new_line(false, true);
+			_do_new_line(false, true);
 			accept_event();
 			return;
 		}
 		if (k->is_action("ui_text_newline_blank", true)) {
-			_new_line(false);
+			_do_new_line(false);
 			accept_event();
 			return;
 		}
 		if (k->is_action("ui_text_newline", true)) {
-			_new_line();
+			new_line();
 			accept_event();
 			return;
 		}
@@ -2036,7 +2036,7 @@ void TextEdit::_swap_current_input_direction() {
 	update();
 }
 
-void TextEdit::_new_line(bool p_split_current_line, bool p_above) {
+void TextEdit::_do_new_line(bool p_split_current_line, bool p_above) {
 	if (!editable) {
 		return;
 	}
@@ -3109,6 +3109,13 @@ void TextEdit::backspace() {
 		return;
 	}
 	_backspace_internal();
+}
+
+void TextEdit::new_line() {
+	if (GDVIRTUAL_CALL(_new_line)) {
+		return;
+	}
+	_new_line_internal();
 }
 
 void TextEdit::cut() {
@@ -4880,6 +4887,7 @@ void TextEdit::_bind_methods() {
 
 	GDVIRTUAL_BIND(_handle_unicode_input, "unicode_char")
 	GDVIRTUAL_BIND(_backspace)
+	GDVIRTUAL_BIND(_new_line)
 	GDVIRTUAL_BIND(_cut)
 	GDVIRTUAL_BIND(_copy)
 	GDVIRTUAL_BIND(_paste)
@@ -5379,6 +5387,14 @@ void TextEdit::_backspace_internal() {
 
 	set_caret_line(prev_line, false, true);
 	set_caret_column(prev_column);
+}
+
+void TextEdit::_new_line_internal() {
+	if (!editable) {
+		return;
+	}
+
+	_do_new_line();
 }
 
 void TextEdit::_cut_internal() {

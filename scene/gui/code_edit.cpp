@@ -503,17 +503,17 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	// Override new line actions, for auto indent
 	if (k->is_action("ui_text_newline_above", true)) {
-		_new_line(false, true);
+		_do_new_line(false, true);
 		accept_event();
 		return;
 	}
 	if (k->is_action("ui_text_newline_blank", true)) {
-		_new_line(false);
+		_do_new_line(false);
 		accept_event();
 		return;
 	}
 	if (k->is_action("ui_text_newline", true)) {
-		_new_line();
+		new_line();
 		accept_event();
 		return;
 	}
@@ -932,7 +932,7 @@ int CodeEdit::_calculate_spaces_till_next_right_indent(int p_column) const {
 	return indent_size - p_column % indent_size;
 }
 
-void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
+void CodeEdit::_do_new_line(bool p_split_current_line, bool p_above) {
 	if (!is_editable()) {
 		return;
 	}
