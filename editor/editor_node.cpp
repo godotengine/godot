@@ -6157,8 +6157,6 @@ EditorNode::EditorNode() {
 
 	register_exporters();
 
-	ClassDB::set_class_enabled("RootMotionView", true);
-
 	EDITOR_DEF("interface/editor/save_on_focus_loss", false);
 	EDITOR_DEF("interface/editor/show_update_spinner", false);
 	EDITOR_DEF("interface/editor/update_continuously", false);
