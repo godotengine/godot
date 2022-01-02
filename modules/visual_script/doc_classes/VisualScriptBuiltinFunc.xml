@@ -16,85 +16,85 @@
 	</members>
 	<constants>
 		<constant name="MATH_SIN" value="0" enum="BuiltinFunc">
-			Return the sine of the input.
+			Returns the sine of the input.
 		</constant>
 		<constant name="MATH_COS" value="1" enum="BuiltinFunc">
-			Return the cosine of the input.
+			Returns the cosine of the input.
 		</constant>
 		<constant name="MATH_TAN" value="2" enum="BuiltinFunc">
-			Return the tangent of the input.
+			Returns the tangent of the input.
 		</constant>
 		<constant name="MATH_SINH" value="3" enum="BuiltinFunc">
-			Return the hyperbolic sine of the input.
+			Returns the hyperbolic sine of the input.
 		</constant>
 		<constant name="MATH_COSH" value="4" enum="BuiltinFunc">
-			Return the hyperbolic cosine of the input.
+			Returns the hyperbolic cosine of the input.
 		</constant>
 		<constant name="MATH_TANH" value="5" enum="BuiltinFunc">
-			Return the hyperbolic tangent of the input.
+			Returns the hyperbolic tangent of the input.
 		</constant>
 		<constant name="MATH_ASIN" value="6" enum="BuiltinFunc">
-			Return the arc sine of the input.
+			Returns the arc sine of the input.
 		</constant>
 		<constant name="MATH_ACOS" value="7" enum="BuiltinFunc">
-			Return the arc cosine of the input.
+			Returns the arc cosine of the input.
 		</constant>
 		<constant name="MATH_ATAN" value="8" enum="BuiltinFunc">
-			Return the arc tangent of the input.
+			Returns the arc tangent of the input.
 		</constant>
 		<constant name="MATH_ATAN2" value="9" enum="BuiltinFunc">
-			Return the arc tangent of the input, using the signs of both parameters to determine the exact angle.
+			Returns the arc tangent of the input, using the signs of both parameters to determine the exact angle.
 		</constant>
 		<constant name="MATH_SQRT" value="10" enum="BuiltinFunc">
-			Return the square root of the input.
+			Returns the square root of the input.
 		</constant>
 		<constant name="MATH_FMOD" value="11" enum="BuiltinFunc">
-			Return the remainder of one input divided by the other, using floating-point numbers.
+			Returns the remainder of one input divided by the other, using floating-point numbers.
 		</constant>
 		<constant name="MATH_FPOSMOD" value="12" enum="BuiltinFunc">
-			Return the positive remainder of one input divided by the other, using floating-point numbers.
+			Returns the positive remainder of one input divided by the other, using floating-point numbers.
 		</constant>
 		<constant name="MATH_FLOOR" value="13" enum="BuiltinFunc">
-			Return the input rounded down.
+			Returns the input rounded down.
 		</constant>
 		<constant name="MATH_CEIL" value="14" enum="BuiltinFunc">
-			Return the input rounded up.
+			Returns the input rounded up.
 		</constant>
 		<constant name="MATH_ROUND" value="15" enum="BuiltinFunc">
-			Return the input rounded to the nearest integer.
+			Returns the input rounded to the nearest integer.
 		</constant>
 		<constant name="MATH_ABS" value="16" enum="BuiltinFunc">
-			Return the absolute value of the input.
+			Returns the absolute value of the input.
 		</constant>
 		<constant name="MATH_SIGN" value="17" enum="BuiltinFunc">
-			Return the sign of the input, turning it into 1, -1, or 0. Useful to determine if the input is positive or negative.
+			Returns the sign of the input, turning it into 1, -1, or 0. Useful to determine if the input is positive or negative.
 		</constant>
 		<constant name="MATH_POW" value="18" enum="BuiltinFunc">
-			Return the input raised to a given power.
+			Returns the input raised to a given power.
 		</constant>
 		<constant name="MATH_LOG" value="19" enum="BuiltinFunc">
-			Return the natural logarithm of the input. Note that this is not the typical base-10 logarithm function calculators use.
+			Returns the natural logarithm of the input. Note that this is not the typical base-10 logarithm function calculators use.
 		</constant>
 		<constant name="MATH_EXP" value="20" enum="BuiltinFunc">
-			Return the mathematical constant [b]e[/b] raised to the specified power of the input. [b]e[/b] has an approximate value of 2.71828.
+			Returns the mathematical constant [b]e[/b] raised to the specified power of the input. [b]e[/b] has an approximate value of 2.71828.
 		</constant>
 		<constant name="MATH_ISNAN" value="21" enum="BuiltinFunc">
-			Return whether the input is NaN (Not a Number) or not. NaN is usually produced by dividing 0 by 0, though other ways exist.
+			Returns whether the input is NaN (Not a Number) or not. NaN is usually produced by dividing 0 by 0, though other ways exist.
 		</constant>
 		<constant name="MATH_ISINF" value="22" enum="BuiltinFunc">
-			Return whether the input is an infinite floating-point number or not. Infinity is usually produced by dividing a number by 0, though other ways exist.
+			Returns whether the input is an infinite floating-point number or not. Infinity is usually produced by dividing a number by 0, though other ways exist.
 		</constant>
 		<constant name="MATH_EASE" value="23" enum="BuiltinFunc">
 			Easing function, based on exponent. 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
 		</constant>
 		<constant name="MATH_STEP_DECIMALS" value="24" enum="BuiltinFunc">
-			Return the number of digit places after the decimal that the first non-zero digit occurs.
+			Returns the number of digit places after the decimal that the first non-zero digit occurs.
 		</constant>
 		<constant name="MATH_SNAPPED" value="25" enum="BuiltinFunc">
-			Return the input snapped to a given step.
+			Returns the input snapped to a given step.
 		</constant>
 		<constant name="MATH_LERP" value="26" enum="BuiltinFunc">
-			Return a number linearly interpolated between the first two inputs, based on the third input. Uses the formula [code]a + (a - b) * t[/code].
+			Returns a number linearly interpolated between the first two inputs, based on the third input. Uses the formula [code]a + (a - b) * t[/code].
 		</constant>
 		<constant name="MATH_INVERSE_LERP" value="27" enum="BuiltinFunc">
 		</constant>
@@ -107,16 +107,16 @@
 			Randomize the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
 		</constant>
 		<constant name="MATH_RANDI" value="31" enum="BuiltinFunc">
-			Return a random 32 bits integer value. To obtain a random value between 0 to N (where N is smaller than 2^32 - 1), you can use it with the remainder function.
+			Returns a random 32 bits integer value. To obtain a random value between 0 to N (where N is smaller than 2^32 - 1), you can use it with the remainder function.
 		</constant>
 		<constant name="MATH_RANDF" value="32" enum="BuiltinFunc">
-			Return a random floating-point value between 0 and 1. To obtain a random value between 0 to N, you can use it with multiplication.
+			Returns a random floating-point value between 0 and 1. To obtain a random value between 0 to N, you can use it with multiplication.
 		</constant>
 		<constant name="MATH_RANDI_RANGE" value="33" enum="BuiltinFunc">
-			Return a random 32-bit integer value between the two inputs.
+			Returns a random 32-bit integer value between the two inputs.
 		</constant>
 		<constant name="MATH_RANDF_RANGE" value="34" enum="BuiltinFunc">
-			Return a random floating-point value between the two inputs.
+			Returns a random floating-point value between the two inputs.
 		</constant>
 		<constant name="MATH_RANDFN" value="35" enum="BuiltinFunc">
 			Returns a normally-distributed pseudo-random number, using Box-Muller transform with the specified mean and a standard deviation. This is also called Gaussian distribution.
@@ -125,7 +125,7 @@
 			Set the seed for the random number generator.
 		</constant>
 		<constant name="MATH_RANDSEED" value="37" enum="BuiltinFunc">
-			Return a random value from the given seed, along with the new seed.
+			Returns a random value from the given seed, along with the new seed.
 		</constant>
 		<constant name="MATH_DEG2RAD" value="38" enum="BuiltinFunc">
 			Convert the input from degrees to radians.
@@ -144,19 +144,19 @@
 		<constant name="MATH_WRAPF" value="43" enum="BuiltinFunc">
 		</constant>
 		<constant name="MATH_PINGPONG" value="44" enum="BuiltinFunc">
-			Return the [code]value[/code] wrapped between [code]0[/code] and the [code]length[/code]. If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [code]length[/code] side (like a triangle wave). If [code]length[/code] is less than zero, it becomes positive.
+			Returns the [code]value[/code] wrapped between [code]0[/code] and the [code]length[/code]. If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [code]length[/code] side (like a triangle wave). If [code]length[/code] is less than zero, it becomes positive.
 		</constant>
 		<constant name="LOGIC_MAX" value="45" enum="BuiltinFunc">
-			Return the greater of the two numbers, also known as their maximum.
+			Returns the greater of the two numbers, also known as their maximum.
 		</constant>
 		<constant name="LOGIC_MIN" value="46" enum="BuiltinFunc">
-			Return the lesser of the two numbers, also known as their minimum.
+			Returns the lesser of the two numbers, also known as their minimum.
 		</constant>
 		<constant name="LOGIC_CLAMP" value="47" enum="BuiltinFunc">
-			Return the input clamped inside the given range, ensuring the result is never outside it. Equivalent to [code]min(max(input, range_low), range_high)[/code].
+			Returns the input clamped inside the given range, ensuring the result is never outside it. Equivalent to [code]min(max(input, range_low), range_high)[/code].
 		</constant>
 		<constant name="LOGIC_NEAREST_PO2" value="48" enum="BuiltinFunc">
-			Return the nearest power of 2 to the input.
+			Returns the nearest power of 2 to the input.
 		</constant>
 		<constant name="OBJ_WEAKREF" value="49" enum="BuiltinFunc">
 			Create a [WeakRef] from the input.
@@ -165,13 +165,13 @@
 			Convert between types.
 		</constant>
 		<constant name="TYPE_OF" value="51" enum="BuiltinFunc">
-			Return the type of the input as an integer. Check [enum Variant.Type] for the integers that might be returned.
+			Returns the type of the input as an integer. Check [enum Variant.Type] for the integers that might be returned.
 		</constant>
 		<constant name="TYPE_EXISTS" value="52" enum="BuiltinFunc">
 			Checks if a type is registered in the [ClassDB].
 		</constant>
 		<constant name="TEXT_CHAR" value="53" enum="BuiltinFunc">
-			Return a character with the given ascii value.
+			Returns a character with the given ascii value.
 		</constant>
 		<constant name="TEXT_STR" value="54" enum="BuiltinFunc">
 			Convert the input to a string.
@@ -200,7 +200,7 @@
 			Deserialize a [Variant] from a [PackedByteArray] serialized using [constant VAR_TO_BYTES].
 		</constant>
 		<constant name="MATH_SMOOTHSTEP" value="63" enum="BuiltinFunc">
-			Return a number smoothly interpolated between the first two inputs, based on the third input. Similar to [constant MATH_LERP], but interpolates faster at the beginning and slower at the end. Using Hermite interpolation formula:
+			Returns a number smoothly interpolated between the first two inputs, based on the third input. Similar to [constant MATH_LERP], but interpolates faster at the beginning and slower at the end. Using Hermite interpolation formula:
 			[codeblock]
 			var t = clamp((weight - from) / (to - from), 0.0, 1.0)
 			return t * t * (3.0 - 2.0 * t)

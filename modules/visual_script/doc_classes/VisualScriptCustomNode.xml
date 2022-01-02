@@ -12,112 +12,112 @@
 		<method name="_get_caption" qualifiers="virtual const">
 			<return type="String" />
 			<description>
-				Return the node's title.
+				Returns the node's title.
 			</description>
 		</method>
 		<method name="_get_category" qualifiers="virtual const">
 			<return type="String" />
 			<description>
-				Return the node's category.
+				Returns the node's category.
 			</description>
 		</method>
 		<method name="_get_input_value_port_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Return the count of input value ports.
+				Returns the count of input value ports.
 			</description>
 		</method>
 		<method name="_get_input_value_port_hint" qualifiers="virtual const">
 			<return type="int" />
 			<argument index="0" name="input_idx" type="int" />
 			<description>
-				Return the specified input port's hint. See the [enum @GlobalScope.PropertyHint] hints.
+				Returns the specified input port's hint. See the [enum @GlobalScope.PropertyHint] hints.
 			</description>
 		</method>
 		<method name="_get_input_value_port_hint_string" qualifiers="virtual const">
 			<return type="String" />
 			<argument index="0" name="input_idx" type="int" />
 			<description>
-				Return the specified input port's hint string.
+				Returns the specified input port's hint string.
 			</description>
 		</method>
 		<method name="_get_input_value_port_name" qualifiers="virtual const">
 			<return type="String" />
 			<argument index="0" name="input_idx" type="int" />
 			<description>
-				Return the specified input port's name.
+				Returns the specified input port's name.
 			</description>
 		</method>
 		<method name="_get_input_value_port_type" qualifiers="virtual const">
 			<return type="int" />
 			<argument index="0" name="input_idx" type="int" />
 			<description>
-				Return the specified input port's type. See the [enum Variant.Type] values.
+				Returns the specified input port's type. See the [enum Variant.Type] values.
 			</description>
 		</method>
 		<method name="_get_output_sequence_port_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Return the amount of output [b]sequence[/b] ports.
+				Returns the amount of output [b]sequence[/b] ports.
 			</description>
 		</method>
 		<method name="_get_output_sequence_port_text" qualifiers="virtual const">
 			<return type="String" />
 			<argument index="0" name="seq_idx" type="int" />
 			<description>
-				Return the specified [b]sequence[/b] output's name.
+				Returns the specified [b]sequence[/b] output's name.
 			</description>
 		</method>
 		<method name="_get_output_value_port_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Return the amount of output value ports.
+				Returns the amount of output value ports.
 			</description>
 		</method>
 		<method name="_get_output_value_port_hint" qualifiers="virtual const">
 			<return type="int" />
 			<argument index="0" name="output_idx" type="int" />
 			<description>
-				Return the specified output port's hint. See the [enum @GlobalScope.PropertyHint] hints.
+				Returns the specified output port's hint. See the [enum @GlobalScope.PropertyHint] hints.
 			</description>
 		</method>
 		<method name="_get_output_value_port_hint_string" qualifiers="virtual const">
 			<return type="String" />
 			<argument index="0" name="output_idx" type="int" />
 			<description>
-				Return the specified output port's hint string.
+				Returns the specified output port's hint string.
 			</description>
 		</method>
 		<method name="_get_output_value_port_name" qualifiers="virtual const">
 			<return type="String" />
 			<argument index="0" name="output_idx" type="int" />
 			<description>
-				Return the specified output port's name.
+				Returns the specified output port's name.
 			</description>
 		</method>
 		<method name="_get_output_value_port_type" qualifiers="virtual const">
 			<return type="int" />
 			<argument index="0" name="output_idx" type="int" />
 			<description>
-				Return the specified output port's type. See the [enum Variant.Type] values.
+				Returns the specified output port's type. See the [enum Variant.Type] values.
 			</description>
 		</method>
 		<method name="_get_text" qualifiers="virtual const">
 			<return type="String" />
 			<description>
-				Return the custom node's text, which is shown right next to the input [b]sequence[/b] port (if there is none, on the place that is usually taken by it).
+				Returns the custom node's text, which is shown right next to the input [b]sequence[/b] port (if there is none, on the place that is usually taken by it).
 			</description>
 		</method>
 		<method name="_get_working_memory_size" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Return the size of the custom node's working memory. See [method _step] for more details.
+				Returns the size of the custom node's working memory. See [method _step] for more details.
 			</description>
 		</method>
 		<method name="_has_input_sequence_port" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Return whether the custom node has an input [b]sequence[/b] port.
+				Returns whether the custom node has an input [b]sequence[/b] port.
 			</description>
 		</method>
 		<method name="_step" qualifiers="virtual const">

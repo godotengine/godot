@@ -113,7 +113,7 @@
 		<method name="get_dropcap_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Return drop cap text buffer RID.
+				Returns drop cap text buffer RID.
 			</description>
 		</method>
 		<method name="get_dropcap_size" qualifiers="const">

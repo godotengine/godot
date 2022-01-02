@@ -259,7 +259,7 @@
 			<return type="Array" />
 			<argument index="0" name="cache_index" type="int" />
 			<description>
-				Return list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
+				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
 			</description>
 		</method>
 		<method name="get_spacing" qualifiers="const">
@@ -343,7 +343,7 @@
 			<return type="bool" />
 			<argument index="0" name="char" type="int" />
 			<description>
-				Return [code]true[/code] if a Unicode [code]char[/code] is available in the font.
+				Returns [code]true[/code] if a Unicode [code]char[/code] is available in the font.
 			</description>
 		</method>
 		<method name="is_antialiased" qualifiers="const">
