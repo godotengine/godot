@@ -137,6 +137,9 @@ protected:
 
 	virtual void _validate_property(PropertyInfo &property) const override;
 
+	bool property_can_revert(const String &p_name);
+	Variant property_get_revert(const String &p_name);
+
 public:
 	enum {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
