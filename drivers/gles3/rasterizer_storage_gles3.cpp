@@ -6468,6 +6468,7 @@ void RasterizerStorageGLES3::_particles_process(Particles *p_particles, float p_
 
 	glBindVertexArray(p_particles->particle_vaos[0]);
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0); // ensure this is unbound per WebGL2 spec
 	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, p_particles->particle_buffers[1]);
 
 	//		GLint size = 0;
