@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -392,7 +392,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
 
 		if (can_bptc) {
-			formats_imported.push_back("bptc"); //needs to be aded anyway
+			formats_imported.push_back("bptc"); // Needs to be added anyway.
 		}
 		bool can_compress_hdr = hdr_compression > 0;
 

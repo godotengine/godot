@@ -39,13 +39,13 @@
 		<method name="get_connected_host" qualifiers="const">
 			<return type="String" />
 			<description>
-				Return the IP address of the currently connected host.
+				Returns the IP address of the currently connected host.
 			</description>
 		</method>
 		<method name="get_connected_port" qualifiers="const">
 			<return type="int" />
 			<description>
-				Return the IP port of the currently connected host.
+				Returns the IP port of the currently connected host.
 			</description>
 		</method>
 	</methods>

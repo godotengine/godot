@@ -20,7 +20,7 @@
 	</methods>
 	<members>
 		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array()">
-			The polygon's list of vertices. Can be in either clockwise or counterclockwise order.
+			The polygon's list of vertices. Can be in either clockwise or counterclockwise order. Only set this property with convex hull points, use [method set_point_cloud] to generate a convex hull shape from concave shape points.
 		</member>
 	</members>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,7 +109,7 @@ Dictionary DebugAdapterParser::prepare_error_response(const Dictionary &p_params
 		case DAP::ErrorType::UNKNOWN:
 		default:
 			error = "unknown";
-			error_desc = "An unknown error has ocurred when processing the request.";
+			error_desc = "An unknown error has occurred when processing the request.";
 			break;
 	}
 
@@ -412,7 +412,7 @@ Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_variables(const Dictionary &p_params) const {
-	// If _remaining_vars > 0, the debugee is still sending a stack dump to the editor.
+	// If _remaining_vars > 0, the debuggee is still sending a stack dump to the editor.
 	if (DebugAdapterProtocol::get_singleton()->_remaining_vars > 0) {
 		return Dictionary();
 	}

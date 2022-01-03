@@ -201,7 +201,7 @@
 		<method name="get_last_full_visible_line" qualifiers="const">
 			<return type="int" />
 			<description>
-				Return the last visible line. Use [method get_last_full_visible_line_wrap_index] for the wrap index.
+				Returns the last visible line. Use [method get_last_full_visible_line_wrap_index] for the wrap index.
 			</description>
 		</method>
 		<method name="get_last_full_visible_line_wrap_index" qualifiers="const">

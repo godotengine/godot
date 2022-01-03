@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2655,13 +2655,13 @@ void RendererStorageRD::MaterialData::update_uniform_buffer(const Map<StringName
 		uint32_t size = 0U;
 		// The following code enforces a 16-byte alignment of uniform arrays.
 		if (E.value.array_size > 0) {
-			size = ShaderLanguage::get_type_size(E.value.type) * E.value.array_size;
+			size = ShaderLanguage::get_datatype_size(E.value.type) * E.value.array_size;
 			int m = (16 * E.value.array_size);
 			if ((size % m) != 0U) {
 				size += m - (size % m);
 			}
 		} else {
-			size = ShaderLanguage::get_type_size(E.value.type);
+			size = ShaderLanguage::get_datatype_size(E.value.type);
 		}
 		ERR_CONTINUE(offset + size > p_buffer_size);
 #endif
@@ -2818,11 +2818,14 @@ void RendererStorageRD::MaterialData::update_textures(const Map<StringName, Vari
 						case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
 							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_BLACK);
 						} break;
-						case ShaderLanguage::ShaderNode::Uniform::HINT_NONE: {
-							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
-						} break;
 						case ShaderLanguage::ShaderNode::Uniform::HINT_ANISOTROPY: {
 							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_ANISO);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL: {
+							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
+						} break;
+						case ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL: {
+							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
 						} break;
 						default: {
 							rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
@@ -9234,7 +9237,7 @@ void RendererStorageRD::_update_global_variables() {
 
 			for (uint32_t i = 0; i < total_regions; i++) {
 				if (global_variables.buffer_dirty_regions[i]) {
-					RD::get_singleton()->buffer_update(global_variables.buffer, i * region_byte_size, region_byte_size, global_variables.buffer_values);
+					RD::get_singleton()->buffer_update(global_variables.buffer, i * region_byte_size, region_byte_size, &global_variables.buffer_values[i * GlobalVariables::BUFFER_DIRTY_REGION_SIZE]);
 
 					global_variables.buffer_dirty_regions[i] = false;
 				}

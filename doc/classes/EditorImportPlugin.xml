@@ -163,7 +163,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				Return [code]true[/code] to make all options always visible.
+				Returns [code]true[/code] to make all options always visible.
 			</description>
 		</method>
 		<method name="_get_preset_count" qualifiers="virtual const">

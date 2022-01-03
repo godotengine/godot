@@ -97,7 +97,7 @@
 				Returns the total number of characters from text tags. Does not include BBCodes.
 			</description>
 		</method>
-		<method name="get_v_scroll">
+		<method name="get_v_scroll_bar">
 			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar.

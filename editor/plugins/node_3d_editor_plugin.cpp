@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2439,7 +2439,8 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 		_menu_option(VIEW_PERSPECTIVE);
 	}
 
-	const real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_sensitivity");
+	// Scale mouse sensitivity with camera FOV scale when zoomed in to make it easier to point at things.
+	const real_t degrees_per_pixel = real_t(EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_sensitivity")) * MIN(1.0, cursor.fov_scale);
 	const real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
 	const bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
 

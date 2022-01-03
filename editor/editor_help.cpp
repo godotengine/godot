@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1798,11 +1798,11 @@ void EditorHelp::search_again(bool p_search_previous) {
 }
 
 int EditorHelp::get_scroll() const {
-	return class_desc->get_v_scroll()->get_value();
+	return class_desc->get_v_scroll_bar()->get_value();
 }
 
 void EditorHelp::set_scroll(int p_scroll) {
-	class_desc->get_v_scroll()->set_value(p_scroll);
+	class_desc->get_v_scroll_bar()->set_value(p_scroll);
 }
 
 void EditorHelp::update_toggle_scripts_button() {

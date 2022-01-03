@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -293,15 +293,20 @@ void ShaderTextEditor::_update_warning_panel() {
 		}
 
 		warning_count++;
+		int line = w.get_line();
 
 		// First cell.
 		warnings_panel->push_cell();
-		warnings_panel->push_meta(w.get_line() - 1);
 		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-		warnings_panel->add_text(TTR("Line") + " " + itos(w.get_line()));
-		warnings_panel->add_text(" (" + w.get_name() + "):");
+		if (line != -1) {
+			warnings_panel->push_meta(line - 1);
+			warnings_panel->add_text(TTR("Line") + " " + itos(line));
+			warnings_panel->add_text(" (" + w.get_name() + "):");
+			warnings_panel->pop(); // Meta goto.
+		} else {
+			warnings_panel->add_text(w.get_name() + ":");
+		}
 		warnings_panel->pop(); // Color.
-		warnings_panel->pop(); // Meta goto.
 		warnings_panel->pop(); // Cell.
 
 		// Second cell.

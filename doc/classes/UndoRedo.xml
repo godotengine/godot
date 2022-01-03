@@ -162,7 +162,7 @@
 		<method name="get_history_count">
 			<return type="int" />
 			<description>
-				Return how many elements are in the history.
+				Returns how many elements are in the history.
 			</description>
 		</method>
 		<method name="get_version" qualifiers="const">

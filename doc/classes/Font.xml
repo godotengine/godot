@@ -222,7 +222,7 @@
 			<return type="float" />
 			<argument index="0" name="size" type="int" default="16" />
 			<description>
-				Return average pixel offset of the underline below the baseline.
+				Returns average pixel offset of the underline below the baseline.
 				[b]Note:[/b] Real underline position of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
 			</description>
 		</method>
@@ -230,7 +230,7 @@
 			<return type="float" />
 			<argument index="0" name="size" type="int" default="16" />
 			<description>
-				Return average thickness of the underline.
+				Returns average thickness of the underline.
 				[b]Note:[/b] Real underline thickness of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
 			</description>
 		</method>
@@ -238,7 +238,7 @@
 			<return type="bool" />
 			<argument index="0" name="char" type="int" />
 			<description>
-				Return [code]true[/code] if a Unicode [code]char[/code] is available in the font.
+				Returns [code]true[/code] if a Unicode [code]char[/code] is available in the font.
 			</description>
 		</method>
 		<method name="remove_data">

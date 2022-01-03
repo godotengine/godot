@@ -32,7 +32,7 @@
 			<return type="Dictionary" />
 			<argument index="0" name="peer_id" type="int" />
 			<description>
-				Return a dictionary representation of the peer with given [code]peer_id[/code] with three keys. [code]connection[/code] containing the [WebRTCPeerConnection] to this peer, [code]channels[/code] an array of three [WebRTCDataChannel], and [code]connected[/code] a boolean representing if the peer connection is currently connected (all three channels are open).
+				Returns a dictionary representation of the peer with given [code]peer_id[/code] with three keys. [code]connection[/code] containing the [WebRTCPeerConnection] to this peer, [code]channels[/code] an array of three [WebRTCDataChannel], and [code]connected[/code] a boolean representing if the peer connection is currently connected (all three channels are open).
 			</description>
 		</method>
 		<method name="get_peers">

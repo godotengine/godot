@@ -396,7 +396,7 @@
 			<return type="bool" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
-				Returns [code]true[/code] if auto-hinting is supported and preffered over font built-in hinting. Used by dynamic fonts only.
+				Returns [code]true[/code] if auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="_font_is_language_supported" qualifiers="virtual const">
@@ -542,7 +542,7 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="fixed_size" type="int" />
 			<description>
-				If set to [code]true[/code] auto-hinting is preffered over font built-in hinting.
+				If set to [code]true[/code] auto-hinting is preferred over font built-in hinting.
 			</description>
 		</method>
 		<method name="_font_set_force_autohinter" qualifiers="virtual">
@@ -557,7 +557,7 @@
 			<argument index="0" name="oversampling" type="float" />
 			<description>
 				Sets oversampling factor, shared by all font in the TextServer.
-				[b]Note:[/b] This value can be automaticaly changed by display server.
+				[b]Note:[/b] This value can be automatically changed by display server.
 			</description>
 		</method>
 		<method name="_font_set_glyph_advance" qualifiers="virtual">

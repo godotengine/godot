@@ -6,7 +6,7 @@ signal a
 # No parameters.
 signal b()
 
-# With paramters.
+# With parameters.
 signal c(a, b, c)
 
 # With parameters multiline.

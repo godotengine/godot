@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -4052,7 +4052,7 @@ int RichTextLabel::get_content_height() const {
 
 #ifndef DISABLE_DEPRECATED
 // People will be very angry, if their texts get erased, because of #39148. (3.x -> 4.0)
-// Altough some people may not used bbcode_text, so we only overwrite, if bbcode_text is not empty
+// Although some people may not used bbcode_text, so we only overwrite, if bbcode_text is not empty.
 bool RichTextLabel::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "bbcode_text" && !((String)p_value).is_empty()) {
 		set_text(p_value);
@@ -4121,7 +4121,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scroll_follow", "follow"), &RichTextLabel::set_scroll_follow);
 	ClassDB::bind_method(D_METHOD("is_scroll_following"), &RichTextLabel::is_scroll_following);
 
-	ClassDB::bind_method(D_METHOD("get_v_scroll"), &RichTextLabel::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll_bar"), &RichTextLabel::get_v_scroll_bar);
 
 	ClassDB::bind_method(D_METHOD("scroll_to_line", "line"), &RichTextLabel::scroll_to_line);
 	ClassDB::bind_method(D_METHOD("scroll_to_paragraph", "paragraph"), &RichTextLabel::scroll_to_paragraph);

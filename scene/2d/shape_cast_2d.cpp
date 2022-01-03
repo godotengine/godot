@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -223,7 +223,7 @@ void ShapeCast2D::_notification(int p_what) {
 				draw_col.g = g;
 				draw_col.b = g;
 			}
-			// Draw continuos chain of shapes along the cast.
+			// Draw continuous chain of shapes along the cast.
 			const int steps = MAX(2, target_position.length() / shape->get_rect().get_size().length() * 4);
 			for (int i = 0; i <= steps; ++i) {
 				Vector2 t = (real_t(i) / steps) * target_position;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,10 @@
 
 #ifdef TESTS_ENABLED
 #include "tests/gdscript_test_runner.h"
+#endif
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
 #endif
 
 ///////////////////////////
@@ -817,10 +821,16 @@ Error GDScript::reload(bool p_keep_state) {
 		basedir = basedir.get_base_dir();
 	}
 
-	if (source.find("%BASE%") != -1) {
-		//loading a template, don't parse
+// Loading a template, don't parse.
+#ifdef TOOLS_ENABLED
+	if (basedir.begins_with(EditorSettings::get_singleton()->get_project_script_templates_dir())) {
 		return OK;
 	}
+#else
+	if (source.find("_BASE_") != -1) {
+		return OK;
+	}
+#endif
 
 	{
 		String source_path = path;

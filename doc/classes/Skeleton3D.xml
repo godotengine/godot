@@ -297,7 +297,7 @@
 			<argument index="3" name="persistent" type="bool" default="false" />
 			<description>
 				Sets the global pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strengh that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
+				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a global pose! Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to a global pose.
 			</description>
 		</method>
@@ -309,7 +309,7 @@
 			<argument index="3" name="persistent" type="bool" default="false" />
 			<description>
 				Sets the local pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strengh that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
+				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a local pose! Use [method global_pose_to_local_pose] to convert a global pose to a local pose.
 			</description>
 		</method>
