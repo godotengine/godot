@@ -359,9 +359,6 @@ public:                                                                         
 		}                                                                                                                                        \
 		return category;                                                                                                                         \
 	}                                                                                                                                            \
-	static String inherits_static() {                                                                                                            \
-		return String(#m_inherits);                                                                                                              \
-	}                                                                                                                                            \
 	virtual bool is_class(const String &p_class) const override {                                                                                \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                           \
 			return true;                                                                                                                         \
