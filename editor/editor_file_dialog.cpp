@@ -52,6 +52,15 @@ EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
 
 void EditorFileDialog::popup_file_dialog() {
 	popup_centered_clamped(Size2(1050, 700) * EDSCALE, 0.8);
+	_focus_file_text();
+}
+
+void EditorFileDialog::_focus_file_text() {
+	int lp = file->get_text().rfind(".");
+	if (lp != -1) {
+		file->select(0, lp);
+		file->grab_focus();
+	}
 }
 
 VBoxContainer *EditorFileDialog::get_vbox() {
@@ -974,11 +983,7 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	int lp = p_file.rfind(".");
-	if (lp != -1) {
-		file->select(0, lp);
-		file->grab_focus();
-	}
+	_focus_file_text();
 
 	if (is_visible()) {
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));

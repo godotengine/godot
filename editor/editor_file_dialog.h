@@ -149,6 +149,8 @@ private:
 	void update_file_list();
 	void update_filters();
 
+	void _focus_file_text();
+
 	void _update_favorites();
 	void _favorite_pressed();
 	void _favorite_selected(int p_idx);
