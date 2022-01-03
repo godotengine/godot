@@ -31,6 +31,7 @@
 #ifndef SCRIPT_CREATE_DIALOG_H
 #define SCRIPT_CREATE_DIALOG_H
 
+#include "core/object/script_language.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/check_box.h"
@@ -50,6 +51,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Label *path_error_label;
 	Label *builtin_warning_label;
 	Label *script_name_warning_label;
+	Label *template_info_label;
 	PanelContainer *status_panel;
 	LineEdit *parent_name;
 	Button *parent_browse_button;
@@ -61,12 +63,14 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Button *path_button;
 	EditorFileDialog *file_browse;
 	CheckBox *internal;
+	CheckBox *use_templates;
 	VBoxContainer *path_vb;
 	AcceptDialog *alert;
 	CreateDialog *select_class;
 	bool path_valid;
 	bool create_new;
 	bool is_browsing_parent;
+	String template_inactive_message;
 	String initial_bp;
 	bool is_new_script_created;
 	bool is_path_valid;
@@ -76,6 +80,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_parent_name_valid;
 	bool is_class_name_valid;
 	bool is_built_in;
+	bool is_using_templates;
 	bool built_in_enabled;
 	bool load_enabled;
 	int current_language;
@@ -85,23 +90,8 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Control *path_controls[2];
 	Control *name_controls[2];
 
-	enum ScriptOrigin {
-		SCRIPT_ORIGIN_PROJECT,
-		SCRIPT_ORIGIN_EDITOR,
-	};
-	struct ScriptTemplateInfo {
-		int id = 0;
-		ScriptOrigin origin = ScriptOrigin::SCRIPT_ORIGIN_EDITOR;
-		String dir;
-		String name;
-		String extension;
-	};
-
-	String script_template;
-	Vector<ScriptTemplateInfo> template_list;
-	Map<String, Vector<int>> template_overrides; // name : indices
-
-	void _update_script_templates(const String &p_extension);
+	Vector<ScriptLanguage::ScriptTemplate> template_list;
+	ScriptLanguage *language;
 
 	String base_type;
 
@@ -109,8 +99,9 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool _can_be_built_in();
 	void _path_changed(const String &p_path = String());
 	void _path_submitted(const String &p_path = String());
-	void _lang_changed(int l = 0);
+	void _language_changed(int l = 0);
 	void _built_in_pressed();
+	void _use_template_pressed();
 	bool _validate_parent(const String &p_string);
 	bool _validate_class(const String &p_string);
 	String _validate_path(const String &p_path, bool p_file_must_exist);
@@ -125,9 +116,15 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	virtual void ok_pressed() override;
 	void _create_new();
 	void _load_exist();
+	Vector<String> get_hierarchy(String p_object) const;
 	void _msg_script_valid(bool valid, const String &p_msg = String());
 	void _msg_path_valid(bool valid, const String &p_msg = String());
+	void _update_template_menu();
 	void _update_dialog();
+	ScriptLanguage::ScriptTemplate _get_current_template() const;
+	Vector<ScriptLanguage::ScriptTemplate> _get_user_templates(const ScriptLanguage *language, const StringName &p_object, const String &p_dir, const ScriptLanguage::TemplateLocation &p_origin) const;
+	ScriptLanguage::ScriptTemplate _parse_template(const ScriptLanguage *language, const String &p_path, const String &p_filename, const ScriptLanguage::TemplateLocation &p_origin, const String &p_inherits) const;
+	String _get_script_origin_label(const ScriptLanguage::TemplateLocation &p_origin) const;
 
 protected:
 	void _notification(int p_what);
