@@ -4221,7 +4221,11 @@ void GDScriptParser::TreePrinter::print_get_node(GetNodeNode *p_get_node) {
 }
 
 void GDScriptParser::TreePrinter::print_identifier(IdentifierNode *p_identifier) {
-	push_text(p_identifier->name);
+	if (p_identifier != nullptr) {
+		push_text(p_identifier->name);
+	} else {
+		push_text("<invalid identifier>");
+	}
 }
 
 void GDScriptParser::TreePrinter::print_if(IfNode *p_if, bool p_is_elif) {
