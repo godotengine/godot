@@ -177,8 +177,12 @@ public:
 	ThemeItemImportTree();
 };
 
+class ThemeTypeEditor;
+
 class ThemeItemEditorDialog : public AcceptDialog {
 	GDCLASS(ThemeItemEditorDialog, AcceptDialog);
+
+	ThemeTypeEditor *theme_type_editor;
 
 	Ref<Theme> edited_theme;
 
@@ -258,11 +262,12 @@ class ThemeItemEditorDialog : public AcceptDialog {
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	void set_edited_theme(const Ref<Theme> &p_theme);
 
-	ThemeItemEditorDialog();
+	ThemeItemEditorDialog(ThemeTypeEditor *p_theme_editor);
 };
 
 class ThemeTypeDialog : public ConfirmationDialog {
@@ -373,7 +378,10 @@ class ThemeTypeEditor : public MarginContainer {
 	void _font_item_changed(Ref<Font> p_value, String p_item_name);
 	void _icon_item_changed(Ref<Texture2D> p_value, String p_item_name);
 	void _stylebox_item_changed(Ref<StyleBox> p_value, String p_item_name);
-	void _pin_leading_stylebox(Control *p_editor, String p_item_name);
+	void _change_pinned_stylebox();
+	void _on_pin_leader_button_pressed(Control *p_editor, String p_item_name);
+	void _pin_leading_stylebox(String p_item_name, Ref<StyleBox> p_stylebox);
+	void _on_unpin_leader_button_pressed();
 	void _unpin_leading_stylebox();
 	void _update_stylebox_from_leading();
 
@@ -384,10 +392,12 @@ class ThemeTypeEditor : public MarginContainer {
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	void set_edited_theme(const Ref<Theme> &p_theme);
 	void select_type(String p_type_name);
+	bool is_stylebox_pinned(Ref<StyleBox> p_stylebox);
 
 	ThemeTypeEditor();
 };
