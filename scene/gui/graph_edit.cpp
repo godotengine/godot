@@ -1692,7 +1692,7 @@ int GraphEdit::_set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u,
 					r_u.insert(E->get());
 				}
 			}
-			return r_v.size();
+			return r_u.size();
 		} break;
 		default:
 			break;
@@ -1787,8 +1787,8 @@ void GraphEdit::_horizontal_alignment(Dictionary &r_root, Dictionary &r_align, c
 				}
 			}
 
-			int start = up.size() / 2;
-			int end = up.size() % 2 ? start : start + 1;
+			int start = (up.size() - 1) / 2;
+			int end = (up.size() - 1) % 2 ? start + 1 : start;
 			for (int p = start; p <= end; p++) {
 				StringName Align = r_align[current_node];
 				if (Align == current_node && r < up[p].first) {
