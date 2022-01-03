@@ -483,6 +483,9 @@ Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stac
 	} else if (tk == TK_CURLY_BRACKET_OPEN) {
 		r_curly_stack++;
 		return OK;
+	} else if (tk == TK_SYMBOL && String(value) == ";") {
+		// for file-scoped namespace declaration
+		return OK;
 	} else {
 		error_str = "Unexpected token: " + get_token_name(tk);
 		error = true;
