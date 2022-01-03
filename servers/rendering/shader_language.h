@@ -938,14 +938,6 @@ private:
 
 	VaryingFunctionNames varying_function_names;
 
-	struct VaryingUsage {
-		ShaderNode::Varying *var;
-		int line;
-	};
-	List<VaryingUsage> unknown_varying_usages;
-
-	bool _check_varying_usages(int *r_error_line, String *r_error_message) const;
-
 	TkPos _get_tkpos() {
 		TkPos tkp;
 		tkp.char_idx = char_idx;
@@ -1047,7 +1039,6 @@ private:
 	bool _propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);
 	bool _propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin);
 	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
-	bool _validate_varying_using(ShaderNode::Varying &p_varying, String *r_message);
 	bool _check_node_constness(const Node *p_node) const;
 
 	Node *_parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, int &r_array_size);
