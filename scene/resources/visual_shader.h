@@ -221,6 +221,7 @@ public:
 	virtual bool is_generate_input_var(int p_port) const;
 
 	virtual bool is_code_generated() const;
+	virtual bool is_show_prop_names() const;
 
 	virtual Vector<StringName> get_editable_properties() const;
 
@@ -387,6 +388,8 @@ protected:
 public:
 	void set_global_code_generated(bool p_enabled);
 	bool is_global_code_generated() const;
+
+	virtual bool is_show_prop_names() const;
 
 	void set_uniform_name(const String &p_name);
 	String get_uniform_name() const;
