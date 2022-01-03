@@ -271,7 +271,7 @@
 			<return type="Vector2" />
 			<argument index="0" name="n" type="Vector2" />
 			<description>
-				Returns the vector reflected from a plane defined by the given normal.
+				Returns the vector reflected (ie mirrored, or symmetric) over a line defined by the given direction vector [code]n[/code].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">

@@ -62,7 +62,7 @@
 			<return type="ENetPacketPeer" />
 			<argument index="0" name="id" type="int" />
 			<description>
-				Return the [ENetPacketPeer] associated to the given [code]id[/code].
+				Returns the [ENetPacketPeer] associated to the given [code]id[/code].
 			</description>
 		</method>
 		<method name="set_bind_ip">

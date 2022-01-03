@@ -348,7 +348,7 @@
 		<method name="get_static_memory_usage" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the amount of static memory being used by the program in bytes.
+				Returns the amount of static memory being used by the program in bytes (only works in debug).
 			</description>
 		</method>
 		<method name="get_system_dir" qualifiers="const">

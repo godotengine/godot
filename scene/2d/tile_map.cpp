@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -866,7 +866,7 @@ void TileMap::_recreate_layer_internals(int p_layer) {
 		return;
 	}
 
-	// Upadate the layer internals.
+	// Update the layer internals.
 	_rendering_update_layer(p_layer);
 
 	// Recreate the quadrants.
@@ -1375,7 +1375,7 @@ void TileMap::_physics_notification(int p_what) {
 			in_editor = Engine::get_singleton()->is_editor_hint();
 #endif
 			if (is_inside_tree() && collision_animatable && !in_editor) {
-				// Update tranform on the physics tick when in animatable mode.
+				// Update transform on the physics tick when in animatable mode.
 				last_valid_transform = new_transform;
 				set_notify_local_transform(false);
 				set_global_transform(new_transform);
@@ -2296,7 +2296,7 @@ Map<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_wave_function_collapse(
 		// Randomly a cell to fill out of the most constrained.
 		Vector2i selected_cell_to_replace = to_choose_from[Math::random(0, to_choose_from.size() - 1)];
 
-		// Get the list of acceptable pattens for the given cell.
+		// Get the list of acceptable patterns for the given cell.
 		Set<TileSet::TerrainsPattern> valid_tiles = per_cell_acceptable_tiles[selected_cell_to_replace];
 		if (valid_tiles.is_empty()) {
 			break; // No possibilities :/

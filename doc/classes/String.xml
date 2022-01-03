@@ -340,7 +340,7 @@
 			<return type="String" />
 			<argument index="0" name="parts" type="PackedStringArray" />
 			<description>
-				Return a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
+				Returns a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
 				Example:
 				[codeblocks]
 				[gdscript]

@@ -14,7 +14,7 @@
 		<method name="is_public_only" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Return [code]true[/code] if this CryptoKey only has the public part, and not the private one.
+				Returns [code]true[/code] if this CryptoKey only has the public part, and not the private one.
 			</description>
 		</method>
 		<method name="load">

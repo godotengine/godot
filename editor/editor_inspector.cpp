@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1799,7 +1799,7 @@ Array EditorInspectorArray::_extract_properties_as_array(const List<PropertyInfo
 					dict[format_string] = object->get(pi.name);
 					output[array_index] = dict;
 				} else {
-					WARN_PRINT(vformat("Array element %s has an index too high. Array allocaiton failed.", pi.name));
+					WARN_PRINT(vformat("Array element %s has an index too high. Array allocation failed.", pi.name));
 				}
 			}
 		}
@@ -2766,7 +2766,7 @@ void EditorInspector::update_tree() {
 			doc_hint = descr;
 		}
 
-		// Seach for the inspector plugin that will handle the properties. Then add the correct property editor to it.
+		// Search for the inspector plugin that will handle the properties. Then add the correct property editor to it.
 		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
 
@@ -3349,7 +3349,7 @@ void EditorInspector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_PROCESS) {
 		if (update_scroll_request >= 0) {
-			get_v_scrollbar()->call_deferred(SNAME("set_value"), update_scroll_request);
+			get_v_scroll_bar()->call_deferred(SNAME("set_value"), update_scroll_request);
 			update_scroll_request = -1;
 		}
 		if (refresh_countdown > 0) {
@@ -3570,7 +3570,7 @@ EditorInspector::EditorInspector() {
 	deletable_properties = false;
 	property_clipboard = Variant();
 
-	get_v_scrollbar()->connect("value_changed", callable_mp(this, &EditorInspector::_vscroll_changed));
+	get_v_scroll_bar()->connect("value_changed", callable_mp(this, &EditorInspector::_vscroll_changed));
 	update_scroll_request = -1;
 	if (EditorSettings::get_singleton()) {
 		refresh_countdown = float(EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval"));

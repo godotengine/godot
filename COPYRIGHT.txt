@@ -43,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+Copyright: 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -59,15 +59,15 @@ Files: ./core/math/convex_hull.cpp
  ./core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./modules/fbx/fbx_parser/
 Comment: Open Asset Import Library (FBX parser)
 Copyright: 2006-2020, assimp team
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: BSD-3-clause
 
 Files: ./platform/android/java/lib/aidl/com/android/*
@@ -83,8 +83,8 @@ License: Apache-2.0
 Files: ./scene/animation/easing_equations.h
 Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner
- 2007-2021 Juan Linietsky, Ariel Manzur.
- 2014-2021 Godot Engine contributors.
+ 2007-2022 Juan Linietsky, Ariel Manzur.
+ 2014-2022 Godot Engine contributors.
 License: Expat
 
 Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
@@ -108,16 +108,16 @@ Files: ./servers/physics_3d/gjk_epa.cpp
  ./servers/physics_3d/shape_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics_3d/joints/cone_twist_joint_3d_sw.cpp
  ./servers/physics_3d/joints/cone_twist_joint_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./thirdparty/amd-fsr/

@@ -51,7 +51,7 @@
 			<argument index="0" name="pattern" type="TileMapPattern" />
 			<argument index="1" name="index" type="int" default="-1" />
 			<description>
-				Adds a [TileMapPattern] to be stored in the TileSet resouce. If provided, insert it at the given [code]index[/code].
+				Adds a [TileMapPattern] to be stored in the TileSet resource. If provided, insert it at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="add_physics_layer">
@@ -582,7 +582,7 @@
 			Diamond tile shape (for isometric look).
 		</constant>
 		<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="TileShape">
-			Rectangular tile shape with one row/colum out of two offset by half a tile.
+			Rectangular tile shape with one row/column out of two offset by half a tile.
 		</constant>
 		<constant name="TILE_SHAPE_HEXAGON" value="3" enum="TileShape">
 			Hexagonal tile shape.

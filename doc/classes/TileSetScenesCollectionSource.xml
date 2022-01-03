@@ -4,8 +4,8 @@
 		Exposes a set of scenes as tiles for a [TileSet] resource.
 	</brief_description>
 	<description>
-		When placed on a [TileMap], tiles from [TileSetScenesCollectionSource] will automatically instanciate an assiciated scene at the cell's position in the TileMap.
-		Scenes are instanciated as children of the [TileMap] when it enters the tree. If you add/remove a scene tile in the [TileMap] that is already inside the tree, the [TileMap] will automatically instanciate/free the scene accordingly.
+		When placed on a [TileMap], tiles from [TileSetScenesCollectionSource] will automatically instantiate an associated scene at the cell's position in the TileMap.
+		Scenes are instantiated as children of the [TileMap] when it enters the tree. If you add/remove a scene tile in the [TileMap] that is already inside the tree, the [TileMap] will automatically instantiate/free the scene accordingly.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -87,7 +87,7 @@
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="packed_scene" type="PackedScene" />
 			<description>
-				Assigns a [PackedScene] resource to the scene tile with id [code]id[/code]. This will fail if the scene does not extend CanvasItem, as positionning properties are needed to place the scene on the TileMap.
+				Assigns a [PackedScene] resource to the scene tile with id [code]id[/code]. This will fail if the scene does not extend CanvasItem, as positioning properties are needed to place the scene on the TileMap.
 			</description>
 		</method>
 	</methods>

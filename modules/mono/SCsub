@@ -63,3 +63,5 @@ elif env["platform"] == "android":
 
 if env["tools"]:
     env_mono.add_source_files(env.modules_sources, "editor/*.cpp")
+
+SConscript("editor_templates/SCsub")

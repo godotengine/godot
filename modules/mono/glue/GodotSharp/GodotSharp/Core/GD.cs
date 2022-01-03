@@ -400,7 +400,7 @@ namespace Godot
         /// </summary>
         /// <param name="seed">
         /// Seed to use to generate the random number.
-        /// If a different seed is used, its value will be modfied.
+        /// If a different seed is used, its value will be modified.
         /// </param>
         /// <returns>A random <see langword="uint"/> number.</returns>
         public static uint RandFromSeed(ref ulong seed)
