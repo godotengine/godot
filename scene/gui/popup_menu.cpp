@@ -78,9 +78,7 @@ Size2 PopupMenu::get_minimum_size() const {
 
 		String text = items[i].xl_text;
 		size.width += font->get_string_size(text).width;
-		if (i > 0) {
-			size.height += vseparation;
-		}
+		size.height += vseparation;
 
 		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
 			int accel_w = hseparation * 2;
@@ -522,7 +520,9 @@ void PopupMenu::_notification(int p_what) {
 			}
 
 			for (int i = 0; i < items.size(); i++) {
-				if (i > 0) {
+				if (i == 0) {
+					ofs.y += vseparation / 2;
+				} else {
 					ofs.y += vseparation;
 				}
 				Point2 item_ofs = ofs;
