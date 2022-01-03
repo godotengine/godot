@@ -54,81 +54,6 @@ static String _typestr(SL::DataType p_type) {
 	return type;
 }
 
-static int _get_datatype_size(SL::DataType p_type) {
-	switch (p_type) {
-		case SL::TYPE_VOID:
-			return 0;
-		case SL::TYPE_BOOL:
-			return 4;
-		case SL::TYPE_BVEC2:
-			return 8;
-		case SL::TYPE_BVEC3:
-			return 12;
-		case SL::TYPE_BVEC4:
-			return 16;
-		case SL::TYPE_INT:
-			return 4;
-		case SL::TYPE_IVEC2:
-			return 8;
-		case SL::TYPE_IVEC3:
-			return 12;
-		case SL::TYPE_IVEC4:
-			return 16;
-		case SL::TYPE_UINT:
-			return 4;
-		case SL::TYPE_UVEC2:
-			return 8;
-		case SL::TYPE_UVEC3:
-			return 12;
-		case SL::TYPE_UVEC4:
-			return 16;
-		case SL::TYPE_FLOAT:
-			return 4;
-		case SL::TYPE_VEC2:
-			return 8;
-		case SL::TYPE_VEC3:
-			return 12;
-		case SL::TYPE_VEC4:
-			return 16;
-		case SL::TYPE_MAT2:
-			return 32; // 4 * 4 + 4 * 4
-		case SL::TYPE_MAT3:
-			return 48; // 4 * 4 + 4 * 4 + 4 * 4
-		case SL::TYPE_MAT4:
-			return 64;
-		case SL::TYPE_SAMPLER2D:
-			return 16;
-		case SL::TYPE_ISAMPLER2D:
-			return 16;
-		case SL::TYPE_USAMPLER2D:
-			return 16;
-		case SL::TYPE_SAMPLER2DARRAY:
-			return 16;
-		case SL::TYPE_ISAMPLER2DARRAY:
-			return 16;
-		case SL::TYPE_USAMPLER2DARRAY:
-			return 16;
-		case SL::TYPE_SAMPLER3D:
-			return 16;
-		case SL::TYPE_ISAMPLER3D:
-			return 16;
-		case SL::TYPE_USAMPLER3D:
-			return 16;
-		case SL::TYPE_SAMPLERCUBE:
-			return 16;
-		case SL::TYPE_SAMPLERCUBEARRAY:
-			return 16;
-		case SL::TYPE_STRUCT:
-			return 0;
-
-		case SL::TYPE_MAX: {
-			ERR_FAIL_V(0);
-		};
-	}
-
-	ERR_FAIL_V(0);
-}
-
 static int _get_datatype_alignment(SL::DataType p_type) {
 	switch (p_type) {
 		case SL::TYPE_VOID:
@@ -658,12 +583,12 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					uniform_defines.write[uniform.order] = ucode;
 					if (is_buffer_global) {
 						//globals are indices into the global table
-						uniform_sizes.write[uniform.order] = _get_datatype_size(ShaderLanguage::TYPE_UINT);
+						uniform_sizes.write[uniform.order] = ShaderLanguage::get_datatype_size(ShaderLanguage::TYPE_UINT);
 						uniform_alignments.write[uniform.order] = _get_datatype_alignment(ShaderLanguage::TYPE_UINT);
 					} else {
 						// The following code enforces a 16-byte alignment of uniform arrays.
 						if (uniform.array_size > 0) {
-							int size = _get_datatype_size(uniform.type) * uniform.array_size;
+							int size = ShaderLanguage::get_datatype_size(uniform.type) * uniform.array_size;
 							int m = (16 * uniform.array_size);
 							if ((size % m) != 0) {
 								size += m - (size % m);
@@ -671,7 +596,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 							uniform_sizes.write[uniform.order] = size;
 							uniform_alignments.write[uniform.order] = 16;
 						} else {
-							uniform_sizes.write[uniform.order] = _get_datatype_size(uniform.type);
+							uniform_sizes.write[uniform.order] = ShaderLanguage::get_datatype_size(uniform.type);
 							uniform_alignments.write[uniform.order] = _get_datatype_alignment(uniform.type);
 						}
 					}

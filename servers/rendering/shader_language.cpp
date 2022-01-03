@@ -3866,55 +3866,77 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 	return pi;
 }
 
-uint32_t ShaderLanguage::get_type_size(DataType p_type) {
+uint32_t ShaderLanguage::get_datatype_size(ShaderLanguage::DataType p_type) {
 	switch (p_type) {
 		case TYPE_VOID:
 			return 0;
 		case TYPE_BOOL:
-		case TYPE_INT:
-		case TYPE_UINT:
-		case TYPE_FLOAT:
 			return 4;
 		case TYPE_BVEC2:
-		case TYPE_IVEC2:
-		case TYPE_UVEC2:
-		case TYPE_VEC2:
 			return 8;
 		case TYPE_BVEC3:
-		case TYPE_IVEC3:
-		case TYPE_UVEC3:
-		case TYPE_VEC3:
 			return 12;
 		case TYPE_BVEC4:
+			return 16;
+		case TYPE_INT:
+			return 4;
+		case TYPE_IVEC2:
+			return 8;
+		case TYPE_IVEC3:
+			return 12;
 		case TYPE_IVEC4:
+			return 16;
+		case TYPE_UINT:
+			return 4;
+		case TYPE_UVEC2:
+			return 8;
+		case TYPE_UVEC3:
+			return 12;
 		case TYPE_UVEC4:
+			return 16;
+		case TYPE_FLOAT:
+			return 4;
+		case TYPE_VEC2:
+			return 8;
+		case TYPE_VEC3:
+			return 12;
 		case TYPE_VEC4:
 			return 16;
 		case TYPE_MAT2:
-			return 8;
+			return 32; // 4 * 4 + 4 * 4
 		case TYPE_MAT3:
-			return 12;
+			return 48; // 4 * 4 + 4 * 4 + 4 * 4
 		case TYPE_MAT4:
-			return 16;
+			return 64;
 		case TYPE_SAMPLER2D:
+			return 16;
 		case TYPE_ISAMPLER2D:
+			return 16;
 		case TYPE_USAMPLER2D:
+			return 16;
 		case TYPE_SAMPLER2DARRAY:
+			return 16;
 		case TYPE_ISAMPLER2DARRAY:
+			return 16;
 		case TYPE_USAMPLER2DARRAY:
+			return 16;
 		case TYPE_SAMPLER3D:
+			return 16;
 		case TYPE_ISAMPLER3D:
+			return 16;
 		case TYPE_USAMPLER3D:
+			return 16;
 		case TYPE_SAMPLERCUBE:
+			return 16;
 		case TYPE_SAMPLERCUBEARRAY:
-			return 4; //not really, but useful for indices
+			return 16;
 		case TYPE_STRUCT:
-			// FIXME: Implement.
 			return 0;
-		case ShaderLanguage::TYPE_MAX:
-			return 0;
+		case TYPE_MAX: {
+			ERR_FAIL_V(0);
+		};
 	}
-	return 0;
+	ERR_FAIL_V(0);
 }
 
 void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
@@ -5309,7 +5331,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				_set_error("Expected expression, found: " + get_token_text(tk));
 				return nullptr;
 			} else {
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 				if (check_warnings && HAS_WARNING(ShaderWarning::FORMATTING_ERROR_FLAG)) {
 					_add_line_warning(ShaderWarning::FORMATTING_ERROR, "Empty statement. Remove ';' to fix this warning.");
 				}
@@ -6120,7 +6142,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					ERR_FAIL_V(nullptr); //unexpected operator
 			}
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 			if (check_warnings && HAS_WARNING(ShaderWarning::FLOAT_COMPARISON_FLAG) && (op == OP_EQUAL || op == OP_NOT_EQUAL) &&
 					(!expression[i - 1].is_op && !expression[i + 1].is_op) &&
 					(expression[i - 1].node->get_datatype() == TYPE_FLOAT && expression[i + 1].node->get_datatype() == TYPE_FLOAT)) {
@@ -7571,6 +7593,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	int texture_binding = 0;
 	int uniforms = 0;
 	int instance_index = 0;
+#ifdef DEBUG_ENABLED
+	int uniform_buffer_size = 0;
+	int max_uniform_buffer_size = RenderingDevice::get_singleton()->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
+#endif // DEBUG_ENABLED
 	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 
 	stages = &p_functions;
@@ -7971,6 +7997,18 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						uniform2.texture_order = -1;
 						if (uniform_scope != ShaderNode::Uniform::SCOPE_INSTANCE) {
 							uniform2.order = uniforms++;
+#ifdef DEBUG_ENABLED
+							if (uniform2.array_size > 0) {
+								int size = get_datatype_size(uniform2.type) * uniform2.array_size;
+								int m = (16 * uniform2.array_size);
+								if ((size % m) != 0U) {
+									size += m - (size % m);
+								}
+								uniform_buffer_size += size;
+							} else {
+								uniform_buffer_size += get_datatype_size(uniform2.type);
+							}
+#endif // DEBUG_ENABLED
 						}
 					}
 
@@ -8980,6 +9018,14 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 		tk = _get_token();
 	}
 
+#ifdef DEBUG_ENABLED
+	if (HAS_WARNING(ShaderWarning::DEVICE_LIMIT_EXCEEDED) && (uniform_buffer_size > max_uniform_buffer_size)) {
+		Vector<Variant> args;
+		args.push_back(uniform_buffer_size);
+		args.push_back(max_uniform_buffer_size);
+		_add_global_warning(ShaderWarning::DEVICE_LIMIT_EXCEEDED, "uniform buffer", args);
+	}
+#endif // DEBUG_ENABLED
 	return OK;
 }
 
@@ -9687,7 +9733,7 @@ ShaderLanguage::ShaderLanguage() {
 	nodes = nullptr;
 	completion_class = TAG_GLOBAL;
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	warnings_check_map.insert(ShaderWarning::UNUSED_CONSTANT, &used_constants);
 	warnings_check_map.insert(ShaderWarning::UNUSED_FUNCTION, &used_functions);
 	warnings_check_map.insert(ShaderWarning::UNUSED_STRUCT, &used_structs);

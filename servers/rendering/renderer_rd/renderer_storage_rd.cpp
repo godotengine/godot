@@ -2655,13 +2655,13 @@ void RendererStorageRD::MaterialData::update_uniform_buffer(const Map<StringName
 		uint32_t size = 0U;
 		// The following code enforces a 16-byte alignment of uniform arrays.
 		if (E.value.array_size > 0) {
-			size = ShaderLanguage::get_type_size(E.value.type) * E.value.array_size;
+			size = ShaderLanguage::get_datatype_size(E.value.type) * E.value.array_size;
 			int m = (16 * E.value.array_size);
 			if ((size % m) != 0U) {
 				size += m - (size % m);
 			}
 		} else {
-			size = ShaderLanguage::get_type_size(E.value.type);
+			size = ShaderLanguage::get_datatype_size(E.value.type);
 		}
 		ERR_CONTINUE(offset + size > p_buffer_size);
 #endif

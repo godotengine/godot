@@ -36,6 +36,7 @@
 #include "core/string/string_name.h"
 #include "core/templates/list.h"
 #include "core/templates/map.h"
+#include "core/variant/variant.h"
 
 class ShaderWarning {
 public:
@@ -48,6 +49,7 @@ public:
 		UNUSED_VARYING,
 		UNUSED_LOCAL_VARIABLE,
 		FORMATTING_ERROR,
+		DEVICE_LIMIT_EXCEEDED,
 		WARNING_MAX,
 	};
 
@@ -61,12 +63,14 @@ public:
 		UNUSED_VARYING_FLAG = 32U,
 		UNUSED_LOCAL_VARIABLE_FLAG = 64U,
 		FORMATTING_ERROR_FLAG = 128U,
+		DEVICE_LIMIT_EXCEEDED_FLAG = 256U,
 	};
 
 private:
 	Code code;
 	int line;
 	StringName subject;
+	Vector<Variant> extra_args;
 
 public:
 	Code get_code() const;
@@ -74,12 +78,13 @@ public:
 	const StringName &get_subject() const;
 	String get_message() const;
 	String get_name() const;
+	Vector<Variant> get_extra_args() const;
 
 	static String get_name_from_code(Code p_code);
 	static Code get_code_from_name(const String &p_name);
 	static CodeFlags get_flags_from_codemap(const Map<Code, bool> &p_map);
 
-	ShaderWarning(Code p_code = WARNING_MAX, int p_line = -1, const StringName &p_subject = "");
+	ShaderWarning(Code p_code = WARNING_MAX, int p_line = -1, const StringName &p_subject = "", const Vector<Variant> &p_extra_args = Vector<Variant>());
 };
 
 #endif // DEBUG_ENABLED
