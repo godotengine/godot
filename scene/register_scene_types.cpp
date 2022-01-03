@@ -235,6 +235,7 @@
 #include "scene/3d/ray_cast_3d.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform_3d.h"
+#include "scene/3d/shape_cast_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/skeleton_ik_3d.h"
 #include "scene/3d/soft_dynamic_body_3d.h"
@@ -486,6 +487,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GPUParticlesAttractorVectorField3D);
 	GDREGISTER_CLASS(CPUParticles3D);
 	GDREGISTER_CLASS(Position3D);
+	GDREGISTER_CLASS(ShapeCast3D);
 
 	GDREGISTER_CLASS(RootMotionView);
 	ClassDB::set_class_enabled("RootMotionView", false); // disabled by default, enabled by editor
