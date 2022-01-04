@@ -551,6 +551,12 @@ void LocalizationEditor::update_translations() {
 					t2->set_editable(1, true);
 					t2->set_metadata(1, path);
 					t2->set_tooltip(1, locale);
+
+					// Display that it has been removed if this is the case.
+					if (!FileAccess::exists(path)) {
+						t2->set_text(0, t2->get_text(0) + vformat(" (%s)", TTR("Removed")));
+						t2->set_tooltip(0, vformat(TTR("%s cannot be found."), t2->get_tooltip(0)));
+					}
 				}
 			}
 		}

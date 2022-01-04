@@ -417,6 +417,45 @@ void DependencyRemoveDialog::_find_all_removed_dependencies(EditorFileSystemDire
 	}
 }
 
+void DependencyRemoveDialog::_find_localization_remaps_of_removed_files(Vector<RemovedDependency> &p_removed) {
+	for (KeyValue<String, String> &files : all_remove_files) {
+		const String &path = files.key;
+
+		// Look for dependencies in the translation remaps.
+		if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
+			Dictionary remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+
+			if (remaps.has(path)) {
+				RemovedDependency dep;
+				dep.file = TTR("Localization remap");
+				dep.file_type = "";
+				dep.dependency = path;
+				dep.dependency_folder = files.value;
+				p_removed.push_back(dep);
+			}
+
+			Array remap_keys = remaps.keys();
+			for (int j = 0; j < remap_keys.size(); j++) {
+				PackedStringArray remapped_files = remaps[remap_keys[j]];
+				for (int k = 0; k < remapped_files.size(); k++) {
+					int splitter_pos = remapped_files[k].rfind(":");
+					String res_path = remapped_files[k].substr(0, splitter_pos);
+					if (res_path == path) {
+						String locale_name = remapped_files[k].substr(splitter_pos + 1);
+
+						RemovedDependency dep;
+						dep.file = vformat(TTR("Localization remap for path '%s' and locale '%s'."), remap_keys[j], locale_name);
+						dep.file_type = "";
+						dep.dependency = path;
+						dep.dependency_folder = files.value;
+						p_removed.push_back(dep);
+					}
+				}
+			}
+		}
+	}
+}
+
 void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<RemovedDependency> &p_removed) {
 	owners->clear();
 	owners->create_item(); // root
@@ -473,6 +512,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 
 	Vector<RemovedDependency> removed_deps;
 	_find_all_removed_dependencies(EditorFileSystem::get_singleton()->get_filesystem(), removed_deps);
+	_find_localization_remaps_of_removed_files(removed_deps);
 	removed_deps.sort();
 	if (removed_deps.is_empty()) {
 		owners->hide();
