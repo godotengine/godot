@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1553,7 +1553,7 @@ Ref<Theme> create_custom_theme(const Ref<Theme> p_theme) {
 	Ref<Theme> theme = create_editor_theme(p_theme);
 
 	const String custom_theme_path = EditorSettings::get_singleton()->get("interface/theme/custom_theme");
-	if (custom_theme_path != "") {
+	if (!custom_theme_path.is_empty()) {
 		Ref<Theme> custom_theme = ResourceLoader::load(custom_theme_path);
 		if (custom_theme.is_valid()) {
 			theme->merge_with(custom_theme);

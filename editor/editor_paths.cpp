@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -131,7 +131,7 @@ EditorPaths::EditorPaths() {
 		}
 	}
 
-	paths_valid = (data_path != "" && config_path != "" && cache_path != "");
+	paths_valid = (!data_path.is_empty() && !config_path.is_empty() && !cache_path.is_empty());
 	ERR_FAIL_COND_MSG(!paths_valid, "Editor data, config, or cache paths are invalid.");
 
 	// Validate or create each dir and its relevant subdirectories.

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -170,12 +170,12 @@ void CodeEdit::_notification(int p_what) {
 						if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
 							draw_rect(Rect2(Point2(code_completion_rect.position.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
 						}
-						tl->set_align(HALIGN_RIGHT);
+						tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 					} else {
 						if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
 							draw_rect(Rect2(Point2(code_completion_rect.position.x + code_completion_rect.size.width - icon_area_size.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
 						}
-						tl->set_align(HALIGN_LEFT);
+						tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 					}
 					tl->draw(ci, title_pos, code_completion_options[l].font_color);
 				}
@@ -189,7 +189,7 @@ void CodeEdit::_notification(int p_what) {
 			}
 
 			/* Code hint */
-			if (caret_visible && code_hint != "" && (!code_completion_active || (code_completion_below != code_hint_draw_below))) {
+			if (caret_visible && !code_hint.is_empty() && (!code_completion_active || (code_completion_below != code_hint_draw_below))) {
 				const int font_height = font->get_height(font_size);
 				Ref<StyleBox> sb = get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel"));
 				Color font_color = get_theme_color(SNAME("font_color"), SNAME("TooltipLabel"));
@@ -229,7 +229,7 @@ void CodeEdit::_notification(int p_what) {
 
 					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent(font_size) + font_height * i + yofs);
 					round_ofs = round_ofs.round();
-					draw_string(font, round_ofs, line.replace(String::chr(0xFFFF), ""), HALIGN_LEFT, -1, font_size, font_color);
+					draw_string(font, round_ofs, line.replace(String::chr(0xFFFF), ""), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 					if (end > 0) {
 						// Draw an underline for the currently edited function parameter.
 						const Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font_height + font_height * i + yofs);
@@ -315,7 +315,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		} else {
 			if (mb->get_button_index() == MouseButton::LEFT) {
-				if (mb->is_command_pressed() && symbol_lookup_word != String()) {
+				if (mb->is_command_pressed() && !symbol_lookup_word.is_empty()) {
 					Vector2i mpos = mb->get_position();
 					if (is_layout_rtl()) {
 						mpos.x = get_size().x - mpos.x;
@@ -530,7 +530,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 /* General overrides */
 Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
-	if (symbol_lookup_word != String()) {
+	if (!symbol_lookup_word.is_empty()) {
 		return CURSOR_POINTING_HAND;
 	}
 
@@ -1419,40 +1419,23 @@ void CodeEdit::fold_line(int p_line) {
 		/* End line is the same therefore we have a block of single line delimiters. */
 		if (end_line == p_line) {
 			for (int i = p_line + 1; i <= line_count; i++) {
-				if (i == line_count) {
-					end_line = line_count;
-					break;
-				}
-
 				if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
-					end_line = i - 1;
 					break;
 				}
+				end_line = i;
 			}
 		}
 	} else {
 		int start_indent = get_indent_level(p_line);
 		for (int i = p_line + 1; i <= line_count; i++) {
-			if (get_line(p_line).strip_edges().size() == 0 || is_in_string(i) != -1 || is_in_comment(i) != -1) {
+			if (get_line(i).strip_edges().size() == 0) {
+				continue;
+			}
+			if (get_indent_level(i) > start_indent) {
 				end_line = i;
 				continue;
 			}
-
-			if (i == line_count) {
-				/* Do not fold empty last line of script if any */
-				end_line = i;
-				if (get_line(i).strip_edges().size() == 0) {
-					end_line--;
-				}
-				break;
-			}
-
-			if ((get_indent_level(i) <= start_indent && get_line(i).strip_edges().size() != 0)) {
-				/* Keep an empty line unfolded if any */
-				end_line = i - 1;
-				if (get_line(i - 1).strip_edges().size() == 0 && i - 2 > p_line) {
-					end_line = i - 2;
-				}
+			if (is_in_string(i) == -1 && is_in_comment(i) == -1) {
 				break;
 			}
 		}
@@ -2395,7 +2378,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 	if (start_line != end_line) {
 		if (p_to_line < p_from_line) {
 			for (int i = end_line; i > start_line; i--) {
-				delimiter_cache.remove(i);
+				delimiter_cache.remove_at(i);
 			}
 		} else {
 			for (int i = start_line; i < end_line; i++) {
@@ -2614,7 +2597,7 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 	delimiter.type = p_type;
 	delimiter.start_key = p_start_key;
 	delimiter.end_key = p_end_key;
-	delimiter.line_only = p_line_only || p_end_key == "";
+	delimiter.line_only = p_line_only || p_end_key.is_empty();
 	delimiters.insert(at, delimiter);
 	if (!setting_delimiters) {
 		delimiter_cache.clear();
@@ -2632,7 +2615,7 @@ void CodeEdit::_remove_delimiter(const String &p_start_key, DelimiterType p_type
 			break;
 		}
 
-		delimiters.remove(i);
+		delimiters.remove_at(i);
 		if (!setting_delimiters) {
 			delimiter_cache.clear();
 			_update_delimiter_cache();
@@ -2664,7 +2647,7 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 		const String start_key = key.get_slice(" ", 0);
 		const String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();
 
-		_add_delimiter(start_key, end_key, end_key == "", p_type);
+		_add_delimiter(start_key, end_key, end_key.is_empty(), p_type);
 	}
 	setting_delimiters = false;
 	_update_delimiter_cache();
@@ -2673,7 +2656,7 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 void CodeEdit::_clear_delimiters(DelimiterType p_type) {
 	for (int i = delimiters.size() - 1; i >= 0; i--) {
 		if (delimiters[i].type == p_type) {
-			delimiters.remove(i);
+			delimiters.remove_at(i);
 		}
 	}
 	delimiter_cache.clear();
@@ -3007,7 +2990,7 @@ CodeEdit::CodeEdit() {
 	add_auto_brace_completion_pair("\"", "\"");
 	add_auto_brace_completion_pair("\'", "\'");
 
-	/* Delimiter traking */
+	/* Delimiter tracking */
 	add_string_delimiter("\"", "\"", false);
 	add_string_delimiter("\'", "\'", false);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,11 +85,10 @@ public:
 				next_element(other.next_element) {
 		}
 
-		Element &operator=(const Element &other) {
+		void operator=(const Element &other) {
 			list_element = other.list_element;
 			next_element = other.next_element;
 			prev_element = other.prev_element;
-			return *this;
 		}
 
 		_FORCE_INLINE_ bool operator==(const Element &p_other) const {
@@ -145,9 +144,8 @@ public:
 				list_element(other.list_element) {
 		}
 
-		ConstElement &operator=(const ConstElement &other) {
+		void operator=(const ConstElement &other) {
 			list_element = other.list_element;
-			return *this;
 		}
 
 		ConstElement next() const {

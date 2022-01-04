@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -612,7 +612,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	add_child(main_vbox);
 
 	tab_container = memnew(TabContainer);
-	tab_container->set_tab_align(TabContainer::TabAlign::ALIGN_LEFT);
+	tab_container->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
 	tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_container->connect("tab_selected", callable_mp(this, &InputEventConfigurationDialog::_tab_selected));
@@ -622,7 +622,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_name(TTR("Listen for Input"));
 	event_as_text = memnew(Label);
-	event_as_text->set_align(Label::ALIGN_CENTER);
+	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	vb->add_child(event_as_text);
 	// Mouse button detection rect (Mouse button event outside this ColorRect will be ignored)
 	mouse_detection_rect = memnew(ColorRect);
@@ -761,7 +761,7 @@ void ActionMapEditor::_add_action_pressed() {
 }
 
 void ActionMapEditor::_add_action(const String &p_name) {
-	if (p_name == "" || !_is_action_name_valid(p_name)) {
+	if (p_name.is_empty() || !_is_action_name_valid(p_name)) {
 		show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 		return;
 	}
@@ -785,7 +785,7 @@ void ActionMapEditor::_action_edited() {
 			return;
 		}
 
-		if (new_name == "" || !_is_action_name_valid(new_name)) {
+		if (new_name.is_empty() || !_is_action_name_valid(new_name)) {
 			ti->set_text(0, old_name);
 			show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 			return;
@@ -847,7 +847,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			int event_index = item->get_meta("__index");
 
 			Array events = action["events"];
-			events.remove(event_index);
+			events.remove_at(event_index);
 			action["events"] = events;
 
 			emit_signal(SNAME("action_edited"), action_name, action);

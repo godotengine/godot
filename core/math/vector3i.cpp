@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,12 +40,12 @@ int32_t Vector3i::get_axis(const int p_axis) const {
 	return operator[](p_axis);
 }
 
-int Vector3i::min_axis() const {
-	return x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2);
+Vector3i::Axis Vector3i::min_axis_index() const {
+	return x < y ? (x < z ? Vector3i::AXIS_X : Vector3i::AXIS_Z) : (y < z ? Vector3i::AXIS_Y : Vector3i::AXIS_Z);
 }
 
-int Vector3i::max_axis() const {
-	return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
+Vector3i::Axis Vector3i::max_axis_index() const {
+	return x < y ? (y < z ? Vector3i::AXIS_Z : Vector3i::AXIS_Y) : (x < z ? Vector3i::AXIS_Z : Vector3i::AXIS_X);
 }
 
 Vector3i Vector3i::clamp(const Vector3i &p_min, const Vector3i &p_max) const {

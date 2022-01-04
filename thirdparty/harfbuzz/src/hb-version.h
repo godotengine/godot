@@ -53,14 +53,14 @@ HB_BEGIN_DECLS
  *
  * The micro component of the library version available at compile-time.
  */
-#define HB_VERSION_MICRO 1
+#define HB_VERSION_MICRO 2
 
 /**
  * HB_VERSION_STRING:
  *
  * A string literal containing the library version available at compile-time.
  */
-#define HB_VERSION_STRING "3.1.1"
+#define HB_VERSION_STRING "3.1.2"
 
 /**
  * HB_VERSION_ATLEAST:

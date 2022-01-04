@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -786,7 +786,7 @@ void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	if (p_tile) {
 		rect->flags |= RendererCanvasRender::CANVAS_RECT_TILE;
 		rect->flags |= RendererCanvasRender::CANVAS_RECT_REGION;
-		rect->source = Rect2(0, 0, fabsf(p_rect.size.width), fabsf(p_rect.size.height));
+		rect->source = Rect2(0, 0, ABS(p_rect.size.width), ABS(p_rect.size.height));
 	}
 
 	if (p_rect.size.x < 0) {

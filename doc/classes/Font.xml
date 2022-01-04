@@ -96,7 +96,7 @@
 			<argument index="0" name="canvas_item" type="RID" />
 			<argument index="1" name="pos" type="Vector2" />
 			<argument index="2" name="text" type="String" />
-			<argument index="3" name="align" type="int" enum="HAlign" default="0" />
+			<argument index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
 			<argument index="4" name="width" type="float" default="-1" />
 			<argument index="5" name="max_lines" type="int" default="-1" />
 			<argument index="6" name="size" type="int" default="16" />
@@ -114,7 +114,7 @@
 			<argument index="0" name="canvas_item" type="RID" />
 			<argument index="1" name="pos" type="Vector2" />
 			<argument index="2" name="text" type="String" />
-			<argument index="3" name="align" type="int" enum="HAlign" default="0" />
+			<argument index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
 			<argument index="4" name="width" type="float" default="-1" />
 			<argument index="5" name="size" type="int" default="16" />
 			<argument index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
@@ -202,7 +202,7 @@
 			<return type="Vector2" />
 			<argument index="0" name="text" type="String" />
 			<argument index="1" name="size" type="int" default="16" />
-			<argument index="2" name="align" type="int" enum="HAlign" default="0" />
+			<argument index="2" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
 			<argument index="3" name="width" type="float" default="-1" />
 			<argument index="4" name="flags" type="int" default="3" />
 			<description>
@@ -222,7 +222,7 @@
 			<return type="float" />
 			<argument index="0" name="size" type="int" default="16" />
 			<description>
-				Return average pixel offset of the underline below the baseline.
+				Returns average pixel offset of the underline below the baseline.
 				[b]Note:[/b] Real underline position of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
 			</description>
 		</method>
@@ -230,7 +230,7 @@
 			<return type="float" />
 			<argument index="0" name="size" type="int" default="16" />
 			<description>
-				Return average thickness of the underline.
+				Returns average thickness of the underline.
 				[b]Note:[/b] Real underline thickness of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
 			</description>
 		</method>
@@ -238,7 +238,7 @@
 			<return type="bool" />
 			<argument index="0" name="char" type="int" />
 			<description>
-				Return [code]true[/code] if a Unicode [code]char[/code] is available in the font.
+				Returns [code]true[/code] if a Unicode [code]char[/code] is available in the font.
 			</description>
 		</method>
 		<method name="remove_data">

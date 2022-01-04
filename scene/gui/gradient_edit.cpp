@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -89,7 +89,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_pressed() && k->get_keycode() == Key::KEY_DELETE && grabbed != -1) {
-		points.remove(grabbed);
+		points.remove_at(grabbed);
 		grabbed = -1;
 		grabbing = false;
 		update();
@@ -109,7 +109,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
 		if (grabbed != -1) {
-			points.remove(grabbed);
+			points.remove_at(grabbed);
 			grabbed = -1;
 			grabbing = false;
 			update();
@@ -430,6 +430,10 @@ void GradientEdit::set_interpolation_mode(Gradient::InterpolationMode p_interp_m
 
 Gradient::InterpolationMode GradientEdit::get_interpolation_mode() {
 	return interpolation_mode;
+}
+
+ColorPicker *GradientEdit::get_picker() {
+	return picker;
 }
 
 void GradientEdit::_bind_methods() {

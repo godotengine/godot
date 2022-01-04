@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,7 +115,7 @@ void NativeExtensionManager::load_extensions() {
 	FileAccessRef f = FileAccess::open(NativeExtension::get_extension_list_config_file(), FileAccess::READ);
 	while (f && !f->eof_reached()) {
 		String s = f->get_line().strip_edges();
-		if (s != String()) {
+		if (!s.is_empty()) {
 			LoadStatus err = load_extension(s);
 			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, "Error loading extension: " + s);
 		}

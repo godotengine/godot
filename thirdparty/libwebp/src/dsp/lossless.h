@@ -30,7 +30,22 @@ extern "C" {
 
 typedef uint32_t (*VP8LPredictorFunc)(uint32_t left, const uint32_t* const top);
 extern VP8LPredictorFunc VP8LPredictors[16];
-extern VP8LPredictorFunc VP8LPredictors_C[16];
+
+uint32_t VP8LPredictor0_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor1_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor2_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor3_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor4_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor5_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor6_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor7_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor8_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor9_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor10_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor11_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor12_C(uint32_t left, const uint32_t* const top);
+uint32_t VP8LPredictor13_C(uint32_t left, const uint32_t* const top);
+
 // These Add/Sub function expects upper[-1] and out[-1] to be readable.
 typedef void (*VP8LPredictorAddSubFunc)(const uint32_t* in,
                                         const uint32_t* upper, int num_pixels,

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -203,7 +203,7 @@ public:
 			return !(this->operator==(p_other));
 		}
 
-		DataType &operator=(const DataType &p_other) {
+		void operator=(const DataType &p_other) {
 			kind = p_other.kind;
 			type_source = p_other.type_source;
 			is_constant = p_other.is_constant;
@@ -221,7 +221,6 @@ public:
 			if (p_other.has_container_element_type()) {
 				set_container_element_type(p_other.get_container_element_type());
 			}
-			return *this;
 		}
 
 		DataType() = default;

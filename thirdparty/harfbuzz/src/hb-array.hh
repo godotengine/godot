@@ -51,13 +51,19 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
    * Constructors.
    */
   hb_array_t () = default;
-  hb_array_t (Type *array_, unsigned int length_) : arrayZ (array_), length (length_) {}
+  hb_array_t (const hb_array_t&) = default;
+  ~hb_array_t () = default;
+  hb_array_t& operator= (const hb_array_t&) = default;
+  hb_array_t& operator= (hb_array_t&&) = default;
+
+  constexpr hb_array_t (std::nullptr_t) : hb_array_t () {}
+  constexpr hb_array_t (Type *array_, unsigned int length_) : arrayZ (array_), length (length_) {}
   template <unsigned int length_>
-  hb_array_t (Type (&array_)[length_]) : hb_array_t (array_, length_) {}
+  constexpr hb_array_t (Type (&array_)[length_]) : hb_array_t (array_, length_) {}
 
   template <typename U,
 	    hb_enable_if (hb_is_cr_convertible(U, Type))>
-  hb_array_t (const hb_array_t<U> &o) :
+  constexpr hb_array_t (const hb_array_t<U> &o) :
     hb_iter_with_fallback_t<hb_array_t, Type&> (),
     arrayZ (o.arrayZ), length (o.length), backwards_length (o.backwards_length) {}
   template <typename U,
@@ -303,13 +309,19 @@ struct hb_sorted_array_t :
   static constexpr bool is_sorted_iterator = true;
 
   hb_sorted_array_t () = default;
-  hb_sorted_array_t (Type *array_, unsigned int length_) : hb_array_t<Type> (array_, length_) {}
+  hb_sorted_array_t (const hb_sorted_array_t&) = default;
+  ~hb_sorted_array_t () = default;
+  hb_sorted_array_t& operator= (const hb_sorted_array_t&) = default;
+  hb_sorted_array_t& operator= (hb_sorted_array_t&&) = default;
+
+  constexpr hb_sorted_array_t (std::nullptr_t) : hb_sorted_array_t () {}
+  constexpr hb_sorted_array_t (Type *array_, unsigned int length_) : hb_array_t<Type> (array_, length_) {}
   template <unsigned int length_>
-  hb_sorted_array_t (Type (&array_)[length_]) : hb_array_t<Type> (array_) {}
+  constexpr hb_sorted_array_t (Type (&array_)[length_]) : hb_array_t<Type> (array_) {}
 
   template <typename U,
 	    hb_enable_if (hb_is_cr_convertible(U, Type))>
-  hb_sorted_array_t (const hb_array_t<U> &o) :
+  constexpr hb_sorted_array_t (const hb_array_t<U> &o) :
     hb_iter_t<hb_sorted_array_t, Type&> (),
     hb_array_t<Type> (o) {}
   template <typename U,

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1953,7 +1953,7 @@ void RendererCanvasRenderRD::ShaderData::set_code(const String &p_code) {
 	uses_sdf = false;
 	uses_time = false;
 
-	if (code == String()) {
+	if (code.is_empty()) {
 		return; //just invalid, but no error
 	}
 
@@ -2391,6 +2391,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 		actions.renames["SCREEN_PIXEL_SIZE"] = "canvas_data.screen_pixel_size";
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
+		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
+		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
 
 		actions.renames["LIGHT_POSITION"] = "light_position";
 		actions.renames["LIGHT_COLOR"] = "light_color";

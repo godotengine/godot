@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -374,7 +374,7 @@ public:
 	FUNC2(reflection_probe_set_enable_shadows, RID, bool)
 	FUNC2(reflection_probe_set_cull_mask, RID, uint32_t)
 	FUNC2(reflection_probe_set_resolution, RID, int)
-	FUNC2(reflection_probe_set_lod_threshold, RID, float)
+	FUNC2(reflection_probe_set_mesh_lod_threshold, RID, float)
 
 	/* DECAL API */
 
@@ -528,7 +528,6 @@ public:
 	FUNCRIDSPLIT(viewport)
 
 	FUNC2(viewport_set_use_xr, RID, bool)
-	FUNC2(viewport_set_scale_3d, RID, float)
 	FUNC3(viewport_set_size, RID, int, int)
 
 	FUNC2(viewport_set_active, RID, bool)
@@ -538,6 +537,11 @@ public:
 
 	FUNC3(viewport_attach_to_screen, RID, const Rect2 &, int)
 	FUNC2(viewport_set_render_direct_to_screen, RID, bool)
+
+	FUNC2(viewport_set_scaling_3d_mode, RID, ViewportScaling3DMode)
+	FUNC2(viewport_set_scaling_3d_scale, RID, float)
+	FUNC2(viewport_set_fsr_sharpness, RID, float)
+	FUNC2(viewport_set_fsr_mipmap_bias, RID, float)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
 
@@ -571,7 +575,7 @@ public:
 	FUNC2(viewport_set_use_occlusion_culling, RID, bool)
 	FUNC1(viewport_set_occlusion_rays_per_thread, int)
 	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
-	FUNC2(viewport_set_lod_threshold, RID, float)
+	FUNC2(viewport_set_mesh_lod_threshold, RID, float)
 
 	FUNC3R(int, viewport_get_render_info, RID, ViewportRenderInfoType, ViewportRenderInfo)
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
@@ -621,6 +625,9 @@ public:
 
 	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
 	FUNC6(environment_set_ssao_quality, EnvironmentSSAOQuality, bool, float, int, float, float)
+
+	FUNC6(environment_set_ssil, RID, bool, float, float, float, float)
+	FUNC6(environment_set_ssil_quality, EnvironmentSSILQuality, bool, float, int, float, float)
 
 	FUNC11(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, EnvironmentGlowBlendMode, float, float, float)
 	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
@@ -887,6 +894,7 @@ public:
 	virtual uint64_t get_rendering_info(RenderingInfo p_info) override;
 	virtual String get_video_adapter_name() const override;
 	virtual String get_video_adapter_vendor() const override;
+	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
 
 	virtual void set_frame_profiling_enabled(bool p_enable) override;
 	virtual Vector<FrameProfileArea> get_frame_profile() override;

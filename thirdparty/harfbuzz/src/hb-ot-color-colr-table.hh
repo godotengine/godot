@@ -38,8 +38,8 @@
  */
 #define HB_OT_TAG_COLR HB_TAG('C','O','L','R')
 
-#ifndef COLRV1_MAX_NESTING_LEVEL
-#define COLRV1_MAX_NESTING_LEVEL	100
+#ifndef HB_COLRV1_MAX_NESTING_LEVEL
+#define HB_COLRV1_MAX_NESTING_LEVEL	100
 #endif
 
 #ifndef COLRV1_ENABLE_SUBSETTING
@@ -102,7 +102,7 @@ struct hb_colrv1_closure_context_t :
                                hb_set_t *glyphs_,
                                hb_set_t *layer_indices_,
                                hb_set_t *palette_indices_,
-                               unsigned nesting_level_left_ = COLRV1_MAX_NESTING_LEVEL) :
+                               unsigned nesting_level_left_ = HB_COLRV1_MAX_NESTING_LEVEL) :
                           base (base_),
                           glyphs (glyphs_),
                           layer_indices (layer_indices_),
@@ -985,7 +985,7 @@ struct ClipList
     for (const hb_codepoint_t _ : gids.iter ())
     {
       if (_ == start_gid) continue;
-      
+
       offset = gid_offset_map.get (_);
       if (_ == prev_gid + 1 &&  offset == prev_offset)
       {
@@ -1027,7 +1027,7 @@ struct ClipList
 
     const hb_set_t& glyphset = *c->plan->_glyphset;
     const hb_map_t &glyph_map = *c->plan->glyph_map;
-    
+
     hb_map_t new_gid_offset_map;
     hb_set_t new_gids;
     for (const ClipRecord& record : clips.iter ())
@@ -1062,6 +1062,18 @@ struct ClipList
 
 struct Paint
 {
+
+  template <typename ...Ts>
+  bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const
+  {
+    TRACE_SANITIZE (this);
+
+    if (unlikely (!c->check_start_recursion (HB_COLRV1_MAX_NESTING_LEVEL)))
+      return_trace (c->no_dispatch_return_value ());
+
+    return_trace (c->end_recursion (this->dispatch (c, std::forward<Ts> (ds)...)));
+  }
+
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -139,7 +139,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		// Cache options
 		String variable_prefix = options["variable_prefix"];
 
-		if (line == "") {
+		if (line.is_empty()) {
 			print_line("\nDebugger Break, Reason: '" + script_lang->debug_get_error() + "'");
 			print_line("*Frame " + itos(current_frame) + " - " + script_lang->debug_get_stack_level_source(current_frame) + ":" + itos(script_lang->debug_get_stack_level_line(current_frame)) + " in function '" + script_lang->debug_get_stack_level_function(current_frame) + "'");
 			print_line("Enter \"help\" for assistance.");

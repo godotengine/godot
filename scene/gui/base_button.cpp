@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -355,8 +355,8 @@ String BaseButton::get_tooltip(const Point2 &p_pos) const {
 	String tooltip = Control::get_tooltip(p_pos);
 	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->has_valid_event()) {
 		String text = shortcut->get_name() + " (" + shortcut->get_as_text() + ")";
-		if (tooltip != String() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
-			text += "\n" + tooltip;
+		if (!tooltip.is_empty() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
+			text += "\n" + atr(tooltip);
 		}
 		tooltip = text;
 	}

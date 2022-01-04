@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@ class PropertyUtils {
 public:
 	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
 	// Gets the most pure default value, the one that would be set when the node has just been instantiated
-	static Variant get_property_default_value(const Object *p_object, const StringName &p_property, const Vector<SceneState::PackState> *p_states_stack_cache = nullptr, bool p_update_exports = false, const Node *p_owner = nullptr, bool *r_is_class_default = nullptr);
+	static Variant get_property_default_value(const Object *p_object, const StringName &p_property, bool *r_is_valid = nullptr, const Vector<SceneState::PackState> *p_states_stack_cache = nullptr, bool p_update_exports = false, const Node *p_owner = nullptr, bool *r_is_class_default = nullptr);
 
 	// Gets the instance/inheritance states of this node, in order of precedence,
 	// that is, from the topmost (the most able to override values) to the lowermost

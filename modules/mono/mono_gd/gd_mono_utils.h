@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,6 +61,8 @@ bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype);
 bool type_is_generic_ienumerable(MonoReflectionType *p_reftype);
 bool type_is_generic_icollection(MonoReflectionType *p_reftype);
 bool type_is_generic_idictionary(MonoReflectionType *p_reftype);
+
+void get_generic_type_definition(MonoReflectionType *p_reftype, MonoReflectionType **r_generic_reftype);
 
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype);
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);

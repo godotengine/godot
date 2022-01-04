@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,7 +59,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabs->set_tabs_visible(false);
 	tabs->connect("tab_changed", callable_mp(this, &EditorDebuggerNode::_debugger_changed));
 	add_child(tabs);
@@ -181,6 +181,11 @@ ScriptEditorDebugger *EditorDebuggerNode::get_current_debugger() const {
 
 ScriptEditorDebugger *EditorDebuggerNode::get_default_debugger() const {
 	return Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(0));
+}
+
+String EditorDebuggerNode::get_server_uri() const {
+	ERR_FAIL_COND_V(server.is_null(), "");
+	return server->get_uri();
 }
 
 Error EditorDebuggerNode::start(const String &p_uri) {

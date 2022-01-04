@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
+ * Copyright (c) Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -36,6 +36,11 @@
 #  define XXH_STATIC_LINKING_ONLY  /* XXH64_state_t */
 #endif
 #include "xxhash.h"                /* XXH_reset, update, digest */
+#ifndef ZSTD_NO_TRACE
+#  include "zstd_trace.h"
+#else
+#  define ZSTD_TRACE 0
+#endif
 
 #if defined (__cplusplus)
 extern "C" {
@@ -347,10 +352,17 @@ typedef enum {
 *  Private declarations
 *********************************************/
 typedef struct seqDef_s {
-    U32 offset;         /* Offset code of the sequence */
+    U32 offset;         /* offset == rawOffset + ZSTD_REP_NUM, or equivalently, offCode + 1 */
     U16 litLength;
     U16 matchLength;
 } seqDef;
+
+/* Controls whether seqStore has a single "long" litLength or matchLength. See seqStore_t. */
+typedef enum {
+    ZSTD_llt_none = 0,             /* no longLengthType */
+    ZSTD_llt_literalLength = 1,    /* represents a long literal */
+    ZSTD_llt_matchLength = 2       /* represents a long match */
+} ZSTD_longLengthType_e;
 
 typedef struct {
     seqDef* sequencesStart;
@@ -363,12 +375,12 @@ typedef struct {
     size_t maxNbSeq;
     size_t maxNbLit;
 
-    /* longLengthPos and longLengthID to allow us to represent either a single litLength or matchLength
+    /* longLengthPos and longLengthType to allow us to represent either a single litLength or matchLength
      * in the seqStore that has a value larger than U16 (if it exists). To do so, we increment
-     * the existing value of the litLength or matchLength by 0x10000. 
+     * the existing value of the litLength or matchLength by 0x10000.
      */
-    U32   longLengthID;   /* 0 == no longLength; 1 == Represent the long literal; 2 == Represent the long match; */
-    U32   longLengthPos;  /* Index of the sequence to apply long length modification to */
+    ZSTD_longLengthType_e   longLengthType;
+    U32                     longLengthPos;  /* Index of the sequence to apply long length modification to */
 } seqStore_t;
 
 typedef struct {
@@ -378,7 +390,7 @@ typedef struct {
 
 /**
  * Returns the ZSTD_sequenceLength for the given sequences. It handles the decoding of long sequences
- * indicated by longLengthPos and longLengthID, and adds MINMATCH back to matchLength.
+ * indicated by longLengthPos and longLengthType, and adds MINMATCH back to matchLength.
  */
 MEM_STATIC ZSTD_sequenceLength ZSTD_getSequenceLength(seqStore_t const* seqStore, seqDef const* seq)
 {
@@ -386,10 +398,10 @@ MEM_STATIC ZSTD_sequenceLength ZSTD_getSequenceLength(seqStore_t const* seqStore
     seqLen.litLength = seq->litLength;
     seqLen.matchLength = seq->matchLength + MINMATCH;
     if (seqStore->longLengthPos == (U32)(seq - seqStore->sequencesStart)) {
-        if (seqStore->longLengthID == 1) {
+        if (seqStore->longLengthType == ZSTD_llt_literalLength) {
             seqLen.litLength += 0xFFFF;
         }
-        if (seqStore->longLengthID == 2) {
+        if (seqStore->longLengthType == ZSTD_llt_matchLength) {
             seqLen.matchLength += 0xFFFF;
         }
     }

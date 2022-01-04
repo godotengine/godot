@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -190,8 +190,8 @@ static void _OS_printres(Object *p_obj) {
 }
 
 void OS::print_all_resources(String p_to_file) {
-	ERR_FAIL_COND(p_to_file != "" && _OSPRF);
-	if (p_to_file != "") {
+	ERR_FAIL_COND(!p_to_file.is_empty() && _OSPRF);
+	if (!p_to_file.is_empty()) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
@@ -202,7 +202,7 @@ void OS::print_all_resources(String p_to_file) {
 
 	ObjectDB::debug_objects(_OS_printres);
 
-	if (p_to_file != "") {
+	if (!p_to_file.is_empty()) {
 		if (_OSPRF) {
 			memdelete(_OSPRF);
 		}

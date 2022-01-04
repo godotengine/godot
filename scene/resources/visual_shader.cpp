@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -367,7 +367,7 @@ String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::
 	if (!nend) {
 		code += "\n	}";
 	} else {
-		code.remove(code.size() - 1);
+		code.remove_at(code.size() - 1);
 		code += "}";
 	}
 	code += "\n";
@@ -979,7 +979,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 String VisualShader::validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const {
 	String name = p_port_name;
 
-	if (name == String()) {
+	if (name.is_empty()) {
 		return String();
 	}
 
@@ -987,7 +987,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		name = name.substr(1, name.length() - 1);
 	}
 
-	if (name != String()) {
+	if (!name.is_empty()) {
 		String valid_name;
 
 		for (int i = 0; i < name.length(); i++) {
@@ -1031,7 +1031,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 	while (name.length() && !IS_INITIAL_CHAR(name[0])) {
 		name = name.substr(1, name.length() - 1);
 	}
-	if (name != String()) {
+	if (!name.is_empty()) {
 		String valid_name;
 
 		for (int i = 0; i < name.length(); i++) {
@@ -1045,7 +1045,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 		name = valid_name;
 	}
 
-	if (name == String()) {
+	if (name.is_empty()) {
 		name = p_uniform->get_caption();
 	}
 
@@ -1075,7 +1075,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 			while (name.length() && name[name.length() - 1] >= '0' && name[name.length() - 1] <= '9') {
 				name = name.substr(0, name.length() - 1);
 			}
-			ERR_FAIL_COND_V(name == String(), String());
+			ERR_FAIL_COND_V(name.is_empty(), String());
 			name += itos(attempt);
 		} else {
 			break;
@@ -1084,16 +1084,6 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 
 	return name;
 }
-
-VisualShader::RenderModeEnums VisualShader::render_mode_enums[] = {
-	{ Shader::MODE_SPATIAL, "blend" },
-	{ Shader::MODE_SPATIAL, "depth_draw" },
-	{ Shader::MODE_SPATIAL, "cull" },
-	{ Shader::MODE_SPATIAL, "diffuse" },
-	{ Shader::MODE_SPATIAL, "specular" },
-	{ Shader::MODE_CANVAS_ITEM, "blend" },
-	{ Shader::MODE_CANVAS_ITEM, nullptr }
-};
 
 static const char *type_string[VisualShader::TYPE_MAX] = {
 	"vertex",
@@ -1261,27 +1251,25 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	Map<String, String> blend_mode_enums;
 	Set<String> toggles;
 
-	for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
-		String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
-		int idx = 0;
-		bool in_enum = false;
-		while (render_mode_enums[idx].string) {
-			if (mode.begins_with(render_mode_enums[idx].string)) {
-				String begin = render_mode_enums[idx].string;
-				String option = mode.replace_first(begin + "_", "");
+	const Vector<ShaderLanguage::ModeInfo> &rmodes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode));
+
+	for (int i = 0; i < rmodes.size(); i++) {
+		const ShaderLanguage::ModeInfo &info = rmodes[i];
+
+		if (!info.options.is_empty()) {
+			const String begin = String(info.name);
+
+			for (int j = 0; j < info.options.size(); j++) {
+				const String option = String(info.options[j]);
+
 				if (!blend_mode_enums.has(begin)) {
 					blend_mode_enums[begin] = option;
 				} else {
 					blend_mode_enums[begin] += "," + option;
 				}
-				in_enum = true;
-				break;
 			}
-			idx++;
-		}
-
-		if (!in_enum) {
-			toggles.insert(mode);
+		} else {
+			toggles.insert(String(info.name));
 		}
 	}
 
@@ -1568,7 +1556,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 	}
 
 	node_code += vsnode->generate_code(get_mode(), type, node, inputs, outputs, for_preview);
-	if (node_code != String()) {
+	if (!node_code.is_empty()) {
 		code += node_name;
 		code += node_code;
 		code += "\n";
@@ -1653,44 +1641,36 @@ void VisualShader::_update_shader() const {
 	String render_mode;
 
 	{
-		//fill render mode enums
-		int idx = 0;
-		while (render_mode_enums[idx].string) {
-			if (shader_mode == render_mode_enums[idx].mode) {
-				if (modes.has(render_mode_enums[idx].string)) {
-					int which = modes[render_mode_enums[idx].string];
-					int count = 0;
-					for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
-						String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
-						if (mode.begins_with(render_mode_enums[idx].string)) {
-							if (count == which) {
-								if (render_mode != String()) {
-									render_mode += ", ";
-								}
-								render_mode += mode;
-								break;
-							}
-							count++;
-						}
+		const Vector<ShaderLanguage::ModeInfo> &rmodes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode));
+		Vector<String> flag_names;
+
+		// Add enum modes first.
+		for (int i = 0; i < rmodes.size(); i++) {
+			const ShaderLanguage::ModeInfo &info = rmodes[i];
+			const String temp = String(info.name);
+
+			if (!info.options.is_empty()) {
+				if (modes.has(temp) && modes[temp] < info.options.size()) {
+					if (!render_mode.is_empty()) {
+						render_mode += ", ";
 					}
+					render_mode += temp + "_" + info.options[modes[temp]];
 				}
+			} else if (flags.has(temp)) {
+				flag_names.push_back(temp);
 			}
-			idx++;
 		}
 
-		//fill render mode flags
-		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
-			String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
-			if (flags.has(mode)) {
-				if (render_mode != String()) {
-					render_mode += ", ";
-				}
-				render_mode += mode;
+		// Add flags afterward.
+		for (int i = 0; i < flag_names.size(); i++) {
+			if (!render_mode.is_empty()) {
+				render_mode += ", ";
 			}
+			render_mode += flag_names[i];
 		}
 	}
 
-	if (render_mode != String()) {
+	if (!render_mode.is_empty()) {
 		global_code += "render_mode " + render_mode + ";\n\n";
 	}
 
@@ -2468,7 +2448,7 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 			idx++;
 		}
 
-		if (code == String()) {
+		if (code.is_empty()) {
 			switch (get_output_port_type(0)) {
 				case PORT_TYPE_SCALAR: {
 					code = "	" + p_output_vars[0] + " = 0.0;\n";
@@ -2502,7 +2482,7 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 			idx++;
 		}
 
-		if (code == String()) {
+		if (code.is_empty()) {
 			code = "	" + p_output_vars[0] + " = 0.0;\n"; //default (none found) is scalar
 		}
 
@@ -2605,7 +2585,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 
 		while (ports[idx].mode != Shader::MODE_MAX) {
 			if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
-				if (port_list != String()) {
+				if (!port_list.is_empty()) {
 					port_list += ",";
 				}
 				port_list += ports[idx].name;
@@ -2613,7 +2593,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 			idx++;
 		}
 
-		if (port_list == "") {
+		if (port_list.is_empty()) {
 			port_list = TTR("None");
 		}
 		property.hint_string = port_list;
@@ -3063,7 +3043,7 @@ String VisualShaderNodeOutput::generate_code(Shader::Mode p_mode, VisualShader::
 	String code;
 	while (ports[idx].mode != Shader::MODE_MAX) {
 		if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
-			if (p_input_vars[count] != String()) {
+			if (!p_input_vars[count].is_empty()) {
 				String s = ports[idx].string;
 				if (s.find(":") != -1) {
 					code += "	" + s.get_slicec(':', 0) + " = " + p_input_vars[count] + "." + s.get_slicec(':', 1) + ";\n";

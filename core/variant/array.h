@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,8 +44,6 @@ class Array {
 	void _ref(const Array &p_from) const;
 	void _unref() const;
 
-	inline int _clamp_slice_index(int p_index) const;
-
 protected:
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	bool _assign(const Array &p_array);
@@ -75,7 +73,7 @@ public:
 	Error resize(int p_new_size);
 
 	Error insert(int p_pos, const Variant &p_value);
-	void remove(int p_pos);
+	void remove_at(int p_pos);
 	void fill(const Variant &p_value);
 
 	Variant front() const;

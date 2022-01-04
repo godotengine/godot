@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,6 +87,9 @@ void FontData::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_msdf_size", "msdf_size"), &FontData::set_msdf_size);
 	ClassDB::bind_method(D_METHOD("get_msdf_size"), &FontData::get_msdf_size);
+
+	ClassDB::bind_method(D_METHOD("set_fixed_size", "fixed_size"), &FontData::set_fixed_size);
+	ClassDB::bind_method(D_METHOD("get_fixed_size"), &FontData::get_fixed_size);
 
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &FontData::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &FontData::is_force_autohinter);
@@ -749,7 +752,7 @@ void FontData::remove_cache(int p_cache_index) {
 	if (cache[p_cache_index].is_valid()) {
 		TS->free(cache.write[p_cache_index]);
 	}
-	cache.remove(p_cache_index);
+	cache.remove_at(p_cache_index);
 	emit_changed();
 }
 
@@ -1149,11 +1152,11 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_underline_position", "size"), &Font::get_underline_position, DEFVAL(DEFAULT_FONT_SIZE));
 	ClassDB::bind_method(D_METHOD("get_underline_thickness", "size"), &Font::get_underline_thickness, DEFVAL(DEFAULT_FONT_SIZE));
 
-	ClassDB::bind_method(D_METHOD("get_string_size", "text", "size", "align", "width", "flags"), &Font::get_string_size, DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("get_string_size", "text", "size", "alignment", "width", "flags"), &Font::get_string_size, DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
 	ClassDB::bind_method(D_METHOD("get_multiline_string_size", "text", "width", "size", "flags"), &Font::get_multiline_string_size, DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND));
 
-	ClassDB::bind_method(D_METHOD("draw_string", "canvas_item", "pos", "text", "align", "width", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
-	ClassDB::bind_method(D_METHOD("draw_multiline_string", "canvas_item", "pos", "text", "align", "width", "max_lines", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_multiline_string, DEFVAL(HALIGN_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("draw_string", "canvas_item", "pos", "text", "alignment", "width", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
+	ClassDB::bind_method(D_METHOD("draw_multiline_string", "canvas_item", "pos", "text", "alignment", "width", "max_lines", "size", "modulate", "outline_size", "outline_modulate", "flags"), &Font::draw_multiline_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND));
 
 	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next", "size"), &Font::get_char_size, DEFVAL(0), DEFVAL(DEFAULT_FONT_SIZE));
 	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "next", "size", "modulate", "outline_size", "outline_modulate"), &Font::draw_char, DEFVAL(0), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(1, 1, 1, 0)));
@@ -1353,8 +1356,8 @@ void Font::remove_data(int p_idx) {
 		data.write[p_idx]->disconnect(SNAME("changed"), callable_mp(this, &Font::_data_changed));
 	}
 
-	data.remove(p_idx);
-	rids.remove(p_idx);
+	data.remove_at(p_idx);
+	rids.remove_at(p_idx);
 
 	cache.clear();
 	cache_wrap.clear();
@@ -1446,7 +1449,7 @@ real_t Font::get_underline_thickness(int p_size) const {
 	return ret;
 }
 
-Size2 Font::get_string_size(const String &p_text, int p_size, HAlign p_align, real_t p_width, uint16_t p_flags) const {
+Size2 Font::get_string_size(const String &p_text, int p_size, HorizontalAlignment p_alignment, float p_width, uint16_t p_flags) const {
 	ERR_FAIL_COND_V(data.is_empty(), Size2());
 
 	for (int i = 0; i < data.size(); i++) {
@@ -1454,7 +1457,7 @@ Size2 Font::get_string_size(const String &p_text, int p_size, HAlign p_align, re
 	}
 
 	uint64_t hash = p_text.hash64();
-	if (p_align == HALIGN_FILL) {
+	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 		hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 		hash = hash_djb2_one_64(p_flags, hash);
 	}
@@ -1471,7 +1474,7 @@ Size2 Font::get_string_size(const String &p_text, int p_size, HAlign p_align, re
 	return buffer->get_size();
 }
 
-Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int p_size, uint16_t p_flags) const {
+Size2 Font::get_multiline_string_size(const String &p_text, float p_width, int p_size, uint16_t p_flags) const {
 	ERR_FAIL_COND_V(data.is_empty(), Size2());
 
 	for (int i = 0; i < data.size(); i++) {
@@ -1508,7 +1511,7 @@ Size2 Font::get_multiline_string_size(const String &p_text, real_t p_width, int 
 	return ret;
 }
 
-void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
+void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
 	ERR_FAIL_COND(data.is_empty());
 
 	for (int i = 0; i < data.size(); i++) {
@@ -1516,7 +1519,7 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 	}
 
 	uint64_t hash = p_text.hash64();
-	if (p_align == HALIGN_FILL) {
+	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 		hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
 		hash = hash_djb2_one_64(p_flags, hash);
 	}
@@ -1539,7 +1542,7 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 	}
 
 	buffer->set_width(p_width);
-	buffer->set_align(p_align);
+	buffer->set_horizontal_alignment(p_alignment);
 	buffer->set_flags(p_flags);
 
 	if (p_outline_size > 0 && p_outline_modulate.a != 0.0f) {
@@ -1548,7 +1551,7 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 	buffer->draw(p_canvas_item, ofs, p_modulate);
 }
 
-void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, float p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
+void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
 	ERR_FAIL_COND(data.is_empty());
 
 	for (int i = 0; i < data.size(); i++) {
@@ -1571,7 +1574,7 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 		cache_wrap.insert(wrp_hash, lines_buffer);
 	}
 
-	lines_buffer->set_align(p_align);
+	lines_buffer->set_alignment(p_alignment);
 
 	Vector2 lofs = p_pos;
 	for (int i = 0; i < lines_buffer->get_line_count(); i++) {
@@ -1585,7 +1588,7 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 			}
 		}
 		if (p_width > 0) {
-			lines_buffer->set_align(p_align);
+			lines_buffer->set_alignment(p_alignment);
 		}
 
 		if (p_outline_size > 0 && p_outline_modulate.a != 0.0f) {

@@ -9,10 +9,10 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="alignment_horizontal" type="int" setter="set_alignment_horizontal" getter="get_alignment_horizontal" enum="AspectRatioContainer.AlignMode" default="1">
+		<member name="alignment_horizontal" type="int" setter="set_alignment_horizontal" getter="get_alignment_horizontal" enum="AspectRatioContainer.AlignmentMode" default="1">
 			Specifies the horizontal relative position of child controls.
 		</member>
-		<member name="alignment_vertical" type="int" setter="set_alignment_vertical" getter="get_alignment_vertical" enum="AspectRatioContainer.AlignMode" default="1">
+		<member name="alignment_vertical" type="int" setter="set_alignment_vertical" getter="get_alignment_vertical" enum="AspectRatioContainer.AlignmentMode" default="1">
 			Specifies the vertical relative position of child controls.
 		</member>
 		<member name="ratio" type="float" setter="set_ratio" getter="get_ratio" default="1.0">
@@ -36,13 +36,13 @@
 			The width and height of child controls is automatically adjusted to make their bounding rectangle cover the entire area of the container while keeping the aspect ratio.
 			When the bounding rectangle of child controls exceed the container's size and [member Control.rect_clip_content] is enabled, this allows to show only the container's area restricted by its own bounding rectangle.
 		</constant>
-		<constant name="ALIGN_BEGIN" value="0" enum="AlignMode">
+		<constant name="ALIGNMENT_BEGIN" value="0" enum="AlignmentMode">
 			Aligns child controls with the beginning (left or top) of the container.
 		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="AlignMode">
+		<constant name="ALIGNMENT_CENTER" value="1" enum="AlignmentMode">
 			Aligns child controls with the center of the container.
 		</constant>
-		<constant name="ALIGN_END" value="2" enum="AlignMode">
+		<constant name="ALIGNMENT_END" value="2" enum="AlignmentMode">
 			Aligns child controls with the end (right or bottom) of the container.
 		</constant>
 	</constants>

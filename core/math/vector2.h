@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,12 +70,12 @@ struct Vector2 {
 		x = y = p_value;
 	}
 
-	_FORCE_INLINE_ int min_axis() const {
-		return x < y ? 0 : 1;
+	_FORCE_INLINE_ Vector2::Axis min_axis_index() const {
+		return x < y ? Vector2::AXIS_X : Vector2::AXIS_Y;
 	}
 
-	_FORCE_INLINE_ int max_axis() const {
-		return x < y ? 1 : 0;
+	_FORCE_INLINE_ Vector2::Axis max_axis_index() const {
+		return x < y ? Vector2::AXIS_Y : Vector2::AXIS_X;
 	}
 
 	void normalize();
@@ -301,12 +301,12 @@ struct Vector2i {
 		return p_idx ? y : x;
 	}
 
-	_FORCE_INLINE_ int min_axis() const {
-		return x < y ? 0 : 1;
+	_FORCE_INLINE_ Vector2i::Axis min_axis_index() const {
+		return x < y ? Vector2i::AXIS_X : Vector2i::AXIS_Y;
 	}
 
-	_FORCE_INLINE_ int max_axis() const {
-		return x < y ? 1 : 0;
+	_FORCE_INLINE_ Vector2i::Axis max_axis_index() const {
+		return x < y ? Vector2i::AXIS_Y : Vector2i::AXIS_X;
 	}
 
 	Vector2i min(const Vector2i &p_vector2i) const {

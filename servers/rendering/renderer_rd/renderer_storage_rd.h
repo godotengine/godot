@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -320,6 +320,7 @@ private:
 
 	RID default_rd_textures[DEFAULT_RD_TEXTURE_MAX];
 	RID default_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
+	RID custom_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
 	RID default_rd_storage_buffer;
 
 	/* DECAL ATLAS */
@@ -1052,7 +1053,7 @@ private:
 		bool box_projection = false;
 		bool enable_shadows = false;
 		uint32_t cull_mask = (1 << 20) - 1;
-		float lod_threshold = 0.01;
+		float mesh_lod_threshold = 0.01;
 
 		Dependency dependency;
 	};
@@ -1098,7 +1099,7 @@ private:
 		AABB bounds;
 		Vector3i octree_size;
 
-		float dynamic_range = 4.0;
+		float dynamic_range = 2.0;
 		float energy = 1.0;
 		float bias = 1.4;
 		float normal_bias = 0.0;
@@ -1391,6 +1392,13 @@ public:
 	_FORCE_INLINE_ RID sampler_rd_get_default(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {
 		return default_rd_samplers[p_filter][p_repeat];
 	}
+	_FORCE_INLINE_ RID sampler_rd_get_custom(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {
+		return custom_rd_samplers[p_filter][p_repeat];
+	}
+
+	void sampler_rd_configure_custom(float mipmap_bias);
+
+	void sampler_rd_set_default(float p_mipmap_bias);
 
 	/* CANVAS TEXTURE API */
 
@@ -1549,7 +1557,7 @@ public:
 		return s->index_count ? s->index_count : s->vertex_count;
 	}
 
-	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold, uint32_t *r_index_count = nullptr) const {
+	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t *r_index_count = nullptr) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		int32_t current_lod = -1;
@@ -1558,7 +1566,7 @@ public:
 		}
 		for (uint32_t i = 0; i < s->lod_count; i++) {
 			float screen_size = s->lods[i].edge_length * p_model_scale / p_distance_threshold;
-			if (screen_size > p_lod_threshold) {
+			if (screen_size > p_mesh_lod_threshold) {
 				break;
 			}
 			current_lod = i;
@@ -1947,7 +1955,7 @@ public:
 	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable);
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers);
 	void reflection_probe_set_resolution(RID p_probe, int p_resolution);
-	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio);
+	void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio);
 
 	AABB reflection_probe_get_aabb(RID p_probe) const;
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
@@ -1955,7 +1963,7 @@ public:
 	Vector3 reflection_probe_get_extents(RID p_probe) const;
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const;
 	float reflection_probe_get_origin_max_distance(RID p_probe) const;
-	float reflection_probe_get_lod_threshold(RID p_probe) const;
+	float reflection_probe_get_mesh_lod_threshold(RID p_probe) const;
 
 	int reflection_probe_get_resolution(RID p_probe) const;
 	bool reflection_probe_renders_shadows(RID p_probe) const;
@@ -2385,6 +2393,7 @@ public:
 
 	String get_video_adapter_name() const;
 	String get_video_adapter_vendor() const;
+	RenderingDevice::DeviceType get_video_adapter_type() const;
 
 	virtual void capture_timestamps_begin();
 	virtual void capture_timestamp(const String &p_name);

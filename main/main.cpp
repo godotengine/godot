@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,6 @@
 #include "main/main_timer_sync.h"
 #include "main/performance.h"
 #include "main/splash.gen.h"
-#include "main/splash_editor.gen.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
 #include "scene/main/scene_tree.h"
@@ -84,8 +83,12 @@
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_translation.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
+#ifndef NO_EDITOR_SPLASH
+#include "main/splash_editor.gen.h"
+#endif
 #endif
 
 #include "modules/modules_enabled.gen.h" // For mono.
@@ -268,8 +271,8 @@ void finalize_navigation_server() {
 void Main::print_help(const char *p_binary) {
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
-	OS::get_singleton()->print("(c) 2007-2021 Juan Linietsky, Ariel Manzur.\n");
-	OS::get_singleton()->print("(c) 2014-2021 Godot Engine contributors.\n");
+	OS::get_singleton()->print("(c) 2007-2022 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print("(c) 2014-2022 Godot Engine contributors.\n");
 	OS::get_singleton()->print("\n");
 	OS::get_singleton()->print("Usage: %s [options] [path to scene or 'project.godot' file]\n", p_binary);
 	OS::get_singleton()->print("\n");
@@ -347,7 +350,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -b, --breakpoints                            Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
 	OS::get_singleton()->print("  --profiling                                  Enable profiling in the script debugger.\n");
 	OS::get_singleton()->print("  --vk-layers                                  Enable Vulkan Validation layers for debugging.\n");
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	OS::get_singleton()->print("  --gpu-abort                                  Abort on GPU errors (usually validation layer errors), may help see the problem if your system freezes.\n");
 #endif
 	OS::get_singleton()->print("  --remote-debug <uri>                         Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
@@ -421,7 +424,7 @@ Error Main::test_setup() {
 	register_server_types();
 
 	translation_server->setup(); //register translations, load them, etc.
-	if (locale != "") {
+	if (!locale.is_empty()) {
 		translation_server->set_locale(locale);
 	}
 	translation_server->load_translations();
@@ -441,6 +444,9 @@ Error Main::test_setup() {
 
 	register_module_types();
 	register_driver_types();
+
+	// Theme needs modules to be initialized so that sub-resources can be loaded.
+	initialize_theme();
 
 	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
 	TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(0));
@@ -1117,7 +1123,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
 	FileAccessNetwork::configure();
-	if (remotefs != "") {
+	if (!remotefs.is_empty()) {
 		file_access_network_client = memnew(FileAccessNetworkClient);
 		int port;
 		if (remotefs.find(":") != -1) {
@@ -1136,7 +1142,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
 	}
 
-	if (globals->setup(project_path, main_pack, upwards) == OK) {
+	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
 #ifdef TOOLS_ENABLED
 		found_project = true;
 #endif
@@ -1284,7 +1290,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					PROPERTY_HINT_ENUM, "vulkan,opengl3"));
 
 	// if not set on the command line
-	if (rendering_driver == "") {
+	if (rendering_driver.is_empty()) {
 		rendering_driver = GLOBAL_GET("rendering/driver/driver_name");
 	}
 
@@ -1414,7 +1420,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_display_driver_id(display_driver_idx);
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
-	if (audio_driver == "") { // Specified in project.godot.
+	if (audio_driver.is_empty()) { // Specified in project.godot.
 		audio_driver = GLOBAL_GET("audio/driver/driver");
 	}
 
@@ -1597,6 +1603,24 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		display_server->screen_set_orientation(window_orientation);
 	}
 
+	if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
+		// Print requested V-Sync mode at startup to diagnose the printed FPS not going above the monitor refresh rate.
+		switch (window_vsync_mode) {
+			case DisplayServer::VSyncMode::VSYNC_DISABLED:
+				print_line("Requested V-Sync mode: Disabled");
+				break;
+			case DisplayServer::VSyncMode::VSYNC_ENABLED:
+				print_line("Requested V-Sync mode: Enabled - FPS will likely be capped to the monitor refresh rate.");
+				break;
+			case DisplayServer::VSyncMode::VSYNC_ADAPTIVE:
+				print_line("Requested V-Sync mode: Adaptive");
+				break;
+			case DisplayServer::VSyncMode::VSYNC_MAILBOX:
+				print_line("Requested V-Sync mode: Mailbox");
+				break;
+		}
+	}
+
 	/* Initialize Pen Tablet Driver */
 
 	{
@@ -1605,9 +1629,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pen_tablet/driver.windows", PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"));
 	}
 
-	if (tablet_driver == "") { // specified in project.godot
+	if (tablet_driver.is_empty()) { // specified in project.godot
 		tablet_driver = GLOBAL_GET("input_devices/pen_tablet/driver");
-		if (tablet_driver == "") {
+		if (tablet_driver.is_empty()) {
 			tablet_driver = DisplayServer::get_singleton()->tablet_get_driver_name(0);
 		}
 	}
@@ -1619,7 +1643,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 	}
 
-	if (DisplayServer::get_singleton()->tablet_get_current_driver() == "") {
+	if (DisplayServer::get_singleton()->tablet_get_current_driver().is_empty()) {
 		DisplayServer::get_singleton()->tablet_set_current_driver(DisplayServer::get_singleton()->tablet_get_driver_name(0));
 	}
 
@@ -1700,9 +1724,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	RenderingServer::get_singleton()->set_default_clear_color(clear);
 
 	if (show_logo) { //boot logo!
-		String boot_logo_path = GLOBAL_DEF("application/boot_splash/image", String());
-		bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
-		bool boot_logo_filter = GLOBAL_DEF("application/boot_splash/use_filter", true);
+		const bool boot_logo_image = GLOBAL_DEF("application/boot_splash/show_image", true);
+		const String boot_logo_path = String(GLOBAL_DEF("application/boot_splash/image", String())).strip_edges();
+		const bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
+		const bool boot_logo_filter = GLOBAL_DEF("application/boot_splash/use_filter", true);
 		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/image",
 				PropertyInfo(Variant::STRING,
 						"application/boot_splash/image",
@@ -1710,14 +1735,19 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 		Ref<Image> boot_logo;
 
-		boot_logo_path = boot_logo_path.strip_edges();
-
-		if (boot_logo_path != String()) {
-			boot_logo.instantiate();
-			Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
-			if (load_err) {
-				ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+		if (boot_logo_image) {
+			if (!boot_logo_path.is_empty()) {
+				boot_logo.instantiate();
+				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
+				if (load_err) {
+					ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+				}
 			}
+		} else {
+			// Create a 1×1 transparent image. This will effectively hide the splash image.
+			boot_logo.instantiate();
+			boot_logo->create(1, 1, false, Image::FORMAT_RGBA8);
+			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
 		}
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
@@ -1800,7 +1830,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load Translations and Remaps");
 
 	translation_server->setup(); //register translations, load them, etc.
-	if (locale != "") {
+	if (!locale.is_empty()) {
 		translation_server->set_locale(locale);
 	}
 	translation_server->load_translations();
@@ -1822,11 +1852,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
 
 	/* Determine text driver */
-	if (text_driver == "") {
+	if (text_driver.is_empty()) {
 		text_driver = GLOBAL_GET("internationalization/rendering/text_driver");
 	}
 
-	if (text_driver != "") {
+	if (!text_driver.is_empty()) {
 		/* Load user selected text server. */
 		for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 			if (TextServerManager::get_singleton()->get_interface(i)->get_name() == text_driver) {
@@ -1876,6 +1906,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	register_platform_apis();
 	register_module_types();
 
+	// Theme needs modules to be initialized so that sub-resources can be loaded.
+	initialize_theme();
+
 	GLOBAL_DEF("display/mouse_cursor/custom_image", String());
 	GLOBAL_DEF("display/mouse_cursor/custom_image_hotspot", Vector2());
 	GLOBAL_DEF("display/mouse_cursor/tooltip_position_offset", Point2(10, 10));
@@ -1923,7 +1956,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 
 	_start_success = true;
-	locale = String();
 
 	ClassDB::set_current_api(ClassDB::API_NONE); //no more APIs are registered at this point
 
@@ -1972,7 +2004,7 @@ bool Main::start() {
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
 			project_manager = true;
 #endif
-		} else if (args[i].length() && args[i][0] != '-' && positional_arg == "") {
+		} else if (args[i].length() && args[i][0] != '-' && positional_arg.is_empty()) {
 			positional_arg = args[i];
 
 			if (args[i].ends_with(".scn") ||
@@ -2031,9 +2063,14 @@ bool Main::start() {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (doc_tool_path != "") {
+	if (!doc_tool_path.is_empty()) {
 		// Needed to instance editor-only classes for their default values
 		Engine::get_singleton()->set_editor_hint(true);
+
+		// Translate the class reference only when `-l LOCALE` parameter is given.
+		if (!locale.is_empty() && locale != "en") {
+			load_doc_translations(locale);
+		}
 
 		{
 			DirAccessRef da = DirAccess::open(doc_tool_path);
@@ -2110,12 +2147,12 @@ bool Main::start() {
 	}
 #endif
 
-	if (script == "" && game_path == "" && String(GLOBAL_GET("application/run/main_scene")) != "") {
+	if (script.is_empty() && game_path.is_empty() && String(GLOBAL_GET("application/run/main_scene")) != "") {
 		game_path = GLOBAL_GET("application/run/main_scene");
 	}
 
 #ifdef TOOLS_ENABLED
-	if (!editor && !project_manager && !cmdline_tool && script == "" && game_path == "") {
+	if (!editor && !project_manager && !cmdline_tool && script.is_empty() && game_path.is_empty()) {
 		// If we end up here, it means we didn't manage to detect what we want to run.
 		// Let's throw an error gently. The code leading to this is pretty brittle so
 		// this might end up triggered by valid usage, in which case we'll have to
@@ -2131,7 +2168,7 @@ bool Main::start() {
 	}
 	String main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
 
-	if (script != "") {
+	if (!script.is_empty()) {
 		Ref<Script> script_res = ResourceLoader::load(script);
 		ERR_FAIL_COND_V_MSG(script_res.is_null(), false, "Can't load script: " + script);
 
@@ -2180,7 +2217,7 @@ bool Main::start() {
 		}
 	}
 
-	if (!main_loop && main_loop_type == "") {
+	if (!main_loop && main_loop_type.is_empty()) {
 		main_loop_type = "SceneTree";
 	}
 
@@ -2221,7 +2258,7 @@ bool Main::start() {
 		ResourceSaver::add_custom_savers();
 
 		if (!project_manager && !editor) { // game
-			if (game_path != "" || script != "") {
+			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
 				OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
@@ -2288,7 +2325,7 @@ bool Main::start() {
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
-			if (_export_preset != "") {
+			if (!_export_preset.is_empty()) {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only);
 				game_path = ""; // Do not load anything.
 			}
@@ -2302,6 +2339,7 @@ bool Main::start() {
 			String stretch_aspect = GLOBAL_DEF_BASIC("display/window/stretch/aspect", "keep");
 			Size2i stretch_size = Size2i(GLOBAL_DEF_BASIC("display/window/size/width", 0),
 					GLOBAL_DEF_BASIC("display/window/size/height", 0));
+			real_t stretch_scale = GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
 
 			Window::ContentScaleMode cs_sm = Window::CONTENT_SCALE_MODE_DISABLED;
 			if (stretch_mode == "canvas_items") {
@@ -2324,6 +2362,7 @@ bool Main::start() {
 			sml->get_root()->set_content_scale_mode(cs_sm);
 			sml->get_root()->set_content_scale_aspect(cs_aspect);
 			sml->get_root()->set_content_scale_size(stretch_size);
+			sml->get_root()->set_content_scale_factor(stretch_scale);
 
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
@@ -2403,7 +2442,7 @@ bool Main::start() {
 #endif
 
 		String local_game_path;
-		if (game_path != "" && !project_manager) {
+		if (!game_path.is_empty() && !project_manager) {
 			local_game_path = game_path.replace("\\", "/");
 
 			if (!local_game_path.begins_with("res://")) {
@@ -2459,7 +2498,7 @@ bool Main::start() {
 			// Load SSL Certificates from Project Settings (or builtin).
 			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificate_bundle_override", ""));
 
-			if (game_path != "") {
+			if (!game_path.is_empty()) {
 				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid()) {
@@ -2471,7 +2510,7 @@ bool Main::start() {
 
 #ifdef OSX_ENABLED
 				String mac_iconpath = GLOBAL_DEF("application/config/macos_native_icon", "Variant()");
-				if (mac_iconpath != "") {
+				if (!mac_iconpath.is_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(mac_iconpath);
 					hasicon = true;
 				}
@@ -2479,14 +2518,14 @@ bool Main::start() {
 
 #ifdef WINDOWS_ENABLED
 				String win_iconpath = GLOBAL_DEF("application/config/windows_native_icon", "Variant()");
-				if (win_iconpath != "") {
+				if (!win_iconpath.is_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(win_iconpath);
 					hasicon = true;
 				}
 #endif
 
 				String iconpath = GLOBAL_DEF("application/config/icon", "Variant()");
-				if ((iconpath != "") && (!hasicon)) {
+				if ((!iconpath.is_empty()) && (!hasicon)) {
 					Ref<Image> icon;
 					icon.instantiate();
 					if (ImageLoader::load_image(iconpath, icon) == OK) {

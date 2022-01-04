@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -485,7 +485,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				raycaster->intersect(rays);
 
 				LocalVector<Vector3> ray_normals;
-				LocalVector<float> ray_normal_weights;
+				LocalVector<real_t> ray_normal_weights;
 
 				ray_normals.resize(new_index_count);
 				ray_normal_weights.resize(new_index_count);
@@ -517,10 +517,10 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					Vector3 normal = n0 * w + n1 * u + n2 * v;
 
 					Vector2 orig_uv = ray_uvs[j];
-					float orig_bary[3] = { 1.0f - orig_uv.x - orig_uv.y, orig_uv.x, orig_uv.y };
+					real_t orig_bary[3] = { 1.0f - orig_uv.x - orig_uv.y, orig_uv.x, orig_uv.y };
 					for (int k = 0; k < 3; k++) {
 						int idx = orig_tri_id * 3 + k;
-						float weight = orig_bary[k];
+						real_t weight = orig_bary[k];
 						ray_normals[idx] += normal * weight;
 						ray_normal_weights[idx] += weight;
 					}
@@ -653,7 +653,7 @@ Ref<ArrayMesh> ImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
 			if (surfaces[i].material.is_valid()) {
 				mesh->surface_set_material(mesh->get_surface_count() - 1, surfaces[i].material);
 			}
-			if (surfaces[i].name != String()) {
+			if (!surfaces[i].name.is_empty()) {
 				mesh->surface_set_name(mesh->get_surface_count() - 1, surfaces[i].name);
 			}
 		}
@@ -839,7 +839,7 @@ Dictionary ImporterMesh::_get_data() const {
 			d["material"] = surfaces[i].material;
 		}
 
-		if (surfaces[i].name != String()) {
+		if (!surfaces[i].name.is_empty()) {
 			d["name"] = surfaces[i].name;
 		}
 

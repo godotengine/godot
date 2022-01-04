@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	uniforms.clear();
 	uses_screen_texture = false;
 
-	if (code == String()) {
+	if (code.is_empty()) {
 		return; //just invalid, but no error
 	}
 
@@ -531,6 +531,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.renames["COLOR"] = "color_interp";
 		actions.renames["POINT_SIZE"] = "gl_PointSize";
 		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
+		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
 
 		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold";
 		actions.renames["ALPHA_HASH_SCALE"] = "alpha_hash_scale";

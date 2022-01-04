@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -267,7 +267,7 @@ bool GDScriptTestRunner::generate_class_index() {
 		String base_type;
 
 		String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(test.get_source_file(), &base_type);
-		if (class_name == String()) {
+		if (class_name.is_empty()) {
 			continue;
 		}
 		ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,

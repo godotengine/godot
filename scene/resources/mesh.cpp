@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -898,7 +898,9 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
-	WARN_DEPRECATED_MSG("Mesh uses old surface format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene.");
+	WARN_DEPRECATED_MSG(vformat(
+			"Mesh uses old surface format, which is deprecated (and loads slower). Consider re-importing or re-saving the scene. Path: \"%s\"",
+			get_path()));
 
 	int idx = sname.get_slicec('/', 1).to_int();
 	String what = sname.get_slicec('/', 2);
@@ -994,9 +996,9 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			//clear unused flags
-			print_line("format pre: " + itos(old_format));
+			print_verbose("Mesh format pre-conversion: " + itos(old_format));
 
-			print_line("format post: " + itos(new_format));
+			print_verbose("Mesh format post-conversion: " + itos(new_format));
 
 			ERR_FAIL_COND_V(!d.has("aabb"), false);
 			AABB aabb = d["aabb"];
@@ -1104,7 +1106,7 @@ Array ArrayMesh::_get_surfaces() const {
 			data["material"] = surfaces[i].material;
 		}
 
-		if (surfaces[i].name != String()) {
+		if (!surfaces[i].name.is_empty()) {
 			data["name"] = surfaces[i].name;
 		}
 

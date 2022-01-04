@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -699,7 +699,7 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 
 		int limit = to_x - from_x - 4;
 		if (limit > 0) {
-			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim, HALIGN_LEFT, -1, font_size, color);
+			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
 		}
 
 		if (p_selected) {
@@ -1272,7 +1272,7 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 
 		int limit = to_x - from_x - 4;
 		if (limit > 0) {
-			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim, HALIGN_LEFT, -1, font_size, color);
+			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
 		}
 
 		if (p_selected) {

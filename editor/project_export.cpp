@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -178,7 +178,7 @@ void ProjectExportDialog::_update_export_all() {
 		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
 		bool needs_templates;
 		String error;
-		if (preset->get_export_path() == "" || !preset->get_platform()->can_export(preset, error, needs_templates)) {
+		if (preset->get_export_path().is_empty() || !preset->get_platform()->can_export(preset, error, needs_templates)) {
 			can_export = false;
 			break;
 		}
@@ -244,7 +244,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	bool needs_templates;
 	String error;
 	if (!current->get_platform()->can_export(current, error, needs_templates)) {
-		if (error != String()) {
+		if (!error.is_empty()) {
 			Vector<String> items = error.split("\n", false);
 			error = "";
 			for (int i = 0; i < items.size(); i++) {
@@ -336,7 +336,7 @@ void ProjectExportDialog::_update_feature_list() {
 	Vector<String> custom_list = custom.split(",");
 	for (int i = 0; i < custom_list.size(); i++) {
 		String f = custom_list[i].strip_edges();
-		if (f != String()) {
+		if (!f.is_empty()) {
 			features.push_back(f);
 		}
 	}
@@ -871,7 +871,7 @@ void ProjectExportDialog::_open_export_template_manager() {
 
 void ProjectExportDialog::_validate_export_path(const String &p_path) {
 	// Disable export via OK button or Enter key if LineEdit has an empty filename
-	bool invalid_path = (p_path.get_file().get_basename() == "");
+	bool invalid_path = (p_path.get_file().get_basename().is_empty());
 
 	// Check if state change before needlessly messing with signals
 	if (invalid_path && export_project->get_ok_button()->is_disabled()) {
@@ -904,7 +904,7 @@ void ProjectExportDialog::_export_project() {
 		export_project->add_filter("*." + extension_list[i] + " ; " + platform->get_name() + " Export");
 	}
 
-	if (current->get_export_path() != "") {
+	if (!current->get_export_path().is_empty()) {
 		export_project->set_current_path(current->get_export_path());
 	} else {
 		if (extension_list.size() >= 1) {
@@ -1073,7 +1073,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Subsections.
 
 	sections = memnew(TabContainer);
-	sections->set_tab_align(TabContainer::ALIGN_LEFT);
+	sections->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	sections->set_use_hidden_tabs_for_min_size(true);
 	settings_vb->add_child(sections);
 	sections->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1277,11 +1277,13 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_debug = memnew(CheckBox);
 	export_debug->set_text(TTR("Export With Debug"));
 	export_debug->set_pressed(true);
+	export_debug->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_project->get_vbox()->add_child(export_debug);
 
 	export_pck_zip_debug = memnew(CheckBox);
 	export_pck_zip_debug->set_text(TTR("Export With Debug"));
 	export_pck_zip_debug->set_pressed(true);
+	export_pck_zip_debug->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_pck_zip->get_vbox()->add_child(export_pck_zip_debug);
 
 	set_hide_on_ok(false);
@@ -1290,10 +1292,10 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	default_filename = EditorSettings::get_singleton()->get_project_metadata("export_options", "default_filename", "");
 	// If no default set, use project name
-	if (default_filename == "") {
+	if (default_filename.is_empty()) {
 		// If no project name defined, use a sane default
 		default_filename = ProjectSettings::get_singleton()->get("application/config/name");
-		if (default_filename == "") {
+		if (default_filename.is_empty()) {
 			default_filename = "UnnamedProject";
 		}
 	}

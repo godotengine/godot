@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -192,7 +192,7 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 		return;
 	}
 	data.custom_minimum_size = p_custom;
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 Size2 Control::get_custom_minimum_size() const {
@@ -213,7 +213,7 @@ void Control::_update_minimum_size_cache() {
 	data.minimum_size_valid = true;
 
 	if (size_changed) {
-		minimum_size_changed();
+		update_minimum_size();
 	}
 }
 
@@ -713,7 +713,7 @@ void Control::_notification(int p_notification) {
 			update();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -808,6 +808,10 @@ void Control::set_drag_preview(Control *p_control) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!get_viewport()->gui_is_dragging());
 	get_viewport()->_gui_set_drag_preview(this, p_control);
+}
+
+bool Control::is_drag_successful() const {
+	return is_inside_tree() && get_viewport()->gui_is_drag_successful();
 }
 
 void Control::_call_gui_input(const Ref<InputEvent> &p_event) {
@@ -1821,6 +1825,10 @@ Size2 Control::get_size() const {
 	return data.size_cache;
 }
 
+void Control::reset_size() {
+	set_size(Size2());
+}
+
 Rect2 Control::get_global_rect() const {
 	return Rect2(get_global_position(), get_size());
 }
@@ -2526,7 +2534,7 @@ void Control::grab_click_focus() {
 	get_viewport()->_gui_grab_click_focus(this);
 }
 
-void Control::minimum_size_changed() {
+void Control::update_minimum_size() {
 	if (!is_inside_tree() || data.block_minimum_size_adjust) {
 		return;
 	}
@@ -2589,7 +2597,7 @@ bool Control::is_text_field() const {
 	return false;
 }
 
-Array Control::structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String p_text) const {
+Array Control::structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String &p_text) const {
 	Array ret;
 	switch (p_theme_type) {
 		case STRUCTURED_TEXT_URI: {
@@ -2688,7 +2696,7 @@ real_t Control::get_rotation() const {
 void Control::_override_changed() {
 	notification(NOTIFICATION_THEME_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->theme_changed);
-	minimum_size_changed(); // overrides are likely to affect minimum size
+	update_minimum_size(); // Overrides are likely to affect minimum size.
 }
 
 void Control::set_pivot_offset(const Vector2 &p_pivot) {
@@ -2783,7 +2791,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 TypedArray<String> Control::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (data.mouse_filter == MOUSE_FILTER_IGNORE && data.tooltip != "") {
+	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
 		warnings.push_back(TTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
 	}
 
@@ -2841,6 +2849,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position", "keep_offsets"), &Control::set_position, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_set_position", "position"), &Control::_set_position);
 	ClassDB::bind_method(D_METHOD("set_size", "size", "keep_offsets"), &Control::set_size, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("reset_size"), &Control::reset_size);
 	ClassDB::bind_method(D_METHOD("_set_size", "size"), &Control::_set_size);
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_size", "size"), &Control::set_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("set_global_position", "position", "keep_offsets"), &Control::set_global_position, DEFVAL(false));
@@ -2964,10 +2973,11 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "target"), &Control::set_drag_forwarding);
 	ClassDB::bind_method(D_METHOD("set_drag_preview", "control"), &Control::set_drag_preview);
+	ClassDB::bind_method(D_METHOD("is_drag_successful"), &Control::is_drag_successful);
 
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Control::warp_mouse);
 
-	ClassDB::bind_method(D_METHOD("minimum_size_changed"), &Control::minimum_size_changed);
+	ClassDB::bind_method(D_METHOD("update_minimum_size"), &Control::update_minimum_size);
 
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Control::set_layout_direction);
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Control::get_layout_direction);

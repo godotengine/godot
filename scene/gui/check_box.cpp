@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -123,7 +123,7 @@ CheckBox::CheckBox(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
 
-	set_text_align(ALIGN_LEFT);
+	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 
 	if (is_layout_rtl()) {
 		_set_internal_margin(SIDE_RIGHT, get_icon_size().width);

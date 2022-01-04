@@ -159,8 +159,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align" default="0">
-			Text alignment as defined in the [enum Align] enum.
+		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Text alignment as defined in the [enum HorizontalAlignment] enum.
 		</member>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
 			If [code]true[/code], the caret (text cursor) blinks.
@@ -199,7 +199,7 @@
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			If [code]true[/code], the [LineEdit] don't display decoration.
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
@@ -232,7 +232,7 @@
 			If [code]false[/code], using middle mouse button to paste clipboard will be disabled.
 			[b]Note:[/b] This method is only implemented on Linux.
 		</member>
-		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="1" />
+		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" overrides="Control" enum="Control.CursorShape" default="1" />
 		<member name="placeholder_alpha" type="float" setter="set_placeholder_alpha" getter="get_placeholder_alpha" default="0.6">
 			Opacity of the [member placeholder_text]. From [code]0[/code] to [code]1[/code].
 		</member>
@@ -292,18 +292,6 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="Align">
-			Aligns the text on the left-hand side of the [LineEdit].
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="Align">
-			Centers the text in the middle of the [LineEdit].
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Aligns the text on the right-hand side of the [LineEdit].
-		</constant>
-		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Expand row to fit the [LineEdit]'s width.
-		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (copies and clears) the selected text.
 		</constant>
@@ -397,20 +385,11 @@
 		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			Color of the [LineEdit]'s caret (text cursor).
 		</theme_item>
-		<theme_item name="clear" data_type="icon" type="Texture2D">
-			Texture for the clear button. See [member clear_button_enabled].
-		</theme_item>
 		<theme_item name="clear_button_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Color used as default tint for the clear button.
 		</theme_item>
 		<theme_item name="clear_button_color_pressed" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Color used for the clear button when it's pressed.
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			Background used when [LineEdit] has GUI focus.
-		</theme_item>
-		<theme_item name="font" data_type="font" type="Font">
-			Font used for the text.
 		</theme_item>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Default font color.
@@ -421,26 +400,35 @@
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			Font color for selected text (inside the selection rectangle).
 		</theme_item>
-		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size of the [LineEdit]'s text.
-		</theme_item>
 		<theme_item name="font_uneditable_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 0.5)">
 			Font color when editing is disabled.
+		</theme_item>
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
+			Color of the selection rectangle.
 		</theme_item>
 		<theme_item name="minimum_character_width" data_type="constant" type="int" default="4">
 			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'M' characters (i.e. this amount of 'M' characters can be displayed without scrolling).
 		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			Default background for the [LineEdit].
-		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			Font used for the text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the [LineEdit]'s text.
+		</theme_item>
+		<theme_item name="clear" data_type="icon" type="Texture2D">
+			Texture for the clear button. See [member clear_button_enabled].
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			Background used when [LineEdit] has GUI focus. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			Default background for the [LineEdit].
+		</theme_item>
 		<theme_item name="read_only" data_type="style" type="StyleBox">
 			Background used when [LineEdit] is in read-only mode ([member editable] is set to [code]false[/code]).
-		</theme_item>
-		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
-			Color of the selection rectangle.
 		</theme_item>
 	</theme_items>
 </class>

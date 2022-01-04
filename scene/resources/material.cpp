@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -449,10 +449,10 @@ void BaseMaterial3D::_update_shader() {
 			texfilter_str = "filter_linear_mipmap";
 			break;
 		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC:
-			texfilter_str = "filter_nearest_mipmap_aniso";
+			texfilter_str = "filter_nearest_mipmap_anisotropic";
 			break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC:
-			texfilter_str = "filter_linear_mipmap_aniso";
+			texfilter_str = "filter_linear_mipmap_anisotropic";
 			break;
 		case TEXTURE_FILTER_MAX:
 			break; // Internal value, skip.
@@ -695,7 +695,7 @@ void BaseMaterial3D::_update_shader() {
 	}
 	if (features[FEATURE_ANISOTROPY]) {
 		code += "uniform float anisotropy_ratio : hint_range(0,256);\n";
-		code += "uniform sampler2D texture_flowmap : hint_aniso," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_flowmap : hint_anisotropy," + texfilter_str + ";\n";
 	}
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
 		code += "uniform sampler2D texture_ambient_occlusion : hint_white, " + texfilter_str + ";\n";
@@ -1658,13 +1658,28 @@ bool BaseMaterial3D::get_feature(Feature p_feature) const {
 
 void BaseMaterial3D::set_texture(TextureParam p_param, const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_INDEX(p_param, TEXTURE_MAX);
+
+	if (get_texture(TEXTURE_ROUGHNESS).is_null() && p_texture.is_valid() && p_param == TEXTURE_ROUGHNESS) {
+		// If no roughness texture is currently set, automatically set the recommended value
+		// for roughness when using a roughness map.
+		set_roughness(1.0);
+	}
+
+	if (get_texture(TEXTURE_METALLIC).is_null() && p_texture.is_valid() && p_param == TEXTURE_METALLIC) {
+		// If no metallic texture is currently set, automatically set the recommended value
+		// for metallic when using a metallic map.
+		set_metallic(1.0);
+	}
+
 	textures[p_param] = p_texture;
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->texture_names[p_param], rid);
+
 	if (p_texture.is_valid() && p_param == TEXTURE_ALBEDO) {
 		RS::get_singleton()->material_set_param(_get_material(), shader_names->albedo_texture_size,
 				Vector2i(p_texture->get_width(), p_texture->get_height()));
 	}
+
 	notify_property_list_changed();
 	_queue_shader_change();
 }
@@ -2554,7 +2569,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv2_world_triplanar"), "set_flag", "get_flag", FLAG_UV2_USE_WORLD_TRIPLANAR);
 
 	ADD_GROUP("Sampling", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Aniso.,Linear Mipmap Aniso."), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "texture_repeat"), "set_flag", "get_flag", FLAG_USE_TEXTURE_REPEAT);
 
 	ADD_GROUP("Shadows", "");
@@ -2884,7 +2899,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			idx++;
 		}
 
-		print_line("remapped parameter not found: " + String(p_name));
+		WARN_PRINT("Godot 3.x SpatialMaterial remapped parameter not found: " + String(p_name));
 		return true;
 	}
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -285,7 +285,7 @@ EditorPlugin::AfterGUIInput CollisionPolygon3DEditor::forward_spatial_gui_input(
 					if (closest_idx >= 0) {
 						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 						undo_redo->add_undo_method(node, "set_polygon", poly);
-						poly.remove(closest_idx);
+						poly.remove_at(closest_idx);
 						undo_redo->add_do_method(node, "set_polygon", poly);
 						undo_redo->add_do_method(this, "_polygon_draw");
 						undo_redo->add_undo_method(this, "_polygon_draw");

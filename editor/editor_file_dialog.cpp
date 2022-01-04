@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -274,7 +274,7 @@ void EditorFileDialog::_post_popup() {
 		file_box->set_visible(true);
 	}
 
-	if (is_visible() && get_current_file() != "") {
+	if (is_visible() && !get_current_file().is_empty()) {
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 	}
 
@@ -302,7 +302,7 @@ void EditorFileDialog::_post_popup() {
 			bool exists = dir_access->dir_exists(recentd[i]);
 			if (!exists) {
 				// Remove invalid directory from the list of Recent directories.
-				recentd.remove(i--);
+				recentd.remove_at(i--);
 			} else {
 				recent->add_item(name, folder);
 				recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
@@ -576,7 +576,7 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p_pos) {
 	// Right click on specific file(s) or folder(s).
 	item_menu->clear();
-	item_menu->set_size(Size2(1, 1));
+	item_menu->reset_size();
 
 	// Allow specific actions only on one item.
 	bool single_item_selected = item_list->get_selected_items().size() == 1;
@@ -608,7 +608,8 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 	}
 
 	if (item_menu->get_item_count() > 0) {
-		item_menu->set_position(item_list->get_global_position() + p_pos);
+		item_menu->set_position(item_list->get_screen_position() + p_pos);
+		item_menu->reset_size();
 		item_menu->popup();
 	}
 }
@@ -620,7 +621,7 @@ void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	}
 
 	item_menu->clear();
-	item_menu->set_size(Size2(1, 1));
+	item_menu->reset_size();
 
 	if (can_create_dir) {
 		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("folder"), SNAME("FileDialog")), TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KeyModifierMask::CMD | Key::N);
@@ -629,7 +630,8 @@ void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	item_menu->add_separator();
 	item_menu->add_icon_item(item_list->get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), TTR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
 
-	item_menu->set_position(item_list->get_global_position() + p_pos);
+	item_menu->set_position(item_list->get_screen_position() + p_pos);
+	item_menu->reset_size();
 	item_menu->popup();
 }
 
@@ -721,7 +723,7 @@ void EditorFileDialog::update_file_list() {
 	item_list->clear();
 
 	// Scroll back to the top after opening a directory
-	item_list->get_v_scroll()->set_value(0);
+	item_list->get_v_scroll_bar()->set_value(0);
 
 	if (display_mode == DISPLAY_THUMBNAILS) {
 		item_list->set_max_columns(0);
@@ -761,10 +763,11 @@ void EditorFileDialog::update_file_list() {
 	List<String> files;
 	List<String> dirs;
 
-	String item;
+	String item = dir_access->get_next();
 
-	while ((item = dir_access->get_next()) != "") {
+	while (!item.is_empty()) {
 		if (item == "." || item == "..") {
+			item = dir_access->get_next();
 			continue;
 		}
 
@@ -775,6 +778,7 @@ void EditorFileDialog::update_file_list() {
 				dirs.push_back(item);
 			}
 		}
+		item = dir_access->get_next();
 	}
 
 	dirs.sort_custom<NaturalNoCaseComparator>();
@@ -1117,7 +1121,7 @@ void EditorFileDialog::_delete_items() {
 		}
 	}
 	if (folders.size() + files.size() > 0) {
-		remove_dialog->set_size(Size2(1, 1));
+		remove_dialog->reset_size();
 		remove_dialog->show(folders, files);
 	}
 }
@@ -1445,7 +1449,7 @@ void EditorFileDialog::_save_to_recent() {
 	for (int i = 0; i < recent.size(); i++) {
 		bool cres = recent[i].begins_with("res://");
 		if (recent[i] == dir || (res == cres && count > max)) {
-			recent.remove(i);
+			recent.remove_at(i);
 			i--;
 		} else {
 			count++;

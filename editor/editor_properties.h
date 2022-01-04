@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -624,6 +624,10 @@ class EditorPropertyNodePath : public EditorProperty {
 	void _node_selected(const NodePath &p_path);
 	void _node_assign();
 	void _node_clear();
+
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool is_drop_valid(const Dictionary &p_drag_data) const;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;

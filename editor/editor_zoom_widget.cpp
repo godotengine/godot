@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -183,7 +183,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KeyModifierMask::CMD | Key::KEY_0));
 	zoom_reset->set_shortcut_context(this);
 	zoom_reset->set_focus_mode(FOCUS_NONE);
-	zoom_reset->set_text_align(Button::TextAlign::ALIGN_CENTER);
+	zoom_reset->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	// Prevent the button's size from changing when the text size changes
 	zoom_reset->set_custom_minimum_size(Size2(75 * EDSCALE, 0));
 

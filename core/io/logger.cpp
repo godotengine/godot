@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -136,7 +136,7 @@ void RotatedFileLogger::clear_old_backups() {
 	da->list_dir_begin();
 	String f = da->get_next();
 	Set<String> backups;
-	while (f != String()) {
+	while (!f.is_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
 		}
@@ -163,7 +163,7 @@ void RotatedFileLogger::rotate_file() {
 		if (max_files > 1) {
 			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace(":", ".");
 			String backup_name = base_path.get_basename() + timestamp;
-			if (base_path.get_extension() != String()) {
+			if (!base_path.get_extension().is_empty()) {
 				backup_name += "." + base_path.get_extension();
 			}
 
@@ -266,7 +266,7 @@ void CompositeLogger::log_error(const char *p_function, const char *p_file, int 
 	}
 
 	for (int i = 0; i < loggers.size(); ++i) {
-		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
 	}
 }
 

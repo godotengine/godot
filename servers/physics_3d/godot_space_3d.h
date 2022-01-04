@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,10 +75,10 @@ public:
 private:
 	uint64_t elapsed_time[ELAPSED_TIME_MAX] = {};
 
-	GodotPhysicsDirectSpaceState3D *direct_access;
+	GodotPhysicsDirectSpaceState3D *direct_access = nullptr;
 	RID self;
 
-	GodotBroadPhase3D *broadphase;
+	GodotBroadPhase3D *broadphase = nullptr;
 	SelfList<GodotBody3D>::List active_list;
 	SelfList<GodotBody3D>::List mass_properties_update_list;
 	SelfList<GodotBody3D>::List state_query_list;
@@ -93,10 +93,12 @@ private:
 
 	GodotArea3D *area = nullptr;
 
-	real_t contact_recycle_radius = 0.01;
-	real_t contact_max_separation = 0.05;
-	real_t contact_max_allowed_penetration = 0.01;
-	real_t constraint_bias = 0.01;
+	int solver_iterations = 0;
+
+	real_t contact_recycle_radius = 0.0;
+	real_t contact_max_separation = 0.0;
+	real_t contact_max_allowed_penetration = 0.0;
+	real_t contact_bias = 0.0;
 
 	enum {
 		INTERSECTION_QUERY_MAX = 2048
@@ -105,10 +107,9 @@ private:
 	GodotCollisionObject3D *intersection_query_results[INTERSECTION_QUERY_MAX];
 	int intersection_query_subindex_results[INTERSECTION_QUERY_MAX];
 
-	real_t body_linear_velocity_sleep_threshold;
-	real_t body_angular_velocity_sleep_threshold;
-	real_t body_time_to_sleep;
-	real_t body_angular_velocity_damp_ratio;
+	real_t body_linear_velocity_sleep_threshold = 0.0;
+	real_t body_angular_velocity_sleep_threshold = 0.0;
+	real_t body_time_to_sleep = 0.0;
 
 	bool locked = false;
 
@@ -159,14 +160,14 @@ public:
 	void remove_object(GodotCollisionObject3D *p_object);
 	const Set<GodotCollisionObject3D *> &get_objects() const;
 
+	_FORCE_INLINE_ int get_solver_iterations() const { return solver_iterations; }
 	_FORCE_INLINE_ real_t get_contact_recycle_radius() const { return contact_recycle_radius; }
 	_FORCE_INLINE_ real_t get_contact_max_separation() const { return contact_max_separation; }
 	_FORCE_INLINE_ real_t get_contact_max_allowed_penetration() const { return contact_max_allowed_penetration; }
-	_FORCE_INLINE_ real_t get_constraint_bias() const { return constraint_bias; }
+	_FORCE_INLINE_ real_t get_contact_bias() const { return contact_bias; }
 	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_threshold() const { return body_linear_velocity_sleep_threshold; }
 	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_threshold() const { return body_angular_velocity_sleep_threshold; }
 	_FORCE_INLINE_ real_t get_body_time_to_sleep() const { return body_time_to_sleep; }
-	_FORCE_INLINE_ real_t get_body_angular_velocity_damp_ratio() const { return body_angular_velocity_damp_ratio; }
 
 	void update();
 	void setup();

@@ -23,7 +23,7 @@
 		<member name="mie_coefficient" type="float" setter="set_mie_coefficient" getter="get_mie_coefficient" default="0.005">
 			Controls the strength of mie scattering for the sky. Mie scattering results from light colliding with larger particles (like water). On earth, mie scattering results in a whitish color around the sun and horizon.
 		</member>
-		<member name="mie_color" type="Color" setter="set_mie_color" getter="get_mie_color" default="Color(0.36, 0.56, 0.82, 1)">
+		<member name="mie_color" type="Color" setter="set_mie_color" getter="get_mie_color" default="Color(0.63, 0.77, 0.92, 1)">
 			Controls the [Color] of the mie scattering effect. While not physically accurate, this allows for the creation of alien looking planets.
 		</member>
 		<member name="mie_eccentricity" type="float" setter="set_mie_eccentricity" getter="get_mie_eccentricity" default="0.8">
@@ -35,7 +35,7 @@
 		<member name="rayleigh_coefficient" type="float" setter="set_rayleigh_coefficient" getter="get_rayleigh_coefficient" default="2.0">
 			Controls the strength of the Rayleigh scattering. Rayleigh scattering results from light colliding with small particles. It is responsible for the blue color of the sky.
 		</member>
-		<member name="rayleigh_color" type="Color" setter="set_rayleigh_color" getter="get_rayleigh_color" default="Color(0.056, 0.14, 0.3, 1)">
+		<member name="rayleigh_color" type="Color" setter="set_rayleigh_color" getter="get_rayleigh_color" default="Color(0.26, 0.41, 0.58, 1)">
 			Controls the [Color] of the Rayleigh scattering. While not physically accurate, this allows for the creation of alien looking planets. For example, setting this to a red [Color] results in a Mars looking atmosphere with a corresponding blue sunset.
 		</member>
 		<member name="sun_disk_scale" type="float" setter="set_sun_disk_scale" getter="get_sun_disk_scale" default="1.0">

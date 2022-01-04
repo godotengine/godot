@@ -76,19 +76,15 @@ layout(set = 0, binding = 10) uniform sampler shadow_sampler;
 #define MAX_VOXEL_GI_INSTANCES 8
 
 struct VoxelGIData {
-	mat4 xform;
-	vec3 bounds;
-	float dynamic_range;
+	mat4 xform; // 64 - 64
 
-	float bias;
-	float normal_bias;
-	bool blend_ambient;
-	uint texture_slot;
+	vec3 bounds; // 12 - 76
+	float dynamic_range; // 4 - 80
 
-	float anisotropy_strength;
-	float ambient_occlusion;
-	float ambient_occlusion_size;
-	uint mipmaps;
+	float bias; // 4 - 84
+	float normal_bias; // 4 - 88
+	bool blend_ambient; // 4 - 92
+	uint mipmaps; // 4 - 96
 };
 
 layout(set = 0, binding = 11, std140) uniform VoxelGIs {
@@ -190,9 +186,22 @@ params;
 #ifndef MODE_COPY
 layout(set = 0, binding = 15) uniform texture3D prev_density_texture;
 
+#ifdef MOLTENVK_USED
+layout(set = 0, binding = 16) buffer density_only_map_buffer {
+	uint density_only_map[];
+};
+layout(set = 0, binding = 17) buffer light_only_map_buffer {
+	uint light_only_map[];
+};
+layout(set = 0, binding = 18) buffer emissive_only_map_buffer {
+	uint emissive_only_map[];
+};
+#else
 layout(r32ui, set = 0, binding = 16) uniform uimage3D density_only_map;
 layout(r32ui, set = 0, binding = 17) uniform uimage3D light_only_map;
 layout(r32ui, set = 0, binding = 18) uniform uimage3D emissive_only_map;
+#endif
+
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 layout(set = 0, binding = 19) uniform textureCubeArray sky_texture;
 #else
@@ -272,6 +281,9 @@ void main() {
 	if (any(greaterThanEqual(pos, params.fog_volume_size))) {
 		return; //do not compute
 	}
+#ifdef MOLTENVK_USED
+	uint lpos = pos.z * params.fog_volume_size.x * params.fog_volume_size.y + pos.y * params.fog_volume_size.x + pos.x;
+#endif
 
 	vec3 posf = vec3(pos);
 
@@ -335,15 +347,28 @@ void main() {
 	vec3 total_light = vec3(0.0);
 
 	float total_density = params.base_density;
+#ifdef MOLTENVK_USED
+	uint local_density = density_only_map[lpos];
+#else
 	uint local_density = imageLoad(density_only_map, pos).x;
+#endif
+
 	total_density += float(int(local_density)) / DENSITY_SCALE;
 	total_density = max(0.0, total_density);
 
+#ifdef MOLTENVK_USED
+	uint scattering_u = light_only_map[lpos];
+#else
 	uint scattering_u = imageLoad(light_only_map, pos).x;
+#endif
 	vec3 scattering = vec3(scattering_u >> 21, (scattering_u << 11) >> 21, scattering_u % 1024) / vec3(2047.0, 2047.0, 1023.0);
 	scattering += params.base_scattering * params.base_density;
 
+#ifdef MOLTENVK_USED
+	uint emission_u = emissive_only_map[lpos];
+#else
 	uint emission_u = imageLoad(emissive_only_map, pos).x;
+#endif
 	vec3 emission = vec3(emission_u >> 21, (emission_u << 11) >> 21, emission_u % 1024) / vec3(511.0, 511.0, 255.0);
 	emission += params.base_emission * params.base_density;
 
@@ -552,16 +577,29 @@ void main() {
 
 						if (spot_lights.data[light_index].shadow_enabled) {
 							//has shadow
-							vec4 v = vec4(view_pos, 1.0);
+							vec4 uv_rect = spot_lights.data[light_index].atlas_rect;
+							vec2 flip_offset = spot_lights.data[light_index].direction.xy;
 
-							vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
-							splane /= splane.w;
+							vec3 local_vert = (spot_lights.data[light_index].shadow_matrix * vec4(view_pos, 1.0)).xyz;
 
-							float depth = texture(sampler2D(shadow_atlas, linear_sampler), splane.xy).r;
+							float shadow_len = length(local_vert); //need to remember shadow len from here
+							vec3 shadow_sample = normalize(local_vert);
 
-							shadow_attenuation = exp(min(0.0, (depth - splane.z)) / spot_lights.data[light_index].inv_radius * spot_lights.data[light_index].shadow_volumetric_fog_fade);
+							if (shadow_sample.z >= 0.0) {
+								uv_rect.xy += flip_offset;
+							}
+
+							shadow_sample.z = 1.0 + abs(shadow_sample.z);
+							vec3 pos = vec3(shadow_sample.xy / shadow_sample.z, shadow_len - spot_lights.data[light_index].shadow_bias);
+							pos.z *= spot_lights.data[light_index].inv_radius;
+
+							pos.xy = pos.xy * 0.5 + 0.5;
+							pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
+
+							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
+
+							shadow_attenuation = exp(min(0.0, (depth - pos.z)) / spot_lights.data[light_index].inv_radius * spot_lights.data[light_index].shadow_volumetric_fog_fade);
 						}
-
 						total_light += light * attenuation * shadow_attenuation * henyey_greenstein(dot(normalize(light_rel_vec), normalize(view_pos)), params.phase_g);
 					}
 				}
@@ -673,9 +711,15 @@ void main() {
 	final_density = mix(final_density, reprojected_density, reproject_amount);
 
 	imageStore(density_map, pos, final_density);
+#ifdef MOLTENVK_USED
+	density_only_map[lpos] = 0;
+	light_only_map[lpos] = 0;
+	emissive_only_map[lpos] = 0;
+#else
 	imageStore(density_only_map, pos, uvec4(0));
 	imageStore(light_only_map, pos, uvec4(0));
 	imageStore(emissive_only_map, pos, uvec4(0));
+#endif
 #endif
 
 #ifdef MODE_FOG

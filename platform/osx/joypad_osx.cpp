@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -264,7 +264,7 @@ void JoypadOSX::_device_removed(IOReturn p_res, IOHIDDeviceRef p_device) {
 
 	input->joy_connection_changed(device_list[device].id, false, "");
 	device_list.write[device].free();
-	device_list.remove(device);
+	device_list.remove_at(device);
 }
 
 static String _hex_str(uint8_t p_byte) {

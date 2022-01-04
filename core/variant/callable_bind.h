@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,9 @@ public:
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const;
 	virtual const Callable *get_base_comparator() const;
 
+	Callable get_callable() { return callable; }
+	Vector<Variant> get_binds() { return binds; }
+
 	CallableCustomBind(const Callable &p_callable, const Vector<Variant> &p_binds);
 	virtual ~CallableCustomBind();
 };
@@ -71,6 +74,9 @@ public:
 	virtual ObjectID get_object() const; //must always be able to provide an object
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const;
 	virtual const Callable *get_base_comparator() const;
+
+	Callable get_callable() { return callable; }
+	int get_unbinds() { return argcount; }
 
 	CallableCustomUnbind(const Callable &p_callable, int p_argcount);
 	virtual ~CallableCustomUnbind();

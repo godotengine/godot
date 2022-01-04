@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -311,7 +311,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 		while (stream_playbacks.size() > max_polyphony) {
 			AudioServer::get_singleton()->stop_playback_stream(stream_playbacks[0]);
-			stream_playbacks.remove(0);
+			stream_playbacks.remove_at(0);
 		}
 	}
 }
@@ -391,7 +391,13 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
 
 	for (Camera3D *camera : cameras) {
+		if (!camera) {
+			continue;
+		}
 		Viewport *vp = camera->get_viewport();
+		if (!vp) {
+			continue;
+		}
 		if (!vp->is_audio_listener_3d()) {
 			continue;
 		}

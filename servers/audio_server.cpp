@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -762,7 +762,7 @@ void AudioServer::remove_bus(int p_index) {
 	lock();
 	bus_map.erase(buses[p_index]->name);
 	memdelete(buses[p_index]);
-	buses.remove(p_index);
+	buses.remove_at(p_index);
 	unlock();
 
 	emit_signal(SNAME("bus_layout_changed"));
@@ -833,7 +833,7 @@ void AudioServer::move_bus(int p_bus, int p_to_pos) {
 	}
 
 	Bus *bus = buses[p_bus];
-	buses.remove(p_bus);
+	buses.remove_at(p_bus);
 
 	if (p_to_pos == -1) {
 		buses.push_back(bus);
@@ -1026,7 +1026,7 @@ void AudioServer::remove_bus_effect(int p_bus, int p_effect) {
 
 	lock();
 
-	buses[p_bus]->effects.remove(p_effect);
+	buses[p_bus]->effects.remove_at(p_effect);
 	_update_bus_effects(p_bus);
 
 	unlock();
@@ -1591,7 +1591,7 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 				Bus::Effect bfx;
 				bfx.effect = fx;
 				bfx.enabled = p_bus_layout->buses[i].effects[j].enabled;
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 				bfx.prof_time = 0;
 #endif
 				bus->effects.push_back(bfx);

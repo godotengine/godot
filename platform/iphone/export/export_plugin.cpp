@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -728,10 +728,10 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 
 Error EditorExportPlatformIOS::_walk_dir_recursive(DirAccess *p_da, FileHandler p_handler, void *p_userdata) {
 	Vector<String> dirs;
-	String path;
 	String current_dir = p_da->get_current_dir();
 	p_da->list_dir_begin();
-	while ((path = p_da->get_next()).length() != 0) {
+	String path = p_da->get_next();
+	while (!path.is_empty()) {
 		if (p_da->current_is_dir()) {
 			if (path != "." && path != "..") {
 				dirs.push_back(path);
@@ -743,6 +743,7 @@ Error EditorExportPlatformIOS::_walk_dir_recursive(DirAccess *p_da, FileHandler 
 				return err;
 			}
 		}
+		path = p_da->get_next();
 	}
 	p_da->list_dir_end();
 
@@ -1362,10 +1363,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		src_pkg_name = p_preset->get("custom_template/release");
 	}
 
-	if (src_pkg_name == "") {
+	if (src_pkg_name.is_empty()) {
 		String err;
 		src_pkg_name = find_export_template("iphone.zip", &err);
-		if (src_pkg_name == "") {
+		if (src_pkg_name.is_empty()) {
 			EditorNode::add_io_error(err);
 			return ERR_FILE_NOT_FOUND;
 		}
@@ -1766,7 +1767,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 	}
 
 	String etc_error = test_etc2_or_pvrtc();
-	if (etc_error != String()) {
+	if (!etc_error.is_empty()) {
 		valid = false;
 		err += etc_error;
 	}

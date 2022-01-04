@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,11 +68,11 @@ public:
 	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(p_elem); } //alias
 	void fill(T p_elem);
 
-	void remove(int p_index) { _cowdata.remove(p_index); }
+	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 	void erase(const T &p_val) {
 		int idx = find(p_val);
 		if (idx >= 0) {
-			remove(idx);
+			remove_at(idx);
 		}
 	}
 	void reverse();
@@ -132,9 +132,8 @@ public:
 		insert(i, p_val);
 	}
 
-	inline Vector &operator=(const Vector &p_from) {
+	inline void operator=(const Vector &p_from) {
 		_cowdata._ref(p_from._cowdata);
-		return *this;
 	}
 
 	Vector<uint8_t> to_byte_array() const {
@@ -144,27 +143,28 @@ public:
 		return ret;
 	}
 
-	Vector<T> subarray(int p_from, int p_to) const {
-		if (p_from < 0) {
-			p_from = size() + p_from;
-		}
-		if (p_to < 0) {
-			p_to = size() + p_to;
-		}
+	Vector<T> slice(int p_begin, int p_end) const {
+		Vector<T> result;
 
-		ERR_FAIL_INDEX_V(p_from, size(), Vector<T>());
-		ERR_FAIL_INDEX_V(p_to, size(), Vector<T>());
-
-		Vector<T> slice;
-		int span = 1 + p_to - p_from;
-		slice.resize(span);
-		const T *r = ptr();
-		T *w = slice.ptrw();
-		for (int i = 0; i < span; ++i) {
-			w[i] = r[p_from + i];
+		if (p_end < 0) {
+			p_end += size() + 1;
 		}
 
-		return slice;
+		ERR_FAIL_INDEX_V(p_begin, size(), result);
+		ERR_FAIL_INDEX_V(p_end, size() + 1, result);
+
+		ERR_FAIL_COND_V(p_begin > p_end, result);
+
+		int result_size = p_end - p_begin;
+		result.resize(result_size);
+
+		const T *const r = ptr();
+		T *const w = result.ptrw();
+		for (int i = 0; i < result_size; ++i) {
+			w[i] = r[p_begin + i];
+		}
+
+		return result;
 	}
 
 	bool operator==(const Vector<T> &p_arr) const {

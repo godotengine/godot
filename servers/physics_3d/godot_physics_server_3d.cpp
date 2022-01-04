@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -607,40 +607,40 @@ void GodotPhysicsServer3D::body_attach_object_instance_id(RID p_body, ObjectID p
 	}
 
 	ERR_FAIL_MSG("Invalid ID.");
-};
+}
 
 ObjectID GodotPhysicsServer3D::body_get_object_instance_id(RID p_body) const {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, ObjectID());
 
 	return body->get_instance_id();
-};
+}
 
 void GodotPhysicsServer3D::body_set_user_flags(RID p_body, uint32_t p_flags) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
-};
+}
 
 uint32_t GodotPhysicsServer3D::body_get_user_flags(RID p_body) const {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return 0;
-};
+}
 
 void GodotPhysicsServer3D::body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_param(p_param, p_value);
-};
+}
 
 Variant GodotPhysicsServer3D::body_get_param(RID p_body, BodyParameter p_param) const {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_param(p_param);
-};
+}
 
 void GodotPhysicsServer3D::body_reset_mass_properties(RID p_body) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
@@ -654,67 +654,14 @@ void GodotPhysicsServer3D::body_set_state(RID p_body, BodyState p_state, const V
 	ERR_FAIL_COND(!body);
 
 	body->set_state(p_state, p_variant);
-};
+}
 
 Variant GodotPhysicsServer3D::body_get_state(RID p_body, BodyState p_state) const {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, Variant());
 
 	return body->get_state(p_state);
-};
-
-void GodotPhysicsServer3D::body_set_applied_force(RID p_body, const Vector3 &p_force) {
-	GodotBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_COND(!body);
-
-	body->set_applied_force(p_force);
-	body->wakeup();
-};
-
-Vector3 GodotPhysicsServer3D::body_get_applied_force(RID p_body) const {
-	GodotBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_COND_V(!body, Vector3());
-	return body->get_applied_force();
-};
-
-void GodotPhysicsServer3D::body_set_applied_torque(RID p_body, const Vector3 &p_torque) {
-	GodotBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_COND(!body);
-
-	body->set_applied_torque(p_torque);
-	body->wakeup();
-};
-
-Vector3 GodotPhysicsServer3D::body_get_applied_torque(RID p_body) const {
-	GodotBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_COND_V(!body, Vector3());
-
-	return body->get_applied_torque();
-};
-
-void GodotPhysicsServer3D::body_add_central_force(RID p_body, const Vector3 &p_force) {
-	GodotBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_COND(!body);
-
-	body->add_central_force(p_force);
-	body->wakeup();
 }
-
-void GodotPhysicsServer3D::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position) {
-	GodotBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_COND(!body);
-
-	body->add_force(p_force, p_position);
-	body->wakeup();
-};
-
-void GodotPhysicsServer3D::body_add_torque(RID p_body, const Vector3 &p_torque) {
-	GodotBody3D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_COND(!body);
-
-	body->add_torque(p_torque);
-	body->wakeup();
-};
 
 void GodotPhysicsServer3D::body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
@@ -734,7 +681,7 @@ void GodotPhysicsServer3D::body_apply_impulse(RID p_body, const Vector3 &p_impul
 
 	body->apply_impulse(p_impulse, p_position);
 	body->wakeup();
-};
+}
 
 void GodotPhysicsServer3D::body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
@@ -744,7 +691,88 @@ void GodotPhysicsServer3D::body_apply_torque_impulse(RID p_body, const Vector3 &
 
 	body->apply_torque_impulse(p_impulse);
 	body->wakeup();
-};
+}
+
+void GodotPhysicsServer3D::body_apply_central_force(RID p_body, const Vector3 &p_force) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_central_force(p_force);
+	body->wakeup();
+}
+
+void GodotPhysicsServer3D::body_apply_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_force(p_force, p_position);
+	body->wakeup();
+}
+
+void GodotPhysicsServer3D::body_apply_torque(RID p_body, const Vector3 &p_torque) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_torque(p_torque);
+	body->wakeup();
+}
+
+void GodotPhysicsServer3D::body_add_constant_central_force(RID p_body, const Vector3 &p_force) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->add_constant_central_force(p_force);
+	body->wakeup();
+}
+
+void GodotPhysicsServer3D::body_add_constant_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->add_constant_force(p_force, p_position);
+	body->wakeup();
+}
+
+void GodotPhysicsServer3D::body_add_constant_torque(RID p_body, const Vector3 &p_torque) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->add_constant_torque(p_torque);
+	body->wakeup();
+}
+
+void GodotPhysicsServer3D::body_set_constant_force(RID p_body, const Vector3 &p_force) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_constant_force(p_force);
+	if (!p_force.is_equal_approx(Vector3())) {
+		body->wakeup();
+	}
+}
+
+Vector3 GodotPhysicsServer3D::body_get_constant_force(RID p_body) const {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND_V(!body, Vector3());
+	return body->get_constant_force();
+}
+
+void GodotPhysicsServer3D::body_set_constant_torque(RID p_body, const Vector3 &p_torque) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_constant_torque(p_torque);
+	if (!p_torque.is_equal_approx(Vector3())) {
+		body->wakeup();
+	}
+}
+
+Vector3 GodotPhysicsServer3D::body_get_constant_torque(RID p_body) const {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_COND_V(!body, Vector3());
+
+	return body->get_constant_torque();
+}
 
 void GodotPhysicsServer3D::body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
@@ -758,7 +786,7 @@ void GodotPhysicsServer3D::body_set_axis_velocity(RID p_body, const Vector3 &p_a
 	v += p_axis_velocity;
 	body->set_linear_velocity(v);
 	body->wakeup();
-};
+}
 
 void GodotPhysicsServer3D::body_set_axis_lock(RID p_body, BodyAxis p_axis, bool p_lock) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
@@ -1574,20 +1602,15 @@ void GodotPhysicsServer3D::free(RID p_rid) {
 	} else {
 		ERR_FAIL_MSG("Invalid ID.");
 	}
-};
+}
 
 void GodotPhysicsServer3D::set_active(bool p_active) {
 	active = p_active;
-};
-
-void GodotPhysicsServer3D::set_collision_iterations(int p_iterations) {
-	iterations = p_iterations;
-};
+}
 
 void GodotPhysicsServer3D::init() {
-	iterations = 8; // 8?
 	stepper = memnew(GodotStep3D);
-};
+}
 
 void GodotPhysicsServer3D::step(real_t p_step) {
 #ifndef _3D_DISABLED
@@ -1602,7 +1625,7 @@ void GodotPhysicsServer3D::step(real_t p_step) {
 	active_objects = 0;
 	collision_pairs = 0;
 	for (Set<const GodotSpace3D *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		stepper->step((GodotSpace3D *)E->get(), p_step, iterations);
+		stepper->step((GodotSpace3D *)E->get(), p_step);
 		island_count += E->get()->get_island_count();
 		active_objects += E->get()->get_active_objects();
 		collision_pairs += E->get()->get_collision_pairs();
@@ -1612,7 +1635,7 @@ void GodotPhysicsServer3D::step(real_t p_step) {
 
 void GodotPhysicsServer3D::sync() {
 	doing_sync = true;
-};
+}
 
 void GodotPhysicsServer3D::flush_queries() {
 #ifndef _3D_DISABLED
@@ -1665,15 +1688,15 @@ void GodotPhysicsServer3D::flush_queries() {
 		EngineDebugger::profiler_add_frame_data("servers", values);
 	}
 #endif
-};
+}
 
 void GodotPhysicsServer3D::end_sync() {
 	doing_sync = false;
-};
+}
 
 void GodotPhysicsServer3D::finish() {
 	memdelete(stepper);
-};
+}
 
 int GodotPhysicsServer3D::get_process_info(ProcessInfo p_info) {
 	switch (p_info) {

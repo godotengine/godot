@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -284,7 +284,6 @@ struct ObjectNativeExtension {
 
 	GDNativeExtensionClassCreateInstance create_instance;
 	GDNativeExtensionClassFreeInstance free_instance;
-	GDNativeExtensionClassObjectInstance set_object_instance;
 	GDNativeExtensionClassGetVirtual get_virtual;
 };
 
@@ -353,15 +352,12 @@ public:                                                                         
 	static String get_category_static() {                                                                                                        \
 		String category = m_inherits::get_category_static();                                                                                     \
 		if (_get_category != m_inherits::_get_category) {                                                                                        \
-			if (category != "") {                                                                                                                \
+			if (!category.is_empty()) {                                                                                                          \
 				category += "/";                                                                                                                 \
 			}                                                                                                                                    \
 			category += _get_category();                                                                                                         \
 		}                                                                                                                                        \
 		return category;                                                                                                                         \
-	}                                                                                                                                            \
-	static String inherits_static() {                                                                                                            \
-		return String(#m_inherits);                                                                                                              \
 	}                                                                                                                                            \
 	virtual bool is_class(const String &p_class) const override {                                                                                \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                           \

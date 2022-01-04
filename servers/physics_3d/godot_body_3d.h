@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,6 +44,9 @@ class GodotBody3D : public GodotCollisionObject3D {
 
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
+
+	Vector3 prev_linear_velocity;
+	Vector3 prev_angular_velocity;
 
 	Vector3 constant_linear_velocity;
 	Vector3 constant_angular_velocity;
@@ -89,6 +92,9 @@ class GodotBody3D : public GodotCollisionObject3D {
 
 	Vector3 applied_force;
 	Vector3 applied_torque;
+
+	Vector3 constant_force;
+	Vector3 constant_torque;
 
 	SelfList<GodotBody3D> active_list;
 	SelfList<GodotBody3D> mass_properties_update_list;
@@ -163,7 +169,7 @@ public:
 		if (index > -1) {
 			areas.write[index].refCount -= 1;
 			if (areas[index].refCount < 1) {
-				areas.remove(index);
+				areas.remove_at(index);
 			}
 		}
 	}
@@ -207,6 +213,9 @@ public:
 	_FORCE_INLINE_ void set_angular_velocity(const Vector3 &p_velocity) { angular_velocity = p_velocity; }
 	_FORCE_INLINE_ Vector3 get_angular_velocity() const { return angular_velocity; }
 
+	_FORCE_INLINE_ Vector3 get_prev_linear_velocity() const { return prev_linear_velocity; }
+	_FORCE_INLINE_ Vector3 get_prev_angular_velocity() const { return prev_angular_velocity; }
+
 	_FORCE_INLINE_ const Vector3 &get_biased_linear_velocity() const { return biased_linear_velocity; }
 	_FORCE_INLINE_ const Vector3 &get_biased_angular_velocity() const { return biased_angular_velocity; }
 
@@ -238,18 +247,37 @@ public:
 		biased_angular_velocity += _inv_inertia_tensor.xform(p_impulse);
 	}
 
-	_FORCE_INLINE_ void add_central_force(const Vector3 &p_force) {
+	_FORCE_INLINE_ void apply_central_force(const Vector3 &p_force) {
 		applied_force += p_force;
 	}
 
-	_FORCE_INLINE_ void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) {
+	_FORCE_INLINE_ void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) {
 		applied_force += p_force;
 		applied_torque += (p_position - center_of_mass).cross(p_force);
 	}
 
-	_FORCE_INLINE_ void add_torque(const Vector3 &p_torque) {
+	_FORCE_INLINE_ void apply_torque(const Vector3 &p_torque) {
 		applied_torque += p_torque;
 	}
+
+	_FORCE_INLINE_ void add_constant_central_force(const Vector3 &p_force) {
+		constant_force += p_force;
+	}
+
+	_FORCE_INLINE_ void add_constant_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) {
+		constant_force += p_force;
+		constant_torque += (p_position - center_of_mass).cross(p_force);
+	}
+
+	_FORCE_INLINE_ void add_constant_torque(const Vector3 &p_torque) {
+		constant_torque += p_torque;
+	}
+
+	void set_constant_force(const Vector3 &p_force) { constant_force = p_force; }
+	Vector3 get_constant_force() const { return constant_force; }
+
+	void set_constant_torque(const Vector3 &p_torque) { constant_torque = p_torque; }
+	Vector3 get_constant_torque() const { return constant_torque; }
 
 	void set_active(bool p_active);
 	_FORCE_INLINE_ bool is_active() const { return active; }
@@ -269,12 +297,6 @@ public:
 
 	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer3D::BodyState p_state) const;
-
-	void set_applied_force(const Vector3 &p_force) { applied_force = p_force; }
-	Vector3 get_applied_force() const { return applied_force; }
-
-	void set_applied_torque(const Vector3 &p_torque) { applied_torque = p_torque; }
-	Vector3 get_applied_torque() const { return applied_torque; }
 
 	_FORCE_INLINE_ void set_continuous_collision_detection(bool p_enable) { continuous_cd = p_enable; }
 	_FORCE_INLINE_ bool is_continuous_collision_detection_enabled() const { return continuous_cd; }

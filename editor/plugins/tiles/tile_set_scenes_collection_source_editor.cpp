@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -459,7 +459,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 
 	// Middle panel.
 	ScrollContainer *middle_panel = memnew(ScrollContainer);
-	middle_panel->set_enable_h_scroll(false);
+	middle_panel->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	middle_panel->set_custom_minimum_size(Size2i(200, 0) * EDSCALE);
 	split_container_right_side->add_child(middle_panel);
 
@@ -477,7 +477,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 
 	scenes_collection_source_inspector = memnew(EditorInspector);
 	scenes_collection_source_inspector->set_undo_redo(undo_redo);
-	scenes_collection_source_inspector->set_enable_v_scroll(false);
+	scenes_collection_source_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	scenes_collection_source_inspector->edit(scenes_collection_source_proxy_object);
 	middle_vbox_container->add_child(scenes_collection_source_inspector);
 
@@ -493,7 +493,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 
 	tile_inspector = memnew(EditorInspector);
 	tile_inspector->set_undo_redo(undo_redo);
-	tile_inspector->set_enable_v_scroll(false);
+	tile_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	tile_inspector->edit(tile_proxy_object);
 	tile_inspector->set_use_folding(true);
 	middle_vbox_container->add_child(tile_inspector);

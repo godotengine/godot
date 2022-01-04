@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -173,7 +173,7 @@ void CreateDialog::_update_search() {
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type));
 
 	const String search_text = search_box->get_text();
-	bool empty_search = search_text == "";
+	bool empty_search = search_text.is_empty();
 
 	// Filter all candidate results.
 	Vector<String> candidates;
@@ -244,7 +244,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 	}
 
-	if (search_box->get_text() != "") {
+	if (!search_box->get_text().is_empty()) {
 		r_item->set_collapsed(false);
 	} else {
 		// Don't collapse the root node or an abstract node on the first tree level.
@@ -322,7 +322,7 @@ void CreateDialog::_cleanup() {
 
 void CreateDialog::_confirmed() {
 	String selected_item = get_selected_type();
-	if (selected_item == String()) {
+	if (selected_item.is_empty()) {
 		return;
 	}
 
@@ -339,8 +339,10 @@ void CreateDialog::_confirmed() {
 		memdelete(f);
 	}
 
-	emit_signal(SNAME("create"));
+	// To prevent, emitting an error from the transient window (shader dialog for example) hide this dialog before emitting the "create" signal.
 	hide();
+
+	emit_signal(SNAME("create"));
 	_cleanup();
 }
 
@@ -576,7 +578,7 @@ void CreateDialog::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		drop_idx--;
 	}
 
-	favorite_list.remove(from_idx);
+	favorite_list.remove_at(from_idx);
 
 	if (ds < 0) {
 		favorite_list.insert(drop_idx, type);
@@ -640,7 +642,7 @@ void CreateDialog::_load_favorites_and_history() {
 		while (!f->eof_reached()) {
 			String l = f->get_line().strip_edges();
 
-			if (l != String()) {
+			if (!l.is_empty()) {
 				favorite_list.push_back(l);
 			}
 		}

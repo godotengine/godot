@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -225,7 +225,7 @@ bool DisplayServerX11::_refresh_device_info() {
 				if (class_info->number == VALUATOR_ABSX && class_info->mode == XIModeAbsolute) {
 					resolution_x = class_info->resolution;
 					abs_x_min = class_info->min;
-					abs_y_max = class_info->max;
+					abs_x_max = class_info->max;
 					absolute_mode = true;
 				} else if (class_info->number == VALUATOR_ABSY && class_info->mode == XIModeAbsolute) {
 					resolution_y = class_info->resolution;
@@ -239,8 +239,8 @@ bool DisplayServerX11::_refresh_device_info() {
 					tilt_x_min = class_info->min;
 					tilt_x_max = class_info->max;
 				} else if (class_info->number == VALUATOR_TILTY && class_info->mode == XIModeAbsolute) {
-					tilt_x_min = class_info->min;
-					tilt_x_max = class_info->max;
+					tilt_y_min = class_info->min;
+					tilt_y_max = class_info->max;
 				}
 			}
 		}
@@ -286,7 +286,7 @@ void DisplayServerX11::_flush_mouse_motion() {
 			XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
 			if (event_data->evtype == XI_RawMotion) {
 				XFreeEventData(x11_display, &event.xcookie);
-				polled_events.remove(event_index--);
+				polled_events.remove_at(event_index--);
 				continue;
 			}
 			XFreeEventData(x11_display, &event.xcookie);
@@ -1150,7 +1150,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 
 #ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_destroy(p_id);
 	}
 #endif
@@ -2927,7 +2927,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	wd.size = new_rect.size;
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_resize(window_id, wd.size.width, wd.size.height);
 	}
 #endif
@@ -3189,8 +3189,10 @@ void DisplayServerX11::process_events() {
 							Map<int, Vector2>::Element *pen_tilt_x = xi.pen_tilt_x_range.find(device_id);
 							if (pen_tilt_x) {
 								Vector2 pen_tilt_x_range = pen_tilt_x->value();
-								if (pen_tilt_x_range != Vector2()) {
-									xi.tilt.x = ((*values - pen_tilt_x_range[0]) / (pen_tilt_x_range[1] - pen_tilt_x_range[0])) * 2 - 1;
+								if (pen_tilt_x_range[0] != 0 && *values < 0) {
+									xi.tilt.x = *values / -pen_tilt_x_range[0];
+								} else if (pen_tilt_x_range[1] != 0) {
+									xi.tilt.x = *values / pen_tilt_x_range[1];
 								}
 							}
 
@@ -3201,8 +3203,10 @@ void DisplayServerX11::process_events() {
 							Map<int, Vector2>::Element *pen_tilt_y = xi.pen_tilt_y_range.find(device_id);
 							if (pen_tilt_y) {
 								Vector2 pen_tilt_y_range = pen_tilt_y->value();
-								if (pen_tilt_y_range != Vector2()) {
-									xi.tilt.y = ((*values - pen_tilt_y_range[0]) / (pen_tilt_y_range[1] - pen_tilt_y_range[0])) * 2 - 1;
+								if (pen_tilt_y_range[0] != 0 && *values < 0) {
+									xi.tilt.y = *values / -pen_tilt_y_range[0];
+								} else if (pen_tilt_y_range[1] != 0) {
+									xi.tilt.y = *values / pen_tilt_y_range[1];
 								}
 							}
 
@@ -4672,12 +4676,12 @@ DisplayServerX11::~DisplayServerX11() {
 	//destroy all windows
 	for (KeyValue<WindowID, WindowData> &E : windows) {
 #ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			context_vulkan->window_destroy(E.key);
 		}
 #endif
 #ifdef GLES3_ENABLED
-		if (rendering_driver == "opengl3") {
+		if (gl_manager) {
 			gl_manager->window_destroy(E.key);
 		}
 #endif
@@ -4693,15 +4697,15 @@ DisplayServerX11::~DisplayServerX11() {
 
 	//destroy drivers
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan) {
-			memdelete(context_vulkan);
-		}
+	if (context_vulkan) {
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 

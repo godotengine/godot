@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,9 +55,14 @@ bool EditorDebuggerRemoteObject::_get(const StringName &p_name, Variant &r_ret) 
 }
 
 void EditorDebuggerRemoteObject::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->clear(); //sorry, no want category
-	for (const PropertyInfo &E : prop_list) {
-		p_list->push_back(E);
+	p_list->clear(); // Sorry, no want category.
+	for (const PropertyInfo &prop : prop_list) {
+		if (prop.name == "script") {
+			// Skip the script property, it's always added by the non-virtual method.
+			continue;
+		}
+
+		p_list->push_back(prop);
 	}
 }
 

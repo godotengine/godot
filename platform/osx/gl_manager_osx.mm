@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,7 +75,7 @@ Error GLManager_OSX::window_create(DisplayServer::WindowID p_window_id, id p_vie
 	win.window_view = p_view;
 
 	if (_create_context(win) != OK) {
-		_windows.remove(_windows.size() - 1);
+		_windows.remove_at(_windows.size() - 1);
 		return FAILED;
 	}
 

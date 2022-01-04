@@ -127,7 +127,7 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="linear">The linear energy to convert.</param>
-        /// <returns>Audio as decibels</returns>
+        /// <returns>Audio as decibels.</returns>
         public static real_t Linear2Db(real_t linear)
         {
             return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
@@ -400,7 +400,7 @@ namespace Godot
         /// </summary>
         /// <param name="seed">
         /// Seed to use to generate the random number.
-        /// If a different seed is used, its value will be modfied.
+        /// If a different seed is used, its value will be modified.
         /// </param>
         /// <returns>A random <see langword="uint"/> number.</returns>
         public static uint RandFromSeed(ref ulong seed)

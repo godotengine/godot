@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -256,7 +256,7 @@ public:
 		NOTIFICATION_INSTANCED = 20,
 		NOTIFICATION_DRAG_BEGIN = 21,
 		NOTIFICATION_DRAG_END = 22,
-		NOTIFICATION_PATH_CHANGED = 23,
+		NOTIFICATION_PATH_RENAMED = 23,
 		//NOTIFICATION_TRANSLATION_CHANGED = 24, moved below
 		NOTIFICATION_INTERNAL_PROCESS = 25,
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,

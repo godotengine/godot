@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,81 +52,6 @@ static String _typestr(SL::DataType p_type) {
 		type = type.replace("sampler", "texture"); //we use textures instead of samplers
 	}
 	return type;
-}
-
-static int _get_datatype_size(SL::DataType p_type) {
-	switch (p_type) {
-		case SL::TYPE_VOID:
-			return 0;
-		case SL::TYPE_BOOL:
-			return 4;
-		case SL::TYPE_BVEC2:
-			return 8;
-		case SL::TYPE_BVEC3:
-			return 12;
-		case SL::TYPE_BVEC4:
-			return 16;
-		case SL::TYPE_INT:
-			return 4;
-		case SL::TYPE_IVEC2:
-			return 8;
-		case SL::TYPE_IVEC3:
-			return 12;
-		case SL::TYPE_IVEC4:
-			return 16;
-		case SL::TYPE_UINT:
-			return 4;
-		case SL::TYPE_UVEC2:
-			return 8;
-		case SL::TYPE_UVEC3:
-			return 12;
-		case SL::TYPE_UVEC4:
-			return 16;
-		case SL::TYPE_FLOAT:
-			return 4;
-		case SL::TYPE_VEC2:
-			return 8;
-		case SL::TYPE_VEC3:
-			return 12;
-		case SL::TYPE_VEC4:
-			return 16;
-		case SL::TYPE_MAT2:
-			return 32; // 4 * 4 + 4 * 4
-		case SL::TYPE_MAT3:
-			return 48; // 4 * 4 + 4 * 4 + 4 * 4
-		case SL::TYPE_MAT4:
-			return 64;
-		case SL::TYPE_SAMPLER2D:
-			return 16;
-		case SL::TYPE_ISAMPLER2D:
-			return 16;
-		case SL::TYPE_USAMPLER2D:
-			return 16;
-		case SL::TYPE_SAMPLER2DARRAY:
-			return 16;
-		case SL::TYPE_ISAMPLER2DARRAY:
-			return 16;
-		case SL::TYPE_USAMPLER2DARRAY:
-			return 16;
-		case SL::TYPE_SAMPLER3D:
-			return 16;
-		case SL::TYPE_ISAMPLER3D:
-			return 16;
-		case SL::TYPE_USAMPLER3D:
-			return 16;
-		case SL::TYPE_SAMPLERCUBE:
-			return 16;
-		case SL::TYPE_SAMPLERCUBEARRAY:
-			return 16;
-		case SL::TYPE_STRUCT:
-			return 0;
-
-		case SL::TYPE_MAX: {
-			ERR_FAIL_V(0);
-		};
-	}
-
-	ERR_FAIL_V(0);
 }
 
 static int _get_datatype_alignment(SL::DataType p_type) {
@@ -223,6 +148,13 @@ static String _prestr(SL::DataPrecision p_pres, bool p_force_highp = false) {
 			return "highp ";
 		case SL::PRECISION_DEFAULT:
 			return p_force_highp ? "highp " : "";
+	}
+	return "";
+}
+
+static String _constr(bool p_is_const) {
+	if (p_is_const) {
+		return "const ";
 	}
 	return "";
 }
@@ -417,9 +349,7 @@ void ShaderCompilerRD::_dump_function_deps(const SL::ShaderNode *p_node, const S
 			if (i > 0) {
 				header += ", ";
 			}
-			if (fnode->arguments[i].is_const) {
-				header += "const ";
-			}
+			header += _constr(fnode->arguments[i].is_const);
 			if (fnode->arguments[i].type == SL::TYPE_STRUCT) {
 				header += _qualstr(fnode->arguments[i].qualifier) + _mkid(fnode->arguments[i].type_str) + " " + _mkid(fnode->arguments[i].name);
 			} else {
@@ -653,20 +583,22 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					uniform_defines.write[uniform.order] = ucode;
 					if (is_buffer_global) {
 						//globals are indices into the global table
-						uniform_sizes.write[uniform.order] = _get_datatype_size(ShaderLanguage::TYPE_UINT);
+						uniform_sizes.write[uniform.order] = ShaderLanguage::get_datatype_size(ShaderLanguage::TYPE_UINT);
 						uniform_alignments.write[uniform.order] = _get_datatype_alignment(ShaderLanguage::TYPE_UINT);
 					} else {
+						// The following code enforces a 16-byte alignment of uniform arrays.
 						if (uniform.array_size > 0) {
-							int size = _get_datatype_size(uniform.type) * uniform.array_size;
+							int size = ShaderLanguage::get_datatype_size(uniform.type) * uniform.array_size;
 							int m = (16 * uniform.array_size);
 							if ((size % m) != 0) {
 								size += m - (size % m);
 							}
 							uniform_sizes.write[uniform.order] = size;
+							uniform_alignments.write[uniform.order] = 16;
 						} else {
-							uniform_sizes.write[uniform.order] = _get_datatype_size(uniform.type);
+							uniform_sizes.write[uniform.order] = ShaderLanguage::get_datatype_size(uniform.type);
+							uniform_alignments.write[uniform.order] = _get_datatype_alignment(uniform.type);
 						}
-						uniform_alignments.write[uniform.order] = _get_datatype_alignment(uniform.type);
 					}
 				}
 
@@ -791,7 +723,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			for (int i = 0; i < pnode->vconstants.size(); i++) {
 				const SL::ShaderNode::Constant &cnode = pnode->vconstants[i];
 				String gcode;
-				gcode += "const ";
+				gcode += _constr(true);
 				gcode += _prestr(cnode.precision, ShaderLanguage::is_float_type(cnode.type));
 				if (cnode.type == SL::TYPE_STRUCT) {
 					gcode += _mkid(cnode.type_str);
@@ -875,9 +807,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			SL::VariableDeclarationNode *vdnode = (SL::VariableDeclarationNode *)p_node;
 
 			String declaration;
-			if (vdnode->is_const) {
-				declaration += "const ";
-			}
+			declaration += _constr(vdnode->is_const);
 			if (vdnode->datatype == SL::TYPE_STRUCT) {
 				declaration += _mkid(vdnode->struct_name);
 			} else {
@@ -997,9 +927,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 		case SL::Node::TYPE_ARRAY_DECLARATION: {
 			SL::ArrayDeclarationNode *adnode = (SL::ArrayDeclarationNode *)p_node;
 			String declaration;
-			if (adnode->is_const) {
-				declaration += "const ";
-			}
+			declaration += _constr(adnode->is_const);
 			if (adnode->datatype == SL::TYPE_STRUCT) {
 				declaration += _mkid(adnode->struct_name);
 			} else {
@@ -1315,6 +1243,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					code += ")";
 
 				} break;
+				case SL::OP_EMPTY: {
+					// Semicolon (or empty statement) - ignored.
+				} break;
 
 				default: {
 					if (p_use_scope) {
@@ -1407,7 +1338,13 @@ ShaderLanguage::DataType ShaderCompilerRD::_get_variable_type(const StringName &
 }
 
 Error ShaderCompilerRD::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
-	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), ShaderLanguage::VaryingFunctionNames(), ShaderTypes::get_singleton()->get_types(), _get_variable_type);
+	SL::ShaderCompileInfo info;
+	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
+	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
+	info.shader_types = ShaderTypes::get_singleton()->get_types();
+	info.global_variable_type_func = _get_variable_type;
+
+	Error err = parser.compile(p_code, info);
 
 	if (err != OK) {
 		Vector<String> shader = p_code.split("\n");

@@ -278,7 +278,7 @@ void VP8LPutBitsFlushBits(VP8LBitWriter* const bw) {
   // If needed, make some room by flushing some bits out.
   if (bw->cur_ + VP8L_WRITER_BYTES > bw->end_) {
     const uint64_t extra_size = (bw->end_ - bw->buf_) + MIN_EXTRA_SIZE;
-    if (extra_size != (size_t)extra_size ||
+    if (!CheckSizeOverflow(extra_size) ||
         !VP8LBitWriterResize(bw, (size_t)extra_size)) {
       bw->cur_ = bw->buf_;
       bw->error_ = 1;
@@ -314,7 +314,7 @@ void VP8LPutBitsInternal(VP8LBitWriter* const bw, uint32_t bits, int n_bits) {
     while (used >= VP8L_WRITER_BITS) {
       if (bw->cur_ + VP8L_WRITER_BYTES > bw->end_) {
         const uint64_t extra_size = (bw->end_ - bw->buf_) + MIN_EXTRA_SIZE;
-        if (extra_size != (size_t)extra_size ||
+        if (!CheckSizeOverflow(extra_size) ||
             !VP8LBitWriterResize(bw, (size_t)extra_size)) {
           bw->cur_ = bw->buf_;
           bw->error_ = 1;

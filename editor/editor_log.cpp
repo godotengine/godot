@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -162,11 +162,11 @@ void EditorLog::_clear_request() {
 void EditorLog::_copy_request() {
 	String text = log->get_selected_text();
 
-	if (text == "") {
+	if (text.is_empty()) {
 		text = log->get_text();
 	}
 
-	if (text != "") {
+	if (!text.is_empty()) {
 		DisplayServer::get_singleton()->clipboard_set(text);
 	}
 }
@@ -237,7 +237,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	// Only add the message to the log if it passes the filters.
 	bool filter_active = type_filter_map[p_message.type]->is_active();
 	String search_text = search_box->get_text();
-	bool search_match = search_text == String() || p_message.text.findn(search_text) > -1;
+	bool search_match = search_text.is_empty() || p_message.text.findn(search_text) > -1;
 
 	if (!filter_active || !search_match) {
 		return;
@@ -429,7 +429,7 @@ EditorLog::EditorLog() {
 	vb_right->add_child(editor_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_EDITOR, editor_filter);
 
-	add_message(VERSION_FULL_NAME " (c) 2007-2021 Juan Linietsky, Ariel Manzur & Godot Contributors.");
+	add_message(VERSION_FULL_NAME " (c) 2007-2022 Juan Linietsky, Ariel Manzur & Godot Contributors.");
 
 	eh.errfunc = _error_handler;
 	eh.userdata = this;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,7 +92,7 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	if (p_material->has_meta("import_id")) {
 		import_id = p_material->get_meta("import_id");
 		has_import_id = true;
-	} else if (p_material->get_name() != "") {
+	} else if (!p_material->get_name().is_empty()) {
 		import_id = p_material->get_name();
 		has_import_id = true;
 	} else {
@@ -148,7 +148,7 @@ void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, Tree
 	if (p_mesh->has_meta("import_id")) {
 		import_id = p_mesh->get_meta("import_id");
 		has_import_id = true;
-	} else if (p_mesh->get_name() != String()) {
+	} else if (!p_mesh->get_name().is_empty()) {
 		import_id = p_mesh->get_name();
 		has_import_id = true;
 	} else {
@@ -414,7 +414,7 @@ void SceneImportSettings::_update_camera() {
 	float rot_y = cam_rot_y;
 	float zoom = cam_zoom;
 
-	if (selected_type == "Node" || selected_type == "") {
+	if (selected_type == "Node" || selected_type.is_empty()) {
 		camera_aabb = contents_aabb;
 	} else {
 		if (mesh_preview->get_mesh().is_valid()) {

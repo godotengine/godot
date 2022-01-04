@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,6 +57,15 @@ static String format_error_message(DWORD id) {
 	LocalFree(messageBuffer);
 
 	return msg;
+}
+
+static void track_mouse_leave_event(HWND hWnd) {
+	TRACKMOUSEEVENT tme;
+	tme.cbSize = sizeof(TRACKMOUSEEVENT);
+	tme.dwFlags = TME_LEAVE;
+	tme.hwndTrack = hWnd;
+	tme.dwHoverTime = HOVER_DEFAULT;
+	TrackMouseEvent(&tme);
 }
 
 bool DisplayServerWindows::has_feature(Feature p_feature) const {
@@ -538,12 +547,12 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 
 #ifdef VULKAN_ENABLED
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_destroy(p_window);
 	}
 #endif
 #ifdef GLES3_ENABLED
-	if (rendering_driver == "opengl3") {
+	if (gl_manager) {
 		gl_manager->window_destroy(p_window);
 	}
 #endif
@@ -828,12 +837,12 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	wd.height = h;
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
+	if (context_vulkan) {
 		context_vulkan->window_resize(p_window, w, h);
 	}
 #endif
 #if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl3") {
+	if (gl_manager) {
 		gl_manager->window_resize(p_window, w, h);
 	}
 #endif
@@ -1204,8 +1213,11 @@ void DisplayServerWindows::console_set_visible(bool p_enabled) {
 	if (console_visible == p_enabled) {
 		return;
 	}
-	ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
-	console_visible = p_enabled;
+	if (!((OS_Windows *)OS::get_singleton())->_is_win11_terminal()) {
+		// GetConsoleWindow is not supported by the Windows Terminal.
+		ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
+		console_visible = p_enabled;
+	}
 }
 
 bool DisplayServerWindows::is_console_visible() const {
@@ -1565,7 +1577,7 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 	GetKeyboardLayoutList(layout_count, layouts);
 
 	String ret = _get_full_layout_name_from_registry(layouts[p_index]); // Try reading full name from Windows registry, fallback to locale name if failed (e.g. on Wine).
-	if (ret == String()) {
+	if (ret.is_empty()) {
 		WCHAR buf[LOCALE_NAME_MAX_LENGTH];
 		memset(buf, 0, LOCALE_NAME_MAX_LENGTH * sizeof(WCHAR));
 		LCIDToLocaleName(MAKELCID(LOWORD(layouts[p_index]), SORT_DEFAULT), buf, LOCALE_NAME_MAX_LENGTH, 0);
@@ -1973,6 +1985,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				// Run a timer to prevent event catching warning if the focused window is closing.
 				windows[window_id].focus_timer_id = SetTimer(windows[window_id].hWnd, 2, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
 			}
+			if (wParam != WA_INACTIVE) {
+				track_mouse_leave_event(hWnd);
+			}
 			return 0; // Return to the message loop.
 		} break;
 		case WM_GETMINMAXINFO: {
@@ -2257,12 +2272,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				outside = false;
 
 				// Once-off notification, must call again.
-				TRACKMOUSEEVENT tme;
-				tme.cbSize = sizeof(TRACKMOUSEEVENT);
-				tme.dwFlags = TME_LEAVE;
-				tme.hwndTrack = hWnd;
-				tme.dwHoverTime = HOVER_DEFAULT;
-				TrackMouseEvent(&tme);
+				track_mouse_leave_event(hWnd);
 			}
 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
@@ -2363,12 +2373,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				outside = false;
 
 				// Once-off notification, must call again.
-				TRACKMOUSEEVENT tme;
-				tme.cbSize = sizeof(TRACKMOUSEEVENT);
-				tme.dwFlags = TME_LEAVE;
-				tme.hwndTrack = hWnd;
-				tme.dwHoverTime = HOVER_DEFAULT;
-				TrackMouseEvent(&tme);
+				track_mouse_leave_event(hWnd);
 			}
 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
@@ -2643,7 +2648,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					windows[window_id].height = window_h;
 
 #if defined(VULKAN_ENABLED)
-					if ((rendering_driver == "vulkan") && window_created) {
+					if (context_vulkan && window_created) {
 						context_vulkan->window_resize(window_id, windows[window_id].width, windows[window_id].height);
 					}
 #endif
@@ -3105,7 +3110,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 
 #ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			if (context_vulkan->window_create(id, p_vsync_mode, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) == -1) {
 				memdelete(context_vulkan);
 				context_vulkan = nullptr;
@@ -3116,21 +3121,13 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 #endif
 
 #ifdef GLES3_ENABLED
-		if (rendering_driver == "opengl3") {
+		if (gl_manager) {
 			Error err = gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
 		}
 #endif
 
 		RegisterTouchWindow(wd.hWnd, 0);
-
-		TRACKMOUSEEVENT tme;
-		tme.cbSize = sizeof(TRACKMOUSEEVENT);
-		tme.dwFlags = TME_LEAVE;
-		tme.hwndTrack = wd.hWnd;
-		tme.dwHoverTime = HOVER_DEFAULT;
-		TrackMouseEvent(&tme);
-
 		DragAcceptFiles(wd.hWnd, true);
 
 		if ((tablet_get_current_driver() == "wintab") && wintab_available) {
@@ -3455,7 +3452,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 	if (windows.has(MAIN_WINDOW_ID)) {
 #ifdef VULKAN_ENABLED
-		if (rendering_driver == "vulkan") {
+		if (context_vulkan) {
 			context_vulkan->window_destroy(MAIN_WINDOW_ID);
 		}
 #endif
@@ -3467,14 +3464,15 @@ DisplayServerWindows::~DisplayServerWindows() {
 	}
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan)
-			memdelete(context_vulkan);
+	if (context_vulkan) {
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 

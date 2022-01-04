@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -964,6 +964,7 @@ void Skeleton3DEditor::select_bone(int p_idx) {
 
 Skeleton3DEditor::~Skeleton3DEditor() {
 	if (skeleton) {
+		select_bone(-1);
 #ifdef TOOLS_ENABLED
 		skeleton->disconnect("show_rest_only_changed", callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
 		skeleton->disconnect("bone_enabled_changed", callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
@@ -973,6 +974,7 @@ Skeleton3DEditor::~Skeleton3DEditor() {
 #endif
 		handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
 	}
+	edit_mode_toggled(false);
 
 	handles_mesh_instance->queue_delete();
 
@@ -1108,7 +1110,7 @@ void fragment() {
 )");
 	selected_mat->set_shader(selected_sh);
 
-	// Regist properties in editor settings.
+	// Register properties in editor settings.
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/skeleton", Color(1, 0.8, 0.4));
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/selected_bone", Color(0.8, 0.3, 0.0));
 	EDITOR_DEF("editors/3d_gizmos/gizmo_settings/bone_axis_length", (float)0.1);

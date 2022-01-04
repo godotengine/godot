@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -413,7 +413,7 @@ void EditorPropertyArray::update_property() {
 
 void EditorPropertyArray::_remove_pressed(int p_index) {
 	Variant array = object->get_array();
-	array.call("remove", p_index);
+	array.call("remove_at", p_index);
 
 	emit_changed(get_edited_property(), array, "", false);
 	update_property();
@@ -431,7 +431,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 	// When the subtype is of type Object, an additional subtype may be specified in the hint string
 	// (e.g. Resource, Texture2D, ShaderMaterial, etc). We want the allowed type to be that, not just "Object".
-	if (subtype == Variant::OBJECT && subtype_hint_string != "") {
+	if (subtype == Variant::OBJECT && !subtype_hint_string.is_empty()) {
 		allowed_type = subtype_hint_string;
 	}
 

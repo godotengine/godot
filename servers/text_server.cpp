@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,7 +78,7 @@ void TextServerManager::remove_interface(const Ref<TextServer> &p_interface) {
 	ERR_FAIL_COND(idx == -1);
 	print_verbose("TextServer: Removed interface \"" + p_interface->get_name() + "\"");
 	emit_signal(SNAME("interface_removed"), p_interface->get_name());
-	interfaces.remove(idx);
+	interfaces.remove_at(idx);
 }
 
 int TextServerManager::get_interface_count() const {
@@ -141,7 +141,7 @@ TextServerManager::~TextServerManager() {
 		primary_interface.unref();
 	}
 	while (interfaces.size() > 0) {
-		interfaces.remove(0);
+		interfaces.remove_at(0);
 	}
 	singleton = nullptr;
 }
@@ -360,8 +360,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_preserve_control", "shaped"), &TextServer::shaped_text_get_preserve_control);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_add_string", "shaped", "text", "fonts", "size", "opentype_features", "language"), &TextServer::shaped_text_add_string, DEFVAL(Dictionary()), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGN_CENTER), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align"), &TextServer::shaped_text_resize_object, DEFVAL(INLINE_ALIGN_CENTER));
+	ClassDB::bind_method(D_METHOD("shaped_text_add_object", "shaped", "key", "size", "inline_align", "length"), &TextServer::shaped_text_add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("shaped_text_resize_object", "shaped", "key", "size", "inline_align"), &TextServer::shaped_text_resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_substr", "shaped", "start", "length"), &TextServer::shaped_text_substr);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_parent", "shaped"), &TextServer::shaped_text_get_parent);
@@ -403,6 +403,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_grapheme", "shaped", "coords"), &TextServer::shaped_text_hit_test_grapheme);
 	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_position", "shaped", "coords"), &TextServer::shaped_text_hit_test_position);
 
+	ClassDB::bind_method(D_METHOD("shaped_text_get_grapheme_bounds", "shaped", "pos"), &TextServer::shaped_text_get_grapheme_bounds);
 	ClassDB::bind_method(D_METHOD("shaped_text_next_grapheme_pos", "shaped", "pos"), &TextServer::shaped_text_next_grapheme_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_prev_grapheme_pos", "shaped", "pos"), &TextServer::shaped_text_prev_grapheme_pos);
 
@@ -648,13 +649,13 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(RID p_shaped, const
 	return lines;
 }
 
-PackedInt32Array TextServer::shaped_text_get_line_breaks(RID p_shaped, real_t p_width, int p_start, uint16_t /*TextBreakFlag*/ p_break_flags) const {
+PackedInt32Array TextServer::shaped_text_get_line_breaks(RID p_shaped, float p_width, int p_start, uint16_t /*TextBreakFlag*/ p_break_flags) const {
 	PackedInt32Array lines;
 
 	const_cast<TextServer *>(this)->shaped_text_update_breaks(p_shaped);
 	const Vector2i &range = shaped_text_get_range(p_shaped);
 
-	real_t width = 0.f;
+	float width = 0.f;
 	int line_start = MAX(p_start, range.x);
 	int last_safe_break = -1;
 	int word_count = 0;
@@ -1023,7 +1024,7 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 		while (j < ranges.size()) {
 			if (Math::is_equal_approx(ranges[i].y, ranges[j].x, (real_t)UNIT_EPSILON)) {
 				ranges.write[i].y = ranges[j].y;
-				ranges.remove(j);
+				ranges.remove_at(j);
 				continue;
 			}
 			j++;
@@ -1034,9 +1035,9 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 	return ranges;
 }
 
-int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, real_t p_coords) const {
+int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, float p_coords) const {
 	// Exact grapheme hit test, return -1 if missed.
-	real_t off = 0.0f;
+	float off = 0.0f;
 
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
@@ -1052,7 +1053,7 @@ int TextServer::shaped_text_hit_test_grapheme(RID p_shaped, real_t p_coords) con
 	return -1;
 }
 
-int TextServer::shaped_text_hit_test_position(RID p_shaped, real_t p_coords) const {
+int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) const {
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
@@ -1120,6 +1121,27 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, real_t p_coords) con
 	return 0;
 }
 
+Vector2 TextServer::shaped_text_get_grapheme_bounds(RID p_shaped, int p_pos) const {
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+
+	real_t off = 0.0f;
+	for (int i = 0; i < v_size; i++) {
+		if ((glyphs[i].count > 0) && ((glyphs[i].index != 0) || ((glyphs[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE))) {
+			if (glyphs[i].start <= p_pos && glyphs[i].end >= p_pos) {
+				real_t advance = 0.f;
+				for (int j = 0; j < glyphs[i].count; j++) {
+					advance += glyphs[i + j].advance;
+				}
+				return Vector2(off, off + advance);
+			}
+		}
+		off += glyphs[i].advance * glyphs[i].repeat;
+	}
+
+	return Vector2();
+}
+
 int TextServer::shaped_text_next_grapheme_pos(RID p_shaped, int p_pos) const {
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
@@ -1143,7 +1165,7 @@ int TextServer::shaped_text_prev_grapheme_pos(RID p_shaped, int p_pos) const {
 	return p_pos;
 }
 
-void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, const Color &p_color) const {
+void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, const Color &p_color) const {
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	bool hex_codes = shaped_text_get_preserve_control(p_shaped) || shaped_text_get_preserve_invalid(p_shaped);
 
@@ -1240,7 +1262,7 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 	}
 }
 
-void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, real_t p_clip_l, real_t p_clip_r, int p_outline_size, const Color &p_color) const {
+void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, int p_outline_size, const Color &p_color) const {
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 
 	bool rtl = (shaped_text_get_direction(p_shaped) == DIRECTION_RTL);

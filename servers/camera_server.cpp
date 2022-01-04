@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -124,7 +124,7 @@ void CameraServer::remove_feed(const Ref<CameraFeed> &p_feed) {
 #endif
 
 			// remove it from our array, if this results in our feed being unreferenced it will be destroyed
-			feeds.remove(i);
+			feeds.remove_at(i);
 
 			// let whomever is interested know
 			emit_signal(SNAME("camera_feed_removed"), feed_id);

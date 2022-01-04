@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1274,7 +1274,7 @@ ColorPicker::ColorPicker() :
 	preset_container->set_columns(preset_column_count);
 	add_child(preset_container, false, INTERNAL_MODE_FRONT);
 
-	btn_add_preset->set_icon_align(Button::ALIGN_CENTER);
+	btn_add_preset->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	btn_add_preset->set_tooltip(RTR("Add current color as a preset."));
 	btn_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -446,7 +446,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		if (k->get_keycode() == Key::KEY_DELETE || k->get_keycode() == Key::BACKSPACE) {
 			if (wip_active && selected_point.polygon == -1) {
 				if (wip.size() > selected_point.vertex) {
-					wip.remove(selected_point.vertex);
+					wip.remove_at(selected_point.vertex);
 					_wip_changed();
 					selected_point = wip.size() - 1;
 					canvas_item_editor->update_viewport();
@@ -554,7 +554,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 				String num = String::num(vertex.vertex);
 				Size2 num_size = font->get_string_size(num, font_size);
-				p_overlay->draw_string(font, point - num_size * 0.5, num, HALIGN_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
+				p_overlay->draw_string(font, point - num_size * 0.5, num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
 			}
 		}
 	}
@@ -599,7 +599,7 @@ void AbstractPolygon2DEditor::remove_point(const Vertex &p_vertex) {
 	Vector<Vector2> vertices = _get_polygon(p_vertex.polygon);
 
 	if (vertices.size() > (_is_line() ? 2 : 3)) {
-		vertices.remove(p_vertex.vertex);
+		vertices.remove_at(p_vertex.vertex);
 
 		undo_redo->create_action(TTR("Edit Polygon (Remove Point)"));
 		_action_set_polygon(p_vertex.polygon, vertices);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1555,7 +1555,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 	p_shader->uniforms.clear();
 
-	if (p_shader->code == String()) {
+	if (p_shader->code.is_empty()) {
 		return; //just invalid, but no error
 	}
 
@@ -2283,10 +2283,10 @@ void RasterizerStorageGLES3::mesh_instance_check_for_update(RID p_mesh_instance)
 void RasterizerStorageGLES3::update_mesh_instances() {
 }
 
-void RasterizerStorageGLES3::reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) {
+void RasterizerStorageGLES3::reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) {
 }
 
-float RasterizerStorageGLES3::reflection_probe_get_lod_threshold(RID p_probe) const {
+float RasterizerStorageGLES3::reflection_probe_get_mesh_lod_threshold(RID p_probe) const {
 	return 0.0;
 }
 
@@ -4463,6 +4463,10 @@ String RasterizerStorageGLES3::get_video_adapter_name() const {
 
 String RasterizerStorageGLES3::get_video_adapter_vendor() const {
 	return (const char *)glGetString(GL_VENDOR);
+}
+
+RenderingDevice::DeviceType RasterizerStorageGLES3::get_video_adapter_type() const {
+	return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER;
 }
 
 void RasterizerStorageGLES3::initialize() {

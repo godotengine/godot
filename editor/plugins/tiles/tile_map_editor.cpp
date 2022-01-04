@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -598,7 +598,10 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 				}
 
 				if (drag_type == DRAG_TYPE_CLIPBOARD_PASTE) {
-					// Do nothing.
+					// Cancel tile pasting on right-click
+					if (mb->get_button_index() == MouseButton::RIGHT) {
+						drag_type = DRAG_TYPE_NONE;
+					}
 				} else if (tool_buttons_group->get_pressed_button() == select_tool_button) {
 					drag_start_mouse_pos = mpos;
 					if (tile_map_selection.has(tile_map->world_to_map(drag_start_mouse_pos)) && !mb->is_shift_pressed()) {
@@ -2093,8 +2096,8 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	missing_source_label->set_text(TTR("This TileMap's TileSet has no source configured. Edit the TileSet resource to add one."));
 	missing_source_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	missing_source_label->set_align(Label::ALIGN_CENTER);
-	missing_source_label->set_valign(Label::VALIGN_CENTER);
+	missing_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	missing_source_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	missing_source_label->hide();
 	tiles_bottom_panel->add_child(missing_source_label);
 
@@ -2152,8 +2155,8 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	invalid_source_label->set_text(TTR("Invalid source selected."));
 	invalid_source_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	invalid_source_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	invalid_source_label->set_align(Label::ALIGN_CENTER);
-	invalid_source_label->set_valign(Label::VALIGN_CENTER);
+	invalid_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	invalid_source_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	invalid_source_label->hide();
 	atlas_sources_split_container->add_child(invalid_source_label);
 
@@ -3783,7 +3786,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 					}
 
 					// Draw the warning icon.
-					int min_axis = missing_tile_texture->get_size().min_axis();
+					Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
 					Vector2 icon_size;
 					icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
 					icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
@@ -3981,8 +3984,8 @@ TileMapEditor::TileMapEditor() {
 	missing_tileset_label->set_text(TTR("The edited TileMap node has no TileSet resource."));
 	missing_tileset_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	missing_tileset_label->set_v_size_flags(SIZE_EXPAND_FILL);
-	missing_tileset_label->set_align(Label::ALIGN_CENTER);
-	missing_tileset_label->set_valign(Label::VALIGN_CENTER);
+	missing_tileset_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	missing_tileset_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	missing_tileset_label->hide();
 	add_child(missing_tileset_label);
 

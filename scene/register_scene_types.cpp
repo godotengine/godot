@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -123,7 +123,7 @@
 #include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
-#include "scene/gui/video_player.h"
+#include "scene/gui/video_stream_player.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
@@ -232,7 +232,6 @@
 #include "scene/3d/path_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/position_3d.h"
-#include "scene/3d/proximity_group_3d.h"
 #include "scene/3d/ray_cast_3d.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform_3d.h"
@@ -361,7 +360,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ItemList);
 
 	GDREGISTER_CLASS(LineEdit);
-	GDREGISTER_CLASS(VideoPlayer);
+	GDREGISTER_CLASS(VideoStreamPlayer);
 
 #ifndef ADVANCED_GUI_DISABLED
 	GDREGISTER_CLASS(FileDialog);
@@ -477,14 +476,14 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(Lightmapper);
 	GDREGISTER_CLASS(GPUParticles3D);
 	GDREGISTER_VIRTUAL_CLASS(GPUParticlesCollision3D);
-	GDREGISTER_CLASS(GPUParticlesCollisionBox);
-	GDREGISTER_CLASS(GPUParticlesCollisionSphere);
-	GDREGISTER_CLASS(GPUParticlesCollisionSDF);
-	GDREGISTER_CLASS(GPUParticlesCollisionHeightField);
+	GDREGISTER_CLASS(GPUParticlesCollisionBox3D);
+	GDREGISTER_CLASS(GPUParticlesCollisionSphere3D);
+	GDREGISTER_CLASS(GPUParticlesCollisionSDF3D);
+	GDREGISTER_CLASS(GPUParticlesCollisionHeightField3D);
 	GDREGISTER_VIRTUAL_CLASS(GPUParticlesAttractor3D);
-	GDREGISTER_CLASS(GPUParticlesAttractorBox);
-	GDREGISTER_CLASS(GPUParticlesAttractorSphere);
-	GDREGISTER_CLASS(GPUParticlesAttractorVectorField);
+	GDREGISTER_CLASS(GPUParticlesAttractorBox3D);
+	GDREGISTER_CLASS(GPUParticlesAttractorSphere3D);
+	GDREGISTER_CLASS(GPUParticlesAttractorVectorField3D);
 	GDREGISTER_CLASS(CPUParticles3D);
 	GDREGISTER_CLASS(Position3D);
 
@@ -511,7 +510,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VehicleBody3D);
 	GDREGISTER_CLASS(VehicleWheel3D);
 	GDREGISTER_CLASS(Area3D);
-	GDREGISTER_CLASS(ProximityGroup3D);
 	GDREGISTER_CLASS(CollisionShape3D);
 	GDREGISTER_CLASS(CollisionPolygon3D);
 	GDREGISTER_CLASS(RayCast3D);
@@ -884,6 +882,14 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("GIProbeData", "VoxelGIData");
 	ClassDB::add_compatibility_class("BakedLightmap", "LightmapGI");
 	ClassDB::add_compatibility_class("BakedLightmapData", "LightmapGIData");
+	// Portal and room occlusion was replaced by raster occlusion (OccluderInstance3D node).
+	ClassDB::add_compatibility_class("Portal", "Node3D");
+	ClassDB::add_compatibility_class("Room", "Node3D");
+	ClassDB::add_compatibility_class("RoomManager", "Node3D");
+	ClassDB::add_compatibility_class("RoomGroup", "Node3D");
+	ClassDB::add_compatibility_class("Occluder", "Node3D");
+	// The OccluderShapeSphere resource (used in the old Occluder node) is not present anymore.
+	ClassDB::add_compatibility_class("OccluderShapeSphere", "Resource");
 
 	// Renamed in 4.0.
 	// Keep alphabetical ordering to easily locate classes and avoid duplicates.
@@ -933,6 +939,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("KinematicBody2D", "CharacterBody2D");
 	ClassDB::add_compatibility_class("KinematicCollision", "KinematicCollision3D");
 	ClassDB::add_compatibility_class("Light", "Light3D");
+	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
 	ClassDB::add_compatibility_class("LineShape2D", "WorldBoundaryShape2D");
 	ClassDB::add_compatibility_class("Listener", "AudioListener3D");
 	ClassDB::add_compatibility_class("MeshInstance", "MeshInstance3D");
@@ -964,7 +971,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("PinJoint", "PinJoint3D");
 	ClassDB::add_compatibility_class("PlaneShape", "WorldBoundaryShape3D");
 	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
-	ClassDB::add_compatibility_class("ProximityGroup", "ProximityGroup3D");
 	ClassDB::add_compatibility_class("RayCast", "RayCast3D");
 	ClassDB::add_compatibility_class("RayShape", "SeparationRayShape3D");
 	ClassDB::add_compatibility_class("RayShape2D", "SeparationRayShape2D");
@@ -986,13 +992,17 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
+	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
 	ClassDB::add_compatibility_class("TextureProgress", "TextureProgressBar");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
+	ClassDB::add_compatibility_class("VideoPlayer", "VideoStreamPlayer");
 	ClassDB::add_compatibility_class("ViewportContainer", "SubViewportContainer");
 	ClassDB::add_compatibility_class("Viewport", "SubViewport");
 	ClassDB::add_compatibility_class("VisibilityEnabler", "VisibleOnScreenEnabler3D");
 	ClassDB::add_compatibility_class("VisibilityNotifier", "VisibleOnScreenNotifier3D");
+	ClassDB::add_compatibility_class("VisibilityNotifier2D", "VisibleOnScreenNotifier2D");
+	ClassDB::add_compatibility_class("VisibilityNotifier3D", "VisibleOnScreenNotifier3D");
 	ClassDB::add_compatibility_class("VisualServer", "RenderingServer");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
@@ -1010,11 +1020,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp");
 	ClassDB::add_compatibility_class("World", "World3D");
-	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
-	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
-	ClassDB::add_compatibility_class("VisibilityNotifier2D", "VisibleOnScreenNotifier2D");
-	ClassDB::add_compatibility_class("VisibilityNotifier3D", "VisibleOnScreenNotifier3D");
-
 #endif /* DISABLE_DEPRECATED */
 
 	OS::get_singleton()->yield(); // may take time to init
@@ -1031,6 +1036,16 @@ void register_scene_types() {
 		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i + 1), "");
 	}
 
+	if (RenderingServer::get_singleton()) {
+		ColorPicker::init_shaders(); // RenderingServer needs to exist for this to succeed.
+	}
+
+	SceneDebugger::initialize();
+
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
+}
+
+void initialize_theme() {
 	bool default_theme_hidpi = GLOBAL_DEF("gui/theme/use_hidpi", false);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/use_hidpi", PropertyInfo(Variant::BOOL, "gui/theme/use_hidpi", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 	String theme_path = GLOBAL_DEF_RST("gui/theme/custom", "");
@@ -1039,7 +1054,7 @@ void register_scene_types() {
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	Ref<Font> font;
-	if (font_path != String()) {
+	if (!font_path.is_empty()) {
 		font = ResourceLoader::load(font_path);
 		if (!font.is_valid()) {
 			ERR_PRINT("Error loading custom font '" + font_path + "'");
@@ -1049,10 +1064,9 @@ void register_scene_types() {
 	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
 	if (RenderingServer::get_singleton()) {
 		make_default_theme(default_theme_hidpi, font);
-		ColorPicker::init_shaders(); // RenderingServer needs to exist for this to succeed.
 	}
 
-	if (theme_path != String()) {
+	if (!theme_path.is_empty()) {
 		Ref<Theme> theme = ResourceLoader::load(theme_path);
 		if (theme.is_valid()) {
 			Theme::set_project_default(theme);
@@ -1063,9 +1077,6 @@ void register_scene_types() {
 			ERR_PRINT("Error loading custom theme '" + theme_path + "'");
 		}
 	}
-	SceneDebugger::initialize();
-
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SCENE);
 }
 
 void unregister_scene_types() {

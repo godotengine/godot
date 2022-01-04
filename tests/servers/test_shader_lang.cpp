@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -261,6 +261,8 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 					}
 					code += ")";
 					break;
+				case SL::OP_EMPTY:
+					break;
 				default: {
 					code = "(" + dump_node_code(onode->arguments[0], p_level) + _opstr(onode->op) + dump_node_code(onode->arguments[1], p_level) + ")";
 					break;
@@ -339,12 +341,17 @@ MainLoop *test() {
 	dt["fragment"].built_ins["ALBEDO"] = SL::TYPE_VEC3;
 	dt["fragment"].can_discard = true;
 
-	Vector<StringName> rm;
-	rm.push_back("popo");
+	Vector<SL::ModeInfo> rm;
+	rm.push_back({ "popo" });
 	Set<String> types;
 	types.insert("spatial");
 
-	Error err = sl.compile(code, dt, rm, ShaderLanguage::VaryingFunctionNames(), types, nullptr);
+	ShaderLanguage::ShaderCompileInfo info;
+	info.functions = dt;
+	info.render_modes = rm;
+	info.shader_types = types;
+
+	Error err = sl.compile(code, info);
 
 	if (err) {
 		print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());

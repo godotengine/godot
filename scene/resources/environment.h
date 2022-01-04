@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -141,6 +141,15 @@ private:
 	float ssao_direct_light_affect = 0.0;
 	float ssao_ao_channel_affect = 0.0;
 	void _update_ssao();
+
+	// SSIL
+	bool ssil_enabled = false;
+	float ssil_radius = 5.0;
+	float ssil_intensity = 1.0;
+	float ssil_sharpness = 0.98;
+	float ssil_normal_rejection = 1.0;
+
+	void _update_ssil();
 
 	// SDFGI
 	bool sdfgi_enabled = false;
@@ -295,6 +304,18 @@ public:
 	float get_ssao_direct_light_affect() const;
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
 	float get_ssao_ao_channel_affect() const;
+
+	// SSIL
+	void set_ssil_enabled(bool p_enabled);
+	bool is_ssil_enabled() const;
+	void set_ssil_radius(float p_radius);
+	float get_ssil_radius() const;
+	void set_ssil_intensity(float p_intensity);
+	float get_ssil_intensity() const;
+	void set_ssil_sharpness(float p_sharpness);
+	float get_ssil_sharpness() const;
+	void set_ssil_normal_rejection(float p_normal_rejection);
+	float get_ssil_normal_rejection() const;
 
 	// SDFGI
 	void set_sdfgi_enabled(bool p_enabled);

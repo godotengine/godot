@@ -30,6 +30,7 @@
 	</description>
 	<tutorials>
 		<link title="When and how to avoid using nodes for everything">$DOCS_URL/tutorials/best_practices/node_alternatives.html</link>
+		<link title="Object notifications">$DOCS_URL/tutorials/best_practices/godot_notifications.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get" qualifiers="virtual">
@@ -350,6 +351,7 @@
 			<argument index="0" name="property" type="NodePath" />
 			<description>
 				Gets the object's property indexed by the given [NodePath]. The node path should be relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Examples: [code]"position:x"[/code] or [code]"material:next_pass:blend_mode"[/code].
+				[b]Note:[/b] Even though the method takes [NodePath] argument, it doesn't support actual paths to [Node]s in the scene tree, only colon-separated sub-property paths. For the purpose of nodes, use [method Node.get_node_and_resource] instead.
 			</description>
 		</method>
 		<method name="get_instance_id" qualifiers="const">

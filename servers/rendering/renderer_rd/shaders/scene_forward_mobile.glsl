@@ -261,7 +261,9 @@ void main() {
 
 	vertex = (world_matrix * vec4(vertex, 1.0)).xyz;
 
+#ifdef NORMAL_USED
 	normal = world_normal_matrix * normal;
+#endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 
@@ -302,12 +304,13 @@ void main() {
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
 	vertex = (scene_data.inv_camera_matrix * vec4(vertex, 1.0)).xyz;
-	normal = mat3(scene_data.inverse_normal_matrix) * normal;
+#ifdef NORMAL_USED
+	normal = (scene_data.inv_camera_matrix * vec4(normal, 0.0)).xyz;
+#endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-
-	binormal = mat3(scene_data.camera_inverse_binormal_matrix) * binormal;
-	tangent = mat3(scene_data.camera_inverse_tangent_matrix) * tangent;
+	binormal = (scene_data.inv_camera_matrix * vec4(binormal, 0.0)).xyz;
+	tangent = (scene_data.inv_camera_matrix * vec4(tangent, 0.0)).xyz;
 #endif
 #endif
 

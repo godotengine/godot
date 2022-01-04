@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -122,6 +122,14 @@ public:
 	float ssr_fade_in = 0.15;
 	float ssr_fade_out = 2.0;
 	float ssr_depth_tolerance = 0.2;
+
+	/// SSIL
+	///
+	bool ssil_enabled = false;
+	float ssil_radius = 5.0;
+	float ssil_intensity = 1.0;
+	float ssil_sharpness = 0.98;
+	float ssil_normal_rejection = 1.0;
 
 	/// SDFGI
 	bool sdfgi_enabled = false;

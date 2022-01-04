@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2170,7 +2170,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	return id;
 }
 
-RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type) {
+RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
@@ -2194,6 +2194,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	//create view
 
 	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
+	ERR_FAIL_COND_V(p_mipmap + p_mipmaps > src_texture->mipmaps, RID());
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, src_texture->layers, RID());
 
 	int slice_layers = 1;
@@ -2206,7 +2207,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 
 	Texture texture = *src_texture;
 	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
-	texture.mipmaps = 1;
+	texture.mipmaps = p_mipmaps;
 	texture.layers = slice_layers;
 	texture.base_mipmap = p_mipmap;
 	texture.base_layer = p_layer;
@@ -2269,7 +2270,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 				"Specified layer must be a multiple of 6.");
 	}
 	image_view_create_info.subresourceRange.baseMipLevel = p_mipmap;
-	image_view_create_info.subresourceRange.levelCount = 1;
+	image_view_create_info.subresourceRange.levelCount = p_mipmaps;
 	image_view_create_info.subresourceRange.layerCount = slice_layers;
 	image_view_create_info.subresourceRange.baseArrayLayer = p_layer;
 
@@ -2520,7 +2521,7 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 		image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
 		image_memory_barrier.subresourceRange.layerCount = 1;
 
-		vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 	}
 
 	if (texture->used_in_frame != frames_drawn) {
@@ -4249,7 +4250,7 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 		}
 		for (int j = 0; j < shader->sets[i].uniform_info.size(); j++) {
 			const UniformInfo &ui = shader->sets[i].uniform_info[j];
-			if (ret != String()) {
+			if (!ret.is_empty()) {
 				ret += "\n";
 			}
 			ret += "Set: " + itos(i) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Length: " + itos(ui.length);
@@ -8525,6 +8526,11 @@ String RenderingDeviceVulkan::get_device_vendor_name() const {
 String RenderingDeviceVulkan::get_device_name() const {
 	return context->get_device_name();
 }
+
+RenderingDevice::DeviceType RenderingDeviceVulkan::get_device_type() const {
+	return context->get_device_type();
+}
+
 String RenderingDeviceVulkan::get_device_pipeline_cache_uuid() const {
 	return context->get_device_pipeline_cache_uuid();
 }
@@ -8822,6 +8828,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		// get info about further features
 		VulkanContext::MultiviewCapabilities multiview_capabilies = p_context->get_multiview_capabilities();
 		device_capabilities.supports_multiview = multiview_capabilies.is_supported && multiview_capabilies.max_view_count > 1;
+		device_capabilities.supports_fsr_half_float = p_context->get_shader_capabilities().shader_float16_is_supported && p_context->get_storage_buffer_capabilities().storage_buffer_16_bit_access_is_supported;
 	}
 
 	context = p_context;

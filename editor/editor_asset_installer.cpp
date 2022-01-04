@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,7 +88,7 @@ void EditorAssetInstaller::_item_edited() {
 	String path = item->get_metadata(0);
 
 	updating = true;
-	if (path == String() || item == tree->get_root()) { //a dir or root
+	if (path.is_empty() || item == tree->get_root()) { //a dir or root
 		_update_subitems(item, item->is_checked(0), true);
 	}
 
@@ -212,7 +212,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			depth--;
 		}
 
-		if (skip || path == String()) {
+		if (skip || path.is_empty()) {
 			continue;
 		}
 
@@ -307,7 +307,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 		if (status_map.has(name) && status_map[name]->is_checked(0)) {
 			String path = status_map[name]->get_metadata(0);
-			if (path == String()) { // a dir
+			if (path.is_empty()) { // a dir
 
 				String dirpath;
 				TreeItem *t = status_map[name];

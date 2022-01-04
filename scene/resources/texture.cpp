@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -553,7 +553,7 @@ Error StreamTexture2D::load(const String &p_path) {
 	path_to_file = p_path;
 	format = image->get_format();
 
-	if (get_path() == String()) {
+	if (get_path().is_empty()) {
 		//temporarily set path if no path set for resource, helps find errors
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
@@ -927,7 +927,7 @@ Error StreamTexture3D::load(const String &p_path) {
 
 	path_to_file = p_path;
 
-	if (get_path() == String()) {
+	if (get_path().is_empty()) {
 		//temporarily set path if no path set for resource, helps find errors
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
@@ -2680,7 +2680,7 @@ Error StreamTextureLayered::load(const String &p_path) {
 
 	path_to_file = p_path;
 
-	if (get_path() == String()) {
+	if (get_path().is_empty()) {
 		//temporarily set path if no path set for resource, helps find errors
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}

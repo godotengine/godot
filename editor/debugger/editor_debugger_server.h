@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,8 +47,10 @@ public:
 
 	static void register_protocol_handler(const String &p_protocol, CreateServerFunc p_func);
 	static EditorDebuggerServer *create(const String &p_protocol);
+
+	virtual String get_uri() const = 0;
 	virtual void poll() = 0;
-	virtual Error start(const String &p_uri = "") = 0;
+	virtual Error start(const String &p_uri) = 0;
 	virtual void stop() = 0;
 	virtual bool is_active() const = 0;
 	virtual bool is_connection_available() const = 0;

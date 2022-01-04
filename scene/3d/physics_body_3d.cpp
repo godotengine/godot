@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -875,19 +875,6 @@ int RigidDynamicBody3D::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
-void RigidDynamicBody3D::add_central_force(const Vector3 &p_force) {
-	PhysicsServer3D::get_singleton()->body_add_central_force(get_rid(), p_force);
-}
-
-void RigidDynamicBody3D::add_force(const Vector3 &p_force, const Vector3 &p_position) {
-	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
-	singleton->body_add_force(get_rid(), p_force, p_position);
-}
-
-void RigidDynamicBody3D::add_torque(const Vector3 &p_torque) {
-	PhysicsServer3D::get_singleton()->body_add_torque(get_rid(), p_torque);
-}
-
 void RigidDynamicBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
 }
@@ -899,6 +886,48 @@ void RigidDynamicBody3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &
 
 void RigidDynamicBody3D::apply_torque_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->body_apply_torque_impulse(get_rid(), p_impulse);
+}
+
+void RigidDynamicBody3D::apply_central_force(const Vector3 &p_force) {
+	PhysicsServer3D::get_singleton()->body_apply_central_force(get_rid(), p_force);
+}
+
+void RigidDynamicBody3D::apply_force(const Vector3 &p_force, const Vector3 &p_position) {
+	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
+	singleton->body_apply_force(get_rid(), p_force, p_position);
+}
+
+void RigidDynamicBody3D::apply_torque(const Vector3 &p_torque) {
+	PhysicsServer3D::get_singleton()->body_apply_torque(get_rid(), p_torque);
+}
+
+void RigidDynamicBody3D::add_constant_central_force(const Vector3 &p_force) {
+	PhysicsServer3D::get_singleton()->body_add_constant_central_force(get_rid(), p_force);
+}
+
+void RigidDynamicBody3D::add_constant_force(const Vector3 &p_force, const Vector3 &p_position) {
+	PhysicsServer3D *singleton = PhysicsServer3D::get_singleton();
+	singleton->body_add_constant_force(get_rid(), p_force, p_position);
+}
+
+void RigidDynamicBody3D::add_constant_torque(const Vector3 &p_torque) {
+	PhysicsServer3D::get_singleton()->body_add_constant_torque(get_rid(), p_torque);
+}
+
+void RigidDynamicBody3D::set_constant_force(const Vector3 &p_force) {
+	PhysicsServer3D::get_singleton()->body_set_constant_force(get_rid(), p_force);
+}
+
+Vector3 RigidDynamicBody3D::get_constant_force() const {
+	return PhysicsServer3D::get_singleton()->body_get_constant_force(get_rid());
+}
+
+void RigidDynamicBody3D::set_constant_torque(const Vector3 &p_torque) {
+	PhysicsServer3D::get_singleton()->body_set_constant_torque(get_rid(), p_torque);
+}
+
+Vector3 RigidDynamicBody3D::get_constant_torque() const {
+	return PhysicsServer3D::get_singleton()->body_get_constant_torque(get_rid());
 }
 
 void RigidDynamicBody3D::set_use_continuous_collision_detection(bool p_enable) {
@@ -1024,13 +1053,23 @@ void RigidDynamicBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidDynamicBody3D::set_axis_velocity);
 
-	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &RigidDynamicBody3D::add_central_force);
-	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &RigidDynamicBody3D::add_force, Vector3());
-	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &RigidDynamicBody3D::add_torque);
-
 	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidDynamicBody3D::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &RigidDynamicBody3D::apply_impulse, Vector3());
 	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &RigidDynamicBody3D::apply_torque_impulse);
+
+	ClassDB::bind_method(D_METHOD("apply_central_force", "force"), &RigidDynamicBody3D::apply_central_force);
+	ClassDB::bind_method(D_METHOD("apply_force", "force", "position"), &RigidDynamicBody3D::apply_force, Vector3());
+	ClassDB::bind_method(D_METHOD("apply_torque", "torque"), &RigidDynamicBody3D::apply_torque);
+
+	ClassDB::bind_method(D_METHOD("add_constant_central_force", "force"), &RigidDynamicBody3D::add_constant_central_force);
+	ClassDB::bind_method(D_METHOD("add_constant_force", "force", "position"), &RigidDynamicBody3D::add_constant_force, Vector3());
+	ClassDB::bind_method(D_METHOD("add_constant_torque", "torque"), &RigidDynamicBody3D::add_constant_torque);
+
+	ClassDB::bind_method(D_METHOD("set_constant_force", "force"), &RigidDynamicBody3D::set_constant_force);
+	ClassDB::bind_method(D_METHOD("get_constant_force"), &RigidDynamicBody3D::get_constant_force);
+
+	ClassDB::bind_method(D_METHOD("set_constant_torque", "torque"), &RigidDynamicBody3D::set_constant_torque);
+	ClassDB::bind_method(D_METHOD("get_constant_torque"), &RigidDynamicBody3D::get_constant_torque);
 
 	ClassDB::bind_method(D_METHOD("set_sleeping", "sleeping"), &RigidDynamicBody3D::set_sleeping);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &RigidDynamicBody3D::is_sleeping);
@@ -1075,6 +1114,9 @@ void RigidDynamicBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
+	ADD_GROUP("Constant Forces", "constant_");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_force"), "set_constant_force", "get_constant_force");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_torque"), "set_constant_torque", "get_constant_torque");
 
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
@@ -1299,7 +1341,6 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					// in order to avoid blocking lateral motion along a wall.
 					if (motion_angle < .5 * Math_PI) {
 						apply_default_sliding = false;
-
 						if (p_was_on_floor && !vel_dir_facing_up) {
 							// Cancel the motion.
 							Transform3D gt = get_global_transform();
@@ -1307,14 +1348,18 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 							real_t cancel_dist_max = MIN(0.1, margin * 20);
 							if (travel_total <= margin + CMP_EPSILON) {
 								gt.origin -= result.travel;
+								result.travel = Vector3(); // Cancel for constant speed computation.
 							} else if (travel_total < cancel_dist_max) { // If the movement is large the body can be prevented from reaching the walls.
 								gt.origin -= result.travel.slide(up_direction);
 								// Keep remaining motion in sync with amount canceled.
 								motion = motion.slide(up_direction);
+								result.travel = Vector3();
+							} else {
+								// Travel is too high to be safely cancelled, we take it into account.
+								result.travel = result.travel.slide(up_direction);
+								motion = motion.normalized() * result.travel.length();
 							}
 							set_global_transform(gt);
-							result.travel = Vector3(); // Cancel for constant speed computation.
-
 							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.
 							_snap_on_floor(true, false);
 						} else {
@@ -1325,8 +1370,15 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 						// Apply slide on forward in order to allow only lateral motion on next step.
 						Vector3 forward = wall_normal.slide(up_direction).normalized();
 						motion = motion.slide(forward);
-						// Avoid accelerating when you jump on the wall and smooth falling.
-						motion_velocity = motion_velocity.slide(forward);
+
+						// Scales the horizontal velocity according to the wall slope.
+						if (vel_dir_facing_up) {
+							Vector3 slide_motion = motion_velocity.slide(result.collisions[0].normal);
+							// Keeps the vertical motion from motion_velocity and add the horizontal motion of the projection.
+							motion_velocity = up_direction * up_direction.dot(motion_velocity) + slide_motion.slide(up_direction);
+						} else {
+							motion_velocity = motion_velocity.slide(forward);
+						}
 
 						// Allow only lateral motion along previous floor when already on floor.
 						// Fixes slowing down when moving in diagonal against an inclined wall.
@@ -1584,6 +1636,7 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 	Vector3 prev_wall_normal = wall_normal;
 	int wall_collision_count = 0;
 	Vector3 combined_wall_normal;
+	Vector3 tmp_wall_col; // Avoid duplicate on average calculation.
 
 	for (int i = p_result.collision_count - 1; i >= 0; i--) {
 		const PhysicsServer3D::MotionCollision &collision = p_result.collisions[i];
@@ -1630,8 +1683,11 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 		}
 
 		// Collect normal for calculating average.
-		combined_wall_normal += collision.normal;
-		wall_collision_count++;
+		if (!collision.normal.is_equal_approx(tmp_wall_col)) {
+			tmp_wall_col = collision.normal;
+			combined_wall_normal += collision.normal;
+			wall_collision_count++;
+		}
 	}
 
 	if (r_state.wall) {

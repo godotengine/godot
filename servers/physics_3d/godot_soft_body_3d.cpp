@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -374,7 +374,7 @@ void GodotSoftBody3D::unpin_vertex(int p_index) {
 	uint32_t pinned_count = pinned_vertices.size();
 	for (uint32_t i = 0; i < pinned_count; ++i) {
 		if (p_index == pinned_vertices[i]) {
-			pinned_vertices.remove(i);
+			pinned_vertices.remove_at(i);
 
 			if (!soft_mesh.is_null()) {
 				ERR_FAIL_COND(p_index >= (int)map_visual_to_physics.size());

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -606,9 +606,9 @@ private:
 	PagedAllocator<Face> face_pool;
 	LocalVector<Vertex *> original_vertices;
 	int32_t merge_stamp = 0;
-	int32_t min_axis = 0;
-	int32_t med_axis = 0;
-	int32_t max_axis = 0;
+	Vector3::Axis min_axis = Vector3::Axis::AXIS_X;
+	Vector3::Axis med_axis = Vector3::Axis::AXIS_X;
+	Vector3::Axis max_axis = Vector3::Axis::AXIS_X;
 	int32_t used_edge_pairs = 0;
 	int32_t max_used_edge_pairs = 0;
 
@@ -1585,12 +1585,12 @@ void ConvexHullInternal::compute(const Vector3 *p_coords, int32_t p_count) {
 	}
 
 	Vector3 s = aabb.size;
-	max_axis = s.max_axis();
-	min_axis = s.min_axis();
+	max_axis = s.max_axis_index();
+	min_axis = s.min_axis_index();
 	if (min_axis == max_axis) {
-		min_axis = (max_axis + 1) % 3;
+		min_axis = Vector3::Axis((max_axis + 1) % 3);
 	}
-	med_axis = 3 - max_axis - min_axis;
+	med_axis = Vector3::Axis(3 - max_axis - min_axis);
 
 	s /= real_t(10216);
 	if (((med_axis + 1) % 3) != max_axis) {
@@ -1688,7 +1688,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 
 	while (stack.size() > 0) {
 		Vertex *v = stack[stack.size() - 1];
-		stack.remove(stack.size() - 1);
+		stack.remove_at(stack.size() - 1);
 		Edge *e = v->edges;
 		if (e) {
 			do {

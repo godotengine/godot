@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,6 +117,9 @@ void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
 	editor = memnew(GradientEditor);
 	editor->set_gradient(g);
 	add_custom_control(editor);
+
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+	editor->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
 
 	reverse_btn = memnew(GradientReverseButton);
 

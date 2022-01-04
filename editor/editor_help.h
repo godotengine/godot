@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -144,6 +144,8 @@ class EditorHelp : public VBoxContainer {
 	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type, const String &p_enum = String());
 	void _add_method(const DocData::MethodDoc &p_method, bool p_overview = true);
+
+	void _add_bulletpoint();
 
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);

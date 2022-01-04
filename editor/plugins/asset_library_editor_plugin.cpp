@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,15 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/project_settings_editor.h"
+
+static inline void setup_http_request(HTTPRequest *request) {
+	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+
+	const String proxy_host = EDITOR_DEF("network/http_proxy/host", "");
+	const int proxy_port = EDITOR_DEF("network/http_proxy/port", -1);
+	request->set_http_proxy(proxy_host, proxy_port);
+	request->set_https_proxy(proxy_host, proxy_port);
+}
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
 	title->set_text(p_title);
@@ -231,6 +240,7 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_a
 	description->pop();
 	description->add_text("\n" + TTR("Description:") + "\n\n");
 	description->append_text(p_description);
+	description->set_selection_enabled(true);
 	set_title(p_title);
 }
 
@@ -288,8 +298,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	previews = memnew(ScrollContainer);
 	previews_bg->add_child(previews);
-	previews->set_enable_v_scroll(false);
-	previews->set_enable_h_scroll(true);
+	previews->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	preview_hb = memnew(HBoxContainer);
 	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -344,7 +353,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 			if (p_code != 200) {
 				error_text = TTR("Request failed, return code:") + " " + itos(p_code);
 				status->set_text(TTR("Failed:") + " " + itos(p_code));
-			} else if (sha256 != "") {
+			} else if (!sha256.is_empty()) {
 				String download_sha256 = FileAccess::get_sha256(download->get_download_file());
 				if (sha256 != download_sha256) {
 					error_text = TTR("Bad download hash, assuming file has been tampered with.") + "\n";
@@ -355,7 +364,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		} break;
 	}
 
-	if (error_text != String()) {
+	if (!error_text.is_empty()) {
 		download_error->set_text(TTR("Asset Download Error:") + "\n" + error_text);
 		download_error->popup_centered();
 		// Let the user retry the download.
@@ -534,7 +543,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	download = memnew(HTTPRequest);
 	add_child(download);
 	download->connect("request_completed", callable_mp(this, &EditorAssetLibraryItemDownload::_http_download_completed));
-	download->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	setup_http_request(download);
 
 	download_error = memnew(AcceptDialog);
 	add_child(download_error);
@@ -869,7 +878,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 	iq.image_index = p_image_index;
 	iq.image_type = p_type;
 	iq.request = memnew(HTTPRequest);
-	iq.request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	setup_http_request(iq.request);
 
 	iq.target = p_for;
 	iq.queue_id = ++last_queue_id;
@@ -922,7 +931,7 @@ void EditorAssetLibrary::_search(int p_page) {
 			support_list += String(support_key[i]) + "+";
 		}
 	}
-	if (support_list != String()) {
+	if (!support_list.is_empty()) {
 		args += "&support=" + support_list.substr(0, support_list.length() - 1);
 	}
 
@@ -935,7 +944,7 @@ void EditorAssetLibrary::_search(int p_page) {
 		args += "&reverse=true";
 	}
 
-	if (filter->get_text() != String()) {
+	if (!filter->get_text().is_empty()) {
 		args += "&filter=" + filter->get_text().uri_encode();
 	}
 
@@ -1188,7 +1197,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			library_vb->add_child(asset_bottom_page);
 
 			if (result.is_empty()) {
-				if (filter->get_text() != String()) {
+				if (!filter->get_text().is_empty()) {
 					library_error->set_text(
 							vformat(TTR("No results for \"%s\"."), filter->get_text()));
 				} else {
@@ -1219,7 +1228,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				item->connect("author_selected", callable_mp(this, &EditorAssetLibrary::_select_author));
 				item->connect("category_selected", callable_mp(this, &EditorAssetLibrary::_select_category));
 
-				if (r.has("icon_url") && r["icon_url"] != "") {
+				if (r.has("icon_url") && !r["icon_url"].operator String().is_empty()) {
 					_request_image(item->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
 				}
 			}
@@ -1256,7 +1265,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
 
-			if (r.has("icon_url") && r["icon_url"] != "") {
+			if (r.has("icon_url") && !r["icon_url"].operator String().is_empty()) {
 				_request_image(description->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
 			}
 
@@ -1431,8 +1440,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_scroll_bg->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	library_scroll = memnew(ScrollContainer);
-	library_scroll->set_enable_v_scroll(true);
-	library_scroll->set_enable_h_scroll(false);
+	library_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 
 	library_scroll_bg->add_child(library_scroll);
 
@@ -1454,11 +1462,11 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb_border->add_child(library_vb);
 
 	library_loading = memnew(Label(TTR("Loading...")));
-	library_loading->set_align(Label::ALIGN_CENTER);
+	library_loading->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	library_vb->add_child(library_loading);
 
 	library_error = memnew(Label);
-	library_error->set_align(Label::ALIGN_CENTER);
+	library_error->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	library_error->hide();
 	library_vb->add_child(library_error);
 
@@ -1477,7 +1485,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	request = memnew(HTTPRequest);
 	add_child(request);
-	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	setup_http_request(request);
 	request->connect("request_completed", callable_mp(this, &EditorAssetLibrary::_http_request_completed));
 
 	last_queue_id = 0;
@@ -1499,8 +1507,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	set_process_unhandled_key_input(true); // Global shortcuts since there is no main element to be focused.
 
 	downloads_scroll = memnew(ScrollContainer);
-	downloads_scroll->set_enable_h_scroll(true);
-	downloads_scroll->set_enable_v_scroll(false);
+	downloads_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	library_main->add_child(downloads_scroll);
 	downloads_hb = memnew(HBoxContainer);
 	downloads_scroll->add_child(downloads_hb);

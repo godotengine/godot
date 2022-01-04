@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -121,7 +121,7 @@ void GodotCollisionObject2D::remove_shape(int p_index) {
 		shapes.write[i].bpid = 0;
 	}
 	shapes[p_index].shape->remove_owner(this);
-	shapes.remove(p_index);
+	shapes.remove_at(p_index);
 
 	if (!pending_shape_update_list.in_list()) {
 		GodotPhysicsServer2D::godot_singleton->pending_shape_update_list.add(&pending_shape_update_list);

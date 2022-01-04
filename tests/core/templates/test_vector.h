@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,7 +129,7 @@ TEST_CASE("[Vector] Fill large array and modify it") {
 	CHECK(vector[200] == 0);
 	CHECK(vector[499'999] == 0x60d07);
 	CHECK(vector[999'999] == 0x60d07);
-	vector.remove(200);
+	vector.remove_at(200);
 	CHECK(vector[200] == 0x60d07);
 
 	vector.clear();
@@ -145,7 +145,7 @@ TEST_CASE("[Vector] Copy creation") {
 	vector.push_back(4);
 
 	Vector<int> vector_other = Vector<int>(vector);
-	vector_other.remove(0);
+	vector_other.remove_at(0);
 	CHECK(vector_other[0] == 1);
 	CHECK(vector_other[1] == 2);
 	CHECK(vector_other[2] == 3);
@@ -168,7 +168,7 @@ TEST_CASE("[Vector] Duplicate") {
 	vector.push_back(4);
 
 	Vector<int> vector_other = vector.duplicate();
-	vector_other.remove(0);
+	vector_other.remove_at(0);
 	CHECK(vector_other[0] == 1);
 	CHECK(vector_other[1] == 2);
 	CHECK(vector_other[2] == 3);
@@ -238,7 +238,7 @@ TEST_CASE("[Vector] To byte array") {
 	CHECK(byte_array[15] == 59);
 }
 
-TEST_CASE("[Vector] Subarray") {
+TEST_CASE("[Vector] Slice") {
 	Vector<int> vector;
 	vector.push_back(0);
 	vector.push_back(1);
@@ -246,27 +246,27 @@ TEST_CASE("[Vector] Subarray") {
 	vector.push_back(3);
 	vector.push_back(4);
 
-	Vector<int> subarray1 = vector.subarray(1, 2);
-	CHECK(subarray1.size() == 2);
-	CHECK(subarray1[0] == 1);
-	CHECK(subarray1[1] == 2);
+	Vector<int> slice1 = vector.slice(1, 3);
+	CHECK(slice1.size() == 2);
+	CHECK(slice1[0] == 1);
+	CHECK(slice1[1] == 2);
 
-	Vector<int> subarray2 = vector.subarray(1, -1);
-	CHECK(subarray2.size() == 4);
-	CHECK(subarray2[0] == 1);
-	CHECK(subarray2[1] == 2);
-	CHECK(subarray2[2] == 3);
-	CHECK(subarray2[3] == 4);
+	Vector<int> slice2 = vector.slice(1, -1);
+	CHECK(slice2.size() == 4);
+	CHECK(slice2[0] == 1);
+	CHECK(slice2[1] == 2);
+	CHECK(slice2[2] == 3);
+	CHECK(slice2[3] == 4);
 
-	Vector<int> subarray3 = vector.subarray(-2, -1);
-	CHECK(subarray3.size() == 2);
-	CHECK(subarray3[0] == 3);
-	CHECK(subarray3[1] == 4);
+	Vector<int> slice3 = vector.slice(3, -1);
+	CHECK(slice3.size() == 2);
+	CHECK(slice3[0] == 3);
+	CHECK(slice3[1] == 4);
 
-	Vector<int> subarray4 = vector.subarray(-3, 3);
-	CHECK(subarray4.size() == 2);
-	CHECK(subarray4[0] == 2);
-	CHECK(subarray4[1] == 3);
+	Vector<int> slice4 = vector.slice(2, -2);
+	CHECK(slice4.size() == 2);
+	CHECK(slice4[0] == 2);
+	CHECK(slice4[1] == 3);
 }
 
 TEST_CASE("[Vector] Find, has") {
@@ -302,7 +302,7 @@ TEST_CASE("[Vector] Find, has") {
 	CHECK(!vector.has(5));
 }
 
-TEST_CASE("[Vector] Remove") {
+TEST_CASE("[Vector] Remove at") {
 	Vector<int> vector;
 	vector.push_back(0);
 	vector.push_back(1);
@@ -310,30 +310,30 @@ TEST_CASE("[Vector] Remove") {
 	vector.push_back(3);
 	vector.push_back(4);
 
-	vector.remove(0);
+	vector.remove_at(0);
 
 	CHECK(vector[0] == 1);
 	CHECK(vector[1] == 2);
 	CHECK(vector[2] == 3);
 	CHECK(vector[3] == 4);
 
-	vector.remove(2);
+	vector.remove_at(2);
 
 	CHECK(vector[0] == 1);
 	CHECK(vector[1] == 2);
 	CHECK(vector[2] == 4);
 
-	vector.remove(1);
+	vector.remove_at(1);
 
 	CHECK(vector[0] == 1);
 	CHECK(vector[1] == 4);
 
-	vector.remove(0);
+	vector.remove_at(0);
 
 	CHECK(vector[0] == 4);
 }
 
-TEST_CASE("[Vector] Remove and find") {
+TEST_CASE("[Vector] Remove at and find") {
 	Vector<int> vector;
 	vector.push_back(0);
 	vector.push_back(1);
@@ -343,7 +343,7 @@ TEST_CASE("[Vector] Remove and find") {
 
 	CHECK(vector.size() == 5);
 
-	vector.remove(0);
+	vector.remove_at(0);
 
 	CHECK(vector.size() == 4);
 
@@ -353,7 +353,7 @@ TEST_CASE("[Vector] Remove and find") {
 	CHECK(vector.find(3) != -1);
 	CHECK(vector.find(4) != -1);
 
-	vector.remove(vector.find(3));
+	vector.remove_at(vector.find(3));
 
 	CHECK(vector.size() == 3);
 
@@ -362,7 +362,7 @@ TEST_CASE("[Vector] Remove and find") {
 	CHECK(vector.find(2) != -1);
 	CHECK(vector.find(4) != -1);
 
-	vector.remove(vector.find(2));
+	vector.remove_at(vector.find(2));
 
 	CHECK(vector.size() == 2);
 
@@ -370,14 +370,14 @@ TEST_CASE("[Vector] Remove and find") {
 	CHECK(vector.find(1) != -1);
 	CHECK(vector.find(4) != -1);
 
-	vector.remove(vector.find(4));
+	vector.remove_at(vector.find(4));
 
 	CHECK(vector.size() == 1);
 
 	CHECK(vector.find(4) == -1);
 	CHECK(vector.find(1) != -1);
 
-	vector.remove(0);
+	vector.remove_at(0);
 
 	CHECK(vector.is_empty());
 	CHECK(vector.size() == 0);
@@ -412,9 +412,9 @@ TEST_CASE("[Vector] Size, resize, reserve") {
 
 	CHECK(vector.size() == 5);
 
-	vector.remove(0);
-	vector.remove(0);
-	vector.remove(0);
+	vector.remove_at(0);
+	vector.remove_at(0);
+	vector.remove_at(0);
 
 	CHECK(vector.size() == 2);
 

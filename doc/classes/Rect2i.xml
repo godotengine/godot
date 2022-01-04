@@ -6,6 +6,7 @@
 	<description>
 		[Rect2i] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 		It uses integer coordinates. If you need floating-point coordinates, use [Rect2] instead.
+		Negative values for [member size] are not supported and will not work for most methods. Use [method abs] to get a Rect2i with a positive size.
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>

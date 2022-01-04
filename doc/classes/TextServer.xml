@@ -244,7 +244,7 @@
 			<return type="int" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
-				Return the width of the range around the shape between the minimum and maximum representable signed distance.
+				Returns the width of the range around the shape between the minimum and maximum representable signed distance.
 			</description>
 		</method>
 		<method name="font_get_msdf_size" qualifiers="const">
@@ -295,7 +295,7 @@
 			<return type="Array" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
-				Return list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
+				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
 			</description>
 		</method>
 		<method name="font_get_spacing" qualifiers="const">
@@ -382,7 +382,7 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="char" type="int" />
 			<description>
-				Return [code]true[/code] if a Unicode [code]char[/code] is available in the font.
+				Returns [code]true[/code] if a Unicode [code]char[/code] is available in the font.
 			</description>
 		</method>
 		<method name="font_is_antialiased" qualifiers="const">
@@ -396,7 +396,7 @@
 			<return type="bool" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
-				Returns [code]true[/code] if auto-hinting is supported and preffered over font built-in hinting. Used by dynamic fonts only.
+				Returns [code]true[/code] if auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="font_is_language_supported" qualifiers="const">
@@ -541,7 +541,7 @@
 			<argument index="0" name="font_rid" type="RID" />
 			<argument index="1" name="force_autohinter" type="bool" />
 			<description>
-				If set to [code]true[/code] auto-hinting is preffered over font built-in hinting.
+				If set to [code]true[/code] auto-hinting is preferred over font built-in hinting.
 			</description>
 		</method>
 		<method name="font_set_global_oversampling">
@@ -549,7 +549,7 @@
 			<argument index="0" name="oversampling" type="float" />
 			<description>
 				Sets oversampling factor, shared by all font in the TextServer.
-				[b]Note:[/b] This value can be automaticaly changed by display server.
+				[b]Note:[/b] This value can be automatically changed by display server.
 			</description>
 		</method>
 		<method name="font_set_glyph_advance">
@@ -886,7 +886,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="key" type="Variant" />
 			<argument index="2" name="size" type="Vector2" />
-			<argument index="3" name="inline_align" type="int" enum="InlineAlign" default="5" />
+			<argument index="3" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<argument index="4" name="length" type="int" default="1" />
 			<description>
 				Adds inline object to the text buffer, [code]key[/code] must be unique. In the text, object is represented as [code]length[/code] object replacement characters.
@@ -1026,6 +1026,14 @@
 			<argument index="0" name="shaped" type="RID" />
 			<description>
 				Returns text glyphs in the visual order.
+			</description>
+		</method>
+		<method name="shaped_text_get_grapheme_bounds" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="shaped" type="RID" />
+			<argument index="1" name="pos" type="int" />
+			<description>
+				Returns composite character's bounds as offsets from the start of the line.
 			</description>
 		</method>
 		<method name="shaped_text_get_line_breaks" qualifiers="const">
@@ -1205,7 +1213,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="key" type="Variant" />
 			<argument index="2" name="size" type="Vector2" />
-			<argument index="3" name="inline_align" type="int" enum="InlineAlign" default="5" />
+			<argument index="3" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<description>
 				Sets new size and alignment of embedded object.
 			</description>
@@ -1376,7 +1384,7 @@
 		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag">
 		</constant>
 		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag">
-			Grapheme is supprted by the font, and can be drawn.
+			Grapheme is supported by the font, and can be drawn.
 		</constant>
 		<constant name="GRAPHEME_IS_RTL" value="2" enum="GraphemeFlag">
 			Grapheme is part of right-to-left or bottom-to-top run.

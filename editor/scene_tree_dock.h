@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef SCENE_TREE_DOCK_H
 #define SCENE_TREE_DOCK_H
 
-#include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
 #include "editor/groups_editor.h"
@@ -197,6 +196,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode = MODE_BIDI);
 	void _load_request(const String &p_path);
 	void _script_open_request(const Ref<Script> &p_script);
+	void _push_item(Object *p_object);
 
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
 	bool _track_inherit(const String &p_target_scene_path, Node *p_desired_node);

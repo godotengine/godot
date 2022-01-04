@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,7 +114,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc->add_child(cbut_collapse_features);
 
 	tabc_features = memnew(TabContainer);
-	tabc_features->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabc_features->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabc_features->set_use_hidden_tabs_for_min_size(true);
 	vbc->add_child(tabc_features);
 

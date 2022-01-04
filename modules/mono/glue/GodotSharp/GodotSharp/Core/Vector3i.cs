@@ -17,7 +17,7 @@ namespace Godot
     {
         /// <summary>
         /// Enumerated index values for the axes.
-        /// Returned by <see cref="MaxAxis"/> and <see cref="MinAxis"/>.
+        /// Returned by <see cref="MaxAxisIndex"/> and <see cref="MinAxisIndex"/>.
         /// </summary>
         public enum Axis
         {
@@ -124,36 +124,36 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the squared distance between this vector and <paramref name="b"/>.
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
         /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
         /// you need to compare vectors or need the squared distance for some formula.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="to">The other vector to use.</param>
         /// <returns>The squared distance between the two vectors.</returns>
-        public int DistanceSquaredTo(Vector3i b)
+        public int DistanceSquaredTo(Vector3i to)
         {
-            return (b - this).LengthSquared();
+            return (to - this).LengthSquared();
         }
 
         /// <summary>
-        /// Returns the distance between this vector and <paramref name="b"/>.
+        /// Returns the distance between this vector and <paramref name="to"/>.
         /// </summary>
         /// <seealso cref="DistanceSquaredTo(Vector3i)"/>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="to">The other vector to use.</param>
         /// <returns>The distance between the two vectors.</returns>
-        public real_t DistanceTo(Vector3i b)
+        public real_t DistanceTo(Vector3i to)
         {
-            return (b - this).Length();
+            return (to - this).Length();
         }
 
         /// <summary>
-        /// Returns the dot product of this vector and <paramref name="b"/>.
+        /// Returns the dot product of this vector and <paramref name="with"/>.
         /// </summary>
-        /// <param name="b">The other vector to use.</param>
+        /// <param name="with">The other vector to use.</param>
         /// <returns>The dot product of the two vectors.</returns>
-        public int Dot(Vector3i b)
+        public int Dot(Vector3i with)
         {
-            return x * b.x + y * b.y + z * b.z;
+            return x * with.x + y * with.y + z * with.z;
         }
 
         /// <summary>
@@ -186,21 +186,21 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the axis of the vector's largest value. See <see cref="Axis"/>.
+        /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
-        /// <returns>The index of the largest axis.</returns>
-        public Axis MaxAxis()
+        /// <returns>The index of the highest axis.</returns>
+        public Axis MaxAxisIndex()
         {
             return x < y ? (y < z ? Axis.Z : Axis.Y) : (x < z ? Axis.Z : Axis.X);
         }
 
         /// <summary>
-        /// Returns the axis of the vector's smallest value. See <see cref="Axis"/>.
+        /// Returns the axis of the vector's lowest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.Z"/>.
         /// </summary>
-        /// <returns>The index of the smallest axis.</returns>
-        public Axis MinAxis()
+        /// <returns>The index of the lowest axis.</returns>
+        public Axis MinAxisIndex()
         {
             return x < y ? (x < z ? Axis.X : Axis.Z) : (y < z ? Axis.Y : Axis.Z);
         }

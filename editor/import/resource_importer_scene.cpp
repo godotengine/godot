@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -481,7 +481,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 					fixed_name = _fixstr(name, "convcolonly");
 				}
 
-				ERR_FAIL_COND_V(fixed_name == String(), nullptr);
+				ERR_FAIL_COND_V(fixed_name.is_empty(), nullptr);
 
 				if (shapes.size()) {
 					StaticBody3D *col = memnew(StaticBody3D);
@@ -577,7 +577,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 				fixed_name = _fixstr(name, "convcol");
 			}
 
-			if (fixed_name != String()) {
+			if (!fixed_name.is_empty()) {
 				if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
 					mi->set_name(fixed_name);
 				}
@@ -710,7 +710,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 							mat_id = mat->get_name();
 						}
 
-						if (mat_id != String() && p_material_data.has(mat_id)) {
+						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
 							Dictionary matdata = p_material_data[mat_id];
 
 							for (int j = 0; j < post_importer_plugins.size(); j++) {
@@ -1015,6 +1015,7 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 
 void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_clips, bool p_bake_all) {
 	if (!anim->has_animation("default")) {
+		ERR_FAIL_COND_MSG(p_clips.size() > 0, "To create clips, animations must be named \"default\".");
 		return;
 	}
 
@@ -1237,7 +1238,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/path", PROPERTY_HINT_FILE, "*.material,*.res,*.tres"), ""));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION: {
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "settings/loop_mode"), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "settings/loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Pingpong"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.tres"), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/keep_custom_tracks"), ""));
@@ -1259,7 +1260,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/name"), ""));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/start_frame"), 0));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/end_frame"), 0));
-				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/loop_mode"), 0));
+				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Pingpong"), 0));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/save_to_file/path", PROPERTY_HINT_SAVE_FILE, ".res,*.tres"), ""));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"), false));
@@ -1433,7 +1434,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	String script_ext_hint;
 
 	for (const String &E : script_extentions) {
-		if (script_ext_hint != "") {
+		if (!script_ext_hint.is_empty()) {
 			script_ext_hint += ",";
 		}
 		script_ext_hint += "*." + E;
@@ -1559,7 +1560,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 					mesh_id = src_mesh_node->get_mesh()->get_name();
 				}
 
-				if (mesh_id != String() && p_mesh_data.has(mesh_id)) {
+				if (!mesh_id.is_empty() && p_mesh_data.has(mesh_id)) {
 					Dictionary mesh_settings = p_mesh_data[mesh_id];
 
 					if (mesh_settings.has("generate/shadow_meshes")) {
@@ -1649,7 +1650,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 					}
 				}
 
-				if (save_to_file != String()) {
+				if (!save_to_file.is_empty()) {
 					Ref<Mesh> existing = Ref<Resource>(ResourceCache::get(save_to_file));
 					if (existing.is_valid()) {
 						//if somehow an existing one is useful, create
@@ -2051,7 +2052,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	String post_import_script_path = p_options["import_script/path"];
 	Ref<EditorScenePostImport> post_import_script;
 
-	if (post_import_script_path != "") {
+	if (!post_import_script_path.is_empty()) {
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (!scr.is_valid()) {
 			EditorNode::add_io_error(TTR("Couldn't load post-import script:") + " " + post_import_script_path);

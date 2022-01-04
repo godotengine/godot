@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,6 +91,7 @@ Input::MouseMode Input::get_mouse_mode() const {
 
 void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "keycode"), &Input::is_key_pressed);
+	ClassDB::bind_method(D_METHOD("is_physical_key_pressed", "keycode"), &Input::is_physical_key_pressed);
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_joy_button_pressed", "device", "button"), &Input::is_joy_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "exact_match"), &Input::is_action_pressed, DEFVAL(false));
@@ -102,7 +103,6 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vector", "negative_x", "positive_x", "negative_y", "positive_y", "deadzone"), &Input::get_vector, DEFVAL(-1.0f));
 	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_joy_mapping", "guid"), &Input::remove_joy_mapping);
-	ClassDB::bind_method(D_METHOD("joy_connection_changed", "device", "connected", "name", "guid"), &Input::joy_connection_changed);
 	ClassDB::bind_method(D_METHOD("is_joy_known", "device"), &Input::is_joy_known);
 	ClassDB::bind_method(D_METHOD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
 	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
@@ -221,6 +221,11 @@ Input::SpeedTrack::SpeedTrack() {
 bool Input::is_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
 	return keys_pressed.has(p_keycode);
+}
+
+bool Input::is_physical_key_pressed(Key p_keycode) const {
+	_THREAD_SAFE_METHOD_
+	return physical_keys_pressed.has(p_keycode);
 }
 
 bool Input::is_mouse_button_pressed(MouseButton p_button) const {
@@ -398,7 +403,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 
 	if (p_connected) {
 		String uidname = p_guid;
-		if (p_guid == "") {
+		if (p_guid.is_empty()) {
 			int uidlen = MIN(p_name.length(), 16);
 			for (int i = 0; i < uidlen; i++) {
 				uidname = uidname + _hex_str(p_name[i]);
@@ -463,6 +468,13 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			keys_pressed.insert(k->get_keycode());
 		} else {
 			keys_pressed.erase(k->get_keycode());
+		}
+	}
+	if (k.is_valid() && !k->is_echo() && k->get_physical_keycode() != Key::NONE) {
+		if (k->is_pressed()) {
+			physical_keys_pressed.insert(k->get_physical_keycode());
+		} else {
+			physical_keys_pressed.erase(k->get_physical_keycode());
 		}
 	}
 
@@ -862,6 +874,7 @@ void Input::release_pressed_events() {
 	flush_buffered_events(); // this is needed to release actions strengths
 
 	keys_pressed.clear();
+	physical_keys_pressed.clear();
 	joy_buttons_pressed.clear();
 	_joy_axis.clear();
 
@@ -1236,7 +1249,7 @@ void Input::parse_mapping(String p_mapping) {
 
 	int idx = 1;
 	while (++idx < entry.size()) {
-		if (entry[idx] == "") {
+		if (entry[idx].is_empty()) {
 			continue;
 		}
 
@@ -1337,7 +1350,7 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 void Input::remove_joy_mapping(String p_guid) {
 	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
-			map_db.remove(i);
+			map_db.remove_at(i);
 		}
 	}
 	for (KeyValue<int, Joypad> &E : joy_names) {
@@ -1407,10 +1420,10 @@ Input::Input() {
 
 	// If defined, parse SDL_GAMECONTROLLERCONFIG for possible new mappings/overrides.
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
-	if (env_mapping != "") {
+	if (!env_mapping.is_empty()) {
 		Vector<String> entries = env_mapping.split("\n");
 		for (int i = 0; i < entries.size(); i++) {
-			if (entries[i] == "") {
+			if (entries[i].is_empty()) {
 				continue;
 			}
 			parse_mapping(entries[i]);

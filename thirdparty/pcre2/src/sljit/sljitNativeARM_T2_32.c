@@ -610,6 +610,7 @@ static sljit_s32 emit_op_imm(struct sljit_compiler *compiler, sljit_s32 flags, s
 			   Although some clever things could be done here, "NOT IMM" does not worth the efforts. */
 			break;
 		case SLJIT_ADD:
+			compiler->status_flags_state = SLJIT_CURRENT_FLAGS_ADD_SUB;
 			nimm = -(sljit_sw)imm;
 			if (IS_2_LO_REGS(reg, dst)) {
 				if (imm <= 0x7)
@@ -643,6 +644,7 @@ static sljit_s32 emit_op_imm(struct sljit_compiler *compiler, sljit_s32 flags, s
 			break;
 		case SLJIT_SUB:
 			/* SUB operation can be replaced by ADD because of the negative carry flag. */
+			compiler->status_flags_state = SLJIT_CURRENT_FLAGS_ADD_SUB;
 			if (flags & ARG1_IMM) {
 				if (imm == 0 && IS_2_LO_REGS(reg, dst))
 					return push_inst16(compiler, RSBSI | RD3(dst) | RN3(reg));
@@ -801,6 +803,7 @@ static sljit_s32 emit_op_imm(struct sljit_compiler *compiler, sljit_s32 flags, s
 		FAIL_IF(push_inst32(compiler, CLZ | RN4(arg2) | RD4(dst) | RM4(arg2)));
 		return SLJIT_SUCCESS;
 	case SLJIT_ADD:
+		compiler->status_flags_state = SLJIT_CURRENT_FLAGS_ADD_SUB;
 		if (IS_3_LO_REGS(dst, arg1, arg2))
 			return push_inst16(compiler, ADDS | RD3(dst) | RN3(arg1) | RM3(arg2));
 		if (dst == arg1 && !(flags & SET_FLAGS))
@@ -811,6 +814,7 @@ static sljit_s32 emit_op_imm(struct sljit_compiler *compiler, sljit_s32 flags, s
 			return push_inst16(compiler, ADCS | RD3(dst) | RN3(arg2));
 		return push_inst32(compiler, ADC_W | (flags & SET_FLAGS) | RD4(dst) | RN4(arg1) | RM4(arg2));
 	case SLJIT_SUB:
+		compiler->status_flags_state = SLJIT_CURRENT_FLAGS_ADD_SUB;
 		if (flags & UNUSED_RETURN) {
 			if (IS_2_LO_REGS(arg1, arg2))
 				return push_inst16(compiler, CMP | RD3(arg1) | RN3(arg2));
@@ -824,6 +828,7 @@ static sljit_s32 emit_op_imm(struct sljit_compiler *compiler, sljit_s32 flags, s
 			return push_inst16(compiler, SBCS | RD3(dst) | RN3(arg2));
 		return push_inst32(compiler, SBC_W | (flags & SET_FLAGS) | RD4(dst) | RN4(arg1) | RM4(arg2));
 	case SLJIT_MUL:
+		compiler->status_flags_state = 0;
 		if (!(flags & SET_FLAGS))
 			return push_inst32(compiler, MUL | RD4(dst) | RN4(arg1) | RM4(arg2));
 		SLJIT_ASSERT(dst != TMP_REG2);
@@ -1760,16 +1765,14 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_enter(struct sljit_compiler *
 /*  Conditional instructions                                             */
 /* --------------------------------------------------------------------- */
 
-static sljit_uw get_cc(sljit_s32 type)
+static sljit_uw get_cc(struct sljit_compiler *compiler, sljit_s32 type)
 {
 	switch (type) {
 	case SLJIT_EQUAL:
-	case SLJIT_MUL_NOT_OVERFLOW:
 	case SLJIT_EQUAL_F64:
 		return 0x0;
 
 	case SLJIT_NOT_EQUAL:
-	case SLJIT_MUL_OVERFLOW:
 	case SLJIT_NOT_EQUAL_F64:
 		return 0x1;
 
@@ -1802,10 +1805,16 @@ static sljit_uw get_cc(sljit_s32 type)
 		return 0xd;
 
 	case SLJIT_OVERFLOW:
+		if (!(compiler->status_flags_state & SLJIT_CURRENT_FLAGS_ADD_SUB))
+			return 0x1;
+
 	case SLJIT_UNORDERED_F64:
 		return 0x6;
 
 	case SLJIT_NOT_OVERFLOW:
+		if (!(compiler->status_flags_state & SLJIT_CURRENT_FLAGS_ADD_SUB))
+			return 0x0;
+
 	case SLJIT_ORDERED_F64:
 		return 0x7;
 
@@ -1847,7 +1856,7 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump* sljit_emit_jump(struct sljit_compile
 	PTR_FAIL_IF(emit_imm32_const(compiler, TMP_REG1, 0));
 	if (type < SLJIT_JUMP) {
 		jump->flags |= IS_COND;
-		cc = get_cc(type);
+		cc = get_cc(compiler, type);
 		jump->flags |= cc << 8;
 		PTR_FAIL_IF(push_inst16(compiler, IT | (cc << 4) | 0x8));
 	}
@@ -2177,7 +2186,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op_flags(struct sljit_compiler *co
 	ADJUST_LOCAL_OFFSET(dst, dstw);
 
 	op = GET_OPCODE(op);
-	cc = get_cc(type & 0xff);
+	cc = get_cc(compiler, type & 0xff);
 	dst_r = FAST_IS_REG(dst) ? dst : TMP_REG1;
 
 	if (op < SLJIT_ADD) {
@@ -2229,7 +2238,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_cmov(struct sljit_compiler *compil
 
 	dst_reg &= ~SLJIT_I32_OP;
 
-	cc = get_cc(type & 0xff);
+	cc = get_cc(compiler, type & 0xff);
 
 	if (!(src & SLJIT_IMM)) {
 		FAIL_IF(push_inst16(compiler, IT | (cc << 4) | 0x8));

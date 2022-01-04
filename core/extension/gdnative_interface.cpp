@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -783,6 +783,18 @@ static GDNativeVariantPtr gdnative_array_operator_index_const(const GDNativeType
 	return (GDNativeVariantPtr)&self->operator[](p_index);
 }
 
+/* Dictionary functions */
+
+static GDNativeVariantPtr gdnative_dictionary_operator_index(GDNativeTypePtr p_self, const GDNativeVariantPtr p_key) {
+	Dictionary *self = (Dictionary *)p_self;
+	return (GDNativeVariantPtr)&self->operator[](*(const Variant *)p_key);
+}
+
+static GDNativeVariantPtr gdnative_dictionary_operator_index_const(const GDNativeTypePtr p_self, const GDNativeVariantPtr p_key) {
+	const Dictionary *self = (const Dictionary *)p_self;
+	return (GDNativeVariantPtr)&self->operator[](*(const Variant *)p_key);
+}
+
 /* OBJECT API */
 
 static void gdnative_object_method_bind_call(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeVariantPtr *p_args, GDNativeInt p_arg_count, GDNativeVariantPtr r_return, GDNativeCallError *r_error) {
@@ -815,14 +827,19 @@ static GDNativeObjectPtr gdnative_global_get_singleton(const char *p_name) {
 	return (GDNativeObjectPtr)Engine::get_singleton()->get_singleton_object(String(p_name));
 }
 
-static void *gdnative_object_get_instance_binding(GDNativeObjectPtr p_instance, void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks) {
-	Object *o = (Object *)p_instance;
+static void *gdnative_object_get_instance_binding(GDNativeObjectPtr p_object, void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks) {
+	Object *o = (Object *)p_object;
 	return o->get_instance_binding(p_token, p_callbacks);
 }
 
-static void gdnative_object_set_instance_binding(GDNativeObjectPtr p_instance, void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks) {
-	Object *o = (Object *)p_instance;
+static void gdnative_object_set_instance_binding(GDNativeObjectPtr p_object, void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks) {
+	Object *o = (Object *)p_object;
 	o->set_instance_binding(p_token, p_binding, p_callbacks);
+}
+
+static void gdnative_object_set_instance(GDNativeObjectPtr p_object, const char *p_classname, GDExtensionClassInstancePtr p_instance) {
+	Object *o = (Object *)p_object;
+	ClassDB::set_object_extension_instance(o, p_classname, p_instance);
 }
 
 static GDNativeObjectPtr gdnative_object_get_instance_from_id(GDObjectInstanceID p_instance_id) {
@@ -854,19 +871,8 @@ static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(const char *p_clas
 	return (GDNativeMethodBindPtr)mb;
 }
 
-static GDNativeClassConstructor gdnative_classdb_get_constructor(const char *p_classname, GDNativeExtensionPtr *r_extension) {
-	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));
-	if (class_info) {
-		if (r_extension) {
-			*r_extension = class_info->native_extension;
-		}
-		return (GDNativeClassConstructor)class_info->creation_func;
-	}
-	return nullptr;
-}
-
-static GDNativeObjectPtr gdnative_classdb_construct_object(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension) {
-	return (GDNativeObjectPtr)ClassDB::construct_object((Object * (*)()) p_constructor, (ObjectNativeExtension *)p_extension);
+static GDNativeObjectPtr gdnative_classdb_construct_object(const char *p_classname) {
+	return (GDNativeObjectPtr)ClassDB::instantiate(p_classname);
 }
 
 static void *gdnative_classdb_get_class_tag(const char *p_classname) {
@@ -1001,6 +1007,11 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.array_operator_index = gdnative_array_operator_index;
 	gdni.array_operator_index_const = gdnative_array_operator_index_const;
 
+	/* Dictionary functions */
+
+	gdni.dictionary_operator_index = gdnative_dictionary_operator_index;
+	gdni.dictionary_operator_index_const = gdnative_dictionary_operator_index_const;
+
 	/* OBJECT */
 
 	gdni.object_method_bind_call = gdnative_object_method_bind_call;
@@ -1009,6 +1020,7 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.global_get_singleton = gdnative_global_get_singleton;
 	gdni.object_get_instance_binding = gdnative_object_get_instance_binding;
 	gdni.object_set_instance_binding = gdnative_object_set_instance_binding;
+	gdni.object_set_instance = gdnative_object_set_instance;
 
 	gdni.object_cast_to = gdnative_object_cast_to;
 	gdni.object_get_instance_from_id = gdnative_object_get_instance_from_id;
@@ -1016,7 +1028,6 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 
 	/* CLASSDB */
 
-	gdni.classdb_get_constructor = gdnative_classdb_get_constructor;
 	gdni.classdb_construct_object = gdnative_classdb_construct_object;
 	gdni.classdb_get_method_bind = gdnative_classdb_get_method_bind;
 	gdni.classdb_get_class_tag = gdnative_classdb_get_class_tag;

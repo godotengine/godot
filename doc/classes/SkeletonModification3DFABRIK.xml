@@ -24,7 +24,7 @@
 			<return type="bool" />
 			<argument index="0" name="joint_idx" type="int" />
 			<description>
-				Returns a boolean that indiciates whether this modification will attempt to autocalculate the length of the bone assigned to the FABRIK joint at [code]joint_idx[/code].
+				Returns a boolean that indicates whether this modification will attempt to autocalculate the length of the bone assigned to the FABRIK joint at [code]joint_idx[/code].
 			</description>
 		</method>
 		<method name="get_fabrik_joint_bone_index" qualifiers="const">
@@ -66,7 +66,7 @@
 			<return type="bool" />
 			<argument index="0" name="joint_idx" type="int" />
 			<description>
-				Returns a boolean indiciating whether the FABRIK joint uses the target's [Basis] for its rotation.
+				Returns a boolean indicating whether the FABRIK joint uses the target's [Basis] for its rotation.
 				[b]Note:[/b] This option is only available for the final bone in the FABRIK chain, with this setting being ignored for all other bones.
 			</description>
 		</method>

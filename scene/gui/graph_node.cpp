@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -442,7 +442,7 @@ void GraphNode::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 
-			minimum_size_changed();
+			update_minimum_size();
 			update();
 		} break;
 	}
@@ -458,7 +458,7 @@ void GraphNode::_shape() {
 	} else {
 		title_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	title_buf->add_string(title, font, font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+	title_buf->add_string(title, font, font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 #ifdef TOOLS_ENABLED
@@ -666,7 +666,7 @@ void GraphNode::set_title(const String &p_title) {
 	_shape();
 
 	update();
-	minimum_size_changed();
+	update_minimum_size();
 }
 
 String GraphNode::get_title() const {

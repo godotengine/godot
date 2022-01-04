@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,21 +92,6 @@ Vector2 GodotPhysicsDirectBodyState2D::get_velocity_at_local_position(const Vect
 	return body->get_velocity_in_local_point(p_position);
 }
 
-void GodotPhysicsDirectBodyState2D::add_central_force(const Vector2 &p_force) {
-	body->wakeup();
-	body->add_central_force(p_force);
-}
-
-void GodotPhysicsDirectBodyState2D::add_force(const Vector2 &p_force, const Vector2 &p_position) {
-	body->wakeup();
-	body->add_force(p_force, p_position);
-}
-
-void GodotPhysicsDirectBodyState2D::add_torque(real_t p_torque) {
-	body->wakeup();
-	body->add_torque(p_torque);
-}
-
 void GodotPhysicsDirectBodyState2D::apply_central_impulse(const Vector2 &p_impulse) {
 	body->wakeup();
 	body->apply_central_impulse(p_impulse);
@@ -120,6 +105,58 @@ void GodotPhysicsDirectBodyState2D::apply_impulse(const Vector2 &p_impulse, cons
 void GodotPhysicsDirectBodyState2D::apply_torque_impulse(real_t p_torque) {
 	body->wakeup();
 	body->apply_torque_impulse(p_torque);
+}
+
+void GodotPhysicsDirectBodyState2D::apply_central_force(const Vector2 &p_force) {
+	body->wakeup();
+	body->apply_central_force(p_force);
+}
+
+void GodotPhysicsDirectBodyState2D::apply_force(const Vector2 &p_force, const Vector2 &p_position) {
+	body->wakeup();
+	body->apply_force(p_force, p_position);
+}
+
+void GodotPhysicsDirectBodyState2D::apply_torque(real_t p_torque) {
+	body->wakeup();
+	body->apply_torque(p_torque);
+}
+
+void GodotPhysicsDirectBodyState2D::add_constant_central_force(const Vector2 &p_force) {
+	body->wakeup();
+	body->add_constant_central_force(p_force);
+}
+
+void GodotPhysicsDirectBodyState2D::add_constant_force(const Vector2 &p_force, const Vector2 &p_position) {
+	body->wakeup();
+	body->add_constant_force(p_force, p_position);
+}
+
+void GodotPhysicsDirectBodyState2D::add_constant_torque(real_t p_torque) {
+	body->wakeup();
+	body->add_constant_torque(p_torque);
+}
+
+void GodotPhysicsDirectBodyState2D::set_constant_force(const Vector2 &p_force) {
+	if (!p_force.is_equal_approx(Vector2())) {
+		body->wakeup();
+	}
+	body->set_constant_force(p_force);
+}
+
+Vector2 GodotPhysicsDirectBodyState2D::get_constant_force() const {
+	return body->get_constant_force();
+}
+
+void GodotPhysicsDirectBodyState2D::set_constant_torque(real_t p_torque) {
+	if (!Math::is_zero_approx(p_torque)) {
+		body->wakeup();
+	}
+	body->set_constant_torque(p_torque);
+}
+
+real_t GodotPhysicsDirectBodyState2D::get_constant_torque() const {
+	return body->get_constant_torque();
 }
 
 void GodotPhysicsDirectBodyState2D::set_sleep_state(bool p_enable) {

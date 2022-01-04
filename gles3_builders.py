@@ -267,13 +267,13 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
         "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Color& p_color) { _FU GLfloat col[4]={p_color.r,p_color.g,p_color.b,p_color.a}; glUniform4fv(get_uniform(p_uniform),1,col); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector2& p_vec2) { _FU GLfloat vec2[2]={p_vec2.x,p_vec2.y}; glUniform2fv(get_uniform(p_uniform),1,vec2); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector2& p_vec2) { _FU GLfloat vec2[2]={(GLfloat)p_vec2.x,(GLfloat)p_vec2.y}; glUniform2fv(get_uniform(p_uniform),1,vec2); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Size2i& p_vec2) { _FU GLint vec2[2]={p_vec2.x,p_vec2.y}; glUniform2iv(get_uniform(p_uniform),1,vec2); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Size2i& p_vec2) { _FU GLint vec2[2]={(GLint)p_vec2.x,(GLint)p_vec2.y}; glUniform2iv(get_uniform(p_uniform),1,vec2); }\n\n"
     )
     fd.write(
-        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector3& p_vec3) { _FU GLfloat vec3[3]={p_vec3.x,p_vec3.y,p_vec3.z}; glUniform3fv(get_uniform(p_uniform),1,vec3); }\n\n"
+        "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Vector3& p_vec3) { _FU GLfloat vec3[3]={(GLfloat)p_vec3.x,(GLfloat)p_vec3.y,(GLfloat)p_vec3.z}; glUniform3fv(get_uniform(p_uniform),1,vec3); }\n\n"
     )
     fd.write(
         "\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, float p_a, float p_b) { _FU glUniform2f(get_uniform(p_uniform),p_a,p_b); }\n\n"
@@ -291,22 +291,22 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
         const Transform3D &tr = p_transform;
 
         GLfloat matrix[16]={ /* build a 16x16 matrix */
-            tr.basis.elements[0][0],
-            tr.basis.elements[1][0],
-            tr.basis.elements[2][0],
-            0,
-            tr.basis.elements[0][1],
-            tr.basis.elements[1][1],
-            tr.basis.elements[2][1],
-            0,
-            tr.basis.elements[0][2],
-            tr.basis.elements[1][2],
-            tr.basis.elements[2][2],
-            0,
-            tr.origin.x,
-            tr.origin.y,
-            tr.origin.z,
-            1
+            (GLfloat)tr.basis.elements[0][0],
+            (GLfloat)tr.basis.elements[1][0],
+            (GLfloat)tr.basis.elements[2][0],
+            (GLfloat)0,
+            (GLfloat)tr.basis.elements[0][1],
+            (GLfloat)tr.basis.elements[1][1],
+            (GLfloat)tr.basis.elements[2][1],
+            (GLfloat)0,
+            (GLfloat)tr.basis.elements[0][2],
+            (GLfloat)tr.basis.elements[1][2],
+            (GLfloat)tr.basis.elements[2][2],
+            (GLfloat)0,
+            (GLfloat)tr.origin.x,
+            (GLfloat)tr.origin.y,
+            (GLfloat)tr.origin.z,
+            (GLfloat)1
         };
 
 
@@ -324,22 +324,22 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
         const Transform2D &tr = p_transform;
 
         GLfloat matrix[16]={ /* build a 16x16 matrix */
-            tr.elements[0][0],
-            tr.elements[0][1],
-            0,
-            0,
-            tr.elements[1][0],
-            tr.elements[1][1],
-            0,
-            0,
-            0,
-            0,
-            1,
-            0,
-            tr.elements[2][0],
-            tr.elements[2][1],
-            0,
-            1
+            (GLfloat)tr.elements[0][0],
+            (GLfloat)tr.elements[0][1],
+            (GLfloat)0,
+            (GLfloat)0,
+            (GLfloat)tr.elements[1][0],
+            (GLfloat)tr.elements[1][1],
+            (GLfloat)0,
+            (GLfloat)0,
+            (GLfloat)0,
+            (GLfloat)0,
+            (GLfloat)1,
+            (GLfloat)0,
+            (GLfloat)tr.elements[2][0],
+            (GLfloat)tr.elements[2][1],
+            (GLfloat)0,
+            (GLfloat)1
         };
 
 

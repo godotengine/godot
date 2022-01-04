@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -218,7 +218,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		String text = multiple_polygon_mode ? vformat("%d:%d", tinted_polygon_index, tinted_point_index) : vformat("%d", tinted_point_index);
 		Size2 text_size = font->get_string_size(text, font_size);
-		base_control->draw_string(font, xform.xform(polygons[tinted_polygon_index][tinted_point_index]) - text_size * 0.5, text, HALIGN_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
+		base_control->draw_string(font, xform.xform(polygons[tinted_polygon_index][tinted_point_index]) - text_size * 0.5, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
 	}
 
 	if (drag_type == DRAG_TYPE_CREATE_POINT) {
@@ -516,7 +516,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 					_grab_polygon_point(mb->get_position(), xform, closest_polygon, closest_point);
 					if (closest_polygon >= 0) {
 						PackedVector2Array old_polygon = polygons[closest_polygon];
-						polygons[closest_polygon].remove(closest_point);
+						polygons[closest_polygon].remove_at(closest_point);
 						undo_redo->create_action(TTR("Edit Polygons"));
 						if (polygons[closest_polygon].size() < 3) {
 							remove_polygon(closest_polygon);
@@ -563,7 +563,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 					_grab_polygon_point(mb->get_position(), xform, closest_polygon, closest_point);
 					if (closest_polygon >= 0) {
 						PackedVector2Array old_polygon = polygons[closest_polygon];
-						polygons[closest_polygon].remove(closest_point);
+						polygons[closest_polygon].remove_at(closest_point);
 						undo_redo->create_action(TTR("Edit Polygons"));
 						if (polygons[closest_polygon].size() < 3) {
 							remove_polygon(closest_polygon);
@@ -676,7 +676,7 @@ int GenericTilePolygonEditor::add_polygon(Vector<Point2> p_polygon, int p_index)
 
 void GenericTilePolygonEditor::remove_polygon(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)polygons.size());
-	polygons.remove(p_index);
+	polygons.remove_at(p_index);
 
 	if (polygons.size() == 0) {
 		button_create->set_pressed(true);
@@ -1113,7 +1113,7 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 		}
 
 		Vector2 string_size = font->get_string_size(text, font_size);
-		p_canvas_item->draw_string(font, p_transform.get_origin() + Vector2i(-string_size.x / 2, string_size.y / 2), text, HALIGN_CENTER, string_size.x, font_size, color, 1, Color(0, 0, 0, 1));
+		p_canvas_item->draw_string(font, p_transform.get_origin() + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color, 1, Color(0, 0, 0, 1));
 	}
 }
 
@@ -1700,7 +1700,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 					text = "-";
 				}
 				Vector2 string_size = font->get_string_size(text, font_size);
-				p_canvas_item->draw_string(font, p_transform.xform(position) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HALIGN_CENTER, string_size.x, font_size, color, 1, Color(0, 0, 0, 1));
+				p_canvas_item->draw_string(font, p_transform.xform(position) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color, 1, Color(0, 0, 0, 1));
 			}
 		}
 	}
@@ -1876,7 +1876,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 						text = "-";
 					}
 					Vector2 string_size = font->get_string_size(text, font_size);
-					p_canvas_item->draw_string(font, p_transform.xform(position) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HALIGN_CENTER, string_size.x, font_size, color, 1, Color(0, 0, 0, 1));
+					p_canvas_item->draw_string(font, p_transform.xform(position) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color, 1, Color(0, 0, 0, 1));
 				}
 			}
 		}

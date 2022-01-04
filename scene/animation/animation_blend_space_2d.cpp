@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -134,7 +134,7 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 			}
 		}
 		if (erase) {
-			triangles.remove(i);
+			triangles.remove_at(i);
 
 			i--;
 		}
@@ -224,7 +224,7 @@ int AnimationNodeBlendSpace2D::get_triangle_point(int p_triangle, int p_point) {
 void AnimationNodeBlendSpace2D::remove_triangle(int p_triangle) {
 	ERR_FAIL_INDEX(p_triangle, triangles.size());
 
-	triangles.remove(p_triangle);
+	triangles.remove_at(p_triangle);
 }
 
 int AnimationNodeBlendSpace2D::get_triangle_count() const {

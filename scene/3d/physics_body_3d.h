@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -306,13 +306,23 @@ public:
 
 	Array get_colliding_bodies() const;
 
-	void add_central_force(const Vector3 &p_force);
-	void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
-	void add_torque(const Vector3 &p_torque);
-
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
 	void apply_torque_impulse(const Vector3 &p_impulse);
+
+	void apply_central_force(const Vector3 &p_force);
+	void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
+	void apply_torque(const Vector3 &p_torque);
+
+	void add_constant_central_force(const Vector3 &p_force);
+	void add_constant_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
+	void add_constant_torque(const Vector3 &p_torque);
+
+	void set_constant_force(const Vector3 &p_force);
+	Vector3 get_constant_force() const;
+
+	void set_constant_torque(const Vector3 &p_torque);
+	Vector3 get_constant_torque() const;
 
 	virtual TypedArray<String> get_configuration_warnings() const override;
 

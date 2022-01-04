@@ -128,19 +128,19 @@ void main() {
 
 #ifdef MODE_NON_SMART
 
-	vec2 halfPixel = params.half_screen_pixel_size * 0.5f;
+	vec2 half_pixel = params.half_screen_pixel_size * 0.5;
 
 	vec2 uv = (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size;
 
-	vec2 centre = textureLod(source_ssao, vec2(uv), 0.0).xy;
+	vec2 center = textureLod(source_ssao, vec2(uv), 0.0).xy;
 
 	vec4 vals;
-	vals.x = textureLod(source_ssao, vec2(uv + vec2(-halfPixel.x * 3, -halfPixel.y)), 0.0).x;
-	vals.y = textureLod(source_ssao, vec2(uv + vec2(+halfPixel.x, -halfPixel.y * 3)), 0.0).x;
-	vals.z = textureLod(source_ssao, vec2(uv + vec2(-halfPixel.x, +halfPixel.y * 3)), 0.0).x;
-	vals.w = textureLod(source_ssao, vec2(uv + vec2(+halfPixel.x * 3, +halfPixel.y)), 0.0).x;
+	vals.x = textureLod(source_ssao, vec2(uv + vec2(-half_pixel.x * 3, -half_pixel.y)), 0.0).x;
+	vals.y = textureLod(source_ssao, vec2(uv + vec2(+half_pixel.x, -half_pixel.y * 3)), 0.0).x;
+	vals.z = textureLod(source_ssao, vec2(uv + vec2(-half_pixel.x, +half_pixel.y * 3)), 0.0).x;
+	vals.w = textureLod(source_ssao, vec2(uv + vec2(+half_pixel.x * 3, +half_pixel.y)), 0.0).x;
 
-	vec2 sampled = vec2(dot(vals, vec4(0.2)) + centre.x * 0.2, centre.y);
+	vec2 sampled = vec2(dot(vals, vec4(0.2)) + center.x * 0.2, center.y);
 
 #else
 #ifdef MODE_SMART

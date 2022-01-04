@@ -93,6 +93,12 @@
 				Returns font descent (number of pixels below the baseline).
 			</description>
 		</method>
+		<method name="get_fixed_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns font fixed size.
+			</description>
+		</method>
 		<method name="get_font_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -253,7 +259,7 @@
 			<return type="Array" />
 			<argument index="0" name="cache_index" type="int" />
 			<description>
-				Return list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
+				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
 			</description>
 		</method>
 		<method name="get_spacing" qualifiers="const">
@@ -337,7 +343,7 @@
 			<return type="bool" />
 			<argument index="0" name="char" type="int" />
 			<description>
-				Return [code]true[/code] if a Unicode [code]char[/code] is available in the font.
+				Returns [code]true[/code] if a Unicode [code]char[/code] is available in the font.
 			</description>
 		</method>
 		<method name="is_antialiased" qualifiers="const">
@@ -349,7 +355,7 @@
 		<method name="is_force_autohinter" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if auto-hinting is supported and preffered over font built-in hinting. Used by dynamic fonts only.
+				Returns [code]true[/code] if auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="is_language_supported" qualifiers="const">
@@ -481,6 +487,13 @@
 				Sets the font descent (number of pixels below the baseline).
 			</description>
 		</method>
+		<method name="set_fixed_size">
+			<return type="void" />
+			<argument index="0" name="fixed_size" type="int" />
+			<description>
+				Sets the fixed size for the font.
+			</description>
+		</method>
 		<method name="set_font_name">
 			<return type="void" />
 			<argument index="0" name="name" type="String" />
@@ -506,7 +519,7 @@
 			<return type="void" />
 			<argument index="0" name="force_autohinter" type="bool" />
 			<description>
-				If set to [code]true[/code] auto-hinting is preffered over font built-in hinting.
+				If set to [code]true[/code] auto-hinting is preferred over font built-in hinting.
 			</description>
 		</method>
 		<method name="set_glyph_advance">

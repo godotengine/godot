@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -170,6 +170,7 @@ private:
 		RUN_PROJECT_DATA_FOLDER,
 		RUN_RELOAD_CURRENT_PROJECT,
 		RUN_PROJECT_MANAGER,
+		RUN_VCS_METADATA,
 		RUN_VCS_SETTINGS,
 		RUN_VCS_SHUT_DOWN,
 		SETTINGS_UPDATE_CONTINUOUSLY,
@@ -458,7 +459,7 @@ private:
 
 	void _dialog_action(String p_file);
 
-	void _edit_current();
+	void _edit_current(bool p_skip_foreign = false);
 	void _dialog_display_save_error(String p_file, Error p_error);
 	void _dialog_display_load_error(String p_file, Error p_error);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -144,7 +144,7 @@ void godot_icall_Array_Insert(Array *ptr, int32_t index, MonoObject *item) {
 MonoBoolean godot_icall_Array_Remove(Array *ptr, MonoObject *item) {
 	int idx = ptr->find(GDMonoMarshal::mono_object_to_variant(item));
 	if (idx >= 0) {
-		ptr->remove(idx);
+		ptr->remove_at(idx);
 		return true;
 	}
 	return false;
@@ -155,7 +155,7 @@ void godot_icall_Array_RemoveAt(Array *ptr, int32_t index) {
 		GDMonoUtils::set_pending_exception(mono_get_exception_index_out_of_range());
 		return;
 	}
-	ptr->remove(index);
+	ptr->remove_at(index);
 }
 
 int32_t godot_icall_Array_Resize(Array *ptr, int32_t new_size) {
@@ -237,10 +237,8 @@ int32_t godot_icall_Dictionary_KeyValuePairs(Dictionary *ptr, Array **keys, Arra
 }
 
 void godot_icall_Dictionary_KeyValuePairAt(Dictionary *ptr, int index, MonoObject **key, MonoObject **value) {
-	Array *keys = godot_icall_Dictionary_Keys(ptr);
-	Array *values = godot_icall_Dictionary_Values(ptr);
-	*key = GDMonoMarshal::variant_to_mono_object(keys->get(index));
-	*value = GDMonoMarshal::variant_to_mono_object(values->get(index));
+	*key = GDMonoMarshal::variant_to_mono_object(ptr->get_key_at_index(index));
+	*value = GDMonoMarshal::variant_to_mono_object(ptr->get_value_at_index(index));
 }
 
 void godot_icall_Dictionary_Add(Dictionary *ptr, MonoObject *key, MonoObject *value) {

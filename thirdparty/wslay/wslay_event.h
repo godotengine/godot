@@ -31,10 +31,10 @@
 
 #include <wslay/wslay.h>
 
-struct wslay_stack;
-struct wslay_queue;
+#include "wslay_queue.h"
 
 struct wslay_event_byte_chunk {
+  struct wslay_queue_entry qe;
   uint8_t *data;
   size_t data_length;
 };
@@ -44,16 +44,14 @@ struct wslay_event_imsg {
   uint8_t rsv;
   uint8_t opcode;
   uint32_t utf8state;
-  struct wslay_queue *chunks;
+  struct wslay_queue chunks;
   size_t msg_length;
 };
 
-enum wslay_event_msg_type {
-  WSLAY_NON_FRAGMENTED,
-  WSLAY_FRAGMENTED
-};
+enum wslay_event_msg_type { WSLAY_NON_FRAGMENTED, WSLAY_FRAGMENTED };
 
 struct wslay_event_omsg {
+  struct wslay_queue_entry qe;
   uint8_t fin;
   uint8_t opcode;
   uint8_t rsv;
@@ -77,9 +75,7 @@ enum wslay_event_close_status {
   WSLAY_CLOSE_SENT = 1 << 2
 };
 
-enum wslay_event_config {
-  WSLAY_CONFIG_NO_BUFFERING = 1 << 0
-};
+enum wslay_event_config { WSLAY_CONFIG_NO_BUFFERING = 1 << 0 };
 
 struct wslay_event_context {
   /* config status, bitwise OR of enum wslay_event_config values*/
@@ -118,9 +114,9 @@ struct wslay_event_context {
      is currently sent. */
   struct wslay_event_omsg *omsg;
   /* Queue for non-control frames */
-  struct wslay_queue/*<wslay_omsg*>*/ *send_queue;
+  struct wslay_queue /*<wslay_omsg*>*/ send_queue;
   /* Queue for control frames */
-  struct wslay_queue/*<wslay_omsg*>*/ *send_ctrl_queue;
+  struct wslay_queue /*<wslay_omsg*>*/ send_ctrl_queue;
   /* Size of send_queue + size of send_ctrl_queue */
   size_t queued_msg_count;
   /* The sum of message length in send_queue */

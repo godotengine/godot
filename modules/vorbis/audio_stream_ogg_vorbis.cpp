@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,7 @@ int AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 		todo -= mixed;
 		frames_mixed += mixed;
 		start_buffer += mixed;
-		if (!have_packets_left) {
+		if (!have_packets_left && !have_samples_left) {
 			//end of file!
 			bool is_not_empty = mixed > 0 || vorbis_stream->get_length() > 0;
 			if (vorbis_stream->loop && is_not_empty) {
@@ -110,7 +110,7 @@ int AudioStreamPlaybackOGGVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 	if (info.channels > 1) {
 		for (int frame = 0; frame < frames; frame++) {
 			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[0][frame];
+			p_buffer[frame].r = pcm[1][frame];
 		}
 	} else {
 		for (int frame = 0; frame < frames; frame++) {

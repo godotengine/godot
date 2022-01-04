@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ TEST_CASE("[FileAccess] CSV read") {
 	REQUIRE(row2.size() == 3);
 	CHECK(row2[0] == "GOOD_EVENING");
 	CHECK(row2[1] == "Good Evening");
-	CHECK(row2[2] == ""); // Use case: not yet translated!
+	CHECK(row2[2].is_empty()); // Use case: not yet translated!
 	// https://github.com/godotengine/godot/issues/44269
 	CHECK_MESSAGE(row2[2] != "\"", "Should not parse empty string as a single double quote.");
 

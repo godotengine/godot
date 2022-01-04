@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -183,7 +183,9 @@ Error ConfigFile::_internal_save(FileAccess *file) {
 		if (E != values.front()) {
 			file->store_string("\n");
 		}
-		file->store_string("[" + E.key() + "]\n\n");
+		if (!E.key().is_empty()) {
+			file->store_string("[" + E.key() + "]\n\n");
+		}
 
 		for (OrderedHashMap<String, Variant>::Element F = E.get().front(); F; F = F.next()) {
 			String vstr;
@@ -285,9 +287,9 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 			return err;
 		}
 
-		if (assign != String()) {
+		if (!assign.is_empty()) {
 			set_value(section, assign, value);
-		} else if (next_tag.name != String()) {
+		} else if (!next_tag.name.is_empty()) {
 			section = next_tag.name;
 		}
 	}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -399,7 +399,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 
 	FontGlyph chr;
 	chr.found = true;
-	chr.advance = advance.round();
+	chr.advance = advance;
 
 	if (shape.validate() && shape.contours.size() > 0) {
 		int w = (bounds.r - bounds.l);
@@ -552,12 +552,12 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 	}
 
 	FontGlyph chr;
-	chr.advance = (advance * p_data->scale / p_data->oversampling).round();
+	chr.advance = advance * p_data->scale / p_data->oversampling;
 	chr.texture_idx = tex_pos.index;
 	chr.found = true;
 
 	chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w, h);
-	chr.rect.position = (Vector2(xofs, -yofs) * p_data->scale / p_data->oversampling).round();
+	chr.rect.position = Vector2(xofs, -yofs) * p_data->scale / p_data->oversampling;
 	chr.rect.size = chr.uv_rect.size * p_data->scale / p_data->oversampling;
 	return chr;
 }
@@ -729,7 +729,8 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontDataFallback 
 			}
 			FT_Select_Size(fd->face, best_match);
 		} else {
-			FT_Set_Pixel_Sizes(fd->face, 0, fd->size.x * fd->oversampling);
+			FT_Set_Pixel_Sizes(fd->face, 0, Math::round(fd->size.x * fd->oversampling));
+			fd->scale = ((float)fd->size.x * fd->oversampling) / (float)fd->face->size->metrics.y_ppem;
 		}
 
 		fd->ascent = (fd->face->size->metrics.ascender / 64.0) / fd->oversampling * fd->scale;
@@ -1326,7 +1327,7 @@ void TextServerFallback::font_remove_texture(RID p_font_rid, const Vector2i &p_s
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 	ERR_FAIL_INDEX(p_texture_index, fd->cache[size]->textures.size());
 
-	fd->cache[size]->textures.remove(p_texture_index);
+	fd->cache[size]->textures.remove_at(p_texture_index);
 }
 
 void TextServerFallback::font_set_texture_image(RID p_font_rid, const Vector2i &p_size, int p_texture_index, const Ref<Image> &p_image) {
@@ -1824,7 +1825,7 @@ void TextServerFallback::font_draw_glyph(RID p_font_rid, RID p_canvas, int p_siz
 	Vector2i size = _get_size(fd, p_size);
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 	if (!_ensure_glyph(fd, size, p_index)) {
-		return; // // Invalid or non graphicl glyph, do not display errors, nothing to draw.
+		return; // Invalid or non-graphical glyph, do not display errors, nothing to draw.
 	}
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[p_index];
@@ -1846,9 +1847,9 @@ void TextServerFallback::font_draw_glyph(RID p_font_rid, RID p_canvas, int p_siz
 					Size2 csize = gl.rect.size * (float)p_size / (float)fd->msdf_source_size;
 					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, 0, fd->msdf_range);
 				} else {
-					Point2i cpos = p_pos;
+					Point2 cpos = p_pos.floor();
 					cpos += gl.rect.position;
-					Size2i csize = gl.rect.size;
+					Size2 csize = gl.rect.size;
 					RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, false, false);
 				}
 			}
@@ -1864,7 +1865,7 @@ void TextServerFallback::font_draw_glyph_outline(RID p_font_rid, RID p_canvas, i
 	Vector2i size = _get_size_outline(fd, Vector2i(p_size, p_outline_size));
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 	if (!_ensure_glyph(fd, size, p_index)) {
-		return; // // Invalid or non graphicl glyph, do not display errors, nothing to draw.
+		return; // Invalid or non-graphical glyph, do not display errors, nothing to draw.
 	}
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[p_index];
@@ -1886,9 +1887,9 @@ void TextServerFallback::font_draw_glyph_outline(RID p_font_rid, RID p_canvas, i
 					Size2 csize = gl.rect.size * (float)p_size / (float)fd->msdf_source_size;
 					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, p_outline_size * 2, fd->msdf_range);
 				} else {
-					Point2i cpos = p_pos;
+					Point2 cpos = p_pos.floor();
 					cpos += gl.rect.position;
-					Size2i csize = gl.rect.size;
+					Size2 csize = gl.rect.size;
 					RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, false, false);
 				}
 			}
@@ -2247,7 +2248,7 @@ bool TextServerFallback::shaped_text_add_string(RID p_shaped, const String &p_te
 	return true;
 }
 
-bool TextServerFallback::shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align, int p_length) {
+bool TextServerFallback::shaped_text_add_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length) {
 	ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
@@ -2260,7 +2261,7 @@ bool TextServerFallback::shaped_text_add_object(RID p_shaped, Variant p_key, con
 	}
 
 	ShapedTextData::Span span;
-	span.start = sd->text.length();
+	span.start = sd->start + sd->text.length();
 	span.end = span.start + p_length;
 	span.embedded_key = p_key;
 
@@ -2278,7 +2279,7 @@ bool TextServerFallback::shaped_text_add_object(RID p_shaped, Variant p_key, con
 	return true;
 }
 
-bool TextServerFallback::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlign p_inline_align) {
+bool TextServerFallback::shaped_text_resize_object(RID p_shaped, Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align) {
 	ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
@@ -2346,56 +2347,56 @@ bool TextServerFallback::shaped_text_resize_object(RID p_shaped, Variant p_key, 
 		for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : sd->objects) {
 			if ((E.value.pos >= sd->start) && (E.value.pos < sd->end)) {
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
-					switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-						case INLINE_ALIGN_TO_TOP: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+						case INLINE_ALIGNMENT_TO_TOP: {
 							E.value.rect.position.y = -sd->ascent;
 						} break;
-						case INLINE_ALIGN_TO_CENTER: {
+						case INLINE_ALIGNMENT_TO_CENTER: {
 							E.value.rect.position.y = (-sd->ascent + sd->descent) / 2;
 						} break;
-						case INLINE_ALIGN_TO_BASELINE: {
+						case INLINE_ALIGNMENT_TO_BASELINE: {
 							E.value.rect.position.y = 0;
 						} break;
-						case INLINE_ALIGN_TO_BOTTOM: {
+						case INLINE_ALIGNMENT_TO_BOTTOM: {
 							E.value.rect.position.y = sd->descent;
 						} break;
 					}
-					switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-						case INLINE_ALIGN_BOTTOM_TO: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+						case INLINE_ALIGNMENT_BOTTOM_TO: {
 							E.value.rect.position.y -= E.value.rect.size.y;
 						} break;
-						case INLINE_ALIGN_CENTER_TO: {
+						case INLINE_ALIGNMENT_CENTER_TO: {
 							E.value.rect.position.y -= E.value.rect.size.y / 2;
 						} break;
-						case INLINE_ALIGN_TOP_TO: {
+						case INLINE_ALIGNMENT_TOP_TO: {
 							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.y);
 					full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
 				} else {
-					switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-						case INLINE_ALIGN_TO_TOP: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+						case INLINE_ALIGNMENT_TO_TOP: {
 							E.value.rect.position.x = -sd->ascent;
 						} break;
-						case INLINE_ALIGN_TO_CENTER: {
+						case INLINE_ALIGNMENT_TO_CENTER: {
 							E.value.rect.position.x = (-sd->ascent + sd->descent) / 2;
 						} break;
-						case INLINE_ALIGN_TO_BASELINE: {
+						case INLINE_ALIGNMENT_TO_BASELINE: {
 							E.value.rect.position.x = 0;
 						} break;
-						case INLINE_ALIGN_TO_BOTTOM: {
+						case INLINE_ALIGNMENT_TO_BOTTOM: {
 							E.value.rect.position.x = sd->descent;
 						} break;
 					}
-					switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-						case INLINE_ALIGN_BOTTOM_TO: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+						case INLINE_ALIGNMENT_BOTTOM_TO: {
 							E.value.rect.position.x -= E.value.rect.size.x;
 						} break;
-						case INLINE_ALIGN_CENTER_TO: {
+						case INLINE_ALIGNMENT_CENTER_TO: {
 							E.value.rect.position.x -= E.value.rect.size.x / 2;
 						} break;
-						case INLINE_ALIGN_TOP_TO: {
+						case INLINE_ALIGNMENT_TOP_TO: {
 							// NOP
 						} break;
 					}
@@ -2441,7 +2442,7 @@ RID TextServerFallback::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 	new_sd->uthk = sd->uthk;
 
 	if (p_length > 0) {
-		new_sd->text = sd->text.substr(p_start, p_length);
+		new_sd->text = sd->text.substr(p_start - sd->start, p_length);
 		int sd_size = sd->glyphs.size();
 		const Glyph *sd_glyphs = sd->glyphs.ptr();
 
@@ -2498,56 +2499,56 @@ RID TextServerFallback::shaped_text_substr(RID p_shaped, int p_start, int p_leng
 		for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : new_sd->objects) {
 			if ((E.value.pos >= new_sd->start) && (E.value.pos < new_sd->end)) {
 				if (sd->orientation == ORIENTATION_HORIZONTAL) {
-					switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-						case INLINE_ALIGN_TO_TOP: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+						case INLINE_ALIGNMENT_TO_TOP: {
 							E.value.rect.position.y = -new_sd->ascent;
 						} break;
-						case INLINE_ALIGN_TO_CENTER: {
+						case INLINE_ALIGNMENT_TO_CENTER: {
 							E.value.rect.position.y = (-new_sd->ascent + new_sd->descent) / 2;
 						} break;
-						case INLINE_ALIGN_TO_BASELINE: {
+						case INLINE_ALIGNMENT_TO_BASELINE: {
 							E.value.rect.position.y = 0;
 						} break;
-						case INLINE_ALIGN_TO_BOTTOM: {
+						case INLINE_ALIGNMENT_TO_BOTTOM: {
 							E.value.rect.position.y = new_sd->descent;
 						} break;
 					}
-					switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-						case INLINE_ALIGN_BOTTOM_TO: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+						case INLINE_ALIGNMENT_BOTTOM_TO: {
 							E.value.rect.position.y -= E.value.rect.size.y;
 						} break;
-						case INLINE_ALIGN_CENTER_TO: {
+						case INLINE_ALIGNMENT_CENTER_TO: {
 							E.value.rect.position.y -= E.value.rect.size.y / 2;
 						} break;
-						case INLINE_ALIGN_TOP_TO: {
+						case INLINE_ALIGNMENT_TOP_TO: {
 							// NOP
 						} break;
 					}
 					full_ascent = MAX(full_ascent, -E.value.rect.position.y);
 					full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
 				} else {
-					switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-						case INLINE_ALIGN_TO_TOP: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+						case INLINE_ALIGNMENT_TO_TOP: {
 							E.value.rect.position.x = -new_sd->ascent;
 						} break;
-						case INLINE_ALIGN_TO_CENTER: {
+						case INLINE_ALIGNMENT_TO_CENTER: {
 							E.value.rect.position.x = (-new_sd->ascent + new_sd->descent) / 2;
 						} break;
-						case INLINE_ALIGN_TO_BASELINE: {
+						case INLINE_ALIGNMENT_TO_BASELINE: {
 							E.value.rect.position.x = 0;
 						} break;
-						case INLINE_ALIGN_TO_BOTTOM: {
+						case INLINE_ALIGNMENT_TO_BOTTOM: {
 							E.value.rect.position.x = new_sd->descent;
 						} break;
 					}
-					switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-						case INLINE_ALIGN_BOTTOM_TO: {
+					switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+						case INLINE_ALIGNMENT_BOTTOM_TO: {
 							E.value.rect.position.x -= E.value.rect.size.x;
 						} break;
-						case INLINE_ALIGN_CENTER_TO: {
+						case INLINE_ALIGNMENT_CENTER_TO: {
 							E.value.rect.position.x -= E.value.rect.size.x / 2;
 						} break;
-						case INLINE_ALIGN_TOP_TO: {
+						case INLINE_ALIGNMENT_TOP_TO: {
 							// NOP
 						} break;
 					}
@@ -2723,7 +2724,7 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 
 	for (int i = 0; i < sd_size; i++) {
 		if (sd_glyphs[i].count > 0) {
-			char32_t c = sd->text[sd_glyphs[i].start];
+			char32_t c = sd->text[sd_glyphs[i].start - sd->start];
 			if (c_punct_size == 0) {
 				if (is_punct(c)) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
@@ -2980,7 +2981,7 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 				gl.end = j + 1;
 				gl.count = 1;
 				gl.font_size = span.font_size;
-				gl.index = (int32_t)sd->text[j]; // Use codepoint.
+				gl.index = (int32_t)sd->text[j - sd->start]; // Use codepoint.
 				if (gl.index == 0x0009 || gl.index == 0x000b) {
 					gl.index = 0x0020;
 				}
@@ -2996,7 +2997,7 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 				}
 
 				if (gl.font_rid.is_valid()) {
-					if (sd->text[j] != 0 && !is_linebreak(sd->text[j])) {
+					if (sd->text[j - sd->start] != 0 && !is_linebreak(sd->text[j - sd->start])) {
 						if (sd->orientation == ORIENTATION_HORIZONTAL) {
 							gl.advance = font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x;
 							gl.x_off = 0;
@@ -3011,7 +3012,7 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 							sd->descent = MAX(sd->descent, Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
 						}
 					}
-					if (font_get_spacing(gl.font_rid, gl.font_size, TextServer::SPACING_SPACE) && is_whitespace(sd->text[j])) {
+					if (font_get_spacing(gl.font_rid, gl.font_size, TextServer::SPACING_SPACE) && is_whitespace(sd->text[j - sd->start])) {
 						gl.advance += font_get_spacing(gl.font_rid, gl.font_size, TextServer::SPACING_SPACE);
 					} else {
 						gl.advance += font_get_spacing(gl.font_rid, gl.font_size, TextServer::SPACING_GLYPH);
@@ -3052,56 +3053,56 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 	float full_descent = sd->descent;
 	for (KeyValue<Variant, ShapedTextData::EmbeddedObject> &E : sd->objects) {
 		if (sd->orientation == ORIENTATION_HORIZONTAL) {
-			switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-				case INLINE_ALIGN_TO_TOP: {
+			switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+				case INLINE_ALIGNMENT_TO_TOP: {
 					E.value.rect.position.y = -sd->ascent;
 				} break;
-				case INLINE_ALIGN_TO_CENTER: {
+				case INLINE_ALIGNMENT_TO_CENTER: {
 					E.value.rect.position.y = (-sd->ascent + sd->descent) / 2;
 				} break;
-				case INLINE_ALIGN_TO_BASELINE: {
+				case INLINE_ALIGNMENT_TO_BASELINE: {
 					E.value.rect.position.y = 0;
 				} break;
-				case INLINE_ALIGN_TO_BOTTOM: {
+				case INLINE_ALIGNMENT_TO_BOTTOM: {
 					E.value.rect.position.y = sd->descent;
 				} break;
 			}
-			switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-				case INLINE_ALIGN_BOTTOM_TO: {
+			switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+				case INLINE_ALIGNMENT_BOTTOM_TO: {
 					E.value.rect.position.y -= E.value.rect.size.y;
 				} break;
-				case INLINE_ALIGN_CENTER_TO: {
+				case INLINE_ALIGNMENT_CENTER_TO: {
 					E.value.rect.position.y -= E.value.rect.size.y / 2;
 				} break;
-				case INLINE_ALIGN_TOP_TO: {
+				case INLINE_ALIGNMENT_TOP_TO: {
 					// NOP
 				} break;
 			}
 			full_ascent = MAX(full_ascent, -E.value.rect.position.y);
 			full_descent = MAX(full_descent, E.value.rect.position.y + E.value.rect.size.y);
 		} else {
-			switch (E.value.inline_align & INLINE_ALIGN_TEXT_MASK) {
-				case INLINE_ALIGN_TO_TOP: {
+			switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
+				case INLINE_ALIGNMENT_TO_TOP: {
 					E.value.rect.position.x = -sd->ascent;
 				} break;
-				case INLINE_ALIGN_TO_CENTER: {
+				case INLINE_ALIGNMENT_TO_CENTER: {
 					E.value.rect.position.x = (-sd->ascent + sd->descent) / 2;
 				} break;
-				case INLINE_ALIGN_TO_BASELINE: {
+				case INLINE_ALIGNMENT_TO_BASELINE: {
 					E.value.rect.position.x = 0;
 				} break;
-				case INLINE_ALIGN_TO_BOTTOM: {
+				case INLINE_ALIGNMENT_TO_BOTTOM: {
 					E.value.rect.position.x = sd->descent;
 				} break;
 			}
-			switch (E.value.inline_align & INLINE_ALIGN_IMAGE_MASK) {
-				case INLINE_ALIGN_BOTTOM_TO: {
+			switch (E.value.inline_align & INLINE_ALIGNMENT_IMAGE_MASK) {
+				case INLINE_ALIGNMENT_BOTTOM_TO: {
 					E.value.rect.position.x -= E.value.rect.size.x;
 				} break;
-				case INLINE_ALIGN_CENTER_TO: {
+				case INLINE_ALIGNMENT_CENTER_TO: {
 					E.value.rect.position.x -= E.value.rect.size.x / 2;
 				} break;
-				case INLINE_ALIGN_TOP_TO: {
+				case INLINE_ALIGNMENT_TOP_TO: {
 					// NOP
 				} break;
 			}

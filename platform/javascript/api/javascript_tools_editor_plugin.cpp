@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,7 +67,7 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	FileAccess *src_f;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
-	// Name the downloded ZIP file to contain the project name and download date for easier organization.
+	// Name the downloaded ZIP file to contain the project name and download date for easier organization.
 	// Replace characters not allowed (or risky) in Windows file names with safe characters.
 	// In the project name, all invalid characters become an empty string so that a name
 	// like "Platformer 2: Godette's Revenge" becomes "platformer_2-_godette-s_revenge".

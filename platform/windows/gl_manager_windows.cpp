@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ int GLManager_Windows::_find_or_create_display(GLWindow &win) {
 	if (err != OK) {
 		// not good
 		// delete the _display?
-		_displays.remove(new_display_id);
+		_displays.remove_at(new_display_id);
 		return -1;
 	}
 
@@ -193,7 +193,7 @@ Error GLManager_Windows::window_create(DisplayServer::WindowID p_window_id, HWND
 
 	if (win.gldisplay_id == -1) {
 		// release DC?
-		_windows.remove(_windows.size() - 1);
+		_windows.remove_at(_windows.size() - 1);
 		return FAILED;
 	}
 

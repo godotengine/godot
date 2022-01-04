@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -511,7 +511,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		Variant defval;
 		if (script->get_property_default_value(E->key(), defval)) {
 			//remove because it's the same as the default value
-			if (defval == E) {
+			if (defval == E->get()) {
 				to_remove.push_back(E->key());
 			}
 		}

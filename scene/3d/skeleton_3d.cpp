@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -506,7 +506,7 @@ int Skeleton3D::get_bone_axis_forward_enum(int p_bone) {
 // Skeleton creation api
 
 void Skeleton3D::add_bone(const String &p_name) {
-	ERR_FAIL_COND(p_name == "" || p_name.find(":") != -1 || p_name.find("/") != -1);
+	ERR_FAIL_COND(p_name.is_empty() || p_name.find(":") != -1 || p_name.find("/") != -1);
 
 	for (int i = 0; i < bones.size(); i++) {
 		ERR_FAIL_COND(bones[i].name == p_name);
@@ -633,7 +633,7 @@ void Skeleton3D::remove_bone_child(int p_bone, int p_child) {
 
 	int child_idx = bones[p_bone].child_bones.find(p_child);
 	if (child_idx >= 0) {
-		bones.write[p_bone].child_bones.remove(child_idx);
+		bones.write[p_bone].child_bones.remove_at(child_idx);
 	} else {
 		WARN_PRINT("Cannot remove child bone: Child bone not found.");
 	}

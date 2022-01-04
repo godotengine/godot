@@ -11,7 +11,7 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<members>
-		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" override="true" default="0.03" />
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.03" />
 		<member name="spot_angle" type="float" setter="set_param" getter="get_param" default="45.0">
 			The spotlight's angle in degrees.
 		</member>

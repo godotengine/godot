@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -234,11 +234,6 @@ private:
 	// (such as MeshInstance's "Mesh" menu).
 	PanelContainer *context_menu_container;
 	HBoxContainer *hbc_context_menu;
-
-	Map<Control *, Timer *> popup_temporarily_timers;
-
-	Label *warning_child_of_container;
-	VBoxContainer *info_overlay;
 
 	Transform2D transform;
 	bool show_grid;
@@ -536,8 +531,6 @@ private:
 	VSplitContainer *bottom_split;
 
 	void _update_context_menu_stylebox();
-	void _popup_warning_temporarily(Control *p_control, const double p_duration);
-	void _popup_warning_depop(Control *p_control);
 
 	void _set_owner_for_node_and_children(Node *p_node, Node *p_owner);
 
@@ -577,9 +570,6 @@ public:
 
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
-
-	void add_control_to_info_overlay(Control *p_control);
-	void remove_control_from_info_overlay(Control *p_control);
 
 	HSplitContainer *get_palette_split();
 	VSplitContainer *get_bottom_split();

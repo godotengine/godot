@@ -1493,7 +1493,7 @@ hb_ot_layout_lookup_substitute_closure (hb_face_t    *face,
 {
   hb_set_t cur_intersected_glyphs;
   hb_map_t done_lookups_glyph_count;
-  hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> done_lookups_glyph_set;
+  hb_hashmap_t<unsigned, hb_set_t *> done_lookups_glyph_set;
   OT::hb_closure_context_t c (face, glyphs, &cur_intersected_glyphs, &done_lookups_glyph_count, &done_lookups_glyph_set);
 
   const OT::SubstLookup& l = face->table.GSUB->table->get_lookup (lookup_index);
@@ -1522,7 +1522,7 @@ hb_ot_layout_lookups_substitute_closure (hb_face_t      *face,
 {
   hb_set_t cur_intersected_glyphs;
   hb_map_t done_lookups_glyph_count;
-  hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> done_lookups_glyph_set;
+  hb_hashmap_t<unsigned, hb_set_t *> done_lookups_glyph_set;
   OT::hb_closure_context_t c (face, glyphs, &cur_intersected_glyphs, &done_lookups_glyph_count, &done_lookups_glyph_set);
   const OT::GSUB& gsub = *face->table.GSUB->table;
 

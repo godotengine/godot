@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -157,10 +157,10 @@ TEST_CASE("[String] Invalid UTF8") {
 	String s;
 	bool err = s.parse_utf8((const char *)u8str);
 	CHECK(err);
-	CHECK(s == String());
+	CHECK(s.is_empty());
 
 	CharString cs = (const char *)u8str;
-	CHECK(String::utf8(cs) == String());
+	CHECK(String::utf8(cs).is_empty());
 	ERR_PRINT_ON
 }
 
@@ -170,10 +170,10 @@ TEST_CASE("[String] Invalid UTF16") {
 	String s;
 	bool err = s.parse_utf16(u16str);
 	CHECK(err);
-	CHECK(s == String());
+	CHECK(s.is_empty());
 
 	Char16String cs = u16str;
-	CHECK(String::utf16(cs) == String());
+	CHECK(String::utf16(cs).is_empty());
 	ERR_PRINT_ON
 }
 
@@ -1132,6 +1132,25 @@ TEST_CASE("[String] c-escape/unescape") {
 	CHECK(s.c_escape().c_unescape() == s);
 }
 
+TEST_CASE("[String] indent") {
+	static const char *input[] = {
+		"",
+		"aaa\nbbb",
+		"\tcontains\n\tindent",
+		"empty\n\nline",
+	};
+	static const char *expected[] = {
+		"",
+		"\taaa\n\tbbb",
+		"\t\tcontains\n\t\tindent",
+		"\tempty\n\n\tline",
+	};
+
+	for (int i = 0; i < 3; i++) {
+		CHECK(String(input[i]).indent("\t") == expected[i]);
+	}
+}
+
 TEST_CASE("[String] dedent") {
 	String s = "      aaa\n    bbb";
 	String t = "aaa\nbbb";
@@ -1438,6 +1457,24 @@ TEST_CASE("[String] Variant ptr indexed set") {
 	setter(&s, 1, &v);
 
 	CHECK_EQ(s, String("azcd"));
+}
+
+TEST_CASE("[Stress][String] Empty via ' == String()'") {
+	for (int i = 0; i < 100000; ++i) {
+		String str = "Hello World!";
+		if (str.is_empty()) {
+			continue;
+		}
+	}
+}
+
+TEST_CASE("[Stress][String] Empty via `is_empty()`") {
+	for (int i = 0; i < 100000; ++i) {
+		String str = "Hello World!";
+		if (str.is_empty()) {
+			continue;
+		}
+	}
 }
 } // namespace TestString
 

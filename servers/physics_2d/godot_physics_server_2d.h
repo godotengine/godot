@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,6 @@ class GodotPhysicsServer2D : public PhysicsServer2D {
 	friend class GodotPhysicsDirectSpaceState2D;
 	friend class GodotPhysicsDirectBodyState2D;
 	bool active = true;
-	int iterations = 0;
 	bool doing_sync = false;
 
 	int island_count = 0;
@@ -208,19 +207,24 @@ public:
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override;
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const override;
 
-	virtual void body_set_applied_force(RID p_body, const Vector2 &p_force) override;
-	virtual Vector2 body_get_applied_force(RID p_body) const override;
-
-	virtual void body_set_applied_torque(RID p_body, real_t p_torque) override;
-	virtual real_t body_get_applied_torque(RID p_body) const override;
-
-	virtual void body_add_central_force(RID p_body, const Vector2 &p_force) override;
-	virtual void body_add_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position = Vector2()) override;
-	virtual void body_add_torque(RID p_body, real_t p_torque) override;
-
 	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) override;
 	virtual void body_apply_torque_impulse(RID p_body, real_t p_torque) override;
 	virtual void body_apply_impulse(RID p_body, const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) override;
+
+	virtual void body_apply_central_force(RID p_body, const Vector2 &p_force) override;
+	virtual void body_apply_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position = Vector2()) override;
+	virtual void body_apply_torque(RID p_body, real_t p_torque) override;
+
+	virtual void body_add_constant_central_force(RID p_body, const Vector2 &p_force) override;
+	virtual void body_add_constant_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position = Vector2()) override;
+	virtual void body_add_constant_torque(RID p_body, real_t p_torque) override;
+
+	virtual void body_set_constant_force(RID p_body, const Vector2 &p_force) override;
+	virtual Vector2 body_get_constant_force(RID p_body) const override;
+
+	virtual void body_set_constant_torque(RID p_body, real_t p_torque) override;
+	virtual real_t body_get_constant_torque(RID p_body) const override;
+
 	virtual void body_set_axis_velocity(RID p_body, const Vector2 &p_axis_velocity) override;
 
 	virtual void body_add_collision_exception(RID p_body, RID p_body_b) override;
@@ -282,8 +286,6 @@ public:
 	virtual void flush_queries() override;
 	virtual void end_sync() override;
 	virtual void finish() override;
-
-	virtual void set_collision_iterations(int p_iterations) override;
 
 	virtual bool is_flushing_queries() const override { return flushing_queries; }
 

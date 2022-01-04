@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ void RendererSceneSkyRD::SkyShaderData::set_code(const String &p_code) {
 	ubo_size = 0;
 	uniforms.clear();
 
-	if (code == String()) {
+	if (code.is_empty()) {
 		return; //just invalid, but no error
 	}
 
@@ -360,7 +360,7 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(RendererStorageR
 					mm.framebuffers[k] = RD::get_singleton()->framebuffer_create(fbtex);
 				}
 
-				layer.views.write[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer + i * 6, j, RD::TEXTURE_SLICE_CUBEMAP);
+				layer.views.write[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer + i * 6, j, 1, RD::TEXTURE_SLICE_CUBEMAP);
 
 				mmw = MAX(1, mmw >> 1);
 				mmh = MAX(1, mmh >> 1);
@@ -388,7 +388,7 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(RendererStorageR
 				mm.framebuffers[k] = RD::get_singleton()->framebuffer_create(fbtex);
 			}
 
-			layer.views.write[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer, j, RD::TEXTURE_SLICE_CUBEMAP);
+			layer.views.write[j] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer, j, 1, RD::TEXTURE_SLICE_CUBEMAP);
 
 			mmw = MAX(1, mmw >> 1);
 			mmh = MAX(1, mmh >> 1);
@@ -397,7 +397,7 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(RendererStorageR
 		layers.push_back(layer);
 	}
 
-	radiance_base_cubemap = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer, 0, RD::TEXTURE_SLICE_CUBEMAP);
+	radiance_base_cubemap = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer, 0, 1, RD::TEXTURE_SLICE_CUBEMAP);
 	RD::get_singleton()->set_resource_name(radiance_base_cubemap, "radiance base cubemap");
 	RD::TextureFormat tf;
 	tf.format = p_texture_format;
@@ -418,7 +418,7 @@ void RendererSceneSkyRD::ReflectionData::update_reflection_data(RendererStorageR
 			ReflectionData::DownsampleLayer::Mipmap &mm = downsampled_layer.mipmaps.write[j];
 			mm.size.width = mmw;
 			mm.size.height = mmh;
-			mm.view = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), downsampled_radiance_cubemap, 0, j, RD::TEXTURE_SLICE_CUBEMAP);
+			mm.view = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), downsampled_radiance_cubemap, 0, j, 1, RD::TEXTURE_SLICE_CUBEMAP);
 			RD::get_singleton()->set_resource_name(mm.view, "Downsampled Radiance Cubemap Mip " + itos(j) + " ");
 			if (prefer_raster_effects) {
 				// we need a framebuffer for each side of our cubemap

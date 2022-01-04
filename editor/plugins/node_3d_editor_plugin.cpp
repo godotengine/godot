@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -860,7 +860,7 @@ void Node3DEditorViewport::_update_name() {
 	}
 
 	view_menu->set_text(name);
-	view_menu->set_size(Vector2(0, 0)); // resets the button size
+	view_menu->reset_size();
 }
 
 void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
@@ -1238,7 +1238,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		Node3D *item = selection_results[i].item;
 		if (item != scene && item->get_owner() != scene && item != scene->get_deepest_editable_node(item)) {
 			//invalid result
-			selection_results.remove(i);
+			selection_results.remove_at(i);
 			i--;
 		}
 	}
@@ -1291,7 +1291,8 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			selection_menu->set_item_tooltip(i, String(spat->get_name()) + "\nType: " + spat->get_class() + "\nPath: " + node_path);
 		}
 
-		selection_menu->set_position(get_screen_transform().xform(b->get_position()));
+		selection_menu->set_position(get_screen_position() + b->get_position());
+		selection_menu->reset_size();
 		selection_menu->popup();
 	}
 }
@@ -1749,7 +1750,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} else {
 				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 				if (clicked.is_valid() && movement_threshold_passed) {
-					_compute_edit(_edit.mouse_pos);
+					_compute_edit(_edit.original_mouse_pos);
 					clicked = ObjectID();
 
 					_edit.mode = TRANSFORM_TRANSLATE;
@@ -2438,7 +2439,8 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 		_menu_option(VIEW_PERSPECTIVE);
 	}
 
-	const real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_sensitivity");
+	// Scale mouse sensitivity with camera FOV scale when zoomed in to make it easier to point at things.
+	const real_t degrees_per_pixel = real_t(EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_sensitivity")) * MIN(1.0, cursor.fov_scale);
 	const real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
 	const bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
 
@@ -2686,8 +2688,8 @@ void Node3DEditorViewport::_project_settings_changed() {
 	const bool use_occlusion_culling = GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling");
 	viewport->set_use_occlusion_culling(use_occlusion_culling);
 
-	const float lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
-	viewport->set_lod_threshold(lod_threshold);
+	const float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
+	viewport->set_mesh_lod_threshold(mesh_lod_threshold);
 }
 
 void Node3DEditorViewport::_notification(int p_what) {
@@ -2986,7 +2988,7 @@ static void draw_indicator_bar(Control &surface, real_t fill, const Ref<Texture2
 	surface.draw_texture(icon, icon_pos);
 
 	// Draw text below the bar (for speed/zoom information).
-	surface.draw_string(font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), text, HALIGN_LEFT, -1.f, font_size);
+	surface.draw_string(font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), text, HORIZONTAL_ALIGNMENT_LEFT, -1.f, font_size);
 }
 
 void Node3DEditorViewport::_draw() {
@@ -3026,9 +3028,9 @@ void Node3DEditorViewport::_draw() {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		Point2 msgpos = Point2(5, get_size().y - 20);
-		font->draw_string(ci, msgpos + Point2(1, 1), message, HALIGN_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		font->draw_string(ci, msgpos + Point2(-1, -1), message, HALIGN_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		font->draw_string(ci, msgpos, message, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 1));
+		font->draw_string(ci, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+		font->draw_string(ci, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+		font->draw_string(ci, msgpos, message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
 	}
 
 	if (_edit.mode == TRANSFORM_ROTATE) {
@@ -3389,6 +3391,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION:
 		case VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE:
 		case VIEW_DISPLAY_DEBUG_SSAO:
+		case VIEW_DISPLAY_DEBUG_SSIL:
 		case VIEW_DISPLAY_DEBUG_PSSM_SPLITS:
 		case VIEW_DISPLAY_DEBUG_DECAL_ATLAS:
 		case VIEW_DISPLAY_DEBUG_SDFGI:
@@ -3415,6 +3418,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION,
 				VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
 				VIEW_DISPLAY_DEBUG_SSAO,
+				VIEW_DISPLAY_DEBUG_SSIL,
 				VIEW_DISPLAY_DEBUG_GI_BUFFER,
 				VIEW_DISPLAY_DEBUG_DISABLE_LOD,
 				VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
@@ -3443,6 +3447,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_VOXEL_GI_EMISSION,
 				Viewport::DEBUG_DRAW_SCENE_LUMINANCE,
 				Viewport::DEBUG_DRAW_SSAO,
+				Viewport::DEBUG_DRAW_SSIL,
 				Viewport::DEBUG_DRAW_GI_BUFFER,
 				Viewport::DEBUG_DRAW_DISABLE_LOD,
 				Viewport::DEBUG_DRAW_PSSM_SPLITS,
@@ -3620,7 +3625,7 @@ void Node3DEditorViewport::_selection_result_pressed(int p_result) {
 void Node3DEditorViewport::_selection_menu_hide() {
 	selection_results.clear();
 	selection_menu->clear();
-	selection_menu->set_size(Vector2(0, 0));
+	selection_menu->reset_size();
 }
 
 void Node3DEditorViewport::set_can_preview(Camera3D *p_preview) {
@@ -3983,6 +3988,37 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, boo
 	return bounds;
 }
 
+Node *Node3DEditorViewport::_sanitize_preview_node(Node *p_node) const {
+	Node3D *node_3d = Object::cast_to<Node3D>(p_node);
+	if (node_3d == nullptr) {
+		Node3D *replacement_node = memnew(Node3D);
+		replacement_node->set_name(p_node->get_name());
+		p_node->replace_by(replacement_node);
+		memdelete(p_node);
+		p_node = replacement_node;
+	} else {
+		VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(node_3d);
+		if (visual_instance == nullptr) {
+			Node3D *replacement_node = memnew(Node3D);
+			replacement_node->set_name(node_3d->get_name());
+			replacement_node->set_visible(node_3d->is_visible());
+			replacement_node->set_transform(node_3d->get_transform());
+			replacement_node->set_rotation_edit_mode(node_3d->get_rotation_edit_mode());
+			replacement_node->set_rotation_order(node_3d->get_rotation_order());
+			replacement_node->set_as_top_level(node_3d->is_set_as_top_level());
+			p_node->replace_by(replacement_node);
+			memdelete(p_node);
+			p_node = replacement_node;
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_sanitize_preview_node(p_node->get_child(i));
+	}
+
+	return p_node;
+}
+
 void Node3DEditorViewport::_create_preview(const Vector<String> &files) const {
 	for (int i = 0; i < files.size(); i++) {
 		String path = files[i];
@@ -3999,6 +4035,7 @@ void Node3DEditorViewport::_create_preview(const Vector<String> &files) const {
 				if (scene.is_valid()) {
 					Node *instance = scene->instantiate();
 					if (instance) {
+						instance = _sanitize_preview_node(instance);
 						preview_node->add_child(instance);
 					}
 				}
@@ -4048,7 +4085,23 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		if (mesh != nullptr) {
 			MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 			mesh_instance->set_mesh(mesh);
-			mesh_instance->set_name(path.get_file().get_basename());
+
+			// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
+			String name = path.get_file().get_basename();
+			switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_casing").operator int()) {
+				case NAME_CASING_PASCAL_CASE:
+					name = name.capitalize().replace(" ", "");
+					break;
+				case NAME_CASING_CAMEL_CASE:
+					name = name.capitalize().replace(" ", "");
+					name[0] = name.to_lower()[0];
+					break;
+				case NAME_CASING_SNAKE_CASE:
+					name = name.capitalize().replace(" ", "_").to_lower();
+					break;
+			}
+			mesh_instance->set_name(name);
+
 			instantiated_scene = mesh_instance;
 		} else {
 			if (!scene.is_valid()) { // invalid scene
@@ -4063,7 +4116,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		return false;
 	}
 
-	if (editor->get_edited_scene()->get_scene_file_path() != "") { // cyclical instancing
+	if (!editor->get_edited_scene()->get_scene_file_path().is_empty()) { // cyclical instancing
 		if (_cyclical_dependency_exists(editor->get_edited_scene()->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;
@@ -4221,10 +4274,9 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 		if (root_node) {
 			target_node = root_node;
 		} else {
-			accept->set_text(TTR("Cannot drag and drop into scene with no root node."));
-			accept->popup_centered();
-			_remove_preview();
-			return;
+			// Create a root node so we can add child nodes to it.
+			EditorNode::get_singleton()->get_scene_tree_dock()->add_root_node(memnew(Node3D));
+			target_node = get_tree()->get_edited_scene_root();
 		}
 	} else {
 		accept->set_text(TTR("Cannot drag and drop into multiple selected nodes."));
@@ -4335,6 +4387,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	display_submenu->add_radio_check_item(TTR("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE);
 	display_submenu->add_separator();
 	display_submenu->add_radio_check_item(TTR("SSAO"), VIEW_DISPLAY_DEBUG_SSAO);
+	display_submenu->add_radio_check_item(TTR("SSIL"), VIEW_DISPLAY_DEBUG_SSIL);
 	display_submenu->add_separator();
 	display_submenu->add_radio_check_item(TTR("GI Buffer"), VIEW_DISPLAY_DEBUG_GI_BUFFER);
 	display_submenu->add_separator();
@@ -4428,7 +4481,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	cinema_label = memnew(Label);
 	cinema_label->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
 	cinema_label->set_h_grow_direction(GROW_DIRECTION_END);
-	cinema_label->set_align(Label::ALIGN_CENTER);
+	cinema_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	surface->add_child(cinema_label);
 	cinema_label->set_text(TTR("Cinematic Preview"));
 	cinema_label->hide();
@@ -4439,7 +4492,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	locked_label->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -10 * EDSCALE);
 	locked_label->set_h_grow_direction(GROW_DIRECTION_END);
 	locked_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	locked_label->set_align(Label::ALIGN_CENTER);
+	locked_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	surface->add_child(locked_label);
 	locked_label->set_text(TTR("View Rotation Locked"));
 	locked_label->hide();
@@ -6631,6 +6684,7 @@ void Node3DEditor::unhandled_key_input(const Ref<InputEvent> &p_event) {
 void Node3DEditor::_sun_environ_settings_pressed() {
 	Vector2 pos = sun_environ_settings->get_screen_position() + sun_environ_settings->get_size();
 	sun_environ_popup->set_position(pos - Vector2(sun_environ_popup->get_contents_minimum_size().width / 2, 0));
+	sun_environ_popup->reset_size();
 	sun_environ_popup->popup();
 }
 
@@ -7644,7 +7698,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 		sun_title->set_theme_type_variation("HeaderSmall");
 		sun_vb->add_child(sun_title);
 		sun_title->set_text(TTR("Preview Sun"));
-		sun_title->set_align(Label::ALIGN_CENTER);
+		sun_title->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 		CenterContainer *sun_direction_center = memnew(CenterContainer);
 		sun_direction = memnew(Control);
@@ -7732,8 +7786,8 @@ void fragment() {
 
 		sun_state = memnew(Label);
 		sun_environ_hb->add_child(sun_state);
-		sun_state->set_align(Label::ALIGN_CENTER);
-		sun_state->set_valign(Label::VALIGN_CENTER);
+		sun_state->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		sun_state->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 		sun_state->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		VSeparator *sc = memnew(VSeparator);
@@ -7751,7 +7805,7 @@ void fragment() {
 
 		environ_vb->add_child(environ_title);
 		environ_title->set_text(TTR("Preview Environment"));
-		environ_title->set_align(Label::ALIGN_CENTER);
+		environ_title->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 		environ_sky_color = memnew(ColorPickerButton);
 		environ_sky_color->set_edit_alpha(false);
@@ -7799,8 +7853,8 @@ void fragment() {
 
 		environ_state = memnew(Label);
 		sun_environ_hb->add_child(environ_state);
-		environ_state->set_align(Label::ALIGN_CENTER);
-		environ_state->set_valign(Label::VALIGN_CENTER);
+		environ_state->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		environ_state->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 		environ_state->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		preview_sun = memnew(DirectionalLight3D);

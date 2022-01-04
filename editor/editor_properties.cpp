@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -380,7 +380,7 @@ void EditorPropertyPath::_path_pressed() {
 		dialog->set_file_mode(save_mode ? EditorFileDialog::FILE_MODE_SAVE_FILE : EditorFileDialog::FILE_MODE_OPEN_FILE);
 		for (int i = 0; i < extensions.size(); i++) {
 			String e = extensions[i].strip_edges();
-			if (e != String()) {
+			if (!e.is_empty()) {
 				dialog->add_filter(extensions[i].strip_edges());
 			}
 		}
@@ -706,7 +706,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 	bool first = true;
 	for (int i = 0; i < p_options.size(); i++) {
 		String option = p_options[i].strip_edges();
-		if (option != "") {
+		if (!option.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(option);
 			cb->set_clip_text(true);
@@ -832,7 +832,7 @@ public:
 				update();
 			} else if (expand_hovered) {
 				expanded = !expanded;
-				minimum_size_changed();
+				update_minimum_size();
 				update();
 			}
 		}
@@ -891,7 +891,7 @@ public:
 							Vector2 offset;
 							offset.y = rect2.size.y * 0.75;
 
-							draw_string(font, rect2.position + offset, itos(layer_index + 1), HALIGN_CENTER, rect2.size.x, font_size, on ? text_color_on : text_color);
+							draw_string(font, rect2.position + offset, itos(layer_index + 1), HORIZONTAL_ALIGNMENT_CENTER, rect2.size.x, font_size, on ? text_color_on : text_color);
 
 							ofs.x += bsize + 1;
 
@@ -935,7 +935,7 @@ public:
 				}
 
 				if ((expansion_rows != prev_expansion_rows) && expanded) {
-					minimum_size_changed();
+					update_minimum_size();
 				}
 
 				if ((expansion_rows == 0) && (layer_index == layer_count)) {
@@ -1055,7 +1055,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i + 1));
 		}
 
-		if (name == "") {
+		if (name.is_empty()) {
 			name = vformat(TTR("Layer %d"), i + 1);
 		}
 
@@ -1186,7 +1186,7 @@ void EditorPropertyObjectID::_edit_pressed() {
 
 void EditorPropertyObjectID::update_property() {
 	String type = base_type;
-	if (type == "") {
+	if (type.is_empty()) {
 		type = "Object";
 	}
 
@@ -1283,7 +1283,8 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
-			preset->set_position(easing_draw->get_screen_transform().xform(mb->get_position()));
+			preset->set_position(easing_draw->get_screen_position() + mb->get_position());
+			preset->reset_size();
 			preset->popup();
 
 			// Ensure the easing doesn't appear as being dragged
@@ -1382,7 +1383,7 @@ void EditorPropertyEasing::_draw_easing() {
 	} else {
 		decimals = 1;
 	}
-	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), TS->format_number(rtos(exp).pad_decimals(decimals)), HALIGN_LEFT, -1, font_size, font_color);
+	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), TS->format_number(rtos(exp).pad_decimals(decimals)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 }
 
 void EditorPropertyEasing::update_property() {
@@ -2726,6 +2727,29 @@ void EditorPropertyNodePath::_node_clear() {
 	update_property();
 }
 
+bool EditorPropertyNodePath::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	return !is_read_only() && is_drop_valid(p_data);
+}
+
+void EditorPropertyNodePath::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	ERR_FAIL_COND(!is_drop_valid(p_data));
+	Dictionary data = p_data;
+	Array nodes = data["nodes"];
+	Node *node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
+
+	if (node) {
+		_node_selected(node->get_path());
+	}
+}
+
+bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const {
+	if (p_drag_data["type"] != "nodes") {
+		return false;
+	}
+	Array nodes = p_drag_data["nodes"];
+	return nodes.size() == 1;
+}
+
 void EditorPropertyNodePath::update_property() {
 	NodePath p = get_edited_object()->get(get_edited_property());
 
@@ -2780,6 +2804,8 @@ void EditorPropertyNodePath::_notification(int p_what) {
 }
 
 void EditorPropertyNodePath::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw", "position", "data", "from"), &EditorPropertyNodePath::drop_data_fw);
 }
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
@@ -2790,6 +2816,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect("pressed", callable_mp(this, &EditorPropertyNodePath::_node_assign));
+	assign->set_drag_forwarding(this);
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
@@ -3064,7 +3091,7 @@ void EditorPropertyResource::update_property() {
 		if (res.is_valid() && get_edited_object()->editor_is_section_unfolded(get_edited_property())) {
 			if (!sub_inspector) {
 				sub_inspector = memnew(EditorInspector);
-				sub_inspector->set_enable_v_scroll(false);
+				sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 				sub_inspector->set_use_doc_hints(true);
 
 				sub_inspector->set_sub_inspector(true);
@@ -3228,7 +3255,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		}
 	}
 
-	if ((hint.radians || degrees) && hint.suffix == String()) {
+	if ((hint.radians || degrees) && hint.suffix.is_empty()) {
 		hint.suffix = U"\u00B0";
 	}
 
@@ -3513,10 +3540,10 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::NODE_PATH: {
 			EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
-			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && p_hint_text != String()) {
+			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && !p_hint_text.is_empty()) {
 				editor->setup(p_hint_text, Vector<StringName>(), (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));
 			}
-			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && p_hint_text != String()) {
+			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && !p_hint_text.is_empty()) {
 				Vector<String> types = p_hint_text.split(",", false);
 				Vector<StringName> sn = Variant(types); //convert via variant
 				editor->setup(NodePath(), sn, (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));

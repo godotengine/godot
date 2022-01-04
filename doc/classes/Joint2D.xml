@@ -11,6 +11,7 @@
 	<members>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0">
 			When [member node_a] and [member node_b] move in different directions the [code]bias[/code] controls how fast the joint pulls them back to their original position. The lower the [code]bias[/code] the more the two bodies can pull on the joint.
+			When set to [code]0[/code], the default value from [member ProjectSettings.physics/2d/solver/default_constraint_bias] is used.
 		</member>
 		<member name="disable_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" default="true">
 			If [code]true[/code], [member node_a] and [member node_b] can not collide.

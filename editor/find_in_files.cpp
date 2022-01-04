@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,7 +114,7 @@ void FindInFiles::_notification(int p_notification) {
 }
 
 void FindInFiles::start() {
-	if (_pattern == "") {
+	if (_pattern.is_empty()) {
 		print_verbose("Nothing to search, pattern is empty");
 		emit_signal(SNAME(SIGNAL_FINISHED));
 		return;
@@ -224,7 +224,7 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 	for (int i = 0; i < 1000; ++i) {
 		String file = dir->get_next();
 
-		if (file == "") {
+		if (file.is_empty()) {
 			break;
 		}
 

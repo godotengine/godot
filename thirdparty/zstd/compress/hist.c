@@ -1,7 +1,7 @@
 /* ******************************************************************
  * hist : Histogram functions
  * part of Finite State Entropy project
- * Copyright (c) 2013-2020, Yann Collet, Facebook, Inc.
+ * Copyright (c) Yann Collet, Facebook, Inc.
  *
  *  You can contact the author at :
  *  - FSE source repository : https://github.com/Cyan4973/FiniteStateEntropy

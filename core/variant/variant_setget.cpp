@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -704,7 +704,7 @@ struct VariantIndexedSetGet_String {
 		String *b = VariantGetInternalPtr<String>::get_ptr(base);
 		const String *v = VariantInternal::get_string(value);
 		if (v->length() == 0) {
-			b->remove(index);
+			b->remove_at(index);
 		} else {
 			b->set(index, v->get(0));
 		}
@@ -723,7 +723,7 @@ struct VariantIndexedSetGet_String {
 		String *b = VariantGetInternalPtr<String>::get_ptr(base);
 		const String *v = VariantInternal::get_string(value);
 		if (v->length() == 0) {
-			b->remove(index);
+			b->remove_at(index);
 		} else {
 			b->set(index, v->get(0));
 		}
@@ -738,7 +738,7 @@ struct VariantIndexedSetGet_String {
 		OOB_TEST(index, v.length());
 		const String &m = *reinterpret_cast<const String *>(member);
 		if (unlikely(m.length() == 0)) {
-			v.remove(index);
+			v.remove_at(index);
 		} else {
 			v.set(index, m.unicode_at(0));
 		}

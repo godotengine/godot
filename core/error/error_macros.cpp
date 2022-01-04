@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,9 +37,16 @@
 static ErrorHandlerList *error_handler_list = nullptr;
 
 void add_error_handler(ErrorHandlerList *p_handler) {
+	// If p_handler is already in error_handler_list
+	// we'd better remove it first then we can add it.
+	// This prevent cyclic redundancy.
+	remove_error_handler(p_handler);
+
 	_global_lock();
+
 	p_handler->next = error_handler_list;
 	error_handler_list = p_handler;
+
 	_global_unlock();
 }
 
@@ -76,7 +83,7 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 
 // Main error printing function.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
-	OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, (Logger::ErrorType)p_type);
+	OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type);
 
 	_global_lock();
 	ErrorHandlerList *l = error_handler_list;

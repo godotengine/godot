@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -124,14 +124,14 @@ void GodotStep2D::_check_suspend(LocalVector<GodotBody2D *> &p_body_island) cons
 	}
 }
 
-void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta, int p_iterations) {
+void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 	p_space->lock(); // can't access space during this
 
 	p_space->setup(); //update inertias, etc
 
 	p_space->set_last_step(p_delta);
 
-	iterations = p_iterations;
+	iterations = p_space->get_solver_iterations();
 	delta = p_delta;
 
 	const SelfList<GodotBody2D>::List *body_list = &p_space->get_active_body_list();

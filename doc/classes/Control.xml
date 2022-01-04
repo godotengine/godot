@@ -102,6 +102,7 @@
 			<description>
 				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_min_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
+				[b]Note:[/b] This method will not be called when the script is attached to a [Control] node that already overrides its minimum size (e.g. [Label], [Button], [PanelContainer] etc.). It can only be used with most basic GUI nodes, like [Control], [Container], [Panel] etc.
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
@@ -200,7 +201,7 @@
 			<argument index="1" name="text" type="String" />
 			<description>
 				User defined BiDi algorithm override function.
-				Return [code]Array[/code] of [code]Vector2i[/code] text ranges, in the left-to-right order. Ranges should cover full source [code]text[/code] without overlaps. BiDi algorithm will be used on each range separately.
+				Returns [code]Array[/code] of [code]Vector2i[/code] text ranges, in the left-to-right order. Ranges should cover full source [code]text[/code] without overlaps. BiDi algorithm will be used on each range separately.
 			</description>
 		</method>
 		<method name="accept_event">
@@ -654,16 +655,16 @@
 				See [method add_theme_stylebox_override].
 			</description>
 		</method>
+		<method name="is_drag_successful" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if drag operation is successful.
+			</description>
+		</method>
 		<method name="is_layout_rtl" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if layout is right-to-left.
-			</description>
-		</method>
-		<method name="minimum_size_changed">
-			<return type="void" />
-			<description>
-				Invalidates the size cache in this node and in parent nodes up to top_level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="release_focus">
@@ -712,6 +713,12 @@
 			<argument index="0" name="name" type="StringName" />
 			<description>
 				Removes a local override for a theme [StyleBox] with the specified [code]name[/code] previously added by [method add_theme_stylebox_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="reset_size">
+			<return type="void" />
+			<description>
+				Resets the size to [method get_combined_minimum_size]. This is equivalent to calling [code]set_size(Vector2())[/code] (or any size below the minimum).
 			</description>
 		</method>
 		<method name="set_anchor">
@@ -919,6 +926,12 @@
 			<description>
 				Sets the size (see [member rect_size]).
 				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
+			</description>
+		</method>
+		<method name="update_minimum_size">
+			<return type="void" />
+			<description>
+				Invalidates the size cache in this node and in parent nodes up to top level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="warp_mouse">

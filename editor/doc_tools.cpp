@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,11 +37,41 @@
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
+#include "core/string/translation.h"
 #include "core/version.h"
 #include "scene/resources/theme.h"
 
 // Used for a hack preserving Mono properties on non-Mono builds.
 #include "modules/modules_enabled.gen.h" // For mono.
+
+static String _get_indent(const String &p_text) {
+	String indent;
+	bool has_text = false;
+	int line_start = 0;
+
+	for (int i = 0; i < p_text.length(); i++) {
+		const char32_t c = p_text[i];
+		if (c == '\n') {
+			line_start = i + 1;
+		} else if (c > 32) {
+			has_text = true;
+			indent = p_text.substr(line_start, i - line_start);
+			break; // Indentation of the first line that has text.
+		}
+	}
+	if (!has_text) {
+		return p_text;
+	}
+	return indent;
+}
+
+static String _translate_doc_string(const String &p_text) {
+	const String indent = _get_indent(p_text);
+	const String message = p_text.dedent().strip_edges();
+	const String translated = TranslationServer::get_singleton()->doc_translate(message, "");
+	// No need to restore stripped edges because they'll be stripped again later.
+	return translated.indent(indent);
+}
 
 void DocTools::merge_from(const DocTools &p_data) {
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
@@ -252,17 +282,17 @@ void DocTools::remove_from(const DocTools &p_data) {
 }
 
 void DocTools::add_doc(const DocData::ClassDoc &p_class_doc) {
-	ERR_FAIL_COND(p_class_doc.name == "");
+	ERR_FAIL_COND(p_class_doc.name.is_empty());
 	class_list[p_class_doc.name] = p_class_doc;
 }
 
 void DocTools::remove_doc(const String &p_class_name) {
-	ERR_FAIL_COND(p_class_name == "" || !class_list.has(p_class_name));
+	ERR_FAIL_COND(p_class_name.is_empty() || !class_list.has(p_class_name));
 	class_list.erase(p_class_name);
 }
 
 bool DocTools::has_doc(const String &p_class_name) {
-	if (p_class_name == "") {
+	if (p_class_name.is_empty()) {
 		return false;
 	}
 	return class_list.has(p_class_name);
@@ -341,10 +371,16 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			DocData::PropertyDoc prop;
-
 			prop.name = E.name;
-
 			prop.overridden = inherited;
+
+			if (inherited) {
+				String parent = ClassDB::get_parent_class(c.name);
+				while (!ClassDB::has_property(parent, prop.name, true)) {
+					parent = ClassDB::get_parent_class(parent);
+				}
+				prop.overrides = parent;
+			}
 
 			bool default_value_valid = false;
 			Variant default_value;
@@ -431,7 +467,7 @@ void DocTools::generate(bool p_basic_types) {
 		method_list.sort();
 
 		for (const MethodInfo &E : method_list) {
-			if (E.name == "" || (E.name[0] == '_' && !(E.flags & METHOD_FLAG_VIRTUAL))) {
+			if (E.name.is_empty() || (E.name[0] == '_' && !(E.flags & METHOD_FLAG_VIRTUAL))) {
 				continue; //hidden, don't count
 			}
 
@@ -453,21 +489,21 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			if (E.flags & METHOD_FLAG_CONST) {
-				if (method.qualifiers != "") {
+				if (!method.qualifiers.is_empty()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "const";
 			}
 
 			if (E.flags & METHOD_FLAG_VARARG) {
-				if (method.qualifiers != "") {
+				if (!method.qualifiers.is_empty()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "vararg";
 			}
 
 			if (E.flags & METHOD_FLAG_STATIC) {
-				if (method.qualifiers != "") {
+				if (!method.qualifiers.is_empty()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "static";
@@ -603,6 +639,8 @@ void DocTools::generate(bool p_basic_types) {
 				tid.data_type = "style";
 				c.theme_properties.push_back(tid);
 			}
+
+			c.theme_properties.sort();
 		}
 
 		classes.pop_front();
@@ -728,21 +766,21 @@ void DocTools::generate(bool p_basic_types) {
 			DocData::return_doc_from_retinfo(method, mi.return_val);
 
 			if (mi.flags & METHOD_FLAG_VARARG) {
-				if (method.qualifiers != "") {
+				if (!method.qualifiers.is_empty()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "vararg";
 			}
 
 			if (mi.flags & METHOD_FLAG_CONST) {
-				if (method.qualifiers != "") {
+				if (!method.qualifiers.is_empty()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "const";
 			}
 
 			if (mi.flags & METHOD_FLAG_STATIC) {
-				if (method.qualifiers != "") {
+				if (!method.qualifiers.is_empty()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "static";
@@ -877,7 +915,7 @@ void DocTools::generate(bool p_basic_types) {
 				md.name = mi.name;
 
 				if (mi.flags & METHOD_FLAG_VARARG) {
-					if (md.qualifiers != "") {
+					if (!md.qualifiers.is_empty()) {
 						md.qualifiers += " ";
 					}
 					md.qualifiers += "vararg";
@@ -997,7 +1035,7 @@ Error DocTools::load_classes(const String &p_dir) {
 	da->list_dir_begin();
 	String path;
 	path = da->get_next();
-	while (path != String()) {
+	while (!path.is_empty()) {
 		if (!da->current_is_dir() && path.ends_with("xml")) {
 			Ref<XMLParser> parser = memnew(XMLParser);
 			Error err2 = parser->open(p_dir.plus_file(path));
@@ -1027,7 +1065,7 @@ Error DocTools::erase_classes(const String &p_dir) {
 	da->list_dir_begin();
 	String path;
 	path = da->get_next();
-	while (path != String()) {
+	while (!path.is_empty()) {
 		if (!da->current_is_dir() && path.ends_with("xml")) {
 			to_erase.push_back(path);
 		}
@@ -1228,7 +1266,7 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 }
 
 static void _write_string(FileAccess *f, int p_tablevel, const String &p_string) {
-	if (p_string == "") {
+	if (p_string.is_empty()) {
 		return;
 	}
 	String tab;
@@ -1246,15 +1284,15 @@ static void _write_method_doc(FileAccess *f, const String &p_name, Vector<DocDat
 			const DocData::MethodDoc &m = p_method_docs[i];
 
 			String qualifiers;
-			if (m.qualifiers != "") {
+			if (!m.qualifiers.is_empty()) {
 				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
 			}
 
 			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
 
-			if (m.return_type != "") {
+			if (!m.return_type.is_empty()) {
 				String enum_text;
-				if (m.return_enum != String()) {
+				if (!m.return_enum.is_empty()) {
 					enum_text = " enum=\"" + m.return_enum + "\"";
 				}
 				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
@@ -1269,11 +1307,11 @@ static void _write_method_doc(FileAccess *f, const String &p_name, Vector<DocDat
 				const DocData::ArgumentDoc &a = m.arguments[j];
 
 				String enum_text;
-				if (a.enumeration != String()) {
+				if (!a.enumeration.is_empty()) {
 					enum_text = " enum=\"" + a.enumeration + "\"";
 				}
 
-				if (a.default_value != "") {
+				if (!a.default_value.is_empty()) {
 					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
 				} else {
 					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
@@ -1281,7 +1319,7 @@ static void _write_method_doc(FileAccess *f, const String &p_name, Vector<DocDat
 			}
 
 			_write_string(f, 3, "<description>");
-			_write_string(f, 4, m.description.strip_edges().xml_escape());
+			_write_string(f, 4, _translate_doc_string(m.description).strip_edges().xml_escape());
 			_write_string(f, 3, "</description>");
 
 			_write_string(f, 2, "</" + p_name + ">");
@@ -1311,7 +1349,7 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 		_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
 
 		String header = "<class name=\"" + c.name + "\"";
-		if (c.inherits != "") {
+		if (!c.inherits.is_empty()) {
 			header += " inherits=\"" + c.inherits + "\"";
 		}
 		header += String(" version=\"") + VERSION_BRANCH + "\"";
@@ -1319,11 +1357,11 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 		_write_string(f, 0, header);
 
 		_write_string(f, 1, "<brief_description>");
-		_write_string(f, 2, c.brief_description.strip_edges().xml_escape());
+		_write_string(f, 2, _translate_doc_string(c.brief_description).strip_edges().xml_escape());
 		_write_string(f, 1, "</brief_description>");
 
 		_write_string(f, 1, "<description>");
-		_write_string(f, 2, c.description.strip_edges().xml_escape());
+		_write_string(f, 2, _translate_doc_string(c.description).strip_edges().xml_escape());
 		_write_string(f, 1, "</description>");
 
 		_write_string(f, 1, "<tutorials>");
@@ -1345,20 +1383,20 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 
 			for (int i = 0; i < c.properties.size(); i++) {
 				String additional_attributes;
-				if (c.properties[i].enumeration != String()) {
+				if (!c.properties[i].enumeration.is_empty()) {
 					additional_attributes += " enum=\"" + c.properties[i].enumeration + "\"";
 				}
-				if (c.properties[i].default_value != String()) {
+				if (!c.properties[i].default_value.is_empty()) {
 					additional_attributes += " default=\"" + c.properties[i].default_value.xml_escape(true) + "\"";
 				}
 
 				const DocData::PropertyDoc &p = c.properties[i];
 
 				if (c.properties[i].overridden) {
-					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" override=\"true\"" + additional_attributes + " />");
+					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" overrides=\"" + p.overrides + "\"" + additional_attributes + " />");
 				} else {
 					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + additional_attributes + ">");
-					_write_string(f, 3, p.description.strip_edges().xml_escape());
+					_write_string(f, 3, _translate_doc_string(p.description).strip_edges().xml_escape());
 					_write_string(f, 2, "</member>");
 				}
 			}
@@ -1372,19 +1410,19 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 			for (int i = 0; i < c.constants.size(); i++) {
 				const DocData::ConstantDoc &k = c.constants[i];
 				if (k.is_value_valid) {
-					if (k.enumeration != String()) {
+					if (!k.enumeration.is_empty()) {
 						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
 					} else {
 						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
 					}
 				} else {
-					if (k.enumeration != String()) {
+					if (!k.enumeration.is_empty()) {
 						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
 					} else {
 						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
 					}
 				}
-				_write_string(f, 3, k.description.strip_edges().xml_escape());
+				_write_string(f, 3, _translate_doc_string(k.description).strip_edges().xml_escape());
 				_write_string(f, 2, "</constant>");
 			}
 
@@ -1398,13 +1436,13 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 			for (int i = 0; i < c.theme_properties.size(); i++) {
 				const DocData::ThemeItemDoc &ti = c.theme_properties[i];
 
-				if (ti.default_value != "") {
+				if (!ti.default_value.is_empty()) {
 					_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\" default=\"" + ti.default_value.xml_escape(true) + "\">");
 				} else {
 					_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\">");
 				}
 
-				_write_string(f, 3, ti.description.strip_edges().xml_escape());
+				_write_string(f, 3, _translate_doc_string(ti.description).strip_edges().xml_escape());
 
 				_write_string(f, 2, "</theme_item>");
 			}

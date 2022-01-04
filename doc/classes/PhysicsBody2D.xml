@@ -57,6 +57,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" override="true" default="false" />
+		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" overrides="CollisionObject2D" default="false" />
 	</members>
 </class>

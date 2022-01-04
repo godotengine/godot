@@ -392,7 +392,7 @@
 		<method name="screen_get_max_scale" qualifiers="const">
 			<return type="float" />
 			<description>
-				Return the greatest scale factor of all screens.
+				Returns the greatest scale factor of all screens.
 				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
@@ -413,7 +413,7 @@
 			<return type="float" />
 			<argument index="0" name="screen" type="int" default="-1" />
 			<description>
-				Return the scale factor of the specified screen by index.
+				Returns the scale factor of the specified screen by index.
 				[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) screen, and [code]1.0[/code] for all other cases.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>

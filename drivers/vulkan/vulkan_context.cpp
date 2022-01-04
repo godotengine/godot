@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -535,6 +535,24 @@ Error VulkanContext::_check_capabilities() {
 		multiview_capabilities.is_supported = multiview_features.multiview;
 		multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
 		multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
+
+		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features;
+		shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
+		shader_features.pNext = NULL;
+
+		device_features.pNext = &shader_features;
+
+		device_features_func(gpu, &device_features);
+		shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
+
+		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature;
+		storage_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
+		storage_feature.pNext = NULL;
+
+		device_features.pNext = &storage_feature;
+
+		device_features_func(gpu, &device_features);
+		storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = storage_feature.storageBuffer16BitAccess;
 	}
 
 	// check extended properties
@@ -610,15 +628,13 @@ Error VulkanContext::_create_physical_device() {
 	}
 
 	CharString cs = ProjectSettings::get_singleton()->get("application/config/name").operator String().utf8();
-	String name = "GodotEngine " + String(VERSION_FULL_NAME);
-	CharString namecs = name.utf8();
 	const VkApplicationInfo app = {
 		/*sType*/ VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		/*pNext*/ nullptr,
 		/*pApplicationName*/ cs.get_data(),
 		/*applicationVersion*/ 0,
-		/*pEngineName*/ namecs.get_data(),
-		/*engineVersion*/ 0,
+		/*pEngineName*/ VERSION_NAME,
+		/*engineVersion*/ VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH),
 		/*apiVersion*/ VK_MAKE_VERSION(vulkan_major, vulkan_minor, 0)
 	};
 	VkInstanceCreateInfo inst_info{};
@@ -744,6 +760,7 @@ Error VulkanContext::_create_physical_device() {
 		{ 0, nullptr },
 	};
 	device_name = gpu_props.deviceName;
+	device_type = gpu_props.deviceType;
 	pipeline_cache_id = String::hex_encode_buffer(gpu_props.pipelineCacheUUID, VK_UUID_SIZE);
 	pipeline_cache_id += "-driver-" + itos(gpu_props.driverVersion);
 	{
@@ -2192,6 +2209,11 @@ String VulkanContext::get_device_vendor_name() const {
 String VulkanContext::get_device_name() const {
 	return device_name;
 }
+
+RenderingDevice::DeviceType VulkanContext::get_device_type() const {
+	return RenderingDevice::DeviceType(device_type);
+}
+
 String VulkanContext::get_device_pipeline_cache_uuid() const {
 	return pipeline_cache_id;
 }

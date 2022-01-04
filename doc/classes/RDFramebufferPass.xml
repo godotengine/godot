@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This class contains the list of attachment descriptions for a framebuffer pass. Each points with an index to a previously supplied list of texture attachments.
-	Multipass framebuffers can optimize some configurations in mobile, on desktop they provide little to no advantage.
+		Multipass framebuffers can optimize some configurations in mobile, on desktop they provide little to no advantage.
 	</description>
 	<tutorials>
 	</tutorials>

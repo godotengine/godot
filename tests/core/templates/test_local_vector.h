@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,25 +84,25 @@ TEST_CASE("[LocalVector] Remove.") {
 	vector.push_back(3);
 	vector.push_back(4);
 
-	vector.remove(0);
+	vector.remove_at(0);
 
 	CHECK(vector[0] == 1);
 	CHECK(vector[1] == 2);
 	CHECK(vector[2] == 3);
 	CHECK(vector[3] == 4);
 
-	vector.remove(2);
+	vector.remove_at(2);
 
 	CHECK(vector[0] == 1);
 	CHECK(vector[1] == 2);
 	CHECK(vector[2] == 4);
 
-	vector.remove(1);
+	vector.remove_at(1);
 
 	CHECK(vector[0] == 1);
 	CHECK(vector[1] == 4);
 
-	vector.remove(0);
+	vector.remove_at(0);
 
 	CHECK(vector[0] == 4);
 }
@@ -117,7 +117,7 @@ TEST_CASE("[LocalVector] Remove Unordered.") {
 
 	CHECK(vector.size() == 5);
 
-	vector.remove_unordered(0);
+	vector.remove_at_unordered(0);
 
 	CHECK(vector.size() == 4);
 
@@ -128,7 +128,7 @@ TEST_CASE("[LocalVector] Remove Unordered.") {
 	CHECK(vector.find(4) != -1);
 
 	// Now the vector is no more ordered.
-	vector.remove_unordered(vector.find(3));
+	vector.remove_at_unordered(vector.find(3));
 
 	CHECK(vector.size() == 3);
 
@@ -137,7 +137,7 @@ TEST_CASE("[LocalVector] Remove Unordered.") {
 	CHECK(vector.find(2) != -1);
 	CHECK(vector.find(4) != -1);
 
-	vector.remove_unordered(vector.find(2));
+	vector.remove_at_unordered(vector.find(2));
 
 	CHECK(vector.size() == 2);
 
@@ -145,7 +145,7 @@ TEST_CASE("[LocalVector] Remove Unordered.") {
 	CHECK(vector.find(1) != -1);
 	CHECK(vector.find(4) != -1);
 
-	vector.remove_unordered(vector.find(4));
+	vector.remove_at_unordered(vector.find(4));
 
 	CHECK(vector.size() == 1);
 
@@ -153,7 +153,7 @@ TEST_CASE("[LocalVector] Remove Unordered.") {
 	CHECK(vector.find(1) != -1);
 
 	// Remove the last one.
-	vector.remove_unordered(0);
+	vector.remove_at_unordered(0);
 
 	CHECK(vector.is_empty());
 	CHECK(vector.size() == 0);
@@ -193,9 +193,9 @@ TEST_CASE("[LocalVector] Size / Resize / Reserve.") {
 	// Capacity is supposed to change only when the size increase.
 	CHECK(vector.get_capacity() >= 10);
 
-	vector.remove(0);
-	vector.remove(0);
-	vector.remove(0);
+	vector.remove_at(0);
+	vector.remove_at(0);
+	vector.remove_at(0);
 
 	CHECK(vector.size() == 2);
 	// Capacity is supposed to change only when the size increase.

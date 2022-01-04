@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -682,7 +682,7 @@ TileSetEditor::TileSetEditor() {
 	split_container_left_side->add_child(sources_list);
 
 	HBoxContainer *sources_bottom_actions = memnew(HBoxContainer);
-	sources_bottom_actions->set_alignment(HBoxContainer::ALIGN_END);
+	sources_bottom_actions->set_alignment(BoxContainer::ALIGNMENT_END);
 	split_container_left_side->add_child(sources_bottom_actions);
 
 	sources_delete_button = memnew(Button);
@@ -722,8 +722,8 @@ TileSetEditor::TileSetEditor() {
 	no_source_selected_label->set_text(TTR("No TileSet source selected. Select or create a TileSet source."));
 	no_source_selected_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	no_source_selected_label->set_v_size_flags(SIZE_EXPAND_FILL);
-	no_source_selected_label->set_align(Label::ALIGN_CENTER);
-	no_source_selected_label->set_valign(Label::VALIGN_CENTER);
+	no_source_selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	no_source_selected_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	split_container_right_side->add_child(no_source_selected_label);
 
 	// Atlases editor.

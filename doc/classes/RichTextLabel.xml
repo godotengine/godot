@@ -22,7 +22,7 @@
 			<argument index="1" name="width" type="int" default="0" />
 			<argument index="2" name="height" type="int" default="0" />
 			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="4" name="inline_align" type="int" enum="InlineAlign" default="5" />
+			<argument index="4" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<description>
 				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image and a [code]color[/code] to tint the image.
 				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
@@ -97,7 +97,7 @@
 				Returns the total number of characters from text tags. Does not include BBCodes.
 			</description>
 		</method>
-		<method name="get_v_scroll">
+		<method name="get_v_scroll_bar">
 			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar.
@@ -279,7 +279,7 @@
 		</method>
 		<method name="push_paragraph">
 			<return type="void" />
-			<argument index="0" name="align" type="int" enum="RichTextLabel.Align" />
+			<argument index="0" name="alignment" type="int" enum="HorizontalAlignment" />
 			<argument index="1" name="base_direction" type="int" enum="Control.TextDirection" default="0" />
 			<argument index="2" name="language" type="String" default="&quot;&quot;" />
 			<argument index="3" name="st_parser" type="int" enum="Control.StructuredTextParser" default="0" />
@@ -296,7 +296,7 @@
 		<method name="push_table">
 			<return type="void" />
 			<argument index="0" name="columns" type="int" />
-			<argument index="1" name="inline_align" type="int" enum="InlineAlign" default="0" />
+			<argument index="1" name="inline_align" type="int" enum="InlineAlignment" default="0" />
 			<description>
 				Adds a [code][table=columns,inline_align][/code] tag to the tag stack.
 			</description>
@@ -399,7 +399,7 @@
 			The range of characters to display, as a [float] between 0.0 and 1.0. When assigned an out of range value, it's the same as assigning 1.0.
 			[b]Note:[/b] Setting this property updates [member visible_characters] based on current [method get_total_character_count].
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
+		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
 			If [code]true[/code], the scrollbar is visible. Setting this to [code]false[/code] does not block scrolling completely. See [method scroll_to_line].
 		</member>
@@ -429,6 +429,9 @@
 			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
 			[b]Note:[/b] Setting this property updates [member percent_visible] based on current [method get_total_character_count].
 		</member>
+		<member name="visible_characters_behavior" type="int" setter="set_visible_characters_behavior" getter="get_visible_characters_behavior" enum="RichTextLabel.VisibleCharactersBehavior" default="0">
+			Sets the clipping behavior when [member visible_characters] or [member percent_visible] is set. See [enum VisibleCharactersBehavior] for more info.
+		</member>
 	</members>
 	<signals>
 		<signal name="meta_clicked">
@@ -451,18 +454,6 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="Align">
-			Makes text left aligned.
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="Align">
-			Makes text centered.
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Makes text right aligned.
-		</constant>
-		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Makes text fill width.
-		</constant>
 		<constant name="LIST_NUMBERS" value="0" enum="ListType">
 			Each list item has a number marker.
 		</constant>
@@ -527,25 +518,25 @@
 		</constant>
 		<constant name="ITEM_CUSTOMFX" value="25" enum="ItemType">
 		</constant>
+		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
+			Trims text before the shaping. e.g, increasing [member visible_characters] value is visually identical to typing the text.
+		</constant>
+		<constant name="VC_CHARS_AFTER_SHAPING" value="1" enum="VisibleCharactersBehavior">
+			Displays glyphs that are mapped to the first [member visible_characters] characters from the beginning of the text.
+		</constant>
+		<constant name="VC_GLYPHS_AUTO" value="2" enum="VisibleCharactersBehavior">
+			Displays [member percent_visible] glyphs, starting from the left or from the right, depending on [member Control.layout_direction] value.
+		</constant>
+		<constant name="VC_GLYPHS_LTR" value="3" enum="VisibleCharactersBehavior">
+			Displays [member percent_visible] glyphs, starting from the left.
+		</constant>
+		<constant name="VC_GLYPHS_RTL" value="4" enum="VisibleCharactersBehavior">
+			Displays [member percent_visible] glyphs, starting from the right.
+		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="bold_font" data_type="font" type="Font">
-			The font used for bold text.
-		</theme_item>
-		<theme_item name="bold_font_size" data_type="font_size" type="int">
-			The font size used for bold text.
-		</theme_item>
-		<theme_item name="bold_italics_font" data_type="font" type="Font">
-			The font used for bold italics text.
-		</theme_item>
-		<theme_item name="bold_italics_font_size" data_type="font_size" type="int">
-			The font size used for bold italics text.
-		</theme_item>
 		<theme_item name="default_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The default text color.
-		</theme_item>
-		<theme_item name="focus" data_type="style" type="StyleBox">
-			The background The background used when the [RichTextLabel] is focused.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The default tint of text outline.
@@ -556,35 +547,23 @@
 		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			The color of the font's shadow.
 		</theme_item>
-		<theme_item name="italics_font" data_type="font" type="Font">
-			The font used for italics text.
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.1, 0.1, 1, 0.8)">
+			The color of the selection box.
 		</theme_item>
-		<theme_item name="italics_font_size" data_type="font_size" type="int">
-			The font size used for italics text.
+		<theme_item name="table_border" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The default cell border color.
+		</theme_item>
+		<theme_item name="table_even_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The default background color for even rows.
+		</theme_item>
+		<theme_item name="table_odd_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The default background color for odd rows.
 		</theme_item>
 		<theme_item name="line_separation" data_type="constant" type="int" default="0">
 			The vertical space between lines.
 		</theme_item>
-		<theme_item name="mono_font" data_type="font" type="Font">
-			The font used for monospace text.
-		</theme_item>
-		<theme_item name="mono_font_size" data_type="font_size" type="int">
-			The font size used for monospace text.
-		</theme_item>
-		<theme_item name="normal" data_type="style" type="StyleBox">
-			The normal background for the [RichTextLabel].
-		</theme_item>
-		<theme_item name="normal_font" data_type="font" type="Font">
-			The default text font.
-		</theme_item>
-		<theme_item name="normal_font_size" data_type="font_size" type="int">
-			The default text font size.
-		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
-		</theme_item>
-		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.1, 0.1, 1, 0.8)">
-			The color of the selection box.
 		</theme_item>
 		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
 			The horizontal offset of the font's shadow.
@@ -595,20 +574,47 @@
 		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
 			The size of the shadow outline.
 		</theme_item>
-		<theme_item name="table_border" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			The default cell border color.
-		</theme_item>
-		<theme_item name="table_even_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			The default background color for even rows.
-		</theme_item>
 		<theme_item name="table_hseparation" data_type="constant" type="int" default="3">
 			The horizontal separation of elements in a table.
 		</theme_item>
-		<theme_item name="table_odd_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
-			The default background color for odd rows.
-		</theme_item>
 		<theme_item name="table_vseparation" data_type="constant" type="int" default="3">
 			The vertical separation of elements in a table.
+		</theme_item>
+		<theme_item name="bold_font" data_type="font" type="Font">
+			The font used for bold text.
+		</theme_item>
+		<theme_item name="bold_italics_font" data_type="font" type="Font">
+			The font used for bold italics text.
+		</theme_item>
+		<theme_item name="italics_font" data_type="font" type="Font">
+			The font used for italics text.
+		</theme_item>
+		<theme_item name="mono_font" data_type="font" type="Font">
+			The font used for monospace text.
+		</theme_item>
+		<theme_item name="normal_font" data_type="font" type="Font">
+			The default text font.
+		</theme_item>
+		<theme_item name="bold_font_size" data_type="font_size" type="int">
+			The font size used for bold text.
+		</theme_item>
+		<theme_item name="bold_italics_font_size" data_type="font_size" type="int">
+			The font size used for bold italics text.
+		</theme_item>
+		<theme_item name="italics_font_size" data_type="font_size" type="int">
+			The font size used for italics text.
+		</theme_item>
+		<theme_item name="mono_font_size" data_type="font_size" type="int">
+			The font size used for monospace text.
+		</theme_item>
+		<theme_item name="normal_font_size" data_type="font_size" type="int">
+			The default text font size.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			The background used when the [RichTextLabel] is focused. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			The normal background for the [RichTextLabel].
 		</theme_item>
 	</theme_items>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 
+#define TEST_MOTION_MARGIN_MIN_VALUE 0.0001
 #define TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR 0.05
 
 _FORCE_INLINE_ static bool _can_collide_with(GodotCollisionObject3D *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
@@ -507,8 +508,10 @@ bool GodotPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_paramete
 	GodotShape3D *shape = GodotPhysicsServer3D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
 	ERR_FAIL_COND_V(!shape, 0);
 
+	real_t margin = MAX(p_parameters.margin, TEST_MOTION_MARGIN_MIN_VALUE);
+
 	AABB aabb = p_parameters.transform.xform(shape->get_aabb());
-	aabb = aabb.grow(p_parameters.margin);
+	aabb = aabb.grow(margin);
 
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, GodotSpace3D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
@@ -516,7 +519,7 @@ bool GodotPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_paramete
 
 	// Allowed depth can't be lower than motion length, in order to handle contacts at low speed.
 	real_t motion_length = p_parameters.motion.length();
-	real_t min_contact_depth = p_parameters.margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
+	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 	rcd.min_allowed_depth = MIN(motion_length, min_contact_depth);
 
 	for (int i = 0; i < amount; i++) {
@@ -534,7 +537,7 @@ bool GodotPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_paramete
 
 		rcd.object = col_obj;
 		rcd.shape = shape_idx;
-		bool sc = GodotCollisionSolver3D::solve_static(shape, p_parameters.transform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, p_parameters.margin);
+		bool sc = GodotCollisionSolver3D::solve_static(shape, p_parameters.transform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, margin);
 		if (!sc) {
 			continue;
 		}
@@ -677,11 +680,13 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 		return false;
 	}
 
+	real_t margin = MAX(p_parameters.margin, TEST_MOTION_MARGIN_MIN_VALUE);
+
 	// Undo the currently transform the physics server is aware of and apply the provided one
 	body_aabb = p_parameters.from.xform(p_body->get_inv_transform().xform(body_aabb));
-	body_aabb = body_aabb.grow(p_parameters.margin);
+	body_aabb = body_aabb.grow(margin);
 
-	real_t min_contact_depth = p_parameters.margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
+	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 
 	real_t motion_length = p_parameters.motion.length();
 	Vector3 motion_normal = p_parameters.motion / motion_length;
@@ -729,7 +734,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 					int shape_idx = intersection_query_subindex_results[i];
 
-					if (GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, p_parameters.margin)) {
+					if (GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, nullptr, margin)) {
 						collided = cbk.amount > 0;
 					}
 				}
@@ -949,7 +954,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
-				bool sc = GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, p_parameters.margin);
+				bool sc = GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, margin);
 				if (!sc) {
 					continue;
 				}
@@ -1173,8 +1178,11 @@ void GodotSpace3D::set_param(PhysicsServer3D::SpaceParameter p_param, real_t p_v
 		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION:
 			contact_max_separation = p_value;
 			break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION:
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION:
 			contact_max_allowed_penetration = p_value;
+			break;
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_DEFAULT_BIAS:
+			contact_bias = p_value;
 			break;
 		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
 			body_linear_velocity_sleep_threshold = p_value;
@@ -1185,11 +1193,8 @@ void GodotSpace3D::set_param(PhysicsServer3D::SpaceParameter p_param, real_t p_v
 		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP:
 			body_time_to_sleep = p_value;
 			break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
-			body_angular_velocity_damp_ratio = p_value;
-			break;
-		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
-			constraint_bias = p_value;
+		case PhysicsServer3D::SPACE_PARAM_SOLVER_ITERATIONS:
+			solver_iterations = p_value;
 			break;
 	}
 }
@@ -1200,18 +1205,18 @@ real_t GodotSpace3D::get_param(PhysicsServer3D::SpaceParameter p_param) const {
 			return contact_recycle_radius;
 		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION:
 			return contact_max_separation;
-		case PhysicsServer3D::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION:
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION:
 			return contact_max_allowed_penetration;
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_DEFAULT_BIAS:
+			return contact_bias;
 		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
 			return body_linear_velocity_sleep_threshold;
 		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
 			return body_angular_velocity_sleep_threshold;
 		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP:
 			return body_time_to_sleep;
-		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
-			return body_angular_velocity_damp_ratio;
-		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
-			return constraint_bias;
+		case PhysicsServer3D::SPACE_PARAM_SOLVER_ITERATIONS:
+			return solver_iterations;
 	}
 	return 0;
 }
@@ -1237,7 +1242,21 @@ GodotSpace3D::GodotSpace3D() {
 	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_angular", Math::deg2rad(8.0));
 	body_time_to_sleep = GLOBAL_DEF("physics/3d/time_before_sleep", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/time_before_sleep", PropertyInfo(Variant::FLOAT, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
-	body_angular_velocity_damp_ratio = 10;
+
+	solver_iterations = GLOBAL_DEF("physics/3d/solver/solver_iterations", 16);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/solver_iterations", PropertyInfo(Variant::INT, "physics/3d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"));
+
+	contact_recycle_radius = GLOBAL_DEF("physics/3d/solver/contact_recycle_radius", 0.01);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/contact_recycle_radius", PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"));
+
+	contact_max_separation = GLOBAL_DEF("physics/3d/solver/contact_max_separation", 0.05);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/contact_max_separation", PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"));
+
+	contact_max_allowed_penetration = GLOBAL_DEF("physics/3d/solver/contact_max_allowed_penetration", 0.01);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/contact_max_allowed_penetration", PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0,0.1,0.01,or_greater"));
+
+	contact_bias = GLOBAL_DEF("physics/3d/solver/default_contact_bias", 0.8);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/solver/default_contact_bias", PropertyInfo(Variant::FLOAT, "physics/3d/solver/default_contact_bias", PROPERTY_HINT_RANGE, "0,1,0.01"));
 
 	broadphase = GodotBroadPhase3D::create_func();
 	broadphase->set_pair_callback(_broadphase_pair, this);

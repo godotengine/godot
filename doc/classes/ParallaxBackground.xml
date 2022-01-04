@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="layer" type="int" setter="set_layer" getter="get_layer" override="true" default="-100" />
+		<member name="layer" type="int" setter="set_layer" getter="get_layer" overrides="CanvasLayer" default="-100" />
 		<member name="scroll_base_offset" type="Vector2" setter="set_scroll_base_offset" getter="get_scroll_base_offset" default="Vector2(0, 0)">
 			The base position offset for all [ParallaxLayer] children.
 		</member>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,20 +129,20 @@ TEST_CASE("[Array] has() and count()") {
 	CHECK(arr.count(2) == 0);
 }
 
-TEST_CASE("[Array] remove()") {
+TEST_CASE("[Array] remove_at()") {
 	Array arr;
 	arr.push_back(1);
 	arr.push_back(2);
-	arr.remove(0);
+	arr.remove_at(0);
 	CHECK(arr.size() == 1);
 	CHECK(int(arr[0]) == 2);
-	arr.remove(0);
+	arr.remove_at(0);
 	CHECK(arr.size() == 0);
 
-	// The array is now empty; try to use `remove()` again.
+	// The array is now empty; try to use `remove_at()` again.
 	// Normally, this prints an error message so we silence it.
 	ERR_PRINT_OFF;
-	arr.remove(0);
+	arr.remove_at(0);
 	ERR_PRINT_ON;
 
 	CHECK(arr.size() == 0);
@@ -244,6 +244,37 @@ TEST_CASE("[Array] max() and min()") {
 	int min = int(arr.min());
 	CHECK(max == 5);
 	CHECK(min == 2);
+}
+
+TEST_CASE("[Array] slice()") {
+	Array array;
+	array.push_back(0);
+	array.push_back(1);
+	array.push_back(2);
+	array.push_back(3);
+	array.push_back(4);
+
+	Array slice1 = array.slice(1, 3);
+	CHECK(slice1.size() == 2);
+	CHECK(slice1[0] == Variant(1));
+	CHECK(slice1[1] == Variant(2));
+
+	Array slice2 = array.slice(1, -1);
+	CHECK(slice2.size() == 4);
+	CHECK(slice2[0] == Variant(1));
+	CHECK(slice2[1] == Variant(2));
+	CHECK(slice2[2] == Variant(3));
+	CHECK(slice2[3] == Variant(4));
+
+	Array slice3 = array.slice(3, -1);
+	CHECK(slice3.size() == 2);
+	CHECK(slice3[0] == Variant(3));
+	CHECK(slice3[1] == Variant(4));
+
+	Array slice4 = array.slice(2, -2);
+	CHECK(slice4.size() == 2);
+	CHECK(slice4[0] == Variant(2));
+	CHECK(slice4[1] == Variant(3));
 }
 
 TEST_CASE("[Array] Duplicate array") {

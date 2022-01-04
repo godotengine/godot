@@ -4,7 +4,7 @@
 		Base resource for video streams.
 	</brief_description>
 	<description>
-		Base resource type for all video streams. Classes that derive from [VideoStream] can all be used as resource types to play back videos in [VideoPlayer].
+		Base resource type for all video streams. Classes that derive from [VideoStream] can all be used as resource types to play back videos in [VideoStreamPlayer].
 	</description>
 	<tutorials>
 	</tutorials>

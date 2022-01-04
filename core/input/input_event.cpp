@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -360,12 +360,12 @@ String InputEventKey::as_text() const {
 		kc = keycode_get_string(keycode);
 	}
 
-	if (kc == String()) {
+	if (kc.is_empty()) {
 		return kc;
 	}
 
 	String mods_text = InputEventWithModifiers::as_text();
-	return mods_text == "" ? kc : mods_text + "+" + kc;
+	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
 }
 
 String InputEventKey::to_string() {
@@ -382,7 +382,7 @@ String InputEventKey::to_string() {
 	}
 
 	String mods = InputEventWithModifiers::as_text();
-	mods = mods == "" ? TTR("none") : mods;
+	mods = mods.is_empty() ? TTR("none") : mods;
 
 	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, pressed=%s, echo=%s", kc, mods, physical, p, e);
 }
@@ -634,7 +634,7 @@ static const char *_mouse_button_descriptions[9] = {
 String InputEventMouseButton::as_text() const {
 	// Modifiers
 	String mods_text = InputEventWithModifiers::as_text();
-	String full_string = mods_text == "" ? "" : mods_text + "+";
+	String full_string = mods_text.is_empty() ? "" : mods_text + "+";
 
 	// Button
 	MouseButton idx = get_button_index();
@@ -687,7 +687,7 @@ String InputEventMouseButton::to_string() {
 	}
 
 	String mods = InputEventWithModifiers::as_text();
-	mods = mods == "" ? TTR("none") : mods;
+	mods = mods.is_empty() ? TTR("none") : mods;
 
 	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
 	String index_and_mods = vformat("button_index=%s, mods=%s", button_index, mods);

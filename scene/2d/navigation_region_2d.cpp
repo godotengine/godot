@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -207,7 +207,7 @@ void NavigationPolygon::set_outline(int p_idx, const Vector<Vector2> &p_outline)
 
 void NavigationPolygon::remove_outline(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, outlines.size());
-	outlines.remove(p_idx);
+	outlines.remove_at(p_idx);
 	rect_cache_dirty = true;
 }
 

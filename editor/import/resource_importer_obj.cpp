@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -235,7 +235,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 		while (l.length() && l[l.length() - 1] == '\\') {
 			String add = f->get_line().strip_edges();
 			l += add;
-			if (add == String()) {
+			if (add.is_empty()) {
 				break;
 			}
 		}
@@ -301,7 +301,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 						surf_tool->set_normal(normals[norm]);
 					}
 
-					if (face[idx].size() >= 2 && face[idx][1] != String()) {
+					if (face[idx].size() >= 2 && !face[idx][1].is_empty()) {
 						int uv = face[idx][1].to_int() - 1;
 						if (uv < 0) {
 							uv += uvs.size() + 1;
@@ -363,9 +363,9 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 
 				mesh = surf_tool->commit(mesh, mesh_flags);
 
-				if (current_material != String()) {
+				if (!current_material.is_empty()) {
 					mesh->surface_set_name(mesh->get_surface_count() - 1, current_material.get_basename());
-				} else if (current_group != String()) {
+				} else if (!current_group.is_empty()) {
 					mesh->surface_set_name(mesh->get_surface_count() - 1, current_group);
 				}
 

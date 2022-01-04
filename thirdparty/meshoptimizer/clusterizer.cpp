@@ -368,8 +368,7 @@ static size_t kdtreeBuild(size_t offset, KDNode* nodes, size_t node_count, const
 	}
 
 	// split axis is one where the variance is largest
-	unsigned int axis = vars[0] >= vars[1] && vars[0] >= vars[2] ? 0 : vars[1] >= vars[2] ? 1
-	                                                                                      : 2;
+	unsigned int axis = vars[0] >= vars[1] && vars[0] >= vars[2] ? 0 : vars[1] >= vars[2] ? 1 : 2;
 
 	float split = mean[axis];
 	size_t middle = kdtreePartition(indices, count, points, stride, axis, split);

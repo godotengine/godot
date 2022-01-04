@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1305,7 +1305,6 @@ void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_fr
 	RD::get_singleton()->draw_list_draw(p_draw_list, false, total_probes, total_points);
 
 	if (gi->sdfgi_debug_probe_dir != Vector3()) {
-		print_line("CLICK DEBUG ME?");
 		uint32_t cascade = 0;
 		Vector3 offset = Vector3((Vector3i(1, 1, 1) * -int32_t(cascade_size >> 1) + cascades[cascade].position)) * cascades[cascade].cell_size * Vector3(1.0, 1.0 / y_mult, 1.0);
 		Vector3 probe_size = cascades[cascade].cell_size * (cascade_size / SDFGI::PROBE_DIVISOR) * Vector3(1.0, 1.0 / y_mult, 1.0);
@@ -1333,11 +1332,6 @@ void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_fr
 			}
 		}
 
-		if (gi->sdfgi_debug_probe_enabled) {
-			print_line("found: " + gi->sdfgi_debug_probe_index);
-		} else {
-			print_line("no found");
-		}
 		gi->sdfgi_debug_probe_dir = Vector3();
 	}
 
@@ -1864,7 +1858,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 		Ref<Image> img;
 		img.instantiate();
 		for (uint32_t i = 0; i < cascade_size; i++) {
-			Vector<uint8_t> subarr = data.subarray(128 * 128 * i, 128 * 128 * (i + 1) - 1);
+			Vector<uint8_t> subarr = data.slice(128 * 128 * i, 128 * 128 * (i + 1));
 			img->create(cascade_size, cascade_size, false, Image::FORMAT_L8, subarr);
 			img->save_png("res://cascade_sdf_" + itos(cascade) + "_" + itos(i) + ".png");
 		}
@@ -1877,7 +1871,7 @@ void RendererSceneGIRD::SDFGI::render_region(RID p_render_buffers, int p_region,
 		Ref<Image> img;
 		img.instantiate();
 		for (uint32_t i = 0; i < cascade_size; i++) {
-			Vector<uint8_t> subarr = data.subarray(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2 - 1);
+			Vector<uint8_t> subarr = data.slice(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2);
 			img->createcascade_size, cascade_size, false, Image::FORMAT_RGB565, subarr);
 			img->convert(Image::FORMAT_RGBA8);
 			img->save_png("res://cascade_" + itos(cascade) + "_" + itos(i) + ".png");
@@ -2065,7 +2059,7 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 
 			for (int i = 0; i < levels.size(); i++) {
 				VoxelGIInstance::Mipmap mipmap;
-				mipmap.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture, 0, i, RD::TEXTURE_SLICE_3D);
+				mipmap.texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture, 0, i, 1, RD::TEXTURE_SLICE_3D);
 				mipmap.level = levels.size() - i - 1;
 				mipmap.cell_offset = 0;
 				for (uint32_t j = 0; j < mipmap.level; j++) {
@@ -2182,8 +2176,9 @@ void RendererSceneGIRD::VoxelGIInstance::update(bool p_update_light_instances, c
 					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 
 					if (dynamic_maps.size() == 0) {
-						//render depth for first one
-						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+						// Render depth for first one.
+						// Use 16-bit depth when supported to improve performance.
+						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D16_UNORM, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
 						dtf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 						dmap.fb_depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					}
@@ -3132,8 +3127,8 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-		tf.width = rb->width;
-		tf.height = rb->height;
+		tf.width = rb->internal_width;
+		tf.height = rb->internal_height;
 		if (half_resolution) {
 			tf.width >>= 1;
 			tf.height >>= 1;
@@ -3146,13 +3141,13 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 
 	PushConstant push_constant;
 
-	push_constant.screen_size[0] = rb->width;
-	push_constant.screen_size[1] = rb->height;
+	push_constant.screen_size[0] = rb->internal_width;
+	push_constant.screen_size[1] = rb->internal_height;
 	push_constant.z_near = p_projection.get_z_near();
 	push_constant.z_far = p_projection.get_z_far();
 	push_constant.orthogonal = p_projection.is_orthogonal();
-	push_constant.proj_info[0] = -2.0f / (rb->width * p_projection.matrix[0][0]);
-	push_constant.proj_info[1] = -2.0f / (rb->height * p_projection.matrix[1][1]);
+	push_constant.proj_info[0] = -2.0f / (rb->internal_width * p_projection.matrix[0][0]);
+	push_constant.proj_info[1] = -2.0f / (rb->internal_height * p_projection.matrix[1][1]);
 	push_constant.proj_info[2] = (1.0f - p_projection.matrix[0][2]) / p_projection.matrix[0][0];
 	push_constant.proj_info[3] = (1.0f + p_projection.matrix[1][2]) / p_projection.matrix[1][1];
 	push_constant.max_voxel_gi_instances = MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size());
@@ -3344,9 +3339,9 @@ void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
 
 	if (rb->gi.using_half_size_gi) {
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width >> 1, rb->height >> 1, 1);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->internal_width >> 1, rb->internal_height >> 1, 1);
 	} else {
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->width, rb->height, 1);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, rb->internal_width, rb->internal_height, 1);
 	}
 	//do barrier later to allow oeverlap
 	//RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_NO_BARRIER); //no barriers, let other compute, raster and transfer happen at the same time

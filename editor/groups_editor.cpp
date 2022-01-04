@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -227,7 +227,7 @@ void GroupDialog::_group_renamed() {
 		}
 	}
 
-	if (name == "") {
+	if (name.is_empty()) {
 		renamed_group->set_text(0, selected_group);
 		error->set_text(TTR("Invalid group name."));
 		error->popup_centered();
@@ -544,8 +544,8 @@ GroupDialog::GroupDialog() {
 	group_empty->set_theme_type_variation("HeaderSmall");
 
 	group_empty->set_text(TTR("Empty groups will be automatically removed."));
-	group_empty->set_valign(Label::VALIGN_CENTER);
-	group_empty->set_align(Label::ALIGN_CENTER);
+	group_empty->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	group_empty->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	group_empty->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	group_empty->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	nodes_to_remove->add_child(group_empty);

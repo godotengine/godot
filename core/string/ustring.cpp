@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,9 +130,8 @@ Char16String &Char16String::operator+=(char16_t p_char) {
 	return *this;
 }
 
-Char16String &Char16String::operator=(const char16_t *p_cstr) {
+void Char16String::operator=(const char16_t *p_cstr) {
 	copy_from(p_cstr);
-	return *this;
 }
 
 const char16_t *Char16String::get_data() const {
@@ -186,9 +185,8 @@ CharString &CharString::operator+=(char p_char) {
 	return *this;
 }
 
-CharString &CharString::operator=(const char *p_cstr) {
+void CharString::operator=(const char *p_cstr) {
 	copy_from(p_cstr);
-	return *this;
 }
 
 const char *CharString::get_data() const {
@@ -3509,6 +3507,27 @@ char32_t String::unicode_at(int p_idx) const {
 	return operator[](p_idx);
 }
 
+String String::indent(const String &p_prefix) const {
+	String new_string;
+	int line_start = 0;
+
+	for (int i = 0; i < length(); i++) {
+		const char32_t c = operator[](i);
+		if (c == '\n') {
+			if (i == line_start) {
+				new_string += c; // Leave empty lines empty.
+			} else {
+				new_string += p_prefix + substr(line_start, i - line_start + 1);
+			}
+			line_start = i + 1;
+		}
+	}
+	if (line_start != length()) {
+		new_string += p_prefix + substr(line_start);
+	}
+	return new_string;
+}
+
 String String::dedent() const {
 	String new_string;
 	String indent;
@@ -3670,15 +3689,15 @@ String String::simplify_path() const {
 	for (int i = 0; i < dirs.size(); i++) {
 		String d = dirs[i];
 		if (d == ".") {
-			dirs.remove(i);
+			dirs.remove_at(i);
 			i--;
 		} else if (d == "..") {
 			if (i == 0) {
-				dirs.remove(i);
+				dirs.remove_at(i);
 				i--;
 			} else {
-				dirs.remove(i);
-				dirs.remove(i - 1);
+				dirs.remove_at(i);
+				dirs.remove_at(i - 1);
 				i -= 2;
 			}
 		}
@@ -4285,7 +4304,7 @@ bool String::is_valid_filename() const {
 		return false;
 	}
 
-	if (stripped == String()) {
+	if (stripped.is_empty()) {
 		return false;
 	}
 
@@ -4904,7 +4923,7 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 String RTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
-		if (rtr == String() || rtr == p_text) {
+		if (rtr.is_empty() || rtr == p_text) {
 			return TranslationServer::get_singleton()->translate(p_text, p_context);
 		} else {
 			return rtr;
@@ -4917,7 +4936,7 @@ String RTR(const String &p_text, const String &p_context) {
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
-		if (rtr == String() || rtr == p_text || rtr == p_text_plural) {
+		if (rtr.is_empty() || rtr == p_text || rtr == p_text_plural) {
 			return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
 		} else {
 			return rtr;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -213,18 +213,24 @@ public:
 	FUNC3(body_set_state, RID, BodyState, const Variant &);
 	FUNC2RC(Variant, body_get_state, RID, BodyState);
 
-	FUNC2(body_set_applied_force, RID, const Vector3 &);
-	FUNC1RC(Vector3, body_get_applied_force, RID);
-
-	FUNC2(body_set_applied_torque, RID, const Vector3 &);
-	FUNC1RC(Vector3, body_get_applied_torque, RID);
-
-	FUNC2(body_add_central_force, RID, const Vector3 &);
-	FUNC3(body_add_force, RID, const Vector3 &, const Vector3 &);
-	FUNC2(body_add_torque, RID, const Vector3 &);
 	FUNC2(body_apply_torque_impulse, RID, const Vector3 &);
 	FUNC2(body_apply_central_impulse, RID, const Vector3 &);
 	FUNC3(body_apply_impulse, RID, const Vector3 &, const Vector3 &);
+
+	FUNC2(body_apply_central_force, RID, const Vector3 &);
+	FUNC3(body_apply_force, RID, const Vector3 &, const Vector3 &);
+	FUNC2(body_apply_torque, RID, const Vector3 &);
+
+	FUNC2(body_add_constant_central_force, RID, const Vector3 &);
+	FUNC3(body_add_constant_force, RID, const Vector3 &, const Vector3 &);
+	FUNC2(body_add_constant_torque, RID, const Vector3 &);
+
+	FUNC2(body_set_constant_force, RID, const Vector3 &);
+	FUNC1RC(Vector3, body_get_constant_force, RID);
+
+	FUNC2(body_set_constant_torque, RID, const Vector3 &);
+	FUNC1RC(Vector3, body_get_constant_torque, RID);
+
 	FUNC2(body_set_axis_velocity, RID, const Vector3 &);
 
 	FUNC3(body_set_axis_lock, RID, BodyAxis, bool);
@@ -370,7 +376,6 @@ public:
 
 	FUNC1(free, RID);
 	FUNC1(set_active, bool);
-	FUNC1(set_collision_iterations, int);
 
 	virtual void init() override;
 	virtual void step(real_t p_step) override;

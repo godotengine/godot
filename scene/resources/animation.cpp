@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -335,7 +335,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 						bt->values.write[i].value.in_handle.y = rv[i * 6 + 2];
 						bt->values.write[i].value.out_handle.x = rv[i * 6 + 3];
 						bt->values.write[i].value.out_handle.y = rv[i * 6 + 4];
-						bt->values.write[i].value.handle_mode = (HandleMode)rv[i * 6 + 5];
+						bt->values.write[i].value.handle_mode = static_cast<HandleMode>((int)rv[i * 6 + 5]);
 					}
 				}
 
@@ -930,7 +930,7 @@ void Animation::remove_track(int p_track) {
 	}
 
 	memdelete(t);
-	tracks.remove(p_track);
+	tracks.remove_at(p_track);
 	emit_changed();
 	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
@@ -1320,7 +1320,7 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 			ERR_FAIL_COND(tt->compressed_track >= 0);
 
 			ERR_FAIL_INDEX(p_idx, tt->positions.size());
-			tt->positions.remove(p_idx);
+			tt->positions.remove_at(p_idx);
 
 		} break;
 		case TYPE_ROTATION_3D: {
@@ -1329,7 +1329,7 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 			ERR_FAIL_COND(rt->compressed_track >= 0);
 
 			ERR_FAIL_INDEX(p_idx, rt->rotations.size());
-			rt->rotations.remove(p_idx);
+			rt->rotations.remove_at(p_idx);
 
 		} break;
 		case TYPE_SCALE_3D: {
@@ -1338,7 +1338,7 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 			ERR_FAIL_COND(st->compressed_track >= 0);
 
 			ERR_FAIL_INDEX(p_idx, st->scales.size());
-			st->scales.remove(p_idx);
+			st->scales.remove_at(p_idx);
 
 		} break;
 		case TYPE_BLEND_SHAPE: {
@@ -1347,37 +1347,37 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 			ERR_FAIL_COND(bst->compressed_track >= 0);
 
 			ERR_FAIL_INDEX(p_idx, bst->blend_shapes.size());
-			bst->blend_shapes.remove(p_idx);
+			bst->blend_shapes.remove_at(p_idx);
 
 		} break;
 		case TYPE_VALUE: {
 			ValueTrack *vt = static_cast<ValueTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, vt->values.size());
-			vt->values.remove(p_idx);
+			vt->values.remove_at(p_idx);
 
 		} break;
 		case TYPE_METHOD: {
 			MethodTrack *mt = static_cast<MethodTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, mt->methods.size());
-			mt->methods.remove(p_idx);
+			mt->methods.remove_at(p_idx);
 
 		} break;
 		case TYPE_BEZIER: {
 			BezierTrack *bz = static_cast<BezierTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, bz->values.size());
-			bz->values.remove(p_idx);
+			bz->values.remove_at(p_idx);
 
 		} break;
 		case TYPE_AUDIO: {
 			AudioTrack *ad = static_cast<AudioTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, ad->values.size());
-			ad->values.remove(p_idx);
+			ad->values.remove_at(p_idx);
 
 		} break;
 		case TYPE_ANIMATION: {
 			AnimationTrack *an = static_cast<AnimationTrack *>(t);
 			ERR_FAIL_INDEX(p_idx, an->values.size());
-			an->values.remove(p_idx);
+			an->values.remove_at(p_idx);
 
 		} break;
 	}
@@ -1634,7 +1634,7 @@ void Animation::track_insert_key(int p_track, double p_time, const Variant &p_ke
 			k.value.in_handle.y = arr[2];
 			k.value.out_handle.x = arr[3];
 			k.value.out_handle.y = arr[4];
-			k.value.handle_mode = (HandleMode) int(arr[5]);
+			k.value.handle_mode = static_cast<HandleMode>((int)arr[5]);
 			_insert(p_time, bt->values, k);
 
 		} break;
@@ -1905,7 +1905,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			ERR_FAIL_INDEX(p_key_idx, tt->positions.size());
 			TKey<Vector3> key = tt->positions[p_key_idx];
 			key.time = p_time;
-			tt->positions.remove(p_key_idx);
+			tt->positions.remove_at(p_key_idx);
 			_insert(p_time, tt->positions, key);
 			return;
 		}
@@ -1915,7 +1915,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			ERR_FAIL_INDEX(p_key_idx, tt->rotations.size());
 			TKey<Quaternion> key = tt->rotations[p_key_idx];
 			key.time = p_time;
-			tt->rotations.remove(p_key_idx);
+			tt->rotations.remove_at(p_key_idx);
 			_insert(p_time, tt->rotations, key);
 			return;
 		}
@@ -1925,7 +1925,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			ERR_FAIL_INDEX(p_key_idx, tt->scales.size());
 			TKey<Vector3> key = tt->scales[p_key_idx];
 			key.time = p_time;
-			tt->scales.remove(p_key_idx);
+			tt->scales.remove_at(p_key_idx);
 			_insert(p_time, tt->scales, key);
 			return;
 		}
@@ -1935,7 +1935,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			ERR_FAIL_INDEX(p_key_idx, tt->blend_shapes.size());
 			TKey<float> key = tt->blend_shapes[p_key_idx];
 			key.time = p_time;
-			tt->blend_shapes.remove(p_key_idx);
+			tt->blend_shapes.remove_at(p_key_idx);
 			_insert(p_time, tt->blend_shapes, key);
 			return;
 		}
@@ -1944,7 +1944,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			ERR_FAIL_INDEX(p_key_idx, vt->values.size());
 			TKey<Variant> key = vt->values[p_key_idx];
 			key.time = p_time;
-			vt->values.remove(p_key_idx);
+			vt->values.remove_at(p_key_idx);
 			_insert(p_time, vt->values, key);
 			return;
 		}
@@ -1953,7 +1953,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			ERR_FAIL_INDEX(p_key_idx, mt->methods.size());
 			MethodKey key = mt->methods[p_key_idx];
 			key.time = p_time;
-			mt->methods.remove(p_key_idx);
+			mt->methods.remove_at(p_key_idx);
 			_insert(p_time, mt->methods, key);
 			return;
 		}
@@ -1962,7 +1962,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			ERR_FAIL_INDEX(p_key_idx, bt->values.size());
 			TKey<BezierKey> key = bt->values[p_key_idx];
 			key.time = p_time;
-			bt->values.remove(p_key_idx);
+			bt->values.remove_at(p_key_idx);
 			_insert(p_time, bt->values, key);
 			return;
 		}
@@ -1971,7 +1971,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 			TKey<AudioKey> key = at->values[p_key_idx];
 			key.time = p_time;
-			at->values.remove(p_key_idx);
+			at->values.remove_at(p_key_idx);
 			_insert(p_time, at->values, key);
 			return;
 		}
@@ -1980,7 +1980,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 			TKey<StringName> key = at->values[p_key_idx];
 			key.time = p_time;
-			at->values.remove(p_key_idx);
+			at->values.remove_at(p_key_idx);
 			_insert(p_time, at->values, key);
 			return;
 		}
@@ -2155,7 +2155,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			bt->values.write[p_key_idx].value.in_handle.y = arr[2];
 			bt->values.write[p_key_idx].value.out_handle.x = arr[3];
 			bt->values.write[p_key_idx].value.out_handle.y = arr[4];
-			bt->values.write[p_key_idx].value.handle_mode = (HandleMode) int(arr[5]);
+			bt->values.write[p_key_idx].value.handle_mode = static_cast<HandleMode>((int)arr[5]);
 
 		} break;
 		case TYPE_AUDIO: {
@@ -3679,7 +3679,7 @@ void Animation::track_move_to(int p_track, int p_to_index) {
 	}
 
 	Track *track = tracks.get(p_track);
-	tracks.remove(p_track);
+	tracks.remove_at(p_track);
 	// Take into account that the position of the tracks that come after the one removed will change.
 	tracks.insert(p_to_index > p_track ? p_to_index - 1 : p_to_index, track);
 
@@ -3998,13 +3998,12 @@ bool Animation::_blend_shape_track_optimize_key(const TKey<float> &t0, const TKe
 	float v1 = t1.value;
 	float v2 = t2.value;
 
-	if (Math::is_equal_approx(v1, v2, p_allowed_unit_error)) {
+	if (Math::is_equal_approx(v1, v2, (float)p_allowed_unit_error)) {
 		//0 and 2 are close, let's see if 1 is close
-		if (!Math::is_equal_approx(v0, v1, p_allowed_unit_error)) {
+		if (!Math::is_equal_approx(v0, v1, (float)p_allowed_unit_error)) {
 			//not close, not optimizable
 			return false;
 		}
-
 	} else {
 		/*
 		TODO eventually discuss a way to optimize these better.
@@ -4058,7 +4057,7 @@ void Animation::_position_track_optimize(int p_idx, real_t p_allowed_linear_err,
 				prev_erased = true;
 			}
 
-			tt->positions.remove(i);
+			tt->positions.remove_at(i);
 			i--;
 
 		} else {
@@ -4093,7 +4092,7 @@ void Animation::_rotation_track_optimize(int p_idx, real_t p_allowed_angular_err
 				prev_erased = true;
 			}
 
-			tt->rotations.remove(i);
+			tt->rotations.remove_at(i);
 			i--;
 
 		} else {
@@ -4127,7 +4126,7 @@ void Animation::_scale_track_optimize(int p_idx, real_t p_allowed_linear_err) {
 				prev_erased = true;
 			}
 
-			tt->scales.remove(i);
+			tt->scales.remove_at(i);
 			i--;
 
 		} else {
@@ -4162,7 +4161,7 @@ void Animation::_blend_shape_track_optimize(int p_idx, real_t p_allowed_linear_e
 				prev_erased = true;
 			}
 
-			tt->blend_shapes.remove(i);
+			tt->blend_shapes.remove_at(i);
 			i--;
 
 		} else {
@@ -4198,7 +4197,7 @@ struct AnimationCompressionDataState {
 	};
 
 	uint32_t components = 3;
-	LocalVector<uint8_t> data; //commited packets
+	LocalVector<uint8_t> data; // Committed packets.
 	struct PacketData {
 		int32_t data[3] = { 0, 0, 0 };
 		uint32_t frame = 0;
@@ -4577,7 +4576,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 				}
 			}
 			for (int j = 0; j < 3; j++) {
-				//cant have zero
+				// Can't have zero.
 				if (aabb.size[j] < CMP_EPSILON) {
 					aabb.size[j] = CMP_EPSILON;
 				}
@@ -4597,7 +4596,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 				}
 			}
 			for (int j = 0; j < 3; j++) {
-				//cant have zero
+				// Can't have zero.
 				if (aabb.size[j] < CMP_EPSILON) {
 					aabb.size[j] = CMP_EPSILON;
 				}

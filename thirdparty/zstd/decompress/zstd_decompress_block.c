@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
+ * Copyright (c) Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -577,7 +577,7 @@ static size_t ZSTD_buildSeqTable(ZSTD_seqSymbol* DTableSpace, const ZSTD_seqSymb
 size_t ZSTD_decodeSeqHeaders(ZSTD_DCtx* dctx, int* nbSeqPtr,
                              const void* src, size_t srcSize)
 {
-    const BYTE* const istart = (const BYTE* const)src;
+    const BYTE* const istart = (const BYTE*)src;
     const BYTE* const iend = istart + srcSize;
     const BYTE* ip = istart;
     int nbSeq;
@@ -658,7 +658,6 @@ typedef struct {
     size_t litLength;
     size_t matchLength;
     size_t offset;
-    const BYTE* match;
 } seq_t;
 
 typedef struct {
@@ -672,9 +671,6 @@ typedef struct {
     ZSTD_fseState stateOffb;
     ZSTD_fseState stateML;
     size_t prevOffset[ZSTD_REP_NUM];
-    const BYTE* prefixStart;
-    const BYTE* dictEnd;
-    size_t pos;
 } seqState_t;
 
 /*! ZSTD_overlapCopy8() :
@@ -936,10 +932,9 @@ ZSTD_updateFseStateWithDInfo(ZSTD_fseState* DStatePtr, BIT_DStream_t* bitD, ZSTD
         : 0)
 
 typedef enum { ZSTD_lo_isRegularOffset, ZSTD_lo_isLongOffset=1 } ZSTD_longOffset_e;
-typedef enum { ZSTD_p_noPrefetch=0, ZSTD_p_prefetch=1 } ZSTD_prefetch_e;
 
 FORCE_INLINE_TEMPLATE seq_t
-ZSTD_decodeSequence(seqState_t* seqState, const ZSTD_longOffset_e longOffsets, const ZSTD_prefetch_e prefetch)
+ZSTD_decodeSequence(seqState_t* seqState, const ZSTD_longOffset_e longOffsets)
 {
     seq_t seq;
     ZSTD_seqSymbol const llDInfo = seqState->stateLL.table[seqState->stateLL.state];
@@ -1013,14 +1008,6 @@ ZSTD_decodeSequence(seqState_t* seqState, const ZSTD_longOffset_e longOffsets, c
 
     DEBUGLOG(6, "seq: litL=%u, matchL=%u, offset=%u",
                 (U32)seq.litLength, (U32)seq.matchLength, (U32)seq.offset);
-
-    if (prefetch == ZSTD_p_prefetch) {
-        size_t const pos = seqState->pos + seq.litLength;
-        const BYTE* const matchBase = (seq.offset > pos) ? seqState->dictEnd : seqState->prefixStart;
-        seq.match = matchBase + pos - seq.offset;  /* note : this operation can overflow when seq.offset is really too large, which can only happen when input is corrupted.
-                                                    * No consequence though : no memory access will occur, offset is only used for prefetching */
-        seqState->pos = pos + seq.matchLength;
-    }
 
     /* ANS state update
      * gcc-9.0.0 does 2.5% worse with ZSTD_updateFseStateWithDInfo().
@@ -1108,7 +1095,7 @@ ZSTD_decompressSequences_body( ZSTD_DCtx* dctx,
 {
     const BYTE* ip = (const BYTE*)seqStart;
     const BYTE* const iend = ip + seqSize;
-    BYTE* const ostart = (BYTE* const)dst;
+    BYTE* const ostart = (BYTE*)dst;
     BYTE* const oend = ostart + maxDstSize;
     BYTE* op = ostart;
     const BYTE* litPtr = dctx->litPtr;
@@ -1122,7 +1109,6 @@ ZSTD_decompressSequences_body( ZSTD_DCtx* dctx,
     /* Regen sequences */
     if (nbSeq) {
         seqState_t seqState;
-        size_t error = 0;
         dctx->fseEntropy = 1;
         { U32 i; for (i=0; i<ZSTD_REP_NUM; i++) seqState.prevOffset[i] = dctx->entropy.rep[i]; }
         RETURN_ERROR_IF(
@@ -1156,13 +1142,14 @@ ZSTD_decompressSequences_body( ZSTD_DCtx* dctx,
          * If you see most cycles served out of the DSB you've hit the good case.
          * If it is pretty even then you may be in an okay case.
          *
-         * I've been able to reproduce this issue on the following CPUs:
+         * This issue has been reproduced on the following CPUs:
          *   - Kabylake: Macbook Pro (15-inch, 2019) 2.4 GHz Intel Core i9
          *               Use Instruments->Counters to get DSB/MITE cycles.
          *               I never got performance swings, but I was able to
          *               go from the good case of mostly DSB to half of the
          *               cycles served from MITE.
          *   - Coffeelake: Intel i9-9900k
+         *   - Coffeelake: Intel i7-9700k
          *
          * I haven't been able to reproduce the instability or DSB misses on any
          * of the following CPUS:
@@ -1175,33 +1162,35 @@ ZSTD_decompressSequences_body( ZSTD_DCtx* dctx,
          *
          *   https://gist.github.com/terrelln/9889fc06a423fd5ca6e99351564473f4
          */
+        __asm__(".p2align 6");
+        __asm__("nop");
         __asm__(".p2align 5");
         __asm__("nop");
+#  if __GNUC__ >= 9
+        /* better for gcc-9 and gcc-10, worse for clang and gcc-8 */
+        __asm__(".p2align 3");
+#  else
         __asm__(".p2align 4");
+#  endif
 #endif
         for ( ; ; ) {
-            seq_t const sequence = ZSTD_decodeSequence(&seqState, isLongOffset, ZSTD_p_noPrefetch);
+            seq_t const sequence = ZSTD_decodeSequence(&seqState, isLongOffset);
             size_t const oneSeqSize = ZSTD_execSequence(op, oend, sequence, &litPtr, litEnd, prefixStart, vBase, dictEnd);
 #if defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION) && defined(FUZZING_ASSERT_VALID_SEQUENCE)
             assert(!ZSTD_isError(oneSeqSize));
             if (frame) ZSTD_assertValidSequence(dctx, op, oend, sequence, prefixStart, vBase);
 #endif
+            if (UNLIKELY(ZSTD_isError(oneSeqSize)))
+                return oneSeqSize;
             DEBUGLOG(6, "regenerated sequence size : %u", (U32)oneSeqSize);
-            BIT_reloadDStream(&(seqState.DStream));
             op += oneSeqSize;
-            /* gcc and clang both don't like early returns in this loop.
-             * Instead break and check for an error at the end of the loop.
-             */
-            if (UNLIKELY(ZSTD_isError(oneSeqSize))) {
-                error = oneSeqSize;
+            if (UNLIKELY(!--nbSeq))
                 break;
-            }
-            if (UNLIKELY(!--nbSeq)) break;
+            BIT_reloadDStream(&(seqState.DStream));
         }
 
         /* check if reached exact end */
         DEBUGLOG(5, "ZSTD_decompressSequences_body: after decode loop, remaining nbSeq : %i", nbSeq);
-        if (ZSTD_isError(error)) return error;
         RETURN_ERROR_IF(nbSeq, corruption_detected, "");
         RETURN_ERROR_IF(BIT_reloadDStream(&seqState.DStream) < BIT_DStream_completed, corruption_detected, "");
         /* save reps for next block */
@@ -1232,6 +1221,24 @@ ZSTD_decompressSequences_default(ZSTD_DCtx* dctx,
 #endif /* ZSTD_FORCE_DECOMPRESS_SEQUENCES_LONG */
 
 #ifndef ZSTD_FORCE_DECOMPRESS_SEQUENCES_SHORT
+
+FORCE_INLINE_TEMPLATE size_t
+ZSTD_prefetchMatch(size_t prefetchPos, seq_t const sequence,
+                   const BYTE* const prefixStart, const BYTE* const dictEnd)
+{
+    prefetchPos += sequence.litLength;
+    {   const BYTE* const matchBase = (sequence.offset > prefetchPos) ? dictEnd : prefixStart;
+        const BYTE* const match = matchBase + prefetchPos - sequence.offset; /* note : this operation can overflow when seq.offset is really too large, which can only happen when input is corrupted.
+                                                                              * No consequence though : memory address is only used for prefetching, not for dereferencing */
+        PREFETCH_L1(match); PREFETCH_L1(match+CACHELINE_SIZE);   /* note : it's safe to invoke PREFETCH() on any memory address, including invalid ones */
+    }
+    return prefetchPos + sequence.matchLength;
+}
+
+/* This decoding function employs prefetching
+ * to reduce latency impact of cache misses.
+ * It's generally employed when block contains a significant portion of long-distance matches
+ * or when coupled with a "cold" dictionary */
 FORCE_INLINE_TEMPLATE size_t
 ZSTD_decompressSequencesLong_body(
                                ZSTD_DCtx* dctx,
@@ -1242,7 +1249,7 @@ ZSTD_decompressSequencesLong_body(
 {
     const BYTE* ip = (const BYTE*)seqStart;
     const BYTE* const iend = ip + seqSize;
-    BYTE* const ostart = (BYTE* const)dst;
+    BYTE* const ostart = (BYTE*)dst;
     BYTE* const oend = ostart + maxDstSize;
     BYTE* op = ostart;
     const BYTE* litPtr = dctx->litPtr;
@@ -1254,18 +1261,17 @@ ZSTD_decompressSequencesLong_body(
 
     /* Regen sequences */
     if (nbSeq) {
-#define STORED_SEQS 4
+#define STORED_SEQS 8
 #define STORED_SEQS_MASK (STORED_SEQS-1)
-#define ADVANCED_SEQS 4
+#define ADVANCED_SEQS STORED_SEQS
         seq_t sequences[STORED_SEQS];
         int const seqAdvance = MIN(nbSeq, ADVANCED_SEQS);
         seqState_t seqState;
         int seqNb;
+        size_t prefetchPos = (size_t)(op-prefixStart); /* track position relative to prefixStart */
+
         dctx->fseEntropy = 1;
         { int i; for (i=0; i<ZSTD_REP_NUM; i++) seqState.prevOffset[i] = dctx->entropy.rep[i]; }
-        seqState.prefixStart = prefixStart;
-        seqState.pos = (size_t)(op-prefixStart);
-        seqState.dictEnd = dictEnd;
         assert(dst != NULL);
         assert(iend >= ip);
         RETURN_ERROR_IF(
@@ -1277,21 +1283,23 @@ ZSTD_decompressSequencesLong_body(
 
         /* prepare in advance */
         for (seqNb=0; (BIT_reloadDStream(&seqState.DStream) <= BIT_DStream_completed) && (seqNb<seqAdvance); seqNb++) {
-            sequences[seqNb] = ZSTD_decodeSequence(&seqState, isLongOffset, ZSTD_p_prefetch);
-            PREFETCH_L1(sequences[seqNb].match); PREFETCH_L1(sequences[seqNb].match + sequences[seqNb].matchLength - 1); /* note : it's safe to invoke PREFETCH() on any memory address, including invalid ones */
+            seq_t const sequence = ZSTD_decodeSequence(&seqState, isLongOffset);
+            prefetchPos = ZSTD_prefetchMatch(prefetchPos, sequence, prefixStart, dictEnd);
+            sequences[seqNb] = sequence;
         }
         RETURN_ERROR_IF(seqNb<seqAdvance, corruption_detected, "");
 
         /* decode and decompress */
         for ( ; (BIT_reloadDStream(&(seqState.DStream)) <= BIT_DStream_completed) && (seqNb<nbSeq) ; seqNb++) {
-            seq_t const sequence = ZSTD_decodeSequence(&seqState, isLongOffset, ZSTD_p_prefetch);
+            seq_t const sequence = ZSTD_decodeSequence(&seqState, isLongOffset);
             size_t const oneSeqSize = ZSTD_execSequence(op, oend, sequences[(seqNb-ADVANCED_SEQS) & STORED_SEQS_MASK], &litPtr, litEnd, prefixStart, dictStart, dictEnd);
 #if defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION) && defined(FUZZING_ASSERT_VALID_SEQUENCE)
             assert(!ZSTD_isError(oneSeqSize));
             if (frame) ZSTD_assertValidSequence(dctx, op, oend, sequences[(seqNb-ADVANCED_SEQS) & STORED_SEQS_MASK], prefixStart, dictStart);
 #endif
             if (ZSTD_isError(oneSeqSize)) return oneSeqSize;
-            PREFETCH_L1(sequence.match); PREFETCH_L1(sequence.match + sequence.matchLength - 1); /* note : it's safe to invoke PREFETCH() on any memory address, including invalid ones */
+
+            prefetchPos = ZSTD_prefetchMatch(prefetchPos, sequence, prefixStart, dictEnd);
             sequences[seqNb & STORED_SEQS_MASK] = sequence;
             op += oneSeqSize;
         }
@@ -1517,9 +1525,9 @@ ZSTD_decompressBlock_internal(ZSTD_DCtx* dctx,
 }
 
 
-void ZSTD_checkContinuity(ZSTD_DCtx* dctx, const void* dst)
+void ZSTD_checkContinuity(ZSTD_DCtx* dctx, const void* dst, size_t dstSize)
 {
-    if (dst != dctx->previousDstEnd) {   /* not contiguous */
+    if (dst != dctx->previousDstEnd && dstSize > 0) {   /* not contiguous */
         dctx->dictEnd = dctx->previousDstEnd;
         dctx->virtualStart = (const char*)dst - ((const char*)(dctx->previousDstEnd) - (const char*)(dctx->prefixStart));
         dctx->prefixStart = dst;
@@ -1533,7 +1541,7 @@ size_t ZSTD_decompressBlock(ZSTD_DCtx* dctx,
                       const void* src, size_t srcSize)
 {
     size_t dSize;
-    ZSTD_checkContinuity(dctx, dst);
+    ZSTD_checkContinuity(dctx, dst, dstCapacity);
     dSize = ZSTD_decompressBlock_internal(dctx, dst, dstCapacity, src, srcSize, /* frame */ 0);
     dctx->previousDstEnd = (char*)dst + dSize;
     return dSize;

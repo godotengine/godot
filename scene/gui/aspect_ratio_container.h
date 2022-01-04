@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,17 +48,17 @@ public:
 		STRETCH_FIT,
 		STRETCH_COVER,
 	};
-	enum AlignMode {
-		ALIGN_BEGIN,
-		ALIGN_CENTER,
-		ALIGN_END,
+	enum AlignmentMode {
+		ALIGNMENT_BEGIN,
+		ALIGNMENT_CENTER,
+		ALIGNMENT_END,
 	};
 
 private:
 	float ratio = 1.0;
 	StretchMode stretch_mode = STRETCH_FIT;
-	AlignMode alignment_horizontal = ALIGN_CENTER;
-	AlignMode alignment_vertical = ALIGN_CENTER;
+	AlignmentMode alignment_horizontal = ALIGNMENT_CENTER;
+	AlignmentMode alignment_vertical = ALIGNMENT_CENTER;
 
 public:
 	void set_ratio(float p_ratio);
@@ -67,14 +67,14 @@ public:
 	void set_stretch_mode(StretchMode p_mode);
 	StretchMode get_stretch_mode() const { return stretch_mode; }
 
-	void set_alignment_horizontal(AlignMode p_alignment_horizontal);
-	AlignMode get_alignment_horizontal() const { return alignment_horizontal; }
+	void set_alignment_horizontal(AlignmentMode p_alignment_horizontal);
+	AlignmentMode get_alignment_horizontal() const { return alignment_horizontal; }
 
-	void set_alignment_vertical(AlignMode p_alignment_vertical);
-	AlignMode get_alignment_vertical() const { return alignment_vertical; }
+	void set_alignment_vertical(AlignmentMode p_alignment_vertical);
+	AlignmentMode get_alignment_vertical() const { return alignment_vertical; }
 };
 
 VARIANT_ENUM_CAST(AspectRatioContainer::StretchMode);
-VARIANT_ENUM_CAST(AspectRatioContainer::AlignMode);
+VARIANT_ENUM_CAST(AspectRatioContainer::AlignmentMode);
 
 #endif // ASPECT_RATIO_CONTAINER_H

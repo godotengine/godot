@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A simplified interface to a scene file. Provides access to operations and checks that can be performed on the scene resource itself.
-		Can be used to save a node to a file. When saving, the node as well as all the nodes it owns get saved (see [code]owner[/code] property on [Node]).
+		Can be used to save a node to a file. When saving, the node as well as all the nodes it owns get saved (see [member Node.owner] property).
 		[b]Note:[/b] The node doesn't need to own itself.
 		[b]Example of loading a saved scene:[/b]
 		[codeblocks]
@@ -22,7 +22,7 @@
 		AddChild(scene);
 		[/csharp]
 		[/codeblocks]
-		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [code]Node2D[/code] ([code]node[/code]), [code]RigidDynamicBody2D[/code] ([code]body[/code]) and [code]CollisionObject2D[/code] ([code]collision[/code]). [code]collision[/code] is a child of [code]body[/code] which is a child of [code]node[/code]. Only [code]body[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
+		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [Node2D] ([code]node[/code]), [RigidDynamicBody2D] ([code]body[/code]) and [CollisionObject2D] ([code]collision[/code]). [code]collision[/code] is a child of [code]body[/code] which is a child of [code]node[/code]. Only [code]body[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
 		[codeblocks]
 		[gdscript]
 		# Create the objects.

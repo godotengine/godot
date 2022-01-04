@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +70,7 @@ public:
 		GUTTER_TYPE_CUSTOM
 	};
 
-	/* Contex Menu. */
+	/* Context Menu. */
 	enum MenuItems {
 		MENU_CUT,
 		MENU_COPY,
@@ -159,6 +159,7 @@ private:
 		mutable Vector<Line> text;
 		Ref<Font> font;
 		int font_size = -1;
+		int font_height = 0;
 
 		Dictionary opentype_features;
 		String language;
@@ -204,8 +205,8 @@ private:
 			}
 		}
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
-		void insert(int p_at, const String &p_text, const Array &p_bidi_override);
-		void remove(int p_at);
+		void insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override);
+		void remove_range(int p_from_line, int p_to_line);
 		int size() const { return text.size(); }
 		void clear();
 
@@ -271,7 +272,7 @@ private:
 	bool virtual_keyboard_enabled = true;
 	bool middle_mouse_paste_enabled = true;
 
-	// Overridable actions
+	// Overridable actions.
 	String cut_copy_line = "";
 
 	// Context menu.
@@ -336,6 +337,14 @@ private:
 	Variant tooltip_ud;
 
 	/* Mouse */
+	struct LineDrawingCache {
+		int y_offset = 0;
+		Vector<int> first_visible_chars;
+		Vector<int> last_visible_chars;
+	};
+
+	Map<int, LineDrawingCache> line_drawing_cache;
+
 	int _get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 
 	/* Caret. */
@@ -367,6 +376,9 @@ private:
 
 	bool caret_mid_grapheme_enabled = false;
 
+	bool drag_action = false;
+	bool drag_caret_force_displayed = false;
+
 	void _emit_caret_changed();
 
 	void _reset_caret_blink_timer();
@@ -392,6 +404,7 @@ private:
 		int to_column = 0;
 
 		bool shiftclick_left = false;
+		bool drag_attempt = false;
 	} selection;
 
 	bool selecting_enabled = true;
@@ -415,7 +428,7 @@ private:
 	void _pre_shift_selection();
 	void _post_shift_selection();
 
-	/* line wrapping. */
+	/* Line wrapping. */
 	LineWrappingMode line_wrapping_mode = LineWrappingMode::LINE_WRAPPING_NONE;
 
 	int wrap_at_column = 0;
@@ -455,14 +468,14 @@ private:
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
-	// Minimap
+	// Minimap.
 	bool draw_minimap = false;
 
 	int minimap_width = 80;
 	Point2 minimap_char_size = Point2(1, 2);
 	int minimap_line_spacing = 1;
 
-	// minimap scroll
+	// Minimap scroll.
 	bool minimap_clicked = false;
 	bool hovering_minimap = false;
 	bool dragging_minimap = false;
@@ -603,6 +616,9 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	virtual bool is_text_field() const override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+	virtual Variant get_drag_data(const Point2 &p_point) override;
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
 
@@ -717,9 +733,13 @@ public:
 	String get_word_at_pos(const Vector2 &p_pos) const;
 
 	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
+	Point2i get_pos_at_line_column(int p_line, int p_column) const;
+	Rect2i get_rect_at_line_column(int p_line, int p_column) const;
+
 	int get_minimap_line_at_pos(const Point2i &p_pos) const;
 
 	bool is_dragging_cursor() const;
+	bool is_mouse_over_selection(bool p_edges = true) const;
 
 	/* Caret */
 	void set_caret_type(CaretType p_type);
@@ -782,7 +802,7 @@ public:
 	void deselect();
 	void delete_selection();
 
-	/* line wrapping. */
+	/* Line wrapping. */
 	void set_line_wrapping_mode(LineWrappingMode p_wrapping_mode);
 	LineWrappingMode get_line_wrapping_mode() const;
 

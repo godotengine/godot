@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,6 +61,13 @@ static String _prestr(SL::DataPrecision p_pres) {
 			return "highp ";
 		case SL::PRECISION_DEFAULT:
 			return "";
+	}
+	return "";
+}
+
+static String _constr(bool p_is_const) {
+	if (p_is_const) {
+		return "const ";
 	}
 	return "";
 }
@@ -246,9 +253,10 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 		header += "(";
 
 		for (int i = 0; i < fnode->arguments.size(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				header += ", ";
-
+			}
+			header += _constr(fnode->arguments[i].is_const);
 			header += _qualstr(fnode->arguments[i].qualifier);
 			header += _prestr(fnode->arguments[i].precision);
 			header += _typestr(fnode->arguments[i].type);
@@ -365,7 +373,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			for (int i = 0; i < snode->vconstants.size(); i++) {
 				String gcode;
-				gcode += "const ";
+				gcode += _constr(true);
 				gcode += _prestr(snode->vconstants[i].precision);
 				gcode += _typestr(snode->vconstants[i].type);
 				gcode += " " + _mkid(String(snode->vconstants[i].name));
@@ -446,9 +454,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			SL::VariableDeclarationNode *var_dec_node = (SL::VariableDeclarationNode *)p_node;
 
 			StringBuffer<> declaration;
-			if (var_dec_node->is_const) {
-				declaration += "const ";
-			}
+			declaration += _constr(var_dec_node->is_const);
 			declaration += _prestr(var_dec_node->precision);
 			declaration += _typestr(var_dec_node->datatype);
 
@@ -752,6 +758,10 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += a + " - " + n + " * (" + a + " / " + n + "))";
 				} break;
 
+				case SL::OP_EMPTY: {
+					// Semicolon (or empty statement) - ignored.
+				} break;
+
 				default: {
 					if (p_use_scope) {
 						code += "(";
@@ -851,7 +861,13 @@ ShaderLanguage::DataType ShaderCompilerGLES3::_get_variable_type(const StringNam
 Error ShaderCompilerGLES3::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
 	ShaderLanguage::VaryingFunctionNames var_names;
 
-	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), var_names, ShaderTypes::get_singleton()->get_types(), _get_variable_type);
+	ShaderLanguage::ShaderCompileInfo info;
+	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
+	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
+	info.shader_types = ShaderTypes::get_singleton()->get_types();
+	info.global_variable_type_func = _get_variable_type;
+
+	Error err = parser.compile(p_code, info);
 
 	//	Error ShaderLanguage::compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func) {
 	if (err != OK) {

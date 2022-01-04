@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -322,8 +322,8 @@ bool Array::has(const Variant &p_value) const {
 	return _p->array.find(p_value, 0) != -1;
 }
 
-void Array::remove(int p_pos) {
-	_p->array.remove(p_pos);
+void Array::remove_at(int p_pos) {
+	_p->array.remove_at(p_pos);
 }
 
 void Array::set(int p_idx, const Variant &p_value) {
@@ -365,55 +365,30 @@ Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
 	return new_arr;
 }
 
-int Array::_clamp_slice_index(int p_index) const {
-	int arr_size = size();
-	int fixed_index = CLAMP(p_index, -arr_size, arr_size - 1);
-	if (fixed_index < 0) {
-		fixed_index = arr_size + fixed_index;
-	}
-	return fixed_index;
-}
+Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
+	Array result;
 
-Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // like python, but inclusive on upper bound
+	ERR_FAIL_COND_V_MSG(p_step == 0, result, "Slice step cannot be zero.");
 
-	Array new_arr;
-
-	ERR_FAIL_COND_V_MSG(p_step == 0, new_arr, "Array slice step size cannot be zero.");
-
-	if (is_empty()) { // Don't try to slice empty arrays.
-		return new_arr;
-	}
-	if (p_step > 0) {
-		if (p_begin >= size() || p_end < -size()) {
-			return new_arr;
-		}
-	} else { // p_step < 0
-		if (p_begin < -size() || p_end >= size()) {
-			return new_arr;
-		}
+	if (p_end < 0) {
+		p_end += size() + 1;
 	}
 
-	int begin = _clamp_slice_index(p_begin);
-	int end = _clamp_slice_index(p_end);
+	ERR_FAIL_INDEX_V(p_begin, size(), result);
+	ERR_FAIL_INDEX_V(p_end, size() + 1, result);
 
-	int new_arr_size = MAX(((end - begin + p_step) / p_step), 0);
-	new_arr.resize(new_arr_size);
+	ERR_FAIL_COND_V_MSG(p_step > 0 && p_begin > p_end, result, "Slice is positive, but bounds is decreasing");
+	ERR_FAIL_COND_V_MSG(p_step < 0 && p_begin < p_end, result, "Slice is negative, but bounds is increasing");
 
-	if (p_step > 0) {
-		int dest_idx = 0;
-		for (int idx = begin; idx <= end; idx += p_step) {
-			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
-			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
-		}
-	} else { // p_step < 0
-		int dest_idx = 0;
-		for (int idx = begin; idx >= end; idx += p_step) {
-			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
-			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
-		}
+	int result_size = (p_end - p_begin) / p_step;
+	result.resize(result_size);
+
+	for (int src_idx = p_begin, dest_idx = 0; dest_idx < result_size; ++dest_idx) {
+		result[dest_idx] = p_deep ? get(src_idx).duplicate(true) : get(src_idx);
+		src_idx += p_step;
 	}
 
-	return new_arr;
+	return result;
 }
 
 Array Array::filter(const Callable &p_callable) const {
@@ -576,7 +551,7 @@ Variant Array::pop_back() {
 Variant Array::pop_front() {
 	if (!_p->array.is_empty()) {
 		const Variant ret = _p->array.get(0);
-		_p->array.remove(0);
+		_p->array.remove_at(0);
 		return ret;
 	}
 	return Variant();
@@ -603,7 +578,7 @@ Variant Array::pop_at(int p_pos) {
 					_p->array.size()));
 
 	const Variant ret = _p->array.get(p_pos);
-	_p->array.remove(p_pos);
+	_p->array.remove_at(p_pos);
 	return ret;
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -157,6 +157,17 @@ void TilesEditorPlugin::_update_editors() {
 
 	// Update the viewport.
 	CanvasItemEditor::get_singleton()->update_viewport();
+
+	// Update visibility of bottom panel buttons.
+	if (tileset_editor_button->is_pressed() && !tile_set.is_valid()) {
+		if (tile_map) {
+			editor_node->make_bottom_panel_item_visible(tilemap_editor);
+		} else {
+			editor_node->hide_bottom_panel();
+		}
+	}
+	tileset_editor_button->set_visible(tile_set.is_valid());
+	tilemap_editor_button->set_visible(tile_map);
 }
 
 void TilesEditorPlugin::_notification(int p_what) {

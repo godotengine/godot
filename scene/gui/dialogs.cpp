@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -242,7 +242,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 		hbc->add_spacer(true);
 	}
 
-	if (p_action != "") {
+	if (!p_action.is_empty()) {
 		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
 	}
 
@@ -251,7 +251,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 
 Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
-	if (p_cancel == "") {
+	if (p_cancel.is_empty()) {
 		c = TTRC("Cancel");
 	}
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);

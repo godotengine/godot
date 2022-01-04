@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -526,8 +526,6 @@ Sprite2DEditor::Sprite2DEditor() {
 	debug_uv_dialog->add_child(vb);
 	ScrollContainer *scroll = memnew(ScrollContainer);
 	scroll->set_custom_minimum_size(Size2(800, 500) * EDSCALE);
-	scroll->set_enable_h_scroll(true);
-	scroll->set_enable_v_scroll(true);
 	vb->add_margin_child(TTR("Preview:"), scroll, true);
 	debug_uv = memnew(Control);
 	debug_uv->connect("draw", callable_mp(this, &Sprite2DEditor::_debug_uv_draw));

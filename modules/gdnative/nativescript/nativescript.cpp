@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -682,7 +682,7 @@ void NativeScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 				ERR_CONTINUE(info.type < 0 || info.type >= Variant::VARIANT_MAX);
 
 				info.name = d["name"];
-				ERR_CONTINUE(info.name == "");
+				ERR_CONTINUE(info.name.is_empty());
 
 				if (d.has("hint")) {
 					info.hint = PropertyHint(d["hint"].operator int64_t());

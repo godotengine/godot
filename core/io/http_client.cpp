@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,14 @@ HTTPClient *HTTPClient::create() {
 		return _create();
 	}
 	return nullptr;
+}
+
+void HTTPClient::set_http_proxy(const String &p_host, int p_port) {
+	WARN_PRINT("HTTP proxy feature is not available");
+}
+
+void HTTPClient::set_https_proxy(const String &p_host, int p_port) {
+	WARN_PRINT("HTTPS proxy feature is not available");
 }
 
 Error HTTPClient::_request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
@@ -141,6 +149,9 @@ void HTTPClient::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_status"), &HTTPClient::get_status);
 	ClassDB::bind_method(D_METHOD("poll"), &HTTPClient::poll);
+
+	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPClient::set_http_proxy);
+	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPClient::set_https_proxy);
 
 	ClassDB::bind_method(D_METHOD("query_string_from_dict", "fields"), &HTTPClient::query_string_from_dict);
 

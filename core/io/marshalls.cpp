@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -562,7 +562,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					return err;
 				}
 
-				if (str == String()) {
+				if (str.is_empty()) {
 					r_variant = (Object *)nullptr;
 				} else {
 					Object *obj = ClassDB::instantiate(str);
