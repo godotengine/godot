@@ -883,8 +883,6 @@ void ShaderLanguage::clear() {
 	completion_class = SubClassTag::TAG_GLOBAL;
 	completion_struct = StringName();
 
-	unknown_varying_usages.clear();
-
 	error_line = 0;
 	tk_line = 1;
 	char_idx = 0;
@@ -2839,43 +2837,6 @@ bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, St
 	return true;
 }
 
-bool ShaderLanguage::_validate_varying_using(ShaderNode::Varying &p_varying, String *r_message) {
-	switch (p_varying.stage) {
-		case ShaderNode::Varying::STAGE_UNKNOWN:
-			VaryingUsage usage;
-			usage.var = &p_varying;
-			usage.line = tk_line;
-			unknown_varying_usages.push_back(usage);
-			break;
-		case ShaderNode::Varying::STAGE_VERTEX:
-			if (current_function == String("fragment") || current_function == String("light")) {
-				p_varying.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT;
-			}
-			break;
-		case ShaderNode::Varying::STAGE_FRAGMENT:
-			if (current_function == String("light")) {
-				p_varying.stage = ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT;
-			}
-			break;
-		default:
-			break;
-	}
-	return true;
-}
-
-bool ShaderLanguage::_check_varying_usages(int *r_error_line, String *r_error_message) const {
-	for (const List<ShaderLanguage::VaryingUsage>::Element *E = unknown_varying_usages.front(); E; E = E->next()) {
-		ShaderNode::Varying::Stage stage = E->get().var->stage;
-		if (stage != ShaderNode::Varying::STAGE_UNKNOWN && stage != ShaderNode::Varying::STAGE_VERTEX && stage != ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT) {
-			*r_error_line = E->get().line;
-			*r_error_message = RTR("Fragment-stage varying could not been accessed in custom function!");
-			return false;
-		}
-	}
-
-	return true;
-}
-
 bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message) {
 	if (p_node->type == Node::TYPE_OPERATOR) {
 		OperatorNode *op = static_cast<OperatorNode *>(p_node);
@@ -3443,44 +3404,100 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							for (int i = 0; i < call_function->arguments.size(); i++) {
 								int argidx = i + 1;
 								if (argidx < func->arguments.size()) {
-									if (call_function->arguments[i].is_const || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_OUT || call_function->arguments[i].qualifier == ArgumentQualifier::ARGUMENT_QUALIFIER_INOUT) {
-										bool error = false;
-										Node *n = func->arguments[argidx];
+									bool error = false;
+									Node *n = func->arguments[argidx];
+									ArgumentQualifier arg_qual = call_function->arguments[i].qualifier;
+									bool is_out_arg = arg_qual != ArgumentQualifier::ARGUMENT_QUALIFIER_IN;
+
+									if (n->type == Node::TYPE_VARIABLE || n->type == Node::TYPE_ARRAY) {
+										StringName varname;
+
+										if (n->type == Node::TYPE_VARIABLE) {
+											VariableNode *vn = static_cast<VariableNode *>(n);
+											varname = vn->name;
+										} else { // TYPE_ARRAY
+											ArrayNode *an = static_cast<ArrayNode *>(n);
+											varname = an->name;
+										}
+
+										if (shader->varyings.has(varname)) {
+											switch (shader->varyings[varname].stage) {
+												case ShaderNode::Varying::STAGE_UNKNOWN: {
+													_set_error(vformat("Varying '%s' must be assigned in the vertex or fragment function first!", varname));
+													return nullptr;
+												}
+												case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT:
+													FALLTHROUGH;
+												case ShaderNode::Varying::STAGE_VERTEX:
+													if (is_out_arg && current_function != varying_function_names.vertex) { // inout/out
+														error = true;
+													}
+													break;
+												case ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT:
+													FALLTHROUGH;
+												case ShaderNode::Varying::STAGE_FRAGMENT:
+													if (!is_out_arg) {
+														if (current_function != varying_function_names.fragment && current_function != varying_function_names.light) {
+															error = true;
+														}
+													} else if (current_function != varying_function_names.fragment) { // inout/out
+														error = true;
+													}
+													break;
+												default:
+													break;
+											}
+
+											if (error) {
+												_set_error(vformat("Varying '%s' cannot be passed for the '%s' parameter in that context!", varname, _get_qualifier_str(arg_qual)));
+												return nullptr;
+											}
+										}
+									}
+
+									bool is_const_arg = call_function->arguments[i].is_const;
+
+									if (is_const_arg || is_out_arg) {
+										StringName varname;
+
 										if (n->type == Node::TYPE_CONSTANT || n->type == Node::TYPE_OPERATOR) {
-											if (!call_function->arguments[i].is_const) {
+											if (!is_const_arg) {
 												error = true;
 											}
 										} else if (n->type == Node::TYPE_ARRAY) {
 											ArrayNode *an = static_cast<ArrayNode *>(n);
-											if (an->call_expression != nullptr || an->is_const) {
+											if (!is_const_arg && (an->call_expression != nullptr || an->is_const)) {
 												error = true;
 											}
+											varname = an->name;
 										} else if (n->type == Node::TYPE_VARIABLE) {
 											VariableNode *vn = static_cast<VariableNode *>(n);
-											if (vn->is_const) {
+											if (vn->is_const && !is_const_arg) {
 												error = true;
-											} else {
-												StringName varname = vn->name;
-												if (shader->constants.has(varname)) {
+											}
+											varname = vn->name;
+										} else if (n->type == Node::TYPE_MEMBER) {
+											MemberNode *mn = static_cast<MemberNode *>(n);
+											if (mn->basetype_const && is_out_arg) {
+												error = true;
+											}
+										}
+
+										if (!error && varname != StringName()) {
+											if (shader->constants.has(varname)) {
+												error = true;
+											} else if (shader->uniforms.has(varname)) {
+												error = true;
+											} else if (p_builtin_types.has(varname)) {
+												BuiltInInfo info = p_builtin_types[varname];
+												if (info.constant) {
 													error = true;
-												} else if (shader->uniforms.has(varname)) {
-													error = true;
-												} else {
-													if (shader->varyings.has(varname)) {
-														_set_error(vformat("Varyings cannot be passed for '%s' parameter!", _get_qualifier_str(call_function->arguments[i].qualifier)));
-														return nullptr;
-													}
-													if (p_builtin_types.has(varname)) {
-														BuiltInInfo info = p_builtin_types[varname];
-														if (info.constant) {
-															error = true;
-														}
-													}
 												}
 											}
 										}
+
 										if (error) {
-											_set_error(vformat("Constant value cannot be passed for '%s' parameter!", _get_qualifier_str(call_function->arguments[i].qualifier)));
+											_set_error(vformat("Constant value cannot be passed for '%s' parameter!", _get_qualifier_str(arg_qual)));
 											return nullptr;
 										}
 									}
@@ -3546,9 +3563,21 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								return nullptr;
 							}
 						} else {
-							if (!_validate_varying_using(shader->varyings[identifier], &error)) {
-								_set_error(error);
-								return nullptr;
+							ShaderNode::Varying &var = shader->varyings[identifier];
+
+							switch (var.stage) {
+								case ShaderNode::Varying::STAGE_VERTEX:
+									if (current_function == varying_function_names.fragment || current_function == varying_function_names.light) {
+										var.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT;
+									}
+									break;
+								case ShaderNode::Varying::STAGE_FRAGMENT:
+									if (current_function == varying_function_names.light) {
+										var.stage = ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT;
+									}
+									break;
+								default:
+									break;
 							}
 						}
 					}
@@ -3854,6 +3883,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 				MemberNode *mn = alloc_node<MemberNode>();
 				mn->basetype = dt;
+				mn->basetype_const = last_const;
 				mn->datatype = member_type;
 				mn->base_struct_name = st;
 				mn->struct_name = member_struct_name;
@@ -6650,14 +6680,6 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 		}
 
 		tk = _get_token();
-	}
-
-	int error_line;
-	String error_message;
-	if (!_check_varying_usages(&error_line, &error_message)) {
-		_set_tkpos({ 0, error_line });
-		_set_error(error_message);
-		return ERR_PARSE_ERROR;
 	}
 
 	return OK;
