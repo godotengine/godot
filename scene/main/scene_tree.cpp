@@ -2077,11 +2077,16 @@ SceneTree::SceneTree() {
 	const float sharpen_intensity = GLOBAL_GET("rendering/quality/filters/sharpen_intensity");
 	root->set_sharpen_intensity(sharpen_intensity);
 
-	GLOBAL_DEF_RST("rendering/quality/depth/hdr", true);
+	GLOBAL_DEF("rendering/quality/depth/hdr", true);
 	GLOBAL_DEF("rendering/quality/depth/hdr.mobile", false);
 
-	bool hdr = GLOBAL_GET("rendering/quality/depth/hdr");
+	const bool hdr = GLOBAL_GET("rendering/quality/depth/hdr");
 	root->set_hdr(hdr);
+
+	GLOBAL_DEF("rendering/quality/depth/use_32_bpc_depth", false);
+
+	const bool use_32_bpc_depth = GLOBAL_GET("rendering/quality/depth/use_32_bpc_depth");
+	root->set_use_32_bpc_depth(use_32_bpc_depth);
 
 	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(), ref_atlas_size, ref_atlas_subdiv);
 

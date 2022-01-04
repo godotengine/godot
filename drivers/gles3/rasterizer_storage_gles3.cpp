@@ -6905,8 +6905,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 	GLuint color_type;
 	Image::Format image_format;
 
-	bool hdr = rt->flags[RENDER_TARGET_HDR] && config.framebuffer_half_float_supported;
-	//hdr = false;
+	const bool hdr = rt->flags[RENDER_TARGET_HDR] && config.framebuffer_half_float_supported;
 
 	if (!hdr || rt->flags[RENDER_TARGET_NO_3D]) {
 		if (rt->flags[RENDER_TARGET_NO_3D_EFFECTS] && !rt->flags[RENDER_TARGET_TRANSPARENT]) {
@@ -6923,10 +6922,21 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 			image_format = Image::FORMAT_RGBA8;
 		}
 	} else {
-		color_internal_format = GL_RGBA16F;
-		color_format = GL_RGBA;
-		color_type = GL_HALF_FLOAT;
-		image_format = Image::FORMAT_RGBAH;
+		// HDR enabled.
+		if (rt->flags[RENDER_TARGET_USE_32_BPC_DEPTH]) {
+			// 32 bpc. Can be useful for advanced shaders, but should not be used
+			// for general-purpose rendering as it's slower.
+			color_internal_format = GL_RGBA32F;
+			color_format = GL_RGBA;
+			color_type = GL_FLOAT;
+			image_format = Image::FORMAT_RGBAF;
+		} else {
+			// 16 bpc. This is the default HDR mode.
+			color_internal_format = GL_RGBA16F;
+			color_format = GL_RGBA;
+			color_type = GL_HALF_FLOAT;
+			image_format = Image::FORMAT_RGBAH;
+		}
 	}
 
 	{
@@ -7469,6 +7479,7 @@ void RasterizerStorageGLES3::render_target_set_flag(RID p_render_target, RenderT
 
 	switch (p_flag) {
 		case RENDER_TARGET_HDR:
+		case RENDER_TARGET_USE_32_BPC_DEPTH:
 		case RENDER_TARGET_NO_3D:
 		case RENDER_TARGET_NO_SAMPLING:
 		case RENDER_TARGET_NO_3D_EFFECTS: {

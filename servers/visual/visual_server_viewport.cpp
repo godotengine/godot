@@ -668,6 +668,13 @@ void VisualServerViewport::viewport_set_hdr(RID p_viewport, bool p_enabled) {
 	VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_HDR, p_enabled);
 }
 
+void VisualServerViewport::viewport_set_use_32_bpc_depth(RID p_viewport, bool p_enabled) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_USE_32_BPC_DEPTH, p_enabled);
+}
+
 void VisualServerViewport::viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);

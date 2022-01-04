@@ -1352,11 +1352,16 @@
 			[b]Note:[/b] Generally you should only use this option if you encounter bugs when it is set to [code]false[/code], i.e. there are problems with the default method.
 		</member>
 		<member name="rendering/quality/depth/hdr" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], allocates the main framebuffer with high dynamic range. High dynamic range allows the use of [Color] values greater than 1.
+			If [code]true[/code], allocates the root [Viewport]'s framebuffer with high dynamic range. High dynamic range allows the use of [Color] values greater than 1.
 			[b]Note:[/b] Only available on the GLES3 backend.
 		</member>
 		<member name="rendering/quality/depth/hdr.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/quality/depth/hdr] on mobile devices, due to performance concerns or driver support.
+		</member>
+		<member name="rendering/quality/depth/use_32_bpc_depth" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], allocates the root [Viewport]'s framebuffer with full floating-point precision (32-bit) instead of half floating-point precision (16-bit). Only effective when [member rendering/quality/depth/hdr] is also enabled.
+			[b]Note:[/b] Enabling this setting does not improve rendering quality. Using full floating-point precision is slower, and is generally only needed for advanced shaders that require a high level of precision. To reduce banding, enable [member rendering/quality/filters/use_debanding] instead.
+			[b]Note:[/b] Only available on the GLES3 backend.
 		</member>
 		<member name="rendering/quality/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
 			Disables depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.

@@ -2617,8 +2617,11 @@ void SpatialEditorViewport::_notification(int p_what) {
 		float sharpen_intensity = ProjectSettings::get_singleton()->get("rendering/quality/filters/sharpen_intensity");
 		viewport->set_sharpen_intensity(sharpen_intensity);
 
-		bool hdr = ProjectSettings::get_singleton()->get("rendering/quality/depth/hdr");
+		const bool hdr = ProjectSettings::get_singleton()->get("rendering/quality/depth/hdr");
 		viewport->set_hdr(hdr);
+
+		const bool use_32_bpc_depth = ProjectSettings::get_singleton()->get("rendering/quality/depth/use_32_bpc_depth");
+		viewport->set_use_32_bpc_depth(use_32_bpc_depth);
 
 		bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 		info_label->set_visible(show_info);

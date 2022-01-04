@@ -492,6 +492,7 @@ public:
 	BIND2(viewport_set_use_debanding, RID, bool)
 	BIND2(viewport_set_sharpen_intensity, RID, float)
 	BIND2(viewport_set_hdr, RID, bool)
+	BIND2(viewport_set_use_32_bpc_depth, RID, bool)
 	BIND2(viewport_set_usage, RID, ViewportUsage)
 
 	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)

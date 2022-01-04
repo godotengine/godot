@@ -706,6 +706,7 @@ public:
 	};
 
 	virtual void viewport_set_hdr(RID p_viewport, bool p_enabled) = 0;
+	virtual void viewport_set_use_32_bpc_depth(RID p_viewport, bool p_enabled) = 0;
 	virtual void viewport_set_usage(RID p_viewport, ViewportUsage p_usage) = 0;
 
 	enum ViewportRenderInfo {
