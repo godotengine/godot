@@ -7,9 +7,9 @@
 #include "internal/li_collision_object.h"
 #include "lilyphys_server.h"
 
-#include "thirdparty/gjk_epa.h"
-#include "thirdparty/libccd/ccd/ccd.h"
-#include "thirdparty/libccd/ccd/vec3.h"
+#include "li_thirdparty/gjk_epa.h"
+#include "li_thirdparty/libccd/ccd/ccd.h"
+#include "li_thirdparty/libccd/ccd/vec3.h"
 
 void LCollision::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_direction"), &LCollision::get_direction);
@@ -26,14 +26,16 @@ struct CheckData {
 };
 
 // Support function for libccd to use.
-void support(const void *obj, const ccd_vec3_t *dir, ccd_vec3_t *vec) {
+void support(const void *obj, const ccd_vec3_t *_dir, ccd_vec3_t *vec) {
     auto object = (CheckData*)obj;
 
-    //print_line("------");
-    Vector3 point = LilyphysServer::get_singleton()->shape_get_support(object->shape->shape, Vector3{dir->v[0], dir->v[1], dir->v[2]});
+    Vector3 dir = Vector3{_dir->v[0], _dir->v[1], _dir->v[2]};
+    dir = object->object->get_transform().basis.xform(object->shape->transform.basis.xform(dir)).normalized();
+    Vector3 point = LilyphysServer::get_singleton()->shape_get_support(object->shape->shape, dir);
     point = object->shape->transform.xform(point);
     point = object->object->get_transform().xform(point);
     ccdVec3Set(vec, point.x, point.y, point.z);
+    //print_line(vformat("Support point for dir %s is: %s", dir, point));
 }
 
 // For each shape object 1 has...
@@ -51,13 +53,22 @@ List<RID> LCollisionSolver::check_collision(LICollisionObject *object1, LICollis
                 continue;
             }
             // Let's do the check.
-            CheckData data1{object1, &E->get()};
-            CheckData data2{object2, &F->get()};
-            ccd_real_t depth;
-            ccd_vec3_t dir, pos;
-            int intersect = ccdGJKPenetration((const void*)&data1, (const void*)&data2, &ccd, &depth, &dir, &pos);
-            if (intersect != -1) {
-                CollisionResult* result = memnew(CollisionResult(object1->get_self(), object2->get_self(), E->get().transform, true, depth, Vector3{dir.v[0], dir.v[1], dir.v[2]}, Vector3{pos.v[0], pos.v[1], pos.v[2]}));
+//            CheckData data1{object1, &E->get()};
+//            CheckData data2{object2, &F->get()};
+//            ccd_real_t depth;
+//            ccd_vec3_t dir, pos;
+//            int intersect = ccdGJKPenetration((const void*)&data1, (const void*)&data2, &ccd, &depth, &dir, &pos);
+//            if (intersect != -1) {
+//                //print_line(vformat("In-engine reported collision: %s", Vector3(pos.v[0], pos.v[1], pos.v[2])));
+//                CollisionResult* result = memnew(CollisionResult(object1->get_self(), object2->get_self(), E->get().transform, true, depth, Vector3{dir.v[0], dir.v[1], dir.v[2]}, Vector3{pos.v[0], pos.v[1], pos.v[2]}));
+//                RID id = p_owner.make_rid(result);
+//                result->rid = id;
+//                results.push_back(id);
+//            }
+            GJKResult gjk_result;
+            bool intersect = gjk_epa_calculate_penetration(E->get().shape, object1->get_transform() * E->get().transform, F->get().shape, object2->get_transform() * F->get().transform, gjk_result);
+            if (intersect) {
+                CollisionResult* result = memnew(CollisionResult(object1->get_self(), object2->get_self(), E->get().transform, true, gjk_result.depth, gjk_result.normal, gjk_result.position));
                 RID id = p_owner.make_rid(result);
                 result->rid = id;
                 results.push_back(id);

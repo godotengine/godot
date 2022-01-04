@@ -32,6 +32,7 @@ void register_lilyphys_types() {
     ClassDB::register_class<LCollisionShape>();
     ClassDB::register_virtual_class<LShape>();
     ClassDB::register_class<LBoxShape>();
+    ClassDB::register_class<LSphereShape>();
     ClassDB::register_class<LCollision>();
 
 #ifdef TOOLS_ENABLED

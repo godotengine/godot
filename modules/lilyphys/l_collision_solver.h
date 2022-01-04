@@ -13,7 +13,7 @@
 #include "core/object.h"
 #include "core/class_db.h"
 
-#include "thirdparty/libccd/ccd/ccd.h"
+#include "li_thirdparty/libccd/ccd/ccd.h"
 
 class LICollisionObject;
 

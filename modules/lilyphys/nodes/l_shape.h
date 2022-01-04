@@ -33,5 +33,17 @@ public:
     LBoxShape();
 };
 
+class LSphereShape : public LShape {
+GDCLASS(LSphereShape, LShape);
+private:
+    real_t radius;
+    void update_shape() override;
+protected:
+    static void _bind_methods();
+public:
+    void set_radius(const real_t& p_extends);
+    real_t get_radius() const;
+    LSphereShape();
+};
 
 #endif //LILYPHYS_L_SHAPE_H

@@ -37,6 +37,7 @@
 
 #include <core/math/transform.h>
 #include "gjk_epa.h"
+#include "../lilyphys_server.h"
 
 /* Disabling formatting for thirdparty code snippet */
 /* clang-format off */
@@ -114,7 +115,7 @@ namespace GjkEpa2 {
 // MinkowskiDiff
     struct	MinkowskiDiff {
 
-        const LIShape* m_shapes[2];
+        RID m_shapes[2];
 
         Transform transform_A;
         Transform transform_B;
@@ -122,10 +123,10 @@ namespace GjkEpa2 {
         real_t margin_A = 0.0;
         real_t margin_B = 0.0;
 
-        Vector3 (*get_support)(const LIShape*, const Vector3&, real_t);
+        Vector3 (*get_support)(const RID, const Vector3&, real_t);
 
-        void Initialize(const LIShape* shape0, const Transform& wtrs0, const real_t margin0,
-                        const LIShape* shape1, const Transform& wtrs1, const real_t margin1) {
+        void Initialize(const RID shape0, const Transform& wtrs0, const real_t margin0,
+                        const RID shape1, const Transform& wtrs1, const real_t margin1) {
             m_shapes[0]		=	shape0;
             m_shapes[1]		=	shape1;
             transform_A		=	wtrs0;
@@ -140,18 +141,18 @@ namespace GjkEpa2 {
             }
         }
 
-        static Vector3 get_support_without_margin(const LIShape* p_shape, const Vector3& p_dir, real_t p_margin) {
-            return p_shape->get_support(p_dir.normalized());
+        static Vector3 get_support_without_margin(const RID p_shape, const Vector3& p_dir, real_t p_margin) {
+            return LilyphysServer::get_singleton()->shape_get_support(p_shape, p_dir.normalized());
         }
 
-        static Vector3 get_support_with_margin(const LIShape* p_shape, const Vector3& p_dir, real_t p_margin) {
+        static Vector3 get_support_with_margin(const RID p_shape, const Vector3& p_dir, real_t p_margin) {
             Vector3 local_dir_norm = p_dir;
             if (local_dir_norm.length_squared() < CMP_EPSILON2) {
                 local_dir_norm = Vector3(-1.0, -1.0, -1.0);
             }
             local_dir_norm.normalize();
 
-            return p_shape->get_support(local_dir_norm) + p_margin * local_dir_norm;
+            return LilyphysServer::get_singleton()->shape_get_support(p_shape, local_dir_norm) + p_margin * local_dir_norm;
         }
 
         // i wonder how this could be sped up... if it can
@@ -865,8 +866,8 @@ namespace GjkEpa2 {
     };
 
     //
-    static void	Initialize(	const LIShape* shape0, const Transform& wtrs0, real_t margin0,
-                                  const LIShape* shape1, const Transform& wtrs1, real_t margin1,
+    static void	Initialize(	const RID shape0, const Transform& wtrs0, real_t margin0,
+                                  const RID shape1, const Transform& wtrs1, real_t margin1,
                                   sResults& results,
                                   tShape& shape)
     {
@@ -888,10 +889,10 @@ namespace GjkEpa2 {
 //
 
 //
-    bool Distance(	const LIShape*	shape0,
+    bool Distance(	const RID	shape0,
                       const Transform&		wtrs0,
                       real_t				margin0,
-                      const LIShape*		shape1,
+                      const RID		shape1,
                       const Transform&		wtrs1,
                       real_t				margin1,
                       const Vector3&		guess,
@@ -928,10 +929,10 @@ namespace GjkEpa2 {
     }
 
 //
-    bool Penetration(	const LIShape*	shape0,
+    bool Penetration(	const RID	shape0,
                          const Transform&		wtrs0,
                          real_t					margin0,
-                         const LIShape*			shape1,
+                         const RID		shape1,
                          const Transform&		wtrs1,
                          real_t					margin1,
                          const Vector3&			guess,
@@ -996,7 +997,7 @@ namespace GjkEpa2 {
 
 /* clang-format on */
 
-bool gjk_epa_calculate_distance(const LIShape *p_shape_A, const Transform &p_transform_A, const LIShape *p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
+bool gjk_epa_calculate_distance(const RID p_shape_A, const Transform &p_transform_A, const RID p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
 
     GjkEpa2::sResults res;
 
@@ -1010,17 +1011,15 @@ bool gjk_epa_calculate_distance(const LIShape *p_shape_A, const Transform &p_tra
     return false;
 }
 
-bool gjk_epa_calculate_penetration(const LIShape *p_shape_A, const Transform &p_transform_A, const LIShape *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap, real_t p_margin_A, real_t p_margin_B) {
+bool gjk_epa_calculate_penetration(const RID p_shape_A, const Transform &p_transform_A, const RID p_shape_B, const Transform &p_transform_B, GJKResult &p_result, real_t p_margin_A, real_t p_margin_B) {
 
     GjkEpa2::sResults res;
 
     if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_margin_A, p_shape_B, p_transform_B, p_margin_B, p_transform_B.origin - p_transform_A.origin, res)) {
-        if (p_result_callback) {
-            if (p_swap)
-                p_result_callback(res.witnesses[1], res.witnesses[0], p_userdata);
-            else
-                p_result_callback(res.witnesses[0], res.witnesses[1], p_userdata);
-        }
+        p_result.normal = res.normal.normalized();
+        p_result.depth = res.distance;
+        p_result.position = res.witnesses[0];
+        //print_line(vformat("Normal: %s, Distance: %s, Position: %s", res.normal, res.distance, p_result.position));
         return true;
     }
 

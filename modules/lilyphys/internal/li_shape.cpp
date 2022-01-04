@@ -48,3 +48,15 @@ bool LIShape::is_owner(LICollisionObject *p_object) const {
 const Map<LICollisionObject *, int> &LIShape::get_owners() const {
     return owners;
 }
+
+void LISphereShape::set_data(const Variant &p_data) {
+    set_radius(p_data);
+}
+
+Variant LISphereShape::get_data() const {
+    return radius;
+}
+
+Vector3 LISphereShape::get_support(Vector3 p_direction) const {
+    return p_direction * radius;
+}

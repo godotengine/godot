@@ -90,6 +90,8 @@ public:
     void set_inertia_tensor(const Basis& tensor);
     void set_mass(const real_t &mass);
     void set_property(LPhysicsBodyPropertyType type, const Variant& value);
+    void set_velocity(const Vector3& p_velocity);
+    void set_angular_velocity(const Vector3& p_velocity);
 };
 
 

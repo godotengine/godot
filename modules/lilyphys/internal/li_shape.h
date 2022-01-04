@@ -36,5 +36,15 @@ public:
     Vector3 get_support(Vector3 p_direction) const override;
 };
 
+class LISphereShape : public LIShape {
+private:
+    real_t radius;
+    void set_radius(real_t p_radius) { radius = abs(p_radius); }
+public:
+    void set_data(const Variant &p_data) override;
+    Variant get_data() const override;
+    Vector3 get_support(Vector3 p_direction) const override;
+};
+
 
 #endif //LILYPHYS_LI_SHAPE_H

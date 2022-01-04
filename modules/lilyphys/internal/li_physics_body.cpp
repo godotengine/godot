@@ -228,3 +228,13 @@ void LIPhysicsBody::set_collisions_unsatisfied() {
         LilyphysServer::get_singleton()->set_collision_satisfied(collisions[i], false);
     }
 }
+
+void LIPhysicsBody::set_velocity(const Vector3 &p_velocity) {
+    velocity = p_velocity;
+    velocity_changed = true;
+}
+
+void LIPhysicsBody::set_angular_velocity(const Vector3 &p_velocity) {
+    angular_velocity = p_velocity;
+    velocity_changed = true;
+}

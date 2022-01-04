@@ -42,3 +42,29 @@ void LBoxShape::_bind_methods() {
 
 LBoxShape::LBoxShape() : LShape(LShapeType::SHAPE_BOX){
 }
+
+void LSphereShape::update_shape() {
+    LShape::update_shape();
+    LilyphysServer::get_singleton()->shape_set_data(get_self(), radius);
+}
+
+void LSphereShape::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("set_radius", "p_radius"), &LSphereShape::set_radius);
+    ClassDB::bind_method(D_METHOD("get_radius"), &LSphereShape::get_radius);
+
+    ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius"), "set_radius", "get_radius");
+}
+
+void LSphereShape::set_radius(const real_t &p_radius) {
+    radius = p_radius;
+    notify_change_to_owners();
+    _change_notify("radius");
+    update_shape();
+}
+
+real_t LSphereShape::get_radius() const {
+    return radius;
+}
+
+LSphereShape::LSphereShape() : LShape(LShapeType::SHAPE_SPHERE){
+}

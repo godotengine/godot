@@ -18,7 +18,8 @@
 #define FLOAT_TINY ((float) 1.0e-6)
 
 enum LShapeType {
-    SHAPE_BOX
+    SHAPE_BOX,
+    SHAPE_SPHERE
 };
 
 class LilyphysServer : public Object {

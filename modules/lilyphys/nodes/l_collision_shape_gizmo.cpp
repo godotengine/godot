@@ -37,6 +37,12 @@ String LCollisionShapeGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_g
 
         return "Extents";
     }
+
+    if (Object::cast_to<LSphereShape>(*s)) {
+
+        return "Radius";
+    }
+
     return "";
 }
 
@@ -52,6 +58,12 @@ Variant LCollisionShapeGizmoPlugin::get_handle_value(EditorSpatialGizmo *p_gizmo
 
         Ref<LBoxShape> bs = s;
         return bs->get_extents();
+    }
+
+    if (Object::cast_to<LSphereShape>(*s)) {
+
+        Ref<LSphereShape> ss = s;
+        return ss->get_radius();
     }
 
     return Variant();
@@ -91,6 +103,22 @@ void LCollisionShapeGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
         he[p_idx] = d;
         bs->set_extents(he);
     }
+
+    if (Object::cast_to<LSphereShape>(*s)) {
+
+        Ref<LSphereShape> ss = s;
+        Vector3 ra, rb;
+        Geometry::get_closest_points_between_segments(Vector3(), Vector3(4096, 0, 0), sg[0], sg[1], ra, rb);
+        float d = ra.x;
+        if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+            d = Math::stepify(d, SpatialEditor::get_singleton()->get_translate_snap());
+        }
+
+        if (d < 0.001)
+            d = 0.001;
+
+        ss->set_radius(d);
+    }
 }
 void LCollisionShapeGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
 
@@ -112,6 +140,21 @@ void LCollisionShapeGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int 
         ur->create_action(TTR("Change Box Shape Extents"));
         ur->add_do_method(ss.ptr(), "set_extents", ss->get_extents());
         ur->add_undo_method(ss.ptr(), "set_extents", p_restore);
+        ur->commit_action();
+    }
+
+    if (Object::cast_to<LSphereShape>(*s)) {
+
+        Ref<LSphereShape> ss = s;
+        if (p_cancel) {
+            ss->set_radius(p_restore);
+            return;
+        }
+
+        UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
+        ur->create_action(TTR("Change Sphere Shape Radius"));
+        ur->add_do_method(ss.ptr(), "set_radius", ss->get_radius());
+        ur->add_undo_method(ss.ptr(), "set_radius", p_restore);
         ur->commit_action();
     }
 }
@@ -155,6 +198,52 @@ void LCollisionShapeGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
         p_gizmo->add_lines(lines, material);
         p_gizmo->add_collision_segments(lines);
+        p_gizmo->add_handles(handles, handles_material);
+    }
+
+    if (Object::cast_to<LSphereShape>(*s)) {
+
+        Ref<LSphereShape> sp = s;
+        float r = sp->get_radius();
+
+        Vector<Vector3> points;
+
+        for (int i = 0; i <= 360; i++) {
+
+            float ra = Math::deg2rad((float)i);
+            float rb = Math::deg2rad((float)i + 1);
+            Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+            Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
+
+            points.push_back(Vector3(a.x, 0, a.y));
+            points.push_back(Vector3(b.x, 0, b.y));
+            points.push_back(Vector3(0, a.x, a.y));
+            points.push_back(Vector3(0, b.x, b.y));
+            points.push_back(Vector3(a.x, a.y, 0));
+            points.push_back(Vector3(b.x, b.y, 0));
+        }
+
+        Vector<Vector3> collision_segments;
+
+        for (int i = 0; i < 64; i++) {
+
+            float ra = i * Math_PI * 2.0 / 64.0;
+            float rb = (i + 1) * Math_PI * 2.0 / 64.0;
+            Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+            Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
+
+            collision_segments.push_back(Vector3(a.x, 0, a.y));
+            collision_segments.push_back(Vector3(b.x, 0, b.y));
+            collision_segments.push_back(Vector3(0, a.x, a.y));
+            collision_segments.push_back(Vector3(0, b.x, b.y));
+            collision_segments.push_back(Vector3(a.x, a.y, 0));
+            collision_segments.push_back(Vector3(b.x, b.y, 0));
+        }
+
+        p_gizmo->add_lines(points, material);
+        p_gizmo->add_collision_segments(collision_segments);
+        Vector<Vector3> handles;
+        handles.push_back(Vector3(r, 0, 0));
         p_gizmo->add_handles(handles, handles_material);
     }
 }

@@ -42,8 +42,13 @@
 #include "../internal/li_shape.h"
 
 typedef void (*CallbackResult)(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata);
+struct GJKResult {
+    Vector3 normal;
+    Vector3 position;
+    real_t depth;
+};
 
-bool gjk_epa_calculate_penetration(const LIShape *p_shape_A, const Transform &p_transform_A, const LIShape *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap = false, real_t p_margin_A = 0.0, real_t p_margin_B = 0.0);
-bool gjk_epa_calculate_distance(const LIShape *p_shape_A, const Transform &p_transform_A, const LIShape *p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B);
+bool gjk_epa_calculate_penetration(RID p_shape_A, const Transform &p_transform_A, RID p_shape_B, const Transform &p_transform_B, GJKResult &p_result, real_t p_margin_A = 0.0, real_t p_margin_B = 0.0);
+bool gjk_epa_calculate_distance(RID p_shape_A, const Transform &p_transform_A, RID p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B);
 
 #endif //LILYPHYS_GJK_EPA_H
