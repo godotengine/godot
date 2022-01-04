@@ -881,12 +881,23 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 	for (int i = 0; i < p_class->members.size(); i++) {
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
-			resolve_function_body(member.function);
-
 			// Apply annotations.
 			for (GDScriptParser::AnnotationNode *&E : member.function->annotations) {
 				E->apply(parser, member.function);
 			}
+
+#ifdef DEBUG_ENABLED
+			Set<uint32_t> previously_ignored = parser->ignored_warning_codes;
+			for (uint32_t ignored_warning : member.function->ignored_warnings) {
+				parser->ignored_warning_codes.insert(ignored_warning);
+			}
+#endif // DEBUG_ENABLED
+
+			resolve_function_body(member.function);
+
+#ifdef DEBUG_ENABLED
+			parser->ignored_warning_codes = previously_ignored;
+#endif // DEBUG_ENABLED
 		} else if (member.type == GDScriptParser::ClassNode::Member::VARIABLE && member.variable->property != GDScriptParser::VariableNode::PROP_NONE) {
 			if (member.variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
 				if (member.variable->getter != nullptr) {
@@ -925,6 +936,10 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 #ifdef DEBUG_ENABLED
+			Set<uint32_t> previously_ignored = parser->ignored_warning_codes;
+			for (uint32_t ignored_warning : member.function->ignored_warnings) {
+				parser->ignored_warning_codes.insert(ignored_warning);
+			}
 			if (member.variable->usages == 0 && String(member.variable->identifier->name).begins_with("_")) {
 				parser->push_warning(member.variable->identifier, GDScriptWarning::UNUSED_PRIVATE_CLASS_VARIABLE, member.variable->identifier->name);
 			}
@@ -992,6 +1007,9 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 						push_error(vformat(R"(Getter with type "%s" cannot be used along with setter of type "%s".)", getter_function->datatype.to_string(), setter_function->parameters[0]->datatype.to_string()), member.variable);
 					}
 				}
+#ifdef DEBUG_ENABLED
+				parser->ignored_warning_codes = previously_ignored;
+#endif // DEBUG_ENABLED
 			}
 		}
 	}
@@ -1186,7 +1204,23 @@ void GDScriptAnalyzer::decide_suite_type(GDScriptParser::Node *p_suite, GDScript
 void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
 	for (int i = 0; i < p_suite->statements.size(); i++) {
 		GDScriptParser::Node *stmt = p_suite->statements[i];
+		for (GDScriptParser::AnnotationNode *&annotation : stmt->annotations) {
+			annotation->apply(parser, stmt);
+		}
+
+#ifdef DEBUG_ENABLED
+		Set<uint32_t> previously_ignored = parser->ignored_warning_codes;
+		for (uint32_t ignored_warning : stmt->ignored_warnings) {
+			parser->ignored_warning_codes.insert(ignored_warning);
+		}
+#endif // DEBUG_ENABLED
+
 		resolve_node(stmt);
+
+#ifdef DEBUG_ENABLED
+		parser->ignored_warning_codes = previously_ignored;
+#endif // DEBUG_ENABLED
+
 		decide_suite_type(p_suite, stmt);
 	}
 }

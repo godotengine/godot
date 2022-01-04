@@ -297,6 +297,7 @@ public:
 		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
+		Vector<uint32_t> ignored_warnings;
 
 		DataType datatype;
 
@@ -1204,6 +1205,7 @@ private:
 #ifdef DEBUG_ENABLED
 	List<GDScriptWarning> warnings;
 	Set<String> ignored_warnings;
+	Set<uint32_t> ignored_warning_codes;
 	Set<int> unsafe_lines;
 #endif
 
