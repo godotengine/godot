@@ -3988,6 +3988,37 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, boo
 	return bounds;
 }
 
+Node *Node3DEditorViewport::_sanitize_preview_node(Node *p_node) const {
+	Node3D *node_3d = Object::cast_to<Node3D>(p_node);
+	if (node_3d == nullptr) {
+		Node3D *replacement_node = memnew(Node3D);
+		replacement_node->set_name(p_node->get_name());
+		p_node->replace_by(replacement_node);
+		memdelete(p_node);
+		p_node = replacement_node;
+	} else {
+		VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(node_3d);
+		if (visual_instance == nullptr) {
+			Node3D *replacement_node = memnew(Node3D);
+			replacement_node->set_name(node_3d->get_name());
+			replacement_node->set_visible(node_3d->is_visible());
+			replacement_node->set_transform(node_3d->get_transform());
+			replacement_node->set_rotation_edit_mode(node_3d->get_rotation_edit_mode());
+			replacement_node->set_rotation_order(node_3d->get_rotation_order());
+			replacement_node->set_as_top_level(node_3d->is_set_as_top_level());
+			p_node->replace_by(replacement_node);
+			memdelete(p_node);
+			p_node = replacement_node;
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_sanitize_preview_node(p_node->get_child(i));
+	}
+
+	return p_node;
+}
+
 void Node3DEditorViewport::_create_preview(const Vector<String> &files) const {
 	for (int i = 0; i < files.size(); i++) {
 		String path = files[i];
@@ -4004,6 +4035,7 @@ void Node3DEditorViewport::_create_preview(const Vector<String> &files) const {
 				if (scene.is_valid()) {
 					Node *instance = scene->instantiate();
 					if (instance) {
+						instance = _sanitize_preview_node(instance);
 						preview_node->add_child(instance);
 					}
 				}
