@@ -83,6 +83,7 @@ class LocalizationEditor : public VBoxContainer {
 	void _update_pot_file_extensions();
 
 	void _filesystem_files_moved(const String &p_old_file, const String &p_new_file);
+	void _filesystem_file_removed(const String &p_file);
 
 protected:
 	void _notification(int p_what);

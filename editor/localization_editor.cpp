@@ -382,6 +382,7 @@ void LocalizationEditor::_update_pot_file_extensions() {
 
 void LocalizationEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
 	p_fs_dock->connect("files_moved", callable_mp(this, &LocalizationEditor::_filesystem_files_moved));
+	p_fs_dock->connect("file_removed", callable_mp(this, &LocalizationEditor::_filesystem_file_removed));
 }
 
 void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const String &p_new_file) {
@@ -409,8 +410,7 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 		bool remapped_files_updated = false;
 
 		for (int j = 0; j < remapped_files.size(); j++) {
-			// Find the first ':' after 'res://'.
-			int splitter_pos = remapped_files[j].find(":", remapped_files[j].find("/"));
+			int splitter_pos = remapped_files[j].rfind(":");
 			String res_path = remapped_files[j].substr(0, splitter_pos);
 
 			if (res_path == p_old_file) {
@@ -431,6 +431,39 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 
 	if (remaps_changed) {
 		ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_remaps", remaps);
+		update_translations();
+		emit_signal("localization_changed");
+	}
+}
+
+void LocalizationEditor::_filesystem_file_removed(const String &p_file) {
+	// Check if the remaps are affected.
+	Dictionary remaps;
+
+	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
+		remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+	}
+
+	bool remaps_changed = remaps.has(p_file);
+
+	if (!remaps_changed) {
+		Array remap_keys = remaps.keys();
+		for (int i = 0; i < remap_keys.size() && !remaps_changed; i++) {
+			PackedStringArray remapped_files = remaps[remap_keys[i]];
+			for (int j = 0; j < remapped_files.size() && !remaps_changed; j++) {
+				int splitter_pos = remapped_files[j].rfind(":");
+				String res_path = remapped_files[j].substr(0, splitter_pos);
+				remaps_changed = p_file == res_path;
+				if (remaps_changed) {
+					print_verbose(vformat("Remap value \"%s\" of key \"%s\" has been removed from the file system.", remapped_files[j], remap_keys[i]));
+				}
+			}
+		}
+	} else {
+		print_verbose(vformat("Remap key \"%s\" has been removed from the file system.", p_file));
+	}
+
+	if (remaps_changed) {
 		update_translations();
 		emit_signal("localization_changed");
 	}
