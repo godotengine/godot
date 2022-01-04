@@ -489,6 +489,13 @@ void LocalizationEditor::update_translations() {
 			t->set_tooltip(0, keys[i]);
 			t->set_metadata(0, keys[i]);
 			t->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), 0, false, TTR("Remove"));
+
+			// Display that it has been removed if this is the case.
+			if (!FileAccess::exists(keys[i])) {
+				t->set_text(0, t->get_text(0) + vformat(" (%s)", TTR("Removed")));
+				t->set_tooltip(0, vformat(TTR("%s cannot be found."), t->get_tooltip(0)));
+			}
+
 			if (keys[i] == remap_selected) {
 				t->select(0);
 				translation_res_option_add_button->set_disabled(false);
