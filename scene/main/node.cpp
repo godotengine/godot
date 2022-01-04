@@ -896,7 +896,7 @@ void Node::set_name(const String &p_name) {
 	data.name = name;
 
 	if (data.parent) {
-		data.parent->_validate_child_name(this);
+		data.parent->_validate_child_name(this, true);
 	}
 
 	propagate_notification(NOTIFICATION_PATH_RENAMED);
