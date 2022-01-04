@@ -36,10 +36,6 @@
 
 #include <BulletDynamics/ConstraintSolver/btSliderConstraint.h>
 
-/**
-	@author AndreaCatania
-*/
-
 SliderJointBullet::SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &frameInA, const Transform3D &frameInB) :
 		JointBullet() {
 	Transform3D scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));

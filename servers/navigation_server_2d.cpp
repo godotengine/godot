@@ -29,13 +29,10 @@
 /*************************************************************************/
 
 #include "servers/navigation_server_2d.h"
+
 #include "core/math/transform_2d.h"
 #include "core/math/transform_3d.h"
 #include "servers/navigation_server_3d.h"
-
-/**
-	@author AndreaCatania
-*/
 
 NavigationServer2D *NavigationServer2D::singleton = nullptr;
 

@@ -36,10 +36,6 @@
 
 #include <algorithm>
 
-/**
-	@author AndreaCatania
-*/
-
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
 
 void NavMap::set_up(Vector3 p_up) {

@@ -40,10 +40,6 @@
 #include "nav_region.h"
 #include "rvo_agent.h"
 
-/**
-	@author AndreaCatania
-*/
-
 /// The commands are functions executed during the `sync` phase.
 
 #define MERGE_INTERNAL(A, B) A##B

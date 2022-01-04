@@ -36,10 +36,6 @@
 
 #include <BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h>
 
-/**
-	@author AndreaCatania
-*/
-
 Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &frameInA, const Transform3D &frameInB) :
 		JointBullet() {
 	for (int i = 0; i < 3; i++) {

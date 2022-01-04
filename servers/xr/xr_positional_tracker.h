@@ -37,8 +37,6 @@
 #include "servers/xr_server.h"
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The positional tracker object as an object that represents the position and orientation of a tracked object like a controller or headset.
 	An AR/VR Interface will registered the trackers it manages with our AR/VR server and update its position and orientation.
 	This is where potentially additional AR/VR interfaces may be active as there are AR/VR SDKs that solely deal with positional tracking.
@@ -99,4 +97,4 @@ public:
 
 VARIANT_ENUM_CAST(XRPositionalTracker::TrackerHand);
 
-#endif
+#endif // XR_POSITIONAL_TRACKER_H

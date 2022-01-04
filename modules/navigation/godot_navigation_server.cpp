@@ -36,10 +36,6 @@
 #include "navigation_mesh_generator.h"
 #endif
 
-/**
-	@author AndreaCatania
-*/
-
 /// Creates a struct for each function and a function that once called creates
 /// an instance of that struct with the submitted parameters.
 /// Then, that struct is stored in an array; the `sync` function consume that array.

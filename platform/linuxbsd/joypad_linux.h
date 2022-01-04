@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-//author: Andreas Haas <hondres,  liugam3@gmail.com>
 #ifndef JOYPAD_LINUX_H
 #define JOYPAD_LINUX_H
 
@@ -100,5 +99,6 @@ private:
 	Input::JoyAxisValue axis_correct(const input_absinfo *p_abs, int p_value) const;
 };
 
-#endif
+#endif // JOYDEV_ENABLED
+
 #endif // JOYPAD_LINUX_H

@@ -33,10 +33,6 @@
 
 #include "joint_bullet.h"
 
-/**
-	@author AndreaCatania
-*/
-
 class RigidBodyBullet;
 
 class PinJointBullet : public JointBullet {
@@ -57,4 +53,5 @@ public:
 	Vector3 getPivotInA();
 	Vector3 getPivotInB();
 };
-#endif
+
+#endif // PIN_JOINT_BULLET_H

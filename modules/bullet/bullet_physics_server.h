@@ -41,10 +41,6 @@
 #include "soft_body_bullet.h"
 #include "space_bullet.h"
 
-/**
-	@author AndreaCatania
-*/
-
 class BulletPhysicsServer3D : public PhysicsServer3D {
 	GDCLASS(BulletPhysicsServer3D, PhysicsServer3D);
 
@@ -395,4 +391,4 @@ public:
 	JointBullet *get_joint(RID p_rid) const;
 };
 
-#endif
+#endif // BULLET_PHYSICS_SERVER_H

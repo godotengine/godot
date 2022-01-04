@@ -28,10 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/**
- * @author AndreaCatania
- */
-
 #include "skeleton_ik_3d.h"
 
 #ifndef _3D_DISABLED

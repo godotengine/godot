@@ -42,12 +42,6 @@
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <btBulletCollisionCommon.h>
 
-#include <assert.h>
-
-/**
-	@author AndreaCatania
-*/
-
 BulletPhysicsDirectBodyState3D *BulletPhysicsDirectBodyState3D::singleton = nullptr;
 
 Vector3 BulletPhysicsDirectBodyState3D::get_total_gravity() const {

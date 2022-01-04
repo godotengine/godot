@@ -31,10 +31,6 @@
 #ifndef BULLET_UTILITIES_H
 #define BULLET_UTILITIES_H
 
-/**
-	@author AndreaCatania
-*/
-
 #define bulletnew(cl) \
 	new cl
 
@@ -43,4 +39,5 @@
 		delete cl;       \
 		cl = nullptr;    \
 	}
-#endif
+
+#endif // BULLET_UTILITIES_H

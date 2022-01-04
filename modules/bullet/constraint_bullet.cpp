@@ -33,10 +33,6 @@
 #include "collision_object_bullet.h"
 #include "space_bullet.h"
 
-/**
-	@author AndreaCatania
-*/
-
 ConstraintBullet::ConstraintBullet() {}
 
 void ConstraintBullet::setup(btTypedConstraint *p_constraint) {

@@ -31,13 +31,7 @@
 #ifndef GODOT_COLLISION_DISPATCHER_H
 #define GODOT_COLLISION_DISPATCHER_H
 
-#include <cstdint>
-
 #include <btBulletDynamicsCommon.h>
-
-/**
-	@author AndreaCatania
-*/
 
 /// This class is required to implement custom collision behaviour in the narrowphase
 class GodotCollisionDispatcher : public btCollisionDispatcher {
@@ -49,4 +43,5 @@ public:
 	virtual bool needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 	virtual bool needsResponse(const btCollisionObject *body0, const btCollisionObject *body1);
 };
-#endif
+
+#endif // GODOT_COLLISION_DISPATCHER_H

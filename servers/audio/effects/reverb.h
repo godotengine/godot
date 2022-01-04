@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2006
-
 #ifndef REVERB_H
 #define REVERB_H
 
@@ -120,4 +118,4 @@ public:
 	~Reverb();
 };
 
-#endif
+#endif // REVERB_H

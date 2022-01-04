@@ -32,9 +32,7 @@
 #define CHECK_BUTTON_H
 
 #include "scene/gui/button.h"
-/**
-@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class CheckButton : public Button {
 	GDCLASS(CheckButton, Button);
 
@@ -48,4 +46,4 @@ public:
 	~CheckButton();
 };
 
-#endif
+#endif // CHECK_BUTTON_H
