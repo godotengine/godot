@@ -528,7 +528,7 @@ public:
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
-	virtual void reflection_probe_set_lod_threshold(RID p_probe, float p_pixels) = 0;
+	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_pixels) = 0;
 
 	/* DECAL API */
 
@@ -871,7 +871,7 @@ public:
 
 	virtual void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) = 0;
 
-	virtual void viewport_set_lod_threshold(RID p_viewport, float p_pixels) = 0;
+	virtual void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels) = 0;
 
 	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_debanding) = 0;
 	virtual void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread) = 0;

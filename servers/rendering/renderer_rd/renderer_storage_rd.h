@@ -1053,7 +1053,7 @@ private:
 		bool box_projection = false;
 		bool enable_shadows = false;
 		uint32_t cull_mask = (1 << 20) - 1;
-		float lod_threshold = 0.01;
+		float mesh_lod_threshold = 0.01;
 
 		Dependency dependency;
 	};
@@ -1557,7 +1557,7 @@ public:
 		return s->index_count ? s->index_count : s->vertex_count;
 	}
 
-	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_lod_threshold, uint32_t *r_index_count = nullptr) const {
+	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t *r_index_count = nullptr) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
 
 		int32_t current_lod = -1;
@@ -1566,7 +1566,7 @@ public:
 		}
 		for (uint32_t i = 0; i < s->lod_count; i++) {
 			float screen_size = s->lods[i].edge_length * p_model_scale / p_distance_threshold;
-			if (screen_size > p_lod_threshold) {
+			if (screen_size > p_mesh_lod_threshold) {
 				break;
 			}
 			current_lod = i;
@@ -1955,7 +1955,7 @@ public:
 	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable);
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers);
 	void reflection_probe_set_resolution(RID p_probe, int p_resolution);
-	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio);
+	void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio);
 
 	AABB reflection_probe_get_aabb(RID p_probe) const;
 	RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
@@ -1963,7 +1963,7 @@ public:
 	Vector3 reflection_probe_get_extents(RID p_probe) const;
 	Vector3 reflection_probe_get_origin_offset(RID p_probe) const;
 	float reflection_probe_get_origin_max_distance(RID p_probe) const;
-	float reflection_probe_get_lod_threshold(RID p_probe) const;
+	float reflection_probe_get_mesh_lod_threshold(RID p_probe) const;
 
 	int reflection_probe_get_resolution(RID p_probe) const;
 	bool reflection_probe_renders_shadows(RID p_probe) const;

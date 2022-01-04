@@ -374,7 +374,7 @@ public:
 	FUNC2(reflection_probe_set_enable_shadows, RID, bool)
 	FUNC2(reflection_probe_set_cull_mask, RID, uint32_t)
 	FUNC2(reflection_probe_set_resolution, RID, int)
-	FUNC2(reflection_probe_set_lod_threshold, RID, float)
+	FUNC2(reflection_probe_set_mesh_lod_threshold, RID, float)
 
 	/* DECAL API */
 
@@ -575,7 +575,7 @@ public:
 	FUNC2(viewport_set_use_occlusion_culling, RID, bool)
 	FUNC1(viewport_set_occlusion_rays_per_thread, int)
 	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
-	FUNC2(viewport_set_lod_threshold, RID, float)
+	FUNC2(viewport_set_mesh_lod_threshold, RID, float)
 
 	FUNC3R(int, viewport_get_render_info, RID, ViewportRenderInfoType, ViewportRenderInfo)
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
