@@ -1361,6 +1361,7 @@ public:
 	//	int get_render_info(RS::RenderInfo p_info) override;
 	String get_video_adapter_name() const override;
 	String get_video_adapter_vendor() const override;
+	RenderingDevice::DeviceType get_video_adapter_type() const override;
 
 	void capture_timestamps_begin() override {}
 	void capture_timestamp(const String &p_name) override {}

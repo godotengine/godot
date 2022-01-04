@@ -655,6 +655,24 @@
 		</constant>
 		<constant name="BARRIER_MASK_NO_BARRIER" value="8">
 		</constant>
+		<constant name="DEVICE_TYPE_OTHER" value="0" enum="DeviceType">
+			Rendering device type does not match any of the other enum values or is unknown.
+		</constant>
+		<constant name="DEVICE_TYPE_INTEGRATED_GPU" value="1" enum="DeviceType">
+			Rendering device is an integrated GPU, which is typically [i](but not always)[/i] slower than dedicated GPUs ([constant DEVICE_TYPE_DISCRETE_GPU]). On Android and iOS, the rendering device type is always considered to be [constant DEVICE_TYPE_INTEGRATED_GPU].
+		</constant>
+		<constant name="DEVICE_TYPE_DISCRETE_GPU" value="2" enum="DeviceType">
+			Rendering device is a dedicated GPU, which is typically [i](but not always)[/i] faster than integrated GPUs ([constant DEVICE_TYPE_INTEGRATED_GPU]).
+		</constant>
+		<constant name="DEVICE_TYPE_VIRTUAL_GPU" value="3" enum="DeviceType">
+			Rendering device is an emulated GPU in a virtual environment. This is typically much slower than the host GPU, which means the expected performance level on a dedicated GPU will be roughly equivalent to [constant DEVICE_TYPE_INTEGRATED_GPU]. Virtual machine GPU passthrough (such as VFIO) will not report the device type as [constant DEVICE_TYPE_VIRTUAL_GPU]. Instead, the host GPU's device type will be reported as if the GPU was not emulated.
+		</constant>
+		<constant name="DEVICE_TYPE_CPU" value="4" enum="DeviceType">
+			Rendering device is provided by software emulation (such as Lavapipe or [url=https://github.com/google/swiftshader]SwiftShader[/url]). This is the slowest kind of rendering device available; it's typically much slower than [constant DEVICE_TYPE_INTEGRATED_GPU].
+		</constant>
+		<constant name="DEVICE_TYPE_MAX" value="5" enum="DeviceType">
+			Represents the size of the [enum DeviceType] enum.
+		</constant>
 		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource">
 		</constant>
 		<constant name="DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE" value="1" enum="DriverResource">

@@ -1232,6 +1232,13 @@
 				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
 			</description>
 		</method>
+		<method name="get_video_adapter_type" qualifiers="const">
+			<return type="int" enum="RenderingDevice.DeviceType" />
+			<description>
+				Returns the type of the video adapter. Since dedicated graphics cards from a given generation will [i]usually[/i] be significantly faster than integrated graphics made in the same generation, the device type can be used as a basis for automatic graphics settings adjustment. However, this is not always true, so make sure to provide users with a way to manually override graphics settings.
+				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [constant RenderingDevice.DEVICE_TYPE_OTHER].
+			</description>
+		</method>
 		<method name="get_video_adapter_vendor" qualifiers="const">
 			<return type="String" />
 			<description>
