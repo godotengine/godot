@@ -7595,7 +7595,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	int instance_index = 0;
 #ifdef DEBUG_ENABLED
 	int uniform_buffer_size = 0;
-	int max_uniform_buffer_size = RenderingDevice::get_singleton()->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
+	int max_uniform_buffer_size = 0;
+	if (RenderingDevice::get_singleton()) {
+		max_uniform_buffer_size = RenderingDevice::get_singleton()->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
+	}
 #endif // DEBUG_ENABLED
 	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 
