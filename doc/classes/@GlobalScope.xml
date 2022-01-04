@@ -358,14 +358,16 @@
 			<argument index="1" name="to" type="float" />
 			<argument index="2" name="weight" type="float" />
 			<description>
-				Returns a normalized value considering the given range. This is the opposite of [method lerp].
+				Returns an interpolation or extrapolation factor considering the range specified in [code]from[/code] and [code]to[/code], and the interpolated value specified in [code]weight[/code]. The returned value will be between [code]0.0[/code] and [code]1.0[/code] if [code]weight[/code] is between [code]from[/code] and [code]to[/code] (inclusive). If [code]weight[/code] is located outside this range, then an extrapolation factor will be returned (return value lower than [code]0.0[/code] or greater than [code]1.0[/code]).
 				[codeblock]
+				# The interpolation ratio in the `lerp()` call below is 0.75.
 				var middle = lerp(20, 30, 0.75)
 				# `middle` is now 27.5.
 				# Now, we pretend to have forgotten the original ratio and want to get it back.
 				var ratio = inverse_lerp(20, 30, 27.5)
 				# `ratio` is now 0.75.
 				[/codeblock]
+				See also [method lerp] which performs the reverse of this operation.
 			</description>
 		</method>
 		<method name="is_equal_approx">
@@ -420,10 +422,11 @@
 			<argument index="1" name="to" type="float" />
 			<argument index="2" name="weight" type="float" />
 			<description>
-				Linearly interpolates between two values by a normalized value. This is the opposite of [method inverse_lerp].
+				Linearly interpolates between two values by the factor defined in [code]weight[/code]. To perform interpolation, [code]weight[/code] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values outside this range are allowed and can be used to perform [i]extrapolation[/i].
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
+				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep].
 			</description>
 		</method>
 		<method name="lerp_angle">
@@ -433,7 +436,7 @@
 			<argument index="2" name="weight" type="float" />
 			<description>
 				Linearly interpolates between two angles (in radians) by a normalized value.
-				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
+				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU]. To perform eased interpolation with [method lerp_angle], combine it with [method ease] or [method smoothstep].
 				[codeblock]
 				extends Sprite
 				var elapsed = 0.0
