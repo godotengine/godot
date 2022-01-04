@@ -90,66 +90,10 @@ void main() {
 #endif
 
 #ifdef MODE_DEBUG_LIGHT
-
-#ifdef USE_ANISOTROPY
-
-#define POS_X 0
-#define POS_Y 1
-#define POS_Z 2
-#define NEG_X 3
-#define NEG_Y 4
-#define NEG_Z 5
-
-	const uint triangle_aniso[12] = uint[](
-			NEG_X,
-			NEG_Z,
-			NEG_Y,
-			NEG_Z,
-			NEG_X,
-			NEG_Y,
-			POS_Z,
-			POS_X,
-			POS_X,
-			POS_Y,
-			POS_Y,
-			POS_Z);
-
-	color_interp.xyz = texelFetch(sampler3D(color_tex, tex_sampler), ivec3(posu), int(params.level)).xyz * params.dynamic_range;
-	vec3 aniso_pos = texelFetch(sampler3D(aniso_pos_tex, tex_sampler), ivec3(posu), int(params.level)).xyz;
-	vec3 aniso_neg = texelFetch(sampler3D(aniso_neg_tex, tex_sampler), ivec3(posu), int(params.level)).xyz;
-	uint side = triangle_aniso[gl_VertexIndex / 3];
-
-	float strength = 0.0;
-	switch (side) {
-		case POS_X:
-			strength = aniso_pos.x;
-			break;
-		case POS_Y:
-			strength = aniso_pos.y;
-			break;
-		case POS_Z:
-			strength = aniso_pos.z;
-			break;
-		case NEG_X:
-			strength = aniso_neg.x;
-			break;
-		case NEG_Y:
-			strength = aniso_neg.y;
-			break;
-		case NEG_Z:
-			strength = aniso_neg.z;
-			break;
-	}
-
-	color_interp.xyz *= strength;
-
-#else
 	color_interp = texelFetch(sampler3D(color_tex, tex_sampler), ivec3(posu), int(params.level));
 	color_interp.xyz *params.dynamic_range;
-
 #endif
 
-#endif
 	float scale = (1 << params.level);
 
 	gl_Position = params.projection * vec4((vec3(posu) + vertex) * scale, 1.0);
