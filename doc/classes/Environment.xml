@@ -238,7 +238,22 @@
 			The distance at which objects can occlude each other when calculating screen-space ambient occlusion. Higher values will result in occlusion over a greater distance at the cost of performance and quality.
 		</member>
 		<member name="ssao_sharpness" type="float" setter="set_ssao_sharpness" getter="get_ssao_sharpness" default="0.98">
-			Sharpness refers to the amount that the screen-space ambient occlusion effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
+			The amount that the screen-space ambient occlusion effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
+		</member>
+		<member name="ssil_enabled" type="bool" setter="set_ssil_enabled" getter="is_ssil_enabled" default="false">
+			If [code]true[/code], the screen-space indirect lighting effect is enabled. Screen space indirect lighting is a form of indirect lighting that allows diffuse light to bounce between nearby objects. Screen-space indirect lighting works very similarly to screen-space ambient occlusion, in that it only affects a limited range. It is intended to be used along with a form of proper global illumination like SDFGI or [VoxelGI]. Screen-space indirect lighting is not affected by individual light's [member Light3D.light_indirect_energy].
+		</member>
+		<member name="ssil_intensity" type="float" setter="set_ssil_intensity" getter="get_ssil_intensity" default="1.0">
+			The brightness multiplier for the screen-space indirect lighting effect. A higher value will result in brighter light.
+		</member>
+		<member name="ssil_normal_rejection" type="float" setter="set_ssil_normal_rejection" getter="get_ssil_normal_rejection" default="1.0">
+			Amount of normal rejection used when calculating screen-space indirect lighting. Normal rejection uses the normal of a given sample point to reject samples that are facing away from the current pixel. Normal rejection is necessary to avoid light leaking when only one side of an object is illuminated. However, normal rejection can be disabled if light leaking is desirable, such as when the scene mostly contains emissive objects that emit light from faces that cannot be seen from the camera.
+		</member>
+		<member name="ssil_radius" type="float" setter="set_ssil_radius" getter="get_ssil_radius" default="5.0">
+			The distance that bounced lighting can travel when using the screen space indirect lighting effect. A larger value will result in light bouncing further in a scene, but may result in under-sampling artifacts which look like long spikes surrounding light sources.
+		</member>
+		<member name="ssil_sharpness" type="float" setter="set_ssil_sharpness" getter="get_ssil_sharpness" default="0.98">
+			The amount that the screen-space indirect lighting effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
 		</member>
 		<member name="tonemap_exposure" type="float" setter="set_tonemap_exposure" getter="get_tonemap_exposure" default="1.0">
 			The default exposure used for tonemapping.

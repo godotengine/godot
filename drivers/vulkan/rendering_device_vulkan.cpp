@@ -2170,7 +2170,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	return id;
 }
 
-RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type) {
+RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
@@ -2194,6 +2194,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	//create view
 
 	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
+	ERR_FAIL_COND_V(p_mipmap + p_mipmaps > src_texture->mipmaps, RID());
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, src_texture->layers, RID());
 
 	int slice_layers = 1;
@@ -2206,7 +2207,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 
 	Texture texture = *src_texture;
 	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
-	texture.mipmaps = 1;
+	texture.mipmaps = p_mipmaps;
 	texture.layers = slice_layers;
 	texture.base_mipmap = p_mipmap;
 	texture.base_layer = p_layer;
@@ -2269,7 +2270,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 				"Specified layer must be a multiple of 6.");
 	}
 	image_view_create_info.subresourceRange.baseMipLevel = p_mipmap;
-	image_view_create_info.subresourceRange.levelCount = 1;
+	image_view_create_info.subresourceRange.levelCount = p_mipmaps;
 	image_view_create_info.subresourceRange.layerCount = slice_layers;
 	image_view_create_info.subresourceRange.baseArrayLayer = p_layer;
 

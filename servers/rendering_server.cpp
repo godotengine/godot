@@ -2274,6 +2274,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SSAO);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SSIL);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_PSSM_SPLITS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DECAL_ATLAS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI);
@@ -2895,6 +2896,18 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/fadeout_from", PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"));
 	GLOBAL_DEF("rendering/environment/ssao/fadeout_to", 300.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssao/fadeout_to", PropertyInfo(Variant::FLOAT, "rendering/environment/ssao/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"));
+
+	GLOBAL_DEF("rendering/environment/ssil/quality", 2);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssil/quality", PropertyInfo(Variant::INT, "rendering/environment/ssil/quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low (Fast),Medium (Average),High (Slow),Ultra (Custom)"));
+	GLOBAL_DEF("rendering/environment/ssil/half_size", true);
+	GLOBAL_DEF("rendering/environment/ssil/adaptive_target", 0.5);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssil/adaptive_target", PropertyInfo(Variant::FLOAT, "rendering/environment/ssil/adaptive_target", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
+	GLOBAL_DEF("rendering/environment/ssil/blur_passes", 4);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssil/blur_passes", PropertyInfo(Variant::INT, "rendering/environment/ssil/blur_passes", PROPERTY_HINT_RANGE, "0,6"));
+	GLOBAL_DEF("rendering/environment/ssil/fadeout_from", 50.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssil/fadeout_from", PropertyInfo(Variant::FLOAT, "rendering/environment/ssil/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"));
+	GLOBAL_DEF("rendering/environment/ssil/fadeout_to", 300.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/ssil/fadeout_to", PropertyInfo(Variant::FLOAT, "rendering/environment/ssil/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"));
 
 	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/enabled", true);
 	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/amount", 0.25);

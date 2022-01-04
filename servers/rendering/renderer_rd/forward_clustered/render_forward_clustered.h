@@ -251,7 +251,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			float z_far;
 			float z_near;
 
-			uint32_t ssao_enabled;
+			uint32_t ss_effects_flags;
 			float ssao_light_affect;
 			float ssao_ao_affect;
 			uint32_t roughness_limiter_enabled;

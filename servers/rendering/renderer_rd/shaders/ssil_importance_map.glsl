@@ -42,7 +42,7 @@ counter;
 layout(push_constant, binding = 1, std430) uniform Params {
 	vec2 half_screen_pixel_size;
 	float intensity;
-	float power;
+	float pad;
 }
 params;
 
@@ -54,31 +54,32 @@ void main() {
 	// importance map stuff
 	uvec2 base_position = ssC * 2;
 
-	vec2 base_uv = (vec2(base_position) + vec2(0.5f, 0.5f)) * params.half_screen_pixel_size;
-
+	float avg = 0.0;
 	float minV = 1.0;
 	float maxV = 0.0;
 	for (int i = 0; i < 4; i++) {
-		vec4 vals = textureGather(source_texture, vec3(base_uv, i));
+		vec3 value_a = texelFetch(source_texture, ivec3(base_position, i), 0).rgb * params.intensity;
+		vec3 value_b = texelFetch(source_texture, ivec3(base_position, i) + ivec3(0, 1, 0), 0).rgb * params.intensity;
+		vec3 value_c = texelFetch(source_texture, ivec3(base_position, i) + ivec3(1, 0, 0), 0).rgb * params.intensity;
+		vec3 value_d = texelFetch(source_texture, ivec3(base_position, i) + ivec3(1, 1, 0), 0).rgb * params.intensity;
 
-		// apply the same modifications that would have been applied in the main shader
-		vals = params.intensity * vals;
+		// Calculate luminance (black and white value)
+		float a = dot(value_a, vec3(0.2125, 0.7154, 0.0721));
+		float b = dot(value_b, vec3(0.2125, 0.7154, 0.0721));
+		float c = dot(value_c, vec3(0.2125, 0.7154, 0.0721));
+		float d = dot(value_d, vec3(0.2125, 0.7154, 0.0721));
 
-		vals = 1 - vals;
-
-		vals = pow(clamp(vals, 0.0, 1.0), vec4(params.power));
-
-		maxV = max(maxV, max(max(vals.x, vals.y), max(vals.z, vals.w)));
-		minV = min(minV, min(min(vals.x, vals.y), min(vals.z, vals.w)));
+		maxV = max(maxV, max(max(a, b), max(c, d)));
+		minV = min(minV, min(min(a, b), min(c, d)));
 	}
 
 	float min_max_diff = maxV - minV;
 
-	imageStore(dest_image, ssC, vec4(pow(clamp(min_max_diff * 2.0, 0.0, 1.0), 0.8)));
+	imageStore(dest_image, ssC, vec4(pow(clamp(min_max_diff * 2.0, 0.0, 1.0), 0.6)));
 #endif
 
 #ifdef PROCESS_MAPA
-	vec2 uv = (vec2(ssC) + 0.5f) * params.half_screen_pixel_size * 2.0;
+	vec2 uv = (vec2(ssC) + 0.5) * params.half_screen_pixel_size * 2.0;
 
 	float centre = textureLod(source_importance, uv, 0.0).x;
 

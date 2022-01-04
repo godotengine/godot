@@ -1153,7 +1153,7 @@ void main() {
 	}
 #endif // !USE_LIGHTMAP
 
-	if (scene_data.ssao_enabled) {
+	if (bool(scene_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO)) {
 		float ssao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv).r;
 		ao = min(ao, ssao);
 		ao_light_affect = mix(ao_light_affect, max(ao_light_affect, scene_data.ssao_light_affect), scene_data.ssao_ao_affect);
@@ -1222,6 +1222,12 @@ void main() {
 
 	// convert ao to direct light ao
 	ao = mix(1.0, ao, ao_light_affect);
+
+	if (bool(scene_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
+		vec4 ssil = textureLod(sampler2D(ssil_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv, 0.0);
+		ambient_light *= 1.0 - ssil.a;
+		ambient_light += ssil.rgb * albedo.rgb;
+	}
 
 	//this saves some VGPRs
 	vec3 f0 = F0(metallic, specular, albedo);
