@@ -77,6 +77,7 @@ class SceneState : public RefCounted {
 		int signal = 0;
 		int method = 0;
 		int flags = 0;
+		int unbinds = 0;
 		Vector<int> binds;
 	};
 
@@ -163,6 +164,7 @@ public:
 	NodePath get_connection_target(int p_idx) const;
 	StringName get_connection_method(int p_idx) const;
 	int get_connection_flags(int p_idx) const;
+	int get_connection_unbinds(int p_idx) const;
 	Array get_connection_binds(int p_idx) const;
 
 	bool has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method);
@@ -178,7 +180,7 @@ public:
 	void add_node_property(int p_node, int p_name, int p_value);
 	void add_node_group(int p_node, int p_group);
 	void set_base_scene(int p_idx);
-	void add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, const Vector<int> &p_binds);
+	void add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, int p_unbinds, const Vector<int> &p_binds);
 	void add_editable_instance(const NodePath &p_path);
 
 	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time = p_time; }

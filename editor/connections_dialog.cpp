@@ -38,6 +38,7 @@
 #include "plugins/script_editor_plugin.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/spin_box.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
@@ -162,6 +163,20 @@ void ConnectDialog::_tree_node_selected() {
 
 	dst_path = source->get_path_to(current);
 	_update_ok_enabled();
+}
+
+void ConnectDialog::_unbind_count_changed(double p_count) {
+	for (Control *control : bind_controls) {
+		BaseButton *b = Object::cast_to<BaseButton>(control);
+		if (b) {
+			b->set_disabled(p_count > 0);
+		}
+
+		EditorInspector *e = Object::cast_to<EditorInspector>(control);
+		if (e) {
+			e->set_read_only(p_count > 0);
+		}
+	}
 }
 
 /*
@@ -305,6 +320,10 @@ void ConnectDialog::set_dst_method(const StringName &p_method) {
 	dst_method->set_text(p_method);
 }
 
+int ConnectDialog::get_unbinds() const {
+	return int(unbind_count->get_value());
+}
+
 Vector<Variant> ConnectDialog::get_binds() const {
 	return cdbinds->params;
 }
@@ -350,6 +369,8 @@ void ConnectDialog::init(ConnectionData c, bool bEdit) {
 
 	deferred->set_pressed(bDeferred);
 	oneshot->set_pressed(bOneshot);
+	unbind_count->set_value(c.unbinds);
+	_unbind_count_changed(c.unbinds);
 
 	cdbinds->params.clear();
 	cdbinds->params = c.binds;
@@ -449,22 +470,32 @@ ConnectDialog::ConnectDialog() {
 	type_list->add_item("Transform3D", Variant::TRANSFORM3D);
 	type_list->add_item("Color", Variant::COLOR);
 	type_list->select(0);
+	bind_controls.push_back(type_list);
 
 	Button *add_bind = memnew(Button);
 	add_bind->set_text(TTR("Add"));
 	add_bind_hb->add_child(add_bind);
 	add_bind->connect("pressed", callable_mp(this, &ConnectDialog::_add_bind));
+	bind_controls.push_back(add_bind);
 
 	Button *del_bind = memnew(Button);
 	del_bind->set_text(TTR("Remove"));
 	add_bind_hb->add_child(del_bind);
 	del_bind->connect("pressed", callable_mp(this, &ConnectDialog::_remove_bind));
+	bind_controls.push_back(del_bind);
 
 	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
 
 	bind_editor = memnew(EditorInspector);
+	bind_controls.push_back(bind_editor);
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
+
+	unbind_count = memnew(SpinBox);
+	unbind_count->set_tooltip(TTR("Allows to drop arguments sent by signal emitter."));
+	unbind_count->connect("value_changed", callable_mp(this, &ConnectDialog::_unbind_count_changed));
+
+	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
 
 	HBoxContainer *dstm_hb = memnew(HBoxContainer);
 	vbc_left->add_margin_child(TTR("Receiver Method:"), dstm_hb);
@@ -541,26 +572,29 @@ void ConnectionsDock::_make_or_edit_connection() {
 	Node *target = selectedNode->get_node(dst_path);
 	ERR_FAIL_COND(!target);
 
-	ConnectDialog::ConnectionData cToMake;
-	cToMake.source = connect_dialog->get_source();
-	cToMake.target = target;
-	cToMake.signal = connect_dialog->get_signal_name();
-	cToMake.method = connect_dialog->get_dst_method_name();
-	cToMake.binds = connect_dialog->get_binds();
+	ConnectDialog::ConnectionData connection;
+	connection.source = connect_dialog->get_source();
+	connection.target = target;
+	connection.signal = connect_dialog->get_signal_name();
+	connection.method = connect_dialog->get_dst_method_name();
+	connection.unbinds = connect_dialog->get_unbinds();
+	if (connection.unbinds == 0) {
+		connection.binds = connect_dialog->get_binds();
+	}
 	bool defer = connect_dialog->get_deferred();
 	bool oshot = connect_dialog->get_oneshot();
-	cToMake.flags = CONNECT_PERSIST | (defer ? CONNECT_DEFERRED : 0) | (oshot ? CONNECT_ONESHOT : 0);
+	connection.flags = CONNECT_PERSIST | (defer ? CONNECT_DEFERRED : 0) | (oshot ? CONNECT_ONESHOT : 0);
 
 	// Conditions to add function: must have a script and must not have the method already
 	// (in the class, the script itself, or inherited).
 	bool add_script_function = false;
 	Ref<Script> script = target->get_script();
-	if (!target->get_script().is_null() && !ClassDB::has_method(target->get_class(), cToMake.method)) {
+	if (!target->get_script().is_null() && !ClassDB::has_method(target->get_class(), connection.method)) {
 		// There is a chance that the method is inherited from another script.
 		bool found_inherited_function = false;
 		Ref<Script> inherited_script = script->get_base_script();
 		while (!inherited_script.is_null()) {
-			int line = inherited_script->get_language()->find_function(cToMake.method, inherited_script->get_source_code());
+			int line = inherited_script->get_language()->find_function(connection.method, inherited_script->get_source_code());
 			if (line != -1) {
 				found_inherited_function = true;
 				break;
@@ -575,23 +609,23 @@ void ConnectionsDock::_make_or_edit_connection() {
 	if (add_script_function) {
 		// Pick up args here before "it" is deleted by update_tree.
 		script_function_args = it->get_metadata(0).operator Dictionary()["args"];
-		for (int i = 0; i < cToMake.binds.size(); i++) {
-			script_function_args.push_back("extra_arg_" + itos(i) + ":" + Variant::get_type_name(cToMake.binds[i].get_type()));
+		for (int i = 0; i < connection.binds.size(); i++) {
+			script_function_args.push_back("extra_arg_" + itos(i) + ":" + Variant::get_type_name(connection.binds[i].get_type()));
 		}
 	}
 
 	if (connect_dialog->is_editing()) {
 		_disconnect(*it);
-		_connect(cToMake);
+		_connect(connection);
 	} else {
-		_connect(cToMake);
+		_connect(connection);
 	}
 
 	// IMPORTANT NOTE: _disconnect and _connect cause an update_tree, which will delete the object "it" is pointing to.
 	it = nullptr;
 
 	if (add_script_function) {
-		editor->emit_signal(SNAME("script_add_function_request"), target, cToMake.method, script_function_args);
+		editor->emit_signal(SNAME("script_add_function_request"), target, connection.method, script_function_args);
 		hide();
 	}
 
@@ -601,20 +635,18 @@ void ConnectionsDock::_make_or_edit_connection() {
 /*
  * Creates single connection w/ undo-redo functionality.
  */
-void ConnectionsDock::_connect(ConnectDialog::ConnectionData cToMake) {
-	Node *source = static_cast<Node *>(cToMake.source);
-	Node *target = static_cast<Node *>(cToMake.target);
+void ConnectionsDock::_connect(ConnectDialog::ConnectionData p_connection) {
+	Node *source = Object::cast_to<Node>(p_connection.source);
+	Node *target = Object::cast_to<Node>(p_connection.target);
 
 	if (!source || !target) {
 		return;
 	}
 
-	undo_redo->create_action(vformat(TTR("Connect '%s' to '%s'"), String(cToMake.signal), String(cToMake.method)));
-
-	Callable c(target, cToMake.method);
-
-	undo_redo->add_do_method(source, "connect", cToMake.signal, c, cToMake.binds, cToMake.flags);
-	undo_redo->add_undo_method(source, "disconnect", cToMake.signal, c);
+	Callable callable = p_connection.get_callable();
+	undo_redo->create_action(vformat(TTR("Connect '%s' to '%s'"), String(p_connection.signal), String(p_connection.method)));
+	undo_redo->add_do_method(source, "connect", p_connection.signal, callable, varray(), p_connection.flags);
+	undo_redo->add_undo_method(source, "disconnect", p_connection.signal, callable);
 	undo_redo->add_do_method(this, "update_tree");
 	undo_redo->add_undo_method(this, "update_tree");
 	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); //to force redraw of scene tree
@@ -634,8 +666,9 @@ void ConnectionsDock::_disconnect(TreeItem &item) {
 
 	undo_redo->create_action(vformat(TTR("Disconnect '%s' from '%s'"), c.signal, c.method));
 
-	undo_redo->add_do_method(selectedNode, "disconnect", c.signal, Callable(c.target, c.method));
-	undo_redo->add_undo_method(selectedNode, "connect", c.signal, Callable(c.target, c.method), c.binds, c.flags);
+	Callable callable = c.get_callable();
+	undo_redo->add_do_method(selectedNode, "disconnect", c.signal, callable);
+	undo_redo->add_undo_method(selectedNode, "connect", c.signal, callable, c.binds, c.flags);
 	undo_redo->add_do_method(this, "update_tree");
 	undo_redo->add_undo_method(this, "update_tree");
 	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
@@ -662,8 +695,8 @@ void ConnectionsDock::_disconnect_all() {
 	while (child) {
 		Connection cd = child->get_metadata(0);
 		ConnectDialog::ConnectionData c = cd;
-		undo_redo->add_do_method(selectedNode, "disconnect", c.signal, Callable(c.target, c.method));
-		undo_redo->add_undo_method(selectedNode, "connect", c.signal, Callable(c.target, c.method), c.binds, c.flags);
+		undo_redo->add_do_method(selectedNode, "disconnect", c.signal, c.get_callable());
+		undo_redo->add_undo_method(selectedNode, "connect", c.signal, c.get_callable(), c.binds, c.flags);
 		child = child->get_next();
 	}
 
@@ -752,8 +785,8 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
  * Open connection dialog with Connection data to EDIT an existing connection.
  */
 void ConnectionsDock::_open_connection_dialog(ConnectDialog::ConnectionData cToEdit) {
-	Node *src = static_cast<Node *>(cToEdit.source);
-	Node *dst = static_cast<Node *>(cToEdit.target);
+	Node *src = Object::cast_to<Node>(cToEdit.source);
+	Node *dst = Object::cast_to<Node>(cToEdit.target);
 
 	if (src && dst) {
 		const String &signalname = cToEdit.signal;
@@ -1044,7 +1077,9 @@ void ConnectionsDock::update_tree() {
 				if (c.flags & CONNECT_ONESHOT) {
 					path += " (oneshot)";
 				}
-				if (c.binds.size()) {
+				if (c.unbinds > 0) {
+					path += " unbinds(" + itos(c.unbinds) + ")";
+				} else if (!c.binds.is_empty()) {
 					path += " binds(";
 					for (int i = 0; i < c.binds.size(); i++) {
 						if (i > 0) {
@@ -1057,8 +1092,7 @@ void ConnectionsDock::update_tree() {
 
 				TreeItem *connection_item = tree->create_item(signal_item);
 				connection_item->set_text(0, path);
-				Connection cd = c;
-				connection_item->set_metadata(0, cd);
+				connection_item->set_metadata(0, cn);
 				connection_item->set_icon(0, get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
 			}
 		}
