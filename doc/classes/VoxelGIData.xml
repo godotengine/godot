@@ -60,7 +60,7 @@
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="1.5">
 			The normal bias to use for indirect lighting and reflections. Higher values reduce self-reflections visible in non-rough materials, at the cost of more visible light leaking and flatter-looking indirect lighting. To prioritize hiding self-reflections over lighting quality, set [member bias] to [code]0.0[/code] and [member normal_bias] to a value between [code]1.0[/code] and [code]2.0[/code].
 		</member>
-		<member name="dynamic_range" type="float" setter="set_dynamic_range" getter="get_dynamic_range" default="4.0">
+		<member name="dynamic_range" type="float" setter="set_dynamic_range" getter="get_dynamic_range" default="2.0">
 			The dynamic range to use ([code]1.0[/code] represents a low dynamic range scene brightness). Higher values can be used to provide brighter indirect lighting, at the cost of more visible color banding in dark areas (both in indirect lighting and reflections). To avoid color banding, it's recommended to use the lowest value that does not result in visible light clipping.
 		</member>
 		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">

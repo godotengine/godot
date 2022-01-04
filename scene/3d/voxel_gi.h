@@ -45,7 +45,7 @@ class VoxelGIData : public Resource {
 	AABB bounds;
 	Vector3 octree_size;
 
-	float dynamic_range = 4.0;
+	float dynamic_range = 2.0;
 	float energy = 1.0;
 	float bias = 1.5;
 	float normal_bias = 0.0;
