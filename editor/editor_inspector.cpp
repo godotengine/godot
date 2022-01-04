@@ -623,14 +623,17 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 				if (property == "frame_coords" && (object->is_class("Sprite2D") || object->is_class("Sprite3D"))) {
 					Vector2i new_coords = object->get(property);
 					new_coords.x++;
-					if (new_coords.x >= object->get("hframes").operator int64_t()) {
+					if (new_coords.x >= int64_t(object->get("hframes"))) {
 						new_coords.x = 0;
 						new_coords.y++;
 					}
-
-					call_deferred(SNAME("emit_changed"), property, new_coords, "", false);
+					if (new_coords.x < int64_t(object->get("hframes")) && new_coords.y < int64_t(object->get("vframes"))) {
+						call_deferred(SNAME("emit_changed"), property, new_coords, "", false);
+					}
 				} else {
-					call_deferred(SNAME("emit_changed"), property, object->get(property).operator int64_t() + 1, "", false);
+					if (int64_t(object->get(property)) + 1 < (int64_t(object->get("hframes")) * int64_t(object->get("vframes")))) {
+						call_deferred(SNAME("emit_changed"), property, object->get(property).operator int64_t() + 1, "", false);
+					}
 				}
 
 				call_deferred(SNAME("update_property"));
