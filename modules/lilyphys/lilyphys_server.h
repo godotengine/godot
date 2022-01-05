@@ -27,7 +27,7 @@ class LilyphysServer : public Object {
     static LilyphysServer *singleton;
     Set<RID> deletion_queue;
     RID_Owner<LIPhysicsBody> body_owner;
-    Set<RID> bodies;
+    List<RID> bodies;
     RID_Owner<LIShape> shape_owner;
     Set<RID> shapes;
     RID_Owner<LIForceGenerator> generator_owner;
@@ -77,6 +77,7 @@ public:
     void shape_set_data(RID p_id, const Variant &p_data);
     Variant shape_get_data(RID p_id);
     Vector3 shape_get_support(RID p_id, Vector3 p_direction);
+    Basis shape_get_inertia_tensor(RID p_id, real_t p_mass);
     void shape_add_owner(RID p_shape, LICollisionObject* owner);
     void shape_remove_owner(RID p_shape, LICollisionObject* owner);
     size_t physics_body_add_shape(RID p_body, RID p_shape);
@@ -105,8 +106,10 @@ private:
     void perform_all_callbacks();
     void preprocess_collision(float p_step, CollisionResult* p_result);
     bool process_collision(float p_step, CollisionResult* p_result, bool p_first_contact);
-
-    void detect_collision(RID p_body);
+    void detect_collision(RID p_body, RID p_other_body);
+    void detect_collisions_for_body(RID p_body);
+    void process_shock_step(CollisionResult *p_result, real_t p_step);
+    void do_shock_step(real_t p_step);
 };
 
 

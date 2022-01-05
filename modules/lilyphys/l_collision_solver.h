@@ -34,7 +34,10 @@ public:
     Vector3 R0; // Shape position relative to body0
     Vector3 R1; // Shape position relative to body1
     real_t min_separation_velocity = 0.0f;
-    // TODO: Make restitution configurable.
+    real_t accumulated_normal_impulse_aux = 0.0f; // Used in shock step.
+    // TODO: Make friction and restitution configurable.
+    real_t static_friction = pow(0.5f, 2.0f);
+    real_t dynamic_friction = pow(0.3f, 2.0f);
     real_t restitution = 0.09f;
     CollisionResult(RID p_body0, RID p_body1, Transform p_shape_transform, bool p_intersect, real_t p_depth,
                     Vector3 p_dir, Vector3 p_pos) : body0(p_body0), body1(p_body1), shape_transform(p_shape_transform),

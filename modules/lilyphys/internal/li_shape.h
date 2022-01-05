@@ -20,6 +20,7 @@ public:
     virtual void set_data(const Variant& p_data) = 0;
     virtual Variant get_data() const = 0;
     virtual Vector3 get_support(Vector3 p_direction) const = 0;
+    virtual Basis get_inertia_tensor(real_t p_mass) const = 0;
     void add_owner(LICollisionObject* p_object);
     void remove_owner(LICollisionObject* p_object);
     bool is_owner(LICollisionObject* p_object) const;
@@ -34,6 +35,7 @@ public:
     void set_data(const Variant &p_data) override;
     Variant get_data() const override;
     Vector3 get_support(Vector3 p_direction) const override;
+    Basis get_inertia_tensor(real_t p_mass) const override;
 };
 
 class LISphereShape : public LIShape {
@@ -44,6 +46,7 @@ public:
     void set_data(const Variant &p_data) override;
     Variant get_data() const override;
     Vector3 get_support(Vector3 p_direction) const override;
+    Basis get_inertia_tensor(real_t p_mass) const override;
 };
 
 

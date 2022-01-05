@@ -23,6 +23,17 @@ Vector3 LIBoxShape::get_support(Vector3 p_direction) const {
     return point;
 }
 
+Basis LIBoxShape::get_inertia_tensor(real_t p_mass) const {
+    Basis tensor;
+    tensor.set_zero();
+
+    tensor[0].x = (1.0f/12.0f) * p_mass * (pow(half_extents.y * 2.0f, 2.0f) + pow(half_extents.z * 2.0f, 2.0f));
+    tensor[1].y = (1.0f/12.0f) * p_mass * (pow(half_extents.x * 2.0f, 2.0f) + pow(half_extents.z * 2.0f, 2.0f));
+    tensor[2].z = (1.0f/12.0f) * p_mass * (pow(half_extents.x * 2.0f, 2.0f) + pow(half_extents.y * 2.0f, 2.0f));
+
+    return tensor;
+}
+
 void LIShape::add_owner(LICollisionObject *p_object) {
     Map<LICollisionObject*, int>::Element *E = owners.find(p_object);
     if (E) {
@@ -59,4 +70,15 @@ Variant LISphereShape::get_data() const {
 
 Vector3 LISphereShape::get_support(Vector3 p_direction) const {
     return p_direction * radius;
+}
+
+Basis LISphereShape::get_inertia_tensor(real_t p_mass) const {
+    Basis tensor;
+    tensor.set_zero();
+
+    tensor[0][0] = (2.0f / 5.0f) * p_mass * pow(radius, 2.0f);
+    tensor[1][1] = (2.0f / 5.0f) * p_mass * pow(radius, 2.0f);
+    tensor[2][2] = (2.0f / 5.0f) * p_mass * pow(radius, 2.0f);
+
+    return tensor;
 }

@@ -11,22 +11,6 @@
 #include "../l_collision_solver.h"
 
 LIPhysicsBody::LIPhysicsBody() : LICollisionObject(TYPE_BODY) {
-    // Test data.
-    Basis tensor;
-//    real_t mass = 0.1;
-//    set_mass(mass);
-//    angular_damping = 0.8;
-//    linear_damping = 0.8;
-    tensor[0].x = 1.0f / 12.0f * get_mass() * (pow(2, 2.0f) + pow(2, 2.0f));
-    tensor[0].y = 0.0f;
-    tensor[0].z = 0.0f;
-    tensor[1].x = 0.0f;
-    tensor[1].y = 1.0f / 12.0f * get_mass() * (pow(2, 2.0f) + pow(2, 2.0f));
-    tensor[1].z = 0.0f;
-    tensor[2].x = 0.0f;
-    tensor[2].y = 0.0f;
-    tensor[2].z = 1.0f / 12.0f * get_mass() * (pow(2, 2.0f) + pow(2, 2.0f));
-    set_inertia_tensor(tensor);
     velocity_changed = true;
 }
 
@@ -91,7 +75,7 @@ void LIPhysicsBody::perform_callback() {
 }
 
 bool LIPhysicsBody::has_finite_mass() const {
-    return !Math::is_equal_approx(get_inverse_mass(), 0);
+    return !(Math::is_equal_approx(get_inverse_mass(), 0) || immovable);
 }
 
 void LIPhysicsBody::add_force(const Vector3 &p_force) {
@@ -119,8 +103,8 @@ void LIPhysicsBody::integrate_velocity(float p_step) {
 }
 
 void LIPhysicsBody::update_position(float p_step) {
-    transform.origin += velocity * p_step;
-    transform.basis *= Basis(angular_velocity * p_step);
+    transform.origin += velocity * p_step + aux_velocity * p_step;
+    transform.basis *= Basis(angular_velocity * p_step) * Basis(aux_angular_velocity * p_step);
     transform.orthonormalize();
     global_inverse_inertia_tensor = transform.basis * inv_inertia_tensor * transform.basis.transposed();
 }
@@ -237,4 +221,54 @@ void LIPhysicsBody::set_velocity(const Vector3 &p_velocity) {
 void LIPhysicsBody::set_angular_velocity(const Vector3 &p_velocity) {
     angular_velocity = p_velocity;
     velocity_changed = true;
+}
+
+void LIPhysicsBody::recalculate_inertia_tensor() {
+    // Get one of the shapes we've got and use it to calculate an inertia tensor.....yeah.
+    if (shapes.empty() || !has_finite_mass()) {
+        Basis tensor{};
+        tensor.set_zero();
+        set_inertia_tensor(tensor);
+        return;
+    }
+
+    RID shape = shapes.back()->get().shape;
+    Basis tensor = LilyphysServer::get_singleton()->shape_get_inertia_tensor(shape, get_mass());
+    inv_inertia_tensor = tensor;
+}
+
+void LIPhysicsBody::set_shape_transform(size_t p_id, const Transform &p_transform) {
+    LICollisionObject::set_shape_transform(p_id, p_transform);
+    recalculate_inertia_tensor();
+}
+
+void LIPhysicsBody::set_immovable(const bool &p_immovable) {
+    immovable = p_immovable;
+}
+
+void LIPhysicsBody::set_aux_velocity(const Vector3 &p_velocity) {
+    aux_velocity = p_velocity;
+    velocity_changed = true;
+}
+
+void LIPhysicsBody::set_aux_angular_velocity(const Vector3 &p_velocity) {
+    aux_velocity = p_velocity;
+    velocity_changed = true;
+}
+
+const Vector3 &LIPhysicsBody::get_aux_velocity() const {
+    return aux_velocity;
+}
+
+const Vector3 &LIPhysicsBody::get_aux_angular_velocity() const {
+    return aux_angular_velocity;
+}
+
+void LIPhysicsBody::set_temp_immovable() {
+    orig_immovable = immovable;
+    immovable = true;
+}
+
+void LIPhysicsBody::restore_temp_immovable() {
+    immovable = orig_immovable;
 }

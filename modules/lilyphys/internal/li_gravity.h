@@ -9,6 +9,8 @@
 
 class LIGravity : public LIForceGenerator {
     void update_force(LIPhysicsBody* p_body, real_t p_delta) override;
+public:
+    Vector3 get_gravity() const;
 };
 
 

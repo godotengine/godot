@@ -30,6 +30,8 @@ private:
     Vector3 old_angular_velocity;
     Vector3 velocity;
     Vector3 angular_velocity;
+    Vector3 aux_velocity;
+    Vector3 aux_angular_velocity;
 
     real_t inverse_mass = 10;
     real_t linear_damping = 0.8;
@@ -48,6 +50,9 @@ private:
     IntegrationCallback callback;
     bool active = false;
     bool velocity_changed;
+    bool orig_immovable = false;
+    bool immovable = false;
+    bool should_process_shock = true;
     List<RID> collisions;
 public:
     LIPhysicsBody();
@@ -66,6 +71,10 @@ public:
     Vector3 to_global(const Vector3& p_vector) const;
     void copy_current_state_to_old();
     void restore_old_state();
+    void recalculate_inertia_tensor();
+    void set_shape_transform(size_t p_id, const Transform &p_transform);
+    void set_temp_immovable();
+    void restore_temp_immovable();
 
     real_t get_inverse_mass() const;
     real_t get_mass() const;
@@ -75,13 +84,17 @@ public:
     const Vector3 &get_acceleration() const;
     const Vector3 &get_last_acceleration() const;
     const Vector3 &get_angular_velocity() const;
+    const Vector3 &get_aux_velocity() const;
+    const Vector3 &get_aux_angular_velocity() const;
     const Vector3 &get_force_accum() const;
     const Vector3 &get_torque_accum() const;
     const Basis &get_inv_inertia_tensor() const;
     const Basis &get_global_inv_inertia_tensor() const;
     bool is_active() const { return active; }
     bool get_velocity_changed() const { return velocity_changed; }
+    bool get_immovable() const { return immovable; }
     List<RID> get_collisions() const { return collisions; }
+    bool get_should_process_shock() const { return should_process_shock; }
 
     void clear_velocity_changed() { velocity_changed = false; }
     void set_active(bool p_active) { active = p_active; }
@@ -91,7 +104,10 @@ public:
     void set_mass(const real_t &mass);
     void set_property(LPhysicsBodyPropertyType type, const Variant& value);
     void set_velocity(const Vector3& p_velocity);
+    void set_aux_velocity(const Vector3& p_velocity);
     void set_angular_velocity(const Vector3& p_velocity);
+    void set_aux_angular_velocity(const Vector3& p_velocity);
+    void set_immovable(const bool& p_immovable);
 };
 
 

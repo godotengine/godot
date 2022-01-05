@@ -44,7 +44,7 @@ void LilyphysServer::finish() {
 RID LilyphysServer::create_physics_body() {
     LIPhysicsBody* object = memnew(LIPhysicsBody);
     RID rid = body_owner.make_rid(object);
-    bodies.insert(rid);
+    bodies.push_back(rid);
     object->set_self(rid);
     // Automatically register the default gravity force.
     register_generator(rid, gravity);
@@ -132,6 +132,12 @@ Variant LilyphysServer::shape_get_data(RID p_id) {
     return shape->get_data();
 }
 
+Basis LilyphysServer::shape_get_inertia_tensor(RID p_id, real_t p_mass) {
+    LIShape* shape = shape_owner.get(p_id);
+    ERR_FAIL_COND_V_MSG(!shape, Variant(), "RID does not correspond with valid shape.");
+    return shape->get_inertia_tensor(p_mass);
+}
+
 size_t LilyphysServer::physics_body_add_shape(RID p_body, RID p_shape) {
     LIPhysicsBody* body = body_owner.get(p_body);
     ERR_FAIL_COND_V(!shape_owner.owns(p_shape), 0);
@@ -207,7 +213,7 @@ Vector3 LilyphysServer::shape_get_support(RID p_id, Vector3 p_direction) {
 
 void LilyphysServer::find_all_active_bodies() {
     active_bodies.clear();
-    for (Set<RID>::Element *E = bodies.front(); E; E = E->next()) {
+    for (List<RID>::Element *E = bodies.front(); E; E = E->next()) {
         if (body_owner.get(E->get())->is_active()) {
             active_bodies.insert(E->get());
         }
@@ -215,7 +221,7 @@ void LilyphysServer::find_all_active_bodies() {
 }
 
 void LilyphysServer::copy_all_current_state_to_old() {
-    for (Set<RID>::Element *E = bodies.front(); E; E = E->next()) {
+    for (List<RID>::Element *E = bodies.front(); E; E = E->next()) {
         LIPhysicsBody* body = body_owner.get(E->get());
         if (body->is_active() && body->get_velocity_changed()) {
             body->copy_current_state_to_old();
@@ -224,7 +230,7 @@ void LilyphysServer::copy_all_current_state_to_old() {
 }
 
 void LilyphysServer::restore_all_state() {
-    for (Set<RID>::Element *E = bodies.front(); E; E = E->next()) {
+    for (List<RID>::Element *E = bodies.front(); E; E = E->next()) {
         LIPhysicsBody* body = body_owner.get(E->get());
         if (body->is_active() && body->get_velocity_changed()) {
             body->restore_old_state();
@@ -233,7 +239,7 @@ void LilyphysServer::restore_all_state() {
 }
 
 void LilyphysServer::clear_all_accumulators() {
-    for (Set<RID>::Element *E = bodies.front(); E; E = E->next()) {
+    for (List<RID>::Element *E = bodies.front(); E; E = E->next()) {
         body_owner.get(E->get())->clear_accumulators();
     }
 }
@@ -245,33 +251,43 @@ void LilyphysServer::detect_all_collisions(float p_step) {
     update_all_positions(p_step);
 
     collisions.clear();
-    for (Set<RID>::Element *e = bodies.front(); e; e = e->next()) {
+    for (List<RID>::Element *e = bodies.front(); e; e = e->next()) {
         body_owner.get(e->get())->clear_collisions();
     }
 
     // We should really...REALLY get broad phase collision...... this hurts my SOUL !
-    Set<RID>::Element *e = bodies.front();
-    detect_collision(e->get());
+    Map<RID, Set<RID>> checked_bodies;
 
-//    for (Set<RID>::Element *e = bodies.front(); e; e = e->next()) {
-//        detect_collision(e->get());
-//    }
+    for (List<RID>::Element *e = bodies.front(); e; e = e->next()) {
+        for (List<RID>::Element *f = bodies.front(); f; f = f->next()) {
+            bool already_checked = false;
+            already_checked |= checked_bodies[e->get()].has(f->get());
+            already_checked |= checked_bodies[f->get()].has(e->get());
+            if (e != f && !already_checked) {
+                checked_bodies[e->get()].insert(f->get());
+                checked_bodies[f->get()].insert(e->get());
+                detect_collision(e->get(), f->get());
+            }
+        }
+    }
 
     restore_all_state();
 }
 
-void LilyphysServer::detect_collision(RID p_body) {
+void LilyphysServer::detect_collisions_for_body(RID p_body) {
+    for (List<RID>::Element *e = bodies.front(); e; e = e->next()) {
+        detect_collision(p_body, e->get());
+    }
+}
+
+void LilyphysServer::detect_collision(RID p_body, RID p_other_body) {
     LIPhysicsBody* body = body_owner.get(p_body);
-    for (Set<RID>::Element *f = bodies.front(); f; f = f->next()) {
-        if (p_body != f->get()) {
-            List<RID> results = solver.check_collision(body, body_owner.get(f->get()), collision_result_owner);
-            body->add_collisions(results);
-            body_owner.get(f->get())->add_collisions(results);
-            body_owner.get(f->get())->add_collisions(results);
-            for (int i = 0; i < results.size(); i++) {
-                collisions.push_back(results[i]);
-            }
-        }
+    LIPhysicsBody* other_body = body_owner.get(p_other_body);
+    List<RID> results = solver.check_collision(body_owner.get(p_body), other_body, collision_result_owner);
+    body->add_collisions(results);
+    other_body->add_collisions(results);
+    for (int i = 0; i < results.size(); i++) {
+        collisions.push_back(results[i]);
     }
 }
 
@@ -290,8 +306,10 @@ void LilyphysServer::preprocess_collision(float p_step, CollisionResult* p_resul
     // Normalized direction vector from body0 to body1;
     const Vector3 N = body0->get_transform().origin.direction_to(body1->get_transform().origin);
     const float timescale = p_step * (float)num_penetration_relaxation_timesteps;
-    p_result->R0 = p_result->pos - body0->get_transform().origin;
-    p_result->R1 = p_result->pos - body1->get_transform().origin;
+    //p_result->R0 = p_result->pos - body0->get_transform().origin;
+    //p_result->R1 = p_result->pos - body1->get_transform().origin;
+    p_result->R0 = body0->get_transform().inverse().xform(p_result->pos);
+    p_result->R1 = body1->get_transform().inverse().xform(p_result->pos);
 
     if (!body0->has_finite_mass()) {
         p_result->denominator = 0.0f;
@@ -327,6 +345,7 @@ void LilyphysServer::preprocess_collision(float p_step, CollisionResult* p_resul
 bool LilyphysServer::process_collision(float p_step, CollisionResult* p_result, bool p_first_contact) {
     //p_result->satisfied = true;
 
+    // TODO: Pre-process all the stuff we need.
     LIPhysicsBody* body0 = body_owner.get(p_result->body0);
     LIPhysicsBody* body1 = body_owner.get(p_result->body1);
 
@@ -342,17 +361,76 @@ bool LilyphysServer::process_collision(float p_step, CollisionResult* p_result, 
         p_result->dir = -p_result->dir;
     }
 
+    real_t normal_impulse = 0.0f;
+
     if (!body1->has_finite_mass()) {
-        //Vector3 R0 = p_result->pos - body0->get_transform().origin;
         Vector3 R0 = body0->get_transform().inverse().xform(p_result->pos);
         Vector3 n = p_result->dir;
         real_t V01 = (body0->get_velocity() + (body0->get_angular_velocity().cross(R0))).dot(n);
 
-        real_t i = ((-(1 + 0.5f) * V01)) /
+        real_t i = ((-(1 + p_result->restitution) * V01)) /
                 (body0->get_inverse_mass() + (body0->get_inv_inertia_tensor().xform(R0.cross(n)).cross(R0)).dot(n));
 
+        normal_impulse = (i * n).length();
         body0->set_velocity(body0->get_velocity() + (i * n) / body0->get_mass());
         body0->set_angular_velocity(body0->get_angular_velocity() + body0->get_inv_inertia_tensor().xform(R0.cross(i * n)));
+    }
+    else {
+        Vector3 R0 = body0->get_transform().inverse().xform(p_result->pos);
+        Vector3 R1 = body1->get_transform().inverse().xform(p_result->pos);
+        Vector3 n = p_result->dir;
+        real_t V01 = (body0->get_velocity() + (body0->get_angular_velocity().cross(R0)) - body1->get_velocity() - (body1->get_angular_velocity().cross(R1))).dot(n);
+
+        real_t i = ((-(1 + p_result->restitution) * V01)) /
+                (body0->get_inverse_mass() + body1->get_inverse_mass() + (body0->get_inv_inertia_tensor().xform(R0.cross(n)).cross(R0)
+                    + body1->get_inv_inertia_tensor().xform(R1.cross(n)).cross(R1)).dot(n));
+
+        body0->set_velocity(body0->get_velocity() + (i * n) / body0->get_mass());
+        body1->set_velocity(body1->get_velocity() - (i * n) / body1->get_mass());
+        body0->set_angular_velocity(body0->get_angular_velocity() + body0->get_inv_inertia_tensor().xform(R0.cross(i * n)));
+        body1->set_angular_velocity(body1->get_angular_velocity() - body1->get_inv_inertia_tensor().xform(R1.cross(i * n)));
+    }
+
+    // Friction
+    Vector3 n = p_result->dir;
+    Vector3 v_new = body0->get_velocity() - body1->get_velocity();
+    Vector3 tangent_velocity = v_new - v_new.dot(n) * n;
+    Vector3 R0 = body0->get_transform().inverse().xform(p_result->pos);
+    Vector3 R1 = body1->get_transform().inverse().xform(p_result->pos);
+    real_t tangent_speed = tangent_velocity.length();
+
+    if (tangent_speed > min_velocity_for_processing) {
+        Vector3 T = -tangent_velocity / tangent_speed;
+
+        real_t denominator = 0.0f;
+        if (body0->has_finite_mass()) {
+            denominator = body0->get_inverse_mass() + T.dot(body0->get_global_inv_inertia_tensor().xform(R0.cross(T)).cross(R0));
+        }
+        if (body1->has_finite_mass()) {
+            denominator += body1->get_inverse_mass() + T.dot(body1->get_global_inv_inertia_tensor().xform(R1.cross(T)).cross(R1));
+        }
+
+        if (denominator > FLOAT_TINY) {
+            real_t impulse_to_reverse = tangent_speed / denominator;
+            real_t impulse_from_normal_impulse = p_result->static_friction * normal_impulse;
+            real_t friction_impulse;
+
+            if (impulse_to_reverse < impulse_from_normal_impulse) {
+                friction_impulse = impulse_to_reverse;
+            }
+            else {
+                friction_impulse = p_result->dynamic_friction * normal_impulse;
+            }
+
+            T *= friction_impulse;
+
+            body0->set_velocity(body0->get_velocity() + T / body0->get_mass());
+            body0->set_angular_velocity(body0->get_angular_velocity() + body0->get_inv_inertia_tensor().xform(R0.cross(T)));
+            if (body1->has_finite_mass()) {
+                body1->set_velocity(body1->get_velocity() - T / body1->get_mass());
+                body1->set_angular_velocity(body1->get_angular_velocity() - body1->get_inv_inertia_tensor().xform(R1.cross(T)));
+            }
+        }
     }
 
     return true;
@@ -383,7 +461,7 @@ void LilyphysServer::handle_all_constraints(float p_step, int p_iterations, bool
 
     static int dir = 1;
     for (int step = 0; step < p_iterations; step++) {
-        //bool got_one = false;
+        bool got_one = false;
         int num_collisions = collisions.size();
         dir = !dir;
 
@@ -392,8 +470,7 @@ void LilyphysServer::handle_all_constraints(float p_step, int p_iterations, bool
             ERR_FAIL_COND(!result);
             //if (!result->satisfied) {
                 // Do something different if force inelastic? (Process contact function instead?)
-                //got_one |=
-                        process_collision(p_step, result, step == 0);
+                got_one |= process_collision(p_step, result, step == 0);
                 //result->satisfied = false;
             //}
         }
@@ -425,9 +502,9 @@ void LilyphysServer::handle_all_constraints(float p_step, int p_iterations, bool
         }
         orig_collision_count = num_collisions;
 
-//        if (!got_one) {
-//            break;
-//        }
+        if (!got_one) {
+           break;
+        }
     }
 }
 
@@ -453,7 +530,7 @@ void LilyphysServer::update_all_positions(float p_step) {
 
 void LilyphysServer::perform_all_callbacks() {
     // Send the physics state to the nodes.
-    for (Set<RID>::Element *e = bodies.front(); e; e = e->next()) {
+    for (List<RID>::Element *e = bodies.front(); e; e = e->next()) {
         LIPhysicsBody *object = body_owner.get(e->get());
         ERR_FAIL_COND(!object);
         object->perform_callback();
@@ -483,21 +560,21 @@ void LilyphysServer::step(float p_step) {
 
     detect_all_collisions(p_step);
 
-    handle_all_constraints(p_step, 1, false);
+    handle_all_constraints(p_step, collision_iterations, false);
 
     integrate_all_bodies(p_step);
 
-    //handle_all_constraints(p_step, collision_iterations, true);
+    handle_all_constraints(p_step, collision_iterations, true);
+
+    do_shock_step(p_step);
 
     update_all_positions(p_step);
 
     perform_all_callbacks();
-
-
 }
 
 void LilyphysServer::try_activate_all_frozen_bodies() {
-    for (Set<RID>::Element *E = bodies.front(); E; E = E->next()) {
+    for (List<RID>::Element *E = bodies.front(); E; E = E->next()) {
         // TODO: Set criteria for activating bodies.
         LIPhysicsBody* body = body_owner.get(E->get());
         if (!body->is_active()) {
@@ -515,7 +592,7 @@ void LilyphysServer::activate_body(RID p_body) {
     body->set_active(true);
     active_bodies.insert(p_body);
 
-    detect_collision(p_body);
+    detect_collisions_for_body(p_body);
     // TODO: Check if we also shouldn't activate other objects. Doesn't matter now since everything is activated.
 }
 
@@ -552,76 +629,128 @@ Array LilyphysServer::get_body_collisions(RID p_body) {
     return array;
 }
 
-/*
- * void LilyphysServer::handle_all_constraints(float p_step, int p_iterations, bool p_force_inelastic) {
-    int orig_collision_count = collisions.size();
+void LilyphysServer::process_shock_step(CollisionResult *p_result, real_t p_step) {
+    LIPhysicsBody* body0 = body_owner.get(p_result->body0);
+    LIPhysicsBody* body1 = body_owner.get(p_result->body1);
 
-    // TODO: Prepare all constraints.
+    Vector3 N = body1->get_transform().origin.direction_to(body0->get_transform().origin);
+    N.x = N.z = 0.0f;
+    N.normalize();
 
-    // Prepare all collisions.
-    if (p_force_inelastic) {
-        for (List<RID>::Element *E = collisions.front(); E; E = E->next()) {
-            CollisionResult* result = collision_result_owner.get(E->get());
-            ERR_FAIL_COND(!result);
-            preprocess_collision(p_step, result);
-            result->restitution = 0.0f;
-            result->satisfied = false;
-        }
+    if (!body0->has_finite_mass()) {
+        body0 = nullptr;
     }
-    else {
-        for (List<RID>::Element *E = collisions.front(); E; E = E->next()) {
-            CollisionResult* result = collision_result_owner.get(E->get());
-            ERR_FAIL_COND(!result);
-            preprocess_collision(p_step, result);
-        }
+    if (!body1->has_finite_mass()) {
+        body1 = nullptr;
+    }
+    if (!body0 && !body1) {
+        return;
     }
 
-    static int dir = 1;
-    for (int step = 0; step < p_iterations; step++) {
-        bool got_one = false;
-        int num_collisions = collisions.size();
-        dir = !dir;
+    int iterations = 5;
+    real_t timescale = (real_t)num_penetration_relaxation_timesteps * p_step;
 
-        for (int i = dir ? 0 : num_collisions - 1; i >= 0 && i < num_collisions; dir ? i++ : i--) {
-            CollisionResult* result = collision_result_owner.get(collisions[i]);
-            ERR_FAIL_COND(!result);
-            if (!result->satisfied) {
-                // Do something different if force inelastic? (Process contact function instead?)
-                got_one |= process_collision(p_step, result, step == 0);
-                result->satisfied = false;
-            }
+    for (int iteration = 0; iteration < iterations; iteration++) {
+        real_t normal_vel = 0.0f;
+        if (body0) {
+            Vector3 rel_velocity = body0->get_velocity() + body0->get_angular_velocity().cross(p_result->R0);
+            Vector3 rel_aux_velocity = body0->get_aux_velocity() + body0->get_aux_angular_velocity().cross(p_result->R0);
+            normal_vel = rel_velocity.dot(N) + rel_aux_velocity.dot(N);
+        }
+        if (body1) {
+            Vector3 rel_velocity = body1->get_velocity() + body1->get_angular_velocity().cross(p_result->R1);
+            Vector3 rel_aux_velocity = body1->get_aux_velocity() + body1->get_aux_angular_velocity().cross(p_result->R1);
+            normal_vel -= rel_velocity.dot(N) + rel_aux_velocity.dot(N);
+        }
+        real_t final_normal_vel = (p_result->depth) / timescale;
+
+        if (final_normal_vel < 0.0f) {
+            return;
         }
 
-        // TODO: Apply constraints
+        real_t impulse = (final_normal_vel - normal_vel) / p_result->denominator;
+        real_t orig = p_result->accumulated_normal_impulse_aux;
+        p_result->accumulated_normal_impulse_aux = MAX(p_result->accumulated_normal_impulse_aux + impulse, 0.0f);
+        Vector3 actual_impulse = (p_result->accumulated_normal_impulse_aux - orig) * N;
 
-        // TODO: Try to activate all frozen bodies.
-        try_activate_all_frozen_bodies();
-
-        // Number of collisions might have increased when bodies get activated.
-        num_collisions = collisions.size();
-
-        // Preprocess any new collisions.
-        if (p_force_inelastic) {
-            for (int i = orig_collision_count; i < num_collisions; i++) {
-                CollisionResult* result = collision_result_owner.get(collisions[i]);
-                ERR_FAIL_COND(!result);
-                preprocess_collision(p_step, result);
-                result->restitution = 0.0f;
-                result->satisfied = false;
-            }
+        if (body0) {
+            body0->apply_global_impulse(actual_impulse, p_result->R0);
         }
-        else {
-            for (int i = orig_collision_count; i < num_collisions; i++) {
-                CollisionResult* result = collision_result_owner.get(collisions[i]);
-                ERR_FAIL_COND(!result);
-                preprocess_collision(p_step, result);
-            }
-        }
-        orig_collision_count = num_collisions;
-
-        if (!got_one) {
-            break;
+        if (body1) {
+            body1->apply_negative_global_impulse(actual_impulse, p_result->R1);
         }
     }
 }
- */
+
+struct sort_less_body_x {
+    bool operator()(const RID p_a, const RID p_b) const {
+        return LilyphysServer::get_singleton()->get_physics_body((RID &&) p_a)->get_transform().origin.x <
+               LilyphysServer::get_singleton()->get_physics_body((RID &&) p_b)->get_transform().origin.x;
+    }
+};
+
+struct sort_less_body_y {
+    bool operator()(const RID p_a, const RID p_b) const {
+        return LilyphysServer::get_singleton()->get_physics_body((RID &&) p_a)->get_transform().origin.y <
+               LilyphysServer::get_singleton()->get_physics_body((RID &&) p_b)->get_transform().origin.y;
+    }
+};
+
+struct sort_less_body_z {
+    bool operator()(const RID p_a, const RID p_b) const {
+        return LilyphysServer::get_singleton()->get_physics_body((RID &&) p_a)->get_transform().origin.z <
+               LilyphysServer::get_singleton()->get_physics_body((RID &&) p_b)->get_transform().origin.z;
+    }
+};
+
+void LilyphysServer::do_shock_step(real_t p_step) {
+    LIGravity* g = dynamic_cast<LIGravity*>(generator_owner.get(gravity));
+    Vector3 fz = g->get_gravity();
+    ERR_FAIL_COND(!g);
+
+    if (abs(fz.x) > abs(fz.y) && abs(fz.x) > abs(fz.z)) {
+        bodies.sort_custom<sort_less_body_x>();
+    }
+    else if (abs(fz.y) > abs(fz.z) && abs(fz.y) > abs(fz.x)) {
+        bodies.sort_custom<sort_less_body_y>();
+    }
+    else if (abs(fz.z) > abs(fz.x) && abs(fz.z) > abs(fz.y)) {
+        bodies.sort_custom<sort_less_body_z>();
+    }
+
+    bool got_one = true;
+    unsigned int nloops = 0;
+    while (got_one) {
+        got_one = false;
+        nloops++;
+        for (List<RID>::Element *e = bodies.front(); e; e = e->next()) {
+            LIPhysicsBody* body = body_owner.get(e->get());
+            if (body->has_finite_mass() && body->get_should_process_shock()) {
+                int coll_num = body->get_collisions().size();
+                if (coll_num == 0 || !body->is_active()) {
+                    body->set_temp_immovable();
+                }
+                else {
+                    bool set_immovable = false;
+                    for (List<RID>::Element *c = body->get_collisions().front(); c; c = c->next()) {
+                        CollisionResult* result = collision_result_owner.get(c->get());
+                        LIPhysicsBody* body0 = body_owner.get(result->body0);
+                        LIPhysicsBody* body1 = body_owner.get(result->body1);
+                        if (!body0->has_finite_mass() || !body1->has_finite_mass()) {
+                            preprocess_collision(p_step, result); // Recalc denominator.
+                            process_shock_step(result, p_step);
+                            set_immovable = true;
+                        }
+                    }
+                    if (set_immovable) {
+                        body->set_temp_immovable();
+                        got_one = true;
+                    }
+                }
+            }
+        }
+    }
+    for (List<RID>::Element *e = bodies.front(); e; e = e->next()) {
+        body_owner.get(e->get())->restore_temp_immovable();
+    }
+}

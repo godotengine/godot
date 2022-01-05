@@ -21,13 +21,12 @@ public:
         Transform transform;
     };
 
-private:
+protected:
     RID self;
     Type type;
     Map<size_t, ShapeData> shapes;
     size_t last_idx = 0;
 
-protected:
     Transform transform;
 
 public:
