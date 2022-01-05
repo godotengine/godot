@@ -2316,10 +2316,12 @@ void VisualScriptEmitSignal::_validate_property(PropertyInfo &property) const {
 		property.hint = PROPERTY_HINT_ENUM;
 
 		List<StringName> sigs;
+		List<MethodInfo> base_sigs;
 
 		Ref<VisualScript> vs = get_visual_script();
 		if (vs.is_valid()) {
 			vs->get_custom_signal_list(&sigs);
+			ClassDB::get_signal_list(vs->get_instance_base_type(), &base_sigs);
 		}
 
 		String ml;
@@ -2328,6 +2330,12 @@ void VisualScriptEmitSignal::_validate_property(PropertyInfo &property) const {
 				ml += ",";
 			}
 			ml += E;
+		}
+		for (const MethodInfo &E : base_sigs) {
+			if (!ml.is_empty()) {
+				ml += ",";
+			}
+			ml += E.name;
 		}
 
 		property.hint_string = ml;
