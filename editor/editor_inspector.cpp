@@ -2433,7 +2433,7 @@ void EditorInspector::update_tree() {
 
 	Node *node = Object::cast_to<Node>(object);
 	if (node) {
-		is_instance_node = node->get_scene_file_path() != "" && node->get_owner() != nullptr;
+		is_instance_node = !node->get_scene_file_path().is_empty() && node->get_owner() != nullptr;
 	}
 
 	// Get the lists of editors for properties.
