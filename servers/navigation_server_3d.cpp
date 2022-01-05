@@ -84,7 +84,7 @@ void NavigationServer3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
 }
 
-NavigationServer3D *NavigationServer3D::get_singleton() {
+const NavigationServer3D *NavigationServer3D::get_singleton() {
 	return singleton;
 }
 
