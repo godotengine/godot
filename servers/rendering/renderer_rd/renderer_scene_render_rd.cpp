@@ -490,34 +490,67 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	RendererSceneEnvironmentRD *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, Ref<Image>());
 
-	if (env->background == RS::ENV_BG_CAMERA_FEED || env->background == RS::ENV_BG_CANVAS || env->background == RS::ENV_BG_KEEP) {
+	RS::EnvironmentBG environment_background = env->background;
+
+	if (environment_background == RS::ENV_BG_CAMERA_FEED || environment_background == RS::ENV_BG_CANVAS || environment_background == RS::ENV_BG_KEEP) {
 		return Ref<Image>(); //nothing to bake
 	}
 
-	if (env->background == RS::ENV_BG_CLEAR_COLOR || env->background == RS::ENV_BG_COLOR) {
-		Color color;
-		if (env->background == RS::ENV_BG_CLEAR_COLOR) {
-			color = storage->get_default_clear_color();
-		} else {
-			color = env->bg_color;
-		}
-		color.r *= env->bg_energy;
-		color.g *= env->bg_energy;
-		color.b *= env->bg_energy;
+	RS::EnvironmentAmbientSource ambient_source = env->ambient_source;
 
-		Ref<Image> ret;
-		ret.instantiate();
-		ret->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
-		for (int i = 0; i < p_size.width; i++) {
-			for (int j = 0; j < p_size.height; j++) {
-				ret->set_pixel(i, j, color);
-			}
-		}
-		return ret;
+	bool use_ambient_light = false;
+	bool use_cube_map = false;
+	if (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && (environment_background == RS::ENV_BG_CLEAR_COLOR || environment_background == RS::ENV_BG_COLOR)) {
+		use_ambient_light = true;
+	} else {
+		use_cube_map = (ambient_source == RS::ENV_AMBIENT_SOURCE_BG && environment_background == RS::ENV_BG_SKY) || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
+		use_ambient_light = use_cube_map || ambient_source == RS::ENV_AMBIENT_SOURCE_COLOR;
+	}
+	use_cube_map = use_cube_map || (environment_background == RS::ENV_BG_SKY && env->sky.is_valid());
+
+	Color ambient_color;
+	float ambient_color_sky_mix;
+	if (use_ambient_light) {
+		ambient_color_sky_mix = env->ambient_sky_contribution;
+		const float ambient_energy = env->ambient_light_energy;
+		ambient_color = env->ambient_light;
+		ambient_color.to_linear();
+		ambient_color.r *= ambient_energy;
+		ambient_color.g *= ambient_energy;
+		ambient_color.b *= ambient_energy;
 	}
 
-	if (env->background == RS::ENV_BG_SKY && env->sky.is_valid()) {
-		return sky_bake_panorama(env->sky, env->bg_energy, p_bake_irradiance, p_size);
+	if (use_cube_map) {
+		Ref<Image> panorama = sky_bake_panorama(env->sky, env->bg_energy, p_bake_irradiance, p_size);
+		if (use_ambient_light) {
+			for (int x = 0; x < p_size.width; x++) {
+				for (int y = 0; y < p_size.height; y++) {
+					panorama->set_pixel(x, y, ambient_color.lerp(panorama->get_pixel(x, y), ambient_color_sky_mix));
+				}
+			}
+		}
+		return panorama;
+	} else {
+		const float bg_energy = env->bg_energy;
+		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? storage->get_default_clear_color() : env->bg_color);
+		panorama_color.to_linear();
+		panorama_color.r *= bg_energy;
+		panorama_color.g *= bg_energy;
+		panorama_color.b *= bg_energy;
+
+		if (use_ambient_light) {
+			panorama_color = ambient_color.lerp(panorama_color, ambient_color_sky_mix);
+		}
+
+		Ref<Image> panorama;
+		panorama.instantiate();
+		panorama->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
+		for (int x = 0; x < p_size.width; x++) {
+			for (int y = 0; y < p_size.height; y++) {
+				panorama->set_pixel(x, y, panorama_color);
+			}
+		}
+		return panorama;
 	}
 
 	return Ref<Image>();
