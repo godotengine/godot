@@ -48,8 +48,11 @@ public:
 	void set_portal_mode(CullInstance::PortalMode p_mode);
 	CullInstance::PortalMode get_portal_mode() const;
 
-	void set_include_in_bound(bool p_enable) { _include_in_bound = p_enable; }
+	void set_include_in_bound(bool p_enabled) { _include_in_bound = p_enabled; }
 	bool get_include_in_bound() const { return _include_in_bound; }
+
+	void set_allow_merging(bool p_enabled) { _allow_merging = p_enabled; }
+	bool get_allow_merging() const { return _allow_merging; }
 
 	void set_portal_autoplace_priority(int p_priority) { _portal_autoplace_priority = p_priority; }
 	int get_portal_autoplace_priority() const { return _portal_autoplace_priority; }
@@ -63,7 +66,8 @@ protected:
 
 private:
 	PortalMode _portal_mode;
-	bool _include_in_bound;
+	bool _include_in_bound : 1;
+	bool _allow_merging : 1;
 
 	// Allows instances to prefer to be autoplaced
 	// in specific RoomGroups. This allows building exteriors

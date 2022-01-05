@@ -96,11 +96,12 @@ protected:
 
 private:
 	// merging
-	void _merge_into_mesh_data(const MeshInstance &p_mi, int p_surface_id, PoolVector<Vector3> &r_verts, PoolVector<Vector3> &r_norms, PoolVector<real_t> &r_tangents, PoolVector<Color> &r_colors, PoolVector<Vector2> &r_uvs, PoolVector<Vector2> &r_uv2s, PoolVector<int> &r_inds);
-	bool _ensure_indices_valid(PoolVector<int> &r_indices, const PoolVector<Vector3> &p_verts);
-	bool _check_for_valid_indices(const PoolVector<int> &p_inds, const PoolVector<Vector3> &p_verts, LocalVector<int, int32_t> *r_inds);
-	bool _triangle_is_degenerate(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, real_t p_epsilon);
-	void _merge_log(String p_string);
+	bool _is_mergeable_with(const MeshInstance &p_other) const;
+	void _merge_into_mesh_data(const MeshInstance &p_mi, const Transform &p_dest_tr_inv, int p_surface_id, PoolVector<Vector3> &r_verts, PoolVector<Vector3> &r_norms, PoolVector<real_t> &r_tangents, PoolVector<Color> &r_colors, PoolVector<Vector2> &r_uvs, PoolVector<Vector2> &r_uv2s, PoolVector<int> &r_inds);
+	bool _ensure_indices_valid(PoolVector<int> &r_indices, const PoolVector<Vector3> &p_verts) const;
+	bool _check_for_valid_indices(const PoolVector<int> &p_inds, const PoolVector<Vector3> &p_verts, LocalVector<int, int32_t> *r_inds) const;
+	bool _triangle_is_degenerate(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, real_t p_epsilon) const;
+	void _merge_log(String p_string) const;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -144,8 +145,8 @@ public:
 	void create_debug_tangents();
 
 	// merging
-	bool is_mergeable_with(const MeshInstance &p_other);
-	bool create_by_merging(Vector<MeshInstance *> p_list);
+	bool is_mergeable_with(Node *p_other) const;
+	bool merge_meshes(Vector<MeshInstance *> p_list, bool p_use_global_space, bool p_check_compatibility);
 
 	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;

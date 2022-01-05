@@ -15,6 +15,10 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="allow_merging" type="bool" setter="set_allow_merging" getter="get_allow_merging" default="true">
+			This allows fine control over the mesh merging feature in the [RoomManager].
+			Setting this option to [code]false[/code] can be used to prevent an instance being merged.
+		</member>
 		<member name="autoplace_priority" type="int" setter="set_portal_autoplace_priority" getter="get_portal_autoplace_priority" default="0">
 			When set to [code]0[/code], [CullInstance]s will be autoplaced in the [Room] with the highest priority.
 			When set to a value other than [code]0[/code], the system will attempt to autoplace in a [Room] with the [code]autoplace_priority[/code], if it is present.
