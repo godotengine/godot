@@ -586,6 +586,7 @@ protected:
 			RID skeleton;
 			Vector<RID> surface_materials;
 			RID material_override;
+			RID material_overlay;
 			AABB aabb;
 
 			bool use_baked_light = false;
@@ -620,6 +621,7 @@ public:
 	PagedAllocator<GeometryInstanceLightmapSH> geometry_instance_lightmap_sh;
 
 	void _geometry_instance_add_surface_with_material(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
+	void _geometry_instance_add_surface_with_material_chain(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, RID p_mat_src, RID p_mesh);
 	void _geometry_instance_add_surface(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, RID p_material, RID p_mesh);
 	void _geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance);
 	void _geometry_instance_update(GeometryInstance *p_geometry_instance);
@@ -628,6 +630,7 @@ public:
 	virtual GeometryInstance *geometry_instance_create(RID p_base) override;
 	virtual void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) override;
 	virtual void geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) override;
+	virtual void geometry_instance_set_material_overlay(GeometryInstance *p_geometry_instance, RID p_overlay) override;
 	virtual void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_materials) override;
 	virtual void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) override;
 	virtual void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override;

@@ -52,6 +52,7 @@ public:
 	GeometryInstance *geometry_instance_create(RID p_base) override;
 	void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) override;
 	void geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) override;
+	void geometry_instance_set_material_overlay(GeometryInstance *p_geometry_instance, RID p_overlay) override;
 	void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_material) override;
 	void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) override;
 	void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabbb) override;

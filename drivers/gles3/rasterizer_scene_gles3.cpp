@@ -43,6 +43,9 @@ void RasterizerSceneGLES3::geometry_instance_set_skeleton(GeometryInstance *p_ge
 void RasterizerSceneGLES3::geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) {
 }
 
+void RasterizerSceneGLES3::geometry_instance_set_material_overlay(GeometryInstance *p_geometry_instance, RID p_overlay) {
+}
+
 void RasterizerSceneGLES3::geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_material) {
 }
 
