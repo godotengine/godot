@@ -589,6 +589,7 @@ void Control::_notification(int p_notification) {
 			_size_changed();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			release_focus();
 			get_viewport()->_gui_remove_control(this);
 		} break;
 		case NOTIFICATION_READY: {
