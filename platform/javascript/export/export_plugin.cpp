@@ -52,7 +52,7 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String file = fname;
+		String file = String::utf8(fname);
 
 		// Skip service worker and offline page if not exporting pwa.
 		if (!pwa && (file == "godot.service.worker.js" || file == "godot.offline.html")) {

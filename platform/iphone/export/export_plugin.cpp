@@ -1484,7 +1484,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String file = fname;
+		String file = String::utf8(fname);
 
 		print_line("READ: " + file);
 		Vector<uint8_t> data;

@@ -124,7 +124,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String name = fname;
+		String name = String::utf8(fname);
 		files_sorted.insert(name);
 
 		ret = unzGoToNextFile(pkg);
@@ -303,7 +303,7 @@ void EditorAssetInstaller::ok_pressed() {
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String name = fname;
+		String name = String::utf8(fname);
 
 		if (status_map.has(name) && status_map[name]->is_checked(0)) {
 			String path = status_map[name]->get_metadata(0);
