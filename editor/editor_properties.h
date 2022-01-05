@@ -522,6 +522,10 @@ class EditorPropertyNodePath : public EditorProperty {
 	void _node_assign();
 	void _node_clear();
 
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool is_drop_valid(const Dictionary &p_drag_data) const;
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);

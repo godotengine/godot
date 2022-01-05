@@ -3382,30 +3382,33 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			tex.instance();
 			{
 				Ref<Texture> normal_texture = material->get_texture(SpatialMaterial::TEXTURE_NORMAL);
-				// Code for uncompressing RG normal maps
-				Ref<Image> img = normal_texture->get_data();
-				Ref<ImageTexture> img_tex = img;
-				if (img_tex.is_valid()) {
-					img = img_tex->get_data();
-				}
-				img->decompress();
-				img->convert(Image::FORMAT_RGBA8);
-				img->lock();
-				for (int32_t y = 0; y < img->get_height(); y++) {
-					for (int32_t x = 0; x < img->get_width(); x++) {
-						Color c = img->get_pixel(x, y);
-						Vector2 red_green = Vector2(c.r, c.g);
-						red_green = red_green * Vector2(2.0f, 2.0f) - Vector2(1.0f, 1.0f);
-						float blue = 1.0f - red_green.dot(red_green);
-						blue = MAX(0.0f, blue);
-						c.b = Math::sqrt(blue);
-						img->set_pixel(x, y, c);
+				if (normal_texture.is_valid()) {
+					// Code for uncompressing RG normal maps
+					Ref<Image> img = normal_texture->get_data();
+					if (img.is_valid()) {
+						Ref<ImageTexture> img_tex = img;
+						if (img_tex.is_valid()) {
+							img = img_tex->get_data();
+						}
+						img->decompress();
+						img->convert(Image::FORMAT_RGBA8);
+						img->lock();
+						for (int32_t y = 0; y < img->get_height(); y++) {
+							for (int32_t x = 0; x < img->get_width(); x++) {
+								Color c = img->get_pixel(x, y);
+								Vector2 red_green = Vector2(c.r, c.g);
+								red_green = red_green * Vector2(2.0f, 2.0f) - Vector2(1.0f, 1.0f);
+								float blue = 1.0f - red_green.dot(red_green);
+								blue = MAX(0.0f, blue);
+								c.b = Math::sqrt(blue);
+								img->set_pixel(x, y, c);
+							}
+						}
+						img->unlock();
+						tex->create_from_image(img);
 					}
 				}
-				img->unlock();
-				tex->create_from_image(img);
 			}
-			Ref<Texture> normal_texture = material->get_texture(SpatialMaterial::TEXTURE_NORMAL);
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (tex.is_valid() && tex->get_data().is_valid()) {
 				tex->set_name(material->get_name() + "_normal");

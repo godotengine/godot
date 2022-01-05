@@ -472,7 +472,7 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_FAIL_COND(!get_viewport());
-
+			release_focus();
 			get_viewport()->_gui_remove_control(this);
 
 		} break;
