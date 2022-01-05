@@ -3878,7 +3878,7 @@ void RendererStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surf
 				} break;
 				case RS::ARRAY_WEIGHTS: {
 					//assumed weights too
-					vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
+					vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 				} break;
 			}
 		} else {
