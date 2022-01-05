@@ -107,6 +107,12 @@ public:
 		}
 	}
 
+	void fill(const T &p_val) {
+		for (U i = 0; i < count; i++) {
+			data[i] = p_val;
+		}
+	}
+
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ void reset() {
 		clear();
