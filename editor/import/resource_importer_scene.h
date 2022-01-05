@@ -31,7 +31,9 @@
 #ifndef RESOURCEIMPORTERSCENE_H
 #define RESOURCEIMPORTERSCENE_H
 
+#include "core/error/error_macros.h"
 #include "core/io/resource_importer.h"
+#include "core/variant/dictionary.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
@@ -48,13 +50,13 @@ class EditorSceneFormatImporter : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	Node *import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps);
-	Ref<Animation> import_animation_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps);
+	Node *import_scene_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options, int p_bake_fps);
+	Ref<Animation> import_animation_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options, int p_bake_fps);
 
 	GDVIRTUAL0RC(int, _get_import_flags)
 	GDVIRTUAL0RC(Vector<String>, _get_extensions)
-	GDVIRTUAL3R(Object *, _import_scene, String, uint32_t, uint32_t)
-	GDVIRTUAL3R(Ref<Animation>, _import_animation, String, uint32_t, uint32_t)
+	GDVIRTUAL4R(Object *, _import_scene, String, uint32_t, Dictionary, uint32_t)
+	GDVIRTUAL4R(Ref<Animation>, _import_animation, String, uint32_t, Dictionary, uint32_t)
 	GDVIRTUAL1(_get_import_options, String)
 	GDVIRTUAL2RC(Variant, _get_option_visibility, String, String)
 
@@ -69,8 +71,8 @@ public:
 
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps);
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options);
 
@@ -270,9 +272,6 @@ public:
 	Node *pre_import(const String &p_source_file);
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-	Node *import_scene_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
-	Ref<Animation> import_animation_from_other_importer(EditorSceneFormatImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
-
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;
 
@@ -293,8 +292,8 @@ class EditorSceneFormatImporterESCN : public EditorSceneFormatImporter {
 public:
 	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, const Map<StringName, Variant> &p_options, int p_bake_fps) override;
 };
 
 #include "scene/resources/box_shape_3d.h"
