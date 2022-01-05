@@ -2318,12 +2318,9 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			return -1;
 		}
 
-		if (!p_item->disable_folding && !hide_folding && (p_pos.x >= x_ofs && p_pos.x < (x_ofs + cache.item_margin))) {
-			if (p_item->first_child) {
-				p_item->set_collapsed(!p_item->is_collapsed());
-			}
-
-			return -1; //handled!
+		if (!p_item->disable_folding && !hide_folding && p_item->first_child && (p_pos.x >= x_ofs && p_pos.x < (x_ofs + cache.item_margin))) {
+			p_item->set_collapsed(!p_item->is_collapsed());
+			return -1;
 		}
 
 		int x = p_pos.x;
