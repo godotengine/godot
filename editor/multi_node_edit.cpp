@@ -152,7 +152,8 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		for (const PropertyInfo &F : plist) {
 			if (F.name == "script") {
-				continue; //added later manually, since this is intercepted before being set (check Variant Object::get() )
+				// Added later manually, since this is intercepted before being set (check Variant Object::get()).
+				continue;
 			}
 			if (!usage.has(F.name)) {
 				PLData pld;
@@ -162,7 +163,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				data_list.push_back(usage.getptr(F.name));
 			}
 
-			// Make sure only properties with the same exact PropertyInfo data will appear
+			// Make sure only properties with the same exact PropertyInfo data will appear.
 			if (usage[F.name].info == F) {
 				usage[F.name].uses++;
 			}
@@ -170,6 +171,9 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		nc++;
 	}
+
+	// Hide script property in favor of the scripts property.
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_NONE));
 
 	for (const PLData *E : data_list) {
 		if (nc == E->uses) {

@@ -55,13 +55,8 @@ bool EditorDebuggerRemoteObject::_get(const StringName &p_name, Variant &r_ret) 
 }
 
 void EditorDebuggerRemoteObject::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->clear(); // Sorry, no want category.
+	p_list->clear(); // Clear list to get rid of categories.
 	for (const PropertyInfo &prop : prop_list) {
-		if (prop.name == "script") {
-			// Skip the script property, it's always added by the non-virtual method.
-			continue;
-		}
-
 		p_list->push_back(prop);
 	}
 }

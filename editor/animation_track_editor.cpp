@@ -48,10 +48,6 @@ class AnimationTrackKeyEdit : public Object {
 public:
 	bool setting = false;
 
-	bool _hide_script_from_inspector() {
-		return true;
-	}
-
 	bool _dont_undo_redo() {
 		return true;
 	}
@@ -59,7 +55,6 @@ public:
 	static void _bind_methods() {
 		ClassDB::bind_method("_update_obj", &AnimationTrackKeyEdit::_update_obj);
 		ClassDB::bind_method("_key_ofs_changed", &AnimationTrackKeyEdit::_key_ofs_changed);
-		ClassDB::bind_method("_hide_script_from_inspector", &AnimationTrackKeyEdit::_hide_script_from_inspector);
 		ClassDB::bind_method("get_root_path", &AnimationTrackKeyEdit::get_root_path);
 		ClassDB::bind_method("_dont_undo_redo", &AnimationTrackKeyEdit::_dont_undo_redo);
 	}
@@ -554,6 +549,9 @@ public:
 			return;
 		}
 
+		// Hide script property.
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_NONE));
+
 		ERR_FAIL_INDEX(track, animation->get_track_count());
 		int key = animation->track_find_key(track, key_ofs, true);
 		ERR_FAIL_COND(key == -1);
@@ -704,10 +702,6 @@ class AnimationMultiTrackKeyEdit : public Object {
 public:
 	bool setting = false;
 
-	bool _hide_script_from_inspector() {
-		return true;
-	}
-
 	bool _dont_undo_redo() {
 		return true;
 	}
@@ -715,7 +709,6 @@ public:
 	static void _bind_methods() {
 		ClassDB::bind_method("_update_obj", &AnimationMultiTrackKeyEdit::_update_obj);
 		ClassDB::bind_method("_key_ofs_changed", &AnimationMultiTrackKeyEdit::_key_ofs_changed);
-		ClassDB::bind_method("_hide_script_from_inspector", &AnimationMultiTrackKeyEdit::_hide_script_from_inspector);
 		ClassDB::bind_method("get_root_path", &AnimationMultiTrackKeyEdit::get_root_path);
 		ClassDB::bind_method("_dont_undo_redo", &AnimationMultiTrackKeyEdit::_dont_undo_redo);
 	}
@@ -1194,6 +1187,9 @@ public:
 		if (animation.is_null()) {
 			return;
 		}
+
+		// Hide script property.
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_NONE));
 
 		int first_track = -1;
 		float first_key = -1.0;
