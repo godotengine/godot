@@ -172,6 +172,7 @@ void Node3D::_notification(int p_what) {
 			if (get_script_instance()) {
 				get_script_instance()->call(SceneStringNames::get_singleton()->_enter_world);
 			}
+
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
 				get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
@@ -186,7 +187,6 @@ void Node3D::_notification(int p_what) {
 				}
 			}
 #endif
-
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 #ifdef TOOLS_ENABLED
@@ -456,7 +456,6 @@ void Node3D::clear_subgizmo_selection() {
 
 void Node3D::add_gizmo(Ref<Node3DGizmo> p_gizmo) {
 #ifdef TOOLS_ENABLED
-
 	if (data.gizmos_disabled || p_gizmo.is_null()) {
 		return;
 	}
@@ -474,7 +473,6 @@ void Node3D::add_gizmo(Ref<Node3DGizmo> p_gizmo) {
 
 void Node3D::remove_gizmo(Ref<Node3DGizmo> p_gizmo) {
 #ifdef TOOLS_ENABLED
-
 	int idx = data.gizmos.find(p_gizmo);
 	if (idx != -1) {
 		p_gizmo->free();
@@ -506,10 +504,8 @@ Array Node3D::get_gizmos_bind() const {
 
 Vector<Ref<Node3DGizmo>> Node3D::get_gizmos() const {
 #ifdef TOOLS_ENABLED
-
 	return data.gizmos;
 #else
-
 	return Vector<Ref<Node3DGizmo>>();
 #endif
 }
@@ -561,7 +557,6 @@ void Node3D::set_as_top_level(bool p_enabled) {
 
 		data.top_level = p_enabled;
 		data.top_level_active = p_enabled;
-
 	} else {
 		data.top_level = p_enabled;
 	}
@@ -581,6 +576,7 @@ Ref<World3D> Node3D::get_world_3d() const {
 void Node3D::_propagate_visibility_changed() {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+
 #ifdef TOOLS_ENABLED
 	if (!data.gizmos.is_empty()) {
 		data.gizmos_dirty = true;
@@ -597,31 +593,28 @@ void Node3D::_propagate_visibility_changed() {
 }
 
 void Node3D::show() {
-	if (data.visible) {
-		return;
-	}
-
-	data.visible = true;
-
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	_propagate_visibility_changed();
+	set_visible(true);
 }
 
 void Node3D::hide() {
-	if (!data.visible) {
+	set_visible(false);
+}
+
+void Node3D::set_visible(bool p_visible) {
+	if (data.visible == p_visible) {
 		return;
 	}
 
-	data.visible = false;
+	data.visible = p_visible;
 
 	if (!is_inside_tree()) {
 		return;
 	}
-
 	_propagate_visibility_changed();
+}
+
+bool Node3D::is_visible() const {
+	return data.visible;
 }
 
 bool Node3D::is_visible_in_tree() const {
@@ -635,18 +628,6 @@ bool Node3D::is_visible_in_tree() const {
 	}
 
 	return true;
-}
-
-void Node3D::set_visible(bool p_visible) {
-	if (p_visible) {
-		show();
-	} else {
-		hide();
-	}
-}
-
-bool Node3D::is_visible() const {
-	return data.visible;
 }
 
 void Node3D::rotate_object_local(const Vector3 &p_axis, real_t p_angle) {
@@ -757,16 +738,16 @@ Vector3 Node3D::to_global(Vector3 p_local) const {
 	return get_global_transform().xform(p_local);
 }
 
-void Node3D::set_notify_transform(bool p_enable) {
-	data.notify_transform = p_enable;
+void Node3D::set_notify_transform(bool p_enabled) {
+	data.notify_transform = p_enabled;
 }
 
 bool Node3D::is_transform_notification_enabled() const {
 	return data.notify_transform;
 }
 
-void Node3D::set_notify_local_transform(bool p_enable) {
-	data.notify_local_transform = p_enable;
+void Node3D::set_notify_local_transform(bool p_enabled) {
+	data.notify_local_transform = p_enabled;
 }
 
 bool Node3D::is_local_transform_notification_enabled() const {
