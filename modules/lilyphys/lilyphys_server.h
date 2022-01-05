@@ -64,7 +64,7 @@ public:
     void set_active(bool p_active) { active = p_active; }
     void step(float p_step);
     void free(RID p_rid);
-    RID create_physics_body();
+    RID create_physics_body(bool p_start_deactivated);
     void queue_free_rid(RID p_rid);
     void set_integration_callback(RID p_body, Object *p_receiver, const StringName& p_method, const Variant& p_user_data = Variant());
     void register_generator(RID p_body, RID p_generator);
@@ -90,6 +90,7 @@ public:
     void set_step_through(bool p_step_through) { step_through = p_step_through; }
     bool get_step_through() { return step_through; }
     void do_step_through() { do_step = true; }
+    void deactivate_body(RID p_rid);
 private:
     void free_queue();
     void find_all_active_bodies();

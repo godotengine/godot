@@ -8,7 +8,7 @@
 #include "../l_body_state.h"
 
 LPhysicsBody::LPhysicsBody() : LCollisionObject(Type::TYPE_BODY) {
-    rid = LilyphysServer::get_singleton()->create_physics_body();
+    rid = LilyphysServer::get_singleton()->create_physics_body(start_deactivated);
     LilyphysServer::get_singleton()->set_integration_callback(rid, this, "_state_changed");
 }
 
@@ -23,6 +23,7 @@ void LPhysicsBody::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_mass", "mass"), &LPhysicsBody::set_mass);
     ClassDB::bind_method(D_METHOD("set_linear_damping", "linear_damping"), &LPhysicsBody::set_linear_damping);
     ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &LPhysicsBody::set_velocity);
+    ClassDB::bind_method(D_METHOD("set_start_deactivated", "start_deactivated"), &LPhysicsBody::set_start_deactivated);
 
     ClassDB::bind_method(D_METHOD("get_acceleration"), &LPhysicsBody::get_acceleration);
     ClassDB::bind_method(D_METHOD("get_angular_damping"), &LPhysicsBody::get_angular_damping);
@@ -32,6 +33,7 @@ void LPhysicsBody::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_mass"), &LPhysicsBody::get_mass);
     ClassDB::bind_method(D_METHOD("get_linear_damping"), &LPhysicsBody::get_linear_damping);
     ClassDB::bind_method(D_METHOD("get_velocity"), &LPhysicsBody::get_velocity);
+    ClassDB::bind_method(D_METHOD("get_start_deactivated"), &LPhysicsBody::get_start_deactivated);
 
     ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "acceleration"), "set_acceleration", "get_acceleration");
     ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_damping"), "set_angular_damping", "get_angular_damping");
@@ -41,6 +43,7 @@ void LPhysicsBody::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(Variant::REAL, "mass"), "set_mass", "get_mass");
     ADD_PROPERTY(PropertyInfo(Variant::REAL, "linear_damping"), "set_linear_damping", "get_linear_damping");
     ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity"), "set_velocity", "get_velocity");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "start_deactivated"), "set_start_deactivated", "get_start_deactivated");
 }
 
 void LPhysicsBody::_state_changed(Object *p_state) {
@@ -54,6 +57,10 @@ void LPhysicsBody::_state_changed(Object *p_state) {
 
 void LPhysicsBody::_notification(int p_what) {
     switch (p_what) {
+        case NOTIFICATION_READY:
+            if (start_deactivated) {
+                LilyphysServer::get_singleton()->deactivate_body(get_rid());
+            }
         case NOTIFICATION_ENTER_TREE:
         case NOTIFICATION_TRANSFORM_CHANGED:
         LilyphysServer::get_singleton()->set_physics_body_parameter(rid, LPhysicsBodyPropertyType::TRANSFORM, get_global_transform());

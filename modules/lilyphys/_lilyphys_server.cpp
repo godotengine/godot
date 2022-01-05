@@ -33,7 +33,7 @@ String _LilyphysServer::get_pee_storage() {
 }
 
 RID _LilyphysServer::create_physics_body() {
-    return LilyphysServer::get_singleton()->create_physics_body();
+    return LilyphysServer::get_singleton()->create_physics_body(false);
 }
 
 Array _LilyphysServer::get_body_collisions(RID rid) {

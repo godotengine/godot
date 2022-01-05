@@ -18,6 +18,8 @@ void LCollision::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_body0"), &LCollision::get_body_0);
     ClassDB::bind_method(D_METHOD("get_body1"), &LCollision::get_body_1);
     ClassDB::bind_method(D_METHOD("get_shape_transform"), &LCollision::get_shape_transform);
+    ClassDB::bind_method(D_METHOD("get_body0_path"), &LCollision::get_body0_path);
+    ClassDB::bind_method(D_METHOD("get_body1_path"), &LCollision::get_body1_path);
 }
 
 struct CheckData {
@@ -68,7 +70,7 @@ List<RID> LCollisionSolver::check_collision(LICollisionObject *object1, LICollis
             GJKResult gjk_result;
             bool intersect = gjk_epa_calculate_penetration(E->get().shape, object1->get_transform() * E->get().transform, F->get().shape, object2->get_transform() * F->get().transform, gjk_result);
             if (intersect) {
-                CollisionResult* result = memnew(CollisionResult(object1->get_self(), object2->get_self(), E->get().transform, true, gjk_result.depth, gjk_result.normal, gjk_result.position));
+                CollisionResult* result = memnew(CollisionResult(object1->get_self(), object2->get_self(), E->get().transform, true, gjk_result.depth, gjk_result.normal, gjk_result.position, object1->get_node_path(), object2->get_node_path()));
                 RID id = p_owner.make_rid(result);
                 result->rid = id;
                 results.push_back(id);

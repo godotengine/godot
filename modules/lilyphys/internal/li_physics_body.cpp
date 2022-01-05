@@ -77,7 +77,7 @@ void LIPhysicsBody::perform_callback() {
 }
 
 bool LIPhysicsBody::has_finite_mass() const {
-    return !(Math::is_equal_approx(get_inverse_mass(), 0) || immovable);
+    return !(Math::is_equal_approx(get_inverse_mass(), 0) || immovable || trigger);
 }
 
 void LIPhysicsBody::add_force(const Vector3 &p_force) {
@@ -132,20 +132,34 @@ void LIPhysicsBody::set_property(const LPhysicsBodyPropertyType type, const Vari
     switch (type) {
         case LPhysicsBodyPropertyType::ACCELERATION:
             acceleration = value;
+            break;
         case LPhysicsBodyPropertyType::ANGULAR_DAMPING:
             angular_damping = value;
+            break;
         case LPhysicsBodyPropertyType::INVERSE_MASS:
             inverse_mass = value;
+            break;
         case LPhysicsBodyPropertyType::INV_INERTIA_TENSOR:
             inv_inertia_tensor = value;
+            break;
         case LPhysicsBodyPropertyType::LINEAR_DAMPING:
             linear_damping = value;
+            break;
         case LPhysicsBodyPropertyType::ANGULAR_VELOCITY:
             angular_velocity = value;
+            break;
         case LPhysicsBodyPropertyType::TRANSFORM:
             transform = value;
+            break;
         case LPhysicsBodyPropertyType::VELOCITY:
             velocity = value;
+            break;
+        case LPhysicsBodyPropertyType::TRIGGER:
+            trigger = value;
+            break;
+        case LPhysicsBodyPropertyType::NODE_PATH:
+            node_path = value;
+            break;
     }
 }
 
@@ -277,8 +291,9 @@ void LIPhysicsBody::restore_temp_immovable() {
 
 bool LIPhysicsBody::get_should_be_active() {
     return (
-            (velocity.length_squared() > sq_velocity_activity_threshold) ||
-            (angular_velocity.length_squared() > sq_angular_velocity_activity_threshold)
+            (((velocity.length_squared() > sq_velocity_activity_threshold) ||
+            (angular_velocity.length_squared() > sq_angular_velocity_activity_threshold))
+            && !trigger)
             );
 }
 

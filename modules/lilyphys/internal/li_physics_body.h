@@ -20,7 +20,9 @@ enum LPhysicsBodyPropertyType {
     VELOCITY,
     ACCELERATION,
     ANGULAR_VELOCITY,
-    INV_INERTIA_TENSOR
+    INV_INERTIA_TENSOR,
+    TRIGGER,
+    NODE_PATH
 };
 
 class LIPhysicsBody : public LICollisionObject {
@@ -63,6 +65,7 @@ private:
     bool orig_immovable = false;
     bool immovable = false;
     bool should_process_shock = true;
+    bool trigger = false;
     List<RID> collisions;
 public:
     LIPhysicsBody();
@@ -110,6 +113,7 @@ public:
     List<RID> get_collisions() const { return collisions; }
     bool get_should_process_shock() const { return should_process_shock; }
     bool get_should_be_active();
+    bool is_trigger() const { return trigger; }
 
     void clear_velocity_changed() { velocity_changed = false; }
     void set_active(bool p_active) { active = p_active; }
@@ -123,6 +127,7 @@ public:
     void set_angular_velocity(const Vector3& p_velocity);
     void set_aux_angular_velocity(const Vector3& p_velocity);
     void set_immovable(const bool& p_immovable);
+    void set_trigger(const bool& p_trigger) { trigger = p_trigger; }
 };
 
 

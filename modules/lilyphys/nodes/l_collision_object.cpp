@@ -73,3 +73,12 @@ void LCollisionObject::shape_owner_set_transform(size_t p_id, const Transform &p
 LCollisionObject::~LCollisionObject() {
     LilyphysServer::get_singleton()->queue_free_rid(rid);
 }
+
+void LCollisionObject::_notification(int p_what) {
+    switch (p_what) {
+        case NOTIFICATION_ENTER_TREE:
+        case NOTIFICATION_EXIT_TREE:
+            LilyphysServer::get_singleton()->set_physics_body_parameter(get_rid(), NODE_PATH, get_path());
+            break;
+    }
+}

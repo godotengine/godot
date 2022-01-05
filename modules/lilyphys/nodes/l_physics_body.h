@@ -18,6 +18,7 @@ private:
     Vector3 angular_velocity{};
     Basis inverse_inertia_tensor{};
     bool ignore_mass = false;
+    bool start_deactivated = false;
 protected:
     static void _bind_methods();
     void _notification(int p_what);
@@ -41,6 +42,8 @@ public:
     void set_inverse_inertia_tensor(const Basis &p_inverse_inertia_tensor);
     void set_mass(real_t p_mass);
     real_t get_mass() const;
+    void set_start_deactivated(const bool& p_start_deactivated) { start_deactivated = p_start_deactivated; }
+    bool get_start_deactivated() const { return start_deactivated; }
 };
 
 

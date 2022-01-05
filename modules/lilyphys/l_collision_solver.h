@@ -39,9 +39,11 @@ public:
     real_t static_friction = pow(0.5f, 2.0f);
     real_t dynamic_friction = pow(0.3f, 2.0f);
     real_t restitution = 0.09f;
+    NodePath body0_path;
+    NodePath body1_path;
     CollisionResult(RID p_body0, RID p_body1, Transform p_shape_transform, bool p_intersect, real_t p_depth,
-                    Vector3 p_dir, Vector3 p_pos) : body0(p_body0), body1(p_body1), shape_transform(p_shape_transform),
-                    intersect(p_intersect), depth(p_depth), dir(p_dir), pos(p_pos) {}
+                    Vector3 p_dir, Vector3 p_pos, const NodePath& p_body0_path, const NodePath& p_body1_path) : body0(p_body0), body1(p_body1), shape_transform(p_shape_transform),
+                    intersect(p_intersect), depth(p_depth), dir(p_dir), pos(p_pos), body0_path(p_body0_path), body1_path(p_body1_path) {}
 };
 
 class LCollision : public Object {
@@ -53,6 +55,8 @@ private:
     RID body0;
     RID body1;
     Transform shape_transform;
+    NodePath body0_path;
+    NodePath body1_path;
 protected:
     static void _bind_methods();
 public:
@@ -80,14 +84,24 @@ public:
         return shape_transform;
     }
 
+    const NodePath &get_body0_path() const {
+        return body0_path;
+    }
+
+    const NodePath &get_body1_path() const {
+        return body1_path;
+    }
+
     void init(const Vector3 &p_direction, const Vector3 &p_position, real_t p_depth, const RID &p_body_0,
-                           const RID &p_body_1, const Transform &p_shape_transform) {
+                           const RID &p_body_1, const Transform &p_shape_transform, const NodePath &p_body0_path, const NodePath &p_body1_path) {
         direction = p_direction;
         position = p_position;
         depth = p_depth;
         body0 = p_body_0;
         body1 = p_body_1;
         shape_transform = p_shape_transform;
+        body0_path = p_body0_path;
+        body1_path = p_body1_path;
     }
 };
 

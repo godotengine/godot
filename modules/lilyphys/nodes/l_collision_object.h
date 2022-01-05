@@ -14,7 +14,7 @@ class LCollisionObject : public Spatial {
 public:
     enum Type {
         TYPE_BODY,
-        TYPE_AREA // Not implemented yet.
+        TYPE_TRIGGER
     };
 private:
     struct ShapeData {
@@ -30,6 +30,7 @@ private:
 protected:
     RID rid;
     static void _bind_methods();
+    void _notification(int p_what);
 public:
     RID get_rid();
     size_t create_shape_owner(LCollisionShape* p_owner);

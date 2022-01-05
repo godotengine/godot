@@ -5,6 +5,7 @@
 #ifndef LILYPHYS_LI_COLLISION_OBJECT_H
 #define LILYPHYS_LI_COLLISION_OBJECT_H
 
+#include "core/node_path.h"
 #include "core/map.h"
 #include "core/rid.h"
 #include "core/math/transform.h"
@@ -26,6 +27,7 @@ protected:
     Type type;
     Map<size_t, ShapeData> shapes;
     size_t last_idx = 0;
+    NodePath node_path;
 
     Transform transform;
 
@@ -45,6 +47,8 @@ public:
     void set_shape_transform(size_t p_id, const Transform& p_transform);
     bool get_shape_exists(size_t p_id);
     const Map<size_t, ShapeData>& get_shapes() { return shapes; }
+    void set_node_path(const NodePath& p_path) { node_path = p_path; }
+    NodePath get_node_path() { return node_path; };
 };
 
 

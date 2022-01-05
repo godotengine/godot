@@ -41,8 +41,11 @@ void LilyphysServer::finish() {
     memdelete(LBodyState::singleton);
 }
 
-RID LilyphysServer::create_physics_body() {
+RID LilyphysServer::create_physics_body(bool p_start_deactivated = false) {
     LIPhysicsBody* object = memnew(LIPhysicsBody);
+    if (p_start_deactivated) {
+        object->set_active(false);
+    }
     RID rid = body_owner.make_rid(object);
     bodies.push_back(rid);
     object->set_self(rid);
@@ -296,8 +299,8 @@ void LilyphysServer::preprocess_collision(float p_step, CollisionResult* p_resul
     LIPhysicsBody* body0 = body_owner.get(p_result->body0);
     LIPhysicsBody* body1 = body_owner.get(p_result->body1);
 
-    // Only process collisions between two LIPhysicsBodies, NOT areas!
-    if (!body0 || !body1) {
+    // Only process collisions between two LIPhysicsBodies, NOT triggers!
+    if (!body0 || !body1 || (body0->is_trigger() && body1->is_trigger())) {
         return;
     }
 
@@ -348,6 +351,11 @@ bool LilyphysServer::process_collision(float p_step, CollisionResult* p_result, 
     // TODO: Pre-process all the stuff we need.
     LIPhysicsBody* body0 = body_owner.get(p_result->body0);
     LIPhysicsBody* body1 = body_owner.get(p_result->body1);
+
+    // Do not process collisions with triggers!!
+    if (body0->is_trigger() || body1->is_trigger()) {
+        return false;
+    }
 
     // Only process collisions between two LIPhysicsBodies, NOT areas! Also, no collisions with both immovable objects!
     if (!body0 || !body1 || (!body0->has_finite_mass() && !body1->has_finite_mass())) {
@@ -658,7 +666,7 @@ Array LilyphysServer::get_body_collisions(RID p_body) {
         ERR_FAIL_COND_V(!result, Array{});
         // Sooooo where does this get deleted?
         LCollision* collision = memnew(LCollision);
-        collision->init(result->dir, result->pos, result->depth, result->body0, result->body1, result->shape_transform);
+        collision->init(result->dir, result->pos, result->depth, result->body0, result->body1, result->shape_transform, result->body0_path, result->body1_path);
         array.push_back(collision);
     }
     return array;
@@ -797,4 +805,10 @@ void LilyphysServer::damp_all_for_deactivation() {
     for (List<RID>::Element *e = bodies.front(); e; e = e->next()) {
         body_owner.get(e->get())->damp_for_deactivation();
     }
+}
+
+void LilyphysServer::deactivate_body(RID p_rid) {
+    LIPhysicsBody* body = body_owner.get(p_rid);
+    ERR_FAIL_COND(!body)
+    body->set_active(false);
 }
