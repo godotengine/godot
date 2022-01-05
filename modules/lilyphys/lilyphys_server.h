@@ -99,8 +99,9 @@ private:
     void detect_all_collisions(float p_step);
     void handle_all_constraints(float p_step, int p_iterations, bool p_force_inelastic);
     void integrate_all_bodies(float p_step);
-    void try_freeze_all_bodies();
+    void try_freeze_all_bodies(real_t p_step);
     void try_activate_all_frozen_bodies();
+    void damp_all_for_deactivation();
     void activate_body(RID p_body);
     void update_all_positions(float p_step);
     void perform_all_callbacks();

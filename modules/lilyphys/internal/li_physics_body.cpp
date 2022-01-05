@@ -12,6 +12,8 @@
 
 LIPhysicsBody::LIPhysicsBody() : LICollisionObject(TYPE_BODY) {
     velocity_changed = true;
+    set_activity_threshold(0.1f, 5.0f);
+    set_deactivation_threshold(0.1f, 0.2f);
 }
 
 real_t LIPhysicsBody::get_inverse_mass() const {
@@ -271,4 +273,67 @@ void LIPhysicsBody::set_temp_immovable() {
 
 void LIPhysicsBody::restore_temp_immovable() {
     immovable = orig_immovable;
+}
+
+bool LIPhysicsBody::get_should_be_active() {
+    return (
+            (velocity.length_squared() > sq_velocity_activity_threshold) ||
+            (angular_velocity.length_squared() > sq_angular_velocity_activity_threshold)
+            );
+}
+
+void LIPhysicsBody::set_activity_threshold(real_t p_velocity, real_t p_angular_velocity) {
+    sq_velocity_activity_threshold = Math::pow(p_velocity, 2.0f);
+    sq_angular_velocity_activity_threshold = Math::pow(Math::deg2rad(p_angular_velocity), 2.0f);
+}
+
+void LIPhysicsBody::try_to_freeze(real_t p_step) {
+    if (!has_finite_mass() || !is_active()) {
+        return;
+    }
+
+    if ((transform.origin - last_position_for_deactivation).length_squared() > sq_delta_pos_threshold) {
+        last_position_for_deactivation = transform.origin;
+        inactive_time = 0.0f;
+        return;
+    }
+
+    Basis delta_mat = transform.basis - last_orientation_for_deactivation;
+    if ( (delta_mat.get_column(0).length_squared() > sq_delta_orient_threshold) ||
+         (delta_mat.get_column(1).length_squared() > sq_delta_orient_threshold) ||
+         (delta_mat.get_column(2).length_squared() > sq_delta_orient_threshold) ) {
+        last_orientation_for_deactivation = transform.basis;
+        inactive_time = 0.0f;
+        return;
+    }
+
+    if (get_should_be_active()) {
+        return;
+    }
+
+    inactive_time += p_step;
+
+    if (inactive_time > deactivation_time) {
+        last_orientation_for_deactivation = transform.basis;
+        last_position_for_deactivation = transform.origin;
+        set_active(false);
+    }
+}
+
+void LIPhysicsBody::set_deactivation_threshold(real_t p_pos_threshold, real_t p_orient_threshold) {
+    sq_delta_pos_threshold = Math::pow(p_pos_threshold, 2.0f);
+    sq_delta_orient_threshold = Math::pow(p_orient_threshold, 2.0f);
+}
+
+void LIPhysicsBody::damp_for_deactivation() {
+    real_t frac = inactive_time / deactivation_time;
+    const real_t r = 0.5;
+    if (frac < r) {
+        return;
+    }
+
+    real_t scale = 1.0f - ((frac - r) / 1.0f - r);
+    scale = CLAMP(scale, 0.0f, 1.0f);
+    velocity *= scale;
+    angular_velocity *= scale;
 }

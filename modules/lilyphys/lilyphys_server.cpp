@@ -61,7 +61,7 @@ RID LilyphysServer::create_physics_body() {
 void LilyphysServer::set_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method,
                                               const Variant &p_user_data) {
     LIPhysicsBody *body = body_owner.get(p_body);
-    ERR_FAIL_COND(!body);
+    ERR_FAIL_COND(!body)
     body->set_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(0), p_method, p_user_data);
 }
 
@@ -93,7 +93,7 @@ void LilyphysServer::clear_registry() {
 
 void LilyphysServer::set_physics_body_parameter(RID rid, LPhysicsBodyPropertyType type, const Variant& value) {
     LIPhysicsBody *body = body_owner.get(rid);
-    ERR_FAIL_COND(!body);
+    ERR_FAIL_COND(!body)
     body->set_property(type, value);
 }
 
@@ -113,7 +113,7 @@ RID LilyphysServer::create_shape(LShapeType p_type) {
             shape = memnew(LISphereShape);
             break;
     }
-    ERR_FAIL_COND_V(!shape, RID());
+    ERR_FAIL_COND_V(!shape, RID())
     RID id = shape_owner.make_rid(shape);
     shape->set_self(id);
 
@@ -122,50 +122,50 @@ RID LilyphysServer::create_shape(LShapeType p_type) {
 
 void LilyphysServer::shape_set_data(RID p_id, const Variant &p_data) {
     LIShape* shape = shape_owner.get(p_id);
-    ERR_FAIL_COND(!shape);
+    ERR_FAIL_COND(!shape)
     shape->set_data(p_data);
 }
 
 Variant LilyphysServer::shape_get_data(RID p_id) {
     LIShape* shape = shape_owner.get(p_id);
-    ERR_FAIL_COND_V_MSG(!shape, Variant(), "RID does not correspond with valid shape.");
+    ERR_FAIL_COND_V_MSG(!shape, Variant(), "RID does not correspond with valid shape.")
     return shape->get_data();
 }
 
 Basis LilyphysServer::shape_get_inertia_tensor(RID p_id, real_t p_mass) {
     LIShape* shape = shape_owner.get(p_id);
-    ERR_FAIL_COND_V_MSG(!shape, Variant(), "RID does not correspond with valid shape.");
+    ERR_FAIL_COND_V_MSG(!shape, Variant(), "RID does not correspond with valid shape.")
     return shape->get_inertia_tensor(p_mass);
 }
 
 size_t LilyphysServer::physics_body_add_shape(RID p_body, RID p_shape) {
     LIPhysicsBody* body = body_owner.get(p_body);
-    ERR_FAIL_COND_V(!shape_owner.owns(p_shape), 0);
-    ERR_FAIL_COND_V(!body, 0);
+    ERR_FAIL_COND_V(!shape_owner.owns(p_shape), 0)
+    ERR_FAIL_COND_V(!body, 0)
     return body->add_shape(p_shape);
 }
 
 void LilyphysServer::physics_body_remove_shape(RID p_body, size_t p_id) {
     LIPhysicsBody* body = body_owner.get(p_body);
-    ERR_FAIL_COND(!body);
+    ERR_FAIL_COND(!body)
     body->remove_shape(p_id);
 }
 
 void LilyphysServer::physics_body_shape_set_disabled(RID p_body, size_t p_id, bool p_disabled) {
     LIPhysicsBody* body = body_owner.get(p_body);
-    ERR_FAIL_COND(!body);
+    ERR_FAIL_COND(!body)
     body->set_shape_disabled(p_id, p_disabled);
 }
 
 void LilyphysServer::physics_body_shape_set_transform(RID p_body, size_t p_id, const Transform &p_transform) {
     LIPhysicsBody* body = body_owner.get(p_body);
-    ERR_FAIL_COND(!body);
+    ERR_FAIL_COND(!body)
     body->set_shape_transform(p_id, p_transform);
 }
 
 bool LilyphysServer::physics_body_get_shape_exists(RID p_body, size_t p_id) {
     LIPhysicsBody* body = body_owner.get(p_body);
-    ERR_FAIL_COND_V(!body, false);
+    ERR_FAIL_COND_V(!body, false)
     return body->get_shape_exists(p_id);
 }
 
@@ -189,25 +189,25 @@ void LilyphysServer::free(RID p_rid) {
         memdelete(body);
     }
     else {
-        ERR_FAIL_MSG("Invalid rid trying to be freed.");
+        ERR_FAIL_MSG("Invalid rid trying to be freed.")
     }
 }
 
 void LilyphysServer::shape_remove_owner(RID p_shape, LICollisionObject *owner) {
     LIShape* shape = shape_owner.get(p_shape);
-    ERR_FAIL_COND(!shape);
+    ERR_FAIL_COND(!shape)
     shape->remove_owner(owner);
 }
 
 void LilyphysServer::shape_add_owner(RID p_shape, LICollisionObject *owner) {
     LIShape* shape = shape_owner.get(p_shape);
-    ERR_FAIL_COND(!shape);
+    ERR_FAIL_COND(!shape)
     shape->add_owner(owner);
 }
 
 Vector3 LilyphysServer::shape_get_support(RID p_id, Vector3 p_direction) {
     LIShape* shape = shape_owner.get(p_id);
-    ERR_FAIL_COND_V(!shape, Vector3(0, 0, 0));
+    ERR_FAIL_COND_V(!shape, Vector3(0, 0, 0))
     return shape->get_support(p_direction);
 }
 
@@ -333,7 +333,7 @@ void LilyphysServer::preprocess_collision(float p_step, CollisionResult* p_resul
     }
     else {
         float approachScale = -0.1f * (p_result->depth - allowed_penetration) / (FLOAT_TINY + allowed_penetration);
-        CLAMP(approachScale, FLOAT_TINY, 1.0f);
+        approachScale = CLAMP(approachScale, FLOAT_TINY, 1.0f);
         p_result->min_separation_velocity = approachScale * (p_result->depth - allowed_penetration) / MAX(p_step, FLOAT_TINY);
     }
     if (p_result->min_separation_velocity > max_velocity_magnitude) {
@@ -518,12 +518,15 @@ void LilyphysServer::integrate_all_bodies(float p_step) {
     }
 }
 
-void LilyphysServer::try_freeze_all_bodies() {
-
+void LilyphysServer::try_freeze_all_bodies(real_t p_step) {
+    for (Set<RID>::Element* e = active_bodies.front(); e; e = e->next()) {
+        LIPhysicsBody* body = body_owner.get(e->get());
+        body->try_to_freeze(p_step);
+    }
 }
 
 void LilyphysServer::update_all_positions(float p_step) {
-    for (Set<RID>::Element *E = active_bodies.front(); E; E = E->next()) {
+    for (List<RID>::Element *E = bodies.front(); E; E = E->next()) {
         body_owner.get(E->get())->update_position(p_step);
     }
 }
@@ -568,6 +571,10 @@ void LilyphysServer::step(float p_step) {
 
     do_shock_step(p_step);
 
+    //damp_all_for_deactivation(); This creates worse results??
+
+    try_freeze_all_bodies(p_step);
+
     update_all_positions(p_step);
 
     perform_all_callbacks();
@@ -575,10 +582,20 @@ void LilyphysServer::step(float p_step) {
 
 void LilyphysServer::try_activate_all_frozen_bodies() {
     for (List<RID>::Element *E = bodies.front(); E; E = E->next()) {
-        // TODO: Set criteria for activating bodies.
         LIPhysicsBody* body = body_owner.get(E->get());
         if (!body->is_active()) {
-            activate_body(E->get());
+            if (body->get_should_be_active()) {
+                activate_body(E->get());
+            }
+            else {
+                if (body->get_velocity_changed()) {
+                    Vector3 zero;
+                    zero.zero();
+                    body->set_velocity(zero);
+                    body->set_angular_velocity(zero);
+                    body->clear_velocity_changed();
+                }
+            }
         }
     }
 }
@@ -593,7 +610,25 @@ void LilyphysServer::activate_body(RID p_body) {
     active_bodies.insert(p_body);
 
     detect_collisions_for_body(p_body);
-    // TODO: Check if we also shouldn't activate other objects. Doesn't matter now since everything is activated.
+    // Wake up any other body that we might end up effecting.
+    for (List<RID>::Element* e = body->get_collisions().front(); e; e = e->next()) {
+        CollisionResult* result = collision_result_owner.get(e->get());
+        Vector3 normal = result->dir;
+        LIPhysicsBody* body0 = body_owner.get(result->body0);
+        LIPhysicsBody* body1 = body_owner.get(result->body1);
+        // Make sure the body we're waking becomes body0.
+        if (p_body != result->body0) {
+            LIPhysicsBody* other = body0;
+            body0 = body1;
+            body1 = other;
+            normal = -normal;
+        }
+        if (body1 && !body1->is_active()) {
+            if (body0->get_force_accum().dot(normal) < -FLOAT_TINY) {
+                activate_body(body1->get_self());
+            }
+        }
+    }
 }
 
 void LilyphysServer::queue_free_rid(RID p_rid) {
@@ -633,7 +668,8 @@ void LilyphysServer::process_shock_step(CollisionResult *p_result, real_t p_step
     LIPhysicsBody* body0 = body_owner.get(p_result->body0);
     LIPhysicsBody* body1 = body_owner.get(p_result->body1);
 
-    Vector3 N = body1->get_transform().origin.direction_to(body0->get_transform().origin);
+    //Vector3 N = body1->get_transform().origin.direction_to(body0->get_transform().origin);
+    Vector3 N = -p_result->dir;
     N.x = N.z = 0.0f;
     N.normalize();
 
@@ -662,10 +698,10 @@ void LilyphysServer::process_shock_step(CollisionResult *p_result, real_t p_step
             Vector3 rel_aux_velocity = body1->get_aux_velocity() + body1->get_aux_angular_velocity().cross(p_result->R1);
             normal_vel -= rel_velocity.dot(N) + rel_aux_velocity.dot(N);
         }
-        real_t final_normal_vel = (p_result->depth) / timescale;
+        real_t final_normal_vel = (p_result->depth - allowed_penetration) / timescale;
 
         if (final_normal_vel < 0.0f) {
-            return;
+            continue;
         }
 
         real_t impulse = (final_normal_vel - normal_vel) / p_result->denominator;
@@ -675,9 +711,11 @@ void LilyphysServer::process_shock_step(CollisionResult *p_result, real_t p_step
 
         if (body0) {
             body0->apply_global_impulse(actual_impulse, p_result->R0);
+            print_line("Applying shock impulse!!");
         }
         if (body1) {
             body1->apply_negative_global_impulse(actual_impulse, p_result->R1);
+            print_line("Applying negative shock impulse!!");
         }
     }
 }
@@ -752,5 +790,11 @@ void LilyphysServer::do_shock_step(real_t p_step) {
     }
     for (List<RID>::Element *e = bodies.front(); e; e = e->next()) {
         body_owner.get(e->get())->restore_temp_immovable();
+    }
+}
+
+void LilyphysServer::damp_all_for_deactivation() {
+    for (List<RID>::Element *e = bodies.front(); e; e = e->next()) {
+        body_owner.get(e->get())->damp_for_deactivation();
     }
 }

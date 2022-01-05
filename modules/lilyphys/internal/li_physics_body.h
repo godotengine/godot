@@ -40,6 +40,16 @@ private:
     Vector3 last_acceleration;
     Vector3 force_accum;
     Vector3 torque_accum;
+    // Deactivation stuff.
+    real_t sq_velocity_activity_threshold;
+    real_t sq_angular_velocity_activity_threshold;
+    Vector3 last_position_for_deactivation;
+    Basis last_orientation_for_deactivation;
+    real_t sq_delta_pos_threshold;
+    real_t sq_delta_orient_threshold;
+    real_t inactive_time = 0.0f;
+    real_t deactivation_time = 1.0f;
+
     Basis inv_inertia_tensor;
     Basis global_inverse_inertia_tensor;
     struct IntegrationCallback {
@@ -48,7 +58,7 @@ private:
         Variant user_data;
     };
     IntegrationCallback callback;
-    bool active = false;
+    bool active = true;
     bool velocity_changed;
     bool orig_immovable = false;
     bool immovable = false;
@@ -75,6 +85,10 @@ public:
     void set_shape_transform(size_t p_id, const Transform &p_transform);
     void set_temp_immovable();
     void restore_temp_immovable();
+    void set_activity_threshold(real_t p_velocity, real_t p_angular_velocity);
+    void set_deactivation_threshold(real_t p_pos_threshold, real_t p_orient_threshold);
+    void try_to_freeze(real_t p_step);
+    void damp_for_deactivation();
 
     real_t get_inverse_mass() const;
     real_t get_mass() const;
@@ -95,6 +109,7 @@ public:
     bool get_immovable() const { return immovable; }
     List<RID> get_collisions() const { return collisions; }
     bool get_should_process_shock() const { return should_process_shock; }
+    bool get_should_be_active();
 
     void clear_velocity_changed() { velocity_changed = false; }
     void set_active(bool p_active) { active = p_active; }
