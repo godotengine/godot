@@ -2794,7 +2794,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		bool skip = false;
 
-		String file = fname;
+		String file = String::utf8(fname);
 
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
@@ -2976,7 +2976,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		char extra[16384];
 		ret = unzGetCurrentFileInfo(tmp_unaligned, &info, fname, 16384, extra, 16384 - ZIP_ALIGNMENT, nullptr, 0);
 
-		String file = fname;
+		String file = String::utf8(fname);
 
 		Vector<uint8_t> data;
 		data.resize(info.compressed_size);
