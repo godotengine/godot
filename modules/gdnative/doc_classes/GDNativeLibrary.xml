@@ -7,8 +7,8 @@
 		A GDNative library can implement [NativeScript]s, global functions to call with the [GDNative] class, or low-level engine extensions through interfaces such as [ARVRInterfaceGDNative]. The library must be compiled for each platform and architecture that the project will run on.
 	</description>
 	<tutorials>
-		<link>$DOCS_URL/tutorials/plugins/gdnative/gdnative-c-example.html</link>
-		<link>$DOCS_URL/tutorials/plugins/gdnative/gdnative-cpp-example.html</link>
+		<link>$DOCS_URL/tutorials/scripting/gdnative/gdnative-c-example.html</link>
+		<link>$DOCS_URL/tutorials/scripting/gdnative/gdnative-cpp-example.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_current_dependencies" qualifiers="const">

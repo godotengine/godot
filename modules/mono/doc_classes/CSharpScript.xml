@@ -8,7 +8,7 @@
 		See also [GodotSharp].
 	</description>
 	<tutorials>
-		<link>$DOCS_URL/getting_started/scripting/c_sharp/index.html</link>
+		<link>$DOCS_URL/tutorials/scripting/c_sharp/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="new" qualifiers="vararg">
