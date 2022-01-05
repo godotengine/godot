@@ -2490,7 +2490,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			/* process selection */
 
 			if (p_double_click && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it's confusing for check
-
+				// Emits the "item_activated" signal.
 				propagate_mouse_activated = true;
 
 				incr_search.clear();
