@@ -270,7 +270,9 @@ void main() {
 
 	const float PI = 3.14159265359;
 	vec2 uv = vec2(pos) / vec2(params.section.zw);
-	uv.y = 1.0 - uv.y;
+	if (bool(params.flags & FLAG_FLIP_Y)) {
+		uv.y = 1.0 - uv.y;
+	}
 	float phi = uv.x * 2.0 * PI;
 	float theta = uv.y * PI;
 
