@@ -8,7 +8,7 @@
 		[method new] creates a new instance of the script. [method Object.set_script] extends an existing object, if that object's class matches one of the script's base classes.
 	</description>
 	<tutorials>
-		<link>$DOCS_URL/getting_started/scripting/gdscript/index.html</link>
+		<link>$DOCS_URL/tutorials/scripting/gdscript/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_as_byte_code" qualifiers="const">
