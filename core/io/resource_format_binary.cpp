@@ -683,6 +683,7 @@ Error ResourceLoaderBinary::load() {
 					//already loaded, don't do anything
 					stage++;
 					error = OK;
+					internal_index_cache[path] = Ref<Resource>(ResourceCache::get(path));
 					continue;
 				}
 			}
