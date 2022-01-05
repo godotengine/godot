@@ -109,7 +109,7 @@ private:
 	StringName signal;
 	LineEdit *dst_method;
 	ConnectDialogBinds *cdbinds;
-	bool bEditMode;
+	bool edit_mode;
 	NodePath dst_path;
 	VBoxContainer *vbc_right;
 
@@ -128,7 +128,7 @@ private:
 	void ok_pressed() override;
 	void _cancel_pressed();
 	void _item_activated();
-	void _text_submitted(const String &_text);
+	void _text_submitted(const String &p_text);
 	void _tree_node_selected();
 	void _unbind_count_changed(double p_count);
 	void _add_bind();
@@ -154,7 +154,7 @@ public:
 	bool get_oneshot() const;
 	bool is_editing() const;
 
-	void init(ConnectionData c, bool bEdit = false);
+	void init(ConnectionData p_cd, bool p_edit = false);
 
 	void popup_dialog(const String &p_for_signal);
 	ConnectDialog();
@@ -184,7 +184,7 @@ class ConnectionsDock : public VBoxContainer {
 		DISCONNECT
 	};
 
-	Node *selectedNode;
+	Node *selected_node;
 	ConnectionsDockTree *tree;
 	EditorNode *editor;
 
@@ -201,21 +201,21 @@ class ConnectionsDock : public VBoxContainer {
 	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
-	void _connect(ConnectDialog::ConnectionData p_connection);
-	void _disconnect(TreeItem &item);
+	void _connect(ConnectDialog::ConnectionData p_cd);
+	void _disconnect(TreeItem &p_item);
 	void _disconnect_all();
 
 	void _tree_item_selected();
 	void _tree_item_activated();
-	bool _is_item_signal(TreeItem &item);
+	bool _is_item_signal(TreeItem &p_item);
 
-	void _open_connection_dialog(TreeItem &item);
-	void _open_connection_dialog(ConnectDialog::ConnectionData cToEdit);
-	void _go_to_script(TreeItem &item);
+	void _open_connection_dialog(TreeItem &p_item);
+	void _open_connection_dialog(ConnectDialog::ConnectionData p_cd);
+	void _go_to_script(TreeItem &p_item);
 
-	void _handle_signal_menu_option(int option);
-	void _handle_slot_menu_option(int option);
-	void _rmb_pressed(Vector2 position);
+	void _handle_signal_menu_option(int p_option);
+	void _handle_slot_menu_option(int p_option);
+	void _rmb_pressed(Vector2 p_position);
 	void _close();
 
 protected:
