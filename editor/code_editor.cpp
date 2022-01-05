@@ -1548,7 +1548,9 @@ void CodeTextEditor::set_error_pos(int p_line, int p_column) {
 
 void CodeTextEditor::goto_error() {
 	if (!error->get_text().is_empty()) {
-		text_editor->unfold_line(error_line);
+		if (text_editor->get_line_count() != error_line) {
+			text_editor->unfold_line(error_line);
+		}
 		text_editor->set_caret_line(error_line);
 		text_editor->set_caret_column(error_column);
 		text_editor->center_viewport_to_caret();
