@@ -17,44 +17,34 @@ def can_build():
         return False
 
     # Check the minimal dependencies
-    x11_error = os.system("pkg-config --version > /dev/null")
-    if x11_error:
+    error = os.system("pkg-config --version > /dev/null")
+    if error:
         print("Error: pkg-config not found. Aborting.")
         return False
 
-    x11_error = os.system("pkg-config x11 --modversion > /dev/null")
+    x11_error = os.system("pkg-config x11 --exists")
     if x11_error:
-        print("Error: X11 libraries not found. Aborting.")
-        return False
+        print("Error: libx11-dev library not found. Aborting.")
+    xcursor_error = os.system("pkg-config xcursor --exists")
+    if xcursor_error:
+        print("Error: libxcursor-dev library not found. Aborting.")
+    xinerama_error = os.system("pkg-config xinerama --exists")
+    if xinerama_error:
+        print("Error: libxinerama-dev library not found. Aborting.")
+    xext_error = os.system("pkg-config xext --exists")
+    if xext_error:
+        print("Error: libxext-dev library not found. Aborting.")
+    xrandr_error = os.system("pkg-config xrandr --exists")
+    if xrandr_error:
+        print("Error: libxrandr-dev library not found. Aborting.")
+    xrender_error = os.system("pkg-config xrender --exists")
+    if xrender_error:
+        print("Error: libxrender-dev library not found. Aborting.")
+    xi_error = os.system("pkg-config xi --exists")
+    if xi_error:
+        print("Error: libxi-dev library not found. Aborting.")
 
-    x11_error = os.system("pkg-config xcursor --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xcursor library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xinerama --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xinerama library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xext --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xext library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xrandr --modversion > /dev/null")
-    if x11_error:
-        print("Error: XrandR library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xrender --modversion > /dev/null")
-    if x11_error:
-        print("Error: XRender library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xi --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xi library not found. Aborting.")
+    if x11_error or xcursor_error or xinerama_error or xext_error or xrandr_error or xrender_error or xi_error:
         return False
 
     return True
@@ -235,86 +225,150 @@ def configure(env):
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
 
-    # FIXME: Check for existence of the libs before parsing their flags with pkg-config
+    # freetype depends on libpng, which depends on zlib.
+    # Bundling one of them while keeping others as shared libraries leads to library mismatch issues.
+    if not env["builtin_freetype"] and not env["builtin_libpng"] and not env["builtin_zlib"]:
+        freetype_error = os.system("pkg-config freetype2 --exists")
+        if freetype_error:
+            print("Error: libfreetype-dev library not found.")
+        libpng_error = os.system("pkg-config libpng16 --exists")
+        if libpng_error:
+            print("Error: libpng-dev library not found.")
+        zlib_error = os.system("pkg-config zlib --exists")
+        if zlib_error:
+            print("Error: libz-dev library not found.")
 
-    # freetype depends on libpng and zlib, so bundling one of them while keeping others
-    # as shared libraries leads to weird issues
-    if env["builtin_freetype"] or env["builtin_libpng"] or env["builtin_zlib"]:
+        if freetype_error or libpng_error or zlib_error:
+            print("Using builtin freetype, libpng and zlib.")
+            env["builtin_freetype"] = True
+            env["builtin_libpng"] = True
+            env["builtin_zlib"] = True
+        else:
+            env.ParseConfig("pkg-config freetype2 libpng16 zlib --cflags --libs")
+
+    elif not env["builtin_freetype"] or not env["builtin_libpng"] or not env["builtin_zlib"]:
+        print("freetype depends on libpng which depends on zlib.")
+        print("Bundling one of them while keeping others as shared libraries leads to library")
+        print("mismatch issues.")
+        print("Using builtin freetype, libpng and zlib.")
         env["builtin_freetype"] = True
         env["builtin_libpng"] = True
         env["builtin_zlib"] = True
 
-    if not env["builtin_freetype"]:
-        env.ParseConfig("pkg-config freetype2 --cflags --libs")
-
-    if not env["builtin_libpng"]:
-        env.ParseConfig("pkg-config libpng16 --cflags --libs")
-
     if not env["builtin_bullet"]:
         # We need at least version 2.90
-        min_bullet_version = "2.90"
-
-        import subprocess
-
-        bullet_version = subprocess.check_output(["pkg-config", "bullet", "--modversion"]).strip()
-        if str(bullet_version) < min_bullet_version:
-            # Abort as system bullet was requested but too old
-            print(
-                "Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(
-                    bullet_version, min_bullet_version
-                )
-            )
-            sys.exit(255)
-        env.ParseConfig("pkg-config bullet --cflags --libs")
-
-    if False:  # not env['builtin_assimp']:
-        # FIXME: Add min version check
-        env.ParseConfig("pkg-config assimp --cflags --libs")
+        error = os.system("pkg-config bullet --atleast-version='2.90'")
+        if error:
+            print("Error: libbullet-dev version 2.90 or higher not found. Using builtin bullet")
+            env["builtin_bullet"] = True
+        else:
+            env.ParseConfig("pkg-config bullet --cflags --libs")
 
     if not env["builtin_enet"]:
-        env.ParseConfig("pkg-config libenet --cflags --libs")
+        error = os.system("pkg-config libenet --exists")
+        if error:
+            print("Error: libenet-dev library not found. Using builtin enet.")
+            env["builtin_enet"] = True
+        else:
+            env.ParseConfig("pkg-config libenet --cflags --libs")
 
     if not env["builtin_squish"]:
-        env.ParseConfig("pkg-config libsquish --cflags --libs")
+        error = os.system("pkg-config libsquish --exists")
+        if error:
+            print("Error: libsquish-dev library not found. Using builtin squish.")
+            env["builtin_squish"] = True
+        else:
+            env.ParseConfig("pkg-config libsquish --cflags --libs")
 
     if not env["builtin_zstd"]:
-        env.ParseConfig("pkg-config libzstd --cflags --libs")
+        error = os.system("pkg-config libzstd --exists")
+        if error:
+            print("Error: libzstd-dev library not found. Using builtin zstd.")
+            env["builtin_zstd"] = True
+        else:
+            env.ParseConfig("pkg-config libzstd --cflags --libs")
 
     # Sound and video libraries
-    # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
+    # opus, libtheora and libvorbis depend on libogg.
+    # Bundling one of them while keeping others as shared libraries leads to library mismatch issues.
+    if (
+        not env["builtin_libogg"]
+        and not env["builtin_opus"]
+        and not env["builtin_libtheora"]
+        and not env["builtin_libvorbis"]
+    ):
+        libogg_error = os.system("pkg-config ogg --exists")
+        if libogg_error:
+            print("Error: libogg-dev library not found.")
+        libopus_error = os.system("pkg-config opus --exists")
+        if libopus_error:
+            print("Error: libopus-dev library not found.")
+        libopusfile_error = os.system("pkg-config opusfile --exists")
+        if libopusfile_error:
+            print("Error: libopusfile-dev library not found.")
+        libtheora_error = os.system("pkg-config theora theoradec --exists")
+        if libtheora_error:
+            print("Error: libtheora-dev library not found.")
+        libvorbis_error = os.system("pkg-config vorbis vorbisfile --exists")
+        if libvorbis_error:
+            print("Error: libvorbis-dev library not found.")
 
-    if not env["builtin_libtheora"]:
-        env["builtin_libogg"] = False  # Needed to link against system libtheora
-        env["builtin_libvorbis"] = False  # Needed to link against system libtheora
-        env.ParseConfig("pkg-config theora theoradec --cflags --libs")
-    else:
+        if libogg_error or libopus_error or libopusfile_error or libtheora_error or libvorbis_error:
+            print("Using builtin libogg, opus, libtheora and libvorbis.")
+            env["builtin_libogg"] = True
+            env["builtin_opus"] = True
+            env["builtin_libtheora"] = True
+            env["builtin_libvorbis"] = True
+        else:
+            env.ParseConfig("pkg-config ogg opus opusfile theora theoradec vorbis vorbisfile --cflags --libs")
+
+    elif (
+        not env["builtin_libogg"]
+        or not env["builtin_opus"]
+        or not env["builtin_libtheora"]
+        or not env["builtin_libvorbis"]
+    ):
+        print("opus, libtheora and libvorbis depend on libogg.")
+        print("Bundling one of them while keeping others as shared libraries leads to library")
+        print("mismatch issues.")
+        print("Using builtin libogg, opus, libtheora and libvorbis.")
+        env["builtin_libogg"] = True
+        env["builtin_opus"] = True
+        env["builtin_libtheora"] = True
+        env["builtin_libvorbis"] = True
+
+    if env["builtin_libtheora"]:
         list_of_x86 = ["x86_64", "x86", "i386", "i586"]
         if any(platform.machine() in s for s in list_of_x86):
             env["x86_libtheora_opt_gcc"] = True
 
     if not env["builtin_libvpx"]:
-        env.ParseConfig("pkg-config vpx --cflags --libs")
-
-    if not env["builtin_libvorbis"]:
-        env["builtin_libogg"] = False  # Needed to link against system libvorbis
-        env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
-
-    if not env["builtin_opus"]:
-        env["builtin_libogg"] = False  # Needed to link against system opus
-        env.ParseConfig("pkg-config opus opusfile --cflags --libs")
-
-    if not env["builtin_libogg"]:
-        env.ParseConfig("pkg-config ogg --cflags --libs")
+        error = os.system("pkg-config vpx --exists")
+        if error:
+            print("Error: libvpx-dev library not found. Using builtin libvpx.")
+            env["builtin_libvpx"] = True
+        else:
+            env.ParseConfig("pkg-config vpx --cflags --libs")
 
     if not env["builtin_libwebp"]:
-        env.ParseConfig("pkg-config libwebp --cflags --libs")
+        error = os.system("pkg-config libwebp --exists")
+        if error:
+            print("Error: libwebp-dev library not found. Using builtin libwebp.")
+            env["builtin_libwebp"] = True
+        else:
+            env.ParseConfig("pkg-config libwebp --cflags --libs")
 
     if not env["builtin_mbedtls"]:
         # mbedTLS does not provide a pkgconfig config yet. See https://github.com/ARMmbed/mbedtls/issues/228
         env.Append(LIBS=["mbedtls", "mbedcrypto", "mbedx509"])
 
     if not env["builtin_wslay"]:
-        env.ParseConfig("pkg-config libwslay --cflags --libs")
+        error = os.system("pkg-config libwslay --exists")
+        if error:
+            print("Error: libwslay-dev library not found. Using builtin wslay.")
+            env["builtin_wslay"] = True
+        else:
+            env.ParseConfig("pkg-config libwslay --cflags --libs")
 
     if not env["builtin_miniupnpc"]:
         # No pkgconfig file so far, hardcode default paths.
@@ -324,7 +378,12 @@ def configure(env):
     # On Linux wchar_t should be 32-bits
     # 16-bit library shouldn't be required due to compiler optimisations
     if not env["builtin_pcre2"]:
-        env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
+        error = os.system("pkg-config libpcre2-32 --exists")
+        if error:
+            print("Error: libpcre2-dev library not found. Using builtin pcre2.")
+            env["builtin_pcre2"] = True
+        else:
+            env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
 
     # Embree is only used in tools build on x86_64 and aarch64.
     if env["tools"] and not env["builtin_embree"] and is64:
@@ -333,32 +392,31 @@ def configure(env):
 
     ## Flags
 
-    if os.system("pkg-config --exists alsa") == 0:  # 0 means found
+    error = os.system("pkg-config alsa --exists")
+    if error:
+        print("Warning: ALSA libraries not found. Disabling the ALSA audio driver.")
+    else:
         env["alsa"] = True
         env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
-    else:
-        print("Warning: ALSA libraries not found. Disabling the ALSA audio driver.")
 
     if env["pulseaudio"]:
-        if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
-            env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
-            env.ParseConfig("pkg-config --cflags libpulse")
+        error = os.system("pkg-config libpulse --exists")
+        if error:
+            print("Warning: libpulse-dev library not found. Disabling the PulseAudio audio driver.")
         else:
-            print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
+            env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
+            env.ParseConfig("pkg-config libpulse --cflags")
 
     if platform.system() == "Linux":
         env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
-            if os.system("pkg-config --exists libudev") == 0:  # 0 means found
-                env.Append(CPPDEFINES=["UDEV_ENABLED"])
+            error = os.system("pkg-config libudev --exists")
+            if error:
+                print("Warning: libudev-dev library not found. Disabling controller hotplugging support.")
             else:
-                print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
+                env.Append(CPPDEFINES=["UDEV_ENABLED"])
     else:
         env["udev"] = False  # Linux specific
-
-    # Linkflags below this line should typically stay the last ones
-    if not env["builtin_zlib"]:
-        env.ParseConfig("pkg-config zlib --cflags --libs")
 
     env.Prepend(CPPPATH=["#platform/x11"])
     env.Append(CPPDEFINES=["X11_ENABLED", "UNIX_ENABLED", "OPENGL_ENABLED", "GLES_ENABLED", ("_FILE_OFFSET_BITS", 64)])
