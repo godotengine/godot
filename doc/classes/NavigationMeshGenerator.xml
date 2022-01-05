@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorNavigationMeshGenerator" inherits="Object" version="3.5">
+<class name="NavigationMeshGenerator" inherits="Object" version="3.5">
 	<brief_description>
+		This class is responsible for creating and clearing navigation meshes.
 	</brief_description>
 	<description>
+		This class is responsible for creating and clearing navigation meshes.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,12 +14,14 @@
 			<argument index="0" name="nav_mesh" type="NavigationMesh" />
 			<argument index="1" name="root_node" type="Node" />
 			<description>
+				Bakes the navigation mesh. This will allow you to use pathfinding with the navigation system.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void" />
 			<argument index="0" name="nav_mesh" type="NavigationMesh" />
 			<description>
+				Clears the navigation mesh.
 			</description>
 		</method>
 	</methods>

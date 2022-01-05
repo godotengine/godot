@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Navigation2DServer" inherits="Object" version="3.5">
+	<brief_description>
+		Server interface for low-level 2D navigation access.
+	</brief_description>
+	<description>
+		Navigation2DServer is the server responsible for all 2D navigation. It handles several objects, namely maps, regions and agents.
+		Maps are made up of regions, which are made of navigation polygons. Together, they define the navigable areas in the 2D world. For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [member Navigation.edge_connection_margin] to the respective other edge's vertex.
+		To use the collision avoidance system, you may use agents. You can set an agent's target velocity, then the servers will emit a callback with a modified velocity.
+		[b]Note:[/b] The collision avoidance system ignores regions. Using the modified velocity as-is might lead to pushing and agent outside of a navigable area. This is a limitation of the collision avoidance system, any more complex situation may require the use of the physics engine.
+		This server keeps tracks of any call and executes them during the sync phase. This means that you can request any change to the map, using any thread, without worrying.
+	</description>
+	<tutorials>
+		<link title="2D Navigation Demo">https://godotengine.org/asset-library/asset/117</link>
+	</tutorials>
+	<methods>
+		<method name="agent_create" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Creates the agent.
+			</description>
+		</method>
+		<method name="agent_is_map_changed" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="agent" type="RID" />
+			<description>
+				Returns [code]true[/code] if the map got changed the previous frame.
+			</description>
+		</method>
+		<method name="agent_set_callback" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="agent" type="RID" />
+			<argument index="1" name="receiver" type="Object" />
+			<argument index="2" name="method" type="String" />
+			<argument index="3" name="userdata" type="Variant" default="null" />
+			<description>
+				Callback called at the end of the RVO process.
+			</description>
+		</method>
+		<method name="agent_set_map" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="agent" type="RID" />
+			<argument index="1" name="map" type="RID" />
+			<description>
+				Puts the agent in the map.
+			</description>
+		</method>
+		<method name="agent_set_max_neighbors" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="agent" type="RID" />
+			<argument index="1" name="count" type="int" />
+			<description>
+				Sets the maximum number of other agents the agent takes into account in the navigation. The larger this number, the longer the running time of the simulation. If the number is too low, the simulation will not be safe.
+			</description>
+		</method>
+		<method name="agent_set_max_speed" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="agent" type="RID" />
+			<argument index="1" name="max_speed" type="float" />
+			<description>
+				Sets the maximum speed of the agent. Must be positive.
+			</description>
+		</method>
+		<method name="agent_set_neighbor_dist" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="agent" type="RID" />
+			<argument index="1" name="dist" type="float" />
+			<description>
+				Sets the maximum distance to other agents this agent takes into account in the navigation. The larger this number, the longer the running time of the simulation. If the number is too low, the simulation will not be safe.
+			</description>
+		</method>
+		<method name="agent_set_position" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="agent" type="RID" />
+			<argument index="1" name="position" type="Vector2" />
+			<description>
+				Sets the position of the agent in world space.
+			</description>
+		</method>
+		<method name="agent_set_radius" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="agent" type="RID" />
+			<argument index="1" name="radius" type="float" />
+			<description>
+				Sets the radius of the agent.
+			</description>
+		</method>
+		<method name="agent_set_target_velocity" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="agent" type="RID" />
+			<argument index="1" name="target_velocity" type="Vector2" />
+			<description>
+				Sets the new target velocity.
+			</description>
+		</method>
+		<method name="agent_set_time_horizon" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="agent" type="RID" />
+			<argument index="1" name="time" type="float" />
+			<description>
+				The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to other agents. The larger this number, the sooner this agent will respond to the presence of other agents, but the less freedom this agent has in choosing its velocities. Must be positive.
+			</description>
+		</method>
+		<method name="agent_set_velocity" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="agent" type="RID" />
+			<argument index="1" name="velocity" type="Vector2" />
+			<description>
+				Sets the current velocity of the agent.
+			</description>
+		</method>
+		<method name="free" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="object" type="RID" />
+			<description>
+				Destroys the given RID.
+			</description>
+		</method>
+		<method name="map_create" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Create a new map.
+			</description>
+		</method>
+		<method name="map_get_cell_size" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="map" type="RID" />
+			<description>
+				Returns the map cell size.
+			</description>
+		</method>
+		<method name="map_get_closest_point" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="map" type="RID" />
+			<argument index="1" name="to_point" type="Vector2" />
+			<description>
+				Returns the point closest to the provided [code]to_point[/code] on the navigation mesh surface.
+			</description>
+		</method>
+		<method name="map_get_closest_point_owner" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="map" type="RID" />
+			<argument index="1" name="to_point" type="Vector2" />
+			<description>
+				Returns the owner region RID for the point returned by [method map_get_closest_point].
+			</description>
+		</method>
+		<method name="map_get_edge_connection_margin" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="map" type="RID" />
+			<description>
+				Returns the edge connection margin of the map. The edge connection margin is a distance used to connect two regions.
+			</description>
+		</method>
+		<method name="map_get_path" qualifiers="const">
+			<return type="PoolVector2Array" />
+			<argument index="0" name="map" type="RID" />
+			<argument index="1" name="origin" type="Vector2" />
+			<argument index="2" name="destination" type="Vector2" />
+			<argument index="3" name="optimize" type="bool" />
+			<description>
+				Returns the navigation path to reach the destination from the origin.
+			</description>
+		</method>
+		<method name="map_is_active" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="nap" type="RID" />
+			<description>
+				Returns [code]true[/code] if the map is active.
+			</description>
+		</method>
+		<method name="map_set_active" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="map" type="RID" />
+			<argument index="1" name="active" type="bool" />
+			<description>
+				Sets the map active.
+			</description>
+		</method>
+		<method name="map_set_cell_size" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="map" type="RID" />
+			<argument index="1" name="cell_size" type="float" />
+			<description>
+				Set the map cell size used to weld the navigation mesh polygons.
+			</description>
+		</method>
+		<method name="map_set_edge_connection_margin" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="map" type="RID" />
+			<argument index="1" name="margin" type="float" />
+			<description>
+				Set the map edge connection margin used to weld the compatible region edges.
+			</description>
+		</method>
+		<method name="region_create" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Creates a new region.
+			</description>
+		</method>
+		<method name="region_set_map" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="region" type="RID" />
+			<argument index="1" name="map" type="RID" />
+			<description>
+				Sets the map for the region.
+			</description>
+		</method>
+		<method name="region_set_navpoly" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="region" type="RID" />
+			<argument index="1" name="nav_poly" type="NavigationPolygon" />
+			<description>
+				Sets the navigation mesh for the region.
+			</description>
+		</method>
+		<method name="region_set_transform" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="region" type="RID" />
+			<argument index="1" name="transform" type="Transform2D" />
+			<description>
+				Sets the global transformation for the region.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationObstacle" inherits="Node" version="3.5">
+	<brief_description>
+		3D obstacle used in navigation for collision avoidance.
+	</brief_description>
+	<description>
+		3D obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. This can be done by having the obstacle as a child of a [Navigation] node, or using [method set_navigation]. [NavigationObstacle] is physics safe.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_navigation" qualifiers="const">
+			<return type="Node" />
+			<description>
+				Returns the [Navigation] node that the obstacle is using for its navigation system.
+			</description>
+		</method>
+		<method name="set_navigation">
+			<return type="void" />
+			<argument index="0" name="navigation" type="Node" />
+			<description>
+				Sets the [Navigation] node used by the obstacle. Useful when you don't want to make the obstacle a child of a [Navigation] node.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="estimate_radius" type="bool" setter="set_estimate_radius" getter="is_radius_estimated" default="true">
+			Enables radius estimation algorithm which uses parent's collision shapes to determine the obstacle radius.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+			The radius of the agent. Used only if [member estimate_radius] is set to [code]false[/code].
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

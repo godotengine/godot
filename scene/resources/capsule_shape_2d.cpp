@@ -98,6 +98,10 @@ Rect2 CapsuleShape2D::get_rect() const {
 	return rect;
 }
 
+real_t CapsuleShape2D::get_enclosing_radius() const {
+	return radius + height * 0.5;
+}
+
 void CapsuleShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CapsuleShape2D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CapsuleShape2D::get_radius);

@@ -51,6 +51,8 @@
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/navigation_2d.h"
+#include "scene/2d/navigation_agent_2d.h"
+#include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/particles_2d.h"
@@ -66,6 +68,8 @@
 #include "scene/2d/touch_screen_button.h"
 #include "scene/2d/visibility_notifier_2d.h"
 #include "scene/2d/y_sort.h"
+#include "scene/3d/spatial.h"
+#include "scene/3d/world_environment.h"
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
@@ -147,6 +151,7 @@
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/mesh_data_tool.h"
+#include "scene/resources/navigation_mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particles_material.h"
 #include "scene/resources/physics_material.h"
@@ -170,9 +175,6 @@
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
 
-#include "scene/3d/spatial.h"
-#include "scene/3d/world_environment.h"
-
 #ifndef _3D_DISABLED
 #include "scene/3d/area.h"
 #include "scene/3d/arvr_nodes.h"
@@ -191,7 +193,9 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
-#include "scene/3d/navigation_mesh.h"
+#include "scene/3d/navigation_agent.h"
+#include "scene/3d/navigation_mesh_instance.h"
+#include "scene/3d/navigation_obstacle.h"
 #include "scene/3d/occluder.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/path.h"
@@ -489,9 +493,15 @@ void register_scene_types() {
 	ClassDB::register_class<ConeTwistJoint>();
 	ClassDB::register_class<Generic6DOFJoint>();
 
+	ClassDB::register_class<Navigation>();
+	ClassDB::register_class<NavigationMeshInstance>();
+	ClassDB::register_class<NavigationAgent>();
+	ClassDB::register_class<NavigationObstacle>();
+
 	OS::get_singleton()->yield(); //may take time to init
 
 #endif
+	ClassDB::register_class<NavigationMesh>();
 
 	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF_NOVAL("gui/common/swap_ok_cancel", bool(OS::get_singleton()->get_swap_ok_cancel())));
 
@@ -740,6 +750,8 @@ void register_scene_types() {
 	ClassDB::register_class<Navigation2D>();
 	ClassDB::register_class<NavigationPolygon>();
 	ClassDB::register_class<NavigationPolygonInstance>();
+	ClassDB::register_class<NavigationAgent2D>();
+	ClassDB::register_class<NavigationObstacle2D>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

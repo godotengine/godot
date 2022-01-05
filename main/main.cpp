@@ -66,6 +66,8 @@
 #include "servers/arvr_server.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
+#include "servers/navigation_2d_server.h"
+#include "servers/navigation_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "servers/register_server_types.h"
@@ -110,6 +112,8 @@ static ARVRServer *arvr_server = nullptr;
 static PhysicsServer *physics_server = nullptr;
 static Physics2DServer *physics_2d_server = nullptr;
 static VisualServerCallbacks *visual_server_callbacks = nullptr;
+static NavigationServer *navigation_server = nullptr;
+static Navigation2DServer *navigation_2d_server = nullptr;
 
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
@@ -212,6 +216,19 @@ void finalize_physics() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
+}
+
+void initialize_navigation_server() {
+	ERR_FAIL_COND(navigation_server != nullptr);
+	navigation_server = NavigationServerManager::new_default_server();
+	navigation_2d_server = memnew(Navigation2DServer);
+}
+
+void finalize_navigation_server() {
+	memdelete(navigation_server);
+	navigation_server = nullptr;
+	memdelete(navigation_2d_server);
+	navigation_2d_server = nullptr;
 }
 
 //#define DEBUG_INIT
@@ -1523,6 +1540,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	camera_server = CameraServer::create();
 
 	initialize_physics();
+	initialize_navigation_server();
 	register_server_singletons();
 
 	register_driver_types();
@@ -2230,6 +2248,7 @@ bool Main::iteration() {
 			break;
 		}
 
+		NavigationServer::get_singleton_mut()->process(frame_slice * time_scale);
 		message_queue->flush();
 
 		PhysicsServer::get_singleton()->step(frame_slice * time_scale);
@@ -2429,6 +2448,7 @@ void Main::cleanup(bool p_force) {
 
 	OS::get_singleton()->finalize();
 	finalize_physics();
+	finalize_navigation_server();
 
 	if (packed_data) {
 		memdelete(packed_data);
