@@ -330,6 +330,10 @@ _modules_tests_gen = custom_target(
 )
 SOURCES += [_modules_tests_gen]
 
+# Needed to work around backwards dependency
+# editor <-> modules/gdscript
+template_builders_bin = find_program('editor/template_builders.py')
+
 # then thirdparty
 subdir('thirdparty')
 
