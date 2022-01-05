@@ -954,7 +954,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		real_t col_d = 1e20;
 
 		for (int i = 0; i < 3; i++) {
-			const Vector3 grabber_pos = gt.origin + gt.basis.get_axis(i) * gizmo_scale * (GIZMO_ARROW_OFFSET + (GIZMO_ARROW_SIZE * 0.5));
+			const Vector3 grabber_pos = gt.origin + gt.basis.get_axis(i).normalized() * gizmo_scale * (GIZMO_ARROW_OFFSET + (GIZMO_ARROW_SIZE * 0.5));
 			const real_t grabber_radius = gizmo_scale * GIZMO_ARROW_SIZE;
 
 			Vector3 r;
@@ -1058,7 +1058,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		float col_d = 1e20;
 
 		for (int i = 0; i < 3; i++) {
-			const Vector3 grabber_pos = gt.origin + gt.basis.get_axis(i) * gizmo_scale * GIZMO_SCALE_OFFSET;
+			const Vector3 grabber_pos = gt.origin + gt.basis.get_axis(i).normalized() * gizmo_scale * GIZMO_SCALE_OFFSET;
 			const real_t grabber_radius = gizmo_scale * GIZMO_ARROW_SIZE;
 
 			Vector3 r;
@@ -1138,68 +1138,62 @@ void Node3DEditorViewport::_transform_gizmo_apply(Node3D *p_node, const Transfor
 	}
 }
 
-Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local) {
+Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal) {
 	switch (p_mode) {
 		case TRANSFORM_SCALE: {
-			if (p_local) {
-				Basis g = p_original.basis.orthonormalized();
-				Vector3 local_motion = g.inverse().xform(p_motion);
-
-				if (_edit.snap || spatial_editor->is_snap_enabled()) {
-					local_motion.snap(Vector3(p_extra, p_extra, p_extra));
-				}
-
-				Transform3D local_t;
-				local_t.basis = p_original_local.basis.scaled_local(local_motion + Vector3(1, 1, 1));
-				local_t.origin = p_original_local.origin;
-				return local_t;
-			} else {
-				Transform3D base = Transform3D(Basis(), _edit.center);
-				if (_edit.snap || spatial_editor->is_snap_enabled()) {
-					p_motion.snap(Vector3(p_extra, p_extra, p_extra));
-				}
-
-				Transform3D global_t;
-				global_t.basis.scale(p_motion + Vector3(1, 1, 1));
-				return base * (global_t * (base.inverse() * p_original));
+			if (_edit.snap || spatial_editor->is_snap_enabled()) {
+				p_motion.snap(Vector3(p_extra, p_extra, p_extra));
 			}
+			Transform3D s;
+			if (p_local) {
+				s.basis = p_original_local.basis.scaled_local(p_motion + Vector3(1, 1, 1));
+				s.origin = p_original_local.origin;
+			} else {
+				s.basis.scale(p_motion + Vector3(1, 1, 1));
+				Transform3D base = Transform3D(Basis(), _edit.center);
+				s = base * (s * (base.inverse() * p_original));
+
+				// Recalculate orthogonalized scale without moving origin.
+				if (p_orthogonal) {
+					s.basis = p_original_local.basis.scaled_orthogonal(p_motion + Vector3(1, 1, 1));
+					// The scaled_orthogonal() does not require orthogonal Basis,
+					// but it may make a bit skew by precision problems.
+					s.basis.orthogonalize();
+				}
+			}
+
+			return s;
 		}
 		case TRANSFORM_TRANSLATE: {
+			if (_edit.snap || spatial_editor->is_snap_enabled()) {
+				p_motion.snap(Vector3(p_extra, p_extra, p_extra));
+			}
+
 			if (p_local) {
-				if (_edit.snap || spatial_editor->is_snap_enabled()) {
-					Basis g = p_original.basis.orthonormalized();
-					Vector3 local_motion = g.inverse().xform(p_motion);
-					local_motion.snap(Vector3(p_extra, p_extra, p_extra));
-
-					p_motion = g.xform(local_motion);
-				}
-
-			} else {
-				if (_edit.snap || spatial_editor->is_snap_enabled()) {
-					p_motion.snap(Vector3(p_extra, p_extra, p_extra));
-				}
+				p_motion = p_original.basis.xform(p_motion);
 			}
 
 			// Apply translation
 			Transform3D t = p_original;
 			t.origin += p_motion;
+
 			return t;
 		}
 		case TRANSFORM_ROTATE: {
+			Transform3D r;
+
 			if (p_local) {
-				Transform3D r;
 				Vector3 axis = p_original_local.basis.xform(p_motion);
 				r.basis = Basis(axis.normalized(), p_extra) * p_original_local.basis;
 				r.origin = p_original_local.origin;
-				return r;
 			} else {
-				Transform3D r;
 				Basis local = p_original.basis * p_original_local.basis.inverse();
 				Vector3 axis = local.xform_inv(p_motion);
 				r.basis = local * Basis(axis.normalized(), p_extra) * p_original_local.basis;
 				r.origin = Basis(p_motion, p_extra).xform(p_original.origin - _edit.center) + _edit.center;
-				return r;
 			}
+
+			return r;
 		}
 		default: {
 			ERR_FAIL_V_MSG(Transform3D(), "Invalid mode in '_compute_transform'");
@@ -1480,6 +1474,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.original_mouse_pos = b->get_position();
 					_edit.snap = spatial_editor->is_snap_enabled();
 					_edit.mode = TRANSFORM_NONE;
+					_edit.original = spatial_editor->get_gizmo_transform(); // To prevent to break when flipping with scale.
 
 					bool can_select_gizmos = spatial_editor->get_single_selected_node();
 
@@ -1783,30 +1778,30 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								plane = Plane(_get_camera_normal(), _edit.center);
 								break;
 							case TRANSFORM_X_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0);
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
 								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 								break;
 							case TRANSFORM_Y_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1);
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
 								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 								break;
 							case TRANSFORM_Z_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2);
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized();
 								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 								break;
 							case TRANSFORM_YZ:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2) + spatial_editor->get_gizmo_transform().basis.get_axis(1);
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0), _edit.center);
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
+								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
 								plane_mv = true;
 								break;
 							case TRANSFORM_XZ:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2) + spatial_editor->get_gizmo_transform().basis.get_axis(0);
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1), _edit.center);
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
+								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
 								plane_mv = true;
 								break;
 							case TRANSFORM_XY:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0) + spatial_editor->get_gizmo_transform().basis.get_axis(1);
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2), _edit.center);
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized() + spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
+								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
 								plane_mv = true;
 								break;
 						}
@@ -1857,6 +1852,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						// This might not be necessary anymore after issue #288 is solved (in 4.0?).
 						set_message(TTR("Scaling: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 								String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
+						motion = _edit.original.basis.inverse().xform(motion);
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 						for (Node *E : selection) {
@@ -1877,14 +1873,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							if (se->gizmo.is_valid()) {
 								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
 									Transform3D xform = GE.value;
-									Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original * xform, xform, motion, snap, local_coords);
+									Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original * xform, xform, motion, snap, local_coords, true); // Force orthogonal with subgizmo.
 									if (!local_coords) {
 										new_xform = se->original.affine_inverse() * new_xform;
 									}
 									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
 								}
 							} else {
-								Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original, se->original_local, motion, snap, local_coords);
+								Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original, se->original_local, motion, snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
 								_transform_gizmo_apply(se->sp, new_xform, local_coords);
 							}
 						}
@@ -1904,27 +1900,27 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								plane = Plane(_get_camera_normal(), _edit.center);
 								break;
 							case TRANSFORM_X_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0);
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized();
 								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 								break;
 							case TRANSFORM_Y_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1);
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized();
 								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 								break;
 							case TRANSFORM_Z_AXIS:
-								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2);
+								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized();
 								plane = Plane(motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized(), _edit.center);
 								break;
 							case TRANSFORM_YZ:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0), _edit.center);
+								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
 								plane_mv = true;
 								break;
 							case TRANSFORM_XZ:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1), _edit.center);
+								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
 								plane_mv = true;
 								break;
 							case TRANSFORM_XY:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2), _edit.center);
+								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
 								plane_mv = true;
 								break;
 						}
@@ -1956,6 +1952,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						motion_snapped.snap(Vector3(snap, snap, snap));
 						set_message(TTR("Translating: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 								String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
+						motion = spatial_editor->get_gizmo_transform().basis.inverse().xform(motion);
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 						for (Node *E : selection) {
@@ -1976,12 +1973,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							if (se->gizmo.is_valid()) {
 								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
 									Transform3D xform = GE.value;
-									Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original * xform, xform, motion, snap, local_coords);
+									Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original * xform, xform, motion, snap, local_coords, true); // Force orthogonal with subgizmo.
 									new_xform = se->original.affine_inverse() * new_xform;
 									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
 								}
 							} else {
-								Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original, se->original_local, motion, snap, local_coords);
+								Transform3D new_xform = _compute_transform(TRANSFORM_TRANSLATE, se->original, se->original_local, motion, snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
 								_transform_gizmo_apply(se->sp, new_xform, false);
 							}
 						}
@@ -2000,15 +1997,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								plane = Plane(_get_camera_normal(), _edit.center);
 								break;
 							case TRANSFORM_X_AXIS:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0), _edit.center);
+								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(0).normalized(), _edit.center);
 								axis = Vector3(1, 0, 0);
 								break;
 							case TRANSFORM_Y_AXIS:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1), _edit.center);
+								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(1).normalized(), _edit.center);
 								axis = Vector3(0, 1, 0);
 								break;
 							case TRANSFORM_Z_AXIS:
-								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2), _edit.center);
+								plane = Plane(spatial_editor->get_gizmo_transform().basis.get_axis(2).normalized(), _edit.center);
 								axis = Vector3(0, 0, 1);
 								break;
 							case TRANSFORM_YZ:
@@ -2063,14 +2060,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
 									Transform3D xform = GE.value;
 
-									Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original * xform, xform, compute_axis, angle, local_coords);
+									Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original * xform, xform, compute_axis, angle, local_coords, true); // Force orthogonal with subgizmo.
 									if (!local_coords) {
 										new_xform = se->original.affine_inverse() * new_xform;
 									}
 									se->gizmo->set_subgizmo_transform(GE.key, new_xform);
 								}
 							} else {
-								Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original, se->original_local, compute_axis, angle, local_coords);
+								Transform3D new_xform = _compute_transform(TRANSFORM_ROTATE, se->original, se->original_local, compute_axis, angle, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS);
 								_transform_gizmo_apply(se->sp, new_xform, local_coords);
 							}
 						}
@@ -3676,8 +3673,6 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 			subviewport_container->get_stretch_shrink();
 	Vector3 scale = Vector3(1, 1, 1) * gizmo_scale;
 
-	xform.basis.scale(scale);
-
 	// if the determinant is zero, we should disable the gizmo from being rendered
 	// this prevents supplying bad values to the renderer and then having to filter it out again
 	if (xform.basis.determinant() == 0) {
@@ -3694,18 +3689,26 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	}
 
 	for (int i = 0; i < 3; i++) {
-		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], xform);
+		Transform3D axis_angle = Transform3D();
+		if (xform.basis.get_axis(i).normalized().dot(xform.basis.get_axis((i + 1) % 3).normalized()) < 1.0) {
+			axis_angle = axis_angle.looking_at(xform.basis.get_axis(i).normalized(), xform.basis.get_axis((i + 1) % 3).normalized());
+		}
+		axis_angle.basis.scale(scale);
+		axis_angle.origin = xform.origin;
+		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
-		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], xform);
+		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
-		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], xform);
+		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
-		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], xform);
+		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
-		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], xform);
+		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 	}
 	// Rotation white outline
+	xform.orthonormalize();
+	xform.basis.scale(scale);
 	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], xform);
 	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
 }
@@ -4915,7 +4918,6 @@ void Node3DEditor::update_transform_gizmo() {
 			gizmo_center += xf.origin;
 			if (count == 0 && local_gizmo_coords) {
 				gizmo_basis = xf.basis;
-				gizmo_basis.orthonormalize();
 			}
 			count++;
 		}
@@ -4940,7 +4942,6 @@ void Node3DEditor::update_transform_gizmo() {
 			gizmo_center += xf.origin;
 			if (count == 0 && local_gizmo_coords) {
 				gizmo_basis = xf.basis;
-				gizmo_basis.orthonormalize();
 			}
 			count++;
 		}
@@ -5815,6 +5816,12 @@ void fragment() {
 	{
 		//move gizmo
 
+		// Inverted zxy.
+		Vector3 ivec = Vector3(0, 0, -1);
+		Vector3 nivec = Vector3(-1, -1, 0);
+		Vector3 ivec2 = Vector3(-1, 0, 0);
+		Vector3 ivec3 = Vector3(0, -1, 0);
+
 		for (int i = 0; i < 3; i++) {
 			Color col;
 			switch (i) {
@@ -5851,16 +5858,6 @@ void fragment() {
 			const Color albedo = col.from_hsv(col.get_h(), 0.25, 1.0, 1);
 			mat_hl->set_albedo(albedo);
 			gizmo_color_hl[i] = mat_hl;
-
-			Vector3 ivec;
-			ivec[i] = 1;
-			Vector3 nivec;
-			nivec[(i + 1) % 3] = 1;
-			nivec[(i + 2) % 3] = 1;
-			Vector3 ivec2;
-			ivec2[(i + 1) % 3] = 1;
-			Vector3 ivec3;
-			ivec3[(i + 2) % 3] = 1;
 
 			//translate
 			{

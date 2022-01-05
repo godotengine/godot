@@ -84,6 +84,9 @@ void Node3D::_notify_dirty() {
 }
 
 void Node3D::_update_local_transform() const {
+	if (this->get_rotation_edit_mode() != ROTATION_EDIT_MODE_BASIS) {
+		data.local_transform = data.local_transform.orthogonalized();
+	}
 	data.local_transform.basis.set_euler_scale(data.rotation, data.scale);
 
 	data.dirty &= ~DIRTY_LOCAL;
@@ -321,6 +324,14 @@ void Node3D::set_rotation_edit_mode(RotationEditMode p_mode) {
 		return;
 	}
 	data.rotation_edit_mode = p_mode;
+
+	// Shearing is not allowed except in ROTATION_EDIT_MODE_BASIS.
+	data.dirty |= DIRTY_LOCAL;
+	_propagate_transform_changed(this);
+	if (data.notify_local_transform) {
+		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+	}
+
 	notify_property_list_changed();
 }
 
