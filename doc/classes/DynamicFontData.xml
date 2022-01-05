@@ -21,6 +21,9 @@
 		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="DynamicFontData.Hinting" default="2">
 			The font hinting mode used by FreeType. See [enum Hinting] for options.
 		</member>
+		<member name="override_oversampling" type="float" setter="set_override_oversampling" getter="get_override_oversampling" default="0.0">
+			If set to a value greater than [code]0.0[/code], it will override default font oversampling, ignoring [member SceneTree.use_font_oversampling] value and viewport stretch mode.
+		</member>
 	</members>
 	<constants>
 		<constant name="HINTING_NONE" value="0" enum="Hinting">
