@@ -64,8 +64,6 @@ public:
 			AND,
 			OR,
 			NOT,
-			AMPERSAND_AMPERSAND,
-			PIPE_PIPE,
 			BANG,
 			// Bitwise
 			AMPERSAND,

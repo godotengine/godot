@@ -53,8 +53,6 @@ static const char *token_names[] = {
 	"and", // AND,
 	"or", // OR,
 	"not", // NOT,
-	"&&", // AMPERSAND_AMPERSAND,
-	"||", // PIPE_PIPE,
 	"!", // BANG,
 	// Bitwise
 	"&", // AMPERSAND,
@@ -1387,10 +1385,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 				return make_token(Token::CARET);
 			}
 		case '&':
-			if (_peek() == '&') {
-				_advance();
-				return make_token(Token::AMPERSAND_AMPERSAND);
-			} else if (_peek() == '=') {
+			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::AMPERSAND_EQUAL);
 			} else if (_peek() == '"' || _peek() == '\'') {
@@ -1400,10 +1395,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 				return make_token(Token::AMPERSAND);
 			}
 		case '|':
-			if (_peek() == '|') {
-				_advance();
-				return make_token(Token::PIPE_PIPE);
-			} else if (_peek() == '=') {
+			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::PIPE_EQUAL);
 			} else {

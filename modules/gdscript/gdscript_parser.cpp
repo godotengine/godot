@@ -2339,12 +2339,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 			operation->variant_op = Variant::OP_BIT_XOR;
 			break;
 		case GDScriptTokenizer::Token::AND:
-		case GDScriptTokenizer::Token::AMPERSAND_AMPERSAND:
 			operation->operation = BinaryOpNode::OP_LOGIC_AND;
 			operation->variant_op = Variant::OP_AND;
 			break;
 		case GDScriptTokenizer::Token::OR:
-		case GDScriptTokenizer::Token::PIPE_PIPE:
 			operation->operation = BinaryOpNode::OP_LOGIC_OR;
 			operation->variant_op = Variant::OP_OR;
 			break;
@@ -3241,8 +3239,6 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_AND }, // AND,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_OR }, // OR,
 		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_not_in_operator,	PREC_CONTENT_TEST }, // NOT,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,			PREC_LOGIC_AND }, // AMPERSAND_AMPERSAND,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,			PREC_LOGIC_OR }, // PIPE_PIPE,
 		{ &GDScriptParser::parse_unary_operator,			nullptr,                                        PREC_NONE }, // BANG,
 		// Bitwise
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_BIT_AND }, // AMPERSAND,
