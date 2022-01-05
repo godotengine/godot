@@ -55,7 +55,7 @@ protected:
 
 public:
 	/// Thread safe, can be used across many threads.
-	static NavigationServer3D *get_singleton();
+	static const NavigationServer3D *get_singleton();
 
 	/// MUST be used in single thread!
 	static NavigationServer3D *get_singleton_mut();

@@ -204,7 +204,7 @@ void NavigationServer2D::_bind_methods() {
 NavigationServer2D::NavigationServer2D() {
 	singleton = this;
 	ERR_FAIL_COND_MSG(!NavigationServer3D::get_singleton(), "The Navigation3D singleton should be initialized before the 2D one.");
-	NavigationServer3D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationServer2D::_emit_map_changed));
+	NavigationServer3D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationServer2D::_emit_map_changed));
 }
 
 NavigationServer2D::~NavigationServer2D() {
