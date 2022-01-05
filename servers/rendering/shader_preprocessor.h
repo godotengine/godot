@@ -61,6 +61,7 @@ struct PreprocessorState {
 	Vector<bool> skip_stack_else;
 	int condition_depth;
 	Set<String> includes;
+	List<uint64_t> cyclic_include_hashes; // holds code hash of includes
 	int include_depth;
 	String current_include = "";
 	String error;
@@ -127,19 +128,25 @@ struct ShaderDependencyNode {
 	int line_count;
 	String code;
 
-	String path;
 	Ref<Shader> shader;
 	Set<ShaderDependencyNode *> dependencies;
 
 	ShaderDependencyNode() = default;
 	ShaderDependencyNode(Ref<Shader> p_shader);
 	ShaderDependencyNode(String p_code);
-	ShaderDependencyNode(String p_path, String p_code);
 
 	int GetContext(int p_line, ShaderDependencyNode **r_context);
+	String get_code() {
+		if (shader.is_null()) {
+			return code;
+		}
+
+		return shader->get_code();
+	}
+
 	String get_path() {
 		if (shader.is_null()) {
-			return path;
+			return "";
 		}
 
 		return shader->get_path();
@@ -170,7 +177,6 @@ public:
 
 	void populate(Ref<Shader> p_shader);
 	void populate(String p_code);
-	void populate(String p_path, String p_code);
 	void update_shaders();
 	void clear();
 
@@ -182,7 +188,7 @@ private:
 	List<String> visited_shaders;
 
 	Set<ShaderDependencyNode *>::Element *find(Ref<Shader> p_shader);
-	Set<ShaderDependencyNode *>::Element *find(String p_path);
+	List<ShaderDependencyNode *>::Element *find(uint64_t hash);
 	void populate(ShaderDependencyNode *p_node);
 	void update_shaders(ShaderDependencyNode *p_node);
 };

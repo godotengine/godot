@@ -338,10 +338,8 @@ ShaderPreprocessor::~ShaderPreprocessor() {
 	free_state();
 }
 
-ShaderPreprocessor::ShaderPreprocessor(const String &p_code) {
-	code = p_code;
-	state = nullptr;
-	state_owner = false;
+ShaderPreprocessor::ShaderPreprocessor(const String &p_code) :
+		code(p_code), state(nullptr), state_owner(false) {
 }
 
 String ShaderPreprocessor::preprocess(PreprocessorState *p_state) {
@@ -354,6 +352,10 @@ String ShaderPreprocessor::preprocess(PreprocessorState *p_state) {
 		state = create_state();
 		state_owner = true;
 	}
+
+	// track code hashes to prevent cyclic include.
+	uint64_t code_hash = code.hash64();
+	state->cyclic_include_hashes.push_back(code_hash);
 
 	CommentRemover remover(code);
 	String stripped = remover.strip();
@@ -405,6 +407,9 @@ String ShaderPreprocessor::preprocess(PreprocessorState *p_state) {
 	expand_output_macros(last_size, p_tokenizer.get_line());
 
 	String result = vector_to_string(output);
+
+	// remove this hash.
+	state->cyclic_include_hashes.erase(code_hash);
 
 	return result;
 }
@@ -655,7 +660,7 @@ void ShaderPreprocessor::process_include(PreprocessorTokenizer *p_tokenizer) {
 
 	RES res = ResourceLoader::load(path);
 	if (res.is_null()) {
-		set_error("Shader include load failed", line);
+		set_error("Shader include load failed. Does the shader exist? Is there a cyclic dependency?", line);
 		return;
 	}
 
@@ -671,6 +676,12 @@ void ShaderPreprocessor::process_include(PreprocessorTokenizer *p_tokenizer) {
 		return;
 	}
 
+	uint64_t code_hash = included.hash64();
+	if (state->cyclic_include_hashes.find(code_hash)) {
+		set_error("Cyclic include found.", line);
+		return;
+	}
+
 	int type_end = included.find(";");
 	if (type_end == -1) {
 		set_error("Shader include shader_type not found", line);
@@ -680,6 +691,8 @@ void ShaderPreprocessor::process_include(PreprocessorTokenizer *p_tokenizer) {
 	const String real_path = shader->get_path();
 	if (state->includes.has(real_path)) {
 		//Already included, skip.
+		//This is a valid check because 2 separate include paths could use some
+		//of the same shared functions from a common shader include.
 		return;
 	}
 
@@ -977,13 +990,10 @@ void ShaderPreprocessor::refresh_shader_dependencies(Ref<Shader> p_shader) {
 }
 
 ShaderDependencyNode::ShaderDependencyNode(Ref<Shader> p_shader) :
-		line(0), line_count(0), code(p_shader->get_code()), path(p_shader->get_path()), shader(p_shader) {}
+		line(0), line_count(0), code(p_shader->get_code()), shader(p_shader) {}
 
 ShaderDependencyNode::ShaderDependencyNode(String p_code) :
 		line(0), line_count(0), code(p_code) {}
-
-ShaderDependencyNode::ShaderDependencyNode(String p_path, String p_code) :
-		line(0), line_count(0), code(p_code), path(p_path) {}
 
 int ShaderDependencyNode::GetContext(int p_line, ShaderDependencyNode **r_context) {
 	int include_offset = 0;
@@ -1042,30 +1052,15 @@ void ShaderDependencyGraph::populate(String p_code) {
 	populate(node);
 }
 
-void ShaderDependencyGraph::populate(String p_path, String p_code) {
-	clear();
-
-	ShaderDependencyNode *node = memnew(ShaderDependencyNode(p_path, p_code));
-	nodes.insert(node);
-	populate(node);
-}
-
 ShaderDependencyGraph::~ShaderDependencyGraph() {
 	clear();
 }
 
 void ShaderDependencyGraph::populate(ShaderDependencyNode *p_node) {
-	if (!p_node->shader.is_null()) {
-		ERR_FAIL_COND_MSG(cyclic_dep_tracker.find(p_node), vformat("Shader %s contains a cyclic import. Skipping...", p_node->shader->get_path()));
-	}
+	ERR_FAIL_COND_MSG(find(p_node->code.hash64()), vformat("Shader %s contains a cyclic import. Skipping...", p_node->get_path()));
 
 	cyclic_dep_tracker.push_back(p_node);
-	String code;
-	if (!p_node->shader.is_null()) {
-		code = CommentRemover(p_node->shader->get_code()).strip(); // Build dependency graph starting from edited shader. Strip comments
-	} else {
-		code = CommentRemover(p_node->code).strip();
-	}
+	String code = CommentRemover(p_node->get_code()).strip(); // Build dependency graph starting from edited shader. Strip comments
 
 	PreprocessorTokenizer p_tokenizer(code);
 	while (1) {
@@ -1078,18 +1073,19 @@ void ShaderDependencyGraph::populate(ShaderDependencyNode *p_node) {
 					p_tokenizer.skip_whitespace();
 					if (!path.is_empty()) {
 						RES res = ResourceLoader::load(path);
+						ERR_FAIL_COND_MSG(res.is_null(), vformat("Could not load included shader %s. Does the shader exist? Is there a cyclic dependency?", path));
 						if (!res.is_null()) {
 							Ref<Shader> shader_reference = Object::cast_to<Shader>(*res);
 							if (!shader_reference.is_null()) {
 								// skip this shader if we've picked it up as a dependency already
 								String shader_path = shader_reference->get_path();
 								if (!visited_shaders.find(shader_path)) {
+									visited_shaders.push_back(shader_path);
 									String included_code = shader_reference->get_code();
 									ShaderDependencyNode *new_node = memnew(ShaderDependencyNode(shader_reference));
 									new_node->line = p_tokenizer.get_line() + 1;
 									Vector<String> shader = included_code.split("\n");
 									new_node->line_count = shader.size();
-									visited_shaders.push_back(shader_path);
 									populate(new_node);
 									p_node->dependencies.insert(new_node);
 								}
@@ -1116,9 +1112,9 @@ Set<ShaderDependencyNode *>::Element *ShaderDependencyGraph::find(Ref<Shader> p_
 	return nullptr;
 }
 
-Set<ShaderDependencyNode *>::Element *ShaderDependencyGraph::find(String p_path) {
-	for (Set<ShaderDependencyNode *>::Element *E = nodes.front(); E; E = E->next()) {
-		if (E->get()->path == p_path) {
+List<ShaderDependencyNode *>::Element *ShaderDependencyGraph::find(uint64_t p_hash) {
+	for (List<ShaderDependencyNode *>::Element *E = cyclic_dep_tracker.front(); E; E = E->next()) {
+		if (E->get()->code.hash64() == p_hash) {
 			return E;
 		}
 	}

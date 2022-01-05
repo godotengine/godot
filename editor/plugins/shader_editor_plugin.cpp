@@ -363,11 +363,11 @@ void ShaderTextEditor::_validate_script() {
 		bool highlight_error = false;
 		error_shader_path = shader->get_path();
 		if (context) {
-			if (!context->path.is_empty()) {
-				TreeItem *tree_item = shader_dependency_tree->get_item_with_text(context->path);
+			if (!context->get_path().is_empty()) {
+				TreeItem *tree_item = shader_dependency_tree->get_item_with_text(context->get_path());
 				tree_item->set_custom_bg_color(0, marked_line_color);
 
-				error_shader_path = context->path;
+				error_shader_path = context->get_path();
 			} else {
 				highlight_error = true;
 			}
@@ -471,8 +471,8 @@ void ShaderTextEditor::_update_warning_panel() {
 		bool highlight_error = false;
 		String warning_shader_path = shader->get_path();
 		if (context) {
-			if (!context->path.is_empty()) {
-				TreeItem *tree_item = shader_dependency_tree->get_item_with_text(context->path);
+			if (!context->get_path().is_empty()) {
+				TreeItem *tree_item = shader_dependency_tree->get_item_with_text(context->get_path());
 				if (saved_treat_warning_as_errors) {
 					if (warning_count == 0) {
 						tree_item->set_custom_bg_color(0, marked_line_color);
@@ -483,7 +483,7 @@ void ShaderTextEditor::_update_warning_panel() {
 					tree_item->set_custom_bg_color(0, warning_color * preprocessor_inactive_color_intensity);
 				}
 
-				warning_shader_path = context->path;
+				warning_shader_path = context->get_path();
 			} else {
 				highlight_error = true;
 			}
