@@ -1265,10 +1265,10 @@ public:
 		while (ret == UNZ_OK) {
 			// get file name
 			unz_file_info info;
-			char fname[16834];
-			ret = unzGetCurrentFileInfo(pkg, &info, fname, 16834, nullptr, 0, nullptr, 0);
+			char fname[16384];
+			ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-			String path = fname;
+			String path = String::utf8(fname);
 
 			if (path.ends_with("/")) {
 				// Ignore directories
