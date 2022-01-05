@@ -1934,16 +1934,15 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 
 	if (p_await->to_await->type == GDScriptParser::Node::CALL) {
 		reduce_call(static_cast<GDScriptParser::CallNode *>(p_await->to_await), true);
-		awaiting_type = p_await->to_await->get_datatype();
 	} else {
 		reduce_expression(p_await->to_await);
 	}
 
+	awaiting_type = p_await->to_await->get_datatype();
+
 	if (p_await->to_await->is_constant) {
 		p_await->is_constant = p_await->to_await->is_constant;
 		p_await->reduced_value = p_await->to_await->reduced_value;
-
-		awaiting_type = p_await->to_await->get_datatype();
 	} else {
 		awaiting_type.kind = GDScriptParser::DataType::VARIANT;
 		awaiting_type.type_source = GDScriptParser::DataType::UNDETECTED;
@@ -3050,6 +3049,12 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			if (base_type.is_variant() || !base_type.is_hard_type()) {
 				result_type.kind = GDScriptParser::DataType::VARIANT;
 				mark_node_unsafe(p_subscript);
+
+				reduce_identifier_from_base(p_subscript->attribute, &base_type);
+				GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
+				if (attr_type.is_set()) {
+					result_type = attr_type;
+				}
 			} else {
 				reduce_identifier_from_base(p_subscript->attribute, &base_type);
 				GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
