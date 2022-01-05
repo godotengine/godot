@@ -213,7 +213,7 @@ GDScriptWarning::Code GDScriptWarning::get_code_from_name(const String &p_name) 
 		}
 	}
 
-	ERR_FAIL_V_MSG(WARNING_MAX, "Invalid GDScript warning name: " + p_name);
+	return WARNING_MAX;
 }
 
 #endif // DEBUG_ENABLED
