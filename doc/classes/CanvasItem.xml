@@ -201,7 +201,7 @@
 			<argument index="3" name="texture" type="Texture2D" default="null" />
 			<argument index="4" name="width" type="float" default="1.0" />
 			<description>
-				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. See also [method draw_line], [method draw_polyline], [method draw_polygon], [method draw_rect]
+				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect].
 			</description>
 		</method>
 		<method name="draw_rect">
