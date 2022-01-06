@@ -2325,6 +2325,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_glow_set_use_high_quality", "enable"), &RenderingServer::environment_glow_set_use_high_quality);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr_roughness_quality", "quality"), &RenderingServer::environment_set_ssr_roughness_quality);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao_quality", "quality", "half_size", "adaptive_target", "blur_passes", "fadeout_from", "fadeout_to"), &RenderingServer::environment_set_ssao_quality);
+	ClassDB::bind_method(D_METHOD("environment_set_ssil_quality", "quality", "half_size", "adaptive_target", "blur_passes", "fadeout_from", "fadeout_to"), &RenderingServer::environment_set_ssil_quality);
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi_ray_count", "ray_count"), &RenderingServer::environment_set_sdfgi_ray_count);
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi_frames_to_converge", "frames"), &RenderingServer::environment_set_sdfgi_frames_to_converge);
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi_frames_to_update_light", "frames"), &RenderingServer::environment_set_sdfgi_frames_to_update_light);
@@ -2375,6 +2376,12 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_MEDIUM);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_HIGH);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_ULTRA);
+
+	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_VERY_LOW);
+	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_LOW);
+	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_MEDIUM);
+	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_ULTRA);
 
 	BIND_ENUM_CONSTANT(ENV_SDFGI_CASCADES_4);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_CASCADES_6);
