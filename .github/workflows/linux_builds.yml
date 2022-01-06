@@ -98,9 +98,9 @@ jobs:
       - name: Download test project
         if: ${{ matrix.test }}
         run: |
-          wget https://github.com/qarmin/RegressionTestProject/archive/3.x.zip
-          unzip 3.x.zip
-          mv "RegressionTestProject-3.x" "test_project"
+          wget https://github.com/godotengine/regression-test-project/archive/3.4.zip
+          unzip 3.4.zip
+          mv "regression-test-project-3.4" "test_project"
 
       # Editor is quite complicated piece of software, so it is easy to introduce bug here
       - name: Open and close editor
