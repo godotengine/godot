@@ -270,7 +270,7 @@ int PortalTracer::trace_globals(const LocalVector<Plane> &p_planes, VSInstance *
 		// If we are overriding the camera there is a potential problem in the editor:
 		// gizmos BEHIND the override camera will not be drawn.
 		// As this should be editor only and performance is not critical, we will just disable
-		// frustum culling for global objects when the camera is overriden.
+		// frustum culling for global objects when the camera is overridden.
 		for (uint32_t n = 0; n < num_globals; n++) {
 			const PortalRenderer::Moving &moving = _portal_renderer->get_moving_global(n);
 
@@ -490,7 +490,7 @@ void PortalTracer::trace_recursive(const TraceParams &p_params, int p_depth, int
 				// note that this loses the far clipping plane .. but that shouldn't be important usually?
 				// (maybe we might need to account for this in future .. look for issues)
 				if (overall_res != VSPortal::ClipResult::CLIP_INSIDE) {
-					// if it WASNT totally inside the existing frustum, we also need to add any existing planes
+					// if it WASN'T totally inside the existing frustum, we also need to add any existing planes
 					// that cut the portal.
 					for (uint32_t n = 0; n < partial_planes.size(); n++) {
 						new_planes.push_back(p_planes[partial_planes[n]]);

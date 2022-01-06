@@ -340,7 +340,7 @@
 			Filmic tonemapper operator.
 		</constant>
 		<constant name="TONE_MAPPER_ACES" value="3" enum="ToneMapper">
-			Academy Color Encoding System tonemapper operator. Performs an aproximation of the ACES tonemapping curve.
+			Academy Color Encoding System tonemapper operator. Performs an approximation of the ACES tonemapping curve.
 		</constant>
 		<constant name="TONE_MAPPER_ACES_FITTED" value="4" enum="ToneMapper">
 			High quality Academy Color Encoding System tonemapper operator that matches the industry standard. Performs a more physically accurate curve fit which better simulates how light works in the real world. The color of lights and emissive materials will become lighter as the emissive energy increases, and will eventually become white if the light is bright enough to saturate the camera sensor.

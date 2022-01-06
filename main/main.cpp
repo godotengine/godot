@@ -1949,7 +1949,7 @@ bool Main::start() {
 			String stretch_mode = GLOBAL_DEF("display/window/stretch/mode", "disabled");
 			String stretch_aspect = GLOBAL_DEF("display/window/stretch/aspect", "ignore");
 			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/width", 0), GLOBAL_DEF("display/window/size/height", 0));
-			// out of compatability reasons stretch_scale is called shrink when exposed to the user.
+			// out of compatibility reasons stretch_scale is called shrink when exposed to the user.
 			real_t stretch_scale = GLOBAL_DEF("display/window/stretch/shrink", 1.0);
 
 			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;

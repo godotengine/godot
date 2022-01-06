@@ -702,7 +702,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if the string is a path to a file or
-        /// directory and its startign point is explicitly defined. This includes
+        /// directory and its starting point is explicitly defined. This includes
         /// <c>res://</c>, <c>user://</c>, <c>C:\</c>, <c>/</c>, etc.
         /// </summary>
         /// <seealso cref="IsRelPath(string)"/>

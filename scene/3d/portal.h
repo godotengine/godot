@@ -98,7 +98,7 @@ public:
 	static bool _portal_plane_convention;
 
 private:
-	// updates world coords when the tranform changes, and updates the visual server
+	// updates world coords when the transform changes, and updates the visual server
 	void portal_update();
 
 	void set_linked_room_internal(const NodePath &link_path);

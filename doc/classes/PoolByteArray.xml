@@ -50,9 +50,9 @@
 			<argument index="1" name="compression_mode" type="int" default="0" />
 			<description>
 				Returns a new [PoolByteArray] with the data decompressed. Set the compression mode using one of [enum File.CompressionMode]'s constants. [b]This method only accepts gzip and deflate compression modes.[/b]
-				This method is potentially slower than [code]decompress[/code], as it may have to re-allocate it's output buffer multiple times while decompressing, where as [code]decompress[/code] knows it's output buffer size from the begining.
+				This method is potentially slower than [code]decompress[/code], as it may have to re-allocate its output buffer multiple times while decompressing, where as [code]decompress[/code] knows its output buffer size from the beginning.
 
-				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [code]max_output_size[/code]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that ammount in bytes, then an error will be returned.
+				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [code]max_output_size[/code]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
 			</description>
 		</method>
 		<method name="empty">

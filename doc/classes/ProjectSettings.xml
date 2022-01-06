@@ -1330,7 +1330,7 @@
 		<member name="rendering/portals/advanced/flip_imported_portals" type="bool" setter="" getter="" default="false">
 			The default convention is for portal normals to point outward (face outward) from the source room.
 			If you accidentally build your level with portals facing the wrong way, this setting can fix the problem.
-			It will flip named portal meshes (i.e. [code]-portal[/code]) on the initial convertion to [Portal] nodes.
+			It will flip named portal meshes (i.e. [code]-portal[/code]) on the initial conversion to [Portal] nodes.
 		</member>
 		<member name="rendering/portals/debug/logging" type="bool" setter="" getter="" default="true">
 			Show conversion logs.

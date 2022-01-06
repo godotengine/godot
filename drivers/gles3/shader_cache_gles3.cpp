@@ -41,7 +41,7 @@ String ShaderCacheGLES3::hash_program(const char *const *p_strings_platform, con
 	CryptoCore::SHA256Context ctx;
 	ctx.start();
 
-	// GL may already reject a binary program if harware/software has changed, but just in case
+	// GL may already reject a binary program if hardware/software has changed, but just in case
 	for (const char *const *s = p_strings_platform; *s; s++) {
 		uint8_t *bytes = reinterpret_cast<uint8_t *>(const_cast<char *>(*s));
 		ctx.update(bytes, strlen(*s));

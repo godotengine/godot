@@ -135,7 +135,7 @@ private:
 		Octant *parent;
 		Octant *children[8];
 
-		int children_count; // cache for amount of childrens (fast check for removal)
+		int children_count; // cache for amount of children (fast check for removal)
 		int parent_index; // cache for parent index (fast check for removal)
 
 		List<Element *, AL> pairable_elements;

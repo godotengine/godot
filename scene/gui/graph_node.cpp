@@ -176,7 +176,7 @@ void GraphNode::_resort() {
 	}
 
 	stretch_avail += stretch_diff - sb->get_margin(MARGIN_BOTTOM) - sb->get_margin(MARGIN_TOP); //available stretch space.
-	/** Second, pass sucessively to discard elements that can't be stretched, this will run while stretchable
+	/** Second, pass successively to discard elements that can't be stretched, this will run while stretchable
 		elements exist */
 
 	while (stretch_ratio_total > 0) { // first of all, don't even be here if no stretchable objects exist

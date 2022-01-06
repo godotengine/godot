@@ -128,7 +128,7 @@ public:
 	static ShaderCacheGLES3 *shader_cache;
 	static ThreadedCallableQueue<GLuint> *cache_write_queue;
 
-	static ThreadedCallableQueue<GLuint> *compile_queue; // Non-null if using queued asynchronous compilation (via seconday context)
+	static ThreadedCallableQueue<GLuint> *compile_queue; // Non-null if using queued asynchronous compilation (via secondary context)
 	static bool parallel_compile_supported; // True if using natively supported asyncrhonous compilation
 
 	static bool async_hidden_forbidden;

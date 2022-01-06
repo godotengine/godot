@@ -668,10 +668,10 @@ void NavMap::sync() {
 		}
 
 		const float ecm_squared(edge_connection_margin * edge_connection_margin);
-#define LEN_TOLLERANCE 0.1
-#define DIR_TOLLERANCE 0.9
-		// In front of tollerance
-#define IFO_TOLLERANCE 0.5
+#define LEN_TOLERANCE 0.1
+#define DIR_TOLERANCE 0.9
+		// In front of tolerance
+#define IFO_TOLERANCE 0.5
 
 		// Find the compatible near edges.
 		//
@@ -693,9 +693,9 @@ void NavMap::sync() {
 
 				Vector3 rel_centers = other_edge.edge_center - edge.edge_center;
 				if (ecm_squared > rel_centers.length_squared() // Are enough closer?
-						&& ABS(edge.edge_len_squared - other_edge.edge_len_squared) < LEN_TOLLERANCE // Are the same length?
-						&& ABS(edge.edge_dir.dot(other_edge.edge_dir)) > DIR_TOLLERANCE // Are alligned?
-						&& ABS(rel_centers.normalized().dot(edge.edge_dir)) < IFO_TOLLERANCE // Are one in front the other?
+						&& ABS(edge.edge_len_squared - other_edge.edge_len_squared) < LEN_TOLERANCE // Are the same length?
+						&& ABS(edge.edge_dir.dot(other_edge.edge_dir)) > DIR_TOLERANCE // Are aligned?
+						&& ABS(rel_centers.normalized().dot(edge.edge_dir)) < IFO_TOLERANCE // Are one in front the other?
 				) {
 					// The edges can be connected
 					edge.is_free = false;
