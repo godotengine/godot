@@ -508,7 +508,7 @@ void PVSBuilder::trace_rooms_recursive(int p_depth, int p_source_room_id, int p_
 		// if portal is totally inside the planes, don't copy the old planes ..
 		// i.e. we can now cull using the portal and forget about the rest of the frustum (yay)
 		if (overall_res != VSPortal::ClipResult::CLIP_INSIDE) {
-			// if it WASNT totally inside the existing frustum, we also need to add any existing planes
+			// if it WASN'T totally inside the existing frustum, we also need to add any existing planes
 			// that cut the portal.
 			for (uint32_t n = 0; n < partial_planes.size(); n++)
 				planes.push_back(p_planes[partial_planes[n]]);
@@ -644,7 +644,7 @@ void PVSBuilder::trace_rooms_recursive_simple(int p_depth, int p_source_room_id,
 		// if portal is totally inside the planes, don't copy the old planes ..
 		// i.e. we can now cull using the portal and forget about the rest of the frustum (yay)
 		if (overall_res != VSPortal::ClipResult::CLIP_INSIDE) {
-			// if it WASNT totally inside the existing frustum, we also need to add any existing planes
+			// if it WASN'T totally inside the existing frustum, we also need to add any existing planes
 			// that cut the portal.
 			for (uint32_t n = 0; n < partial_planes.size(); n++)
 				planes.push_back(p_planes[partial_planes[n]]);

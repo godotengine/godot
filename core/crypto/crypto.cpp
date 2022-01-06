@@ -100,7 +100,7 @@ void Crypto::load_default_certificates(String p_path) {
 
 PoolByteArray Crypto::hmac_digest(HashingContext::HashType p_hash_type, PoolByteArray p_key, PoolByteArray p_msg) {
 	Ref<HMACContext> ctx = Ref<HMACContext>(HMACContext::create());
-	ERR_FAIL_COND_V_MSG(ctx.is_null(), PoolByteArray(), "HMAC is not available witout mbedtls module.");
+	ERR_FAIL_COND_V_MSG(ctx.is_null(), PoolByteArray(), "HMAC is not available without mbedtls module.");
 	Error err = ctx->start(p_hash_type, p_key);
 	ERR_FAIL_COND_V(err != OK, PoolByteArray());
 	err = ctx->update(p_msg);

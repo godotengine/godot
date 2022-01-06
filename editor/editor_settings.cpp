@@ -1448,7 +1448,7 @@ float EditorSettings::get_auto_display_scale() const {
 	return OS::get_singleton()->get_screen_max_scale();
 #else
 	const int screen = OS::get_singleton()->get_current_screen();
-	// Use the smallest dimension to use a correct display scale on portait displays.
+	// Use the smallest dimension to use a correct display scale on portrait displays.
 	const int smallest_dimension = MIN(OS::get_singleton()->get_screen_size(screen).x, OS::get_singleton()->get_screen_size(screen).y);
 	if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && smallest_dimension >= 1400) {
 		// hiDPI display.

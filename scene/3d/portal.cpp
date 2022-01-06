@@ -551,7 +551,7 @@ void Portal::_sanitize_points() {
 	// may not be necessary, no idea how fast it is
 	_pts_local = Geometry::convex_hull_2d(raw);
 
-	// some pecularity of convex_hull_2d function, it duplicates the last point for some reason
+	// some peculiarity of convex_hull_2d function, it duplicates the last point for some reason
 	if (_pts_local.size() > 1) {
 		_pts_local.resize(_pts_local.size() - 1);
 	}
