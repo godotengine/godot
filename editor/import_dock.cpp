@@ -297,6 +297,8 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	_set_dirty(false);
 	import_as->set_disabled(false);
 	preset->set_disabled(false);
+	content->show();
+	select_a_resource->hide();
 
 	imported->set_text(vformat(TTR("%d Files"), p_paths.size()));
 
