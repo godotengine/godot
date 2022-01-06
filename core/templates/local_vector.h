@@ -36,6 +36,8 @@
 #include "core/templates/sort_array.h"
 #include "core/templates/vector.h"
 
+#include <initializer_list>
+
 template <class T, class U = uint32_t, bool force_trivial = false>
 class LocalVector {
 private:
@@ -228,6 +230,12 @@ public:
 	}
 
 	_FORCE_INLINE_ LocalVector() {}
+	_FORCE_INLINE_ LocalVector(std::initializer_list<T> p_init) {
+		reserve(p_init.size());
+		for (const T &element : p_init) {
+			push_back(element);
+		}
+	}
 	_FORCE_INLINE_ LocalVector(const LocalVector &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {
