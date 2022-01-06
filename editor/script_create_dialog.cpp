@@ -353,15 +353,15 @@ void ScriptCreateDialog::_load_exist() {
 }
 
 Vector<String> ScriptCreateDialog::get_hierarchy(String p_object) const {
-	Vector<String> hierachy;
-	hierachy.append(p_object);
+	Vector<String> hierarchy;
+	hierarchy.append(p_object);
 
 	String parent_class = ClassDB::get_parent_class(p_object);
 	while (parent_class.is_valid_identifier()) {
-		hierachy.append(parent_class);
+		hierarchy.append(parent_class);
 		parent_class = ClassDB::get_parent_class(parent_class);
 	}
-	return hierachy;
+	return hierarchy;
 }
 
 void ScriptCreateDialog::_language_changed(int l) {
@@ -544,7 +544,7 @@ void ScriptCreateDialog::_update_template_menu() {
 	template_list.clear();
 
 	if (is_language_using_templates) {
-		// Get the lastest templates used for each type of node from project settings then global settings.
+		// Get the latest templates used for each type of node from project settings then global settings.
 		Dictionary last_local_templates = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
 		Dictionary last_global_templates;
 		if (EditorSettings::get_singleton()->has_meta("script_setup/templates_dictionary")) {

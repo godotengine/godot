@@ -261,7 +261,7 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 	}
 
 	// For BaseMaterial3D, if a roughness or metallic textures is being assigned to an empty slot,
-	// set the respective metallic or roughness factor to 1.0 as a convinence feature
+	// set the respective metallic or roughness factor to 1.0 as a convenience feature
 	BaseMaterial3D *base_material = Object::cast_to<StandardMaterial3D>(p_edited);
 	if (base_material) {
 		Texture2D *texture = Object::cast_to<Texture2D>(p_new_value);

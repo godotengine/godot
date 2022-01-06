@@ -1325,7 +1325,7 @@ public:
 	struct Frame {
 		RenderTarget *current_rt;
 
-		// these 2 may have been superceded by the equivalents in the render target.
+		// these 2 may have been superseded by the equivalents in the render target.
 		// these may be able to be removed.
 		bool clear_request;
 		Color clear_request_color;
