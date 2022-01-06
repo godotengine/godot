@@ -258,6 +258,7 @@ protected:
 	// Overridable actions
 	virtual void _handle_unicode_input_internal(const uint32_t p_unicode) override;
 	virtual void _backspace_internal() override;
+	virtual void _new_line_internal() override;
 
 	GDVIRTUAL1(_confirm_code_completion, bool)
 	GDVIRTUAL1(_request_code_completion, bool)

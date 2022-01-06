@@ -1037,6 +1037,10 @@ void CodeEdit::_do_new_line(bool p_split_current_line, bool p_above) {
 	end_complex_operation();
 }
 
+void CodeEdit::_new_line_internal() {
+	_do_new_line();
+}
+
 /* Auto brace completion */
 void CodeEdit::set_auto_brace_completion_enabled(bool p_enabled) {
 	auto_brace_completion_enabled = p_enabled;
