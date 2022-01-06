@@ -261,11 +261,16 @@ Vector2 Vector2::lerp(const Vector2 &p_to, const real_t p_weight) const {
 }
 
 Vector2 Vector2::slerp(const Vector2 &p_to, const real_t p_weight) const {
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector2(), "The start Vector2 must be normalized.");
-#endif
-	real_t theta = angle_to(p_to);
-	return rotated(theta * p_weight);
+	real_t start_length_sq = length_squared();
+	real_t end_length_sq = p_to.length_squared();
+	if (unlikely(start_length_sq == 0.0 || end_length_sq == 0.0)) {
+		// Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
+		return lerp(p_to, p_weight);
+	}
+	real_t start_length = Math::sqrt(start_length_sq);
+	real_t result_length = Math::lerp(start_length, Math::sqrt(end_length_sq), p_weight);
+	real_t angle = angle_to(p_to);
+	return rotated(angle * p_weight) * (result_length / start_length);
 }
 
 Vector2 Vector2::direction_to(const Vector2 &p_to) const {

@@ -240,8 +240,16 @@ Vector3 Vector3::lerp(const Vector3 &p_to, const real_t p_weight) const {
 }
 
 Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
-	real_t theta = angle_to(p_to);
-	return rotated(cross(p_to).normalized(), theta * p_weight);
+	real_t start_length_sq = length_squared();
+	real_t end_length_sq = p_to.length_squared();
+	if (unlikely(start_length_sq == 0.0 || end_length_sq == 0.0)) {
+		// Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
+		return lerp(p_to, p_weight);
+	}
+	real_t start_length = Math::sqrt(start_length_sq);
+	real_t result_length = Math::lerp(start_length, Math::sqrt(end_length_sq), p_weight);
+	real_t angle = angle_to(p_to);
+	return rotated(cross(p_to).normalized(), angle * p_weight) * (result_length / start_length);
 }
 
 real_t Vector3::distance_to(const Vector3 &p_to) const {
