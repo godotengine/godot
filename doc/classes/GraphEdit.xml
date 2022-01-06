@@ -113,7 +113,7 @@
 			<return type="void" />
 			<description>
 				Ends the creation of the current connection. In other words, if you are dragging a connection you can use this method to abort the process and remove the line that followed your cursor.
-				This is best used together with [signal connection_drag_begun] and [signal connection_drag_ended] to add custom behavior like node addition through shortcuts.
+				This is best used together with [signal connection_drag_started] and [signal connection_drag_ended] to add custom behavior like node addition through shortcuts.
 				[b]Note:[/b] This method suppresses any other connection request signals apart from [signal connection_drag_ended].
 			</description>
 		</method>
@@ -249,17 +249,17 @@
 				Emitted at the beginning of a GraphNode movement.
 			</description>
 		</signal>
-		<signal name="connection_drag_begun">
+		<signal name="connection_drag_ended">
+			<description>
+				Emitted at the end of a connection drag.
+			</description>
+		</signal>
+		<signal name="connection_drag_started">
 			<argument index="0" name="from" type="String" />
 			<argument index="1" name="slot" type="String" />
 			<argument index="2" name="is_output" type="bool" />
 			<description>
 				Emitted at the beginning of a connection drag.
-			</description>
-		</signal>
-		<signal name="connection_drag_ended">
-			<description>
-				Emitted at the end of a connection drag.
 			</description>
 		</signal>
 		<signal name="connection_from_empty">
