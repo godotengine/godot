@@ -189,7 +189,7 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint6
 		f.package = pkg_num;
 		unzGetFilePos(zfile, &f.file_pos);
 
-		String fname = String("res://") + filename_inzip;
+		String fname = String("res://") + String::utf8(filename_inzip);
 		files[fname] = f;
 
 		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };

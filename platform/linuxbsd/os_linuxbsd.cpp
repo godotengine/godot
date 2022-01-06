@@ -431,7 +431,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	if (trash_path.is_empty()) {
 		char *dhome = getenv("XDG_DATA_HOME");
 		if (dhome) {
-			trash_path = String(dhome) + "/Trash";
+			trash_path = String::utf8(dhome) + "/Trash";
 		}
 	}
 
@@ -439,7 +439,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	if (trash_path.is_empty()) {
 		char *home = getenv("HOME");
 		if (home) {
-			trash_path = String(home) + "/.local/share/Trash";
+			trash_path = String::utf8(home) + "/.local/share/Trash";
 		}
 	}
 
