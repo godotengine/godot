@@ -346,7 +346,7 @@ String OS::get_model_name() const {
 }
 
 void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
-	_execpath = p_execpath;
+	_execpath = String::utf8(p_execpath);
 	_cmdline = p_args;
 }
 
