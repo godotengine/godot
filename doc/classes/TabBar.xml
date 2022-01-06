@@ -49,19 +49,6 @@
 				Returns [code]true[/code] if select with right mouse button is enabled.
 			</description>
 		</method>
-		<method name="get_tab_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the number of tabs.
-			</description>
-		</method>
-		<method name="get_tab_disabled" qualifiers="const">
-			<return type="bool" />
-			<argument index="0" name="tab_idx" type="int" />
-			<description>
-				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
-			</description>
-		</method>
 		<method name="get_tab_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<argument index="0" name="tab_idx" type="int" />
@@ -115,6 +102,13 @@
 			<return type="int" />
 			<description>
 				Returns the [TabBar]'s rearrange group ID.
+			</description>
+		</method>
+		<method name="is_tab_disabled" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="tab_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
 			</description>
 		</method>
 		<method name="move_tab">
@@ -213,6 +207,9 @@
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
 			Sets when the close button will appear on the tabs. See [enum CloseButtonDisplayPolicy] for details.
+		</member>
+		<member name="tab_count" type="int" setter="set_tab_count" getter="get_tab_count" default="0">
+			The number of tabs currently in the bar.
 		</member>
 	</members>
 	<signals>

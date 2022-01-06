@@ -510,6 +510,13 @@ void TabBar::_notification(int p_what) {
 	}
 }
 
+void TabBar::set_tab_count(int p_count) {
+	ERR_FAIL_COND(p_count < 0);
+	tabs.resize(p_count);
+	update();
+	notify_property_list_changed();
+}
+
 int TabBar::get_tab_count() const {
 	return tabs.size();
 }
@@ -635,7 +642,7 @@ void TabBar::set_tab_disabled(int p_tab, bool p_disabled) {
 	update();
 }
 
-bool TabBar::get_tab_disabled(int p_tab) const {
+bool TabBar::is_tab_disabled(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), false);
 	return tabs[p_tab].disabled;
 }
@@ -765,13 +772,9 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	Tab t;
 	t.text = p_str;
 	t.xl_text = atr(p_str);
-	t.text_buf.instantiate();
 	t.text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 	t.text_buf->add_string(t.xl_text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
 	t.icon = p_icon;
-	t.disabled = false;
-	t.ofs_cache = 0;
-	t.size_cache = 0;
 
 	tabs.push_back(t);
 	_update_cache();
@@ -786,6 +789,7 @@ void TabBar::clear_tabs() {
 	previous = 0;
 	call_deferred(SNAME("_update_hover"));
 	update();
+	notify_property_list_changed();
 }
 
 void TabBar::remove_tab(int p_idx) {
@@ -808,6 +812,7 @@ void TabBar::remove_tab(int p_idx) {
 	}
 
 	_ensure_no_over_offset();
+	notify_property_list_changed();
 }
 
 Variant TabBar::get_drag_data(const Point2 &p_point) {
@@ -966,6 +971,7 @@ void TabBar::move_tab(int from, int to) {
 
 	_update_cache();
 	update();
+	notify_property_list_changed();
 }
 
 int TabBar::get_tab_width(int p_idx) const {
@@ -1128,8 +1134,61 @@ bool TabBar::get_select_with_rmb() const {
 	return select_with_rmb;
 }
 
+bool TabBar::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("tab_") && components[0].trim_prefix("tab_").is_valid_int()) {
+		int tab_index = components[0].trim_prefix("tab_").to_int();
+		String property = components[1];
+		if (property == "title") {
+			set_tab_title(tab_index, p_value);
+			return true;
+		} else if (property == "icon") {
+			set_tab_icon(tab_index, p_value);
+			return true;
+		} else if (components[1] == "disabled") {
+			set_tab_disabled(tab_index, p_value);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool TabBar::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("tab_") && components[0].trim_prefix("tab_").is_valid_int()) {
+		int tab_index = components[0].trim_prefix("tab_").to_int();
+		String property = components[1];
+		if (property == "title") {
+			r_ret = get_tab_title(tab_index);
+			return true;
+		} else if (property == "icon") {
+			r_ret = get_tab_icon(tab_index);
+			return true;
+		} else if (components[1] == "disabled") {
+			r_ret = is_tab_disabled(tab_index);
+			return true;
+		}
+	}
+	return false;
+}
+
+void TabBar::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < tabs.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("tab_%d/title", i)));
+
+		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("tab_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		pi.usage &= ~(get_tab_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("tab_%d/disabled", i));
+		pi.usage &= ~(!is_tab_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+	}
+}
+
 void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_hover"), &TabBar::_update_hover);
+	ClassDB::bind_method(D_METHOD("set_tab_count"), &TabBar::set_tab_count);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabBar::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabBar::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabBar::get_current_tab);
@@ -1146,7 +1205,7 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabBar::set_tab_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &TabBar::get_tab_icon);
 	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &TabBar::set_tab_disabled);
-	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &TabBar::get_tab_disabled);
+	ClassDB::bind_method(D_METHOD("is_tab_disabled", "tab_idx"), &TabBar::is_tab_disabled);
 	ClassDB::bind_method(D_METHOD("remove_tab", "tab_idx"), &TabBar::remove_tab);
 	ClassDB::bind_method(D_METHOD("add_tab", "title", "icon"), &TabBar::add_tab, DEFVAL(""), DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("set_tab_alignment", "alignment"), &TabBar::set_tab_alignment);
@@ -1183,6 +1242,8 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
+
+	ADD_ARRAY_COUNT("Tabs", "tab_count", "set_tab_count", "get_tab_count", "tab_");
 
 	BIND_ENUM_CONSTANT(ALIGNMENT_LEFT);
 	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);

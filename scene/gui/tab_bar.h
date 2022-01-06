@@ -73,6 +73,10 @@ private:
 		Ref<Texture2D> right_button;
 		Rect2 rb_rect;
 		Rect2 cb_rect;
+
+		Tab() {
+			text_buf.instantiate();
+		}
 	};
 
 	int offset = 0;
@@ -112,6 +116,9 @@ private:
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -140,7 +147,7 @@ public:
 	Ref<Texture2D> get_tab_icon(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
-	bool get_tab_disabled(int p_tab) const;
+	bool is_tab_disabled(int p_tab) const;
 
 	void set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button);
 	Ref<Texture2D> get_tab_right_button(int p_tab) const;
@@ -156,7 +163,9 @@ public:
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
 	CloseButtonDisplayPolicy get_tab_close_display_policy() const;
 
+	void set_tab_count(int p_count);
 	int get_tab_count() const;
+
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
 	int get_previous_tab() const;
