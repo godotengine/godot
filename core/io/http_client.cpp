@@ -491,7 +491,7 @@ Error HTTPClient::poll() {
 							continue;
 						}
 						if (s.begins_with("content-length:")) {
-							body_size = s.substr(s.find(":") + 1, s.length()).strip_edges().to_int();
+							body_size = s.substr(s.find(":") + 1, s.length()).strip_edges().to_int64();
 							body_left = body_size;
 
 						} else if (s.begins_with("transfer-encoding:")) {

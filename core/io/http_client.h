@@ -174,8 +174,8 @@ private:
 	Vector<uint8_t> chunk;
 	int chunk_left;
 	bool chunk_trailer_part;
-	int body_size;
-	int body_left;
+	int64_t body_size;
+	int64_t body_left;
 	bool read_until_eof;
 
 	Ref<StreamPeerTCP> tcp_connection;
