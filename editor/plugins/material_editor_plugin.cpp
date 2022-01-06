@@ -254,6 +254,43 @@ void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
+void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
+	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
+	if (!undo_redo) {
+		return;
+	}
+
+	// For BaseMaterial3D, if a roughness or metallic textures is being assigned to an empty slot,
+	// set the respective metallic or roughness factor to 1.0 as a convinence feature
+	BaseMaterial3D *base_material = Object::cast_to<StandardMaterial3D>(p_edited);
+	if (base_material) {
+		Texture2D *texture = Object::cast_to<Texture2D>(p_new_value);
+		if (texture) {
+			if (p_property == "roughness_texture") {
+				if (base_material->get_texture(StandardMaterial3D::TEXTURE_ROUGHNESS).is_null() && texture) {
+					undo_redo->add_do_property(p_edited, "roughness", 1.0);
+
+					bool valid = false;
+					Variant value = p_edited->get("roughness", &valid);
+					if (valid) {
+						undo_redo->add_undo_property(p_edited, "roughness", value);
+					}
+				}
+			} else if (p_property == "metallic_texture") {
+				if (base_material->get_texture(StandardMaterial3D::TEXTURE_METALLIC).is_null() && texture) {
+					undo_redo->add_do_property(p_edited, "metallic", 1.0);
+
+					bool valid = false;
+					Variant value = p_edited->get("metallic", &valid);
+					if (valid) {
+						undo_redo->add_undo_property(p_edited, "metallic", value);
+					}
+				}
+			}
+		}
+	}
+}
+
 EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 	env.instantiate();
 	Ref<Sky> sky = memnew(Sky());
@@ -261,6 +298,8 @@ EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 	env->set_background(Environment::BG_COLOR);
 	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
 	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
+
+	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &EditorInspectorPluginMaterial::_undo_redo_inspector_callback));
 }
 
 MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {

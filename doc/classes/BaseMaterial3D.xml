@@ -53,7 +53,6 @@
 			<argument index="1" name="texture" type="Texture2D" />
 			<description>
 				Sets the texture for the slot specified by [code]param[/code]. See [enum TextureParam] for available slots.
-				[b]Note:[/b] When setting a roughness or metallic texture on a material that has no texture assigned to those slots, [member roughness] or [member metallic] will automatically be set to [code]1.0[/code] to ensure correct appearance.
 			</description>
 		</method>
 	</methods>
@@ -233,7 +232,6 @@
 		</member>
 		<member name="metallic" type="float" setter="set_metallic" getter="get_metallic" default="0.0">
 			A high value makes the material appear more like a metal. Non-metals use their albedo as the diffuse color and add diffuse to the specular reflection. With non-metals, the reflection appears on top of the albedo color. Metals use their albedo as a multiplier to the specular reflection and set the diffuse color to black resulting in a tinted reflection. Materials work better when fully metal or fully non-metal, values between [code]0[/code] and [code]1[/code] should only be used for blending between metal and non-metal sections. To alter the amount of reflection use [member roughness].
-			[b]Note:[/b] [member metallic] is automatically set to [code]1.0[/code] when assigning a metallic texture using [method set_texture].
 		</member>
 		<member name="metallic_specular" type="float" setter="set_specular" getter="get_specular" default="0.5">
 			Sets the size of the specular lobe. The specular lobe is the bright spot that is reflected from light sources.
@@ -306,7 +304,6 @@
 		</member>
 		<member name="roughness" type="float" setter="set_roughness" getter="get_roughness" default="1.0">
 			Surface reflection. A value of [code]0[/code] represents a perfect mirror while a value of [code]1[/code] completely blurs the reflection. See also [member metallic].
-			[b]Note:[/b] [member roughness] is automatically set to [code]1.0[/code] when assigning a roughness texture using [method set_texture].
 		</member>
 		<member name="roughness_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to control the roughness per-pixel. Multiplied by [member roughness].
