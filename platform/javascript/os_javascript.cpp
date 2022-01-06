@@ -659,7 +659,7 @@ const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
 // Clipboard
 void OS_JavaScript::update_clipboard_callback(const char *p_text) {
 	// Only call set_clipboard from OS (sets local clipboard)
-	get_singleton()->OS::set_clipboard(p_text);
+	get_singleton()->OS::set_clipboard(String::utf8(p_text));
 }
 
 void OS_JavaScript::set_clipboard(const String &p_text) {

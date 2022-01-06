@@ -69,7 +69,7 @@
 			<return type="String" />
 			<argument index="0" name="bytes" type="int" default="-1" />
 			<description>
-				Gets a string with byte-length [code]bytes[/code] from the stream. If [code]bytes[/code] is negative (default) the length will be read from the stream using the reverse process of [method put_string].
+				Gets an ASCII string with byte-length [code]bytes[/code] from the stream. If [code]bytes[/code] is negative (default) the length will be read from the stream using the reverse process of [method put_string].
 			</description>
 		</method>
 		<method name="get_u16">
