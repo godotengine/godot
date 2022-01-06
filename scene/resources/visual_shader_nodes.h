@@ -1302,26 +1302,23 @@ class VisualShaderNodeScalarUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeScalarUniform, VisualShaderNodeUniform);
 
 public:
-	virtual String get_caption() const;
+	enum Hint {
+		HINT_NONE,
+		HINT_RANGE,
+		HINT_RANGE_STEP,
+		HINT_MAX,
+	};
 
-	virtual int get_input_port_count() const;
-	virtual PortType get_input_port_type(int p_port) const;
-	virtual String get_input_port_name(int p_port) const;
+private:
+	Hint hint = HINT_NONE;
+	float hint_range_min;
+	float hint_range_max;
+	float hint_range_step;
+	bool default_value_enabled;
+	float default_value;
 
-	virtual int get_output_port_count() const;
-	virtual PortType get_output_port_type(int p_port) const;
-	virtual String get_output_port_name(int p_port) const;
-
-	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
-
-	VisualShaderNodeScalarUniform();
-};
-
-///////////////////////////////////////
-
-class VisualShaderNodeBooleanUniform : public VisualShaderNodeUniform {
-	GDCLASS(VisualShaderNodeBooleanUniform, VisualShaderNodeUniform);
+protected:
+	static void _bind_methods();
 
 public:
 	virtual String get_caption() const;
@@ -1336,6 +1333,65 @@ public:
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_hint(Hint p_hint);
+	Hint get_hint() const;
+
+	void set_min(float p_value);
+	float get_min() const;
+
+	void set_max(float p_value);
+	float get_max() const;
+
+	void set_step(float p_value);
+	float get_step() const;
+
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(float p_value);
+	float get_default_value() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
+	VisualShaderNodeScalarUniform();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeScalarUniform::Hint)
+
+///////////////////////////////////////
+
+class VisualShaderNodeBooleanUniform : public VisualShaderNodeUniform {
+	GDCLASS(VisualShaderNodeBooleanUniform, VisualShaderNodeUniform);
+
+private:
+	bool default_value_enabled;
+	bool default_value;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(bool p_value);
+	bool get_default_value() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
 
 	VisualShaderNodeBooleanUniform();
 };
@@ -1345,6 +1401,13 @@ public:
 class VisualShaderNodeColorUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeColorUniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled;
+	Color default_value;
+
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_caption() const;
 
@@ -1358,6 +1421,14 @@ public:
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(const Color &p_value);
+	Color get_default_value() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
 
 	VisualShaderNodeColorUniform();
 };
@@ -1367,6 +1438,13 @@ public:
 class VisualShaderNodeVec3Uniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeVec3Uniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled;
+	Vector3 default_value;
+
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_caption() const;
 
@@ -1380,6 +1458,14 @@ public:
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(const Vector3 &p_value);
+	Vector3 get_default_value() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
 
 	VisualShaderNodeVec3Uniform();
 };
@@ -1389,6 +1475,13 @@ public:
 class VisualShaderNodeTransformUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeTransformUniform, VisualShaderNodeUniform);
 
+private:
+	bool default_value_enabled;
+	Transform default_value;
+
+protected:
+	static void _bind_methods();
+
 public:
 	virtual String get_caption() const;
 
@@ -1402,6 +1495,14 @@ public:
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_default_value_enabled(bool p_enabled);
+	bool is_default_value_enabled() const;
+
+	void set_default_value(const Transform &p_value);
+	Transform get_default_value() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
 
 	VisualShaderNodeTransformUniform();
 };
@@ -1447,6 +1548,7 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	virtual bool is_code_generated() const;
+	virtual bool is_show_prop_names() const;
 
 	Vector<StringName> get_editable_properties() const;
 

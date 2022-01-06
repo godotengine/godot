@@ -96,6 +96,10 @@ bool VisualShaderNode::is_code_generated() const {
 	return true;
 }
 
+bool VisualShaderNode::is_show_prop_names() const {
+	return false;
+}
+
 Vector<VisualShader::DefaultTextureParam> VisualShaderNode::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	return Vector<VisualShader::DefaultTextureParam>();
 }
@@ -2332,6 +2336,10 @@ void VisualShaderNodeUniform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_uniform_name"), &VisualShaderNodeUniform::get_uniform_name);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "uniform_name"), "set_uniform_name", "get_uniform_name");
+}
+
+bool VisualShaderNodeUniform::is_show_prop_names() const {
+	return true;
 }
 
 VisualShaderNodeUniform::VisualShaderNodeUniform() {
