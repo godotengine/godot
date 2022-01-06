@@ -8,8 +8,6 @@
 #include "lilyphys_server.h"
 
 #include "li_thirdparty/gjk_epa.h"
-#include "li_thirdparty/libccd/ccd/ccd.h"
-#include "li_thirdparty/libccd/ccd/vec3.h"
 
 void LCollision::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_direction"), &LCollision::get_direction);
@@ -22,23 +20,23 @@ void LCollision::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_body1_path"), &LCollision::get_body1_path);
 }
 
-struct CheckData {
-    LICollisionObject *object;
-    LICollisionObject::ShapeData* shape;
-};
+//struct CheckData {
+//    LICollisionObject *object;
+//    LICollisionObject::ShapeData* shape;
+//};
 
 // Support function for libccd to use.
-void support(const void *obj, const ccd_vec3_t *_dir, ccd_vec3_t *vec) {
-    auto object = (CheckData*)obj;
-
-    Vector3 dir = Vector3{_dir->v[0], _dir->v[1], _dir->v[2]};
-    dir = object->object->get_transform().basis.xform(object->shape->transform.basis.xform(dir)).normalized();
-    Vector3 point = LilyphysServer::get_singleton()->shape_get_support(object->shape->shape, dir);
-    point = object->shape->transform.xform(point);
-    point = object->object->get_transform().xform(point);
-    ccdVec3Set(vec, point.x, point.y, point.z);
-    //print_line(vformat("Support point for dir %s is: %s", dir, point));
-}
+//void support(const void *obj, const ccd_vec3_t *_dir, ccd_vec3_t *vec) {
+//    auto object = (CheckData*)obj;
+//
+//    Vector3 dir = Vector3{_dir->v[0], _dir->v[1], _dir->v[2]};
+//    dir = object->object->get_transform().basis.xform(object->shape->transform.basis.xform(dir)).normalized();
+//    Vector3 point = LilyphysServer::get_singleton()->shape_get_support(object->shape->shape, dir);
+//    point = object->shape->transform.xform(point);
+//    point = object->object->get_transform().xform(point);
+//    ccdVec3Set(vec, point.x, point.y, point.z);
+//    //print_line(vformat("Support point for dir %s is: %s", dir, point));
+//}
 
 // For each shape object 1 has...
 List<RID> LCollisionSolver::check_collision(LICollisionObject *object1, LICollisionObject *object2, RID_Owner<CollisionResult>& p_owner) {
@@ -81,9 +79,9 @@ List<RID> LCollisionSolver::check_collision(LICollisionObject *object1, LICollis
 }
 
 LCollisionSolver::LCollisionSolver() {
-    CCD_INIT(&ccd);
-    ccd.support1 = support;
-    ccd.support2 = support;
-    ccd.max_iterations = 100;
-    ccd.epa_tolerance = 0.0001;
+//    CCD_INIT(&ccd);
+//    ccd.support1 = support;
+//    ccd.support2 = support;
+//    ccd.max_iterations = 100;
+//    ccd.epa_tolerance = 0.0001;
 }

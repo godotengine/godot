@@ -13,8 +13,6 @@
 #include "core/object.h"
 #include "core/class_db.h"
 
-#include "li_thirdparty/libccd/ccd/ccd.h"
-
 class LICollisionObject;
 
 class CollisionResult : public RID_Data {
@@ -106,9 +104,6 @@ public:
 };
 
 class LCollisionSolver {
-private:
-    ccd_t ccd;
-
 public:
     List<RID> check_collision(LICollisionObject* object1, LICollisionObject* object2, RID_Owner<CollisionResult>& p_owner);
     LCollisionSolver();
