@@ -78,7 +78,7 @@
 		<method name="size">
 			<return type="int" />
 			<description>
-				Returns the array size.
+				Returns the number of elements in the array.
 			</description>
 		</method>
 	</methods>
