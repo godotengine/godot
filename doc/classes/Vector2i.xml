@@ -53,7 +53,7 @@
 		<method name="aspect" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the ratio of [member x] to [member y].
+				Returns the aspect ratio of this vector, the ratio of [member x] to [member y].
 			</description>
 		</method>
 		<method name="clamp" qualifiers="const">
@@ -79,7 +79,7 @@
 		<method name="sign" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
-				Returns the vector with each component set to one or negative one, depending on the signs of the components.
+				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
 	</methods>
