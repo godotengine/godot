@@ -33,6 +33,7 @@
 #include "core/object/message_queue.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/main/viewport.h"
+#include "scene/property_utils.h"
 #include "scene/scene_string_names.h"
 
 /*
@@ -837,6 +838,64 @@ void Node3D::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+bool Node3D::property_can_revert(const String &p_name) {
+	if (p_name == "basis") {
+		return true;
+	} else if (p_name == "scale") {
+		return true;
+	} else if (p_name == "quaternion") {
+		return true;
+	} else if (p_name == "rotation") {
+		return true;
+	} else if (p_name == "position") {
+		return true;
+	}
+	return false;
+}
+
+Variant Node3D::property_get_revert(const String &p_name) {
+	Variant r_ret;
+	bool valid = false;
+
+	if (p_name == "basis") {
+		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
+		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
+			r_ret = Transform3D(variant).get_basis();
+		} else {
+			r_ret = Basis();
+		}
+	} else if (p_name == "scale") {
+		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
+		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
+			r_ret = Transform3D(variant).get_basis().get_scale();
+		} else {
+			return Vector3(1.0, 1.0, 1.0);
+		}
+	} else if (p_name == "quaternion") {
+		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
+		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
+			r_ret = Quaternion(Transform3D(variant).get_basis());
+		} else {
+			return Quaternion();
+		}
+	} else if (p_name == "rotation") {
+		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
+		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
+			r_ret = Transform3D(variant).get_basis().get_euler_normalized(data.rotation_order);
+		} else {
+			return Vector3();
+		}
+	} else if (p_name == "position") {
+		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
+		if (valid) {
+			r_ret = Transform3D(variant).get_origin();
+		} else {
+			return Vector3();
+		}
+	}
+	return r_ret;
+}
+
 void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Node3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Node3D::get_transform);
@@ -908,6 +967,9 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node3D::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node3D::to_global);
 
+	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &Node3D::property_can_revert);
+	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &Node3D::property_get_revert);
+
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_ENTER_WORLD);
 	BIND_CONSTANT(NOTIFICATION_EXIT_WORLD);
@@ -926,6 +988,7 @@ void Node3D::_bind_methods() {
 
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM3D,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform", "");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "global_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position", PROPERTY_HINT_RANGE, "-99999,99999,0,or_greater,or_lesser,noslider,suffix:m", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians", PROPERTY_USAGE_EDITOR), "set_rotation", "get_rotation");
@@ -935,7 +998,6 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_edit_mode", PROPERTY_HINT_ENUM, "Euler,Quaternion,Basis"), "set_rotation_edit_mode", "get_rotation_edit_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_order", PROPERTY_HINT_ENUM, "XYZ,XZY,YXZ,YZX,ZXY,ZYX"), "set_rotation_order", "get_rotation_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_transform", "get_transform");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");
