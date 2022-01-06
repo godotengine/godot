@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,6 +29,8 @@ btCollisionDispatcherMt::btCollisionDispatcherMt(btCollisionConfiguration* confi
 	: btCollisionDispatcher(config)
 {
 	m_batchManifoldsPtr.resize(btGetTaskScheduler()->getNumThreads());
+	m_batchReleasePtr.resize(btGetTaskScheduler()->getNumThreads());
+
 	m_batchUpdating = false;
 	m_grainSize = grainSize;  // iterations per task
 }
@@ -76,10 +78,11 @@ btPersistentManifold* btCollisionDispatcherMt::getNewManifold(const btCollisionO
 
 void btCollisionDispatcherMt::releaseManifold(btPersistentManifold* manifold)
 {
-	clearManifold(manifold);
 	//btAssert( !btThreadsAreRunning() );
+	
 	if (!m_batchUpdating)
 	{
+		clearManifold(manifold);
 		// batch updater will update manifold pointers array after finishing, so
 		// only need to update array when not batch-updating
 		int findIndex = manifold->m_index1a;
@@ -87,6 +90,9 @@ void btCollisionDispatcherMt::releaseManifold(btPersistentManifold* manifold)
 		m_manifoldsPtr.swap(findIndex, m_manifoldsPtr.size() - 1);
 		m_manifoldsPtr[findIndex]->m_index1a = findIndex;
 		m_manifoldsPtr.pop_back();
+	} else {
+		m_batchReleasePtr[btGetCurrentThreadIndex()].push_back(manifold);
+		return;
 	}
 
 	manifold->~btPersistentManifold();
@@ -151,6 +157,17 @@ void btCollisionDispatcherMt::dispatchAllCollisionPairs(btOverlappingPairCache* 
 			m_manifoldsPtr.push_back(batchManifoldsPtr[j]);
 		}
 
+		batchManifoldsPtr.resizeNoInitialize(0);
+	}
+
+	// remove batched remove manifolds.
+	for (int i = 0; i < m_batchReleasePtr.size(); ++i)
+	{
+		btAlignedObjectArray<btPersistentManifold*>& batchManifoldsPtr = m_batchReleasePtr[i];
+		for (int j = 0; j < batchManifoldsPtr.size(); ++j)
+		{
+			releaseManifold(batchManifoldsPtr[j]);
+		}
 		batchManifoldsPtr.resizeNoInitialize(0);
 	}
 

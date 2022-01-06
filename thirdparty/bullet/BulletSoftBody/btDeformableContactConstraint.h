@@ -37,7 +37,7 @@ public:
 	{
 	}
 
-	btDeformableContactConstraint() {}
+	btDeformableContactConstraint() : m_static(false) {}
 
 	btDeformableContactConstraint(const btDeformableContactConstraint& other)
 		: m_static(other.m_static), m_normal(other.m_normal), m_infoGlobal(other.m_infoGlobal)
@@ -150,7 +150,7 @@ public:
 
 	btDeformableRigidContactConstraint(const btSoftBody::DeformableRigidContact& c, const btContactSolverInfo& infoGlobal);
 	btDeformableRigidContactConstraint(const btDeformableRigidContactConstraint& other);
-	btDeformableRigidContactConstraint() {}
+	btDeformableRigidContactConstraint() : m_binding(false) {}
 	virtual ~btDeformableRigidContactConstraint()
 	{
 	}

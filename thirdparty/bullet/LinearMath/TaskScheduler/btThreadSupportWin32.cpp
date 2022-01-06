@@ -82,8 +82,7 @@ typedef BOOL(WINAPI* Pfn_GetLogicalProcessorInformation)(PSYSTEM_LOGICAL_PROCESS
 void getProcessorInformation(btProcessorInfo* procInfo)
 {
 	memset(procInfo, 0, sizeof(*procInfo));
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) && \
-    !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) && !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	// Can't dlopen libraries on UWP.
 	return;
 #else

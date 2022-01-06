@@ -1,5 +1,5 @@
 //Bullet Continuous Collision Detection and Physics Library
-//Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+//Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 //
 // btAxisSweep3.h
