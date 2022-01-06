@@ -1068,7 +1068,7 @@
 			<argument index="8" name="light_affect" type="float" />
 			<argument index="9" name="ao_channel_affect" type="float" />
 			<description>
-				Sets the variables to be used with the "screen space ambient occlusion" post-process effect. See [Environment] for more details.
+				Sets the variables to be used with the screen-space ambient occlusion (SSAO) post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ssao_quality">
@@ -1080,6 +1080,19 @@
 			<argument index="4" name="fadeout_from" type="float" />
 			<argument index="5" name="fadeout_to" type="float" />
 			<description>
+				Sets the quality level of the screen-space ambient occlusion (SSAO) post-process effect. See [Environment] for more details.
+			</description>
+		</method>
+		<method name="environment_set_ssil_quality">
+			<return type="void" />
+			<argument index="0" name="quality" type="int" enum="RenderingServer.EnvironmentSSILQuality" />
+			<argument index="1" name="half_size" type="bool" />
+			<argument index="2" name="adaptive_target" type="float" />
+			<argument index="3" name="blur_passes" type="int" />
+			<argument index="4" name="fadeout_from" type="float" />
+			<argument index="5" name="fadeout_to" type="float" />
+			<description>
+				Sets the quality level of the screen-space indirect lighting (SSIL) post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ssr">
@@ -4131,19 +4144,34 @@
 		<constant name="ENV_SSR_ROUGNESS_QUALITY_HIGH" value="3" enum="EnvironmentSSRRoughnessQuality">
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_VERY_LOW" value="0" enum="EnvironmentSSAOQuality">
-			Lowest quality of screen space ambient occlusion.
+			Lowest quality of screen-space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_LOW" value="1" enum="EnvironmentSSAOQuality">
-			Low quality screen space ambient occlusion.
+			Low quality screen-space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="2" enum="EnvironmentSSAOQuality">
-			Medium quality screen space ambient occlusion.
+			Medium quality screen-space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_HIGH" value="3" enum="EnvironmentSSAOQuality">
-			High quality screen space ambient occlusion.
+			High quality screen-space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_ULTRA" value="4" enum="EnvironmentSSAOQuality">
-			Highest quality screen space ambient occlusion. Uses the adaptive setting which can be dynamically adjusted to smoothly balance performance and visual quality.
+			Highest quality screen-space ambient occlusion. Uses the adaptive target setting which can be dynamically adjusted to smoothly balance performance and visual quality.
+		</constant>
+		<constant name="ENV_SSIL_QUALITY_VERY_LOW" value="0" enum="EnvironmentSSILQuality">
+			Lowest quality of screen-space indirect lighting.
+		</constant>
+		<constant name="ENV_SSIL_QUALITY_LOW" value="1" enum="EnvironmentSSILQuality">
+			Low quality screen-space indirect lighting.
+		</constant>
+		<constant name="ENV_SSIL_QUALITY_MEDIUM" value="2" enum="EnvironmentSSILQuality">
+			High quality screen-space indirect lighting.
+		</constant>
+		<constant name="ENV_SSIL_QUALITY_HIGH" value="3" enum="EnvironmentSSILQuality">
+			High quality screen-space indirect lighting.
+		</constant>
+		<constant name="ENV_SSIL_QUALITY_ULTRA" value="4" enum="EnvironmentSSILQuality">
+			Highest quality screen-space indirect lighting. Uses the adaptive target setting which can be dynamically adjusted to smoothly balance performance and visual quality.
 		</constant>
 		<constant name="ENV_SDFGI_CASCADES_4" value="0" enum="EnvironmentSDFGICascades">
 		</constant>
