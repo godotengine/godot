@@ -16,12 +16,6 @@
 				Override this method to define what happens when the user presses the backspace key.
 			</description>
 		</method>
-		<method name="_new_line" qualifiers="virtual">
-			<return type="void" />
-			<description>
-				Override this method to define what happens when the user presses the new line key.
-			</description>
-		</method>
 		<method name="_copy" qualifiers="virtual">
 			<return type="void" />
 			<description>
@@ -39,6 +33,12 @@
 			<argument index="0" name="unicode_char" type="int" />
 			<description>
 				Override this method to define what happens when the types in the provided key [code]unicode[/code].
+			</description>
+		</method>
+		<method name="_new_line" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Override this method to define what happens when the user presses the new line key.
 			</description>
 		</method>
 		<method name="_paste" qualifiers="virtual">
@@ -71,12 +71,6 @@
 			<return type="void" />
 			<description>
 				Called when the user presses the backspace key. Can be overridden with [method _backspace].
-			</description>
-		</method>
-		<method name="new_line">
-			<return type="void" />
-			<description>
-				Called when the user presses the new line key. Can be overridden with [method _new_line].
 			</description>
 		</method>
 		<method name="begin_complex_operation">
