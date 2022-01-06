@@ -12,8 +12,8 @@
 
 LIPhysicsBody::LIPhysicsBody() : LICollisionObject(TYPE_BODY) {
     velocity_changed = true;
-    set_activity_threshold(0.1f, 5.0f);
-    set_deactivation_threshold(0.1f, 0.2f);
+    set_activity_threshold(0.5f, 30.0f);
+    set_deactivation_threshold(0.2f, 0.2f);
 }
 
 real_t LIPhysicsBody::get_inverse_mass() const {
@@ -290,6 +290,8 @@ void LIPhysicsBody::restore_temp_immovable() {
 }
 
 bool LIPhysicsBody::get_should_be_active() {
+    //print_line(vformat("Velocity: %s, %s", velocity.length_squared(), Math::rad2deg(angular_velocity.length_squared())));
+    //print_line(vformat("Thresholds: %s, %s", sq_velocity_activity_threshold, sq_angular_velocity_activity_threshold));
     return (
             (((velocity.length_squared() > sq_velocity_activity_threshold) ||
             (angular_velocity.length_squared() > sq_angular_velocity_activity_threshold))
@@ -327,6 +329,7 @@ void LIPhysicsBody::try_to_freeze(real_t p_step) {
     }
 
     inactive_time += p_step;
+    //print_line(vformat("Adding to inactive time. (%s)", inactive_time));
 
     if (inactive_time > deactivation_time) {
         last_orientation_for_deactivation = transform.basis;
