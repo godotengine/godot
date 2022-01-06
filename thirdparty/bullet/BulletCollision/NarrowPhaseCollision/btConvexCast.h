@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -30,7 +30,7 @@ class btMinkowskiSumShape;
 #define MAX_CONVEX_CAST_EPSILON btScalar(0.0001)
 #endif
 ///Typically the conservative advancement reaches solution in a few iterations, clip it to 32 for degenerate cases.
-///See discussion about this here http://continuousphysics.com/Bullet/phpBB2/viewtopic.php?t=565
+///See discussion about this here https://bulletphysics.orgphpBB2/viewtopic.php?t=565
 //will need to digg deeper to make the algorithm more robust
 //since, a large epsilon can cause an early termination with false
 //positive results (ray intersections that shouldn't be there)

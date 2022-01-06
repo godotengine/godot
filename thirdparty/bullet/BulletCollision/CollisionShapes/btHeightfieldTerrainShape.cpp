@@ -828,6 +828,7 @@ void btHeightfieldTerrainShape::performRaycast(btTriangleCallback* callback, con
 		{
 			// Don't use chunks, the ray is too short in the plane
 			gridRaycast(processTriangles, beginPos, endPos, &indices[0]);
+			return;
 		}
 
 		ProcessVBoundsAction processVBounds(m_vboundsGrid, &indices[0]);

@@ -22,7 +22,7 @@ subject to the following restrictions:
 ///If the platform doesn't support placement new, you can disable B3_USE_PLACEMENT_NEW
 ///then the b3AlignedObjectArray doesn't support objects with virtual methods, and non-trivial constructors/destructors
 ///You can enable B3_USE_MEMCPY, then swapping elements in the array will use memcpy instead of operator=
-///see discussion here: http://continuousphysics.com/Bullet/phpBB2/viewtopic.php?t=1231 and
+///see discussion here: https://bulletphysics.orgphpBB2/viewtopic.php?t=1231 and
 ///http://www.continuousphysics.com/Bullet/phpBB2/viewtopic.php?t=1240
 
 #define B3_USE_PLACEMENT_NEW 1
