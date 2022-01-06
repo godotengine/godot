@@ -262,6 +262,11 @@ class KinematicBody : public PhysicsBody {
 	GDCLASS(KinematicBody, PhysicsBody);
 
 public:
+	enum MovingPlatformApplyVelocityOnLeave {
+		PLATFORM_VEL_ON_LEAVE_ALWAYS,
+		PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY,
+		PLATFORM_VEL_ON_LEAVE_NEVER,
+	};
 	struct Collision {
 		Vector3 collision;
 		Vector3 normal;
@@ -291,6 +296,8 @@ private:
 	bool on_ceiling;
 	bool on_wall;
 	bool sync_to_physics = false;
+	MovingPlatformApplyVelocityOnLeave moving_platform_apply_velocity_on_leave = PLATFORM_VEL_ON_LEAVE_ALWAYS;
+
 	Vector<Collision> colliders;
 	Vector<Ref<KinematicCollision>> slide_colliders;
 	Ref<KinematicCollision> motion_cache;
@@ -304,6 +311,8 @@ private:
 
 	Vector3 _move_and_slide_internal(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_up_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
 	void _set_collision_direction(const Collision &p_collision, const Vector3 &p_up_direction, float p_floor_max_angle);
+	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
+	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
 
 protected:
 	void _notification(int p_what);
@@ -339,6 +348,8 @@ public:
 	KinematicBody();
 	~KinematicBody();
 };
+
+VARIANT_ENUM_CAST(KinematicBody::MovingPlatformApplyVelocityOnLeave);
 
 class KinematicCollision : public Reference {
 	GDCLASS(KinematicCollision, Reference);
