@@ -111,15 +111,37 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 	}
 
 	// Fall back to the default from the native class
-	if (r_is_class_default) {
-		*r_is_class_default = true;
+	{
+		if (r_is_class_default) {
+			*r_is_class_default = true;
+		}
+		bool valid = false;
+		Variant value = ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return value;
+		} else {
+			// Heuristically check if this is a synthetic property (whatever/0, whatever/1, etc.)
+			// because they are not in the class DB yet must have a default (null).
+			String prop_str = String(p_property);
+			int p = prop_str.rfind("/");
+			if (p != -1 && p < prop_str.length() - 1) {
+				bool all_digits = true;
+				for (int i = p + 1; i < prop_str.length(); i++) {
+					if (prop_str[i] < '0' || prop_str[i] > '9') {
+						all_digits = false;
+						break;
+					}
+				}
+				if (r_is_valid) {
+					*r_is_valid = all_digits;
+				}
+			}
+			return Variant();
+		}
 	}
-	// This is saying that properties not registered in the class DB are considered to have a default value of null
-	// (that covers cases like synthetic properties in the style of whatever/0, whatever/1, which may not have a value in any ancestor).
-	if (r_is_valid) {
-		*r_is_valid = true;
-	}
-	return ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property);
 }
 
 // Like SceneState::PackState, but using a raw pointer to avoid the cost of
