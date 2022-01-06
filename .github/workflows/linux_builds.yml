@@ -122,13 +122,13 @@ jobs:
           ${{ matrix.bin }} --doctool --headless 2>&1 > /dev/null || true
           git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
 
-      # Download, unzip and setup SwiftShader library [4466040]
+      # Download, unzip and setup SwiftShader library
+      # See https://github.com/godotengine/regression-test-project/releases/tag/_ci-deps for details
       - name: Download SwiftShader
         if: ${{ matrix.tests }}
         run: |
-          wget https://github.com/qarmin/gtk_library_store/releases/download/3.24.0/swiftshader2.zip
-          unzip swiftshader2.zip
-          rm swiftshader2.zip
+          wget https://github.com/godotengine/regression-test-project/releases/download/_ci-deps/swiftshader-ubuntu20.04-20210728.zip
+          unzip swiftshader-ubuntu20.04-20210728.zip
           curr="$(pwd)/libvk_swiftshader.so"
           sed -i "s|PATH_TO_CHANGE|$curr|" vk_swiftshader_icd.json
 
@@ -136,9 +136,9 @@ jobs:
       - name: Download test project
         if: ${{ matrix.proj-test }}
         run: |
-          wget https://github.com/qarmin/RegressionTestProject/archive/4.0.zip
+          wget https://github.com/godotengine/regression-test-project/archive/4.0.zip
           unzip 4.0.zip
-          mv "RegressionTestProject-4.0" "test_project"
+          mv "regression-test-project-4.0" "test_project"
 
       # Editor is quite complicated piece of software, so it is easy to introduce bug here
       - name: Open and close editor
