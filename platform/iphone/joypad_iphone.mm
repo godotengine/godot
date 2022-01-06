@@ -158,7 +158,7 @@ void JoypadIPhone::start_processing() {
 	};
 
 	// tell Godot about our new controller
-	OSIPhone::get_singleton()->joy_connection_changed(joy_id, true, [controller.vendorName UTF8String]);
+	OSIPhone::get_singleton()->joy_connection_changed(joy_id, true, String::utf8([controller.vendorName UTF8String]));
 
 	// add it to our dictionary, this will retain our controllers
 	[self.connectedJoypads setObject:controller forKey:[NSNumber numberWithInt:joy_id]];

@@ -67,7 +67,7 @@ String iOS::get_model() const {
 	NSString *platform = [NSString stringWithCString:model encoding:NSUTF8StringEncoding];
 	free(model);
 	const char *str = [platform UTF8String];
-	return String(str != NULL ? str : "");
+	return String::utf8(str != nullptr ? str : "");
 }
 
 String iOS::get_rate_url(int p_app_id) const {

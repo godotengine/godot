@@ -283,9 +283,9 @@ Array AudioDriverALSA::get_device_list() {
 
 		if (name != nullptr && !strncmp(name, "plughw", 6)) {
 			if (desc) {
-				list.push_back(String(name) + ";" + String(desc));
+				list.push_back(String::utf8(name) + ";" + String::utf8(desc));
 			} else {
-				list.push_back(String(name));
+				list.push_back(String::utf8(name));
 			}
 		}
 
