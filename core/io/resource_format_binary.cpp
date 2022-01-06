@@ -54,7 +54,7 @@ enum {
 	VARIANT_QUATERNION = 14,
 	VARIANT_AABB = 15,
 	VARIANT_MATRIX3 = 16,
-	VARIANT_TRANSFORM = 17,
+	VARIANT_TRANSFORM3D = 17,
 	VARIANT_MATRIX32 = 18,
 	VARIANT_COLOR = 20,
 	VARIANT_NODE_PATH = 22,
@@ -63,13 +63,13 @@ enum {
 	VARIANT_INPUT_EVENT = 25,
 	VARIANT_DICTIONARY = 26,
 	VARIANT_ARRAY = 30,
-	VARIANT_RAW_ARRAY = 31,
-	VARIANT_INT32_ARRAY = 32,
-	VARIANT_FLOAT32_ARRAY = 33,
-	VARIANT_STRING_ARRAY = 34,
-	VARIANT_VECTOR3_ARRAY = 35,
-	VARIANT_COLOR_ARRAY = 36,
-	VARIANT_VECTOR2_ARRAY = 37,
+	VARIANT_PACKED_BYTE_ARRAY = 31,
+	VARIANT_PACKED_INT32_ARRAY = 32,
+	VARIANT_PACKED_FLOAT32_ARRAY = 33,
+	VARIANT_PACKED_STRING_ARRAY = 34,
+	VARIANT_PACKED_VECTOR3_ARRAY = 35,
+	VARIANT_PACKED_COLOR_ARRAY = 36,
+	VARIANT_PACKED_VECTOR2_ARRAY = 37,
 	VARIANT_INT64 = 40,
 	VARIANT_DOUBLE = 41,
 	VARIANT_CALLABLE = 42,
@@ -78,8 +78,8 @@ enum {
 	VARIANT_VECTOR2I = 45,
 	VARIANT_RECT2I = 46,
 	VARIANT_VECTOR3I = 47,
-	VARIANT_INT64_ARRAY = 48,
-	VARIANT_FLOAT64_ARRAY = 49,
+	VARIANT_PACKED_INT64_ARRAY = 48,
+	VARIANT_PACKED_FLOAT64_ARRAY = 49,
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -245,7 +245,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = v;
 
 		} break;
-		case VARIANT_TRANSFORM: {
+		case VARIANT_TRANSFORM3D: {
 			Transform3D v;
 			v.basis.elements[0].x = f->get_real();
 			v.basis.elements[0].y = f->get_real();
@@ -422,7 +422,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = a;
 
 		} break;
-		case VARIANT_RAW_ARRAY: {
+		case VARIANT_PACKED_BYTE_ARRAY: {
 			uint32_t len = f->get_32();
 
 			Vector<uint8_t> array;
@@ -434,7 +434,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = array;
 
 		} break;
-		case VARIANT_INT32_ARRAY: {
+		case VARIANT_PACKED_INT32_ARRAY: {
 			uint32_t len = f->get_32();
 
 			Vector<int32_t> array;
@@ -453,7 +453,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 
 			r_v = array;
 		} break;
-		case VARIANT_INT64_ARRAY: {
+		case VARIANT_PACKED_INT64_ARRAY: {
 			uint32_t len = f->get_32();
 
 			Vector<int64_t> array;
@@ -472,7 +472,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 
 			r_v = array;
 		} break;
-		case VARIANT_FLOAT32_ARRAY: {
+		case VARIANT_PACKED_FLOAT32_ARRAY: {
 			uint32_t len = f->get_32();
 
 			Vector<float> array;
@@ -491,7 +491,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 
 			r_v = array;
 		} break;
-		case VARIANT_FLOAT64_ARRAY: {
+		case VARIANT_PACKED_FLOAT64_ARRAY: {
 			uint32_t len = f->get_32();
 
 			Vector<double> array;
@@ -510,7 +510,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 
 			r_v = array;
 		} break;
-		case VARIANT_STRING_ARRAY: {
+		case VARIANT_PACKED_STRING_ARRAY: {
 			uint32_t len = f->get_32();
 			Vector<String> array;
 			array.resize(len);
@@ -522,7 +522,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = array;
 
 		} break;
-		case VARIANT_VECTOR2_ARRAY: {
+		case VARIANT_PACKED_VECTOR2_ARRAY: {
 			uint32_t len = f->get_32();
 
 			Vector<Vector2> array;
@@ -547,7 +547,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = array;
 
 		} break;
-		case VARIANT_VECTOR3_ARRAY: {
+		case VARIANT_PACKED_VECTOR3_ARRAY: {
 			uint32_t len = f->get_32();
 
 			Vector<Vector3> array;
@@ -572,7 +572,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = array;
 
 		} break;
-		case VARIANT_COLOR_ARRAY: {
+		case VARIANT_PACKED_COLOR_ARRAY: {
 			uint32_t len = f->get_32();
 
 			Vector<Color> array;
@@ -1501,7 +1501,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::TRANSFORM3D: {
-			f->store_32(VARIANT_TRANSFORM);
+			f->store_32(VARIANT_TRANSFORM3D);
 			Transform3D val = p_property;
 			f->store_real(val.basis.elements[0].x);
 			f->store_real(val.basis.elements[0].y);
@@ -1625,7 +1625,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
-			f->store_32(VARIANT_RAW_ARRAY);
+			f->store_32(VARIANT_PACKED_BYTE_ARRAY);
 			Vector<uint8_t> arr = p_property;
 			int len = arr.size();
 			f->store_32(len);
@@ -1635,7 +1635,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::PACKED_INT32_ARRAY: {
-			f->store_32(VARIANT_INT32_ARRAY);
+			f->store_32(VARIANT_PACKED_INT32_ARRAY);
 			Vector<int32_t> arr = p_property;
 			int len = arr.size();
 			f->store_32(len);
@@ -1646,7 +1646,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
-			f->store_32(VARIANT_INT64_ARRAY);
+			f->store_32(VARIANT_PACKED_INT64_ARRAY);
 			Vector<int64_t> arr = p_property;
 			int len = arr.size();
 			f->store_32(len);
@@ -1657,7 +1657,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::PACKED_FLOAT32_ARRAY: {
-			f->store_32(VARIANT_FLOAT32_ARRAY);
+			f->store_32(VARIANT_PACKED_FLOAT32_ARRAY);
 			Vector<float> arr = p_property;
 			int len = arr.size();
 			f->store_32(len);
@@ -1668,7 +1668,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
-			f->store_32(VARIANT_FLOAT64_ARRAY);
+			f->store_32(VARIANT_PACKED_FLOAT64_ARRAY);
 			Vector<double> arr = p_property;
 			int len = arr.size();
 			f->store_32(len);
@@ -1679,7 +1679,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
-			f->store_32(VARIANT_STRING_ARRAY);
+			f->store_32(VARIANT_PACKED_STRING_ARRAY);
 			Vector<String> arr = p_property;
 			int len = arr.size();
 			f->store_32(len);
@@ -1690,7 +1690,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
-			f->store_32(VARIANT_VECTOR3_ARRAY);
+			f->store_32(VARIANT_PACKED_VECTOR3_ARRAY);
 			Vector<Vector3> arr = p_property;
 			int len = arr.size();
 			f->store_32(len);
@@ -1703,7 +1703,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::PACKED_VECTOR2_ARRAY: {
-			f->store_32(VARIANT_VECTOR2_ARRAY);
+			f->store_32(VARIANT_PACKED_VECTOR2_ARRAY);
 			Vector<Vector2> arr = p_property;
 			int len = arr.size();
 			f->store_32(len);
@@ -1715,7 +1715,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 		} break;
 		case Variant::PACKED_COLOR_ARRAY: {
-			f->store_32(VARIANT_COLOR_ARRAY);
+			f->store_32(VARIANT_PACKED_COLOR_ARRAY);
 			Vector<Color> arr = p_property;
 			int len = arr.size();
 			f->store_32(len);
