@@ -127,8 +127,8 @@ jobs:
       - name: Download SwiftShader
         if: ${{ matrix.tests }}
         run: |
-          wget https://github.com/godotengine/regression-test-project/releases/download/_ci-deps/swiftshader-ubuntu20.04-20210728.zip
-          unzip swiftshader-ubuntu20.04-20210728.zip
+          wget https://github.com/godotengine/regression-test-project/releases/download/_ci-deps/swiftshader-ubuntu20.04-20211002.zip
+          unzip swiftshader-ubuntu20.04-20211002.zip
           curr="$(pwd)/libvk_swiftshader.so"
           sed -i "s|PATH_TO_CHANGE|$curr|" vk_swiftshader_icd.json
 
