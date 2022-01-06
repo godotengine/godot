@@ -87,10 +87,10 @@ void NavigationObstacle2D::_notification(int p_what) {
 		case NOTIFICATION_PARENTED: {
 			parent_node2d = Object::cast_to<Node2D>(get_parent());
 			reevaluate_agent_radius();
-		}
+		} break;
 		case NOTIFICATION_UNPARENTED: {
 			parent_node2d = nullptr;
-		}
+		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (parent_node2d) {
 				Navigation2DServer::get_singleton()->agent_set_position(agent, parent_node2d->get_global_transform().get_origin());
