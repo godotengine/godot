@@ -181,6 +181,9 @@
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			The navigation layers the GridMap generates its navigable regions in.
 		</member>
+		<member name="physics_material" type="PhysicsMaterial" setter="set_physics_material" getter="get_physics_material">
+			Overrides the default friction and bounce physics properties for the whole [GridMap].
+		</member>
 	</members>
 	<signals>
 		<signal name="cell_size_changed">
