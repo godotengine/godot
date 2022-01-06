@@ -114,7 +114,12 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 	if (r_is_class_default) {
 		*r_is_class_default = true;
 	}
-	return ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property, r_is_valid);
+	// This is saying that properties not registered in the class DB are considered to have a default value of null
+	// (that covers cases like synthetic properties in the style of whatever/0, whatever/1, which may not have a value in any ancestor).
+	if (r_is_valid) {
+		*r_is_valid = true;
+	}
+	return ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property);
 }
 
 // Like SceneState::PackState, but using a raw pointer to avoid the cost of
