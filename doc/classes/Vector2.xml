@@ -95,7 +95,7 @@
 		<method name="ceil" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the vector with all components rounded up (towards positive infinity).
+				Returns a new vector with all components rounded up (towards positive infinity).
 			</description>
 		</method>
 		<method name="clamp" qualifiers="const">
@@ -158,7 +158,7 @@
 		<method name="floor" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the vector with all components rounded down (towards negative infinity).
+				Returns a new vector with all components rounded down (towards negative infinity).
 			</description>
 		</method>
 		<method name="from_angle" qualifiers="static">
@@ -231,7 +231,7 @@
 			<argument index="0" name="to" type="Vector2" />
 			<argument index="1" name="delta" type="float" />
 			<description>
-				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount. Will not go past the final value.
+				Returns a new vector moved toward [code]to[/code] by the fixed [code]delta[/code] amount. Will not go past the final value.
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
@@ -264,7 +264,7 @@
 			<return type="Vector2" />
 			<argument index="0" name="b" type="Vector2" />
 			<description>
-				Returns the vector projected onto the vector [code]b[/code].
+				Returns this vector projected onto the vector [code]b[/code].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
@@ -284,13 +284,13 @@
 		<method name="round" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
+				Returns a new vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
 			</description>
 		</method>
 		<method name="sign" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
+				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
 		<method name="slerp" qualifiers="const">

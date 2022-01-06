@@ -96,7 +96,7 @@
 			<argument index="2" name="post_b" type="Vector3" />
 			<argument index="3" name="weight" type="float" />
 			<description>
-				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Performs a cubic interpolation between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]weight[/code]. [code]weight[/code] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="direction_to" qualifiers="const">
@@ -201,7 +201,7 @@
 			<argument index="0" name="to" type="Vector3" />
 			<argument index="1" name="delta" type="float" />
 			<description>
-				Moves this vector toward [code]to[/code] by the fixed [code]delta[/code] amount. Will not go past the final value.
+				Returns a new vector moved toward [code]to[/code] by the fixed [code]delta[/code] amount. Will not go past the final value.
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
@@ -246,7 +246,7 @@
 			<return type="Vector3" />
 			<argument index="0" name="b" type="Vector3" />
 			<description>
-				Returns this vector projected onto another vector [code]b[/code].
+				Returns this vector projected onto the vector [code]b[/code].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
@@ -267,13 +267,13 @@
 		<method name="round" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns this vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
+				Returns a new vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
 			</description>
 		</method>
 		<method name="sign" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns a vector with each component set to one or negative one, depending on the signs of this vector's components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
+				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
 		<method name="signed_angle_to" qualifiers="const">
