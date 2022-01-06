@@ -1639,14 +1639,14 @@ void RendererStorageRD::material_initialize(RID p_rid) {
 }
 
 void RendererStorageRD::_material_queue_update(Material *material, bool p_uniform, bool p_texture) {
+	material->uniform_dirty = material->uniform_dirty || p_uniform;
+	material->texture_dirty = material->texture_dirty || p_texture;
+
 	if (material->update_element.in_list()) {
 		return;
 	}
 
 	material_update_list.add(&material->update_element);
-
-	material->uniform_dirty = material->uniform_dirty || p_uniform;
-	material->texture_dirty = material->texture_dirty || p_texture;
 }
 
 void RendererStorageRD::material_set_shader(RID p_material, RID p_shader) {
