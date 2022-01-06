@@ -508,7 +508,6 @@ void ShaderTextEditor::_update_warning_panel() {
 		}
 
 		warning_count++;
-		int line = w.get_line();
 
 		Array warning_data_array;
 		warning_data_array.resize(2);
