@@ -200,9 +200,9 @@ jobs:
       # CI has no audio device, so use the Dummy audio driver to avoid spurious error messages.
       - name: Download project
         run: |
-          wget2 https://github.com/qarmin/RegressionTestProject/archive/3.3.zip
+          wget https://github.com/godotengine/regression-test-project/archive/3.3.zip
           unzip 3.3.zip
-          mv "RegressionTestProject-3.3" "test_project"
+          mv "regression-test-project-3.3" "test_project"
 
       # Editor is quite complicated piece of software, so it is easy to introduce bug here
       - name: Open and close editor
