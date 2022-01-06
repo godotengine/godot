@@ -1071,7 +1071,7 @@ void initialize_theme() {
 		if (theme.is_valid()) {
 			Theme::set_project_default(theme);
 			if (font.is_valid()) {
-				Theme::set_default_font(font);
+				Theme::set_fallback_font(font);
 			}
 		} else {
 			ERR_PRINT("Error loading custom theme '" + theme_path + "'");

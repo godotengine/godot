@@ -294,7 +294,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<Theme> theme = Ref<Theme>(memnew(Theme));
 
 	// Controls may rely on the scale for their internal drawing logic.
-	theme->set_default_theme_base_scale(EDSCALE);
+	theme->set_default_base_scale(EDSCALE);
 
 	// Theme settings
 	Color accent_color = EDITOR_GET("interface/theme/accent_color");
