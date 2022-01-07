@@ -217,9 +217,9 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ KEY_SLASH, VK_OEM_2 }, // (0xBF) //Windows 2000/XP: For the US standard keyboard, the '/?' key
 
 	{ KEY_QUOTELEFT, VK_OEM_3 }, // (0xC0)
-	{ KEY_BRACELEFT, VK_OEM_4 }, // (0xDB)
+	{ KEY_BRACKETLEFT, VK_OEM_4 }, // (0xDB)
 	{ KEY_BACKSLASH, VK_OEM_5 }, // (0xDC)
-	{ KEY_BRACERIGHT, VK_OEM_6 }, // (0xDD)
+	{ KEY_BRACKETRIGHT, VK_OEM_6 }, // (0xDD)
 	{ KEY_APOSTROPHE, VK_OEM_7 }, // (0xDE)
 	/*
 {VK_OEM_8 (0xDF)
