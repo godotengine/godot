@@ -528,7 +528,7 @@ public:
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
-	virtual void reflection_probe_set_lod_threshold(RID p_probe, float p_pixels) = 0;
+	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_pixels) = 0;
 
 	/* DECAL API */
 
@@ -871,7 +871,7 @@ public:
 
 	virtual void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) = 0;
 
-	virtual void viewport_set_lod_threshold(RID p_viewport, float p_pixels) = 0;
+	virtual void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels) = 0;
 
 	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_debanding) = 0;
 	virtual void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread) = 0;
@@ -913,6 +913,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 		VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE,
 		VIEWPORT_DEBUG_DRAW_SSAO,
+		VIEWPORT_DEBUG_DRAW_SSIL,
 		VIEWPORT_DEBUG_DRAW_PSSM_SPLITS,
 		VIEWPORT_DEBUG_DRAW_DECAL_ATLAS,
 		VIEWPORT_DEBUG_DRAW_SDFGI,
@@ -1028,6 +1029,18 @@ public:
 	};
 
 	virtual void environment_set_ssao_quality(EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
+
+	virtual void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) = 0;
+
+	enum EnvironmentSSILQuality {
+		ENV_SSIL_QUALITY_VERY_LOW,
+		ENV_SSIL_QUALITY_LOW,
+		ENV_SSIL_QUALITY_MEDIUM,
+		ENV_SSIL_QUALITY_HIGH,
+		ENV_SSIL_QUALITY_ULTRA,
+	};
+
+	virtual void environment_set_ssil_quality(EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
 	enum EnvironmentSDFGICascades {
 		ENV_SDFGI_CASCADES_4,
@@ -1207,6 +1220,7 @@ public:
 	virtual void instance_geometry_set_flag(RID p_instance, InstanceFlags p_flags, bool p_enabled) = 0;
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, ShadowCastingSetting p_shadow_casting_setting) = 0;
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material) = 0;
+	virtual void instance_geometry_set_material_overlay(RID p_instance, RID p_material) = 0;
 	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, VisibilityRangeFadeMode p_fade_mode) = 0;
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice) = 0;
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
@@ -1473,6 +1487,7 @@ public:
 	virtual uint64_t get_rendering_info(RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
+	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
 
 	struct FrameProfileArea {
 		String name;
@@ -1593,6 +1608,7 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentGlowBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSILQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGICascades);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToConverge);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIRayCount);

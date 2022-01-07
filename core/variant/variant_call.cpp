@@ -1513,6 +1513,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2i, aspect, sarray(), varray());
 	bind_method(Vector2i, max_axis_index, sarray(), varray());
 	bind_method(Vector2i, min_axis_index, sarray(), varray());
+	bind_method(Vector2i, length, sarray(), varray());
+	bind_method(Vector2i, length_squared, sarray(), varray());
 	bind_method(Vector2i, sign, sarray(), varray());
 	bind_method(Vector2i, abs, sarray(), varray());
 	bind_method(Vector2i, clamp, sarray("min", "max"), varray());
@@ -1594,6 +1596,8 @@ static void _register_variant_builtin_methods() {
 
 	bind_method(Vector3i, min_axis_index, sarray(), varray());
 	bind_method(Vector3i, max_axis_index, sarray(), varray());
+	bind_method(Vector3i, length, sarray(), varray());
+	bind_method(Vector3i, length_squared, sarray(), varray());
 	bind_method(Vector3i, sign, sarray(), varray());
 	bind_method(Vector3i, abs, sarray(), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());

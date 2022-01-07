@@ -1894,7 +1894,7 @@ void Thread::_start_func(void *ud) {
 
 Error Thread::start(const Callable &p_callable, const Variant &p_userdata, Priority p_priority) {
 	ERR_FAIL_COND_V_MSG(is_started(), ERR_ALREADY_IN_USE, "Thread already started.");
-	ERR_FAIL_COND_V(p_callable.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!p_callable.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
 
 	ret = Variant();

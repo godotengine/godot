@@ -92,6 +92,8 @@ public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
 
+	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
+
 	EditorInspectorPluginMaterial();
 };
 

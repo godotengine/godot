@@ -363,10 +363,10 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 	if (!enabled) {
 		NavigationServer2D::get_singleton()->region_set_map(region, RID());
-		NavigationServer2D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+		NavigationServer2D::get_singleton_mut()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	} else {
 		NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
-		NavigationServer2D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+		NavigationServer2D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 	}
 
 	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) {
@@ -402,7 +402,7 @@ void NavigationRegion2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (enabled) {
 				NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
-				NavigationServer2D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+				NavigationServer2D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -411,7 +411,7 @@ void NavigationRegion2D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			NavigationServer2D::get_singleton()->region_set_map(region, RID());
 			if (enabled) {
-				NavigationServer2D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
+				NavigationServer2D::get_singleton_mut()->disconnect("map_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 			}
 		} break;
 		case NOTIFICATION_DRAW: {

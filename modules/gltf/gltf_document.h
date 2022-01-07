@@ -33,6 +33,7 @@
 
 #include "gltf_animation.h"
 
+#include "core/error/error_list.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
 #include "gltf_document_extension_convert_importer_mesh.h"
@@ -120,11 +121,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	Node *import_scene(const String &p_path, uint32_t p_flags, int32_t p_bake_fps, Ref<GLTFState> r_state);
-	Node *import_scene_gltf(const String &p_path, uint32_t p_flags, int32_t p_bake_fps, Ref<GLTFState> r_state, List<String> *r_missing_deps, Error *r_err = nullptr);
-	Error save_scene(Node *p_node, const String &p_path,
-			const String &p_src_path, uint32_t p_flags,
-			float p_bake_fps, Ref<GLTFState> r_state);
 	void set_extensions(TypedArray<GLTFDocumentExtension> p_extensions);
 	TypedArray<GLTFDocumentExtension> get_extensions() const;
 
@@ -200,7 +196,7 @@ private:
 	Ref<Texture2D> _get_texture(Ref<GLTFState> state,
 			const GLTFTextureIndex p_texture);
 	Error _parse_json(const String &p_path, Ref<GLTFState> state);
-	Error _parse_glb(const String &p_path, Ref<GLTFState> state);
+	Error _parse_glb(FileAccess *f, Ref<GLTFState> state);
 	void _compute_node_heights(Ref<GLTFState> state);
 	Error _parse_buffers(Ref<GLTFState> state, const String &p_base_path);
 	Error _parse_buffer_views(Ref<GLTFState> state);
@@ -287,10 +283,10 @@ private:
 			Skeleton3D *skeleton,
 			const GLTFNodeIndex node_index,
 			const GLTFNodeIndex bone_index);
-	ImporterMeshInstance3D *_generate_mesh_instance(Ref<GLTFState> state, Node *parent_node, const GLTFNodeIndex node_index);
-	Camera3D *_generate_camera(Ref<GLTFState> state, Node *parent_node, const GLTFNodeIndex node_index);
-	Node3D *_generate_light(Ref<GLTFState> state, Node *parent_node, const GLTFNodeIndex node_index);
-	Node3D *_generate_spatial(Ref<GLTFState> state, Node *parent_node, const GLTFNodeIndex node_index);
+	ImporterMeshInstance3D *_generate_mesh_instance(Ref<GLTFState> state, const GLTFNodeIndex node_index);
+	Camera3D *_generate_camera(Ref<GLTFState> state, const GLTFNodeIndex node_index);
+	Node3D *_generate_light(Ref<GLTFState> state, const GLTFNodeIndex node_index);
+	Node3D *_generate_spatial(Ref<GLTFState> state, const GLTFNodeIndex node_index);
 	void _assign_scene_names(Ref<GLTFState> state);
 	template <class T>
 	T _interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values,
@@ -361,6 +357,7 @@ private:
 			GLTFNodeIndex p_node_i);
 	Error _encode_buffer_bins(Ref<GLTFState> state, const String &p_path);
 	Error _encode_buffer_glb(Ref<GLTFState> state, const String &p_path);
+	PackedByteArray _serialize_glb_buffer(Ref<GLTFState> state, Error *r_err);
 	Dictionary _serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material);
 	Dictionary _serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material);
 	Error _serialize_version(Ref<GLTFState> state);
@@ -384,6 +381,17 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
+	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
+	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
+	Error append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
+
+public:
+	Node *generate_scene(Ref<GLTFState> state, int32_t p_bake_fps = 30.0f);
+	PackedByteArray generate_buffer(Ref<GLTFState> state);
+	Error write_to_filesystem(Ref<GLTFState> state, const String &p_path);
+
+public:
+	Error _parse_gltf_state(Ref<GLTFState> state, const String &p_search_path, float p_bake_fps);
 	void _process_mesh_instances(Ref<GLTFState> state, Node *scene_root);
 	void _generate_scene_node(Ref<GLTFState> state, Node *scene_parent,
 			Node3D *scene_root,
@@ -447,8 +455,8 @@ public:
 			MeshInstance3D *p_mesh_instance);
 	void _convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			String p_animation_track_name);
-	Error serialize(Ref<GLTFState> state, Node *p_root, const String &p_path);
-	Error parse(Ref<GLTFState> state, String p_paths, bool p_read_binary = false);
+	Error _serialize(Ref<GLTFState> state, const String &p_path);
+	Error _parse(Ref<GLTFState> state, String p_path, FileAccess *f, int p_bake_fps);
 };
 
 #endif // GLTF_DOCUMENT_H

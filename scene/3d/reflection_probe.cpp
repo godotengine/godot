@@ -76,13 +76,13 @@ float ReflectionProbe::get_max_distance() const {
 	return max_distance;
 }
 
-void ReflectionProbe::set_lod_threshold(float p_pixels) {
-	lod_threshold = p_pixels;
-	RS::get_singleton()->reflection_probe_set_lod_threshold(probe, p_pixels);
+void ReflectionProbe::set_mesh_lod_threshold(float p_pixels) {
+	mesh_lod_threshold = p_pixels;
+	RS::get_singleton()->reflection_probe_set_mesh_lod_threshold(probe, p_pixels);
 }
 
-float ReflectionProbe::get_lod_threshold() const {
-	return lod_threshold;
+float ReflectionProbe::get_mesh_lod_threshold() const {
+	return mesh_lod_threshold;
 }
 
 void ReflectionProbe::set_extents(const Vector3 &p_extents) {
@@ -207,8 +207,8 @@ void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_distance", "max_distance"), &ReflectionProbe::set_max_distance);
 	ClassDB::bind_method(D_METHOD("get_max_distance"), &ReflectionProbe::get_max_distance);
 
-	ClassDB::bind_method(D_METHOD("set_lod_threshold", "ratio"), &ReflectionProbe::set_lod_threshold);
-	ClassDB::bind_method(D_METHOD("get_lod_threshold"), &ReflectionProbe::get_lod_threshold);
+	ClassDB::bind_method(D_METHOD("set_mesh_lod_threshold", "ratio"), &ReflectionProbe::set_mesh_lod_threshold);
+	ClassDB::bind_method(D_METHOD("get_mesh_lod_threshold"), &ReflectionProbe::get_mesh_lod_threshold);
 
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &ReflectionProbe::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &ReflectionProbe::get_extents);
@@ -240,7 +240,7 @@ void ReflectionProbe::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_as_interior", "is_set_as_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_shadows"), "set_enable_shadows", "are_shadows_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_lod_threshold", "get_lod_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
 
 	ADD_GROUP("Ambient", "ambient_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ambient_mode", PROPERTY_HINT_ENUM, "Disabled,Environment,Constant Color"), "set_ambient_mode", "get_ambient_mode");

@@ -809,8 +809,8 @@ public:
 	void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override;
 	void mesh_instance_check_for_update(RID p_mesh_instance) override;
 	void update_mesh_instances() override;
-	void reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) override;
-	float reflection_probe_get_lod_threshold(RID p_probe) const override;
+	void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override;
+	float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;
 
 	void mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface) override;
 
@@ -1325,7 +1325,7 @@ public:
 	struct Frame {
 		RenderTarget *current_rt;
 
-		// these 2 may have been superceded by the equivalents in the render target.
+		// these 2 may have been superseded by the equivalents in the render target.
 		// these may be able to be removed.
 		bool clear_request;
 		Color clear_request_color;
@@ -1361,6 +1361,7 @@ public:
 	//	int get_render_info(RS::RenderInfo p_info) override;
 	String get_video_adapter_name() const override;
 	String get_video_adapter_vendor() const override;
+	RenderingDevice::DeviceType get_video_adapter_type() const override;
 
 	void capture_timestamps_begin() override {}
 	void capture_timestamp(const String &p_name) override {}

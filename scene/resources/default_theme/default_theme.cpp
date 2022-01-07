@@ -1053,17 +1053,17 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 	fill_default_theme(t, default_font, large_font, default_icon, default_style, default_scale);
 
 	Theme::set_default(t);
-	Theme::set_default_base_scale(default_scale);
-	Theme::set_default_icon(default_icon);
-	Theme::set_default_style(default_style);
-	Theme::set_default_font(default_font);
-	Theme::set_default_font_size(default_font_size);
+	Theme::set_fallback_base_scale(default_scale);
+	Theme::set_fallback_icon(default_icon);
+	Theme::set_fallback_style(default_style);
+	Theme::set_fallback_font(default_font);
+	Theme::set_fallback_font_size(default_font_size);
 }
 
 void clear_default_theme() {
 	Theme::set_project_default(nullptr);
 	Theme::set_default(nullptr);
-	Theme::set_default_icon(nullptr);
-	Theme::set_default_style(nullptr);
-	Theme::set_default_font(nullptr);
+	Theme::set_fallback_icon(nullptr);
+	Theme::set_fallback_style(nullptr);
+	Theme::set_fallback_font(nullptr);
 }

@@ -2283,10 +2283,10 @@ void RasterizerStorageGLES3::mesh_instance_check_for_update(RID p_mesh_instance)
 void RasterizerStorageGLES3::update_mesh_instances() {
 }
 
-void RasterizerStorageGLES3::reflection_probe_set_lod_threshold(RID p_probe, float p_ratio) {
+void RasterizerStorageGLES3::reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) {
 }
 
-float RasterizerStorageGLES3::reflection_probe_get_lod_threshold(RID p_probe) const {
+float RasterizerStorageGLES3::reflection_probe_get_mesh_lod_threshold(RID p_probe) const {
 	return 0.0;
 }
 
@@ -4463,6 +4463,10 @@ String RasterizerStorageGLES3::get_video_adapter_name() const {
 
 String RasterizerStorageGLES3::get_video_adapter_vendor() const {
 	return (const char *)glGetString(GL_VENDOR);
+}
+
+RenderingDevice::DeviceType RasterizerStorageGLES3::get_video_adapter_type() const {
+	return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER;
 }
 
 void RasterizerStorageGLES3::initialize() {

@@ -32,7 +32,6 @@
 #define INSPECTOR_DOCK_H
 
 #include "editor/animation_track_editor.h"
-#include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
 #include "editor/editor_inspector.h"

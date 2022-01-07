@@ -62,6 +62,9 @@ class ImportDock : public VBoxContainer {
 
 	ImportDockParameters *params;
 
+	VBoxContainer *content;
+	Label *select_a_resource;
+
 	void _preset_selected(int p_idx);
 	void _importer_selected(int i_idx);
 	void _update_options(const String &p_path, const Ref<ConfigFile> &p_config = Ref<ConfigFile>());

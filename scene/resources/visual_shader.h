@@ -326,7 +326,7 @@ protected:
 	GDVIRTUAL0RC(int, _get_output_port_count)
 	GDVIRTUAL1RC(int, _get_output_port_type, int)
 	GDVIRTUAL1RC(String, _get_output_port_name, int)
-	GDVIRTUAL4RC(String, _get_code, Vector<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
+	GDVIRTUAL4RC(String, _get_code, TypedArray<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
 	GDVIRTUAL1RC(String, _get_global_code, Shader::Mode)
 	GDVIRTUAL0RC(bool, _is_highend)
 

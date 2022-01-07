@@ -60,13 +60,13 @@
 			<argument index="0" name="xform" type="Transform3D" />
 			<argument index="1" name="weight" type="float" />
 			<description>
-				Interpolates the transform to other Transform3D by weight amount (on the range of 0.0 to 1.0).
+				Returns a transform interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use [method affine_inverse] for transforms with scaling).
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
@@ -88,7 +88,7 @@
 		<method name="orthonormalized" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors (scale of 1 or -1).
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">

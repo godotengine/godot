@@ -69,6 +69,8 @@ public:
 
 	void orthonormalize();
 	Transform3D orthonormalized() const;
+	void orthogonalize();
+	Transform3D orthogonalized() const;
 	bool is_equal_approx(const Transform3D &p_transform) const;
 
 	bool operator==(const Transform3D &p_transform) const;
@@ -99,6 +101,7 @@ public:
 	void operator*=(const real_t p_val);
 	Transform3D operator*(const real_t p_val) const;
 
+	Transform3D sphere_interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 	Transform3D interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Transform3D inverse_xform(const Transform3D &t) const {

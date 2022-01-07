@@ -625,7 +625,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 								pa->object->set_indexed(pa->subpath, value, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 								if (!valid) {
-									ERR_PRINT("Failed setting track value '" + String(pa->owner->path) + "'. Check if property exists or the type of key is valid. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
+									ERR_PRINT("Failed setting track value '" + String(pa->owner->path) + "'. Check if the property exists or the type of key is valid. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 
@@ -1070,8 +1070,24 @@ void AnimationPlayer::_animation_update_transforms() {
 				bool valid;
 				pa->object->set_indexed(pa->subpath, pa->value_accum, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
+
 				if (!valid) {
-					ERR_PRINT("Failed setting key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "'. Check if property exists or the type of key is right for the property");
+					// Get subpath as string for printing the error
+					// Cannot use `String::join(Vector<String>)` because this is a vector of StringName
+					String key_debug;
+					if (pa->subpath.size() > 0) {
+						key_debug = pa->subpath[0];
+						for (int subpath_index = 1; subpath_index < pa->subpath.size(); ++subpath_index) {
+							key_debug += ".";
+							key_debug += pa->subpath[subpath_index];
+						}
+					}
+					ERR_PRINT("Failed setting key '" + key_debug +
+							"' at time " + rtos(playback.current.pos) +
+							" in Animation '" + get_current_animation() +
+							"' at Node '" + get_path() +
+							"', Track '" + String(pa->owner->path) +
+							"'. Check if the property exists or the type of key is right for the property.");
 				}
 #endif
 

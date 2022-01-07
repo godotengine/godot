@@ -2120,7 +2120,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case BASIS: {
-			r_dst = Transform3D(*a._data._basis).interpolate_with(Transform3D(*b._data._basis), c).basis;
+			r_dst = a._data._basis->lerp(*b._data._basis, c);
 		}
 			return;
 		case TRANSFORM3D: {

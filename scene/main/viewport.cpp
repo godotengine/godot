@@ -48,6 +48,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/mesh.h"
@@ -2833,13 +2834,13 @@ bool Viewport::is_using_debanding() const {
 	return use_debanding;
 }
 
-void Viewport::set_lod_threshold(float p_pixels) {
-	lod_threshold = p_pixels;
-	RS::get_singleton()->viewport_set_lod_threshold(viewport, lod_threshold);
+void Viewport::set_mesh_lod_threshold(float p_pixels) {
+	mesh_lod_threshold = p_pixels;
+	RS::get_singleton()->viewport_set_mesh_lod_threshold(viewport, mesh_lod_threshold);
 }
 
-float Viewport::get_lod_threshold() const {
-	return lod_threshold;
+float Viewport::get_mesh_lod_threshold() const {
+	return mesh_lod_threshold;
 }
 
 void Viewport::set_use_occlusion_culling(bool p_use_occlusion_culling) {
@@ -3634,8 +3635,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sdf_scale", "scale"), &Viewport::set_sdf_scale);
 	ClassDB::bind_method(D_METHOD("get_sdf_scale"), &Viewport::get_sdf_scale);
 
-	ClassDB::bind_method(D_METHOD("set_lod_threshold", "pixels"), &Viewport::set_lod_threshold);
-	ClassDB::bind_method(D_METHOD("get_lod_threshold"), &Viewport::get_lod_threshold);
+	ClassDB::bind_method(D_METHOD("set_mesh_lod_threshold", "pixels"), &Viewport::set_mesh_lod_threshold);
+	ClassDB::bind_method(D_METHOD("get_mesh_lod_threshold"), &Viewport::get_mesh_lod_threshold);
 
 	ClassDB::bind_method(D_METHOD("_process_picking"), &Viewport::_process_picking);
 
@@ -3685,7 +3686,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), "set_screen_space_aa", "get_screen_space_aa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_occlusion_culling"), "set_use_occlusion_culling", "is_using_occlusion_culling");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_lod_threshold", "get_lod_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 #ifndef _3D_DISABLED
 	ADD_GROUP("Scaling 3D", "");
@@ -3766,6 +3767,7 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SCENE_LUMINANCE);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SSAO);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_SSIL);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_PSSM_SPLITS);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_DECAL_ATLAS);
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_SDFGI);
@@ -3824,7 +3826,7 @@ Viewport::Viewport() {
 	set_shadow_atlas_quadrant_subdiv(2, SHADOW_ATLAS_QUADRANT_SUBDIV_16);
 	set_shadow_atlas_quadrant_subdiv(3, SHADOW_ATLAS_QUADRANT_SUBDIV_64);
 
-	set_lod_threshold(lod_threshold);
+	set_mesh_lod_threshold(mesh_lod_threshold);
 
 	String id = itos(get_instance_id());
 	input_group = "_vp_input" + id;
@@ -3864,6 +3866,11 @@ Viewport::~Viewport() {
 
 void SubViewport::set_size(const Size2i &p_size) {
 	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
+
+	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
+	if (c) {
+		c->update_minimum_size();
+	}
 }
 
 Size2i SubViewport::get_size() const {

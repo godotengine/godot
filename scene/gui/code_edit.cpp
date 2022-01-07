@@ -143,7 +143,6 @@ void CodeEdit::_notification(int p_what) {
 
 				code_completion_line_ofs = CLAMP(code_completion_current_selected - lines / 2, 0, code_completion_options_count - lines);
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, code_completion_rect.position.y + (code_completion_current_selected - code_completion_line_ofs) * row_height), Size2(code_completion_rect.size.width, row_height)), code_completion_selected_color);
-				draw_rect(Rect2(code_completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(code_completion_base_width, code_completion_rect.size.width - (icon_area_size.x + icon_hsep)), code_completion_rect.size.height)), code_completion_existing_color);
 
 				for (int i = 0; i < lines; i++) {
 					int l = code_completion_line_ofs + i;
@@ -177,6 +176,17 @@ void CodeEdit::_notification(int p_what) {
 						}
 						tl->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 					}
+
+					Point2 match_pos = Point2(code_completion_rect.position.x + icon_area_size.x + icon_hsep, code_completion_rect.position.y + i * row_height);
+
+					for (int j = 0; j < code_completion_options[l].matches.size(); j++) {
+						Pair<int, int> match = code_completion_options[l].matches[j];
+						int match_offset = font->get_string_size(code_completion_options[l].display.substr(0, match.first), font_size).width;
+						int match_len = font->get_string_size(code_completion_options[l].display.substr(match.first, match.second), font_size).width;
+
+						draw_rect(Rect2(match_pos + Point2(match_offset, 0), Size2(match_len, row_height)), code_completion_existing_color);
+					}
+
 					tl->draw(ci, title_pos, code_completion_options[l].font_color);
 				}
 
@@ -2808,6 +2818,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	code_completion_base = string_to_complete;
 
 	Vector<ScriptCodeCompletionOption> completion_options_casei;
+	Vector<ScriptCodeCompletionOption> completion_options_substr;
+	Vector<ScriptCodeCompletionOption> completion_options_substr_casei;
 	Vector<ScriptCodeCompletionOption> completion_options_subseq;
 	Vector<ScriptCodeCompletionOption> completion_options_subseq_casei;
 
@@ -2862,35 +2874,100 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		const char32_t *tgt = &option.display[0];
 		const char32_t *tgt_lower = &display_lower[0];
 
-		const char32_t *ssq_last_tgt = nullptr;
-		const char32_t *ssq_lower_last_tgt = nullptr;
+		const char32_t *sst = &string_to_complete[0];
+		const char32_t *sst_lower = &display_lower[0];
 
-		for (; *tgt; tgt++, tgt_lower++) {
+		Vector<Pair<int, int>> ssq_matches;
+		int ssq_match_start = 0;
+		int ssq_match_len = 0;
+
+		Vector<Pair<int, int>> ssq_lower_matches;
+		int ssq_lower_match_start = 0;
+		int ssq_lower_match_len = 0;
+
+		int sst_start = -1;
+		int sst_lower_start = -1;
+
+		for (int i = 0; *tgt; tgt++, tgt_lower++, i++) {
+			// Check substring.
+			if (*sst == *tgt) {
+				sst++;
+				if (sst_start == -1) {
+					sst_start = i;
+				}
+			} else if (sst_start != -1 && *sst) {
+				sst = &string_to_complete[0];
+				sst_start = -1;
+			}
+
+			// Check subsequence.
 			if (*ssq == *tgt) {
 				ssq++;
-				ssq_last_tgt = tgt;
+				if (ssq_match_len == 0) {
+					ssq_match_start = i;
+				}
+				ssq_match_len++;
+			} else if (ssq_match_len > 0) {
+				ssq_matches.push_back(Pair<int, int>(ssq_match_start, ssq_match_len));
+				ssq_match_len = 0;
 			}
+
+			// Check lower substring.
+			if (*sst_lower == *tgt) {
+				sst_lower++;
+				if (sst_lower_start == -1) {
+					sst_lower_start = i;
+				}
+			} else if (sst_lower_start != -1 && *sst_lower) {
+				sst_lower = &string_to_complete[0];
+				sst_lower_start = -1;
+			}
+
+			// Check lower subsequence.
 			if (*ssq_lower == *tgt_lower) {
 				ssq_lower++;
-				ssq_lower_last_tgt = tgt;
+				if (ssq_lower_match_len == 0) {
+					ssq_lower_match_start = i;
+				}
+				ssq_lower_match_len++;
+			} else if (ssq_lower_match_len > 0) {
+				ssq_lower_matches.push_back(Pair<int, int>(ssq_lower_match_start, ssq_lower_match_len));
+				ssq_lower_match_len = 0;
 			}
 		}
 
 		/* Matched the whole subsequence in s. */
-		if (!*ssq) {
-			/* Finished matching in the first s.length() characters. */
-			if (ssq_last_tgt == &option.display[string_to_complete.length() - 1]) {
+		if (!*ssq) { // Matched the whole subsequence in s.
+			option.matches.clear();
+
+			if (sst_start == 0) { // Matched substring in beginning of s.
+				option.matches.push_back(Pair<int, int>(sst_start, string_to_complete.length()));
 				code_completion_options.push_back(option);
+			} else if (sst_start > 0) { // Matched substring in s.
+				option.matches.push_back(Pair<int, int>(sst_start, string_to_complete.length()));
+				completion_options_substr.push_back(option);
 			} else {
+				if (ssq_match_len > 0) {
+					ssq_matches.push_back(Pair<int, int>(ssq_match_start, ssq_match_len));
+				}
+				option.matches.append_array(ssq_matches);
 				completion_options_subseq.push_back(option);
 			}
 			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
-			/* Matched the whole subsequence in s_lower. */
-		} else if (!*ssq_lower) {
-			/* Finished matching in the first s.length() characters. */
-			if (ssq_lower_last_tgt == &option.display[string_to_complete.length() - 1]) {
+		} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower.
+			option.matches.clear();
+
+			if (sst_lower_start == 0) { // Matched substring in beginning of s_lower.
+				option.matches.push_back(Pair<int, int>(sst_lower_start, string_to_complete.length()));
 				completion_options_casei.push_back(option);
+			} else if (sst_lower_start > 0) { // Matched substring in s_lower.
+				option.matches.push_back(Pair<int, int>(sst_lower_start, string_to_complete.length()));
+				completion_options_substr_casei.push_back(option);
 			} else {
+				if (ssq_lower_match_len > 0) {
+					ssq_lower_matches.push_back(Pair<int, int>(ssq_lower_match_start, ssq_lower_match_len));
+				}
+				option.matches.append_array(ssq_lower_matches);
 				completion_options_subseq_casei.push_back(option);
 			}
 			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);

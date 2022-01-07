@@ -167,8 +167,8 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 		}
 	}
 
-	float screen_lod_threshold = p_viewport->lod_threshold / float(p_viewport->size.width);
-	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, screen_lod_threshold, p_viewport->shadow_atlas, xr_interface, &p_viewport->render_info);
+	float screen_mesh_lod_threshold = p_viewport->mesh_lod_threshold / float(p_viewport->size.width);
+	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, screen_mesh_lod_threshold, p_viewport->shadow_atlas, xr_interface, &p_viewport->render_info);
 
 	RENDER_TIMESTAMP("<End Rendering 3D Scene");
 }
@@ -1084,11 +1084,11 @@ void RendererViewport::viewport_set_occlusion_culling_build_quality(RS::Viewport
 	RendererSceneOcclusionCull::get_singleton()->set_build_quality(p_quality);
 }
 
-void RendererViewport::viewport_set_lod_threshold(RID p_viewport, float p_pixels) {
+void RendererViewport::viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	viewport->lod_threshold = p_pixels;
+	viewport->mesh_lod_threshold = p_pixels;
 }
 
 int RendererViewport::viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfoType p_type, RS::ViewportRenderInfo p_info) {

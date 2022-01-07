@@ -362,16 +362,16 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 	}
 
 	builder.append("\n>> on function: ");
-	builder.append(p_function);
+	builder.append(String::utf8(p_function));
 	builder.append("()\n>> ");
-	builder.append(String(p_file).trim_prefix(self->base_dir));
+	builder.append(String::utf8(p_file).trim_prefix(self->base_dir));
 	builder.append("\n>> ");
 	builder.append(itos(p_line));
 	builder.append("\n>> ");
-	builder.append(p_error);
+	builder.append(String::utf8(p_error));
 	if (strlen(p_explanation) > 0) {
 		builder.append("\n>> ");
-		builder.append(p_explanation);
+		builder.append(String::utf8(p_explanation));
 	}
 	builder.append("\n");
 

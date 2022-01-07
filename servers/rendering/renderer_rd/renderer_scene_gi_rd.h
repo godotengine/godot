@@ -602,19 +602,15 @@ public:
 	};
 
 	struct VoxelGIData {
-		float xform[16];
-		float bounds[3];
-		float dynamic_range;
+		float xform[16]; // 64 - 64
 
-		float bias;
-		float normal_bias;
-		uint32_t blend_ambient;
-		uint32_t texture_slot;
+		float bounds[3]; // 12 - 76
+		float dynamic_range; // 4 - 80
 
-		uint32_t pad0;
-		uint32_t pad1;
-		uint32_t pad2;
-		uint32_t mipmaps;
+		float bias; // 4 - 84
+		float normal_bias; // 4 - 88
+		uint32_t blend_ambient; // 4 - 92
+		uint32_t mipmaps; // 4 - 96
 	};
 
 	struct PushConstant {

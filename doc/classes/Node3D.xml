@@ -134,6 +134,20 @@
 				Resets this node's transformations (like scale, skew and taper) preserving its rotation and translation by performing Gram-Schmidt orthonormalization on this node's [Transform3D].
 			</description>
 		</method>
+		<method name="property_can_revert">
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Returns [code]true[/code] if the property identified by [code]name[/code] can be reverted to a default value.
+			</description>
+		</method>
+		<method name="property_get_revert">
+			<return type="Variant" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Returns the default value of the Node3D property with given [code]name[/code].
+			</description>
+		</method>
 		<method name="rotate">
 			<return type="void" />
 			<argument index="0" name="axis" type="Vector3" />
