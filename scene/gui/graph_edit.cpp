@@ -600,7 +600,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									to = get_node(String(connecting_from)); //maybe it was erased
 									if (Object::cast_to<GraphNode>(to)) {
 										connecting = true;
-										emit_signal(SNAME("connection_drag_begun"), connecting_from, connecting_index, false);
+										emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
 									}
 									return;
 								}
@@ -617,7 +617,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_target = false;
 					connecting_to = pos;
 					just_disconnected = false;
-					emit_signal(SNAME("connection_drag_begun"), connecting_from, connecting_index, true);
+					emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
 					return;
 				}
 			}
@@ -644,7 +644,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									fr = get_node(String(connecting_from)); //maybe it was erased
 									if (Object::cast_to<GraphNode>(fr)) {
 										connecting = true;
-										emit_signal(SNAME("connection_drag_begun"), connecting_from, connecting_index, true);
+										emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
 									}
 									return;
 								}
@@ -661,7 +661,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_target = false;
 					connecting_to = pos;
 					just_disconnected = false;
-					emit_signal(SNAME("connection_drag_begun"), connecting_from, connecting_index, false);
+					emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
 					return;
 				}
 			}
@@ -2275,7 +2275,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "ofs")));
-	ADD_SIGNAL(MethodInfo("connection_drag_begun", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::STRING, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::STRING, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 }
 
