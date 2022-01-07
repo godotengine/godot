@@ -1672,9 +1672,9 @@ void Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &Directory::rename);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &Directory::remove);
 
-	ClassDB::bind_method(D_METHOD("set_include_navigational"), &Directory::set_include_navigational);
+	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &Directory::set_include_navigational);
 	ClassDB::bind_method(D_METHOD("get_include_navigational"), &Directory::get_include_navigational);
-	ClassDB::bind_method(D_METHOD("set_include_hidden"), &Directory::set_include_hidden);
+	ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &Directory::set_include_hidden);
 	ClassDB::bind_method(D_METHOD("get_include_hidden"), &Directory::get_include_hidden);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");

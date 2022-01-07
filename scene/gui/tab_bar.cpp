@@ -1188,7 +1188,7 @@ void TabBar::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_hover"), &TabBar::_update_hover);
-	ClassDB::bind_method(D_METHOD("set_tab_count"), &TabBar::set_tab_count);
+	ClassDB::bind_method(D_METHOD("set_tab_count", "count"), &TabBar::set_tab_count);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabBar::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabBar::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabBar::get_current_tab);

@@ -359,8 +359,9 @@ void OptionButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_popup"), &OptionButton::get_popup);
 
-	ClassDB::bind_method(D_METHOD("set_item_count"), &OptionButton::set_item_count);
+	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &OptionButton::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
+
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
