@@ -88,8 +88,8 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-12-20 18:53+0000\n"
-"Last-Translator: jker <cxgmfy@163.com>\n"
+"PO-Revision-Date: 2021-12-31 08:52+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -97,7 +97,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.10\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2402,7 +2402,7 @@ msgstr "请求文件的类型未知："
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
-msgstr "保存出错。"
+msgstr "保存时出错。"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
@@ -2472,7 +2472,7 @@ msgstr "无法加载要合并的网格库！"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr "保存网格库出错！"
+msgstr "保存网格库时出错！"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
@@ -6845,7 +6845,7 @@ msgstr "删除顶点"
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Close Curve"
-msgstr "关闭曲线"
+msgstr "闭合曲线"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -10459,15 +10459,15 @@ msgstr "导出选中的场景（包括依赖项）"
 
 #: editor/project_export.cpp
 msgid "Export selected resources (and dependencies)"
-msgstr "导出选中的资源（包括依赖资源）"
+msgstr "导出选中的资源（包括依赖项）"
 
 #: editor/project_export.cpp
 msgid "Export Mode:"
-msgstr "导出模式:"
+msgstr "导出模式："
 
 #: editor/project_export.cpp
 msgid "Resources to export:"
-msgstr "导出的资源:"
+msgstr "导出的资源："
 
 #: editor/project_export.cpp
 msgid ""

@@ -2188,8 +2188,8 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Aquesta propietat no disposa de cap descripció. Podeu contribuir "
-"[color=$color][url=$url] tot aportant-ne una[/url][/color]!"
+"Aquesta propietat no disposa de cap descripció. Podeu contribuir [color="
+"$color][url=$url] tot aportant-ne una[/url][/color]!"
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
@@ -3056,8 +3056,8 @@ msgstr ""
 "Quan aquesta opció està activada, utilitzar el desplegament en un clic farà "
 "que l'executable intenti connectar-se a la IP d'aquest ordinador per tal que "
 "el projecte pugui ser depurat.\n"
-"Aquesta opció està pensada per ser usada per la depuració remota ("
-"habitualment amb un dispositiu mòbil).\n"
+"Aquesta opció està pensada per ser usada per la depuració remota "
+"(habitualment amb un dispositiu mòbil).\n"
 "No cal que l'activeu per utilitzar el depurador del GDScript localment."
 
 #: editor/editor_node.cpp
