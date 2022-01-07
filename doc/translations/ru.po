@@ -32,12 +32,14 @@
 # GameOverCode <thefguyplayeriwbt@gmail.com>, 2021.
 # trolley813 <trolleybus.1329@gmail.com>, 2021.
 # artem <artem999.r@protonmail.com>, 2021.
+# Werryx <artoops@mail.ru>, 2022.
+# Eugene <oukey311@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-04 12:53+0000\n"
-"Last-Translator: artem <artem999.r@protonmail.com>\n"
+"PO-Revision-Date: 2022-01-03 03:53+0000\n"
+"Last-Translator: Eugene <oukey311@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ru/>\n"
 "Language: ru\n"
@@ -46,7 +48,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -472,6 +474,23 @@ msgid ""
 "want a true content-aware comparison, you have to use [code]deep_equal[/"
 "code]."
 msgstr ""
+"Сравнивает два значения, проверяя их фактическое содержимое, рекурсивно "
+"переходя в любой массив или словарь до самого глубокого уровня.\n"
+"Это можно сравнить с [code]==[/code] по нескольким причинам:\n"
+"- Для [code]null[/code], [code]int[/code], [code]float[/code], [code]String[/"
+"code], [code]Object[/code] и [code]RID[/code], [code]deep_equal[/code] и "
+"[code]==[/code] работают одинаково.\n"
+"- Для [code]Dictionary[/code], [code]==[/code] рассматривает равенство и "
+"только если обе переменные указывают на один и тот же [code]Dictionary[/"
+"code], без рекурсии или просмотра содержимого вообще.\n"
+"- Для [code]Array[/code], [code]==[/code] считается равенством тогда, и "
+"только тогда, когда каждый элемент в первом [code]Array[/code] равен "
+"элементу во втором [code]Array[/code], как сообщает [code]==[/code]. Это "
+"означает, что [code]==[/code] рекурсивно переходит в [code]Array[/code], но "
+"не в [code]Dictionary[/code].\n"
+"Короче говоря, всякий раз, когда потенциально задействован [code]Dictionary[/"
+"code], если вам нужно истинное сравнение с учетом содержимого, вы должны "
+"использовать [code]deep_equal[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 #, fuzzy
@@ -4767,14 +4786,16 @@ msgid ""
 "Returns the center of the [AABB], which is equal to [member position] + "
 "([member size] / 2)."
 msgstr ""
+"Возвращает центр [AABB], который равен [позиция участника] + ([количество "
+"участников] / 2)."
 
 #: doc/classes/AABB.xml
 msgid "Gets the position of the 8 endpoints of the [AABB] in space."
-msgstr "Возвращает позицию 8-ми точек [AABB] в пространстве."
+msgstr "Получает положение 8 конечных точек [AABB] в пространстве."
 
 #: doc/classes/AABB.xml
 msgid "Returns the normalized longest axis of the [AABB]."
-msgstr "Возвращает самую длинную нормализованную ось [AABB]."
+msgstr "Возвращает нормализованную самую длинную ось [AABB]."
 
 #: doc/classes/AABB.xml
 msgid ""
@@ -4888,7 +4909,6 @@ msgid "Beginning corner. Typically has values lower than [member end]."
 msgstr "Начальный угол. Обычно имеет меньшия значения, чем у [member end]."
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml
-#, fuzzy
 msgid ""
 "Size from [member position] to [member end]. Typically, all components are "
 "positive.\n"
@@ -4912,7 +4932,6 @@ msgstr ""
 "можно только принять или закрыть (с тем же результатом)."
 
 #: doc/classes/AcceptDialog.xml
-#, fuzzy
 msgid ""
 "Adds a button with label [code]text[/code] and a custom [code]action[/code] "
 "to the dialog and returns the created button. [code]action[/code] will be "
@@ -4922,15 +4941,16 @@ msgid ""
 "You can use [method remove_button] method to remove a button created with "
 "this method from the dialog."
 msgstr ""
-"Добавляет кнопку с надписью [code]text[/code]] и пользовательским действием "
+"Добавляет кнопку с надписью [code]text[/code] и пользовательским действием "
 "[code]action[/code] в диалоговое окно и возвращает созданную кнопку. "
 "[code]action[/code] будет передано сигналу [signal custom_action] при "
 "нажатии.\n"
-"Если установлено в [code]true[/code], [code]right[/code] поместит кнопку "
-"справа от любых родственных кнопок."
+"Если установлено в [code]true[/code], [code]right[/code] разместит кнопку "
+"справа от любых родственных кнопок.\n"
+"Вы можете использовать метод [method remove_button] чтобы удалить кнопку, "
+"созданную этим методом из диалога."
 
 #: doc/classes/AcceptDialog.xml
-#, fuzzy
 msgid ""
 "Adds a button with label [code]name[/code] and a cancel action to the dialog "
 "and returns the created button.\n"
@@ -4938,7 +4958,9 @@ msgid ""
 "this method from the dialog."
 msgstr ""
 "Добавляет кнопку с надписью [code]name[/code] и действием отмены в "
-"диалоговое окно и возвращает созданную кнопку."
+"диалоговое окно и возвращает созданную кнопку.\n"
+"Вы можете использовать метод [method remove_button] чтобы удалить кнопку, "
+"созданную этим методом из диалога."
 
 #: doc/classes/AcceptDialog.xml
 msgid ""
@@ -4980,10 +5002,10 @@ msgid ""
 "the [code]button[/code] will no longer emit this dialog's [signal "
 "custom_action] signal or cancel this dialog."
 msgstr ""
-"Удаляет [code]кнопку[/code] из диалога. НЕ освобождает [код]кнопки[/код]. "
-"Кнопка [code]button[/code] должна быть [Button], добавленной с помощью "
-"метода [method add_button] или [method add_cancel]. После удаления нажатие "
-"[code]кнопки[/code] больше не будет вызывать сигнал [signal custom_action] "
+"Удаляет [code]button[/code] из диалога. НЕ освобождает [code]button[/code]. "
+"[code]button[/code] должна быть [Button], добавленной с помощью метода "
+"[method add_button] или [method add_cancel]. После удаления, нажатие "
+"[code]button[/code] больше не будет вызывать сигнал [signal custom_action] "
 "этого диалога или отменять этот диалог."
 
 #: doc/classes/AcceptDialog.xml
@@ -5112,7 +5134,6 @@ msgstr ""
 "раздел [method start]."
 
 #: doc/classes/AESContext.xml
-#, fuzzy
 msgid ""
 "Get the current IV state for this context (IV gets updated when calling "
 "[method update]). You normally don't need this function.\n"
@@ -5121,8 +5142,8 @@ msgid ""
 msgstr ""
 "Получить текущее IV состояние для данного контекста (IV обновляется при "
 "вызове [method update]). Обычно эта функция вам не нужна.\n"
-"Примечание: Эта функция имеет смысл только тогда, когда контекст запущен с "
-"[constant MODE_CBC_ENCRYPT] или [constant MODE_CBC_DECRYPT]."
+"[b]Примечание:[/b] Эта функция имеет смысл только тогда, когда контекст "
+"запущен с [constant MODE_CBC_ENCRYPT] или [constant MODE_CBC_DECRYPT]."
 
 #: doc/classes/AESContext.xml
 msgid ""
@@ -5138,7 +5159,6 @@ msgstr ""
 "MODE_CBC_ENCRYPT], либо [constant MODE_CBC_DECRYPT]."
 
 #: doc/classes/AESContext.xml
-#, fuzzy
 msgid ""
 "Run the desired operation for this AES context. Will return a "
 "[PoolByteArray] containing the result of encrypting (or decrypting) the "
@@ -5146,11 +5166,11 @@ msgid ""
 "[b]Note:[/b] The size of [code]src[/code] must be a multiple of 16. Apply "
 "some padding if needed."
 msgstr ""
-"Запустить нужную операцию для данного AES-контекста. Вернет "
-"[PackedByteArray], содержащий результат шифрования (или расшифровки) данного "
-"[code]src[/code]. Режимы операции смотрите в [method start].\n"
-"Примечание: Размер [code]src[/code] должен быть кратен 16. При необходимости "
-"применяйте дополнение."
+"Запустить нужную операцию для данного AES-контекста. Вернет [PoolByteArray], "
+"содержащий результат шифрования (или расшифровки) данного [code]src[/code]. "
+"Режимы операции смотрите в [method start].\n"
+"[b]Примечание:[/b] Размер [code]src[/code] должен быть кратен 16. При "
+"необходимости применяйте дополнение."
 
 #: doc/classes/AESContext.xml
 msgid "AES electronic codebook encryption mode."
@@ -5323,7 +5343,6 @@ msgid "Proxy texture for simple frame-based animations."
 msgstr "Прокси-текстура для простых покадровых анимаций."
 
 #: doc/classes/AnimatedTexture.xml
-#, fuzzy
 msgid ""
 "[AnimatedTexture] is a resource format for frame-based animations, where "
 "multiple textures can be chained automatically with a predefined delay for "
@@ -5342,8 +5361,8 @@ msgstr ""
 "[AnimatedTexture] — это формат ресурса для покадровых анимаций, где "
 "несколько текстур могут быть автоматически сцеплены с предопределенной "
 "задержкой для каждого кадра. В отличие от [AnimationPlayer] или "
-"[AnimatedSprite2D], не является [Node], и имеет преимущество в том, что "
-"может быть использован везде, где может быть использован ресурс [Texture2D], "
+"[AnimatedSprite], не является [Node], и имеет преимущество в том, что может "
+"быть использован везде, где может быть использован ресурс [Texture], "
 "например в [TileSet].\n"
 "Воспроизведение анимации контролируется свойством [member fps], а также "
 "опциональной задержкой каждого кадра (см. [method set_frame_delay]). "
@@ -5351,17 +5370,17 @@ msgstr ""
 "автоматически перезапускается на 0 кадр.\n"
 "В настоящее время [AnimatedTexture] требует, чтобы все текстуры кадров имели "
 "одинаковый размер, в противном случае более крупные будут обрезаны в "
-"соответствии с наименьшим кадром. Кроме того, не поддерживается "
-"[AtlasTexture]. Каждый кадр должен быть отдельным изображением."
+"соответствии с наименьшим кадром.\n"
+"[b]Примечание:[/b] Кроме того, не поддерживается [AtlasTexture]. Каждый кадр "
+"должен быть отдельным [Texture]."
 
 #: doc/classes/AnimatedTexture.xml
 msgid "Returns the given frame's delay value."
 msgstr "Возвращает значение задержки данного кадра."
 
 #: doc/classes/AnimatedTexture.xml
-#, fuzzy
 msgid "Returns the given frame's [Texture]."
-msgstr "Возвращает [Texture2D] заданного кадра."
+msgstr "Возвращает [Texture] заданного кадра."
 
 #: doc/classes/AnimatedTexture.xml
 msgid ""
@@ -5394,7 +5413,6 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/AnimatedTexture.xml
-#, fuzzy
 msgid ""
 "Assigns a [Texture] to the given frame. Frame IDs start at 0, so the first "
 "frame has ID 0, and the last frame of the animation has ID [member frames] - "
@@ -5403,7 +5421,7 @@ msgid ""
 "in mind that only frames from 0 to [member frames] - 1 will be part of the "
 "animation."
 msgstr ""
-"Назначает [Texture2D] данному кадру. Идентификаторы кадров начинаются с 0, "
+"Назначает [Texture] данному кадру. Идентификаторы кадров начинаются с 0, "
 "поэтому первый кадр имеет идентификатор 0, а последний кадр анимации имеет "
 "идентификатор [member frames] - 1.\n"
 "Вы можете определить любое количество текстур до [constant MAX_FRAMES], но "
@@ -5458,7 +5476,6 @@ msgstr ""
 "code]."
 
 #: doc/classes/AnimatedTexture.xml
-#, fuzzy
 msgid ""
 "If [code]true[/code], the animation will pause where it currently is (i.e. "
 "at [member current_frame]). The animation will continue from where it was "
@@ -5470,22 +5487,19 @@ msgstr ""
 "приостановлена."
 
 #: doc/classes/AnimatedTexture.xml
-#, fuzzy
 msgid ""
 "The maximum number of frames supported by [AnimatedTexture]. If you need "
 "more frames in your animation, use [AnimationPlayer] or [AnimatedSprite]."
 msgstr ""
 "Максимальное количество кадров, поддерживаемое [AnimatedTexture]. Если вам "
 "нужно больше кадров в анимации, используйте [AnimationPlayer] или "
-"[AnimatedSprite2D]."
+"[AnimatedSprite]."
 
 #: doc/classes/Animation.xml
-#, fuzzy
 msgid "Contains data used to animate everything in the engine."
 msgstr "Содержит данные, используемые для анимации всего в движке."
 
 #: doc/classes/Animation.xml
-#, fuzzy
 msgid ""
 "An Animation resource contains data used to animate everything in the "
 "engine. Animations are divided into tracks, and each track must be linked to "
@@ -5530,7 +5544,6 @@ msgid "$DOCS_URL/tutorials/animation/index.html"
 msgstr ""
 
 #: doc/classes/Animation.xml
-#, fuzzy
 msgid "Adds a track to the Animation."
 msgstr "Добавляет дорожку в анимацию."
 
@@ -5543,7 +5556,6 @@ msgstr ""
 "Ключ [code]track_idx[/code] должен быть индексом дорожки анимации."
 
 #: doc/classes/Animation.xml
-#, fuzzy
 msgid ""
 "Inserts a key with value [code]animation[/code] at the given [code]time[/"
 "code] (in seconds). The [code]track_idx[/code] must be the index of an "
@@ -5622,6 +5634,9 @@ msgid ""
 "[code]offset[/code]. The [code]track_idx[/code] must be the index of an "
 "Audio Track."
 msgstr ""
+"Устанавливает начало смещения ключа, идентифицированного [code]key_idx[/"
+"code] равным значению [code]offset[/code]. [code]track_idx[/code] должен "
+"быть индексом аудио дорожки."
 
 #: doc/classes/Animation.xml
 #, fuzzy
@@ -5689,13 +5704,15 @@ msgstr ""
 
 #: doc/classes/Animation.xml
 msgid "Clear the animation (clear all tracks and reset all)."
-msgstr ""
+msgstr "Очистить анимацию (удалить все дорожки и сбросить всё)."
 
 #: doc/classes/Animation.xml
 msgid ""
 "Adds a new track that is a copy of the given track from [code]to_animation[/"
 "code]."
 msgstr ""
+"Добавляет новую дорожку, которая является копией данной дорожки из "
+"[code]to_animation[/code]."
 
 #: doc/classes/Animation.xml
 msgid ""
@@ -5774,7 +5791,7 @@ msgstr "Получает тип дорожки."
 
 #: doc/classes/Animation.xml
 msgid "Insert a generic key in a given track."
-msgstr ""
+msgstr "Вставить общий ключ в данную дорожку."
 
 #: doc/classes/Animation.xml
 msgid ""
@@ -6775,7 +6792,7 @@ msgstr ""
 
 #: doc/classes/AnimationNodeStateMachineTransition.xml
 msgid "The transition type."
-msgstr ""
+msgstr "Тип перехода."
 
 #: doc/classes/AnimationNodeStateMachineTransition.xml
 msgid "The time to cross-fade between this state and the next."
@@ -24634,7 +24651,7 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Academy Color Encoding System tonemapper operator. Performs an aproximation "
+"Academy Color Encoding System tonemapper operator. Performs an approximation "
 "of the ACES tonemapping curve."
 msgstr ""
 

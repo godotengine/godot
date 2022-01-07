@@ -39,12 +39,13 @@
 # Bastian <bastian.ike@gmail.com>, 2021.
 # KuhnChris <kuhnchris@kuhnchris.eu>, 2021.
 # Rémi Verschelde <remi@godotengine.org>, 2021.
+# Antonio Noack <corperateraider@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-16 12:44+0000\n"
-"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
+"PO-Revision-Date: 2022-01-03 03:53+0000\n"
+"Last-Translator: Antonio Noack <corperateraider@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/de/>\n"
 "Language: de\n"
@@ -52,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -80,7 +81,7 @@ msgstr "Signale"
 
 #: doc/tools/make_rst.py
 msgid "Enumerations"
-msgstr "Aufzählungen"
+msgstr "Aufzählungstypen"
 
 #: doc/tools/make_rst.py
 msgid "Constants"
@@ -472,6 +473,21 @@ msgid ""
 "want a true content-aware comparison, you have to use [code]deep_equal[/"
 "code]."
 msgstr ""
+"Vergleicht zwei Werte, indem es deren tatsächlichen Inhalt überprüft. Die "
+"Methode geht dabei in jedes `Array` oder `Dictionary` bis zum aller tiefsten "
+"Level.\n"
+"Was ist der Unterschied zu [code]==[/code]?\n"
+"- Für die Typen [code]null[/code], [code]int[/code], [code]float[/code], "
+"[code]String[/code], [code]Object[/code] und [code]RID[/code] sind "
+"[code]deep_equal[/code] und [code]==[/code] identisch.\n"
+"- Für [code]Dictionary[/code]s, prüft [code]==[/code] nur, ob es dasselbe "
+"Objekt ist .\n"
+"- Für [code]Array[/code]s, [code]==[/code] werden die Arrays elementweise "
+"mit  [code]==[/code] verglichen. Der Elemente-Vergleich ist also wieder "
+"einfach, nicht tief.\n"
+"Zusammengefasst, immer wenn ein [code]Dictionary[/code] potentiell "
+"involviert ist, und du einen wahren Inhaltsvergleich brauchst, musst du "
+"[code]deep_equal[/code] verwenden."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1449,7 +1465,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns a random unsigned 32-bit integer. Use remainder to obtain a random "
 "value in the interval [code][0, N - 1][/code] (where N is smaller than "
@@ -1465,10 +1480,14 @@ msgstr ""
 "Modulo, um einen Zufallswert im Intervall [code][0, N - 1][/code] zu "
 "erhalten (wobei N kleiner als 2^32 ist).\n"
 "[codeblock]\n"
-"randi()           # Returns random integer between 0 and 2^32 - 1\n"
-"randi() % 20      # Returns random integer between 0 and 19\n"
-"randi() % 100     # Returns random integer between 0 and 99\n"
-"randi() % 100 + 1 # Returns random integer between 1 and 100\n"
+"randi()           # Gibt Zufallswert zwischen 0 und 2^32 - 1 zurück "
+"(inklusiv)\n"
+"randi() % 20      # Gibt einen Zufallswert zwischen 0 and 19 zurück "
+"(inklusiv)\n"
+"randi() % 100     # Gibt einen Zufallswert zwischen 0 und 99 zurück "
+"(inklusiv)\n"
+"randi() % 100 + 1 # Gibt einen Zufallswert zwischen 1 and 100 zurück "
+"(inklusiv)\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -1666,7 +1685,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the square root of [code]s[/code], where [code]s[/code] is a non-"
 "negative number.\n"
@@ -1681,12 +1699,11 @@ msgstr ""
 "[codeblock]\n"
 "sqrt(9) # Ergibt 3\n"
 "[/codeblock]\n"
-"[b]Note:[/b]Negative Werte von [code]s[/code] ergeben NaN. Falls Sie die "
+"[b]Notiz:[/b]Negative Werte von [code]s[/code] ergeben NaN. Falls Sie die "
 "Quadratwurzel negativer Zahlen ziehen müssen, verwenden Sie [code]System."
 "Numerics.Complex[/code] in C#."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the position of the first non-zero digit, after the decimal point. "
 "Note that the maximum return value is 10, which is a design decision in the "
@@ -1701,12 +1718,9 @@ msgstr ""
 "Merke, dass der höchste Rückgabewert 10 ist, was eine Entwurfsentscheidung "
 "in der Implementation ist.\n"
 "[codeblock]\n"
-"# n ist 0\n"
-"n = step_decimals(5)\n"
-"# n ist 4\n"
-"n = step_decimals(1.0005)\n"
-"# n ist 9\n"
-"n = step_decimals(0.000000005)\n"
+"n = step_decimals(5) # n ist 0\n"
+"n = step_decimals(1.0005) # n ist 4\n"
+"n = step_decimals(0.000000005) # n ist 9\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -1730,7 +1744,6 @@ msgstr ""
 "Siehe auch [method ceil], [method floor], [method round], und [int]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Converts one or more arguments of any type to string in the best way "
 "possible.\n"
@@ -1745,8 +1758,8 @@ msgstr ""
 "[codeblock]\n"
 "var a = [10, 20, 30]\n"
 "var b = str(a);\n"
-"len(a) # Returns 3\n"
-"len(b) # Returns 12\n"
+"len(a) # Ergibt 3\n"
+"len(b) # Ergibt 12\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -1829,7 +1842,6 @@ msgstr ""
 "Text."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns whether the given class exists in [ClassDB].\n"
 "[codeblock]\n"
@@ -1839,8 +1851,8 @@ msgid ""
 msgstr ""
 "Gibt zurück ob die gegebene Klasse in [ClassDB] existiert.\n"
 "[codeblock]\n"
-"type_exists(\"Sprite2D\") # Returns true\n"
-"type_exists(\"Variant\") # Returns false\n"
+"type_exists(\"Sprite\") # Ergibt true\n"
+"type_exists(\"Variant\") # Ergibt false\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -2080,11 +2092,12 @@ msgstr ""
 "Umfang passt. Dies ist äquivalent zu [code]TAU / 2[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "The circle constant, the circumference of the unit circle in radians. This "
 "is equivalent to [code]PI * 2[/code], or 360 degrees in rotations."
-msgstr "Die Kreiskonstante, der Umfang des Einheitskreises im Bogenmaß."
+msgstr ""
+"Die Kreiskonstante, der Umfang des Einheitskreises im Bogenmaß. Sie ist "
+"äquivalent mit [code]PI * 2[/code], oder einer 360°-Drehung."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -2152,9 +2165,8 @@ msgstr ""
 "werden kann."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [ARVRServer] singleton."
-msgstr "Das [XRServer] Singleton."
+msgstr "Das [ARVRServer] Singleton."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [AudioServer] singleton."
@@ -2173,9 +2185,8 @@ msgid "The [Engine] singleton."
 msgstr "Das [Engine] Singleton."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [Geometry] singleton."
-msgstr "Das [Geometry2D] Singleton."
+msgstr "Das [Geometry] Singleton."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [IP] singleton."
@@ -2214,9 +2225,8 @@ msgid "The [Marshalls] singleton."
 msgstr "Das [Marshalls] Singleton."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [EditorNavigationMeshGenerator] singleton."
-msgstr "Das [NavigationMeshGenerator] Singleton."
+msgstr "Das [EditorNavigationMeshGenerator] Singleton."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [OS] singleton."
@@ -2227,14 +2237,12 @@ msgid "The [Performance] singleton."
 msgstr "Das [Performance] Singleton."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [Physics2DServer] singleton."
-msgstr "Das [PhysicsServer2D] Singleton."
+msgstr "Das [Physics2DServer] Singleton."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [PhysicsServer] singleton."
-msgstr "Das [PhysicsServer2D] Singleton."
+msgstr "Das [PhysicsServer] Singleton."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [ProjectSettings] singleton."
@@ -2249,9 +2257,8 @@ msgid "The [ResourceSaver] singleton."
 msgstr "Das [ResourceSaver] Singleton."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [Time] singleton."
-msgstr "Das [Engine] Singleton."
+msgstr "Das [Time] Singleton."
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [TranslationServer] singleton."
@@ -2262,9 +2269,8 @@ msgid "The [VisualScriptEditor] singleton."
 msgstr "Das [VisualScriptEditor] Singleton."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [VisualServer] singleton."
-msgstr "Das [DisplayServer] Singleton."
+msgstr "Das [VisualServer] Singleton."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Left margin, usually used for [Control] or [StyleBox]-derived classes."
@@ -2360,10 +2366,10 @@ msgstr ""
 "Klassen."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Scancodes with this bit applied are non-printable."
 msgstr ""
-"Tastencodes, für die dieses Bit gesetzt ist, können nicht ausgegeben werden."
+"Tastencodes, für die dieses Bit gesetzt ist, können nicht in der Konsole "
+"ausgegeben werden."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Escape key."
@@ -2634,20 +2640,20 @@ msgstr "Rechte Richtungs-Taste."
 msgid ""
 "Media back key. Not to be confused with the Back button on an Android device."
 msgstr ""
+"Medien-Zurück-Taste. Nicht zu verwechseln mit dem Zurück-Knopf bei einem "
+"Android-Gerät."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Media forward key."
-msgstr "Medium aufnehmen Taste."
+msgstr "Medien-Vorwärts-Taste."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Media stop key."
 msgstr "Medium stoppen Taste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Media refresh key."
-msgstr "Medium aufnehmen Taste."
+msgstr "Medien-Neuladen-Taste."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Volume down key."
@@ -3435,23 +3441,20 @@ msgid "Extra mouse button 2 mask."
 msgstr "Extra Maustaste 2 Maske."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Invalid button or axis."
-msgstr "ungültige Zeitdauer."
+msgstr "Ungültiger Knopf oder ungültige Achse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 0."
 msgstr "Gamepad-Taste 0."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad button 1."
-msgstr "Extra Maustaste 1 Maske."
+msgstr "Gamepad Taste 1."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Gamepad button 2."
-msgstr "Extra Maustaste 2 Maske."
+msgstr "Gamepad Taste 2."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad button 3."
@@ -3534,9 +3537,8 @@ msgid "Gamepad button 22."
 msgstr "Gamepad-Taste 22."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Represents the maximum number of joystick buttons supported."
-msgstr "Die maximale Anzahl der Tasten des Game Controllers."
+msgstr "Die maximale Anzahl der Tasten des Game-Controllers."
 
 #: doc/classes/@GlobalScope.xml
 msgid "DualShock circle button."
@@ -3555,53 +3557,45 @@ msgid "DualShock triangle button."
 msgstr "DualShock-Dreieck-Taste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Xbox controller B button."
-msgstr "Game-Controller SDL-Taste A."
+msgstr "XBox-Controller B-Taste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Xbox controller A button."
-msgstr "Game-Controller SDL-Taste A."
+msgstr "XBox-Controller A-Taste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Xbox controller X button."
-msgstr "Game-Controller SDL-Taste A."
+msgstr "XBox-Controller X-Taste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Xbox controller Y button."
-msgstr "Game-Controller SDL-Taste A."
+msgstr "XBox-Controller Y-Taste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Nintendo controller A button."
-msgstr "Game-Controller SDL-Taste A."
+msgstr "Nintendo-Controller A-Taste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Nintendo controller B button."
-msgstr "Game-Controller SDL-Taste A."
+msgstr "Nintendo-Controller B-Taste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Nintendo controller X button."
-msgstr "Game-Controller SDL-Taste A."
+msgstr "Nintendo-Controller X-Taste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Nintendo controller Y button."
-msgstr "Game-Controller SDL-Taste A."
+msgstr "Nintendo-Controller Y-Taste."
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Grip (side) buttons on a VR controller."
-msgstr "Grip (Seiten) Knopf an einem VR-Controller"
+msgstr "Grip-Knopf(Seite) an einem VR-Controller"
 
 #: doc/classes/@GlobalScope.xml
 msgid "Push down on the touchpad or main joystick on a VR controller."
 msgstr ""
+"Drücke auf das Touchpad oder den Haupt-Joystick auf einem VR-Controller."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Trigger on a VR controller."
@@ -3663,7 +3657,7 @@ msgstr "Spiel-Controller SDL-Führungstaste."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Gamepad SDL miscellaneous button."
-msgstr ""
+msgstr "Controller SDL Sonstiges-Taste."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -10919,15 +10913,15 @@ msgstr ""
 
 #: doc/classes/AudioEffectFilter.xml
 msgid "Allows frequencies other than the [member cutoff_hz] to pass."
-msgstr ""
+msgstr "Lässt andere Frequenzen als den [member cutoff_hz] passieren."
 
 #: doc/classes/AudioEffectFilter.xml
 msgid "Threshold frequency for the filter, in Hz."
-msgstr ""
+msgstr "Schwellenfrequenz für den Filter, in Hz."
 
 #: doc/classes/AudioEffectFilter.xml
 msgid "Gain amount of the frequencies after the filter."
-msgstr ""
+msgstr "Verstärkungsgrad der Frequenzen nach dem Filter."
 
 #: doc/classes/AudioEffectFilter.xml
 msgid "Amount of boost in the frequency range near the cutoff frequency."
@@ -10935,7 +10929,7 @@ msgstr ""
 
 #: doc/classes/AudioEffectHighPassFilter.xml
 msgid "Adds a high-pass filter to the Audio Bus."
-msgstr ""
+msgstr "Fügt dem Audiobus einen Hochpassfilter hinzu."
 
 #: doc/classes/AudioEffectHighPassFilter.xml
 msgid ""
@@ -19131,7 +19125,7 @@ msgstr ""
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
 msgid "Radial acceleration randomness ratio."
-msgstr ""
+msgstr "Radialbeschleunigungs-Zufallsverhältnis."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/Particles2D.xml
@@ -19141,7 +19135,7 @@ msgstr ""
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
 msgid "Initial scale applied to each particle."
-msgstr ""
+msgstr "Auf jedes Partikel angewendete Anfangsskalierung."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid "Each particle's scale will vary along this [Curve]."
@@ -25059,7 +25053,7 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Academy Color Encoding System tonemapper operator. Performs an aproximation "
+"Academy Color Encoding System tonemapper operator. Performs an approximation "
 "of the ACES tonemapping curve."
 msgstr ""
 

@@ -1,72 +1,67 @@
-# Thai translation of the Godot Engine class reference.
+# Nepali translation of the Godot Engine class reference.
 # Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# Thanachart Monpassorn <nunf_2539@hotmail.com>, 2020.
-# Sanhaphat Srijumpa <fluke031@hotmail.com>, 2020.
-# Pierre Stempin <pierre.stempin@gmail.com>, 2020.
-# Kongfa Warorot <gongpha@hotmail.com>, 2020.
-# PT 07 <porton555@gmail.com>, 2021.
-# SysError_ <ictsanook@hotmail.com>, 2021.
+# Yuyutsu Poudel <yuyutsumadi@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-10 10:42+0000\n"
-"Last-Translator: SysError_ <ictsanook@hotmail.com>\n"
-"Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot-"
-"class-reference/th/>\n"
-"Language: th\n"
+"PO-Revision-Date: 2021-12-30 03:38+0000\n"
+"Last-Translator: Yuyutsu Poudel <yuyutsumadi@gmail.com>\n"
+"Language-Team: Nepali <https://hosted.weblate.org/projects/godot-engine/"
+"godot-class-reference/ne/>\n"
+"Language: ne\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
-msgstr "รายละเอียด"
+msgstr "विवरण"
 
 #: doc/tools/make_rst.py
 msgid "Tutorials"
-msgstr "บทช่วยสอน"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Properties"
-msgstr "คุณสมบัติ"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Methods"
-msgstr "เมธอด"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Theme Properties"
-msgstr "คุณสมบัติธีม"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Signals"
-msgstr "สัญญาณ"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Enumerations"
-msgstr "ค่าคงที่แบบมีความหมาย"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Constants"
-msgstr "ค่าคงที่"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Property Descriptions"
-msgstr "รายละเอียดของคุณสมบัติ"
+msgstr ""
 
 #: doc/tools/make_rst.py
 msgid "Method Descriptions"
-msgstr "รายละเอียดเมท็อด"
+msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid "Built-in GDScript functions."
-msgstr "Built-in function ใน GDScript"
+msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -74,8 +69,6 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
-"รายชื่อของฟังก์ชัน GDScript ฟังก์ชันคณิตศาสตร์และยูทิลิตี้อื่น ๆ โดยทุกอย่างมีให้โดยออบเจกต์ "
-"(คีย์เวิร์ด: builtin, built in, global functions)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -90,15 +83,6 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
-"คืนค่าสีที่สร้างจากจำนวนเต็มสีแดง, เขียว, น้ำเงินและความโปร่งใส แต่ละช่องควรมีข้อมูล 8 บิต "
-"ในช่วงตั้งแต่ 0 ถึง 255\n"
-"[code] r8 [/code] ช่องสีแดง\n"
-"[code] g8 [/code] ช่องสีเขียว\n"
-"[code] b8 [/code] ช่องสีน้ำเงิน\n"
-"[code] a8 [/code] ช่องความโปร่งใส\n"
-"[codeblock]\n"
-"red = Color8(255, 0, 0)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -109,15 +93,8 @@ msgid ""
 "[/codeblock]\n"
 "Supported color names are the same as the constants defined in [Color]."
 msgstr ""
-"คืนค่าสีที่ตรงตามชื่อมาตรฐาน [code]name[/code] พร้อม [code]alpha[/code] ในช่วงตั้งแต่ 0 "
-"ถึง 1\n"
-"[codeblock]\n"
-"red = ColorN(\"red\", 1)\n"
-"[/codeblock]\n"
-"ชื่อสีที่ได้รับการสนับสนุนจะตรงกันกับค่าคงที่ที่กำหนดไว้ใน [Color]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the absolute value of parameter [code]s[/code] (i.e. positive "
 "value).\n"
@@ -125,14 +102,8 @@ msgid ""
 "a = abs(-1) # a is 1\n"
 "[/codeblock]"
 msgstr ""
-"คืนค่าสัมบูรณ์ของพารามิเตอร์ [code]s[/code] (เช่น ค่าบวก)\n"
-"[codeblock]\n"
-"# a คือ 1\n"
-"a = abs(-1)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the arc cosine of [code]s[/code] in radians. Use to get the angle of "
 "cosine [code]s[/code]. [code]s[/code] must be between [code]-1.0[/code] and "
@@ -143,15 +114,8 @@ msgid ""
 "c = acos(0.866025)\n"
 "[/codeblock]"
 msgstr ""
-"คืนค่า arccos ของ [code]s[/code] ในรูปของเรเดียน ใช้เพื่อหามุมของ cos [code]s[/"
-"code]\n"
-"[codeblock]\n"
-"# c คือ 0.523599 หรือ 30 องศาถ้าแปลงด้วย rad2deg(s)\n"
-"c = acos(0.866025)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the arc sine of [code]s[/code] in radians. Use to get the angle of "
 "sine [code]s[/code]. [code]s[/code] must be between [code]-1.0[/code] and "
@@ -162,15 +126,8 @@ msgid ""
 "s = asin(0.5)\n"
 "[/codeblock]"
 msgstr ""
-"คืนค่า arcsin ของ [code]s[/code] ในรูปของเรเดียน ใช้เพื่อหามุมของ sin [code]s[/"
-"code]\n"
-"[codeblock]\n"
-"# s คือ 0.523599 หรือ 30 องศาถ้าแปลงด้วย rad2deg(s)\n"
-"s = asin(0.5)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Asserts that the [code]condition[/code] is [code]true[/code]. If the "
 "[code]condition[/code] is [code]false[/code], an error is generated. When "
@@ -196,23 +153,6 @@ msgid ""
 "a message with clarifying details\n"
 "[/codeblock]"
 msgstr ""
-"ตรวจสอบว่า เงื่อนไข [code]condition[/code] มีค่าเป็น [code]true[/code] หรือไม่ หาก "
-"[code]condition[/code] มีค่าเป็น [code]false[/code] "
-"ข้อผิดพลาดจะถูกสร้างขึ้นมาและโปรแกรมจะหยุดทำงานจนกระทั่งคุณดำเนินการต่อ "
-"จะทำงานเมื่อดีบักหรือเริ่มเกมจากตัวแก้ไขเท่านั้น "
-"ใช้ในการแก้จุดบกพร่องในช่วงการพัฒนาเพื่อให้แน่ใจได้ว่า เงื่อนไขที่ต้องการถูกต้อง ([code]true[/"
-"code]) หรือไม่\n"
-"อาร์กิวเมนต์ [code]message[/code] ที่เลือกให้ได้ ถ้าให้มา มันจะใช้ในการแสดงข้อความเสริมของ "
-"\"การตรวจสอบผิดพลาด\" คุณสามารถใช้มันในการเพิ่มรายละเอียดว่าทำไมมันถึงตรวจสอบล้มเหลว\n"
-"[codeblock]\n"
-"# สมมติว่าเราต้องการความเร็วระหว่าง 0 ถึง 20\n"
-"speed = -10\n"
-"assert(speed < 20) # เป็นจริง โปรแกรมจะดำเนินต่อไป\n"
-"assert(speed >= 0) # เป็นเท็จ โปรแกรมจะหยุดทำงาน\n"
-"assert(speed >= 0 && speed < 20) # คุณสามารถเชื่อมทั้งสองเงื่อนไขให้อยู่ในรูปเดียวกันได้\n"
-"assert(speed < 20, \"speed = %f, but the speed limit is 20\" % speed) # "
-"แสดงข้อความที่ชี้แจงรายละเอียด\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -225,13 +165,6 @@ msgid ""
 "a = atan(0.5) # a is 0.463648\n"
 "[/codeblock]"
 msgstr ""
-"คืนค่า arctan ของ [code]s[/code] ในรูปของเรเดียน ใช้เพื่อหามุมจากมุม tan ในตรีโกณมิติ: "
-"[code]atan(tan(angle)) == angle[/code]\n"
-"เมท็อดไม่รู้ว่าควอดรันต์ไหนจะมีมุมที่ล้มเหลว ดู [method atan2] หากคุณใช้ [code]y[/code] และ "
-"[code]x[/code]\n"
-"[codeblock]\n"
-"a = atan(0.5) # a คือ 0.463648\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -310,7 +243,6 @@ msgid ""
 msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the cosine of angle [code]s[/code] in radians.\n"
 "[codeblock]\n"
@@ -318,25 +250,14 @@ msgid ""
 "a = cos(PI)  # a is -1.0\n"
 "[/codeblock]"
 msgstr ""
-"คืนค่าสัมบูรณ์ของพารามิเตอร์ [code]s[/code] (เช่น ค่าบวก)\n"
-"[codeblock]\n"
-"# a คือ 1\n"
-"a = abs(-1)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the hyperbolic cosine of [code]s[/code] in radians.\n"
 "[codeblock]\n"
 "print(cosh(1)) # Prints 1.543081\n"
 "[/codeblock]"
 msgstr ""
-"คืนค่าสัมบูรณ์ของพารามิเตอร์ [code]s[/code] (เช่น ค่าบวก)\n"
-"[codeblock]\n"
-"# a คือ 1\n"
-"a = abs(-1)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid "Converts from decibels to linear energy (audio)."
@@ -800,7 +721,6 @@ msgid ""
 msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the result of [code]base[/code] raised to the power of [code]exp[/"
 "code].\n"
@@ -808,12 +728,6 @@ msgid ""
 "pow(2, 5) # Returns 32.0\n"
 "[/codeblock]"
 msgstr ""
-"คืนค่า arcsin ของ [code]s[/code] ในรูปของเรเดียน ใช้เพื่อหามุมของ sin [code]s[/"
-"code]\n"
-"[codeblock]\n"
-"# s คือ 0.523599 หรือ 30 องศาถ้าแปลงด้วย rad2deg(s)\n"
-"s = asin(0.5)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1172,7 +1086,6 @@ msgid ""
 msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the hyperbolic tangent of [code]s[/code].\n"
 "[codeblock]\n"
@@ -1180,11 +1093,6 @@ msgid ""
 "b = tanh(a)  # b is 0.6\n"
 "[/codeblock]"
 msgstr ""
-"คืนค่าสัมบูรณ์ของพารามิเตอร์ [code]s[/code] (เช่น ค่าบวก)\n"
-"[codeblock]\n"
-"# a คือ 1\n"
-"a = abs(-1)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1535,7 +1443,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Top-left corner."
-msgstr "มุมบนซ้าย"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Top-right corner."
@@ -1591,20 +1499,19 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Escape key."
-msgstr "ปุ่ม ESC"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Tab key."
-msgstr "ปุ่มแท็บ"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Shift+Tab key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Backspace key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Return key (on the main keyboard)."
@@ -1616,15 +1523,15 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Insert key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Delete key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Pause key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Print Screen key."
@@ -1636,15 +1543,15 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Clear key."
-msgstr "ปุ่ม Clear"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Home key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "End key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Left arrow key."
@@ -1672,19 +1579,19 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Shift key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Control key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Meta key."
-msgstr "ปุ่มเมตา"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Alt key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Caps Lock key."
@@ -1700,67 +1607,67 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F1 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F2 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F3 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F4 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F5 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F6 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F7 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F8 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F9 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F10 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F11 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F12 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F13 key."
-msgstr "ปุ่ม ,F3"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F14 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F15 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F16 key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Multiply (*) key on the numeric keypad."
@@ -1844,7 +1751,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Help key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Left Direction key."
@@ -1860,18 +1767,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Media forward key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Media stop key."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Media refresh key."
-msgstr "ปุ่ม Refresh"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Volume down key."
@@ -1927,15 +1832,15 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Favorites key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Search key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Standby key."
-msgstr "ปุ่มสแตนด์บาย"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Open URL / Launch Browser key."
@@ -2015,151 +1920,151 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Unknown key."
-msgstr "ปุ่มที่ไม่รู้จัก"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Space key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "! key."
-msgstr "ปุ่มอัศเจรีย์ ( ! )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "\" key."
-msgstr "ปุ่มฟันหนู ( \" )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "# key."
-msgstr "ปุ่มสัญลักษณ์นัมเบอร์ ( # )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "$ key."
-msgstr "ปุ่มดอลลาร์ ( $ )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "% key."
-msgstr "ปุ่มเปอร์เซ็นต์ ( % )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "& key."
-msgstr "ปุ่มแอนด์ ( & )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "' key."
-msgstr "ปุ่มอัญประกาศเดี่ยว ( ' )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "( key."
-msgstr "ปุ่มวงเล็บเปิด ( ( )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ") key."
-msgstr "ปุ่มวงเล็บปิด ( ) )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "* key."
-msgstr "ปุ่มดอกจัน ( * )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "+ key."
-msgstr "ปุ่มเครื่องหมายบวก ( + )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ", key."
-msgstr "ปุ่มลูกน้ำ ( , )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "- key."
-msgstr "ปุ่มเครื่องหมายลบ ( - )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ". key."
-msgstr "ปุ่มเครื่องหมายจุด ( . )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "/ key."
-msgstr "ปุ่มเครื่องหมายทับ ( / )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 0."
-msgstr "เลข 0"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 1."
-msgstr "เลข 1"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 2."
-msgstr "เลข 2"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 3."
-msgstr "เลข 3"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 4."
-msgstr "เลข 4"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 5."
-msgstr "เลข 5"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 6."
-msgstr "เลข 6"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 7."
-msgstr "เลข 7"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 8."
-msgstr "เลข 8"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 9."
-msgstr "เลข 9"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ": key."
-msgstr "ปุ่มจุดคู่ ( : )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "; key."
-msgstr "ปุ่มจุดครึ่ง ( ; )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "< key."
-msgstr "ปุ่มเครื่องหมายน้อยกว่า ( < )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "= key."
-msgstr "ปุ่มเครื่องหมายเท่ากับ ( = )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "> key."
-msgstr "ปุ่มเครื่องหมายมากกว่า ( > )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "? key."
-msgstr "ปุ่มปรัศนี ( ? )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "@ key."
-msgstr "ปุ่มแอต ( @ )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "A key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "B key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "C key."
-msgstr "ปุ่ม"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "D key."
@@ -3447,19 +3352,19 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Variable is of type [bool]."
-msgstr "ตัวแปรคือประเภท [bool]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Variable is of type [int]."
-msgstr "ตัวแปรคือประเภท [int]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Variable is of type [float] (real)."
-msgstr "ตัวแปรคือประเภท [float] (real)"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Variable is of type [String]."
-msgstr "ตัวแปรคือประเภท [String]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Variable is of type [Vector2]."
@@ -3522,39 +3427,32 @@ msgid "Variable is of type [Array]."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolByteArray]."
-msgstr "ตัวแปรคือประเภท [bool]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolIntArray]."
-msgstr "ตัวแปรคือประเภท [bool]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolRealArray]."
-msgstr "ตัวแปรคือประเภท [bool]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolStringArray]."
-msgstr "ตัวแปรคือประเภท [String]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolVector2Array]."
-msgstr "ตัวแปรคือประเภท [bool]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolVector3Array]."
-msgstr "ตัวแปรคือประเภท [bool]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "Variable is of type [PoolColorArray]."
-msgstr "ตัวแปรคือประเภท [bool]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Represents the size of the [enum Variant.Type] enum."
@@ -3693,9 +3591,8 @@ msgstr ""
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/math/vectors_advanced.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/math/index.html"
+msgstr ""
 
 #: doc/classes/AABB.xml
 msgid "Constructs an [AABB] from a position and size."
@@ -4037,9 +3934,8 @@ msgstr ""
 
 #: doc/classes/AnimatedSprite.xml doc/classes/AnimatedSprite3D.xml
 #: doc/classes/AnimationPlayer.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/2d/2d_sprite_animation.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html"
+msgstr ""
 
 #: doc/classes/AnimatedSprite.xml doc/classes/Area2D.xml
 #: doc/classes/AudioStreamPlayer.xml doc/classes/Button.xml
@@ -4048,9 +3944,8 @@ msgstr "https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html"
 #: doc/classes/InputEventAction.xml doc/classes/Label.xml
 #: doc/classes/Particles2D.xml doc/classes/Timer.xml
 #: doc/classes/VisibilityNotifier2D.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/515"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AnimatedSprite.xml
 msgid ""
@@ -4708,11 +4603,8 @@ msgstr ""
 #: doc/classes/AnimationNodeTimeScale.xml doc/classes/AnimationNodeTimeSeek.xml
 #: doc/classes/AnimationNodeTransition.xml doc/classes/AnimationTree.xml
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/animation/animation_tree.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree."
-"html"
 
 #: doc/classes/AnimationNode.xml
 msgid ""
@@ -4906,9 +4798,8 @@ msgstr ""
 #: doc/classes/Mesh.xml doc/classes/MeshInstance.xml doc/classes/Particles.xml
 #: doc/classes/Quat.xml doc/classes/Skeleton.xml doc/classes/SpotLight.xml
 #: doc/classes/StaticBody.xml doc/classes/WorldEnvironment.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/678"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AnimationNodeAnimation.xml
 msgid "Input animation to use in an [AnimationNodeBlendTree]."
@@ -4929,9 +4820,8 @@ msgstr ""
 #: doc/classes/KinematicBody.xml doc/classes/Mesh.xml
 #: doc/classes/MeshInstance.xml doc/classes/MeshLibrary.xml
 #: doc/classes/ProjectSettings.xml doc/classes/Transform.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/125"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AnimationNodeAnimation.xml
 msgid ""
@@ -6278,9 +6168,8 @@ msgid "Output node."
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
-#, fuzzy
 msgid "Animation node."
-msgstr "Node กลศาสตร์การเคลื่อนไหวร่างกายแบบ 2D"
+msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid "OneShot node."
@@ -6327,9 +6216,8 @@ msgstr ""
 
 #: doc/classes/Area.xml doc/classes/QuadMesh.xml doc/classes/Viewport.xml
 #: doc/classes/ViewportTexture.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/127"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Area.xml
 msgid ""
@@ -6564,23 +6452,19 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Area2D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/physics/using_area_2d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/using_area_2d.html"
 
 #: doc/classes/Area2D.xml doc/classes/CollisionShape2D.xml
 #: doc/classes/RectangleShape2D.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/121"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Area2D.xml doc/classes/Camera2D.xml
 #: doc/classes/KinematicBody2D.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/120"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Area2D.xml
 msgid ""
@@ -7162,11 +7046,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ArrayMesh.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/procedural_geometry/arraymesh.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/"
-"arraymesh.html"
 
 #: doc/classes/ArrayMesh.xml
 msgid ""
@@ -8595,9 +8476,8 @@ msgstr ""
 #: doc/classes/AudioEffect.xml doc/classes/AudioEffectRecord.xml
 #: doc/classes/AudioServer.xml doc/classes/AudioStream.xml
 #: doc/classes/AudioStreamPlayer.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/527"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AudioEffectAmplify.xml
 msgid ""
@@ -8684,9 +8564,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioEffectCapture.xml
-#, fuzzy
 msgid "Returns the number of audio frames inserted from the audio bus."
-msgstr "คืนค่าชื่อของอุปกรณ์เสียงทั้งหมดที่ตรวจพบในระบบ"
+msgstr ""
 
 #: doc/classes/AudioEffectCapture.xml
 msgid ""
@@ -8892,10 +8771,8 @@ msgstr ""
 #: doc/classes/AudioEffectDistortion.xml doc/classes/AudioEffectFilter.xml
 #: doc/classes/AudioEffectHighShelfFilter.xml
 #: doc/classes/AudioEffectLowShelfFilter.xml doc/classes/AudioServer.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/audio/audio_buses.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html"
 
 #: doc/classes/AudioEffectDistortion.xml
 msgid "Distortion power. Value can range from 0 to 1."
@@ -9285,11 +9162,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioEffectRecord.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/audio/recording_with_microphone.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/audio/"
-"recording_with_microphone.html"
 
 #: doc/classes/AudioEffectRecord.xml
 msgid "Returns the recorded sample."
@@ -9427,15 +9301,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioServer.xml doc/classes/AudioStreamPlayer.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/525"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AudioServer.xml doc/classes/AudioStream.xml
 #: doc/classes/AudioStreamPlayer.xml doc/classes/CanvasItem.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/528"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AudioServer.xml
 msgid "Adds a bus at [code]at_position[/code]."
@@ -9518,7 +9390,7 @@ msgstr ""
 
 #: doc/classes/AudioServer.xml
 msgid "Returns the names of all audio devices detected on the system."
-msgstr "คืนค่าชื่อของอุปกรณ์เสียงทั้งหมดที่ตรวจพบในระบบ"
+msgstr ""
 
 #: doc/classes/AudioServer.xml
 msgid "Returns the sample rate at the output of the [AudioServer]."
@@ -9530,7 +9402,7 @@ msgstr ""
 
 #: doc/classes/AudioServer.xml
 msgid "Returns the speaker configuration."
-msgstr "คืนค่าการกำหนดค่าของลำโพง"
+msgstr ""
 
 #: doc/classes/AudioServer.xml
 msgid "Returns the relative time since the last mix occurred."
@@ -9661,17 +9533,14 @@ msgstr ""
 
 #: doc/classes/AudioStream.xml doc/classes/AudioStreamPlayer.xml
 #: doc/classes/AudioStreamPlayer2D.xml doc/classes/AudioStreamPlayer3D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/audio/audio_streams.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html"
 
 #: doc/classes/AudioStream.xml doc/classes/AudioStreamGenerator.xml
 #: doc/classes/AudioStreamGeneratorPlayback.xml
 #: doc/classes/AudioStreamPlayback.xml doc/classes/AudioStreamPlayer.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/526"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/AudioStream.xml
 msgid "Returns the length of the audio stream in seconds."
@@ -10286,10 +10155,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/BakedLightmap.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/baked_lightmaps.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html"
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
@@ -10722,23 +10589,17 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Basis.xml doc/classes/Transform.xml doc/classes/Transform2D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/math/matrices_and_transforms.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/math/"
-"matrices_and_transforms.html"
 
 #: doc/classes/Basis.xml doc/classes/Transform.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/using_transforms.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html"
 
 #: doc/classes/Basis.xml doc/classes/Line2D.xml doc/classes/Transform.xml
 #: doc/classes/Transform2D.xml doc/classes/Vector2.xml doc/classes/Vector3.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/584"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Basis.xml doc/classes/CylinderShape.xml
 #: doc/classes/Dictionary.xml doc/classes/DynamicFont.xml
@@ -10749,15 +10610,13 @@ msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
 #: doc/classes/SurfaceTool.xml doc/classes/TextureButton.xml
 #: doc/classes/TextureRect.xml doc/classes/Thread.xml
 #: doc/classes/VBoxContainer.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/676"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Basis.xml doc/classes/Line2D.xml doc/classes/Transform.xml
 #: doc/classes/Transform2D.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/583"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Basis.xml
 msgid "Constructs a pure rotation basis matrix from the given quaternion."
@@ -11238,17 +11097,15 @@ msgstr ""
 #: doc/classes/CylinderShape.xml doc/classes/ProjectSettings.xml
 #: doc/classes/RigidBody.xml doc/classes/SphereShape.xml
 #: doc/classes/StaticBody.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/675"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/BoxShape.xml doc/classes/CollisionShape.xml
 #: modules/gridmap/doc_classes/GridMap.xml doc/classes/KinematicBody.xml
 #: doc/classes/Mesh.xml doc/classes/MeshInstance.xml
 #: doc/classes/MeshLibrary.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/126"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/BoxShape.xml
 msgid ""
@@ -11290,9 +11147,8 @@ msgstr ""
 #: doc/classes/GridContainer.xml doc/classes/OS.xml
 #: doc/classes/PoolStringArray.xml doc/classes/ProjectSettings.xml
 #: doc/classes/ResourceLoader.xml doc/classes/RichTextLabel.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/677"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Button.xml
 msgid ""
@@ -11724,15 +11580,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/TileMap.xml doc/classes/TileSet.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/112"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/Environment.xml
 #: doc/classes/WorldEnvironment.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/110"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Camera2D.xml
 msgid "Aligns the camera to the tracked node."
@@ -11995,14 +11849,12 @@ msgid "Returns the unique ID for this feed."
 msgstr ""
 
 #: doc/classes/CameraFeed.xml
-#, fuzzy
 msgid "Returns the camera's name."
-msgstr "คืนค่าการกำหนดค่าของลำโพง"
+msgstr ""
 
 #: doc/classes/CameraFeed.xml
-#, fuzzy
 msgid "Returns the position of camera on the device."
-msgstr "คืนค่าผกผันรูทสองของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/CameraFeed.xml
 msgid "If [code]true[/code], the feed is active."
@@ -12161,10 +12013,8 @@ msgid "$DOCS_URL/tutorials/2d/2d_transforms.html"
 msgstr ""
 
 #: doc/classes/CanvasItem.xml doc/classes/Control.xml doc/classes/Node2D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/2d/custom_drawing_in_2d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html"
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -12770,17 +12620,13 @@ msgstr ""
 
 #: doc/classes/CharFXTransform.xml doc/classes/RichTextEffect.xml
 #: doc/classes/RichTextLabel.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel."
-"html"
 
 #: doc/classes/CharFXTransform.xml doc/classes/RichTextEffect.xml
 msgid ""
 "https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project"
 msgstr ""
-"https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project"
 
 #: doc/classes/CharFXTransform.xml
 msgid ""
@@ -13686,11 +13532,8 @@ msgstr ""
 #: doc/classes/PhysicsBody2D.xml doc/classes/PhysicsDirectBodyState.xml
 #: doc/classes/PhysicsDirectSpaceState.xml doc/classes/RigidBody.xml
 #: doc/classes/Shape.xml doc/classes/Shape2D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/physics/physics_introduction.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/"
-"physics_introduction.html"
 
 #: doc/classes/CollisionShape.xml
 msgid ""
@@ -13729,9 +13572,8 @@ msgstr ""
 #: doc/classes/CollisionShape2D.xml doc/classes/KinematicBody2D.xml
 #: doc/classes/RectangleShape2D.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/113"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/CollisionShape2D.xml
 msgid ""
@@ -13776,19 +13618,16 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Color.xml doc/classes/ColorPickerButton.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/517"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Color.xml doc/classes/ColorPicker.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/146"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Color.xml doc/classes/ColorPickerButton.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/133"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Color.xml
 msgid ""
@@ -15248,16 +15087,12 @@ msgid "$DOCS_URL/tutorials/ui/index.html"
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/ui/control_node_gallery.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/gui/index.html"
+msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid "https://github.com/godotengine/godot-demo-projects/tree/master/gui"
 msgstr ""
-"https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
-"generator"
 
 #: doc/classes/Control.xml
 msgid ""
@@ -17293,10 +17128,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CPUParticles2D.xml doc/classes/Particles2D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/2d/particle_systems_2d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html"
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
@@ -18006,11 +17839,8 @@ msgid ""
 msgstr ""
 
 #: modules/mono/doc_classes/CSharpScript.xml
-#, fuzzy
 msgid "$DOCS_URL/getting_started/scripting/c_sharp/index.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/c_sharp/"
-"index.html"
 
 #: modules/mono/doc_classes/CSharpScript.xml
 #: modules/gdnative/doc_classes/PluginScript.xml
@@ -18888,11 +18718,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Dictionary.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#dictionary"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"gdscript_basics.html#dictionary"
 
 #: doc/classes/Dictionary.xml
 msgid "Clear the dictionary, removing all key/value pairs."
@@ -18987,10 +18814,8 @@ msgstr ""
 
 #: doc/classes/DirectionalLight.xml doc/classes/Light.xml
 #: doc/classes/OmniLight.xml doc/classes/SpotLight.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/lights_and_shadows.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html"
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
@@ -19115,10 +18940,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Directory.xml doc/classes/File.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/scripting/filesystem.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html"
 
 #: doc/classes/Directory.xml
 msgid ""
@@ -20127,11 +19950,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorImportPlugin.xml doc/classes/ResourceImporter.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/plugins/editor/import_plugins.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"import_plugins.html"
 
 #: doc/classes/EditorImportPlugin.xml
 msgid ""
@@ -20307,11 +20127,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorInspectorPlugin.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/plugins/editor/inspector_plugins.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"import_plugins.html"
 
 #: doc/classes/EditorInspectorPlugin.xml
 msgid "Adds a custom control, which is not necessarily a property editor."
@@ -20574,10 +20391,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorPlugin.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/plugins/editor/index.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html"
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -21442,11 +21257,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorScenePostImport.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html#custom-script"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/assets/"
-"importing_scenes.html#custom-script"
 
 #: doc/classes/EditorScenePostImport.xml
 msgid ""
@@ -21861,11 +21673,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/plugins/editor/spatial_gizmos.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"spatial_gizmos.html"
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
 msgid ""
@@ -22382,23 +22191,17 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Environment.xml doc/classes/WorldEnvironment.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/environment_and_post_processing.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/"
-"environment_and_post_processing.html"
 
 #: doc/classes/Environment.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/high_dynamic_range.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html"
 
 #: doc/classes/Environment.xml doc/classes/Material.xml doc/classes/Mesh.xml
 #: doc/classes/MeshInstance.xml doc/classes/WorldEnvironment.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/123"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
@@ -23906,18 +23709,12 @@ msgid ""
 msgstr ""
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/plugins/gdnative/gdnative-c-example.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/gdnative/gdnative-c-"
-"example.html"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/plugins/gdnative/gdnative-cpp-example.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/gdnative/gdnative-"
-"cpp-example.html"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
 msgid ""
@@ -23989,11 +23786,8 @@ msgid ""
 msgstr ""
 
 #: modules/gdscript/doc_classes/GDScript.xml
-#, fuzzy
 msgid "$DOCS_URL/getting_started/scripting/gdscript/index.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"index.html"
 
 #: modules/gdscript/doc_classes/GDScript.xml
 msgid "Returns byte code for the script source code."
@@ -25977,10 +25771,8 @@ msgid ""
 msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/using_gridmaps.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html"
 
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid "Clear all cells."
@@ -26573,19 +26365,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/HTTPClient.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/networking/http_client_class.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/"
-"http_client_class.html"
 
 #: doc/classes/HTTPClient.xml doc/classes/HTTPRequest.xml
 #: doc/classes/StreamPeerSSL.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/networking/ssl_certificates.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates."
-"html"
 
 #: doc/classes/HTTPClient.xml
 msgid "Closes the current connection, allowing reuse of this [HTTPClient]."
@@ -27378,11 +27164,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/networking/http_request_class.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/"
-"http_request_class.html"
 
 #: doc/classes/HTTPRequest.xml
 msgid "Cancels the current request."
@@ -27529,11 +27312,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Image.xml doc/classes/ImageTexture.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/assets_pipeline/importing_images.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/assets/"
-"importing_scenes.html#custom-script"
 
 #: doc/classes/Image.xml
 msgid ""
@@ -27669,9 +27449,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Image.xml
-#, fuzzy
 msgid "Returns a copy of the image's raw data."
-msgstr "ส่งคืนสำเนาของ plane ที่ทำให้เป็นมาตรฐาน"
+msgstr ""
 
 #: doc/classes/Image.xml
 msgid "Returns the image's format. See [enum Format] constants."
@@ -28313,9 +28092,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ImageTexture.xml
-#, fuzzy
 msgid "Returns the format of the texture, one of [enum Image.Format]."
-msgstr "คืนค่าผกผันรูทสองของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/ImageTexture.xml
 msgid ""
@@ -28502,7 +28280,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml
-#, fuzzy
 msgid ""
 "Returns a value between 0 and 1 representing the intensity of the given "
 "action. In a joypad, for example, the further away the axis (analog sticks "
@@ -28513,9 +28290,6 @@ msgid ""
 "for [InputEventKey] and [InputEventMouseButton] events, and the direction "
 "for [InputEventJoypadMotion] events."
 msgstr ""
-"ส่งคืนค่าระหว่าง 0 ถึง 1 แทน action ที่กำหนด ตัวอย่างเช่นในจอยสติ๊กในแกน "
-"(อะนาล็อกหรือทริกเกอร์ L2, R2) อยู่ห่างจาก dead zone มากเท่าใดค่าก็จะยิ่งใกล้เคียงกับ 1 "
-"มากขึ้นเท่านั้น ถ้าการ action ถูกจับคู่กับตัวควบคุมที่ไม่มีแกนเป็นแป้นพิมพ์ค่าที่ส่งคืนก็จะเป็น 0 หรือ 1"
 
 #: doc/classes/Input.xml
 msgid ""
@@ -28663,7 +28437,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml
-#, fuzzy
 msgid ""
 "Returns [code]true[/code] if you are pressing the action event. Note that if "
 "an action has multiple buttons assigned and more than one of them is "
@@ -28673,9 +28446,6 @@ msgid ""
 "for [InputEventKey] and [InputEventMouseButton] events, and the direction "
 "for [InputEventJoypadMotion] events."
 msgstr ""
-"ส่งคืนค่า [code]true[/code] หากคุณกำลังใช้การกด action event โปรดทราบไว้ว่าหาก "
-"action มีการกำหนดปุ่มไว้หลายปุ่มและมีการกดมากกว่าหนึ่งปุ่ม การปล่อยปุ่มครั้งเดียวจะเป็นการยกเลิก "
-"action นี้แม้ว่าจะยังกดปุ่มอื่นที่กำหนด action นี้อยู่ก็ตาม"
 
 #: doc/classes/Input.xml
 msgid ""
@@ -28981,10 +28751,8 @@ msgstr ""
 #: doc/classes/InputEventMouse.xml doc/classes/InputEventScreenDrag.xml
 #: doc/classes/InputEventScreenTouch.xml
 #: doc/classes/InputEventWithModifiers.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/inputs/inputevent.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html"
 
 #: doc/classes/InputEvent.xml
 msgid ""
@@ -29096,11 +28864,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/InputEventAction.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/inputs/inputevent.html#actions"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent."
-"html#actions"
 
 #: doc/classes/InputEventAction.xml
 msgid "The action's name. Actions are accessed via this [String]."
@@ -29284,11 +29049,8 @@ msgid "Contains mouse click information. See [method Node._input]."
 msgstr ""
 
 #: doc/classes/InputEventMouseButton.xml doc/classes/InputEventMouseMotion.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/inputs/mouse_and_input_coordinates.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/"
-"mouse_and_input_coordinates.html"
 
 #: doc/classes/InputEventMouseButton.xml
 msgid ""
@@ -29455,11 +29217,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/InputMap.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/inputs/inputevent.html#inputmap"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent."
-"html#inputmap"
 
 #: doc/classes/InputMap.xml
 msgid ""
@@ -30215,13 +29974,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/JavaScript.xml
-#, fuzzy
 msgid ""
 "$DOCS_URL/tutorials/export/exporting_for_web.html#calling-javascript-from-"
 "script"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/export/"
-"exporting_for_web.html#calling-javascript-from-script"
 
 #: doc/classes/JavaScript.xml
 msgid ""
@@ -30331,11 +30087,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/JNISingleton.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/platform/android/android_plugin.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"import_plugins.html"
 
 #: doc/classes/Joint.xml
 msgid "Base class for all 3D joints."
@@ -30350,9 +30103,8 @@ msgstr ""
 
 #: doc/classes/Joint.xml doc/classes/RigidBody.xml doc/classes/VehicleBody.xml
 #: doc/classes/VehicleWheel.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/524"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Joint.xml
 msgid ""
@@ -30581,7 +30333,7 @@ msgstr ""
 
 #: doc/classes/KinematicBody.xml
 msgid "Kinematic body 3D node."
-msgstr "Node กลศาสตร์การเคลื่อนไหวร่างกายแบบ 3D"
+msgstr ""
 
 #: doc/classes/KinematicBody.xml
 msgid ""
@@ -30602,11 +30354,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/physics/kinematic_character_2d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/"
-"kinematic_character_2d.html"
 
 #: doc/classes/KinematicBody.xml
 msgid ""
@@ -30682,7 +30431,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/KinematicBody.xml
-#, fuzzy
 msgid ""
 "Moves the body along the vector [code]rel_vec[/code]. The body will stop if "
 "it collides. Returns a [KinematicCollision], which contains information "
@@ -30691,10 +30439,6 @@ msgid ""
 "If [code]test_only[/code] is [code]true[/code], the body does not move but "
 "the would-be collision information is given."
 msgstr ""
-"ย้าย body ไปตามเวกเตอร์ [code] rel_vec [/code] body จะหยุดถ้า collision (การชน) "
-"กลับไปที่ [KinematicCollision2D] ซึ่งมีข้อมูลเกี่ยวกับ collision\n"
-"ถ้า [code]test_only[/code] คือ [code]true[/code] body จะไม่เคลื่อนไหว "
-"แต่จะได้รับข้อมูล collision"
 
 #: doc/classes/KinematicBody.xml
 msgid ""
@@ -30816,7 +30560,7 @@ msgstr ""
 
 #: doc/classes/KinematicBody2D.xml
 msgid "Kinematic body 2D node."
-msgstr "Node กลศาสตร์การเคลื่อนไหวร่างกายแบบ 2D"
+msgstr ""
 
 #: doc/classes/KinematicBody2D.xml
 msgid ""
@@ -30837,11 +30581,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/KinematicBody2D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/physics/using_kinematic_body_2d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/"
-"using_kinematic_body_2d.html"
 
 #: doc/classes/KinematicBody2D.xml
 msgid ""
@@ -30874,7 +30615,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/KinematicBody2D.xml
-#, fuzzy
 msgid ""
 "Moves the body along the vector [code]rel_vec[/code]. The body will stop if "
 "it collides. Returns a [KinematicCollision2D], which contains information "
@@ -30883,10 +30623,6 @@ msgid ""
 "If [code]test_only[/code] is [code]true[/code], the body does not move but "
 "the would-be collision information is given."
 msgstr ""
-"ย้าย body ไปตามเวกเตอร์ [code] rel_vec [/code] body จะหยุดถ้า collision (การชน) "
-"กลับไปที่ [KinematicCollision2D] ซึ่งมีข้อมูลเกี่ยวกับ collision\n"
-"ถ้า [code]test_only[/code] คือ [code]true[/code] body จะไม่เคลื่อนไหว "
-"แต่จะได้รับข้อมูล collision"
 
 #: doc/classes/KinematicBody2D.xml
 msgid ""
@@ -31276,9 +31012,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Light.xml
-#, fuzzy
 msgid "Returns the value of the specified [enum Light.Param] parameter."
-msgstr "คืนค่าผกผันรูทสองของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/Light.xml
 msgid "Sets the value of the specified [enum Light.Param] parameter."
@@ -31473,11 +31208,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Light2D.xml doc/classes/LightOccluder2D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows."
-"html"
 
 #: doc/classes/Light2D.xml
 msgid "The Light2D's [Color]."
@@ -33559,20 +33291,14 @@ msgid ""
 msgstr ""
 
 #: doc/classes/MultiMesh.xml doc/classes/MultiMeshInstance.xml
-#, fuzzy
 msgid ""
 "$DOCS_URL/tutorials/performance/vertex_animation/animating_thousands_of_fish."
 "html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/"
-"animating_thousands_of_fish.html"
 
 #: doc/classes/MultiMesh.xml doc/classes/MultiMeshInstance.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/performance/using_multimesh.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/optimization/"
-"using_multimesh.html"
 
 #: doc/classes/MultiMesh.xml
 msgid ""
@@ -33717,11 +33443,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/MultiMeshInstance.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/using_multi_mesh_instance.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/"
-"using_multi_mesh_instance.html"
 
 #: doc/classes/MultiMeshInstance.xml
 msgid ""
@@ -33966,11 +33689,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Mutex.xml doc/classes/Semaphore.xml doc/classes/Thread.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/performance/threads/using_multiple_threads.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/threads/"
-"using_multiple_threads.html"
 
 #: doc/classes/Mutex.xml
 msgid ""
@@ -34046,9 +33766,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Navigation.xml doc/classes/NavigationMesh.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/124"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
 msgid ""
@@ -34128,9 +33847,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Navigation2D.xml doc/classes/NavigationPolygon.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/117"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Navigation2D.xml
 msgid ""
@@ -34560,15 +34278,12 @@ msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
 #: doc/classes/NetworkedMultiplayerPeer.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/networking/high_level_multiplayer.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/networking/"
-"high_level_multiplayer.html"
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
 msgid "http://enet.bespin.org/usergroup0.html"
-msgstr "http://enet.bespin.org/usergroup0.html"
+msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
 msgid ""
@@ -34809,9 +34524,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NetworkedMultiplayerPeer.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/537"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/NetworkedMultiplayerPeer.xml
 msgid ""
@@ -35101,16 +34815,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid "$DOCS_URL/getting_started/step_by_step/nodes_and_scenes.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/step_by_step/"
-"scenes_and_nodes.html"
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid "https://github.com/godotengine/godot-demo-projects/"
-msgstr "https://github.com/godotengine/tps-demo"
+msgstr ""
 
 #: doc/classes/Node.xml
 msgid ""
@@ -35144,7 +34854,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Called when there is an input event. The input event propagates up through "
 "the node tree until a node consumes it.\n"
@@ -35159,18 +34868,8 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not orphan)."
 msgstr ""
-"ในระหว่างที่เรียกใช้งาน physics processing ก็คือการวนซ้ำ "
-"หมายความว่าการประมวลผลทางฟิสิกส์ก็คืออัตราเฟรมที่จะถูกซิงค์กับฟิสิกส์ ดังนั้นตัวแปร [code]delta[/"
-"code] ควรเป็นค่าคงที่\n"
-"จะทำงานก็ต่อเมื่อเปิดใช้งาน physics processing ซึ่งจะทำงานโดยอัตโนมัติ "
-"หากเมธอดนี้ถูกรบกวนสามารถสลับใช้ [method set_physics_process] เพื่อปิดเปิดใช้งาน "
-"physics processing ได้\n"
-"สอดคล้องกับ [constant NOTIFICATION_PHYSICS_PROCESS] การแจ้งเตือนใน [method "
-"Object._notification]\n"
-"[b]หมายเหตุ:[/b]เมธอดนี้จะถูกเรียกก็ต่อเมื่อมีโหนดอยู่ในผังฉากเท่านั้น"
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Called during the physics processing step of the main loop. Physics "
 "processing means that the frame rate is synced to the physics, i.e. the "
@@ -35184,18 +34883,8 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not orphan)."
 msgstr ""
-"ในระหว่างที่เรียกใช้งาน physics processing ก็คือการวนซ้ำ "
-"หมายความว่าการประมวลผลทางฟิสิกส์ก็คืออัตราเฟรมที่จะถูกซิงค์กับฟิสิกส์ ดังนั้นตัวแปร [code]delta[/"
-"code] ควรเป็นค่าคงที่\n"
-"จะทำงานก็ต่อเมื่อเปิดใช้งาน physics processing ซึ่งจะทำงานโดยอัตโนมัติ "
-"หากเมธอดนี้ถูกรบกวนสามารถสลับใช้ [method set_physics_process] เพื่อปิดเปิดใช้งาน "
-"physics processing ได้\n"
-"สอดคล้องกับ [constant NOTIFICATION_PHYSICS_PROCESS] การแจ้งเตือนใน [method "
-"Object._notification]\n"
-"[b]หมายเหตุ:[/b]เมธอดนี้จะถูกเรียกก็ต่อเมื่อมีโหนดอยู่ในผังฉากเท่านั้น"
 
 #: doc/classes/Node.xml
-#, fuzzy
 msgid ""
 "Called during the processing step of the main loop. Processing happens at "
 "every frame and as fast as possible, so the [code]delta[/code] time since "
@@ -35207,15 +34896,6 @@ msgid ""
 "[b]Note:[/b] This method is only called if the node is present in the scene "
 "tree (i.e. if it's not orphan)."
 msgstr ""
-"ในระหว่างที่เรียกใช้งาน physics processing ก็คือการวนซ้ำ "
-"หมายความว่าการประมวลผลทางฟิสิกส์ก็คืออัตราเฟรมที่จะถูกซิงค์กับฟิสิกส์ ดังนั้นตัวแปร [code]delta[/"
-"code] ควรเป็นค่าคงที่\n"
-"จะทำงานก็ต่อเมื่อเปิดใช้งาน physics processing ซึ่งจะทำงานโดยอัตโนมัติ "
-"หากเมธอดนี้ถูกรบกวนสามารถสลับใช้ [method set_physics_process] เพื่อปิดเปิดใช้งาน "
-"physics processing ได้\n"
-"สอดคล้องกับ [constant NOTIFICATION_PHYSICS_PROCESS] การแจ้งเตือนใน [method "
-"Object._notification]\n"
-"[b]หมายเหตุ:[/b]เมธอดนี้จะถูกเรียกก็ต่อเมื่อมีโหนดอยู่ในผังฉากเท่านั้น"
 
 #: doc/classes/Node.xml
 msgid ""
@@ -36127,11 +35807,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node2D.xml doc/classes/Vector2.xml
-#, fuzzy
 msgid "https://github.com/godotengine/godot-demo-projects/tree/master/2d"
 msgstr ""
-"https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
-"generator"
 
 #: doc/classes/Node2D.xml
 msgid "Multiplies the current scale by the [code]ratio[/code] vector."
@@ -36298,9 +35975,8 @@ msgstr ""
 #: doc/classes/NodePath.xml doc/classes/PackedScene.xml doc/classes/Panel.xml
 #: doc/classes/PanelContainer.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/520"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/NodePath.xml
 msgid ""
@@ -36512,19 +36188,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Object.xml doc/classes/Reference.xml doc/classes/Resource.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/best_practices/node_alternatives.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/workflow/"
-"best_practices/node_alternatives.html"
 
 #: doc/classes/Object.xml
-#, fuzzy
 msgid ""
 "$DOCS_URL/tutorials/scripting/gdscript/gdscript_exports.html#advanced-exports"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"gdscript_basics.html#dictionary"
 
 #: doc/classes/Object.xml
 msgid ""
@@ -37832,9 +37502,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid "Returns the number of displays attached to the host machine."
-msgstr "คืนค่าชื่อของอุปกรณ์เสียงทั้งหมดที่ตรวจพบในระบบ"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid ""
@@ -38025,9 +37694,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid "Returns the number of video drivers supported on the current platform."
-msgstr "คืนค่าชื่อของอุปกรณ์เสียงทั้งหมดที่ตรวจพบในระบบ"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid ""
@@ -38545,79 +38213,79 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Sunday."
-msgstr "วันอาทิตย์"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Monday."
-msgstr "วันจันทร์"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Tuesday."
-msgstr "วันอังคาร"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Wednesday."
-msgstr "วันพุธ"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Thursday."
-msgstr "วันพฤหัสบดี"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Friday."
-msgstr "วันศุกร์"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Saturday."
-msgstr "วันเสาร์"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "January."
-msgstr "มกราคม"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "February."
-msgstr "กุมภาพันธ์"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "March."
-msgstr "มีนาคม"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "April."
-msgstr "เมษายน"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "May."
-msgstr "พฤษภาคม"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "June."
-msgstr "มิถุนายน"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "July."
-msgstr "กรกฎาคม"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "August."
-msgstr "สิงหาคม"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "September."
-msgstr "กันยายน"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "October."
-msgstr "ตุลาคม"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "November."
-msgstr "พฤศจิกายน"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "December."
-msgstr "ธันวาคม"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid ""
@@ -38720,9 +38388,8 @@ msgid "Ringtones directory path."
 msgstr ""
 
 #: doc/classes/OS.xml
-#, fuzzy
 msgid "Unknown powerstate."
-msgstr "ปุ่มที่ไม่รู้จัก"
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Unplugged, running on battery."
@@ -39129,14 +38796,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Panel.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/516"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Panel.xml doc/classes/Skeleton.xml doc/classes/SkeletonIK.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/523"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Panel.xml
 msgid "The style of this [Panel]."
@@ -39283,13 +38948,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Particles.xml
-#, fuzzy
 msgid ""
 "$DOCS_URL/tutorials/performance/vertex_animation/"
 "controlling_thousands_of_fish.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/"
-"controlling_thousands_of_fish.html"
 
 #: doc/classes/Particles.xml
 msgid ""
@@ -39450,9 +39112,8 @@ msgid "Returns the randomness ratio associated with the specified parameter."
 msgstr ""
 
 #: doc/classes/ParticlesMaterial.xml
-#, fuzzy
 msgid "Returns the [Texture] used by the specified parameter."
-msgstr "คืนค่าผกผันรูทสองของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/ParticlesMaterial.xml
 msgid ""
@@ -39469,9 +39130,8 @@ msgid "Sets the randomness ratio for the specified [enum Parameter]."
 msgstr ""
 
 #: doc/classes/ParticlesMaterial.xml
-#, fuzzy
 msgid "Sets the [Texture] for the specified [enum Parameter]."
-msgstr "คืนค่าผกผันรูทสองของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/ParticlesMaterial.xml
 msgid ""
@@ -40151,10 +39811,8 @@ msgstr ""
 #: doc/classes/PhysicsDirectBodyState.xml
 #: doc/classes/PhysicsDirectSpaceState.xml doc/classes/RayCast.xml
 #: doc/classes/RayCast2D.xml doc/classes/World.xml doc/classes/World2D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/physics/ray-casting.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html"
 
 #: doc/classes/Physics2DDirectBodyState.xml doc/classes/RigidBody2D.xml
 msgid "Adds a constant directional force without affecting rotation."
@@ -40799,9 +40457,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Physics2DServer.xml
-#, fuzzy
 msgid "Returns the value of a damped spring joint parameter."
-msgstr "คืนค่าผกผันรูทสองของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/Physics2DServer.xml
 msgid ""
@@ -41735,9 +41392,8 @@ msgid "Gets the priority value of the Joint."
 msgstr ""
 
 #: doc/classes/PhysicsServer.xml
-#, fuzzy
 msgid "Returns the type of the Joint."
-msgstr "คืนค่าการกำหนดค่าของลำโพง"
+msgstr ""
 
 #: doc/classes/PhysicsServer.xml
 msgid "Sets the priority value of the Joint."
@@ -42220,7 +41876,7 @@ msgstr ""
 
 #: doc/classes/Plane.xml
 msgid "Returns a copy of the plane, normalized."
-msgstr "ส่งคืนสำเนาของ plane ที่ทำให้เป็นมาตรฐาน"
+msgstr ""
 
 #: doc/classes/Plane.xml
 msgid ""
@@ -42742,9 +42398,8 @@ msgstr ""
 
 #: doc/classes/PoolVector2Array.xml doc/classes/TileMap.xml
 #: doc/classes/TileSet.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/519"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/PoolVector2Array.xml
 msgid ""
@@ -44690,17 +44345,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
-#, fuzzy
 msgid ""
 "Default [InputEventAction] to move down in the UI.\n"
 "[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are "
 "necessary for the internal logic of several [Control]s. The events assigned "
 "to the action can however be modified."
 msgstr ""
-"ค่าเริ่มต้น [InputEventAction] เพื่อเลื่อนลงใน UI\n"
-"[b]หมายเหตุ:[/b] ค่าเริ่มต้น [code]ui_*[/code] ไม่สามารถลบ action "
-"ได้เนื่องจากจำเป็นสำหรับ logic ในการ [Control] ต่างๆ อย่างไรก็ตาม event "
-"ที่กำหนดให้กับการ action สามารถแก้ไขได้"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -46622,9 +46272,8 @@ msgstr ""
 
 #: doc/classes/QuadMesh.xml doc/classes/Viewport.xml
 #: doc/classes/ViewportTexture.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/129"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/QuadMesh.xml
 msgid "Offset of the generated Quad. Useful for particles."
@@ -46636,7 +46285,7 @@ msgstr ""
 
 #: doc/classes/Quat.xml
 msgid "Quaternion."
-msgstr "ควอเทอร์เนียน"
+msgstr ""
 
 #: doc/classes/Quat.xml
 msgid ""
@@ -46651,12 +46300,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Quat.xml
-#, fuzzy
 msgid ""
 "$DOCS_URL/tutorials/3d/using_transforms.html#interpolating-with-quaternions"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms."
-"html#interpolating-with-quaternions"
 
 #: doc/classes/Quat.xml
 msgid "Constructs a quaternion from the given [Basis]."
@@ -46823,9 +46469,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RandomNumberGenerator.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/math/random_number_generation.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/math/index.html"
+msgstr ""
 
 #: doc/classes/RandomNumberGenerator.xml
 msgid ""
@@ -47455,10 +47100,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ReflectionProbe.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/reflection_probes.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html"
 
 #: doc/classes/ReflectionProbe.xml
 msgid ""
@@ -47847,9 +47490,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Resource.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/scripting/resources.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html"
+msgstr ""
 
 #: doc/classes/Resource.xml
 msgid ""
@@ -48385,9 +48027,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RichTextLabel.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/132"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/RichTextLabel.xml
 msgid ""
@@ -49177,14 +48818,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RigidBody2D.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/119"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/RigidBody2D.xml doc/classes/Sprite.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/148"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/RigidBody2D.xml
 msgid ""
@@ -49782,11 +49421,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RootMotionView.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/animation/animation_tree.html#root-motion"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree."
-"html"
 
 #: doc/classes/RootMotionView.xml
 msgid "Path to an [AnimationTree] node to use as a basis for root motion."
@@ -49993,16 +49629,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SceneTree.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/scripting/scene_tree.html"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/shading/index.html"
+msgstr ""
 
 #: doc/classes/SceneTree.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/rendering/multiple_resolutions.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/viewports/"
-"multiple_resolutions.html"
 
 #: doc/classes/SceneTree.xml
 msgid ""
@@ -50772,10 +50404,8 @@ msgid "$DOCS_URL/tutorials/shaders/index.html"
 msgstr ""
 
 #: doc/classes/Shader.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/shaders/introduction_to_shaders.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html"
 
 #: doc/classes/Shader.xml
 msgid ""
@@ -51104,10 +50734,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Skeleton2D.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/animation/2d_skeletons.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html"
 
 #: doc/classes/Skeleton2D.xml
 msgid ""
@@ -51413,10 +51041,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SoftBody.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/physics/soft_body.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/physics/soft_body.html"
 
 #: doc/classes/SoftBody.xml
 msgid "Returns local translation of a vertex in the surface array."
@@ -51500,17 +51126,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Spatial.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/introduction_to_3d.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html"
 
 #: doc/classes/Spatial.xml doc/classes/Vector3.xml
-#, fuzzy
 msgid "https://github.com/godotengine/godot-demo-projects/tree/master/3d"
 msgstr ""
-"https://github.com/godotengine/godot-demo-projects/tree/master/audio/"
-"generator"
 
 #: doc/classes/Spatial.xml
 msgid ""
@@ -51813,10 +51434,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/spatial_material.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/spatial_material.html"
 
 #: doc/classes/SpatialMaterial.xml
 msgid "Returns [code]true[/code], if the specified [enum Feature] is enabled."
@@ -53181,9 +52800,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Sprite.xml
-#, fuzzy
 msgid "General-purpose sprite node."
-msgstr "Node สไปรต์เอนกประสงค์"
+msgstr ""
 
 #: doc/classes/Sprite.xml
 msgid ""
@@ -53859,11 +53477,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/String.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/"
-"gdscript_format_string.html"
 
 #: doc/classes/String.xml
 msgid "Constructs a new String from the given [bool]."
@@ -55870,9 +55485,8 @@ msgid "Returns the amount of total lines in the text."
 msgstr ""
 
 #: doc/classes/TextEdit.xml
-#, fuzzy
 msgid "Returns the height of a largest line."
-msgstr "คืนค่า arc tanh ของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/TextEdit.xml
 msgid ""
@@ -55881,9 +55495,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/TextEdit.xml
-#, fuzzy
 msgid "Returns the number of times the given line is wrapped."
-msgstr "คืนค่าชื่อของอุปกรณ์เสียงทั้งหมดที่ตรวจพบในระบบ"
+msgstr ""
 
 #: doc/classes/TextEdit.xml
 msgid "Returns an array of [String]s representing each wrapped index."
@@ -57311,11 +56924,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Thread.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/performance/threads/thread_safe_apis.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/threads/thread_safe_apis."
-"html"
 
 #: doc/classes/Thread.xml
 msgid ""
@@ -57390,15 +57000,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/TileMap.xml doc/classes/TileSet.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/2d/using_tilemaps.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html"
 
 #: doc/classes/TileMap.xml doc/classes/TileSet.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/111"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/TileMap.xml
 msgid "Clears all cells."
@@ -58836,11 +58443,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Translation.xml doc/classes/TranslationServer.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/i18n/internationalizing_games.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/i18n/"
-"internationalizing_games.html"
 
 #: doc/classes/Translation.xml doc/classes/TranslationServer.xml
 msgid "$DOCS_URL/tutorials/i18n/locales.html"
@@ -60743,7 +60347,7 @@ msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid "Disconnected."
-msgstr "ตัดการเชื่อม"
+msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid "Unknown device."
@@ -60848,10 +60452,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Variant.xml
-#, fuzzy
 msgid "$DOCS_URL/development/cpp/variant_class.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/development/cpp/variant_class.html"
 
 #: doc/classes/VBoxContainer.xml
 msgid "Vertical box container."
@@ -60870,7 +60472,6 @@ msgid "Vector used for 2D math."
 msgstr ""
 
 #: doc/classes/Vector2.xml
-#, fuzzy
 msgid ""
 "2-element structure that can be used to represent positions in 2D space or "
 "any other pair of numeric values.\n"
@@ -60878,11 +60479,6 @@ msgid ""
 "code] if it's equal to [code]Vector2(0, 0)[/code]. Otherwise, a Vector2 will "
 "always evaluate to [code]true[/code]."
 msgstr ""
-"โครงสร้าง 2 องค์ประกอบที่สามารถใช้เพื่อแสดงตำแหน่งในพื้นที่ 2 มิติหรือค่าตัวเลขคู่อื่นๆ\n"
-"ใช้พิกัด floating-point เพื่อดู [Vector2i] สำหรับจำนวนเต็ม\n"
-"[b]ห:[/bมายเหตุ] ในส่วนของ boolean บริบทของ Vector2 ค่าเป็น [code]false[/code] "
-"ถ้ามันเท่ากับ [code]Vector2(0, 0)[/code] หากไม่เป็นอย่างนั้น Vector2 จะให้ค่าเป็น "
-"[code]true[/code] เสมอ"
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
@@ -61137,11 +60733,11 @@ msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid "Zero vector, a vector with all components set to [code]0[/code]."
-msgstr "เส้นเวกเตอร์ศูนย์ เส้นเวกเตอร์กับ components ทั้งหมดจะมีค่าเป็น [code]0[/code]"
+msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid "One vector, a vector with all components set to [code]1[/code]."
-msgstr "เส้นเวกเตอร์หนึ่ง เส้นเวกเตอร์กับ components ทั้งหมดจะมีค่าเป็น [code]1[/code]"
+msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
@@ -61170,7 +60766,6 @@ msgid "Vector used for 3D math."
 msgstr ""
 
 #: doc/classes/Vector3.xml
-#, fuzzy
 msgid ""
 "3-element structure that can be used to represent positions in 3D space or "
 "any other pair of numeric values.\n"
@@ -61178,11 +60773,6 @@ msgid ""
 "code] if it's equal to [code]Vector3(0, 0, 0)[/code]. Otherwise, a Vector3 "
 "will always evaluate to [code]true[/code]."
 msgstr ""
-"โครงสร้าง 2 องค์ประกอบที่สามารถใช้เพื่อแสดงตำแหน่งในพื้นที่ 2 มิติหรือค่าตัวเลขคู่อื่นๆ\n"
-"ใช้พิกัด floating-point เพื่อดู [Vector2i] สำหรับจำนวนเต็ม\n"
-"[b]ห:[/bมายเหตุ] ในส่วนของ boolean บริบทของ Vector2 ค่าเป็น [code]false[/code] "
-"ถ้ามันเท่ากับ [code]Vector2(0, 0)[/code] หากไม่เป็นอย่างนั้น Vector2 จะให้ค่าเป็น "
-"[code]true[/code] เสมอ"
 
 #: doc/classes/Vector3.xml
 msgid "Returns a Vector3 with the given components."
@@ -61786,24 +61376,20 @@ msgid "$DOCS_URL/tutorials/rendering/index.html"
 msgstr ""
 
 #: doc/classes/Viewport.xml doc/classes/ViewportTexture.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/128"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Viewport.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/130"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Viewport.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/541"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Viewport.xml doc/classes/ViewportTexture.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/586"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid ""
@@ -62630,11 +62216,8 @@ msgid ""
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScript.xml
-#, fuzzy
 msgid "$DOCS_URL/getting_started/scripting/visual_script/index.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/getting_started/scripting/"
-"visual_script/index.html"
 
 #: modules/visual_script/doc_classes/VisualScript.xml
 msgid "Add a custom signal with the specified name to the VisualScript."
@@ -64391,11 +63974,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/performance/using_servers.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers."
-"html"
 
 #: doc/classes/VisualServer.xml
 msgid "Sets images to be rendered in the window margin."
@@ -65481,9 +65061,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Returns the size of the lightmap capture area."
-msgstr "คืนค่าผกผันรูทสองของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid "Returns the energy multiplier used by the lightmap capture."
@@ -66265,9 +65844,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Returns the depth of the texture."
-msgstr "คืนค่า arc tanh ของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid "Returns the flags of a texture."
@@ -66278,9 +65856,8 @@ msgid "Returns the format of the texture's image."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Returns the texture's height."
-msgstr "คืนค่าการกำหนดค่าของลำโพง"
+msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid "Returns the texture's path."
@@ -66291,9 +65868,8 @@ msgid "Returns the opengl id of the texture's image."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
 msgid "Returns the type of the texture, can be any of the [enum TextureType]."
-msgstr "คืนค่าผกผันรูทสองของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid "Returns the texture's width."
@@ -67517,10 +67093,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNode.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/shaders/visual_shaders.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/shading/visual_shaders.html"
 
 #: doc/classes/VisualShaderNode.xml
 msgid ""
@@ -67963,11 +67537,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNodeCustom.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/plugins/editor/visual_shader_plugins.html"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/plugins/editor/"
-"visual_shader_plugins.html"
 
 #: doc/classes/VisualShaderNodeCustom.xml
 msgid ""
@@ -68163,8 +67734,6 @@ msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
-"คืนค่าการลดลงของผลคูณเชิงสเกลาร์ของพื้นผิวปกติและทิศทางการมองของกล้อง "
-"(ส่งผ่านอินพุตที่เกี่ยวข้องไปยังมัน)"
 
 #: doc/classes/VisualShaderNodeGlobalExpression.xml
 msgid ""
@@ -68309,11 +67878,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualShaderNodeInput.xml
-#, fuzzy
 msgid "$DOCS_URL/tutorials/shaders/shader_reference/index.html"
 msgstr ""
-"https://docs.godotengine.org/en/stable/tutorials/shading/shading_reference/"
-"index.html"
 
 #: doc/classes/VisualShaderNodeInput.xml
 msgid ""
@@ -68847,7 +68413,7 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr "คืนค่า arc tanh ของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml
 msgid ""
@@ -68884,7 +68450,7 @@ msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml
 msgid "Returns the inverse of the square root of the parameter."
-msgstr "คืนค่าผกผันรูทสองของพารามิเตอร์"
+msgstr ""
 
 #: doc/classes/VisualShaderNodeVectorFunc.xml
 msgid "Natural logarithm."

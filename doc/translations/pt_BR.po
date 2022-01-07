@@ -31,13 +31,15 @@
 # Alefy San <alefyferreiradeoliveira@outlook.com>, 2021.
 # Supernova Files <filessupernova@gmail.com>, 2021.
 # Leo Lamas <leoslamas@gmail.com>, 2021.
-# Vinicius A. Portela <vinicius@simpx.net>, 2021.
+# Vinicius A. Portela <vinicius@simpx.net>, 2021, 2022.
+# Felipe SiFa <felipe@logus.digital>, 2022.
+# Gabriel Gian <gabrielgian@live.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-19 17:31+0000\n"
-"Last-Translator: Vinicius A. Portela <vinicius@simpx.net>\n"
+"PO-Revision-Date: 2022-01-07 12:18+0000\n"
+"Last-Translator: Gabriel Gian <gabrielgian@live.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -45,7 +47,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.10\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -462,6 +464,23 @@ msgid ""
 "want a true content-aware comparison, you have to use [code]deep_equal[/"
 "code]."
 msgstr ""
+"Compara dois valores, verificando seu conteúdo real, recorrendo a qualquer "
+"`Array` ou `Dicionário` até o seu nível mais profundo.\n"
+"Isso se compara a [code]==[/code] de várias maneiras:\n"
+"- Para [code]null[/code], [code]int[/code], [code]float[/code], "
+"[code]String[/code], [code]Objeto[/code] e [code]RID[/code] tanto "
+"[code]deep_equal[/code] quanto [code]==[/code] funcionam da mesma maneira.\n"
+"- Para [code]Dicionário[/code], [code]==[code] considera igualdade se, e "
+"somente se, ambas as variáveis apontarem para o mesmo [code]Dicionário[/"
+"code], sem nenhuma recorrência ou consciência do conteúdo.\n"
+"- Para [code]Array[/code], [code]==[/code] considera igualdade se, e somente "
+"se, cada item no primeiro [code]Array[/code] for igual a sua contraparte no "
+"segundo [code]Array[/code], como diz o próprio [code]==[/code]. Isso implica "
+"que [code]==[/code] recursa para [code]Array[/code], mas não para "
+"[code]Dicionário[/code].\n"
+"Em resumo, sempre que um [code]Dicionário[/code] estiver potencialmente "
+"envolvido, se você quiser uma verdadeira comparação consciente do conteúdo, "
+"você tem que usar [code]deep_equal[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -3791,40 +3810,44 @@ msgid ""
 "OpenVR touchpad X axis (Joystick axis on Oculus Touch and Windows MR "
 "controllers)."
 msgstr ""
+"Eixo X do touchpad OpenVR (eixo do controle nos controles Oculus Touch e "
+"Windows MR)."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "OpenVR touchpad Y axis (Joystick axis on Oculus Touch and Windows MR "
 "controllers)."
 msgstr ""
+"Eixo Y do touchpad OpenVR (eixo do controle nos controles Oculus Touch e "
+"Windows MR)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI note OFF message."
-msgstr ""
+msgstr "Mensagem de nota MIDI DESLIGADA."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI note ON message."
-msgstr ""
+msgstr "Mensagem de nota MIDI LIGADA."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI aftertouch message."
-msgstr ""
+msgstr "Mensagem de nota MIDI pós-toque."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI control change message."
-msgstr ""
+msgstr "Mensagem de mudança de controle MIDI."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI program change message."
-msgstr ""
+msgstr "Mensagem de mudança de programa MIDI."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI channel pressure message."
-msgstr ""
+msgstr "Mensagem de pressão de canal MIDI."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI pitch bend message."
-msgstr ""
+msgstr "Mensagem de mudança de tom MIDI."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3842,6 +3865,20 @@ msgid ""
 "    print(\"Still failing!\")\n"
 "[/codeblock]"
 msgstr ""
+"Métodos que retornam [enum Error] returnam [constant OK] quando não ocorreu "
+"nenhum erro. Note que muitas funções não retornam um código de erro, mas "
+"imprimem mensagens de erro para a saída padrão.\n"
+"Já que [constant OK] tem valor 0 e todos os outros códigos de falha são "
+"valores inteiros positivos, ele também pode ser usado em verificações "
+"booleanas, por exemplo.:\n"
+"[codeblock]\n"
+"var err = método_que_retorna_erro()\n"
+"if err != OK:\n"
+"    print(\"Falha!\")\n"
+"# Ou, equivalente:\n"
+"if err:\n"
+"    print(\"Ainda falhando!\")\n"
+"[/codeblock]"
 
 #: doc/classes/@GlobalScope.xml
 msgid "Generic error."
@@ -3849,31 +3886,31 @@ msgstr "Erro genérico."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Unavailable error."
-msgstr ""
+msgstr "Erro indisponível."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Unconfigured error."
-msgstr ""
+msgstr "Erro não configurado."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Unauthorized error."
-msgstr ""
+msgstr "Erro não autorizado."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Parameter range error."
-msgstr ""
+msgstr "Erro na faixa do parâmetro."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Out of memory (OOM) error."
-msgstr ""
+msgstr "Erro de falta de memória (OOM)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Not found error."
-msgstr ""
+msgstr "Arquivo: erro não encontrado."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Bad drive error."
-msgstr ""
+msgstr "Arquivo: erro de unidade defeituosa."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Bad path error."
@@ -3889,63 +3926,63 @@ msgstr "Arquivo: Erro arquivo já em uso."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Can't open error."
-msgstr ""
+msgstr "Arquivo: não se pode abrir erro."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Can't write error."
-msgstr ""
+msgstr "Arquivo: não se pode escrever erro."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Can't read error."
-msgstr ""
+msgstr "Arquivo: não é possível ler erro."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Unrecognized error."
-msgstr ""
+msgstr "Arquivo: erro não reconhecido."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Corrupt error."
-msgstr ""
+msgstr "Arquivo: Erro corrompido."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Missing dependencies error."
-msgstr ""
+msgstr "Arquivo: Erro de dependências faltando."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: End of file (EOF) error."
-msgstr ""
+msgstr "Arquivo: Erro de fim de arquivo (EOF)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't open error."
-msgstr ""
+msgstr "Erro não é possível abrir."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't create error."
-msgstr ""
+msgstr "Erro não é possível criar."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Query failed error."
-msgstr ""
+msgstr "Erro busca falhou."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Already in use error."
-msgstr ""
+msgstr "Erro já em uso."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Locked error."
-msgstr ""
+msgstr "Erro bloqueado."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Timeout error."
-msgstr ""
+msgstr "Erro tempo esgotado."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't connect error."
-msgstr ""
+msgstr "Erro não é possível conectar."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't resolve error."
-msgstr ""
+msgstr "Erro não se pode resolver."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Connection error."
@@ -3953,35 +3990,35 @@ msgstr "Erro de conexão."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't acquire resource error."
-msgstr ""
+msgstr "Erro não se pode adquirir o recurso."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't fork process error."
-msgstr ""
+msgstr "Erro não se pode dividir o processo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Invalid data error."
-msgstr ""
+msgstr "Erro dado inválido."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Invalid parameter error."
-msgstr ""
+msgstr "Erro parâmetro inválido."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Already exists error."
-msgstr ""
+msgstr "Erro já existe."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Does not exist error."
-msgstr ""
+msgstr "Erro não existe."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Database: Read error."
-msgstr ""
+msgstr "Erro de leitura da base de dados."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Database: Write error."
-msgstr ""
+msgstr "Erro de escritura da base de dados."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Compilation failed error."
@@ -3993,15 +4030,15 @@ msgstr "Erro de método não encontrado."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Linking failed error."
-msgstr ""
+msgstr "Erro falha de link."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Script failed error."
-msgstr ""
+msgstr "Erro falha de script."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Cycling link (import cycle) error."
-msgstr ""
+msgstr "Erro de link cíclico (importar ciclo)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Invalid declaration error."
@@ -4009,19 +4046,19 @@ msgstr "Erro de declaração inválida."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Duplicate symbol error."
-msgstr ""
+msgstr "Erro de símbolo duplicado."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Parse error."
-msgstr ""
+msgstr "Erro de análise."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Busy error."
-msgstr ""
+msgstr "Erro de disponibilidade."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Skip error."
-msgstr ""
+msgstr "Pular erro."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Help error."
@@ -4029,17 +4066,19 @@ msgstr "Erro de ajuda."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Bug error."
-msgstr ""
+msgstr "Erro de bug."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Printer on fire error. (This is an easter egg, no engine methods return this "
 "error code.)"
 msgstr ""
+"Erro de impressora pegando fogo. (Isto é um easter egg, nenhum método do "
+"motor retorna este código de erro.)"
 
 #: doc/classes/@GlobalScope.xml
 msgid "No hint for the edited property."
-msgstr ""
+msgstr "Nenhuma dica para a propriedade editada."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4050,6 +4089,12 @@ msgid ""
 "above the max or below the min values. Example: [code]\"-360,360,1,"
 "or_greater,or_lesser\"[/code]."
 msgstr ""
+"Indica que uma propriedade integer ou float deve estar dentro de um "
+"intervalo especificado pela string de dica [code]\"min,max\"[/code] ou "
+"[code]\"min,max,step\"[/code]. A string de dica pode incluir opcionalmente "
+"[code]\"or_greater\"[/code] e/ou [code]\"or_lesser\"[/code] para permitir "
+"uma entrada manual indo respectivamente acima ou abaixo dos valores máximo e "
+"mínimo. Exemplo: [code]\"-360,360,1,or_greater,or_lesser\"[/code]."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4067,6 +4112,9 @@ msgid ""
 "pick in a list specified via a hint string such as [code]\"Hello,Something,"
 "Else\"[/code]."
 msgstr ""
+"Indica que uma propriedade integer, float ou string é um valor enumerado "
+"para ser selecionado em uma lista especificada por uma string de dica como "
+"[code]\"Hello,Something,Else\"[/code]."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4075,10 +4123,14 @@ msgid ""
 "the curve horizontally and/or [code]\"inout\"[/code] to also include in/out "
 "easing."
 msgstr ""
+"Indica que uma propriedade float deve ser editada via uma função de "
+"atenuação exponencial. A string de dica pode incluir [code]\"attenuation\"[/"
+"code] para virar a curva horizontalmente e/ou [code]\"inout\"[/code] para "
+"incluir também uma atenuação de entrada e saída."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Deprecated hint, unused."
-msgstr ""
+msgstr "Dica descontinuada, sem uso."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4086,30 +4138,41 @@ msgid ""
 "example, to allow toggling bits 0, 1, 2 and 4, the hint could be something "
 "like [code]\"Bit0,Bit1,Bit2,,Bit4\"[/code]."
 msgstr ""
+"Indica que uma propriedade integer é uma bitmask com bit flags nomeadas. Por "
+"exemplo, para permitir-se acionar os bits 0, 1, 2 e 4, a dica poderia ser "
+"algo como [code]\"Bit0,Bit1,Bit2,,Bit4\"[/code]."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Hints that an integer property is a bitmask using the optionally named 2D "
 "render layers."
 msgstr ""
+"Indica que uma propriedade integer é uma bitmask usando as camadas de "
+"renderização 2D nomeadas opcionalmente."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Hints that an integer property is a bitmask using the optionally named 2D "
 "physics layers."
 msgstr ""
+"Indica que uma propriedade integer é uma bitmask usando as camadas de física "
+"2D opcionalmente nomeadas."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Hints that an integer property is a bitmask using the optionally named 3D "
 "render layers."
 msgstr ""
+"Indica que uma propriedade integer é uma bitmask usando as camadas de "
+"renderização 3D opcionalmente nomeadas."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Hints that an integer property is a bitmask using the optionally named 3D "
 "physics layers."
 msgstr ""
+"Indica que uma propriedade integer é uma bitmask usando as camadas de física "
+"3D opcionalmente nomeadas."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4117,12 +4180,18 @@ msgid ""
 "file dialog for picking the path. The hint string can be a set of filters "
 "with wildcards like [code]\"*.png,*.jpg\"[/code]."
 msgstr ""
+"Indica que uma propriedade string é um caminho para um arquivo. Editá-la irá "
+"exibir um diálogo de arquivo para selecionar o caminho. A string de dica "
+"pode ser um conjunto de filtros com coringas como [code]\"*.png,*.jpg\"[/"
+"code]."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Hints that a string property is a path to a directory. Editing it will show "
 "a file dialog for picking the path."
 msgstr ""
+"Indica que uma propriedade string é um caminho para um diretório. Editá-la "
+"irá exibir um diálogo de arquivo para selecionar o caminho."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4131,12 +4200,19 @@ msgid ""
 "hint string can be a set of filters with wildcards like [code]\"*.png,*.jpg"
 "\"[/code]."
 msgstr ""
+"Indica que uma propriedade de string é um caminho absoluto para um arquivo "
+"fora da pasta do projeto. Editá-la irá exibir um diálogo de arquivo para "
+"selecionar o caminho. A string de dica pode ser um conjunto de filtros com "
+"coringas como [code]\"*.png,*.jpg\"[/code]."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Hints that a string property is an absolute path to a directory outside the "
 "project folder. Editing it will show a file dialog for picking the path."
 msgstr ""
+"Indica que uma propriedade string é um caminho absoluto para uma diretório "
+"fora da pasta do projeto. Editá-la irá exibir um diálogo de arquivo para "
+"selecionar o caminho."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4144,12 +4220,19 @@ msgid ""
 "optionally specified via the hint string (e.g. [code]\"Texture\"[/code]). "
 "Editing it will show a popup menu of valid resource types to instantiate."
 msgstr ""
+"Indica que uma propriedade é uma instância de um tipo derivado de um "
+"[Resource], opcionalmente especificado via uma string de dica (ex. "
+"[code]\"Texture\"[/code]). Editá-la irá exibir um menu popup de tipos "
+"válidos de recurso para instanciar."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "Hints that a string property is text with line breaks. Editing it will show "
 "a text input field where line breaks can be typed."
 msgstr ""
+"Indica que uma propriedade string é um texto com quebras de linha. Editá-la "
+"irá exibir um campo de entrada de texto onde as quebras de linha podem ser "
+"digitadas."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -23879,7 +23962,7 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Academy Color Encoding System tonemapper operator. Performs an aproximation "
+"Academy Color Encoding System tonemapper operator. Performs an approximation "
 "of the ACES tonemapping curve."
 msgstr ""
 

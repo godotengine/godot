@@ -7,7 +7,7 @@
 # Bob <spiroski.boban@gmail.com>, 2020.
 # Riccardo Ferro <Riccardo3Ferro@gmail.com>, 2020.
 # Lorenzo Asolan <brixiumx@gmail.com>, 2020.
-# Mirko <miknsop@gmail.com>, 2020.
+# Mirko <miknsop@gmail.com>, 2020, 2021.
 # Lorenzo Cerqua <lorenzocerqua@tutanota.com>, 2020.
 # StarFang208 <polaritymanx@yahoo.it>, 2020.
 # Giacomo Bertolotti <giacomo.chappo@hotmail.it>, 2020, 2021.
@@ -27,8 +27,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-11-15 21:14+0000\n"
-"Last-Translator: Andrea Leganza <neogene@gmail.com>\n"
+"PO-Revision-Date: 2021-12-31 09:51+0000\n"
+"Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/it/>\n"
 "Language: it\n"
@@ -36,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -2375,8 +2375,9 @@ msgid "Num Lock key."
 msgstr "Tasto Num Lock/Bloc num."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Scroll Lock key."
-msgstr ""
+msgstr "Tasto Blocco scorrimento."
 
 #: doc/classes/@GlobalScope.xml
 msgid "F1 key."
@@ -2511,16 +2512,19 @@ msgid "Right Super key (Windows key)."
 msgstr "Tasto 'Windows' destro."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Context menu key."
-msgstr ""
+msgstr "Tasto menu contestuale."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Left Hyper key."
-msgstr ""
+msgstr "Tasto Hyper sinistro."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Right Hyper key."
-msgstr ""
+msgstr "Tasto Hyper destro."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Help key."
@@ -2552,16 +2556,19 @@ msgid "Media refresh key."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Volume down key."
-msgstr ""
+msgstr "Tasto volume giù."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Mute volume key."
-msgstr ""
+msgstr "Tasto volume muto."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Volume up key."
-msgstr ""
+msgstr "Tasto del volume su."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Bass Boost key."
@@ -2588,28 +2595,33 @@ msgid "Media play key."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Previous song key."
-msgstr ""
+msgstr "Tasto brano precedente."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Next song key."
-msgstr ""
+msgstr "Tasto brano successivo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Media record key."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Home page key."
-msgstr ""
+msgstr "Tasto pagina iniziale."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Favorites key."
-msgstr ""
+msgstr "Tasto Preferiti."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Search key."
-msgstr ""
+msgstr "Tasto Ricerca."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Standby key."
@@ -2696,544 +2708,677 @@ msgid "Unknown key."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Space key."
-msgstr ""
+msgstr "Tasto spazio."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "! key."
-msgstr ""
+msgstr "Tasto !."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "\" key."
-msgstr ""
+msgstr "Tasto \"."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "# key."
-msgstr ""
+msgstr "Tasto #."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "$ key."
-msgstr ""
+msgstr "Tasto $."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "% key."
-msgstr ""
+msgstr "Tasto %."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "& key."
-msgstr ""
+msgstr "Tasto &."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "' key."
-msgstr ""
+msgstr "Tasto '."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "( key."
-msgstr ""
+msgstr "Tasto (."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ") key."
-msgstr ""
+msgstr "Tasto )."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "* key."
-msgstr ""
+msgstr "Tasto *."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "+ key."
-msgstr ""
+msgstr "Tasto +."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ", key."
-msgstr ""
+msgstr "Tasto ,."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "- key."
-msgstr ""
+msgstr "Tasto -."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ". key."
-msgstr ""
+msgstr "Tasto \".\"."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "/ key."
-msgstr ""
+msgstr "Tasto /."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Number 0."
-msgstr ""
+msgstr "Numero 0."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Number 1."
-msgstr ""
+msgstr "Numero 1."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Number 2."
-msgstr ""
+msgstr "Numero 2."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Number 3."
-msgstr ""
+msgstr "Numero 3."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Number 4."
-msgstr ""
+msgstr "Numero 4."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Number 5."
-msgstr ""
+msgstr "Numero 5."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Number 6."
-msgstr ""
+msgstr "Numero 6."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Number 7."
-msgstr ""
+msgstr "Numero 7."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Number 8."
-msgstr ""
+msgstr "Numero 8."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Number 9."
-msgstr ""
+msgstr "Numero 9."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ": key."
-msgstr ""
+msgstr "Tasto :."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "; key."
-msgstr ""
+msgstr "Tasto ;."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "< key."
-msgstr ""
+msgstr "Tasto <."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "= key."
-msgstr ""
+msgstr "Tasto =."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "> key."
-msgstr ""
+msgstr "Tasto >."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "? key."
-msgstr ""
+msgstr "Tasto ?."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "@ key."
-msgstr ""
+msgstr "Tasto @."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "A key."
-msgstr ""
+msgstr "Tasto A."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "B key."
-msgstr ""
+msgstr "Tasto B."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "C key."
-msgstr ""
+msgstr "Tasto C."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "D key."
-msgstr ""
+msgstr "Tasto D."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "E key."
-msgstr ""
+msgstr "Tasto E."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "F key."
-msgstr ""
+msgstr "Tasto F."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "G key."
-msgstr ""
+msgstr "Tasto G."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "H key."
-msgstr ""
+msgstr "Tasto H."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "I key."
-msgstr ""
+msgstr "Tasto I."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "J key."
-msgstr ""
+msgstr "Tasto J."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "K key."
-msgstr ""
+msgstr "Tasto K."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "L key."
-msgstr ""
+msgstr "Tasto L."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "M key."
-msgstr ""
+msgstr "Tasto M."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "N key."
-msgstr ""
+msgstr "Tasto N."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "O key."
-msgstr ""
+msgstr "Tasto O."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "P key."
-msgstr ""
+msgstr "Tasto P."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Q key."
-msgstr ""
+msgstr "Tasto Q."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "R key."
-msgstr ""
+msgstr "Tasto R."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "S key."
-msgstr ""
+msgstr "Tasto S."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "T key."
-msgstr ""
+msgstr "Tasto T."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "U key."
-msgstr ""
+msgstr "Tasto U."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "V key."
-msgstr ""
+msgstr "Tasto V."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "W key."
-msgstr ""
+msgstr "Tasto W."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "X key."
-msgstr ""
+msgstr "Tasto X."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Y key."
-msgstr ""
+msgstr "Tasto Y."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Z key."
-msgstr ""
+msgstr "Tasto Z."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "[ key."
-msgstr ""
+msgstr "Tasto [."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "\\ key."
-msgstr ""
+msgstr "Tasto \\."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "] key."
-msgstr ""
+msgstr "Tasto ]."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "^ key."
-msgstr ""
+msgstr "Tasto ^."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "_ key."
-msgstr ""
+msgstr "Tasto _."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "` key."
-msgstr ""
+msgstr "Tasto '."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "{ key."
-msgstr ""
+msgstr "Tasto {."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "| key."
-msgstr ""
+msgstr "Tasto |."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "} key."
-msgstr ""
+msgstr "Tasto }."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "~ key."
-msgstr ""
+msgstr "Tasto ~."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Non-breakable space key."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¡ key."
-msgstr ""
+msgstr "Tasto ¡."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¢ key."
-msgstr ""
+msgstr "Tasto ¢."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "£ key."
-msgstr ""
+msgstr "Tasto £."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¤ key."
-msgstr ""
+msgstr "Tasto ¤."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¥ key."
-msgstr ""
+msgstr "Tasto ¥."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¦ key."
-msgstr ""
+msgstr "Tasto ¦."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "§ key."
-msgstr ""
+msgstr "Tasto §."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¨ key."
-msgstr ""
+msgstr "Tasto ¨."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "© key."
-msgstr ""
+msgstr "Tasto ©."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "ª key."
-msgstr ""
+msgstr "Tasto ª."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "« key."
-msgstr ""
+msgstr "Tasto «."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¬ key."
-msgstr ""
+msgstr "Tasto ¬."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Soft hyphen key."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "® key."
-msgstr ""
+msgstr "Tasto ®."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¯ key."
-msgstr ""
+msgstr "Tasto ¯."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "° key."
-msgstr ""
+msgstr "Tasto °."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "± key."
-msgstr ""
+msgstr "Tasto ±."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "² key."
-msgstr ""
+msgstr "Tasto ²."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "³ key."
-msgstr ""
+msgstr "Tasto ³."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "´ key."
-msgstr ""
+msgstr "Tasto ´."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "µ key."
-msgstr ""
+msgstr "Tasto µ."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¶ key."
-msgstr ""
+msgstr "Tasto ¶."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "· key."
-msgstr ""
+msgstr "Tasto ·."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¸ key."
-msgstr ""
+msgstr "Tasto ¸."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¹ key."
-msgstr ""
+msgstr "Tasto ¹."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "º key."
-msgstr ""
+msgstr "Tasto º."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "» key."
-msgstr ""
+msgstr "Tasto »."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¼ key."
-msgstr ""
+msgstr "Tasto ¼."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "½ key."
-msgstr ""
+msgstr "Tasto ½."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¾ key."
-msgstr ""
+msgstr "Tasto ¾."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "¿ key."
-msgstr ""
+msgstr "Tasto ¿."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "À key."
-msgstr ""
+msgstr "Tasto À."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Á key."
-msgstr ""
+msgstr "Tasto Á."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Â key."
-msgstr ""
+msgstr "Tasto Â."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ã key."
-msgstr ""
+msgstr "Tasto Ã."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ä key."
-msgstr ""
+msgstr "Tasto Ä."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Å key."
-msgstr ""
+msgstr "Tasto Å."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Æ key."
-msgstr ""
+msgstr "Tasto Æ."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ç key."
-msgstr ""
+msgstr "Tasto Ç."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "È key."
-msgstr ""
+msgstr "Tasto È."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "É key."
-msgstr ""
+msgstr "Tasto É."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ê key."
-msgstr ""
+msgstr "Tasto Ê."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ë key."
-msgstr ""
+msgstr "Tasto Ë."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ì key."
-msgstr ""
+msgstr "Tasto Ì."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Í key."
-msgstr ""
+msgstr "Tasto Í."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Î key."
-msgstr ""
+msgstr "Tasto Î."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ï key."
-msgstr ""
+msgstr "Tasto Ï."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ð key."
-msgstr ""
+msgstr "Tasto Ð."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ñ key."
-msgstr ""
+msgstr "Tasto Ñ."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ò key."
-msgstr ""
+msgstr "Tasto Ò."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ó key."
-msgstr ""
+msgstr "Tasto Ó."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ô key."
-msgstr ""
+msgstr "Tasto Ô."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Õ key."
-msgstr ""
+msgstr "Tasto Õ."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ö key."
-msgstr ""
+msgstr "Tasto Ö."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "× key."
-msgstr ""
+msgstr "Tasto ×."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ø key."
-msgstr ""
+msgstr "Tasto Ø."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ù key."
-msgstr ""
+msgstr "Tasto Ù."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ú key."
-msgstr ""
+msgstr "Tasto Ú."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Û key."
-msgstr ""
+msgstr "Tasto Û."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ü key."
-msgstr ""
+msgstr "Tasto Ü."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Ý key."
-msgstr ""
+msgstr "Tasto Ý."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Þ key."
-msgstr ""
+msgstr "Tasto Þ."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "ß key."
-msgstr ""
+msgstr "Tasto ß."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "÷ key."
-msgstr ""
+msgstr "Tasto ÷."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "ÿ key."
-msgstr ""
+msgstr "Tasto ÿ."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Key Code mask."
@@ -3276,16 +3421,19 @@ msgid "Group Switch key mask."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Left mouse button."
-msgstr ""
+msgstr "Tasto sinistro del mouse."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Right mouse button."
-msgstr ""
+msgstr "Tasto destro del mouse."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Middle mouse button."
-msgstr ""
+msgstr "Tasto centrale del mouse."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Extra mouse button 1 (only present on some mice)."
@@ -3705,20 +3853,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Generic error."
-msgstr ""
+msgstr "Errore generico."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Unavailable error."
-msgstr ""
+msgstr "Errore non disponibile."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Unconfigured error."
-msgstr ""
+msgstr "Errore non configurato."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Unauthorized error."
-msgstr ""
+msgstr "Errore non autorizzato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Parameter range error."
@@ -3761,8 +3913,9 @@ msgid "File: Can't read error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "File: Unrecognized error."
-msgstr ""
+msgstr "File: Errore non riconosciuto."
 
 #: doc/classes/@GlobalScope.xml
 msgid "File: Corrupt error."
@@ -3777,12 +3930,14 @@ msgid "File: End of file (EOF) error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Can't open error."
-msgstr ""
+msgstr "Impossibile aprire l'errore."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Can't create error."
-msgstr ""
+msgstr "Impossibile creare l'errore."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Query failed error."
@@ -3793,24 +3948,28 @@ msgid "Already in use error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Locked error."
-msgstr ""
+msgstr "Errore bloccato."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Timeout error."
-msgstr ""
+msgstr "Errore di timeout."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't connect error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Can't resolve error."
-msgstr ""
+msgstr "Impossibile risolvere l'errore."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Connection error."
-msgstr ""
+msgstr "Errore di connessione."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Can't acquire resource error."
@@ -3825,24 +3984,28 @@ msgid "Invalid data error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Invalid parameter error."
-msgstr ""
+msgstr "Errore di parametro non valido."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Already exists error."
-msgstr ""
+msgstr "Esiste già l'errore."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Does not exist error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Database: Read error."
-msgstr ""
+msgstr "Database: Errore di lettura."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Database: Write error."
-msgstr ""
+msgstr "Database: Errore di scrittura."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Compilation failed error."
@@ -3865,8 +4028,9 @@ msgid "Cycling link (import cycle) error."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Invalid declaration error."
-msgstr ""
+msgstr "Errore di dichiarazione non valida."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Duplicate symbol error."
@@ -4120,8 +4284,9 @@ msgid "Default method flags."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "Variable is [code]null[/code]."
-msgstr ""
+msgstr "La variabile è [code]null[/code]."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Variable is of type [bool]."
@@ -4354,13 +4519,15 @@ msgstr ""
 #: doc/classes/AABB.xml doc/classes/Basis.xml doc/classes/Plane.xml
 #: doc/classes/Rect2.xml doc/classes/Transform.xml doc/classes/Transform2D.xml
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/math/index.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/math/index.html"
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/math/vector_math.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/math/vector_math.html"
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
@@ -4936,8 +5103,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Animation.xml doc/classes/AnimationPlayer.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/animation/index.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/animation/index.html"
 
 #: doc/classes/Animation.xml
 msgid "Adds a track to the Animation."
@@ -5330,12 +5498,14 @@ msgid "No interpolation (nearest value)."
 msgstr ""
 
 #: doc/classes/Animation.xml
+#, fuzzy
 msgid "Linear interpolation."
-msgstr ""
+msgstr "Interpolazione lineare."
 
 #: doc/classes/Animation.xml
+#, fuzzy
 msgid "Cubic interpolation."
-msgstr ""
+msgstr "Interpolazione cubica."
 
 #: doc/classes/Animation.xml
 msgid "Update between keyframes."
@@ -6964,32 +7134,38 @@ msgid "Animation node."
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
+#, fuzzy
 msgid "OneShot node."
-msgstr ""
+msgstr "Nodo OneShot."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid "Mix node."
 msgstr ""
 
 #: doc/classes/AnimationTreePlayer.xml
+#, fuzzy
 msgid "Blend2 node."
-msgstr ""
+msgstr "Nodo Blend2."
 
 #: doc/classes/AnimationTreePlayer.xml
+#, fuzzy
 msgid "Blend3 node."
-msgstr ""
+msgstr "Nodo Blend3."
 
 #: doc/classes/AnimationTreePlayer.xml
+#, fuzzy
 msgid "Blend4 node."
-msgstr ""
+msgstr "Nodo Blend4."
 
 #: doc/classes/AnimationTreePlayer.xml
+#, fuzzy
 msgid "TimeScale node."
-msgstr ""
+msgstr "Nodo TimeScale."
 
 #: doc/classes/AnimationTreePlayer.xml
+#, fuzzy
 msgid "TimeSeek node."
-msgstr ""
+msgstr "Nodo TimeSeek."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid "Transition node."
@@ -8152,8 +8328,9 @@ msgstr ""
 #: doc/classes/ARVRCamera.xml doc/classes/ARVRController.xml
 #: doc/classes/ARVRInterface.xml doc/classes/ARVROrigin.xml
 #: doc/classes/ARVRPositionalTracker.xml doc/classes/ARVRServer.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/vr/index.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/vr/index.html"
 
 #: doc/classes/ARVRController.xml
 msgid "A spatial node representing a spatially-tracked controller."
@@ -11165,8 +11342,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/BakedLightmap.xml doc/classes/SpatialMaterial.xml
+#, fuzzy
 msgid "Currently unused."
-msgstr ""
+msgstr "Attualmente inutilizzato."
 
 #: doc/classes/BakedLightmap.xml
 #, fuzzy
@@ -12726,8 +12904,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CameraFeed.xml
+#, fuzzy
 msgid "Unspecified position."
-msgstr ""
+msgstr "Posizione non specificata."
 
 #: doc/classes/CameraFeed.xml
 msgid "Camera is mounted at the front of the device."
@@ -12852,8 +13031,9 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml doc/classes/CanvasLayer.xml
 #: doc/classes/InputEvent.xml doc/classes/Viewport.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/2d/2d_transforms.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/2d/2d_transforms.html"
 
 #: doc/classes/CanvasItem.xml doc/classes/Control.xml doc/classes/Node2D.xml
 #, fuzzy
@@ -13333,8 +13513,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasLayer.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/2d/canvas_layers.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/2d/canvas_layers.html"
 
 #: doc/classes/CanvasLayer.xml
 msgid "Returns the RID of the canvas used by this layer."
@@ -14754,44 +14935,52 @@ msgid "Antique white color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Aqua color."
-msgstr ""
+msgstr "Colore acqua."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Aquamarine color."
-msgstr ""
+msgstr "Colore acquamarina."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Azure color."
-msgstr ""
+msgstr "Colore azzurro."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Beige color."
-msgstr ""
+msgstr "Colore beige."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Bisque color."
-msgstr ""
+msgstr "Colore biscotto."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Black color."
-msgstr ""
+msgstr "Colore nero."
 
 #: doc/classes/Color.xml
 msgid "Blanche almond color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Blue color."
-msgstr ""
+msgstr "Colore blu."
 
 #: doc/classes/Color.xml
 msgid "Blue violet color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Brown color."
-msgstr ""
+msgstr "Colore marrone."
 
 #: doc/classes/Color.xml
 msgid "Burly wood color."
@@ -14802,32 +14991,38 @@ msgid "Cadet blue color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Chartreuse color."
-msgstr ""
+msgstr "Colore chartreuse."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Chocolate color."
-msgstr ""
+msgstr "Colore cioccolato."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Coral color."
-msgstr ""
+msgstr "Colore corallo."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Cornflower color."
-msgstr ""
+msgstr "Colore fiordaliso."
 
 #: doc/classes/Color.xml
 msgid "Corn silk color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Crimson color."
-msgstr ""
+msgstr "Colore cremisi."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Cyan color."
-msgstr ""
+msgstr "Colore ciano."
 
 #: doc/classes/Color.xml
 msgid "Dark blue color."
@@ -14914,8 +15109,9 @@ msgid "Dodger blue color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Firebrick color."
-msgstr ""
+msgstr "Colore mattone refrattario."
 
 #: doc/classes/Color.xml
 msgid "Floral white color."
@@ -14926,40 +15122,47 @@ msgid "Forest green color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Fuchsia color."
-msgstr ""
+msgstr "Colore fucsia."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Gainsboro color."
-msgstr ""
+msgstr "Colore Gainsboro."
 
 #: doc/classes/Color.xml
 msgid "Ghost white color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Gold color."
-msgstr ""
+msgstr "Colore oro."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Goldenrod color."
-msgstr ""
+msgstr "Colore verga d'oro."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Gray color."
-msgstr ""
+msgstr "Colore grigio."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Green color."
-msgstr ""
+msgstr "Colore verde."
 
 #: doc/classes/Color.xml
 msgid "Green yellow color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Honeydew color."
-msgstr ""
+msgstr "Colore melata."
 
 #: doc/classes/Color.xml
 msgid "Hot pink color."
@@ -14970,20 +15173,24 @@ msgid "Indian red color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Indigo color."
-msgstr ""
+msgstr "Colore indaco."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Ivory color."
-msgstr ""
+msgstr "Colore avorio."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Khaki color."
-msgstr ""
+msgstr "Colore cachi."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Lavender color."
-msgstr ""
+msgstr "Colore lavanda."
 
 #: doc/classes/Color.xml
 msgid "Lavender blush color."
@@ -15050,24 +15257,28 @@ msgid "Light yellow color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Lime color."
-msgstr ""
+msgstr "Colore lime."
 
 #: doc/classes/Color.xml
 msgid "Lime green color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Linen color."
-msgstr ""
+msgstr "Colore lino."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Magenta color."
-msgstr ""
+msgstr "Colore magenta."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Maroon color."
-msgstr ""
+msgstr "Colore marrone."
 
 #: doc/classes/Color.xml
 msgid "Medium aquamarine color."
@@ -15118,8 +15329,9 @@ msgid "Misty rose color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Moccasin color."
-msgstr ""
+msgstr "Colore mocassino."
 
 #: doc/classes/Color.xml
 msgid "Navajo white color."
@@ -15134,24 +15346,27 @@ msgid "Old lace color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Olive color."
-msgstr ""
+msgstr "Colore oliva."
 
 #: doc/classes/Color.xml
 msgid "Olive drab color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Orange color."
-msgstr ""
+msgstr "Colore arancione."
 
 #: doc/classes/Color.xml
 msgid "Orange red color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Orchid color."
-msgstr ""
+msgstr "Colore orchidea."
 
 #: doc/classes/Color.xml
 msgid "Pale goldenrod color."
@@ -15178,32 +15393,37 @@ msgid "Peach puff color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Peru color."
-msgstr ""
+msgstr "Colore peru."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Pink color."
-msgstr ""
+msgstr "Colore rosa."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Plum color."
-msgstr ""
+msgstr "Colore prugna."
 
 #: doc/classes/Color.xml
 msgid "Powder blue color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Purple color."
-msgstr ""
+msgstr "Colore viola."
 
 #: doc/classes/Color.xml
 msgid "Rebecca purple color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Red color."
-msgstr ""
+msgstr "Colore rosso."
 
 #: doc/classes/Color.xml
 msgid "Rosy brown color."
@@ -15218,8 +15438,9 @@ msgid "Saddle brown color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Salmon color."
-msgstr ""
+msgstr "Colore salmone."
 
 #: doc/classes/Color.xml
 msgid "Sandy brown color."
@@ -15230,16 +15451,19 @@ msgid "Sea green color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Seashell color."
-msgstr ""
+msgstr "Colore conchiglia."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Sienna color."
-msgstr ""
+msgstr "Colore terra di Siena."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Silver color."
-msgstr ""
+msgstr "Colore argento."
 
 #: doc/classes/Color.xml
 msgid "Sky blue color."
@@ -15254,8 +15478,9 @@ msgid "Slate gray color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Snow color."
-msgstr ""
+msgstr "Colore neve."
 
 #: doc/classes/Color.xml
 msgid "Spring green color."
@@ -15266,32 +15491,38 @@ msgid "Steel blue color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Tan color."
-msgstr ""
+msgstr "Colore marrone chiaro."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Teal color."
-msgstr ""
+msgstr "Color verde acqua."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Thistle color."
-msgstr ""
+msgstr "Colore cardo."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Tomato color."
-msgstr ""
+msgstr "Colore pomodoro."
 
 #: doc/classes/Color.xml
 msgid "Transparent color (white with no alpha)."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Turquoise color."
-msgstr ""
+msgstr "Colore turchese."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Violet color."
-msgstr ""
+msgstr "Colore viola."
 
 #: doc/classes/Color.xml
 msgid "Web gray color."
@@ -15310,20 +15541,23 @@ msgid "Web purple color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Wheat color."
-msgstr ""
+msgstr "Colore grano."
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "White color."
-msgstr ""
+msgstr "Colore bianco."
 
 #: doc/classes/Color.xml
 msgid "White smoke color."
 msgstr ""
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid "Yellow color."
-msgstr ""
+msgstr "Colore giallo."
 
 #: doc/classes/Color.xml
 msgid "Yellow green color."
@@ -15554,8 +15788,9 @@ msgid "[StyleBox] used when the [ColorPickerButton] is being pressed."
 msgstr ""
 
 #: doc/classes/ColorRect.xml
+#, fuzzy
 msgid "Colored rectangle."
-msgstr ""
+msgstr "Rettangolo colorato."
 
 #: doc/classes/ColorRect.xml
 msgid ""
@@ -15942,8 +16177,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/ui/index.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/ui/index.html"
 
 #: doc/classes/Control.xml
 #, fuzzy
@@ -23707,7 +23943,7 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Academy Color Encoding System tonemapper operator. Performs an aproximation "
+"Academy Color Encoding System tonemapper operator. Performs an approximation "
 "of the ACES tonemapping curve."
 msgstr ""
 
@@ -24476,8 +24712,9 @@ msgid "https://en.wikipedia.org/wiki/Double-precision_floating-point_format"
 msgstr ""
 
 #: doc/classes/float.xml
+#, fuzzy
 msgid "https://en.wikipedia.org/wiki/Single-precision_floating-point_format"
-msgstr ""
+msgstr "https://en.wikipedia.org/wiki/Single-precision_floating-point_format"
 
 #: doc/classes/float.xml
 msgid ""
@@ -25775,8 +26012,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/GIProbe.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/3d/gi_probes.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/3d/gi_probes.html"
 
 #: doc/classes/GIProbe.xml
 msgid ""
@@ -27205,8 +27443,9 @@ msgid "Used as background when the [ScrollBar] has the GUI focus."
 msgstr ""
 
 #: doc/classes/HSeparator.xml
+#, fuzzy
 msgid "Horizontal separator."
-msgstr ""
+msgstr "Separatore orizzontale."
 
 #: doc/classes/HSeparator.xml
 msgid ""
@@ -28224,8 +28463,9 @@ msgid "Emitted when a request is completed."
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
+#, fuzzy
 msgid "Request successful."
-msgstr ""
+msgstr "Richiesta riuscita."
 
 #: doc/classes/HTTPRequest.xml
 msgid "Request failed while connecting."
@@ -29200,8 +29440,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/inputs/index.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/inputs/index.html"
 
 #: doc/classes/Input.xml
 msgid ""
@@ -34073,8 +34314,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/MeshInstance2D.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/2d/2d_meshes.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/2d/2d_meshes.html"
 
 #: doc/classes/MeshInstance2D.xml
 msgid "The [Mesh] that will be drawn by the [MeshInstance2D]."
@@ -35554,8 +35796,9 @@ msgid ""
 msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
+#, fuzzy
 msgid "[url=https://facebook.github.io/zstd/]Zstandard[/url] compression."
-msgstr ""
+msgstr "Compressione [url=https://facebook.github.io/zstd/]Zstandard[/url]."
 
 #: doc/classes/NetworkedMultiplayerPeer.xml
 msgid "A high-level network interface to simplify multiplayer interactions."
@@ -36934,8 +37177,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Node2D.xml
+#, fuzzy
 msgid "Global position."
-msgstr ""
+msgstr "Posizione globale."
 
 #: doc/classes/Node2D.xml
 msgid "Global rotation in radians."
@@ -36946,12 +37190,14 @@ msgid "Global rotation in degrees."
 msgstr ""
 
 #: doc/classes/Node2D.xml
+#, fuzzy
 msgid "Global scale."
-msgstr ""
+msgstr "Scala globale."
 
 #: doc/classes/Node2D.xml
+#, fuzzy
 msgid "Global [Transform2D]."
-msgstr ""
+msgstr "Globale [Transform2D]."
 
 #: doc/classes/Node2D.xml
 msgid "Position, relative to the node's parent."
@@ -36970,8 +37216,9 @@ msgid "The node's scale. Unscaled value: [code](1, 1)[/code]."
 msgstr ""
 
 #: doc/classes/Node2D.xml
+#, fuzzy
 msgid "Local [Transform2D]."
-msgstr ""
+msgstr "Locale [Transform2D]."
 
 #: doc/classes/Node2D.xml
 msgid ""
@@ -40886,8 +41133,9 @@ msgid "Represents the size of the [enum Monitor] enum."
 msgstr ""
 
 #: doc/classes/PHashTranslation.xml
+#, fuzzy
 msgid "Optimized translation."
-msgstr ""
+msgstr "Traduzione ottimizzata."
 
 #: doc/classes/PHashTranslation.xml
 msgid ""
@@ -51236,8 +51484,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Script.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/scripting/index.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/scripting/index.html"
 
 #: doc/classes/Script.xml
 msgid "Returns [code]true[/code] if the script can be instanced."
@@ -51544,8 +51793,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Shader.xml doc/classes/ShaderMaterial.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/shaders/index.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/shaders/index.html"
 
 #: doc/classes/Shader.xml
 #, fuzzy
@@ -56094,8 +56344,9 @@ msgid "Sets [Material] to be used by the [Mesh] you are constructing."
 msgstr ""
 
 #: doc/classes/TabContainer.xml
+#, fuzzy
 msgid "Tabbed container."
-msgstr ""
+msgstr "Contenitore a schede."
 
 #: doc/classes/TabContainer.xml
 msgid ""
@@ -56538,8 +56789,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/TCP_Server.xml
+#, fuzzy
 msgid "Stops listening."
-msgstr ""
+msgstr "Smette di ascoltare."
 
 #: doc/classes/TCP_Server.xml
 msgid ""
@@ -57742,8 +57994,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/ui/gui_skinning.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/ui/gui_skinning.html"
 
 #: doc/classes/Theme.xml
 msgid "Clears all values on the theme."
@@ -59371,8 +59624,9 @@ msgid "Emitted when the button is released (up)."
 msgstr ""
 
 #: doc/classes/TouchScreenButton.xml
+#, fuzzy
 msgid "Always visible."
-msgstr ""
+msgstr "Sempre visibile."
 
 #: doc/classes/TouchScreenButton.xml
 msgid "Visible on touch screens only."
@@ -59662,8 +59916,9 @@ msgstr ""
 "internationalizing_games.html"
 
 #: doc/classes/Translation.xml doc/classes/TranslationServer.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/i18n/locales.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/i18n/locales.html"
 
 #: doc/classes/Translation.xml
 msgid "Virtual method to override [method get_message]."
@@ -61369,8 +61624,9 @@ msgid ""
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml
+#, fuzzy
 msgid "Inconsistent parameters."
-msgstr ""
+msgstr "Parametri incoerenti."
 
 #: modules/upnp/doc_classes/UPNP.xml
 msgid ""
@@ -61435,32 +61691,39 @@ msgid "Invalid gateway."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml
+#, fuzzy
 msgid "Invalid port."
-msgstr ""
+msgstr "Porta non valida."
 
 #: modules/upnp/doc_classes/UPNP.xml
+#, fuzzy
 msgid "Invalid protocol."
-msgstr ""
+msgstr "Protocollo non valido."
 
 #: modules/upnp/doc_classes/UPNP.xml
+#, fuzzy
 msgid "Invalid duration."
-msgstr ""
+msgstr "Durata non valida."
 
 #: modules/upnp/doc_classes/UPNP.xml
+#, fuzzy
 msgid "Invalid arguments."
-msgstr ""
+msgstr "Argomenti non validi."
 
 #: modules/upnp/doc_classes/UPNP.xml
+#, fuzzy
 msgid "Invalid response."
-msgstr ""
+msgstr "Risposta non valida."
 
 #: modules/upnp/doc_classes/UPNP.xml
+#, fuzzy
 msgid "Invalid parameter."
-msgstr ""
+msgstr "Parametro non valido."
 
 #: modules/upnp/doc_classes/UPNP.xml modules/upnp/doc_classes/UPNPDevice.xml
+#, fuzzy
 msgid "HTTP error."
-msgstr ""
+msgstr "Errore HTTP."
 
 #: modules/upnp/doc_classes/UPNP.xml
 msgid "Socket error."
@@ -61483,12 +61746,14 @@ msgid ""
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml modules/upnp/doc_classes/UPNPDevice.xml
+#, fuzzy
 msgid "Unknown error."
-msgstr ""
+msgstr "Errore sconosciuto."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
+#, fuzzy
 msgid "UPNP device."
-msgstr ""
+msgstr "Dispositivo UPNP."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid ""
@@ -61546,8 +61811,9 @@ msgid "IGD status. See [enum IGDStatus]."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
+#, fuzzy
 msgid "Service type."
-msgstr ""
+msgstr "Tipo di servizio."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid "OK."
@@ -61566,16 +61832,19 @@ msgid "Not a valid IGD."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
+#, fuzzy
 msgid "Disconnected."
-msgstr ""
+msgstr "Disconnesso."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
+#, fuzzy
 msgid "Unknown device."
-msgstr ""
+msgstr "Dispositivo sconosciuto."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
+#, fuzzy
 msgid "Invalid control."
-msgstr ""
+msgstr "Controllo non valido."
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid "Memory allocation error."
@@ -61703,9 +61972,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
+#, fuzzy
 msgid ""
 "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
 msgstr ""
+"https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
 
 #: doc/classes/Vector2.xml
 msgid ""
@@ -62599,8 +62870,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Viewport.xml
+#, fuzzy
 msgid "$DOCS_URL/tutorials/rendering/index.html"
-msgstr ""
+msgstr "$DOCS_URL/tutorials/rendering/index.html"
 
 #: doc/classes/Viewport.xml doc/classes/ViewportTexture.xml
 #, fuzzy
@@ -64630,20 +64902,23 @@ msgid "The math constant."
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
+#, fuzzy
 msgid "Unity: [code]1[/code]."
-msgstr ""
+msgstr "Unity: [code]1[/code]."
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
+#, fuzzy
 msgid "Pi: [code]3.141593[/code]."
-msgstr ""
+msgstr "Pi: [code]3.141593[/code]."
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
 msgid "Pi divided by two: [code]1.570796[/code]."
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
+#, fuzzy
 msgid "Tau: [code]6.283185[/code]."
-msgstr ""
+msgstr "Tau: [code]6.283185[/code]."
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
 msgid ""
@@ -64656,8 +64931,9 @@ msgid "Square root of two: [code]1.414214[/code]."
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
+#, fuzzy
 msgid "Infinity: [code]inf[/code]."
-msgstr ""
+msgstr "Infinito: [code]inf[/code]."
 
 #: modules/visual_script/doc_classes/VisualScriptMathConstant.xml
 msgid "Not a number: [code]nan[/code]."
@@ -70894,8 +71170,9 @@ msgid ""
 msgstr ""
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
+#, fuzzy
 msgid "https://www.snopekgames.com/blog/2020/how-make-vr-game-webxr-godot"
-msgstr ""
+msgstr "https://www.snopekgames.com/blog/2020/how-make-vr-game-webxr-godot"
 
 #: modules/webxr/doc_classes/WebXRInterface.xml
 msgid ""
@@ -71389,16 +71666,19 @@ msgid ""
 msgstr ""
 
 #: doc/classes/XMLParser.xml
+#, fuzzy
 msgid "There's no node (no file or buffer opened)."
-msgstr ""
+msgstr "Non c'è nessun nodo (nessun file o buffer aperto)."
 
 #: doc/classes/XMLParser.xml
+#, fuzzy
 msgid "Element (tag)."
-msgstr ""
+msgstr "Elemento (tag)."
 
 #: doc/classes/XMLParser.xml
+#, fuzzy
 msgid "End of element."
-msgstr ""
+msgstr "Fine dell'elemento."
 
 #: doc/classes/XMLParser.xml
 msgid "Text node."

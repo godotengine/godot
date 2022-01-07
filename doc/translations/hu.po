@@ -8,12 +8,13 @@
 # Frontrider <frontrider@tutanota.com>, 2021.
 # Andras Virag <snowflake71@gmail.com>, 2021.
 # balintmaci <balintmaci@gmail.com>, 2021.
+# Balázs Püspök-Kiss <pkblazsak@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-06 21:43+0000\n"
-"Last-Translator: balintmaci <balintmaci@gmail.com>\n"
+"PO-Revision-Date: 2021-12-23 17:58+0000\n"
+"Last-Translator: Balázs Püspök-Kiss <pkblazsak@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/hu/>\n"
 "Language: hu\n"
@@ -21,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -2285,7 +2286,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "± key."
-msgstr ""
+msgstr "± gomb."
 
 #: doc/classes/@GlobalScope.xml
 msgid "² key."
@@ -22792,7 +22793,7 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Academy Color Encoding System tonemapper operator. Performs an aproximation "
+"Academy Color Encoding System tonemapper operator. Performs an approximation "
 "of the ACES tonemapping curve."
 msgstr ""
 

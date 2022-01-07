@@ -13,12 +13,13 @@
 # xX-Void-Xx <arandomdude75@gmail.com>, 2021.
 # Alaa alden Aldroubi <alaa.aldroubi@gmail.com>, 2021.
 # يزن حمزه <yznhamzeh@gmail.com>, 2021.
+# HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-10-31 13:40+0000\n"
-"Last-Translator: يزن حمزه <yznhamzeh@gmail.com>\n"
+"PO-Revision-Date: 2022-01-03 03:53+0000\n"
+"Last-Translator: HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ar/>\n"
 "Language: ar\n"
@@ -27,7 +28,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -35,7 +36,7 @@ msgstr "الوصف"
 
 #: doc/tools/make_rst.py
 msgid "Tutorials"
-msgstr "دورات تعليمية"
+msgstr "شروحات"
 
 #: doc/tools/make_rst.py
 msgid "Properties"
@@ -43,7 +44,7 @@ msgstr "خاصيات"
 
 #: doc/tools/make_rst.py
 msgid "Methods"
-msgstr "الطُرق"
+msgstr "طرق"
 
 #: doc/tools/make_rst.py
 msgid "Theme Properties"
@@ -59,7 +60,7 @@ msgstr "التعدادات"
 
 #: doc/tools/make_rst.py
 msgid "Constants"
-msgstr "الثوابت"
+msgstr "ثوابت"
 
 #: doc/tools/make_rst.py
 msgid "Property Descriptions"
@@ -22962,7 +22963,7 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Academy Color Encoding System tonemapper operator. Performs an aproximation "
+"Academy Color Encoding System tonemapper operator. Performs an approximation "
 "of the ACES tonemapping curve."
 msgstr ""
 
