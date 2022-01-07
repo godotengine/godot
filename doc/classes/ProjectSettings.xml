@@ -163,6 +163,7 @@
 				[codeblock]
 				ProjectSettings.set_setting("application/config/name", "Example")
 				[/codeblock]
+				This can also be used to erase custom project settings. To do this change the setting value to [code]null[/code].
 			</description>
 		</method>
 	</methods>
