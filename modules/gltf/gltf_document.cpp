@@ -6851,7 +6851,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> state, int32_t p_bake_fps) {
 	_process_mesh_instances(state, root);
 	if (state->animations.size()) {
 		AnimationPlayer *ap = memnew(AnimationPlayer);
-		root->add_child(ap);
+		root->add_child(ap, true);
 		ap->set_owner(root);
 		for (int i = 0; i < state->animations.size(); i++) {
 			_import_animation(state, ap, i, p_bake_fps);
