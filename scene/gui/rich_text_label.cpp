@@ -3064,6 +3064,12 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag == "lb") {
+			add_text("[");
+			pos = brk_end + 1;
+		} else if (tag == "rb") {
+			add_text("]");
+			pos = brk_end + 1;
 		} else if (tag == "lrm") {
 			add_text(String::chr(0x200E));
 			pos = brk_end + 1;
