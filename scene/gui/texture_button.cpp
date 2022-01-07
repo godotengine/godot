@@ -170,6 +170,12 @@ void TextureButton::_notification(int p_what) {
 
 			Point2 ofs;
 			Size2 size;
+			bool draw_focus = (has_focus() && focused.is_valid());
+
+			// If no other texture is valid, try using focused texture.
+			if (!texdraw.is_valid() && draw_focus) {
+				texdraw = focused;
+			}
 
 			if (texdraw.is_valid()) {
 				size = texdraw->get_size();
@@ -226,7 +232,9 @@ void TextureButton::_notification(int p_what) {
 				size.width *= hflip ? -1.0f : 1.0f;
 				size.height *= vflip ? -1.0f : 1.0f;
 
-				if (_tile) {
+				if (texdraw == focused) {
+					// Do nothing, we only needed to calculate the rectangle.
+				} else if (_tile) {
 					draw_texture_rect(texdraw, Rect2(ofs, size), _tile);
 				} else {
 					draw_texture_rect_region(texdraw, Rect2(ofs, size), _texture_region);
@@ -235,7 +243,7 @@ void TextureButton::_notification(int p_what) {
 				_position_rect = Rect2();
 			}
 
-			if (has_focus() && focused.is_valid()) {
+			if (draw_focus) {
 				draw_texture_rect(focused, Rect2(ofs, size), false);
 			};
 		} break;
