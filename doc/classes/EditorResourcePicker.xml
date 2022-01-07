@@ -40,7 +40,7 @@
 			</description>
 		</method>
 		<method name="handle_menu_selected" qualifiers="virtual">
-			<return type="void" />
+			<return type="bool" />
 			<argument index="0" name="id" type="int" />
 			<description>
 				This virtual method can be implemented to handle context menu items not handled by default. See [method set_create_options].
