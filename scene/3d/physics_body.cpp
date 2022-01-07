@@ -1198,9 +1198,14 @@ Vector3 KinematicBody::_move_and_slide_internal(const Vector3 &p_linear_velocity
 		}
 	}
 
-	if (!on_floor) {
+	if (moving_platform_apply_velocity_on_leave != PLATFORM_VEL_ON_LEAVE_NEVER) {
 		// Add last platform velocity when just left a moving platform.
-		return body_velocity + current_floor_velocity;
+		if (!on_floor) {
+			if (moving_platform_apply_velocity_on_leave == PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY && current_floor_velocity.dot(up_direction) < 0) {
+				current_floor_velocity = current_floor_velocity.slide(up_direction);
+			}
+			return body_velocity + current_floor_velocity;
+		}
 	}
 
 	return body_velocity;
@@ -1254,6 +1259,14 @@ real_t KinematicBody::get_floor_angle(const Vector3 &p_up_direction) const {
 
 Vector3 KinematicBody::get_floor_velocity() const {
 	return floor_velocity;
+}
+
+void KinematicBody::set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_apply_velocity) {
+	moving_platform_apply_velocity_on_leave = p_on_leave_apply_velocity;
+}
+
+KinematicBody::MovingPlatformApplyVelocityOnLeave KinematicBody::get_moving_platform_apply_velocity_on_leave() const {
+	return moving_platform_apply_velocity_on_leave;
 }
 
 bool KinematicBody::test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia) {
@@ -1445,6 +1458,9 @@ void KinematicBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &KinematicBody::set_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_safe_margin"), &KinematicBody::get_safe_margin);
 
+	ClassDB::bind_method(D_METHOD("set_moving_platform_apply_velocity_on_leave", "on_leave_apply_velocity"), &KinematicBody::set_moving_platform_apply_velocity_on_leave);
+	ClassDB::bind_method(D_METHOD("get_moving_platform_apply_velocity_on_leave"), &KinematicBody::get_moving_platform_apply_velocity_on_leave);
+
 	ClassDB::bind_method(D_METHOD("get_slide_count"), &KinematicBody::get_slide_count);
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &KinematicBody::_get_slide_collision);
 	ClassDB::bind_method(D_METHOD("get_last_slide_collision"), &KinematicBody::_get_last_slide_collision);
@@ -1464,6 +1480,12 @@ void KinematicBody::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "motion/sync_to_physics"), "set_sync_to_physics", "is_sync_to_physics_enabled");
+	ADD_GROUP("Moving platform", "moving_platform");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "moving_platform_apply_velocity_on_leave", PROPERTY_HINT_ENUM, "Always,Upward Only,Never", PROPERTY_USAGE_DEFAULT), "set_moving_platform_apply_velocity_on_leave", "get_moving_platform_apply_velocity_on_leave");
+
+	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_ALWAYS);
+	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY);
+	BIND_ENUM_CONSTANT(PLATFORM_VEL_ON_LEAVE_NEVER);
 }
 
 KinematicBody::KinematicBody() :

@@ -144,7 +144,19 @@
 		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
 			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method move_and_slide] or [method move_and_collide] functions.
 		</member>
+		<member name="moving_platform_apply_velocity_on_leave" type="int" setter="set_moving_platform_apply_velocity_on_leave" getter="get_moving_platform_apply_velocity_on_leave" enum="KinematicBody2D.MovingPlatformApplyVelocityOnLeave" default="0">
+			Sets the behaviour to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for available behaviour.
+		</member>
 	</members>
 	<constants>
+		<constant name="PLATFORM_VEL_ON_LEAVE_ALWAYS" value="0" enum="MovingPlatformApplyVelocityOnLeave">
+			Add the last platform velocity when you leave a moving platform.
+		</constant>
+		<constant name="PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY" value="1" enum="MovingPlatformApplyVelocityOnLeave">
+			Add the last platform velocity when you leave a moving platform, but any downward motion is ignored. It's useful to keep full jump height even when the platform is moving down.
+		</constant>
+		<constant name="PLATFORM_VEL_ON_LEAVE_NEVER" value="2" enum="MovingPlatformApplyVelocityOnLeave">
+			Do nothing when leaving a platform.
+		</constant>
 	</constants>
 </class>
