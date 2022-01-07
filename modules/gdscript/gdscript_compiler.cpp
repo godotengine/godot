@@ -134,7 +134,12 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 					result.native_type = script->get_instance_base_type();
 				} else {
 					result.kind = GDScriptDataType::GDSCRIPT;
-					result.script_type_ref = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path);
+					Error err = OK;
+					result.script_type_ref = GDScriptCache::get_full_script(p_datatype.script_path, err, main_script->path);
+					if (err != OK) {
+						ERR_PRINT("Parser bug: cannot get data type script.");
+						return GDScriptDataType();
+					}
 					result.script_type = result.script_type_ref.ptr();
 					result.native_type = p_datatype.native_type;
 				}
