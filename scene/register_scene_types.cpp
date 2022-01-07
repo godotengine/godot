@@ -91,6 +91,7 @@
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/grid_container.h"
@@ -353,6 +354,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CenterContainer);
 	GDREGISTER_CLASS(ScrollContainer);
 	GDREGISTER_CLASS(PanelContainer);
+	GDREGISTER_VIRTUAL_CLASS(FlowContainer);
+	GDREGISTER_CLASS(HFlowContainer);
+	GDREGISTER_CLASS(VFlowContainer);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -390,6 +394,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(SplitContainer);
 	GDREGISTER_CLASS(HSplitContainer);
 	GDREGISTER_CLASS(VSplitContainer);
+
 	GDREGISTER_CLASS(GraphNode);
 	GDREGISTER_CLASS(GraphEdit);
 
