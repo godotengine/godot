@@ -210,6 +210,14 @@ Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
 			CLAMP(y, p_min.y, p_max.y));
 }
 
+int64_t Vector2i::length_squared() const {
+	return x * (int64_t)x + y * (int64_t)y;
+}
+
+double Vector2i::length() const {
+	return Math::sqrt((double)length_squared());
+}
+
 Vector2i Vector2i::operator+(const Vector2i &p_v) const {
 	return Vector2i(x + p_v.x, y + p_v.y);
 }
