@@ -2363,6 +2363,7 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 		// Then remove the provided item itself.
 		p_item->parent->subitems.erase(p_item);
 	}
+	memdelete(p_item);
 }
 
 void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment) {
