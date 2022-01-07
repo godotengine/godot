@@ -646,6 +646,11 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			ScriptCodeCompletionOption option(E, ScriptCodeCompletionOption::KIND_CLASS);
 			r_result.insert(option.display, option);
 		}
+	} else if (p_annotation->name == "@warning_ignore") {
+		for (int warning_code = 0; warning_code < GDScriptWarning::WARNING_MAX; warning_code++) {
+			ScriptCodeCompletionOption warning(GDScriptWarning::get_name_from_code((GDScriptWarning::Code)warning_code).to_lower(), ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+			r_result.insert(warning.display, warning);
+		}
 	}
 }
 
@@ -1158,6 +1163,10 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 
 static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::ExpressionNode *p_expression, GDScriptCompletionIdentifier &r_type) {
 	bool found = false;
+
+	if (p_expression == nullptr) {
+		return false;
+	}
 
 	if (p_expression->is_constant) {
 		// Already has a value, so just use that.

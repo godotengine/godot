@@ -231,7 +231,7 @@ void CameraFeedOSX::set_device(AVCaptureDevice *p_device) {
 
 	// get some info
 	NSString *device_name = p_device.localizedName;
-	name = device_name.UTF8String;
+	name = String::utf8(device_name.UTF8String);
 	position = CameraFeed::FEED_UNSPECIFIED;
 	if ([p_device position] == AVCaptureDevicePositionBack) {
 		position = CameraFeed::FEED_BACK;

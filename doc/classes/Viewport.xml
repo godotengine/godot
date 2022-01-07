@@ -215,10 +215,10 @@
 		</member>
 		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
 		</member>
-		<member name="lod_threshold" type="float" setter="set_lod_threshold" getter="get_lod_threshold" default="1.0">
-			The automatic LOD bias to use for meshes rendered within the [Viewport] (this is analogous to [member ReflectionProbe.lod_threshold]). Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member lod_threshold] to improve performance at the cost of geometry detail.
+		<member name="mesh_lod_threshold" type="float" setter="set_mesh_lod_threshold" getter="get_mesh_lod_threshold" default="1.0">
+			The automatic LOD bias to use for meshes rendered within the [Viewport] (this is analogous to [member ReflectionProbe.mesh_lod_threshold]). Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member mesh_lod_threshold] to improve performance at the cost of geometry detail.
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/mesh_lod/lod_change/threshold_pixels] project setting.
-			[b]Note:[/b] [member lod_threshold] does not affect [GeometryInstance3D] visibility ranges (also known as "manual" LOD or hierarchical LOD).
+			[b]Note:[/b] [member mesh_lod_threshold] does not affect [GeometryInstance3D] visibility ranges (also known as "manual" LOD or hierarchical LOD).
 		</member>
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
 			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 2 or 4 is best unless targeting very high-end systems. See also bilinear scaling 3d [member scaling_3d_mode] for supersampling, which provides higher quality but is much more expensive.
@@ -409,29 +409,32 @@
 		<constant name="DEBUG_DRAW_SSAO" value="12" enum="DebugDraw">
 			Draws the screen-space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
 		</constant>
-		<constant name="DEBUG_DRAW_PSSM_SPLITS" value="13" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_SSIL" value="13" enum="DebugDraw">
+			Draws the screen-space indirect lighting texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssil_enabled] set in your [WorldEnvironment].
+		</constant>
+		<constant name="DEBUG_DRAW_PSSM_SPLITS" value="14" enum="DebugDraw">
 			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order, they will be colored red, green, blue, and yellow.
 		</constant>
-		<constant name="DEBUG_DRAW_DECAL_ATLAS" value="14" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_DECAL_ATLAS" value="15" enum="DebugDraw">
 			Draws the decal atlas used by [Decal]s and light projector textures in the upper left quadrant of the [Viewport].
 		</constant>
-		<constant name="DEBUG_DRAW_SDFGI" value="15" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_SDFGI" value="16" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="16" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="17" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_GI_BUFFER" value="17" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_GI_BUFFER" value="18" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_DISABLE_LOD" value="18" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_DISABLE_LOD" value="19" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="19" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="20" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="20" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="21" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="21" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="22" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="22" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_OCCLUDERS" value="23" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_OCCLUDERS" value="24" enum="DebugDraw">
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.

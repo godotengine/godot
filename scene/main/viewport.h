@@ -148,6 +148,7 @@ public:
 		DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 		DEBUG_DRAW_SCENE_LUMINANCE,
 		DEBUG_DRAW_SSAO,
+		DEBUG_DRAW_SSIL,
 		DEBUG_DRAW_PSSM_SPLITS,
 		DEBUG_DRAW_DECAL_ATLAS,
 		DEBUG_DRAW_SDFGI,
@@ -296,7 +297,7 @@ private:
 	float fsr_sharpness = 0.2f;
 	float fsr_mipmap_bias = 0.0f;
 	bool use_debanding = false;
-	float lod_threshold = 1.0;
+	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
 
 	Ref<ViewportTexture> default_texture;
@@ -530,8 +531,8 @@ public:
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
 
-	void set_lod_threshold(float p_pixels);
-	float get_lod_threshold() const;
+	void set_mesh_lod_threshold(float p_pixels);
+	float get_mesh_lod_threshold() const;
 
 	void set_use_occlusion_culling(bool p_us_occlusion_culling);
 	bool is_using_occlusion_culling() const;

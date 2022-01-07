@@ -325,7 +325,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 		char fname[16834];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16834, nullptr, 0, nullptr, 0);
 
-		String path = fname;
+		String path = String::utf8(fname);
 
 		if (path.ends_with("/")) {
 			// Ignore directories

@@ -20,6 +20,8 @@ while IFS= read -rd '' f; do
         continue
     elif [[ "$f" == *"sln" ]]; then
         continue
+    elif [[ "$f" == *".bat" ]]; then
+        continue
     elif [[ "$f" == *".out" ]]; then
         # GDScript integration testing files.
         continue

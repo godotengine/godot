@@ -1068,7 +1068,7 @@
 			<argument index="8" name="light_affect" type="float" />
 			<argument index="9" name="ao_channel_affect" type="float" />
 			<description>
-				Sets the variables to be used with the "screen space ambient occlusion" post-process effect. See [Environment] for more details.
+				Sets the variables to be used with the screen-space ambient occlusion (SSAO) post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ssao_quality">
@@ -1080,6 +1080,19 @@
 			<argument index="4" name="fadeout_from" type="float" />
 			<argument index="5" name="fadeout_to" type="float" />
 			<description>
+				Sets the quality level of the screen-space ambient occlusion (SSAO) post-process effect. See [Environment] for more details.
+			</description>
+		</method>
+		<method name="environment_set_ssil_quality">
+			<return type="void" />
+			<argument index="0" name="quality" type="int" enum="RenderingServer.EnvironmentSSILQuality" />
+			<argument index="1" name="half_size" type="bool" />
+			<argument index="2" name="adaptive_target" type="float" />
+			<argument index="3" name="blur_passes" type="int" />
+			<argument index="4" name="fadeout_from" type="float" />
+			<argument index="5" name="fadeout_to" type="float" />
+			<description>
+				Sets the quality level of the screen-space indirect lighting (SSIL) post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ssr">
@@ -1232,6 +1245,13 @@
 				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
 			</description>
 		</method>
+		<method name="get_video_adapter_type" qualifiers="const">
+			<return type="int" enum="RenderingDevice.DeviceType" />
+			<description>
+				Returns the type of the video adapter. Since dedicated graphics cards from a given generation will [i]usually[/i] be significantly faster than integrated graphics made in the same generation, the device type can be used as a basis for automatic graphics settings adjustment. However, this is not always true, so make sure to provide users with a way to manually override graphics settings.
+				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [constant RenderingDevice.DEVICE_TYPE_OTHER].
+			</description>
+		</method>
 		<method name="get_video_adapter_vendor" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -1243,6 +1263,13 @@
 			<return type="RID" />
 			<description>
 				Returns the id of a white texture. Creates one if none exists.
+			</description>
+		</method>
+		<method name="gi_set_use_half_resolution">
+			<return type="void" />
+			<argument index="0" name="half_resolution" type="bool" />
+			<description>
+				If [code]half_resolution[/code] is [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. See also [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
 			</description>
 		</method>
 		<method name="global_variable_add">
@@ -1394,6 +1421,14 @@
 			<argument index="0" name="instance" type="RID" />
 			<argument index="1" name="lod_bias" type="float" />
 			<description>
+			</description>
+		</method>
+		<method name="instance_geometry_set_material_overlay">
+			<return type="void" />
+			<argument index="0" name="instance" type="RID" />
+			<argument index="1" name="material" type="RID" />
+			<description>
+				Sets a material that will be rendered for all surfaces on top of active materials for the mesh associated with this instance. Equivalent to [member GeometryInstance3D.material_overlay].
 			</description>
 		</method>
 		<method name="instance_geometry_set_material_override">
@@ -2535,19 +2570,19 @@
 				Sets the intensity of the reflection probe. Intensity modulates the strength of the reflection. Equivalent to [member ReflectionProbe.intensity].
 			</description>
 		</method>
-		<method name="reflection_probe_set_lod_threshold">
-			<return type="void" />
-			<argument index="0" name="probe" type="RID" />
-			<argument index="1" name="pixels" type="float" />
-			<description>
-			</description>
-		</method>
 		<method name="reflection_probe_set_max_distance">
 			<return type="void" />
 			<argument index="0" name="probe" type="RID" />
 			<argument index="1" name="distance" type="float" />
 			<description>
 				Sets the max distance away from the probe an object can be before it is culled. Equivalent to [member ReflectionProbe.max_distance].
+			</description>
+		</method>
+		<method name="reflection_probe_set_mesh_lod_threshold">
+			<return type="void" />
+			<argument index="0" name="probe" type="RID" />
+			<argument index="1" name="pixels" type="float" />
+			<description>
 			</description>
 		</method>
 		<method name="reflection_probe_set_origin_offset">
@@ -4001,28 +4036,31 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_SSAO" value="12" enum="ViewportDebugDraw">
 			Draws the screen space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_PSSM_SPLITS" value="13" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_SSIL" value="13" enum="ViewportDebugDraw">
+			Draws the screen space indirect lighting texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssil_enabled] set in your [WorldEnvironment].
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_PSSM_SPLITS" value="14" enum="ViewportDebugDraw">
 			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order they will be colored red, green, blue, yellow.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_DECAL_ATLAS" value="14" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_DECAL_ATLAS" value="15" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="15" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="16" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="16" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="17" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="17" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="18" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_DISABLE_LOD" value="18" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_DISABLE_LOD" value="19" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="19" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="20" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="20" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="21" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS" value="21" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS" value="22" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="22" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="23" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="24" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 		</constant>
@@ -4113,19 +4151,34 @@
 		<constant name="ENV_SSR_ROUGNESS_QUALITY_HIGH" value="3" enum="EnvironmentSSRRoughnessQuality">
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_VERY_LOW" value="0" enum="EnvironmentSSAOQuality">
-			Lowest quality of screen space ambient occlusion.
+			Lowest quality of screen-space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_LOW" value="1" enum="EnvironmentSSAOQuality">
-			Low quality screen space ambient occlusion.
+			Low quality screen-space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="2" enum="EnvironmentSSAOQuality">
-			Medium quality screen space ambient occlusion.
+			Medium quality screen-space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_HIGH" value="3" enum="EnvironmentSSAOQuality">
-			High quality screen space ambient occlusion.
+			High quality screen-space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_ULTRA" value="4" enum="EnvironmentSSAOQuality">
-			Highest quality screen space ambient occlusion. Uses the adaptive setting which can be dynamically adjusted to smoothly balance performance and visual quality.
+			Highest quality screen-space ambient occlusion. Uses the adaptive target setting which can be dynamically adjusted to smoothly balance performance and visual quality.
+		</constant>
+		<constant name="ENV_SSIL_QUALITY_VERY_LOW" value="0" enum="EnvironmentSSILQuality">
+			Lowest quality of screen-space indirect lighting.
+		</constant>
+		<constant name="ENV_SSIL_QUALITY_LOW" value="1" enum="EnvironmentSSILQuality">
+			Low quality screen-space indirect lighting.
+		</constant>
+		<constant name="ENV_SSIL_QUALITY_MEDIUM" value="2" enum="EnvironmentSSILQuality">
+			High quality screen-space indirect lighting.
+		</constant>
+		<constant name="ENV_SSIL_QUALITY_HIGH" value="3" enum="EnvironmentSSILQuality">
+			High quality screen-space indirect lighting.
+		</constant>
+		<constant name="ENV_SSIL_QUALITY_ULTRA" value="4" enum="EnvironmentSSILQuality">
+			Highest quality screen-space indirect lighting. Uses the adaptive target setting which can be dynamically adjusted to smoothly balance performance and visual quality.
 		</constant>
 		<constant name="ENV_SDFGI_CASCADES_4" value="0" enum="EnvironmentSDFGICascades">
 		</constant>

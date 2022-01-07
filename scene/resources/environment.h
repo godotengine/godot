@@ -142,6 +142,15 @@ private:
 	float ssao_ao_channel_affect = 0.0;
 	void _update_ssao();
 
+	// SSIL
+	bool ssil_enabled = false;
+	float ssil_radius = 5.0;
+	float ssil_intensity = 1.0;
+	float ssil_sharpness = 0.98;
+	float ssil_normal_rejection = 1.0;
+
+	void _update_ssil();
+
 	// SDFGI
 	bool sdfgi_enabled = false;
 	SDFGICascades sdfgi_cascades = SDFGI_CASCADES_6;
@@ -295,6 +304,18 @@ public:
 	float get_ssao_direct_light_affect() const;
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
 	float get_ssao_ao_channel_affect() const;
+
+	// SSIL
+	void set_ssil_enabled(bool p_enabled);
+	bool is_ssil_enabled() const;
+	void set_ssil_radius(float p_radius);
+	float get_ssil_radius() const;
+	void set_ssil_intensity(float p_intensity);
+	float get_ssil_intensity() const;
+	void set_ssil_sharpness(float p_sharpness);
+	float get_ssil_sharpness() const;
+	void set_ssil_normal_rejection(float p_normal_rejection);
+	float get_ssil_normal_rejection() const;
 
 	// SDFGI
 	void set_sdfgi_enabled(bool p_enabled);

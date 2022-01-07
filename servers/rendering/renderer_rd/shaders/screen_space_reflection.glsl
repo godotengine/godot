@@ -223,7 +223,6 @@ void main() {
 				blur_radius = (a * (sqrt(a2 + fh2) - a)) / (4.0f * h);
 			}
 		}
-
 		final_color = imageLoad(source_diffuse, ivec2((final_pos - 0.5) * pixel_size));
 
 		imageStore(blur_radius_image, ssC, vec4(blur_radius / 255.0)); //stored in r8

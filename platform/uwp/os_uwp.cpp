@@ -443,7 +443,7 @@ String OS_UWP::get_name() const {
 
 OS::Date OS_UWP::get_date(bool p_utc) const {
 	SYSTEMTIME systemtime;
-	if (utc) {
+	if (p_utc) {
 		GetSystemTime(&systemtime);
 	} else {
 		GetLocalTime(&systemtime);
@@ -460,10 +460,11 @@ OS::Date OS_UWP::get_date(bool p_utc) const {
 
 OS::Time OS_UWP::get_time(bool p_utc) const {
 	SYSTEMTIME systemtime;
-	if (utc)
+	if (p_utc) {
 		GetSystemTime(&systemtime);
-	else
+	} else {
 		GetLocalTime(&systemtime);
+	}
 
 	Time time;
 	time.hour = systemtime.wHour;

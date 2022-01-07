@@ -26,7 +26,7 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #ifdef GENERATE_MAP
-layout(set = 0, binding = 0) uniform sampler2DArray source_ssao;
+layout(set = 0, binding = 0) uniform sampler2DArray source_texture;
 #else
 layout(set = 0, binding = 0) uniform sampler2D source_importance;
 #endif
@@ -56,11 +56,10 @@ void main() {
 
 	vec2 base_uv = (vec2(base_position) + vec2(0.5f, 0.5f)) * params.half_screen_pixel_size;
 
-	float avg = 0.0;
 	float minV = 1.0;
 	float maxV = 0.0;
 	for (int i = 0; i < 4; i++) {
-		vec4 vals = textureGather(source_ssao, vec3(base_uv, i));
+		vec4 vals = textureGather(source_texture, vec3(base_uv, i));
 
 		// apply the same modifications that would have been applied in the main shader
 		vals = params.intensity * vals;
@@ -68,8 +67,6 @@ void main() {
 		vals = 1 - vals;
 
 		vals = pow(clamp(vals, 0.0, 1.0), vec4(params.power));
-
-		avg += dot(vec4(vals.x, vals.y, vals.z, vals.w), vec4(1.0 / 16.0, 1.0 / 16.0, 1.0 / 16.0, 1.0 / 16.0));
 
 		maxV = max(maxV, max(max(vals.x, vals.y), max(vals.z, vals.w)));
 		minV = min(minV, min(min(vals.x, vals.y), min(vals.z, vals.w)));

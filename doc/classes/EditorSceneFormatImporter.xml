@@ -37,7 +37,8 @@
 			<return type="Animation" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="flags" type="int" />
-			<argument index="2" name="bake_fps" type="int" />
+			<argument index="2" name="options" type="Dictionary" />
+			<argument index="3" name="bake_fps" type="int" />
 			<description>
 			</description>
 		</method>
@@ -45,23 +46,8 @@
 			<return type="Object" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="flags" type="int" />
-			<argument index="2" name="bake_fps" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="import_animation_from_other_importer">
-			<return type="Animation" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="flags" type="int" />
-			<argument index="2" name="bake_fps" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="import_scene_from_other_importer">
-			<return type="Node" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="flags" type="int" />
-			<argument index="2" name="bake_fps" type="int" />
+			<argument index="2" name="options" type="Dictionary" />
+			<argument index="3" name="bake_fps" type="int" />
 			<description>
 			</description>
 		</method>

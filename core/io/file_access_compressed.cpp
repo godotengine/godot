@@ -312,10 +312,10 @@ uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) con
 			} else {
 				read_block--;
 				at_end = true;
-				if (i < p_length - 1) {
+				if (i + 1 < p_length) {
 					read_eof = true;
 				}
-				return i;
+				return i + 1;
 			}
 		}
 	}

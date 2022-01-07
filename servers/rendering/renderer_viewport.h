@@ -95,7 +95,7 @@ public:
 
 		bool sdf_active;
 
-		float lod_threshold = 1.0;
+		float mesh_lod_threshold = 1.0;
 
 		uint64_t last_pass = 0;
 
@@ -256,7 +256,7 @@ public:
 	void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling);
 	void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread);
 	void viewport_set_occlusion_culling_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality);
-	void viewport_set_lod_threshold(RID p_viewport, float p_pixels);
+	void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels);
 
 	virtual int viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfoType p_type, RS::ViewportRenderInfo p_info);
 	virtual void viewport_set_debug_draw(RID p_viewport, RS::ViewportDebugDraw p_draw);
