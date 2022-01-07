@@ -50,13 +50,15 @@
 # Timothée MB <timothee.me@gmail.com>, 2021.
 # Florent <fnuttens@dabao.fr>, 2021.
 # Benjamin Peter <benji.peter@hotmail.fr>, 2021.
+# Maxime Leroy <lisacintosh@gmail.com>, 2021.
+# ASTRALE <jules.cercy@etu.univ-lyon1.fr>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-19 17:31+0000\n"
-"Last-Translator: Benjamin Peter <benji.peter@hotmail.fr>\n"
+"PO-Revision-Date: 2021-12-27 15:29+0000\n"
+"Last-Translator: ASTRALE <jules.cercy@etu.univ-lyon1.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
 "Language: fr\n"
@@ -64,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.10\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -487,6 +489,24 @@ msgid ""
 "want a true content-aware comparison, you have to use [code]deep_equal[/"
 "code]."
 msgstr ""
+"Compare deux valeurs en verifiant leur contenu, recursivement dans les "
+"tableaux et les dictionnaires jusqu'à leur niveau le plus profond.\n"
+"Il y a plusieurs similiratité avec [code]==[/code] :\n"
+"- Pour [code]null[/code], [code]int[/code], [code]float[/code], "
+"[code]String[/code], [code]Object[/code] et [code]RID[/code], les résultats "
+"de [code]deep_equal[/code] et [code]==[/code] sont les mêmes.\n"
+"- Pour [code]Dictionary[/code], [code]==[/code] considère que l'égalité est "
+"respéctée si et seulement si les deux variables pointent vers le même "
+"[code]Dictionary[/code], sans recursion ou connaissance du contenu des "
+"variables.\n"
+"- For [code]Array[/code], [code]==[/code] considère que l'égalité est "
+"respéctée si et seulement si chaque élement du premier [code]Tableau[/code] "
+"est égal à l'élément au même index du second [code]Array[/code], évalué par "
+"[code]==[/code] lui même. Cela implique que [code]==[/code] recurses dans un "
+"[code]Array[/code], mais pas dans un [code]Dictionary[/code].\n"
+"Rapidement, dès qu'un [code]Dictionary[/code] est potentiellement impliqué, "
+"si une vraie comparaison du contenu est souhaité, il faut utiliser "
+"[code]deep_equal[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1495,6 +1515,7 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Returns an array with the given range. Range can be 1 argument [code]N[/"
 "code] (0 to [code]N[/code] - 1), two arguments ([code]initial[/code], "
@@ -1535,6 +1556,45 @@ msgid ""
 "3\n"
 "[/codeblock]"
 msgstr ""
+"Renvoie un tableau avec la plage donnée reçu. La plage peut être un argument "
+"[code]N[/code] (0 à [code]N[/code] - 1), deux arguments ([code]initial[/"
+"code], [code]final - 1[/code]) ou trois arguments ([code]initial[/code], "
+"[code]final - 1[/code], [code]increment[/code]). Renvoie un tableau vide si "
+"la plage n'est pas valide (par exemple [code]plage(2, 5, -1)[/code] ou "
+"[code]plage(5, 5, 1)[/code]).[/code]\n"
+"Renvoie un tableau avec la plage donnée. [code]range()[/code] peut avoir 1 "
+"argument N ([code]0[/code] à [code]N - 1[/code]), deux arguments "
+"([code]initial[/code], [code]final - 1[/code]) ou trois arguments "
+"([code]initial[/code], [code]final - 1[/code], [code]increment[/code]). "
+"[code]increment[/code] peut être négatif. Si [code]increment[/code] est "
+"négatif, [code]final - 1[/code] deviendra [code]final + 1[/code]. De plus, "
+"la valeur initiale doit être supérieure à la valeur finale pour que la "
+"boucle s'exécute.\n"
+"[bloc de code]\n"
+"print(range(4))\n"
+"print(range(2, 5))\n"
+"print(range(0, 6, 2))\n"
+"[codeblock]\n"
+"Sortie :\n"
+"[codeblock]\n"
+"[0, 1, 2, 3]\n"
+"[2, 3, 4]\n"
+"[0, 2, 4]\n"
+"[codeblock]\n"
+"Pour itérer sur un tableau en arrière, utilisez :\n"
+"[codeblock]\n"
+"var array = [3, 6, 9]\n"
+"var i := array.size() - 1\n"
+"while i >= 0 :\n"
+"    print(array[i])\n"
+"    i -= 1\n"
+"[/codeblock]\n"
+"Sortie :\n"
+"[codeblock]\n"
+"9\n"
+"6\n"
+"3\n"
+"[codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -6196,9 +6256,8 @@ msgstr ""
 #: doc/classes/Mesh.xml doc/classes/MeshInstance.xml doc/classes/Particles.xml
 #: doc/classes/Quat.xml doc/classes/Skeleton.xml doc/classes/SpotLight.xml
 #: doc/classes/StaticBody.xml doc/classes/WorldEnvironment.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/678"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr "https://godotengine.org/asset-library/asset/678"
 
 #: doc/classes/AnimationNodeAnimation.xml
 msgid "Input animation to use in an [AnimationNodeBlendTree]."
@@ -6222,9 +6281,8 @@ msgstr ""
 #: doc/classes/KinematicBody.xml doc/classes/Mesh.xml
 #: doc/classes/MeshInstance.xml doc/classes/MeshLibrary.xml
 #: doc/classes/ProjectSettings.xml doc/classes/Transform.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/125"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr "https://godotengine.org/asset-library/asset/125"
 
 #: doc/classes/AnimationNodeAnimation.xml
 msgid ""
@@ -7702,9 +7760,8 @@ msgstr ""
 
 #: doc/classes/Area.xml doc/classes/QuadMesh.xml doc/classes/Viewport.xml
 #: doc/classes/ViewportTexture.xml
-#, fuzzy
 msgid "https://godotengine.org/asset-library/asset/127"
-msgstr "https://docs.godotengine.org/en/latest/tutorials/vr/index.html"
+msgstr "https://godotengine.org/asset-library/asset/127"
 
 #: doc/classes/Area.xml
 msgid ""
@@ -24957,7 +25014,7 @@ msgstr "Opérateur de tonte de film."
 
 #: doc/classes/Environment.xml
 msgid ""
-"Academy Color Encoding System tonemapper operator. Performs an aproximation "
+"Academy Color Encoding System tonemapper operator. Performs an approximation "
 "of the ACES tonemapping curve."
 msgstr ""
 

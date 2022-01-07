@@ -17,12 +17,13 @@
 # Dominik Mielcarek <fogbpl@gmail.com>, 2021.
 # CXVMNER <cxvmner@gmail.com>, 2021.
 # Tomasz Piechocki <t.piechocki@yahoo.com>, 2021.
+# DeiranZ <jwabik322@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-09 23:13+0000\n"
-"Last-Translator: Tomasz Piechocki <t.piechocki@yahoo.com>\n"
+"PO-Revision-Date: 2022-01-07 12:18+0000\n"
+"Last-Translator: DeiranZ <jwabik322@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/pl/>\n"
 "Language: pl\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -1173,7 +1174,7 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid "Like [method print], but prints only when used in debug mode."
-msgstr ""
+msgstr "Jak [method print], ale wypisuje tylko w trybie debugowania."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1184,6 +1185,12 @@ msgid ""
 "Frame 0 - res://test.gd:16 in function '_process'\n"
 "[/codeblock]"
 msgstr ""
+"Wypisuje zrzut stosu w miejscu kodu, działa tylko przy uruchamianiu z "
+"włączonym debuggerem.\n"
+"Wynik w konsoli wyglądać może tak:\n"
+"[codeblock]\n"
+"Frame 0 - res://test.gd:16 in function '_process'\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1193,6 +1200,11 @@ msgid ""
 "printerr(\"prints to stderr\")\n"
 "[/codeblock]"
 msgstr ""
+"Wypisuje do standardowej linii błędów jeden lub więcej argumentów jako "
+"string, w najlepszy możliwy sposób.\n"
+"[codeblock]\n"
+"printerr(\"wypisuje do stderr\")\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1207,6 +1219,16 @@ msgid ""
 "prints to the terminal. If you need to print in the editor, use another "
 "method, such as [method print]."
 msgstr ""
+"Wypisuje do konsoli jeden lub więcej argumentów jako string, w najlepszy "
+"możliwy sposób. Nie tworzy nowej linii na końcu.\n"
+"[codeblock]\n"
+"printraw(\"A\")\n"
+"printraw(\"B\")\n"
+"# Wypisuje AB\n"
+"[/codeblock]\n"
+"[b]Notka:[/b] W związku z ograniczeniami wbudowanej konsoli Godota, wypisuje "
+"się to tylko w terminalu. Jeżeli potrzebujesz wypisu w edytorze, skorzystaj "
+"z innej metody, jak [method print]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1216,6 +1238,11 @@ msgid ""
 "prints(\"A\", \"B\", \"C\") # Prints A B C\n"
 "[/codeblock]"
 msgstr ""
+"Wypisuje do konsoli jeden lub więcej argumentów ze spacją pomiędzy każdym "
+"argumentem.\n"
+"[codeblock]\n"
+"prints(\"A\", \"B\", \"C\") # Wypisuje A B C\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -23344,7 +23371,7 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Academy Color Encoding System tonemapper operator. Performs an aproximation "
+"Academy Color Encoding System tonemapper operator. Performs an approximation "
 "of the ACES tonemapping curve."
 msgstr ""
 

@@ -23307,7 +23307,7 @@ msgstr ""
 
 #: doc/classes/Environment.xml
 msgid ""
-"Academy Color Encoding System tonemapper operator. Performs an aproximation "
+"Academy Color Encoding System tonemapper operator. Performs an approximation "
 "of the ACES tonemapping curve."
 msgstr ""
 
