@@ -44,7 +44,7 @@
 			<argument index="0" name="flag" type="int" enum="SpatialMaterial.Flags" />
 			<argument index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables the specified flag. Flags are optional behaviour that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting the corresponding member to [code]true[/code]. See [enum Flags] enumerator for options.
+				If [code]true[/code], enables the specified flag. Flags are optional behavior that can be turned on and off. Only one flag can be enabled at a time with this function, the flag enumerators cannot be bit-masked together to enable or disable multiple flags at once. Flags can also be enabled by setting the corresponding member to [code]true[/code]. See [enum Flags] enumerator for options.
 			</description>
 		</method>
 		<method name="set_texture">

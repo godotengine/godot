@@ -173,7 +173,7 @@
 			Lock the body's Z axis movement. Deprecated alias for [member axis_lock_motion_z].
 		</member>
 		<member name="moving_platform_apply_velocity_on_leave" type="int" setter="set_moving_platform_apply_velocity_on_leave" getter="get_moving_platform_apply_velocity_on_leave" enum="KinematicBody.MovingPlatformApplyVelocityOnLeave" default="0">
-			Sets the behaviour to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for available behaviour.
+			Sets the behavior to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for available behavior.
 		</member>
 	</members>
 	<constants>

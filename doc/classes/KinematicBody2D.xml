@@ -145,7 +145,7 @@
 			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method move_and_slide] or [method move_and_collide] functions.
 		</member>
 		<member name="moving_platform_apply_velocity_on_leave" type="int" setter="set_moving_platform_apply_velocity_on_leave" getter="get_moving_platform_apply_velocity_on_leave" enum="KinematicBody2D.MovingPlatformApplyVelocityOnLeave" default="0">
-			Sets the behaviour to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for available behaviour.
+			Sets the behavior to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for available behavior.
 		</member>
 	</members>
 	<constants>
