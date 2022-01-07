@@ -261,6 +261,8 @@ protected:
 	void _notification(int p_what);
 
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
+	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
+	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
 
 public:
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
