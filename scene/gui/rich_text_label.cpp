@@ -2165,6 +2165,12 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag == "lb") {
+			add_text("[");
+			pos = brk_end + 1;
+		} else if (tag == "rb") {
+			add_text("]");
+			pos = brk_end + 1;
 		} else if (tag == "center") {
 			push_align(ALIGN_CENTER);
 			pos = brk_end + 1;
