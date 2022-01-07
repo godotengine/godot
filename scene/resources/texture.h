@@ -649,6 +649,82 @@ public:
 	virtual ~GradientTexture();
 };
 
+class GradientTexture2D : public Texture {
+	GDCLASS(GradientTexture2D, Texture);
+
+public:
+	enum Fill {
+		FILL_LINEAR,
+		FILL_RADIAL,
+	};
+	enum Repeat {
+		REPEAT_NONE,
+		REPEAT,
+		REPEAT_MIRROR,
+	};
+
+private:
+	Ref<Gradient> gradient;
+	mutable RID texture;
+
+	int width = 64;
+	int height = 64;
+
+	uint32_t flags = FLAGS_DEFAULT;
+
+	bool use_hdr = false;
+
+	Vector2 fill_from;
+	Vector2 fill_to = Vector2(1, 0);
+
+	Fill fill = FILL_LINEAR;
+	Repeat repeat = REPEAT_NONE;
+
+	float _get_gradient_offset_at(int x, int y) const;
+
+	bool update_pending = false;
+	void _queue_update();
+	void _update();
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_gradient(Ref<Gradient> p_gradient);
+	Ref<Gradient> get_gradient() const;
+
+	void set_width(int p_width);
+	virtual int get_width() const;
+	void set_height(int p_height);
+	virtual int get_height() const;
+
+	virtual void set_flags(uint32_t p_flags);
+	virtual uint32_t get_flags() const;
+
+	void set_use_hdr(bool p_enabled);
+	bool is_using_hdr() const;
+
+	void set_fill(Fill p_fill);
+	Fill get_fill() const;
+	void set_fill_from(Vector2 p_fill_from);
+	Vector2 get_fill_from() const;
+	void set_fill_to(Vector2 p_fill_to);
+	Vector2 get_fill_to() const;
+
+	void set_repeat(Repeat p_repeat);
+	Repeat get_repeat() const;
+
+	virtual RID get_rid() const;
+	virtual bool has_alpha() const { return true; }
+	virtual Ref<Image> get_image() const;
+
+	GradientTexture2D();
+	virtual ~GradientTexture2D();
+};
+
+VARIANT_ENUM_CAST(GradientTexture2D::Fill);
+VARIANT_ENUM_CAST(GradientTexture2D::Repeat);
+
 class ProxyTexture : public Texture {
 	GDCLASS(ProxyTexture, Texture);
 
