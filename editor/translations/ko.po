@@ -346,6 +346,11 @@ msgid "Duplicate Key(s)"
 msgstr "키 복제"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add RESET Value(s)"
+msgstr "프레임 %d개 추가"
+
+#: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
 msgstr "키 삭제"
 
@@ -513,6 +518,11 @@ msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
 "이 설정은 단일 트랙에만 적용 가능하므로 베지어 편집에 사용할 수 없습니다."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Add RESET Keys"
+msgstr "애니메이션 키 스케일"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1492,6 +1502,10 @@ msgid "Invalid name."
 msgstr "올바르지 않은 이름입니다."
 
 #: editor/editor_autoload_settings.cpp
+msgid "Cannot begin with a digit."
+msgstr ""
+
+#: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
 msgstr "올바른 문자:"
 
@@ -1596,7 +1610,9 @@ msgstr "씬 업데이트 중..."
 msgid "[empty]"
 msgstr "[비었음]"
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "[unsaved]"
 msgstr "[저장되지 않음]"
 
@@ -1617,6 +1633,7 @@ msgstr "폴더 만들기"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "이름:"
@@ -2110,7 +2127,8 @@ msgid "Properties"
 msgstr "속성"
 
 #: editor/editor_help.cpp
-msgid "override:"
+#, fuzzy
+msgid "overrides %s:"
 msgstr "오버라이드:"
 
 #: editor/editor_help.cpp
@@ -2251,6 +2269,20 @@ msgstr "테마 속성"
 msgid "Property:"
 msgstr "속성:"
 
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Pin value"
+msgstr "(값)"
+
+#: editor/editor_inspector.cpp
+msgid ""
+"Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pin value [Disabled because '%s' is editor-only]"
+msgstr ""
+
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
@@ -2259,6 +2291,29 @@ msgstr "Set %s"
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
 msgstr "다수 설정:"
+
+#: editor/editor_inspector.cpp
+msgid "Pinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Unpinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property"
+msgstr "속성 복사"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Paste Property"
+msgstr "속성 붙여넣기"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property Path"
+msgstr "스크립트 경로 복사"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -3065,6 +3120,20 @@ msgid ""
 msgstr ""
 "이 설정이 활성화되면, 프로젝트를 실행하는 동안 네비게이션 메시와 폴리곤이 보"
 "이게 됩니다."
+
+#: editor/editor_node.cpp
+msgid "Force Shader Fallbacks"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, shaders will be used in their fallback form "
+"(either visible via an ubershader or hidden) during all the run time.\n"
+"This is useful for verifying the look and performance of fallbacks, which "
+"are normally displayed briefly.\n"
+"Asynchronous shader compilation must be enabled in the project settings for "
+"this option to make a difference."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -4176,6 +4245,10 @@ msgstr "파일에서 찾기"
 msgid "Find:"
 msgstr "찾기:"
 
+#: editor/find_in_files.cpp editor/rename_dialog.cpp
+msgid "Replace:"
+msgstr "바꾸기:"
+
 #: editor/find_in_files.cpp
 msgid "Folder:"
 msgstr "폴더:"
@@ -4201,6 +4274,11 @@ msgstr "찾기..."
 msgid "Replace..."
 msgstr "바꾸기..."
 
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Replace in Files"
+msgstr "모두 바꾸기"
+
 #: editor/find_in_files.cpp
 msgid "Find: "
 msgstr "찾기: "
@@ -4210,8 +4288,9 @@ msgid "Replace: "
 msgstr "바꾸기: "
 
 #: editor/find_in_files.cpp
-msgid "Replace all (no undo)"
-msgstr "모두 바꾸기 (되돌릴 수 없습니다)"
+#, fuzzy
+msgid "Replace All (NO UNDO)"
+msgstr "모두 바꾸기"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4429,6 +4508,12 @@ msgid ""
 msgstr ""
 "경고: 이 리소스를 사용하는 애셋이 있습니다. 정상적으로 불러오지 못할 수도 있"
 "습니다."
+
+#: editor/import_dock.cpp
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust "
+"import settings."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -5880,6 +5965,11 @@ msgid "Alt+Drag: Move selected node."
 msgstr "Alt+드래그: 선택된 노드를 이동합니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+드래그: 선택된 노드를 이동합니다."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "V: Set selected node's pivot position."
 msgstr "V: 선택된 노드의 피벗 위치를 설정합니다."
 
@@ -5907,6 +5997,10 @@ msgstr "회전 모드"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
 msgstr "스케일 모드"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Shift: Scale proportionally."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6005,8 +6099,20 @@ msgstr "선택된 오브젝트를 그 자리에 잠급니다 (움직일 수 없�
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock Selected Node(s)"
+msgstr "선택 항목 잠그기"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
 msgstr "선택된 오브젝트를 잠금에서 풉니다 (움직일 수 있습니다)."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Unlock Selected Node(s)"
+msgstr "선택 항목 잠금 풀기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6015,8 +6121,20 @@ msgstr "오브젝트의 자식을 선택하지 않도록 합니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Group Selected Node(s)"
+msgstr "선택 항목 묶기"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "오브젝트의 자식을 선택할 수 있도록 복원합니다."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Ungroup Selected Node(s)"
+msgstr "선택 항목 묶음 풀기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -7656,6 +7774,11 @@ msgid "Find in Files..."
 msgstr "파일에서 찾기..."
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Replace in Files..."
+msgstr "바꾸기..."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "상황에 맞는 도움말"
 
@@ -8175,6 +8298,19 @@ msgstr "선택 항목 포커스"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr "자유 시점 토글"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Decrease Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Increase Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Reset Field of View to Default"
+msgstr "디폴트로 재설정"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8896,6 +9032,29 @@ msgid "Another Theme"
 msgstr "다른 테마"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Type"
+msgstr "타입 추가"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Filter the list of types or create a new custom type:"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Available Node-based types:"
+msgstr "사용 가능한 프로필:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Type name is empty!"
+msgstr "파일 이름이 비었습니다."
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Are you sure you want to create an empty type?"
+msgstr "두 개 이상의 프로젝트를 여시겠습니까?"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Confirm Item Rename"
 msgstr "항목 이름 바꾸기 확인"
 
@@ -8920,18 +9079,6 @@ msgstr ""
 "일박스에서 같은 속성이 업데이트됩니다."
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Type"
-msgstr "타입 추가"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "항목 타입 추가"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Node Types:"
-msgstr "노드 타입:"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "디폴트 보이기"
 
@@ -8946,6 +9093,10 @@ msgstr "모두 오버라이드"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr "모든 디폴트 타입 항목을 오버라이드합니다."
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "항목 타입 추가"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -11417,10 +11568,6 @@ msgid "Batch Rename"
 msgstr "일괄 이름 바꾸기"
 
 #: editor/rename_dialog.cpp
-msgid "Replace:"
-msgstr "바꾸기:"
-
-#: editor/rename_dialog.cpp
 msgid "Prefix:"
 msgstr "접두사:"
 
@@ -11706,6 +11853,20 @@ msgstr ""
 "이미 인스턴스된 씬의 가지를 저장할 수 없습니다.\n"
 "씬의 바리에이션을 만드려면, 인스턴스된 씬을 바탕으로 상속 씬을 씬 > 새 상속 "
 "씬...을 대신 사용하여 만들 수 있습니다."
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is a child of an already instantiated scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is part of an inherited scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -12663,63 +12824,69 @@ msgstr "솔루션 빌드"
 msgid "End of inner exception stack trace"
 msgstr "내부 예외 스택 추적의 끝"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+"이 노드가 작동하려면 NavigationMesh 리소스를 설정하거나 만들어야 합니다."
+
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
 msgstr "NavMesh 굽기"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
 msgstr "내비게이션 메시를 지웁니다."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
 msgstr "구성 설정 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
 msgstr "그리드 크기 계산 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
 msgstr "Heightfield 만드는 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
 msgstr "걷기 가능한 삼각형 표시 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
 msgstr "압축된 Heightfield를 구성 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
 msgstr "걷기 가능한 영역 계산 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Partitioning..."
 msgstr "파티션 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating contours..."
 msgstr "윤곽선 만드는 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
 msgstr "Polymesh 만드는 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
 msgstr "네이티브 내비게이션 메시로 변환 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
 msgstr "내비게이션 메시 생성기 설정:"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
 msgstr "지오메트리 분석 중..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Done!"
 msgstr "완료!"
 
@@ -13722,6 +13889,16 @@ msgstr ""
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "Occluder 폴리곤이 비어있습니다. 폴리곤을 그려주세요."
 
+#: scene/2d/navigation_agent_2d.cpp
+msgid "The NavigationAgent2D can be used only under a Node2D node."
+msgstr ""
+
+#: scene/2d/navigation_obstacle_2d.cpp
+msgid ""
+"The NavigationObstacle2D only serves to provide collision avoidance to a "
+"Node2D object."
+msgstr ""
+
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
@@ -13973,18 +14150,23 @@ msgstr ""
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "SpotLight의 각도를 90도 이상으로 잡으면 그림자를 투영할 수 없습니다."
 
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
+#: scene/3d/navigation_agent.cpp
+msgid "The NavigationAgent can be used only under a spatial node."
 msgstr ""
-"이 노드가 작동하려면 NavigationMesh 리소스를 설정하거나 만들어야 합니다."
 
-#: scene/3d/navigation_mesh.cpp
+#: scene/3d/navigation_mesh_instance.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
 "NavigationMeshInstance는 Navigation 노드의 자식이나 손주에 있어야 합니다. 이"
 "것은 내비게이션 데이터만 제공합니다."
+
+#: scene/3d/navigation_obstacle.cpp
+msgid ""
+"The NavigationObstacle only serves to provide collision avoidance to a "
+"spatial object."
+msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
@@ -14451,10 +14633,6 @@ msgid ""
 msgstr ""
 "'fragment' 함수에서 할당된 Varying은 'vertex' 또는 'light'에서 재할당되지 않"
 "을 수 있습니다."
-
-#: servers/visual/shader_language.cpp
-msgid "Fragment-stage varying could not been accessed in custom function!"
-msgstr "커스텀 함수에서 Fragment-stage varying에 접근할 수 없습니다!"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

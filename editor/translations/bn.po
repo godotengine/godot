@@ -327,6 +327,11 @@ msgid "Duplicate Key(s)"
 msgstr "কী (সমূহ) প্রতিলিপি করুন"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add RESET Value(s)"
+msgstr "ফ্রেম যোগ করুন"
+
+#: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
 msgstr "কী (সমূহ) অপসারণ করুন"
 
@@ -497,6 +502,11 @@ msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
 "এই বিকল্পটি বেজিয়ার সম্পাদনার জন্য কাজ করে না, কারণ এটি কেবলমাত্র Single ট্র্যাক।"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Add RESET Keys"
+msgstr "অ্যানিমেশনের (Anim) চাবিসমূহের আকার পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1520,6 +1530,10 @@ msgid "Invalid name."
 msgstr "অগ্রহনযোগ্য নাম।"
 
 #: editor/editor_autoload_settings.cpp
+msgid "Cannot begin with a digit."
+msgstr ""
+
+#: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
 msgstr "গ্রহনযোগ্য অক্ষরসমূহ:"
 
@@ -1634,7 +1648,9 @@ msgstr "দৃশ্য হাল নাগাদ হচ্ছে..."
 msgid "[empty]"
 msgstr "(খালি/শূন্য)"
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "[unsaved]"
 msgstr "[অসংরক্ষিত]"
 
@@ -1656,6 +1672,7 @@ msgstr "ফোল্ডার তৈরি করুন"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "নাম:"
@@ -2182,7 +2199,7 @@ msgstr "প্রোপার্টি-সমূহ:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "override:"
+msgid "overrides %s:"
 msgstr "ওভাররাইড..."
 
 #: editor/editor_help.cpp
@@ -2350,6 +2367,20 @@ msgstr "প্রোপার্টি-সমূহ:"
 msgid "Property:"
 msgstr "প্রপার্টি:"
 
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Pin value"
+msgstr "মান"
+
+#: editor/editor_inspector.cpp
+msgid ""
+"Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pin value [Disabled because '%s' is editor-only]"
+msgstr ""
+
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
@@ -2358,6 +2389,29 @@ msgstr ""
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
 msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Unpinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property"
+msgstr "প্রোপার্টি-সমূহ:"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Paste Property"
+msgstr "প্রোপার্টি-সমূহ:"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property Path"
+msgstr "পথ প্রতিলিপি/কপি করুন"
 
 #: editor/editor_log.cpp
 #, fuzzy
@@ -3190,6 +3244,20 @@ msgid ""
 msgstr ""
 "এই সিদ্ধান্তটি (অপশন) সক্রিয় করলে চলমান গেমে ন্যাভিগেশন (Navigation) মেস এবং "
 "পলিগন-সমূহ দৃশ্যমান হবে।"
+
+#: editor/editor_node.cpp
+msgid "Force Shader Fallbacks"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, shaders will be used in their fallback form "
+"(either visible via an ubershader or hidden) during all the run time.\n"
+"This is useful for verifying the look and performance of fallbacks, which "
+"are normally displayed briefly.\n"
+"Asynchronous shader compilation must be enabled in the project settings for "
+"this option to make a difference."
+msgstr ""
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -4410,6 +4478,11 @@ msgstr "টাইল খুঁজুন"
 msgid "Find:"
 msgstr "সন্ধান করুন"
 
+#: editor/find_in_files.cpp editor/rename_dialog.cpp
+#, fuzzy
+msgid "Replace:"
+msgstr "প্রতিস্থাপন করুন"
+
 #: editor/find_in_files.cpp
 #, fuzzy
 msgid "Folder:"
@@ -4435,6 +4508,11 @@ msgstr "খুঁজুন..."
 msgid "Replace..."
 msgstr "প্রতিস্থাপন..."
 
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Replace in Files"
+msgstr "সমস্তগুলি প্রতিস্থাপন করুন"
+
 #: editor/find_in_files.cpp
 #, fuzzy
 msgid "Find: "
@@ -4447,7 +4525,7 @@ msgstr "প্রতিস্থাপন করুন"
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Replace all (no undo)"
+msgid "Replace All (NO UNDO)"
 msgstr "সমস্তগুলি প্রতিস্থাপন করুন"
 
 #: editor/find_in_files.cpp
@@ -4684,6 +4762,12 @@ msgstr ""
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
+msgstr ""
+
+#: editor/import_dock.cpp
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust "
+"import settings."
 msgstr ""
 
 #: editor/inspector_dock.cpp
@@ -6265,6 +6349,11 @@ msgstr "অল্টার কী + টান: স্থানান্তর"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
+msgid "Alt+Drag: Scale selected node."
+msgstr "অল্টার কী + টান: স্থানান্তর"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "V: Set selected node's pivot position."
 msgstr "নির্বাচিত ট্র্যাক/পথ অপসারণ করুন।"
 
@@ -6295,6 +6384,10 @@ msgstr "ঘূর্ণায়ন মোড"
 #, fuzzy
 msgid "Scale Mode"
 msgstr "মাপের মোড করুন (R)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Shift: Scale proportionally."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6408,8 +6501,20 @@ msgstr "নির্বাচিত বস্তুটিকে এই স্থ
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock Selected Node(s)"
+msgstr "নির্বাচন করুন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
 msgstr "নির্বাচিত বস্তুটিকে মুক্ত করুন (সরানো সম্ভব হবে)।"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Unlock Selected Node(s)"
+msgstr "নির্বাচিত সমূহ অপসারণ করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6418,8 +6523,20 @@ msgstr "বস্তুর অন্তর্ভুক্ত-সমূহ যা
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Group Selected Node(s)"
+msgstr "নির্বাচিত সমূহ অপসারণ করুন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "বস্তুর অন্তর্ভুক্ত-সমূহের নির্বাচনযোগ্যতা পুনরায় ফিরিয়ে আনে।"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Ungroup Selected Node(s)"
+msgstr "নির্বাচিত সমূহ অপসারণ করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -8178,6 +8295,11 @@ msgid "Find in Files..."
 msgstr "দ্রুত ফাইলসমূহ ফিল্টার করুন..."
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Replace in Files..."
+msgstr "প্রতিস্থাপন..."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "প্রাসঙ্গিক সাহায্য"
 
@@ -8755,6 +8877,19 @@ msgstr "নির্বাচনে ফোকাস করুন"
 #, fuzzy
 msgid "Toggle Freelook"
 msgstr "পূর্ণ-পর্দা অদলবদল/টগল করুন"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Decrease Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Increase Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Reset Field of View to Default"
+msgstr "প্রাথমিক sRGB ব্যবহার করুন"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9568,6 +9703,30 @@ msgstr "থিম ইম্পোর্ট করুন"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Type"
+msgstr "ধরণ"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Filter the list of types or create a new custom type:"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Available Node-based types:"
+msgstr "উপস্থিত নোডসমূহ:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Type name is empty!"
+msgstr "সংরক্ষণের পথটি খালি!"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Are you sure you want to create an empty type?"
+msgstr "একধিক প্রকল্প খোলায় আপনি সুনিশ্চিত?"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Confirm Item Rename"
 msgstr "অ্যানিমেশন (Anim) ট্র্যাক/পথ-এর নাম পরিবর্তন করুন"
 
@@ -9593,21 +9752,6 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Type"
-msgstr "ধরণ"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Add Item Type"
-msgstr "বস্তু যোগ করুন"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Node Types:"
-msgstr "নোডের ধরণ সন্ধান করুন"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Show Default"
 msgstr "লোড ডিফল্ট"
 
@@ -9623,6 +9767,11 @@ msgstr "ওভাররাইড..."
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Add Item Type"
+msgstr "বস্তু যোগ করুন"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -12216,11 +12365,6 @@ msgid "Batch Rename"
 msgstr "পুনঃনামকরণ করুন"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
-msgid "Replace:"
-msgstr "প্রতিস্থাপন করুন"
-
-#: editor/rename_dialog.cpp
 msgid "Prefix:"
 msgstr ""
 
@@ -12514,6 +12658,20 @@ msgid ""
 "Can't save the branch of an already instanced scene.\n"
 "To create a variation of a scene, you can make an inherited scene based on "
 "the instanced scene using Scene > New Inherited Scene... instead."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is a child of an already instantiated scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is part of an inherited scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -13577,71 +13735,78 @@ msgstr "সব সিলেক্ট করুন"
 msgid "End of inner exception stack trace"
 msgstr ""
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+"এই নোডটি সফল্ভাবে কাজ করার জন্য একটি NavigationMesh রিসোর্স নির্ধারন বা তৈরি "
+"করতে হবে।"
+
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
 msgstr ""
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 #, fuzzy
 msgid "Clear the navigation mesh."
 msgstr "Navigation Mesh তৈরি করুন"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
 msgstr "কনফিগারেশন তৈরি করা হচ্ছে..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
 msgstr "গ্রিড সাইজ হিসাব করা হচ্ছে..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 #, fuzzy
 msgid "Creating heightfield..."
 msgstr "লাইটের ওকট্রী (octree) তৈরি করা হচ্ছে"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 #, fuzzy
 msgid "Marking walkable triangles..."
 msgstr "অনুবাদ-সম্ভব শব্দমালা/বাক্য-সমূহ..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
 msgstr "কম্প্যাক্ট হাইফিল্ড তৈরি করা হছে..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
 msgstr "ব্যাবহারযোগ্য পথ মুছে ফেলা হচ্ছে..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 #, fuzzy
 msgid "Partitioning..."
 msgstr "সতর্কতা"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 #, fuzzy
 msgid "Creating contours..."
 msgstr "ওকট্রী (octree) গঠনবিন্যাস তৈরি করা হচ্ছে"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 #, fuzzy
 msgid "Creating polymesh..."
 msgstr "প্রান্তরেখা মেস তৈরি করুন..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 #, fuzzy
 msgid "Converting to native navigation mesh..."
 msgstr "Navigation Mesh তৈরি করুন"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
 msgstr "ন্যাভিগেশন ম্যাশ জেনারেটর সেটআপ:"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 #, fuzzy
 msgid "Parsing Geometry..."
 msgstr "জ্যামিতিক-আকার বিশ্লেষণ করা হচ্ছে"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Done!"
 msgstr "সম্পন্ন হয়েছে!"
 
@@ -14688,6 +14853,16 @@ msgstr ""
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "এই occluder এর জন্য occluder পলিগনটি খালি। অনুগ্রহ করে একটি পলিগন আঁকুন!"
 
+#: scene/2d/navigation_agent_2d.cpp
+msgid "The NavigationAgent2D can be used only under a Node2D node."
+msgstr ""
+
+#: scene/2d/navigation_obstacle_2d.cpp
+msgid ""
+"The NavigationObstacle2D only serves to provide collision avoidance to a "
+"Node2D object."
+msgstr ""
+
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
@@ -14921,19 +15096,23 @@ msgstr ""
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
 
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
+#: scene/3d/navigation_agent.cpp
+msgid "The NavigationAgent can be used only under a spatial node."
 msgstr ""
-"এই নোডটি সফল্ভাবে কাজ করার জন্য একটি NavigationMesh রিসোর্স নির্ধারন বা তৈরি "
-"করতে হবে।"
 
-#: scene/3d/navigation_mesh.cpp
+#: scene/3d/navigation_mesh_instance.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
 "NavigationMeshInstance-কে অবশ্যই Navigation-এর অংশ অথবা অংশের অংশ হতে হবে। "
 "এটা শুধুমাত্র ন্যাভিগেশনের তথ্য প্রদান করে।"
+
+#: scene/3d/navigation_obstacle.cpp
+msgid ""
+"The NavigationObstacle only serves to provide collision avoidance to a "
+"spatial object."
+msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
@@ -15351,10 +15530,6 @@ msgstr ""
 msgid ""
 "Varyings which assigned in 'fragment' function may not be reassigned in "
 "'vertex' or 'light'."
-msgstr ""
-
-#: servers/visual/shader_language.cpp
-msgid "Fragment-stage varying could not been accessed in custom function!"
 msgstr ""
 
 #: servers/visual/shader_language.cpp

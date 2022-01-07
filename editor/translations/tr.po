@@ -382,6 +382,11 @@ msgid "Duplicate Key(s)"
 msgstr "Yinelenen Anahtar(lar)"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add RESET Value(s)"
+msgstr "%d Çerçeve[ler]'i ekle"
+
+#: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
 msgstr "Anahtar(lar)ı Sil"
 
@@ -548,6 +553,11 @@ msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
 "Bu seçenek yalnızca tek izli olduğundan, Bezier düzenlemede işe yaramaz."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Add RESET Keys"
+msgstr "Animasyon Anahtarı Ölçekle"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1532,6 +1542,10 @@ msgid "Invalid name."
 msgstr "Geçersiz ad."
 
 #: editor/editor_autoload_settings.cpp
+msgid "Cannot begin with a digit."
+msgstr ""
+
+#: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
 msgstr "Geçerli karakterler:"
 
@@ -1636,7 +1650,9 @@ msgstr "Sahne güncelleniyor..."
 msgid "[empty]"
 msgstr "(boş)"
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "[unsaved]"
 msgstr "[kaydedilmemiş]"
 
@@ -1657,6 +1673,7 @@ msgstr "Klasör Oluştur"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "İsim:"
@@ -2155,7 +2172,8 @@ msgid "Properties"
 msgstr "Özellikler"
 
 #: editor/editor_help.cpp
-msgid "override:"
+#, fuzzy
+msgid "overrides %s:"
 msgstr "üzerine yaz:"
 
 #: editor/editor_help.cpp
@@ -2296,6 +2314,20 @@ msgstr "Tema Özelliği"
 msgid "Property:"
 msgstr "Özellik:"
 
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Pin value"
+msgstr "(değer)"
+
+#: editor/editor_inspector.cpp
+msgid ""
+"Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pin value [Disabled because '%s' is editor-only]"
+msgstr ""
+
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
@@ -2304,6 +2336,29 @@ msgstr "Ayarla %s"
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
 msgstr "Çoklu Ayarla:"
+
+#: editor/editor_inspector.cpp
+msgid "Pinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Unpinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property"
+msgstr "Özellikleri Kopyala"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Paste Property"
+msgstr "Özellikleri Yapıştır"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property Path"
+msgstr "Betik Yolunu Kopyala"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -3117,6 +3172,20 @@ msgid ""
 msgstr ""
 "Bu seçenek etkinleştirildiğinde, gezinme mesh ve poligonlar(çokgenler), "
 "çalışan projede görünür olacaktır."
+
+#: editor/editor_node.cpp
+msgid "Force Shader Fallbacks"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, shaders will be used in their fallback form "
+"(either visible via an ubershader or hidden) during all the run time.\n"
+"This is useful for verifying the look and performance of fallbacks, which "
+"are normally displayed briefly.\n"
+"Asynchronous shader compilation must be enabled in the project settings for "
+"this option to make a difference."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -4242,6 +4311,10 @@ msgstr "Dosyalarda bul"
 msgid "Find:"
 msgstr "Bul:"
 
+#: editor/find_in_files.cpp editor/rename_dialog.cpp
+msgid "Replace:"
+msgstr "Değiştir:"
+
 #: editor/find_in_files.cpp
 msgid "Folder:"
 msgstr "Dosya:"
@@ -4267,6 +4340,11 @@ msgstr "Bul..."
 msgid "Replace..."
 msgstr "Değiştir..."
 
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Replace in Files"
+msgstr "Tümünü Değiştir"
+
 #: editor/find_in_files.cpp
 msgid "Find: "
 msgstr "Bul: "
@@ -4276,8 +4354,9 @@ msgid "Replace: "
 msgstr "Değiştir: "
 
 #: editor/find_in_files.cpp
-msgid "Replace all (no undo)"
-msgstr "Tümünü Değiştir (geri alma yok)"
+#, fuzzy
+msgid "Replace All (NO UNDO)"
+msgstr "Tümünü Değiştir"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4499,6 +4578,12 @@ msgid ""
 msgstr ""
 "UYARI: Bu kaynağı kullanan varlıklar mevcut, düzgün yüklenmeyi "
 "durdurabilirler."
+
+#: editor/import_dock.cpp
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust "
+"import settings."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -5959,6 +6044,11 @@ msgid "Alt+Drag: Move selected node."
 msgstr "Alt+Sürükle: Seçili düğümü taşıyın."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+Sürükle: Seçili düğümü taşıyın."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "V: Set selected node's pivot position."
 msgstr "V: Seçili düğümün pivot konumunu ayarlayın."
 
@@ -5987,6 +6077,10 @@ msgstr "Döndürme Biçimi"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
 msgstr "Esnetme Şekli"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Shift: Scale proportionally."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6085,8 +6179,20 @@ msgstr "Seçilen nesneyi yerine kilitleyin (taşınamaz)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock Selected Node(s)"
+msgstr "Seçimi Kilitle"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
 msgstr "Seçilen nesnenin kilidini açın (taşınabilir)."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Unlock Selected Node(s)"
+msgstr "Seçim Kilidini Aç"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6095,8 +6201,20 @@ msgstr "Nesnenin çocuğunun seçilemez olduğundan kuşkusuz olur."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Group Selected Node(s)"
+msgstr "Seçilenleri Grupla"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "Nesnenin çocuğunun seçilebilme yeteneğini geri kazandırır."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Ungroup Selected Node(s)"
+msgstr "Seçilen Grubu Dağıt"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -7735,6 +7853,11 @@ msgid "Find in Files..."
 msgstr "Dosyalarda Bul..."
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Replace in Files..."
+msgstr "Değiştir..."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "Bağlamsal Yardım"
 
@@ -8256,6 +8379,19 @@ msgstr "Seçime Odaklan"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr "Serbest Bakış Aç / Kapat"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Decrease Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Increase Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Reset Field of View to Default"
+msgstr "Varsayılanlara dön"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8980,6 +9116,29 @@ msgid "Another Theme"
 msgstr "Başka Bir Tema"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Type"
+msgstr "Tür Ekle"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Filter the list of types or create a new custom type:"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Available Node-based types:"
+msgstr "Kullanılabilir Profiller:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Type name is empty!"
+msgstr "Dosya ismi boş."
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Are you sure you want to create an empty type?"
+msgstr "Birden fazla proje açmakta kararlı mısınız?"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Confirm Item Rename"
 msgstr "Öğeyi Yeniden Adlandırmayı Onayla"
 
@@ -9004,18 +9163,6 @@ msgstr ""
 "tipteki diğer tüm StyleBox'larda aynı özellikleri güncelleyecektir."
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Type"
-msgstr "Tür Ekle"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "Öğe Türü Ekle"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Node Types:"
-msgstr "Düğüm Türleri:"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Varsayılanı Göster"
 
@@ -9030,6 +9177,10 @@ msgstr "Tümünü Geçersiz Kıl"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr "Tüm varsayılan tür öğelerini geçersiz kıl."
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "Öğe Türü Ekle"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -11530,10 +11681,6 @@ msgid "Batch Rename"
 msgstr "Tümden Yeniden Adlandır"
 
 #: editor/rename_dialog.cpp
-msgid "Replace:"
-msgstr "Değiştir:"
-
-#: editor/rename_dialog.cpp
 msgid "Prefix:"
 msgstr "Ön Ek:"
 
@@ -11825,6 +11972,20 @@ msgstr ""
 "Bir sahnenin varyasyonunu oluşturmak için, bunun yerine Sahne > Yeni "
 "Devralınan Sahne... seçeneğini kullanarak örneklenen sahneye dayalı olarak "
 "devralınan bir sahne oluşturabilirsiniz."
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is a child of an already instantiated scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is part of an inherited scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -12784,63 +12945,70 @@ msgstr "Solüsyonu İnşa Et"
 msgid "End of inner exception stack trace"
 msgstr "İç özel durum yığını izlemesinin sonu"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+"Bu düğümün çalışması için bir NavigationMesh kaynağı ayarlanmış veya "
+"oluşturulmuş olmalıdır."
+
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
 msgstr "NavMesh'i Sabitle"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
 msgstr "Yönlendirici örüntüsünü temizle."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
 msgstr "Konfigürasyon Ayarlanıyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
 msgstr "Izgara boyutu hesaplanıyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
 msgstr "Yükseklik-alanı Oluşturuluyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
 msgstr "Yürünebilir üçgenler işaretleniyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
 msgstr "Aralıksız yükseklialanı inşa ediliyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
 msgstr "Yürünebilir alan aşındırılıyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Partitioning..."
 msgstr "Bölümleniyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating contours..."
 msgstr "Konturlar oluşturuluyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
 msgstr "Çoklu-örüntü oluşturuluyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
 msgstr "Yerli yönlendirici örüntüsüne dönüştürülüyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
 msgstr "Navigasyon Örüntüsü Üreteci Kurulumu:"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
 msgstr "Geometri Ayrıştırılıyor..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Done!"
 msgstr "Oldu!"
 
@@ -13861,6 +14029,16 @@ msgstr ""
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "Bu engelleyici için engelleyici çokgeni boş. Lütfen bir çokgen çizin."
 
+#: scene/2d/navigation_agent_2d.cpp
+msgid "The NavigationAgent2D can be used only under a Node2D node."
+msgstr ""
+
+#: scene/2d/navigation_obstacle_2d.cpp
+msgid ""
+"The NavigationObstacle2D only serves to provide collision avoidance to a "
+"Node2D object."
+msgstr ""
+
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
@@ -14122,19 +14300,23 @@ msgstr ""
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "90 dereceden geniş açılı SpotIşık gölge oluşturamaz."
 
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
+#: scene/3d/navigation_agent.cpp
+msgid "The NavigationAgent can be used only under a spatial node."
 msgstr ""
-"Bu düğümün çalışması için bir NavigationMesh kaynağı ayarlanmış veya "
-"oluşturulmuş olmalıdır."
 
-#: scene/3d/navigation_mesh.cpp
+#: scene/3d/navigation_mesh_instance.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
 "NavigationMeshInstance, bir Navigation düğümünün çocuğu ya da torunu "
 "olmalıdır. O yalnızca yönlendirme verisi sağlar."
+
+#: scene/3d/navigation_obstacle.cpp
+msgid ""
+"The NavigationObstacle only serves to provide collision avoidance to a "
+"spatial object."
+msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
@@ -14611,10 +14793,6 @@ msgid ""
 "'vertex' or 'light'."
 msgstr ""
 "'Parça' işlevinde atanan varyasyonlar, 'köşe' veya 'ışık'ta yeniden atanamaz."
-
-#: servers/visual/shader_language.cpp
-msgid "Fragment-stage varying could not been accessed in custom function!"
-msgstr "Özel işlevde parça aşaması değişikliğine erişilemedi!"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

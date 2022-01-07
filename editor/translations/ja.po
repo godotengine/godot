@@ -351,6 +351,11 @@ msgid "Duplicate Key(s)"
 msgstr "キーを複製"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add RESET Value(s)"
+msgstr "%dフレームを追加"
+
+#: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
 msgstr "キーを削除"
 
@@ -517,6 +522,11 @@ msgstr "アニメーションキーの拡縮"
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr "このオプションは単一トラックでのベジェ編集では機能しません。"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Add RESET Keys"
+msgstr "アニメーションキーの拡縮"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1500,6 +1510,10 @@ msgid "Invalid name."
 msgstr "無効な名前です。"
 
 #: editor/editor_autoload_settings.cpp
+msgid "Cannot begin with a digit."
+msgstr ""
+
+#: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
 msgstr "有効な文字:"
 
@@ -1604,7 +1618,9 @@ msgstr "シーンを更新..."
 msgid "[empty]"
 msgstr "[空]"
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "[unsaved]"
 msgstr "[未保存]"
 
@@ -1625,6 +1641,7 @@ msgstr "フォルダーを作成"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "名前:"
@@ -2124,7 +2141,8 @@ msgid "Properties"
 msgstr "プロパティ"
 
 #: editor/editor_help.cpp
-msgid "override:"
+#, fuzzy
+msgid "overrides %s:"
 msgstr "上書き:"
 
 #: editor/editor_help.cpp
@@ -2264,6 +2282,20 @@ msgstr "テーマプロパティ"
 msgid "Property:"
 msgstr "プロパティ:"
 
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Pin value"
+msgstr "(値)"
+
+#: editor/editor_inspector.cpp
+msgid ""
+"Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pin value [Disabled because '%s' is editor-only]"
+msgstr ""
+
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
@@ -2272,6 +2304,29 @@ msgstr "%s を設定"
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
 msgstr "複数設定:"
+
+#: editor/editor_inspector.cpp
+msgid "Pinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Unpinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property"
+msgstr "プロパティをコピー"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Paste Property"
+msgstr "プロパティを貼り付け"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property Path"
+msgstr "スクリプトのパスをコピー"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -3083,6 +3138,20 @@ msgid ""
 msgstr ""
 "このオプションを有効にすると、ナビゲーションメッシュおよびポリゴンが、ゲーム"
 "実行中にも表示されるようになります。"
+
+#: editor/editor_node.cpp
+msgid "Force Shader Fallbacks"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, shaders will be used in their fallback form "
+"(either visible via an ubershader or hidden) during all the run time.\n"
+"This is useful for verifying the look and performance of fallbacks, which "
+"are normally displayed briefly.\n"
+"Asynchronous shader compilation must be enabled in the project settings for "
+"this option to make a difference."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -4205,6 +4274,10 @@ msgstr "複数ファイル内を検索"
 msgid "Find:"
 msgstr "検索:"
 
+#: editor/find_in_files.cpp editor/rename_dialog.cpp
+msgid "Replace:"
+msgstr "置換:"
+
 #: editor/find_in_files.cpp
 msgid "Folder:"
 msgstr "フォルダー:"
@@ -4229,6 +4302,11 @@ msgstr "検索..."
 msgid "Replace..."
 msgstr "置換..."
 
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Replace in Files"
+msgstr "すべて置換"
+
 #: editor/find_in_files.cpp
 msgid "Find: "
 msgstr "検索: "
@@ -4238,8 +4316,9 @@ msgid "Replace: "
 msgstr "置換: "
 
 #: editor/find_in_files.cpp
-msgid "Replace all (no undo)"
-msgstr "すべて置換 (元に戻せません)"
+#, fuzzy
+msgid "Replace All (NO UNDO)"
+msgstr "すべて置換"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4458,6 +4537,12 @@ msgid ""
 msgstr ""
 "警告:このリソースを使用するアセットが存在するため、正しくロードされない可能性"
 "があります。"
+
+#: editor/import_dock.cpp
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust "
+"import settings."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -5916,6 +6001,11 @@ msgid "Alt+Drag: Move selected node."
 msgstr "Alt+ドラッグ: 選択したノードを移動。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+ドラッグ: 選択したノードを移動。"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "V: Set selected node's pivot position."
 msgstr "V: 選択したノードのピボットの位置を設定する。"
 
@@ -5944,6 +6034,10 @@ msgstr "回転モード"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
 msgstr "スケールモード"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Shift: Scale proportionally."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6042,8 +6136,20 @@ msgstr "選択したオブジェクトの位置をロック (移動不可能に�
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock Selected Node(s)"
+msgstr "選択対象をロック"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
 msgstr "選択したオブジェクトをロック解除 (移動可能にする)。"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Unlock Selected Node(s)"
+msgstr "選択対象をロック解除"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6052,8 +6158,20 @@ msgstr "オブジェクトの子を選択不可にする。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Group Selected Node(s)"
+msgstr "選択対象をグループ化"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "オブジェクトの子を選択可能に戻す。"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Ungroup Selected Node(s)"
+msgstr "選択対象をグループ解除"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -7698,6 +7816,11 @@ msgid "Find in Files..."
 msgstr "複数ファイル内を検索..."
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Replace in Files..."
+msgstr "置換..."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "コンテキスト ヘルプ"
 
@@ -8219,6 +8342,19 @@ msgstr "選択対象にフォーカス"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr "フリールックのオン / オフ"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Decrease Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Increase Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Reset Field of View to Default"
+msgstr "デフォルトに戻す"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8942,6 +9078,29 @@ msgid "Another Theme"
 msgstr "他のテーマ"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Type"
+msgstr "タイプを追加"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Filter the list of types or create a new custom type:"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Available Node-based types:"
+msgstr "利用可能なプロファイル:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Type name is empty!"
+msgstr "ファイル名が空です。"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Are you sure you want to create an empty type?"
+msgstr "複数のプロジェクトを開いてもよろしいですか？"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Confirm Item Rename"
 msgstr "アイテム名変更の確認"
 
@@ -8966,18 +9125,6 @@ msgstr ""
 "てのこのタイプのStyleBoxで同じプロパティが更新されます。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Type"
-msgstr "タイプを追加"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "アイテムのタイプを追加"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Node Types:"
-msgstr "ノードのタイプ:"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "デフォルトの表示"
 
@@ -8993,6 +9140,10 @@ msgstr "すべて上書き"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr "すべてのデフォルトタイプのアイテムをオーバーライドする。"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "アイテムのタイプを追加"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -11488,10 +11639,6 @@ msgid "Batch Rename"
 msgstr "名前の一括変更"
 
 #: editor/rename_dialog.cpp
-msgid "Replace:"
-msgstr "置換:"
-
-#: editor/rename_dialog.cpp
 msgid "Prefix:"
 msgstr "接頭辞:"
 
@@ -11781,6 +11928,20 @@ msgstr ""
 "すでにインスタンス化されているシーンのブランチは保存できません。\n"
 "そのシーンのバリエーションを作成するには、代わりにインスタンス化されたシーン"
 "をベースに シーン > 新しい継承シーン... から継承シーンを作成してください。"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is a child of an already instantiated scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is part of an inherited scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -12745,63 +12906,70 @@ msgstr "ソリューションをビルド"
 msgid "End of inner exception stack trace"
 msgstr "内部例外スタックトレースの終了"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+"このノードを動かすために NavigationMesh リソースを設定または作成する必要があ"
+"ります。"
+
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
 msgstr "NavMeshを焼き込む"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
 msgstr "ナビゲーションメッシュの消去。"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
 msgstr "設定中..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
 msgstr "グリッドサイズ計算中..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
 msgstr "ハイトフィールド生成中..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
 msgstr "移動可能なポリゴンを記録中..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
 msgstr "ハイトフィールド圧縮中..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
 msgstr "移動可能な領域を作成中..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Partitioning..."
 msgstr "分割中..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating contours..."
 msgstr "輪郭を作成しています..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
 msgstr "ポリメッシュを作成しています..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
 msgstr "ネイティブナビゲーションメッシュに変換しています..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
 msgstr "ナビゲーションメッシュ生成設定:"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
 msgstr "ジオメトリを解析しています..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Done!"
 msgstr "完了！"
 
@@ -13828,6 +13996,16 @@ msgstr ""
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "この遮蔽用のオクルーダーポリゴンは空です。ポリゴンを描いてください。"
 
+#: scene/2d/navigation_agent_2d.cpp
+msgid "The NavigationAgent2D can be used only under a Node2D node."
+msgstr ""
+
+#: scene/2d/navigation_obstacle_2d.cpp
+msgid ""
+"The NavigationObstacle2D only serves to provide collision avoidance to a "
+"Node2D object."
+msgstr ""
+
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
@@ -14089,19 +14267,23 @@ msgstr ""
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "90度を超える角度のスポットライトは、シャドウを投影できません。"
 
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
+#: scene/3d/navigation_agent.cpp
+msgid "The NavigationAgent can be used only under a spatial node."
 msgstr ""
-"このノードを動かすために NavigationMesh リソースを設定または作成する必要があ"
-"ります。"
 
-#: scene/3d/navigation_mesh.cpp
+#: scene/3d/navigation_mesh_instance.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
 "NavigationMeshInstance は、ナビゲーションノードの子や孫である必要があります。"
 "これはナビゲーションデータのみ提供します。"
+
+#: scene/3d/navigation_obstacle.cpp
+msgid ""
+"The NavigationObstacle only serves to provide collision avoidance to a "
+"spatial object."
+msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
@@ -14577,10 +14759,6 @@ msgid ""
 msgstr ""
 "'fragment' 関数で割り当てた Varying を 'vertex' と 'light' で再び割り当てるこ"
 "とはできません。"
-
-#: servers/visual/shader_language.cpp
-msgid "Fragment-stage varying could not been accessed in custom function!"
-msgstr "カスタム関数内でFragment-stageのVaryingにアクセスできませんでした！"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

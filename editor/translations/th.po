@@ -335,6 +335,11 @@ msgid "Duplicate Key(s)"
 msgstr "สร้างคีย์ซ้ำอีกอัน"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add RESET Value(s)"
+msgstr "เพิ่ม %d เฟรม(วินาที)"
+
+#: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
 msgstr "ลบคีย์"
 
@@ -500,6 +505,11 @@ msgstr "ปรับคีย์แอนิเมชัน"
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr "ตัวเลือกนี้ไม่สามารถทำงานกับแทร็กเบซิเยร์ เนื่องจากเป็นแค่แทร็กเดี่ยว"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Add RESET Keys"
+msgstr "ปรับคีย์แอนิเมชัน"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1485,6 +1495,10 @@ msgid "Invalid name."
 msgstr "ชื่อผิดพลาด"
 
 #: editor/editor_autoload_settings.cpp
+msgid "Cannot begin with a digit."
+msgstr ""
+
+#: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
 msgstr "ตัวอักษรที่ใช้ได้:"
 
@@ -1591,7 +1605,9 @@ msgstr "อัพเดทฉาก..."
 msgid "[empty]"
 msgstr "[ว่างเปล่า]"
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "[unsaved]"
 msgstr "[ไฟล์ใหม่]"
 
@@ -1612,6 +1628,7 @@ msgstr "สร้างโฟลเดอร์"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "ชื่อ:"
@@ -2107,7 +2124,8 @@ msgid "Properties"
 msgstr "คุณสมบัติ"
 
 #: editor/editor_help.cpp
-msgid "override:"
+#, fuzzy
+msgid "overrides %s:"
 msgstr "แทนที่:"
 
 #: editor/editor_help.cpp
@@ -2247,6 +2265,20 @@ msgstr "คุณสมบัติธีม"
 msgid "Property:"
 msgstr "คุณสมบัติ:"
 
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Pin value"
+msgstr "(ค่า)"
+
+#: editor/editor_inspector.cpp
+msgid ""
+"Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pin value [Disabled because '%s' is editor-only]"
+msgstr ""
+
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
@@ -2255,6 +2287,29 @@ msgstr "ตั้ง %s"
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
 msgstr "กำหนด หลายอย่าง:"
+
+#: editor/editor_inspector.cpp
+msgid "Pinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Unpinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property"
+msgstr "คุณสมบัติ"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Paste Property"
+msgstr "คุณสมบัติ"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property Path"
+msgstr "คัดลอกตำแหน่งสคริปต์"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -3040,6 +3095,20 @@ msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr "เมื่อตัวเลือกนี้เปิดใช้งาน ตัวนำทาง mesh และโพลีกอนจะถูกมองเห็นในโปรเจกต์ที่ทำงานอยู่"
+
+#: editor/editor_node.cpp
+msgid "Force Shader Fallbacks"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, shaders will be used in their fallback form "
+"(either visible via an ubershader or hidden) during all the run time.\n"
+"This is useful for verifying the look and performance of fallbacks, which "
+"are normally displayed briefly.\n"
+"Asynchronous shader compilation must be enabled in the project settings for "
+"this option to make a difference."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -4171,6 +4240,10 @@ msgstr "ค้นหาในไฟล์"
 msgid "Find:"
 msgstr "ค้นหา:"
 
+#: editor/find_in_files.cpp editor/rename_dialog.cpp
+msgid "Replace:"
+msgstr "แทนที่:"
+
 #: editor/find_in_files.cpp
 msgid "Folder:"
 msgstr "โฟลเดอร์:"
@@ -4195,6 +4268,11 @@ msgstr "ค้นหา..."
 msgid "Replace..."
 msgstr "แทนที่..."
 
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Replace in Files"
+msgstr "แทนที่ทั้งหมด"
+
 #: editor/find_in_files.cpp
 msgid "Find: "
 msgstr "ค้นหา: "
@@ -4204,8 +4282,9 @@ msgid "Replace: "
 msgstr "แทนที่: "
 
 #: editor/find_in_files.cpp
-msgid "Replace all (no undo)"
-msgstr "แทนที่ทั้งหมด(แก้ไขไม่ได้)"
+#, fuzzy
+msgid "Replace All (NO UNDO)"
+msgstr "แทนที่ทั้งหมด"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4417,6 +4496,12 @@ msgstr "การเปลี่ยนแปลงชนิดของไฟล
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr "คำเตือน: มีเนื้อหาที่ใช้ทรัพยากรนี้อยู่ ซึ่งอาจทำให้การโหลดเกิดการหยุดขึ้น"
+
+#: editor/import_dock.cpp
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust "
+"import settings."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -5869,6 +5954,11 @@ msgstr "Alt+ลาก: ย้าย"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+ลาก: ย้าย"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "V: Set selected node's pivot position."
 msgstr "ลบโหนดหรือทรานสิชันที่เลือก"
 
@@ -5895,6 +5985,10 @@ msgstr "โหมดหมุน"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
 msgstr "โหมดปรับขนาด"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Shift: Scale proportionally."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5993,8 +6087,20 @@ msgstr "ล็อคไม่ให้ออบเจกต์ที่เลื
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock Selected Node(s)"
+msgstr "ล็อกที่เลือก"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
 msgstr "ปลดล็อคออบเจกต์ที่เลือก"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Unlock Selected Node(s)"
+msgstr "ปลดล็อคที่เลือก"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6003,8 +6109,20 @@ msgstr "โหนดลูกของออบเจกต์ไม่สาม
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Group Selected Node(s)"
+msgstr "จัดกลุ่มที่เลือก"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "คืนค่าความสามารถในการถูกเลือกกับโหนดลูกของออบเจกต์"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Ungroup Selected Node(s)"
+msgstr "เลิกจัดกลุ่มที่เลือก"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -7652,6 +7770,11 @@ msgid "Find in Files..."
 msgstr "ค้นหาในไฟล์..."
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Replace in Files..."
+msgstr "แทนที่..."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "ค้นหาคำที่เลือกในคู่มือ"
 
@@ -8200,6 +8323,19 @@ msgstr "มองวัตถุที่เลือก"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr "เปิด/ปิดมุมมองอิสระ"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Decrease Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Increase Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Reset Field of View to Default"
+msgstr "รีเซ็ตเป็นค่าเริ่มต้น"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8973,6 +9109,30 @@ msgstr "นำเข้าธีม"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
+msgid "Add Type"
+msgstr "ชนิด"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Filter the list of types or create a new custom type:"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Available Node-based types:"
+msgstr "โปรไฟล์ที่มีให้ใช้:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Type name is empty!"
+msgstr "ชื่อไฟล์ว่างเปล่า"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Are you sure you want to create an empty type?"
+msgstr "ยืนยันการเปิดโปรเจกต์มากกว่า 1 โปรเจกต์?"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Confirm Item Rename"
 msgstr "เปลี่ยนชื่อแทร็กแอนิเมชัน"
 
@@ -8998,21 +9158,6 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Add Type"
-msgstr "ชนิด"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Add Item Type"
-msgstr "เพิ่มไอเทม"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Node Types:"
-msgstr "ชนิดโหนด"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Show Default"
 msgstr "โหลดค่าเริ่มต้น"
 
@@ -9028,6 +9173,11 @@ msgstr "แทนที่"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Add Item Type"
+msgstr "เพิ่มไอเทม"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -11499,10 +11649,6 @@ msgid "Batch Rename"
 msgstr "เปลี่ยนชื่อหลายรายการ"
 
 #: editor/rename_dialog.cpp
-msgid "Replace:"
-msgstr "แทนที่:"
-
-#: editor/rename_dialog.cpp
 msgid "Prefix:"
 msgstr "คำนำหน้า:"
 
@@ -11778,6 +11924,20 @@ msgid ""
 "Can't save the branch of an already instanced scene.\n"
 "To create a variation of a scene, you can make an inherited scene based on "
 "the instanced scene using Scene > New Inherited Scene... instead."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is a child of an already instantiated scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is part of an inherited scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -12737,63 +12897,68 @@ msgstr "เติมส่วนที่เลือก"
 msgid "End of inner exception stack trace"
 msgstr "สิ้นสุดสแตคข้อผิดพลาดภายใน"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr "ต้องมี NavigationMesh เพื่อให้โหนดนี้ทำงานได้"
+
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
 msgstr "Bake NavMesh"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
 msgstr "ล้าง Mesh นำทาง"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
 msgstr "กำลังจัดการโครงร่าง..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
 msgstr "กำลังคำนวณขนาดกริด..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
 msgstr "กำลังสร้างสนามความสูง..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
 msgstr "กำลังกำหนดพื้นผิวที่เดินผ่านได้..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
 msgstr "กำลังบีบอัดสนามความสูง..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
 msgstr "บีบแคบส่วนที่เดินผ่านได้..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Partitioning..."
 msgstr "กำลังแบ่งส่วน..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating contours..."
 msgstr "กำลังสร้างคอนทัวร์..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
 msgstr "กำลังสร้าง Polymesh..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
 msgstr "กำลังแปลงกลับเป็น Mesh นำทาง..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
 msgstr "การตั้งค่าการสร้างพื้นผิวนำทาง:"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
 msgstr "วิเคราะห์พื้นผิว..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Done!"
 msgstr "เสร็จสิ้น!"
 
@@ -13786,6 +13951,16 @@ msgstr "ต้องมีรูปหลายเหลี่ยมเพื่
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "รูปหลายเหลี่ยมของตัวบังแสงนี้ว่างเปล่า กรุณาวาดโพลีกอน"
 
+#: scene/2d/navigation_agent_2d.cpp
+msgid "The NavigationAgent2D can be used only under a Node2D node."
+msgstr ""
+
+#: scene/2d/navigation_obstacle_2d.cpp
+msgid ""
+"The NavigationObstacle2D only serves to provide collision avoidance to a "
+"Node2D object."
+msgstr ""
+
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
@@ -14015,17 +14190,23 @@ msgstr ""
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "SpotLight ที่มีมุมมากกว่า 90 ไม่สามารถสร้างเงา"
 
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr "ต้องมี NavigationMesh เพื่อให้โหนดนี้ทำงานได้"
+#: scene/3d/navigation_agent.cpp
+msgid "The NavigationAgent can be used only under a spatial node."
+msgstr ""
 
-#: scene/3d/navigation_mesh.cpp
+#: scene/3d/navigation_mesh_instance.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
 "NavigationMeshInstance ต้องเป็นโหนดลูก/หลานของโหนด Navigation "
 "โดยจะให้ข้อมูลการนำทางเท่านั้น"
+
+#: scene/3d/navigation_obstacle.cpp
+msgid ""
+"The NavigationObstacle only serves to provide collision avoidance to a "
+"spatial object."
+msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
@@ -14453,10 +14634,6 @@ msgstr ""
 msgid ""
 "Varyings which assigned in 'fragment' function may not be reassigned in "
 "'vertex' or 'light'."
-msgstr ""
-
-#: servers/visual/shader_language.cpp
-msgid "Fragment-stage varying could not been accessed in custom function!"
 msgstr ""
 
 #: servers/visual/shader_language.cpp
