@@ -69,7 +69,7 @@
 # Sofiane <Sofiane-77@caramail.fr>, 2019, 2021.
 # Camille Mohr-Daurat <pouleyketchoup@gmail.com>, 2019.
 # Pierre Stempin <pierre.stempin@gmail.com>, 2019.
-# Pierre Caye <pierrecaye@laposte.net>, 2020, 2021.
+# Pierre Caye <pierrecaye@laposte.net>, 2020, 2021, 2022.
 # Kevin Bouancheau <kevin.bouancheau@gmail.com>, 2020.
 # LaurentOngaro <laurent@gameamea.com>, 2020.
 # Julien Humbert <julroy67@gmail.com>, 2020.
@@ -90,8 +90,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-10 10:33+0000\n"
-"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
+"PO-Revision-Date: 2022-01-03 03:55+0000\n"
+"Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -99,7 +99,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1607,7 +1607,7 @@ msgstr "Supprimer l'AutoLoad"
 
 #: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
-msgstr "Activer"
+msgstr "Enable"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rearrange Autoloads"

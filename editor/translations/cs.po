@@ -9,7 +9,7 @@
 # Luděk Novotný <gladosicek@gmail.com>, 2016, 2018.
 # Martin Novák <maidx@seznam.cz>, 2017, 2019.
 # zxey <r.hozak@seznam.cz>, 2018.
-# Vojtěch Šamla <auzkok@seznam.cz>, 2018, 2019, 2020, 2021.
+# Vojtěch Šamla <auzkok@seznam.cz>, 2018, 2019, 2020, 2021, 2022.
 # Peeter Angelo <contact@peeterangelo.com>, 2019.
 # VojtechBrezina <vojta.brezina@gmail.com>, 2019, 2021.
 # Garrom Orc Shaman <garromorcshaman@gmail.com>, 2019.
@@ -33,8 +33,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-15 17:40+0000\n"
-"Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
+"PO-Revision-Date: 2022-01-03 03:55+0000\n"
+"Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -42,7 +42,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2138,19 +2138,16 @@ msgid "Constants"
 msgstr "Konstanty"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Fonts"
-msgstr "Font"
+msgstr "Fonty"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Icons"
-msgstr "Ikona"
+msgstr "Ikony"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Styles"
-msgstr "Styl"
+msgstr "Styly"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -6644,14 +6641,12 @@ msgid "Remove Selected Item"
 msgstr "Odstranit vybranou položku"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Ignore Transforms)"
-msgstr "Importovat ze scény"
+msgstr "Importovat ze scény (ignorovat transformace)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import from Scene (Apply Transforms)"
-msgstr "Importovat ze scény"
+msgstr "Importovat ze scény (aplikovat transformace)"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
@@ -7224,9 +7219,8 @@ msgid "ResourcePreloader"
 msgstr "Zdroj"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Portals"
-msgstr "Převrátit horizontálně"
+msgstr "Převrátit portály"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Room Generate Points"
@@ -7237,9 +7231,8 @@ msgid "Generate Points"
 msgstr "Generovat body"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Portal"
-msgstr "Převrátit horizontálně"
+msgstr "Převrátit portál"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
@@ -8107,9 +8100,8 @@ msgstr ""
 "Nelze jej použít jako spolehlivý ukazatel výkonu ve hře."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Convert Rooms"
-msgstr "Konvertovat na %s"
+msgstr "Konvertovat místnosti"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -8339,9 +8331,8 @@ msgid "Post"
 msgstr "Po"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unnamed Gizmo"
-msgstr "Nepojmenovaný projekt"
+msgstr "Nepojmenované gizmo"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -8601,9 +8592,8 @@ msgid "{num} color(s)"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No colors found."
-msgstr "Nebyly nalezeny žádné dílčí zdroje."
+msgstr "Nebyly nalezeny žádné barvy."
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8611,9 +8601,8 @@ msgid "{num} constant(s)"
 msgstr "Konstanty"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "No constants found."
-msgstr "Konstantní barva."
+msgstr "Nebyly nalezeny žádné konstanty."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} font(s)"
@@ -8667,9 +8656,8 @@ msgid "Finalizing"
 msgstr "Analyzuji"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Filter:"
-msgstr "Filtry:"
+msgstr "Filtr:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "With Data"
@@ -8776,9 +8764,8 @@ msgid "Deselect all Theme items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Import Selected"
-msgstr "Importovat scénu"
+msgstr "Importovat vybrané"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid ""
@@ -8799,9 +8786,8 @@ msgid "Remove All Color Items"
 msgstr "Odstranit všechny položky"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Item"
-msgstr "Odstranit položku"
+msgstr "Přejmenovat položku"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8938,9 +8924,8 @@ msgid "Add Theme Item"
 msgstr "Přidat položku"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Old Name:"
-msgstr "Název uzlu:"
+msgstr "Starý název:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8948,14 +8933,12 @@ msgid "Import Items"
 msgstr "Importovat motiv"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Default Theme"
-msgstr "Výchozí"
+msgstr "Výchozí motiv"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Editor Theme"
-msgstr "Editovat téma"
+msgstr "Motiv editoru"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select Another Theme Resource:"
@@ -8977,9 +8960,8 @@ msgid "Cancel Item Rename"
 msgstr "Dávkové přejmenování"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Override Item"
-msgstr "Přepisuje"
+msgstr "Přepsat položku"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Unpin this StyleBox as a main style."
@@ -8992,9 +8974,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Type"
-msgstr "Typ"
+msgstr "Přidat typ"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9006,18 +8987,16 @@ msgid "Node Types:"
 msgstr "Typy uzlu:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Show Default"
-msgstr "Načíst výchozí"
+msgstr "Zobrazit výchozí"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show default type items alongside items that have been overridden."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Override All"
-msgstr "Přepisuje"
+msgstr "Přepsat všechny"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
@@ -9037,14 +9016,12 @@ msgid "Add, remove, organize and import Theme items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Add Preview"
-msgstr "Náhled"
+msgstr "Přidat náhled"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Default Preview"
-msgstr "Obnovit náhled"
+msgstr "Výchozí náhled"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select UI Scene:"
@@ -10772,7 +10749,6 @@ msgid "Imported Project"
 msgstr "Importovaný projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid project name."
 msgstr "Neplatný název projektu."
 
@@ -11032,9 +11008,8 @@ msgid "Project Manager"
 msgstr "Správce projektů"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Local Projects"
-msgstr "Projekty"
+msgstr "Místní projekty"
 
 #: editor/project_manager.cpp
 msgid "Loading, please wait..."
@@ -11045,14 +11020,12 @@ msgid "Last Modified"
 msgstr "Datum modifikace"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Edit Project"
-msgstr "Exportovat projekt"
+msgstr "Upravit projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Run Project"
-msgstr "Přejmenovat projekt"
+msgstr "Spustit projekt"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -11072,14 +11045,12 @@ msgid "New Project"
 msgstr "Nový projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import Project"
-msgstr "Importovaný projekt"
+msgstr "Importovat projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove Project"
-msgstr "Přejmenovat projekt"
+msgstr "Odstranit projekt"
 
 #: editor/project_manager.cpp
 msgid "Remove Missing"
@@ -11119,9 +11090,8 @@ msgstr ""
 "Přejete si prozkoumat oficiální ukázkové projekty v knihovně assetů?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Filter projects"
-msgstr "Filtrovat vlastnosti"
+msgstr "Filtrovat projekty"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -11332,9 +11302,8 @@ msgid "Override for Feature"
 msgstr "Přepsání vlastnosti"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Add %d Translations"
-msgstr "Přidat překlad"
+msgstr "Přidat %d překladů"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Translation"
@@ -12597,9 +12566,8 @@ msgid "Export Mesh GLTF2"
 msgstr "Exportovat Mesh Library"
 
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "Export GLTF..."
-msgstr "Exportovat..."
+msgstr "Exportovat GLTF..."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -13461,9 +13429,8 @@ msgid "'apksigner' returned with error #%d"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Verifying %s..."
-msgstr "Přidávám %s..."
+msgstr "Ověřuji %s..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' verification of %s failed."
@@ -13552,9 +13519,8 @@ msgid "Package not found: %s"
 msgstr "Animace nenalezena: '%s'"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Creating APK..."
-msgstr "Vytvářím kontury..."
+msgstr "Vytvářím APK..."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -13573,9 +13539,8 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Adding files..."
-msgstr "Přidávám %s..."
+msgstr "Přidávám soubory..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not export project files"
@@ -13634,9 +13599,8 @@ msgid "Could not write file:"
 msgstr "Nelze zapsat soubor:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file:"
-msgstr "Nelze zapsat soubor:"
+msgstr "Nelze přečíst soubor:"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy

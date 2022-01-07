@@ -51,7 +51,7 @@
 # Kareem Abduljaleel <karemjaleel34@gmail.com>, 2021.
 # ILG - Game <moegypt277@gmail.com>, 2021.
 # Hatim Jamal <hatimjamal8@gmail.com>, 2021.
-# HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>, 2021.
+# HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>, 2021, 2022.
 # abubakrAlsaab <madeinsudan19@gmail.com>, 2021.
 # Hafid Talbi <atalbiie@gmail.com>, 2021.
 # Hareth Mohammed <harethpy@gmail.com>, 2021.
@@ -62,8 +62,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-14 15:28+0000\n"
-"Last-Translator: Spirit <i8bou3@gmail.com>\n"
+"PO-Revision-Date: 2022-01-03 03:54+0000\n"
+"Last-Translator: HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -72,7 +72,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2142,7 +2142,7 @@ msgstr "الافتراضي:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr "الطُرق"
+msgstr "طرق"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
@@ -2155,7 +2155,7 @@ msgstr "اللون"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
-msgstr "الثوابت"
+msgstr "ثوابت"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 #, fuzzy

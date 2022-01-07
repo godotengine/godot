@@ -21,13 +21,14 @@
 # Frontrider <frontrider@tutanota.com>, 2021.
 # Andras Virag <snowflake71@gmail.com>, 2021.
 # balintmaci <balintmaci@gmail.com>, 2021.
+# Balázs Püspök-Kiss <pkblazsak@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-06 21:44+0000\n"
-"Last-Translator: balintmaci <balintmaci@gmail.com>\n"
+"PO-Revision-Date: 2021-12-23 15:30+0000\n"
+"Last-Translator: Balázs Püspök-Kiss <pkblazsak@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1764,7 +1765,7 @@ msgstr "Beépített hozzáférést ad a Csomagkönyvtárhoz."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows editing the node hierarchy in the Scene dock."
-msgstr ""
+msgstr "Engedélyezi a Node hierarchia szerkesztését a Jelenet dokkban."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
