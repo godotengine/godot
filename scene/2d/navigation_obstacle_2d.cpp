@@ -57,9 +57,9 @@ void NavigationObstacle2D::_validate_property(PropertyInfo &p_property) const {
 
 void NavigationObstacle2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			initialize_agent();
+		case NOTIFICATION_ENTER_TREE: {
 			parent_node2d = Object::cast_to<Node2D>(get_parent());
+			reevaluate_agent_radius();
 
 			// Search the navigation node and set it
 			{
@@ -104,6 +104,7 @@ NavigationObstacle2D::NavigationObstacle2D() :
 		navigation(nullptr),
 		agent(RID()) {
 	agent = Navigation2DServer::get_singleton()->agent_create();
+	initialize_agent();
 }
 
 NavigationObstacle2D::~NavigationObstacle2D() {
@@ -148,7 +149,7 @@ void NavigationObstacle2D::initialize_agent() {
 void NavigationObstacle2D::reevaluate_agent_radius() {
 	if (!estimate_agent_radius()) {
 		Navigation2DServer::get_singleton()->agent_set_radius(agent, radius);
-	} else if (parent_node2d) {
+	} else if (parent_node2d && parent_node2d->is_inside_tree()) {
 		Navigation2DServer::get_singleton()->agent_set_radius(agent, estimate_agent_radius());
 	}
 }

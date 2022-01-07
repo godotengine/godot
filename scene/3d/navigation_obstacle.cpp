@@ -57,9 +57,9 @@ void NavigationObstacle::_validate_property(PropertyInfo &p_property) const {
 
 void NavigationObstacle::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			initialize_agent();
+		case NOTIFICATION_ENTER_TREE: {
 			parent_spatial = Object::cast_to<Spatial>(get_parent());
+			reevaluate_agent_radius();
 
 			// Search the navigation node and set it
 			{
@@ -111,6 +111,7 @@ NavigationObstacle::NavigationObstacle() :
 		navigation(nullptr),
 		agent(RID()) {
 	agent = NavigationServer::get_singleton()->agent_create();
+	initialize_agent();
 }
 
 NavigationObstacle::~NavigationObstacle() {
@@ -129,7 +130,7 @@ void NavigationObstacle::set_navigation(Navigation *p_nav) {
 
 void NavigationObstacle::set_navigation_node(Node *p_nav) {
 	Navigation *nav = Object::cast_to<Navigation>(p_nav);
-	ERR_FAIL_COND(nav);
+	ERR_FAIL_NULL(nav);
 	set_navigation(nav);
 }
 
@@ -155,7 +156,7 @@ void NavigationObstacle::initialize_agent() {
 void NavigationObstacle::reevaluate_agent_radius() {
 	if (!estimate_radius) {
 		NavigationServer::get_singleton()->agent_set_radius(agent, radius);
-	} else if (parent_spatial) {
+	} else if (parent_spatial && parent_spatial->is_inside_tree()) {
 		NavigationServer::get_singleton()->agent_set_radius(agent, estimate_agent_radius());
 	}
 }
