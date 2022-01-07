@@ -4880,6 +4880,7 @@ void TextEdit::_bind_methods() {
 
 	// Overridable actions
 	ClassDB::bind_method(D_METHOD("backspace"), &TextEdit::backspace);
+	ClassDB::bind_method(D_METHOD("new_line"), &TextEdit::new_line);
 
 	ClassDB::bind_method(D_METHOD("cut"), &TextEdit::cut);
 	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);

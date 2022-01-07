@@ -620,6 +620,12 @@
 				Merge the gutters from [code]from_line[/code] into [code]to_line[/code]. Only overwritable gutters will be copied.
 			</description>
 		</method>
+		<method name="new_line">
+			<return type="void" />
+			<description>
+				Called when the user presses the new line key. Can be overridden with [method _new_line].
+			</description>
+		</method>
 		<method name="paste">
 			<return type="void" />
 			<description>
