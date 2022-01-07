@@ -347,6 +347,11 @@ msgid "Duplicate Key(s)"
 msgstr "Duplikovat klíč(e)"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add RESET Value(s)"
+msgstr "Přidat %d snímků"
+
+#: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
 msgstr "Odstranit klíč(e)"
 
@@ -513,6 +518,11 @@ msgid ""
 msgstr ""
 "Tato možnost nefunguje pro úpravy Beziérovy křivky, protože se jedná pouze o "
 "jednu stopu."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Add RESET Keys"
+msgstr "Animace: změnit měřítko klíčů"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1497,6 +1507,10 @@ msgid "Invalid name."
 msgstr "Neplatný název."
 
 #: editor/editor_autoload_settings.cpp
+msgid "Cannot begin with a digit."
+msgstr ""
+
+#: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
 msgstr "Platné znaky:"
 
@@ -1601,7 +1615,9 @@ msgstr "Aktualizuji scénu..."
 msgid "[empty]"
 msgstr "[prázdné]"
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "[unsaved]"
 msgstr "[neuloženo]"
 
@@ -1622,6 +1638,7 @@ msgstr "Vytvořit složku"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "Jméno:"
@@ -2114,7 +2131,8 @@ msgid "Properties"
 msgstr "Vlastnosti"
 
 #: editor/editor_help.cpp
-msgid "override:"
+#, fuzzy
+msgid "overrides %s:"
 msgstr "přepsat:"
 
 #: editor/editor_help.cpp
@@ -2254,6 +2272,20 @@ msgstr "Vlastnost motivu"
 msgid "Property:"
 msgstr "Vlastnost:"
 
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Pin value"
+msgstr "(hodnota)"
+
+#: editor/editor_inspector.cpp
+msgid ""
+"Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pin value [Disabled because '%s' is editor-only]"
+msgstr ""
+
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
@@ -2262,6 +2294,29 @@ msgstr "Nastav %s"
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
 msgstr "Nastavit více:"
+
+#: editor/editor_inspector.cpp
+msgid "Pinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Unpinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property"
+msgstr "Kopírovat vlastnosti"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Paste Property"
+msgstr "Vložit vlastnosti"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property Path"
+msgstr "Zkopírovat cestu ke skriptu"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -3067,6 +3122,20 @@ msgid ""
 msgstr ""
 "když je povolena tato volba, tak lze během hry vidět navigační meshe a "
 "polygony."
+
+#: editor/editor_node.cpp
+msgid "Force Shader Fallbacks"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, shaders will be used in their fallback form "
+"(either visible via an ubershader or hidden) during all the run time.\n"
+"This is useful for verifying the look and performance of fallbacks, which "
+"are normally displayed briefly.\n"
+"Asynchronous shader compilation must be enabled in the project settings for "
+"this option to make a difference."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -4186,6 +4255,10 @@ msgstr "Najít v souborech"
 msgid "Find:"
 msgstr "Najít:"
 
+#: editor/find_in_files.cpp editor/rename_dialog.cpp
+msgid "Replace:"
+msgstr "Nahradit:"
+
 #: editor/find_in_files.cpp
 msgid "Folder:"
 msgstr "Složka:"
@@ -4211,6 +4284,11 @@ msgstr "Najít..."
 msgid "Replace..."
 msgstr "Nahradit..."
 
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Replace in Files"
+msgstr "Nahradit všechny"
+
 #: editor/find_in_files.cpp
 msgid "Find: "
 msgstr "Najít: "
@@ -4220,8 +4298,9 @@ msgid "Replace: "
 msgstr "Nahradit: "
 
 #: editor/find_in_files.cpp
-msgid "Replace all (no undo)"
-msgstr "Nahradit všechny (bez možnosti vrácení)"
+#, fuzzy
+msgid "Replace All (NO UNDO)"
+msgstr "Nahradit všechny"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4439,6 +4518,12 @@ msgid ""
 msgstr ""
 "VAROVÁNÍ: Existují zdroje, který tento zdroj používají. Může se stát, že se "
 "přestanou správně načítat."
+
+#: editor/import_dock.cpp
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust "
+"import settings."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -5896,6 +5981,11 @@ msgid "Alt+Drag: Move selected node."
 msgstr "Alt+přetažení: Přesun vybraného uzlu."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+přetažení: Přesun vybraného uzlu."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "V: Set selected node's pivot position."
 msgstr "V: Nastavení polohy pivotu vybraného uzlu."
 
@@ -5923,6 +6013,10 @@ msgstr "Režim otáčení"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
 msgstr "Režim škálování"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Shift: Scale proportionally."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6021,8 +6115,20 @@ msgstr "Uzamknout vybraný objekt na místě (nemůže být přesunut)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock Selected Node(s)"
+msgstr "Uzamčít vybraný"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
 msgstr "Uvolnit vybraný objekt (může být přesunut)."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Unlock Selected Node(s)"
+msgstr "Odemčít vybraný"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6031,8 +6137,20 @@ msgstr "Zajistí, aby nebylo možné vybrat potomky objektu."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Group Selected Node(s)"
+msgstr "Seskupit vybrané"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "Obnoví, aby bylo možné vybrat potomky objektu."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Ungroup Selected Node(s)"
+msgstr "Odskupit vybrané"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -7670,6 +7788,11 @@ msgid "Find in Files..."
 msgstr "Najít v souborech..."
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Replace in Files..."
+msgstr "Nahradit..."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "Kontextová nápověda"
 
@@ -8205,6 +8328,19 @@ msgstr "Zaměřit výběr"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr "Přepnout volný pohled"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Decrease Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Increase Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Reset Field of View to Default"
+msgstr "Obnovit výchozí"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8950,6 +9086,29 @@ msgid "Another Theme"
 msgstr "Importovat motiv"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Type"
+msgstr "Přidat typ"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Filter the list of types or create a new custom type:"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Available Node-based types:"
+msgstr "Dostupné profily:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Type name is empty!"
+msgstr "Název souboru je prázdný."
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Are you sure you want to create an empty type?"
+msgstr "Jste si jisti, že chcete otevřit více než jeden projekt?"
+
+#: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
 msgid "Confirm Item Rename"
 msgstr "Animace: přejmenování stopy"
@@ -8974,19 +9133,6 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Type"
-msgstr "Přidat typ"
-
-#: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Add Item Type"
-msgstr "Přidat položku"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Node Types:"
-msgstr "Typy uzlu:"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Zobrazit výchozí"
 
@@ -9001,6 +9147,11 @@ msgstr "Přepsat všechny"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Add Item Type"
+msgstr "Přidat položku"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -11500,10 +11651,6 @@ msgid "Batch Rename"
 msgstr "Dávkové přejmenování"
 
 #: editor/rename_dialog.cpp
-msgid "Replace:"
-msgstr "Nahradit:"
-
-#: editor/rename_dialog.cpp
 msgid "Prefix:"
 msgstr "Prefix:"
 
@@ -11779,6 +11926,20 @@ msgid ""
 "Can't save the branch of an already instanced scene.\n"
 "To create a variation of a scene, you can make an inherited scene based on "
 "the instanced scene using Scene > New Inherited Scene... instead."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is a child of an already instantiated scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is part of an inherited scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -12743,63 +12904,70 @@ msgstr "Vyplnit výběr"
 msgid "End of inner exception stack trace"
 msgstr "Konec zásobníku trasování vnitřní výjimky"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+"Aby tento uzel mohl fungovat, musí mít nastaven nebo vytvořen zdroj "
+"NavigationMesh."
+
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
 msgstr "Zapéct NavMesh"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
 msgstr "Vymazat navigační model."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
 msgstr "Nastavuji konfiguraci..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
 msgstr "Počítám velikost mřížky..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
 msgstr "Vytvářím výškové pole..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
 msgstr "Vyznačuji průchozí trojúhelníky..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
 msgstr "Konstruuji kompaktní výškové pole..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
 msgstr "Eroduji průchozí oblast..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Partitioning..."
 msgstr "Rozděluji..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating contours..."
 msgstr "Vytvářím kontury..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
 msgstr "Vytvářím polymesh..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
 msgstr "Převádím na nativní navigační mřížku..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
 msgstr "Nastavení generátoru navigační sítě:"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
 msgstr "Parsuji geometrii..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Done!"
 msgstr "Hotovo!"
 
@@ -13809,6 +13977,16 @@ msgstr ""
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "Stínový polygon pro toto stínítko je prázdný. Nakreslete polygon."
 
+#: scene/2d/navigation_agent_2d.cpp
+msgid "The NavigationAgent2D can be used only under a Node2D node."
+msgstr ""
+
+#: scene/2d/navigation_obstacle_2d.cpp
+msgid ""
+"The NavigationObstacle2D only serves to provide collision avoidance to a "
+"Node2D object."
+msgstr ""
+
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
@@ -14059,19 +14237,23 @@ msgstr ""
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "SpotLight s úhlem širším než 90 stupňů nemůže vrhat stíny."
 
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
+#: scene/3d/navigation_agent.cpp
+msgid "The NavigationAgent can be used only under a spatial node."
 msgstr ""
-"Aby tento uzel mohl fungovat, musí mít nastaven nebo vytvořen zdroj "
-"NavigationMesh."
 
-#: scene/3d/navigation_mesh.cpp
+#: scene/3d/navigation_mesh_instance.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
 "NavigationMeshInstance musí být dítětem nebo vnoučetem uzlu Navigation. "
 "Poskytuje pouze data pro navigaci."
+
+#: scene/3d/navigation_obstacle.cpp
+msgid ""
+"The NavigationObstacle only serves to provide collision avoidance to a "
+"spatial object."
+msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
@@ -14516,10 +14698,6 @@ msgstr ""
 msgid ""
 "Varyings which assigned in 'fragment' function may not be reassigned in "
 "'vertex' or 'light'."
-msgstr ""
-
-#: servers/visual/shader_language.cpp
-msgid "Fragment-stage varying could not been accessed in custom function!"
 msgstr ""
 
 #: servers/visual/shader_language.cpp

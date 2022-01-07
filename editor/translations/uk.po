@@ -338,6 +338,11 @@ msgid "Duplicate Key(s)"
 msgstr "Дублювати ключі"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add RESET Value(s)"
+msgstr "Додати %d кадри"
+
+#: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
 msgstr "Вилучити ключі"
 
@@ -506,6 +511,11 @@ msgid ""
 msgstr ""
 "Цей параметр не працює для редагування кривих Безьє, оскільки це лише "
 "одинарна доріжка."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Add RESET Keys"
+msgstr "Масштабування ключів анімації"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1492,6 +1502,10 @@ msgid "Invalid name."
 msgstr "Некоректна назва."
 
 #: editor/editor_autoload_settings.cpp
+msgid "Cannot begin with a digit."
+msgstr ""
+
+#: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
 msgstr "Припустимі символи:"
 
@@ -1596,7 +1610,9 @@ msgstr "Оновлення сцени..."
 msgid "[empty]"
 msgstr "[порожньо]"
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "[unsaved]"
 msgstr "[не збережено]"
 
@@ -1617,6 +1633,7 @@ msgstr "Створити Теку"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "Ім'я:"
@@ -2120,7 +2137,8 @@ msgid "Properties"
 msgstr "Властивості"
 
 #: editor/editor_help.cpp
-msgid "override:"
+#, fuzzy
+msgid "overrides %s:"
 msgstr "перевизначення:"
 
 #: editor/editor_help.cpp
@@ -2260,6 +2278,20 @@ msgstr "Властивість теми"
 msgid "Property:"
 msgstr "Властивість:"
 
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Pin value"
+msgstr "(значення)"
+
+#: editor/editor_inspector.cpp
+msgid ""
+"Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pin value [Disabled because '%s' is editor-only]"
+msgstr ""
+
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
@@ -2268,6 +2300,29 @@ msgstr "Встановити %s"
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
 msgstr "Встановити кратність:"
+
+#: editor/editor_inspector.cpp
+msgid "Pinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Unpinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property"
+msgstr "Копіювати властивості"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Paste Property"
+msgstr "Вставити властивості"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property Path"
+msgstr "Копіювати шлях до скрипту"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -3084,6 +3139,20 @@ msgid ""
 msgstr ""
 "Якщо увімкнено цей параметр, у запущеному проєкті буде показано навігаційні "
 "сітки та полігони."
+
+#: editor/editor_node.cpp
+msgid "Force Shader Fallbacks"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, shaders will be used in their fallback form "
+"(either visible via an ubershader or hidden) during all the run time.\n"
+"This is useful for verifying the look and performance of fallbacks, which "
+"are normally displayed briefly.\n"
+"Asynchronous shader compilation must be enabled in the project settings for "
+"this option to make a difference."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -4210,6 +4279,10 @@ msgstr "Знайти у файлах"
 msgid "Find:"
 msgstr "Знайти:"
 
+#: editor/find_in_files.cpp editor/rename_dialog.cpp
+msgid "Replace:"
+msgstr "Заміна:"
+
 #: editor/find_in_files.cpp
 msgid "Folder:"
 msgstr "Тека:"
@@ -4235,6 +4308,11 @@ msgstr "Знайти..."
 msgid "Replace..."
 msgstr "Замінити..."
 
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Replace in Files"
+msgstr "Замінити всі"
+
 #: editor/find_in_files.cpp
 msgid "Find: "
 msgstr "Знайти: "
@@ -4244,8 +4322,9 @@ msgid "Replace: "
 msgstr "Замінити: "
 
 #: editor/find_in_files.cpp
-msgid "Replace all (no undo)"
-msgstr "Замінити все (без скасовування)"
+#, fuzzy
+msgid "Replace All (NO UNDO)"
+msgstr "Замінити всі"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4464,6 +4543,12 @@ msgid ""
 msgstr ""
 "УВАГА: існують об'єкти, що використовують цей ресурс та можуть припинити "
 "завантажуватися належним чином."
+
+#: editor/import_dock.cpp
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust "
+"import settings."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -5933,6 +6018,11 @@ msgid "Alt+Drag: Move selected node."
 msgstr "Alt+Перетягнути: перемістити позначений вузол."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+Перетягнути: перемістити позначений вузол."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "V: Set selected node's pivot position."
 msgstr "V: встановити позицію опорної точки позначеного вузла."
 
@@ -5961,6 +6051,10 @@ msgstr "Режим повороту"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
 msgstr "Режим масштабування"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Shift: Scale proportionally."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6059,8 +6153,20 @@ msgstr "Блокування обраного об'єкта на місці (н�
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock Selected Node(s)"
+msgstr "Заблокувати позначене"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
 msgstr "Розблокувати вибраний об'єкт (можна перемістити)."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Unlock Selected Node(s)"
+msgstr "Розблокувати позначене"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6069,8 +6175,20 @@ msgstr "Гарантує нащадки об'єкта не можуть бути
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Group Selected Node(s)"
+msgstr "Згрупувати позначені"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "Відновлює можливість вибору нащадків об'єкта."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Ungroup Selected Node(s)"
+msgstr "Розгрупувати позначені"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -7717,6 +7835,11 @@ msgid "Find in Files..."
 msgstr "Знайти у файлах…"
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Replace in Files..."
+msgstr "Замінити..."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "Контекстна довідка"
 
@@ -8239,6 +8362,19 @@ msgstr "Фокусувати позначене"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr "Перемикання огляду"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Decrease Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Increase Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Reset Field of View to Default"
+msgstr "Повернутися до типового"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8964,6 +9100,29 @@ msgid "Another Theme"
 msgstr "Інша тема"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Type"
+msgstr "Додати тип"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Filter the list of types or create a new custom type:"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Available Node-based types:"
+msgstr "Доступні профілі:"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Type name is empty!"
+msgstr "Порожня назва файла."
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Are you sure you want to create an empty type?"
+msgstr "Ви справді хочете відкрити декілька проєктів одразу?"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Confirm Item Rename"
 msgstr "Підтвердити перейменування запису"
 
@@ -8989,18 +9148,6 @@ msgstr ""
 "цього типу."
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Type"
-msgstr "Додати тип"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "Додати тип запису"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Node Types:"
-msgstr "Типи вузлів:"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "Показати типовий"
 
@@ -9016,6 +9163,10 @@ msgstr "Перевизначити усе"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr "Перевизначити усі записи стандартних типів."
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "Додати тип запису"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -11528,10 +11679,6 @@ msgid "Batch Rename"
 msgstr "Пакетне перейменування"
 
 #: editor/rename_dialog.cpp
-msgid "Replace:"
-msgstr "Заміна:"
-
-#: editor/rename_dialog.cpp
 msgid "Prefix:"
 msgstr "Префікс:"
 
@@ -11824,6 +11971,20 @@ msgstr ""
 "Щоб створити варіацію сцени, ви можете створити успадковану сцену на основі "
 "екземпляра сцени за допомогою пункту меню «Сцена > Створити успадковану "
 "сцену...»."
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is a child of an already instantiated scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is part of an inherited scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -12789,63 +12950,70 @@ msgstr "Зібрати рішення"
 msgid "End of inner exception stack trace"
 msgstr "Кінець трасування стека для внутрішнього виключення"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+"Для роботи цього вузла слід встановити або створити ресурс «Навігаційна "
+"сітка»."
+
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
 msgstr "Запекти NavMesh"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
 msgstr "Очистити навігаційну сітку."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
 msgstr "Налаштування конфігурації..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
 msgstr "Розрахунок розміру сітки..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
 msgstr "Створення карти висот..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
 msgstr "Позначення прохідних трикутників..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
 msgstr "Створення компактної карти висот..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
 msgstr "Розмиття прохідної ділянки..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Partitioning..."
 msgstr "Розбиття..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating contours..."
 msgstr "Створення контурів..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
 msgstr "Створення сітки..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
 msgstr "Перетворення на власну навігаційну сітку..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
 msgstr "Налаштування генератора навігаційної сітки:"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
 msgstr "Аналіз геометрії..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Done!"
 msgstr "Зроблено!"
 
@@ -13891,6 +14059,16 @@ msgstr ""
 "Для цього затуляння багатокутник є порожнім. Будь ласка, намалюйте "
 "багатокутник."
 
+#: scene/2d/navigation_agent_2d.cpp
+msgid "The NavigationAgent2D can be used only under a Node2D node."
+msgstr ""
+
+#: scene/2d/navigation_obstacle_2d.cpp
+msgid ""
+"The NavigationObstacle2D only serves to provide collision avoidance to a "
+"Node2D object."
+msgstr ""
+
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
@@ -14152,19 +14330,23 @@ msgstr ""
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "SpotLight з кутом, який є більшим за 90 градусів, не може давати тіні."
 
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
+#: scene/3d/navigation_agent.cpp
+msgid "The NavigationAgent can be used only under a spatial node."
 msgstr ""
-"Для роботи цього вузла слід встановити або створити ресурс «Навігаційна "
-"сітка»."
 
-#: scene/3d/navigation_mesh.cpp
+#: scene/3d/navigation_mesh_instance.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
 "NavigationMeshInstance має бути дочірнім елементом вузла Navigation або "
 "елементом ще нижчої підпорядкованості. Він надає лише навігаційні дані."
+
+#: scene/3d/navigation_obstacle.cpp
+msgid ""
+"The NavigationObstacle only serves to provide collision avoidance to a "
+"spatial object."
+msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
@@ -14653,12 +14835,6 @@ msgid ""
 msgstr ""
 "Змінним, яким надано значення у функції «fragment», не можна повторно "
 "надавати значення у «vertex» або «light»."
-
-#: servers/visual/shader_language.cpp
-msgid "Fragment-stage varying could not been accessed in custom function!"
-msgstr ""
-"Доступ до змінного значення на кроці фрагментації у нетиповій функції "
-"неможливий!"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
