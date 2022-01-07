@@ -13,13 +13,14 @@
 # zooid <the.zooid@gmail.com>, 2020.
 # Любомир Василев <lyubomirv@gmx.com>, 2020, 2021.
 # Ziv D <wizdavid@gmail.com>, 2020.
+# Violin Iliev <violin.developer@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-10-11 15:44+0000\n"
-"Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
+"PO-Revision-Date: 2021-12-31 08:52+0000\n"
+"Last-Translator: Violin Iliev <violin.developer@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -27,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1135,7 +1136,7 @@ msgstr "Благодарности от общността на Godot!"
 
 #: editor/editor_about.cpp editor/editor_node.cpp editor/project_manager.cpp
 msgid "Click to copy."
-msgstr ""
+msgstr "Натисни за да копираш."
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"

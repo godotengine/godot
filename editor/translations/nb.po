@@ -25,8 +25,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-03 13:15+0000\n"
-"Last-Translator: Daniel Skogly <daniel@klungo.no>\n"
+"PO-Revision-Date: 2021-12-26 17:18+0000\n"
+"Last-Translator: Petter Reinholdtsen <pere-weblate@hungry.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -34,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -882,7 +882,7 @@ msgstr "Engangs"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "Kobler fra signalet etter dets første utsending."
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -3075,7 +3075,7 @@ msgstr "Sett opp versjonskontroll"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "Steng ned versjonskontroll"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3663,7 +3663,7 @@ msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
-msgstr ""
+msgstr "Velg visningsvindu"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
@@ -4155,6 +4155,11 @@ msgid ""
 "\n"
 "Do you wish to overwrite them?"
 msgstr ""
+"Disse filene eller mappene er i konflikt med oppføringene i målstedet «%s»:\n"
+"\n"
+"%s\n"
+"\n"
+"Ønsker du å overskrive dem?"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -8288,9 +8293,8 @@ msgid "Yaw:"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Size:"
-msgstr "Størrelse: "
+msgstr "Størrelse:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn:"
@@ -9054,9 +9058,8 @@ msgid "Importing items {n}/{n}"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Updating the editor"
-msgstr "Avslutt redigeringsverktøyet?"
+msgstr "Oppdaterer redigeringsverktøyet"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -11400,14 +11403,12 @@ msgid "Are you sure to run %d projects at once?"
 msgstr "Er du sikker på at du vil kjøre mer enn ett prosjekt?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove %d projects from the list?"
-msgstr "Velg enhet fra listen"
+msgstr "Fjern %d prosjekter fra listen?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove this project from the list?"
-msgstr "Velg enhet fra listen"
+msgstr "Fjern dette prosjektet fra listen?"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -13977,9 +13978,8 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project\n"
-msgstr "Kunne ikke endre project.godot i projsektstien."
+msgstr "Klarte ikke eksportere prosjektfiler til gradle-prosjekt\n"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -14462,6 +14462,8 @@ msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
 msgstr ""
+"Flate former virker ikke så bra og vil bli fjernet i fremtidige versjoner. "
+"Veldig fint om de ikke brukes."
 
 #: scene/3d/collision_shape.cpp
 msgid ""

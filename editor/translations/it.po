@@ -59,17 +59,18 @@
 # Alessandro Mandelli <mandelli.alessandro@ngi.it>, 2021.
 # Jusef Azzolina <rosarioazzolina33@gmail.com>, 2021.
 # Daniele Basso <tiziodcaio@gmail.com>, 2021.
-# Riteo Siuga <riteo@posteo.net>, 2021.
+# Riteo Siuga <riteo@posteo.net>, 2021, 2022.
 # Luigi <luibass92@live.it>, 2021.
 # Micky <micheledevita2@gmail.com>, 2021.
 # Fabio Plos <altre0cose@gmail.com>, 2021.
 # Theraloss <danilo.polani@gmail.com>, 2021.
+# Pietro Grungo <pietro.grungo@libero.it>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-19 08:43+0000\n"
+"PO-Revision-Date: 2022-01-06 01:53+0000\n"
 "Last-Translator: Riteo Siuga <riteo@posteo.net>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -78,7 +79,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -682,7 +683,7 @@ msgstr "Crea traccia/e di rispristino"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Ottimizzatore anim."
+msgstr "Ottimizzatore animazioni"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -1386,7 +1387,6 @@ msgid "Toggle Audio Bus Mute"
 msgstr "Commuta l'ammutolimento di un bus audio"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Toggle Audio Bus Bypass Effects"
 msgstr "Commuta il bypass degli effetti del bus audio"
 
@@ -1849,10 +1849,8 @@ msgstr ""
 "annullato."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Profile must be a valid filename and must not contain '.'"
-msgstr ""
-"Il profilo deve essere un nome di file valido e non può contenere \".\""
+msgstr "Il profilo deve avere un nome valido e non può contenere \".\""
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile with this name already exists."
@@ -1884,7 +1882,7 @@ msgstr "Proprietà delle classi:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Main Features:"
-msgstr "Funzionalità Principali"
+msgstr "Funzionalità Principali:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Nodes and Classes:"
@@ -1945,7 +1943,7 @@ msgstr "Configura il profilo selezionato:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Extra Options:"
-msgstr "Opzioni Addizionali"
+msgstr "Opzioni aggiuntive:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Create or import a profile to edit available classes and properties."
@@ -2186,9 +2184,8 @@ msgid "Theme Properties"
 msgstr "Proprietà del tema"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Colors"
-msgstr "Colore"
+msgstr "Colori"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
@@ -2203,9 +2200,8 @@ msgid "Icons"
 msgstr "Icone"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Styles"
-msgstr "Stile"
+msgstr "Stili"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -2643,7 +2639,7 @@ msgstr "Salvare le modifiche a \"%s\" prima di chiudere?"
 
 #: editor/editor_node.cpp
 msgid "%s no longer exists! Please specify a new save location."
-msgstr "%s non esiste più! Specificare una nuova posizione di salvataggio"
+msgstr "%s non esiste più! Specificare una nuova posizione di salvataggio."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2659,7 +2655,7 @@ msgid ""
 "Scene tree dock."
 msgstr ""
 "È necessario un nodo principale per salvare la scena. Puoi aggiungerne uno "
-"nel pannello di scena"
+"nel pannello di scena."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -2691,7 +2687,7 @@ msgstr "Scena attuale non salvata. Aprire comunque?"
 
 #: editor/editor_node.cpp
 msgid "Can't undo while mouse buttons are pressed."
-msgstr "Impossible annullare quando i bottoni del mouse sono premuti"
+msgstr "Impossibile tornare indietro mentre i tasti del mouse sono premuti."
 
 #: editor/editor_node.cpp
 msgid "Nothing to undo."
@@ -3261,7 +3257,6 @@ msgid "Support Godot Development"
 msgstr "Supporta lo sviluppo di Godot"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Play the project."
 msgstr "Esegui il progetto."
 
@@ -3311,7 +3306,6 @@ msgid "Update Continuously"
 msgstr "Aggiorna continuamente"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update When Changed"
 msgstr "Aggiorna quando modificata"
 
@@ -3340,10 +3334,9 @@ msgid "Don't Save"
 msgstr "Non salvare"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Android build template is missing, please install relevant templates."
 msgstr ""
-"Modello di costruzione di Android mancante, si prega di installare i modelli "
+"Il modello di costruzione di Android manca, si prega di installare i modelli "
 "rilevanti."
 
 #: editor/editor_node.cpp
@@ -3398,7 +3391,6 @@ msgid "Template Package"
 msgstr "Pacchetto di modelli"
 
 #: editor/editor_node.cpp modules/gltf/editor_scene_exporter_gltf_plugin.cpp
-#, fuzzy
 msgid "Export Library"
 msgstr "Esporta Libreria"
 
@@ -3481,9 +3473,8 @@ msgid "No sub-resources found."
 msgstr "Nessuna sottorisorsa trovata."
 
 #: editor/editor_path.cpp
-#, fuzzy
 msgid "Open a list of sub-resources."
-msgstr "Apre una lista di sottorisorse."
+msgstr "Apri una lista di sottorisorse."
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -3532,9 +3523,8 @@ msgid "Frame Time (ms)"
 msgstr "Durata di un fotogramma (ms)"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Average Time (ms)"
-msgstr "Tempo medio (sec)"
+msgstr "Tempo medio (ms)"
 
 #: editor/editor_profiler.cpp
 #, fuzzy
@@ -3635,7 +3625,6 @@ msgid "Pick a Viewport"
 msgstr "Selezionare una vista"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Selected node is not a Viewport!"
 msgstr "Il nodo selezionato non è un Viewport!"
 
@@ -3673,7 +3662,6 @@ msgstr ""
 "questa proprietà (%s)."
 
 #: editor/editor_resource_picker.cpp
-#, fuzzy
 msgid "Quick Load"
 msgstr "Caricamento rapido"
 
@@ -3696,7 +3684,6 @@ msgid "Paste"
 msgstr "Incolla"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Convert to %s"
 msgstr "Converti in %s"
 
@@ -3724,9 +3711,8 @@ msgstr ""
 "esistente come eseguibile."
 
 #: editor/editor_run_script.cpp
-#, fuzzy
 msgid "Write your logic in the _run() method."
-msgstr "Inserire la logica dello script nel metodo _run()."
+msgstr "Inserisci la logica dello script nel metodo _run()."
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
@@ -3749,10 +3735,9 @@ msgid "Did you forget the '_run' method?"
 msgstr "Hai dimenticato il metodo \"_run\"?"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hold %s to round to integers. Hold Shift for more precise changes."
 msgstr ""
-"Tenere premuto %s per arrotondare ai numeri interi. Tenere premuto Shift per "
+"Tieni premuto %s per arrotondare ai numeri interi. Tieni premuto Shift per "
 "modifiche più precise."
 
 #: editor/editor_sub_scene.cpp
@@ -3780,14 +3765,12 @@ msgid "Uninstall these templates."
 msgstr "Disinstalla questi modelli."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "There are no mirrors available."
-msgstr "File \"%s\" assente."
+msgstr "Non ci sono mirror disponibili."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Retrieving the mirror list..."
-msgstr "Recupero dei mirror, attendi..."
+msgstr "Recupero dei mirror..."
 
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
@@ -3798,23 +3781,20 @@ msgid "Error requesting URL:"
 msgstr "Errore nella richiesta URL:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connecting to the mirror..."
-msgstr "Connessione al mirror in corso..."
+msgstr "Connessione al mirror..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't resolve the requested address."
 msgstr "Impossibile risolvere l'hostname."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't connect to the mirror."
-msgstr "Impossibile connettersi all'host."
+msgstr "Impossibile connettersi al mirror."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "No response from the mirror."
-msgstr "Nessuna risposta dall'host:"
+msgstr "Nessuna risposta dal mirror."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3984,9 +3964,8 @@ msgid "Uninstall templates for the current version."
 msgstr "Disinstalla template dalla versione attuale."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download from:"
-msgstr "Errore durante il download"
+msgstr "Scarica da:"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -4885,9 +4864,8 @@ msgid "Blend:"
 msgstr "Blend:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed:"
-msgstr "Parametro Modificato"
+msgstr "Parametro modificato:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -6650,9 +6628,8 @@ msgid "No mesh to debug."
 msgstr "Nessuna mesh da debuggare."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh has no UV in layer %d."
-msgstr "Il modello non ha UV su questo layer"
+msgstr "Il modello non ha UV sul layer %d."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "MeshInstance lacks a Mesh!"
@@ -7408,14 +7385,12 @@ msgid "Flip Portals"
 msgstr "Ribalta orizzontalmente"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Room Generate Points"
-msgstr "Conteggio Punti Generati:"
+msgstr "Genera punti nella stanza"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
-#, fuzzy
 msgid "Generate Points"
-msgstr "Conteggio Punti Generati:"
+msgstr "Genera punti"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 #, fuzzy
@@ -8115,9 +8090,8 @@ msgid "Surface Changes:"
 msgstr "Cambiamenti delle superfici:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Draw Calls:"
-msgstr "Draw Calls"
+msgstr "Draw Calls:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Vertices:"
@@ -8841,9 +8815,8 @@ msgid "Importing items {n}/{n}"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Updating the editor"
-msgstr "Uscire dall'editor?"
+msgstr "Aggiornamento dell'editor"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -8859,14 +8832,12 @@ msgid "With Data"
 msgstr "Con i Dati"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select by data type:"
-msgstr "Scegli un Nodo"
+msgstr "Seleziona dati in base al tipo:"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible color items."
-msgstr "Prima seleziona un oggetto di impostazione!"
+msgstr "Seleziona tutti gli oggetti colorati visibili."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible color items and their data."
@@ -8877,9 +8848,8 @@ msgid "Deselect all visible color items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible constant items."
-msgstr "Prima seleziona un oggetto di impostazione!"
+msgstr "Seleziona tutti gli oggetti visibili."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible constant items and their data."
@@ -8890,9 +8860,8 @@ msgid "Deselect all visible constant items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible font items."
-msgstr "Prima seleziona un oggetto di impostazione!"
+msgstr "Seleziona tutti i font visibili."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible font items and their data."
@@ -8903,19 +8872,16 @@ msgid "Deselect all visible font items."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible icon items."
-msgstr "Prima seleziona un oggetto di impostazione!"
+msgstr "Seleziona tutte le icone visibili."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all visible icon items and their data."
-msgstr "Prima seleziona un oggetto di impostazione!"
+msgstr "Seleziona tutte le icone visibili ed i loro dati."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Deselect all visible icon items."
-msgstr "Prima seleziona un oggetto di impostazione!"
+msgstr "Deseleziona tutte le icone visibili."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select all visible stylebox items."
@@ -8938,19 +8904,16 @@ msgstr ""
 "peso della tua risorsa Tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Collapse types."
-msgstr "Comprimi Tutto"
+msgstr "Comprimi tipologie."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Expand types."
-msgstr "Espandi Tutto"
+msgstr "Espandi tipologie."
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select all Theme items."
-msgstr "Seleziona file template"
+msgstr "Seleziona tutti gli oggetti del tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select With Data"
@@ -9146,9 +9109,8 @@ msgid "Editor Theme"
 msgstr "Modifica Tema"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Select Another Theme Resource:"
-msgstr "Elimina risorsa"
+msgstr "Seleziona un'altra risorsa del tema:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9190,9 +9152,8 @@ msgid "Add Item Type"
 msgstr "Aggiungi Elemento"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Node Types:"
-msgstr "Tipo di nodo"
+msgstr "Tipo di nodo:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -9280,9 +9241,8 @@ msgid "Checked Radio Item"
 msgstr "Elemento Radio Controllato"
 
 #: editor/plugins/theme_editor_preview.cpp
-#, fuzzy
 msgid "Named Separator"
-msgstr "Chiamato Sep."
+msgstr "Chiamato Separatore"
 
 #: editor/plugins/theme_editor_preview.cpp
 msgid "Submenu"
@@ -11583,7 +11543,7 @@ msgstr "Impostazioni Progetto (project.godot)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr "Informazioni Generali"
+msgstr "Generale"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."

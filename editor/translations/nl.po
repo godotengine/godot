@@ -52,13 +52,14 @@
 # Edgar <Edgar@anotherfoxguy.com>, 2021.
 # Daan van Luijk <daanvl@outlook.be>, 2021.
 # Dani Verschoor <daniverschoor@outlook.com>, 2021.
+# naan <xlightfox@hotmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-11-20 22:07+0000\n"
-"Last-Translator: Dani Verschoor <daniverschoor@outlook.com>\n"
+"PO-Revision-Date: 2021-12-31 08:52+0000\n"
+"Last-Translator: naan <xlightfox@hotmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -66,7 +67,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9.1\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -992,7 +993,7 @@ msgstr "Bewerken..."
 
 #: editor/connections_dialog.cpp
 msgid "Go to Method"
-msgstr "Ga naar methode"
+msgstr "Ga naar Methode"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -1710,7 +1711,7 @@ msgid ""
 "'Import Pvrtc' in Project Settings."
 msgstr ""
 "Doelplatform vereist 'PVRTC' textuurcompressie voor GLES2. Schakel 'Import "
-"Etc' in bij de Projectinstellingen."
+"Pvrtc' in bij de Projectinstellingen."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -6186,6 +6187,7 @@ msgid "Show Group And Lock Icons"
 msgstr "Toon Groep en Slot Iconen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Center Selection"
 msgstr "Centreer Selectie"
 

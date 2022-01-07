@@ -3,19 +3,20 @@
 # Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # suresh p <suresh9247@gmail.com>, 2019, 2020.
+# Jagadeesh Vijay Varma <jagadeeshvarma.b@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2020-09-15 07:17+0000\n"
-"Last-Translator: suresh p <suresh9247@gmail.com>\n"
+"PO-Revision-Date: 2021-12-26 17:18+0000\n"
+"Last-Translator: Jagadeesh Vijay Varma <jagadeeshvarma.b@gmail.com>\n"
 "Language-Team: Telugu <https://hosted.weblate.org/projects/godot-engine/"
 "godot/te/>\n"
 "Language: te\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -39,9 +40,8 @@ msgid "Invalid input %i (not passed) in expression"
 msgstr "వ్యక్తీకరణలో చెల్లని ఇన్పుట్ %i (ఆమోదించబడలేదు)"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "self can't be used because instance is null (not passed)"
-msgstr "తనకు తానుగా(self) ఉపయోగించుకోలేదు ఎందుకంటే instance ఒక శూన్యం (ఆమోదించబడలేదు )"
+msgstr "స్వయం ఉపయోగించబడదు ఎందుకంటే ఉదాహరణ శూన్యం (ఉత్తీర్ణత లేదు)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -899,7 +899,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr ""
+msgstr "సంకేతాలు"
 
 #: editor/connections_dialog.cpp
 msgid "Filter signals"
@@ -1797,7 +1797,7 @@ msgstr ""
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Import"
-msgstr ""
+msgstr "దిగుమతి"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -2039,7 +2039,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr ""
+msgstr "పద్ధతులు"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
@@ -2051,7 +2051,7 @@ msgstr ""
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
-msgstr ""
+msgstr "స్థిరాంకాలు"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Fonts"
@@ -2067,7 +2067,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr ""
+msgstr "గణనలు"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -2221,7 +2221,7 @@ msgstr ""
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
-msgstr ""
+msgstr "నోడ్"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
@@ -6064,7 +6064,7 @@ msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 1"
-msgstr ""
+msgstr "ఫ్లాట్ 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"

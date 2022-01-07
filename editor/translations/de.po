@@ -74,13 +74,14 @@
 # Dominik Moos <dominik.moos@protonmail.com>, 2021.
 # Zae Chao <zaevi@live.com>, 2021.
 # Tim <tim14speckenwirth@gmail.com>, 2021.
+# Antonio Noack <corperateraider@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2021-12-11 06:25+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2022-01-03 03:55+0000\n"
+"Last-Translator: Antonio Noack <corperateraider@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -88,7 +89,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2217,7 +2218,7 @@ msgstr "Stile"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Aufzählungen"
+msgstr "Aufzählungstypen"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"

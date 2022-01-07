@@ -3,12 +3,12 @@
 # Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# Napstaguy04 <brokenscreen3@gmail.com>, 2021.
+# Napstaguy04 <brokenscreen3@gmail.com>, 2021, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-09 23:13+0000\n"
+"PO-Revision-Date: 2022-01-07 11:42+0000\n"
 "Last-Translator: Napstaguy04 <brokenscreen3@gmail.com>\n"
 "Language-Team: Tagalog <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tl/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
 "|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -38,7 +38,7 @@ msgstr "Kulang na bytes para sa decoding bytes, o di-wastong format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Di-wastong input %i (di naipasa) sa expression"
+msgstr "Di-wastong input %i (di naipasa) sa ekspresyon"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -2216,7 +2216,7 @@ msgstr "Itakda ang %s"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr ""
+msgstr "Magtakda ng Marami:"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2608,15 +2608,17 @@ msgstr "Buksan ang Talaan ng mga Proyekto?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
-msgstr ""
+msgstr "I-save at Umalis"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr ""
+msgstr "I-save ang (mga sumusunod na) binagong eksena bago umalis?"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
+"I-save ang (mga sumusunod na) binagong eksena bago buksan ang Tagapangasiwa "
+"ng Proyekto?"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2726,7 +2728,7 @@ msgstr "Karaniwan"
 #: editor/editor_node.cpp editor/editor_resource_picker.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 msgid "Show in FileSystem"
-msgstr ""
+msgstr "Ipakita sa FileSystem"
 
 #: editor/editor_node.cpp
 msgid "Play This Scene"
@@ -2885,7 +2887,7 @@ msgstr "Magluwas..."
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
-msgstr ""
+msgstr "Ikabit ang Android Build Template..."
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
@@ -2990,7 +2992,7 @@ msgstr "Editor"
 
 #: editor/editor_node.cpp
 msgid "Editor Settings..."
-msgstr ""
+msgstr "Kaayusan ng Editor..."
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
@@ -3003,6 +3005,7 @@ msgstr "Kumuha ng Screenshot"
 #: editor/editor_node.cpp
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr ""
+"Nakaimpok lahat ng mga screenshot sa Folder ng Data/Kaayusan ng Editor."
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
@@ -3030,7 +3033,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Manage Export Templates..."
-msgstr ""
+msgstr "Pangasiwaan ang mga Export Template..."
 
 #: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
@@ -3066,7 +3069,7 @@ msgstr "Tungkol sa Godot"
 
 #: editor/editor_node.cpp
 msgid "Support Godot Development"
-msgstr "Suportahan ang Development ng Godot"
+msgstr "Suportahan ang Paglalago ng Godot"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -3127,11 +3130,11 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
-msgstr ""
+msgstr "FileSystem"
 
 #: editor/editor_node.cpp
 msgid "Inspector"
-msgstr "Taga-siyasat"
+msgstr "Tagasuri"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
@@ -3943,7 +3946,7 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by Last Modified"
-msgstr ""
+msgstr "Ayusin ayon sa Huling Binago"
 
 #: editor/filesystem_dock.cpp
 msgid "Sort by First Modified"
@@ -6884,11 +6887,11 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
-msgstr ""
+msgstr "Linisin ang UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Settings"
-msgstr ""
+msgstr "Kaayusan ng Grid"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Snap"
@@ -6940,7 +6943,7 @@ msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Rename Resource"
-msgstr ""
+msgstr "Baguhin ang Pangalan ng Resource"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -6958,19 +6961,19 @@ msgstr ""
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Instance:"
-msgstr ""
+msgstr "Instance:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Type:"
-msgstr ""
+msgstr "Uri:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
-msgstr ""
+msgstr "Buksan sa Editor"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
@@ -7030,15 +7033,15 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving file!"
-msgstr ""
+msgstr "Nabigong maimpok ang file!"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme."
-msgstr ""
+msgstr "Nabigong maimpok ang tema."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error Saving"
-msgstr ""
+msgstr "Nabigo ang Pagiimpok"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error importing theme."
@@ -7079,7 +7082,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr ""
+msgstr "Iangkat ang Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -7117,11 +7120,11 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter methods"
-msgstr ""
+msgstr "Salain ang mga method"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
-msgstr ""
+msgstr "Pagkakaayos"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
@@ -7178,31 +7181,31 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme"
-msgstr ""
+msgstr "Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme..."
-msgstr ""
+msgstr "Magangkat ng Tema..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
-msgstr ""
+msgstr "Sariwain ang Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
-msgstr ""
+msgstr "Iimpok ang Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close All"
-msgstr ""
+msgstr "Isara lahat"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
-msgstr ""
+msgstr "Isara ang Dokumentasyon"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
-msgstr ""
+msgstr "Patakbuhin"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -7210,7 +7213,7 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
-msgstr ""
+msgstr "Maghanap"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
@@ -7240,7 +7243,7 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
-msgstr ""
+msgstr "Dokumentasyong Online"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation."
@@ -7290,7 +7293,7 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Target"
-msgstr ""
+msgstr "Pinagtututukan"
 
 #: editor/plugins/script_text_editor.cpp
 msgid ""
@@ -7324,7 +7327,7 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
-msgstr ""
+msgstr "Pumili ng Kulay"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Convert Case"
@@ -7531,19 +7534,19 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top Orthogonal"
-msgstr ""
+msgstr "Taas Ortogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top Perspective"
-msgstr ""
+msgstr "Perspektibong Taas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom Orthogonal"
-msgstr ""
+msgstr "Babang Ortogonal"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom Perspective"
-msgstr ""
+msgstr "Perspektibong Baba"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left Orthogonal"
@@ -7580,12 +7583,12 @@ msgstr ""
 #. TRANSLATORS: This will be appended to the view name when Auto Orthogonal is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [auto]"
-msgstr ""
+msgstr " [kusa]"
 
 #. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
-msgstr ""
+msgstr " [mga aktibong portal]"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Aborted."
@@ -7953,39 +7956,39 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
-msgstr ""
+msgstr "1 Tinginan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports"
-msgstr ""
+msgstr "2 Tinginan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports (Alt)"
-msgstr ""
+msgstr "2 Tinginan (Alt)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports"
-msgstr ""
+msgstr "3 Tinginan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports (Alt)"
-msgstr ""
+msgstr "3 Tinginan (Alt)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "4 Viewports"
-msgstr ""
+msgstr "4 na Tinginan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
-msgstr ""
+msgstr "Mga Gizmo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
-msgstr ""
+msgstr "Tingnan ang Pinagmulan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Grid"
-msgstr ""
+msgstr "Tignan ang Grid"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Portal Culling"
@@ -7998,7 +8001,7 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings..."
-msgstr ""
+msgstr "Kaayusan..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -8042,11 +8045,11 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate (deg.):"
-msgstr ""
+msgstr "Ikot (deg.):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale (ratio):"
-msgstr ""
+msgstr "Laki (rasyo):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Type"
@@ -8098,7 +8101,7 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
-msgstr ""
+msgstr "Walang laman ang Sprite!"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Can't convert a sprite using animation frames to mesh."
@@ -8118,11 +8121,11 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Convert to Polygon2D"
-msgstr ""
+msgstr "Ipalit sa Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create collision polygon."
-msgstr ""
+msgstr "Di-wastong geometry, hindi makagawa ng collision polygon."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D Sibling"
@@ -8138,7 +8141,7 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
-msgstr ""
+msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -8146,19 +8149,19 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Shrink (Pixels): "
-msgstr ""
+msgstr "Palitiin (Pa-pixel): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Grow (Pixels): "
-msgstr ""
+msgstr "Palakihin (pa-Pixel): "
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Update Preview"
-msgstr ""
+msgstr "Sariwain ang Preview"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Settings:"
-msgstr ""
+msgstr "Kaayusan:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "No Frames Selected"
@@ -8190,7 +8193,7 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
-msgstr ""
+msgstr "Magdagdag ng Puwang"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
@@ -8198,7 +8201,7 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "(empty)"
-msgstr ""
+msgstr "(puwang)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move Frame"
@@ -8214,11 +8217,11 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
-msgstr ""
+msgstr "Bilis:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
-msgstr ""
+msgstr "Ipaulit-ulit"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames:"
@@ -8282,23 +8285,23 @@ msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
-msgstr ""
+msgstr "Paraan ng Paguurong:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
-msgstr ""
+msgstr "Paguurong na Pa-pixel"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
-msgstr ""
+msgstr "Paguurong na Pa-grid"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
-msgstr ""
+msgstr "Kusang Paghahati"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Offset:"
-msgstr ""
+msgstr "Usog:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Step:"
@@ -8322,7 +8325,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "No colors found."
-msgstr ""
+msgstr "Walang kulay na nahanap."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "{num} constant(s)"
@@ -8374,11 +8377,11 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Updating the editor"
-msgstr ""
+msgstr "Sinasariwa ang editor"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Finalizing"
-msgstr ""
+msgstr "Tinatapos ang pagsasariwa"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Filter:"
@@ -8507,7 +8510,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Color Items"
-msgstr ""
+msgstr "Alisin Lahat ng Color Items"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Rename Item"
@@ -8545,7 +8548,7 @@ msgstr "Magdagdag ng Constant Item"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Font Item"
-msgstr ""
+msgstr "Magdagdag ng Font Item"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Icon Item"
@@ -8593,7 +8596,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Types:"
-msgstr ""
+msgstr "Mga Uri:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Type:"
@@ -8679,11 +8682,11 @@ msgstr "Magdagdag ng Uri"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Item Type"
-msgstr ""
+msgstr "Magdagdag ng Bagong Uri ng Item"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Node Types:"
-msgstr ""
+msgstr "Uri ng mga Node:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
@@ -8703,7 +8706,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
-msgstr ""
+msgstr "Tema:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Manage Items..."
@@ -10574,7 +10577,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
-msgstr ""
+msgstr "Huling Binago"
 
 #: editor/project_manager.cpp
 msgid "Edit Project"
@@ -11413,7 +11416,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
-msgstr ""
+msgstr "Mababagong mga Anak"
 
 #: editor/scene_tree_dock.cpp
 msgid "Load As Placeholder"
@@ -11539,7 +11542,7 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Open Script:"
-msgstr ""
+msgstr "Buksan ang Skrip:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -11552,6 +11555,8 @@ msgid ""
 "Children are not selectable.\n"
 "Click to make selectable."
 msgstr ""
+"Hindi maaring piliin ang mga anak na ito.\n"
+"Pindutin upang gawing pilian."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visibility"
@@ -12021,15 +12026,15 @@ msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
-msgstr ""
+msgstr "Sangunianan"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
-msgstr ""
+msgstr "Mga Sanggunianan: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr ""
+msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -12141,15 +12146,15 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit X Axis"
-msgstr ""
+msgstr "Ayusin ang X Axis"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit Y Axis"
-msgstr ""
+msgstr "Ayusin ang Y Axis"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit Z Axis"
-msgstr ""
+msgstr "Ayusin ang Z Axis"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Rotate X"
@@ -12181,7 +12186,7 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Paste Selects"
-msgstr ""
+msgstr "I-pasta Lahat ng Pinili"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -12193,7 +12198,7 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Settings"
-msgstr ""
+msgstr "Kaayusan ng GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
@@ -12289,7 +12294,7 @@ msgstr ""
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
-msgstr ""
+msgstr "Gumagawa ng polymesh..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
@@ -12301,11 +12306,11 @@ msgstr ""
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
-msgstr ""
+msgstr "Sinisiyasat ang Geometry..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Done!"
-msgstr ""
+msgstr "Tapos na!"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -12427,7 +12432,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
-msgstr ""
+msgstr "Magdagdag ng Variable"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
@@ -12483,7 +12488,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s)"
-msgstr ""
+msgstr "Magdagdag ng (mga) Node"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
@@ -12505,7 +12510,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Base Type"
-msgstr ""
+msgstr "Ibahin ang Punong-Uri"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Move Node(s)"
@@ -12549,7 +12554,7 @@ msgstr "Hindi makopya ang punsyon ng node."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste VisualScript Nodes"
-msgstr ""
+msgstr "I-pasta ang mga node ng VisualScript"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function with a function node."
@@ -12569,15 +12574,15 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Create Function"
-msgstr ""
+msgstr "Gumawa ng Punsyon"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
-msgstr ""
+msgstr "Alisin ang Punsyon"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Variable"
-msgstr ""
+msgstr "Alisin ang Variable"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Variable:"
@@ -12609,7 +12614,7 @@ msgstr "Magdagdag ng mga Node..."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Function..."
-msgstr ""
+msgstr "Magdagdag ng punsyon..."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "function_name"
@@ -12673,7 +12678,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr ""
+msgstr "Di-wastong index ng pangalan ng katangian na '%s' sa node %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -12711,7 +12716,7 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "Nawawala ang pangalan ng pakete."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package segments must be of non-zero length."
@@ -12829,7 +12834,7 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Invalid package name:"
-msgstr ""
+msgstr "Di-wastong pangalan para sa pakete:"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -12892,7 +12897,7 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
-msgstr ""
+msgstr "nagbalik ng may pagkakabigong #%d ang 'apksigner'"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Verifying %s..."
@@ -12904,11 +12909,13 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid "Exporting for Android"
-msgstr ""
+msgstr "Niluluwas para sa Android"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
+"Di-wastong pangalan ng file! Kinikailangan ng Android App Bundle ang *.aab "
+"extension."
 
 #: platform/android/export/export_plugin.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
@@ -13587,6 +13594,8 @@ msgstr ""
 #: scene/3d/room_manager.cpp
 msgid "Misnamed nodes detected, check output log for details. Aborting."
 msgstr ""
+"May nasagap na mga nodes na mali ang pagpapangalan, tignan ang output log "
+"para sa karagdagang mga detalye. Tinitigil."
 
 #: scene/3d/room_manager.cpp
 msgid "Portal link room not found, check output log for details."
@@ -13656,7 +13665,7 @@ msgstr ""
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Animation not found: '%s'"
-msgstr ""
+msgstr "Di-mahanap ang animation: '%s'"
 
 #: scene/animation/animation_player.cpp
 msgid "Anim Apply Reset"
@@ -13668,7 +13677,7 @@ msgstr ""
 
 #: scene/animation/animation_tree.cpp
 msgid "Invalid animation: '%s'."
-msgstr ""
+msgstr "Di-tugmang animasyon: '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "Nothing connected to input '%s' of node '%s'."
@@ -13700,6 +13709,9 @@ msgid ""
 "LMB: Set color\n"
 "RMB: Remove preset"
 msgstr ""
+"Kulay: #%s\n"
+"LMB: Magtakda ng kulay\n"
+"RMB: Magalis ng preset"
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the editor window."
@@ -13807,6 +13819,8 @@ msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
 msgstr ""
+"Dapat mas malaki o magkatumbas ng 2 pixel ang Tinginan bago maka-render ng "
+"alinman."
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
