@@ -20,7 +20,7 @@
 		<member name="fill_to" type="Vector2" setter="set_fill_to" getter="get_fill_to" default="Vector2( 1, 0 )">
 			The final offset used to fill the texture specified in UV coordinates.
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="7" />
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" overrides="Texture" default="7" />
 		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
 			The [Gradient] used to fill the texture.
 		</member>
