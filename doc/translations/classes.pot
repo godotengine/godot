@@ -54,6 +54,70 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr ""
 
+#: doc/tools/make_rst.py
+msgid "Theme Property Descriptions"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "Inherits:"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "Inherited By:"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "(overrides %s)"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "Default"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "Setter"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "value"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "Getter"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid ""
+"This method should typically be overridden by the user to have any effect."
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid ""
+"This method has no side effects. It doesn't modify any of the instance's "
+"member variables."
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid ""
+"This method accepts any number of arguments after the ones described here."
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "This method is used to construct a type."
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid ""
+"This method doesn't need an instance to be called, so it can be called "
+"directly using the class name."
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid ""
+"This method describes a valid operator to use with this type as left-hand "
+"operand."
+msgstr ""
+
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid "Built-in GDScript functions."
 msgstr ""
@@ -463,16 +527,24 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
-"Returns a normalized value considering the given range. This is the opposite "
-"of [method lerp].\n"
+"Returns an interpolation or extrapolation factor considering the range "
+"specified in [code]from[/code] and [code]to[/code], and the interpolated "
+"value specified in [code]weight[/code]. The returned value will be between "
+"[code]0.0[/code] and [code]1.0[/code] if [code]weight[/code] is between "
+"[code]from[/code] and [code]to[/code] (inclusive). If [code]weight[/code] is "
+"located outside this range, then an extrapolation factor will be returned "
+"(return value lower than [code]0.0[/code] or greater than [code]1.0[/"
+"code]).\n"
 "[codeblock]\n"
+"# The interpolation ratio in the `lerp()` call below is 0.75.\n"
 "var middle = lerp(20, 30, 0.75)\n"
 "# `middle` is now 27.5.\n"
 "# Now, we pretend to have forgotten the original ratio and want to get it "
 "back.\n"
 "var ratio = inverse_lerp(20, 30, 27.5)\n"
 "# `ratio` is now 0.75.\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"See also [method lerp] which performs the reverse of this operation."
 msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -522,8 +594,11 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
-"Linearly interpolates between two values by a normalized value. This is the "
-"opposite of [method inverse_lerp].\n"
+"Linearly interpolates between two values by the factor defined in "
+"[code]weight[/code]. To perform interpolation, [code]weight[/code] should be "
+"between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values "
+"outside this range are allowed and can be used to perform [i]extrapolation[/"
+"i].\n"
 "If the [code]from[/code] and [code]to[/code] arguments are of type [int] or "
 "[float], the return value is a [float].\n"
 "If both are of the same vector type ([Vector2], [Vector3] or [Color]), the "
@@ -532,7 +607,10 @@ msgid ""
 "[codeblock]\n"
 "lerp(0, 4, 0.75) # Returns 3.0\n"
 "lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Returns Vector2(2, 3.5)\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"See also [method inverse_lerp] which performs the reverse of this operation. "
+"To perform eased interpolation with [method lerp], combine it with [method "
+"ease] or [method smoothstep]."
 msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -540,7 +618,8 @@ msgid ""
 "Linearly interpolates between two angles (in radians) by a normalized "
 "value.\n"
 "Similar to [method lerp], but interpolates correctly when the angles wrap "
-"around [constant @GDScript.TAU].\n"
+"around [constant @GDScript.TAU]. To perform eased interpolation with [method "
+"lerp_angle], combine it with [method ease] or [method smoothstep].\n"
 "[codeblock]\n"
 "extends Sprite\n"
 "var elapsed = 0.0\n"
@@ -1372,7 +1451,15 @@ msgid "The [Marshalls] singleton."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "The [EditorNavigationMeshGenerator] singleton."
+msgid "The [Navigation2DServer] singleton."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid "The [NavigationMeshGenerator] singleton."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid "The [NavigationServer] singleton."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
@@ -2882,31 +2969,108 @@ msgid ""
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI note OFF message."
+msgid ""
+"MIDI note OFF message. See the documentation of [InputEventMIDI] for "
+"information of how to use MIDI inputs."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI note ON message."
+msgid ""
+"MIDI note ON message. See the documentation of [InputEventMIDI] for "
+"information of how to use MIDI inputs."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI aftertouch message."
+msgid ""
+"MIDI aftertouch message. This message is most often sent by pressing down on "
+"the key after it \"bottoms out\"."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI control change message."
+msgid ""
+"MIDI control change message. This message is sent when a controller value "
+"changes. Controllers include devices such as pedals and levers."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI program change message."
+msgid ""
+"MIDI program change message. This message sent when the program patch number "
+"changes."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI channel pressure message."
+msgid ""
+"MIDI channel pressure message. This message is most often sent by pressing "
+"down on the key after it \"bottoms out\". This message is different from "
+"polyphonic after-touch as it indicates the highest pressure across all keys."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI pitch bend message."
+msgid ""
+"MIDI pitch bend message. This message is sent to indicate a change in the "
+"pitch bender (wheel or lever, typically)."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI system exclusive message. This has behavior exclusive to the device "
+"you're receiving input from. Getting this data is not implemented in Godot."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI quarter frame message. Contains timing information that is used to "
+"synchronize MIDI devices. Getting this data is not implemented in Godot."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI song position pointer message. Gives the number of 16th notes since the "
+"start of the song. Getting this data is not implemented in Godot."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI song select message. Specifies which sequence or song is to be played. "
+"Getting this data is not implemented in Godot."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI tune request message. Upon receiving a tune request, all analog "
+"synthesizers should tune their oscillators."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI timing clock message. Sent 24 times per quarter note when "
+"synchronization is required."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI start message. Start the current sequence playing. This message will be "
+"followed with Timing Clocks."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid "MIDI continue message. Continue at the point the sequence was stopped."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid "MIDI stop message. Stop the current sequence."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI active sensing message. This message is intended to be sent repeatedly "
+"to tell the receiver that a connection is alive."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI system reset message. Reset all receivers in the system to power-up "
+"status. It should not be sent on power-up itself."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
@@ -6957,7 +7121,10 @@ msgid ""
 "seed will be used each time if you want non-reproducible shuffling."
 msgstr ""
 
-#: doc/classes/Array.xml
+#: doc/classes/Array.xml doc/classes/PoolByteArray.xml
+#: doc/classes/PoolColorArray.xml doc/classes/PoolIntArray.xml
+#: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
+#: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
 msgid "Returns the number of elements in the array."
 msgstr ""
 
@@ -11832,7 +11999,7 @@ msgstr ""
 msgid ""
 "A camera feed gives you access to a single physical camera attached to your "
 "device. When enabled, Godot will start capturing frames from the camera "
-"which can then be used.\n"
+"which can then be used. See also [CameraServer].\n"
 "[b]Note:[/b] Many cameras will return YCbCr images which are split into two "
 "textures and need to be combined in a shader. Godot does this automatically "
 "for you if you set the environment to show the camera image in the "
@@ -11897,11 +12064,13 @@ msgstr ""
 msgid ""
 "The [CameraServer] keeps track of different cameras accessible in Godot. "
 "These are external cameras such as webcams or the cameras on your phone.\n"
-"It is notably used to provide AR modules with a video feed from the camera."
+"It is notably used to provide AR modules with a video feed from the camera.\n"
+"[b]Note:[/b] This class is currently only implemented on macOS and iOS. On "
+"other platforms, no [CameraFeed]s will be available."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
-msgid "Adds a camera feed to the camera server."
+msgid "Adds the camera [code]feed[/code] to the camera server."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
@@ -11909,7 +12078,9 @@ msgid "Returns an array of [CameraFeed]s."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
-msgid "Returns the [CameraFeed] with this id."
+msgid ""
+"Returns the [CameraFeed] corresponding to the camera with the given "
+"[code]index[/code]."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
@@ -11917,15 +12088,15 @@ msgid "Returns the number of [CameraFeed]s registered."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
-msgid "Removes a [CameraFeed]."
+msgid "Removes the specified camera [code]feed[/code]."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
-msgid "Emitted when a [CameraFeed] is added (e.g. webcam is plugged in)."
+msgid "Emitted when a [CameraFeed] is added (e.g. a webcam is plugged in)."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
-msgid "Emitted when a [CameraFeed] is removed (e.g. webcam is unplugged)."
+msgid "Emitted when a [CameraFeed] is removed (e.g. a webcam is unplugged)."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
@@ -11933,7 +12104,7 @@ msgid "The RGBA camera image."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
-msgid "The YCbCr camera image."
+msgid "The [url=https://en.wikipedia.org/wiki/YCbCr]YCbCr[/url] camera image."
 msgstr ""
 
 #: doc/classes/CameraServer.xml
@@ -12019,8 +12190,9 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Draws an arc between the given angles. The larger the value of "
-"[code]point_count[/code], the smoother the curve."
+"Draws a unfilled arc between the given angles. The larger the value of "
+"[code]point_count[/code], the smoother the curve. See also [method "
+"draw_circle]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12030,17 +12202,23 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
-msgid "Draws a colored circle."
+msgid ""
+"Draws a colored, unfilled circle. See also [method draw_arc], [method "
+"draw_polyline] and [method draw_polygon]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
-msgid "Draws a colored polygon of any amount of points, convex or concave."
+msgid ""
+"Draws a colored polygon of any amount of points, convex or concave. Unlike "
+"[method draw_polygon], a single color must be specified for the whole "
+"polygon."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
 "Draws a line from a 2D point to another, with a given color and width. It "
-"can be optionally antialiased."
+"can be optionally antialiased. See also [method draw_multiline] and [method "
+"draw_polyline]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12051,16 +12229,22 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Draws multiple, parallel lines with a uniform [code]color[/code].\n"
+"Draws multiple disconnected lines with a uniform [code]color[/code]. When "
+"drawing large amounts of lines, this is faster than using individual [method "
+"draw_line] calls. To draw interconnected lines, use [method draw_polyline] "
+"instead.\n"
 "[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently "
 "not implemented and have no effect."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Draws multiple, parallel lines with a uniform [code]width[/code] and segment-"
-"by-segment coloring. Colors assigned to line segments match by index between "
-"[code]points[/code] and [code]colors[/code].\n"
+"Draws multiple disconnected lines with a uniform [code]width[/code] and "
+"segment-by-segment coloring. Colors assigned to line segments match by index "
+"between [code]points[/code] and [code]colors[/code]. When drawing large "
+"amounts of lines, this is faster than using individual [method draw_line] "
+"calls. To draw interconnected lines, use [method draw_polyline_colors] "
+"instead.\n"
 "[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently "
 "not implemented and have no effect."
 msgstr ""
@@ -12072,27 +12256,39 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
-msgid "Draws a polygon of any amount of points, convex or concave."
+msgid ""
+"Draws a solid polygon of any amount of points, convex or concave. Unlike "
+"[method draw_colored_polygon], each point's color can be changed "
+"individually. See also [method draw_polyline] and [method "
+"draw_polyline_colors]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
 "Draws interconnected line segments with a uniform [code]color[/code] and "
-"[code]width[/code] and optional antialiasing."
+"[code]width[/code] and optional antialiasing. When drawing large amounts of "
+"lines, this is faster than using individual [method draw_line] calls. To "
+"draw disconnected lines, use [method draw_multiline] instead. See also "
+"[method draw_polygon]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Draws interconnected line segments with a uniform [code]width[/code], "
+"Draws interconnected line segments with a uniform [code]width[/code] and "
 "segment-by-segment coloring, and optional antialiasing. Colors assigned to "
 "line segments match by index between [code]points[/code] and [code]colors[/"
-"code]."
+"code]. When drawing large amounts of lines, this is faster than using "
+"individual [method draw_line] calls. To draw disconnected lines, use [method "
+"draw_multiline_colors] instead. See also [method draw_polygon]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
 "Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points "
-"for a triangle and 4 points for a quad."
+"for a triangle, and 4 points for a quad. If 0 points or more than 4 points "
+"are specified, nothing will be drawn and an error message will be printed. "
+"See also [method draw_line], [method draw_polyline], [method draw_polygon], "
+"and [method draw_rect]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12212,7 +12408,9 @@ msgid "Returns the [World2D] where this item is in."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
-msgid "Hide the [CanvasItem] if it's currently visible."
+msgid ""
+"Hide the [CanvasItem] if it's currently visible. This is equivalent to "
+"setting [member visible] to [code]false[/code]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12271,7 +12469,8 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Show the [CanvasItem] if it's currently hidden. For controls that inherit "
+"Show the [CanvasItem] if it's currently hidden. This is equivalent to "
+"setting [member visible] to [code]true[/code]. For controls that inherit "
 "[Popup], the correct way to make them visible is to call one of the multiple "
 "[code]popup*()[/code] functions instead."
 msgstr ""
@@ -12625,8 +12824,8 @@ msgstr ""
 
 #: doc/classes/CharFXTransform.xml
 msgid ""
-"The index of the current character (starting from 0). Setting this property "
-"won't affect drawing."
+"The index of the current character (starting from 0) for the "
+"[RichTextLabel]'s BBCode text. Setting this property won't affect drawing."
 msgstr ""
 
 #: doc/classes/CharFXTransform.xml
@@ -12671,6 +12870,12 @@ msgstr ""
 
 #: doc/classes/CharFXTransform.xml
 msgid "The position offset the character will be drawn with (in pixels)."
+msgstr ""
+
+#: doc/classes/CharFXTransform.xml
+msgid ""
+"The index of the current character (starting from 0) for this "
+"[RichTextEffect] custom block. Setting this property won't affect drawing."
 msgstr ""
 
 #: doc/classes/CharFXTransform.xml
@@ -13174,6 +13379,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
+#: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
 msgid "Returns the object's [RID]."
 msgstr ""
 
@@ -13596,9 +13802,9 @@ msgstr ""
 #: doc/classes/Color.xml
 msgid ""
 "A color represented by red, green, blue, and alpha (RGBA) components. The "
-"alpha component is often used for transparency. Values are in floating-point "
-"and usually range from 0 to 1. Some properties (such as CanvasItem.modulate) "
-"may accept values greater than 1 (overbright or HDR colors).\n"
+"alpha component is often used for opacity. Values are in floating-point and "
+"usually range from 0 to 1. Some properties (such as CanvasItem.modulate) may "
+"accept values greater than 1 (overbright or HDR colors).\n"
 "You can also create a color from standardized color names by using [method "
 "@GDScript.ColorN] or directly using the color constants defined here. The "
 "standardized color set is based on the [url=https://en.wikipedia.org/wiki/"
@@ -13838,7 +14044,9 @@ msgstr ""
 
 #: doc/classes/Color.xml
 msgid ""
-"The color's alpha (transparency) component, typically on the range of 0 to 1."
+"The color's alpha component, typically on the range of 0 to 1. A value of 0 "
+"means that the color is fully transparent. A value of 1 means that the color "
+"is fully opaque."
 msgstr ""
 
 #: doc/classes/Color.xml
@@ -14506,7 +14714,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/ColorPicker.xml
-msgid "If [code]true[/code], shows an alpha channel slider (transparency)."
+msgid "If [code]true[/code], shows an alpha channel slider (opacity)."
 msgstr ""
 
 #: doc/classes/ColorPicker.xml
@@ -16520,7 +16728,9 @@ msgstr ""
 #: doc/classes/ConvexPolygonShape2D.xml
 msgid ""
 "The polygon's list of vertices. Can be in either clockwise or "
-"counterclockwise order."
+"counterclockwise order. Only set this property with convex hull points, use "
+"[method set_point_cloud] to generate a convex hull shape from concave shape "
+"points."
 msgstr ""
 
 #: doc/classes/CPUParticles.xml
@@ -17834,7 +18044,7 @@ msgid ""
 msgstr ""
 
 #: modules/mono/doc_classes/CSharpScript.xml
-msgid "$DOCS_URL/getting_started/scripting/c_sharp/index.html"
+msgid "$DOCS_URL/tutorials/scripting/c_sharp/index.html"
 msgstr ""
 
 #: modules/mono/doc_classes/CSharpScript.xml
@@ -19344,6 +19554,13 @@ msgid "The font hinting mode used by FreeType. See [enum Hinting] for options."
 msgstr ""
 
 #: doc/classes/DynamicFontData.xml
+msgid ""
+"If set to a value greater than [code]0.0[/code], it will override default "
+"font oversampling, ignoring [member SceneTree.use_font_oversampling] value "
+"and viewport stretch mode."
+msgstr ""
+
+#: doc/classes/DynamicFontData.xml
 msgid "Disables font hinting (smoother but less crisp)."
 msgstr ""
 
@@ -19361,11 +19578,13 @@ msgstr ""
 
 #: doc/classes/EditorExportPlugin.xml
 msgid ""
-"Editor export plugins are automatically activated whenever the user exports "
+"[EditorExportPlugin]s are automatically invoked whenever the user exports "
 "the project. Their most common use is to determine what files are being "
 "included in the exported project. For each plugin, [method _export_begin] is "
 "called at the beginning of the export process and then [method _export_file] "
-"is called for each exported file."
+"is called for each exported file.\n"
+"To use [EditorExportPlugin], register it using the [method EditorPlugin."
+"add_export_plugin] method first."
 msgstr ""
 
 #: doc/classes/EditorExportPlugin.xml
@@ -19445,8 +19664,19 @@ msgstr ""
 
 #: doc/classes/EditorExportPlugin.xml
 msgid ""
-"Adds a shared object with the given [code]tags[/code] and destination "
-"[code]path[/code]."
+"Adds file or directory matching [code]path[/code] to [code]PlugIns[/code] "
+"directory of macOS app bundle.\n"
+"[b]Note:[/b] This is useful only for macOS exports."
+msgstr ""
+
+#: doc/classes/EditorExportPlugin.xml
+msgid ""
+"Adds a shared object or a directory containing only shared objects with the "
+"given [code]tags[/code] and destination [code]path[/code].\n"
+"[b]Note:[/b] In case of macOS exports, those shared objects will be added to "
+"[code]Frameworks[/code] directory of app bundle.\n"
+"In case of a directory code-sign will error if you place non code object in "
+"directory."
 msgstr ""
 
 #: doc/classes/EditorExportPlugin.xml
@@ -19889,10 +20119,9 @@ msgstr ""
 
 #: doc/classes/EditorImportPlugin.xml
 msgid ""
-"EditorImportPlugins provide a way to extend the editor's resource import "
+"[EditorImportPlugin]s provide a way to extend the editor's resource import "
 "functionality. Use them to import resources from custom files or to provide "
-"alternatives to the editor's existing importers. Register your "
-"[EditorPlugin] with [method EditorPlugin.add_import_plugin].\n"
+"alternatives to the editor's existing importers.\n"
 "EditorImportPlugins work by associating with specific file extensions and a "
 "resource type. See [method get_recognized_extensions] and [method "
 "get_resource_type]. They may optionally specify some import presets that "
@@ -19941,7 +20170,9 @@ msgid ""
 "\n"
 "    var filename = save_path + \".\" + get_save_extension()\n"
 "    return ResourceSaver.save(filename, mesh)\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"To use [EditorImportPlugin], register it using the [method EditorPlugin."
+"add_import_plugin] method first."
 msgstr ""
 
 #: doc/classes/EditorImportPlugin.xml doc/classes/ResourceImporter.xml
@@ -20108,8 +20339,8 @@ msgstr ""
 
 #: doc/classes/EditorInspectorPlugin.xml
 msgid ""
-"These plugins allow adding custom property editors to [EditorInspector].\n"
-"Plugins are registered via [method EditorPlugin.add_inspector_plugin].\n"
+"[EditorInspectorPlugin] allows adding custom property editors to "
+"[EditorInspector].\n"
 "When an object is edited, the [method can_handle] function is called and "
 "must return [code]true[/code] if the object type is supported.\n"
 "If supported, the function [method parse_begin] will be called, allowing to "
@@ -20118,7 +20349,9 @@ msgid ""
 "called for every category and property. They offer the ability to add custom "
 "controls to the inspector too.\n"
 "Finally, [method parse_end] will be called.\n"
-"On each of these calls, the \"add\" functions can be called."
+"On each of these calls, the \"add\" functions can be called.\n"
+"To use [EditorInspectorPlugin], register it using the [method EditorPlugin."
+"add_inspector_plugin] method first."
 msgstr ""
 
 #: doc/classes/EditorInspectorPlugin.xml
@@ -21188,6 +21421,14 @@ msgstr ""
 msgid "Imports scenes from third-parties' 3D files."
 msgstr ""
 
+#: doc/classes/EditorSceneImporter.xml
+msgid ""
+"[EditorSceneImporter] allows to define an importer script for a third-party "
+"3D format.\n"
+"To use [EditorSceneImporter], register it using the [method EditorPlugin."
+"add_scene_import_plugin] method first."
+msgstr ""
+
 #: modules/fbx/doc_classes/EditorSceneImporterFBX.xml
 msgid "FBX 3D asset importer."
 msgstr ""
@@ -21661,10 +21902,12 @@ msgstr ""
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
 msgid ""
-"EditorSpatialGizmoPlugin allows you to define a new type of Gizmo. There are "
-"two main ways to do so: extending [EditorSpatialGizmoPlugin] for the simpler "
-"gizmos, or creating a new [EditorSpatialGizmo] type. See the tutorial in the "
-"documentation for more info."
+"[EditorSpatialGizmoPlugin] allows you to define a new type of Gizmo. There "
+"are two main ways to do so: extending [EditorSpatialGizmoPlugin] for the "
+"simpler gizmos, or creating a new [EditorSpatialGizmo] type. See the "
+"tutorial in the documentation for more info.\n"
+"To use [EditorSpatialGizmoPlugin], register it using the [method "
+"EditorPlugin.add_spatial_gizmo_plugin] method first."
 msgstr ""
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
@@ -22141,7 +22384,7 @@ msgid ""
 "[member ProjectSettings.application/run/disable_stderr] project setting.\n"
 "[b]Warning:[/b] If you set this to [code]false[/code] anywhere in the "
 "project, important error messages may be hidden even if they are emitted "
-"from other scripts. If this is set to [code]false[/code] in a [code]@tool[/"
+"from other scripts. If this is set to [code]false[/code] in a [code]tool[/"
 "code] script, this will also impact the editor itself. Do [i]not[/i] report "
 "bugs before ensuring error messages are enabled (as they are by default).\n"
 "[b]Note:[/b] This property does not impact the editor's Errors tab when "
@@ -23704,11 +23947,11 @@ msgid ""
 msgstr ""
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
-msgid "$DOCS_URL/tutorials/plugins/gdnative/gdnative-c-example.html"
+msgid "$DOCS_URL/tutorials/scripting/gdnative/gdnative-c-example.html"
 msgstr ""
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
-msgid "$DOCS_URL/tutorials/plugins/gdnative/gdnative-cpp-example.html"
+msgid "$DOCS_URL/tutorials/scripting/gdnative/gdnative-cpp-example.html"
 msgstr ""
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
@@ -23781,7 +24024,7 @@ msgid ""
 msgstr ""
 
 #: modules/gdscript/doc_classes/GDScript.xml
-msgid "$DOCS_URL/getting_started/scripting/gdscript/index.html"
+msgid "$DOCS_URL/tutorials/scripting/gdscript/index.html"
 msgstr ""
 
 #: modules/gdscript/doc_classes/GDScript.xml
@@ -25893,6 +26136,12 @@ msgstr ""
 
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid ""
+"Overrides the default friction and bounce physics properties for the whole "
+"[GridMap]."
+msgstr ""
+
+#: modules/gridmap/doc_classes/GridMap.xml
+msgid ""
 "Controls whether this GridMap will be baked in a [BakedLightmap] or not."
 msgstr ""
 
@@ -26121,7 +26370,7 @@ msgid ""
 "    var err = ctx.start(HashingContext.HASH_SHA256, key)\n"
 "    assert(err == OK)\n"
 "    var msg1 = \"this is \".to_utf8()\n"
-"    var msg2 = \"vewy vewy secret\".to_utf8()\n"
+"    var msg2 = \"super duper secret\".to_utf8()\n"
 "    err = ctx.update(msg1)\n"
 "    assert(err == OK)\n"
 "    err = ctx.update(msg2)\n"
@@ -26144,7 +26393,7 @@ msgid ""
 "        Error err = ctx.Start(HashingContext.HASH_SHA256, key);\n"
 "        GD.Assert(err == OK);\n"
 "        PoolByteArray msg1 = String(\"this is \").to_utf8();\n"
-"        PoolByteArray msg2 = String(\"vewy vew secret\").to_utf8();\n"
+"        PoolByteArray msg2 = String(\"super duper secret\").to_utf8();\n"
 "        err = ctx.Update(msg1);\n"
 "        GD.Assert(err == OK);\n"
 "        err = ctx.Update(msg2);\n"
@@ -28418,7 +28667,11 @@ msgid ""
 "pressed, instead of every frame while it's pressed.\n"
 "If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
 "for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events."
+"for [InputEventJoypadMotion] events.\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_action_just_pressed] may "
+"return [code]false[/code] even if one of the action's keys is pressed. See "
+"[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -28439,7 +28692,11 @@ msgid ""
 "button assigned to this action is still pressed.\n"
 "If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
 "for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events."
+"for [InputEventJoypadMotion] events.\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
+"[code]false[/code] even if one of the action's keys is pressed. See [url="
+"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -28458,8 +28715,17 @@ msgstr ""
 
 #: doc/classes/Input.xml
 msgid ""
-"Returns [code]true[/code] if you are pressing the key. You can pass a [enum "
-"KeyList] constant."
+"Returns [code]true[/code] if you are pressing the key in the current "
+"keyboard layout. You can pass a [enum KeyList] constant.\n"
+"[method is_key_pressed] is only recommended over [method "
+"is_physical_key_pressed] in non-game applications. This ensures that "
+"shortcut keys behave as expected depending on the user's keyboard layout, as "
+"keyboard shortcuts are generally dependent on the keyboard layout in non-"
+"game applications. If in doubt, use [method is_physical_key_pressed].\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_key_pressed] may return "
+"[code]false[/code] even if one of the action's keys is pressed. See [url="
+"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -28472,7 +28738,16 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if you are pressing the key in the physical "
 "location on the 101/102-key US QWERTY keyboard. You can pass a [enum "
-"KeyList] constant."
+"KeyList] constant.\n"
+"[method is_physical_key_pressed] is recommended over [method is_key_pressed] "
+"for in-game actions, as it will make W/A/S/D layouts work regardless of the "
+"user's keyboard layout. [method is_physical_key_pressed] will also ensure "
+"that the top row number keys work on any keyboard layout. If in doubt, use "
+"[method is_physical_key_pressed].\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_physical_key_pressed] may "
+"return [code]false[/code] even if one of the action's keys is pressed. See "
+"[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -28788,7 +29063,11 @@ msgid ""
 "or [InputEventScreenDrag].\n"
 "If [code]exact_match[/code] is [code]false[/code], it ignores the input "
 "modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"direction for [InputEventJoypadMotion] events.\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
+"[code]false[/code] even if one of the action's keys is pressed. See [url="
+"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
 
 #: doc/classes/InputEvent.xml
@@ -28816,7 +29095,11 @@ msgstr ""
 #: doc/classes/InputEvent.xml
 msgid ""
 "Returns [code]true[/code] if this input event is pressed. Not relevant for "
-"events of type [InputEventMouseMotion] or [InputEventScreenDrag]."
+"events of type [InputEventMouseMotion] or [InputEventScreenDrag].\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
+"[code]false[/code] even if one of the action's keys is pressed. See [url="
+"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
 
 #: doc/classes/InputEvent.xml
@@ -29008,6 +29291,103 @@ msgid ""
 "input mode is active. See [method OS.set_ime_active] for more information."
 msgstr ""
 
+#: doc/classes/InputEventMIDI.xml
+msgid "Input event for MIDI inputs."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"InputEventMIDI allows receiving input events from MIDI devices such as a "
+"piano. MIDI stands for Musical Instrument Digital Interface.\n"
+"MIDI signals can be sent over a 5-pin MIDI connector or over USB, if your "
+"device supports both be sure to check the settings in the device to see "
+"which output it's using.\n"
+"To receive input events from MIDI devices, you need to call [method OS."
+"open_midi_inputs]. You can check which devices are detected using [method OS."
+"get_connected_midi_inputs].\n"
+"Note that Godot does not currently support MIDI output, so there is no way "
+"to emit MIDI signals from Godot. Only MIDI input works."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-"
+"status-bytes"
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid "https://en.wikipedia.org/wiki/General_MIDI#Program_change_events"
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid "https://en.wikipedia.org/wiki/Piano_key_frequencies#List"
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"The MIDI channel of this input event. There are 16 channels, so this value "
+"ranges from 0 to 15. MIDI channel 9 is reserved for the use with percussion "
+"instruments, the rest of the channels are for non-percussion instruments."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"If the message is [code]MIDI_MESSAGE_CONTROL_CHANGE[/code], this indicates "
+"the controller number, otherwise this is zero. Controllers include devices "
+"such as pedals and levers."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"If the message is [code]MIDI_MESSAGE_CONTROL_CHANGE[/code], this indicates "
+"the controller value, otherwise this is zero. Controllers include devices "
+"such as pedals and levers."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"The instrument of this input event. This value ranges from 0 to 127. Refer "
+"to the instrument list on the General MIDI wikipedia article to see a list "
+"of instruments, except that this value is 0-index, so subtract one from "
+"every number on that chart. A standard piano will have an instrument number "
+"of 0."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"Returns a value indicating the type of message for this MIDI signal. This is "
+"a member of the MidiMessageList enum.\n"
+"For MIDI messages between 0x80 and 0xEF, only the left half of the bits are "
+"returned as this value, as the other part is the channel (ex: 0x94 becomes "
+"0x9). For MIDI messages from 0xF0 to 0xFF, the value is returned as-is.\n"
+"Notes will return [code]MIDI_MESSAGE_NOTE_ON[/code] when activated, but they "
+"might not always return [code]MIDI_MESSAGE_NOTE_OFF[/code] when deactivated, "
+"therefore your code should treat the input as stopped if some period of time "
+"has passed.\n"
+"For more information, see the MIDI message status byte list chart linked "
+"above."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"The pitch index number of this MIDI signal. This value ranges from 0 to 127. "
+"On a piano, middle C is 60, and A440 is 69, see the \"MIDI note\" column of "
+"the piano key frequency chart on Wikipedia for more information."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"The pressure of the MIDI signal. This value ranges from 0 to 127. For many "
+"devices, this value is always zero."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"The velocity of the MIDI signal. This value ranges from 0 to 127. For a "
+"piano, this corresponds to how quickly the key was pressed, and is rarely "
+"above about 110 in practice."
+msgstr ""
+
 #: doc/classes/InputEventMouse.xml
 msgid "Base input event type for mouse events."
 msgstr ""
@@ -29024,15 +29404,17 @@ msgstr ""
 
 #: doc/classes/InputEventMouse.xml
 msgid ""
-"The global mouse position relative to the current [Viewport] when used in "
-"[method Control._gui_input], otherwise is at 0,0."
+"The global mouse position relative to the current [Viewport]. If used in "
+"[method Control._gui_input] and if the current [Control] is not under the "
+"mouse, moving it will not update this value."
 msgstr ""
 
 #: doc/classes/InputEventMouse.xml
 msgid ""
 "The local mouse position relative to the [Viewport]. If used in [method "
 "Control._gui_input], the position is relative to the current [Control] which "
-"is under the mouse."
+"is under the mouse. If the current [Control] is not under the mouse, moving "
+"it will not update this value."
 msgstr ""
 
 #: doc/classes/InputEventMouseButton.xml
@@ -29630,9 +30012,9 @@ msgstr ""
 msgid "Returns an array with the indexes of the selected items."
 msgstr ""
 
-#: doc/classes/ItemList.xml
+#: doc/classes/ItemList.xml doc/classes/RichTextLabel.xml
 msgid ""
-"Returns the [Object] ID associated with the list.\n"
+"Returns the vertical scrollbar.\n"
 "[b]Warning:[/b] This is a required internal node, removing and freeing it "
 "may cause a crash. If you wish to hide it or any of its children, use their "
 "[member CanvasItem.visible] property."
@@ -30551,6 +30933,29 @@ msgstr ""
 msgid ""
 "Lock the body's Z axis movement. Deprecated alias for [member "
 "axis_lock_motion_z]."
+msgstr ""
+
+#: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
+msgid ""
+"Sets the behavior to apply when you leave a moving platform. By default, to "
+"be physically accurate, when you leave the last platform velocity is "
+"applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for "
+"available behavior."
+msgstr ""
+
+#: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
+msgid "Add the last platform velocity when you leave a moving platform."
+msgstr ""
+
+#: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
+msgid ""
+"Add the last platform velocity when you leave a moving platform, but any "
+"downward motion is ignored. It's useful to keep full jump height even when "
+"the platform is moving down."
+msgstr ""
+
+#: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
+msgid "Do nothing when leaving a platform."
 msgstr ""
 
 #: doc/classes/KinematicBody2D.xml
@@ -33751,16 +34156,13 @@ msgstr ""
 msgid ""
 "Provides navigation and pathfinding within a collection of "
 "[NavigationMesh]es. By default, these will be automatically collected from "
-"child [NavigationMeshInstance] nodes, but they can also be added on the fly "
-"with [method navmesh_add]. In addition to basic pathfinding, this class also "
-"assists with aligning navigation agents with the meshes they are navigating "
-"on.\n"
-"[b]Note:[/b] The current navigation system has many known issues and will "
-"not always return optimal paths as expected. These issues will be fixed in "
-"Godot 4.0."
+"child [NavigationMeshInstance] nodes. In addition to basic pathfinding, this "
+"class also assists with aligning navigation agents with the meshes they are "
+"navigating on."
 msgstr ""
 
 #: doc/classes/Navigation.xml doc/classes/NavigationMesh.xml
+#: doc/classes/NavigationServer.xml
 msgid "https://godotengine.org/asset-library/asset/124"
 msgstr ""
 
@@ -33780,10 +34182,7 @@ msgstr ""
 #: doc/classes/Navigation.xml
 msgid ""
 "Returns the owner of the [NavigationMesh] which contains the navigation "
-"point closest to the point given. This is usually a "
-"[NavigationMeshInstance]. For meshes added via [method navmesh_add], returns "
-"the owner that was given (or [code]null[/code] if the [code]owner[/code] "
-"parameter was omitted)."
+"point closest to the point given. This is usually a [NavigationMeshInstance]."
 msgstr ""
 
 #: doc/classes/Navigation.xml
@@ -33799,25 +34198,16 @@ msgid ""
 "Returns the path between two given points. Points are in local coordinate "
 "space. If [code]optimize[/code] is [code]true[/code] (the default), the "
 "agent properties associated with each [NavigationMesh] (radius, height, "
-"etc.) are considered in the path calculation, otherwise they are ignored.\n"
-"[b]Note:[/b] This method has known issues and will often return non-optimal "
-"paths. These issues will be fixed in Godot 4.0."
+"etc.) are considered in the path calculation, otherwise they are ignored."
 msgstr ""
 
-#: doc/classes/Navigation.xml
+#: doc/classes/Navigation.xml doc/classes/NavigationMesh.xml
+msgid "The XZ plane cell size to use for fields."
+msgstr ""
+
+#: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
 msgid ""
-"Adds a [NavigationMesh]. Returns an ID for use with [method navmesh_remove] "
-"or [method navmesh_set_transform]. If given, a [Transform2D] is applied to "
-"the polygon. The optional [code]owner[/code] is used as return value for "
-"[method get_closest_point_owner]."
-msgstr ""
-
-#: doc/classes/Navigation.xml
-msgid "Removes the [NavigationMesh] with the given ID."
-msgstr ""
-
-#: doc/classes/Navigation.xml
-msgid "Sets the transform applied to the [NavigationMesh] with the given ID."
+"This value is used to detect the near edges to connect compatible regions."
 msgstr ""
 
 #: doc/classes/Navigation.xml
@@ -33834,14 +34224,11 @@ msgstr ""
 msgid ""
 "Navigation2D provides navigation and pathfinding within a 2D area, specified "
 "as a collection of [NavigationPolygon] resources. By default, these are "
-"automatically collected from child [NavigationPolygonInstance] nodes, but "
-"they can also be added on the fly with [method navpoly_add].\n"
-"[b]Note:[/b] The current navigation system has many known issues and will "
-"not always return optimal paths as expected. These issues will be fixed in "
-"Godot 4.0."
+"automatically collected from child [NavigationPolygonInstance] nodes."
 msgstr ""
 
-#: doc/classes/Navigation2D.xml doc/classes/NavigationPolygon.xml
+#: doc/classes/Navigation2D.xml doc/classes/Navigation2DServer.xml
+#: doc/classes/NavigationPolygon.xml
 msgid "https://godotengine.org/asset-library/asset/117"
 msgstr ""
 
@@ -33849,35 +34236,389 @@ msgstr ""
 msgid ""
 "Returns the owner of the [NavigationPolygon] which contains the navigation "
 "point closest to the point given. This is usually a "
-"[NavigationPolygonInstance]. For polygons added via [method navpoly_add], "
-"returns the owner that was given (or [code]null[/code] if the [code]owner[/"
-"code] parameter was omitted)."
+"[NavigationPolygonInstance]."
 msgstr ""
 
 #: doc/classes/Navigation2D.xml
 msgid ""
 "Returns the path between two given points. Points are in local coordinate "
 "space. If [code]optimize[/code] is [code]true[/code] (the default), the path "
-"is smoothed by merging path segments where possible.\n"
-"[b]Note:[/b] This method has known issues and will often return non-optimal "
-"paths. These issues will be fixed in Godot 4.0."
+"is smoothed by merging path segments where possible."
 msgstr ""
 
 #: doc/classes/Navigation2D.xml
+msgid "The XY plane cell size to use for fields."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml
+msgid "Server interface for low-level 2D navigation access."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml
 msgid ""
-"Adds a [NavigationPolygon]. Returns an ID for use with [method "
-"navpoly_remove] or [method navpoly_set_transform]. If given, a [Transform2D] "
-"is applied to the polygon. The optional [code]owner[/code] is used as return "
-"value for [method get_closest_point_owner]."
+"Navigation2DServer is the server responsible for all 2D navigation. It "
+"handles several objects, namely maps, regions and agents.\n"
+"Maps are made up of regions, which are made of navigation polygons. "
+"Together, they define the navigable areas in the 2D world. For two regions "
+"to be connected to each other, they must share a similar edge. An edge is "
+"considered connected to another if both of its two vertices are at a "
+"distance less than [member Navigation.edge_connection_margin] to the "
+"respective other edge's vertex.\n"
+"To use the collision avoidance system, you may use agents. You can set an "
+"agent's target velocity, then the servers will emit a callback with a "
+"modified velocity.\n"
+"[b]Note:[/b] The collision avoidance system ignores regions. Using the "
+"modified velocity as-is might lead to pushing and agent outside of a "
+"navigable area. This is a limitation of the collision avoidance system, any "
+"more complex situation may require the use of the physics engine.\n"
+"This server keeps tracks of any call and executes them during the sync "
+"phase. This means that you can request any change to the map, using any "
+"thread, without worrying."
 msgstr ""
 
-#: doc/classes/Navigation2D.xml
-msgid "Removes the [NavigationPolygon] with the given ID."
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Creates the agent."
 msgstr ""
 
-#: doc/classes/Navigation2D.xml
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Returns [code]true[/code] if the map got changed the previous frame."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Callback called at the end of the RVO process."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Puts the agent in the map."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid ""
-"Sets the transform applied to the [NavigationPolygon] with the given ID."
+"Sets the maximum number of other agents the agent takes into account in the "
+"navigation. The larger this number, the longer the running time of the "
+"simulation. If the number is too low, the simulation will not be safe."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Sets the maximum speed of the agent. Must be positive."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Sets the maximum distance to other agents this agent takes into account in "
+"the navigation. The larger this number, the longer the running time of the "
+"simulation. If the number is too low, the simulation will not be safe."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Sets the position of the agent in world space."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Sets the radius of the agent."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Sets the new target velocity."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"The minimal amount of time for which the agent's velocities that are "
+"computed by the simulation are safe with respect to other agents. The larger "
+"this number, the sooner this agent will respond to the presence of other "
+"agents, but the less freedom this agent has in choosing its velocities. Must "
+"be positive."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Sets the current velocity of the agent."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Destroys the given RID."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Create a new map."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Returns the map cell size."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns the point closest to the provided [code]to_point[/code] on the "
+"navigation mesh surface."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Returns the owner region RID for the point returned by [method "
+"map_get_closest_point]."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml
+msgid ""
+"Returns the edge connection margin of the map. The edge connection margin is "
+"a distance used to connect two regions."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Returns the navigation path to reach the destination from the origin."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Returns [code]true[/code] if the map is active."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Sets the map active."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Set the map cell size used to weld the navigation mesh polygons."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Set the map edge connection margin used to weld the compatible region edges."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Creates a new region."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Sets the map for the region."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Sets the navigation mesh for the region."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Sets the global transformation for the region."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid "3D agent used in navigation for collision avoidance."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"3D agent that is used in navigation to reach a location while avoiding "
+"static and dynamic obstacles. The dynamic obstacles are avoided using RVO "
+"(Reciprocal Velocity Obstacles) collision avoidance. The agent needs "
+"navigation data to work correctly. This can be done by having the agent as a "
+"child of a [Navigation] node, or using [method set_navigation]. "
+"[NavigationAgent] is physics safe."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns the distance to the target location, using the agent's global "
+"position. The user must set the target location with [method "
+"set_target_location] in order for this to be accurate."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Returns the reachable final location in global coordinates. This can change "
+"if the navigation path is altered in any way. Because of this, it would be "
+"best to check this each frame."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid "Returns the path from start to finish in global coordinates."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Returns which index the agent is currently on in the navigation path's "
+"[PoolVector3Array]."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Returns the [Navigation] node that the agent is using for its navigation "
+"system."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Returns a [Vector3] in global coordinates, that can be moved to, making sure "
+"that there are no static objects in the way. If the agent does not have a "
+"navigation path, it will return the origin of the agent's parent."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns the user-defined target location (set with [method "
+"set_target_location])."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns [code]true[/code] if the navigation path's final location has been "
+"reached."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns [code]true[/code] if the target location is reachable. The target "
+"location is set using [method set_target_location]."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns [code]true[/code] if the target location is reached. The target "
+"location is set using [method set_target_location]. It may not always be "
+"possible to reach the target location. It should always be possible to reach "
+"the final location though. See [method get_final_location]."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Sets the [Navigation] node used by the agent. Useful when you don't want to "
+"make the agent a child of a [Navigation] node."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Sets the user desired final location. This will clear the current navigation "
+"path."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Sends the given velocity to the collision avoidance algorithm. It will "
+"adjust the velocity to avoid collisions. Once the adjustment to the velocity "
+"is complete, it will emit the [signal velocity_computed] signal."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid "The agent height offset to match the navigation mesh height."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Ignores collisions on the Y axis. Must be [code]true[/code] to move on a "
+"horizontal plane."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid "The maximum number of neighbors for the agent to consider."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid "The maximum speed that an agent can move."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid "The distance to search for other agents."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"The maximum distance the agent is allowed away from the ideal path to the "
+"final location. This can happen due to trying to avoid collisions. When the "
+"maximum distance is exceeded, it recalculates the ideal path."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid "The radius of the agent."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"The distance threshold before a target is considered to be reached. This "
+"will allow an agent to not have to hit a point on the path exactly, but in "
+"the area."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"The minimal amount of time for which this agent's velocities, that are "
+"computed with the collision avoidance algorithim, are safe with respect to "
+"other agents. The larger the number, the sooner the agent will respond to "
+"other agents, but the less freedom in choosing its velocities. Must be "
+"positive."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid "Notifies when the final location is reached."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Notifies when the navigation path changes. This can be triggered by the "
+"navigation system or by the user changing the path."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Notifies when the player-defined target, set with [method "
+"set_target_location], is reached."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Notifies when the collision avoidance velocity is calculated after a call to "
+"[method set_velocity]."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid "2D agent used in navigation for collision avoidance."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"2D agent that is used in navigation to reach a location while avoiding "
+"static and dynamic obstacles. The dynamic obstacles are avoided using RVO "
+"(Reciprocal Velocity Obstacles) collision avoidance. The agent needs "
+"navigation data to work correctly. This can be done by having the agent as a "
+"child of a [Navigation2D] node, or using [method set_navigation]. "
+"[NavigationAgent2D] is physics safe."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns the reachable final location in global coordinates. This can change "
+"if the navigation path is altered in any way."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns which index the agent is currently on in the navigation path's "
+"[PoolVector2Array]."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns the [Navigation2D] node that the agent is using for its navigation "
+"system."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns a [Vector2] in global coordinates, that can be moved to, making sure "
+"that there are no static objects in the way. If the agent does not have a "
+"navigation path, it will return the position of the agent's parent."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"Sets the [Navigation2D] node used by the agent. Useful when you don't want "
+"to make the agent a child of a [Navigation2D] node."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"Sends the passed in velocity to the collision avoidance algorithm. It will "
+"adjust the velocity to avoid collisions. Once the adjustment to the velocity "
+"is complete, it will emit the [signal velocity_computed] signal."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -33973,10 +34714,6 @@ msgstr ""
 
 #: doc/classes/NavigationMesh.xml
 msgid "The Y axis cell size to use for fields."
-msgstr ""
-
-#: doc/classes/NavigationMesh.xml
-msgid "The XZ plane cell size to use for fields."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -34138,22 +34875,112 @@ msgstr ""
 msgid "Represents the size of the [enum SourceGeometryMode] enum."
 msgstr ""
 
+#: doc/classes/NavigationMeshGenerator.xml
+msgid "This class is responsible for creating and clearing navigation meshes."
+msgstr ""
+
+#: doc/classes/NavigationMeshGenerator.xml
+msgid ""
+"Bakes the navigation mesh. This will allow you to use pathfinding with the "
+"navigation system."
+msgstr ""
+
+#: doc/classes/NavigationMeshGenerator.xml
+msgid "Clears the navigation mesh."
+msgstr ""
+
 #: doc/classes/NavigationMeshInstance.xml
-msgid "Node that instances navigation meshes into a scenario."
+msgid "An instance of a [NavigationMesh]."
 msgstr ""
 
 #: doc/classes/NavigationMeshInstance.xml
 msgid ""
-"NavigationMeshInstance is a node that takes a [NavigationMesh] resource and "
-"adds it to the current scenario by creating an instance of it."
+"An instance of a [NavigationMesh]. It tells the [Navigation] node what can "
+"be navigated and what cannot, based on the [NavigationMesh] resource. This "
+"should be a child of a [Navigation] node."
 msgstr ""
 
 #: doc/classes/NavigationMeshInstance.xml
-msgid "If [code]true[/code], the navigation mesh will be used by [Navigation]."
+msgid ""
+"Bakes the [NavigationMesh]. The baking is done in a separate thread because "
+"navigation baking is not a cheap operation. This can be done at runtime. "
+"When it is completed, it automatically sets the new [NavigationMesh]."
 msgstr ""
 
 #: doc/classes/NavigationMeshInstance.xml
-msgid "The [NavigationMesh] resource for the instance."
+msgid "Determines if the [NavigationMeshInstance] is enabled or disabled."
+msgstr ""
+
+#: doc/classes/NavigationMeshInstance.xml
+msgid "The [NavigationMesh] resource to use."
+msgstr ""
+
+#: doc/classes/NavigationMeshInstance.xml
+msgid "Notifies when the navigation mesh bake operation is completed."
+msgstr ""
+
+#: doc/classes/NavigationMeshInstance.xml
+msgid "Notifies when the [NavigationMesh] has changed."
+msgstr ""
+
+#: doc/classes/NavigationObstacle.xml
+msgid "3D obstacle used in navigation for collision avoidance."
+msgstr ""
+
+#: doc/classes/NavigationObstacle.xml
+msgid ""
+"3D obstacle used in navigation for collision avoidance. The obstacle needs "
+"navigation data to work correctly. This can be done by having the obstacle "
+"as a child of a [Navigation] node, or using [method set_navigation]. "
+"[NavigationObstacle] is physics safe."
+msgstr ""
+
+#: doc/classes/NavigationObstacle.xml
+msgid ""
+"Returns the [Navigation] node that the obstacle is using for its navigation "
+"system."
+msgstr ""
+
+#: doc/classes/NavigationObstacle.xml
+msgid ""
+"Sets the [Navigation] node used by the obstacle. Useful when you don't want "
+"to make the obstacle a child of a [Navigation] node."
+msgstr ""
+
+#: doc/classes/NavigationObstacle.xml doc/classes/NavigationObstacle2D.xml
+msgid ""
+"Enables radius estimation algorithm which uses parent's collision shapes to "
+"determine the obstacle radius."
+msgstr ""
+
+#: doc/classes/NavigationObstacle.xml doc/classes/NavigationObstacle2D.xml
+msgid ""
+"The radius of the agent. Used only if [member estimate_radius] is set to "
+"[code]false[/code]."
+msgstr ""
+
+#: doc/classes/NavigationObstacle2D.xml
+msgid "2D obstacle used in navigation for collision avoidance."
+msgstr ""
+
+#: doc/classes/NavigationObstacle2D.xml
+msgid ""
+"2D obstacle used in navigation for collision avoidance. The obstacle needs "
+"navigation data to work correctly. This can be done by having the obstacle "
+"as a child of a [Navigation2D] node, or using [method set_navigation]. "
+"[NavigationObstacle] is physics safe."
+msgstr ""
+
+#: doc/classes/NavigationObstacle2D.xml
+msgid ""
+"Returns the [Navigation2D] node that the obstacle is using for its "
+"navigation system."
+msgstr ""
+
+#: doc/classes/NavigationObstacle2D.xml
+msgid ""
+"Sets the [Navigation2D] node used by the obstacle. Useful when you don't "
+"want to make the obstacle a child of a [Navigation2D] node."
 msgstr ""
 
 #: doc/classes/NavigationPolygon.xml
@@ -34250,6 +35077,72 @@ msgstr ""
 msgid ""
 "Changes an outline created in the editor or by script. You have to call "
 "[method make_polygons_from_outlines] for the polygons to update."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid "Server interface for low-level 3D navigation access."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid ""
+"NavigationServer is the server responsible for all 3D navigation. It handles "
+"several objects, namely maps, regions and agents.\n"
+"Maps are made up of regions, which are made of navigation meshes. Together, "
+"they define the navigable areas in the 3D world. For two regions to be "
+"connected to each other, they must share a similar edge. An edge is "
+"considered connected to another if both of its two vertices are at a "
+"distance less than [member Navigation.edge_connection_margin] to the "
+"respective other edge's vertex.\n"
+"To use the collision avoidance system, you may use agents. You can set an "
+"agent's target velocity, then the servers will emit a callback with a "
+"modified velocity.\n"
+"[b]Note:[/b] The collision avoidance system ignores regions. Using the "
+"modified velocity as-is might lead to pushing and agent outside of a "
+"navigable area. This is a limitation of the collision avoidance system, any "
+"more complex situation may require the use of the physics engine.\n"
+"This server keeps tracks of any call and executes them during the sync "
+"phase. This means that you can request any change to the map, using any "
+"thread, without worrying."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid ""
+"Returns the normal for the point returned by [method map_get_closest_point]."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid ""
+"Returns the closest point between the navigation surface and the segment."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid ""
+"Returns the edge connection margin of the map. This distance is the minimum "
+"vertex distance needed to connect two edges from different regions."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid "Returns the map's up direction."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid "Sets the map up direction."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid ""
+"Process the collision avoidance agents.\n"
+"The result of this process is needed by the physics server, so this must be "
+"called in the main thread.\n"
+"[b]Note:[/b] This function is not thread safe."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid "Bakes the navigation mesh."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+msgid "Control activation of this server."
 msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
@@ -37565,7 +38458,9 @@ msgid "Returns the maximum amount of static memory used (only works in debug)."
 msgstr ""
 
 #: doc/classes/OS.xml
-msgid "Returns the amount of static memory being used by the program in bytes."
+msgid ""
+"Returns the amount of static memory being used by the program in bytes (only "
+"works in debug)."
 msgstr ""
 
 #: doc/classes/OS.xml
@@ -42152,8 +43047,8 @@ msgid ""
 "compression mode using one of [enum File.CompressionMode]'s constants. "
 "[b]This method only accepts gzip and deflate compression modes.[/b]\n"
 "This method is potentially slower than [code]decompress[/code], as it may "
-"have to re-allocate it's output buffer multiple times while decompressing, "
-"where as [code]decompress[/code] knows it's output buffer size from the "
+"have to re-allocate its output buffer multiple times while decompressing, "
+"where as [code]decompress[/code] knows its output buffer size from the "
 "beginning.\n"
 "\n"
 "GZIP has a maximal compression ratio of 1032:1, meaning it's very possible "
@@ -42221,12 +43116,6 @@ msgstr ""
 
 #: doc/classes/PoolByteArray.xml
 msgid "Changes the byte at the given index."
-msgstr ""
-
-#: doc/classes/PoolByteArray.xml doc/classes/PoolColorArray.xml
-#: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
-#: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
-msgid "Returns the size of the array."
 msgstr ""
 
 #: doc/classes/PoolByteArray.xml
@@ -42307,10 +43196,6 @@ msgstr ""
 
 #: doc/classes/PoolIntArray.xml
 msgid "Changes the int at the given index."
-msgstr ""
-
-#: doc/classes/PoolIntArray.xml
-msgid "Returns the array size."
 msgstr ""
 
 #: doc/classes/PoolRealArray.xml
@@ -45802,8 +46687,9 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
-"If [code]true[/code], allocates the main framebuffer with high dynamic "
-"range. High dynamic range allows the use of [Color] values greater than 1.\n"
+"If [code]true[/code], allocates the root [Viewport]'s framebuffer with high "
+"dynamic range. High dynamic range allows the use of [Color] values greater "
+"than 1.\n"
 "[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
@@ -45811,6 +46697,19 @@ msgstr ""
 msgid ""
 "Lower-end override for [member rendering/quality/depth/hdr] on mobile "
 "devices, due to performance concerns or driver support."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"If [code]true[/code], allocates the root [Viewport]'s framebuffer with full "
+"floating-point precision (32-bit) instead of half floating-point precision "
+"(16-bit). Only effective when [member rendering/quality/depth/hdr] is also "
+"enabled.\n"
+"[b]Note:[/b] Enabling this setting does not improve rendering quality. Using "
+"full floating-point precision is slower, and is generally only needed for "
+"advanced shaders that require a high level of precision. To reduce banding, "
+"enable [member rendering/quality/filters/use_debanding] instead.\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -46669,12 +47568,12 @@ msgstr ""
 msgid "Removes all collision exceptions for this ray."
 msgstr ""
 
-#: doc/classes/RayCast.xml
+#: doc/classes/RayCast.xml doc/classes/RayCast2D.xml
 msgid ""
-"Updates the collision information for the ray.\n"
-"Use this method to update the collision information immediately instead of "
-"waiting for the next [code]_physics_process[/code] call, for example if the "
-"ray or its parent has changed state.\n"
+"Updates the collision information for the ray. Use this method to update the "
+"collision information immediately instead of waiting for the next "
+"[code]_physics_process[/code] call, for example if the ray or its parent has "
+"changed state.\n"
 "[b]Note:[/b] [code]enabled[/code] is not required for this to work."
 msgstr ""
 
@@ -46799,15 +47698,6 @@ msgid ""
 "result is cached so it can be used later until the next frame. If multiple "
 "queries are required between physics frames (or during the same frame) use "
 "[method force_raycast_update] after adjusting the raycast."
-msgstr ""
-
-#: doc/classes/RayCast2D.xml
-msgid ""
-"Updates the collision information for the ray. Use this method to update the "
-"collision information immediately instead of waiting for the next "
-"[code]_physics_process[/code] call, for example if the ray or its parent has "
-"changed state.\n"
-"[b]Note:[/b] [code]enabled[/code] is not required for this to work."
 msgstr ""
 
 #: doc/classes/RayCast2D.xml
@@ -48070,14 +48960,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/RichTextLabel.xml
-msgid ""
-"Returns the vertical scrollbar.\n"
-"[b]Warning:[/b] This is a required internal node, removing and freeing it "
-"may cause a crash. If you wish to hide it or any of its children, use their "
-"[member CanvasItem.visible] property."
-msgstr ""
-
-#: doc/classes/RichTextLabel.xml
 msgid "Returns the number of visible lines."
 msgstr ""
 
@@ -49122,7 +50004,7 @@ msgstr ""
 
 #: doc/classes/RoomGroup.xml
 msgid ""
-"Although [Room] behaviour can be specified individually, sometimes it is "
+"Although [Room] behavior can be specified individually, sometimes it is "
 "faster and more convenient to write functionality for a group of rooms.\n"
 "[RoomGroup]s should be placed as children of the [b]room list[/b] (the "
 "parent [Node] of your [Room]s), and [Room]s should be placed in turn as "
@@ -49305,7 +50187,7 @@ msgstr ""
 msgid ""
 "Portal culling normally operates using the current [Camera] / [Camera]s, "
 "however for debugging purposes within the editor, you can use this setting "
-"to override this behaviour and force it to use a particular camera to get a "
+"to override this behavior and force it to use a particular camera to get a "
 "better idea of what the occlusion culling is doing."
 msgstr ""
 
@@ -49412,7 +50294,7 @@ msgid ""
 "plain [Node] in the running project. This means a script attached to a "
 "[RootMotionView] node [i]must[/i] have [code]extends Node[/code] instead of "
 "[code]extends RootMotionView[/code]. Additionally, it must not be a "
-"[code]@tool[/code] script."
+"[code]tool[/code] script."
 msgstr ""
 
 #: doc/classes/RootMotionView.xml
@@ -51458,7 +52340,7 @@ msgstr ""
 #: doc/classes/SpatialMaterial.xml
 msgid ""
 "If [code]true[/code], enables the specified flag. Flags are optional "
-"behaviour that can be turned on and off. Only one flag can be enabled at a "
+"behavior that can be turned on and off. Only one flag can be enabled at a "
 "time with this function, the flag enumerators cannot be bit-masked together "
 "to enable or disable multiple flags at once. Flags can also be enabled by "
 "setting the corresponding member to [code]true[/code]. See [enum Flags] "
@@ -51482,19 +52364,38 @@ msgid ""
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
-msgid "The strength of the anisotropy effect."
+msgid ""
+"The strength of the anisotropy effect. This is multiplied by [member "
+"anisotropy_flowmap]'s alpha channel if a texture is defined there and the "
+"texture contains an alpha channel."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
 msgid ""
-"If [code]true[/code], anisotropy is enabled. Changes the shape of the "
-"specular blob and aligns it to tangent space. Mesh tangents are needed for "
-"this to work. If the mesh does not contain tangents the anisotropy effect "
-"will appear broken."
+"If [code]true[/code], anisotropy is enabled. Anisotropy changes the shape of "
+"the specular blob and aligns it to tangent space. This is useful for brushed "
+"aluminium and hair reflections.\n"
+"[b]Note:[/b] Mesh tangents are needed for anisotropy to work. If the mesh "
+"does not contain tangents, the anisotropy effect will appear broken.\n"
+"[b]Note:[/b] Material anisotropy should not to be confused with anisotropic "
+"texture filtering. Anisotropic texture filtering can be enabled by selecting "
+"a texture in the FileSystem dock, going to the Import dock, checking the "
+"[b]Anisotropic[/b] checkbox then clicking [b]Reimport[/b]."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
-msgid "Texture that offsets the tangent map for anisotropy calculations."
+msgid ""
+"Texture that offsets the tangent map for anisotropy calculations and "
+"optionally controls the anisotropy effect (if an alpha channel is present). "
+"The flowmap texture is expected to be a derivative map, with the red channel "
+"representing distortion on the X axis and green channel representing "
+"distortion on the Y axis. Values below 0.5 will result in negative "
+"distortion, whereas values above 0.5 will result in positive distortion.\n"
+"If present, the texture's alpha channel will be used to multiply the "
+"strength of the [member anisotropy] effect. Fully opaque pixels will keep "
+"the anisotropy effect's original strength while fully transparent pixels "
+"will disable the anisotropy effect entirely. The flowmap texture's blue "
+"channel is ignored."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
@@ -53192,7 +54093,7 @@ msgstr ""
 
 #: doc/classes/StreamPeer.xml
 msgid ""
-"Gets a string with byte-length [code]bytes[/code] from the stream. If "
+"Gets an ASCII string with byte-length [code]bytes[/code] from the stream. If "
 "[code]bytes[/code] is negative (default) the length will be read from the "
 "stream using the reverse process of [method put_string]."
 msgstr ""
@@ -53870,6 +54771,16 @@ msgid ""
 "or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/"
 "Reserved_IP_addresses]reserved IP addresses[/url] such as [code]0.0.0.0[/"
 "code] as valid."
+msgstr ""
+
+#: doc/classes/String.xml
+msgid ""
+"Return a [String] which is the concatenation of the [code]parts[/code]. The "
+"separator between elements is the string providing this method.\n"
+"Example:\n"
+"[codeblock]\n"
+"print(\", \".join([\"One\", \"Two\", \"Three\", \"Four\"]))\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -57080,7 +57991,7 @@ msgstr ""
 
 #: doc/classes/TileMap.xml
 msgid ""
-"Sets the tile index for the cell given by a Vector2.\n"
+"Sets the tile index for the given cell.\n"
 "An index of [code]-1[/code] clears the cell.\n"
 "Optionally, the tile can also be flipped, transposed, or given autotile "
 "coordinates. The autotile coordinate refers to the column and row of the "
@@ -57102,9 +58013,11 @@ msgstr ""
 
 #: doc/classes/TileMap.xml
 msgid ""
-"Sets the tile index for the given cell.\n"
+"Sets the tile index for the cell given by a Vector2.\n"
 "An index of [code]-1[/code] clears the cell.\n"
-"Optionally, the tile can also be flipped or transposed.\n"
+"Optionally, the tile can also be flipped, transposed, or given autotile "
+"coordinates. The autotile coordinate refers to the column and row of the "
+"subtile.\n"
 "[b]Note:[/b] Data such as navigation polygons and collision shapes are not "
 "immediately updated for performance reasons.\n"
 "If you need these to be immediately updated, you can call [method "
@@ -58206,17 +59119,17 @@ msgid ""
 "transformation is composed of rotation, scaling and translation."
 msgstr ""
 
-#: doc/classes/Transform.xml
+#: doc/classes/Transform.xml doc/classes/Transform2D.xml
 msgid ""
-"Interpolates the transform to other Transform by weight amount (on the range "
-"of 0.0 to 1.0)."
+"Returns a transform interpolated between this transform and another by a "
+"given [code]weight[/code] (on the range of 0.0 to 1.0)."
 msgstr ""
 
-#: doc/classes/Transform.xml
+#: doc/classes/Transform.xml doc/classes/Transform2D.xml
 msgid ""
 "Returns the inverse of the transform, under the assumption that the "
 "transformation is composed of rotation and translation (no scaling, use "
-"affine_inverse for transforms with scaling)."
+"[method affine_inverse] for transforms with scaling)."
 msgstr ""
 
 #: doc/classes/Transform.xml doc/classes/Transform2D.xml
@@ -58236,10 +59149,10 @@ msgid ""
 "Operations take place in global space."
 msgstr ""
 
-#: doc/classes/Transform.xml
+#: doc/classes/Transform.xml doc/classes/Transform2D.xml
 msgid ""
 "Returns the transform with the basis orthogonal (90 degrees), and normalized "
-"axis vectors."
+"axis vectors (scale of 1 or -1)."
 msgstr ""
 
 #: doc/classes/Transform.xml
@@ -58359,25 +59272,6 @@ msgstr ""
 
 #: doc/classes/Transform2D.xml
 msgid "Returns the scale."
-msgstr ""
-
-#: doc/classes/Transform2D.xml
-msgid ""
-"Returns a transform interpolated between this transform and another by a "
-"given [code]weight[/code] (on the range of 0.0 to 1.0)."
-msgstr ""
-
-#: doc/classes/Transform2D.xml
-msgid ""
-"Returns the inverse of the transform, under the assumption that the "
-"transformation is composed of rotation and translation (no scaling, use "
-"[method affine_inverse] for transforms with scaling)."
-msgstr ""
-
-#: doc/classes/Transform2D.xml
-msgid ""
-"Returns the transform with the basis orthogonal (90 degrees), and normalized "
-"axis vectors (scale of 1 or -1)."
 msgstr ""
 
 #: doc/classes/Transform2D.xml
@@ -60530,9 +61424,9 @@ msgid ""
 "Returns the vector \"bounced off\" from a plane defined by the given normal."
 msgstr ""
 
-#: doc/classes/Vector2.xml
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
-"Returns the vector with all components rounded up (towards positive "
+"Returns a new vector with all components rounded up (towards positive "
 "infinity)."
 msgstr ""
 
@@ -60587,9 +61481,9 @@ msgid ""
 "[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code]."
 msgstr ""
 
-#: doc/classes/Vector2.xml
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
-"Returns the vector with all components rounded down (towards negative "
+"Returns a new vector with all components rounded down (towards negative "
 "infinity)."
 msgstr ""
 
@@ -60630,10 +61524,10 @@ msgid ""
 "range of 0.0 to 1.0, representing the amount of interpolation."
 msgstr ""
 
-#: doc/classes/Vector2.xml
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
-"Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] "
-"amount."
+"Returns a new vector moved toward [code]to[/code] by the fixed [code]delta[/"
+"code] amount. Will not go past the final value."
 msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
@@ -60654,12 +61548,14 @@ msgid ""
 "components and [code]modv[/code]'s components."
 msgstr ""
 
-#: doc/classes/Vector2.xml
-msgid "Returns the vector projected onto the vector [code]b[/code]."
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
+msgid "Returns this vector projected onto the vector [code]b[/code]."
 msgstr ""
 
 #: doc/classes/Vector2.xml
-msgid "Returns the vector reflected from a plane defined by the given normal."
+msgid ""
+"Returns the vector reflected (i.e. mirrored, or symmetric) over a line "
+"defined by the given direction vector [code]n[/code]."
 msgstr ""
 
 #: doc/classes/Vector2.xml
@@ -60668,17 +61564,17 @@ msgid ""
 "@GDScript.deg2rad]."
 msgstr ""
 
-#: doc/classes/Vector2.xml
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
-"Returns the vector with all components rounded to the nearest integer, with "
-"halfway cases rounded away from zero."
+"Returns a new vector with all components rounded to the nearest integer, "
+"with halfway cases rounded away from zero."
 msgstr ""
 
-#: doc/classes/Vector2.xml
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
-"Returns the vector with each component set to one or negative one, depending "
-"on the signs of the components. If a component is zero, it returns positive "
-"one."
+"Returns a new vector with each component set to one or negative one, "
+"depending on the signs of the components. If a component is zero, it returns "
+"positive one."
 msgstr ""
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
@@ -60778,21 +61674,15 @@ msgid "Returns the unsigned minimum angle to the given vector, in radians."
 msgstr ""
 
 #: doc/classes/Vector3.xml
-msgid ""
-"Returns a new vector with all components rounded up (towards positive "
-"infinity)."
-msgstr ""
-
-#: doc/classes/Vector3.xml
 msgid "Returns the cross product of this vector and [code]b[/code]."
 msgstr ""
 
 #: doc/classes/Vector3.xml
 msgid ""
-"Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/"
-"code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by "
-"the given amount [code]weight[/code]. [code]weight[/code] is on the range of "
-"0.0 to 1.0, representing the amount of interpolation."
+"Performs a cubic interpolation between this vector and [code]b[/code] using "
+"[code]pre_a[/code] and [code]post_b[/code] as handles, and returns the "
+"result at position [code]weight[/code]. [code]weight[/code] is on the range "
+"of 0.0 to 1.0, representing the amount of interpolation."
 msgstr ""
 
 #: doc/classes/Vector3.xml
@@ -60812,12 +61702,6 @@ msgid ""
 "directions, and [code]1.0[/code] (0 degree angle) when the vectors are "
 "aligned.\n"
 "[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code]."
-msgstr ""
-
-#: doc/classes/Vector3.xml
-msgid ""
-"Returns a new vector with all components rounded down (towards negative "
-"infinity)."
 msgstr ""
 
 #: doc/classes/Vector3.xml
@@ -60848,17 +61732,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Vector3.xml
-msgid ""
-"Moves this vector toward [code]to[/code] by the fixed [code]delta[/code] "
-"amount."
-msgstr ""
-
-#: doc/classes/Vector3.xml
 msgid "Returns the outer product with [code]b[/code]."
-msgstr ""
-
-#: doc/classes/Vector3.xml
-msgid "Returns this vector projected onto another vector [code]b[/code]."
 msgstr ""
 
 #: doc/classes/Vector3.xml
@@ -60869,19 +61743,6 @@ msgstr ""
 msgid ""
 "Rotates this vector around a given axis by [code]phi[/code] radians. The "
 "axis must be a normalized vector."
-msgstr ""
-
-#: doc/classes/Vector3.xml
-msgid ""
-"Returns this vector with all components rounded to the nearest integer, with "
-"halfway cases rounded away from zero."
-msgstr ""
-
-#: doc/classes/Vector3.xml
-msgid ""
-"Returns a vector with each component set to one or negative one, depending "
-"on the signs of this vector's components. If a component is zero, it returns "
-"positive one."
 msgstr ""
 
 #: doc/classes/Vector3.xml
@@ -61575,10 +62436,12 @@ msgstr ""
 msgid ""
 "If [code]true[/code], the viewport rendering will receive benefits from High "
 "Dynamic Range algorithm. High Dynamic Range allows the viewport to receive "
-"values that are outside the 0-1 range. In Godot HDR uses 16 bits, meaning it "
-"does not store the full range of a floating point number.\n"
+"values that are outside the 0-1 range. In Godot, HDR uses half floating-"
+"point precision (16-bit) by default. To use full floating-point precision "
+"(32-bit), enable [member use_32_bpc_depth].\n"
 "[b]Note:[/b] Requires [member usage] to be set to [constant USAGE_3D] or "
-"[constant USAGE_3D_NO_EFFECTS], since HDR is not supported for 2D."
+"[constant USAGE_3D_NO_EFFECTS], since HDR is not supported for 2D.\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
 #: doc/classes/Viewport.xml
@@ -61691,6 +62554,18 @@ msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid "The rendering mode of viewport."
+msgstr ""
+
+#: doc/classes/Viewport.xml
+msgid ""
+"If [code]true[/code], allocates the viewport's framebuffer with full "
+"floating-point precision (32-bit) instead of half floating-point precision "
+"(16-bit). Only effective when [member hdr] is also enabled.\n"
+"[b]Note:[/b] Enabling this setting does not improve rendering quality. Using "
+"full floating-point precision is slower, and is generally only needed for "
+"advanced shaders that require a high level of precision. To reduce banding, "
+"enable [member debanding] instead.\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 
 #: doc/classes/Viewport.xml
@@ -62211,7 +63086,7 @@ msgid ""
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScript.xml
-msgid "$DOCS_URL/getting_started/scripting/visual_script/index.html"
+msgid "$DOCS_URL/tutorials/scripting/visual_script/index.html"
 msgstr ""
 
 #: modules/visual_script/doc_classes/VisualScript.xml
@@ -67177,6 +68052,22 @@ msgstr ""
 msgid "Translated to [code]uniform bool[/code] in the shader language."
 msgstr ""
 
+#: doc/classes/VisualShaderNodeBooleanUniform.xml
+#: doc/classes/VisualShaderNodeColorUniform.xml
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+#: doc/classes/VisualShaderNodeTransformUniform.xml
+#: doc/classes/VisualShaderNodeVec3Uniform.xml
+msgid "A default value to be assigned within the shader."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeBooleanUniform.xml
+#: doc/classes/VisualShaderNodeColorUniform.xml
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+#: doc/classes/VisualShaderNodeTransformUniform.xml
+#: doc/classes/VisualShaderNodeVec3Uniform.xml
+msgid "Enables usage of the [member default_value]."
+msgstr ""
+
 #: doc/classes/VisualShaderNodeColorConstant.xml
 msgid "A [Color] constant to be used within the visual shader graph."
 msgstr ""
@@ -68003,6 +68894,52 @@ msgstr ""
 msgid ""
 "Returns an associated scalar if the provided boolean value is [code]true[/"
 "code] or [code]false[/code]."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"A hint applied to the uniform, which controls the values it can take when "
+"set through the inspector."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"Minimum value for range hints. Used if [member hint] is set to [constant "
+"HINT_RANGE] or [constant HINT_RANGE_STEP]."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"Maximum value for range hints. Used if [member hint] is set to [constant "
+"HINT_RANGE] or [constant HINT_RANGE_STEP]."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"Step (increment) value for the range hint with step. Used if [member hint] "
+"is set to [constant HINT_RANGE_STEP]."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid "No hint used."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"A range hint for scalar value, which limits possible input values between "
+"[member min] and [member max]. Translated to [code]hint_range(min, max)[/"
+"code] in shader code."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"A range hint for scalar value with step, which limits possible input values "
+"between [member min] and [member max], with a step (increment) of [member "
+"step]). Translated to [code]hint_range(min, max, step)[/code] in shader code."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid "Represents the size of the [enum Hint] enum."
 msgstr ""
 
 #: doc/classes/VisualShaderNodeSwitch.xml

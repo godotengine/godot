@@ -135,7 +135,7 @@
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
 				Modifies [member motion_velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for detailed information about collisions that occurred, use [method get_slide_collision].
 				When the body touches a moving platform, the platform's velocity is automatically added to the body motion. If a collision occurs due to the platform's motion, it will always be first in the slide collisions.
-				The general behaviour and available properties change according to the [member motion_mode].
+				The general behavior and available properties change according to the [member motion_mode].
 				Returns [code]true[/code] if the body collided, otherwise, returns [code]false[/code].
 			</description>
 		</method>
@@ -172,13 +172,13 @@
 			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].
 		</member>
 		<member name="motion_mode" type="int" setter="set_motion_mode" getter="get_motion_mode" enum="CharacterBody2D.MotionMode" default="0">
-			Sets the motion mode which defines the behaviour of [method move_and_slide]. See [enum MotionMode] constants for available modes.
+			Sets the motion mode which defines the behavior of [method move_and_slide]. See [enum MotionMode] constants for available modes.
 		</member>
 		<member name="motion_velocity" type="Vector2" setter="set_motion_velocity" getter="get_motion_velocity" default="Vector2(0, 0)">
 			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].
 		</member>
 		<member name="moving_platform_apply_velocity_on_leave" type="int" setter="set_moving_platform_apply_velocity_on_leave" getter="get_moving_platform_apply_velocity_on_leave" enum="CharacterBody2D.MovingPlatformApplyVelocityOnLeave" default="0">
-			Sets the behaviour to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for available behaviour.
+			Sets the behavior to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for available behavior.
 		</member>
 		<member name="moving_platform_floor_layers" type="int" setter="set_moving_platform_floor_layers" getter="get_moving_platform_floor_layers" default="4294967295">
 			Collision layers that will be included for detecting floor bodies that will act as moving platforms to be followed by the [CharacterBody2D]. By default, all floor bodies are detected and propagate their velocity.

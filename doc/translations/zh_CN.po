@@ -112,6 +112,71 @@ msgstr "属性说明"
 msgid "Method Descriptions"
 msgstr "方法说明"
 
+#: doc/tools/make_rst.py
+#, fuzzy
+msgid "Theme Property Descriptions"
+msgstr "属性说明"
+
+#: doc/tools/make_rst.py
+msgid "Inherits:"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "Inherited By:"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "(overrides %s)"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "Default"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "Setter"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "value"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "Getter"
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid ""
+"This method should typically be overridden by the user to have any effect."
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid ""
+"This method has no side effects. It doesn't modify any of the instance's "
+"member variables."
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid ""
+"This method accepts any number of arguments after the ones described here."
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid "This method is used to construct a type."
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid ""
+"This method doesn't need an instance to be called, so it can be called "
+"directly using the class name."
+msgstr ""
+
+#: doc/tools/make_rst.py
+msgid ""
+"This method describes a valid operator to use with this type as left-hand "
+"operand."
+msgstr ""
+
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid "Built-in GDScript functions."
 msgstr "内置 GDScript 函数。"
@@ -763,25 +828,25 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
-"Returns a normalized value considering the given range. This is the opposite "
-"of [method lerp].\n"
+"Returns an interpolation or extrapolation factor considering the range "
+"specified in [code]from[/code] and [code]to[/code], and the interpolated "
+"value specified in [code]weight[/code]. The returned value will be between "
+"[code]0.0[/code] and [code]1.0[/code] if [code]weight[/code] is between "
+"[code]from[/code] and [code]to[/code] (inclusive). If [code]weight[/code] is "
+"located outside this range, then an extrapolation factor will be returned "
+"(return value lower than [code]0.0[/code] or greater than [code]1.0[/"
+"code]).\n"
 "[codeblock]\n"
+"# The interpolation ratio in the `lerp()` call below is 0.75.\n"
 "var middle = lerp(20, 30, 0.75)\n"
 "# `middle` is now 27.5.\n"
 "# Now, we pretend to have forgotten the original ratio and want to get it "
 "back.\n"
 "var ratio = inverse_lerp(20, 30, 27.5)\n"
 "# `ratio` is now 0.75.\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"See also [method lerp] which performs the reverse of this operation."
 msgstr ""
-"考虑给定范围，返回归一化值。这是 [method lerp] 的逆运算。\n"
-"[codeblock]\n"
-"var middle = lerp(20, 30, 0.75)\n"
-"# `middle` 现在是 27.5\n"
-"# 现在，我们假装忘记了原来的比例，想把它找回来。\n"
-"var ratio = inverse_lerp(20, 30, 27.5)\n"
-"# `ratio` 现在是 0.75。\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -843,9 +908,13 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
-"Linearly interpolates between two values by a normalized value. This is the "
-"opposite of [method inverse_lerp].\n"
+"Linearly interpolates between two values by the factor defined in "
+"[code]weight[/code]. To perform interpolation, [code]weight[/code] should be "
+"between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values "
+"outside this range are allowed and can be used to perform [i]extrapolation[/"
+"i].\n"
 "If the [code]from[/code] and [code]to[/code] arguments are of type [int] or "
 "[float], the return value is a [float].\n"
 "If both are of the same vector type ([Vector2], [Vector3] or [Color]), the "
@@ -854,7 +923,10 @@ msgid ""
 "[codeblock]\n"
 "lerp(0, 4, 0.75) # Returns 3.0\n"
 "lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Returns Vector2(2, 3.5)\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"See also [method inverse_lerp] which performs the reverse of this operation. "
+"To perform eased interpolation with [method lerp], combine it with [method "
+"ease] or [method smoothstep]."
 msgstr ""
 "用一个归一化的值在两个值之间进行线性插值。这是 [method inverse_lerp] 的逆运"
 "算。\n"
@@ -869,11 +941,13 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Linearly interpolates between two angles (in radians) by a normalized "
 "value.\n"
 "Similar to [method lerp], but interpolates correctly when the angles wrap "
-"around [constant @GDScript.TAU].\n"
+"around [constant @GDScript.TAU]. To perform eased interpolation with [method "
+"lerp_angle], combine it with [method ease] or [method smoothstep].\n"
 "[codeblock]\n"
 "extends Sprite\n"
 "var elapsed = 0.0\n"
@@ -2176,8 +2250,19 @@ msgid "The [Marshalls] singleton."
 msgstr "[Marshalls] 单例。"
 
 #: doc/classes/@GlobalScope.xml
-msgid "The [EditorNavigationMeshGenerator] singleton."
+#, fuzzy
+msgid "The [Navigation2DServer] singleton."
+msgstr "[TranslationServer]单例。"
+
+#: doc/classes/@GlobalScope.xml
+#, fuzzy
+msgid "The [NavigationMeshGenerator] singleton."
 msgstr "[EditorNavigationMeshGenerator] 单例。"
+
+#: doc/classes/@GlobalScope.xml
+#, fuzzy
+msgid "The [NavigationServer] singleton."
+msgstr "[TranslationServer]单例。"
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [OS] singleton."
@@ -3690,32 +3775,109 @@ msgid ""
 msgstr "OpenVR触摸板Y轴（Oculus Touch和Windows MR控制器的操纵杆轴）。"
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI note OFF message."
-msgstr "MIDI 音符关闭信息。"
+msgid ""
+"MIDI note OFF message. See the documentation of [InputEventMIDI] for "
+"information of how to use MIDI inputs."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI note ON message."
-msgstr "MIDI 音符开启信息。"
+msgid ""
+"MIDI note ON message. See the documentation of [InputEventMIDI] for "
+"information of how to use MIDI inputs."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI aftertouch message."
-msgstr "MIDI 触摸后信息。"
+msgid ""
+"MIDI aftertouch message. This message is most often sent by pressing down on "
+"the key after it \"bottoms out\"."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI control change message."
-msgstr "MIDI 控制更改信息。"
+msgid ""
+"MIDI control change message. This message is sent when a controller value "
+"changes. Controllers include devices such as pedals and levers."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI program change message."
-msgstr "MIDI 程序变更信息。"
+msgid ""
+"MIDI program change message. This message sent when the program patch number "
+"changes."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI channel pressure message."
-msgstr "MIDI 通道压力消息。"
+msgid ""
+"MIDI channel pressure message. This message is most often sent by pressing "
+"down on the key after it \"bottoms out\". This message is different from "
+"polyphonic after-touch as it indicates the highest pressure across all keys."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-msgid "MIDI pitch bend message."
-msgstr "MIDI 弯音消息。"
+msgid ""
+"MIDI pitch bend message. This message is sent to indicate a change in the "
+"pitch bender (wheel or lever, typically)."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI system exclusive message. This has behavior exclusive to the device "
+"you're receiving input from. Getting this data is not implemented in Godot."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI quarter frame message. Contains timing information that is used to "
+"synchronize MIDI devices. Getting this data is not implemented in Godot."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI song position pointer message. Gives the number of 16th notes since the "
+"start of the song. Getting this data is not implemented in Godot."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI song select message. Specifies which sequence or song is to be played. "
+"Getting this data is not implemented in Godot."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI tune request message. Upon receiving a tune request, all analog "
+"synthesizers should tune their oscillators."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI timing clock message. Sent 24 times per quarter note when "
+"synchronization is required."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI start message. Start the current sequence playing. This message will be "
+"followed with Timing Clocks."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid "MIDI continue message. Continue at the point the sequence was stopped."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid "MIDI stop message. Stop the current sequence."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI active sensing message. This message is intended to be sent repeatedly "
+"to tell the receiver that a connection is alive."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"MIDI system reset message. Reset all receivers in the system to power-up "
+"status. It should not be sent on power-up itself."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -8638,7 +8800,10 @@ msgstr ""
 "randi] 等方法一致。如果你想每次都使用新的种子，让打乱无法重现，则可以调用 "
 "[method @GDScript.randomize]。"
 
-#: doc/classes/Array.xml
+#: doc/classes/Array.xml doc/classes/PoolByteArray.xml
+#: doc/classes/PoolColorArray.xml doc/classes/PoolIntArray.xml
+#: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
+#: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
 msgid "Returns the number of elements in the array."
 msgstr "返回数组中元素的个数。"
 
@@ -14601,10 +14766,11 @@ msgid ""
 msgstr "通过相机源，您可以访问连接到设备的单个物理相机。"
 
 #: doc/classes/CameraFeed.xml
+#, fuzzy
 msgid ""
 "A camera feed gives you access to a single physical camera attached to your "
 "device. When enabled, Godot will start capturing frames from the camera "
-"which can then be used.\n"
+"which can then be used. See also [CameraServer].\n"
 "[b]Note:[/b] Many cameras will return YCbCr images which are split into two "
 "textures and need to be combined in a shader. Godot does this automatically "
 "for you if you set the environment to show the camera image in the "
@@ -14670,17 +14836,21 @@ msgid "Server keeping track of different cameras accessible in Godot."
 msgstr "服务器跟踪 Godot 中可访问的不同摄像头。"
 
 #: doc/classes/CameraServer.xml
+#, fuzzy
 msgid ""
 "The [CameraServer] keeps track of different cameras accessible in Godot. "
 "These are external cameras such as webcams or the cameras on your phone.\n"
-"It is notably used to provide AR modules with a video feed from the camera."
+"It is notably used to provide AR modules with a video feed from the camera.\n"
+"[b]Note:[/b] This class is currently only implemented on macOS and iOS. On "
+"other platforms, no [CameraFeed]s will be available."
 msgstr ""
 "[CameraServer]记录了Godot中可访问的不同摄像机。这些是外部摄像机，如网络摄像机"
 "或手机上的摄像机。\n"
 "它主要用于为AR模块提供来自摄像机的视频资料。"
 
 #: doc/classes/CameraServer.xml
-msgid "Adds a camera feed to the camera server."
+#, fuzzy
+msgid "Adds the camera [code]feed[/code] to the camera server."
 msgstr "将相机源添加到相机服务。"
 
 #: doc/classes/CameraServer.xml
@@ -14688,23 +14858,29 @@ msgid "Returns an array of [CameraFeed]s."
 msgstr "返回一个 [CameraFeed] 数组。"
 
 #: doc/classes/CameraServer.xml
-msgid "Returns the [CameraFeed] with this id."
-msgstr "返回具有此 ID 的 [CameraFeed]。"
+#, fuzzy
+msgid ""
+"Returns the [CameraFeed] corresponding to the camera with the given "
+"[code]index[/code]."
+msgstr "返回带有给定[code]id[/code]的项的索引。"
 
 #: doc/classes/CameraServer.xml
 msgid "Returns the number of [CameraFeed]s registered."
 msgstr "返回注册的 [CameraFeed] 的数量。"
 
 #: doc/classes/CameraServer.xml
-msgid "Removes a [CameraFeed]."
-msgstr "移除 [CameraFeed]。"
+#, fuzzy
+msgid "Removes the specified camera [code]feed[/code]."
+msgstr "移除索引[code]idx[/code]处的项目。"
 
 #: doc/classes/CameraServer.xml
-msgid "Emitted when a [CameraFeed] is added (e.g. webcam is plugged in)."
+#, fuzzy
+msgid "Emitted when a [CameraFeed] is added (e.g. a webcam is plugged in)."
 msgstr "当添加 [CameraFeed] 时触发（例如，插入网络摄像头）。"
 
 #: doc/classes/CameraServer.xml
-msgid "Emitted when a [CameraFeed] is removed (e.g. webcam is unplugged)."
+#, fuzzy
+msgid "Emitted when a [CameraFeed] is removed (e.g. a webcam is unplugged)."
 msgstr "当移除 [CameraFeed] 时触发（例如，拔掉网络摄像头）。"
 
 #: doc/classes/CameraServer.xml
@@ -14712,8 +14888,10 @@ msgid "The RGBA camera image."
 msgstr "RGBA 相机图像。"
 
 #: doc/classes/CameraServer.xml
-msgid "The YCbCr camera image."
-msgstr "YCbCr 相机图像。"
+#, fuzzy
+msgid "The [url=https://en.wikipedia.org/wiki/YCbCr]YCbCr[/url] camera image."
+msgstr ""
+"使用 [url=https://en.wikipedia.org/wiki/DEFLATE]DEFLATE[/url] 压缩方法。"
 
 #: doc/classes/CameraServer.xml
 msgid "The Y component camera image."
@@ -14818,9 +14996,11 @@ msgid ""
 msgstr "引擎调用的可覆盖函数（如果定义了）来绘制画布项目。"
 
 #: doc/classes/CanvasItem.xml
+#, fuzzy
 msgid ""
-"Draws an arc between the given angles. The larger the value of "
-"[code]point_count[/code], the smoother the curve."
+"Draws a unfilled arc between the given angles. The larger the value of "
+"[code]point_count[/code], the smoother the curve. See also [method "
+"draw_circle]."
 msgstr ""
 "在给定的角度之间画一条弧线。[code]point_count[/code] 的值越大，曲线越平滑。"
 
@@ -14833,17 +15013,25 @@ msgstr ""
 "与可选的下一个字符的字偶距。"
 
 #: doc/classes/CanvasItem.xml
-msgid "Draws a colored circle."
-msgstr "画一个彩色的圆。"
+msgid ""
+"Draws a colored, unfilled circle. See also [method draw_arc], [method "
+"draw_polyline] and [method draw_polygon]."
+msgstr ""
 
 #: doc/classes/CanvasItem.xml
-msgid "Draws a colored polygon of any amount of points, convex or concave."
+#, fuzzy
+msgid ""
+"Draws a colored polygon of any amount of points, convex or concave. Unlike "
+"[method draw_polygon], a single color must be specified for the whole "
+"polygon."
 msgstr "绘制任意数量点的彩色多边形，凸或凹。"
 
 #: doc/classes/CanvasItem.xml
+#, fuzzy
 msgid ""
 "Draws a line from a 2D point to another, with a given color and width. It "
-"can be optionally antialiased."
+"can be optionally antialiased. See also [method draw_multiline] and [method "
+"draw_polyline]."
 msgstr ""
 "绘制一条从 2D 点到另一个点的线，具有给定的颜色和宽度。它可以选择抗锯齿。"
 
@@ -14855,20 +15043,29 @@ msgstr ""
 "使用所提供的纹理以2D方式绘制一个[Mesh]。相关文档请参阅[MeshInstance2D]。"
 
 #: doc/classes/CanvasItem.xml
+#, fuzzy
 msgid ""
-"Draws multiple, parallel lines with a uniform [code]color[/code].\n"
+"Draws multiple disconnected lines with a uniform [code]color[/code]. When "
+"drawing large amounts of lines, this is faster than using individual [method "
+"draw_line] calls. To draw interconnected lines, use [method draw_polyline] "
+"instead.\n"
 "[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently "
 "not implemented and have no effect."
 msgstr ""
-"使用 uniform [code]color[/code] 绘制多条平行线。\n"
+"以 uniform 的 [code]width[/code] 和逐段着色绘制多条平行线。分配给线段的颜色"
+"按 [code]points[/code] 和 [code]colors[/code] 之间的索引匹配。\n"
 "[b]注意：[/b][code]width[/code] 和 [code]antialiased[/code] 目前没有实现，没"
 "有效果。"
 
 #: doc/classes/CanvasItem.xml
+#, fuzzy
 msgid ""
-"Draws multiple, parallel lines with a uniform [code]width[/code] and segment-"
-"by-segment coloring. Colors assigned to line segments match by index between "
-"[code]points[/code] and [code]colors[/code].\n"
+"Draws multiple disconnected lines with a uniform [code]width[/code] and "
+"segment-by-segment coloring. Colors assigned to line segments match by index "
+"between [code]points[/code] and [code]colors[/code]. When drawing large "
+"amounts of lines, this is faster than using individual [method draw_line] "
+"calls. To draw interconnected lines, use [method draw_polyline_colors] "
+"instead.\n"
 "[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are currently "
 "not implemented and have no effect."
 msgstr ""
@@ -14886,23 +15083,31 @@ msgstr ""
 "[MultiMeshInstance2D]。"
 
 #: doc/classes/CanvasItem.xml
-msgid "Draws a polygon of any amount of points, convex or concave."
-msgstr "绘制任意数量的点的多边形，凸或凹。"
+msgid ""
+"Draws a solid polygon of any amount of points, convex or concave. Unlike "
+"[method draw_colored_polygon], each point's color can be changed "
+"individually. See also [method draw_polyline] and [method "
+"draw_polyline_colors]."
+msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
 "Draws interconnected line segments with a uniform [code]color[/code] and "
-"[code]width[/code] and optional antialiasing."
+"[code]width[/code] and optional antialiasing. When drawing large amounts of "
+"lines, this is faster than using individual [method draw_line] calls. To "
+"draw disconnected lines, use [method draw_multiline] instead. See also "
+"[method draw_polygon]."
 msgstr ""
-"以uniform 的[code]color[/code]和[code]width[/code]来绘制相互连接的线段，可选"
-"抗锯齿。"
 
 #: doc/classes/CanvasItem.xml
+#, fuzzy
 msgid ""
-"Draws interconnected line segments with a uniform [code]width[/code], "
+"Draws interconnected line segments with a uniform [code]width[/code] and "
 "segment-by-segment coloring, and optional antialiasing. Colors assigned to "
 "line segments match by index between [code]points[/code] and [code]colors[/"
-"code]."
+"code]. When drawing large amounts of lines, this is faster than using "
+"individual [method draw_line] calls. To draw disconnected lines, use [method "
+"draw_multiline_colors] instead. See also [method draw_polygon]."
 msgstr ""
 "以uniform的[code]width[/code]绘制相互连接的线段，逐段着色，可选抗锯齿。分配给"
 "线段的颜色通过[code]points[/code]和[code]colors[/code]之间的索引进行匹配。"
@@ -14910,10 +15115,11 @@ msgstr ""
 #: doc/classes/CanvasItem.xml
 msgid ""
 "Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points "
-"for a triangle and 4 points for a quad."
+"for a triangle, and 4 points for a quad. If 0 points or more than 4 points "
+"are specified, nothing will be drawn and an error message will be printed. "
+"See also [method draw_line], [method draw_polyline], [method draw_polygon], "
+"and [method draw_rect]."
 msgstr ""
-"绘制自定义基本网格。1点为一个点，2点为一条线，3点为一个三角形，4点为一个四边"
-"形。"
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -15056,8 +15262,11 @@ msgid "Returns the [World2D] where this item is in."
 msgstr "返回此物品所在的[World2D]。"
 
 #: doc/classes/CanvasItem.xml
-msgid "Hide the [CanvasItem] if it's currently visible."
-msgstr "如果[CanvasItem]当前可见，则隐藏它。"
+#, fuzzy
+msgid ""
+"Hide the [CanvasItem] if it's currently visible. This is equivalent to "
+"setting [member visible] to [code]false[/code]."
+msgstr "清空数组。与调用 [method resize] 时指定大小为 [code]0[/code] 等价。"
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -15122,8 +15331,10 @@ msgstr ""
 "如果[code]enable[/code]为[code]true[/code]，则将使用全局变换数据更新子项。"
 
 #: doc/classes/CanvasItem.xml
+#, fuzzy
 msgid ""
-"Show the [CanvasItem] if it's currently hidden. For controls that inherit "
+"Show the [CanvasItem] if it's currently hidden. This is equivalent to "
+"setting [member visible] to [code]true[/code]. For controls that inherit "
 "[Popup], the correct way to make them visible is to call one of the multiple "
 "[code]popup*()[/code] functions instead."
 msgstr ""
@@ -15524,9 +15735,10 @@ msgstr ""
 "https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project"
 
 #: doc/classes/CharFXTransform.xml
+#, fuzzy
 msgid ""
-"The index of the current character (starting from 0). Setting this property "
-"won't affect drawing."
+"The index of the current character (starting from 0) for the "
+"[RichTextLabel]'s BBCode text. Setting this property won't affect drawing."
 msgstr "当前字符的索引（从0开始）。设置此属性不会影响图形。"
 
 #: doc/classes/CharFXTransform.xml
@@ -15593,6 +15805,13 @@ msgstr ""
 #: doc/classes/CharFXTransform.xml
 msgid "The position offset the character will be drawn with (in pixels)."
 msgstr "绘制字符的位置偏移量（以像素为单位）。"
+
+#: doc/classes/CharFXTransform.xml
+#, fuzzy
+msgid ""
+"The index of the current character (starting from 0) for this "
+"[RichTextEffect] custom block. Setting this property won't affect drawing."
+msgstr "当前字符的索引（从0开始）。设置此属性不会影响图形。"
 
 #: doc/classes/CharFXTransform.xml
 msgid ""
@@ -16162,6 +16381,7 @@ msgstr ""
 "返回是否设置了碰撞掩码 [member collision_mask] 的指定位[code]bit[/code]。"
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
+#: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
 msgid "Returns the object's [RID]."
 msgstr "返回对象的 [RID]。"
 
@@ -16670,11 +16890,12 @@ msgid "Color in RGBA format using floats on the range of 0 to 1."
 msgstr "RGBA 格式的颜色，使用 0 到 1 范围内的浮点数。"
 
 #: doc/classes/Color.xml
+#, fuzzy
 msgid ""
 "A color represented by red, green, blue, and alpha (RGBA) components. The "
-"alpha component is often used for transparency. Values are in floating-point "
-"and usually range from 0 to 1. Some properties (such as CanvasItem.modulate) "
-"may accept values greater than 1 (overbright or HDR colors).\n"
+"alpha component is often used for opacity. Values are in floating-point and "
+"usually range from 0 to 1. Some properties (such as CanvasItem.modulate) may "
+"accept values greater than 1 (overbright or HDR colors).\n"
 "You can also create a color from standardized color names by using [method "
 "@GDScript.ColorN] or directly using the color constants defined here. The "
 "standardized color set is based on the [url=https://en.wikipedia.org/wiki/"
@@ -17043,8 +17264,10 @@ msgstr ""
 
 #: doc/classes/Color.xml
 msgid ""
-"The color's alpha (transparency) component, typically on the range of 0 to 1."
-msgstr "颜色的 Alpha（透明度）分量，通常在 0 到 1 的范围内。"
+"The color's alpha component, typically on the range of 0 to 1. A value of 0 "
+"means that the color is fully transparent. A value of 1 means that the color "
+"is fully opaque."
+msgstr ""
 
 #: doc/classes/Color.xml
 msgid "Wrapper for [member a] that uses the range 0 to 255 instead of 0 to 1."
@@ -17718,7 +17941,8 @@ msgstr ""
 "动事件中也会立即应用(会造成性能问题)。"
 
 #: doc/classes/ColorPicker.xml
-msgid "If [code]true[/code], shows an alpha channel slider (transparency)."
+#, fuzzy
+msgid "If [code]true[/code], shows an alpha channel slider (opacity)."
 msgstr "如果 [code]true[/code]，显示 Alpha 通道滑块（透明度）。"
 
 #: doc/classes/ColorPicker.xml
@@ -20444,8 +20668,10 @@ msgstr ""
 #: doc/classes/ConvexPolygonShape2D.xml
 msgid ""
 "The polygon's list of vertices. Can be in either clockwise or "
-"counterclockwise order."
-msgstr "多边形的顶点列表。可以按顺时针或逆时针顺序。"
+"counterclockwise order. Only set this property with convex hull points, use "
+"[method set_point_cloud] to generate a convex hull shape from concave shape "
+"points."
+msgstr ""
 
 #: doc/classes/CPUParticles.xml
 msgid "CPU-based 3D particle emitter."
@@ -22000,8 +22226,9 @@ msgstr ""
 "另请参阅[GodotSharp]。"
 
 #: modules/mono/doc_classes/CSharpScript.xml
-msgid "$DOCS_URL/getting_started/scripting/c_sharp/index.html"
-msgstr "$DOCS_URL/getting_started/scripting/c_sharp/index.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/scripting/c_sharp/index.html"
+msgstr "$DOCS_URL/tutorials/scripting/index.html"
 
 #: modules/mono/doc_classes/CSharpScript.xml
 #: modules/gdnative/doc_classes/PluginScript.xml
@@ -24013,6 +24240,13 @@ msgid "The font hinting mode used by FreeType. See [enum Hinting] for options."
 msgstr "FreeType 使用的字体提示模式。参阅 [enum Hinting] 选项。"
 
 #: doc/classes/DynamicFontData.xml
+msgid ""
+"If set to a value greater than [code]0.0[/code], it will override default "
+"font oversampling, ignoring [member SceneTree.use_font_oversampling] value "
+"and viewport stretch mode."
+msgstr ""
+
+#: doc/classes/DynamicFontData.xml
 msgid "Disables font hinting (smoother but less crisp)."
 msgstr "禁用字体提示（更平滑但不那么清晰）。"
 
@@ -24029,12 +24263,15 @@ msgid "A script that is executed when exporting the project."
 msgstr "在导出项目时执行的脚本。"
 
 #: doc/classes/EditorExportPlugin.xml
+#, fuzzy
 msgid ""
-"Editor export plugins are automatically activated whenever the user exports "
+"[EditorExportPlugin]s are automatically invoked whenever the user exports "
 "the project. Their most common use is to determine what files are being "
 "included in the exported project. For each plugin, [method _export_begin] is "
 "called at the beginning of the export process and then [method _export_file] "
-"is called for each exported file."
+"is called for each exported file.\n"
+"To use [EditorExportPlugin], register it using the [method EditorPlugin."
+"add_export_plugin] method first."
 msgstr ""
 "每当用户导出项目时，会自动激活编辑器的导出插件。其最常用在确定哪些文件被包含"
 "到导出的项目中。对于每个插件，在导出过程开始时调用[method _export_begin]，然"
@@ -24136,9 +24373,20 @@ msgstr "从给定的[code]path[/code]添加静态库到iOS项目。"
 
 #: doc/classes/EditorExportPlugin.xml
 msgid ""
-"Adds a shared object with the given [code]tags[/code] and destination "
-"[code]path[/code]."
-msgstr "添加指定 [code]tags[/code] 和目标 [code]path[/code] 的共享对象。"
+"Adds file or directory matching [code]path[/code] to [code]PlugIns[/code] "
+"directory of macOS app bundle.\n"
+"[b]Note:[/b] This is useful only for macOS exports."
+msgstr ""
+
+#: doc/classes/EditorExportPlugin.xml
+msgid ""
+"Adds a shared object or a directory containing only shared objects with the "
+"given [code]tags[/code] and destination [code]path[/code].\n"
+"[b]Note:[/b] In case of macOS exports, those shared objects will be added to "
+"[code]Frameworks[/code] directory of app bundle.\n"
+"In case of a directory code-sign will error if you place non code object in "
+"directory."
+msgstr ""
 
 #: doc/classes/EditorExportPlugin.xml
 msgid ""
@@ -24649,11 +24897,11 @@ msgstr ""
 "源类型导入。"
 
 #: doc/classes/EditorImportPlugin.xml
+#, fuzzy
 msgid ""
-"EditorImportPlugins provide a way to extend the editor's resource import "
+"[EditorImportPlugin]s provide a way to extend the editor's resource import "
 "functionality. Use them to import resources from custom files or to provide "
-"alternatives to the editor's existing importers. Register your "
-"[EditorPlugin] with [method EditorPlugin.add_import_plugin].\n"
+"alternatives to the editor's existing importers.\n"
 "EditorImportPlugins work by associating with specific file extensions and a "
 "resource type. See [method get_recognized_extensions] and [method "
 "get_resource_type]. They may optionally specify some import presets that "
@@ -24702,7 +24950,9 @@ msgid ""
 "\n"
 "    var filename = save_path + \".\" + get_save_extension()\n"
 "    return ResourceSaver.save(filename, mesh)\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"To use [EditorImportPlugin], register it using the [method EditorPlugin."
+"add_import_plugin] method first."
 msgstr ""
 "EditorImportPlugins提供了一种扩展编辑器资源导入功能的方法。使用它们来导入自定"
 "义文件中的资源，或成为编辑器现有导入器的替代品。用[method EditorPlugin."
@@ -24971,9 +25221,10 @@ msgid "Plugin for adding custom property editors on inspector."
 msgstr "用于在检查器上添加自定义属性编辑器的插件。"
 
 #: doc/classes/EditorInspectorPlugin.xml
+#, fuzzy
 msgid ""
-"These plugins allow adding custom property editors to [EditorInspector].\n"
-"Plugins are registered via [method EditorPlugin.add_inspector_plugin].\n"
+"[EditorInspectorPlugin] allows adding custom property editors to "
+"[EditorInspector].\n"
 "When an object is edited, the [method can_handle] function is called and "
 "must return [code]true[/code] if the object type is supported.\n"
 "If supported, the function [method parse_begin] will be called, allowing to "
@@ -24982,7 +25233,9 @@ msgid ""
 "called for every category and property. They offer the ability to add custom "
 "controls to the inspector too.\n"
 "Finally, [method parse_end] will be called.\n"
-"On each of these calls, the \"add\" functions can be called."
+"On each of these calls, the \"add\" functions can be called.\n"
+"To use [EditorInspectorPlugin], register it using the [method EditorPlugin."
+"add_inspector_plugin] method first."
 msgstr ""
 "该插件允许向[EditorInspector]添加自定义属性编辑器。\n"
 "插件通过[method EditorPlugin.add_inspector_plugin]注册。\n"
@@ -26384,6 +26637,14 @@ msgstr "如果你的生成器支持类型[code]type[/code]的资源，返回[cod
 msgid "Imports scenes from third-parties' 3D files."
 msgstr "从第三方的3D文件中导入场景。"
 
+#: doc/classes/EditorSceneImporter.xml
+msgid ""
+"[EditorSceneImporter] allows to define an importer script for a third-party "
+"3D format.\n"
+"To use [EditorSceneImporter], register it using the [method EditorPlugin."
+"add_scene_import_plugin] method first."
+msgstr ""
+
 #: modules/fbx/doc_classes/EditorSceneImporterFBX.xml
 msgid "FBX 3D asset importer."
 msgstr "FBX 3D资产导入器。"
@@ -27030,11 +27291,14 @@ msgid "Used by the editor to define Spatial gizmo types."
 msgstr "由编辑部用于定义空间小工具的类型。"
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
+#, fuzzy
 msgid ""
-"EditorSpatialGizmoPlugin allows you to define a new type of Gizmo. There are "
-"two main ways to do so: extending [EditorSpatialGizmoPlugin] for the simpler "
-"gizmos, or creating a new [EditorSpatialGizmo] type. See the tutorial in the "
-"documentation for more info."
+"[EditorSpatialGizmoPlugin] allows you to define a new type of Gizmo. There "
+"are two main ways to do so: extending [EditorSpatialGizmoPlugin] for the "
+"simpler gizmos, or creating a new [EditorSpatialGizmo] type. See the "
+"tutorial in the documentation for more info.\n"
+"To use [EditorSpatialGizmoPlugin], register it using the [method "
+"EditorPlugin.add_spatial_gizmo_plugin] method first."
 msgstr ""
 "EditorSpatialGizmoPlugin 允许您定义一种新的辅助工具类型。这样做的主要方法有两"
 "种：扩展 [EditorSpatialGizmoPlugin] 以获得更简单的Gizmos，或创建新的 "
@@ -27676,6 +27940,7 @@ msgstr ""
 "[member physics_jitter_fix]设置为[code]0[/code]来禁用物理抖动修复。"
 
 #: doc/classes/Engine.xml
+#, fuzzy
 msgid ""
 "If [code]false[/code], stops printing error and warning messages to the "
 "console and editor Output log. This can be used to hide error and warning "
@@ -27683,7 +27948,7 @@ msgid ""
 "[member ProjectSettings.application/run/disable_stderr] project setting.\n"
 "[b]Warning:[/b] If you set this to [code]false[/code] anywhere in the "
 "project, important error messages may be hidden even if they are emitted "
-"from other scripts. If this is set to [code]false[/code] in a [code]@tool[/"
+"from other scripts. If this is set to [code]false[/code] in a [code]tool[/"
 "code] script, this will also impact the editor itself. Do [i]not[/i] report "
 "bugs before ensuring error messages are enabled (as they are by default).\n"
 "[b]Note:[/b] This property does not impact the editor's Errors tab when "
@@ -29641,11 +29906,13 @@ msgstr ""
 "个平台和架构进行编译。"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
-msgid "$DOCS_URL/tutorials/plugins/gdnative/gdnative-c-example.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/scripting/gdnative/gdnative-c-example.html"
 msgstr "$DOCS_URL/tutorials/plugins/gdnative/gdnative-c-example.html"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
-msgid "$DOCS_URL/tutorials/plugins/gdnative/gdnative-cpp-example.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/scripting/gdnative/gdnative-cpp-example.html"
 msgstr "$DOCS_URL/tutorials/plugins/gdnative/gdnative-cpp-example.html"
 
 #: modules/gdnative/doc_classes/GDNativeLibrary.xml
@@ -29739,8 +30006,9 @@ msgstr ""
 "[method Object.set_script] 会扩展该对象。"
 
 #: modules/gdscript/doc_classes/GDScript.xml
-msgid "$DOCS_URL/getting_started/scripting/gdscript/index.html"
-msgstr "$DOCS_URL/getting_started/scripting/gdscript/index.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/scripting/gdscript/index.html"
+msgstr "$DOCS_URL/tutorials/scripting/index.html"
 
 #: modules/gdscript/doc_classes/GDScript.xml
 msgid "Returns byte code for the script source code."
@@ -32261,6 +32529,12 @@ msgstr "指定的 [MeshLibrary]。"
 
 #: modules/gridmap/doc_classes/GridMap.xml
 msgid ""
+"Overrides the default friction and bounce physics properties for the whole "
+"[GridMap]."
+msgstr ""
+
+#: modules/gridmap/doc_classes/GridMap.xml
+msgid ""
 "Controls whether this GridMap will be baked in a [BakedLightmap] or not."
 msgstr "控制此 GridMap 是否会在 [BakedLightmap] 中烘焙。"
 
@@ -32518,6 +32792,7 @@ msgid "Used to create an HMAC for a message using a key."
 msgstr "用来为一个使用密钥的信息创建 HMAC。"
 
 #: doc/classes/HMACContext.xml
+#, fuzzy
 msgid ""
 "The HMACContext class is useful for advanced HMAC use cases, such as "
 "streaming the message as it supports creating the message over time rather "
@@ -32531,7 +32806,7 @@ msgid ""
 "    var err = ctx.start(HashingContext.HASH_SHA256, key)\n"
 "    assert(err == OK)\n"
 "    var msg1 = \"this is \".to_utf8()\n"
-"    var msg2 = \"vewy vewy secret\".to_utf8()\n"
+"    var msg2 = \"super duper secret\".to_utf8()\n"
 "    err = ctx.update(msg1)\n"
 "    assert(err == OK)\n"
 "    err = ctx.update(msg2)\n"
@@ -32554,7 +32829,7 @@ msgid ""
 "        Error err = ctx.Start(HashingContext.HASH_SHA256, key);\n"
 "        GD.Assert(err == OK);\n"
 "        PoolByteArray msg1 = String(\"this is \").to_utf8();\n"
-"        PoolByteArray msg2 = String(\"vewy vew secret\").to_utf8();\n"
+"        PoolByteArray msg2 = String(\"super duper secret\").to_utf8();\n"
 "        err = ctx.Update(msg1);\n"
 "        GD.Assert(err == OK);\n"
 "        err = ctx.Update(msg2);\n"
@@ -35536,6 +35811,7 @@ msgstr ""
 "想要的值（在 0 到 1 的范围内）。"
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] when the user starts pressing the action event, "
 "meaning it's [code]true[/code] only on the frame that the user pressed down "
@@ -35544,7 +35820,11 @@ msgid ""
 "pressed, instead of every frame while it's pressed.\n"
 "If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
 "for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events."
+"for [InputEventJoypadMotion] events.\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_action_just_pressed] may "
+"return [code]false[/code] even if one of the action's keys is pressed. See "
+"[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
 "当用户开始按下动作事件时，返回[code]true[/code]，也就是说，只有在用户按下按钮"
 "的那一帧才是[code]true[/code]。\n"
@@ -35570,6 +35850,7 @@ msgstr ""
 "向。"
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if you are pressing the action event. Note that if "
 "an action has multiple buttons assigned and more than one of them is "
@@ -35577,7 +35858,11 @@ msgid ""
 "button assigned to this action is still pressed.\n"
 "If [code]exact[/code] is [code]false[/code], it ignores the input modifiers "
 "for [InputEventKey] and [InputEventMouseButton] events, and the direction "
-"for [InputEventJoypadMotion] events."
+"for [InputEventJoypadMotion] events.\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
+"[code]false[/code] even if one of the action's keys is pressed. See [url="
+"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
 "如果你正在按下动作事件，返回[code]true[/code]。请注意，如果一个动作有多个分配"
 "的按钮，并且不止一个被按下，释放一个按钮将释放这个动作，即使其他分配给这个动"
@@ -35606,11 +35891,18 @@ msgstr ""
 
 #: doc/classes/Input.xml
 msgid ""
-"Returns [code]true[/code] if you are pressing the key. You can pass a [enum "
-"KeyList] constant."
+"Returns [code]true[/code] if you are pressing the key in the current "
+"keyboard layout. You can pass a [enum KeyList] constant.\n"
+"[method is_key_pressed] is only recommended over [method "
+"is_physical_key_pressed] in non-game applications. This ensures that "
+"shortcut keys behave as expected depending on the user's keyboard layout, as "
+"keyboard shortcuts are generally dependent on the keyboard layout in non-"
+"game applications. If in doubt, use [method is_physical_key_pressed].\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_key_pressed] may return "
+"[code]false[/code] even if one of the action's keys is pressed. See [url="
+"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
-"如果你正在按压该键，则返回 [code]true[/code]。你可以传递 [enum KeyList] 常"
-"量。"
 
 #: doc/classes/Input.xml
 msgid ""
@@ -35623,10 +35915,17 @@ msgstr ""
 msgid ""
 "Returns [code]true[/code] if you are pressing the key in the physical "
 "location on the 101/102-key US QWERTY keyboard. You can pass a [enum "
-"KeyList] constant."
+"KeyList] constant.\n"
+"[method is_physical_key_pressed] is recommended over [method is_key_pressed] "
+"for in-game actions, as it will make W/A/S/D layouts work regardless of the "
+"user's keyboard layout. [method is_physical_key_pressed] will also ensure "
+"that the top row number keys work on any keyboard layout. If in doubt, use "
+"[method is_physical_key_pressed].\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_physical_key_pressed] may "
+"return [code]false[/code] even if one of the action's keys is pressed. See "
+"[url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
-"如果你正在按压该键，则返回[code]true[/code]。按键由 101/102 键美式 QWERTY 键"
-"盘上该键的物理位置确定。你可以传递 [enum KeyList] 常量。"
 
 #: doc/classes/Input.xml
 msgid ""
@@ -36018,6 +36317,7 @@ msgstr ""
 "向。"
 
 #: doc/classes/InputEvent.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if the given action is being pressed (and is not "
 "an echo event for [InputEventKey] events, unless [code]allow_echo[/code] is "
@@ -36025,7 +36325,11 @@ msgid ""
 "or [InputEventScreenDrag].\n"
 "If [code]exact_match[/code] is [code]false[/code], it ignores the input "
 "modifiers for [InputEventKey] and [InputEventMouseButton] events, and the "
-"direction for [InputEventJoypadMotion] events."
+"direction for [InputEventJoypadMotion] events.\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
+"[code]false[/code] even if one of the action's keys is pressed. See [url="
+"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
 "如果给定的动作被按下，则返回[code]true[/code]，并且不是 [InputEventKey] 事件"
 "的回显事件，除非 [code]allow_echo[/code] 是 [code]true[/code]。与"
@@ -36065,12 +36369,20 @@ msgstr ""
 "[code]true[/code]。"
 
 #: doc/classes/InputEvent.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if this input event is pressed. Not relevant for "
-"events of type [InputEventMouseMotion] or [InputEventScreenDrag]."
+"events of type [InputEventMouseMotion] or [InputEventScreenDrag].\n"
+"[b]Note:[/b] Due to keyboard ghosting, [method is_action_pressed] may return "
+"[code]false[/code] even if one of the action's keys is pressed. See [url="
+"$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input "
+"examples[/url] in the documentation for more information."
 msgstr ""
-"如果此输入事件为按下，则返回 [code]true[/code]。与类型 "
-"[InputEventMouseMotion] 或 [InputEventScreenDrag] 的事件无关。"
+"如果给定的动作被释放，即未被按下，则返回[code]true[/code]。与"
+"[InputEventMouseMotion]或[InputEventScreenDrag]类型的事件无关。\n"
+"如果[code]exact_match[/code]是[code]false[/code]，它将忽略[InputEventKey]和"
+"[InputEventMouseButton]事件的输入修饰符，以及[InputEventJoypadMotion]事件的方"
+"向。"
 
 #: doc/classes/InputEvent.xml
 msgid ""
@@ -36320,6 +36632,110 @@ msgstr ""
 "符和复杂文字的 Unicode 标识符可能无法使用。更多信息参阅 [method OS."
 "set_ime_active]。"
 
+#: doc/classes/InputEventMIDI.xml
+#, fuzzy
+msgid "Input event for MIDI inputs."
+msgstr "动作的输入事件类型。"
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"InputEventMIDI allows receiving input events from MIDI devices such as a "
+"piano. MIDI stands for Musical Instrument Digital Interface.\n"
+"MIDI signals can be sent over a 5-pin MIDI connector or over USB, if your "
+"device supports both be sure to check the settings in the device to see "
+"which output it's using.\n"
+"To receive input events from MIDI devices, you need to call [method OS."
+"open_midi_inputs]. You can check which devices are detected using [method OS."
+"get_connected_midi_inputs].\n"
+"Note that Godot does not currently support MIDI output, so there is no way "
+"to emit MIDI signals from Godot. Only MIDI input works."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-"
+"status-bytes"
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+#, fuzzy
+msgid "https://en.wikipedia.org/wiki/General_MIDI#Program_change_events"
+msgstr ""
+"https://zh.wikipedia.org/zh-cn/%E5%96%AE%E7%B2%BE%E5%BA%A6%E6%B5%AE%E9%BB%9E"
+"%E6%95%B8"
+
+#: doc/classes/InputEventMIDI.xml
+#, fuzzy
+msgid "https://en.wikipedia.org/wiki/Piano_key_frequencies#List"
+msgstr ""
+"https://zh.wikipedia.org/zh-cn/%E5%96%AE%E7%B2%BE%E5%BA%A6%E6%B5%AE%E9%BB%9E"
+"%E6%95%B8"
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"The MIDI channel of this input event. There are 16 channels, so this value "
+"ranges from 0 to 15. MIDI channel 9 is reserved for the use with percussion "
+"instruments, the rest of the channels are for non-percussion instruments."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"If the message is [code]MIDI_MESSAGE_CONTROL_CHANGE[/code], this indicates "
+"the controller number, otherwise this is zero. Controllers include devices "
+"such as pedals and levers."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"If the message is [code]MIDI_MESSAGE_CONTROL_CHANGE[/code], this indicates "
+"the controller value, otherwise this is zero. Controllers include devices "
+"such as pedals and levers."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"The instrument of this input event. This value ranges from 0 to 127. Refer "
+"to the instrument list on the General MIDI wikipedia article to see a list "
+"of instruments, except that this value is 0-index, so subtract one from "
+"every number on that chart. A standard piano will have an instrument number "
+"of 0."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"Returns a value indicating the type of message for this MIDI signal. This is "
+"a member of the MidiMessageList enum.\n"
+"For MIDI messages between 0x80 and 0xEF, only the left half of the bits are "
+"returned as this value, as the other part is the channel (ex: 0x94 becomes "
+"0x9). For MIDI messages from 0xF0 to 0xFF, the value is returned as-is.\n"
+"Notes will return [code]MIDI_MESSAGE_NOTE_ON[/code] when activated, but they "
+"might not always return [code]MIDI_MESSAGE_NOTE_OFF[/code] when deactivated, "
+"therefore your code should treat the input as stopped if some period of time "
+"has passed.\n"
+"For more information, see the MIDI message status byte list chart linked "
+"above."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"The pitch index number of this MIDI signal. This value ranges from 0 to 127. "
+"On a piano, middle C is 60, and A440 is 69, see the \"MIDI note\" column of "
+"the piano key frequency chart on Wikipedia for more information."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"The pressure of the MIDI signal. This value ranges from 0 to 127. For many "
+"devices, this value is always zero."
+msgstr ""
+
+#: doc/classes/InputEventMIDI.xml
+msgid ""
+"The velocity of the MIDI signal. This value ranges from 0 to 127. For a "
+"piano, this corresponds to how quickly the key was pressed, and is rarely "
+"above about 110 in practice."
+msgstr ""
+
 #: doc/classes/InputEventMouse.xml
 msgid "Base input event type for mouse events."
 msgstr "鼠标事件的基本输入事件类型。"
@@ -36335,18 +36751,22 @@ msgid ""
 msgstr "鼠标按钮掩码标识符，是[enum ButtonList] 按钮掩码之一或按位组合。"
 
 #: doc/classes/InputEventMouse.xml
+#, fuzzy
 msgid ""
-"The global mouse position relative to the current [Viewport] when used in "
-"[method Control._gui_input], otherwise is at 0,0."
+"The global mouse position relative to the current [Viewport]. If used in "
+"[method Control._gui_input] and if the current [Control] is not under the "
+"mouse, moving it will not update this value."
 msgstr ""
-"在[method Control._gui_input]中使用时，相对于当前[Viewport]的全局鼠标位置，否"
-"则是在0,0处。"
+"相对于[Viewport]的本地局部鼠标位置。如果在[method Control._gui_input]中使用，"
+"位置是相对于当前处于鼠标下的控件[Control]。"
 
 #: doc/classes/InputEventMouse.xml
+#, fuzzy
 msgid ""
 "The local mouse position relative to the [Viewport]. If used in [method "
 "Control._gui_input], the position is relative to the current [Control] which "
-"is under the mouse."
+"is under the mouse. If the current [Control] is not under the mouse, moving "
+"it will not update this value."
 msgstr ""
 "相对于[Viewport]的本地局部鼠标位置。如果在[method Control._gui_input]中使用，"
 "位置是相对于当前处于鼠标下的控件[Control]。"
@@ -37076,16 +37496,16 @@ msgstr "返回与指定索引关联的工具提示。"
 msgid "Returns an array with the indexes of the selected items."
 msgstr "返回一个包含所选项目索引的数组。"
 
-#: doc/classes/ItemList.xml
+#: doc/classes/ItemList.xml doc/classes/RichTextLabel.xml
 msgid ""
-"Returns the [Object] ID associated with the list.\n"
+"Returns the vertical scrollbar.\n"
 "[b]Warning:[/b] This is a required internal node, removing and freeing it "
 "may cause a crash. If you wish to hide it or any of its children, use their "
 "[member CanvasItem.visible] property."
 msgstr ""
-"返回与列表相关的[Object]ID。\n"
-"[b]警告：[/b] 这是一个必要的内部节点，移除和释放它可能会导致崩溃。如果你想隐"
-"藏它或它的任意子节点，请使用其的 [member CanvasItem.visible] 属性。"
+"返回垂直滚动条。\n"
+"[b]警告：[/b] 这是一个必需的内部节点，删除和释放它可能会导致崩溃。如果您希望"
+"隐藏它或其任何子项，请使用它们的 [member CanvasItem.visible] 属性。"
 
 #: doc/classes/ItemList.xml
 msgid "Returns [code]true[/code] if one or more items are selected."
@@ -38258,6 +38678,30 @@ msgid ""
 "Lock the body's Z axis movement. Deprecated alias for [member "
 "axis_lock_motion_z]."
 msgstr "锁定物体的Z轴运动。已被废弃的[member axis_lock_motion_z]的别名。"
+
+#: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
+msgid ""
+"Sets the behavior to apply when you leave a moving platform. By default, to "
+"be physically accurate, when you leave the last platform velocity is "
+"applied. See [enum MovingPlatformApplyVelocityOnLeave] constants for "
+"available behavior."
+msgstr ""
+
+#: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
+msgid "Add the last platform velocity when you leave a moving platform."
+msgstr ""
+
+#: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
+msgid ""
+"Add the last platform velocity when you leave a moving platform, but any "
+"downward motion is ignored. It's useful to keep full jump height even when "
+"the platform is moving down."
+msgstr ""
+
+#: doc/classes/KinematicBody.xml doc/classes/KinematicBody2D.xml
+#, fuzzy
+msgid "Do nothing when leaving a platform."
+msgstr "使用 2D 变换时使用此选项。"
 
 #: doc/classes/KinematicBody2D.xml
 msgid "Kinematic body 2D node."
@@ -42109,16 +42553,13 @@ msgid "Mesh-based navigation and pathfinding node."
 msgstr "基于网格的导航和寻路节点。"
 
 #: doc/classes/Navigation.xml
+#, fuzzy
 msgid ""
 "Provides navigation and pathfinding within a collection of "
 "[NavigationMesh]es. By default, these will be automatically collected from "
-"child [NavigationMeshInstance] nodes, but they can also be added on the fly "
-"with [method navmesh_add]. In addition to basic pathfinding, this class also "
-"assists with aligning navigation agents with the meshes they are navigating "
-"on.\n"
-"[b]Note:[/b] The current navigation system has many known issues and will "
-"not always return optimal paths as expected. These issues will be fixed in "
-"Godot 4.0."
+"child [NavigationMeshInstance] nodes. In addition to basic pathfinding, this "
+"class also assists with aligning navigation agents with the meshes they are "
+"navigating on."
 msgstr ""
 "在[NavigationMesh]的集合中提供导航和寻路功能。默认情况下，这些将自动从子"
 "[NavigationMeshInstance]节点中收集，也可以通过[method navmesh_add]即时添加。"
@@ -42127,6 +42568,7 @@ msgstr ""
 "路径。这些问题将在Godot 4.0中得到解决。"
 
 #: doc/classes/Navigation.xml doc/classes/NavigationMesh.xml
+#: doc/classes/NavigationServer.xml
 msgid "https://godotengine.org/asset-library/asset/124"
 msgstr "https://godotengine.org/asset-library/asset/124"
 
@@ -42146,12 +42588,10 @@ msgstr ""
 "代理。"
 
 #: doc/classes/Navigation.xml
+#, fuzzy
 msgid ""
 "Returns the owner of the [NavigationMesh] which contains the navigation "
-"point closest to the point given. This is usually a "
-"[NavigationMeshInstance]. For meshes added via [method navmesh_add], returns "
-"the owner that was given (or [code]null[/code] if the [code]owner[/code] "
-"parameter was omitted)."
+"point closest to the point given. This is usually a [NavigationMeshInstance]."
 msgstr ""
 "返回包含最接近给定点的导航点的 [NavigationMesh] 的所有者。这通常是一个 "
 "[NavigationMeshInstance]。对于通过 [method navmesh_add] 添加的网格，返回给定"
@@ -42168,13 +42608,12 @@ msgstr ""
 "导航网格之间的交点。如果找到多个交点，则返回最接近线段起点的交点。"
 
 #: doc/classes/Navigation.xml
+#, fuzzy
 msgid ""
 "Returns the path between two given points. Points are in local coordinate "
 "space. If [code]optimize[/code] is [code]true[/code] (the default), the "
 "agent properties associated with each [NavigationMesh] (radius, height, "
-"etc.) are considered in the path calculation, otherwise they are ignored.\n"
-"[b]Note:[/b] This method has known issues and will often return non-optimal "
-"paths. These issues will be fixed in Godot 4.0."
+"etc.) are considered in the path calculation, otherwise they are ignored."
 msgstr ""
 "返回两个给定点之间的路径。点是在局部坐标空间中。如果[code]optimize[/code]是"
 "[code]true[/code]（默认），与每个[NavigationMesh]相关的代理属性（半径、高度"
@@ -42182,24 +42621,14 @@ msgstr ""
 "[b]注意：[/b] 这个方法有已知的问题，经常会返回非最佳的路径。这些问题将在"
 "Godot 4.0中得到修正。"
 
-#: doc/classes/Navigation.xml
+#: doc/classes/Navigation.xml doc/classes/NavigationMesh.xml
+msgid "The XZ plane cell size to use for fields."
+msgstr "用于字段的XZ平面单元尺寸。"
+
+#: doc/classes/Navigation.xml doc/classes/Navigation2D.xml
 msgid ""
-"Adds a [NavigationMesh]. Returns an ID for use with [method navmesh_remove] "
-"or [method navmesh_set_transform]. If given, a [Transform2D] is applied to "
-"the polygon. The optional [code]owner[/code] is used as return value for "
-"[method get_closest_point_owner]."
+"This value is used to detect the near edges to connect compatible regions."
 msgstr ""
-"添加一个 [NavigationMesh]。返回用于 [method navmesh_remove] 或 [method "
-"navmesh_set_transform] 的 ID。如果给定，则将 [Transform2D] 应用于多边形。可选"
-"的 [code]owner[/code] 用作 [method get_closest_point_owner] 的返回值。"
-
-#: doc/classes/Navigation.xml
-msgid "Removes the [NavigationMesh] with the given ID."
-msgstr "移除具有指定ID的[NavigationMesh]。"
-
-#: doc/classes/Navigation.xml
-msgid "Sets the transform applied to the [NavigationMesh] with the given ID."
-msgstr "设置应用于具有指定ID的[NavigationMesh]的变换。"
 
 #: doc/classes/Navigation.xml
 msgid ""
@@ -42214,14 +42643,11 @@ msgid "2D navigation and pathfinding node."
 msgstr "2D导航和寻路节点。"
 
 #: doc/classes/Navigation2D.xml
+#, fuzzy
 msgid ""
 "Navigation2D provides navigation and pathfinding within a 2D area, specified "
 "as a collection of [NavigationPolygon] resources. By default, these are "
-"automatically collected from child [NavigationPolygonInstance] nodes, but "
-"they can also be added on the fly with [method navpoly_add].\n"
-"[b]Note:[/b] The current navigation system has many known issues and will "
-"not always return optimal paths as expected. These issues will be fixed in "
-"Godot 4.0."
+"automatically collected from child [NavigationPolygonInstance] nodes."
 msgstr ""
 "Navigation2D在2D区域内提供导航和寻路，指定为[NavigationPolygon]资源的集合。默"
 "认情况下，这些资源自动从子[NavigationPolygonInstance]节点中收集，但其也可以通"
@@ -42229,29 +42655,28 @@ msgstr ""
 "[b]注意：[/b] 当前的导航系统有许多已知的问题，并不总是能像预期的那样返回最佳"
 "的路径。这些问题将在Godot 4.0中得到解决。"
 
-#: doc/classes/Navigation2D.xml doc/classes/NavigationPolygon.xml
+#: doc/classes/Navigation2D.xml doc/classes/Navigation2DServer.xml
+#: doc/classes/NavigationPolygon.xml
 msgid "https://godotengine.org/asset-library/asset/117"
 msgstr "https://godotengine.org/asset-library/asset/117"
 
 #: doc/classes/Navigation2D.xml
+#, fuzzy
 msgid ""
 "Returns the owner of the [NavigationPolygon] which contains the navigation "
 "point closest to the point given. This is usually a "
-"[NavigationPolygonInstance]. For polygons added via [method navpoly_add], "
-"returns the owner that was given (or [code]null[/code] if the [code]owner[/"
-"code] parameter was omitted)."
+"[NavigationPolygonInstance]."
 msgstr ""
 "返回包含最接近给定点的导航点的 [NavigationPolygon] 的所有者。这通常是一个 "
 "[NavigationPolygonInstance]。对于通过 [method navpoly_add] 添加的多边形，返回"
 "给定的所有者（如果省略 [code]owner[/code] 参数，则返回 [code]null[/code]）。"
 
 #: doc/classes/Navigation2D.xml
+#, fuzzy
 msgid ""
 "Returns the path between two given points. Points are in local coordinate "
 "space. If [code]optimize[/code] is [code]true[/code] (the default), the path "
-"is smoothed by merging path segments where possible.\n"
-"[b]Note:[/b] This method has known issues and will often return non-optimal "
-"paths. These issues will be fixed in Godot 4.0."
+"is smoothed by merging path segments where possible."
 msgstr ""
 "返回两个给定点之间的路径。点是在局部坐标空间中。如果[code]optimize[/code]为"
 "[code]true[/code]（默认值），路径将尽可能地合并路径段，从而平滑。\n"
@@ -42259,24 +42684,418 @@ msgstr ""
 "Godot 4.0中得到解决。"
 
 #: doc/classes/Navigation2D.xml
+#, fuzzy
+msgid "The XY plane cell size to use for fields."
+msgstr "用于字段的XZ平面单元尺寸。"
+
+#: doc/classes/Navigation2DServer.xml
+#, fuzzy
+msgid "Server interface for low-level 2D navigation access."
+msgstr "低级音频访问的服务器接口。"
+
+#: doc/classes/Navigation2DServer.xml
 msgid ""
-"Adds a [NavigationPolygon]. Returns an ID for use with [method "
-"navpoly_remove] or [method navpoly_set_transform]. If given, a [Transform2D] "
-"is applied to the polygon. The optional [code]owner[/code] is used as return "
-"value for [method get_closest_point_owner]."
+"Navigation2DServer is the server responsible for all 2D navigation. It "
+"handles several objects, namely maps, regions and agents.\n"
+"Maps are made up of regions, which are made of navigation polygons. "
+"Together, they define the navigable areas in the 2D world. For two regions "
+"to be connected to each other, they must share a similar edge. An edge is "
+"considered connected to another if both of its two vertices are at a "
+"distance less than [member Navigation.edge_connection_margin] to the "
+"respective other edge's vertex.\n"
+"To use the collision avoidance system, you may use agents. You can set an "
+"agent's target velocity, then the servers will emit a callback with a "
+"modified velocity.\n"
+"[b]Note:[/b] The collision avoidance system ignores regions. Using the "
+"modified velocity as-is might lead to pushing and agent outside of a "
+"navigable area. This is a limitation of the collision avoidance system, any "
+"more complex situation may require the use of the physics engine.\n"
+"This server keeps tracks of any call and executes them during the sync "
+"phase. This means that you can request any change to the map, using any "
+"thread, without worrying."
 msgstr ""
-"添加 [NavigationPolygon]。返回用于 [method navpoly_remove] 或 [method "
-"navpoly_set_transform] 的 ID。如果给定，则将 [Transform2D] 应用于多边形。可选"
-"的 [code]owner[/code] 用作 [method get_closest_point_owner] 的返回值。"
 
-#: doc/classes/Navigation2D.xml
-msgid "Removes the [NavigationPolygon] with the given ID."
-msgstr "移除具有指定ID的[NavigationPolygon]。"
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Creates the agent."
+msgstr "创建一个 [HingeJoint]关节。"
 
-#: doc/classes/Navigation2D.xml
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns [code]true[/code] if the map got changed the previous frame."
+msgstr "如果脚本可以实例化，则返回 [code]true[/code]。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid "Callback called at the end of the RVO process."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Puts the agent in the map."
+msgstr "返回输入的正切值。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 msgid ""
-"Sets the transform applied to the [NavigationPolygon] with the given ID."
-msgstr "设置应用于具有指定ID的[NavigationPolygon]的变换。"
+"Sets the maximum number of other agents the agent takes into account in the "
+"navigation. The larger this number, the longer the running time of the "
+"simulation. If the number is too low, the simulation will not be safe."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the maximum speed of the agent. Must be positive."
+msgstr "设置自动图块的[enum BitmaskMode]位掩码模式。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Sets the maximum distance to other agents this agent takes into account in "
+"the navigation. The larger this number, the longer the running time of the "
+"simulation. If the number is too low, the simulation will not be safe."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the position of the agent in world space."
+msgstr "设置给定顶点的位置。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the radius of the agent."
+msgstr "设置给定顶点的法线。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the new target velocity."
+msgstr "设置给定顶点的骨架。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"The minimal amount of time for which the agent's velocities that are "
+"computed by the simulation are safe with respect to other agents. The larger "
+"this number, the sooner this agent will respond to the presence of other "
+"agents, but the less freedom this agent has in choosing its velocities. Must "
+"be positive."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the current velocity of the agent."
+msgstr "返回补间的当前时间。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Destroys the given RID."
+msgstr "移除给定的图块 ID。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Create a new map."
+msgstr "创建一个[Area]区域。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns the map cell size."
+msgstr "返回数组大小。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid ""
+"Returns the point closest to the provided [code]to_point[/code] on the "
+"navigation mesh surface."
+msgstr ""
+"返回索引[code]point[/code]处的点在索引[code]triangle[/code]的三角形中的位置。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid ""
+"Returns the owner region RID for the point returned by [method "
+"map_get_closest_point]."
+msgstr "返回正在使用的输入端口的数量。替代[method get_free_input_port_id]。"
+
+#: doc/classes/Navigation2DServer.xml
+msgid ""
+"Returns the edge connection margin of the map. The edge connection margin is "
+"a distance used to connect two regions."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns the navigation path to reach the destination from the origin."
+msgstr "返回图块的导航多边形。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns [code]true[/code] if the map is active."
+msgstr "如果选择处于活动状态，则返回 [code]true[/code]。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the map active."
+msgstr "停止定时器。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Set the map cell size used to weld the navigation mesh polygons."
+msgstr "返回应用于该项导航网格的转换。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+msgid ""
+"Set the map edge connection margin used to weld the compatible region edges."
+msgstr ""
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Creates a new region."
+msgstr "创建一个[Area]区域。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the map for the region."
+msgstr "设置给定边的元数据。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the navigation mesh for the region."
+msgstr "设置此项的导航网格。"
+
+#: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the global transformation for the region."
+msgstr "设置视窗的全局变换矩阵。"
+
+#: doc/classes/NavigationAgent.xml
+msgid "3D agent used in navigation for collision avoidance."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"3D agent that is used in navigation to reach a location while avoiding "
+"static and dynamic obstacles. The dynamic obstacles are avoided using RVO "
+"(Reciprocal Velocity Obstacles) collision avoidance. The agent needs "
+"navigation data to work correctly. This can be done by having the agent as a "
+"child of a [Navigation] node, or using [method set_navigation]. "
+"[NavigationAgent] is physics safe."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns the distance to the target location, using the agent's global "
+"position. The user must set the target location with [method "
+"set_target_location] in order for this to be accurate."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Returns the reachable final location in global coordinates. This can change "
+"if the navigation path is altered in any way. Because of this, it would be "
+"best to check this each frame."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid "Returns the path from start to finish in global coordinates."
+msgstr "返回全局屏幕坐标中的可见矩形。"
+
+#: doc/classes/NavigationAgent.xml
+#, fuzzy
+msgid ""
+"Returns which index the agent is currently on in the navigation path's "
+"[PoolVector3Array]."
+msgstr "以 [PoolVector3Array] 的形式返回缓存的点。"
+
+#: doc/classes/NavigationAgent.xml
+#, fuzzy
+msgid ""
+"Returns the [Navigation] node that the agent is using for its navigation "
+"system."
+msgstr "返回指定名称的动画节点。"
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Returns a [Vector3] in global coordinates, that can be moved to, making sure "
+"that there are no static objects in the way. If the agent does not have a "
+"navigation path, it will return the origin of the agent's parent."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid ""
+"Returns the user-defined target location (set with [method "
+"set_target_location])."
+msgstr "返回用[method set_size_override]设置的尺寸重写。"
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid ""
+"Returns [code]true[/code] if the navigation path's final location has been "
+"reached."
+msgstr "返回[code]true[/code]是否对指定路径进行过滤。"
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid ""
+"Returns [code]true[/code] if the target location is reachable. The target "
+"location is set using [method set_target_location]."
+msgstr ""
+"如果启用了尺寸重写，返回[code]true[/code]。参阅[method set_size_override]。"
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns [code]true[/code] if the target location is reached. The target "
+"location is set using [method set_target_location]. It may not always be "
+"possible to reach the target location. It should always be possible to reach "
+"the final location though. See [method get_final_location]."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Sets the [Navigation] node used by the agent. Useful when you don't want to "
+"make the agent a child of a [Navigation] node."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Sets the user desired final location. This will clear the current navigation "
+"path."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Sends the given velocity to the collision avoidance algorithm. It will "
+"adjust the velocity to avoid collisions. Once the adjustment to the velocity "
+"is complete, it will emit the [signal velocity_computed] signal."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml
+#, fuzzy
+msgid "The agent height offset to match the navigation mesh height."
+msgstr "返回图块的导航多边形的偏移量。"
+
+#: doc/classes/NavigationAgent.xml
+msgid ""
+"Ignores collisions on the Y axis. Must be [code]true[/code] to move on a "
+"horizontal plane."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid "The maximum number of neighbors for the agent to consider."
+msgstr "自动曝光的最大亮度值。"
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid "The maximum speed that an agent can move."
+msgstr "曲线能达到的最大值。"
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid "The distance to search for other agents."
+msgstr "实例没有类型。"
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"The maximum distance the agent is allowed away from the ideal path to the "
+"final location. This can happen due to trying to avoid collisions. When the "
+"maximum distance is exceeded, it recalculates the ideal path."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid "The radius of the agent."
+msgstr "圆柱体的半径。"
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"The distance threshold before a target is considered to be reached. This "
+"will allow an agent to not have to hit a point on the path exactly, but in "
+"the area."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"The minimal amount of time for which this agent's velocities, that are "
+"computed with the collision avoidance algorithim, are safe with respect to "
+"other agents. The larger the number, the sooner the agent will respond to "
+"other agents, but the less freedom in choosing its velocities. Must be "
+"positive."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid "Notifies when the final location is reached."
+msgstr "当动画播放结束时通知。"
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Notifies when the navigation path changes. This can be triggered by the "
+"navigation system or by the user changing the path."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Notifies when the player-defined target, set with [method "
+"set_target_location], is reached."
+msgstr ""
+
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+msgid ""
+"Notifies when the collision avoidance velocity is calculated after a call to "
+"[method set_velocity]."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid "2D agent used in navigation for collision avoidance."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"2D agent that is used in navigation to reach a location while avoiding "
+"static and dynamic obstacles. The dynamic obstacles are avoided using RVO "
+"(Reciprocal Velocity Obstacles) collision avoidance. The agent needs "
+"navigation data to work correctly. This can be done by having the agent as a "
+"child of a [Navigation2D] node, or using [method set_navigation]. "
+"[NavigationAgent2D] is physics safe."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns the reachable final location in global coordinates. This can change "
+"if the navigation path is altered in any way."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid ""
+"Returns which index the agent is currently on in the navigation path's "
+"[PoolVector2Array]."
+msgstr "以[PoolVector2Array]的形式返回缓存的点。"
+
+#: doc/classes/NavigationAgent2D.xml
+#, fuzzy
+msgid ""
+"Returns the [Navigation2D] node that the agent is using for its navigation "
+"system."
+msgstr "返回指定名称的动画节点。"
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"Returns a [Vector2] in global coordinates, that can be moved to, making sure "
+"that there are no static objects in the way. If the agent does not have a "
+"navigation path, it will return the position of the agent's parent."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"Sets the [Navigation2D] node used by the agent. Useful when you don't want "
+"to make the agent a child of a [Navigation2D] node."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"Sends the passed in velocity to the collision avoidance algorithm. It will "
+"adjust the velocity to avoid collisions. Once the adjustment to the velocity "
+"is complete, it will emit the [signal velocity_computed] signal."
+msgstr ""
 
 #: doc/classes/NavigationMesh.xml
 msgid "A mesh to approximate the walkable areas and obstacles."
@@ -42384,10 +43203,6 @@ msgstr ""
 #: doc/classes/NavigationMesh.xml
 msgid "The Y axis cell size to use for fields."
 msgstr "用于字段Y轴单元的尺寸。"
-
-#: doc/classes/NavigationMesh.xml
-msgid "The XZ plane cell size to use for fields."
-msgstr "用于字段的XZ平面单元尺寸。"
 
 #: doc/classes/NavigationMesh.xml
 msgid ""
@@ -42578,25 +43393,123 @@ msgstr ""
 msgid "Represents the size of the [enum SourceGeometryMode] enum."
 msgstr "表示[enum SourceGeometryMode]枚举的大小。"
 
+#: doc/classes/NavigationMeshGenerator.xml
+msgid "This class is responsible for creating and clearing navigation meshes."
+msgstr ""
+
+#: doc/classes/NavigationMeshGenerator.xml
+msgid ""
+"Bakes the navigation mesh. This will allow you to use pathfinding with the "
+"navigation system."
+msgstr ""
+
+#: doc/classes/NavigationMeshGenerator.xml
+#, fuzzy
+msgid "Clears the navigation mesh."
+msgstr "设置此项的导航网格。"
+
 #: doc/classes/NavigationMeshInstance.xml
-msgid "Node that instances navigation meshes into a scenario."
-msgstr "将导航网格实例化为场景的节点。"
+#, fuzzy
+msgid "An instance of a [NavigationMesh]."
+msgstr "实例化 [MultiMesh] 的节点。"
 
 #: doc/classes/NavigationMeshInstance.xml
 msgid ""
-"NavigationMeshInstance is a node that takes a [NavigationMesh] resource and "
-"adds it to the current scenario by creating an instance of it."
+"An instance of a [NavigationMesh]. It tells the [Navigation] node what can "
+"be navigated and what cannot, based on the [NavigationMesh] resource. This "
+"should be a child of a [Navigation] node."
 msgstr ""
-"NavigationMeshInstance 节点可以接收一个 [NavigationMesh] 资源，并通过创建它的"
-"一个实例将其添加到当前场景中。"
 
 #: doc/classes/NavigationMeshInstance.xml
-msgid "If [code]true[/code], the navigation mesh will be used by [Navigation]."
-msgstr "为 [code]true[/code] 时导航网格将被 [Navigation] 使用。"
+msgid ""
+"Bakes the [NavigationMesh]. The baking is done in a separate thread because "
+"navigation baking is not a cheap operation. This can be done at runtime. "
+"When it is completed, it automatically sets the new [NavigationMesh]."
+msgstr ""
 
 #: doc/classes/NavigationMeshInstance.xml
-msgid "The [NavigationMesh] resource for the instance."
+#, fuzzy
+msgid "Determines if the [NavigationMeshInstance] is enabled or disabled."
+msgstr "递归扫描 [NavigationMeshInstance] 的子节点以获取几何体。"
+
+#: doc/classes/NavigationMeshInstance.xml
+#, fuzzy
+msgid "The [NavigationMesh] resource to use."
 msgstr "实例的 [NavigationMesh] 资源。"
+
+#: doc/classes/NavigationMeshInstance.xml
+#, fuzzy
+msgid "Notifies when the navigation mesh bake operation is completed."
+msgstr "当动画开始播放时通知。"
+
+#: doc/classes/NavigationMeshInstance.xml
+#, fuzzy
+msgid "Notifies when the [NavigationMesh] has changed."
+msgstr "当动画开始播放时通知。"
+
+#: doc/classes/NavigationObstacle.xml
+msgid "3D obstacle used in navigation for collision avoidance."
+msgstr ""
+
+#: doc/classes/NavigationObstacle.xml
+msgid ""
+"3D obstacle used in navigation for collision avoidance. The obstacle needs "
+"navigation data to work correctly. This can be done by having the obstacle "
+"as a child of a [Navigation] node, or using [method set_navigation]. "
+"[NavigationObstacle] is physics safe."
+msgstr ""
+
+#: doc/classes/NavigationObstacle.xml
+#, fuzzy
+msgid ""
+"Returns the [Navigation] node that the obstacle is using for its navigation "
+"system."
+msgstr "返回指定名称的动画节点。"
+
+#: doc/classes/NavigationObstacle.xml
+msgid ""
+"Sets the [Navigation] node used by the obstacle. Useful when you don't want "
+"to make the obstacle a child of a [Navigation] node."
+msgstr ""
+
+#: doc/classes/NavigationObstacle.xml doc/classes/NavigationObstacle2D.xml
+msgid ""
+"Enables radius estimation algorithm which uses parent's collision shapes to "
+"determine the obstacle radius."
+msgstr ""
+
+#: doc/classes/NavigationObstacle.xml doc/classes/NavigationObstacle2D.xml
+#, fuzzy
+msgid ""
+"The radius of the agent. Used only if [member estimate_radius] is set to "
+"[code]false[/code]."
+msgstr ""
+"设置主按钮的切换模式状态。只有当 [member toggle_mode] 被设置为 [code]true[/"
+"code] 时才起作用。"
+
+#: doc/classes/NavigationObstacle2D.xml
+msgid "2D obstacle used in navigation for collision avoidance."
+msgstr ""
+
+#: doc/classes/NavigationObstacle2D.xml
+msgid ""
+"2D obstacle used in navigation for collision avoidance. The obstacle needs "
+"navigation data to work correctly. This can be done by having the obstacle "
+"as a child of a [Navigation2D] node, or using [method set_navigation]. "
+"[NavigationObstacle] is physics safe."
+msgstr ""
+
+#: doc/classes/NavigationObstacle2D.xml
+msgid ""
+"Returns the [Navigation2D] node that the obstacle is using for its "
+"navigation system."
+msgstr ""
+
+#: doc/classes/NavigationObstacle2D.xml
+msgid ""
+"Sets the [Navigation2D] node used by the obstacle. Useful when you don't "
+"want to make the obstacle a child of a [Navigation2D] node."
+msgstr ""
 
 #: doc/classes/NavigationPolygon.xml
 msgid ""
@@ -42723,6 +43636,79 @@ msgid ""
 msgstr ""
 "更改在编辑器或脚本中创建的轮廓。你必须调用 [method "
 "make_polygons_from_outlines] 来更新多边形。"
+
+#: doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Server interface for low-level 3D navigation access."
+msgstr "低级音频访问的服务器接口。"
+
+#: doc/classes/NavigationServer.xml
+msgid ""
+"NavigationServer is the server responsible for all 3D navigation. It handles "
+"several objects, namely maps, regions and agents.\n"
+"Maps are made up of regions, which are made of navigation meshes. Together, "
+"they define the navigable areas in the 3D world. For two regions to be "
+"connected to each other, they must share a similar edge. An edge is "
+"considered connected to another if both of its two vertices are at a "
+"distance less than [member Navigation.edge_connection_margin] to the "
+"respective other edge's vertex.\n"
+"To use the collision avoidance system, you may use agents. You can set an "
+"agent's target velocity, then the servers will emit a callback with a "
+"modified velocity.\n"
+"[b]Note:[/b] The collision avoidance system ignores regions. Using the "
+"modified velocity as-is might lead to pushing and agent outside of a "
+"navigable area. This is a limitation of the collision avoidance system, any "
+"more complex situation may require the use of the physics engine.\n"
+"This server keeps tracks of any call and executes them during the sync "
+"phase. This means that you can request any change to the map, using any "
+"thread, without worrying."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+#, fuzzy
+msgid ""
+"Returns the normal for the point returned by [method map_get_closest_point]."
+msgstr "返回碰撞点相交物体形状的法线。"
+
+#: doc/classes/NavigationServer.xml
+#, fuzzy
+msgid ""
+"Returns the closest point between the navigation surface and the segment."
+msgstr "起点和终点之间点的样式。"
+
+#: doc/classes/NavigationServer.xml
+msgid ""
+"Returns the edge connection margin of the map. This distance is the minimum "
+"vertex distance needed to connect two edges from different regions."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Returns the map's up direction."
+msgstr "返回位图的尺寸。"
+
+#: doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Sets the map up direction."
+msgstr "停止音频。"
+
+#: doc/classes/NavigationServer.xml
+msgid ""
+"Process the collision avoidance agents.\n"
+"The result of this process is needed by the physics server, so this must be "
+"called in the main thread.\n"
+"[b]Note:[/b] This function is not thread safe."
+msgstr ""
+
+#: doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Bakes the navigation mesh."
+msgstr "设置此项的导航网格。"
+
+#: doc/classes/NavigationServer.xml
+#, fuzzy
+msgid "Control activation of this server."
+msgstr "此节点的局部变换。"
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
 msgid ""
@@ -47206,7 +48192,10 @@ msgid "Returns the maximum amount of static memory used (only works in debug)."
 msgstr "返回使用的静态内存的最大数量(仅在调试中有效)。"
 
 #: doc/classes/OS.xml
-msgid "Returns the amount of static memory being used by the program in bytes."
+#, fuzzy
+msgid ""
+"Returns the amount of static memory being used by the program in bytes (only "
+"works in debug)."
 msgstr "返回程序所使用的静态内存量，以字节为单位。"
 
 #: doc/classes/OS.xml
@@ -52751,21 +53740,22 @@ msgstr ""
 "大小。使用 [enum File.CompressionMode] 常量之一设置压缩模式。"
 
 #: doc/classes/PoolByteArray.xml
+#, fuzzy
 msgid ""
 "Returns a new [PoolByteArray] with the data decompressed. Set the "
 "compression mode using one of [enum File.CompressionMode]'s constants. "
 "[b]This method only accepts gzip and deflate compression modes.[/b]\n"
 "This method is potentially slower than [code]decompress[/code], as it may "
-"have to re-allocate it's output buffer multiple times while decompressing, "
-"where as [code]decompress[/code] knows it's output buffer size from the "
-"begining.\n"
+"have to re-allocate its output buffer multiple times while decompressing, "
+"where as [code]decompress[/code] knows its output buffer size from the "
+"beginning.\n"
 "\n"
 "GZIP has a maximal compression ratio of 1032:1, meaning it's very possible "
 "for a small compressed payload to decompress to a potentially very large "
 "output. To guard against this, you may provide a maximum size this function "
 "is allowed to allocate in bytes via [code]max_output_size[/code]. Passing -1 "
 "will allow for unbounded output. If any positive value is passed, and the "
-"decompression exceeds that ammount in bytes, then an error will be returned."
+"decompression exceeds that amount in bytes, then an error will be returned."
 msgstr ""
 "返回数据解压后的新 [PoolByteArray] 。使用 [enum File.CompressionMode] 的常数"
 "之一设置压缩模式。[b]此方法仅接受 gzip 和deflate压缩模式。[/b]\n"
@@ -52852,12 +53842,6 @@ msgstr ""
 #: doc/classes/PoolByteArray.xml
 msgid "Changes the byte at the given index."
 msgstr "改变给定索引处的字节。"
-
-#: doc/classes/PoolByteArray.xml doc/classes/PoolColorArray.xml
-#: doc/classes/PoolRealArray.xml doc/classes/PoolStringArray.xml
-#: doc/classes/PoolVector2Array.xml doc/classes/PoolVector3Array.xml
-msgid "Returns the size of the array."
-msgstr "返回数组的大小。"
 
 #: doc/classes/PoolByteArray.xml
 msgid ""
@@ -52954,10 +53938,6 @@ msgstr ""
 #: doc/classes/PoolIntArray.xml
 msgid "Changes the int at the given index."
 msgstr "更改给定索引处的 int。"
-
-#: doc/classes/PoolIntArray.xml
-msgid "Returns the array size."
-msgstr "返回数组大小。"
 
 #: doc/classes/PoolRealArray.xml
 msgid "A pooled [Array] of reals ([float])."
@@ -57292,13 +58272,14 @@ msgstr ""
 "相关的每一帧，以提供最佳的整体性能。"
 
 #: doc/classes/ProjectSettings.xml
+#, fuzzy
 msgid ""
 "The default convention is for portal normals to point outward (face outward) "
 "from the source room.\n"
 "If you accidentally build your level with portals facing the wrong way, this "
 "setting can fix the problem.\n"
 "It will flip named portal meshes (i.e. [code]-portal[/code]) on the initial "
-"convertion to [Portal] nodes."
+"conversion to [Portal] nodes."
 msgstr ""
 "默认的惯例是，portal的法线从源空间向外。\n"
 "如果你在建造关卡时不小心将portal朝向了错误的方向，这个设置可以解决这个问"
@@ -57358,9 +58339,11 @@ msgstr ""
 "时，才应该使用该选项。"
 
 #: doc/classes/ProjectSettings.xml
+#, fuzzy
 msgid ""
-"If [code]true[/code], allocates the main framebuffer with high dynamic "
-"range. High dynamic range allows the use of [Color] values greater than 1.\n"
+"If [code]true[/code], allocates the root [Viewport]'s framebuffer with high "
+"dynamic range. High dynamic range allows the use of [Color] values greater "
+"than 1.\n"
 "[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 "如果 [code]true[/code]，则分配具有高动态范围（HDR）的主帧缓冲区。高动态范围允"
@@ -57374,6 +58357,19 @@ msgid ""
 msgstr ""
 "由于性能问题或驱动支持，移动设备上的 [member rendering/quality/depth/hdr] 的"
 "低端覆盖。"
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"If [code]true[/code], allocates the root [Viewport]'s framebuffer with full "
+"floating-point precision (32-bit) instead of half floating-point precision "
+"(16-bit). Only effective when [member rendering/quality/depth/hdr] is also "
+"enabled.\n"
+"[b]Note:[/b] Enabling this setting does not improve rendering quality. Using "
+"full floating-point precision is slower, and is generally only needed for "
+"advanced shaders that require a high level of precision. To reduce banding, "
+"enable [member rendering/quality/filters/use_debanding] instead.\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
+msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -58498,17 +59494,16 @@ msgstr "添加碰撞例外，这样射线就不会报告与指定 [RID] 的碰�
 msgid "Removes all collision exceptions for this ray."
 msgstr "删除此射线的所有碰撞例外。"
 
-#: doc/classes/RayCast.xml
+#: doc/classes/RayCast.xml doc/classes/RayCast2D.xml
 msgid ""
-"Updates the collision information for the ray.\n"
-"Use this method to update the collision information immediately instead of "
-"waiting for the next [code]_physics_process[/code] call, for example if the "
-"ray or its parent has changed state.\n"
+"Updates the collision information for the ray. Use this method to update the "
+"collision information immediately instead of waiting for the next "
+"[code]_physics_process[/code] call, for example if the ray or its parent has "
+"changed state.\n"
 "[b]Note:[/b] [code]enabled[/code] is not required for this to work."
 msgstr ""
-"更新射线的碰撞信息。\n"
-"使用此方法立即更新碰撞信息，而不是等待下一个 [code]_physics_process[/code] 调"
-"用，例如，如果光线或其父级已更改状态。\n"
+"更新射线的碰撞信息。使用此方法立即更新碰撞信息，而不是等待下一次 "
+"[code]_physics_process[/code] 调用，例如，如果光线或其父级已更改状态。\n"
 "[b]注意：[/b] [code]enabled[/code]不需要此功能。"
 
 #: doc/classes/RayCast.xml doc/classes/RayCast2D.xml
@@ -58664,18 +59659,6 @@ msgstr ""
 "RayCast2D 在每一个物理帧中计算交集（见 [Node]），结果被缓存起来，以便以后可以"
 "用到下一帧。如果在物理帧之间需要多次查询（或在同一帧中），请在调整射线广播后"
 "使用 [method force_raycast_update]。"
-
-#: doc/classes/RayCast2D.xml
-msgid ""
-"Updates the collision information for the ray. Use this method to update the "
-"collision information immediately instead of waiting for the next "
-"[code]_physics_process[/code] call, for example if the ray or its parent has "
-"changed state.\n"
-"[b]Note:[/b] [code]enabled[/code] is not required for this to work."
-msgstr ""
-"更新射线的碰撞信息。使用此方法立即更新碰撞信息，而不是等待下一次 "
-"[code]_physics_process[/code] 调用，例如，如果光线或其父级已更改状态。\n"
-"[b]注意：[/b] [code]enabled[/code]不需要此功能。"
 
 #: doc/classes/RayCast2D.xml
 msgid ""
@@ -60319,17 +61302,6 @@ msgid ""
 msgstr "返回文本标签的总字符数。不包括 BBCode。"
 
 #: doc/classes/RichTextLabel.xml
-msgid ""
-"Returns the vertical scrollbar.\n"
-"[b]Warning:[/b] This is a required internal node, removing and freeing it "
-"may cause a crash. If you wish to hide it or any of its children, use their "
-"[member CanvasItem.visible] property."
-msgstr ""
-"返回垂直滚动条。\n"
-"[b]警告：[/b] 这是一个必需的内部节点，删除和释放它可能会导致崩溃。如果您希望"
-"隐藏它或其任何子项，请使用它们的 [member CanvasItem.visible] 属性。"
-
-#: doc/classes/RichTextLabel.xml
 msgid "Returns the number of visible lines."
 msgstr "返回可见行数。"
 
@@ -61699,8 +62671,9 @@ msgid "Groups [Room]s together to allow common functionality."
 msgstr "将 [Room] 组合在一起以实现通用功能。"
 
 #: doc/classes/RoomGroup.xml
+#, fuzzy
 msgid ""
-"Although [Room] behaviour can be specified individually, sometimes it is "
+"Although [Room] behavior can be specified individually, sometimes it is "
 "faster and more convenient to write functionality for a group of rooms.\n"
 "[RoomGroup]s should be placed as children of the [b]room list[/b] (the "
 "parent [Node] of your [Room]s), and [Room]s should be placed in turn as "
@@ -61970,10 +62943,11 @@ msgstr ""
 "[b]注意：[/b]使用 [code]Full[/code] PVS 模式时不使用该值。"
 
 #: doc/classes/RoomManager.xml
+#, fuzzy
 msgid ""
 "Portal culling normally operates using the current [Camera] / [Camera]s, "
 "however for debugging purposes within the editor, you can use this setting "
-"to override this behaviour and force it to use a particular camera to get a "
+"to override this behavior and force it to use a particular camera to get a "
 "better idea of what the occlusion culling is doing."
 msgstr ""
 "Portal 剔除通常使用当前的 [Camera] / 多个[Camera] 进行操作，但是为了在编辑器"
@@ -62101,6 +63075,7 @@ msgid "Editor-only helper for setting up root motion in [AnimationTree]."
 msgstr "在[AnimationTree]中设置根运动的仅编辑器可用的辅助工具。"
 
 #: doc/classes/RootMotionView.xml
+#, fuzzy
 msgid ""
 "[i]Root motion[/i] refers to an animation technique where a mesh's skeleton "
 "is used to give impulse to a character. When working with 3D animations, a "
@@ -62113,7 +63088,7 @@ msgid ""
 "plain [Node] in the running project. This means a script attached to a "
 "[RootMotionView] node [i]must[/i] have [code]extends Node[/code] instead of "
 "[code]extends RootMotionView[/code]. Additionally, it must not be a "
-"[code]@tool[/code] script."
+"[code]tool[/code] script."
 msgstr ""
 "[i]Root motion[/i] 指的是一种动画技术，其中使用网格的骨架为角色提供动力。在处"
 "理 3D 动画时，一种流行的技术是动画师使用根骨架骨骼来为骨架的其余部分提供运"
@@ -64628,9 +65603,10 @@ msgstr ""
 "可以通过将相应的成员设置为 [code]true[/code] 来启用功能。"
 
 #: doc/classes/SpatialMaterial.xml
+#, fuzzy
 msgid ""
 "If [code]true[/code], enables the specified flag. Flags are optional "
-"behaviour that can be turned on and off. Only one flag can be enabled at a "
+"behavior that can be turned on and off. Only one flag can be enabled at a "
 "time with this function, the flag enumerators cannot be bit-masked together "
 "to enable or disable multiple flags at once. Flags can also be enabled by "
 "setting the corresponding member to [code]true[/code]. See [enum Flags] "
@@ -64660,23 +65636,39 @@ msgid ""
 msgstr "纹理乘以 [member albedo_color]。用于对象的基本纹理。"
 
 #: doc/classes/SpatialMaterial.xml
-msgid "The strength of the anisotropy effect."
-msgstr "各向异性效应的强度。"
+msgid ""
+"The strength of the anisotropy effect. This is multiplied by [member "
+"anisotropy_flowmap]'s alpha channel if a texture is defined there and the "
+"texture contains an alpha channel."
+msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
 msgid ""
-"If [code]true[/code], anisotropy is enabled. Changes the shape of the "
-"specular blob and aligns it to tangent space. Mesh tangents are needed for "
-"this to work. If the mesh does not contain tangents the anisotropy effect "
-"will appear broken."
+"If [code]true[/code], anisotropy is enabled. Anisotropy changes the shape of "
+"the specular blob and aligns it to tangent space. This is useful for brushed "
+"aluminium and hair reflections.\n"
+"[b]Note:[/b] Mesh tangents are needed for anisotropy to work. If the mesh "
+"does not contain tangents, the anisotropy effect will appear broken.\n"
+"[b]Note:[/b] Material anisotropy should not to be confused with anisotropic "
+"texture filtering. Anisotropic texture filtering can be enabled by selecting "
+"a texture in the FileSystem dock, going to the Import dock, checking the "
+"[b]Anisotropic[/b] checkbox then clicking [b]Reimport[/b]."
 msgstr ""
-"如果 [code]true[/code]，则启用各向异性。改变镜面小球的形状，并使其与切线空间"
-"对齐。此功能需要有网格切线才行。如果网格不包含切线，各向异性的效果就会被破"
-"坏。"
 
 #: doc/classes/SpatialMaterial.xml
-msgid "Texture that offsets the tangent map for anisotropy calculations."
-msgstr "用于各向异性计算的偏移切线图的纹理。"
+msgid ""
+"Texture that offsets the tangent map for anisotropy calculations and "
+"optionally controls the anisotropy effect (if an alpha channel is present). "
+"The flowmap texture is expected to be a derivative map, with the red channel "
+"representing distortion on the X axis and green channel representing "
+"distortion on the Y axis. Values below 0.5 will result in negative "
+"distortion, whereas values above 0.5 will result in positive distortion.\n"
+"If present, the texture's alpha channel will be used to multiply the "
+"strength of the [member anisotropy] effect. Fully opaque pixels will keep "
+"the anisotropy effect's original strength while fully transparent pixels "
+"will disable the anisotropy effect entirely. The flowmap texture's blue "
+"channel is ignored."
+msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
 msgid ""
@@ -66681,8 +67673,9 @@ msgstr ""
 "@GlobalScope.Error] 错误码以及一个数据数组。"
 
 #: doc/classes/StreamPeer.xml
+#, fuzzy
 msgid ""
-"Gets a string with byte-length [code]bytes[/code] from the stream. If "
+"Gets an ASCII string with byte-length [code]bytes[/code] from the stream. If "
 "[code]bytes[/code] is negative (default) the length will be read from the "
 "stream using the reverse process of [method put_string]."
 msgstr ""
@@ -67523,6 +68516,16 @@ msgstr ""
 "如果此字符串仅包含格式正确的 IPv4 或 IPv6 地址，则返回 [code]true[/code]。该"
 "方法认为[url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]保留IP地址[/"
 "url]如[code]0.0.0.0[/code]是有效的。"
+
+#: doc/classes/String.xml
+msgid ""
+"Return a [String] which is the concatenation of the [code]parts[/code]. The "
+"separator between elements is the string providing this method.\n"
+"Example:\n"
+"[codeblock]\n"
+"print(\", \".join([\"One\", \"Two\", \"Three\", \"Four\"]))\n"
+"[/codeblock]"
+msgstr ""
 
 #: doc/classes/String.xml
 msgid ""
@@ -71443,8 +72446,9 @@ msgstr ""
 "可以选择忽略图块地图的半偏移。"
 
 #: doc/classes/TileMap.xml
+#, fuzzy
 msgid ""
-"Sets the tile index for the cell given by a Vector2.\n"
+"Sets the tile index for the given cell.\n"
 "An index of [code]-1[/code] clears the cell.\n"
 "Optionally, the tile can also be flipped, transposed, or given autotile "
 "coordinates. The autotile coordinate refers to the column and row of the "
@@ -71479,10 +72483,13 @@ msgstr ""
 "[/codeblock]"
 
 #: doc/classes/TileMap.xml
+#, fuzzy
 msgid ""
-"Sets the tile index for the given cell.\n"
+"Sets the tile index for the cell given by a Vector2.\n"
 "An index of [code]-1[/code] clears the cell.\n"
-"Optionally, the tile can also be flipped or transposed.\n"
+"Optionally, the tile can also be flipped, transposed, or given autotile "
+"coordinates. The autotile coordinate refers to the column and row of the "
+"subtile.\n"
 "[b]Note:[/b] Data such as navigation polygons and collision shapes are not "
 "immediately updated for performance reasons.\n"
 "If you need these to be immediately updated, you can call [method "
@@ -72795,20 +73802,22 @@ msgid ""
 "transformation is composed of rotation, scaling and translation."
 msgstr "返回变换的反值，假设变换是由旋转、缩放和平移组成的。"
 
-#: doc/classes/Transform.xml
+#: doc/classes/Transform.xml doc/classes/Transform2D.xml
 msgid ""
-"Interpolates the transform to other Transform by weight amount (on the range "
-"of 0.0 to 1.0)."
-msgstr "根据权重（在 0.0 到 1.0 的范围内）将变换与其他变换进行插值。"
+"Returns a transform interpolated between this transform and another by a "
+"given [code]weight[/code] (on the range of 0.0 to 1.0)."
+msgstr ""
+"返回在此变换和另一个变换之间通过给定的[code]weight[/code]插值的变换，范围为"
+"0.0到1.0。"
 
-#: doc/classes/Transform.xml
+#: doc/classes/Transform.xml doc/classes/Transform2D.xml
 msgid ""
 "Returns the inverse of the transform, under the assumption that the "
 "transformation is composed of rotation and translation (no scaling, use "
-"affine_inverse for transforms with scaling)."
+"[method affine_inverse] for transforms with scaling)."
 msgstr ""
 "返回变换的反值，假设该变换是由旋转和平移组成的（没有缩放，对有缩放的变换使用 "
-"affine_inverse）。"
+"[method affine_inverse]）。"
 
 #: doc/classes/Transform.xml doc/classes/Transform2D.xml
 msgid ""
@@ -72833,11 +73842,11 @@ msgstr ""
 "[code]target[/code]和[code]up[/code]向量的轴旋转，来完全与目标对齐。\n"
 "操作是在全局空间进行的。"
 
-#: doc/classes/Transform.xml
+#: doc/classes/Transform.xml doc/classes/Transform2D.xml
 msgid ""
 "Returns the transform with the basis orthogonal (90 degrees), and normalized "
-"axis vectors."
-msgstr "返回具有正交基（90 度）且轴向量归一化的变换。"
+"axis vectors (scale of 1 or -1)."
+msgstr "返回使用正交基（90 度）以及归一化的轴向量（缩放为 1 或 -1）的变换。"
 
 #: doc/classes/Transform.xml
 msgid ""
@@ -72980,29 +73989,6 @@ msgstr "返回变换的旋转（单位为弧度）。"
 #: doc/classes/Transform2D.xml
 msgid "Returns the scale."
 msgstr "返回缩放。"
-
-#: doc/classes/Transform2D.xml
-msgid ""
-"Returns a transform interpolated between this transform and another by a "
-"given [code]weight[/code] (on the range of 0.0 to 1.0)."
-msgstr ""
-"返回在此变换和另一个变换之间通过给定的[code]weight[/code]插值的变换，范围为"
-"0.0到1.0。"
-
-#: doc/classes/Transform2D.xml
-msgid ""
-"Returns the inverse of the transform, under the assumption that the "
-"transformation is composed of rotation and translation (no scaling, use "
-"[method affine_inverse] for transforms with scaling)."
-msgstr ""
-"返回变换的反值，假设该变换是由旋转和平移组成的（没有缩放，对有缩放的变换使用 "
-"[method affine_inverse]）。"
-
-#: doc/classes/Transform2D.xml
-msgid ""
-"Returns the transform with the basis orthogonal (90 degrees), and normalized "
-"axis vectors (scale of 1 or -1)."
-msgstr "返回使用正交基（90 度）以及归一化的轴向量（缩放为 1 或 -1）的变换。"
 
 #: doc/classes/Transform2D.xml
 msgid ""
@@ -75690,11 +76676,11 @@ msgid ""
 "Returns the vector \"bounced off\" from a plane defined by the given normal."
 msgstr "返回从由给定法线定义的平面上“反弹”的向量。"
 
-#: doc/classes/Vector2.xml
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
-"Returns the vector with all components rounded up (towards positive "
+"Returns a new vector with all components rounded up (towards positive "
 "infinity)."
-msgstr "返回所有分量四舍五入后的向量，朝正无穷大。"
+msgstr "返回一个新的向量，所有的分量都是四舍五入的，向正无穷大。"
 
 #: doc/classes/Vector2.xml
 msgid ""
@@ -75764,11 +76750,11 @@ msgstr ""
 "（180度角）和[code]1.0[/code]（0度角）之间，当向量对齐。\n"
 "[b]注意：[/b][code]a.dot(b)[/code]等同于[code]b.dot(a)[/code]。"
 
-#: doc/classes/Vector2.xml
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
-"Returns the vector with all components rounded down (towards negative "
+"Returns a new vector with all components rounded down (towards negative "
 "infinity)."
-msgstr "返回所有分量四舍五入后的向量，朝负无穷大。"
+msgstr "返回一个新的向量，所有的向量都被四舍五入，向负无穷大。"
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
 msgid ""
@@ -75814,10 +76800,11 @@ msgstr ""
 "返回这个向量与[code]to[/code]之间线性插值的结果，插值量为[code]weight[/"
 "code]。[code]weight[/code]的范围是0.0到1.0，表示插值的数量。"
 
-#: doc/classes/Vector2.xml
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
+#, fuzzy
 msgid ""
-"Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] "
-"amount."
+"Returns a new vector moved toward [code]to[/code] by the fixed [code]delta[/"
+"code] amount. Will not go past the final value."
 msgstr "向[code]to[/code]移动固定的[code]delta[/code]量。"
 
 #: doc/classes/Vector2.xml doc/classes/Vector3.xml
@@ -75842,12 +76829,16 @@ msgstr ""
 "返回一个由这个向量的[code]modv[/code]分量和[method @GDScript.fposmod]分量组成"
 "的向量。"
 
-#: doc/classes/Vector2.xml
-msgid "Returns the vector projected onto the vector [code]b[/code]."
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
+#, fuzzy
+msgid "Returns this vector projected onto the vector [code]b[/code]."
 msgstr "返回投射到向量[code]b[/code]的向量。"
 
 #: doc/classes/Vector2.xml
-msgid "Returns the vector reflected from a plane defined by the given normal."
+#, fuzzy
+msgid ""
+"Returns the vector reflected (i.e. mirrored, or symmetric) over a line "
+"defined by the given direction vector [code]n[/code]."
 msgstr "返回从给定法线定义的平面反射的向量。"
 
 #: doc/classes/Vector2.xml
@@ -75856,18 +76847,20 @@ msgid ""
 "@GDScript.deg2rad]."
 msgstr "返回旋转了[code]phi[/code]弧度的向量。参阅[method @GDScript.deg2rad]。"
 
-#: doc/classes/Vector2.xml
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
+#, fuzzy
 msgid ""
-"Returns the vector with all components rounded to the nearest integer, with "
-"halfway cases rounded away from zero."
+"Returns a new vector with all components rounded to the nearest integer, "
+"with halfway cases rounded away from zero."
 msgstr ""
 "返回所有分量都被四舍五入为最接近的整数的向量，中间情况向远离零的方向舍入。"
 
-#: doc/classes/Vector2.xml
+#: doc/classes/Vector2.xml doc/classes/Vector3.xml
+#, fuzzy
 msgid ""
-"Returns the vector with each component set to one or negative one, depending "
-"on the signs of the components. If a component is zero, it returns positive "
-"one."
+"Returns a new vector with each component set to one or negative one, "
+"depending on the signs of the components. If a component is zero, it returns "
+"positive one."
 msgstr ""
 "根据分量的符号，返回每个分量设置为 1 或负1的向量。如果分量为零，则返回正1。"
 
@@ -75977,25 +76970,20 @@ msgid "Returns the unsigned minimum angle to the given vector, in radians."
 msgstr "返回与给定向量的无符号最小角度，单位为弧度。"
 
 #: doc/classes/Vector3.xml
-msgid ""
-"Returns a new vector with all components rounded up (towards positive "
-"infinity)."
-msgstr "返回一个新的向量，所有的分量都是四舍五入的，向正无穷大。"
-
-#: doc/classes/Vector3.xml
 msgid "Returns the cross product of this vector and [code]b[/code]."
 msgstr "返回此向量与 [code]b[/code] 的叉积。"
 
 #: doc/classes/Vector3.xml
+#, fuzzy
 msgid ""
-"Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/"
-"code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by "
-"the given amount [code]weight[/code]. [code]weight[/code] is on the range of "
-"0.0 to 1.0, representing the amount of interpolation."
+"Performs a cubic interpolation between this vector and [code]b[/code] using "
+"[code]pre_a[/code] and [code]post_b[/code] as handles, and returns the "
+"result at position [code]weight[/code]. [code]weight[/code] is on the range "
+"of 0.0 to 1.0, representing the amount of interpolation."
 msgstr ""
-"在向量[code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code]"
-"（[code]a[/code]是当前的）之间，通过给定的量[code]weight[/code]进行三次插值。"
-"[code]weight[/code]的范围是0.0到1.0，表示插值的数量。"
+"用[code]pre_a[/code]和[code]post_b[/code]作为句柄，在这个向量和[code]b[/code]"
+"之间进行三次插值，并在[code]weight[/code]位置返回结果。[code]weight[/code]的"
+"范围是0.0到1.0，表示插值的量。"
 
 #: doc/classes/Vector3.xml
 msgid "Returns the distance between this vector and [code]b[/code]."
@@ -76022,12 +77010,6 @@ msgstr ""
 "当使用归一化单位向量，向量朝向相反方向时，结果总是在[code]-1.0[/code]（180度"
 "角）和[code]1.0[/code]（0度角）之间，当向量对齐。\n"
 "[b]注意：[/b][code]a.dot(b)[/code]等同于[code]b.dot(a)[/code]。"
-
-#: doc/classes/Vector3.xml
-msgid ""
-"Returns a new vector with all components rounded down (towards negative "
-"infinity)."
-msgstr "返回一个新的向量，所有的向量都被四舍五入，向负无穷大。"
 
 #: doc/classes/Vector3.xml
 msgid ""
@@ -76065,18 +77047,8 @@ msgstr ""
 "返回[constant AXIS_Z]。"
 
 #: doc/classes/Vector3.xml
-msgid ""
-"Moves this vector toward [code]to[/code] by the fixed [code]delta[/code] "
-"amount."
-msgstr "将此向量向[code]to[/code]移动，以固定[code]delta[/code]量。"
-
-#: doc/classes/Vector3.xml
 msgid "Returns the outer product with [code]b[/code]."
 msgstr "返回与 [code]b[/code] 的外积。"
-
-#: doc/classes/Vector3.xml
-msgid "Returns this vector projected onto another vector [code]b[/code]."
-msgstr "返回这个向量投射到另一个向量[code]b[/code]上的结果。"
 
 #: doc/classes/Vector3.xml
 msgid "Returns this vector reflected from a plane defined by the given normal."
@@ -76087,22 +77059,6 @@ msgid ""
 "Rotates this vector around a given axis by [code]phi[/code] radians. The "
 "axis must be a normalized vector."
 msgstr "将此向量绕给定的轴旋转 [code]phi[/code] 弧度。该轴必须是归一化的向量。"
-
-#: doc/classes/Vector3.xml
-msgid ""
-"Returns this vector with all components rounded to the nearest integer, with "
-"halfway cases rounded away from zero."
-msgstr ""
-"返回所有分量都被四舍五入为最接近的整数的向量，中间情况向远离零的方向舍入。"
-
-#: doc/classes/Vector3.xml
-msgid ""
-"Returns a vector with each component set to one or negative one, depending "
-"on the signs of this vector's components. If a component is zero, it returns "
-"positive one."
-msgstr ""
-"返回一个向量，每个分量设置为1或负1，取决于这个向量的分量的符号。如果分量为0，"
-"则返回正1。"
 
 #: doc/classes/Vector3.xml
 msgid ""
@@ -76953,13 +77909,16 @@ msgid ""
 msgstr "如果[code]true[/code]，视窗上的GUI控件将完美地放置像素。"
 
 #: doc/classes/Viewport.xml
+#, fuzzy
 msgid ""
 "If [code]true[/code], the viewport rendering will receive benefits from High "
 "Dynamic Range algorithm. High Dynamic Range allows the viewport to receive "
-"values that are outside the 0-1 range. In Godot HDR uses 16 bits, meaning it "
-"does not store the full range of a floating point number.\n"
+"values that are outside the 0-1 range. In Godot, HDR uses half floating-"
+"point precision (16-bit) by default. To use full floating-point precision "
+"(32-bit), enable [member use_32_bpc_depth].\n"
 "[b]Note:[/b] Requires [member usage] to be set to [constant USAGE_3D] or "
-"[constant USAGE_3D_NO_EFFECTS], since HDR is not supported for 2D."
+"[constant USAGE_3D_NO_EFFECTS], since HDR is not supported for 2D.\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
 msgstr ""
 "如果[code]true[/code]，视窗的渲染将获得高动态范围算法的收益。高动态范围允许视"
 "窗接收0-1范围以外的数值。在Godot中HDR使用16比特，这意味着它不能存储浮点数的全"
@@ -77103,6 +78062,18 @@ msgstr "如果 [code]true[/code]，视窗应使其背景渲染为透明。"
 #: doc/classes/Viewport.xml
 msgid "The rendering mode of viewport."
 msgstr "视窗的渲染模式。"
+
+#: doc/classes/Viewport.xml
+msgid ""
+"If [code]true[/code], allocates the viewport's framebuffer with full "
+"floating-point precision (32-bit) instead of half floating-point precision "
+"(16-bit). Only effective when [member hdr] is also enabled.\n"
+"[b]Note:[/b] Enabling this setting does not improve rendering quality. Using "
+"full floating-point precision is slower, and is generally only needed for "
+"advanced shaders that require a high level of precision. To reduce banding, "
+"enable [member debanding] instead.\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
+msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid "The custom [World] which can be used as 3D environment source."
@@ -77711,7 +78682,8 @@ msgstr ""
 "您最有可能通过 Visual Script 编辑器或在为其编写插件时使用此类。"
 
 #: modules/visual_script/doc_classes/VisualScript.xml
-msgid "$DOCS_URL/getting_started/scripting/visual_script/index.html"
+#, fuzzy
+msgid "$DOCS_URL/tutorials/scripting/visual_script/index.html"
 msgstr "$DOCS_URL/getting_started/scripting/visual_script/index.html"
 
 #: modules/visual_script/doc_classes/VisualScript.xml
@@ -83361,6 +84333,23 @@ msgstr "一个在可视化着色器图中使用的布尔uniform。"
 msgid "Translated to [code]uniform bool[/code] in the shader language."
 msgstr "在着色器语言中被转换成[code]uniform bool[/code]。"
 
+#: doc/classes/VisualShaderNodeBooleanUniform.xml
+#: doc/classes/VisualShaderNodeColorUniform.xml
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+#: doc/classes/VisualShaderNodeTransformUniform.xml
+#: doc/classes/VisualShaderNodeVec3Uniform.xml
+#, fuzzy
+msgid "A default value to be assigned within the shader."
+msgstr "在可视化着色器图中使用的菲涅尔效果。"
+
+#: doc/classes/VisualShaderNodeBooleanUniform.xml
+#: doc/classes/VisualShaderNodeColorUniform.xml
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+#: doc/classes/VisualShaderNodeTransformUniform.xml
+#: doc/classes/VisualShaderNodeVec3Uniform.xml
+msgid "Enables usage of the [member default_value]."
+msgstr ""
+
 #: doc/classes/VisualShaderNodeColorConstant.xml
 msgid "A [Color] constant to be used within the visual shader graph."
 msgstr "一个[Color]常量，在可视化着色器图中使用。"
@@ -84400,6 +85389,53 @@ msgid ""
 "code] or [code]false[/code]."
 msgstr ""
 "如果提供的布尔值是[code]true[/code]或[code]false[/code]，则返回相关标量。"
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"A hint applied to the uniform, which controls the values it can take when "
+"set through the inspector."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"Minimum value for range hints. Used if [member hint] is set to [constant "
+"HINT_RANGE] or [constant HINT_RANGE_STEP]."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"Maximum value for range hints. Used if [member hint] is set to [constant "
+"HINT_RANGE] or [constant HINT_RANGE_STEP]."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"Step (increment) value for the range hint with step. Used if [member hint] "
+"is set to [constant HINT_RANGE_STEP]."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid "No hint used."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"A range hint for scalar value, which limits possible input values between "
+"[member min] and [member max]. Translated to [code]hint_range(min, max)[/"
+"code] in shader code."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+msgid ""
+"A range hint for scalar value with step, which limits possible input values "
+"between [member min] and [member max], with a step (increment) of [member "
+"step]). Translated to [code]hint_range(min, max, step)[/code] in shader code."
+msgstr ""
+
+#: doc/classes/VisualShaderNodeScalarUniform.xml
+#, fuzzy
+msgid "Represents the size of the [enum Hint] enum."
+msgstr "表示[enum Monitor] enum的大小。"
 
 #: doc/classes/VisualShaderNodeSwitch.xml
 msgid "A boolean/vector function for use within the visual shader graph."
