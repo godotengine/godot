@@ -131,42 +131,42 @@ class VisualShaderEditor : public VBoxContainer {
 	GDCLASS(VisualShaderEditor, VBoxContainer);
 	friend class VisualShaderGraphPlugin;
 
-	CustomPropertyEditor *property_editor;
-	int editing_node;
-	int editing_port;
+	CustomPropertyEditor *property_editor = nullptr;
+	int editing_node = -1;
+	int editing_port = -1;
 
 	Ref<VisualShader> visual_shader;
-	GraphEdit *graph;
-	Button *add_node;
-	Button *preview_shader;
+	GraphEdit *graph = nullptr;
+	Button *add_node = nullptr;
+	Button *preview_shader = nullptr;
 
 	OptionButton *edit_type = nullptr;
-	OptionButton *edit_type_standard;
-	OptionButton *edit_type_particles;
-	OptionButton *edit_type_sky;
-	OptionButton *edit_type_fog;
-	CheckBox *custom_mode_box;
+	OptionButton *edit_type_standard = nullptr;
+	OptionButton *edit_type_particles = nullptr;
+	OptionButton *edit_type_sky = nullptr;
+	OptionButton *edit_type_fog = nullptr;
+	CheckBox *custom_mode_box = nullptr;
 	bool custom_mode_enabled = false;
 
-	bool pending_update_preview;
-	bool shader_error;
-	Window *preview_window;
-	VBoxContainer *preview_vbox;
-	CodeEdit *preview_text;
-	Ref<CodeHighlighter> syntax_highlighter;
-	PanelContainer *error_panel;
-	Label *error_label;
+	bool pending_update_preview = false;
+	bool shader_error = false;
+	Window *preview_window = nullptr;
+	VBoxContainer *preview_vbox = nullptr;
+	CodeEdit *preview_text = nullptr;
+	Ref<CodeHighlighter> syntax_highlighter = nullptr;
+	PanelContainer *error_panel = nullptr;
+	Label *error_label = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	Point2 saved_node_pos;
-	bool saved_node_pos_dirty;
+	bool saved_node_pos_dirty = false;
 
-	ConfirmationDialog *members_dialog;
+	ConfirmationDialog *members_dialog = nullptr;
 	VisualShaderNode::PortType members_input_port_type = VisualShaderNode::PORT_TYPE_MAX;
 	VisualShaderNode::PortType members_output_port_type = VisualShaderNode::PORT_TYPE_MAX;
-	PopupMenu *popup_menu;
+	PopupMenu *popup_menu = nullptr;
 	PopupMenu *constants_submenu = nullptr;
-	MenuButton *tools;
+	MenuButton *tools = nullptr;
 
 	PopupPanel *comment_title_change_popup = nullptr;
 	LineEdit *comment_title_change_edit = nullptr;
@@ -231,11 +231,11 @@ class VisualShaderEditor : public VBoxContainer {
 		SET_COMMENT_DESCRIPTION,
 	};
 
-	Tree *members;
-	AcceptDialog *alert;
-	LineEdit *node_filter;
-	RichTextLabel *node_desc;
-	Label *highend_label;
+	Tree *members = nullptr;
+	AcceptDialog *alert = nullptr;
+	LineEdit *node_filter = nullptr;
+	RichTextLabel *node_desc = nullptr;
+	Label *highend_label = nullptr;
 
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos, VisualShaderNode::PortType p_input_port_type = VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PortType p_output_port_type = VisualShaderNode::PORT_TYPE_MAX);
@@ -330,7 +330,7 @@ class VisualShaderEditor : public VBoxContainer {
 	bool drag_dirty = false;
 	void _node_dragged(const Vector2 &p_from, const Vector2 &p_to, int p_node);
 	void _nodes_dragged();
-	bool updating;
+	bool updating = false;
 
 	void _connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
 	void _disconnection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);
@@ -347,10 +347,10 @@ class VisualShaderEditor : public VBoxContainer {
 	void _edit_port_default_input(Object *p_button, int p_node, int p_port);
 	void _port_edited();
 
-	int to_node;
-	int to_slot;
-	int from_node;
-	int from_slot;
+	int to_node = -1;
+	int to_slot = -1;
+	int from_node = -1;
+	int from_slot = -1;
 
 	Set<int> selected_constants;
 	Set<int> selected_uniforms;
@@ -480,9 +480,9 @@ public:
 class VisualShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(VisualShaderEditorPlugin, EditorPlugin);
 
-	VisualShaderEditor *visual_shader_editor;
-	EditorNode *editor;
-	Button *button;
+	VisualShaderEditor *visual_shader_editor = nullptr;
+	EditorNode *editor = nullptr;
+	Button *button = nullptr;
 
 public:
 	virtual String get_name() const override { return "VisualShader"; }
@@ -504,7 +504,7 @@ public:
 
 class EditorPropertyShaderMode : public EditorProperty {
 	GDCLASS(EditorPropertyShaderMode, EditorProperty);
-	OptionButton *options;
+	OptionButton *options = nullptr;
 
 	void _option_selected(int p_which);
 
