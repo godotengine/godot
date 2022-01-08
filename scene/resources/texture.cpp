@@ -1808,13 +1808,12 @@ Ref<Image> GradientTexture::get_data() const {
 }
 
 GradientTexture2D::GradientTexture2D() {
+	texture = RID_PRIME(VS::get_singleton()->texture_create());
 	_queue_update();
 }
 
 GradientTexture2D::~GradientTexture2D() {
-	if (texture.is_valid()) {
-		VS::get_singleton()->free(texture);
-	}
+	VS::get_singleton()->free(texture);
 }
 
 void GradientTexture2D::set_gradient(Ref<Gradient> p_gradient) {
@@ -1889,13 +1888,8 @@ void GradientTexture2D::_update() {
 			image->create(width, height, false, Image::FORMAT_RGBA8, data);
 		}
 	}
-
-	if (texture.is_valid()) {
-		VS::get_singleton()->free(texture);
-		texture = VS::get_singleton()->texture_create_from_image(image);
-	} else {
-		texture = VS::get_singleton()->texture_create_from_image(image);
-	}
+	VS::get_singleton()->texture_allocate(texture, width, height, 0, image->get_format(), VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
+	VS::get_singleton()->texture_set_data(texture, image);
 
 	emit_changed();
 }
