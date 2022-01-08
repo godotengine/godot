@@ -6586,103 +6586,110 @@ Error GLTFDocument::parse(Ref<GLTFState> state, String p_path, bool p_read_binar
 	state->major_version = version.get_slice(".", 0).to_int();
 	state->minor_version = version.get_slice(".", 1).to_int();
 
-	/* STEP 0 PARSE SCENE */
+	/* PARSE EXTENSIONS */
+
+	err = _parse_gltf_extensions(state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* PARSE SCENE */
 	err = _parse_scenes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 1 PARSE NODES */
+	/* PARSE NODES */
 	err = _parse_nodes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 2 PARSE BUFFERS */
+	/* PARSE BUFFERS */
 	err = _parse_buffers(state, p_path.get_base_dir());
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 3 PARSE BUFFER VIEWS */
+	/* PARSE BUFFER VIEWS */
 	err = _parse_buffer_views(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 4 PARSE ACCESSORS */
+	/* PARSE ACCESSORS */
 	err = _parse_accessors(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 5 PARSE IMAGES */
+	/* PARSE IMAGES */
 	err = _parse_images(state, p_path.get_base_dir());
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 6 PARSE TEXTURES */
+	/* PARSE TEXTURES */
 	err = _parse_textures(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 7 PARSE TEXTURES */
+	/* PARSE TEXTURES */
 	err = _parse_materials(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 9 PARSE SKINS */
+	/* PARSE SKINS */
 	err = _parse_skins(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 10 DETERMINE SKELETONS */
+	/* DETERMINE SKELETONS */
 	err = _determine_skeletons(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 11 CREATE SKELETONS */
+	/* CREATE SKELETONS */
 	err = _create_skeletons(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 12 CREATE SKINS */
+	/* CREATE SKINS */
 	err = _create_skins(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 13 PARSE MESHES (we have enough info now) */
+	/* PARSE MESHES (we have enough info now) */
 	err = _parse_meshes(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 14 PARSE LIGHTS */
+	/* PARSE LIGHTS */
 	err = _parse_lights(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 15 PARSE CAMERAS */
+	/* PARSE CAMERAS */
 	err = _parse_cameras(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 16 PARSE ANIMATIONS */
+	/* PARSE ANIMATIONS */
 	err = _parse_animations(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
 
-	/* STEP 17 ASSIGN SCENE NAMES */
+	/* ASSIGN SCENE NAMES */
 	_assign_scene_names(state);
 
 	return OK;
@@ -6801,4 +6808,16 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> state, const String p_path) {
 		f->close();
 	}
 	return err;
+}
+
+Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> state) {
+	ERR_FAIL_COND_V(!state.is_valid(), ERR_PARSE_ERROR);
+	if (state->json.has("extensionsRequired") && state->json["extensionsRequired"].get_type() == Variant::ARRAY) {
+		Array extensions_required = state->json["extensionsRequired"];
+		if (extensions_required.find("KHR_draco_mesh_compression") != -1) {
+			ERR_PRINT("glTF2 extension KHR_draco_mesh_compression is not supported.");
+			return ERR_UNAVAILABLE;
+		}
+	}
+	return OK;
 }
