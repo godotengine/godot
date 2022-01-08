@@ -282,6 +282,7 @@ String VisualScriptFunctionCall::get_text() const {
 }
 
 void VisualScriptFunctionCall::set_basic_type(Variant::Type p_type) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 	if (basic_type == p_type) {
 		return;
 	}
@@ -1068,6 +1069,7 @@ void VisualScriptPropertySet::_update_base_type() {
 	}
 }
 void VisualScriptPropertySet::set_basic_type(Variant::Type p_type) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 	if (basic_type == p_type) {
 		return;
 	}
@@ -1916,6 +1918,7 @@ VisualScriptPropertyGet::CallMode VisualScriptPropertyGet::get_call_mode() const
 }
 
 void VisualScriptPropertyGet::set_basic_type(Variant::Type p_type) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 	if (basic_type == p_type) {
 		return;
 	}

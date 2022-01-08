@@ -1950,6 +1950,7 @@ StringName VisualScriptBasicTypeConstant::get_basic_type_constant() const {
 }
 
 void VisualScriptBasicTypeConstant::set_basic_type(Variant::Type p_which) {
+	ERR_FAIL_INDEX(p_which, Variant::VARIANT_MAX);
 	type = p_which;
 
 	List<StringName> constants;
