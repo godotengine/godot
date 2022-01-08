@@ -545,11 +545,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		Ref<Image> panorama;
 		panorama.instantiate();
 		panorama->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
-		for (int x = 0; x < p_size.width; x++) {
-			for (int y = 0; y < p_size.height; y++) {
-				panorama->set_pixel(x, y, panorama_color);
-			}
-		}
+		panorama->fill(panorama_color);
 		return panorama;
 	}
 

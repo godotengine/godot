@@ -514,11 +514,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	}
 	bg_color.a = MAX(bg_color.a, 0.2); // some background
 
-	for (int i = 0; i < thumbnail_size; i++) {
-		for (int j = 0; j < thumbnail_size; j++) {
-			img->set_pixel(i, j, bg_color);
-		}
-	}
+	img->fill(bg_color);
 
 	const int x0 = thumbnail_size / 8;
 	const int y0 = thumbnail_size / 8;
