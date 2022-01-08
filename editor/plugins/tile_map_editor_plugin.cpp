@@ -2132,10 +2132,10 @@ void TileMapEditorPlugin::_notification(int p_what) {
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		switch ((int)EditorSettings::get_singleton()->get("editors/tile_map/editor_side")) {
 			case 0: { // Left.
-				CanvasItemEditor::get_singleton()->get_palette_split()->move_child(tile_map_editor, 0);
+				CanvasItemEditor::get_singleton()->move_control_to_left_panel(tile_map_editor);
 			} break;
 			case 1: { // Right.
-				CanvasItemEditor::get_singleton()->get_palette_split()->move_child(tile_map_editor, 1);
+				CanvasItemEditor::get_singleton()->move_control_to_right_panel(tile_map_editor);
 			} break;
 		}
 	}
@@ -2182,10 +2182,10 @@ TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 	tile_map_editor = memnew(TileMapEditor(p_node));
 	switch ((int)EditorSettings::get_singleton()->get("editors/tile_map/editor_side")) {
 		case 0: { // Left.
-			add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE_LEFT, tile_map_editor);
+			CanvasItemEditor::get_singleton()->add_control_to_left_panel(tile_map_editor);
 		} break;
 		case 1: { // Right.
-			add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE_RIGHT, tile_map_editor);
+			CanvasItemEditor::get_singleton()->add_control_to_right_panel(tile_map_editor);
 		} break;
 	}
 	tile_map_editor->hide();
