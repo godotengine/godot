@@ -1727,7 +1727,9 @@
 		</member>
 		<member name="rendering/lightmapping/probe_capture/update_speed" type="float" setter="" getter="" default="15">
 		</member>
-		<member name="rendering/limits/cluster_builder/max_clustered_elements" type="float" setter="" getter="" default="512">
+		<member name="rendering/limits/cluster_builder/max_clustered_elements" type="float" setter="" getter="" default="128">
+			When using the Vulkan Clustered backend, the maximum number of [OmniLight3D]s, [SpotLight3D]s, [Decal]s and [ReflectionProbe]s that can be rendered at a given time on screen. If this limit is exceeded, these elements will flicker as not all of them will be rendered at the same time. This value should be set as low as possible to improve performance, as higher values will use up GPU time even if the limit is not reached.
+			[b]Note:[/b] Ignored when using the Vulkan Mobile and OpenGL backends.
 		</member>
 		<member name="rendering/limits/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
 		</member>

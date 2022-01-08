@@ -3001,7 +3001,7 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/limits/forward_renderer/threaded_render_minimum_instances", 500);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/forward_renderer/threaded_render_minimum_instances", PropertyInfo(Variant::INT, "rendering/limits/forward_renderer/threaded_render_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"));
 
-	GLOBAL_DEF("rendering/limits/cluster_builder/max_clustered_elements", 512);
+	GLOBAL_DEF("rendering/limits/cluster_builder/max_clustered_elements", 128);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/cluster_builder/max_clustered_elements", PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"));
 
 	GLOBAL_DEF_RST("rendering/xr/enabled", false);
