@@ -1454,10 +1454,10 @@ void GridMapEditorPlugin::_notification(int p_what) {
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
 			case 0: { // Left.
-				Node3DEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 0);
+				Node3DEditor::get_singleton()->move_control_to_left_panel(grid_map_editor);
 			} break;
 			case 1: { // Right.
-				Node3DEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 1);
+				Node3DEditor::get_singleton()->move_control_to_right_panel(grid_map_editor);
 			} break;
 		}
 	}
@@ -1493,10 +1493,10 @@ GridMapEditorPlugin::GridMapEditorPlugin(EditorNode *p_node) {
 	grid_map_editor = memnew(GridMapEditor(editor));
 	switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
 		case 0: { // Left.
-			add_control_to_container(CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, grid_map_editor);
+			Node3DEditor::get_singleton()->add_control_to_left_panel(grid_map_editor);
 		} break;
 		case 1: { // Right.
-			add_control_to_container(CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, grid_map_editor);
+			Node3DEditor::get_singleton()->add_control_to_right_panel(grid_map_editor);
 		} break;
 	}
 	grid_map_editor->hide();
