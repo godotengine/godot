@@ -124,27 +124,17 @@ public:
 				return true;
 			}
 
-			int existing = animation->track_find_key(track, new_time, true);
-
 			setting = true;
-			undo_redo->create_action(TTR("Anim Change Keyframe Time"), UndoRedo::MERGE_ENDS);
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Keyframe Time"), UndoRedo::MERGE_ENDS);
 
 			Variant val = animation->track_get_key_value(track, key);
 			float trans = animation->track_get_key_transition(track, key);
 
-			undo_redo->add_do_method(animation.ptr(), "track_remove_key", track, key);
-			undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, new_time, val, trans);
-			undo_redo->add_do_method(this, "_key_ofs_changed", animation, key_ofs, new_time);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", track, new_time);
-			undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, key_ofs, val, trans);
-			undo_redo->add_undo_method(this, "_key_ofs_changed", animation, new_time, key_ofs);
+			animation->track_remove_key(track, key);
+			animation->track_insert_key(track, new_time, val, trans);
+			_key_ofs_changed(animation, key_ofs, new_time);
 
-			if (existing != -1) {
-				Variant v = animation->track_get_key_value(track, existing);
-				trans = animation->track_get_key_transition(track, existing);
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, new_time, v, trans);
-			}
-			undo_redo->commit_action();
+			undo_redo->commit_action_cumulative();
 
 			setting = false;
 			return true;
@@ -152,14 +142,10 @@ public:
 
 		if (name == "easing") {
 			float val = p_value;
-			float prev_val = animation->track_get_key_transition(track, key);
 			setting = true;
-			undo_redo->create_action(TTR("Anim Change Transition"), UndoRedo::MERGE_ENDS);
-			undo_redo->add_do_method(animation.ptr(), "track_set_key_transition", track, key, val);
-			undo_redo->add_undo_method(animation.ptr(), "track_set_key_transition", track, key, prev_val);
-			undo_redo->add_do_method(this, "_update_obj", animation);
-			undo_redo->add_undo_method(this, "_update_obj", animation);
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Transition"), UndoRedo::MERGE_ENDS);
+			animation->track_set_key_transition(track, key, val);
+			undo_redo->commit_action_cumulative();
 
 			setting = false;
 			return true;
@@ -187,12 +173,9 @@ public:
 						}
 					}
 
-					undo_redo->create_action(vformat(TTR("Anim Change %s"), chan));
-					undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, p_value);
-					undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, old);
-					undo_redo->add_do_method(this, "_update_obj", animation);
-					undo_redo->add_undo_method(this, "_update_obj", animation);
-					undo_redo->commit_action();
+					undo_redo->create_action_cumulative(animation.ptr(), vformat(TTR("Anim Change %s"), chan));
+					animation->track_set_key_value(track, key, p_value);
+					undo_redo->commit_action_cumulative();
 
 					setting = false;
 					return true;
@@ -209,13 +192,10 @@ public:
 					}
 
 					setting = true;
-					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 					Variant prev = animation->track_get_key_value(track, key);
-					undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, value);
-					undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, prev);
-					undo_redo->add_do_method(this, "_update_obj", animation);
-					undo_redo->add_undo_method(this, "_update_obj", animation);
-					undo_redo->commit_action();
+					animation->track_set_key_value(track, key, value);
+					undo_redo->commit_action_cumulative();
 
 					setting = false;
 					return true;
@@ -269,17 +249,14 @@ public:
 				}
 
 				if (mergeable) {
-					undo_redo->create_action(TTR("Anim Change Call"), UndoRedo::MERGE_ENDS);
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Call"), UndoRedo::MERGE_ENDS);
 				} else {
-					undo_redo->create_action(TTR("Anim Change Call"));
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Call"));
 				}
 
 				setting = true;
-				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, d_new);
-				undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, d_old);
-				undo_redo->add_do_method(this, "_update_obj", animation);
-				undo_redo->add_undo_method(this, "_update_obj", animation);
-				undo_redo->commit_action();
+				animation->track_set_key_value(track, key, d_new);
+				undo_redo->commit_action_cumulative();
 
 				setting = false;
 				if (change_notify_deserved) {
@@ -292,13 +269,9 @@ public:
 					const Variant &value = p_value;
 
 					setting = true;
-					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					float prev = animation->bezier_track_get_key_value(track, key);
-					undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_value", track, key, value);
-					undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_value", track, key, prev);
-					undo_redo->add_do_method(this, "_update_obj", animation);
-					undo_redo->add_undo_method(this, "_update_obj", animation);
-					undo_redo->commit_action();
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					animation->bezier_track_set_key_value(track, key, value);
+					undo_redo->commit_action_cumulative();
 
 					setting = false;
 					return true;
@@ -308,13 +281,9 @@ public:
 					const Variant &value = p_value;
 
 					setting = true;
-					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					Vector2 prev = animation->bezier_track_get_key_in_handle(track, key);
-					undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, value);
-					undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, prev);
-					undo_redo->add_do_method(this, "_update_obj", animation);
-					undo_redo->add_undo_method(this, "_update_obj", animation);
-					undo_redo->commit_action();
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					animation->bezier_track_set_key_in_handle(track, key, value);
+					undo_redo->commit_action_cumulative();
 
 					setting = false;
 					return true;
@@ -324,13 +293,9 @@ public:
 					const Variant &value = p_value;
 
 					setting = true;
-					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					Vector2 prev = animation->bezier_track_get_key_out_handle(track, key);
-					undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, value);
-					undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, prev);
-					undo_redo->add_do_method(this, "_update_obj", animation);
-					undo_redo->add_undo_method(this, "_update_obj", animation);
-					undo_redo->commit_action();
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					animation->bezier_track_set_key_out_handle(track, key, value);
+					undo_redo->commit_action_cumulative();
 
 					setting = false;
 					return true;
@@ -340,13 +305,9 @@ public:
 					const Variant &value = p_value;
 
 					setting = true;
-					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					int prev = animation->bezier_track_get_key_handle_mode(track, key);
-					undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, value);
-					undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, prev);
-					undo_redo->add_do_method(this, "_update_obj", animation);
-					undo_redo->add_undo_method(this, "_update_obj", animation);
-					undo_redo->commit_action();
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					animation->bezier_track_set_key_handle_mode(track, key, (Animation::HandleMode)(int)value);
+					undo_redo->commit_action_cumulative();
 
 					setting = false;
 					return true;
@@ -357,13 +318,9 @@ public:
 					Ref<AudioStream> stream = p_value;
 
 					setting = true;
-					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					RES prev = animation->audio_track_get_key_stream(track, key);
-					undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_stream", track, key, stream);
-					undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_stream", track, key, prev);
-					undo_redo->add_do_method(this, "_update_obj", animation);
-					undo_redo->add_undo_method(this, "_update_obj", animation);
-					undo_redo->commit_action();
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					animation->audio_track_set_key_stream(track, key, stream);
+					undo_redo->commit_action_cumulative();
 
 					setting = false;
 					return true;
@@ -373,13 +330,9 @@ public:
 					float value = p_value;
 
 					setting = true;
-					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					float prev = animation->audio_track_get_key_start_offset(track, key);
-					undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_start_offset", track, key, value);
-					undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_start_offset", track, key, prev);
-					undo_redo->add_do_method(this, "_update_obj", animation);
-					undo_redo->add_undo_method(this, "_update_obj", animation);
-					undo_redo->commit_action();
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					animation->audio_track_set_key_start_offset(track, key, value);
+					undo_redo->commit_action_cumulative();
 
 					setting = false;
 					return true;
@@ -389,13 +342,9 @@ public:
 					float value = p_value;
 
 					setting = true;
-					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					float prev = animation->audio_track_get_key_end_offset(track, key);
-					undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_end_offset", track, key, value);
-					undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_end_offset", track, key, prev);
-					undo_redo->add_do_method(this, "_update_obj", animation);
-					undo_redo->add_undo_method(this, "_update_obj", animation);
-					undo_redo->commit_action();
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					animation->audio_track_set_key_end_offset(track, key, value);
+					undo_redo->commit_action_cumulative();
 
 					setting = false;
 					return true;
@@ -406,13 +355,9 @@ public:
 					StringName anim_name = p_value;
 
 					setting = true;
-					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					StringName prev = animation->animation_track_get_key_animation(track, key);
-					undo_redo->add_do_method(animation.ptr(), "animation_track_set_key_animation", track, key, anim_name);
-					undo_redo->add_undo_method(animation.ptr(), "animation_track_set_key_animation", track, key, prev);
-					undo_redo->add_do_method(this, "_update_obj", animation);
-					undo_redo->add_undo_method(this, "_update_obj", animation);
-					undo_redo->commit_action();
+					undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+					animation->animation_track_set_key_animation(track, key, anim_name);
+					undo_redo->commit_action_cumulative();
 
 					setting = false;
 					return true;
@@ -774,7 +719,6 @@ public:
 	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
-		bool update_obj = false;
 		bool change_notify_deserved = false;
 		for (const KeyValue<int, List<float>> &E : key_ofs_map) {
 			int track = E.key;
@@ -794,46 +738,32 @@ public:
 						new_time /= fps;
 					}
 
-					int existing = animation->track_find_key(track, new_time, true);
-
 					if (!setting) {
 						setting = true;
-						undo_redo->create_action(TTR("Anim Multi Change Keyframe Time"), UndoRedo::MERGE_ENDS);
+						undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Keyframe Time"), UndoRedo::MERGE_ENDS);
 					}
 
 					Variant val = animation->track_get_key_value(track, key);
 					float trans = animation->track_get_key_transition(track, key);
 
-					undo_redo->add_do_method(animation.ptr(), "track_remove_key", track, key);
-					undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, new_time, val, trans);
-					undo_redo->add_do_method(this, "_key_ofs_changed", animation, key_ofs, new_time);
-					undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", track, new_time);
-					undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, key_ofs, val, trans);
-					undo_redo->add_undo_method(this, "_key_ofs_changed", animation, new_time, key_ofs);
+					animation->track_remove_key(track, key);
+					animation->track_insert_key(track, new_time, val, trans);
+					_key_ofs_changed(animation, key_ofs, new_time);
 
-					if (existing != -1) {
-						Variant v = animation->track_get_key_value(track, existing);
-						trans = animation->track_get_key_transition(track, existing);
-						undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, new_time, v, trans);
-					}
 				} else if (name == "easing") {
 					float val = p_value;
-					float prev_val = animation->track_get_key_transition(track, key);
 
 					if (!setting) {
 						setting = true;
-						undo_redo->create_action(TTR("Anim Multi Change Transition"), UndoRedo::MERGE_ENDS);
+						undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Transition"), UndoRedo::MERGE_ENDS);
 					}
-					undo_redo->add_do_method(animation.ptr(), "track_set_key_transition", track, key, val);
-					undo_redo->add_undo_method(animation.ptr(), "track_set_key_transition", track, key, prev_val);
-					update_obj = true;
+					animation->track_set_key_transition(track, key, val);
 				}
 
 				switch (animation->track_get_type(track)) {
 					case Animation::TYPE_POSITION_3D:
 					case Animation::TYPE_ROTATION_3D:
 					case Animation::TYPE_SCALE_3D: {
-						Variant old = animation->track_get_key_value(track, key);
 						if (!setting) {
 							String chan;
 							switch (animation->track_get_type(track)) {
@@ -851,11 +781,9 @@ public:
 							}
 
 							setting = true;
-							undo_redo->create_action(vformat(TTR("Anim Multi Change %s"), chan));
+							undo_redo->create_action_cumulative(animation.ptr(), vformat(TTR("Anim Multi Change %s"), chan));
 						}
-						undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, p_value);
-						undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, old);
-						update_obj = true;
+						animation->track_set_key_value(track, key, p_value);
 					} break;
 					case Animation::TYPE_BLEND_SHAPE:
 					case Animation::TYPE_VALUE: {
@@ -868,12 +796,9 @@ public:
 
 							if (!setting) {
 								setting = true;
-								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
-							Variant prev = animation->track_get_key_value(track, key);
-							undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, value);
-							undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, prev);
-							update_obj = true;
+							animation->track_set_key_value(track, key, value);
 						}
 					} break;
 					case Animation::TYPE_METHOD: {
@@ -922,21 +847,17 @@ public:
 							}
 						}
 
-						Variant prev = animation->track_get_key_value(track, key);
-
 						if (!setting) {
 							if (mergeable) {
-								undo_redo->create_action(TTR("Anim Multi Change Call"), UndoRedo::MERGE_ENDS);
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Call"), UndoRedo::MERGE_ENDS);
 							} else {
-								undo_redo->create_action(TTR("Anim Multi Change Call"));
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Call"));
 							}
 
 							setting = true;
 						}
 
-						undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, d_new);
-						undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, d_old);
-						update_obj = true;
+						animation->track_set_key_value(track, key, d_new);
 					} break;
 					case Animation::TYPE_BEZIER: {
 						if (name == "value") {
@@ -944,45 +865,33 @@ public:
 
 							if (!setting) {
 								setting = true;
-								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
-							float prev = animation->bezier_track_get_key_value(track, key);
-							undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_value", track, key, value);
-							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_value", track, key, prev);
-							update_obj = true;
+							animation->bezier_track_set_key_value(track, key, value);
 						} else if (name == "in_handle") {
 							const Variant &value = p_value;
 
 							if (!setting) {
 								setting = true;
-								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
-							Vector2 prev = animation->bezier_track_get_key_in_handle(track, key);
-							undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, value);
-							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, prev);
-							update_obj = true;
+							animation->bezier_track_set_key_in_handle(track, key, value);
 						} else if (name == "out_handle") {
 							const Variant &value = p_value;
 
 							if (!setting) {
 								setting = true;
-								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
-							Vector2 prev = animation->bezier_track_get_key_out_handle(track, key);
-							undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, value);
-							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, prev);
-							update_obj = true;
+							animation->bezier_track_set_key_out_handle(track, key, value);
 						} else if (name == "handle_mode") {
 							const Variant &value = p_value;
 
 							if (!setting) {
 								setting = true;
-								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
-							int prev = animation->bezier_track_get_key_handle_mode(track, key);
-							undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, value);
-							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_handle_mode", track, key, prev);
-							update_obj = true;
+							animation->bezier_track_set_key_handle_mode(track, key, (Animation::HandleMode)(int)value);
 						}
 					} break;
 					case Animation::TYPE_AUDIO: {
@@ -991,34 +900,25 @@ public:
 
 							if (!setting) {
 								setting = true;
-								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
-							RES prev = animation->audio_track_get_key_stream(track, key);
-							undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_stream", track, key, stream);
-							undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_stream", track, key, prev);
-							update_obj = true;
+							animation->audio_track_set_key_stream(track, key, stream);
 						} else if (name == "start_offset") {
 							float value = p_value;
 
 							if (!setting) {
 								setting = true;
-								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
-							float prev = animation->audio_track_get_key_start_offset(track, key);
-							undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_start_offset", track, key, value);
-							undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_start_offset", track, key, prev);
-							update_obj = true;
+							animation->audio_track_set_key_start_offset(track, key, value);
 						} else if (name == "end_offset") {
 							float value = p_value;
 
 							if (!setting) {
 								setting = true;
-								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
-							float prev = animation->audio_track_get_key_end_offset(track, key);
-							undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_end_offset", track, key, value);
-							undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_end_offset", track, key, prev);
-							update_obj = true;
+							animation->audio_track_set_key_end_offset(track, key, value);
 						}
 					} break;
 					case Animation::TYPE_ANIMATION: {
@@ -1027,12 +927,10 @@ public:
 
 							if (!setting) {
 								setting = true;
-								undo_redo->create_action(TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
+								undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Multi Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 							}
 							StringName prev = animation->animation_track_get_key_animation(track, key);
-							undo_redo->add_do_method(animation.ptr(), "animation_track_set_key_animation", track, key, anim_name);
-							undo_redo->add_undo_method(animation.ptr(), "animation_track_set_key_animation", track, key, prev);
-							update_obj = true;
+							animation->animation_track_set_key_animation(track, key, anim_name);
 						}
 					} break;
 				}
@@ -1040,12 +938,7 @@ public:
 		}
 
 		if (setting) {
-			if (update_obj) {
-				undo_redo->add_do_method(this, "_update_obj", animation);
-				undo_redo->add_undo_method(this, "_update_obj", animation);
-			}
-
-			undo_redo->commit_action();
+			undo_redo->commit_action_cumulative();
 			setting = false;
 
 			if (change_notify_deserved) {
@@ -1405,10 +1298,10 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 	}
 
 	editing = true;
-	undo_redo->create_action(TTR("Change Animation Length"));
-	undo_redo->add_do_method(animation.ptr(), "set_length", p_new_len);
-	undo_redo->add_undo_method(animation.ptr(), "set_length", animation->get_length());
-	undo_redo->commit_action();
+	undo_redo->create_action_cumulative(animation.ptr(), TTR("Change Animation Length"), UndoRedo::MERGE_ENDS);
+	animation->set_length(p_new_len);
+	animation->set_length(animation->get_length());
+	undo_redo->commit_action_cumulative();
 	editing = false;
 	update();
 
@@ -1416,22 +1309,21 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 }
 
 void AnimationTimelineEdit::_anim_loop_pressed() {
-	undo_redo->create_action(TTR("Change Animation Loop"));
+	undo_redo->create_action_cumulative(animation.ptr(), TTR("Change Animation Loop"));
 	switch (animation->get_loop_mode()) {
 		case Animation::LoopMode::LOOP_NONE: {
-			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LoopMode::LOOP_LINEAR);
+			animation->set_loop_mode(Animation::LoopMode::LOOP_LINEAR);
 		} break;
 		case Animation::LoopMode::LOOP_LINEAR: {
-			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LoopMode::LOOP_PINGPONG);
+			animation->set_loop_mode(Animation::LoopMode::LOOP_PINGPONG);
 		} break;
 		case Animation::LoopMode::LOOP_PINGPONG: {
-			undo_redo->add_do_method(animation.ptr(), "set_loop_mode", Animation::LoopMode::LOOP_NONE);
+			animation->set_loop_mode(Animation::LoopMode::LOOP_NONE);
 		} break;
 		default:
 			break;
 	}
-	undo_redo->add_undo_method(animation.ptr(), "set_loop_mode", animation->get_loop_mode());
-	undo_redo->commit_action();
+	undo_redo->commit_action_cumulative();
 }
 
 int AnimationTimelineEdit::get_buttons_width() const {
@@ -2503,10 +2395,9 @@ void AnimationTrackEdit::_zoom_changed() {
 }
 
 void AnimationTrackEdit::_path_submitted(const String &p_text) {
-	undo_redo->create_action(TTR("Change Track Path"));
-	undo_redo->add_do_method(animation.ptr(), "track_set_path", track, p_text);
-	undo_redo->add_undo_method(animation.ptr(), "track_set_path", track, animation->track_get_path(track));
-	undo_redo->commit_action();
+	undo_redo->create_action_cumulative(animation.ptr(), TTR("Change Track Path"));
+	animation->track_set_path(track, p_text);
+	undo_redo->commit_action_cumulative();
 	path_popup->hide();
 }
 
@@ -2715,10 +2606,9 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		Point2 pos = mb->get_position();
 
 		if (check_rect.has_point(pos)) {
-			undo_redo->create_action(TTR("Toggle Track Enabled"));
-			undo_redo->add_do_method(animation.ptr(), "track_set_enabled", track, !animation->track_is_enabled(track));
-			undo_redo->add_undo_method(animation.ptr(), "track_set_enabled", track, animation->track_is_enabled(track));
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Toggle Track Enabled"));
+			animation->track_set_enabled(track, !animation->track_is_enabled(track));
+			undo_redo->commit_action_cumulative();
 			update();
 			accept_event();
 		}
@@ -3035,10 +2925,9 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_CALL_MODE_TRIGGER:
 		case MENU_CALL_MODE_CAPTURE: {
 			Animation::UpdateMode update_mode = Animation::UpdateMode(p_index);
-			undo_redo->create_action(TTR("Change Animation Update Mode"));
-			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", track, update_mode);
-			undo_redo->add_undo_method(animation.ptr(), "value_track_set_update_mode", track, animation->value_track_get_update_mode(track));
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Change Animation Update Mode"));
+			animation->value_track_set_update_mode(track, update_mode);
+			undo_redo->commit_action_cumulative();
 			update();
 
 		} break;
@@ -3046,19 +2935,17 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_INTERPOLATION_LINEAR:
 		case MENU_INTERPOLATION_CUBIC: {
 			Animation::InterpolationType interp_mode = Animation::InterpolationType(p_index - MENU_INTERPOLATION_NEAREST);
-			undo_redo->create_action(TTR("Change Animation Interpolation Mode"));
-			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track, interp_mode);
-			undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_type", track, animation->track_get_interpolation_type(track));
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Change Animation Interpolation Mode"));
+			animation->track_set_interpolation_type(track, interp_mode);
+			undo_redo->commit_action_cumulative();
 			update();
 		} break;
 		case MENU_LOOP_WRAP:
 		case MENU_LOOP_CLAMP: {
 			bool loop_wrap = p_index == MENU_LOOP_WRAP;
-			undo_redo->create_action(TTR("Change Animation Loop Mode"));
-			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, loop_wrap);
-			undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, animation->track_get_interpolation_loop_wrap(track));
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Change Animation Loop Mode"));
+			animation->track_set_interpolation_loop_wrap(track, loop_wrap);
+			undo_redo->commit_action_cumulative();
 			update();
 
 		} break;
@@ -3285,6 +3172,39 @@ AnimationTrackEditGroup::AnimationTrackEditGroup() {
 
 //////////////////////////////////////
 
+class AnimationKeyPosCalculator {
+public:
+	virtual float operator()(float m_ofs) const {
+		return 0.0;
+	}
+	virtual ~AnimationKeyPosCalculator();
+};
+
+class ScaledKey : public AnimationKeyPosCalculator {
+	float _from_t;
+	float _len;
+	float _pivot;
+	float _s;
+
+public:
+	ScaledKey(float from_time, float len, float pivot, float s) :
+			_from_t(from_time), _len(len), _pivot(pivot), _s(s) {}
+	float operator()(float m_ofs) const override {
+		return ((_s > 0 ? m_ofs : _from_t + (_len - (m_ofs - _from_t))) - _pivot) * ABS(_s) + _from_t;
+	}
+};
+
+class MovedKey : public AnimationKeyPosCalculator {
+	float _motion;
+
+public:
+	MovedKey(float motion) :
+			_motion(motion) {}
+	float operator()(float m_ofs) const override {
+		return m_ofs + _motion;
+	}
+};
+
 void AnimationTrackEditor::add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin) {
 	if (track_edit_plugins.find(p_plugin) != -1) {
 		return;
@@ -3445,28 +3365,11 @@ void AnimationTrackEditor::_track_remove_request(int p_track) {
 	}
 	int idx = p_track;
 	if (idx >= 0 && idx < animation->get_track_count()) {
-		undo_redo->create_action(TTR("Remove Anim Track"));
-		undo_redo->add_do_method(this, "_clear_selection", false);
-		undo_redo->add_do_method(animation.ptr(), "remove_track", idx);
-		undo_redo->add_undo_method(animation.ptr(), "add_track", animation->track_get_type(idx), idx);
-		undo_redo->add_undo_method(animation.ptr(), "track_set_path", idx, animation->track_get_path(idx));
-
-		// TODO interpolation.
-		for (int i = 0; i < animation->track_get_key_count(idx); i++) {
-			Variant v = animation->track_get_key_value(idx, i);
-			float time = animation->track_get_key_time(idx, i);
-			float trans = animation->track_get_key_transition(idx, i);
-
-			undo_redo->add_undo_method(animation.ptr(), "track_insert_key", idx, time, v);
-			undo_redo->add_undo_method(animation.ptr(), "track_set_key_transition", idx, i, trans);
-		}
-
-		undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_type", idx, animation->track_get_interpolation_type(idx));
-		if (animation->track_get_type(idx) == Animation::TYPE_VALUE) {
-			undo_redo->add_undo_method(animation.ptr(), "value_track_set_update_mode", idx, animation->value_track_get_update_mode(idx));
-		}
-
-		undo_redo->commit_action();
+		undo_redo->create_action_cumulative(animation.ptr(), TTR("Remove Anim Track"));
+		_clear_selection(false);
+		animation->remove_track(idx);
+		// TODO interpolation. <<< Still valid? (Undo actions removed from here.)
+		undo_redo->commit_action_cumulative();
 	}
 }
 
@@ -3607,7 +3510,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 }
 
 void AnimationTrackEditor::_insert_track(bool p_create_reset, bool p_create_beziers) {
-	undo_redo->create_action(TTR("Anim Insert"));
+	undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Insert"));
 
 	Ref<Animation> reset_anim;
 	if (p_create_reset) {
@@ -3624,7 +3527,7 @@ void AnimationTrackEditor::_insert_track(bool p_create_reset, bool p_create_bezi
 		insert_data.pop_front();
 	}
 
-	undo_redo->commit_action();
+	undo_redo->commit_action_cumulative();
 
 	if (advance) {
 		float step = animation->get_step();
@@ -3941,16 +3844,16 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 		Ref<Animation> reset_anim;
 		reset_anim.instantiate();
 		reset_anim->set_length(ANIM_MIN_LENGTH);
-		undo_redo->add_do_method(player, "add_animation", SceneStringNames::get_singleton()->RESET, reset_anim);
-		undo_redo->add_do_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
-		undo_redo->add_undo_method(player, "remove_animation", SceneStringNames::get_singleton()->RESET);
-		undo_redo->add_undo_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
+		undo_redo->create_action_cumulative(player, "Add Animation [Nested]");
+		player->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
+		undo_redo->commit_action_cumulative();
+		AnimationPlayerEditor::get_singleton()->call("animation_player_changed", player);
 		return reset_anim;
 	}
 }
 
 void AnimationTrackEditor::_confirm_insert_list() {
-	undo_redo->create_action(TTR("Anim Create & Insert"));
+	undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Create & Insert"));
 
 	bool create_reset = insert_confirm_reset->is_visible() && insert_confirm_reset->is_pressed();
 	Ref<Animation> reset_anim;
@@ -3964,7 +3867,7 @@ void AnimationTrackEditor::_confirm_insert_list() {
 		insert_data.pop_front();
 	}
 
-	undo_redo->commit_action();
+	undo_redo->commit_action_cumulative();
 }
 
 PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val) {
@@ -4099,7 +4002,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 			}
 		}
 		created = true;
-		undo_redo->create_action(TTR("Anim Insert Track & Key"));
+		undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Insert Track & Key"));
 		Animation::UpdateMode update_mode = Animation::UPDATE_DISCRETE;
 
 		if (p_id.type == Animation::TYPE_VALUE || p_id.type == Animation::TYPE_BEZIER) {
@@ -4134,14 +4037,14 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 
 		p_id.track_idx = p_next_tracks.normal;
 
-		undo_redo->add_do_method(animation.ptr(), "add_track", p_id.type);
-		undo_redo->add_do_method(animation.ptr(), "track_set_path", p_id.track_idx, p_id.path);
+		animation->add_track(p_id.type);
+		animation->track_set_path(p_id.track_idx, p_id.path);
 		if (p_id.type == Animation::TYPE_VALUE) {
-			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", p_id.track_idx, update_mode);
+			animation->value_track_set_update_mode(p_id.track_idx, update_mode);
 		}
 
 	} else {
-		undo_redo->create_action(TTR("Anim Insert Key"));
+		undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Insert Key"));
 	}
 
 	float time = timeline->get_play_position();
@@ -4174,21 +4077,10 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		}
 	}
 
-	undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_id.track_idx, time, value);
+	animation->track_insert_key(p_id.track_idx, time, value);
 
 	if (created) {
-		// Just remove the track.
-		undo_redo->add_undo_method(this, "_clear_selection", false);
-		undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
 		p_next_tracks.normal++;
-	} else {
-		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_id.track_idx, time);
-		int existing = animation->track_find_key(p_id.track_idx, time, true);
-		if (existing != -1) {
-			Variant v = animation->track_get_key_value(p_id.track_idx, existing);
-			float trans = animation->track_get_key_transition(p_id.track_idx, existing);
-			undo_redo->add_undo_method(animation.ptr(), "track_insert_key", p_id.track_idx, time, v, trans);
-		}
 	}
 
 	if (p_create_reset && track_type_is_resettable(p_id.type)) {
@@ -4201,15 +4093,14 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 			}
 		}
 		if (create_reset_track) {
-			undo_redo->add_do_method(reset_anim, "add_track", p_id.type);
-			undo_redo->add_do_method(reset_anim, "track_set_path", p_next_tracks.reset, p_id.path);
-			undo_redo->add_do_method(reset_anim, "track_insert_key", p_next_tracks.reset, 0.0f, value);
-			undo_redo->add_undo_method(reset_anim, "remove_track", reset_anim->get_track_count());
+			reset_anim->add_track(p_id.type);
+			reset_anim->track_set_path(p_next_tracks.reset, p_id.path);
+			reset_anim->track_insert_key(p_next_tracks.reset, 0.0f, value);
 			p_next_tracks.reset++;
 		}
 	}
 
-	undo_redo->commit_action();
+	undo_redo->commit_action_cumulative();
 
 	return p_next_tracks;
 }
@@ -4462,6 +4353,9 @@ void AnimationTrackEditor::_animation_update() {
 		return;
 	}
 
+	_update_key_edit();
+	_selection_changed();
+
 	if (track_edits.size() == animation->get_track_count()) {
 		// Check tracks are the same.
 
@@ -4531,17 +4425,16 @@ void AnimationTrackEditor::_update_scroll(double) {
 }
 
 void AnimationTrackEditor::_update_step(double p_new_step) {
-	undo_redo->create_action(TTR("Change Animation Step"));
+	undo_redo->create_action_cumulative(animation.ptr(), TTR("Change Animation Step"));
 	float step_value = p_new_step;
 	if (timeline->is_using_fps()) {
 		if (step_value != 0.0) {
 			step_value = 1.0 / step_value;
 		}
 	}
-	undo_redo->add_do_method(animation.ptr(), "set_step", step_value);
-	undo_redo->add_undo_method(animation.ptr(), "set_step", animation->get_step());
+	animation->set_step(step_value);
 	step->set_block_signals(true);
-	undo_redo->commit_action();
+	undo_redo->commit_action_cumulative();
 	step->set_block_signals(false);
 	emit_signal(SNAME("animation_step_changed"), step_value);
 }
@@ -4556,14 +4449,12 @@ void AnimationTrackEditor::_dropped_track(int p_from_track, int p_to_track) {
 	}
 
 	_clear_selection();
-	undo_redo->create_action(TTR("Rearrange Tracks"));
-	undo_redo->add_do_method(animation.ptr(), "track_move_to", p_from_track, p_to_track);
+	undo_redo->create_action_cumulative(animation.ptr(), TTR("Rearrange Tracks"));
+	animation->track_move_to(p_from_track, p_to_track);
 	// Take into account that the position of the tracks that come after the one removed will change.
 	int to_track_real = p_to_track > p_from_track ? p_to_track - 1 : p_to_track;
-	undo_redo->add_undo_method(animation.ptr(), "track_move_to", to_track_real, p_to_track > p_from_track ? p_from_track : p_from_track + 1);
-	undo_redo->add_do_method(this, "_track_grab_focus", to_track_real);
-	undo_redo->add_undo_method(this, "_track_grab_focus", p_from_track);
-	undo_redo->commit_action();
+	_track_grab_focus(to_track_real);
+	undo_redo->commit_action_cumulative();
 }
 
 void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
@@ -4599,11 +4490,10 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 		case Animation::TYPE_ROTATION_3D:
 		case Animation::TYPE_SCALE_3D:
 		case Animation::TYPE_METHOD: {
-			undo_redo->create_action(TTR("Add Track"));
-			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
-			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
-			undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Track"));
+			animation->add_track((Animation::TrackType)adding_track_type);
+			animation->track_set_path(animation->get_track_count() - 1, path_to);
+			undo_redo->commit_action_cumulative();
 
 		} break;
 		case Animation::TYPE_BEZIER: {
@@ -4626,11 +4516,10 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 				return;
 			}
 
-			undo_redo->create_action(TTR("Add Track"));
-			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
-			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
-			undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Track"));
+			animation->add_track((Animation::TrackType)adding_track_type);
+			animation->track_set_path(animation->get_track_count() - 1, path_to);
+			undo_redo->commit_action_cumulative();
 
 		} break;
 		case Animation::TYPE_ANIMATION: {
@@ -4644,11 +4533,10 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 				return;
 			}
 
-			undo_redo->create_action(TTR("Add Track"));
-			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
-			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
-			undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Track"));
+			animation->add_track((Animation::TrackType)adding_track_type);
+			animation->track_set_path(animation->get_track_count() - 1, path_to);
+			undo_redo->commit_action_cumulative();
 
 		} break;
 	}
@@ -4695,12 +4583,11 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 			}
 		}
 
-		undo_redo->create_action(TTR("Add Track"));
-		undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
-		undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), full_path);
-		undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", animation->get_track_count(), update_mode);
-		undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
-		undo_redo->commit_action();
+		undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Track"));
+		animation->add_track(Animation::TYPE_VALUE);
+		animation->track_set_path(animation->get_track_count() - 1, full_path);
+		animation->value_track_set_update_mode(animation->get_track_count() - 1, update_mode);
+		undo_redo->commit_action_cumulative();
 	} else {
 		Vector<String> subindices;
 		{
@@ -4718,14 +4605,13 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 			}
 		}
 
-		undo_redo->create_action(TTR("Add Bezier Track"));
+		undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Bezier Track"));
 		int base_track = animation->get_track_count();
 		for (int i = 0; i < subindices.size(); i++) {
-			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
-			undo_redo->add_do_method(animation.ptr(), "track_set_path", base_track + i, full_path + subindices[i]);
-			undo_redo->add_undo_method(animation.ptr(), "remove_track", base_track);
+			animation->add_track((Animation::TrackType)adding_track_type);
+			animation->track_set_path(base_track + i, full_path + subindices[i]);
 		}
-		undo_redo->commit_action();
+		undo_redo->commit_action_cumulative();
 	}
 }
 
@@ -4780,10 +4666,9 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			Vector3 pos = base->get_position();
 
-			undo_redo->create_action(TTR("Add Position Key"));
-			undo_redo->add_do_method(animation.ptr(), "position_track_insert_key", p_track, p_ofs, pos);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Position Key"));
+			animation->position_track_insert_key(p_track, p_ofs, pos);
+			undo_redo->commit_action_cumulative();
 
 		} break;
 		case Animation::TYPE_ROTATION_3D: {
@@ -4800,10 +4685,9 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			Quaternion rot = base->get_transform().basis.operator Quaternion();
 
-			undo_redo->create_action(TTR("Add Rotation Key"));
-			undo_redo->add_do_method(animation.ptr(), "rotation_track_insert_key", p_track, p_ofs, rot);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Rotation Key"));
+			animation->rotation_track_insert_key(p_track, p_ofs, rot);
+			undo_redo->commit_action_cumulative();
 
 		} break;
 		case Animation::TYPE_SCALE_3D: {
@@ -4820,10 +4704,9 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			Vector3 scale = base->get_scale();
 
-			undo_redo->create_action(TTR("Add Scale Key"));
-			undo_redo->add_do_method(animation.ptr(), "scale_track_insert_key", p_track, p_ofs, scale);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Scale Key"));
+			animation->scale_track_insert_key(p_track, p_ofs, scale);
+			undo_redo->commit_action_cumulative();
 
 		} break;
 		case Animation::TYPE_BLEND_SHAPE:
@@ -4832,11 +4715,9 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			Variant value;
 			_find_hint_for_track(p_track, bp, &value);
 
-			undo_redo->create_action(TTR("Add Track Key"));
-			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, value);
-			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Track Key"));
+			animation->track_insert_key(p_track, p_ofs, value);
+			undo_redo->commit_action_cumulative();
 
 		} break;
 		case Animation::TYPE_METHOD: {
@@ -4865,10 +4746,9 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			arr[4] = 0;
 			arr[5] = 0;
 
-			undo_redo->create_action(TTR("Add Track Key"));
-			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, arr);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Track Key"));
+			animation->track_insert_key(p_track, p_ofs, arr);
+			undo_redo->commit_action_cumulative();
 
 		} break;
 		case Animation::TYPE_AUDIO: {
@@ -4877,18 +4757,16 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			ak["start_offset"] = 0;
 			ak["end_offset"] = 0;
 
-			undo_redo->create_action(TTR("Add Track Key"));
-			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, ak);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Track Key"));
+			animation->track_insert_key(p_track, p_ofs, ak);
+			undo_redo->commit_action_cumulative();
 		} break;
 		case Animation::TYPE_ANIMATION: {
 			StringName anim = "[stop]";
 
-			undo_redo->create_action(TTR("Add Track Key"));
-			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, anim);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Track Key"));
+			animation->track_insert_key(p_track, p_ofs, anim);
+			undo_redo->commit_action_cumulative();
 		} break;
 	}
 }
@@ -4923,16 +4801,69 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 			}
 			d["args"] = params;
 
-			undo_redo->create_action(TTR("Add Method Track Key"));
-			undo_redo->add_do_method(animation.ptr(), "track_insert_key", insert_key_from_track_call_track, insert_key_from_track_call_ofs, d);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", insert_key_from_track_call_track, insert_key_from_track_call_ofs);
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Add Method Track Key"));
+			animation->track_insert_key(insert_key_from_track_call_track, insert_key_from_track_call_ofs, d);
+			undo_redo->commit_action_cumulative();
 
 			return;
 		}
 	}
 
 	EditorNode::get_singleton()->show_warning(TTR("Method not found in object: ") + p_method);
+}
+
+void AnimationTrackEditor::_move_keys(const String &action, const AnimationKeyPosCalculator &calculate_key_pos) {
+	undo_redo->create_action_cumulative(animation.ptr(), action);
+
+	List<std::tuple<int, float, float, Variant, real_t>> keys;
+	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		float pos = animation->track_get_key_time(E->key().track, E->key().key);
+		keys.push_back({ E->key().track,
+				pos,
+				snap_time(calculate_key_pos(pos)),
+				animation->track_get_key_value(E->key().track, E->key().key),
+				animation->track_get_key_transition(E->key().track, E->key().key) });
+	}
+
+	int selected = selection.size();
+
+	// 1 - Remove the keys.
+	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		animation->track_remove_key(E->key().track, E->key().key);
+	}
+
+	// 2 - Remove overlapped keys.
+	for (int i = 0; i < selected; i++) {
+		float newpos = std::get<2>(keys[i]);
+		int idx = animation->track_find_key(std::get<0>(keys[i]), newpos, true);
+		if (idx == -1) {
+			continue;
+		}
+		SelectedKey sk;
+		sk.key = idx;
+		sk.track = std::get<0>(keys[i]);
+		if (selection.has(sk)) {
+			continue; // Already in selection, don't save.
+		}
+
+		animation->track_remove_key_at_time(std::get<0>(keys[i]), newpos);
+	}
+
+	// 3 - Move the keys (Reinsert them).
+	for (int i = 0; i < selected; i++) {
+		float newpos = std::get<2>(keys[i]);
+		animation->track_insert_key(std::get<0>(keys[i]), newpos, std::get<3>(keys[i]), std::get<4>(keys[i]));
+	}
+
+	_clear_selection_for_anim(animation);
+
+	// 4 - Reselect.
+	for (int i = 0; i < selected; i++) {
+		float newpos = std::get<2>(keys[i]);
+		_select_at_anim(animation, std::get<0>(keys[i]), newpos);
+	}
+
+	undo_redo->commit_action_cumulative();
 }
 
 void AnimationTrackEditor::_key_selected(int p_key, bool p_single, int p_track) {
@@ -5112,75 +5043,7 @@ void AnimationTrackEditor::_select_at_anim(const Ref<Animation> &p_anim, int p_t
 }
 
 void AnimationTrackEditor::_move_selection_commit() {
-	undo_redo->create_action(TTR("Anim Move Keys"));
-
-	List<_AnimMoveRestore> to_restore;
-
-	float motion = moving_selection_offset;
-	// 1 - remove the keys.
-	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-		undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
-	}
-	// 2 - Remove overlapped keys.
-	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-		float newtime = snap_time(E->get().pos + motion);
-		int idx = animation->track_find_key(E->key().track, newtime, true);
-		if (idx == -1) {
-			continue;
-		}
-		SelectedKey sk;
-		sk.key = idx;
-		sk.track = E->key().track;
-		if (selection.has(sk)) {
-			continue; // Already in selection, don't save.
-		}
-
-		undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newtime);
-		_AnimMoveRestore amr;
-
-		amr.key = animation->track_get_key_value(E->key().track, idx);
-		amr.track = E->key().track;
-		amr.time = newtime;
-		amr.transition = animation->track_get_key_transition(E->key().track, idx);
-
-		to_restore.push_back(amr);
-	}
-
-	// 3 - Move the keys (Reinsert them).
-	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-		float newpos = snap_time(E->get().pos + motion);
-		undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
-	}
-
-	// 4 - (Undo) Remove inserted keys.
-	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-		float newpos = snap_time(E->get().pos + motion);
-		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newpos);
-	}
-
-	// 5 - (Undo) Reinsert keys.
-	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
-	}
-
-	// 6 - (Undo) Reinsert overlapped keys.
-	for (_AnimMoveRestore &amr : to_restore) {
-		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, amr.transition);
-	}
-
-	undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
-	undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
-
-	// 7 - Reselect.
-	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-		float oldpos = E->get().pos;
-		float newpos = snap_time(oldpos + motion);
-
-		undo_redo->add_do_method(this, "_select_at_anim", animation, E->key().track, newpos);
-		undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
-	}
-
-	undo_redo->commit_action();
+	_move_keys("Anim Move Keys", MovedKey(moving_selection_offset));
 
 	moving_selection = false;
 	for (int i = 0; i < track_edits.size(); i++) {
@@ -5338,7 +5201,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 
 		int start_track = transpose ? _get_track_selected() : top_track;
 
-		undo_redo->create_action(TTR("Anim Duplicate Keys"));
+		undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Duplicate Keys"));
 
 		List<Pair<int, float>> new_selection_values;
 
@@ -5358,22 +5221,15 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 				continue;
 			}
 
-			int existing_idx = animation->track_find_key(dst_track, dst_time, true);
-
-			undo_redo->add_do_method(animation.ptr(), "track_insert_key", dst_track, dst_time, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", dst_track, dst_time);
+			animation->track_insert_key(dst_track, dst_time, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 
 			Pair<int, float> p;
 			p.first = dst_track;
 			p.second = dst_time;
 			new_selection_values.push_back(p);
-
-			if (existing_idx != -1) {
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", dst_track, dst_time, animation->track_get_key_value(dst_track, existing_idx), animation->track_get_key_transition(dst_track, existing_idx));
-			}
 		}
 
-		undo_redo->commit_action();
+		undo_redo->commit_action_cumulative();
 
 		// Reselect duplicated.
 
@@ -5575,9 +5431,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 
 			int base_track = animation->get_track_count();
-			undo_redo->create_action(TTR("Paste Tracks"));
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Paste Tracks"));
 			for (int i = 0; i < track_clipboard.size(); i++) {
-				undo_redo->add_do_method(animation.ptr(), "add_track", track_clipboard[i].track_type);
+				animation->add_track(track_clipboard[i].track_type);
 				Node *exists = nullptr;
 				NodePath path = track_clipboard[i].base_path;
 
@@ -5589,24 +5445,22 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					}
 				}
 
-				undo_redo->add_do_method(animation.ptr(), "track_set_path", base_track, path);
-				undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", base_track, track_clipboard[i].interp_type);
-				undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", base_track, track_clipboard[i].loop_wrap);
-				undo_redo->add_do_method(animation.ptr(), "track_set_enabled", base_track, track_clipboard[i].enabled);
+				animation->track_set_path(base_track, path);
+				animation->track_set_interpolation_type(base_track, track_clipboard[i].interp_type);
+				animation->track_set_interpolation_loop_wrap(base_track, track_clipboard[i].loop_wrap);
+				animation->track_set_enabled(base_track, track_clipboard[i].enabled);
 				if (track_clipboard[i].track_type == Animation::TYPE_VALUE) {
-					undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", base_track, track_clipboard[i].update_mode);
+					animation->value_track_set_update_mode(base_track, track_clipboard[i].update_mode);
 				}
 
 				for (int j = 0; j < track_clipboard[i].keys.size(); j++) {
-					undo_redo->add_do_method(animation.ptr(), "track_insert_key", base_track, track_clipboard[i].keys[j].time, track_clipboard[i].keys[j].value, track_clipboard[i].keys[j].transition);
+					animation->track_insert_key(base_track, track_clipboard[i].keys[j].time, track_clipboard[i].keys[j].value, track_clipboard[i].keys[j].transition);
 				}
-
-				undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
 
 				base_track++;
 			}
 
-			undo_redo->commit_action();
+			undo_redo->commit_action_cumulative();
 		} break;
 
 		case EDIT_SCALE_SELECTION:
@@ -5636,7 +5490,6 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			len = to_t - from_t;
 			if (last_menu_track_opt == EDIT_SCALE_FROM_CURSOR) {
 				pivot = timeline->get_play_position();
-
 			} else {
 				pivot = from_t;
 			}
@@ -5646,76 +5499,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				ERR_PRINT("Can't scale to 0");
 			}
 
-			undo_redo->create_action(TTR("Anim Scale Keys"));
-
-			List<_AnimMoveRestore> to_restore;
-
-			// 1 - Remove the keys.
-			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
-			}
-			// 2 - Remove overlapped keys.
-			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newtime = (E->get().pos - from_t) * s + from_t;
-				int idx = animation->track_find_key(E->key().track, newtime, true);
-				if (idx == -1) {
-					continue;
-				}
-				SelectedKey sk;
-				sk.key = idx;
-				sk.track = E->key().track;
-				if (selection.has(sk)) {
-					continue; // Already in selection, don't save.
-				}
-
-				undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newtime);
-				_AnimMoveRestore amr;
-
-				amr.key = animation->track_get_key_value(E->key().track, idx);
-				amr.track = E->key().track;
-				amr.time = newtime;
-				amr.transition = animation->track_get_key_transition(E->key().track, idx);
-
-				to_restore.push_back(amr);
-			}
-
-#define _NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * ABS(s) + from_t
-			// 3 - Move the keys (re insert them).
-			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newpos = _NEW_POS(E->get().pos);
-				undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
-			}
-
-			// 4 - (Undo) Remove inserted keys.
-			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newpos = _NEW_POS(E->get().pos);
-				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newpos);
-			}
-
-			// 5 - (Undo) Reinsert keys.
-			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
-			}
-
-			// 6 - (Undo) Reinsert overlapped keys.
-			for (_AnimMoveRestore &amr : to_restore) {
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, amr.transition);
-			}
-
-			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
-			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
-
-			// 7-reselect.
-			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float oldpos = E->get().pos;
-				float newpos = _NEW_POS(oldpos);
-				if (newpos >= 0) {
-					undo_redo->add_do_method(this, "_select_at_anim", animation, E->key().track, newpos);
-				}
-				undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
-			}
-#undef _NEW_POS
-			undo_redo->commit_action();
+			_move_keys("Anim Scale Keys", ScaledKey(from_t, len, pivot, s));
 		} break;
 		case EDIT_DUPLICATE_SELECTION: {
 			if (bezier_edit->is_visible()) {
@@ -5732,7 +5516,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			_anim_duplicate_keys(true);
 		} break;
 		case EDIT_ADD_RESET_KEY: {
-			undo_redo->create_action(TTR("Anim Add RESET Keys"));
+			undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Add RESET Keys"));
 			Ref<Animation> reset = _create_and_get_reset_animation();
 			int reset_tracks = reset->get_track_count();
 			Set<int> tracks_added;
@@ -5756,28 +5540,19 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					}
 				}
 
-				int existing_idx = -1;
 				if (dst_track == -1) {
 					// If adding multiple tracks, make sure that correct track is referenced.
 					dst_track = reset_tracks;
 					reset_tracks++;
 
-					undo_redo->add_do_method(reset.ptr(), "add_track", animation->track_get_type(sk.track));
-					undo_redo->add_do_method(reset.ptr(), "track_set_path", dst_track, path);
-					undo_redo->add_undo_method(reset.ptr(), "remove_track", dst_track);
-				} else {
-					existing_idx = reset->track_find_key(dst_track, 0, true);
+					reset->add_track(animation->track_get_type(sk.track));
+					reset->track_set_path(dst_track, path);
 				}
 
-				undo_redo->add_do_method(reset.ptr(), "track_insert_key", dst_track, 0, animation->track_get_key_value(sk.track, sk.key), animation->track_get_key_transition(sk.track, sk.key));
-				undo_redo->add_undo_method(reset.ptr(), "track_remove_key_at_time", dst_track, 0);
-
-				if (existing_idx != -1) {
-					undo_redo->add_undo_method(reset.ptr(), "track_insert_key", dst_track, 0, reset->track_get_key_value(dst_track, existing_idx), reset->track_get_key_transition(dst_track, existing_idx));
-				}
+				reset->track_insert_key(dst_track, 0, animation->track_get_key_value(sk.track, sk.key), animation->track_get_key_transition(sk.track, sk.key));
 			}
 
-			undo_redo->commit_action();
+			undo_redo->commit_action_cumulative();
 
 		} break;
 		case EDIT_DELETE_SELECTION: {
@@ -5787,15 +5562,13 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 
 			if (selection.size()) {
-				undo_redo->create_action(TTR("Anim Delete Keys"));
+				undo_redo->create_action_cumulative(animation.ptr(), TTR("Anim Delete Keys"));
 
 				for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-					undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
-					undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
+					animation->track_remove_key(E->key().track, E->key().key);
 				}
-				undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
-				undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
-				undo_redo->commit_action();
+				_clear_selection_for_anim(animation);
+				undo_redo->commit_action_cumulative();
 				_update_key_edit();
 			}
 		} break;
@@ -5814,9 +5587,10 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		} break;
 		case EDIT_OPTIMIZE_ANIMATION_CONFIRM: {
+			undo_redo->create_action_cumulative(animation.ptr(), "Anim Optimize");
 			animation->optimize(optimize_linear_error->get_value(), optimize_angular_error->get_value(), optimize_max_angle->get_value());
+			undo_redo->commit_action_cumulative();
 			_update_tracks();
-			undo_redo->clear_history();
 
 		} break;
 		case EDIT_CLEAN_UP_ANIMATION: {
@@ -5839,6 +5613,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 }
 
 void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
+	undo_redo->create_action_cumulative(animation.ptr(), "Anim Cleanup");
+
 	for (int i = 0; i < p_animation->get_track_count(); i++) {
 		bool prop_exists = false;
 		Variant::Type valid_type = Variant::NIL;
@@ -5884,7 +5660,7 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 		}
 	}
 
-	undo_redo->clear_history();
+	undo_redo->commit_action_cumulative();
 	_update_tracks();
 }
 

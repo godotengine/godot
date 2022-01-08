@@ -277,6 +277,8 @@ public:
 	AnimationTrackEditGroup();
 };
 
+class AnimationKeyPosCalculator;
+
 class AnimationTrackEditor : public VBoxContainer {
 	GDCLASS(AnimationTrackEditor, VBoxContainer);
 
@@ -380,6 +382,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	int insert_key_from_track_call_track;
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
+	_FORCE_INLINE_ void _move_keys(const String &p_action, const AnimationKeyPosCalculator &calculate_key_pos);
 
 	void _clear_selection(bool p_update = false);
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);

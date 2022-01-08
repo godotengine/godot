@@ -165,23 +165,11 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 
 	String current = animation->get_item_text(animation->get_selected());
 	if (player->get_autoplay() == current) {
-		//unset
-		undo_redo->create_action(TTR("Toggle Autoplay"));
-		undo_redo->add_do_method(player, "set_autoplay", "");
-		undo_redo->add_undo_method(player, "set_autoplay", player->get_autoplay());
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
-		undo_redo->commit_action();
-
-	} else {
-		//set
-		undo_redo->create_action(TTR("Toggle Autoplay"));
-		undo_redo->add_do_method(player, "set_autoplay", current);
-		undo_redo->add_undo_method(player, "set_autoplay", player->get_autoplay());
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
-		undo_redo->commit_action();
+		current = "";
 	}
+	undo_redo->create_action_cumulative(player, TTR("Toggle Autoplay"));
+	player->set_autoplay(current);
+	undo_redo->commit_action_cumulative();
 }
 
 void AnimationPlayerEditor::_play_pressed() {
@@ -434,22 +422,12 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	String current = animation->get_item_text(animation->get_selected());
 	Ref<Animation> anim = player->get_animation(current);
 
-	undo_redo->create_action(TTR("Remove Animation"));
+	undo_redo->create_action_cumulative(player, TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
-		undo_redo->add_do_method(player, "set_autoplay", "");
-		undo_redo->add_undo_method(player, "set_autoplay", current);
-		// Avoid having the autoplay icon linger around if there is only one animation in the player.
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
+		player->set_autoplay("");
 	}
-	undo_redo->add_do_method(player, "remove_animation", current);
-	undo_redo->add_undo_method(player, "add_animation", current, anim);
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
-	if (animation->get_item_count() == 1) {
-		undo_redo->add_do_method(this, "_stop_onion_skinning");
-		undo_redo->add_undo_method(this, "_start_onion_skinning");
-	}
-	undo_redo->commit_action();
+	player->remove_animation(current);
+	undo_redo->commit_action_cumulative();
 }
 
 void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
@@ -507,14 +485,12 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
 
-		undo_redo->create_action(TTR("Rename Animation"));
-		undo_redo->add_do_method(player, "rename_animation", current, new_name);
-		undo_redo->add_do_method(anim.ptr(), "set_name", new_name);
-		undo_redo->add_undo_method(player, "rename_animation", new_name, current);
-		undo_redo->add_undo_method(anim.ptr(), "set_name", current);
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
-		undo_redo->commit_action();
+		undo_redo->create_action_cumulative(player, TTR("Rename Animation"));
+		anim->set_name(new_name);
+		undo_redo->create_action_cumulative(anim.ptr(), TTR("Rename Animation [Nested]"));
+		player->rename_animation(current, new_name);
+		undo_redo->commit_action_cumulative();
+		undo_redo->commit_action_cumulative();
 
 		_select_anim_by_name(new_name);
 
@@ -522,16 +498,12 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
 		new_anim->set_name(new_name);
 
-		undo_redo->create_action(TTR("Add Animation"));
-		undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
-		undo_redo->add_undo_method(player, "remove_animation", new_name);
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
-		if (animation->get_item_count() == 0) {
-			undo_redo->add_do_method(this, "_start_onion_skinning");
-			undo_redo->add_undo_method(this, "_stop_onion_skinning");
-		}
-		undo_redo->commit_action();
+		// FIXME: This is one of the actions producing error 'Condition "!animation_set.has(p_anim)" is true.'
+		// The error is harmless but how to resolve it in a sensible way is unclear.
+		// Cause: The cumulative undo system sets properties get_property_list order, and assigned_animation appears before anims/
+		undo_redo->create_action_cumulative(player, TTR("Add Animation"));
+		player->add_animation(new_name, new_anim);
+		undo_redo->commit_action_cumulative();
 
 		_select_anim_by_name(new_name);
 	}
@@ -546,12 +518,9 @@ void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 
 	String current = animation->get_item_text(animation->get_selected());
 
-	undo_redo->create_action(TTR("Blend Next Changed"));
-	undo_redo->add_do_method(player, "animation_set_next", current, blend_editor.next->get_item_text(p_idx));
-	undo_redo->add_undo_method(player, "animation_set_next", current, player->animation_get_next(current));
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
-	undo_redo->commit_action();
+	undo_redo->create_action_cumulative(player, TTR("Blend Next Changed"));
+	player->animation_set_next(current, blend_editor.next->get_item_text(p_idx));
+	undo_redo->commit_action_cumulative();
 }
 
 void AnimationPlayerEditor::_animation_blend() {
@@ -630,14 +599,10 @@ void AnimationPlayerEditor::_blend_edited() {
 	updating_blends = true;
 	String to = selected->get_text(0);
 	float blend_time = selected->get_range(1);
-	float prev_blend_time = player->get_blend_time(current, to);
 
-	undo_redo->create_action(TTR("Change Blend Time"));
-	undo_redo->add_do_method(player, "set_blend_time", current, to, blend_time);
-	undo_redo->add_undo_method(player, "set_blend_time", current, to, prev_blend_time);
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
-	undo_redo->commit_action();
+	undo_redo->create_action_cumulative(player, TTR("Change Blend Time"));
+	player->set_blend_time(current, to, blend_time);
+	undo_redo->commit_action_cumulative();
 	updating_blends = false;
 }
 
@@ -751,15 +716,9 @@ void AnimationPlayerEditor::_load_animations(Vector<String> p_files) {
 			file = file.substr(0, file.find("."));
 		}
 
-		undo_redo->create_action(TTR("Load Animation"));
-		undo_redo->add_do_method(player, "add_animation", file, res);
-		undo_redo->add_undo_method(player, "remove_animation", file);
-		if (player->has_animation(file)) {
-			undo_redo->add_undo_method(player, "add_animation", file, player->get_animation(file));
-		}
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
-		undo_redo->commit_action();
+		undo_redo->create_action_cumulative(player, TTR("Load Animation"));
+		player->add_animation(file, res);
+		undo_redo->commit_action_cumulative();
 	}
 }
 
@@ -780,6 +739,13 @@ void AnimationPlayerEditor::_update_animation() {
 	} else {
 		play->set_pressed(false);
 		stop->set_pressed(true);
+	}
+
+	// TODO: make sure this has the intended results.
+	if (animation->get_item_count() == 0) {
+		_start_onion_skinning();
+	} else if (animation->get_item_count() == 1) {
+		_stop_onion_skinning();
 	}
 
 	scale->set_text(String::num(player->get_speed_scale(), 2));
@@ -983,13 +949,10 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	}
 	new_anim->set_name(new_name);
 
-	undo_redo->create_action(TTR("Duplicate Animation"));
-	undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
-	undo_redo->add_undo_method(player, "remove_animation", new_name);
-	undo_redo->add_do_method(player, "animation_set_next", new_name, player->animation_get_next(current));
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
-	undo_redo->commit_action();
+	undo_redo->create_action_cumulative(player, TTR("Duplicate Animation"));
+	player->add_animation(new_name, new_anim);
+	player->animation_set_next(new_name, player->animation_get_next(current));
+	undo_redo->commit_action_cumulative();
 
 	for (int i = 0; i < animation->get_item_count(); i++) {
 		if (animation->get_item_text(i) == new_name) {
@@ -1152,12 +1115,9 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 				name = base + " " + itos(idx);
 			}
 
-			undo_redo->create_action(TTR("Paste Animation"));
-			undo_redo->add_do_method(player, "add_animation", name, anim2);
-			undo_redo->add_undo_method(player, "remove_animation", name);
-			undo_redo->add_do_method(this, "_animation_player_changed", player);
-			undo_redo->add_undo_method(this, "_animation_player_changed", player);
-			undo_redo->commit_action();
+			undo_redo->create_action_cumulative(player, TTR("Paste Animation"));
+			player->add_animation(name, anim2);
+			undo_redo->commit_action_cumulative();
 
 			_select_anim_by_name(name);
 		} break;

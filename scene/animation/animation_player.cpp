@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/object/message_queue.h"
+#include "editor/plugins/animation_player_editor_plugin.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
@@ -84,7 +85,11 @@ bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 
 	} else if (name.begins_with("anims/")) {
 		String which = name.get_slicec('/', 1);
-		add_animation(which, p_value);
+		if (p_value != "") {
+			add_animation(which, p_value);
+		} else {
+			remove_animation(which);
+		}
 
 	} else if (name.begins_with("next/")) {
 		String which = name.get_slicec('/', 1);
@@ -625,7 +630,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 								pa->object->set_indexed(pa->subpath, value, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 								if (!valid) {
-									ERR_PRINT("Failed setting track value '" + String(pa->owner->path) + "'. Check if the property exists or the type of key is valid. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
+									ERR_PRINT("Failed setting track value '" + String(pa->owner->path) + "'. Check if property exists or the type of key is valid. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 
@@ -1070,24 +1075,8 @@ void AnimationPlayer::_animation_update_transforms() {
 				bool valid;
 				pa->object->set_indexed(pa->subpath, pa->value_accum, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
-
 				if (!valid) {
-					// Get subpath as string for printing the error
-					// Cannot use `String::join(Vector<String>)` because this is a vector of StringName
-					String key_debug;
-					if (pa->subpath.size() > 0) {
-						key_debug = pa->subpath[0];
-						for (int subpath_index = 1; subpath_index < pa->subpath.size(); ++subpath_index) {
-							key_debug += ".";
-							key_debug += pa->subpath[subpath_index];
-						}
-					}
-					ERR_PRINT("Failed setting key '" + key_debug +
-							"' at time " + rtos(playback.current.pos) +
-							" in Animation '" + get_current_animation() +
-							"' at Node '" + get_path() +
-							"', Track '" + String(pa->owner->path) +
-							"'. Check if the property exists or the type of key is right for the property.");
+					ERR_PRINT("Failed setting key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "'. Check if property exists or the type of key is right for the property");
 				}
 #endif
 
@@ -1189,6 +1178,7 @@ Error AnimationPlayer::add_animation(const StringName &p_name, const Ref<Animati
 
 	_ref_anim(p_animation);
 	notify_property_list_changed();
+	_update_editor();
 	return OK;
 }
 
@@ -1201,6 +1191,7 @@ void AnimationPlayer::remove_animation(const StringName &p_name) {
 
 	clear_caches();
 	notify_property_list_changed();
+	_update_editor();
 }
 
 void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
@@ -1259,6 +1250,7 @@ void AnimationPlayer::rename_animation(const StringName &p_name, const StringNam
 
 	clear_caches();
 	notify_property_list_changed();
+	_update_editor();
 }
 
 bool AnimationPlayer::has_animation(const StringName &p_name) const {
@@ -1300,6 +1292,7 @@ void AnimationPlayer::set_blend_time(const StringName &p_animation1, const Strin
 	} else {
 		blend_times[bk] = p_time;
 	}
+	_update_editor();
 }
 
 float AnimationPlayer::get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const {
@@ -1561,6 +1554,12 @@ void AnimationPlayer::_stop_playing_caches() {
 	playing_caches.clear();
 }
 
+void AnimationPlayer::_update_editor() {
+	if (AnimationPlayerEditor::get_singleton()) {
+		AnimationPlayerEditor::get_singleton()->call("_animation_player_changed", this);
+	}
+}
+
 void AnimationPlayer::_node_removed(Node *p_node) {
 	clear_caches(); // nodes contained here are being removed, clear the caches
 }
@@ -1608,6 +1607,7 @@ void AnimationPlayer::set_autoplay(const String &p_name) {
 	}
 
 	autoplay = p_name;
+	AnimationPlayerEditor::get_singleton()->call("animation_player_changed", this);
 }
 
 String AnimationPlayer::get_autoplay() const {
@@ -1671,6 +1671,7 @@ void AnimationPlayer::_set_process(bool p_process, bool p_force) {
 void AnimationPlayer::animation_set_next(const StringName &p_animation, const StringName &p_next) {
 	ERR_FAIL_COND(!animation_set.has(p_animation));
 	animation_set[p_animation].next = p_next;
+	_update_editor();
 }
 
 StringName AnimationPlayer::animation_get_next(const StringName &p_animation) const {
@@ -1782,6 +1783,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
 	// Forcing the use of the original root because the scene where original player belongs may be not the active one
 	Node *root = get_node(get_root());
+	// TODO: cleanup code (after undo system refactoring).
 	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(root);
 	aux_player->seek(0.0f, true);
 	aux_player->queue_delete();
@@ -1791,10 +1793,9 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 		old_values->restore();
 
 		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action(TTR("Anim Apply Reset"));
-		ur->add_do_method(new_values.ptr(), "restore");
-		ur->add_undo_method(old_values.ptr(), "restore");
-		ur->commit_action();
+		ur->create_action_cumulative(this, TTR("Anim Apply Reset"));
+		new_values->restore();
+		ur->commit_action_cumulative();
 	}
 
 	return old_values;

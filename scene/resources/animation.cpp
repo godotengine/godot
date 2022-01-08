@@ -67,32 +67,45 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		int track = name.get_slicec('/', 1).to_int();
 		String what = name.get_slicec('/', 2);
 
-		if (tracks.size() == track && what == "type") {
-			String type = p_value;
-
-			if (type == "position_3d") {
-				add_track(TYPE_POSITION_3D);
-			} else if (type == "rotation_3d") {
-				add_track(TYPE_ROTATION_3D);
-			} else if (type == "scale_3d") {
-				add_track(TYPE_SCALE_3D);
-			} else if (type == "blend_shape") {
-				add_track(TYPE_BLEND_SHAPE);
-			} else if (type == "value") {
-				add_track(TYPE_VALUE);
-			} else if (type == "method") {
-				add_track(TYPE_METHOD);
-			} else if (type == "bezier") {
-				add_track(TYPE_BEZIER);
-			} else if (type == "audio") {
-				add_track(TYPE_AUDIO);
-			} else if (type == "animation") {
-				add_track(TYPE_ANIMATION);
-			} else {
+		if (what == "type") {
+			if (p_value == "") {
+				remove_track(tracks.size() - 1);
+				return true;
+			}
+			int type = p_value == "position_3d"
+					? TYPE_POSITION_3D
+					: p_value == "rotation_3d"
+					? TYPE_ROTATION_3D
+					: p_value == "scale_3d"
+					? TYPE_SCALE_3D
+					: p_value == "blend_shape"
+					? TYPE_BLEND_SHAPE
+					: p_value == "value"
+					? TYPE_VALUE
+					: p_value == "method"
+					? TYPE_METHOD
+					: p_value == "bezier"
+					? TYPE_BEZIER
+					: p_value == "audio"
+					? TYPE_AUDIO
+					: p_value == "animation"
+					? TYPE_ANIMATION
+					: -1;
+			if (type == -1) {
 				return false;
 			}
+			if (track == tracks.size()) {
+				add_track((TrackType)type);
+				return true;
+			}
+			if (track < tracks.size()) {
+				track_set_type(track, (TrackType)type);
+				return true;
+			}
+		}
 
-			return true;
+		if (p_value == "") {
+			return false;
 		}
 
 		ERR_FAIL_INDEX_V(track, tracks.size(), false);
@@ -123,9 +136,11 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					bst->compressed_track = index;
 				} break;
 				default: {
+					emit_changed();
 					return false;
 				}
 			}
+			emit_changed(); // Built-in methods are mostly unused, so emit_changed must be called manually. TODO: integrate existing methods.
 			return true;
 		} else if (what == "interp") {
 			track_set_interpolation_type(track, InterpolationType(p_value.operator int()));
@@ -145,6 +160,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				const real_t *r = values.ptr();
 
 				int64_t count = vcount / POSITION_TRACK_SIZE;
+				tt->positions.clear();
 				tt->positions.resize(count);
 
 				TKey<Vector3> *tw = tt->positions.ptrw();
@@ -167,6 +183,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				const real_t *r = values.ptr();
 
 				int64_t count = vcount / ROTATION_TRACK_SIZE;
+				rt->rotations.clear();
 				rt->rotations.resize(count);
 
 				TKey<Quaternion> *rw = rt->rotations.ptrw();
@@ -190,6 +207,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				const real_t *r = values.ptr();
 
 				int64_t count = vcount / SCALE_TRACK_SIZE;
+				st->scales.clear();
 				st->scales.resize(count);
 
 				TKey<Vector3> *sw = st->scales.ptrw();
@@ -212,6 +230,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				const real_t *r = values.ptr();
 
 				int64_t count = vcount / BLEND_SHAPE_TRACK_SIZE;
+				st->blend_shapes.clear();
 				st->blend_shapes.resize(count);
 
 				TKey<float> *sw = st->blend_shapes.ptrw();
@@ -248,6 +267,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 				ERR_FAIL_COND_V(times.size() != values.size(), false);
 
+				vt->values.clear();
 				if (times.size()) {
 					int valcount = times.size();
 
@@ -272,11 +292,12 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					}
 				}
 
+				emit_changed();
 				return true;
 
 			} else if (track_get_type(track) == TYPE_METHOD) {
 				while (track_get_key_count(track)) {
-					track_remove_key(track, 0); //well shouldn't be set anyway
+					track_remove_key(track, 0);
 				}
 
 				Dictionary d = p_value;
@@ -319,6 +340,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 				ERR_FAIL_COND_V(times.size() * 6 != values.size(), false);
 
+				bt->values.clear();
 				if (times.size()) {
 					int valcount = times.size();
 
@@ -339,6 +361,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					}
 				}
 
+				emit_changed();
 				return true;
 			} else if (track_get_type(track) == TYPE_AUDIO) {
 				AudioTrack *ad = static_cast<AudioTrack *>(tracks[track]);
@@ -351,12 +374,11 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 				ERR_FAIL_COND_V(clips.size() != times.size(), false);
 
+				ad->values.clear();
 				if (times.size()) {
 					int valcount = times.size();
 
 					const real_t *rt = times.ptr();
-
-					ad->values.clear();
 
 					for (int i = 0; i < valcount; i++) {
 						Dictionary d2 = clips[i];
@@ -380,6 +402,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					}
 				}
 
+				emit_changed();
 				return true;
 			} else if (track_get_type(track) == TYPE_ANIMATION) {
 				AnimationTrack *an = static_cast<AnimationTrack *>(tracks[track]);
@@ -392,6 +415,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 				ERR_FAIL_COND_V(clips.size() != times.size(), false);
 
+				an->values.clear();
 				if (times.size()) {
 					int valcount = times.size();
 
@@ -408,6 +432,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					}
 				}
 
+				emit_changed();
 				return true;
 			} else {
 				return false;
@@ -419,6 +444,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
+	emit_changed();
 	return true;
 }
 
@@ -942,6 +968,26 @@ int Animation::get_track_count() const {
 Animation::TrackType Animation::track_get_type(int p_track) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), TYPE_VALUE);
 	return tracks[p_track]->type;
+}
+
+void Animation::track_set_type(int p_track, TrackType p_type) {
+	Map<String, Variant> properties;
+	properties.insert("type", Variant());
+	properties.insert("path", Variant());
+	//properties.insert("compressed_track", Variant());
+	properties.insert("interp", Variant());
+	properties.insert("loop_wrap", Variant());
+	properties.insert("imported", Variant());
+	properties.insert("enabled", Variant());
+	properties.insert("keys", Variant());
+	for (Map<String, Variant>::Element *E = properties.front(); E; E = E->next()) {
+		_get(vformat("tracks/%s/%s", p_track, E->key()), properties[E->key()]);
+	}
+	remove_track(p_track);
+	add_track(p_type, p_track);
+	for (Map<String, Variant>::Element *E = properties.front(); E; E = E->next()) {
+		_set(vformat("tracks/%s/%s", p_track, E->key()), properties[E->key()]);
+	}
 }
 
 void Animation::track_set_path(int p_track, const NodePath &p_path) {
@@ -2715,7 +2761,6 @@ void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	vt->update_mode = p_mode;
-	emit_changed();
 }
 
 Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const {
@@ -3734,6 +3779,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_track", "track_idx"), &Animation::remove_track);
 	ClassDB::bind_method(D_METHOD("get_track_count"), &Animation::get_track_count);
 	ClassDB::bind_method(D_METHOD("track_get_type", "track_idx"), &Animation::track_get_type);
+	ClassDB::bind_method(D_METHOD("track_set_type", "track_idx"), &Animation::track_set_type);
 	ClassDB::bind_method(D_METHOD("track_get_path", "track_idx"), &Animation::track_get_path);
 	ClassDB::bind_method(D_METHOD("track_set_path", "track_idx", "path"), &Animation::track_set_path);
 	ClassDB::bind_method(D_METHOD("find_track", "path", "type"), &Animation::find_track);
