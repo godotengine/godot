@@ -127,6 +127,66 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 	force_keep_in_merge_ends = false;
 }
 
+void UndoRedo::create_action_cumulative(Object *p_object, const String &p_name, MergeMode p_mode) {
+	uint64_t ticks = OS::get_singleton()->get_ticks_msec();
+	Map<String, Variant> object_cache;
+	List<PropertyInfo> properties;
+	p_object->get_property_list(&properties);
+	for (int i = 0; i < properties.size(); i++) {
+		object_cache.insert(properties[i].name, p_object->get(properties[i].name));
+	}
+
+	_list_object_info.push_back({ p_object, object_cache });
+
+	if (action_level == 0) {
+		_discard_redo();
+
+		// Check if the merge operation is valid
+		if (p_mode != MERGE_DISABLE && actions.size() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].last_tick + 800 > ticks) {
+			current_action = actions.size() - 2;
+
+			if (p_mode == MERGE_ENDS) {
+				// Clear all do ops from last action if they are not forced kept
+				LocalVector<List<Operation>::Element *> to_remove;
+				for (List<Operation>::Element *E = actions.write[current_action + 1].do_ops.front(); E; E = E->next()) {
+					if (!E->get().force_keep_in_merge_ends) {
+						to_remove.push_back(E);
+					}
+				}
+
+				for (unsigned int i = 0; i < to_remove.size(); i++) {
+					List<Operation>::Element *E = to_remove[i];
+					// Delete all object references
+					if (E->get().type == Operation::TYPE_REFERENCE) {
+						Object *obj = ObjectDB::get_instance(E->get().object);
+
+						if (obj) {
+							memdelete(obj);
+						}
+					}
+					E->erase();
+				}
+			}
+
+			actions.write[actions.size() - 1].last_tick = ticks;
+
+			merge_mode = p_mode;
+			merging = true;
+		} else {
+			Action new_action;
+			new_action.name = p_name;
+			new_action.last_tick = ticks;
+			actions.push_back(new_action);
+
+			merge_mode = MERGE_DISABLE;
+		}
+	}
+
+	action_level++;
+
+	force_keep_in_merge_ends = false;
+}
+
 void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIANT_ARG_DECLARE) {
 	VARIANT_ARGPTRS
 	ERR_FAIL_COND(p_object == nullptr);
@@ -307,6 +367,60 @@ void UndoRedo::commit_action(bool p_execute) {
 	committing++;
 	_redo(p_execute); // perform action
 	committing--;
+
+	if (callback && actions.size() > 0) {
+		callback(callback_ud, actions[actions.size() - 1].name);
+	}
+}
+
+void UndoRedo::commit_action_cumulative() {
+	Object *p_object = _list_object_info.back()->get().first;
+	Map<String, Variant> &p_object_cache = _list_object_info.back()->get().second;
+	List<PropertyInfo> properties;
+	p_object->get_property_list(&properties);
+	String info = actions[actions.size() - 1].name;
+
+	for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+		const String &p_name = E->get().name;
+		Variant p_value_old = p_object_cache[p_name];
+		Variant p_value_new = p_object->get(p_name);
+		// FIXME: Is there a normal way to check for a null Variant? Comparing with "null" will not always behave as intended.
+		p_value_old = stringify_variants(p_value_old) == "null" ? "" : p_value_old;
+		p_value_new = stringify_variants(p_value_new) == "null" ? "" : p_value_new;
+		if (p_value_new != p_value_old) {
+			add_do_property(p_object, p_name, p_value_new);
+			add_undo_property(p_object, p_name, p_value_old);
+			info += vformat("\n%s: %s = `%s` -> `%s`", action_level, p_name, stringify_variants(p_value_old), stringify_variants(p_value_new));
+		}
+		p_object_cache.erase(p_name);
+	}
+
+	for (Map<String, Variant>::Element *E = p_object_cache.back(); E; E = E->prev()) {
+		add_do_property(p_object, E->key(), "");
+		add_undo_property(p_object, E->key(), E->value());
+		info += vformat("\n%s: %s = `%s` -> ``", action_level, E->key(), stringify_variants(E->value()));
+	}
+
+	WARN_PRINT(info);
+	ERR_FAIL_COND(action_level <= 0);
+	action_level--;
+	_list_object_info.pop_back();
+	if (action_level > 0) {
+		return; //still nested
+	}
+
+	if (merging) {
+		version--;
+		merging = false;
+	}
+
+	if (actions[current_action + 1].do_ops.size() == 0) {
+		actions.remove_at(current_action + 1);
+		return;
+	}
+	current_action++;
+	version++;
+	emit_signal(SNAME("version_changed"));
 
 	if (callback && actions.size() > 0) {
 		callback(callback_ud, actions[actions.size() - 1].name);
