@@ -392,6 +392,7 @@ public:
 
 public:
 	Error _parse_gltf_state(Ref<GLTFState> state, const String &p_search_path, float p_bake_fps);
+	Error _parse_gltf_extensions(Ref<GLTFState> state);
 	void _process_mesh_instances(Ref<GLTFState> state, Node *scene_root);
 	void _generate_scene_node(Ref<GLTFState> state, Node *scene_parent,
 			Node3D *scene_root,

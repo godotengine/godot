@@ -6901,78 +6901,83 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 
 Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_search_path, float p_bake_fps) {
 	Error err;
-	/* STEP 0 PARSE SCENE */
+
+	/* PARSE EXTENSIONS */
+	err = _parse_gltf_extensions(state);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
+	/* PARSE SCENE */
 	err = _parse_scenes(state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 1 PARSE NODES */
+	/* PARSE NODES */
 	err = _parse_nodes(state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 2 PARSE BUFFERS */
+	/* PARSE BUFFERS */
 	err = _parse_buffers(state, p_search_path);
 
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 3 PARSE BUFFER VIEWS */
+	/* PARSE BUFFER VIEWS */
 	err = _parse_buffer_views(state);
 
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 4 PARSE ACCESSORS */
+	/* PARSE ACCESSORS */
 	err = _parse_accessors(state);
 
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 5 PARSE IMAGES */
+	/* PARSE IMAGES */
 	err = _parse_images(state, p_search_path);
 
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 6 PARSE TEXTURES */
+	/* PARSE TEXTURES */
 	err = _parse_textures(state);
 
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 7 PARSE TEXTURES */
+	/* PARSE TEXTURES */
 	err = _parse_materials(state);
 
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 9 PARSE SKINS */
+	/* PARSE SKINS */
 	err = _parse_skins(state);
 
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 10 DETERMINE SKELETONS */
+	/* DETERMINE SKELETONS */
 	err = _determine_skeletons(state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 11 CREATE SKELETONS */
+	/* CREATE SKELETONS */
 	err = _create_skeletons(state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 12 CREATE SKINS */
+	/* CREATE SKINS */
 	err = _create_skins(state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 13 PARSE MESHES (we have enough info now) */
+	/* PARSE MESHES (we have enough info now) */
 	err = _parse_meshes(state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 14 PARSE LIGHTS */
+	/* PARSE LIGHTS */
 	err = _parse_lights(state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 15 PARSE CAMERAS */
+	/* PARSE CAMERAS */
 	err = _parse_cameras(state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 16 PARSE ANIMATIONS */
+	/* PARSE ANIMATIONS */
 	err = _parse_animations(state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
-	/* STEP 17 ASSIGN SCENE NAMES */
+	/* ASSIGN SCENE NAMES */
 	_assign_scene_names(state);
 
 	Node3D *root = memnew(Node3D);
@@ -6998,4 +7003,16 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 	err = _parse(r_state, p_path.get_base_dir(), f, p_bake_fps);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 	return err;
+}
+
+Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> state) {
+	ERR_FAIL_NULL_V(state, ERR_PARSE_ERROR);
+	if (state->json.has("extensionsRequired") && state->json["extensionsRequired"].get_type() == Variant::ARRAY) {
+		Array extensions_required = state->json["extensionsRequired"];
+		if (extensions_required.find("KHR_draco_mesh_compression") != -1) {
+			ERR_PRINT("glTF2 extension KHR_draco_mesh_compression is not supported.");
+			return ERR_UNAVAILABLE;
+		}
+	}
+	return OK;
 }
