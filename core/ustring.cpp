@@ -2443,15 +2443,7 @@ String String::substr(int p_from, int p_chars) const {
 }
 
 int String::find_last(const String &p_str) const {
-	int pos = -1;
-	int findfrom = 0;
-	int findres = -1;
-	while ((findres = find(p_str, findfrom)) != -1) {
-		pos = findres;
-		findfrom = pos + 1;
-	}
-
-	return pos;
+	return rfind(p_str);
 }
 
 int String::find(const String &p_str, int p_from) const {
@@ -4062,7 +4054,7 @@ String String::get_base_dir() const {
 }
 
 String String::get_file() const {
-	int sep = MAX(find_last("/"), find_last("\\"));
+	int sep = MAX(rfind("/"), rfind("\\"));
 	if (sep == -1) {
 		return *this;
 	}
@@ -4071,8 +4063,8 @@ String String::get_file() const {
 }
 
 String String::get_extension() const {
-	int pos = find_last(".");
-	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\"))) {
+	int pos = rfind(".");
+	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
 		return "";
 	}
 
@@ -4171,8 +4163,8 @@ String String::validate_node_name() const {
 }
 
 String String::get_basename() const {
-	int pos = find_last(".");
-	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\"))) {
+	int pos = rfind(".");
+	if (pos < 0 || pos < MAX(rfind("/"), rfind("\\"))) {
 		return *this;
 	}
 

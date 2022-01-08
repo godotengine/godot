@@ -1819,7 +1819,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 						String name = to_rename.path.get_file();
 						rename_dialog->set_title(TTR("Renaming file:") + " " + name);
 						rename_dialog_text->set_text(name);
-						rename_dialog_text->select(0, name.find_last("."));
+						rename_dialog_text->select(0, name.rfind("."));
 					} else {
 						String name = to_rename.path.substr(0, to_rename.path.length() - 1).get_file();
 						rename_dialog->set_title(TTR("Renaming folder:") + " " + name);
@@ -1863,7 +1863,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					String name = to_duplicate.path.get_file();
 					duplicate_dialog->set_title(TTR("Duplicating file:") + " " + name);
 					duplicate_dialog_text->set_text(name);
-					duplicate_dialog_text->select(0, name.find_last("."));
+					duplicate_dialog_text->select(0, name.rfind("."));
 				} else {
 					String name = to_duplicate.path.substr(0, to_duplicate.path.length() - 1).get_file();
 					duplicate_dialog->set_title(TTR("Duplicating folder:") + " " + name);

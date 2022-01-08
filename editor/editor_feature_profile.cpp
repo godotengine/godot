@@ -359,7 +359,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 		}
 
 		if (!d->current_is_dir()) {
-			int last_pos = f.find_last(".profile");
+			int last_pos = f.rfind(".profile");
 			if (last_pos != -1) {
 				profiles.push_back(f.substr(0, last_pos));
 			}

@@ -1655,7 +1655,7 @@ void ProjectSettingsEditor::_update_translations() {
 				PoolStringArray selected = remaps[keys[i]];
 				for (int j = 0; j < selected.size(); j++) {
 					String s2 = selected[j];
-					int qp = s2.find_last(":");
+					int qp = s2.rfind(":");
 					String path = s2.substr(0, qp);
 					String locale = s2.substr(qp + 1, s2.length());
 
