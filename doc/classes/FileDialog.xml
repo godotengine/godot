@@ -13,7 +13,9 @@
 			<return type="void" />
 			<argument index="0" name="filter" type="String" />
 			<description>
-				Adds [code]filter[/code] as a custom filter; [code]filter[/code] should be of the form [code]"filename.extension ; Description"[/code]. For example, [code]"*.png ; PNG Images"[/code].
+				Adds [code]filter[/code] to the list of filters, which restricts what files can be picked.
+				A [code]filter[/code] should be of the form [code]"filename.extension ; Description"[/code], where filename and extension can be [code]*[/code] to match any string. Filters starting with [code].[/code] (i.e. empty filenames) are not allowed.
+				Example filters: [code]"*.png ; PNG Images"[/code], [code]"project.godot ; Godot Project"[/code].
 			</description>
 		</method>
 		<method name="clear_filters">
