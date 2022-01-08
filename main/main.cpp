@@ -772,7 +772,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get().ends_with("project.godot")) {
 			String path;
 			String file = I->get();
-			int sep = MAX(file.find_last("/"), file.find_last("\\"));
+			int sep = MAX(file.rfind("/"), file.rfind("\\"));
 			if (sep == -1) {
 				path = ".";
 			} else {
@@ -944,7 +944,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		ScriptDebuggerRemote *sdr = memnew(ScriptDebuggerRemote);
 		uint16_t debug_port = 6007;
 		if (debug_host.find(":") != -1) {
-			int sep_pos = debug_host.find_last(":");
+			int sep_pos = debug_host.rfind(":");
 			debug_port = debug_host.substr(sep_pos + 1, debug_host.length()).to_int();
 			debug_host = debug_host.substr(0, sep_pos);
 		}
@@ -967,7 +967,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		for (int i = 0; i < breakpoints.size(); i++) {
 			String bp = breakpoints[i];
-			int sp = bp.find_last(":");
+			int sp = bp.rfind(":");
 			ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
 
 			script_debugger->insert_breakpoint(bp.substr(sp + 1, bp.length()).to_int(), bp.substr(0, sp));
@@ -2034,7 +2034,7 @@ bool Main::start() {
 						local_game_path = "res://" + local_game_path;
 
 					} else {
-						int sep = local_game_path.find_last("/");
+						int sep = local_game_path.rfind("/");
 
 						if (sep == -1) {
 							DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
