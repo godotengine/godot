@@ -18,7 +18,7 @@
 		<method name="get_final_location">
 			<return type="Vector2" />
 			<description>
-				Returns the reachable final location in global coordinates. This can change if the navigation path is altered in any way.
+				Returns the reachable final location in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
 			</description>
 		</method>
 		<method name="get_nav_path" qualifiers="const">
