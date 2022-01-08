@@ -87,7 +87,7 @@
 			<return type="void" />
 			<argument index="0" name="velocity" type="Vector3" />
 			<description>
-				Sends the given velocity to the collision avoidance algorithm. It will adjust the velocity to avoid collisions. Once the adjustment to the velocity is complete, it will emit the [signal velocity_computed] signal.
+				Sends the passed in velocity to the collision avoidance algorithm. It will adjust the velocity to avoid collisions. Once the adjustment to the velocity is complete, it will emit the [signal velocity_computed] signal.
 			</description>
 		</method>
 	</methods>
