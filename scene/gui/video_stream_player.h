@@ -60,6 +60,7 @@ class VideoStreamPlayer : public Control {
 	int wait_resampler_limit = 2;
 
 	bool paused = false;
+	bool paused_from_tree = false;
 	bool autoplay = false;
 	float volume = 1.0;
 	double last_audio_time = 0.0;
