@@ -971,12 +971,7 @@ void RendererStorageRD::texture_2d_placeholder_initialize(RID p_texture) {
 	Ref<Image> image;
 	image.instantiate();
 	image->create(4, 4, false, Image::FORMAT_RGBA8);
-
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			image->set_pixel(i, j, Color(1, 0, 1, 1));
-		}
-	}
+	image->fill(Color(1, 0, 1, 1));
 
 	texture_2d_initialize(p_texture, image);
 }
@@ -987,12 +982,7 @@ void RendererStorageRD::texture_2d_layered_placeholder_initialize(RID p_texture,
 	Ref<Image> image;
 	image.instantiate();
 	image->create(4, 4, false, Image::FORMAT_RGBA8);
-
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			image->set_pixel(i, j, Color(1, 0, 1, 1));
-		}
-	}
+	image->fill(Color(1, 0, 1, 1));
 
 	Vector<Ref<Image>> images;
 	if (p_layered_type == RS::TEXTURE_LAYERED_2D_ARRAY) {
@@ -1013,12 +1003,7 @@ void RendererStorageRD::texture_3d_placeholder_initialize(RID p_texture) {
 	Ref<Image> image;
 	image.instantiate();
 	image->create(4, 4, false, Image::FORMAT_RGBA8);
-
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			image->set_pixel(i, j, Color(1, 0, 1, 1));
-		}
-	}
+	image->fill(Color(1, 0, 1, 1));
 
 	Vector<Ref<Image>> images;
 	//cube
