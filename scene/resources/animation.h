@@ -36,6 +36,8 @@
 
 #define ANIM_MIN_LENGTH 0.001
 
+class AnimationTrackEditor;
+
 class Animation : public Resource {
 	GDCLASS(Animation, Resource);
 	RES_BASE_EXTENSION("anim");
@@ -376,6 +378,7 @@ public:
 
 	int get_track_count() const;
 	TrackType track_get_type(int p_track) const;
+	void track_set_type(int p_track, TrackType p_type);
 
 	void track_set_path(int p_track, const NodePath &p_path);
 	NodePath track_get_path(int p_track) const;

@@ -77,9 +77,9 @@ private:
 
 	Vector<Action> actions;
 	int current_action = -1;
-	List<Pair<Object *, Map<String, Variant>>> _list_object_info;
 	bool force_keep_in_merge_ends = false;
 	int action_level = 0;
+	Map<int, Pair<Object *, Map<String, Variant>>> action_cumulative_cache;
 	MergeMode merge_mode = MERGE_DISABLE;
 	bool merging = false;
 	uint64_t version = 1;

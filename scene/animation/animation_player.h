@@ -241,6 +241,7 @@ private:
 
 	void _node_removed(Node *p_node);
 	void _stop_playing_caches();
+	void _update_editor();
 
 	// bind helpers
 	Vector<String> _get_animation_list() const {

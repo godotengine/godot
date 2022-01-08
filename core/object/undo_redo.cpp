@@ -129,14 +129,6 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 
 void UndoRedo::create_action_cumulative(Object *p_object, const String &p_name, MergeMode p_mode) {
 	uint64_t ticks = OS::get_singleton()->get_ticks_msec();
-	Map<String, Variant> object_cache;
-	List<PropertyInfo> properties;
-	p_object->get_property_list(&properties);
-	for (int i = 0; i < properties.size(); i++) {
-		object_cache.insert(properties[i].name, p_object->get(properties[i].name));
-	}
-
-	_list_object_info.push_back({ p_object, object_cache });
 
 	if (action_level == 0) {
 		_discard_redo();
@@ -182,7 +174,15 @@ void UndoRedo::create_action_cumulative(Object *p_object, const String &p_name, 
 		}
 	}
 
+	Map<String, Variant> property_list_old;
+	List<PropertyInfo> property_list;
+	p_object->get_property_list(&property_list);
+	for (int i = 0; i < property_list.size(); i++) {
+		property_list_old.insert(property_list[i].name, p_object->get(property_list[i].name));
+	}
+
 	action_level++;
+	action_cumulative_cache[action_level] = { p_object, property_list_old };
 
 	force_keep_in_merge_ends = false;
 }
@@ -353,6 +353,7 @@ bool UndoRedo::is_committing_action() const {
 }
 
 void UndoRedo::commit_action(bool p_execute) {
+	ERR_FAIL_COND_MSG(action_cumulative_cache.has(action_level), "Non-cumulative commit for cumulative action.");
 	ERR_FAIL_COND(action_level <= 0);
 	action_level--;
 	if (action_level > 0) {
@@ -374,39 +375,41 @@ void UndoRedo::commit_action(bool p_execute) {
 }
 
 void UndoRedo::commit_action_cumulative() {
-	Object *p_object = _list_object_info.back()->get().first;
-	Map<String, Variant> &p_object_cache = _list_object_info.back()->get().second;
-	List<PropertyInfo> properties;
-	p_object->get_property_list(&properties);
-	String info = actions[actions.size() - 1].name;
+	ERR_FAIL_COND_MSG(!action_cumulative_cache.has(action_level), "Cumulative commit for non-cumulative action.");
+	Object *p_object = action_cumulative_cache[action_level].first;
+	Map<String, Variant> &property_list_old = action_cumulative_cache[action_level].second; // Properties in the old state.
+	List<PropertyInfo> property_list_new; // Properties in the new state.
+	p_object->get_property_list(&property_list_new);
+	print_verbose(vformat("Storing cumulative undo action '%s' [nested: %s].", get_action_name(current_action), action_level));
 
-	for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+#define PROPERTY_LOG "  %s = `%s` -> `%s`"
+	// Iterates through all properties in `property_list_new`.
+	for (List<PropertyInfo>::Element *E = property_list_new.front(); E; E = E->next()) {
 		const String &p_name = E->get().name;
-		Variant p_value_old = p_object_cache[p_name];
-		Variant p_value_new = p_object->get(p_name);
-		// FIXME: Is there a normal way to check for a null Variant? Comparing with "null" will not always behave as intended.
-		p_value_old = stringify_variants(p_value_old) == "null" ? "" : p_value_old;
-		p_value_new = stringify_variants(p_value_new) == "null" ? "" : p_value_new;
+		const Variant &p_value_old = property_list_old[p_name].get_type() != Variant::NIL ? property_list_old[p_name] : "";
+		const Variant &p_value_new = p_object->get(p_name).get_type() != Variant::NIL ? p_object->get(p_name) : "";
+		// Only properties that have changed or been created are added to the action at this point.
 		if (p_value_new != p_value_old) {
 			add_do_property(p_object, p_name, p_value_new);
 			add_undo_property(p_object, p_name, p_value_old);
-			info += vformat("\n%s: %s = `%s` -> `%s`", action_level, p_name, stringify_variants(p_value_old), stringify_variants(p_value_new));
+			print_verbose(vformat(PROPERTY_LOG, p_name, stringify_variants(p_value_old), stringify_variants(p_value_new)));
 		}
-		p_object_cache.erase(p_name);
+		property_list_old.erase(p_name);
 	}
 
-	for (Map<String, Variant>::Element *E = p_object_cache.back(); E; E = E->prev()) {
+	// Iterates through deleted properties; any `property_list_old` properties also in `property_list_new` are erased by the first loop.
+	for (Map<String, Variant>::Element *E = property_list_old.back(); E; E = E->prev()) {
 		add_do_property(p_object, E->key(), "");
 		add_undo_property(p_object, E->key(), E->value());
-		info += vformat("\n%s: %s = `%s` -> ``", action_level, E->key(), stringify_variants(E->value()));
+		print_verbose(vformat(PROPERTY_LOG, E->key(), stringify_variants(E->value()), ""));
 	}
+#undef PROPERTY_LOG
 
-	WARN_PRINT(info);
 	ERR_FAIL_COND(action_level <= 0);
+	action_cumulative_cache.erase(action_level);
 	action_level--;
-	_list_object_info.pop_back();
 	if (action_level > 0) {
-		return; //still nested
+		return; // Still nested.
 	}
 
 	if (merging) {
