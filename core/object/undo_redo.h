@@ -77,6 +77,7 @@ private:
 
 	Vector<Action> actions;
 	int current_action = -1;
+	List<Pair<Object *, Map<String, Variant>>> _list_object_info;
 	bool force_keep_in_merge_ends = false;
 	int action_level = 0;
 	MergeMode merge_mode = MERGE_DISABLE;
@@ -103,6 +104,7 @@ protected:
 
 public:
 	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_DISABLE);
+	void create_action_cumulative(Object *p_object, const String &p_name = "", MergeMode p_mode = MERGE_DISABLE);
 
 	void add_do_method(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
 	void add_undo_method(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
@@ -116,6 +118,7 @@ public:
 
 	bool is_committing_action() const;
 	void commit_action(bool p_execute = true);
+	void commit_action_cumulative();
 
 	bool redo();
 	bool undo();
