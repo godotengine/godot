@@ -1135,7 +1135,7 @@ void TextEdit::_notification(int p_what) {
 					int first_visible_char = TS->shaped_text_get_range(rid).y;
 					int last_visible_char = TS->shaped_text_get_range(rid).x;
 
-					int char_ofs = 0;
+					float char_ofs = 0;
 					if (outline_size > 0 && outline_color.a > 0) {
 						for (int j = 0; j < gl_size; j++) {
 							for (int k = 0; k < glyphs[j].repeat; k++) {
@@ -1170,7 +1170,7 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 
-						int char_pos = char_ofs + char_margin + ofs_x;
+						float char_pos = char_ofs + char_margin + ofs_x;
 						if (char_pos >= xmargin_beg) {
 							if (highlight_matching_braces_enabled) {
 								if ((brace_open_match_line == line && brace_open_match_column == glyphs[j].start) ||
