@@ -634,6 +634,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeCompare);
 	GDREGISTER_CLASS(VisualShaderNodeMultiplyAdd);
 	GDREGISTER_CLASS(VisualShaderNodeBillboard);
+	GDREGISTER_VIRTUAL_CLASS(VisualShaderNodeVarying);
+	GDREGISTER_CLASS(VisualShaderNodeVaryingSetter);
+	GDREGISTER_CLASS(VisualShaderNodeVaryingGetter);
 
 	GDREGISTER_CLASS(VisualShaderNodeSDFToScreenUV);
 	GDREGISTER_CLASS(VisualShaderNodeScreenUVToSDF);
