@@ -315,34 +315,49 @@
 		<constant name="TWEEN_PAUSE_PROCESS" value="2" enum="TweenPauseMode">
 		</constant>
 		<constant name="TRANS_LINEAR" value="0" enum="TransitionType">
+			The animation is interpolated linearly.
 		</constant>
 		<constant name="TRANS_SINE" value="1" enum="TransitionType">
+			The animation is interpolated using a sine function.
 		</constant>
 		<constant name="TRANS_QUINT" value="2" enum="TransitionType">
+			The animation is interpolated with a quintic (to the power of 5) function.
 		</constant>
 		<constant name="TRANS_QUART" value="3" enum="TransitionType">
+			The animation is interpolated with a quartic (to the power of 4) function.
 		</constant>
 		<constant name="TRANS_QUAD" value="4" enum="TransitionType">
+			The animation is interpolated with a quadratic (to the power of 2) function.
 		</constant>
 		<constant name="TRANS_EXPO" value="5" enum="TransitionType">
+			The animation is interpolated with an exponential (to the power of x) function.
 		</constant>
 		<constant name="TRANS_ELASTIC" value="6" enum="TransitionType">
+			The animation is interpolated with elasticity, wiggling around the edges.
 		</constant>
 		<constant name="TRANS_CUBIC" value="7" enum="TransitionType">
+			The animation is interpolated with a cubic (to the power of 3) function.
 		</constant>
 		<constant name="TRANS_CIRC" value="8" enum="TransitionType">
+			The animation is interpolated with a function using square roots.
 		</constant>
 		<constant name="TRANS_BOUNCE" value="9" enum="TransitionType">
+			The animation is interpolated by bouncing at the end.
 		</constant>
 		<constant name="TRANS_BACK" value="10" enum="TransitionType">
+			The animation is interpolated backing out at ends.
 		</constant>
 		<constant name="EASE_IN" value="0" enum="EaseType">
+			The interpolation starts slowly and speeds up towards the end.
 		</constant>
 		<constant name="EASE_OUT" value="1" enum="EaseType">
+			The interpolation starts quickly and slows down towards the end.
 		</constant>
 		<constant name="EASE_IN_OUT" value="2" enum="EaseType">
+			A combination of [constant EASE_IN] and [constant EASE_OUT]. The interpolation is slowest at both ends.
 		</constant>
 		<constant name="EASE_OUT_IN" value="3" enum="EaseType">
+			A combination of [constant EASE_IN] and [constant EASE_OUT]. The interpolation is fastest at both ends.
 		</constant>
 	</constants>
 </class>
