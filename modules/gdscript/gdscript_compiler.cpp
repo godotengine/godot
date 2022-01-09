@@ -2069,7 +2069,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	if (p_func) {
 		// if no return statement -> return type is void not unresolved Variant
 		if (p_func->body->has_return) {
-			gd_function->return_type = _gdtype_from_datatype(p_func->get_datatype());
+			gd_function->return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
 		} else {
 			gd_function->return_type = GDScriptDataType();
 			gd_function->return_type.has_type = true;
