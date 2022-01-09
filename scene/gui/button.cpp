@@ -302,6 +302,8 @@ void Button::_notification(int p_what) {
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
 
+			text_buf->set_alignment(align_rtl_checked);
+			text_buf->set_width(text_width);
 			switch (align_rtl_checked) {
 				case HORIZONTAL_ALIGNMENT_FILL:
 				case HORIZONTAL_ALIGNMENT_LEFT: {
