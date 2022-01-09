@@ -303,16 +303,19 @@
 	</signals>
 	<constants>
 		<constant name="TWEEN_PROCESS_PHYSICS" value="0" enum="TweenProcessMode">
-			The [Tween] updates during physics frame.
+			The [Tween] updates during the physics frame.
 		</constant>
 		<constant name="TWEEN_PROCESS_IDLE" value="1" enum="TweenProcessMode">
-			The [Tween] updates during idle
+			The [Tween] updates during the idle frame.
 		</constant>
 		<constant name="TWEEN_PAUSE_BOUND" value="0" enum="TweenPauseMode">
+			If the [Tween] has a bound node, it will process when that node can process (see [member Node.process_mode]). Otherwise it's the same as [constant TWEEN_PAUSE_STOP].
 		</constant>
 		<constant name="TWEEN_PAUSE_STOP" value="1" enum="TweenPauseMode">
+			If [SceneTree] is paused, the [Tween] will also pause.
 		</constant>
 		<constant name="TWEEN_PAUSE_PROCESS" value="2" enum="TweenPauseMode">
+			The [Tween] will process regardless of whether [SceneTree] is paused.
 		</constant>
 		<constant name="TRANS_LINEAR" value="0" enum="TransitionType">
 		</constant>
