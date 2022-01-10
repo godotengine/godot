@@ -369,10 +369,11 @@
 		<method name="slice" qualifiers="const">
 			<return type="PackedByteArray" />
 			<argument index="0" name="begin" type="int" />
-			<argument index="1" name="end" type="int" />
+			<argument index="1" name="end" type="int" default="2147483647" />
 			<description>
 				Returns the slice of the [PackedByteArray], from [code]begin[/code] (inclusive) to [code]end[/code] (exclusive), as a new [PackedByteArray].
-				If [code]end[/code]is negative, it will be relative to the end of the array.
+				The absolute value of [code]begin[/code] and [code]end[/code] will be clamped to the array size, so the default value for [code]end[/code] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [code]begin[/code] or [code]end[/code] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
 			</description>
 		</method>
 		<method name="sort">

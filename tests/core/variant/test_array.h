@@ -254,27 +254,52 @@ TEST_CASE("[Array] slice()") {
 	array.push_back(3);
 	array.push_back(4);
 
+	Array slice0 = array.slice(0, 0);
+	CHECK(slice0.size() == 0);
+
 	Array slice1 = array.slice(1, 3);
 	CHECK(slice1.size() == 2);
 	CHECK(slice1[0] == Variant(1));
 	CHECK(slice1[1] == Variant(2));
 
 	Array slice2 = array.slice(1, -1);
-	CHECK(slice2.size() == 4);
+	CHECK(slice2.size() == 3);
 	CHECK(slice2[0] == Variant(1));
 	CHECK(slice2[1] == Variant(2));
 	CHECK(slice2[2] == Variant(3));
-	CHECK(slice2[3] == Variant(4));
 
-	Array slice3 = array.slice(3, -1);
+	Array slice3 = array.slice(3);
 	CHECK(slice3.size() == 2);
 	CHECK(slice3[0] == Variant(3));
 	CHECK(slice3[1] == Variant(4));
 
 	Array slice4 = array.slice(2, -2);
-	CHECK(slice4.size() == 2);
+	CHECK(slice4.size() == 1);
 	CHECK(slice4[0] == Variant(2));
-	CHECK(slice4[1] == Variant(3));
+
+	Array slice5 = array.slice(-2);
+	CHECK(slice5.size() == 2);
+	CHECK(slice5[0] == Variant(3));
+	CHECK(slice5[1] == Variant(4));
+
+	Array slice6 = array.slice(2, 42);
+	CHECK(slice6.size() == 3);
+	CHECK(slice6[0] == Variant(2));
+	CHECK(slice6[1] == Variant(3));
+	CHECK(slice6[2] == Variant(4));
+
+	Array slice7 = array.slice(4, 0, -2);
+	CHECK(slice7.size() == 2);
+	CHECK(slice7[0] == Variant(4));
+	CHECK(slice7[1] == Variant(2));
+
+	ERR_PRINT_OFF;
+	Array slice8 = array.slice(4, 1);
+	CHECK(slice8.size() == 0);
+
+	Array slice9 = array.slice(3, -4);
+	CHECK(slice9.size() == 0);
+	ERR_PRINT_ON;
 }
 
 TEST_CASE("[Array] Duplicate array") {
