@@ -1006,8 +1006,11 @@
 		<constant name="JOY_BUTTON_22" value="22" enum="JoystickList">
 			Gamepad button 22.
 		</constant>
-		<constant name="JOY_BUTTON_MAX" value="23" enum="JoystickList">
-			Represents the maximum number of joystick buttons supported.
+		<constant name="JOY_BUTTON_MAX" value="128" enum="JoystickList">
+			The maximum number of game controller buttons supported by the engine. The actual limit may be lower on specific platforms:
+			- Android: Up to 36 buttons.
+			- Linux: Up to 80 buttons.
+			- Windows and macOS: Up to 128 buttons.
 		</constant>
 		<constant name="JOY_SONY_CIRCLE" value="1" enum="JoystickList">
 			DualShock circle button.
