@@ -5949,6 +5949,7 @@ void TextEdit::_update_scrollbars() {
 		caret.line_ofs = 0;
 		caret.wrap_ofs = 0;
 		v_scroll->set_value(0);
+		v_scroll->set_max(0);
 		v_scroll->hide();
 	}
 
@@ -5966,6 +5967,7 @@ void TextEdit::_update_scrollbars() {
 	} else {
 		caret.x_ofs = 0;
 		h_scroll->set_value(0);
+		h_scroll->set_max(0);
 		h_scroll->hide();
 	}
 
