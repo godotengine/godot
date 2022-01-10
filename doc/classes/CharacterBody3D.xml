@@ -81,37 +81,37 @@
 		<method name="is_on_ceiling" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the body collided with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+				Returns [code]true[/code] if the body collided with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "ceiling" or not.
 			</description>
 		</method>
 		<method name="is_on_ceiling_only" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the body collided only with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+				Returns [code]true[/code] if the body collided only with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "ceiling" or not.
 			</description>
 		</method>
 		<method name="is_on_floor" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the body collided with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+				Returns [code]true[/code] if the body collided with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "floor" or not.
 			</description>
 		</method>
 		<method name="is_on_floor_only" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the body collided only with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+				Returns [code]true[/code] if the body collided only with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "floor" or not.
 			</description>
 		</method>
 		<method name="is_on_wall" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the body collided with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+				Returns [code]true[/code] if the body collided with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "wall" or not.
 			</description>
 		</method>
 		<method name="is_on_wall_only" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the body collided only with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code].
+				Returns [code]true[/code] if the body collided only with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "wall" or not.
 			</description>
 		</method>
 		<method name="move_and_slide">
