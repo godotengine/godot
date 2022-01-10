@@ -2665,6 +2665,12 @@ float TextServerFallback::shaped_text_tab_align(RID p_shaped, const PackedFloat3
 		const_cast<TextServerFallback *>(this)->shaped_text_update_breaks(p_shaped);
 	}
 
+	for (int i = 0; i < p_tab_stops.size(); i++) {
+		if (p_tab_stops[i] <= 0) {
+			return 0.f;
+		}
+	}
+
 	int tab_index = 0;
 	float off = 0.f;
 
