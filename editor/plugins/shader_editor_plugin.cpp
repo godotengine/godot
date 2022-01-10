@@ -205,7 +205,7 @@ void ShaderTextEditor::_check_shader_mode() {
 
 static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_variable) {
 	RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(p_variable);
-	return RS::global_variable_type_get_shader_datatype(gvt);
+	return (ShaderLanguage::DataType)RS::global_variable_type_get_shader_datatype(gvt);
 }
 
 void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options) {

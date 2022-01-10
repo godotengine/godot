@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"
 
 #define SL ShaderLanguage
@@ -1333,7 +1334,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 ShaderLanguage::DataType ShaderCompiler::_get_variable_type(const StringName &p_type) {
 	RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(p_type);
-	return RS::global_variable_type_get_shader_datatype(gvt);
+	return (ShaderLanguage::DataType)RS::global_variable_type_get_shader_datatype(gvt);
 }
 
 Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
