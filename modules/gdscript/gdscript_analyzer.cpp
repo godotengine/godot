@@ -1868,13 +1868,14 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		push_error("Cannot assign a new value to a constant.", p_assignment->assignee);
 	}
 
-	if (!assignee_type.is_variant() && assigned_value_type.is_hard_type()) {
-		bool compatible = true;
-		GDScriptParser::DataType op_type = assigned_value_type;
-		if (p_assignment->operation != GDScriptParser::AssignmentNode::OP_NONE) {
-			op_type = get_operation_type(p_assignment->variant_op, assignee_type, assigned_value_type, compatible, p_assignment->assigned_value);
-		}
+	bool compatible = true;
+	GDScriptParser::DataType op_type = assigned_value_type;
+	if (p_assignment->operation != GDScriptParser::AssignmentNode::OP_NONE) {
+		op_type = get_operation_type(p_assignment->variant_op, assignee_type, assigned_value_type, compatible, p_assignment->assigned_value);
+	}
+	p_assignment->set_datatype(op_type);
 
+	if (!assignee_type.is_variant() && assigned_value_type.is_hard_type()) {
 		if (compatible) {
 			compatible = is_type_compatible(assignee_type, op_type, true);
 			if (!compatible) {
