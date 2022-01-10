@@ -7596,8 +7596,16 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 #ifdef DEBUG_ENABLED
 	int uniform_buffer_size = 0;
 	int max_uniform_buffer_size = 0;
-	if (RenderingDevice::get_singleton()) {
-		max_uniform_buffer_size = RenderingDevice::get_singleton()->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
+	int uniform_buffer_exceeded_line = -1;
+
+	bool check_device_limit_warnings = false;
+	{
+		RenderingDevice *device = RenderingDevice::get_singleton();
+		if (device != nullptr) {
+			check_device_limit_warnings = check_warnings && HAS_WARNING(ShaderWarning::DEVICE_LIMIT_EXCEEDED_FLAG);
+
+			max_uniform_buffer_size = device->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
+		}
 	}
 #endif // DEBUG_ENABLED
 	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
@@ -8001,15 +8009,21 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						if (uniform_scope != ShaderNode::Uniform::SCOPE_INSTANCE) {
 							uniform2.order = uniforms++;
 #ifdef DEBUG_ENABLED
-							if (uniform2.array_size > 0) {
-								int size = get_datatype_size(uniform2.type) * uniform2.array_size;
-								int m = (16 * uniform2.array_size);
-								if ((size % m) != 0U) {
-									size += m - (size % m);
+							if (check_device_limit_warnings) {
+								if (uniform2.array_size > 0) {
+									int size = get_datatype_size(uniform2.type) * uniform2.array_size;
+									int m = (16 * uniform2.array_size);
+									if ((size % m) != 0U) {
+										size += m - (size % m);
+									}
+									uniform_buffer_size += size;
+								} else {
+									uniform_buffer_size += get_datatype_size(uniform2.type);
 								}
-								uniform_buffer_size += size;
-							} else {
-								uniform_buffer_size += get_datatype_size(uniform2.type);
+
+								if (uniform_buffer_exceeded_line == -1 && uniform_buffer_size > max_uniform_buffer_size) {
+									uniform_buffer_exceeded_line = tk_line;
+								}
 							}
 #endif // DEBUG_ENABLED
 						}
@@ -9022,11 +9036,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	}
 
 #ifdef DEBUG_ENABLED
-	if (HAS_WARNING(ShaderWarning::DEVICE_LIMIT_EXCEEDED) && (uniform_buffer_size > max_uniform_buffer_size)) {
-		Vector<Variant> args;
-		args.push_back(uniform_buffer_size);
-		args.push_back(max_uniform_buffer_size);
-		_add_global_warning(ShaderWarning::DEVICE_LIMIT_EXCEEDED, "uniform buffer", args);
+	if (check_device_limit_warnings && uniform_buffer_exceeded_line != -1) {
+		_add_warning(ShaderWarning::DEVICE_LIMIT_EXCEEDED, uniform_buffer_exceeded_line, "uniform buffer", { uniform_buffer_size, max_uniform_buffer_size });
 	}
 #endif // DEBUG_ENABLED
 	return OK;
