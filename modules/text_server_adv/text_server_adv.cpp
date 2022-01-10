@@ -2573,7 +2573,7 @@ int32_t TextServerAdvanced::font_get_glyph_index(RID p_font_rid, int p_size, cha
 			return FT_Get_Char_Index(fd->cache[size]->face, p_char);
 		}
 	} else {
-		return 0;
+		return (int32_t)p_char;
 	}
 #else
 	return (int32_t)p_char;
