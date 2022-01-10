@@ -480,6 +480,10 @@ void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_proper
 		if (font_preview->get_data_count() > 0) {
 			font_preview->get_data(0)->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		}
+	} else if (p_edited_property == "subpixel_positioning") {
+		if (font_preview->get_data_count() > 0) {
+			font_preview->get_data(0)->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
+		}
 	} else if (p_edited_property == "oversampling") {
 		if (font_preview->get_data_count() > 0) {
 			font_preview->get_data(0)->set_oversampling(import_settings_data->get("oversampling"));
@@ -915,6 +919,7 @@ void DynamicFontImportSettings::_re_import() {
 	main_settings["msdf_size"] = import_settings_data->get("msdf_size");
 	main_settings["force_autohinter"] = import_settings_data->get("force_autohinter");
 	main_settings["hinting"] = import_settings_data->get("hinting");
+	main_settings["subpixel_positioning"] = import_settings_data->get("subpixel_positioning");
 	main_settings["oversampling"] = import_settings_data->get("oversampling");
 	main_settings["compress"] = import_settings_data->get("compress");
 
@@ -1265,6 +1270,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 		font_preview->get_data(0)->set_msdf_size(import_settings_data->get("msdf_size"));
 		font_preview->get_data(0)->set_force_autohinter(import_settings_data->get("force_autohinter"));
 		font_preview->get_data(0)->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
+		font_preview->get_data(0)->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
 		font_preview->get_data(0)->set_oversampling(import_settings_data->get("oversampling"));
 	}
 	font_preview_label->add_theme_font_override("font", font_preview);
@@ -1323,6 +1329,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel"), 1));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "compress", PROPERTY_HINT_NONE, ""), false));
 

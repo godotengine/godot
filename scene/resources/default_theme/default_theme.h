@@ -36,7 +36,7 @@
 const int default_font_size = 16;
 
 void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, Ref<Texture2D> &default_icon, Ref<StyleBox> &default_style, float p_scale);
-void make_default_theme(float p_scale, Ref<Font> p_font);
+void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_subpixel, TextServer::Hinting p_hinting, bool p_aa);
 void clear_default_theme();
 
 #endif

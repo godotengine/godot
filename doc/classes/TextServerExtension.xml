@@ -328,6 +328,13 @@
 				Returns font style name.
 			</description>
 		</method>
+		<method name="_font_get_subpixel_positioning" qualifiers="virtual const">
+			<return type="int" enum="TextServer.SubpixelPositioning" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font sub-pixel glyph positioning mode.
+			</description>
+		</method>
 		<method name="_font_get_supported_chars" qualifiers="virtual const">
 			<return type="String" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -736,6 +743,14 @@
 			<argument index="1" name="name_style" type="String" />
 			<description>
 				Sets the font style name.
+			</description>
+		</method>
+		<method name="_font_set_subpixel_positioning" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="subpixel_positioning" type="int" enum="TextServer.SubpixelPositioning" />
+			<description>
+				Sets font sub-pixel glyph positioning mode.
 			</description>
 		</method>
 		<method name="_font_set_texture_image" qualifiers="virtual">

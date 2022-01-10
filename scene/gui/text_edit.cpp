@@ -961,7 +961,7 @@ void TextEdit::_notification(int p_what) {
 
 						// Give visual indication of empty selected line.
 						if (selection.active && line >= selection.from_line && line <= selection.to_line && char_margin >= xmargin_beg) {
-							int char_w = font->get_char_size(' ', 0, font_size).width;
+							float char_w = font->get_char_size(' ', 0, font_size).width;
 							if (rtl) {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - xmargin_beg - ofs_x - char_w, ofs_y, char_w, row_height), selection_color);
 							} else {

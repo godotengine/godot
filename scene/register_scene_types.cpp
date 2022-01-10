@@ -1075,10 +1075,21 @@ void initialize_theme() {
 	// Allow creating the default theme at a different scale to suit higher/lower base resolutions.
 	float default_theme_scale = GLOBAL_DEF("gui/theme/default_theme_scale", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_theme_scale", PropertyInfo(Variant::FLOAT, "gui/theme/default_theme_scale", PROPERTY_HINT_RANGE, "0.5,8,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
 	String theme_path = GLOBAL_DEF_RST("gui/theme/custom", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom", PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
 	String font_path = GLOBAL_DEF_RST("gui/theme/custom_font", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+	bool font_antialiased = (bool)GLOBAL_DEF_RST("gui/theme/default_font_antialiased", true);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_antialiased", PropertyInfo(Variant::BOOL, "gui/theme/default_font_antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+	TextServer::Hinting font_hinting = (TextServer::Hinting)(int)GLOBAL_DEF_RST("gui/theme/default_font_hinting", TextServer::HINTING_LIGHT);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_hinting", PropertyInfo(Variant::INT, "gui/theme/default_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
+	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_DEF_RST("gui/theme/default_font_subpixel_positioning", TextServer::SUBPIXEL_POSITIONING_AUTO);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_subpixel_positioning", PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	Ref<Font> font;
 	if (!font_path.is_empty()) {
@@ -1090,7 +1101,7 @@ void initialize_theme() {
 
 	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
 	if (RenderingServer::get_singleton()) {
-		make_default_theme(default_theme_scale, font);
+		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased);
 	}
 
 	if (!theme_path.is_empty()) {

@@ -139,6 +139,7 @@ class TextServerFallback : public TextServer {
 		int fixed_size = 0;
 		bool force_autohinter = false;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
+		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		Dictionary variation_coordinates;
 		float oversampling = 0.f;
 
@@ -289,6 +290,9 @@ public:
 
 	virtual void font_set_hinting(RID p_font_rid, TextServer::Hinting p_hinting) override;
 	virtual TextServer::Hinting font_get_hinting(RID p_font_rid) const override;
+
+	virtual void font_set_subpixel_positioning(RID p_font_rid, SubpixelPositioning p_subpixel) override;
+	virtual SubpixelPositioning font_get_subpixel_positioning(RID p_font_rid) const override;
 
 	virtual void font_set_variation_coordinates(RID p_font_rid, const Dictionary &p_variation_coordinates) override;
 	virtual Dictionary font_get_variation_coordinates(RID p_font_rid) const override;
