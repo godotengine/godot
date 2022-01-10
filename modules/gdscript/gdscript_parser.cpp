@@ -817,6 +817,8 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				class_end = true;
 				break;
 			default:
+				// Display a completion with identifiers.
+				make_completion_context(COMPLETION_IDENTIFIER, nullptr);
 				push_error(vformat(R"(Unexpected "%s" in class body.)", current.get_name()));
 				advance();
 				break;
