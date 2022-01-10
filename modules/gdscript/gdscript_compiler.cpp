@@ -1078,29 +1078,25 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 			} else {
 				// Regular assignment.
-				GDScriptCodeGenerator::Address target;
-
+				ERR_FAIL_COND_V_MSG(assignment->assignee->type != GDScriptParser::Node::IDENTIFIER, GDScriptCodeGenerator::Address(), "Expected the assignee to be an identifier here.");
+				GDScriptCodeGenerator::Address member;
+				bool is_member = false;
 				bool has_setter = false;
 				bool is_in_setter = false;
 				StringName setter_function;
-				if (assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
-					StringName var_name = static_cast<const GDScriptParser::IdentifierNode *>(assignment->assignee)->name;
-					if (!codegen.locals.has(var_name) && codegen.script->member_indices.has(var_name)) {
-						setter_function = codegen.script->member_indices[var_name].setter;
-						if (setter_function != StringName()) {
-							has_setter = true;
-							is_in_setter = setter_function == codegen.function_name;
-							target.mode = GDScriptCodeGenerator::Address::MEMBER;
-							target.address = codegen.script->member_indices[var_name].index;
-						}
-					}
+				StringName var_name = static_cast<const GDScriptParser::IdentifierNode *>(assignment->assignee)->name;
+				if (!codegen.locals.has(var_name) && codegen.script->member_indices.has(var_name)) {
+					is_member = true;
+					setter_function = codegen.script->member_indices[var_name].setter;
+					has_setter = setter_function != StringName();
+					is_in_setter = has_setter && setter_function == codegen.function_name;
+					member.mode = GDScriptCodeGenerator::Address::MEMBER;
+					member.address = codegen.script->member_indices[var_name].index;
 				}
 
-				if (has_setter) {
-					if (!is_in_setter) {
-						// Store stack slot for the temp value.
-						target = codegen.add_temporary(_gdtype_from_datatype(assignment->assignee->get_datatype()));
-					}
+				GDScriptCodeGenerator::Address target;
+				if (is_member) {
+					target = member; // _parse_expression could call its getter, but we want to know the actual address
 				} else {
 					target = _parse_expression(codegen, r_error, assignment->assignee);
 					if (r_error) {
