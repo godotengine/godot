@@ -38,11 +38,41 @@ bool ConvexPolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, dou
 	return Geometry2D::is_point_in_polygon(p_point, points);
 }
 
+#ifdef DEBUG_ENABLED
+// Check if point p3 is to the left of [p1, p2] segment or on it.
+bool left_test(const Vector2 &p1, const Vector2 &p2, const Vector2 &p3) {
+	Vector2 p12 = p2 - p1;
+	Vector2 p13 = p3 - p1;
+	// If the value of the cross product is positive or zero; p3 is to the left or on the segment, respectively.
+	return p12.cross(p13) >= 0;
+}
+
+bool is_convex(const Vector<Vector2> &p_points) {
+	// Pre-condition: Polygon is in counter-clockwise order.
+	int polygon_size = p_points.size();
+	for (int i = 0; i < polygon_size && polygon_size > 3; i++) {
+		int j = (i + 1) % polygon_size;
+		int k = (j + 1) % polygon_size;
+		// If any consecutive three points fail left-test, then there is a concavity.
+		if (!left_test(p_points[i], p_points[j], p_points[k])) {
+			return false;
+		}
+	}
+
+	return true;
+}
+#endif
+
 void ConvexPolygonShape2D::_update_shape() {
 	Vector<Vector2> final_points = points;
 	if (Geometry2D::is_polygon_clockwise(final_points)) { //needs to be counter clockwise
 		final_points.reverse();
 	}
+#ifdef DEBUG_ENABLED
+	if (!is_convex(final_points)) {
+		WARN_PRINT("Concave polygon is assigned to ConvexPolygonShape2D.");
+	}
+#endif
 	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), final_points);
 	emit_changed();
 }
