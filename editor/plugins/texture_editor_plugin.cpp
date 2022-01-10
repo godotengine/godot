@@ -84,7 +84,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	texture_display->set_texture(p_texture);
 	texture_display->set_anchors_preset(TextureRect::PRESET_WIDE);
 	texture_display->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	texture_display->set_expand(true);
+	texture_display->set_ignore_texture_size(true);
 	add_child(texture_display);
 
 	if (p_show_metadata) {
