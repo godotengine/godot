@@ -154,6 +154,212 @@ TEST_SUITE("[[TextServer]") {
 			}
 		}
 
+		SUBCASE("[TextServer] Text layout: Line break and align points") {
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				TEST_FAIL_COND(ts.is_null(), "Invalid TS interface.");
+
+				RID font1 = ts->create_font();
+				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+				RID font2 = ts->create_font();
+				ts->font_set_data_ptr(font2, _font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
+				RID font3 = ts->create_font();
+				ts->font_set_data_ptr(font3, _font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size);
+
+				Vector<RID> font;
+				font.push_back(font1);
+				font.push_back(font2);
+				font.push_back(font3);
+
+				{
+					String test = U"Test test long text long text\n";
+					RID ctx = ts->create_shaped_text();
+					TEST_FAIL_COND(ctx == RID(), "Creating text buffer failed.");
+					bool ok = ts->shaped_text_add_string(ctx, test, font, 16);
+					TEST_FAIL_COND(!ok, "Adding text to the buffer failed.");
+					ts->shaped_text_update_breaks(ctx);
+					ts->shaped_text_update_justification_ops(ctx);
+
+					const Glyph *glyphs = ts->shaped_text_get_glyphs(ctx);
+					int gl_size = ts->shaped_text_get_glyph_count(ctx);
+
+					TEST_FAIL_COND(gl_size != 30, "Invalid glyph count.");
+					for (int j = 0; j < gl_size; j++) {
+						bool hard = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_HARD) == TextServer::GRAPHEME_IS_BREAK_HARD;
+						bool soft = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_SOFT) == TextServer::GRAPHEME_IS_BREAK_SOFT;
+						bool space = (glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE;
+						bool virt = (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL;
+						bool elo = (glyphs[j].flags & TextServer::GRAPHEME_IS_ELONGATION) == TextServer::GRAPHEME_IS_ELONGATION;
+						if (j == 4 || j == 9 || j == 14 || j == 19 || j == 24) {
+							TEST_FAIL_COND((!soft || !space || hard || virt || elo), "Invalid glyph flags.");
+						} else if (j == 29) {
+							TEST_FAIL_COND((soft || !space || !hard || virt || elo), "Invalid glyph flags.");
+						} else {
+							TEST_FAIL_COND((soft || space || hard || virt || elo), "Invalid glyph flags.");
+						}
+					}
+					ts->free(ctx);
+				}
+
+				{
+					String test = U"الحمـد";
+					RID ctx = ts->create_shaped_text();
+					TEST_FAIL_COND(ctx == RID(), "Creating text buffer failed.");
+					bool ok = ts->shaped_text_add_string(ctx, test, font, 16);
+					TEST_FAIL_COND(!ok, "Adding text to the buffer failed.");
+					ts->shaped_text_update_breaks(ctx);
+
+					const Glyph *glyphs = ts->shaped_text_get_glyphs(ctx);
+					int gl_size = ts->shaped_text_get_glyph_count(ctx);
+					TEST_FAIL_COND(gl_size != 6, "Invalid glyph count.");
+					for (int j = 0; j < gl_size; j++) {
+						bool hard = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_HARD) == TextServer::GRAPHEME_IS_BREAK_HARD;
+						bool soft = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_SOFT) == TextServer::GRAPHEME_IS_BREAK_SOFT;
+						bool space = (glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE;
+						bool virt = (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL;
+						bool elo = (glyphs[j].flags & TextServer::GRAPHEME_IS_ELONGATION) == TextServer::GRAPHEME_IS_ELONGATION;
+						TEST_FAIL_COND((soft || space || hard || virt || elo), "Invalid glyph flags.");
+					}
+
+					if (ts->has_feature(TextServer::FEATURE_KASHIDA_JUSTIFICATION)) {
+						ts->shaped_text_update_justification_ops(ctx);
+
+						glyphs = ts->shaped_text_get_glyphs(ctx);
+						gl_size = ts->shaped_text_get_glyph_count(ctx);
+
+						TEST_FAIL_COND(gl_size != 6, "Invalid glyph count.");
+						for (int j = 0; j < gl_size; j++) {
+							bool hard = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_HARD) == TextServer::GRAPHEME_IS_BREAK_HARD;
+							bool soft = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_SOFT) == TextServer::GRAPHEME_IS_BREAK_SOFT;
+							bool space = (glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE;
+							bool virt = (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL;
+							bool elo = (glyphs[j].flags & TextServer::GRAPHEME_IS_ELONGATION) == TextServer::GRAPHEME_IS_ELONGATION;
+							if (j == 1) {
+								TEST_FAIL_COND((soft || space || hard || virt || !elo), "Invalid glyph flags.");
+							} else {
+								TEST_FAIL_COND((soft || space || hard || virt || elo), "Invalid glyph flags.");
+							}
+						}
+					}
+					ts->free(ctx);
+				}
+
+				{
+					String test = U"الحمـد الرياضي العربي";
+					RID ctx = ts->create_shaped_text();
+					TEST_FAIL_COND(ctx == RID(), "Creating text buffer failed.");
+					bool ok = ts->shaped_text_add_string(ctx, test, font, 16);
+					TEST_FAIL_COND(!ok, "Adding text to the buffer failed.");
+					ts->shaped_text_update_breaks(ctx);
+
+					const Glyph *glyphs = ts->shaped_text_get_glyphs(ctx);
+					int gl_size = ts->shaped_text_get_glyph_count(ctx);
+
+					TEST_FAIL_COND(gl_size != 21, "Invalid glyph count.");
+					for (int j = 0; j < gl_size; j++) {
+						bool hard = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_HARD) == TextServer::GRAPHEME_IS_BREAK_HARD;
+						bool soft = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_SOFT) == TextServer::GRAPHEME_IS_BREAK_SOFT;
+						bool space = (glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE;
+						bool virt = (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL;
+						bool elo = (glyphs[j].flags & TextServer::GRAPHEME_IS_ELONGATION) == TextServer::GRAPHEME_IS_ELONGATION;
+						if (j == 6 || j == 14) {
+							TEST_FAIL_COND((!soft || !space || hard || virt || elo), "Invalid glyph flags.");
+						} else {
+							TEST_FAIL_COND((soft || space || hard || virt || elo), "Invalid glyph flags.");
+						}
+					}
+
+					if (ts->has_feature(TextServer::FEATURE_KASHIDA_JUSTIFICATION)) {
+						ts->shaped_text_update_justification_ops(ctx);
+
+						glyphs = ts->shaped_text_get_glyphs(ctx);
+						gl_size = ts->shaped_text_get_glyph_count(ctx);
+
+						TEST_FAIL_COND(gl_size != 23, "Invalid glyph count.");
+						for (int j = 0; j < gl_size; j++) {
+							bool hard = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_HARD) == TextServer::GRAPHEME_IS_BREAK_HARD;
+							bool soft = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_SOFT) == TextServer::GRAPHEME_IS_BREAK_SOFT;
+							bool space = (glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE;
+							bool virt = (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL;
+							bool elo = (glyphs[j].flags & TextServer::GRAPHEME_IS_ELONGATION) == TextServer::GRAPHEME_IS_ELONGATION;
+							if (j == 7 || j == 16) {
+								TEST_FAIL_COND((!soft || !space || hard || virt || elo), "Invalid glyph flags.");
+							} else if (j == 3 || j == 9) {
+								TEST_FAIL_COND((soft || space || hard || !virt || !elo), "Invalid glyph flags.");
+							} else if (j == 18) {
+								TEST_FAIL_COND((soft || space || hard || virt || !elo), "Invalid glyph flags.");
+							} else {
+								TEST_FAIL_COND((soft || space || hard || virt || elo), "Invalid glyph flags.");
+							}
+						}
+					}
+
+					ts->free(ctx);
+				}
+
+				{
+					String test = U"เป็น ภาษา ราชการ และ ภาษา";
+					RID ctx = ts->create_shaped_text();
+					TEST_FAIL_COND(ctx == RID(), "Creating text buffer failed.");
+					bool ok = ts->shaped_text_add_string(ctx, test, font, 16);
+					TEST_FAIL_COND(!ok, "Adding text to the buffer failed.");
+					ts->shaped_text_update_breaks(ctx);
+					ts->shaped_text_update_justification_ops(ctx);
+
+					const Glyph *glyphs = ts->shaped_text_get_glyphs(ctx);
+					int gl_size = ts->shaped_text_get_glyph_count(ctx);
+
+					TEST_FAIL_COND(gl_size != 25, "Invalid glyph count.");
+					for (int j = 0; j < gl_size; j++) {
+						bool hard = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_HARD) == TextServer::GRAPHEME_IS_BREAK_HARD;
+						bool soft = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_SOFT) == TextServer::GRAPHEME_IS_BREAK_SOFT;
+						bool space = (glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE;
+						bool virt = (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL;
+						bool elo = (glyphs[j].flags & TextServer::GRAPHEME_IS_ELONGATION) == TextServer::GRAPHEME_IS_ELONGATION;
+						if (j == 4 || j == 9 || j == 16 || j == 20) {
+							TEST_FAIL_COND((!soft || !space || hard || virt || elo), "Invalid glyph flags.");
+						} else {
+							TEST_FAIL_COND((soft || space || hard || virt || elo), "Invalid glyph flags.");
+						}
+					}
+					ts->free(ctx);
+				}
+
+				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) {
+					String test = U"เป็นภาษาราชการและภาษา";
+					RID ctx = ts->create_shaped_text();
+					TEST_FAIL_COND(ctx == RID(), "Creating text buffer failed.");
+					bool ok = ts->shaped_text_add_string(ctx, test, font, 16);
+					TEST_FAIL_COND(!ok, "Adding text to the buffer failed.");
+					ts->shaped_text_update_breaks(ctx);
+					ts->shaped_text_update_justification_ops(ctx);
+
+					const Glyph *glyphs = ts->shaped_text_get_glyphs(ctx);
+					int gl_size = ts->shaped_text_get_glyph_count(ctx);
+
+					TEST_FAIL_COND(gl_size != 25, "Invalid glyph count.");
+					for (int j = 0; j < gl_size; j++) {
+						bool hard = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_HARD) == TextServer::GRAPHEME_IS_BREAK_HARD;
+						bool soft = (glyphs[j].flags & TextServer::GRAPHEME_IS_BREAK_SOFT) == TextServer::GRAPHEME_IS_BREAK_SOFT;
+						bool space = (glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE;
+						bool virt = (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) == TextServer::GRAPHEME_IS_VIRTUAL;
+						bool elo = (glyphs[j].flags & TextServer::GRAPHEME_IS_ELONGATION) == TextServer::GRAPHEME_IS_ELONGATION;
+						if (j == 4 || j == 9 || j == 16 || j == 20) {
+							TEST_FAIL_COND((!soft || !space || hard || !virt || elo), "Invalid glyph flags.");
+						} else {
+							TEST_FAIL_COND((soft || space || hard || virt || elo), "Invalid glyph flags.");
+						}
+					}
+					ts->free(ctx);
+				}
+
+				for (int j = 0; j < font.size(); j++) {
+					ts->free(font[j]);
+				}
+				font.clear();
+			}
+		}
+
 		SUBCASE("[TextServer] Text layout: Line breaking") {
 			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);

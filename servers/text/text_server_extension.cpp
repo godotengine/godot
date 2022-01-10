@@ -194,6 +194,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_set_direction, "shaped", "direction");
 	GDVIRTUAL_BIND(_shaped_text_get_direction, "shaped");
+	GDVIRTUAL_BIND(_shaped_text_get_inferred_direction, "shaped");
 
 	GDVIRTUAL_BIND(_shaped_text_set_bidi_override, "shaped", "override");
 
@@ -952,6 +953,14 @@ TextServer::Direction TextServerExtension::shaped_text_get_direction(RID p_shape
 		return (TextServer::Direction)ret;
 	}
 	return TextServer::Direction::DIRECTION_AUTO;
+}
+
+TextServer::Direction TextServerExtension::shaped_text_get_inferred_direction(RID p_shaped) const {
+	int ret;
+	if (GDVIRTUAL_CALL(_shaped_text_get_inferred_direction, p_shaped, ret)) {
+		return (TextServer::Direction)ret;
+	}
+	return TextServer::Direction::DIRECTION_LTR;
 }
 
 void TextServerExtension::shaped_text_set_orientation(RID p_shaped, TextServer::Orientation p_orientation) {

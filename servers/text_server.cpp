@@ -347,6 +347,7 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shaped_text_set_direction", "shaped", "direction"), &TextServer::shaped_text_set_direction, DEFVAL(DIRECTION_AUTO));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_direction", "shaped"), &TextServer::shaped_text_get_direction);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_inferred_direction", "shaped"), &TextServer::shaped_text_get_inferred_direction);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_set_bidi_override", "shaped", "override"), &TextServer::shaped_text_set_bidi_override);
 
@@ -1224,6 +1225,17 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 	}
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
+		if (trim_pos >= 0) {
+			if (rtl) {
+				if (i < trim_pos) {
+					continue;
+				}
+			} else {
+				if (i >= trim_pos) {
+					break;
+				}
+			}
+		}
 		for (int j = 0; j < glyphs[i].repeat; j++) {
 			if (p_clip_r > 0) {
 				// Clip right / bottom.
@@ -1248,17 +1260,6 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 					if (ofs.y - p_pos.y < p_clip_l) {
 						ofs.y += glyphs[i].advance;
 						continue;
-					}
-				}
-			}
-			if (trim_pos >= 0) {
-				if (rtl) {
-					if (i < trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-						continue;
-					}
-				} else {
-					if (i >= trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-						break;
 					}
 				}
 			}
@@ -1293,7 +1294,7 @@ void TextServer::shaped_text_draw(RID p_shaped, RID p_canvas, const Vector2 &p_p
 void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vector2 &p_pos, float p_clip_l, float p_clip_r, int p_outline_size, const Color &p_color) const {
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 
-	bool rtl = (shaped_text_get_direction(p_shaped) == DIRECTION_RTL);
+	bool rtl = (shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL);
 
 	int ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped);
 	int trim_pos = shaped_text_get_trim_pos(p_shaped);
@@ -1319,6 +1320,17 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 	}
 	// Draw at the baseline.
 	for (int i = 0; i < v_size; i++) {
+		if (trim_pos >= 0) {
+			if (rtl) {
+				if (i < trim_pos) {
+					continue;
+				}
+			} else {
+				if (i >= trim_pos) {
+					break;
+				}
+			}
+		}
 		for (int j = 0; j < glyphs[i].repeat; j++) {
 			if (p_clip_r > 0) {
 				// Clip right / bottom.
@@ -1343,17 +1355,6 @@ void TextServer::shaped_text_draw_outline(RID p_shaped, RID p_canvas, const Vect
 					if (ofs.y - p_pos.y < p_clip_l) {
 						ofs.y += glyphs[i].advance;
 						continue;
-					}
-				}
-			}
-			if (trim_pos >= 0) {
-				if (rtl) {
-					if (i < trim_pos) {
-						continue;
-					}
-				} else {
-					if (i >= trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-						break;
 					}
 				}
 			}
