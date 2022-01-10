@@ -2841,6 +2841,24 @@ Vector<String> TextServerAdvanced::font_get_script_support_overrides(RID p_font_
 	return out;
 }
 
+void TextServerAdvanced::font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->feature_overrides = p_overrides;
+}
+
+Dictionary TextServerAdvanced::font_get_opentype_feature_overrides(RID p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+
+	MutexLock lock(fd->mutex);
+	return fd->feature_overrides;
+}
+
 Dictionary TextServerAdvanced::font_supported_feature_list(RID p_font_rid) const {
 	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND_V(!fd, Dictionary());
@@ -4237,6 +4255,24 @@ Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char
 	return gl;
 }
 
+_FORCE_INLINE_ void TextServerAdvanced::_add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs) {
+	for (const Variant *ftr = p_source.next(nullptr); ftr != nullptr; ftr = p_source.next(ftr)) {
+		int32_t values = p_source[*ftr];
+		if (values >= 0) {
+			hb_feature_t feature;
+			if (ftr->get_type() == Variant::STRING) {
+				feature.tag = name_to_tag(*ftr);
+			} else {
+				feature.tag = *ftr;
+			}
+			feature.value = values;
+			feature.start = 0;
+			feature.end = -1;
+			r_ftrs.push_back(feature);
+		}
+	}
+}
+
 void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_start, int32_t p_end, hb_script_t p_script, hb_direction_t p_direction, Vector<RID> p_fonts, int p_span, int p_fb_index) {
 	int fs = p_sd->spans[p_span].font_size;
 	if (p_fb_index >= p_fonts.size()) {
@@ -4293,17 +4329,9 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int32_t p_star
 	hb_buffer_add_utf32(p_sd->hb_buffer, (const uint32_t *)p_sd->text.ptr(), p_sd->text.length(), p_start, p_end - p_start);
 
 	Vector<hb_feature_t> ftrs;
-	for (const Variant *ftr = p_sd->spans[p_span].features.next(nullptr); ftr != nullptr; ftr = p_sd->spans[p_span].features.next(ftr)) {
-		double values = p_sd->spans[p_span].features[*ftr];
-		if (values >= 0) {
-			hb_feature_t feature;
-			feature.tag = *ftr;
-			feature.value = values;
-			feature.start = 0;
-			feature.end = -1;
-			ftrs.push_back(feature);
-		}
-	}
+	_add_featuers(font_get_opentype_feature_overrides(f), ftrs);
+	_add_featuers(p_sd->spans[p_span].features, ftrs);
+
 	hb_shape(hb_font, p_sd->hb_buffer, ftrs.is_empty() ? nullptr : &ftrs[0], ftrs.size());
 
 	unsigned int glyph_count = 0;

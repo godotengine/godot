@@ -184,6 +184,9 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_script_support_override", "script"), &FontData::remove_script_support_override);
 	ClassDB::bind_method(D_METHOD("get_script_support_overrides"), &FontData::get_script_support_overrides);
 
+	ClassDB::bind_method(D_METHOD("set_opentype_feature_overrides", "overrides"), &FontData::set_opentype_feature_overrides);
+	ClassDB::bind_method(D_METHOD("get_opentype_feature_overrides"), &FontData::get_opentype_feature_overrides);
+
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &FontData::has_char);
 	ClassDB::bind_method(D_METHOD("get_supported_chars"), &FontData::get_supported_chars);
 
@@ -191,49 +194,25 @@ void FontData::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_supported_feature_list"), &FontData::get_supported_feature_list);
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &FontData::get_supported_variation_list);
+
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_antialiased", "is_antialiased");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_name", "get_font_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "style_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style_name", "get_font_style_name");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style", "get_font_style");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_pixel_range", "get_msdf_pixel_range");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_size", "get_msdf_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_force_autohinter", "is_force_autohinter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_STORAGE), "set_hinting", "get_hinting");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_oversampling", "get_oversampling");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size", "get_fixed_size");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "opentype_feature_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_opentype_feature_overrides", "get_opentype_feature_overrides");
 }
 
 bool FontData::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> tokens = p_name.operator String().split("/");
-	if (tokens.size() == 1) {
-		if (tokens[0] == "data") {
-			set_data(p_value);
-			return true;
-		} else if (tokens[0] == "antialiased") {
-			set_antialiased(p_value);
-			return true;
-		} else if (tokens[0] == "font_name") {
-			set_font_name(p_value);
-			return true;
-		} else if (tokens[0] == "style_name") {
-			set_font_style_name(p_value);
-			return true;
-		} else if (tokens[0] == "font_style") {
-			set_font_style(p_value);
-			return true;
-		} else if (tokens[0] == "multichannel_signed_distance_field") {
-			set_multichannel_signed_distance_field(p_value);
-			return true;
-		} else if (tokens[0] == "msdf_pixel_range") {
-			set_msdf_pixel_range(p_value);
-			return true;
-		} else if (tokens[0] == "msdf_size") {
-			set_msdf_size(p_value);
-			return true;
-		} else if (tokens[0] == "fixed_size") {
-			set_fixed_size(p_value);
-			return true;
-		} else if (tokens[0] == "hinting") {
-			set_hinting((TextServer::Hinting)p_value.operator int());
-			return true;
-		} else if (tokens[0] == "force_autohinter") {
-			set_force_autohinter(p_value);
-			return true;
-		} else if (tokens[0] == "oversampling") {
-			set_oversampling(p_value);
-			return true;
-		}
-	} else if (tokens.size() == 2 && tokens[0] == "language_support_override") {
+	if (tokens.size() == 2 && tokens[0] == "language_support_override") {
 		String lang = tokens[1];
 		set_language_support_override(lang, p_value);
 		return true;
@@ -309,45 +288,7 @@ bool FontData::_set(const StringName &p_name, const Variant &p_value) {
 
 bool FontData::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> tokens = p_name.operator String().split("/");
-	if (tokens.size() == 1) {
-		if (tokens[0] == "data") {
-			r_ret = get_data();
-			return true;
-		} else if (tokens[0] == "antialiased") {
-			r_ret = is_antialiased();
-			return true;
-		} else if (tokens[0] == "font_name") {
-			r_ret = get_font_name();
-			return true;
-		} else if (tokens[0] == "style_name") {
-			r_ret = get_font_style_name();
-			return true;
-		} else if (tokens[0] == "font_style") {
-			r_ret = get_font_style();
-			return true;
-		} else if (tokens[0] == "multichannel_signed_distance_field") {
-			r_ret = is_multichannel_signed_distance_field();
-			return true;
-		} else if (tokens[0] == "msdf_pixel_range") {
-			r_ret = get_msdf_pixel_range();
-			return true;
-		} else if (tokens[0] == "msdf_size") {
-			r_ret = get_msdf_size();
-			return true;
-		} else if (tokens[0] == "fixed_size") {
-			r_ret = get_fixed_size();
-			return true;
-		} else if (tokens[0] == "hinting") {
-			r_ret = get_hinting();
-			return true;
-		} else if (tokens[0] == "force_autohinter") {
-			r_ret = is_force_autohinter();
-			return true;
-		} else if (tokens[0] == "oversampling") {
-			r_ret = get_oversampling();
-			return true;
-		}
-	} else if (tokens.size() == 2 && tokens[0] == "language_support_override") {
+	if (tokens.size() == 2 && tokens[0] == "language_support_override") {
 		String lang = tokens[1];
 		r_ret = get_language_support_override(lang);
 		return true;
@@ -422,20 +363,6 @@ bool FontData::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void FontData::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-
-	p_list->push_back(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-	p_list->push_back(PropertyInfo(Variant::STRING, "style_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-	p_list->push_back(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-	p_list->push_back(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-	p_list->push_back(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-	p_list->push_back(PropertyInfo(Variant::INT, "fixed_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-	p_list->push_back(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_STORAGE));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "force_autohinter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-
 	Vector<String> lang_over = get_language_support_overrides();
 	for (int i = 0; i < lang_over.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::BOOL, "language_support_override/" + lang_over[i], PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -1075,6 +1002,16 @@ void FontData::remove_script_support_override(const String &p_script) {
 Vector<String> FontData::get_script_support_overrides() const {
 	_ensure_rid(0);
 	return TS->font_get_script_support_overrides(cache[0]);
+}
+
+void FontData::set_opentype_feature_overrides(const Dictionary &p_overrides) {
+	_ensure_rid(0);
+	TS->font_set_opentype_feature_overrides(cache[0], p_overrides);
+}
+
+Dictionary FontData::get_opentype_feature_overrides() const {
+	_ensure_rid(0);
+	return TS->font_get_opentype_feature_overrides(cache[0]);
 }
 
 bool FontData::has_char(char32_t p_char) const {

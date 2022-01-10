@@ -120,17 +120,26 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 	Label *page5_description = nullptr;
 	Button *add_lang = nullptr;
 	Button *add_script = nullptr;
+	Button *add_ot = nullptr;
 
 	PopupMenu *menu_langs = nullptr;
 	PopupMenu *menu_scripts = nullptr;
+	PopupMenu *menu_ot = nullptr;
+	PopupMenu *menu_ot_ss = nullptr;
+	PopupMenu *menu_ot_cv = nullptr;
+	PopupMenu *menu_ot_cu = nullptr;
 
 	Tree *lang_list = nullptr;
 	TreeItem *lang_list_root = nullptr;
+	Label *label_langs = nullptr;
 
 	Tree *script_list = nullptr;
 	TreeItem *script_list_root = nullptr;
-	Label *label_langs = nullptr;
 	Label *label_script = nullptr;
+
+	Tree *ot_list = nullptr;
+	TreeItem *ot_list_root = nullptr;
+	Label *label_ot = nullptr;
 
 	void _lang_add();
 	void _lang_add_item(int p_option);
@@ -139,6 +148,10 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 	void _script_add();
 	void _script_add_item(int p_option);
 	void _script_remove(Object *p_item, int p_column, int p_id);
+
+	void _ot_add();
+	void _ot_add_item(int p_option);
+	void _ot_remove(Object *p_item, int p_column, int p_id);
 
 	// Common
 

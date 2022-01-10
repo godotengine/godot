@@ -79,42 +79,12 @@
 				Returns text server font cache entry resource id.
 			</description>
 		</method>
-		<method name="get_data" qualifiers="const">
-			<return type="PackedByteArray" />
-			<description>
-				Returns contents of the dynamic font source file.
-			</description>
-		</method>
 		<method name="get_descent" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="cache_index" type="int" />
 			<argument index="1" name="size" type="int" />
 			<description>
 				Returns font descent (number of pixels below the baseline).
-			</description>
-		</method>
-		<method name="get_fixed_size" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns font fixed size.
-			</description>
-		</method>
-		<method name="get_font_name" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns font family name.
-			</description>
-		</method>
-		<method name="get_font_style" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns font style flags, see [enum TextServer.FontStyle].
-			</description>
-		</method>
-		<method name="get_font_style_name" qualifiers="const">
-			<return type="String" />
-			<description>
-				Returns font style name.
 			</description>
 		</method>
 		<method name="get_glyph_advance" qualifiers="const">
@@ -180,12 +150,6 @@
 				Returns rectangle in the cache texture containing the glyph.
 			</description>
 		</method>
-		<method name="get_hinting" qualifiers="const">
-			<return type="int" enum="TextServer.Hinting" />
-			<description>
-				Returns the font hinting mode. Used by dynamic fonts only.
-			</description>
-		</method>
 		<method name="get_kerning" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="cache_index" type="int" />
@@ -214,24 +178,6 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns list of language support overrides.
-			</description>
-		</method>
-		<method name="get_msdf_pixel_range" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the width of the range around the shape between the minimum and maximum representable signed distance.
-			</description>
-		</method>
-		<method name="get_msdf_size" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns source font size used to generate MSDF textures.
-			</description>
-		</method>
-		<method name="get_oversampling" qualifiers="const">
-			<return type="float" />
-			<description>
-				Returns font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="get_scale" qualifiers="const">
@@ -346,29 +292,11 @@
 				Returns [code]true[/code] if a Unicode [code]char[/code] is available in the font.
 			</description>
 		</method>
-		<method name="is_antialiased" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if font 8-bit anitialiased glyph rendering is supported and enabled.
-			</description>
-		</method>
-		<method name="is_force_autohinter" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.
-			</description>
-		</method>
 		<method name="is_language_supported" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="language" type="String" />
 			<description>
 				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
-			</description>
-		</method>
-		<method name="is_multichannel_signed_distance_field" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data.
 			</description>
 		</method>
 		<method name="is_script_supported" qualifiers="const">
@@ -455,13 +383,6 @@
 				Renders the range of characters to the font cache texture.
 			</description>
 		</method>
-		<method name="set_antialiased">
-			<return type="void" />
-			<argument index="0" name="antialiased" type="bool" />
-			<description>
-				If set to [code]true[/code], 8-bit antialiased glyph rendering is used, otherwise 1-bit rendering is used. Used by dynamic fonts only.
-			</description>
-		</method>
 		<method name="set_ascent">
 			<return type="void" />
 			<argument index="0" name="cache_index" type="int" />
@@ -471,13 +392,6 @@
 				Sets the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
-		<method name="set_data">
-			<return type="void" />
-			<argument index="0" name="data" type="PackedByteArray" />
-			<description>
-				Sets font source data, e.g contents of the dynamic font source file.
-			</description>
-		</method>
 		<method name="set_descent">
 			<return type="void" />
 			<argument index="0" name="cache_index" type="int" />
@@ -485,41 +399,6 @@
 			<argument index="2" name="descent" type="float" />
 			<description>
 				Sets the font descent (number of pixels below the baseline).
-			</description>
-		</method>
-		<method name="set_fixed_size">
-			<return type="void" />
-			<argument index="0" name="fixed_size" type="int" />
-			<description>
-				Sets the fixed size for the font.
-			</description>
-		</method>
-		<method name="set_font_name">
-			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<description>
-				Sets the font family name.
-			</description>
-		</method>
-		<method name="set_font_style">
-			<return type="void" />
-			<argument index="0" name="style" type="int" />
-			<description>
-				Sets the font style flags, see [enum TextServer.FontStyle].
-			</description>
-		</method>
-		<method name="set_font_style_name">
-			<return type="void" />
-			<argument index="0" name="name" type="String" />
-			<description>
-				Sets the font style name.
-			</description>
-		</method>
-		<method name="set_force_autohinter">
-			<return type="void" />
-			<argument index="0" name="force_autohinter" type="bool" />
-			<description>
-				If set to [code]true[/code] auto-hinting is preferred over font built-in hinting.
 			</description>
 		</method>
 		<method name="set_glyph_advance">
@@ -573,13 +452,6 @@
 				Sets rectangle in the cache texture containing the glyph.
 			</description>
 		</method>
-		<method name="set_hinting">
-			<return type="void" />
-			<argument index="0" name="hinting" type="int" enum="TextServer.Hinting" />
-			<description>
-				Sets font hinting mode. Used by dynamic fonts only.
-			</description>
-		</method>
 		<method name="set_kerning">
 			<return type="void" />
 			<argument index="0" name="cache_index" type="int" />
@@ -596,35 +468,6 @@
 			<argument index="1" name="supported" type="bool" />
 			<description>
 				Adds override for [method is_language_supported].
-			</description>
-		</method>
-		<method name="set_msdf_pixel_range">
-			<return type="void" />
-			<argument index="0" name="msdf_pixel_range" type="int" />
-			<description>
-				Sets the width of the range around the shape between the minimum and maximum representable signed distance.
-			</description>
-		</method>
-		<method name="set_msdf_size">
-			<return type="void" />
-			<argument index="0" name="msdf_size" type="int" />
-			<description>
-				Sets source font size used to generate MSDF textures.
-			</description>
-		</method>
-		<method name="set_multichannel_signed_distance_field">
-			<return type="void" />
-			<argument index="0" name="msdf" type="bool" />
-			<description>
-				If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field (MSDF) generated from the dynamic font vector data. MSDF rendering allows displaying the font at any scaling factor without blurriness, and without incurring a CPU cost when the font size changes (since the font no longer needs to be rasterized on the CPU). As a downside, font hinting is not available with MSDF. The lack of font hinting may result in less crisp and less readable fonts at small sizes.
-				[b]Note:[/b] MSDF font rendering does not render glyphs with overlapping shapes correctly. Overlapping shapes are not valid per the OpenType standard, but are still commonly found in many font files, especially those converted by Google Fonts. To avoid issues with overlapping glyphs, consider downloading the font file directly from the type foundry instead of relying on Google Fonts.
-			</description>
-		</method>
-		<method name="set_oversampling">
-			<return type="void" />
-			<argument index="0" name="oversampling" type="float" />
-			<description>
-				Sets font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="set_scale">
@@ -701,4 +544,45 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="antialiased" type="bool" setter="set_antialiased" getter="is_antialiased" default="true">
+			If set to [code]true[/code], font 8-bit anitialiased glyph rendering is supported and enabled.
+		</member>
+		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
+			Contents of the dynamic font source file.
+		</member>
+		<member name="fixed_size" type="int" setter="set_fixed_size" getter="get_fixed_size" default="0">
+			Font size, used only for the bitmap fonts.
+		</member>
+		<member name="font_name" type="String" setter="set_font_name" getter="get_font_name" default="&quot;&quot;">
+			Font family name.
+		</member>
+		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" default="0">
+			Font style flags, see [enum TextServer.FontStyle].
+		</member>
+		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="is_force_autohinter" default="false">
+			If set to [code]true[/code], auto-hinting is supported and preffered over font built-in hinting. Used by dynamic fonts only.
+		</member>
+		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="TextServer.Hinting" default="1">
+			Font hinting mode. Used by dynamic fonts only.
+		</member>
+		<member name="msdf_pixel_range" type="int" setter="set_msdf_pixel_range" getter="get_msdf_pixel_range" default="16">
+			The width of the range around the shape between the minimum and maximum representable signed distance.
+		</member>
+		<member name="msdf_size" type="int" setter="set_msdf_size" getter="get_msdf_size" default="48">
+			Source font size used to generate MSDF textures.
+		</member>
+		<member name="multichannel_signed_distance_field" type="bool" setter="set_multichannel_signed_distance_field" getter="is_multichannel_signed_distance_field" default="false">
+			If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data.
+		</member>
+		<member name="opentype_feature_overrides" type="Dictionary" setter="set_opentype_feature_overrides" getter="get_opentype_feature_overrides" default="{}">
+			Font OpenType feature set override.
+		</member>
+		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
+			Font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
+		</member>
+		<member name="style_name" type="String" setter="set_font_style_name" getter="get_font_style_name" default="&quot;&quot;">
+			Font style name.
+		</member>
+	</members>
 </class>

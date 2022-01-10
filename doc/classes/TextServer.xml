@@ -261,6 +261,13 @@
 				Returns font family name.
 			</description>
 		</method>
+		<method name="font_get_opentype_feature_overrides" qualifiers="const">
+			<return type="Dictionary" />
+			<argument index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font OpenType feature set override.
+			</description>
+		</method>
 		<method name="font_get_oversampling" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="font_rid" type="RID" />
@@ -661,6 +668,14 @@
 			<argument index="1" name="name" type="String" />
 			<description>
 				Sets the font family name.
+			</description>
+		</method>
+		<method name="font_set_opentype_feature_overrides">
+			<return type="void" />
+			<argument index="0" name="font_rid" type="RID" />
+			<argument index="1" name="overrides" type="Dictionary" />
+			<description>
+				Sets font OpenType feature set override.
 			</description>
 		</method>
 		<method name="font_set_oversampling">
