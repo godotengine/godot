@@ -183,9 +183,6 @@ def configure_msvc(env, manual_msvc_config):
             env.Append(CCFLAGS=["/O1"])
             env.Append(LINKFLAGS=["/OPT:REF"])
 
-        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
-        env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
-
     elif env["target"] == "release_debug":
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Append(CCFLAGS=["/O2"])
@@ -193,14 +190,15 @@ def configure_msvc(env, manual_msvc_config):
         elif env["optimize"] == "size":  # optimize for size
             env.Append(CCFLAGS=["/O1"])
             env.Append(LINKFLAGS=["/OPT:REF"])
-        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
 
     elif env["target"] == "debug":
         env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
-        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         # Allow big objects. Only needed for debug, see MinGW branch for rationale.
         env.AppendUnique(CCFLAGS=["/bigobj"])
         env.Append(LINKFLAGS=["/DEBUG"])
+
+    env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
+    env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
 
     if env["debug_symbols"]:
         env.AppendUnique(CCFLAGS=["/Zi", "/FS"])
@@ -316,8 +314,6 @@ def configure_mingw(env):
                 env.Append(CCFLAGS=["-O2"])
         else:  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
-        env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
-
         if env["debug_symbols"]:
             env.Prepend(CCFLAGS=["-g2"])
 
@@ -336,6 +332,8 @@ def configure_mingw(env):
         # GCC LTO, so enabling for debug builds only (which are not built with LTO
         # and are the only ones with too big objects).
         env.Append(CCFLAGS=["-Wa,-mbig-obj"])
+
+    env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
 
     ## Compiler configuration
 
