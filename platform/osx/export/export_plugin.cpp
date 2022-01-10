@@ -381,12 +381,22 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 #ifdef OSX_ENABLED
 	List<String> args;
 
+	bool ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
+
 	if (p_preset->get("codesign/timestamp")) {
-		args.push_back("--timestamp");
+		if (ad_hoc) {
+			WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
+		} else {
+			args.push_back("--timestamp");
+		}
 	}
 	if (p_preset->get("codesign/hardened_runtime")) {
-		args.push_back("--options");
-		args.push_back("runtime");
+		if (ad_hoc) {
+			WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
+		} else {
+			args.push_back("--options");
+			args.push_back("runtime");
+		}
 	}
 
 	if (p_path.get_extension() != "dmg") {
@@ -403,7 +413,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	}
 
 	args.push_back("-s");
-	if (p_preset->get("codesign/identity") == "") {
+	if (ad_hoc) {
 		args.push_back("-");
 	} else {
 		args.push_back(p_preset->get("codesign/identity"));
@@ -1166,10 +1176,9 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 	String err;
 	bool valid = false;
 
-	// Look for export templates (first official, and if defined custom templates).
-
-	bool dvalid = exists_export_template("osx.zip", &err);
-	bool rvalid = dvalid; // Both in the same ZIP.
+	// Look for export templates (custom templates).
+	bool dvalid = false;
+	bool rvalid = false;
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -1184,6 +1193,12 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 
+	// Look for export templates (official templates, check only is custom templates are not set).
+	if (!dvalid || !rvalid) {
+		dvalid = exists_export_template("osx.zip", &err);
+		rvalid = dvalid; // Both in the same ZIP.
+	}
+
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
@@ -1194,16 +1209,26 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		valid = false;
 	}
 
+#ifdef OSX_ENABLED
 	bool sign_enabled = p_preset->get("codesign/enable");
 	bool noto_enabled = p_preset->get("notarization/enable");
+	bool ad_hoc = ((p_preset->get("codesign/identity") == "") || (p_preset->get("codesign/identity") == "-"));
+
 	if (noto_enabled) {
-		if (!sign_enabled) {
-			err += TTR("Notarization: code signing required.") + "\n";
+		if (ad_hoc) {
+			err += TTR("Notarization: Notarization with the ad-hoc signature is not supported.") + "\n";
 			valid = false;
 		}
-		bool hr_enabled = p_preset->get("codesign/hardened_runtime");
-		if (!hr_enabled) {
-			err += TTR("Notarization: hardened runtime required.") + "\n";
+		if (!sign_enabled) {
+			err += TTR("Notarization: Code signing is required for notarization.") + "\n";
+			valid = false;
+		}
+		if (!(bool)p_preset->get("codesign/hardened_runtime")) {
+			err += TTR("Notarization: Hardened runtime is required for notarization.") + "\n";
+			valid = false;
+		}
+		if (!(bool)p_preset->get("codesign/timestamp")) {
+			err += TTR("Notarization: Timestamping is required for notarization.") + "\n";
 			valid = false;
 		}
 		if (p_preset->get("notarization/apple_id_name") == "") {
@@ -1214,7 +1239,22 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 			err += TTR("Notarization: Apple ID password not specified.") + "\n";
 			valid = false;
 		}
+	} else {
+		err += TTR("Notarization is disabled. Exported project will be blocked by Gatekeeper, if it's downloaded from an unknown source.") + "\n";
+		if (!sign_enabled) {
+			err += TTR("Code signing is disabled. Exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
+		} else {
+			if ((bool)p_preset->get("codesign/hardened_runtime") && ad_hoc) {
+				err += TTR("Hardened Runtime is not compatible with ad-hoc signature, and will be disabled!") + "\n";
+			}
+			if ((bool)p_preset->get("codesign/timestamp") && ad_hoc) {
+				err += TTR("Timestamping is not compatible with ad-hoc signature, and will be disabled!") + "\n";
+			}
+		}
 	}
+#else
+	err += TTR("macOS code signing and Notarization is not supported on the host OS. Exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
+#endif
 
 	if (!err.is_empty()) {
 		r_error = err;
