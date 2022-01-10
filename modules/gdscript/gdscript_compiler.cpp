@@ -882,7 +882,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 #endif
 				/* Find chain of sets */
 
-				StringName assign_property;
+				StringName assign_class_member_property;
+
+				GDScriptCodeGenerator::Address target_member_property;
+				bool is_member_property = false;
+				bool member_property_has_setter = false;
+				bool member_property_is_in_setter = false;
+				StringName member_property_setter_function;
 
 				List<const GDScriptParser::SubscriptNode *> chain;
 
@@ -892,11 +898,20 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					while (true) {
 						chain.push_back(n);
 						if (n->base->type != GDScriptParser::Node::SUBSCRIPT) {
-							// Check for a built-in property.
+							// Check for a property.
 							if (n->base->type == GDScriptParser::Node::IDENTIFIER) {
 								GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(n->base);
-								if (_is_class_member_property(codegen, identifier->name)) {
-									assign_property = identifier->name;
+								StringName var_name = identifier->name;
+								if (_is_class_member_property(codegen, var_name)) {
+									assign_class_member_property = var_name;
+								} else if (!codegen.locals.has(var_name) && codegen.script->member_indices.has(var_name)) {
+									is_member_property = true;
+									member_property_setter_function = codegen.script->member_indices[var_name].setter;
+									member_property_has_setter = member_property_setter_function != StringName();
+									member_property_is_in_setter = member_property_has_setter && member_property_setter_function == codegen.function_name;
+									target_member_property.mode = GDScriptCodeGenerator::Address::MEMBER;
+									target_member_property.address = codegen.script->member_indices[var_name].index;
+									target_member_property.type = codegen.script->member_indices[var_name].data_type;
 								}
 							}
 							break;
@@ -1013,10 +1028,20 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					assigned = info.base;
 				}
 
-				// If this is a local member, also assign to it.
+				// If this is a class member property, also assign to it.
 				// This allow things like: position.x += 2.0
-				if (assign_property != StringName()) {
-					gen->write_set_member(assigned, assign_property);
+				if (assign_class_member_property != StringName()) {
+					gen->write_set_member(assigned, assign_class_member_property);
+				}
+				// Same as above but for members
+				if (is_member_property) {
+					if (member_property_has_setter && !member_property_is_in_setter) {
+						Vector<GDScriptCodeGenerator::Address> args;
+						args.push_back(assigned);
+						gen->write_call(GDScriptCodeGenerator::Address(), GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), member_property_setter_function, args);
+					} else {
+						gen->write_assign(target_member_property, assigned);
+					}
 				}
 
 				if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
