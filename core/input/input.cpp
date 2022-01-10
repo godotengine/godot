@@ -892,7 +892,8 @@ void Input::set_event_dispatch_function(EventDispatchFunc p_function) {
 void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 	_THREAD_SAFE_METHOD_;
 	Joypad &joy = joy_names[p_device];
-	//printf("got button %i, mapping is %i\n", p_button, joy.mapping);
+	ERR_FAIL_INDEX((int)p_button, (int)JoyButton::MAX);
+
 	if (joy.last_buttons[(size_t)p_button] == p_pressed) {
 		return;
 	}
