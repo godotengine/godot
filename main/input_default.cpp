@@ -775,7 +775,8 @@ InputDefault::InputDefault() {
 void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
 	_THREAD_SAFE_METHOD_;
 	Joypad &joy = joy_names[p_device];
-	//printf("got button %i, mapping is %i\n", p_button, joy.mapping);
+	ERR_FAIL_INDEX(p_button, JOY_BUTTON_MAX);
+
 	if (joy.last_buttons[p_button] == p_pressed) {
 		return;
 	}

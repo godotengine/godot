@@ -85,7 +85,7 @@ enum JoystickList {
 	JOY_BUTTON_20 = 20,
 	JOY_BUTTON_21 = 21,
 	JOY_BUTTON_22 = 22,
-	JOY_BUTTON_MAX = 23,
+	JOY_BUTTON_MAX = 128, // Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
 
 	JOY_L = JOY_BUTTON_4,
 	JOY_R = JOY_BUTTON_5,
