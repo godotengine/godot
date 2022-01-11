@@ -100,8 +100,8 @@ public:
 
 	Ref<SpatialMaterial> get_debug_material();
 
-	float get_debug_shape_thickness() const;
-	void set_debug_shape_thickness(const float p_debug_thickness);
+	int get_debug_shape_thickness() const;
+	void set_debug_shape_thickness(const int p_debug_thickness);
 
 	void force_raycast_update();
 	bool is_colliding() const;

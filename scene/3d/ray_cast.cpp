@@ -332,7 +332,7 @@ void RayCast::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_shape_thickness", PROPERTY_HINT_RANGE, "1,5"), "set_debug_shape_thickness", "get_debug_shape_thickness");
 }
 
-float RayCast::get_debug_shape_thickness() const {
+int RayCast::get_debug_shape_thickness() const {
 	return debug_shape_thickness;
 }
 
@@ -361,7 +361,7 @@ void RayCast::_update_debug_shape_vertices() {
 	}
 }
 
-void RayCast::set_debug_shape_thickness(const float p_debug_shape_thickness) {
+void RayCast::set_debug_shape_thickness(const int p_debug_shape_thickness) {
 	debug_shape_thickness = p_debug_shape_thickness;
 	update_gizmo();
 
