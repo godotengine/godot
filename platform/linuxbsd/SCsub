@@ -5,6 +5,8 @@ Import("env")
 from platform_methods import run_in_subprocess
 import platform_linuxbsd_builders
 
+thirdparty_dir="#thirdparty"
+
 common_linuxbsd = [
     "crash_handler_linuxbsd.cpp",
     "os_linuxbsd.cpp",
@@ -20,8 +22,19 @@ if "x11" in env and env["x11"]:
         "key_mapping_x11.cpp",
     ]
 
-if "vulkan" in env and env["vulkan"]:
-    common_linuxbsd.append("vulkan_context_x11.cpp")
+    if "vulkan" in env and env["vulkan"]:
+        common_linuxbsd.append("vulkan_context_x11.cpp")
+
+if "wayland" in env and env["wayland"]:
+    common_linuxbsd += [
+    	thirdparty_dir + "/wayland/wayland.c",
+    	thirdparty_dir + "/xdg-shell/xdg-shell.c",
+        "display_server_wayland.cpp",
+        "key_mapping_xkb.cpp",
+    ]
+
+    if "vulkan" in env and env["vulkan"]:
+            common_linuxbsd.append("vulkan_context_wayland.cpp")
 
 if "udev" in env and env["udev"]:
     common_linuxbsd.append("libudev-so_wrap.c")

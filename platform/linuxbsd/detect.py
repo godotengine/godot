@@ -16,11 +16,23 @@ def can_build():
         return False
 
     # Check the minimal dependencies
-    x11_error = os.system("pkg-config --version > /dev/null")
-    if x11_error:
+    pkgconfig_error = os.system("pkg-config --version > /dev/null")
+    if pkgconfig_error:
         print("Error: pkg-config not found. Aborting.")
         return False
 
+# TODO: Make X11 and Wayland coesist peacefully.
+#    if env["x11"]:
+#        return check_x11_dependencies()
+#
+#    if env["wayland"]:
+#        return check_wayland_dependencies()
+#
+    return True
+
+
+
+def check_x11_dependencies():
     x11_error = os.system("pkg-config x11 --modversion > /dev/null")
     if x11_error:
         print("Error: X11 libraries not found. Aborting.")
@@ -58,6 +70,18 @@ def can_build():
 
     return True
 
+def check_wayland_dependencies():
+    wayland_error = os.system("pkg-config wayland-client --modversion > /dev/null")
+    if wayland_error:
+        print("Error: wayland-client library not found. Aborting.")
+        return False
+
+    wayland_error = os.system("pkg-config xkbcommon --modversion > /dev/null")
+    if wayland_error:
+            print("Error: xkbcommon library not found. Aborting.")
+            return False
+
+    return True
 
 def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
@@ -77,6 +101,7 @@ def get_opts():
         BoolVariable("dbus", "Detect and use D-Bus to handle screensaver", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
+        BoolVariable("wayland", "Enable Wayland display", True),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("touch", "Enable touch events", True),
@@ -218,13 +243,16 @@ def configure(env):
 
     ## Dependencies
 
-    env.ParseConfig("pkg-config x11 --cflags --libs")
-    env.ParseConfig("pkg-config xcursor --cflags --libs")
-    env.ParseConfig("pkg-config xinerama --cflags --libs")
-    env.ParseConfig("pkg-config xext --cflags --libs")
-    env.ParseConfig("pkg-config xrandr --cflags --libs")
-    env.ParseConfig("pkg-config xrender --cflags --libs")
-    env.ParseConfig("pkg-config xi --cflags --libs")
+    #env.ParseConfig("pkg-config x11 --cflags --libs")
+    #env.ParseConfig("pkg-config xcursor --cflags --libs")
+    #env.ParseConfig("pkg-config xinerama --cflags --libs")
+    #env.ParseConfig("pkg-config xext --cflags --libs")
+    #env.ParseConfig("pkg-config xrandr --cflags --libs")
+    #env.ParseConfig("pkg-config xrender --cflags --libs")
+    #env.ParseConfig("pkg-config xi --cflags --libs")
+
+    env.ParseConfig("pkg-config wayland-client --cflags --libs")
+    env.ParseConfig("pkg-config xkbcommon --cflags --libs")
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
@@ -378,6 +406,12 @@ def configure(env):
             env.Exit(255)
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
+    if env["wayland"]:
+        if not env["vulkan"]:
+            print("Error: Wayland support requires vulkan=yes")
+            env.Exit(255)
+        env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
+
     env.Append(CPPDEFINES=["UNIX_ENABLED"])
     env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
@@ -389,8 +423,9 @@ def configure(env):
             # No pkgconfig file for glslang so far
             env.Append(LIBS=["glslang", "SPIRV"])
 
-    env.Append(CPPDEFINES=["GLES3_ENABLED"])
-    env.Append(LIBS=["GL"])
+    # TODO: Make this work, maybe reporting a missing conditional
+    #env.Append(CPPDEFINES=["GLES3_ENABLED"])
+    #env.Append(LIBS=["GL"])
 
     env.Append(LIBS=["pthread"])
 
