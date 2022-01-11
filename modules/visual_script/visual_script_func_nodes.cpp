@@ -261,13 +261,13 @@ String VisualScriptFunctionCall::get_text() const {
 	String text;
 
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		text = String("On ") + Variant::get_type_name(basic_type);
+		text = vformat(TTR("On %s"), Variant::get_type_name(basic_type));
 	} else if (call_mode == CALL_MODE_INSTANCE) {
-		text = String("On ") + base_type;
+		text = vformat(TTR("On %s"), base_type);
 	} else if (call_mode == CALL_MODE_NODE_PATH) {
 		text = "[" + String(base_path.simplified()) + "]";
 	} else if (call_mode == CALL_MODE_SELF) {
-		text = "On Self";
+		text = TTR("On Self");
 	} else if (call_mode == CALL_MODE_SINGLETON) {
 		text = String(singleton) + ":" + String(function) + "()";
 	}
@@ -1033,15 +1033,25 @@ PropertyInfo VisualScriptPropertySet::get_output_value_port_info(int p_idx) cons
 
 String VisualScriptPropertySet::get_caption() const {
 	static const char *opname[ASSIGN_OP_MAX] = {
-		"Set", "Add", "Subtract", "Multiply", "Divide", "Mod", "ShiftLeft", "ShiftRight", "BitAnd", "BitOr", "BitXor"
+		TTRC("Set %s"),
+		TTRC("Add %s"),
+		TTRC("Subtract %s"),
+		TTRC("Multiply %s"),
+		TTRC("Divide %s"),
+		TTRC("Mod %s"),
+		TTRC("ShiftLeft %s"),
+		TTRC("ShiftRight %s"),
+		TTRC("BitAnd %s"),
+		TTRC("BitOr %s"),
+		TTRC("BitXor %s")
 	};
 
-	String prop = String(opname[assign_op]) + " " + property;
+	String prop = property;
 	if (index != StringName()) {
 		prop += "." + String(index);
 	}
 
-	return prop;
+	return vformat(TTRGET(opname[assign_op]), prop);
 }
 
 String VisualScriptPropertySet::get_text() const {
@@ -1049,13 +1059,13 @@ String VisualScriptPropertySet::get_text() const {
 		return "";
 	}
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		return String("On ") + Variant::get_type_name(basic_type);
+		return vformat(TTR("On %s"), Variant::get_type_name(basic_type));
 	} else if (call_mode == CALL_MODE_INSTANCE) {
-		return String("On ") + base_type;
+		return vformat(TTR("On %s"), base_type);
 	} else if (call_mode == CALL_MODE_NODE_PATH) {
 		return " [" + String(base_path.simplified()) + "]";
 	} else {
-		return "On Self";
+		return TTR("On Self");
 	}
 }
 
@@ -1761,23 +1771,23 @@ PropertyInfo VisualScriptPropertyGet::get_output_value_port_info(int p_idx) cons
 }
 
 String VisualScriptPropertyGet::get_caption() const {
-	String prop = String("Get ") + property;
+	String prop = property;
 	if (index != StringName()) {
 		prop += "." + String(index);
 	}
 
-	return prop;
+	return vformat(TTR("Get %s"), prop);
 }
 
 String VisualScriptPropertyGet::get_text() const {
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		return String("On ") + Variant::get_type_name(basic_type);
+		return vformat(TTR("On %s"), Variant::get_type_name(basic_type));
 	} else if (call_mode == CALL_MODE_INSTANCE) {
-		return String("On ") + base_type;
+		return vformat(TTR("On %s"), base_type);
 	} else if (call_mode == CALL_MODE_NODE_PATH) {
 		return " [" + String(base_path.simplified()) + "]";
 	} else {
-		return "On Self";
+		return TTR("On Self");
 	}
 }
 
@@ -2293,7 +2303,7 @@ PropertyInfo VisualScriptEmitSignal::get_output_value_port_info(int p_idx) const
 }
 
 String VisualScriptEmitSignal::get_caption() const {
-	return "Emit " + String(name);
+	return vformat(TTR("Emit %s"), name);
 }
 
 void VisualScriptEmitSignal::set_signal(const StringName &p_type) {
