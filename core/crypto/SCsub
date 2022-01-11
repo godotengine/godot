@@ -30,6 +30,7 @@ if not has_module:
     thirdparty_mbedtls_sources = [
         "aes.c",
         "base64.c",
+        "constant_time.c",
         "md5.c",
         "sha1.c",
         "sha256.c",
