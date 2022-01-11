@@ -3186,7 +3186,7 @@ String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::T
 				}
 			} break;
 			case RS::GLOBAL_VAR_TYPE_SAMPLER2D: {
-				if (!Object::cast_to<VisualShaderNodeTextureUniform>(this)) {
+				if (!Object::cast_to<VisualShaderNodeTexture2DUniform>(this)) {
 					incompatible_type = true;
 				}
 			} break;

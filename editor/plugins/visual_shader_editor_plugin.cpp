@@ -218,7 +218,7 @@ void VisualShaderGraphPlugin::set_uniform_name(VisualShader::Type p_type, int p_
 
 void VisualShaderGraphPlugin::update_curve(int p_node_id) {
 	if (links.has(p_node_id) && links[p_node_id].curve_editors[0]) {
-		Ref<VisualShaderNodeCurveTexture> tex = Object::cast_to<VisualShaderNodeCurveTexture>(links[p_node_id].visual_node);
+		Ref<VisualShaderNodeCurveSample> tex = Object::cast_to<VisualShaderNodeCurveSample>(links[p_node_id].visual_node);
 		ERR_FAIL_COND(!tex.is_valid());
 
 		if (tex->get_texture().is_valid()) {
@@ -230,7 +230,7 @@ void VisualShaderGraphPlugin::update_curve(int p_node_id) {
 
 void VisualShaderGraphPlugin::update_curve_xyz(int p_node_id) {
 	if (links.has(p_node_id) && links[p_node_id].curve_editors[0] && links[p_node_id].curve_editors[1] && links[p_node_id].curve_editors[2]) {
-		Ref<VisualShaderNodeCurveXYZTexture> tex = Object::cast_to<VisualShaderNodeCurveXYZTexture>(links[p_node_id].visual_node);
+		Ref<VisualShaderNodeCurveXYZSample> tex = Object::cast_to<VisualShaderNodeCurveXYZSample>(links[p_node_id].visual_node);
 		ERR_FAIL_COND(!tex.is_valid());
 
 		if (tex->get_texture().is_valid()) {
@@ -483,8 +483,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		}
 	}
 
-	Ref<VisualShaderNodeCurveTexture> curve = vsnode;
-	Ref<VisualShaderNodeCurveXYZTexture> curve_xyz = vsnode;
+	Ref<VisualShaderNodeCurveSample> curve = vsnode;
+	Ref<VisualShaderNodeCurveXYZSample> curve_xyz = vsnode;
 
 	bool is_curve = curve.is_valid() || curve_xyz.is_valid();
 	if (is_curve) {
@@ -2580,12 +2580,12 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 		undo_redo->add_undo_method(this, "_update_uniforms", true);
 	}
 
-	VisualShaderNodeCurveTexture *curve = Object::cast_to<VisualShaderNodeCurveTexture>(vsnode.ptr());
+	VisualShaderNodeCurveSample *curve = Object::cast_to<VisualShaderNodeCurveSample>(vsnode.ptr());
 	if (curve) {
 		graph_plugin->call_deferred(SNAME("update_curve"), id_to_use);
 	}
 
-	VisualShaderNodeCurveXYZTexture *curve_xyz = Object::cast_to<VisualShaderNodeCurveXYZTexture>(vsnode.ptr());
+	VisualShaderNodeCurveXYZSample *curve_xyz = Object::cast_to<VisualShaderNodeCurveXYZSample>(vsnode.ptr());
 	if (curve_xyz) {
 		graph_plugin->call_deferred(SNAME("update_curve_xyz"), id_to_use);
 	}
@@ -2595,21 +2595,21 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx, String p_resource_pa
 	} else {
 		//post-initialization
 
-		VisualShaderNodeTexture *texture2d = Object::cast_to<VisualShaderNodeTexture>(vsnode.ptr());
-		VisualShaderNodeTexture3D *texture3d = Object::cast_to<VisualShaderNodeTexture3D>(vsnode.ptr());
+		VisualShaderNodeTexture2DSample *sample2d = Object::cast_to<VisualShaderNodeTexture2DSample>(vsnode.ptr());
+		VisualShaderNodeTexture3DSample *sample3d = Object::cast_to<VisualShaderNodeTexture3DSample>(vsnode.ptr());
 
-		if (texture2d || texture3d || curve || curve_xyz) {
+		if (sample2d || sample3d || curve || curve_xyz) {
 			undo_redo->add_do_method(vsnode.ptr(), "set_texture", ResourceLoader::load(p_resource_path));
 			return;
 		}
 
-		VisualShaderNodeCubemap *cubemap = Object::cast_to<VisualShaderNodeCubemap>(vsnode.ptr());
+		VisualShaderNodeCubemapSample *cubemap = Object::cast_to<VisualShaderNodeCubemapSample>(vsnode.ptr());
 		if (cubemap) {
 			undo_redo->add_do_method(vsnode.ptr(), "set_cube_map", ResourceLoader::load(p_resource_path));
 			return;
 		}
 
-		VisualShaderNodeTexture2DArray *texture2d_array = Object::cast_to<VisualShaderNodeTexture2DArray>(vsnode.ptr());
+		VisualShaderNodeTexture2DArraySample *texture2d_array = Object::cast_to<VisualShaderNodeTexture2DArraySample>(vsnode.ptr());
 		if (texture2d_array) {
 			undo_redo->add_do_method(vsnode.ptr(), "set_texture_array", ResourceLoader::load(p_resource_path));
 		}
@@ -4598,23 +4598,23 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("UVFunc", "Textures", "Common", "VisualShaderNodeUVFunc", TTR("Function to be applied on texture coordinates."), -1, VisualShaderNode::PORT_TYPE_VECTOR));
 
 	cubemap_node_option_idx = add_options.size();
-	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubemap", TTR("Perform the cubic texture lookup."), -1, -1));
+	add_options.push_back(AddOption("CubeMapSample", "Textures", "Functions", "VisualShaderNodeCubemapSample", TTR("Perform the cubic texture lookup."), -1, -1));
 	curve_node_option_idx = add_options.size();
-	add_options.push_back(AddOption("CurveTexture", "Textures", "Functions", "VisualShaderNodeCurveTexture", TTR("Perform the curve texture lookup."), -1, -1));
+	add_options.push_back(AddOption("CurveSample", "Textures", "Functions", "VisualShaderNodeCurveSample", TTR("Perform the curve texture lookup."), -1, -1));
 	curve_xyz_node_option_idx = add_options.size();
-	add_options.push_back(AddOption("CurveXYZTexture", "Textures", "Functions", "VisualShaderNodeCurveXYZTexture", TTR("Perform the three components curve texture lookup."), -1, -1));
+	add_options.push_back(AddOption("CurveXYZSample", "Textures", "Functions", "VisualShaderNodeCurveXYZSample", TTR("Perform the three components curve texture lookup."), -1, -1));
 	texture2d_node_option_idx = add_options.size();
-	add_options.push_back(AddOption("Texture2D", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the 2D texture lookup."), -1, -1));
+	add_options.push_back(AddOption("Texture2DSample", "Textures", "Functions", "VisualShaderNodeTexture2DSample", TTR("Perform the 2D texture lookup."), -1, -1));
 	texture2d_array_node_option_idx = add_options.size();
-	add_options.push_back(AddOption("Texture2DArray", "Textures", "Functions", "VisualShaderNodeTexture2DArray", TTR("Perform the 2D-array texture lookup."), -1, -1, -1, -1, -1));
+	add_options.push_back(AddOption("Texture2DArraySample", "Textures", "Functions", "VisualShaderNodeTexture2DArraySample", TTR("Perform the 2D-array texture lookup."), -1, -1, -1, -1, -1));
 	texture3d_node_option_idx = add_options.size();
-	add_options.push_back(AddOption("Texture3D", "Textures", "Functions", "VisualShaderNodeTexture3D", TTR("Perform the 3D texture lookup."), -1, -1));
+	add_options.push_back(AddOption("Texture3DSample", "Textures", "Functions", "VisualShaderNodeTexture3DSample", TTR("Perform the 3D texture lookup."), -1, -1));
 	add_options.push_back(AddOption("UVPanning", "Textures", "Functions", "VisualShaderNodeUVFunc", TTR("Apply panning function on texture coordinates."), VisualShaderNodeUVFunc::FUNC_PANNING, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("UVScaling", "Textures", "Functions", "VisualShaderNodeUVFunc", TTR("Apply scaling function on texture coordinates."), VisualShaderNodeUVFunc::FUNC_SCALING, VisualShaderNode::PORT_TYPE_VECTOR));
 
 	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubemapUniform", TTR("Cubic texture uniform lookup."), -1, -1));
-	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, -1));
 	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), -1, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("Texture2DUniform", "Textures", "Variables", "VisualShaderNodeTexture2DUniform", TTR("2D texture uniform lookup."), -1, -1));
 	add_options.push_back(AddOption("Texture2DArrayUniform", "Textures", "Variables", "VisualShaderNodeTexture2DArrayUniform", TTR("2D array of textures uniform lookup."), -1, -1, -1, -1, -1));
 	add_options.push_back(AddOption("Texture3DUniform", "Textures", "Variables", "VisualShaderNodeTexture3DUniform", TTR("3D texture uniform lookup."), -1, -1, -1, -1, -1));
 

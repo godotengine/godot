@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeTextureUniform" inherits="VisualShaderNodeUniform" version="4.0">
+<class name="VisualShaderNodeTextureUniformBase" inherits="VisualShaderNodeUniform" version="4.0">
 	<brief_description>
-		Performs a uniform texture lookup within the visual shader graph.
+		A base node for texture uniform nodes in the visual shader graph.
 	</brief_description>
 	<description>
-		Performs a lookup operation on the texture provided as a uniform for the shader.
+		A virtual class, use the descendants instead.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="color_default" type="int" setter="set_color_default" getter="get_color_default" enum="VisualShaderNodeTextureUniform.ColorDefault" default="0">
+		<member name="color_default" type="int" setter="set_color_default" getter="get_color_default" enum="VisualShaderNodeTextureUniformBase.ColorDefault" default="0">
 			Sets the default color if no texture is assigned to the uniform.
 		</member>
-		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="VisualShaderNodeTextureUniform.TextureFilter" default="0">
+		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="VisualShaderNodeTextureUniformBase.TextureFilter" default="0">
 			Sets the texture filtering mode. See [enum TextureFilter] for options.
 		</member>
-		<member name="texture_repeat" type="int" setter="set_texture_repeat" getter="get_texture_repeat" enum="VisualShaderNodeTextureUniform.TextureRepeat" default="0">
+		<member name="texture_repeat" type="int" setter="set_texture_repeat" getter="get_texture_repeat" enum="VisualShaderNodeTextureUniformBase.TextureRepeat" default="0">
 			Sets the texture repeating mode. See [enum TextureRepeat] for options.
 		</member>
-		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTextureUniform.TextureType" default="0">
+		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTextureUniformBase.TextureType" default="0">
 			Defines the type of data provided by the source texture. See [enum TextureType] for options.
 		</member>
 	</members>
