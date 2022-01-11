@@ -12,11 +12,13 @@
 		<method name="_commit_handle" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
-			<argument index="1" name="restore" type="Variant" />
-			<argument index="2" name="cancel" type="bool" />
+			<argument index="1" name="secondary" type="bool" />
+			<argument index="2" name="restore" type="Variant" />
+			<argument index="3" name="cancel" type="bool" />
 			<description>
 				Override this method to commit a handle being edited (handles must have been previously added by [method add_handles]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [code]restore[/code] argument as "undo".
 				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action.
+				The [code]secondary[/code] argument is [code]true[/code] when the committed handle is secondary (see [method add_handles] for more information).
 			</description>
 		</method>
 		<method name="_commit_subgizmos" qualifiers="virtual">
@@ -32,16 +34,19 @@
 		<method name="_get_handle_name" qualifiers="virtual const">
 			<return type="String" />
 			<argument index="0" name="id" type="int" />
+			<argument index="1" name="secondary" type="bool" />
 			<description>
-				Override this method to return the name of an edited handle (handles must have been previously added by [method add_handles]).
-				Handles can be named for reference to the user when editing.
+				Override this method to return the name of an edited handle (handles must have been previously added by [method add_handles]). Handles can be named for reference to the user when editing.
+				The [code]secondary[/code] argument is [code]true[/code] when the requested handle is secondary (see [method add_handles] for more information).
 			</description>
 		</method>
 		<method name="_get_handle_value" qualifiers="virtual const">
 			<return type="Variant" />
 			<argument index="0" name="id" type="int" />
+			<argument index="1" name="secondary" type="bool" />
 			<description>
 				Override this method to return the current value of a handle. This value will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle].
+				The [code]secondary[/code] argument is [code]true[/code] when the requested handle is secondary (see [method add_handles] for more information).
 			</description>
 		</method>
 		<method name="_get_subgizmo_transform" qualifiers="virtual const">
@@ -54,8 +59,10 @@
 		<method name="_is_handle_highlighted" qualifiers="virtual const">
 			<return type="bool" />
 			<argument index="0" name="id" type="int" />
+			<argument index="1" name="secondary" type="bool" />
 			<description>
 				Override this method to return [code]true[/code] whenever the given handle should be highlighted in the editor.
+				The [code]secondary[/code] argument is [code]true[/code] when the requested handle is secondary (see [method add_handles] for more information).
 			</description>
 		</method>
 		<method name="_redraw" qualifiers="virtual">
@@ -67,10 +74,12 @@
 		<method name="_set_handle" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
-			<argument index="1" name="camera" type="Camera3D" />
-			<argument index="2" name="point" type="Vector2" />
+			<argument index="1" name="secondary" type="bool" />
+			<argument index="2" name="camera" type="Camera3D" />
+			<argument index="3" name="point" type="Vector2" />
 			<description>
 				Override this method to update the node properties when the user drags a gizmo handle (previously added with [method add_handles]). The provided [code]point[/code] is the mouse position in screen coordinates and the [code]camera[/code] can be used to convert it to raycasts.
+				The [code]secondary[/code] argument is [code]true[/code] when the edited handle is secondary (see [method add_handles] for more information).
 			</description>
 		</method>
 		<method name="_set_subgizmo_transform" qualifiers="virtual">
@@ -120,6 +129,7 @@
 			<argument index="4" name="secondary" type="bool" default="false" />
 			<description>
 				Adds a list of handles (points) which can be used to edit the properties of the gizmo's Node3D. The [code]ids[/code] argument can be used to specify a custom identifier for each handle, if an empty [code]Array[/code] is passed, the ids will be assigned automatically from the [code]handles[/code] argument order.
+				The [code]secondary[/code] argument marks the added handles as secondary, meaning they will normally have less selection priority than regular handles. When the user is holding the shift key secondary handles will switch to have higher priority than regular handles. This change in priority can be used to place multiple handles at the same point while still giving the user control on their selection.
 				There are virtual methods which will be called upon editing of these handles. Call this method during [method _redraw].
 			</description>
 		</method>

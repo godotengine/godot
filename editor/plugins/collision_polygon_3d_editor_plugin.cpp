@@ -358,6 +358,7 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 
 	float depth = _get_depth() * 0.5;
 
+	m->clear_surfaces();
 	imesh->clear_surfaces();
 	imgeom->set_material_override(line_material);
 	imesh->surface_begin(Mesh::PRIMITIVE_LINES);

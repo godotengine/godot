@@ -312,6 +312,7 @@ private:
 		bool snap = false;
 		Ref<EditorNode3DGizmo> gizmo;
 		int gizmo_handle = 0;
+		bool gizmo_handle_secondary = false;
 		Variant gizmo_initial_value;
 	} _edit;
 
@@ -554,6 +555,7 @@ private:
 
 	Ref<Node3DGizmo> current_hover_gizmo;
 	int current_hover_gizmo_handle;
+	bool current_hover_gizmo_handle_secondary;
 
 	real_t snap_translate_value;
 	real_t snap_rotate_value;
@@ -810,8 +812,15 @@ public:
 	Ref<EditorNode3DGizmo> get_current_hover_gizmo() const { return current_hover_gizmo; }
 	void set_current_hover_gizmo(Ref<EditorNode3DGizmo> p_gizmo) { current_hover_gizmo = p_gizmo; }
 
-	void set_current_hover_gizmo_handle(int p_id) { current_hover_gizmo_handle = p_id; }
-	int get_current_hover_gizmo_handle() const { return current_hover_gizmo_handle; }
+	void set_current_hover_gizmo_handle(int p_id, bool p_secondary) {
+		current_hover_gizmo_handle = p_id;
+		current_hover_gizmo_handle_secondary = p_secondary;
+	}
+
+	int get_current_hover_gizmo_handle(bool &r_secondary) const {
+		r_secondary = current_hover_gizmo_handle_secondary;
+		return current_hover_gizmo_handle;
+	}
 
 	void set_can_preview(Camera3D *p_preview);
 

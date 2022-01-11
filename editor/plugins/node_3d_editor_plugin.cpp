@@ -423,6 +423,7 @@ Vector3 Node3DEditorViewport::_get_ray(const Vector2 &p_pos) const {
 void Node3DEditorViewport::_clear_selected() {
 	_edit.gizmo = Ref<EditorNode3DGizmo>();
 	_edit.gizmo_handle = -1;
+	_edit.gizmo_handle_secondary = false;
 	_edit.gizmo_initial_value = Variant();
 
 	Node3D *selected = spatial_editor->get_single_selected_node();
@@ -1358,7 +1359,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				if (b->is_pressed() && _edit.gizmo.is_valid()) {
 					//restore
-					_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_initial_value, true);
+					_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 					_edit.gizmo = Ref<EditorNode3DGizmo>();
 				}
 
@@ -1496,11 +1497,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							}
 
 							int gizmo_handle = -1;
-							seg->handles_intersect_ray(camera, _edit.mouse_pos, b->is_shift_pressed(), gizmo_handle);
+							bool gizmo_secondary = false;
+							seg->handles_intersect_ray(camera, _edit.mouse_pos, b->is_shift_pressed(), gizmo_handle, gizmo_secondary);
 							if (gizmo_handle != -1) {
 								_edit.gizmo = seg;
 								_edit.gizmo_handle = gizmo_handle;
-								_edit.gizmo_initial_value = seg->get_handle_value(gizmo_handle);
+								_edit.gizmo_handle_secondary = gizmo_secondary;
+								_edit.gizmo_initial_value = seg->get_handle_value(gizmo_handle, gizmo_secondary);
 								intersected_handle = true;
 								break;
 							}
@@ -1612,7 +1615,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					surface->update();
 				} else {
 					if (_edit.gizmo.is_valid()) {
-						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_initial_value, false);
+						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
 						break;
 					}
@@ -1694,6 +1697,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			Ref<EditorNode3DGizmo> found_gizmo;
 			int found_handle = -1;
+			bool found_handle_secondary = false;
 
 			for (int i = 0; i < gizmos.size(); i++) {
 				Ref<EditorNode3DGizmo> seg = gizmos[i];
@@ -1701,7 +1705,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					continue;
 				}
 
-				seg->handles_intersect_ray(camera, _edit.mouse_pos, false, found_handle);
+				seg->handles_intersect_ray(camera, _edit.mouse_pos, false, found_handle, found_handle_secondary);
 
 				if (found_handle != -1) {
 					found_gizmo = seg;
@@ -1713,9 +1717,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				spatial_editor->select_gizmo_highlight_axis(-1);
 			}
 
-			if (found_gizmo != spatial_editor->get_current_hover_gizmo() || found_handle != spatial_editor->get_current_hover_gizmo_handle()) {
+			bool current_hover_handle_secondary = false;
+			int curreny_hover_handle = spatial_editor->get_current_hover_gizmo_handle(current_hover_handle_secondary);
+			if (found_gizmo != spatial_editor->get_current_hover_gizmo() || found_handle != curreny_hover_handle || found_handle_secondary != current_hover_handle_secondary) {
 				spatial_editor->set_current_hover_gizmo(found_gizmo);
-				spatial_editor->set_current_hover_gizmo_handle(found_handle);
+				spatial_editor->set_current_hover_gizmo_handle(found_handle, found_handle_secondary);
 				spatial_editor->get_single_selected_node()->update_gizmos();
 			}
 		}
@@ -1728,9 +1734,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		NavigationMode nav_mode = NAVIGATION_NONE;
 
 		if (_edit.gizmo.is_valid()) {
-			_edit.gizmo->set_handle(_edit.gizmo_handle, camera, m->get_position());
-			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle);
-			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle);
+			_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, camera, m->get_position());
+			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
+			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			set_message(n + ": " + String(v));
 
 		} else if ((m->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
@@ -4301,6 +4307,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	_edit.plane = TRANSFORM_VIEW;
 	_edit.snap = true;
 	_edit.gizmo_handle = -1;
+	_edit.gizmo_handle_secondary = false;
 
 	index = p_index;
 	editor = p_editor;
@@ -5306,6 +5313,7 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 		selected = p_spatial;
 		current_hover_gizmo = Ref<EditorNode3DGizmo>();
 		current_hover_gizmo_handle = -1;
+		current_hover_gizmo_handle_secondary = false;
 
 		if (selected) {
 			Vector<Ref<Node3DGizmo>> gizmos = selected->get_gizmos();
@@ -7676,6 +7684,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	EDITOR_DEF("editors/3d/navigation/show_viewport_rotation_gizmo", true);
 
 	current_hover_gizmo_handle = -1;
+	current_hover_gizmo_handle_secondary = false;
 	{
 		//sun popup
 

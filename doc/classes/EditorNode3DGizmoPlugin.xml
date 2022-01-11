@@ -21,11 +21,14 @@
 			<return type="void" />
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
 			<argument index="1" name="handle_id" type="int" />
-			<argument index="2" name="restore" type="Variant" />
-			<argument index="3" name="cancel" type="bool" />
+			<argument index="2" name="secondary" type="bool" />
+			<argument index="3" name="restore" type="Variant" />
+			<argument index="4" name="cancel" type="bool" />
 			<description>
 				Override this method to commit a handle being edited (handles must have been previously added by [method EditorNode3DGizmo.add_handles] during [method _redraw]). This usually means creating an [UndoRedo] action for the change, using the current handle value as "do" and the [code]restore[/code] argument as "undo".
-				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action. Called for this plugin's active gizmos.
+				If the [code]cancel[/code] argument is [code]true[/code], the [code]restore[/code] value should be directly set, without any [UndoRedo] action.
+				The [code]secondary[/code] argument is [code]true[/code] when the committed handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information).
+				Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_commit_subgizmos" qualifiers="virtual">
@@ -56,16 +59,20 @@
 			<return type="String" />
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
 			<argument index="1" name="handle_id" type="int" />
+			<argument index="2" name="secondary" type="bool" />
 			<description>
-				Override this method to provide gizmo's handle names. Called for this plugin's active gizmos.
+				Override this method to provide gizmo's handle names. The [code]secondary[/code] argument is [code]true[/code] when the requested handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information). Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_get_handle_value" qualifiers="virtual const">
 			<return type="Variant" />
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
 			<argument index="1" name="handle_id" type="int" />
+			<argument index="2" name="secondary" type="bool" />
 			<description>
-				Override this method to return the current value of a handle. This value will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle]. Called for this plugin's active gizmos.
+				Override this method to return the current value of a handle. This value will be requested at the start of an edit and used as the [code]restore[/code] argument in [method _commit_handle].
+				The [code]secondary[/code] argument is [code]true[/code] when the requested handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information).
+				Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_get_priority" qualifiers="virtual const">
@@ -94,8 +101,9 @@
 			<return type="bool" />
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
 			<argument index="1" name="handle_id" type="int" />
+			<argument index="2" name="secondary" type="bool" />
 			<description>
-				Override this method to return [code]true[/code] whenever to given handle should be highlighted in the editor. Called for this plugin's active gizmos.
+				Override this method to return [code]true[/code] whenever to given handle should be highlighted in the editor. The [code]secondary[/code] argument is [code]true[/code] when the requested handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information). Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_is_selectable_when_hidden" qualifiers="virtual const">
@@ -115,10 +123,13 @@
 			<return type="void" />
 			<argument index="0" name="gizmo" type="EditorNode3DGizmo" />
 			<argument index="1" name="handle_id" type="int" />
-			<argument index="2" name="camera" type="Camera3D" />
-			<argument index="3" name="screen_pos" type="Vector2" />
+			<argument index="2" name="secondary" type="bool" />
+			<argument index="3" name="camera" type="Camera3D" />
+			<argument index="4" name="screen_pos" type="Vector2" />
 			<description>
-				Override this method to update the node's properties when the user drags a gizmo handle (previously added with [method EditorNode3DGizmo.add_handles]). The provided [code]point[/code] is the mouse position in screen coordinates and the [code]camera[/code] can be used to convert it to raycasts. Called for this plugin's active gizmos.
+				Override this method to update the node's properties when the user drags a gizmo handle (previously added with [method EditorNode3DGizmo.add_handles]). The provided [code]point[/code] is the mouse position in screen coordinates and the [code]camera[/code] can be used to convert it to raycasts.
+				The [code]secondary[/code] argument is [code]true[/code] when the edited handle is secondary (see [method EditorNode3DGizmo.add_handles] for more information).
+				Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_set_subgizmo_transform" qualifiers="virtual">
