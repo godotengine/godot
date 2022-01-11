@@ -475,7 +475,7 @@ real_t CanvasItemEditor::snap_angle(real_t p_target, real_t p_start) const {
 	}
 }
 
-void CanvasItemEditor::unhandled_key_input(const Ref<InputEvent> &p_ev) {
+void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventKey> k = p_ev;
@@ -5322,7 +5322,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	ED_SHORTCUT("canvas_item_editor/zoom_800_percent", TTR("Zoom to 800%"), Key::KEY_4);
 	ED_SHORTCUT("canvas_item_editor/zoom_1600_percent", TTR("Zoom to 1600%"), Key::KEY_5);
 
-	set_process_unhandled_key_input(true);
+	set_process_shortcut_input(true);
 
 	// Update the menus' checkboxes
 	call_deferred(SNAME("set_state"), get_state());

@@ -640,7 +640,7 @@ void EditorAssetLibrary::_update_repository_options() {
 	}
 }
 
-void EditorAssetLibrary::unhandled_key_input(const Ref<InputEvent> &p_event) {
+void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> key = p_event;
@@ -1541,7 +1541,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	description = nullptr;
 
 	set_process(true);
-	set_process_unhandled_key_input(true); // Global shortcuts since there is no main element to be focused.
+	set_process_shortcut_input(true); // Global shortcuts since there is no main element to be focused.
 
 	downloads_scroll = memnew(ScrollContainer);
 	downloads_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);

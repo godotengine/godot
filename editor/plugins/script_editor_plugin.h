@@ -426,7 +426,7 @@ class ScriptEditor : public PanelContainer {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	void _script_list_gui_input(const Ref<InputEvent> &ev);
 	void _make_script_list_context_menu();

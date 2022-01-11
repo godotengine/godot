@@ -430,7 +430,7 @@ void EditorNode::_update_title() {
 	DisplayServer::get_singleton()->window_set_title(title);
 }
 
-void EditorNode::unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -7168,7 +7168,7 @@ EditorNode::EditorNode() {
 	_update_recent_scenes();
 
 	editor_data.restore_editor_global_states();
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 
 	load_errors = memnew(RichTextLabel);
 	load_error_dialog = memnew(AcceptDialog);

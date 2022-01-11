@@ -1542,6 +1542,21 @@ void TextEdit::_notification(int p_what) {
 	}
 }
 
+void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid()) {
+		if (!k->is_pressed()) {
+			return;
+		}
+		// Handle Unicode (with modifiers active, process after shortcuts).
+		if (has_focus() && editable && (k->get_unicode() >= 32)) {
+			handle_unicode_input(k->get_unicode());
+			accept_event();
+		}
+	}
+}
+
 void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
@@ -6620,6 +6635,7 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	set_focus_mode(FOCUS_ALL);
 	_update_caches();
 	set_default_cursor_shape(CURSOR_IBEAM);
+	set_process_unhandled_key_input(true);
 
 	text.set_tab_size(text.get_tab_size());
 

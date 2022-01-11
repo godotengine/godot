@@ -304,7 +304,7 @@ class EditorAssetLibrary : public PanelContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void disable_community_support();

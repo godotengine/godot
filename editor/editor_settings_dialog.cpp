@@ -92,7 +92,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	search_box->grab_focus();
 
 	_update_shortcuts();
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 
 	// Restore valid window bounds or pop up at default size.
 	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
@@ -119,7 +119,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", Rect2(get_position(), get_size()));
-				set_process_unhandled_input(false);
+				set_process_shortcut_input(false);
 			}
 		} break;
 
@@ -148,7 +148,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 	}
 }
 
-void EditorSettingsDialog::unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> k = p_event;

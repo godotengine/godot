@@ -215,6 +215,27 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 	}
 }
 
+void LineEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid()) {
+		if (!k->is_pressed()) {
+			return;
+		}
+		// Handle Unicode (with modifiers active, process after shortcuts).
+		if (has_focus() && editable && (k->get_unicode() >= 32)) {
+			selection_delete();
+			char32_t ucodestr[2] = { (char32_t)k->get_unicode(), 0 };
+			int prev_len = text.length();
+			insert_text_at_caret(ucodestr);
+			if (text.length() != prev_len) {
+				_text_changed();
+			}
+			accept_event();
+		}
+	}
+}
+
 void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -2445,6 +2466,7 @@ LineEdit::LineEdit(const String &p_placeholder) {
 	set_focus_mode(FOCUS_ALL);
 	set_default_cursor_shape(CURSOR_IBEAM);
 	set_mouse_filter(MOUSE_FILTER_STOP);
+	set_process_unhandled_key_input(true);
 
 	caret_blink_timer = memnew(Timer);
 	add_child(caret_blink_timer, false, INTERNAL_MODE_FRONT);
