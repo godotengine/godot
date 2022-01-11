@@ -3381,10 +3381,11 @@ void CanvasItemEditor::_draw_selection() {
 					Size2 move_factor = Size2(MOVE_HANDLE_DISTANCE, MOVE_HANDLE_DISTANCE);
 					viewport->draw_set_transform_matrix(simple_xform);
 
-					Vector<Point2> points;
-					points.push_back(Vector2(move_factor.x * EDSCALE, 5 * EDSCALE));
-					points.push_back(Vector2(move_factor.x * EDSCALE, -5 * EDSCALE));
-					points.push_back(Vector2((move_factor.x + 10) * EDSCALE, 0));
+					Vector<Point2> points = {
+						Vector2(move_factor.x * EDSCALE, 5 * EDSCALE),
+						Vector2(move_factor.x * EDSCALE, -5 * EDSCALE),
+						Vector2((move_factor.x + 10) * EDSCALE, 0)
+					};
 
 					viewport->draw_colored_polygon(points, get_theme_color(SNAME("axis_x_color"), SNAME("Editor")));
 					viewport->draw_line(Point2(), Point2(move_factor.x * EDSCALE, 0), get_theme_color(SNAME("axis_x_color"), SNAME("Editor")), Math::round(EDSCALE));
@@ -5823,11 +5824,12 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		editor_data->get_undo_redo().add_do_property(child, "rect_size", texture_size);
 	} else if (node_class == "Polygon2D") {
 		Size2 texture_size = texture->get_size();
-		Vector<Vector2> list;
-		list.push_back(Vector2(0, 0));
-		list.push_back(Vector2(texture_size.width, 0));
-		list.push_back(Vector2(texture_size.width, texture_size.height));
-		list.push_back(Vector2(0, texture_size.height));
+		Vector<Vector2> list = {
+			Vector2(0, 0),
+			Vector2(texture_size.width, 0),
+			Vector2(texture_size.width, texture_size.height),
+			Vector2(0, texture_size.height)
+		};
 		editor_data->get_undo_redo().add_do_property(child, "polygon", list);
 	}
 

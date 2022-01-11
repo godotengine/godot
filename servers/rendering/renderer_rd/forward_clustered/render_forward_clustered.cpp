@@ -1795,12 +1795,14 @@ void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform
 	{
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, true, false, rp_uniform_set);
 		//regular forward for now
-		Vector<Color> clear;
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
+		Vector<Color> clear = {
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0)
+		};
+
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, clear, 1.0, 0, p_region);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), &render_list_params, 0, render_list_params.element_count);
 		RD::get_singleton()->draw_list_end();
@@ -1839,12 +1841,13 @@ void RenderForwardClustered::_render_uv2(const PagedArray<GeometryInstance *> &p
 	{
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, true, false, rp_uniform_set, true);
 		//regular forward for now
-		Vector<Color> clear;
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
+		Vector<Color> clear = {
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0)
+		};
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, clear, 1.0, 0, p_region);
 
 		const int uv_offset_count = 9;
@@ -1901,11 +1904,12 @@ void RenderForwardClustered::_render_sdfgi(RID p_render_buffers, const Vector3i 
 	Vector3 half_extents = p_bounds.size * 0.5;
 	Vector3 center = p_bounds.position + half_extents;
 
-	Vector<RID> sbs;
-	sbs.push_back(p_albedo_texture);
-	sbs.push_back(p_emission_texture);
-	sbs.push_back(p_emission_aniso_texture);
-	sbs.push_back(p_geom_facing_texture);
+	Vector<RID> sbs = {
+		p_albedo_texture,
+		p_emission_texture,
+		p_emission_aniso_texture,
+		p_geom_facing_texture
+	};
 
 	//print_line("re-render " + p_from + " - " + p_size + " bounds " + p_bounds);
 	for (int i = 0; i < 3; i++) {

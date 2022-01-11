@@ -5260,21 +5260,26 @@ Size2 VisualShaderNodePortPreview::get_minimum_size() const {
 
 void VisualShaderNodePortPreview::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
-		Vector<Vector2> points;
-		Vector<Vector2> uvs;
-		Vector<Color> colors;
-		points.push_back(Vector2());
-		uvs.push_back(Vector2(0, 0));
-		colors.push_back(Color(1, 1, 1, 1));
-		points.push_back(Vector2(get_size().width, 0));
-		uvs.push_back(Vector2(1, 0));
-		colors.push_back(Color(1, 1, 1, 1));
-		points.push_back(get_size());
-		uvs.push_back(Vector2(1, 1));
-		colors.push_back(Color(1, 1, 1, 1));
-		points.push_back(Vector2(0, get_size().height));
-		uvs.push_back(Vector2(0, 1));
-		colors.push_back(Color(1, 1, 1, 1));
+		Vector<Vector2> points = {
+			Vector2(),
+			Vector2(get_size().width, 0),
+			get_size(),
+			Vector2(0, get_size().height)
+		};
+
+		Vector<Vector2> uvs = {
+			Vector2(0, 0),
+			Vector2(1, 0),
+			Vector2(1, 1),
+			Vector2(0, 1)
+		};
+
+		Vector<Color> colors = {
+			Color(1, 1, 1, 1),
+			Color(1, 1, 1, 1),
+			Color(1, 1, 1, 1),
+			Color(1, 1, 1, 1)
+		};
 
 		draw_primitive(points, colors, uvs);
 	}
