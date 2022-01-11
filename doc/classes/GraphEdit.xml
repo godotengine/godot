@@ -367,7 +367,7 @@
 		<theme_item name="port_grab_distance_horizontal" data_type="constant" type="int" default="24">
 			The horizontal range within which a port can be grabbed (on both sides).
 		</theme_item>
-		<theme_item name="port_grab_distance_vertical" data_type="constant" type="int" default="6">
+		<theme_item name="port_grab_distance_vertical" data_type="constant" type="int" default="26">
 			The vertical range within which a port can be grabbed (on both sides).
 		</theme_item>
 		<theme_item name="layout" data_type="icon" type="Texture2D">
