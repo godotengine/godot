@@ -2,7 +2,13 @@
 
 Import("env")
 
-import editor.template_builders as build_template_gd
+# Using importlib package and relative path to prevent conflicts with other external
+# python packages named "editor" while trying to import template_builders.
+import importlib.util
+
+spec = importlib.util.spec_from_file_location("editor.template_builders", "../../../editor/template_builders.py")
+build_template_gd = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(build_template_gd)
 
 env["BUILDERS"]["MakeGDTemplateBuilder"] = Builder(
     action=env.Run(build_template_gd.make_templates, "Generating GDScript templates header."),
