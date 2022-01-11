@@ -11,6 +11,31 @@ import pickle
 import sys
 import time
 from collections import OrderedDict
+from importlib.util import spec_from_file_location, module_from_spec
+
+# Explicitly resolve the helper modules, this is done to avoid clash with
+# modules of the same name that might be randomly added (e.g. someone adding
+# an `editor.py` file at the root of the module creates a clash with the editor
+# folder when doing `import editor.template_builder`)
+
+
+def _helper_module(name, path):
+    spec = spec_from_file_location(name, path)
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules[name] = module
+
+
+_helper_module("gles3_builders", "gles3_builders.py")
+_helper_module("glsl_builders", "glsl_builders.py")
+_helper_module("methods", "methods.py")
+_helper_module("platform_methods", "platform_methods.py")
+_helper_module("version", "version.py")
+_helper_module("core.core_builders", "core/core_builders.py")
+_helper_module("editor.editor_builders", "editor/editor_builders.py")
+_helper_module("editor.template_builders", "editor/template_builders.py")
+_helper_module("main.main_builders", "main/main_builders.py")
+_helper_module("modules.modules_builders", "modules/modules_builders.py")
 
 # Local
 import methods
