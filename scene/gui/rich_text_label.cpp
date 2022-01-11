@@ -1005,7 +1005,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				float y_off = TS->shaped_text_get_underline_position(rid);
 				float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
 				draw_line(p_ofs + Vector2(off.x, off.y + y_off), p_ofs + Vector2(off.x + glyphs[i].advance * glyphs[i].repeat, off.y + y_off), uc, underline_width);
-			} else if (_find_strikethrough(it)) {
+			}
+			if (_find_strikethrough(it)) {
 				Color uc = font_color;
 				uc.a *= 0.5;
 				float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
