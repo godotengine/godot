@@ -91,8 +91,8 @@
 			<argument index="0" name="name" type="String" />
 			<argument index="1" name="color" type="Color" />
 			<description>
-				Creates a local override for a theme [Color] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override cannot be removed, but it can be overridden with the corresponding default value.
-				See also [method get_color].
+				Creates a local override for a theme [Color] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control.
+				See also [method get_color], [method remove_color_override].
 				[b]Example of overriding a label's color and resetting it later:[/b]
 				[codeblock]
 				# Given the child Label node "MyLabel", override its font color with a custom value.
@@ -107,8 +107,8 @@
 			<argument index="0" name="name" type="String" />
 			<argument index="1" name="constant" type="int" />
 			<description>
-				Creates a local override for a theme constant with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override cannot be removed, but it can be overridden with the corresponding default value.
-				See also [method get_constant].
+				Creates a local override for a theme constant with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control.
+				See also [method get_constant], [method remove_constant_override].
 			</description>
 		</method>
 		<method name="add_font_override">
@@ -116,7 +116,8 @@
 			<argument index="0" name="name" type="String" />
 			<argument index="1" name="font" type="Font" />
 			<description>
-				Creates a local override for a theme [Font] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed by assigning it a [code]null[/code] value.
+				Creates a local override for a theme [Font] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control.
+				[b]Note:[/b] An override can be removed by assigning it a [code]null[/code] value. This behavior is deprecated and will be removed in 4.0, use [method remove_font_override] instead.
 				See also [method get_font].
 			</description>
 		</method>
@@ -125,7 +126,8 @@
 			<argument index="0" name="name" type="String" />
 			<argument index="1" name="texture" type="Texture" />
 			<description>
-				Creates a local override for a theme icon with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed by assigning it a [code]null[/code] value.
+				Creates a local override for a theme icon with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control.
+				[b]Note:[/b] An override can be removed by assigning it a [code]null[/code] value. This behavior is deprecated and will be removed in 4.0, use [method remove_icon_override] instead.
 				See also [method get_icon].
 			</description>
 		</method>
@@ -134,7 +136,8 @@
 			<argument index="0" name="name" type="String" />
 			<argument index="1" name="shader" type="Shader" />
 			<description>
-				Creates a local override for a theme shader with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed by assigning it a [code]null[/code] value.
+				Creates a local override for a theme shader with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control.
+				[b]Note:[/b] An override can be removed by assigning it a [code]null[/code] value. This behavior is deprecated and will be removed in 4.0, use [method remove_shader_override] instead.
 			</description>
 		</method>
 		<method name="add_stylebox_override">
@@ -142,7 +145,8 @@
 			<argument index="0" name="name" type="String" />
 			<argument index="1" name="stylebox" type="StyleBox" />
 			<description>
-				Creates a local override for a theme [StyleBox] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed by assigning it a [code]null[/code] value.
+				Creates a local override for a theme [StyleBox] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control.
+				[b]Note:[/b] An override can be removed by assigning it a [code]null[/code] value. This behavior is deprecated and will be removed in 4.0, use [method remove_stylebox_override] instead.
 				See also [method get_stylebox].
 				[b]Example of modifying a property in a StyleBox by duplicating it:[/b]
 				[codeblock]
@@ -511,6 +515,48 @@
 			<return type="void" />
 			<description>
 				Give up the focus. No other control will be able to receive keyboard input.
+			</description>
+		</method>
+		<method name="remove_color_override">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Removes a theme override for a [Color] with the given [code]name[/code].
+			</description>
+		</method>
+		<method name="remove_constant_override">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Removes a theme override for a constant with the given [code]name[/code].
+			</description>
+		</method>
+		<method name="remove_font_override">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Removes a theme override for a [Font] with the given [code]name[/code].
+			</description>
+		</method>
+		<method name="remove_icon_override">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Removes a theme override for an icon with the given [code]name[/code].
+			</description>
+		</method>
+		<method name="remove_shader_override">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Removes a theme override for a shader with the given [code]name[/code].
+			</description>
+		</method>
+		<method name="remove_stylebox_override">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Removes a theme override for a [StyleBox] with the given [code]name[/code].
 			</description>
 		</method>
 		<method name="set_anchor">

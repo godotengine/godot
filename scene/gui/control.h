@@ -421,6 +421,13 @@ public:
 	void add_color_override(const StringName &p_name, const Color &p_color);
 	void add_constant_override(const StringName &p_name, int p_constant);
 
+	void remove_icon_override(const StringName &p_name);
+	void remove_shader_override(const StringName &p_name);
+	void remove_stylebox_override(const StringName &p_name);
+	void remove_font_override(const StringName &p_name);
+	void remove_color_override(const StringName &p_name);
+	void remove_constant_override(const StringName &p_name);
+
 	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;

@@ -223,40 +223,22 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
-			if (data.icon_override.has(dname)) {
-				data.icon_override[dname]->disconnect("changed", this, "_override_changed");
-			}
-			data.icon_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			remove_icon_override(dname);
 		} else if (name.begins_with("custom_shaders/")) {
 			String dname = name.get_slicec('/', 1);
-			if (data.shader_override.has(dname)) {
-				data.shader_override[dname]->disconnect("changed", this, "_override_changed");
-			}
-			data.shader_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			remove_shader_override(dname);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
-			if (data.style_override.has(dname)) {
-				data.style_override[dname]->disconnect("changed", this, "_override_changed");
-			}
-			data.style_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			remove_stylebox_override(dname);
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/', 1);
-			if (data.font_override.has(dname)) {
-				data.font_override[dname]->disconnect("changed", this, "_override_changed");
-			}
-			data.font_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			remove_font_override(dname);
 		} else if (name.begins_with("custom_colors/")) {
 			String dname = name.get_slicec('/', 1);
-			data.color_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			remove_color_override(dname);
 		} else if (name.begins_with("custom_constants/")) {
 			String dname = name.get_slicec('/', 1);
-			data.constant_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			remove_constant_override(dname);
 		} else {
 			return false;
 		}
@@ -1929,6 +1911,52 @@ void Control::add_constant_override(const StringName &p_name, int p_constant) {
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
+void Control::remove_icon_override(const StringName &p_name) {
+	if (data.icon_override.has(p_name)) {
+		data.icon_override[p_name]->disconnect("changed", this, "_override_changed");
+	}
+
+	data.icon_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_shader_override(const StringName &p_name) {
+	if (data.shader_override.has(p_name)) {
+		data.shader_override[p_name]->disconnect("changed", this, "_override_changed");
+	}
+
+	data.shader_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_stylebox_override(const StringName &p_name) {
+	if (data.style_override.has(p_name)) {
+		data.style_override[p_name]->disconnect("changed", this, "_override_changed");
+	}
+
+	data.style_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_font_override(const StringName &p_name) {
+	if (data.font_override.has(p_name)) {
+		data.font_override[p_name]->disconnect("changed", this, "_override_changed");
+	}
+
+	data.font_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_color_override(const StringName &p_name) {
+	data.color_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
+void Control::remove_constant_override(const StringName &p_name) {
+	data.constant_override.erase(p_name);
+	notification(NOTIFICATION_THEME_CHANGED);
+}
+
 void Control::set_focus_mode(FocusMode p_focus_mode) {
 	ERR_FAIL_INDEX((int)p_focus_mode, 3);
 
@@ -2790,6 +2818,13 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_font_override", "name", "font"), &Control::add_font_override);
 	ClassDB::bind_method(D_METHOD("add_color_override", "name", "color"), &Control::add_color_override);
 	ClassDB::bind_method(D_METHOD("add_constant_override", "name", "constant"), &Control::add_constant_override);
+
+	ClassDB::bind_method(D_METHOD("remove_icon_override", "name"), &Control::remove_icon_override);
+	ClassDB::bind_method(D_METHOD("remove_shader_override", "name"), &Control::remove_shader_override);
+	ClassDB::bind_method(D_METHOD("remove_stylebox_override", "name"), &Control::remove_stylebox_override);
+	ClassDB::bind_method(D_METHOD("remove_font_override", "name"), &Control::remove_font_override);
+	ClassDB::bind_method(D_METHOD("remove_color_override", "name"), &Control::remove_color_override);
+	ClassDB::bind_method(D_METHOD("remove_constant_override", "name"), &Control::remove_constant_override);
 
 	ClassDB::bind_method(D_METHOD("get_icon", "name", "theme_type"), &Control::get_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_stylebox", "name", "theme_type"), &Control::get_stylebox, DEFVAL(""));
