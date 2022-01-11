@@ -19,8 +19,8 @@
 		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative" default="Vector2(0, 0)">
 			The drag position relative to the previous position (position at the last frame).
 		</member>
-		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed" default="Vector2(0, 0)">
-			The drag speed.
+		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
+			The drag velocity.
 		</member>
 	</members>
 </class>

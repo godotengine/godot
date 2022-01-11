@@ -787,7 +787,7 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 		mm->set_tilt(Vector2(p.x, p.y));
 	}
 	mm->set_global_position(pos);
-	mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+	mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 	const Vector2i relativeMotion = Vector2i(delta.x, delta.y) * DS_OSX->screen_get_max_scale();
 	mm->set_relative(relativeMotion);
 	_get_key_modifier_state([event modifierFlags], mm);

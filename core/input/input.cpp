@@ -121,7 +121,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
-	ClassDB::bind_method(D_METHOD("get_last_mouse_speed"), &Input::get_last_mouse_speed);
+	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
 	ClassDB::bind_method(D_METHOD("set_mouse_mode", "mode"), &Input::set_mouse_mode);
 	ClassDB::bind_method(D_METHOD("get_mouse_mode"), &Input::get_mouse_mode);
@@ -183,7 +183,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 	}
 }
 
-void Input::SpeedTrack::update(const Vector2 &p_delta_p) {
+void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
 	uint32_t tdiff = tick - last_tick;
 	float delta_t = tdiff / 1000000.0;
@@ -202,17 +202,17 @@ void Input::SpeedTrack::update(const Vector2 &p_delta_p) {
 		accum = accum - slice;
 		accum_t -= min_ref_frame;
 
-		speed = (slice / min_ref_frame).lerp(speed, min_ref_frame / max_ref_frame);
+		velocity = (slice / min_ref_frame).lerp(velocity, min_ref_frame / max_ref_frame);
 	}
 }
 
-void Input::SpeedTrack::reset() {
+void Input::VelocityTrack::reset() {
 	last_tick = OS::get_singleton()->get_ticks_usec();
-	speed = Vector2();
+	velocity = Vector2();
 	accum_t = 0;
 }
 
-Input::SpeedTrack::SpeedTrack() {
+Input::VelocityTrack::VelocityTrack() {
 	min_ref_frame = 0.1;
 	max_ref_frame = 0.3;
 	reset();
@@ -515,7 +515,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 			drag_event->set_position(mm->get_position());
 			drag_event->set_relative(mm->get_relative());
-			drag_event->set_speed(mm->get_speed());
+			drag_event->set_velocity(mm->get_velocity());
 
 			event_dispatch_function(drag_event);
 		}
@@ -525,12 +525,12 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	if (st.is_valid()) {
 		if (st->is_pressed()) {
-			SpeedTrack &track = touch_speed_track[st->get_index()];
+			VelocityTrack &track = touch_velocity_track[st->get_index()];
 			track.reset();
 		} else {
 			// Since a pointer index may not occur again (OSs may or may not reuse them),
 			// imperatively remove it from the map to keep no fossil entries in it
-			touch_speed_track.erase(st->get_index());
+			touch_velocity_track.erase(st->get_index());
 		}
 
 		if (emulate_mouse_from_touch) {
@@ -570,9 +570,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventScreenDrag> sd = p_event;
 
 	if (sd.is_valid()) {
-		SpeedTrack &track = touch_speed_track[sd->get_index()];
+		VelocityTrack &track = touch_velocity_track[sd->get_index()];
 		track.update(sd->get_relative());
-		sd->set_speed(track.speed);
+		sd->set_velocity(track.velocity);
 
 		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
 			Ref<InputEventMouseMotion> motion_event;
@@ -582,7 +582,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event->set_position(sd->get_position());
 			motion_event->set_global_position(sd->get_position());
 			motion_event->set_relative(sd->get_relative());
-			motion_event->set_speed(sd->get_speed());
+			motion_event->set_velocity(sd->get_velocity());
 			motion_event->set_button_mask(mouse_button_mask);
 
 			_parse_input_event_impl(motion_event, true);
@@ -696,7 +696,7 @@ void Input::set_gyroscope(const Vector3 &p_gyroscope) {
 }
 
 void Input::set_mouse_position(const Point2 &p_posf) {
-	mouse_speed_track.update(p_posf - mouse_pos);
+	mouse_velocity_track.update(p_posf - mouse_pos);
 	mouse_pos = p_posf;
 }
 
@@ -704,8 +704,8 @@ Point2 Input::get_mouse_position() const {
 	return mouse_pos;
 }
 
-Point2 Input::get_last_mouse_speed() const {
-	return mouse_speed_track.speed;
+Point2 Input::get_last_mouse_velocity() const {
+	return mouse_velocity_track.velocity;
 }
 
 MouseButton Input::get_mouse_button_mask() const {

@@ -739,20 +739,15 @@ Vector2 InputEventMouseMotion::get_relative() const {
 	return relative;
 }
 
-void InputEventMouseMotion::set_speed(const Vector2 &p_speed) {
-	speed = p_speed;
+void InputEventMouseMotion::set_velocity(const Vector2 &p_velocity) {
+	velocity = p_velocity;
 }
 
-Vector2 InputEventMouseMotion::get_speed() const {
-	return speed;
+Vector2 InputEventMouseMotion::get_velocity() const {
+	return velocity;
 }
 
 Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
-	Vector2 g = get_global_position();
-	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
-	Vector2 r = p_xform.basis_xform(get_relative());
-	Vector2 s = p_xform.basis_xform(get_speed());
-
 	Ref<InputEventMouseMotion> mm;
 	mm.instantiate();
 
@@ -761,20 +756,20 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 
 	mm->set_modifiers_from_event(this);
 
-	mm->set_position(l);
+	mm->set_position(p_xform.xform(get_position() + p_local_ofs));
 	mm->set_pressure(get_pressure());
 	mm->set_tilt(get_tilt());
-	mm->set_global_position(g);
+	mm->set_global_position(get_global_position());
 
 	mm->set_button_mask(get_button_mask());
-	mm->set_relative(r);
-	mm->set_speed(s);
+	mm->set_relative(p_xform.basis_xform(get_relative()));
+	mm->set_velocity(p_xform.basis_xform(get_velocity()));
 
 	return mm;
 }
 
 String InputEventMouseMotion::as_text() const {
-	return vformat(RTR("Mouse motion at position (%s) with speed (%s)"), String(get_position()), String(get_speed()));
+	return vformat(RTR("Mouse motion at position (%s) with velocity (%s)"), String(get_position()), String(get_velocity()));
 }
 
 String InputEventMouseMotion::to_string() {
@@ -802,7 +797,7 @@ String InputEventMouseMotion::to_string() {
 
 	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
 	String mask_and_position = vformat("button_mask=%s, position=(%s)", button_mask_string, String(get_position()));
-	return vformat("InputEventMouseMotion: %s, relative=(%s), speed=(%s), pressure=%.2f, tilt=(%s)", mask_and_position, String(get_relative()), String(get_speed()), get_pressure(), String(get_tilt()));
+	return vformat("InputEventMouseMotion: %s, relative=(%s), velocity=(%s), pressure=%.2f, tilt=(%s)", mask_and_position, String(get_relative()), String(get_velocity()), get_pressure(), String(get_tilt()));
 }
 
 bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
@@ -841,7 +836,7 @@ bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 
 	set_position(motion->get_position());
 	set_global_position(motion->get_global_position());
-	set_speed(motion->get_speed());
+	set_velocity(motion->get_velocity());
 	relative += motion->get_relative();
 
 	return true;
@@ -857,13 +852,13 @@ void InputEventMouseMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventMouseMotion::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventMouseMotion::get_relative);
 
-	ClassDB::bind_method(D_METHOD("set_speed", "speed"), &InputEventMouseMotion::set_speed);
-	ClassDB::bind_method(D_METHOD("get_speed"), &InputEventMouseMotion::get_speed);
+	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventMouseMotion::set_velocity);
+	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventMouseMotion::get_velocity);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity"), "set_velocity", "get_velocity");
 }
 
 ///////////////////////////////////
@@ -1188,12 +1183,12 @@ Vector2 InputEventScreenDrag::get_relative() const {
 	return relative;
 }
 
-void InputEventScreenDrag::set_speed(const Vector2 &p_speed) {
-	speed = p_speed;
+void InputEventScreenDrag::set_velocity(const Vector2 &p_velocity) {
+	velocity = p_velocity;
 }
 
-Vector2 InputEventScreenDrag::get_speed() const {
-	return speed;
+Vector2 InputEventScreenDrag::get_velocity() const {
+	return velocity;
 }
 
 Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
@@ -1207,17 +1202,17 @@ Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, con
 	sd->set_index(index);
 	sd->set_position(p_xform.xform(pos + p_local_ofs));
 	sd->set_relative(p_xform.basis_xform(relative));
-	sd->set_speed(p_xform.basis_xform(speed));
+	sd->set_velocity(p_xform.basis_xform(velocity));
 
 	return sd;
 }
 
 String InputEventScreenDrag::as_text() const {
-	return vformat(RTR("Screen dragged with %s touch points at position (%s) with speed of (%s)"), itos(index), String(get_position()), String(get_speed()));
+	return vformat(RTR("Screen dragged with %s touch points at position (%s) with velocity of (%s)"), itos(index), String(get_position()), String(get_velocity()));
 }
 
 String InputEventScreenDrag::to_string() {
-	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), speed=(%s)", index, String(get_position()), String(get_relative()), String(get_speed()));
+	return vformat("InputEventScreenDrag: index=%d, position=(%s), relative=(%s), velocity=(%s)", index, String(get_position()), String(get_relative()), String(get_velocity()));
 }
 
 bool InputEventScreenDrag::accumulate(const Ref<InputEvent> &p_event) {
@@ -1230,7 +1225,7 @@ bool InputEventScreenDrag::accumulate(const Ref<InputEvent> &p_event) {
 	}
 
 	set_position(drag->get_position());
-	set_speed(drag->get_speed());
+	set_velocity(drag->get_velocity());
 	relative += drag->get_relative();
 
 	return true;
@@ -1246,13 +1241,13 @@ void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventScreenDrag::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventScreenDrag::get_relative);
 
-	ClassDB::bind_method(D_METHOD("set_speed", "speed"), &InputEventScreenDrag::set_speed);
-	ClassDB::bind_method(D_METHOD("get_speed"), &InputEventScreenDrag::get_speed);
+	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventScreenDrag::set_velocity);
+	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventScreenDrag::get_velocity);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "speed"), "set_speed", "get_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity"), "set_velocity", "get_velocity");
 }
 
 ///////////////////////////////////
