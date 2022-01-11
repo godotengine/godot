@@ -374,7 +374,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					font_color_shadow = _find_color(text, p_font_color_shadow);
 					if (_find_underline(text) || (_find_meta(text, &meta) && underline_meta)) {
 						underline = true;
-					} else if (_find_strikethrough(text)) {
+					}
+					if (_find_strikethrough(text)) {
 						strikethrough = true;
 					}
 
@@ -620,24 +621,27 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							}
 						}
 
-						if (underline || strikethrough) {
+#ifdef TOOLS_ENABLED
+						const float line_width = EDSCALE;
+#else
+						const float line_width = 1.0f;
+#endif
+						if (underline) {
 							Color uc = color;
 							uc.a *= 0.5;
 
-							int line_y = y + lh;
-							if (underline) {
-								line_y -= line_descent - 2;
-							} else {
-								line_y -= (line_ascent + line_descent) / 2;
-							}
+							const int line_y = y + lh - (line_descent - 2);
 							const Point2 from = p_ofs + Point2(align_ofs + wofs, line_y);
 							const Point2 to = from + Point2(w + (is_at_line_wrap ? 0 : align_spacing), 0);
+							VS::get_singleton()->canvas_item_add_line(ci, from, to, uc, line_width);
+						}
+						if (strikethrough) {
+							Color uc = color;
+							uc.a *= 0.5;
 
-							float line_width = 1.0f;
-#ifdef TOOLS_ENABLED
-							line_width *= EDSCALE;
-#endif
-
+							const int line_y = y + lh - (line_ascent + line_descent) / 2;
+							const Point2 from = p_ofs + Point2(align_ofs + wofs, line_y);
+							const Point2 to = from + Point2(w + (is_at_line_wrap ? 0 : align_spacing), 0);
 							VS::get_singleton()->canvas_item_add_line(ci, from, to, uc, line_width);
 						}
 					}
