@@ -41,7 +41,6 @@
 #include "servers/display_server.h"
 #include "servers/rendering/renderer_thread_pool.h"
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/shader_language.h"
 
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
@@ -1456,7 +1455,7 @@ public:
 	virtual void global_variables_load_settings(bool p_load_textures) = 0;
 	virtual void global_variables_clear() = 0;
 
-	static ShaderLanguage::DataType global_variable_type_get_shader_datatype(GlobalVariableType p_type);
+	static int global_variable_type_get_shader_datatype(GlobalVariableType p_type);
 
 	/* FREE */
 
