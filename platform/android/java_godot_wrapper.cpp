@@ -144,7 +144,7 @@ bool GodotJavaWrapper::create_offscreen_gl(JNIEnv *p_env) {
 
 void GodotJavaWrapper::destroy_offscreen_gl(JNIEnv *p_env) {
 	if (_destroy_offscreen_gl) {
-		p_env->CallBooleanMethod(godot_instance, _destroy_offscreen_gl);
+		p_env->CallVoidMethod(godot_instance, _destroy_offscreen_gl);
 	}
 }
 
