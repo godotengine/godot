@@ -275,10 +275,8 @@ void ProjectSettingsEditor::_editor_restart_close() {
 void ProjectSettingsEditor::_action_added(const String &p_name) {
 	String name = "input/" + p_name;
 
-	if (ProjectSettings::get_singleton()->has_setting(name)) {
-		action_map->show_message(vformat(TTR("An action with the name '%s' already exists."), name));
-		return;
-	}
+	ERR_FAIL_COND_MSG(ProjectSettings::get_singleton()->has_setting(name),
+			"An action with this name already exists.");
 
 	Dictionary action;
 	action["events"] = Array();
@@ -351,10 +349,8 @@ void ProjectSettingsEditor::_action_renamed(const String &p_old_name, const Stri
 	const String old_property_name = "input/" + p_old_name;
 	const String new_property_name = "input/" + p_new_name;
 
-	if (ProjectSettings::get_singleton()->has_setting(new_property_name)) {
-		action_map->show_message(vformat(TTR("An action with the name '%s' already exists."), new_property_name));
-		return;
-	}
+	ERR_FAIL_COND_MSG(ProjectSettings::get_singleton()->has_setting(new_property_name),
+			"An action with this name already exists.");
 
 	int order = ProjectSettings::get_singleton()->get_order(old_property_name);
 	Dictionary action = ProjectSettings::get_singleton()->get(old_property_name);
