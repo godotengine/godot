@@ -3753,6 +3753,11 @@ void VisualScriptEditor::_toggle_scripts_pressed() {
 
 void VisualScriptEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			graph->set_panning_scheme((GraphEdit::PanningScheme)EDITOR_GET("interface/editors/sub_editor_panning_scheme").operator int());
+		} break;
+
 		case NOTIFICATION_READY: {
 			variable_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_members));
 			variable_editor->connect("changed", callable_mp(this, &VisualScriptEditor::_update_graph), varray(-1), CONNECT_DEFERRED);
