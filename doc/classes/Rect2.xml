@@ -7,7 +7,6 @@
 		[Rect2] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 		It uses floating-point coordinates.
 		The 3D counterpart to [Rect2] is [AABB].
-		Negative values for [member size] are not supported and will not work for most methods. Use [method abs] to get a Rect2 with a positive size.
 	</description>
 	<tutorials>
 		<link title="Math tutorial index">$DOCS_URL/tutorials/math/index.html</link>
