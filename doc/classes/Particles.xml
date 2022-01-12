@@ -7,6 +7,7 @@
 		3D particle node used to create a variety of particle systems and effects. [Particles] features an emitter that generates some number of particles at a given rate.
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 		[b]Note:[/b] [Particles] only work when using the GLES3 renderer. If using the GLES2 renderer, use [CPUParticles] instead. You can convert [Particles] to [CPUParticles] by selecting the node, clicking the [b]Particles[/b] menu at the top of the 3D editor viewport then choosing [b]Convert to CPUParticles[/b].
+		[b]Note:[/b] On macOS, [Particles] rendering is much slower than [CPUParticles] due to transform feedback being implemented on the CPU instead of the GPU. Consider using [CPUParticles] instead when targeting macOS.
 		[b]Note:[/b] After working on a Particles node, remember to update its [member visibility_aabb] by selecting it, clicking the [b]Particles[/b] menu at the top of the 3D editor viewport then choose [b]Generate Visibility AABB[/b]. Otherwise, particles may suddenly disappear depending on the camera position and angle.
 	</description>
 	<tutorials>
