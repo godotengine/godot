@@ -3575,6 +3575,7 @@ DisplayServerOSX::WindowID DisplayServerOSX::_create_window(WindowMode p_mode, V
 		[wd.window_object setDelegate:wd.window_delegate];
 		[wd.window_object setAcceptsMouseMovedEvents:YES];
 		[wd.window_object setRestorable:NO];
+		[wd.window_object setColorSpace:[NSColorSpace sRGBColorSpace]];
 
 		if ([wd.window_object respondsToSelector:@selector(setTabbingMode:)]) {
 			[wd.window_object setTabbingMode:NSWindowTabbingModeDisallowed];
