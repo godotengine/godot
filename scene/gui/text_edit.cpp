@@ -2812,6 +2812,17 @@ void TextEdit::clear() {
 }
 
 void TextEdit::_clear() {
+	if (editable && undo_enabled) {
+		_move_caret_document_start(false);
+		begin_complex_operation();
+
+		_remove_text(0, 0, MAX(0, get_line_count() - 1), MAX(get_line(MAX(get_line_count() - 1, 0)).size() - 1, 0));
+		insert_text_at_caret("");
+		text.clear();
+
+		end_complex_operation();
+		return;
+	}
 	clear_undo_history();
 	text.clear();
 	caret.column = 0;
