@@ -94,6 +94,10 @@ void Path2D::_notification(int p_what) {
 			return;
 		}
 
+		if (curve->get_point_count() < 2) {
+			return;
+		}
+
 #ifdef TOOLS_ENABLED
 		const float line_width = 2 * EDSCALE;
 #else

@@ -509,6 +509,9 @@ public:
 	}
 
 	Element *lower_bound(const T &p_value) const {
+		if (!_data._root) {
+			return nullptr;
+		}
 		return _lower_bound(p_value);
 	}
 

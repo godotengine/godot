@@ -13,7 +13,9 @@
 			<return type="void" />
 			<argument index="0" name="filter" type="String" />
 			<description>
-				Adds [code]filter[/code] as a custom filter; [code]filter[/code] should be of the form [code]"filename.extension ; Description"[/code]. For example, [code]"*.png ; PNG Images"[/code].
+				Adds [code]filter[/code] to the list of filters, which restricts what files can be picked.
+				A [code]filter[/code] should be of the form [code]"filename.extension ; Description"[/code], where filename and extension can be [code]*[/code] to match any string. Filters starting with [code].[/code] (i.e. empty filenames) are not allowed.
+				Example filters: [code]"*.png ; PNG Images"[/code], [code]"project.godot ; Godot Project"[/code].
 			</description>
 		</method>
 		<method name="clear_filters">
@@ -65,7 +67,7 @@
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
 		<member name="filters" type="PoolStringArray" setter="set_filters" getter="get_filters" default="PoolStringArray(  )">
-			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PoolStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code].
+			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PoolStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code]. Multiple file types can also be specified in a single filter. [code]"*.png, *.jpg, *.jpeg ; Supported Images"[/code] will show both PNG and JPEG files when selected.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="FileDialog.Mode" default="4">
 			The dialog's open or save mode, which affects the selection behavior. See enum [code]Mode[/code] constants.

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SpriteFrames" inherits="Resource" version="3.5">
 	<brief_description>
-		Sprite frame library for AnimatedSprite.
+		Sprite frame library for AnimatedSprite and AnimatedSprite3D.
 	</brief_description>
 	<description>
-		Sprite frame library for [AnimatedSprite]. Contains frames and animation data for playback.
+		Sprite frame library for an [AnimatedSprite] or [AnimatedSprite3D] node. Contains frames and animation data for playback.
 		[b]Note:[/b] You can associate a set of normal maps by creating additional [SpriteFrames] resources with a [code]_normal[/code] suffix. For example, having 2 [SpriteFrames] resources [code]run[/code] and [code]run_normal[/code] will make it so the [code]run[/code] animation uses the normal map.
 	</description>
 	<tutorials>
