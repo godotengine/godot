@@ -28,12 +28,13 @@
 # Manuel Cantón Guillén <manuelcanton8@gmail.com>, 2021.
 # Rémi Verschelde <akien@godotengine.org>, 2021.
 # Rémi Verschelde <remi@godotengine.org>, 2021.
+# Alfonso V <alfonsov96@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-12-16 20:56+0000\n"
-"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
+"PO-Revision-Date: 2022-01-09 14:56+0000\n"
+"Last-Translator: Alfonso V <alfonsov96@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/es/>\n"
 "Language: es\n"
@@ -41,7 +42,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -90,77 +91,95 @@ msgstr "Descripciones de Propiedades"
 
 #: doc/tools/make_rst.py
 msgid "Inherits:"
-msgstr ""
+msgstr "Hereda de:"
 
 #: doc/tools/make_rst.py
 msgid "Inherited By:"
-msgstr ""
+msgstr "Heredado por:"
 
 #: doc/tools/make_rst.py
 msgid "(overrides %s)"
-msgstr ""
+msgstr "(sobreescribe %s)"
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid "Default"
-msgstr ""
+msgstr "Por defecto"
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid "Setter"
-msgstr ""
+msgstr "Método Configurador o Setter"
 
 #: doc/tools/make_rst.py
 msgid "value"
-msgstr ""
+msgstr "valor"
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid "Getter"
-msgstr ""
+msgstr "Método de Acceso al Valor o Getter"
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method should typically be overridden by the user to have any effect."
 msgstr ""
+"Típicamente, este método debería ser sobreescrito por el usuario para que "
+"tenga algún efecto."
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid ""
 "This method has no side effects. It doesn't modify any of the instance's "
 "member variables."
 msgstr ""
+"Este método no tiene efectos secundarios. No modifica ninguna de las "
+"variables miembras de la instancia."
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method accepts any number of arguments after the ones described here."
 msgstr ""
+"Este método permite agregar cualquier número de argumentos después de los "
+"descritos aquí."
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid "This method is used to construct a type."
-msgstr ""
+msgstr "Este método se utiliza para construir un tipo."
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method doesn't need an instance to be called, so it can be called "
 "directly using the class name."
 msgstr ""
+"Este método no necesita una instancia para ser llamado, por lo que puede "
+"llamarse directamente utilizando el nombre de la clase."
 
 #: doc/tools/make_rst.py
+#, fuzzy
 msgid ""
 "This method describes a valid operator to use with this type as left-hand "
 "operand."
 msgstr ""
+"Este método describe un operador tal que el tipo de la instancia que lo "
+"llama es considerado como operando izquierdo."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid "Built-in GDScript functions."
-msgstr "Funciones GDScript Incorporadas."
+msgstr "Funciones GDScript predefinidas."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "List of core built-in GDScript functions. Math functions and other "
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
-"Lista de funciones primordiales e incorporadas de GDScript. Funciones "
-"matemáticas y otras utilidades. Todo lo demás está proporcionado por "
-"objetos. (Palabras clave: incorporado, includido, funciones globales.)"
+"Lista de funciones primitivas de GDScript. Funciones matemáticas y otras "
+"utilidades. Todo lo demás está proporcionado por objetos. (Palabras clave: "
+"incorporado, includido, tipo primitivo, funciones globales.)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -187,6 +206,7 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Returns a color according to the standardized [code]name[/code] with "
 "[code]alpha[/code] ranging from 0 to 1.\n"
@@ -230,7 +250,7 @@ msgid ""
 msgstr ""
 "Devuelve el arco coseno de [code]s[/code] en radianes. Se usa para obtener "
 "el ángulo del coseno de [code]s[/code]. [code]s[/code] debe estar entre "
-"[code]-1.0[/code] y [code]1.0[/code] (inclusive), en otro caso, [method "
+"[code]-1.0[/code] y [code]1.0[/code] (incluyéndolos); en otro caso, [method "
 "acos] devolverá [constant NAN].\n"
 "[codeblock]\n"
 "# c es 0.523599 o 30 grados si se convierte con rad2deg(s)\n"
@@ -250,14 +270,15 @@ msgid ""
 msgstr ""
 "Devuelve el arcoseno de [code]s[/code] en radianes. Se usa para obtener el "
 "ángulo del seno de [code]s[/code]. [code]s[/code] debe estar entre "
-"[code]-1.0[/code] y [code]1.0[/code] (inclusive), en otro caso, [method "
+"[code]-1.0[/code] y [code]1.0[/code] (incluyéndolos); en otro caso, [method "
 "asin] devolverá [constant NAN].\n"
 "[codeblock]\n"
-"# s es 0.523599 o 30 grados si se convierte conrad2deg(s)\n"
+"# s es 0.523599 o 30 grados si se convierte con rad2deg(s)\n"
 "s = asin(0.5)\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Asserts that the [code]condition[/code] is [code]true[/code]. If the "
 "[code]condition[/code] is [code]false[/code], an error is generated. When "
@@ -286,8 +307,8 @@ msgstr ""
 "Afirma que la condición [code]condition[/code] es [code]true[/code]. Si la "
 "condición [code]condition[/code] es [code]false[/code], se genera un error. "
 "Cuando se ejecuta desde el editor, el proyecto en ejecución también se "
-"pausará hasta que lo reanude. Esto se puede utilizar como una forma más "
-"restrictiva de [method push_error] para informar errores a los "
+"pausará hasta que el usuario lo reanude. Esto se puede utilizar como una "
+"forma más restrictiva de [method push_error] para informar errores a los "
 "desarrolladores de proyectos o usuarios de complementos.\n"
 "[b]Nota:[/b] Por razones de rendimiento, el código dentro de [method assert] "
 "solo se ejecuta en compilaciones de depuración o cuando se ejecuta el "
@@ -310,6 +331,7 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Returns the arc tangent of [code]s[/code] in radians. Use it to get the "
 "angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == "
@@ -321,7 +343,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 "Devuelve el arco tangente de [code]s[/code] en radianes. Úsalo para obtener "
-"el ángulo de la tangente de un ángulo en trigonometría: "
+"el ángulo a partir de la tangente de un ángulo en trigonometría: "
 "[code]atan(tan(angle)) == angle[/code].\n"
 "El método no puede saber en qué cuadrante el ángulo se encuentra. Vea "
 "[method atan2] si tienes tanto [code]y[/code] como [code]x[/code]\n"
@@ -330,6 +352,7 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle "
 "of tangent [code]y/x[/code]. To compute the value, the method takes into "
@@ -339,8 +362,8 @@ msgid ""
 "a = atan2(0, -1) # a is 3.141593\n"
 "[/codeblock]"
 msgstr ""
-"Devuelve la arcotangente de [code]y/x[/code] en radianes. Usalo para obtener "
-"el angulo de la tangente [code]y/x[/code]. Para obtener el valor, el metodo "
+"Devuelve la arcotangente de [code]y/x[/code] en radianes. Úsalo para obtener "
+"el ángulo de la tangente [code]y/x[/code]. Para obtener el valor, el método "
 "tiene en cuenta el signo de ambos argumentos para determinar el cuadrante.\n"
 "Nota importante: La coordenada Y es la primera, por convención.\n"
 "[codeblock]\n"
@@ -364,14 +387,15 @@ msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 #: modules/visual_script/doc_classes/VisualScriptBuiltinFunc.xml
+#, fuzzy
 msgid ""
 "Converts a 2D point expressed in the cartesian coordinate system (X and Y "
 "axis) to the polar coordinate system (a distance from the origin and an "
 "angle)."
 msgstr ""
 "Convierte un punto 2D expresado en el sistema de coordenadas cartesianas "
-"(ejes X e Y) en el sistema de coordenadas polares (una distancia del origen "
-"y un ángulo)."
+"(ejes X e Y) al sistema de coordenadas polares (una distancia desde el "
+"origen y un ángulo)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -485,7 +509,7 @@ msgstr "Convierte de decibeles a energía lineal (audio)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid "Deprecated alias for [method step_decimals]."
-msgstr "Alias obsoleto del [method step_decimals]."
+msgstr "Alias obsoleto para [method step_decimals]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -506,6 +530,7 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Compares two values by checking their actual contents, recursing into any "
 "`Array` or `Dictionary` up to its deepest level.\n"
@@ -525,6 +550,23 @@ msgid ""
 "want a true content-aware comparison, you have to use [code]deep_equal[/"
 "code]."
 msgstr ""
+"Compara dos valores evaluando sus contenidos actuales, recorriendo de forma "
+"recursiva todo `Array` o `Dictionary` hasta su mayor profundidad.\n"
+"Es comparable con [code]==[/code] en varios aspectos:\n"
+"- Para [code]null[/code], [code]int[/code], [code]float[/code], "
+"[code]String[/code], [code]Object[/code] y [code]RID[/code], tanto "
+"[code]deep_equal[/code] como [code]==[/code] operan de la misma forma.\n"
+"- Para [code]Dictionary[/code], [code]==[/code] considera igualdad si, y "
+"solo si, ambas variables apuntan a exactamente el mismo [code]Dictionary[/"
+"code], sin recursión o verificación de su contenido.\n"
+"- Para [code]Array[/code], [code]==[/code] considera igualdad si, y solo si, "
+"cada ítem en el primer [code]Array[/code] es igual a su contraparte en el "
+"segundo [code]Array[/code], según el mismo [code]==[/code]. Esto implica que "
+"[code]==[/code] es recursivo para evaluar elementos de tipo [code]Array[/"
+"code], pero no para elementos de tipo [code]Dictionary[/code].\n"
+"En síntesis, siempre que un [code]Dictionary[/code] está potencialmente "
+"involucrado, si se quiere una comparación real de contenidos, se debe "
+"utilizar [code]deep_equal[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -540,12 +582,13 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Converts a dictionary (previously created with [method inst2dict]) back to "
 "an instance. Useful for deserializing."
 msgstr ""
 "Convierte un diccionario (que fue creado previamente con [method inst2dict]) "
-"de nuevo a una instancia. Es útil para deserializar."
+"de nuevo en una instancia. Es útil para deserializar."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 #, fuzzy
@@ -588,6 +631,7 @@ msgstr ""
 "avanzadas, utilice [Tween] o [AnimationPlayer]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "The natural exponential function. It raises the mathematical constant [b]e[/"
 "b] to the power of [code]s[/code] and returns it.\n"
@@ -602,7 +646,7 @@ msgstr ""
 "potencia de [code]s[/code] y la devuelve.\n"
 "[b]e[/b] tiene un valor aproximado de 2,71828, y puede obtenerse con "
 "[code]exp(1)[/code].\n"
-"Para los exponentes a otras bases se utiliza el método [method pow].\n"
+"Para potencias con otras bases se utiliza el método [method pow].\n"
 "[codeblock]\n"
 "a = exp(2) # Aproximadamente 7.39\n"
 "[/codeblock]"
@@ -641,12 +685,13 @@ msgid ""
 "[/codeblock]\n"
 "For the integer remainder operation, use the % operator."
 msgstr ""
-"Devuelve el resto en punto flotante de [code]a/b[/code], manteniendo el "
-"signo de [code]a[/code].\n"
+"Devuelve el residuo real de [code]a/b[/code], manteniendo el signo de "
+"[code]a[/code].\n"
 "[codeblock]\n"
-"r = fmod(7, 5.5) # r es 1.5\n"
+"# residuo es 1.5\n"
+"var residuo = fmod(7, 5.5)\n"
 "[/codeblock]\n"
-"Para la operación módulo de números enteros, utilice el operador %."
+"Para la operación del resto de los números enteros, utilice el operador %."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -668,11 +713,11 @@ msgid ""
 " 1.5  0.0  0.0\n"
 "[/codeblock]"
 msgstr ""
-"Devuelve el módulo en punto flotante de [code]a/b[/code] que envuelve por "
-"igual en positivo y en negativo.\n"
+"Devuelve el módulo real de [code]a/b[/code] que envuelve por igual en "
+"positivo y en negativo.\n"
 "[codeblock]\n"
 "for i in 7:\n"
-"var x = 0.5 * i - 1.5\n"
+"    var x = 0.5 * i - 1.5\n"
 "    print(\"%4.1f %4.1f %4.1f\" % [x, fmod(x, 1.5), fposmod(x, 1.5)])\n"
 "[/codeblock]\n"
 "Produce:\n"
@@ -812,10 +857,11 @@ msgstr ""
 "func _ready():\n"
 "    var id = get_instance_id()\n"
 "    var inst = instance_from_id(id)\n"
-"    print(inst.foo) # Prints bar\n"
+"    print(inst.foo) # Imprime bar\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Returns an interpolation or extrapolation factor considering the range "
 "specified in [code]from[/code] and [code]to[/code], and the interpolated "
@@ -836,6 +882,23 @@ msgid ""
 "[/codeblock]\n"
 "See also [method lerp] which performs the reverse of this operation."
 msgstr ""
+"Devuelve un factor de interpolación o extrapolación, considerando el rango "
+"especificado en [code]from[/code] y [code]to[/code], y el valor interpolado "
+"especificado en [code]weight[/code]. El valor devuelto estará entre "
+"[code]0.0[/code] y [code]1.0[/code] si [code]weight[/code] está entre "
+"[code]from[/code] y [code]to[/code] (incluyéndolos). Si [code]weight[/code] "
+"está ubicado fuera de este rango, se devolverá un factor de extrapolación "
+"(valor de retorno menor que [code]0.0[/code] o mayor que [code]1.0[/code]).\n"
+"[codeblock]\n"
+"# La razón de interpolación en la llamada a `lerp()` de más abajo es 0.75.\n"
+"var middle = lerp(20, 30, 0.75)\n"
+"# `middle` ahora es 27.5.\n"
+"# Ahora, suponemos haber olvidado la razón original y queremos obtererla de "
+"vuelta.\n"
+"var ratio = inverse_lerp(20, 30, 27.5)\n"
+"# `ratio` ahora es 0.75.\n"
+"[/codeblock]\n"
+"Ver también [method lerp], el cual ejecuta la operación inversa a esta."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -2202,6 +2265,7 @@ msgstr ""
 "La constante del círculo, la circunferencia de la unidad círculo en radianes."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "Positive floating-point infinity. This is the result of floating-point "
 "division when the divisor is [code]0.0[/code]. For negative infinity, use "
@@ -2214,8 +2278,18 @@ msgid ""
 "code] will not result in [constant INF] and will result in a run-time error "
 "instead."
 msgstr ""
+"Infinito como número de punto flotante. Este es el resultado de una división "
+"real cuando el divisor es [code]0.0[/code]. Para el infinito negativo, "
+"utilizar [code]-INF[/code]. Dividir por [code]-0.0[/code] otorgará como "
+"resultado el infinito negativo si el numerador es positivo, de manera que no "
+"es lo mismo que dividir por [code]0.0[/code] (a pesar de que [code]0.0 == "
+"-0.0[/code] devuelve [code]true[/code]). [b]Nota:[/b] El infinito numérico "
+"solo es un concepto para números de punto flotante y no tiene un equivalente "
+"para enteros. La división de un entero por [code]0[/code] no resultará en "
+"[constant INF] y en su lugar arrojará un error en tiempo de ejecución."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
+#, fuzzy
 msgid ""
 "\"Not a Number\", an invalid floating-point value. [constant NAN] has "
 "special properties, including that it is not equal to itself ([code]NAN == "
@@ -2227,6 +2301,15 @@ msgid ""
 "[code]0[/code] will not result in [constant NAN] and will result in a run-"
 "time error instead."
 msgstr ""
+"\"Not a Number\" (\"No es un Número\"), un decimal de valor inválido. "
+"[constant NAN] tiene propiedades especiales, incluyendo que no es igual a si "
+"mismo([code]NAN==NAN[/code] devuelve [code]false[/code]). Es una salida dada "
+"por algunas operaciones inválidas, como dividir un decimal [code]0.0[/code] "
+"por [code]0.0[/code].\n"
+"[b]Nota:[/b] \"Not a Number\" es solo un concepto con números decimales, y "
+"no tiene un equivalente para enteros. Dividiendo un entero por [code]0[/"
+"code] no resultará en [constante NAN] y en su lugar arrojará un error en "
+"tiempo de ejecución."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Global scope constants and variables."
@@ -3641,8 +3724,13 @@ msgid "Gamepad button 22."
 msgstr "Botón 2 del mando de videojuegos."
 
 #: doc/classes/@GlobalScope.xml
-msgid "Represents the maximum number of joystick buttons supported."
-msgstr "Representa el máximo número de botones de joystick soportados."
+msgid ""
+"The maximum number of game controller buttons supported by the engine. The "
+"actual limit may be lower on specific platforms:\n"
+"- Android: Up to 36 buttons.\n"
+"- Linux: Up to 80 buttons.\n"
+"- Windows and macOS: Up to 128 buttons."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "DualShock circle button."
@@ -3901,16 +3989,22 @@ msgstr ""
 "Touch y Windows MR)."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI note OFF message. See the documentation of [InputEventMIDI] for "
 "information of how to use MIDI inputs."
 msgstr ""
+"Mensaje de APAGADO en una nota MIDI. Ver la documentación de "
+"[InputEventMIDI] para información sobre cómo utilizar inputs MIDI."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI note ON message. See the documentation of [InputEventMIDI] for "
 "information of how to use MIDI inputs."
 msgstr ""
+"Mensaje de ENCENDIDO en una nota MIDI. Ver la documentación de "
+"[InputEventMIDI] para información sobre cómo utilizar inputs MIDI."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3919,35 +4013,55 @@ msgid ""
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI control change message. This message is sent when a controller value "
 "changes. Controllers include devices such as pedals and levers."
 msgstr ""
+"Mensaje de cambio de control MIDI. Este mensaje se envía cuando cambia un "
+"valor en el controlador. Los controladores son aparatos como pedales y "
+"palancas."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI program change message. This message sent when the program patch number "
 "changes."
 msgstr ""
+"Mensaje de cambio de programa MIDI. Este mensaje se envía cuando el número "
+"de versión del programa cambia."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI channel pressure message. This message is most often sent by pressing "
 "down on the key after it \"bottoms out\". This message is different from "
 "polyphonic after-touch as it indicates the highest pressure across all keys."
 msgstr ""
+"Mensaje de presión en canal MIDI. Este mensaje suele enviarse al presionar "
+"una tecla después de que esta alcanza su punto mínimo. Este mensaje es "
+"diferente al de after-touch polifónico, ya que indica la presión más alta de "
+"entre todas las teclas."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI pitch bend message. This message is sent to indicate a change in the "
 "pitch bender (wheel or lever, typically)."
 msgstr ""
+"Mensaje de alteración de tono MIDI. Este mensaje se envía para indicar un "
+"cambio en la herramienta de alteración de tono del instrumento (normalmente "
+"una rueda o palanca)."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI system exclusive message. This has behavior exclusive to the device "
 "you're receiving input from. Getting this data is not implemented in Godot."
 msgstr ""
+"Mensaje exclusivo del sistema MIDI. Este tiene comportamiento exclusivo para "
+"el aparato desde el cual se está recibiendo input. La obtención de estos "
+"datos no está implementada en Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3956,16 +4070,23 @@ msgid ""
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI song position pointer message. Gives the number of 16th notes since the "
 "start of the song. Getting this data is not implemented in Godot."
 msgstr ""
+"Mensaje de puntero a posición en canción MIDI. Otorga el número de "
+"semicorcheas (o decimosextas) desde el inicio de la canción. La obtención de "
+"estos datos no está implementada en Godot."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI song select message. Specifies which sequence or song is to be played. "
 "Getting this data is not implemented in Godot."
 msgstr ""
+"Mensaje de selección de canción MIDI. Especifica qué secuencia o canción se "
+"reproducirá. La obtención de estos datos no está implementada en Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -3974,30 +4095,42 @@ msgid ""
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI timing clock message. Sent 24 times per quarter note when "
 "synchronization is required."
 msgstr ""
+"Mensaje de reloj sincronizador MIDI. Se envía 24 veces por nota negra (o "
+"cuarta) cuando se requiere sincronización."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI start message. Start the current sequence playing. This message will be "
 "followed with Timing Clocks."
 msgstr ""
+"Mensaje de inicio MIDI. Inicia la secuencia actual. El envío de este mensaje "
+"es seguido de Timing Clocks."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid "MIDI continue message. Continue at the point the sequence was stopped."
 msgstr ""
+"Mensaje de continuación MIDI. Continúa desde el punto en el cual la pista "
+"fue previamente detenida."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI stop message. Stop the current sequence."
-msgstr ""
+msgstr "Mensaje de detención MIDI. Detiene la secuencia actual."
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI active sensing message. This message is intended to be sent repeatedly "
 "to tell the receiver that a connection is alive."
 msgstr ""
+"Mensaje de percepción activa MIDI. La intención de este mensaje es que se "
+"envíe repetidamente para informar al recibidor que la conexión sigue en pie."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4757,8 +4890,6 @@ msgid ""
 "typically used for fast overlap tests.\n"
 "It uses floating-point coordinates. The 2D counterpart to [AABB] is "
 "[Rect2].\n"
-"Negative values for [member size] are not supported and will not work for "
-"most methods. Use [method abs] to get an AABB with a positive size.\n"
 "[b]Note:[/b] Unlike [Rect2], [AABB] does not have a variant that uses "
 "integer coordinates."
 msgstr ""
@@ -4802,6 +4933,7 @@ msgstr ""
 "Devuelve [code]true[/code] si este [AABB] contiene completamente a otro."
 
 #: doc/classes/AABB.xml
+#, fuzzy
 msgid ""
 "Returns a copy of this [AABB] expanded to include a given point.\n"
 "[b]Example:[/b]\n"
@@ -4813,16 +4945,28 @@ msgid ""
 "var box2 = box.expand(Vector3(0, -1, 2))\n"
 "[/codeblock]"
 msgstr ""
+"Devuelve una copia de este [AABB] expandido para incluir un punto dado.\n"
+"[b]Ejemplo:[/b]\n"
+"[codeblock]\n"
+"# posición (-3, 2, 0), tamaño (1, 1, 1)\n"
+"var box = AABB(Vector3(-3, 2, 0), Vector3(1, 1, 1))\n"
+"# posición (-3, -1, 0), tamaño (3, 4, 2), de manera que ajustamos tanto el "
+"AABB original como el Vector3(0, -1, 2)\n"
+"var box2 = box.expand(Vector3(0, -1, 2))\n"
+"[/codeblock]"
 
 #: doc/classes/AABB.xml
 msgid "Returns the volume of the [AABB]."
 msgstr "Devuelve el volumen del [AABB]."
 
 #: doc/classes/AABB.xml
+#, fuzzy
 msgid ""
 "Returns the center of the [AABB], which is equal to [member position] + "
 "([member size] / 2)."
 msgstr ""
+"Devuelve el centro del [AABB], el cual es igual a [member position] + "
+"([member size] / 2)."
 
 #: doc/classes/AABB.xml
 msgid "Gets the position of the 8 endpoints of the [AABB] in space."
@@ -4995,12 +5139,17 @@ msgstr ""
 "al diálogo y devuelve el botón creado."
 
 #: doc/classes/AcceptDialog.xml
+#, fuzzy
 msgid ""
 "Returns the label used for built-in text.\n"
 "[b]Warning:[/b] This is a required internal node, removing and freeing it "
 "may cause a crash. If you wish to hide it or any of its children, use their "
 "[member CanvasItem.visible] property."
 msgstr ""
+"Devuelve la etiqueta utilizada por un texto integrado.\n"
+"[b]Aviso:[/b] Este es un Nodo Interno requerido, removerlo o liberarlo puede "
+"resultar en un colapso. Si deseas ocultarlo o cualquiera de sus Hijos, usa "
+"la propiedad [member CanvasItem.visible]."
 
 #: doc/classes/AcceptDialog.xml
 msgid ""
@@ -12286,15 +12435,19 @@ msgid "Represents the size of the [enum FFT_Size] enum."
 msgstr "Representa el tamaño del enum [enum FFT_Size]."
 
 #: doc/classes/AudioEffectRecord.xml
-msgid "Audio effect used for recording sound from a microphone."
+#, fuzzy
+msgid "Audio effect used for recording the sound from an audio bus."
 msgstr "Efecto de audio usado para grabar el sonido de un micrófono."
 
 #: doc/classes/AudioEffectRecord.xml
+#, fuzzy
 msgid ""
-"Allows the user to record sound from a microphone. It sets and gets the "
-"format in which the audio file will be recorded (8-bit, 16-bit, or "
-"compressed). It checks whether or not the recording is active, and if it is, "
-"records the sound. It then returns the recorded sample."
+"Allows the user to record the sound from an audio bus. This can include all "
+"audio output by Godot when used on the \"Master\" audio bus.\n"
+"Can be used (with an [AudioStreamMicrophone]) to record from a microphone.\n"
+"It sets and gets the format in which the audio file will be recorded (8-bit, "
+"16-bit, or compressed). It checks whether or not the recording is active, "
+"and if it is, records the sound. It then returns the recorded sample."
 msgstr ""
 "Permite al usuario grabar el sonido desde un micrófono. Establece y obtiene "
 "el formato en el que se grabará el archivo de audio (8-bit, 16-bit o "
@@ -20140,9 +20293,8 @@ msgstr ""
 msgid ""
 "Creates a local override for a theme [Color] with the specified [code]name[/"
 "code]. Local overrides always take precedence when fetching theme items for "
-"the control. An override cannot be removed, but it can be overridden with "
-"the corresponding default value.\n"
-"See also [method get_color].\n"
+"the control.\n"
+"See also [method get_color], [method remove_color_override].\n"
 "[b]Example of overriding a label's color and resetting it later:[/b]\n"
 "[codeblock]\n"
 "# Given the child Label node \"MyLabel\", override its font color with a "
@@ -20155,20 +20307,24 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Control.xml
+#, fuzzy
 msgid ""
 "Creates a local override for a theme constant with the specified [code]name[/"
 "code]. Local overrides always take precedence when fetching theme items for "
-"the control. An override cannot be removed, but it can be overridden with "
-"the corresponding default value.\n"
-"See also [method get_constant]."
+"the control.\n"
+"See also [method get_constant], [method remove_constant_override]."
 msgstr ""
+"Devuelve [code]true[/code] si existe el ajuste especificado por [code]name[/"
+"code], [code]false[/code] en caso contrario."
 
 #: doc/classes/Control.xml
 msgid ""
 "Creates a local override for a theme [Font] with the specified [code]name[/"
 "code]. Local overrides always take precedence when fetching theme items for "
-"the control. An override can be removed by assigning it a [code]null[/code] "
-"value.\n"
+"the control.\n"
+"[b]Note:[/b] An override can be removed by assigning it a [code]null[/code] "
+"value. This behavior is deprecated and will be removed in 4.0, use [method "
+"remove_font_override] instead.\n"
 "See also [method get_font]."
 msgstr ""
 
@@ -20176,8 +20332,10 @@ msgstr ""
 msgid ""
 "Creates a local override for a theme icon with the specified [code]name[/"
 "code]. Local overrides always take precedence when fetching theme items for "
-"the control. An override can be removed by assigning it a [code]null[/code] "
-"value.\n"
+"the control.\n"
+"[b]Note:[/b] An override can be removed by assigning it a [code]null[/code] "
+"value. This behavior is deprecated and will be removed in 4.0, use [method "
+"remove_icon_override] instead.\n"
 "See also [method get_icon]."
 msgstr ""
 
@@ -20185,16 +20343,20 @@ msgstr ""
 msgid ""
 "Creates a local override for a theme shader with the specified [code]name[/"
 "code]. Local overrides always take precedence when fetching theme items for "
-"the control. An override can be removed by assigning it a [code]null[/code] "
-"value."
+"the control.\n"
+"[b]Note:[/b] An override can be removed by assigning it a [code]null[/code] "
+"value. This behavior is deprecated and will be removed in 4.0, use [method "
+"remove_shader_override] instead."
 msgstr ""
 
 #: doc/classes/Control.xml
 msgid ""
 "Creates a local override for a theme [StyleBox] with the specified "
 "[code]name[/code]. Local overrides always take precedence when fetching "
-"theme items for the control. An override can be removed by assigning it a "
-"[code]null[/code] value.\n"
+"theme items for the control.\n"
+"[b]Note:[/b] An override can be removed by assigning it a [code]null[/code] "
+"value. This behavior is deprecated and will be removed in 4.0, use [method "
+"remove_stylebox_override] instead.\n"
 "See also [method get_stylebox].\n"
 "[b]Example of modifying a property in a StyleBox by duplicating it:[/b]\n"
 "[codeblock]\n"
@@ -20679,6 +20841,39 @@ msgid ""
 "Give up the focus. No other control will be able to receive keyboard input."
 msgstr ""
 "Deje el enfoque. Ningún otro control podrá recibir la entrada del teclado."
+
+#: doc/classes/Control.xml
+#, fuzzy
+msgid ""
+"Removes a theme override for a [Color] with the given [code]name[/code]."
+msgstr "Elimina la animación con la clave [code]name[/code]."
+
+#: doc/classes/Control.xml
+#, fuzzy
+msgid ""
+"Removes a theme override for a constant with the given [code]name[/code]."
+msgstr "Elimina la animación con la clave [code]name[/code]."
+
+#: doc/classes/Control.xml
+#, fuzzy
+msgid "Removes a theme override for a [Font] with the given [code]name[/code]."
+msgstr "Elimina la animación con la clave [code]name[/code]."
+
+#: doc/classes/Control.xml
+#, fuzzy
+msgid "Removes a theme override for an icon with the given [code]name[/code]."
+msgstr "Elimina la animación con la clave [code]name[/code]."
+
+#: doc/classes/Control.xml
+#, fuzzy
+msgid "Removes a theme override for a shader with the given [code]name[/code]."
+msgstr "Devuelve el índice del artículo con el [code]id[/code] dado."
+
+#: doc/classes/Control.xml
+#, fuzzy
+msgid ""
+"Removes a theme override for a [StyleBox] with the given [code]name[/code]."
+msgstr "Devuelve el índice del artículo con el [code]id[/code] dado."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21412,7 +21607,15 @@ msgid ""
 "its [member mouse_filter] lets the event reach it.\n"
 "[b]Note:[/b] [signal mouse_exited] will be emitted if the mouse enters a "
 "child [Control] node, even if the mouse cursor is still inside the parent's "
-"[code]Rect[/code] area."
+"[code]Rect[/code] area.\n"
+"If you want to check whether the mouse truly left the area, ignoring any top "
+"nodes, you can use code like this:\n"
+"[codeblock]\n"
+"func _on_mouse_exited():\n"
+"    if not Rect2(Vector2(), rect_size)."
+"has_point(get_local_mouse_position()):\n"
+"        # Not hovering over area.\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/Control.xml
@@ -29288,22 +29491,25 @@ msgid ""
 msgstr ""
 
 #: doc/classes/EditorVCSInterface.xml
+#, fuzzy
 msgid ""
-"Version Control System (VCS) interface which reads and writes to the local "
+"Version Control System (VCS) interface, which reads and writes to the local "
 "VCS in use."
 msgstr ""
 "Interfaz del Sistema de Control de Versiones (VCS) que lee y escribe en el "
 "VCS local en uso."
 
 #: doc/classes/EditorVCSInterface.xml
+#, fuzzy
 msgid ""
-"Used by the editor to display VCS extracted information in the editor. The "
-"implementation of this API is included in VCS addons, which are essentially "
-"GDNative plugins that need to be put into the project folder. These VCS "
-"addons are scripts which are attached (on demand) to the object instance of "
-"[code]EditorVCSInterface[/code]. All the functions listed below, instead of "
-"performing the task themselves, they call the internally defined functions "
-"in the VCS addons to provide a plug-n-play experience."
+"Defines the API that the editor uses to extract information from the "
+"underlying VCS. The implementation of this API is included in VCS plugins, "
+"which are scripts that inherit [EditorVCSInterface] and are attached (on "
+"demand) to the singleton instance of [EditorVCSInterface]. Instead of "
+"performing the task themselves, all the virtual functions listed below are "
+"calling the internally overridden functions in the VCS plugins to provide a "
+"plug-n-play experience. A custom VCS plugin is supposed to inherit from "
+"[EditorVCSInterface] and override these virtual functions."
 msgstr ""
 "Usado por el editor para mostrar la información extraída del VCS en el "
 "editor. La implementación de esta API está incluida en los addons de VCS, "
@@ -29315,150 +29521,244 @@ msgstr ""
 "proporcionar una experiencia de plug-n-play."
 
 #: doc/classes/EditorVCSInterface.xml
-msgid ""
-"Creates a version commit if the addon is initialized, else returns without "
-"doing anything. Uses the files which have been staged previously, with the "
-"commit message set to a value as provided as in the argument."
-msgstr ""
-"Crea un commit de versión si el addon se inicializa, si no, regresa sin "
-"hacer nada. Utiliza los archivos que han sido preparados previamente, con el "
-"mensaje de confirmación establecido en un valor como el proporcionado en el "
-"argumento."
+#, fuzzy
+msgid "Checks out a [code]branch_name[/code] in the VCS."
+msgstr "Elimina un Autoload [code]name[/code] de la lista."
 
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
-"Returns an [Array] of [Dictionary] objects containing the diff output from "
-"the VCS in use, if a VCS addon is initialized, else returns an empty [Array] "
-"object. The diff contents also consist of some contextual lines which "
-"provide context to the observed line change in the file.\n"
-"Each [Dictionary] object has the line diff contents under the keys:\n"
-"- [code]\"content\"[/code] to store a [String] containing the line contents\n"
-"- [code]\"status\"[/code] to store a [String] which contains [code]\"+\"[/"
-"code] in case the content is a line addition but it stores a [code]\"-\"[/"
-"code] in case of deletion and an empty string in the case the line content "
-"is neither an addition nor a deletion.\n"
-"- [code]\"new_line_number\"[/code] to store an integer containing the new "
-"line number of the line content.\n"
-"- [code]\"line_count\"[/code] to store an integer containing the number of "
-"lines in the line content.\n"
-"- [code]\"old_line_number\"[/code] to store an integer containing the old "
-"line number of the line content.\n"
-"- [code]\"offset\"[/code] to store the offset of the line change since the "
-"first contextual line content."
+"Commits the currently staged changes and applies the commit [code]msg[/code] "
+"to the resulting commit."
 msgstr ""
-"Devuelve una [Array] de objetos del [Dictionary] que contiene la diferencia "
-"desdel el VCS en uso, si se inicializa un addon VCS, si no, devuelve un "
-"objeto [Array] vacio. El contenido de la diferencia también consiste en "
-"algunas líneas contextuales que proporcionan contexto al cambio de línea "
-"observado en el archivo.\n"
-"Cada objeto [Dictionary] tiene el contenido de la línea diferencia bajo las "
-"claves:\n"
-"- [code]\"content\"[/code] para almacenar una [String] que contiene el "
-"contenido de la línea\n"
-"- [code]\"status\"[/code] para almacenar una [String] que contiene [code]\"+"
-"\"[/code] en caso de que el contenido sea una adición de línea pero almacena "
-"un [code]\"-\"[/code] en caso de eliminación y una cadena vacía en caso de "
-"que el contenido de la línea no sea ni una adición ni una eliminación.\n"
-"- [code]\"new_line_number\"[/code] para almacenar un número entero que "
-"contenga el nuevo número de línea del contenido de la línea.\n"
-"- [code]\"line_count\"[/code] para almacenar un entero que contenga el "
-"número de líneas del contenido de la línea.\n"
-"- [code]\"old_line_number\"[/code] para almacenar un entero que contiene el "
-"número de línea antiguo del contenido de la línea.\n"
-"- [code]\"offset\"[/code] para almacenar el offset del cambio de línea desde "
-"el primer contenido de línea contextual."
+
+#: doc/classes/EditorVCSInterface.xml
+#, fuzzy
+msgid "Creates a new branch named [code]branch_name[/code] in the VCS."
+msgstr "Crea una instancia de [code]class[/code]."
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Creates a new remote destination with name [code]remote_name[/code] and "
+"points it to [code]remote_url[/code]. This can be both an HTTPS remote or an "
+"SSH remote."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+#, fuzzy
+msgid "Discards the changes made in file present at [code]file_path[/code]."
+msgstr "Guarda la escena como un archivo en [code]path[/code]."
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Fetches new changes from the remote, but doesn't write changes to the "
+"current working directory. Equivalent to [code]git fetch[/code]."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Gets an instance of an [Array] of [String]s containing available branch "
+"names in the VCS."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+#, fuzzy
+msgid "Gets the current branch name defined in the VCS."
+msgstr "Devuelve la ruta actual que se está viendo en el [FileSystemDock]."
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Returns an [Array] of [Dictionary] items (see [method create_diff_file], "
+"[method create_diff_hunk], [method create_diff_line], [method "
+"add_line_diffs_into_diff_hunk] and [method add_diff_hunks_into_diff_file]), "
+"each containing information about a diff. If [code]identifier[/code] is a "
+"file path, returns a file diff, and if it is a commit identifier, then "
+"returns a commit diff."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Returns an [Array] of [Dictionary] items (see [method create_diff_hunk]), "
+"each containing a line diff between a file at [code]file_path[/code] and the "
+"[code]text[/code] which is passed in."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Returns an [Array] of [Dictionary] items (see [method create_status_file]), "
+"each containing the status data of every modified file in the project folder."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Returns an [Array] of [Dictionary] items (see [method create_commit]), each "
+"containing the data for a past commit."
+msgstr ""
 
 #: doc/classes/EditorVCSInterface.xml
 #, fuzzy
 msgid ""
-"Returns a [Dictionary] containing the path of the detected file change "
-"mapped to an integer signifying what kind of change the corresponding file "
-"has experienced.\n"
-"The following integer values are being used to signify that the detected "
-"file is:\n"
-"- [code]0[/code]: New to the VCS working directory\n"
-"- [code]1[/code]: Modified\n"
-"- [code]2[/code]: Renamed\n"
-"- [code]3[/code]: Deleted\n"
-"- [code]4[/code]: Typechanged"
+"Returns an [Array] of [String]s, each containing the name of a remote "
+"configured in the VCS."
 msgstr ""
-"Devuelve un [Dictionary] que contiene la ruta del cambio de archivo "
-"detectado mapeado a un número entero, lo que significa qué tipo de cambio ha "
-"experimentado el archivo correspondiente.\n"
-"Los siguientes valores enteros se están utilizando para significar que el "
-"archivo detectado es:\n"
-"- [code]0[/code]: Nuevo en el directorio de trabajo del VCS\n"
-"- [code]1[/code]: Modificado\n"
-"- [code]2[/code]: Renombrado\n"
-"- [code]3[/code]: Borrado\n"
-"- [code]4[/code]: Cambiado de tipo"
+"Devuelve un [Array] que contiene los Ids de los dispositivos de todos los "
+"joypads conectados actualmente."
 
 #: doc/classes/EditorVCSInterface.xml
-msgid "Returns the project name of the VCS working directory."
-msgstr "Devuelve el nombre del proyecto del directorio de trabajo del VCS."
+#, fuzzy
+msgid "Returns the name of the underlying VCS provider."
+msgstr "Devuelve el nombre del nodo en [code]idx[/code]."
 
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
-"Returns the name of the VCS if the VCS has been initialized, else return an "
-"empty string."
+"Initializes the VCS plugin when called from the editor. Returns whether or "
+"not the plugin was successfully initialized. A VCS project is initialized at "
+"[code]project_path[/code]."
 msgstr ""
-"Devuelve el nombre del VCS si el VCS ha sido inicializado, si no, devuelve "
-"una cadena vacía."
+
+#: doc/classes/EditorVCSInterface.xml
+msgid "Pulls changes from the remote. This can give rise to merge conflicts."
+msgstr ""
 
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
-"Initializes the VCS addon if not already. Uses the argument value as the "
-"path to the working directory of the project. Creates the initial commit if "
-"required. Returns [code]true[/code] if no failure occurs, else returns "
-"[code]false[/code]."
+"Pushes changes to the [code]remote[/code]. Optionally, if [code]force[/code] "
+"is set to true, a force push will override the change history already "
+"present on the remote."
 msgstr ""
-"Inicializa el addon VCS si no lo ha hecho ya. Usa el valor del argumento "
-"como la ruta al directorio de trabajo del proyecto. Crea el commit inicial "
-"si es necesario. Devuelve [code]true[/code] si no se produce ningún fallo, "
-"si no, devuelve [code]false[/code]."
+
+#: doc/classes/EditorVCSInterface.xml
+#, fuzzy
+msgid "Remove a branch from the local VCS."
+msgstr "Elimina un nodo de la selección."
+
+#: doc/classes/EditorVCSInterface.xml
+#, fuzzy
+msgid "Remove a remote from the local VCS."
+msgstr "Elimina un nodo de la selección."
 
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
-"Returns [code]true[/code] if the addon is ready to respond to function "
-"calls, else returns [code]false[/code]."
+"Set user credentials in the underlying VCS. [code]username[/code] and "
+"[code]password[/code] are used only during HTTPS authentication unless not "
+"already mentioned in the remote URL. [code]ssh_public_key_path[/code], "
+"[code]ssh_private_key_path[/code], and [code]ssh_passphrase[/code] are only "
+"used during SSH authentication."
 msgstr ""
-"Devuelve [code]true[/code] si el addon está listo para responder a las "
-"llamadas de la función, si no, devuelve [code]false[/code]."
 
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
-"Returns [code]true[/code] if the VCS addon has been initialized, else "
-"returns [code]false[/code]."
+"Shuts down VCS plugin instance. Called when the user either closes the "
+"editor or shuts down the VCS plugin through the editor UI."
 msgstr ""
-"Devuelve [code]true[/code] si el addon VCS ha sido inicializado, si no, "
-"devuelve [code]false[/code]."
+
+#: doc/classes/EditorVCSInterface.xml
+#, fuzzy
+msgid "Stages the file present at [code]file_path[/code] to the staged area."
+msgstr "Añade la cámara [code]feed[/code] al servidor de la cámara."
 
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
-"Shuts down the VCS addon to allow cleanup code to run on call. Returns "
-"[code]true[/code] is no failure occurs, else returns [code]false[/code]."
+"Unstages the file present at [code]file_path[/code] from the staged area to "
+"the unstaged area."
 msgstr ""
-"Apaga el complemento del VCS para permitir que el código de limpieza se "
-"ejecute cuando sea necesario. Devuelve [code]true[/code] si no se produce "
-"ningún fallo, si no devuelve [code]false[/code]."
 
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
-"Stages the file which should be committed when [method EditorVCSInterface."
-"commit] is called. Argument should contain the absolute path."
+"Helper function to add an array of [code]diff_hunks[/code] into a "
+"[code]diff_file[/code]."
 msgstr ""
-"Establece el archivo que debe ser confirmado cuando se llama al [method "
-"EditorVCSInterface.commit]. El argumento debería contener la ruta absoluta."
 
 #: doc/classes/EditorVCSInterface.xml
 msgid ""
-"Unstages the file which was staged previously to be committed, so that it is "
-"no longer committed when [method EditorVCSInterface.commit] is called. "
-"Argument should contain the absolute path."
+"Helper function to add an array of [code]line_diffs[/code] into a "
+"[code]diff_hunk[/code]."
 msgstr ""
-"Devuelve al estado sin añadir el archivo que se preparó previamente para ser "
-"confirmado, de modo que ya no se confirma cuando se llama al [method "
-"EditorVCSInterface.commit]. El argumento debe contener la ruta absoluta."
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Helper function to create a commit [Dictionary] item. [code]msg[/code] is "
+"the commit message of the commit. [code]author[/code] is a human-readable "
+"string containing the author's details, e.g. the email and name configured "
+"in the VCS. [code]id[/code] is the identifier of the commit, in whichever "
+"format your VCS may provide an identifier to commits. [code]date[/code] is "
+"directly added to the commit item and displayed in the editor, and hence, it "
+"shall be a well-formatted, human-readable date string."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Helper function to create a [code]Dictionary[/code] for storing old and new "
+"diff file paths."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Helper function to create a [code]Dictionary[/code] for storing diff hunk "
+"data. [code]old_start[/code] is the starting line number in old file. "
+"[code]new_start[/code] is the starting line number in new file. "
+"[code]old_lines[/code] is the number of lines in the old file. "
+"[code]new_lines[/code] is the number of lines in the new file."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Helper function to create a [code]Dictionary[/code] for storing a line diff. "
+"[code]new_line_no[/code] is the line number in the new file (can be "
+"[code]-1[/code] if the line is deleted). [code]old_line_no[/code] is the "
+"line number in the old file (can be [code]-1[/code] if the line is added). "
+"[code]content[/code] is the diff text. [code]content[/code] is the diff "
+"text. [code]status[/code] is a single character string which stores the line "
+"origin."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid ""
+"Helper function to create a [code]Dictionary[/code] used by editor to read "
+"the status of a file."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+#, fuzzy
+msgid "Pops up an error message in the edior."
+msgstr "Se utiliza para agrupar las propiedades en el editor."
+
+#: doc/classes/EditorVCSInterface.xml
+#, fuzzy
+msgid "A new file has been added."
+msgstr "Emitido cuando se ha añadido una nueva interfaz."
+
+#: doc/classes/EditorVCSInterface.xml
+msgid "An earlier added file has been modified."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid "An earlier added file has been renamed."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid "An earlier added file has been deleted."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid "An earlier added file has been typechanged."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid "A file is left unmerged."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+msgid "A commit is encountered from the commit area."
+msgstr ""
+
+#: doc/classes/EditorVCSInterface.xml
+#, fuzzy
+msgid "A file is encountered from the staged area."
+msgstr "Estado: Desconectado del servidor."
+
+#: doc/classes/EditorVCSInterface.xml
+msgid "A file is encountered from the unstaged area."
+msgstr ""
 
 #: doc/classes/EncodedObjectAsID.xml
 msgid "Holds a reference to an [Object]'s instance ID."
@@ -31401,13 +31701,15 @@ msgstr ""
 
 #: doc/classes/FileDialog.xml
 msgid ""
-"Adds [code]filter[/code] as a custom filter; [code]filter[/code] should be "
-"of the form [code]\"filename.extension ; Description\"[/code]. For example, "
-"[code]\"*.png ; PNG Images\"[/code]."
+"Adds [code]filter[/code] to the list of filters, which restricts what files "
+"can be picked.\n"
+"A [code]filter[/code] should be of the form [code]\"filename.extension ; "
+"Description\"[/code], where filename and extension can be [code]*[/code] to "
+"match any string. Filters starting with [code].[/code] (i.e. empty "
+"filenames) are not allowed.\n"
+"Example filters: [code]\"*.png ; PNG Images\"[/code], [code]\"project."
+"godot ; Godot Project\"[/code]."
 msgstr ""
-"Añade [code]filter[/code] como filtro personalizado; [code]filter[/code] "
-"debe tener la forma [code]\"filename.extension ; Description\"[/code]. Por "
-"ejemplo, [code]\"*.png ; Imágenes PNG\"[/code]."
 
 #: doc/classes/FileDialog.xml
 msgid "Clear all the added filters in the dialog."
@@ -31464,7 +31766,9 @@ msgstr "La ruta de archivo actualmente seleccionada del diálogo de archivo."
 msgid ""
 "The available file type filters. For example, this shows only [code].png[/"
 "code] and [code].gd[/code] files: [code]set_filters(PoolStringArray([\"*."
-"png ; PNG Images\",\"*.gd ; GDScript Files\"]))[/code]."
+"png ; PNG Images\",\"*.gd ; GDScript Files\"]))[/code]. Multiple file types "
+"can also be specified in a single filter. [code]\"*.png, *.jpg, *.jpeg ; "
+"Supported Images\"[/code] will show both PNG and JPEG files when selected."
 msgstr ""
 "Los filtros de tipo de archivo disponibles. Por ejemplo, esto muestra sólo "
 "los archivos [code].png[/code] y [code].gd[/code]: "
@@ -33789,6 +34093,104 @@ msgstr "El [Gradient] que se usará para rellenar la textura."
 #: doc/classes/GradientTexture.xml
 msgid "The number of color samples that will be obtained from the [Gradient]."
 msgstr "El número de muestras de color que se obtendrán del [Gradient]."
+
+#: doc/classes/GradientTexture2D.xml
+#, fuzzy
+msgid "Gradient-filled 2D texture."
+msgstr "Textura llena de gradientes."
+
+#: doc/classes/GradientTexture2D.xml
+#, fuzzy
+msgid ""
+"The texture uses a [Gradient] to fill the texture data in 2D space. The "
+"gradient is filled according to the specified [member fill] and [member "
+"repeat] types using colors obtained from the gradient. The texture does not "
+"necessarily represent an exact copy of the gradient, but instead an "
+"interpolation of samples obtained from the gradient at fixed steps (see "
+"[member width] and [member height])."
+msgstr ""
+"GradientTexture utiliza un [Gradient] para rellenar los datos de la textura. "
+"El gradiente se rellenará de izquierda a derecha usando los colores "
+"obtenidos del gradiente. Esto significa que la textura no representa "
+"necesariamente una copia exacta del gradiente, sino una interpolación de "
+"muestras obtenidas del gradiente a pasos fijos (ver [member width])."
+
+#: doc/classes/GradientTexture2D.xml
+msgid ""
+"The gradient fill type, one of the [enum Fill] values. The texture is filled "
+"by interpolating colors starting from [member fill_from] to [member fill_to] "
+"offsets."
+msgstr ""
+
+#: doc/classes/GradientTexture2D.xml
+msgid ""
+"The initial offset used to fill the texture specified in UV coordinates."
+msgstr ""
+
+#: doc/classes/GradientTexture2D.xml
+msgid "The final offset used to fill the texture specified in UV coordinates."
+msgstr ""
+
+#: doc/classes/GradientTexture2D.xml
+#, fuzzy
+msgid "The [Gradient] used to fill the texture."
+msgstr "El [Gradient] que se usará para rellenar la textura."
+
+#: doc/classes/GradientTexture2D.xml
+#, fuzzy
+msgid ""
+"The number of vertical color samples that will be obtained from the "
+"[Gradient], which also represents the texture's height."
+msgstr "El número de muestras de color que se obtendrán del [Gradient]."
+
+#: doc/classes/GradientTexture2D.xml
+msgid ""
+"The gradient repeat type, one of the [enum Repeat] values. The texture is "
+"filled starting from [member fill_from] to [member fill_to] offsets by "
+"default, but the gradient fill can be repeated to cover the entire texture."
+msgstr ""
+
+#: doc/classes/GradientTexture2D.xml
+msgid ""
+"If [code]true[/code], the generated texture will support high dynamic range "
+"([constant Image.FORMAT_RGBAF] format). This allows for glow effects to work "
+"if [member Environment.glow_enabled] is [code]true[/code]. If [code]false[/"
+"code], the generated texture will use low dynamic range; overbright colors "
+"will be clamped ([constant Image.FORMAT_RGBA8] format)."
+msgstr ""
+
+#: doc/classes/GradientTexture2D.xml
+#, fuzzy
+msgid ""
+"The number of horizontal color samples that will be obtained from the "
+"[Gradient], which also represents the texture's width."
+msgstr "El número de muestras de color que se obtendrán del [Gradient]."
+
+#: doc/classes/GradientTexture2D.xml
+msgid "The colors are linearly interpolated in a straight line."
+msgstr ""
+
+#: doc/classes/GradientTexture2D.xml
+msgid "The colors are linearly interpolated in a circular pattern."
+msgstr ""
+
+#: doc/classes/GradientTexture2D.xml
+msgid ""
+"The gradient fill is restricted to the range defined by [member fill_from] "
+"to [member fill_to] offsets."
+msgstr ""
+
+#: doc/classes/GradientTexture2D.xml
+msgid ""
+"The texture is filled starting from [member fill_from] to [member fill_to] "
+"offsets, repeating the same pattern in both directions."
+msgstr ""
+
+#: doc/classes/GradientTexture2D.xml
+msgid ""
+"The texture is filled starting from [member fill_from] to [member fill_to] "
+"offsets, mirroring the pattern in both directions."
+msgstr ""
 
 #: doc/classes/GraphEdit.xml
 msgid ""
@@ -39188,7 +39590,7 @@ msgstr ""
 #: doc/classes/InputEventMIDI.xml
 msgid ""
 "Returns a value indicating the type of message for this MIDI signal. This is "
-"a member of the MidiMessageList enum.\n"
+"a member of the [enum @GlobalScope.MidiMessageList] enum.\n"
 "For MIDI messages between 0x80 and 0xEF, only the left half of the bits are "
 "returned as this value, as the other part is the channel (ex: 0x94 becomes "
 "0x9). For MIDI messages from 0xF0 to 0xFF, the value is returned as-is.\n"
@@ -44326,9 +44728,10 @@ msgid "Returns the number of faces in this [Mesh]."
 msgstr "Devuelve el número de caras en esta [Mesh]."
 
 #: doc/classes/MeshDataTool.xml
+#, fuzzy
 msgid ""
 "Returns specified edge associated with given face.\n"
-"Edge argument must 2 or less because a face only has three edges."
+"Edge argument must be either 0, 1, or 2 because a face only has three edges."
 msgstr ""
 "Devuelve un borde específico asociado a una cara determinada.\n"
 "El argumento de borde debe ser 2 o menos porque una cara sólo tiene tres "
@@ -44343,9 +44746,11 @@ msgid "Calculates and returns the face normal of the given face."
 msgstr "Calcula y devuelve la cara normal de la cara dada."
 
 #: doc/classes/MeshDataTool.xml
+#, fuzzy
 msgid ""
 "Returns the specified vertex of the given face.\n"
-"Vertex argument must be 2 or less because faces contain three vertices."
+"Vertex argument must be either 0, 1, or 2 because faces contain three "
+"vertices."
 msgstr ""
 "Devuelve el vértice especificado de la cara dada.\n"
 "El argumento del vértice debe ser 2 o menos porque las caras contienen tres "
@@ -44615,9 +45020,10 @@ msgid "The [Mesh] that will be drawn by the [MeshInstance2D]."
 msgstr "La [Mesh] que será dibujada por la [MeshInstance2D]."
 
 #: doc/classes/MeshInstance2D.xml doc/classes/MultiMeshInstance2D.xml
+#, fuzzy
 msgid ""
 "The normal map that will be used if using the default [CanvasItemMaterial].\n"
-"[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. "
+"[b]Note:[/b] Godot expects the normal map to use X+, Y+, and Z+ coordinates. "
 "See [url=http://wiki.polycount.com/wiki/"
 "Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for "
 "a comparison of normal map coordinates expected by popular engines."
@@ -45892,7 +46298,7 @@ msgid ""
 "set_target_location] in order for this to be accurate."
 msgstr ""
 
-#: doc/classes/NavigationAgent.xml
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
 "Returns the reachable final location in global coordinates. This can change "
 "if the navigation path is altered in any way. Because of this, it would be "
@@ -45968,9 +46374,9 @@ msgid ""
 "path."
 msgstr ""
 
-#: doc/classes/NavigationAgent.xml
+#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
-"Sends the given velocity to the collision avoidance algorithm. It will "
+"Sends the passed in velocity to the collision avoidance algorithm. It will "
 "adjust the velocity to avoid collisions. Once the adjustment to the velocity "
 "is complete, it will emit the [signal velocity_computed] signal."
 msgstr ""
@@ -46067,12 +46473,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationAgent2D.xml
-msgid ""
-"Returns the reachable final location in global coordinates. This can change "
-"if the navigation path is altered in any way."
-msgstr ""
-
-#: doc/classes/NavigationAgent2D.xml
 #, fuzzy
 msgid ""
 "Returns which index the agent is currently on in the navigation path's "
@@ -46097,13 +46497,6 @@ msgstr ""
 msgid ""
 "Sets the [Navigation2D] node used by the agent. Useful when you don't want "
 "to make the agent a child of a [Navigation2D] node."
-msgstr ""
-
-#: doc/classes/NavigationAgent2D.xml
-msgid ""
-"Sends the passed in velocity to the collision avoidance algorithm. It will "
-"adjust the velocity to avoid collisions. Once the adjustment to the velocity "
-"is complete, it will emit the [signal velocity_computed] signal."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -46492,7 +46885,7 @@ msgid ""
 "2D obstacle used in navigation for collision avoidance. The obstacle needs "
 "navigation data to work correctly. This can be done by having the obstacle "
 "as a child of a [Navigation2D] node, or using [method set_navigation]. "
-"[NavigationObstacle] is physics safe."
+"[NavigationObstacle2D] is physics safe."
 msgstr ""
 
 #: doc/classes/NavigationObstacle2D.xml
@@ -50973,6 +51366,7 @@ msgstr ""
 "usados."
 
 #: doc/classes/OS.xml
+#, fuzzy
 msgid ""
 "Execute the file at the given path with the arguments passed as an array of "
 "strings. Platform path resolution will take place. The resolved file must "
@@ -50991,6 +51385,9 @@ msgid ""
 "If [code]blocking[/code] is [code]false[/code], the Godot thread will "
 "continue while the new process runs. It is not possible to retrieve the "
 "shell output in non-blocking mode, so [code]output[/code] will be empty.\n"
+"On Windows, if [code]open_console[/code] is [code]true[/code] and process is "
+"console app, new terminal window will be opened, it's ignored on other "
+"platforms.\n"
 "The return value also depends on the blocking mode. When blocking, the "
 "method will return an exit code of the process. When non-blocking, the "
 "method returns a process ID, which you can use to monitor the process (and "
@@ -53347,6 +53744,10 @@ msgid ""
 "to [CPUParticles] by selecting the node, clicking the [b]Particles[/b] menu "
 "at the top of the 3D editor viewport then choosing [b]Convert to "
 "CPUParticles[/b].\n"
+"[b]Note:[/b] On macOS, [Particles] rendering is much slower than "
+"[CPUParticles] due to transform feedback being implemented on the CPU "
+"instead of the GPU. Consider using [CPUParticles] instead when targeting "
+"macOS.\n"
 "[b]Note:[/b] After working on a Particles node, remember to update its "
 "[member visibility_aabb] by selecting it, clicking the [b]Particles[/b] menu "
 "at the top of the 3D editor viewport then choose [b]Generate Visibility "
@@ -53482,6 +53883,10 @@ msgid ""
 "[Particles2D] to [CPUParticles2D] by selecting the node, clicking the "
 "[b]Particles[/b] menu at the top of the 2D editor viewport then choosing "
 "[b]Convert to CPUParticles2D[/b].\n"
+"[b]Note:[/b] On macOS, [Particles2D] rendering is much slower than "
+"[CPUParticles2D] due to transform feedback being implemented on the CPU "
+"instead of the GPU. Consider using [CPUParticles2D] instead when targeting "
+"macOS.\n"
 "[b]Note:[/b] After working on a Particles node, remember to update its "
 "[member visibility_rect] by selecting it, clicking the [b]Particles[/b] menu "
 "at the top of the 2D editor viewport then choose [b]Generate Visibility "
@@ -59463,12 +59868,15 @@ msgstr ""
 "el archivo de configuración)."
 
 #: doc/classes/ProjectSettings.xml
+#, fuzzy
 msgid ""
 "Sets the value of a setting.\n"
 "[b]Example:[/b]\n"
 "[codeblock]\n"
 "ProjectSettings.set_setting(\"application/config/name\", \"Example\")\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"This can also be used to erase custom project settings. To do this change "
+"the setting value to [code]null[/code]."
 msgstr ""
 "Establece el valor de un ajuste.\n"
 "[b]Ejemplo:[/b]\n"
@@ -60490,6 +60898,18 @@ msgstr ""
 "[code]tscn[/code] si deseas analizar también los archivos de la escena, "
 "especialmente si utilizas scripts incorporados que se serializan en los "
 "archivos de la escena."
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Load the previously opened VCS plugin when the editor starts up. This is set "
+"to [code]true[/code] whenever a new VCS plugin is initialized."
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Last loaded VCS plugin name. Used to autoload the plugin when the editor "
+"starts up."
+msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -63716,9 +64136,7 @@ msgid ""
 "[Rect2] consists of a position, a size, and several utility functions. It is "
 "typically used for fast overlap tests.\n"
 "It uses floating-point coordinates.\n"
-"The 3D counterpart to [Rect2] is [AABB].\n"
-"Negative values for [member size] are not supported and will not work for "
-"most methods. Use [method abs] to get a Rect2 with a positive size."
+"The 3D counterpart to [Rect2] is [AABB]."
 msgstr ""
 "[Rect2] consta de una posición, un tamaño y varias funciones de utilidad. Se "
 "utiliza típicamente para pruebas de superposición rápida.\n"
@@ -68144,6 +68562,12 @@ msgstr ""
 
 #: doc/classes/ScriptEditor.xml
 msgid ""
+"Reload all currently opened scripts from disk in case the file contents are "
+"newer."
+msgstr ""
+
+#: doc/classes/ScriptEditor.xml
+msgid ""
 "Emitted when user changed active script. Argument is a freshly activated "
 "[Script]."
 msgstr ""
@@ -69095,6 +69519,17 @@ msgstr ""
 "Si [code]true[/code], el deslizador mostrará las marcas de los valores "
 "mínimo y máximo."
 
+#: doc/classes/Slider.xml
+msgid ""
+"Emitted when dragging stops. If [code]value_changed[/code] is true, [member "
+"Range.value] is different from the value when you started the dragging."
+msgstr ""
+
+#: doc/classes/Slider.xml
+#, fuzzy
+msgid "Emitted when dragging is started."
+msgstr "Emitido cuando se inicia el scrolling."
+
 #: doc/classes/SliderJoint.xml
 #, fuzzy
 msgid "Slider between two PhysicsBodies in 3D."
@@ -70023,9 +70458,10 @@ msgstr ""
 "con las texturas de base."
 
 #: doc/classes/SpatialMaterial.xml
+#, fuzzy
 msgid ""
 "Texture that specifies the per-pixel normal of the detail overlay.\n"
-"[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. "
+"[b]Note:[/b] Godot expects the normal map to use X+, Y+, and Z+ coordinates. "
 "See [url=http://wiki.polycount.com/wiki/"
 "Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for "
 "a comparison of normal map coordinates expected by popular engines."
@@ -70290,7 +70726,7 @@ msgid ""
 "you can use [method SurfaceTool.generate_normals] and [method SurfaceTool."
 "generate_tangents] to automatically generate normals and tangents "
 "respectively.\n"
-"[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. "
+"[b]Note:[/b] Godot expects the normal map to use X+, Y+, and Z+ coordinates. "
 "See [url=http://wiki.polycount.com/wiki/"
 "Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for "
 "a comparison of normal map coordinates expected by popular engines."
@@ -71751,13 +72187,13 @@ msgstr "Representa el tamaño del enum [enum DrawFlags]."
 
 #: doc/classes/SpriteFrames.xml
 #, fuzzy
-msgid "Sprite frame library for AnimatedSprite."
+msgid "Sprite frame library for AnimatedSprite and AnimatedSprite3D."
 msgstr "Biblioteca de fotogramas de Sprite para AnimatedSprite2D."
 
 #: doc/classes/SpriteFrames.xml
 msgid ""
-"Sprite frame library for [AnimatedSprite]. Contains frames and animation "
-"data for playback.\n"
+"Sprite frame library for an [AnimatedSprite] or [AnimatedSprite3D] node. "
+"Contains frames and animation data for playback.\n"
 "[b]Note:[/b] You can associate a set of normal maps by creating additional "
 "[SpriteFrames] resources with a [code]_normal[/code] suffix. For example, "
 "having 2 [SpriteFrames] resources [code]run[/code] and [code]run_normal[/"
@@ -80018,7 +80454,9 @@ msgid ""
 "TransitionType] constants with [constant EASE_IN_OUT], and use the one that "
 "looks best.\n"
 "[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/"
-"tween_cheatsheet.png]Tween easing and transition types cheatsheet[/url]"
+"tween_cheatsheet.png]Tween easing and transition types cheatsheet[/url]\n"
+"[b]Note:[/b] Tween methods will return [code]false[/code] if the requested "
+"operation cannot be completed."
 msgstr ""
 "Los Tweens son útiles para las animaciones que requieren que una propiedad "
 "numérica sea interpolada en un rango de valores. El nombre [i]tween[/i] "
@@ -81602,8 +82040,17 @@ msgstr ""
 "[code]length[/code]."
 
 #: doc/classes/Vector2.xml
-msgid "Returns the cross product of this vector and [code]with[/code]."
-msgstr "Devuelve el producto cruzado de este vector y [code]with[/code]."
+msgid ""
+"Returns the 2D analog of the cross product for this vector and [code]with[/"
+"code].\n"
+"This is the signed area of the parallelogram formed by the two vectors. If "
+"the second vector is clockwise from the first vector, then the cross product "
+"is the positive area. If counter-clockwise, the cross product is the "
+"negative area.\n"
+"[b]Note:[/b] Cross product is not defined in 2D mathematically. This method "
+"embeds the 2D vectors in the XY plane of 3D space and uses their cross "
+"product's Z component as the analog."
+msgstr ""
 
 #: doc/classes/Vector2.xml
 #, fuzzy
