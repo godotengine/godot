@@ -115,7 +115,7 @@
 			<argument index="4" name="outline" type="float" default="0.0" />
 			<argument index="5" name="pixel_range" type="float" default="4.0" />
 			<description>
-				Draws a textured rectangle region of the multi-channel signed distance field texture at a given position, optionally modulated by a color. See [method FontData.set_multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
+				Draws a textured rectangle region of the multi-channel signed distance field texture at a given position, optionally modulated by a color. See [member FontData.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
 				If [code]outline[/code] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [code]outline[/code] radius.
 				Value of the [code]pixel_range[/code] should the same that was used during distance field texture generation.
 			</description>

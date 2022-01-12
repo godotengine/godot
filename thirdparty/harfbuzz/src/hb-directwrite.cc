@@ -43,14 +43,6 @@
  * Functions for using HarfBuzz with DirectWrite fonts.
  **/
 
-/* Declare object creator for dynamic support of DWRITE */
-typedef HRESULT (* WINAPI t_DWriteCreateFactory)(
-  DWRITE_FACTORY_TYPE factoryType,
-  REFIID              iid,
-  IUnknown            **factory
-);
-
-
 /*
  * DirectWrite font stream helpers
  */
@@ -145,7 +137,6 @@ public:
 
 struct hb_directwrite_face_data_t
 {
-  HMODULE dwrite_dll;
   IDWriteFactory *dwriteFactory;
   IDWriteFontFile *fontFile;
   DWriteFontFileStream *fontFileStream;
@@ -167,33 +158,12 @@ _hb_directwrite_shaper_face_data_create (hb_face_t *face)
     return nullptr; \
   } HB_STMT_END
 
-  data->dwrite_dll = LoadLibrary (TEXT ("DWRITE"));
-  if (unlikely (!data->dwrite_dll))
-    FAIL ("Cannot find DWrite.DLL");
-
-  t_DWriteCreateFactory p_DWriteCreateFactory;
-
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-function-type"
-#endif
-
-  p_DWriteCreateFactory = (t_DWriteCreateFactory)
-			  GetProcAddress (data->dwrite_dll, "DWriteCreateFactory");
-
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-
-  if (unlikely (!p_DWriteCreateFactory))
-    FAIL ("Cannot find DWriteCreateFactory().");
-
   HRESULT hr;
 
   // TODO: factory and fontFileLoader should be cached separately
   IDWriteFactory* dwriteFactory;
-  hr = p_DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof (IDWriteFactory),
-			      (IUnknown**) &dwriteFactory);
+  hr = DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof (IDWriteFactory),
+			    (IUnknown**) &dwriteFactory);
 
   if (unlikely (hr != S_OK))
     FAIL ("Failed to run DWriteCreateFactory().");
@@ -257,8 +227,6 @@ _hb_directwrite_shaper_face_data_destroy (hb_directwrite_face_data_t *data)
     delete data->fontFileStream;
   if (data->faceBlob)
     hb_blob_destroy (data->faceBlob);
-  if (data->dwrite_dll)
-    FreeLibrary (data->dwrite_dll);
   if (data)
     delete data;
 }
@@ -793,6 +761,8 @@ retry_getglyphs:
   }
 
   if (isRightToLeft) hb_buffer_reverse (buffer);
+
+  buffer->clear_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_BREAK);
 
   delete [] clusterMap;
   delete [] glyphIndices;

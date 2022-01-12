@@ -244,15 +244,13 @@ void RayCast2D::_draw_debug_shape() {
 	xf.rotate(target_position.angle());
 	xf.translate(Vector2(no_line ? 0 : target_position.length() - arrow_size, 0));
 
-	Vector<Vector2> pts;
-	pts.push_back(xf.xform(Vector2(arrow_size, 0)));
-	pts.push_back(xf.xform(Vector2(0, 0.5 * arrow_size)));
-	pts.push_back(xf.xform(Vector2(0, -0.5 * arrow_size)));
+	Vector<Vector2> pts = {
+		xf.xform(Vector2(arrow_size, 0)),
+		xf.xform(Vector2(0, 0.5 * arrow_size)),
+		xf.xform(Vector2(0, -0.5 * arrow_size))
+	};
 
-	Vector<Color> cols;
-	for (int i = 0; i < 3; i++) {
-		cols.push_back(draw_col);
-	}
+	Vector<Color> cols = { draw_col, draw_col, draw_col };
 
 	draw_primitive(pts, cols, Vector<Vector2>());
 }

@@ -2,13 +2,7 @@
  *  RFC 1521 base64 encoding/decoding
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -21,38 +15,14 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_BASE64_C)
 
 #include "mbedtls/base64.h"
+#include "constant_time_internal.h"
 
 #include <stdint.h>
 
@@ -67,38 +37,6 @@
 #endif /* MBEDTLS_SELF_TEST */
 
 #define BASE64_SIZE_T_MAX   ( (size_t) -1 ) /* SIZE_T_MAX is not standard */
-
-/* Return 0xff if low <= c <= high, 0 otherwise.
- *
- * Constant flow with respect to c.
- */
-static unsigned char mask_of_range( unsigned char low, unsigned char high,
-                                    unsigned char c )
-{
-    /* low_mask is: 0 if low <= c, 0x...ff if low > c */
-    unsigned low_mask = ( (unsigned) c - low ) >> 8;
-    /* high_mask is: 0 if c <= high, 0x...ff if c > high */
-    unsigned high_mask = ( (unsigned) high - c ) >> 8;
-    return( ~( low_mask | high_mask ) & 0xff );
-}
-
-/* Given a value in the range 0..63, return the corresponding Base64 digit.
- * The implementation assumes that letters are consecutive (e.g. ASCII
- * but not EBCDIC).
- */
-static unsigned char enc_char( unsigned char val )
-{
-    unsigned char digit = 0;
-    /* For each range of values, if val is in that range, mask digit with
-     * the corresponding value. Since val can only be in a single range,
-     * only at most one masking will change digit. */
-    digit |= mask_of_range(  0, 25, val ) & ( 'A' + val );
-    digit |= mask_of_range( 26, 51, val ) & ( 'a' + val - 26 );
-    digit |= mask_of_range( 52, 61, val ) & ( '0' + val - 52 );
-    digit |= mask_of_range( 62, 62, val ) & '+';
-    digit |= mask_of_range( 63, 63, val ) & '/';
-    return( digit );
-}
 
 /*
  * Encode a buffer into base64 format
@@ -140,10 +78,12 @@ int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
         C2 = *src++;
         C3 = *src++;
 
-        *p++ = enc_char( ( C1 >> 2 ) & 0x3F );
-        *p++ = enc_char( ( ( ( C1 &  3 ) << 4 ) + ( C2 >> 4 ) ) & 0x3F );
-        *p++ = enc_char( ( ( ( C2 & 15 ) << 2 ) + ( C3 >> 6 ) ) & 0x3F );
-        *p++ = enc_char( C3 & 0x3F );
+        *p++ = mbedtls_ct_base64_enc_char( ( C1 >> 2 ) & 0x3F );
+        *p++ = mbedtls_ct_base64_enc_char( ( ( ( C1 &  3 ) << 4 ) + ( C2 >> 4 ) )
+                                        & 0x3F );
+        *p++ = mbedtls_ct_base64_enc_char( ( ( ( C2 & 15 ) << 2 ) + ( C3 >> 6 ) )
+                                        & 0x3F );
+        *p++ = mbedtls_ct_base64_enc_char( C3 & 0x3F );
     }
 
     if( i < slen )
@@ -151,11 +91,12 @@ int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
         C1 = *src++;
         C2 = ( ( i + 1 ) < slen ) ? *src++ : 0;
 
-        *p++ = enc_char( ( C1 >> 2 ) & 0x3F );
-        *p++ = enc_char( ( ( ( C1 & 3 ) << 4 ) + ( C2 >> 4 ) ) & 0x3F );
+        *p++ = mbedtls_ct_base64_enc_char( ( C1 >> 2 ) & 0x3F );
+        *p++ = mbedtls_ct_base64_enc_char( ( ( ( C1 & 3 ) << 4 ) + ( C2 >> 4 ) )
+                                        & 0x3F );
 
         if( ( i + 1 ) < slen )
-             *p++ = enc_char( ( ( C2 & 15 ) << 2 ) & 0x3F );
+             *p++ = mbedtls_ct_base64_enc_char( ( ( C2 & 15 ) << 2 ) & 0x3F );
         else *p++ = '=';
 
         *p++ = '=';
@@ -165,34 +106,6 @@ int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
     *p = 0;
 
     return( 0 );
-}
-
-/* Given a Base64 digit, return its value.
- * If c is not a Base64 digit ('A'..'Z', 'a'..'z', '0'..'9', '+' or '/'),
- * return -1.
- *
- * The implementation assumes that letters are consecutive (e.g. ASCII
- * but not EBCDIC).
- *
- * The implementation is constant-flow (no branch or memory access depending
- * on the value of c) unless the compiler inlines and optimizes a specific
- * access.
- */
-static signed char dec_value( unsigned char c )
-{
-    unsigned char val = 0;
-    /* For each range of digits, if c is in that range, mask val with
-     * the corresponding value. Since c can only be in a single range,
-     * only at most one masking will change val. Set val to one plus
-     * the desired value so that it stays 0 if c is in none of the ranges. */
-    val |= mask_of_range( 'A', 'Z', c ) & ( c - 'A' +  0 + 1 );
-    val |= mask_of_range( 'a', 'z', c ) & ( c - 'a' + 26 + 1 );
-    val |= mask_of_range( '0', '9', c ) & ( c - '0' + 52 + 1 );
-    val |= mask_of_range( '+', '+', c ) & ( c - '+' + 62 + 1 );
-    val |= mask_of_range( '/', '/', c ) & ( c - '/' + 63 + 1 );
-    /* At this point, val is 0 if c is an invalid digit and v+1 if c is
-     * a digit with the value v. */
-    return( val - 1 );
 }
 
 /*
@@ -247,7 +160,7 @@ int mbedtls_base64_decode( unsigned char *dst, size_t dlen, size_t *olen,
         {
             if( equals != 0 )
                 return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
-            if( dec_value( src[i] ) < 0 )
+            if( mbedtls_ct_base64_dec_value( src[i] ) < 0 )
                 return( MBEDTLS_ERR_BASE64_INVALID_CHARACTER );
         }
         n++;
@@ -282,14 +195,14 @@ int mbedtls_base64_decode( unsigned char *dst, size_t dlen, size_t *olen,
         if( *src == '=' )
             ++equals;
         else
-            x |= dec_value( *src );
+            x |= mbedtls_ct_base64_dec_value( *src );
 
         if( ++accumulated_digits == 4 )
         {
             accumulated_digits = 0;
-            *p++ = (unsigned char)( x >> 16 );
-            if( equals <= 1 ) *p++ = (unsigned char)( x >>  8 );
-            if( equals <= 0 ) *p++ = (unsigned char)( x       );
+            *p++ = MBEDTLS_BYTE_2( x );
+            if( equals <= 1 ) *p++ = MBEDTLS_BYTE_1( x );
+            if( equals <= 0 ) *p++ = MBEDTLS_BYTE_0( x );
         }
     }
 

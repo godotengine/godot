@@ -3205,7 +3205,10 @@ void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
 		return;
 	}
 
-	emit_signal(SNAME("property_keyed"), p_path, object->get(p_path), p_advance); //second param is deprecated
+	// The second parameter could be null, causing the event to fire with less arguments, so use the pointer call which preserves it.
+	const Variant args[3] = { p_path, object->get(p_path), p_advance };
+	const Variant *argp[3] = { &args[0], &args[1], &args[2] };
+	emit_signal(SNAME("property_keyed"), argp, 3);
 }
 
 void EditorInspector::_property_deleted(const String &p_path) {
@@ -3213,7 +3216,7 @@ void EditorInspector::_property_deleted(const String &p_path) {
 		return;
 	}
 
-	emit_signal(SNAME("property_deleted"), p_path); //second param is deprecated
+	emit_signal(SNAME("property_deleted"), p_path);
 }
 
 void EditorInspector::_property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance) {
@@ -3221,7 +3224,10 @@ void EditorInspector::_property_keyed_with_value(const String &p_path, const Var
 		return;
 	}
 
-	emit_signal(SNAME("property_keyed"), p_path, p_value, p_advance); //second param is deprecated
+	// The second parameter could be null, causing the event to fire with less arguments, so use the pointer call which preserves it.
+	const Variant args[3] = { p_path, p_value, p_advance };
+	const Variant *argp[3] = { &args[0], &args[1], &args[2] };
+	emit_signal(SNAME("property_keyed"), argp, 3);
 }
 
 void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
@@ -3531,7 +3537,7 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
-	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property")));
+	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "advance")));
 	ADD_SIGNAL(MethodInfo("property_deleted", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "res"), PropertyInfo(Variant::STRING, "prop")));
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::INT, "id")));

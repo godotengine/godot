@@ -174,7 +174,7 @@
 		<member name="caret_force_displayed" type="bool" setter="set_caret_force_displayed" getter="is_caret_force_displayed" default="false">
 			If [code]true[/code], the [LineEdit] will always show the caret, even if focus is lost.
 		</member>
-		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
+		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="true">
 			Allow moving caret, selecting and removing the individual composite character components.
 			[b]Note:[/b] [kbd]Backspace[/kbd] is always removing individual composite character components.
 		</member>

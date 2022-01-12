@@ -34,7 +34,6 @@
 
 Vector<Vector3> WorldBoundaryShape3D::get_debug_mesh_lines() const {
 	Plane p = get_plane();
-	Vector<Vector3> points;
 
 	Vector3 n1 = p.get_any_perpendicular_normal();
 	Vector3 n2 = p.normal.cross(n1).normalized();
@@ -46,16 +45,18 @@ Vector<Vector3> WorldBoundaryShape3D::get_debug_mesh_lines() const {
 		p.normal * p.d + n1 * -10.0 + n2 * 10.0,
 	};
 
-	points.push_back(pface[0]);
-	points.push_back(pface[1]);
-	points.push_back(pface[1]);
-	points.push_back(pface[2]);
-	points.push_back(pface[2]);
-	points.push_back(pface[3]);
-	points.push_back(pface[3]);
-	points.push_back(pface[0]);
-	points.push_back(p.normal * p.d);
-	points.push_back(p.normal * p.d + p.normal * 3);
+	Vector<Vector3> points = {
+		pface[0],
+		pface[1],
+		pface[1],
+		pface[2],
+		pface[2],
+		pface[3],
+		pface[3],
+		pface[0],
+		p.normal * p.d,
+		p.normal * p.d + p.normal * 3
+	};
 
 	return points;
 }

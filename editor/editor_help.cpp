@@ -1724,12 +1724,32 @@ void EditorHelp::_add_text(const String &p_bbcode) {
 	_add_text_to_rt(p_bbcode, class_desc);
 }
 
-void EditorHelp::generate_doc() {
-	doc = memnew(DocTools);
-	doc->generate(true);
+Thread EditorHelp::thread;
+
+void EditorHelp::_wait_for_thread() {
+	if (thread.is_started()) {
+		thread.wait_to_finish();
+	}
+}
+
+void EditorHelp::_gen_doc_thread(void *p_udata) {
 	DocTools compdoc;
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
 	doc->merge_from(compdoc); //ensure all is up to date
+}
+
+static bool doc_gen_use_threads = true;
+
+void EditorHelp::generate_doc() {
+	doc = memnew(DocTools);
+	// Not doable on threads unfortunately, since it instantiates all sorts of classes to get default values.
+	doc->generate(true);
+
+	if (doc_gen_use_threads) {
+		thread.start(_gen_doc_thread, nullptr);
+	} else {
+		_gen_doc_thread(nullptr);
+	}
 }
 
 void EditorHelp::_toggle_scripts_pressed() {
@@ -1741,6 +1761,7 @@ void EditorHelp::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_wait_for_thread();
 			_update_doc();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1758,20 +1779,32 @@ void EditorHelp::_notification(int p_what) {
 }
 
 void EditorHelp::go_to_help(const String &p_help) {
+	_wait_for_thread();
 	_help_callback(p_help);
 }
 
 void EditorHelp::go_to_class(const String &p_class, int p_scroll) {
+	_wait_for_thread();
 	_goto_desc(p_class, p_scroll);
 }
 
 void EditorHelp::update_doc() {
+	_wait_for_thread();
 	ERR_FAIL_COND(!doc->class_list.has(edited_class));
 	ERR_FAIL_COND(!doc->class_list[edited_class].is_script_doc);
 	_update_doc();
 }
 
+void EditorHelp::cleanup_doc() {
+	_wait_for_thread();
+	if (doc_gen_use_threads) {
+		thread.wait_to_finish();
+	}
+	memdelete(doc);
+}
+
 Vector<Pair<String, int>> EditorHelp::get_sections() {
+	_wait_for_thread();
 	Vector<Pair<String, int>> sections;
 
 	for (int i = 0; i < section_line.size(); i++) {
@@ -1781,11 +1814,13 @@ Vector<Pair<String, int>> EditorHelp::get_sections() {
 }
 
 void EditorHelp::scroll_to_section(int p_section_index) {
+	_wait_for_thread();
 	int line = section_line[p_section_index].second;
 	class_desc->scroll_to_paragraph(line);
 }
 
 void EditorHelp::popup_search() {
+	_wait_for_thread();
 	find_bar->popup_search();
 }
 
@@ -1862,6 +1897,11 @@ EditorHelp::EditorHelp() {
 }
 
 EditorHelp::~EditorHelp() {
+}
+
+DocTools *EditorHelp::get_doc_data() {
+	_wait_for_thread();
+	return doc;
 }
 
 void EditorHelpBit::_go_to_help(String p_what) {

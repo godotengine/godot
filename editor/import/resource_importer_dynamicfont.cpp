@@ -107,6 +107,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "opentype_feature_overrides"), Dictionary()));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "preload/char_ranges"), Vector<String>()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "preload/glyph_ranges"), Vector<String>()));
@@ -174,6 +175,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	bool msdf = p_options["multichannel_signed_distance_field"];
 	int px_range = p_options["msdf_pixel_range"];
 	int px_size = p_options["msdf_size"];
+	Dictionary ot_ov = p_options["opentype_feature_overrides"];
 
 	bool autohinter = p_options["force_autohinter"];
 	int hinting = p_options["hinting"];
@@ -190,6 +192,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	font->set_multichannel_signed_distance_field(msdf);
 	font->set_msdf_pixel_range(px_range);
 	font->set_msdf_size(px_size);
+	font->set_opentype_feature_overrides(ot_ov);
 	font->set_fixed_size(0);
 	font->set_force_autohinter(autohinter);
 	font->set_hinting((TextServer::Hinting)hinting);

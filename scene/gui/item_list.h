@@ -62,7 +62,7 @@ private:
 		String language;
 		TextDirection text_direction = TEXT_DIRECTION_AUTO;
 
-		bool selectable = false;
+		bool selectable = true;
 		bool selected = false;
 		bool disabled = false;
 		bool tooltip_enabled = true;

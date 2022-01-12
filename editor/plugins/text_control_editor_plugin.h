@@ -70,7 +70,7 @@ class TextControlEditor : public HBoxContainer {
 
 protected:
 	void _notification(int p_notification);
-	static void _bind_methods(){};
+	static void _bind_methods();
 
 	void _find_resources(EditorFileSystemDirectory *p_dir);
 	void _reload_fonts(const String &p_path);

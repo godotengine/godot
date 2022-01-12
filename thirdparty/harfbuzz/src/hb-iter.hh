@@ -581,6 +581,91 @@ struct
 }
 HB_FUNCOBJ (hb_zip);
 
+/* hb_concat() */
+
+template <typename A, typename B>
+struct hb_concat_iter_t :
+    hb_iter_t<hb_concat_iter_t<A, B>, typename A::item_t>
+{
+  hb_concat_iter_t () {}
+  hb_concat_iter_t (A& a, B& b) : a (a), b (b) {}
+  hb_concat_iter_t (const A& a, const B& b) : a (a), b (b) {}
+
+
+  typedef typename A::item_t __item_t__;
+  static constexpr bool is_random_access_iterator =
+    A::is_random_access_iterator &&
+    B::is_random_access_iterator;
+  static constexpr bool is_sorted_iterator = false;
+
+  __item_t__ __item__ () const
+  {
+    if (!a)
+      return *b;
+    return *a;
+  }
+
+  __item_t__ __item_at__ (unsigned i) const
+  {
+    unsigned a_len = a.len ();
+    if (i < a_len)
+      return a[i];
+    return b[i - a_len];
+  }
+
+  bool __more__ () const { return bool (a) || bool (b); }
+
+  unsigned __len__ () const { return a.len () + b.len (); }
+
+  void __next__ ()
+  {
+    if (a)
+      ++a;
+    else
+      ++b;
+  }
+
+  void __forward__ (unsigned n)
+  {
+    if (!n) return;
+    if (!is_random_access_iterator) {
+      while (n-- && *this) {
+        (*this)++;
+      }
+      return;
+    }
+
+    unsigned a_len = a.len ();
+    if (n > a_len) {
+      n -= a_len;
+      a.__forward__ (a_len);
+      b.__forward__ (n);
+    } else {
+      a.__forward__ (n);
+    }
+  }
+
+  hb_concat_iter_t __end__ () const { return hb_concat_iter_t (a.end (), b.end ()); }
+  bool operator != (const hb_concat_iter_t& o) const
+  {
+    return a != o.a
+        || b != o.b;
+  }
+
+  private:
+  A a;
+  B b;
+};
+struct
+{ HB_PARTIALIZE(2);
+  template <typename A, typename B,
+	    hb_requires (hb_is_iterable (A) && hb_is_iterable (B))>
+  hb_concat_iter_t<hb_iter_type<A>, hb_iter_type<B>>
+  operator () (A&& a, B&& b) const
+  { return hb_concat_iter_t<hb_iter_type<A>, hb_iter_type<B>> (hb_iter (a), hb_iter (b)); }
+}
+HB_FUNCOBJ (hb_concat);
+
 /* hb_apply() */
 
 template <typename Appl>

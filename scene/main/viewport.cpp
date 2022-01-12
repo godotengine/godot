@@ -372,8 +372,6 @@ void Viewport::_sub_window_remove(Window *p_window) {
 void Viewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			gui.embedding_subwindows = gui.embed_subwindows_hint;
-
 			if (get_parent()) {
 				parent = get_parent()->get_viewport();
 				RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, parent->get_viewport_rid());
@@ -1701,13 +1699,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (over) {
 			Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
 			Size2 pos = localizer.xform(mpos);
-			Vector2 speed = localizer.basis_xform(mm->get_speed());
+			Vector2 velocity = localizer.basis_xform(mm->get_velocity());
 			Vector2 rel = localizer.basis_xform(mm->get_relative());
 
 			mm = mm->xformed_by(Transform2D()); // Make a copy.
 
 			mm->set_global_position(mpos);
-			mm->set_speed(speed);
+			mm->set_velocity(velocity);
 			mm->set_relative(rel);
 
 			if (mm->get_button_mask() == MouseButton::NONE) {
@@ -1957,12 +1955,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			if (over->can_process()) {
 				Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
 				Size2 pos = localizer.xform(drag_event->get_position());
-				Vector2 speed = localizer.basis_xform(drag_event->get_speed());
+				Vector2 velocity = localizer.basis_xform(drag_event->get_velocity());
 				Vector2 rel = localizer.basis_xform(drag_event->get_relative());
 
 				drag_event = drag_event->xformed_by(Transform2D()); // Make a copy.
 
-				drag_event->set_speed(speed);
+				drag_event->set_velocity(velocity);
 				drag_event->set_relative(rel);
 				drag_event->set_position(pos);
 
@@ -2546,7 +2544,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		bool click_on_window = false;
 		for (int i = gui.sub_windows.size() - 1; i >= 0; i--) {
-			SubWindow &sw = gui.sub_windows.write[i];
+			SubWindow sw = gui.sub_windows.write[i];
 
 			// Clicked inside window?
 
@@ -3956,8 +3954,8 @@ void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clear_mode", "mode"), &SubViewport::set_clear_mode);
 	ClassDB::bind_method(D_METHOD("get_clear_mode"), &SubViewport::get_clear_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size_2d_override"), "set_size_2d_override", "get_size_2d_override");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size_2d_override"), "set_size_2d_override", "get_size_2d_override");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_2d_override_stretch"), "set_size_2d_override_stretch", "is_size_2d_override_stretch_enabled");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");

@@ -31,6 +31,7 @@
 #ifndef EDITOR_HELP_H
 #define EDITOR_HELP_H
 
+#include "core/os/thread.h"
 #include "editor/code_editor.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_plugin.h"
@@ -164,13 +165,19 @@ class EditorHelp : public VBoxContainer {
 	String _fix_constant(const String &p_constant) const;
 	void _toggle_scripts_pressed();
 
+	static Thread thread;
+
+	static void _wait_for_thread();
+	static void _gen_doc_thread(void *p_udata);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	static void generate_doc();
-	static DocTools *get_doc_data() { return doc; }
+	static DocTools *get_doc_data();
+	static void cleanup_doc();
 
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class, int p_scroll = 0);

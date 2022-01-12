@@ -33,8 +33,6 @@
 
 #ifdef X11_ENABLED
 
-#include "drivers/gles3/rasterizer_platforms.h"
-
 #ifdef GLES3_ENABLED
 
 #include "core/os/os.h"

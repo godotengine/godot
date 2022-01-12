@@ -100,12 +100,18 @@ struct graph_t
 
     bool is_leaf () const
     {
-      return !obj.links.length;
+      return !obj.real_links.length && !obj.virtual_links.length;
     }
 
-    void raise_priority ()
+    bool raise_priority ()
     {
+      if (has_max_priority ()) return false;
       priority++;
+      return true;
+    }
+
+    bool has_max_priority () const {
+      return priority >= 3;
     }
 
     int64_t modified_distance (unsigned order) const
@@ -115,15 +121,22 @@ struct graph_t
       // it's parent where possible.
 
       int64_t modified_distance =
-          hb_min (hb_max(distance + distance_modifier (), 0), 0x7FFFFFFFFF);
-      return (modified_distance << 22) | (0x003FFFFF & order);
+          hb_min (hb_max(distance + distance_modifier (), 0), 0x7FFFFFFFFFF);
+      if (has_max_priority ()) {
+        modified_distance = 0;
+      }
+      return (modified_distance << 18) | (0x003FFFF & order);
     }
 
     int64_t distance_modifier () const
     {
       if (!priority) return 0;
       int64_t table_size = obj.tail - obj.head;
-      return -(table_size - table_size / (1 << hb_min(priority, 16u)));
+
+      if (priority == 1)
+        return -table_size / 2;
+
+      return -table_size;
     }
   };
 
@@ -164,9 +177,10 @@ struct graph_t
       if (check_success (!vertices_.in_error ()))
         v->obj = *objects[i];
       if (!removed_nil) continue;
-      for (unsigned i = 0; i < v->obj.links.length; i++)
-        // Fix indices to account for removed nil object.
-        v->obj.links[i].objidx--;
+      // Fix indices to account for removed nil object.
+      for (auto& l : v->obj.all_links_writer ()) {
+        l.objidx--;
+      }
     }
   }
 
@@ -203,26 +217,46 @@ struct graph_t
   /*
    * serialize graph into the provided serialization buffer.
    */
-  void serialize (hb_serialize_context_t* c) const
+  hb_blob_t* serialize () const
   {
-    c->start_serialize<void> ();
+    hb_vector_t<char> buffer;
+    size_t size = serialized_length ();
+    if (!buffer.alloc (size)) {
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "Unable to allocate output buffer.");
+      return nullptr;
+    }
+    hb_serialize_context_t c((void *) buffer, size);
+
+    c.start_serialize<void> ();
     for (unsigned i = 0; i < vertices_.length; i++) {
-      c->push ();
+      c.push ();
 
       size_t size = vertices_[i].obj.tail - vertices_[i].obj.head;
-      char* start = c->allocate_size <char> (size);
-      if (!start) return;
+      char* start = c.allocate_size <char> (size);
+      if (!start) {
+        DEBUG_MSG (SUBSET_REPACK, nullptr, "Buffer out of space.");
+        return nullptr;
+      }
 
       memcpy (start, vertices_[i].obj.head, size);
 
-      for (const auto& link : vertices_[i].obj.links)
-        serialize_link (link, start, c);
+      // Only real links needs to be serialized.
+      for (const auto& link : vertices_[i].obj.real_links)
+        serialize_link (link, start, &c);
 
       // All duplications are already encoded in the graph, so don't
       // enable sharing during packing.
-      c->pop_pack (false);
+      c.pop_pack (false);
     }
-    c->end_serialize ();
+    c.end_serialize ();
+
+    if (c.in_error ()) {
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "Error during serialization. Err flag: %d",
+                 c.errors);
+      return nullptr;
+    }
+
+    return c.copy_blob ();
   }
 
   /*
@@ -260,7 +294,7 @@ struct graph_t
       sorted_graph[new_id] = next;
       id_map[next_id] = new_id--;
 
-      for (const auto& link : next.obj.links) {
+      for (const auto& link : next.obj.all_links ()) {
         removed_edges[link.objidx]++;
         if (!(vertices_[link.objidx].incoming_edges () - removed_edges[link.objidx]))
           queue.push (link.objidx);
@@ -314,7 +348,7 @@ struct graph_t
       sorted_graph[new_id] = next;
       id_map[next_id] = new_id--;
 
-      for (const auto& link : next.obj.links) {
+      for (const auto& link : next.obj.all_links ()) {
         removed_edges[link.objidx]++;
         if (!(vertices_[link.objidx].incoming_edges () - removed_edges[link.objidx]))
           // Add the order that the links were encountered to the priority.
@@ -348,7 +382,8 @@ struct graph_t
     hb_set_t roots;
     for (unsigned i = 0; i <= root_index; i++)
     {
-      for (auto& l : vertices_[i].obj.links)
+      // Only real links can form 32 bit spaces
+      for (auto& l : vertices_[i].obj.real_links)
       {
         if (l.width == 4 && !l.is_signed)
         {
@@ -466,7 +501,7 @@ struct graph_t
 
   void find_subgraph (unsigned node_idx, hb_hashmap_t<unsigned, unsigned>& subgraph)
   {
-    for (const auto& link : vertices_[node_idx].obj.links)
+    for (const auto& link : vertices_[node_idx].obj.all_links ())
     {
       if (subgraph.has (link.objidx))
       {
@@ -482,7 +517,7 @@ struct graph_t
   {
     if (subgraph.has (node_idx)) return;
     subgraph.add (node_idx);
-    for (const auto& link : vertices_[node_idx].obj.links)
+    for (const auto& link : vertices_[node_idx].obj.all_links ())
       find_subgraph (link.objidx, subgraph);
   }
 
@@ -497,7 +532,7 @@ struct graph_t
       return;
 
     index_map.set (node_idx, duplicate (node_idx));
-    for (const auto& l : object (node_idx).links) {
+    for (const auto& l : object (node_idx).all_links ()) {
       duplicate_subgraph (l.objidx, index_map);
     }
   }
@@ -523,13 +558,19 @@ struct graph_t
     clone->parents.reset ();
 
     unsigned clone_idx = vertices_.length - 2;
-    for (const auto& l : child.obj.links)
+    for (const auto& l : child.obj.real_links)
     {
-      clone->obj.links.push (l);
+      clone->obj.real_links.push (l);
+      vertices_[l.objidx].parents.push (clone_idx);
+    }
+    for (const auto& l : child.obj.virtual_links)
+    {
+      clone->obj.virtual_links.push (l);
       vertices_[l.objidx].parents.push (clone_idx);
     }
 
-    check_success (!clone->obj.links.in_error ());
+    check_success (!clone->obj.real_links.in_error ());
+    check_success (!clone->obj.virtual_links.in_error ());
 
     // The last object is the root of the graph, so swap back the root to the end.
     // The root's obj idx does change, however since it's root nothing else refers to it.
@@ -539,7 +580,7 @@ struct graph_t
     vertices_[vertices_.length - 1] = root;
 
     // Since the root moved, update the parents arrays of all children on the root.
-    for (const auto& l : root.obj.links)
+    for (const auto& l : root.obj.all_links ())
       vertices_[l.objidx].remap_parent (root_idx () - 1, root_idx ());
 
     return clone_idx;
@@ -555,7 +596,7 @@ struct graph_t
     update_parents ();
 
     unsigned links_to_child = 0;
-    for (const auto& l : vertices_[parent_idx].obj.links)
+    for (const auto& l : vertices_[parent_idx].obj.all_links ())
     {
       if (l.objidx == child_idx) links_to_child++;
     }
@@ -578,9 +619,8 @@ struct graph_t
     if (parent_idx == clone_idx) parent_idx++;
 
     auto& parent = vertices_[parent_idx];
-    for (unsigned i = 0; i < parent.obj.links.length; i++)
+    for (auto& l : parent.obj.all_links_writer ())
     {
-      auto& l = parent.obj.links[i];
       if (l.objidx != child_idx)
         continue;
 
@@ -593,7 +633,7 @@ struct graph_t
   /*
    * Raises the sorting priority of all children.
    */
-  void raise_childrens_priority (unsigned parent_idx)
+  bool raise_childrens_priority (unsigned parent_idx)
   {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "  Raising priority of all children of %d",
                parent_idx);
@@ -601,8 +641,10 @@ struct graph_t
     // to invalidate positions. It does not change graph structure so no need
     // to update distances or edge counts.
     auto& parent = vertices_[parent_idx].obj;
-    for (unsigned i = 0; i < parent.links.length; i++)
-      vertices_[parent.links[i].objidx].raise_priority ();
+    bool made_change = false;
+    for (auto& l : parent.all_links_writer ())
+      made_change |= vertices_[l.objidx].raise_priority ();
+    return made_change;
   }
 
   /*
@@ -615,7 +657,8 @@ struct graph_t
 
     for (int parent_idx = vertices_.length - 1; parent_idx >= 0; parent_idx--)
     {
-      for (const auto& link : vertices_[parent_idx].obj.links)
+      // Don't need to check virtual links for overflow
+      for (const auto& link : vertices_[parent_idx].obj.real_links)
       {
         int64_t offset = compute_offset (parent_idx, link);
         if (is_valid_offset (offset, link))
@@ -655,8 +698,10 @@ struct graph_t
     if (!DEBUG_ENABLED(SUBSET_REPACK)) return;
 
     update_parents ();
+    int limit = 10;
     for (const auto& o : overflows)
     {
+      if (!limit--) break;
       const auto& parent = vertices_[o.parent];
       const auto& child = vertices_[o.child];
       DEBUG_MSG (SUBSET_REPACK, nullptr,
@@ -665,12 +710,15 @@ struct graph_t
                  "%4d (%4d in, %4d out, space %2d)",
                  o.parent,
                  parent.incoming_edges (),
-                 parent.obj.links.length,
+                 parent.obj.real_links.length + parent.obj.virtual_links.length,
                  space_for (o.parent),
                  o.child,
                  child.incoming_edges (),
-                 child.obj.links.length,
+                 child.obj.real_links.length + child.obj.virtual_links.length,
                  space_for (o.child));
+    }
+    if (overflows.length > 10) {
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "  ... plus %d more overflows.", overflows.length - 10);
     }
   }
 
@@ -684,12 +732,19 @@ struct graph_t
     return num_roots_for_space_.length;
   }
 
-  void move_to_new_space (unsigned index)
+  void move_to_new_space (const hb_set_t& indices)
   {
-    auto& node = vertices_[index];
-    num_roots_for_space_.push (1);
-    num_roots_for_space_[node.space] = num_roots_for_space_[node.space] - 1;
-    node.space = num_roots_for_space_.length - 1;
+    num_roots_for_space_.push (0);
+    unsigned new_space = num_roots_for_space_.length - 1;
+
+    for (unsigned index : indices) {
+      auto& node = vertices_[index];
+      num_roots_for_space_[node.space] = num_roots_for_space_[node.space] - 1;
+      num_roots_for_space_[new_space] = num_roots_for_space_[new_space] + 1;
+      node.space = new_space;
+      distance_invalid = true;
+      positions_invalid = true;
+    }
   }
 
   unsigned space_for (unsigned index, unsigned* root = nullptr) const
@@ -716,6 +771,15 @@ struct graph_t
 
  private:
 
+  size_t serialized_length () const {
+    size_t total_size = 0;
+    for (unsigned i = 0; i < vertices_.length; i++) {
+      size_t size = vertices_[i].obj.tail - vertices_[i].obj.head;
+      total_size += size;
+    }
+    return total_size;
+  }
+
   /*
    * Returns the numbers of incoming edges that are 32bits wide.
    */
@@ -728,7 +792,8 @@ struct graph_t
       if (visited.has (p)) continue;
       visited.add (p);
 
-      for (const auto& l : vertices_[p].obj.links)
+      // Only real links can be wide
+      for (const auto& l : vertices_[p].obj.real_links)
       {
         if (l.objidx == node_idx && l.width == 4 && !l.is_signed)
         {
@@ -755,7 +820,7 @@ struct graph_t
 
     for (unsigned p = 0; p < vertices_.length; p++)
     {
-      for (auto& l : vertices_[p].obj.links)
+      for (auto& l : vertices_[p].obj.all_links ())
       {
         vertices_[l.objidx].parents.push (p);
       }
@@ -823,7 +888,7 @@ struct graph_t
       int64_t next_distance = vertices_[next_idx].distance;
       visited[next_idx] = true;
 
-      for (const auto& link : next.obj.links)
+      for (const auto& link : next.obj.all_links ())
       {
         if (visited[link.objidx]) continue;
 
@@ -922,9 +987,8 @@ struct graph_t
     if (!id_map) return;
     for (unsigned i : subgraph)
     {
-      for (unsigned j = 0; j < vertices_[i].obj.links.length; j++)
+      for (auto& link : vertices_[i].obj.all_links_writer ())
       {
-        auto& link = vertices_[i].obj.links[j];
         if (!id_map.has (link.objidx)) continue;
         if (only_wide && !(link.width == 4 && !link.is_signed)) continue;
 
@@ -942,9 +1006,8 @@ struct graph_t
     for (unsigned i = 0; i < sorted_graph->length; i++)
     {
       (*sorted_graph)[i].remap_parents (id_map);
-      for (unsigned j = 0; j < (*sorted_graph)[i].obj.links.length; j++)
+      for (auto& link : (*sorted_graph)[i].obj.all_links_writer ())
       {
-        auto& link = (*sorted_graph)[i].obj.links[j];
         link.objidx = id_map[link.objidx];
       }
     }
@@ -1023,7 +1086,7 @@ struct graph_t
     const auto& v = vertices_[start_idx];
 
     // Graph is treated as undirected so search children and parents of start_idx
-    for (const auto& l : v.obj.links)
+    for (const auto& l : v.obj.all_links ())
       find_connected_nodes (l.objidx, targets, visited, connected);
 
     for (unsigned p : v.parents)
@@ -1044,27 +1107,50 @@ struct graph_t
 static bool _try_isolating_subgraphs (const hb_vector_t<graph_t::overflow_record_t>& overflows,
                                       graph_t& sorted_graph)
 {
+  unsigned space = 0;
+  hb_set_t roots_to_isolate;
+
   for (int i = overflows.length - 1; i >= 0; i--)
   {
     const graph_t::overflow_record_t& r = overflows[i];
-    unsigned root = 0;
-    unsigned space = sorted_graph.space_for (r.parent, &root);
-    if (!space) continue;
-    if (sorted_graph.num_roots_for_space (space) <= 1) continue;
 
-    DEBUG_MSG (SUBSET_REPACK, nullptr, "Overflow in space %d moving subgraph %d to space %d.",
-               space,
-               root,
-               sorted_graph.next_space ());
+    unsigned root;
+    unsigned overflow_space = sorted_graph.space_for (r.parent, &root);
+    if (!overflow_space) continue;
+    if (sorted_graph.num_roots_for_space (overflow_space) <= 1) continue;
 
-    hb_set_t roots;
-    roots.add (root);
-    sorted_graph.isolate_subgraph (roots);
-    for (unsigned new_root : roots)
-      sorted_graph.move_to_new_space (new_root);
-    return true;
+    if (!space) {
+      space = overflow_space;
+    }
+
+    if (space == overflow_space)
+      roots_to_isolate.add(root);
   }
-  return false;
+
+  if (!roots_to_isolate) return false;
+
+  unsigned maximum_to_move = hb_max ((sorted_graph.num_roots_for_space (space) / 2u), 1u);
+  if (roots_to_isolate.get_population () > maximum_to_move) {
+    // Only move at most half of the roots in a space at a time.
+    unsigned extra = roots_to_isolate.get_population () - maximum_to_move;
+    while (extra--) {
+      unsigned root = HB_SET_VALUE_INVALID;
+      roots_to_isolate.previous (&root);
+      roots_to_isolate.del (root);
+    }
+  }
+
+  DEBUG_MSG (SUBSET_REPACK, nullptr,
+             "Overflow in space %d (%d roots). Moving %d roots to space %d.",
+             space,
+             sorted_graph.num_roots_for_space (space),
+             roots_to_isolate.get_population (),
+             sorted_graph.next_space ());
+
+  sorted_graph.isolate_subgraph (roots_to_isolate);
+  sorted_graph.move_to_new_space (roots_to_isolate);
+
+  return true;
 }
 
 static bool _process_overflows (const hb_vector_t<graph_t::overflow_record_t>& overflows,
@@ -1093,16 +1179,16 @@ static bool _process_overflows (const hb_vector_t<graph_t::overflow_record_t>& o
       // TODO(garretrieger): initially limiting this to leaf's since they can be
       //                     moved closer with fewer consequences. However, this can
       //                     likely can be used for non-leafs as well.
-      // TODO(garretrieger): add a maximum priority, don't try to raise past this.
       // TODO(garretrieger): also try lowering priority of the parent. Make it
       //                     get placed further up in the ordering, closer to it's children.
       //                     this is probably preferable if the total size of the parent object
       //                     is < then the total size of the children (and the parent can be moved).
       //                     Since in that case moving the parent will cause a smaller increase in
       //                     the length of other offsets.
-      sorted_graph.raise_childrens_priority (r.parent);
-      priority_bumped_parents.add (r.parent);
-      resolution_attempted = true;
+      if (sorted_graph.raise_childrens_priority (r.parent)) {
+        priority_bumped_parents.add (r.parent);
+        resolution_attempted = true;
+      }
       continue;
     }
 
@@ -1127,19 +1213,17 @@ static bool _process_overflows (const hb_vector_t<graph_t::overflow_record_t>& o
  * For a detailed writeup describing how the algorithm operates see:
  * docs/repacker.md
  */
-inline void
+inline hb_blob_t*
 hb_resolve_overflows (const hb_vector_t<hb_serialize_context_t::object_t *>& packed,
                       hb_tag_t table_tag,
-                      hb_serialize_context_t* c,
-                      unsigned max_rounds = 10) {
+                      unsigned max_rounds = 20) {
   // Kahn sort is ~twice as fast as shortest distance sort and works for many fonts
   // so try it first to save time.
   graph_t sorted_graph (packed);
   sorted_graph.sort_kahn ();
   if (!sorted_graph.will_overflow ())
   {
-    sorted_graph.serialize (c);
-    return;
+    return sorted_graph.serialize ();
   }
 
   sorted_graph.sort_shortest_distance ();
@@ -1178,17 +1262,17 @@ hb_resolve_overflows (const hb_vector_t<hb_serialize_context_t::object_t *>& pac
 
   if (sorted_graph.in_error ())
   {
-    c->err (HB_SERIALIZE_ERROR_OTHER);
-    return;
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "Sorted graph in error state.");
+    return nullptr;
   }
 
   if (sorted_graph.will_overflow ())
   {
-    c->err (HB_SERIALIZE_ERROR_OFFSET_OVERFLOW);
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Offset overflow resolution failed.");
-    return;
+    return nullptr;
   }
-  sorted_graph.serialize (c);
+
+  return sorted_graph.serialize ();
 }
 
 #endif /* HB_REPACKER_HH */

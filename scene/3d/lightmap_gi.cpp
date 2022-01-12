@@ -942,11 +942,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				c.r *= environment_custom_energy;
 				c.g *= environment_custom_energy;
 				c.b *= environment_custom_energy;
-				for (int i = 0; i < 128; i++) {
-					for (int j = 0; j < 64; j++) {
-						environment_image->set_pixel(i, j, c);
-					}
-				}
+				environment_image->fill(c);
 
 			} break;
 		}

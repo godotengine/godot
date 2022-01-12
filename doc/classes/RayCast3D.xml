@@ -117,7 +117,7 @@
 			The custom color to use to draw the shape in the editor and at run-time if [b]Visible Collision Shapes[/b] is enabled in the [b]Debug[/b] menu. This color will be highlighted at run-time if the [RayCast3D] is colliding with something.
 			If set to [code]Color(0.0, 0.0, 0.0)[/code] (by default), the color set in [member ProjectSettings.debug/shapes/collision/shape_color] is used.
 		</member>
-		<member name="debug_shape_thickness" type="float" setter="set_debug_shape_thickness" getter="get_debug_shape_thickness" default="2.0">
+		<member name="debug_shape_thickness" type="int" setter="set_debug_shape_thickness" getter="get_debug_shape_thickness" default="2">
 			If set to [code]1[/code], a line is used as the debug shape. Otherwise, a truncated pyramid is drawn to represent the [RayCast3D]. Requires [b]Visible Collision Shapes[/b] to be enabled in the [b]Debug[/b] menu for the debug shape to be visible at run-time.
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">

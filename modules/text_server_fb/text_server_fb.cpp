@@ -1995,6 +1995,24 @@ Vector<String> TextServerFallback::font_get_script_support_overrides(RID p_font_
 	return out;
 }
 
+void TextServerFallback::font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+	fd->feature_overrides = p_overrides;
+}
+
+Dictionary TextServerFallback::font_get_opentype_feature_overrides(RID p_font_rid) const {
+	FontDataFallback *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+
+	MutexLock lock(fd->mutex);
+	return fd->feature_overrides;
+}
+
 Dictionary TextServerFallback::font_supported_feature_list(RID p_font_rid) const {
 	return Dictionary();
 }
@@ -2663,6 +2681,12 @@ float TextServerFallback::shaped_text_tab_align(RID p_shaped, const PackedFloat3
 	}
 	if (!sd->line_breaks_valid) {
 		const_cast<TextServerFallback *>(this)->shaped_text_update_breaks(p_shaped);
+	}
+
+	for (int i = 0; i < p_tab_stops.size(); i++) {
+		if (p_tab_stops[i] <= 0) {
+			return 0.f;
+		}
 	}
 
 	int tab_index = 0;

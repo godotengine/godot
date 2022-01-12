@@ -66,10 +66,23 @@ table_columns = [
     "methods",
     "constants",
     "members",
-    "signals",
     "theme_items",
+    "signals",
+    "operators",
+    "constructors",
 ]
-table_column_names = ["Name", "Brief Desc.", "Desc.", "Methods", "Constants", "Members", "Signals", "Theme Items"]
+table_column_names = [
+    "Name",
+    "Brief Desc.",
+    "Desc.",
+    "Methods",
+    "Constants",
+    "Members",
+    "Theme Items",
+    "Signals",
+    "Operators",
+    "Constructors",
+]
 colors = {
     "name": [36],  # cyan
     "part_big_problem": [4, 31],  # underline, red
@@ -82,7 +95,7 @@ colors = {
     "state_on": [1, 35],  # bold, magenta/plum
     "bold": [1],  # bold
 }
-overall_progress_description_weigth = 10
+overall_progress_description_weight = 10
 
 
 ################################################################################
@@ -180,6 +193,8 @@ class ClassStatus:
             "members": ClassStatusProgress(),
             "theme_items": ClassStatusProgress(),
             "signals": ClassStatusProgress(),
+            "operators": ClassStatusProgress(),
+            "constructors": ClassStatusProgress(),
         }
 
     def __add__(self, other):
@@ -218,12 +233,12 @@ class ClassStatus:
         output["description"] = ok_string if self.has_description else missing_string
 
         description_progress = ClassStatusProgress(
-            (self.has_brief_description + self.has_description) * overall_progress_description_weigth,
-            2 * overall_progress_description_weigth,
+            (self.has_brief_description + self.has_description) * overall_progress_description_weight,
+            2 * overall_progress_description_weight,
         )
         items_progress = ClassStatusProgress()
 
-        for k in ["methods", "constants", "members", "signals", "theme_items"]:
+        for k in ["methods", "constants", "members", "theme_items", "signals", "constructors", "operators"]:
             items_progress += self.progresses[k]
             output[k] = self.progresses[k].to_configured_colored_string()
 
@@ -260,7 +275,7 @@ class ClassStatus:
             elif tag.tag == "description":
                 status.has_description = len(tag.text.strip()) > 0
 
-            elif tag.tag in ["methods", "signals"]:
+            elif tag.tag in ["methods", "signals", "operators", "constructors"]:
                 for sub_tag in list(tag):
                     descr = sub_tag.find("description")
                     status.progresses[tag.tag].increment(len(descr.text.strip()) > 0)
@@ -271,9 +286,6 @@ class ClassStatus:
 
             elif tag.tag in ["tutorials"]:
                 pass  # Ignore those tags for now
-
-            elif tag.tag in ["theme_items"]:
-                pass  # Ignore those tags, since they seem to lack description at all
 
             else:
                 print(tag.tag, tag.attrib)

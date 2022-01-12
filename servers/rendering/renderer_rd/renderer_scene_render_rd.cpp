@@ -545,11 +545,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		Ref<Image> panorama;
 		panorama.instantiate();
 		panorama->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
-		for (int x = 0; x < p_size.width; x++) {
-			for (int y = 0; y < p_size.height; y++) {
-				panorama->set_pixel(x, y, panorama_color);
-			}
-		}
+		panorama->fill(panorama_color);
 		return panorama;
 	}
 
@@ -3841,9 +3837,9 @@ void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
 		return; //just invalid, but no error
 	}
 
-	ShaderCompilerRD::GeneratedCode gen_code;
-	ShaderCompilerRD::IdentifierActions actions;
-	actions.entry_point_stages["fog"] = ShaderCompilerRD::STAGE_COMPUTE;
+	ShaderCompiler::GeneratedCode gen_code;
+	ShaderCompiler::IdentifierActions actions;
+	actions.entry_point_stages["fog"] = ShaderCompiler::STAGE_COMPUTE;
 
 	uses_time = false;
 
@@ -3860,7 +3856,7 @@ void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
 		version = scene_singleton->volumetric_fog.shader.version_create();
 	}
 
-	scene_singleton->volumetric_fog.shader.version_set_compute_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompilerRD::STAGE_COMPUTE], gen_code.defines);
+	scene_singleton->volumetric_fog.shader.version_set_compute_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_COMPUTE], gen_code.defines);
 	ERR_FAIL_COND(!scene_singleton->volumetric_fog.shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -5657,7 +5653,7 @@ void RendererSceneRenderRD::init() {
 		}
 
 		{
-			ShaderCompilerRD::DefaultIdentifierActions actions;
+			ShaderCompiler::DefaultIdentifierActions actions;
 
 			actions.renames["TIME"] = "scene_params.time";
 			actions.renames["PI"] = _MKSTR(Math_PI);

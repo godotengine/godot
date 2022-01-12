@@ -198,6 +198,9 @@ public:
 	virtual void remove_script_support_override(const String &p_script);
 	virtual Vector<String> get_script_support_overrides() const;
 
+	virtual void set_opentype_feature_overrides(const Dictionary &p_overrides);
+	virtual Dictionary get_opentype_feature_overrides() const;
+
 	// Base font properties.
 	virtual bool has_char(char32_t p_char) const;
 	virtual String get_supported_chars() const;

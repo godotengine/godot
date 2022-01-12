@@ -78,7 +78,7 @@
 			The instrument of this input event. This value ranges from 0 to 127. Refer to the instrument list on the General MIDI wikipedia article to see a list of instruments, except that this value is 0-index, so subtract one from every number on that chart. A standard piano will have an instrument number of 0.
 		</member>
 		<member name="message" type="int" setter="set_message" getter="get_message" enum="MIDIMessage" default="0">
-			Returns a value indicating the type of message for this MIDI signal. This is a member of the MIDIMessage enum.
+			Returns a value indicating the type of message for this MIDI signal. This is a member of the [enum @GlobalScope.MIDIMessage] enum.
 			For MIDI messages between 0x80 and 0xEF, only the left half of the bits are returned as this value, as the other part is the channel (ex: 0x94 becomes 0x9). For MIDI messages from 0xF0 to 0xFF, the value is returned as-is.
 			Notes will return [code]MIDI_MESSAGE_NOTE_ON[/code] when activated, but they might not always return [code]MIDI_MESSAGE_NOTE_OFF[/code] when deactivated, therefore your code should treat the input as stopped if some period of time has passed.
 			For more information, see the MIDI message status byte list chart linked above.

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "rasterizer_scene_gles3.h"
-#ifdef GLES3_BACKEND_ENABLED
+#ifdef GLES3_ENABLED
 
 // TODO: 3D support not implemented yet.
 
@@ -471,4 +471,4 @@ void RasterizerSceneGLES3::light_projectors_set_filter(RS::LightProjectorFilter 
 RasterizerSceneGLES3::RasterizerSceneGLES3() {
 }
 
-#endif // GLES3_BACKEND_ENABLED
+#endif // GLES3_ENABLED
