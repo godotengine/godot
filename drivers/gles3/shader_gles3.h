@@ -31,8 +31,16 @@
 #ifndef SHADER_OPENGL_H
 #define SHADER_OPENGL_H
 
-#include "drivers/gles3/rasterizer_platforms.h"
-#ifdef GLES3_BACKEND_ENABLED
+#include "core/os/mutex.h"
+#include "core/string/string_builder.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/map.h"
+#include "core/templates/rid_owner.h"
+#include "core/variant/variant.h"
+#include "servers/rendering_server.h"
+
+#ifdef GLES3_ENABLED
 
 // This must come first to avoid windows.h mess
 #include "platform_config.h"
@@ -42,236 +50,200 @@
 #include OPENGL_INCLUDE_H
 #endif
 
-#include "core/math/camera_matrix.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/map.h"
-#include "core/templates/pair.h"
-#include "core/variant/variant.h"
-#include "servers/rendering/shader_language.h"
-
 #include <stdio.h>
-
-class RasterizerStorageGLES3;
+/**
+	@author Juan Linietsky <reduzio@gmail.com>
+*/
 
 class ShaderGLES3 {
 protected:
-	struct Enum {
-		uint64_t mask;
-		uint64_t shift;
-		const char *defines[16];
-	};
-
-	struct EnumValue {
-		uint64_t set_mask;
-		uint64_t clear_mask;
-	};
-
-	struct AttributePair {
-		const char *name;
-		int index;
-	};
-
-	struct UniformPair {
-		const char *name;
-		Variant::Type type_hint;
-	};
-
 	struct TexUnitPair {
 		const char *name;
 		int index;
 	};
 
-	bool uniforms_dirty;
+	struct UBOPair {
+		const char *name;
+		int index;
+	};
+
+	struct Specialization {
+		const char *name;
+		bool default_value = false;
+	};
 
 private:
-	bool valid = false;
+	//versions
+	CharString general_defines;
 
-	//@TODO Optimize to a fixed set of shader pools and use a LRU
-	int uniform_count;
-	int texunit_pair_count;
-	int conditional_count;
-	int vertex_code_start;
-	int fragment_code_start;
-	int attribute_pair_count;
-
-	struct CustomCode {
-		String vertex;
-		String vertex_globals;
-		String fragment;
-		String fragment_globals;
-		String light;
-		uint32_t version;
-		Vector<StringName> texture_uniforms;
-		Vector<StringName> custom_uniforms;
-		Vector<CharString> custom_defines;
-		Set<uint32_t> versions;
-	};
-
+	// A version is a high-level construct which is a combination of built-in and user-defined shader code
+	// Variants use #idefs to toggle behaviour on and off to change behaviour of the shader
+	// Specializations use #ifdefs to toggle behaviour on and off for performance, on supporting hardware, they will compile a version with everything enabled, and then compile more copies to improve performance
+	// Use specializations to enable and disabled advanced features, use variants to toggle behaviour when different data may be used (e.g. using a samplerArray vs a sampler)
 	struct Version {
-		GLuint id;
-		GLuint vert_id;
-		GLuint frag_id;
-		GLint *uniform_location;
-		Vector<GLint> texture_uniform_locations;
-		Map<StringName, GLint> custom_uniform_locations;
-		uint32_t code_version;
-		bool ok;
-		Version() {
-			id = 0;
-			vert_id = 0;
-			frag_id = 0;
-			uniform_location = NULL;
-			code_version = 0;
-			ok = false;
-		}
-	};
+		Vector<StringName> texture_uniforms;
+		CharString uniforms;
+		CharString vertex_globals;
+		CharString fragment_globals;
+		Map<StringName, CharString> code_sections;
+		Vector<CharString> custom_defines;
 
-	Version *version;
-
-	union VersionKey {
-		struct {
-			uint32_t version;
-			uint32_t code_version;
+		struct Specialization {
+			GLuint id;
+			GLuint vert_id;
+			GLuint frag_id;
+			LocalVector<GLint> uniform_location;
+			LocalVector<GLint> texture_uniform_locations;
+			Map<StringName, GLint> custom_uniform_locations;
+			bool build_queued = false;
+			bool ok = false;
+			Specialization() {
+				id = 0;
+				vert_id = 0;
+				frag_id = 0;
+			}
 		};
-		uint64_t key;
-		bool operator==(const VersionKey &p_key) const { return key == p_key.key; }
-		bool operator<(const VersionKey &p_key) const { return key < p_key.key; }
+
+		LocalVector<OAHashMap<uint64_t, Specialization>> variants;
 	};
 
-	struct VersionKeyHash {
-		static _FORCE_INLINE_ uint32_t hash(const VersionKey &p_key) { return HashMapHasherDefault::hash(p_key.key); }
+	Mutex variant_set_mutex;
+
+	void _compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
+
+	void _clear_version(Version *p_version);
+	void _initialize_version(Version *p_version);
+
+	RID_Owner<Version> version_owner;
+
+	struct StageTemplate {
+		struct Chunk {
+			enum Type {
+				TYPE_MATERIAL_UNIFORMS,
+				TYPE_VERTEX_GLOBALS,
+				TYPE_FRAGMENT_GLOBALS,
+				TYPE_CODE,
+				TYPE_TEXT
+			};
+
+			Type type;
+			StringName code;
+			CharString text;
+		};
+		LocalVector<Chunk> chunks;
 	};
 
-	//this should use a way more cachefriendly version..
-	HashMap<VersionKey, Version, VersionKeyHash> version_map;
+	String name;
 
-	HashMap<uint32_t, CustomCode> custom_code_map;
-	uint32_t last_custom_code;
+	String base_sha256;
 
-	VersionKey conditional_version;
-	VersionKey new_conditional_version;
+	static String shader_cache_dir;
+	static bool shader_cache_cleanup_on_start;
+	static bool shader_cache_save_compressed;
+	static bool shader_cache_save_compressed_zstd;
+	static bool shader_cache_save_debug;
+	bool shader_cache_dir_valid = false;
 
-	virtual String get_shader_name() const = 0;
+	GLint max_image_units;
 
-	const char **conditional_defines;
-	const char **uniform_names;
-	const AttributePair *attribute_pairs;
-	const TexUnitPair *texunit_pairs;
-	const char *vertex_code;
-	const char *fragment_code;
-	CharString fragment_code0;
-	CharString fragment_code1;
-	CharString fragment_code2;
-	CharString fragment_code3;
+	enum StageType {
+		STAGE_TYPE_VERTEX,
+		STAGE_TYPE_FRAGMENT,
+		STAGE_TYPE_MAX,
+	};
 
-	CharString vertex_code0;
-	CharString vertex_code1;
-	CharString vertex_code2;
+	StageTemplate stage_templates[STAGE_TYPE_MAX];
 
-	Vector<CharString> custom_defines;
+	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template, uint64_t p_specialization);
 
-	Version *get_current_version();
+	void _add_stage(const char *p_code, StageType p_stage_type);
 
-	static ShaderGLES3 *active;
+	String _version_get_sha1(Version *p_version) const;
+	bool _load_from_cache(Version *p_version);
+	void _save_to_cache(Version *p_version);
 
-	int max_image_units;
+	const char **uniform_names = nullptr;
+	int uniform_count = 0;
+	const UBOPair *ubo_pairs = nullptr;
+	int ubo_count = 0;
+	const TexUnitPair *texunit_pairs = nullptr;
+	int texunit_pair_count = 0;
+	int specialization_count = 0;
+	const Specialization *specializations = nullptr;
+	uint64_t specialization_default_mask = 0;
+	const char **variant_defines = nullptr;
+	int variant_count = 0;
 
-	Map<StringName, Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value>>> uniform_values;
+	int base_texture_index = 0;
+	Version::Specialization *current_shader = nullptr;
 
 protected:
-	_FORCE_INLINE_ int _get_uniform(int p_which) const;
-	_FORCE_INLINE_ void _set_conditional(int p_which, bool p_value);
-
-	void setup(const char **p_conditional_defines,
-			int p_conditional_count,
-			const char **p_uniform_names,
-			int p_uniform_count,
-			const AttributePair *p_attribute_pairs,
-			int p_attribute_count,
-			const TexUnitPair *p_texunit_pairs,
-			int p_texunit_pair_count,
-			const char *p_vertex_code,
-			const char *p_fragment_code,
-			int p_vertex_code_start,
-			int p_fragment_code_start);
-
 	ShaderGLES3();
+	void _setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants);
+
+	_FORCE_INLINE_ void _version_bind_shader(RID p_version, int p_variant, uint64_t p_specialization) {
+		ERR_FAIL_INDEX(p_variant, variant_count);
+
+		Version *version = version_owner.get_or_null(p_version);
+		ERR_FAIL_COND(!version);
+
+		if (version->variants.size() == 0) {
+			_initialize_version(version); //may lack initialization
+		}
+
+		Version::Specialization *spec = version->variants[p_variant].lookup_ptr(p_specialization);
+		if (!spec) {
+			if (false) {
+				// Queue load this specialization and use defaults in the meantime (TODO)
+
+				spec = version->variants[p_variant].lookup_ptr(specialization_default_mask);
+			} else {
+				// Compile on the spot
+				Version::Specialization s;
+				_compile_specialization(s, p_variant, version, p_specialization);
+				version->variants[p_variant].insert(p_specialization, s);
+				spec = version->variants[p_variant].lookup_ptr(p_specialization);
+			}
+		} else if (spec->build_queued) {
+			// Still queued, wait
+			spec = version->variants[p_variant].lookup_ptr(specialization_default_mask);
+		}
+
+		ERR_FAIL_COND(!spec); // Should never happen
+		ERR_FAIL_COND(!spec->ok); // Should never happen
+
+		glUseProgram(spec->id);
+		current_shader = spec;
+	}
+
+	_FORCE_INLINE_ int _version_get_uniform(int p_which, RID p_version, int p_variant, uint64_t p_specialization) {
+		ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
+		Version *version = version_owner.get_or_null(p_version);
+		ERR_FAIL_COND_V(!version, -1);
+		return version->variants[p_variant].lookup_ptr(p_specialization)->uniform_location[p_which];
+	}
+
+	virtual void _init() = 0;
 
 public:
-	enum {
-		CUSTOM_SHADER_DISABLED = 0
-	};
+	RID version_create();
 
-	GLint get_uniform_location(const String &p_name) const;
-	GLint get_uniform_location(int p_index) const;
+	void version_set_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize = false);
 
-	static _FORCE_INLINE_ ShaderGLES3 *get_active() { return active; }
-	bool bind();
-	void unbind();
+	bool version_is_valid(RID p_version);
 
-	inline GLuint get_program() const { return version ? version->id : 0; }
+	bool version_free(RID p_version);
 
-	void clear_caches();
+	static void set_shader_cache_dir(const String &p_dir);
+	static void set_shader_cache_save_compressed(bool p_enable);
+	static void set_shader_cache_save_compressed_zstd(bool p_enable);
+	static void set_shader_cache_save_debug(bool p_enable);
 
-	uint32_t create_custom_shader();
-	void set_custom_shader_code(uint32_t p_code_id,
-			const String &p_vertex,
-			const String &p_vertex_globals,
-			const String &p_fragment,
-			const String &p_light,
-			const String &p_fragment_globals,
-			const Vector<StringName> &p_uniforms,
-			const Vector<StringName> &p_texture_uniforms,
-			const Vector<CharString> &p_custom_defines);
+	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
-	void set_custom_shader(uint32_t p_code_id);
-	void free_custom_shader(uint32_t p_code_id);
-
-	uint32_t get_version_key() const { return conditional_version.version; }
-
-	// this void* is actually a RasterizerStorageGLES3::Material, but C++ doesn't
-	// like forward declared nested classes.
-	void use_material(void *p_material);
-
-	_FORCE_INLINE_ uint32_t get_version() const { return new_conditional_version.version; }
-	_FORCE_INLINE_ bool is_version_valid() const { return version && version->ok; }
-
-	virtual void init() = 0;
-	void finish();
-
-	void add_custom_define(const String &p_define) {
-		custom_defines.push_back(p_define.utf8());
-	}
-
-	void get_custom_defines(Vector<String> *p_defines) {
-		for (int i = 0; i < custom_defines.size(); i++) {
-			p_defines->push_back(custom_defines[i].get_data());
-		}
-	}
-
-	void remove_custom_define(const String &p_define) {
-		custom_defines.erase(p_define.utf8());
-	}
-
+	void initialize(const String &p_general_defines = "", int p_base_texture_index = 0);
 	virtual ~ShaderGLES3();
 };
 
-// called a lot, made inline
-
-int ShaderGLES3::_get_uniform(int p_which) const {
-	ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
-	ERR_FAIL_COND_V(!version, -1);
-	return version->uniform_location[p_which];
-}
-
-void ShaderGLES3::_set_conditional(int p_which, bool p_value) {
-	ERR_FAIL_INDEX(p_which, conditional_count);
-	if (p_value)
-		new_conditional_version.version |= (1 << p_which);
-	else
-		new_conditional_version.version &= ~(1 << p_which);
-}
-
-#endif // GLES3_BACKEND_ENABLED
-
 #endif // SHADER_OPENGL_H
+#endif

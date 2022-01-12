@@ -834,7 +834,7 @@ private:
 			float transform[16];
 		};
 
-		ShaderCompilerRD compiler;
+		ShaderCompiler compiler;
 		VolumetricFogShaderRD shader;
 		FogPushConstant push_constant;
 		RID volume_ubo;
@@ -917,7 +917,7 @@ private:
 
 		RID pipeline;
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
-		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size;

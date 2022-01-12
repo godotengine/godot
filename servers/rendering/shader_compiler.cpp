@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  shader_compiler_rd.cpp                                               */
+/*  shader_compiler.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "shader_compiler_rd.h"
+#include "shader_compiler.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "renderer_storage_rd.h"
 #include "servers/rendering_server.h"
 
 #define SL ShaderLanguage
@@ -277,7 +276,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 	}
 }
 
-String ShaderCompilerRD::_get_sampler_name(ShaderLanguage::TextureFilter p_filter, ShaderLanguage::TextureRepeat p_repeat) {
+String ShaderCompiler::_get_sampler_name(ShaderLanguage::TextureFilter p_filter, ShaderLanguage::TextureRepeat p_repeat) {
 	if (p_filter == ShaderLanguage::FILTER_DEFAULT) {
 		ERR_FAIL_COND_V(actions.default_filter == ShaderLanguage::FILTER_DEFAULT, String());
 		p_filter = actions.default_filter;
@@ -289,7 +288,7 @@ String ShaderCompilerRD::_get_sampler_name(ShaderLanguage::TextureFilter p_filte
 	return actions.sampler_array_name + "[" + itos(p_filter + (p_repeat == ShaderLanguage::REPEAT_ENABLE ? ShaderLanguage::FILTER_DEFAULT : 0)) + "]";
 }
 
-void ShaderCompilerRD::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added) {
+void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added) {
 	int fidx = -1;
 
 	for (int i = 0; i < p_node->functions.size(); i++) {
@@ -435,7 +434,7 @@ static String _get_global_variable_from_type_and_index(const String &p_buffer, c
 	}
 }
 
-String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope) {
+String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_use_scope) {
 	String code;
 
 	switch (p_node->type) {
@@ -1332,12 +1331,12 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 	return code;
 }
 
-ShaderLanguage::DataType ShaderCompilerRD::_get_variable_type(const StringName &p_type) {
-	RS::GlobalVariableType gvt = ((RendererStorageRD *)(RendererStorage::base_singleton))->global_variable_get_type_internal(p_type);
+ShaderLanguage::DataType ShaderCompiler::_get_variable_type(const StringName &p_type) {
+	RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(p_type);
 	return RS::global_variable_type_get_shader_datatype(gvt);
 }
 
-Error ShaderCompilerRD::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
+Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
 	SL::ShaderCompileInfo info;
 	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
@@ -1383,7 +1382,7 @@ Error ShaderCompilerRD::compile(RS::ShaderMode p_mode, const String &p_code, Ide
 	return OK;
 }
 
-void ShaderCompilerRD::initialize(DefaultIdentifierActions p_actions) {
+void ShaderCompiler::initialize(DefaultIdentifierActions p_actions) {
 	actions = p_actions;
 
 	time_name = "TIME";
@@ -1405,7 +1404,7 @@ void ShaderCompilerRD::initialize(DefaultIdentifierActions p_actions) {
 	texture_functions.insert("texelFetch");
 }
 
-ShaderCompilerRD::ShaderCompilerRD() {
+ShaderCompiler::ShaderCompiler() {
 #if 0
 
 	/** SPATIAL SHADER **/

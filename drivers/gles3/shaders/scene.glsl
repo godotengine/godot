@@ -18,38 +18,38 @@ precision highp int;
 // attributes
 //
 
-layout(location = 0) highp vec4 vertex_attrib;
+layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
-layout(location = 1) vec3 normal_attrib;
+layout(location = 1) in vec3 normal_attrib;
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
-layout(location = 2) vec4 tangent_attrib;
+layout(location = 2) in vec4 tangent_attrib;
 #endif
 
 #if defined(ENABLE_COLOR_INTERP)
-layout(location = 3) vec4 color_attrib;
+layout(location = 3) in vec4 color_attrib;
 #endif
 
 #if defined(ENABLE_UV_INTERP)
-layout(location = 4) vec2 uv_attrib;
+layout(location = 4) in vec2 uv_attrib;
 #endif
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
-layout(location = 5) vec2 uv2_attrib;
+layout(location = 5) in vec2 uv2_attrib;
 #endif
 
 #ifdef USE_SKELETON
 
 #ifdef USE_SKELETON_SOFTWARE
 
-layout(location = 13) highp vec4 bone_transform_row_0;
-layout(location = 14) highp vec4 bone_transform_row_1;
-layout(location = 15) highp vec4 bone_transform_row_2;
+layout(location = 13) in highp vec4 bone_transform_row_0;
+layout(location = 14) in highp vec4 bone_transform_row_1;
+layout(location = 15) in highp vec4 bone_transform_row_2;
 
 #else
 
-layout(location = 6) vec4 bone_ids;
-layout(location = 7) highp vec4 bone_weights;
+layout(location = 6) in vec4 bone_ids;
+layout(location = 7) in highp vec4 bone_weights;
 
 uniform highp sampler2D bone_transforms; // texunit:-1
 uniform ivec2 skeleton_texture_size;
@@ -60,12 +60,12 @@ uniform ivec2 skeleton_texture_size;
 
 #ifdef USE_INSTANCING
 
-layout(location = 8) highp vec4 instance_xform_row_0;
-layout(location = 9) highp vec4 instance_xform_row_1;
-layout(location = 10) highp vec4 instance_xform_row_2;
+layout(location = 8) in highp vec4 instance_xform_row_0;
+layout(location = 9) in highp vec4 instance_xform_row_1;
+layout(location = 10) in highp vec4 instance_xform_row_2;
 
-layout(location = 11) highp vec4 instance_color;
-layout(location = 12) highp vec4 instance_custom_data;
+layout(location = 11) in highp vec4 instance_color;
+layout(location = 12) in highp vec4 instance_custom_data;
 
 #endif
 

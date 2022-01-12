@@ -31,8 +31,7 @@
 #ifndef TEXTURE_LOADER_OPENGL_H
 #define TEXTURE_LOADER_OPENGL_H
 
-#include "drivers/gles3/rasterizer_platforms.h"
-#ifdef GLES3_BACKEND_ENABLED
+#ifdef GLES3_ENABLED
 
 #include "core/io/resource_loader.h"
 #include "scene/resources/texture.h"
@@ -47,6 +46,6 @@ public:
 	virtual ~ResourceFormatGLES2Texture() {}
 };
 
-#endif // GLES3_BACKEND_ENABLED
+#endif // GLES3_ENABLED
 
 #endif // TEXTURE_LOADER_OPENGL_H
