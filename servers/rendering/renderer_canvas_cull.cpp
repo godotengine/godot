@@ -261,6 +261,10 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	if (ci->clip) {
 		if (p_canvas_clip != nullptr) {
 			ci->final_clip_rect = p_canvas_clip->final_clip_rect.intersection(global_rect);
+			if (ci->final_clip_rect == Rect2()) {
+				// Clip rects do not intersect, so don't draw this item.
+				return;
+			}
 		} else {
 			ci->final_clip_rect = global_rect;
 		}
