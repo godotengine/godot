@@ -99,34 +99,31 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	_unblock();
 }
 
-void CanvasItem::show() {
-	if (visible) {
+void CanvasItem::set_visible(bool p_visible) {
+	if (visible == p_visible) {
 		return;
 	}
 
-	visible = true;
-	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, true);
+	visible = p_visible;
+	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
 
 	if (!is_inside_tree()) {
 		return;
 	}
 
-	_propagate_visibility_changed(true);
+	_propagate_visibility_changed(p_visible);
+}
+
+void CanvasItem::show() {
+	set_visible(true);
 }
 
 void CanvasItem::hide() {
-	if (!visible) {
-		return;
-	}
+	set_visible(false);
+}
 
-	visible = false;
-	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, false);
-
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	_propagate_visibility_changed(false);
+bool CanvasItem::is_visible() const {
+	return visible;
 }
 
 CanvasItem *CanvasItem::current_item_drawn = nullptr;
@@ -348,22 +345,10 @@ void CanvasItem::_notification(int p_what) {
 	}
 }
 
-void CanvasItem::set_visible(bool p_visible) {
-	if (p_visible) {
-		show();
-	} else {
-		hide();
-	}
-}
-
 void CanvasItem::_window_visibility_changed() {
 	if (visible) {
 		_propagate_visibility_changed(window->is_visible());
 	}
-}
-
-bool CanvasItem::is_visible() const {
-	return visible;
 }
 
 void CanvasItem::update() {
