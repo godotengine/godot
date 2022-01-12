@@ -488,10 +488,11 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			color.a *= 0.2;
 		}
 
-		Vector<Color> colors;
-		colors.push_back(color);
-		colors.push_back(color);
-		colors.push_back(color);
+		Vector<Color> colors = {
+			color,
+			color,
+			color
+		};
 		blend_space_draw->draw_primitive(points, colors, Vector<Vector2>());
 	}
 

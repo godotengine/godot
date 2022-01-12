@@ -1765,11 +1765,14 @@ Vector<Point2> TileSet::_get_square_corner_or_side_terrain_bit_polygon(Vector2i 
 			break;
 	}
 	bit_rect.position *= Vector2(p_size) / 6.0;
-	Vector<Vector2> polygon;
-	polygon.push_back(bit_rect.position);
-	polygon.push_back(Vector2(bit_rect.get_end().x, bit_rect.position.y));
-	polygon.push_back(bit_rect.get_end());
-	polygon.push_back(Vector2(bit_rect.position.x, bit_rect.get_end().y));
+
+	Vector<Vector2> polygon = {
+		bit_rect.position,
+		Vector2(bit_rect.get_end().x, bit_rect.position.y),
+		bit_rect.get_end(),
+		Vector2(bit_rect.position.x, bit_rect.get_end().y)
+	};
+
 	return polygon;
 }
 
@@ -1984,25 +1987,26 @@ Vector<Point2> TileSet::_get_isometric_side_terrain_bit_polygon(Vector2i p_size,
 }
 
 Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
-	Vector<Vector2> point_list;
-	point_list.push_back(Vector2(3, (3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
-	point_list.push_back(Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(2, 3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
-	point_list.push_back(Vector2(1, 3.0 - p_overlap * 2.0));
-	point_list.push_back(Vector2(0, 3));
-	point_list.push_back(Vector2(-1, 3.0 - p_overlap * 2.0));
-	point_list.push_back(Vector2(-2, 3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
-	point_list.push_back(Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(-3, (3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
-	point_list.push_back(Vector2(-3, -(3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
-	point_list.push_back(Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(-2, -3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
-	point_list.push_back(Vector2(-1, -(3.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(0, -3));
-	point_list.push_back(Vector2(1, -(3.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(2, -3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)));
-	point_list.push_back(Vector2(3, -3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(3, -(3.0 * (1.0 - p_overlap * 2.0)) / 2.0));
+	Vector<Vector2> point_list = {
+		Vector2(3, (3.0 * (1.0 - p_overlap * 2.0)) / 2.0),
+		Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)),
+		Vector2(2, 3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)),
+		Vector2(1, 3.0 - p_overlap * 2.0),
+		Vector2(0, 3),
+		Vector2(-1, 3.0 - p_overlap * 2.0),
+		Vector2(-2, 3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)),
+		Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)),
+		Vector2(-3, (3.0 * (1.0 - p_overlap * 2.0)) / 2.0),
+		Vector2(-3, -(3.0 * (1.0 - p_overlap * 2.0)) / 2.0),
+		Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)),
+		Vector2(-2, -3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)),
+		Vector2(-1, -(3.0 - p_overlap * 2.0)),
+		Vector2(0, -3),
+		Vector2(1, -(3.0 - p_overlap * 2.0)),
+		Vector2(2, -3.0 * (1.0 - (p_overlap * 2.0) * 2.0 / 3.0)),
+		Vector2(3, -3.0 * (1.0 - p_overlap * 2.0)),
+		Vector2(3, -(3.0 * (1.0 - p_overlap * 2.0)) / 2.0)
+	};
 
 	Vector2 unit = Vector2(p_size) / 6.0;
 	for (int i = 0; i < point_list.size(); i++) {
@@ -2144,19 +2148,20 @@ Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_bit_polygon(Vect
 }
 
 Vector<Point2> TileSet::_get_half_offset_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
-	Vector<Vector2> point_list;
-	point_list.push_back(Vector2(3, 0));
-	point_list.push_back(Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(1.5, (3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
-	point_list.push_back(Vector2(0, 3));
-	point_list.push_back(Vector2(-1.5, (3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
-	point_list.push_back(Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(-3, 0));
-	point_list.push_back(Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(-1.5, -(3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
-	point_list.push_back(Vector2(0, -3));
-	point_list.push_back(Vector2(1.5, -(3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0));
-	point_list.push_back(Vector2(3, -3.0 * (1.0 - p_overlap * 2.0)));
+	Vector<Vector2> point_list = {
+		Vector2(3, 0),
+		Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)),
+		Vector2(1.5, (3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0),
+		Vector2(0, 3),
+		Vector2(-1.5, (3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0),
+		Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)),
+		Vector2(-3, 0),
+		Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)),
+		Vector2(-1.5, -(3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0),
+		Vector2(0, -3),
+		Vector2(1.5, -(3.0 * (1.0 - p_overlap * 2.0) + 3.0) / 2.0),
+		Vector2(3, -3.0 * (1.0 - p_overlap * 2.0))
+	};
 
 	Vector2 unit = Vector2(p_size) / 6.0;
 	for (int i = 0; i < point_list.size(); i++) {
@@ -2250,13 +2255,14 @@ Vector<Point2> TileSet::_get_half_offset_corner_terrain_bit_polygon(Vector2i p_s
 }
 
 Vector<Point2> TileSet::_get_half_offset_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
-	Vector<Vector2> point_list;
-	point_list.push_back(Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(0, 3));
-	point_list.push_back(Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)));
-	point_list.push_back(Vector2(0, -3));
-	point_list.push_back(Vector2(3, -3.0 * (1.0 - p_overlap * 2.0)));
+	Vector<Vector2> point_list = {
+		Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)),
+		Vector2(0, 3),
+		Vector2(-3, 3.0 * (1.0 - p_overlap * 2.0)),
+		Vector2(-3, -3.0 * (1.0 - p_overlap * 2.0)),
+		Vector2(0, -3),
+		Vector2(3, -3.0 * (1.0 - p_overlap * 2.0))
+	};
 
 	Vector2 unit = Vector2(p_size) / 6.0;
 	for (int i = 0; i < point_list.size(); i++) {

@@ -1002,12 +1002,13 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 	{
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, 0);
 		//regular forward for now
-		Vector<Color> clear;
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
+		Vector<Color> clear = {
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0)
+		};
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, clear, 1.0, 0, p_region);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), &render_list_params, 0, render_list_params.element_count);
 		RD::get_singleton()->draw_list_end();
@@ -1043,12 +1044,14 @@ void RenderForwardMobile::_render_uv2(const PagedArray<GeometryInstance *> &p_in
 	{
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, true, 0);
 		//regular forward for now
-		Vector<Color> clear;
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
-		clear.push_back(Color(0, 0, 0, 0));
+		Vector<Color> clear = {
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0),
+			Color(0, 0, 0, 0)
+		};
+
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, clear, 1.0, 0, p_region);
 
 		const int uv_offset_count = 9;

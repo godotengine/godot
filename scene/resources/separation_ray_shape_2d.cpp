@@ -59,15 +59,13 @@ void SeparationRayShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	xf.rotate(target_position.angle());
 	xf.translate(Vector2(no_line ? 0 : target_position.length() - arrow_size, 0));
 
-	Vector<Vector2> pts;
-	pts.push_back(xf.xform(Vector2(arrow_size, 0)));
-	pts.push_back(xf.xform(Vector2(0, 0.5 * arrow_size)));
-	pts.push_back(xf.xform(Vector2(0, -0.5 * arrow_size)));
+	Vector<Vector2> pts = {
+		xf.xform(Vector2(arrow_size, 0)),
+		xf.xform(Vector2(0, 0.5 * arrow_size)),
+		xf.xform(Vector2(0, -0.5 * arrow_size))
+	};
 
-	Vector<Color> cols;
-	for (int i = 0; i < 3; i++) {
-		cols.push_back(p_color);
-	}
+	Vector<Color> cols = { p_color, p_color, p_color };
 
 	RS::get_singleton()->canvas_item_add_primitive(p_to_rid, pts, cols, Vector<Point2>(), RID());
 }

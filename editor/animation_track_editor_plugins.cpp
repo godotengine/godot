@@ -145,20 +145,19 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 	}
 
 	for (int i = 0; i < color_samples.size() - 1; i++) {
-		Vector<Vector2> points;
-		Vector<Color> colors;
+		Vector<Vector2> points = {
+			Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from),
+			Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from),
+			Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from + fh),
+			Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from + fh)
+		};
 
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from));
-		colors.push_back(color_samples[i]);
-
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from));
-		colors.push_back(color_samples[i + 1]);
-
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from + fh));
-		colors.push_back(color_samples[i + 1]);
-
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from + fh));
-		colors.push_back(color_samples[i]);
+		Vector<Color> colors = {
+			color_samples[i],
+			color_samples[i + 1],
+			color_samples[i + 1],
+			color_samples[i]
+		};
 
 		draw_primitive(points, colors, Vector<Vector2>());
 	}

@@ -239,14 +239,16 @@ void ShapeCast2D::_notification(int p_what) {
 				xf.translate(Vector2(target_position.length(), 0));
 
 				draw_line(Vector2(), target_position, draw_col, 2);
-				Vector<Vector2> pts;
+
 				float tsize = 8;
-				pts.push_back(xf.xform(Vector2(tsize, 0)));
-				pts.push_back(xf.xform(Vector2(0, Math_SQRT12 * tsize)));
-				pts.push_back(xf.xform(Vector2(0, -Math_SQRT12 * tsize)));
-				Vector<Color> cols;
-				for (int i = 0; i < 3; i++)
-					cols.push_back(draw_col);
+
+				Vector<Vector2> pts = {
+					xf.xform(Vector2(tsize, 0)),
+					xf.xform(Vector2(0, Math_SQRT12 * tsize)),
+					xf.xform(Vector2(0, -Math_SQRT12 * tsize))
+				};
+
+				Vector<Color> cols = { draw_col, draw_col, draw_col };
 
 				draw_primitive(pts, cols, Vector<Vector2>());
 			}
