@@ -45,10 +45,6 @@
 
 #include <assert.h>
 
-/**
-	@author AndreaCatania
-*/
-
 #define CreateThenReturnRID(owner, ridData) \
 	RID rid = owner.make_rid(ridData);      \
 	ridData->set_self(rid);                 \

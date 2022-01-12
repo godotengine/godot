@@ -39,10 +39,6 @@
 
 #include <LinearMath/btTransform.h>
 
-/**
-	@author AndreaCatania
-*/
-
 class AreaBullet;
 class ShapeBullet;
 class btCollisionObject;
@@ -256,4 +252,4 @@ private:
 	void internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody = false);
 };
 
-#endif
+#endif // COLLISION_OBJECT_BULLET_H

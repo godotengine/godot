@@ -35,8 +35,6 @@
 #include "servers/xr/xr_positional_tracker.h"
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The mobile interface is a native VR interface that can be used on Android and iOS phones.
 	It contains a basic implementation supporting 3DOF tracking if a gyroscope and accelerometer are
 	present and sets up the proper projection matrices based on the values provided.
@@ -160,4 +158,4 @@ public:
 	~MobileVRInterface();
 };
 
-#endif // !MOBILE_VR_INTERFACE_H
+#endif // MOBILE_VR_INTERFACE_H

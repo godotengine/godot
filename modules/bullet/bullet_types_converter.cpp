@@ -30,10 +30,6 @@
 
 #include "bullet_types_converter.h"
 
-/**
-	@author AndreaCatania
-*/
-
 // ++ BULLET to GODOT ++++++++++
 void B_TO_G(btVector3 const &inVal, Vector3 &outVal) {
 	outVal[0] = inVal[0];

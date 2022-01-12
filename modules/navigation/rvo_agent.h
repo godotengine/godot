@@ -36,10 +36,6 @@
 
 #include <Agent.h>
 
-/**
-	@author AndreaCatania
-*/
-
 class NavMap;
 
 class RvoAgent : public NavRid {

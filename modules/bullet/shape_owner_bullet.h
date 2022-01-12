@@ -33,10 +33,6 @@
 
 #include "rid_bullet.h"
 
-/**
-	@author AndreaCatania
-*/
-
 class ShapeBullet;
 class btCollisionShape;
 class CollisionObjectBullet;
@@ -51,4 +47,5 @@ public:
 	virtual void remove_shape_full(class ShapeBullet *p_shape) = 0;
 	virtual ~ShapeOwnerBullet() {}
 };
-#endif
+
+#endif // SHAPE_OWNER_BULLET_H

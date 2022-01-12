@@ -35,10 +35,6 @@
 
 #include "core/io/dir_access.h"
 
-/**
-	@author Juan Linietsky <reduz@gmail.com>
-*/
-
 struct DirAccessWindowsPrivate;
 
 class DirAccessWindows : public DirAccess {
@@ -90,6 +86,6 @@ public:
 	~DirAccessWindows();
 };
 
-#endif //WINDOWS_ENABLED
+#endif // WINDOWS_ENABLED
 
-#endif
+#endif // DIR_ACCESS_WINDOWS_H

@@ -34,10 +34,6 @@
 
 #include <LinearMath/btAabbUtil2.h>
 
-/**
-	@author AndreaCatania
-*/
-
 btRayShape::btRayShape(btScalar length) :
 		btConvexInternalShape() {
 	m_shapeType = CUSTOM_CONVEX_SHAPE_TYPE;

@@ -36,10 +36,6 @@
 
 #include <BulletDynamics/ConstraintSolver/btConeTwistConstraint.h>
 
-/**
-	@author AndreaCatania
-*/
-
 ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &rbAFrame, const Transform3D &rbBFrame) :
 		JointBullet() {
 	Transform3D scaled_AFrame(rbAFrame.scaled(rbA->get_body_scale()));

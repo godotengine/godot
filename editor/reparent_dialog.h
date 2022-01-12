@@ -37,9 +37,7 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
-/**
-@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class ReparentDialog : public ConfirmationDialog {
 	GDCLASS(ReparentDialog, ConfirmationDialog);
 
@@ -60,4 +58,4 @@ public:
 	~ReparentDialog();
 };
 
-#endif
+#endif // REPARENT_DIALOG_H

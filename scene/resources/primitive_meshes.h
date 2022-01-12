@@ -36,11 +36,10 @@
 ///@TODO probably should change a few integers to unsigned integers...
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	Base class for all the classes in this file, handles a number of code functions that are shared among all meshes.
 	This class is set apart that it assumes a single surface is always generated for our mesh.
 */
+
 class PrimitiveMesh : public Mesh {
 	GDCLASS(PrimitiveMesh, Mesh);
 

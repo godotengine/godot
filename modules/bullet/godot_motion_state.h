@@ -35,10 +35,6 @@
 
 #include <LinearMath/btMotionState.h>
 
-/**
-	@author AndreaCatania
-*/
-
 class RigidBodyBullet;
 
 // This class is responsible to move kinematic actor
@@ -96,4 +92,5 @@ public:
 		return bodyCurrentWorldTransform;
 	}
 };
-#endif
+
+#endif // GODOT_MOTION_STATE_H

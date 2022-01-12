@@ -32,10 +32,6 @@
 
 #include "nav_map.h"
 
-/**
-	@author AndreaCatania
-*/
-
 RvoAgent::RvoAgent() {
 	callback.id = ObjectID();
 }

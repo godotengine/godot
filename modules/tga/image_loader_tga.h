@@ -33,9 +33,6 @@
 
 #include "core/io/image_loader.h"
 
-/**
-	@author SaracenOne
-*/
 class ImageLoaderTGA : public ImageFormatLoader {
 	enum tga_type_e {
 		TGA_TYPE_NO_DATA = 0,
@@ -81,4 +78,4 @@ public:
 	ImageLoaderTGA();
 };
 
-#endif
+#endif // IMAGE_LOADER_TGA_H

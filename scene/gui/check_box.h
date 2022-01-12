@@ -32,9 +32,7 @@
 #define CHECK_BOX_H
 
 #include "scene/gui/button.h"
-/**
-@author Mariano Suligoy <marianognu.esyrpg@gmail.com>
-*/
+
 class CheckBox : public Button {
 	GDCLASS(CheckBox, Button);
 
@@ -50,4 +48,4 @@ public:
 	~CheckBox();
 };
 
-#endif
+#endif // CHECK_BOX_H

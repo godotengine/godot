@@ -52,10 +52,6 @@
 #define VARIANT_ARGPTRS_PASS *argptr[0], *argptr[1], *argptr[2], *argptr[3], *argptr[4], *argptr[5], *argptr[6]], *argptr[7]
 #define VARIANT_ARGS_FROM_ARRAY(m_arr) m_arr[0], m_arr[1], m_arr[2], m_arr[3], m_arr[4], m_arr[5], m_arr[6], m_arr[7]
 
-/**
-@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
 	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_lesser][,noslider][,radians][,degrees][,exp][,suffix:<keyword>] range.

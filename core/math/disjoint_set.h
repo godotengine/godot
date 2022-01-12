@@ -34,10 +34,6 @@
 #include "core/templates/map.h"
 #include "core/templates/vector.h"
 
-/**
-	@author Marios Staikopoulos <marios@staik.net>
-*/
-
 /* This DisjointSet class uses Find with path compression and Union by rank */
 template <typename T, class C = Comparator<T>, class AL = DefaultAllocator>
 class DisjointSet {
