@@ -2666,6 +2666,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 					debug_password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 					debug_user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
 				}
+				if (debug_keystore.is_relative_path()) {
+					debug_keystore = OS::get_singleton()->get_resource_dir().plus_file(debug_keystore).simplify_path();
+				}
+				if (!FileAccess::exists(debug_keystore)) {
+					EditorNode::add_io_error(TTR("Could not find keystore, unable to export."));
+					return ERR_FILE_CANT_OPEN;
+				}
 
 				cmdline.push_back("-Pdebug_keystore_file=" + debug_keystore); // argument to specify the debug keystore file.
 				cmdline.push_back("-Pdebug_keystore_alias=" + debug_user); // argument to specify the debug keystore alias.
@@ -2675,6 +2682,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				String release_keystore = p_preset->get("keystore/release");
 				String release_username = p_preset->get("keystore/release_user");
 				String release_password = p_preset->get("keystore/release_password");
+				if (release_keystore.is_relative_path()) {
+					release_keystore = OS::get_singleton()->get_resource_dir().plus_file(release_keystore).simplify_path();
+				}
 				if (!FileAccess::exists(release_keystore)) {
 					EditorNode::add_io_error(TTR("Could not find keystore, unable to export."));
 					return ERR_FILE_CANT_OPEN;
