@@ -175,10 +175,14 @@ Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
 section). Check Vulkan-ValidationLayers at the matching SDK tag for the known
 good glslang commit: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/scripts/known_good.json
 
+When updating, also review that our `modules/glslang/glslang_resource_limits.h`
+copy of `DefaultTBuiltInResource` is in sync with the one defined upstream in
+`StandAlone/ResourceLimits.cpp`.
+
 Files extracted from upstream source:
 
-- `glslang` (except `glslang/HLSL`), `OGLCompilersDLL`, `SPIRV`
-- `StandAlone/{DirStackFileIncluder.h,ResourceLimits.{cpp,h}}`
+- `glslang` (except `glslang/HLSL`), `OGLCompilersDLL`, `SPIRV`,
+  minus the `CInterface` folders (depends on `StandAlone`)
 - Run `cmake . && make` and copy generated `include/glslang/build_info.h`
   to `glslang/build_info.h`
 - `LICENSE.txt`
