@@ -57,13 +57,15 @@
 			If [code]true[/code], texture is flipped vertically.
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
-			A color value that gets multiplied on, could be used for mood-coloring or to simulate the color of light.
+			A color value used to [i]multiply[/i] the texture's colors. Can be used for mood-coloring or to simulate the color of light.
+			[b]Note:[/b] If a [member GeometryInstance.material_override] is defined on the [SpriteBase3D], the material override must be configured to take vertex colors into account for albedo. Otherwise, the color defined in [member modulate] will be ignored. For a [SpatialMaterial], [member SpatialMaterial.vertex_color_use_as_albedo] must be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/color] must be inserted in the shader's [code]fragment()[/code] function.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The texture's drawing offset.
 		</member>
 		<member name="opacity" type="float" setter="set_opacity" getter="get_opacity" default="1.0">
-			The objects' visibility on a scale from [code]0[/code] fully invisible to [code]1[/code] fully visible.
+			The texture's visibility on a scale from [code]0[/code] (fully invisible) to [code]1[/code] (fully visible). [member opacity] is a multiplier for the [member modulate] color's alpha channel.
+			[b]Note:[/b] If a [member GeometryInstance.material_override] is defined on the [SpriteBase3D], the material override must be configured to take vertex colors into account for albedo. Otherwise, the opacity defined in [member opacity] will be ignored. For a [SpatialMaterial], [member SpatialMaterial.vertex_color_use_as_albedo] must be [code]true[/code]. For a [ShaderMaterial], [code]ALPHA *= COLOR.a;[/color] must be inserted in the shader's [code]fragment()[/code] function.
 		</member>
 		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
 			The size of one pixel's width on the sprite to scale it in 3D.
