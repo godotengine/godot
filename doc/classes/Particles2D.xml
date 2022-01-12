@@ -7,6 +7,7 @@
 		2D particle node used to create a variety of particle systems and effects. [Particles2D] features an emitter that generates some number of particles at a given rate.
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 		[b]Note:[/b] [Particles2D] only work when using the GLES3 renderer. If using the GLES2 renderer, use [CPUParticles2D] instead. You can convert [Particles2D] to [CPUParticles2D] by selecting the node, clicking the [b]Particles[/b] menu at the top of the 2D editor viewport then choosing [b]Convert to CPUParticles2D[/b].
+		[b]Note:[/b] On macOS, [Particles2D] rendering is much slower than [CPUParticles2D] due to transform feedback being implemented on the CPU instead of the GPU. Consider using [CPUParticles2D] instead when targeting macOS.
 		[b]Note:[/b] After working on a Particles node, remember to update its [member visibility_rect] by selecting it, clicking the [b]Particles[/b] menu at the top of the 2D editor viewport then choose [b]Generate Visibility Rect[/b]. Otherwise, particles may suddenly disappear depending on the camera position and angle.
 		[b]Note:[/b] Unlike [CPUParticles2D], [Particles2D] currently ignore the texture region defined in [AtlasTexture]s.
 	</description>

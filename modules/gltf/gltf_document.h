@@ -369,6 +369,8 @@ public:
 	String _sanitize_scene_name(Ref<GLTFState> state, const String &p_name);
 	String _legacy_validate_node_name(const String &p_name);
 
+	Error _parse_gltf_extensions(Ref<GLTFState> state);
+
 	void _process_mesh_instances(Ref<GLTFState> state, Node *scene_root);
 	void _generate_scene_node(Ref<GLTFState> state, Node *scene_parent,
 			Spatial *scene_root,
