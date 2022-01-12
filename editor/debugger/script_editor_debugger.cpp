@@ -790,6 +790,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			vmem_refresh->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 			vmem_export->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
+			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
 			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
@@ -864,6 +865,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			docontinue->set_icon(get_theme_icon(SNAME("DebugContinue"), SNAME("EditorIcons")));
 			vmem_refresh->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 			vmem_export->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
+			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
 	}
 }
@@ -1658,14 +1660,29 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		stack_dump->connect("cell_selected", callable_mp(this, &ScriptEditorDebugger::_stack_dump_frame_selected));
 		sc->add_child(stack_dump);
 
+		VBoxContainer *inspector_vbox = memnew(VBoxContainer);
+		sc->add_child(inspector_vbox);
+
+		HBoxContainer *tools_hb = memnew(HBoxContainer);
+		inspector_vbox->add_child(tools_hb);
+
+		search = memnew(LineEdit);
+		search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		search->set_placeholder(TTR("Filter stack variables"));
+		search->set_clear_button_enabled(true);
+		tools_hb->add_child(search);
+
 		inspector = memnew(EditorDebuggerInspector);
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
+		inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 		inspector->set_enable_capitalize_paths(false);
 		inspector->set_read_only(true);
 		inspector->connect("object_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
 		inspector->connect("object_edited", callable_mp(this, &ScriptEditorDebugger::_remote_object_edited));
 		inspector->connect("object_property_updated", callable_mp(this, &ScriptEditorDebugger::_remote_object_property_updated));
-		sc->add_child(inspector);
+		inspector->register_text_enter(search);
+		inspector->set_use_filter(true);
+		inspector_vbox->add_child(inspector);
 		tabs->add_child(dbg);
 	}
 

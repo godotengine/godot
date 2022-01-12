@@ -134,6 +134,7 @@ private:
 	LineEdit *vmem_total;
 
 	Tree *stack_dump;
+	LineEdit *search = nullptr;
 	EditorDebuggerInspector *inspector;
 	SceneDebuggerTree *scene_tree;
 
