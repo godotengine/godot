@@ -1973,7 +1973,7 @@ void VisualScriptEditor::input(const Ref<InputEvent> &p_event) {
 	// GUI input for VS Editor Plugin
 	Ref<InputEventMouseButton> key = p_event;
 
-	if (key.is_valid() && !key->is_pressed()) {
+	if (key.is_valid() && key->is_pressed()) {
 		mouse_up_position = get_screen_position() + get_local_mouse_position();
 	}
 }
@@ -1982,10 +1982,28 @@ void VisualScriptEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> key = p_event;
 
 	if (key.is_valid() && key->is_pressed() && key->get_button_mask() == MouseButton::RIGHT) {
-		saved_position = graph->get_local_mouse_position();
+		bool is_empty_selection = true;
 
-		Point2 gpos = get_screen_position() + get_local_mouse_position();
-		_generic_search(script->get_instance_base_type(), gpos);
+		for (int i = 0; i < graph->get_child_count(); i++) {
+			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+			if (gn && gn->is_selected()) {
+				is_empty_selection = false;
+				break;
+			}
+		}
+		if (is_empty_selection && clipboard->nodes.is_empty()) {
+			_generic_search(script->get_instance_base_type(), mouse_up_position);
+		} else {
+			popup_menu->set_item_disabled(int(EDIT_CUT_NODES), is_empty_selection);
+			popup_menu->set_item_disabled(int(EDIT_COPY_NODES), is_empty_selection);
+			popup_menu->set_item_disabled(int(EDIT_PASTE_NODES), clipboard->nodes.is_empty());
+			popup_menu->set_item_disabled(int(EDIT_DELETE_NODES), is_empty_selection);
+			popup_menu->set_item_disabled(int(EDIT_DUPLICATE_NODES), is_empty_selection);
+			popup_menu->set_item_disabled(int(EDIT_CLEAR_COPY_BUFFER), clipboard->nodes.is_empty());
+
+			popup_menu->set_position(mouse_up_position);
+			popup_menu->popup();
+		}
 	}
 }
 
@@ -3873,6 +3891,9 @@ void VisualScriptEditor::_comment_node_resized(const Vector2 &p_new_size, int p_
 
 void VisualScriptEditor::_menu_option(int p_what) {
 	switch (p_what) {
+		case EDIT_ADD_NODE: {
+			_generic_search(script->get_instance_base_type(), mouse_up_position);
+		} break;
 		case EDIT_DELETE_NODES: {
 			_on_nodes_delete();
 		} break;
@@ -3912,6 +3933,9 @@ void VisualScriptEditor::_menu_option(int p_what) {
 		} break;
 		case EDIT_PASTE_NODES: {
 			_on_nodes_paste();
+		} break;
+		case EDIT_DUPLICATE_NODES: {
+			_on_nodes_duplicate();
 		} break;
 		case EDIT_CREATE_FUNCTION: {
 			// Create Function.
@@ -4140,6 +4164,12 @@ void VisualScriptEditor::_menu_option(int p_what) {
 		case REFRESH_GRAPH: {
 			_update_graph();
 		} break;
+		case EDIT_CLEAR_COPY_BUFFER: {
+			clipboard->nodes.clear();
+			clipboard->nodes_positions.clear();
+			clipboard->data_connections.clear();
+			clipboard->sequence_connections.clear();
+		} break;
 	}
 }
 
@@ -4327,9 +4357,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	if (!clipboard) {
 		clipboard = memnew(Clipboard);
 	}
-	updating_graph = false;
-	saved_pos_dirty = false;
-	saved_position = Vector2(0, 0);
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_shortcut_context(this);
@@ -4561,6 +4588,18 @@ VisualScriptEditor::VisualScriptEditor() {
 	new_virtual_method_select = memnew(VisualScriptPropertySelector);
 	add_child(new_virtual_method_select);
 	new_virtual_method_select->connect("selected", callable_mp(this, &VisualScriptEditor::_selected_new_virtual_method));
+
+	popup_menu = memnew(PopupMenu);
+	add_child(popup_menu);
+	popup_menu->add_item(TTR("Add Node"), EDIT_ADD_NODE);
+	popup_menu->add_separator();
+	popup_menu->add_item(TTR("Cut"), EDIT_CUT_NODES);
+	popup_menu->add_item(TTR("Copy"), EDIT_COPY_NODES);
+	popup_menu->add_item(TTR("Paste"), EDIT_PASTE_NODES);
+	popup_menu->add_item(TTR("Delete"), EDIT_DELETE_NODES);
+	popup_menu->add_item(TTR("Duplicate"), EDIT_DUPLICATE_NODES);
+	popup_menu->add_item(TTR("Clear Copy Buffer"), EDIT_CLEAR_COPY_BUFFER);
+	popup_menu->connect("id_pressed", callable_mp(this, &VisualScriptEditor::_menu_option));
 }
 
 VisualScriptEditor::~VisualScriptEditor() {
