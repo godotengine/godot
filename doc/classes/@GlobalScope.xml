@@ -2134,8 +2134,11 @@
 		<constant name="JOY_BUTTON_SDL_MAX" value="21" enum="JoyButton">
 			The number of SDL game controller buttons.
 		</constant>
-		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyButton">
-			The maximum number of game controller buttons: Android supports up to 36 buttons.
+		<constant name="JOY_BUTTON_MAX" value="128" enum="JoyButton">
+			The maximum number of game controller buttons supported by the engine. The actual limit may be lower on specific platforms:
+			- Android: Up to 36 buttons.
+			- Linux: Up to 80 buttons.
+			- Windows and macOS: Up to 128 buttons.
 		</constant>
 		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
 			An invalid game controller axis.

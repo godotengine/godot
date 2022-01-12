@@ -241,7 +241,7 @@ TypedArray<String> NavigationAgent2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node2D>(get_parent())) {
-		warnings.push_back(TTR("The NavigationAgent2D can be used only under a Node2D node"));
+		warnings.push_back(TTR("The NavigationAgent2D can be used only under a Node2D node."));
 	}
 
 	return warnings;

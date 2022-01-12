@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_platforms.h                                               */
+/*  view_panner.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_PLATFORMS_H
-#define RASTERIZER_PLATFORMS_H
+#ifndef VIEW_PANNER_H
+#define VIEW_PANNER_H
 
-/////////////////////////////////////////////////////
-// override for intellisense .. ONLY FOR DEVELOPMENT
-//#ifndef X11_ENABLED
-//#define X11_ENABLED
-//#endif
-//#define GLES3_BACKEND_ENABLED
-/////////////////////////////////////////////////////
+#include "core/object/ref_counted.h"
 
-#if defined(GLES3_ENABLED) || defined(GLES_ENABLED)
+class InputEvent;
 
-#define GLES3_BACKEND_ENABLED
+class ViewPanner : public RefCounted {
+	GDCLASS(ViewPanner, RefCounted);
 
-#endif // defined(GLES3_ENABLED) || defined(GLES_ENABLED)
+	bool is_dragging = false;
+	bool disable_rmb = false;
 
-#endif // RASTERIZER_PLATFORMS_H
+	Callable scroll_callback;
+	Callable pan_callback;
+	Callable zoom_callback;
+
+	void callback_helper(Callable p_callback, Vector2 p_arg1, Vector2 p_arg2 = Vector2());
+
+public:
+	enum ControlScheme {
+		SCROLL_ZOOMS,
+		SCROLL_PANS,
+	};
+	ControlScheme control_scheme = SCROLL_ZOOMS;
+
+	void set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback);
+	void set_control_scheme(ControlScheme p_scheme);
+	void set_disable_rmb(bool p_disable);
+	bool gui_input(const Ref<InputEvent> &p_ev, Rect2 p_canvas_rect = Rect2());
+};
+
+#endif // VIEW_PANNER_H

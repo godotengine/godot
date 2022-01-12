@@ -31,21 +31,17 @@
 #ifndef RASTERIZER_STORAGE_OPENGL_H
 #define RASTERIZER_STORAGE_OPENGL_H
 
-#include "drivers/gles3/rasterizer_platforms.h"
-#ifdef GLES3_BACKEND_ENABLED
+#ifdef GLES3_ENABLED
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "drivers/gles3/rasterizer_asserts.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_storage.h"
+#include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
-#include "shader_compiler_gles3.h"
-#include "shader_gles3.h"
 
 #include "shaders/copy.glsl.gen.h"
-#include "shaders/cubemap_filter.glsl.gen.h"
 
 class RasterizerCanvasGLES3;
 class RasterizerSceneGLES3;
@@ -134,14 +130,15 @@ public:
 	} resources;
 
 	mutable struct Shaders {
-		ShaderCompilerGLES3 compiler;
+		ShaderCompiler compiler;
 
 		CopyShaderGLES3 copy;
-		CubemapFilterShaderGLES3 cubemap_filter;
+		RID copy_version;
+		//CubemapFilterShaderGLES3 cubemap_filter;
 
-		ShaderCompilerGLES3::IdentifierActions actions_canvas;
-		ShaderCompilerGLES3::IdentifierActions actions_scene;
-		ShaderCompilerGLES3::IdentifierActions actions_particles;
+		ShaderCompiler::IdentifierActions actions_canvas;
+		ShaderCompiler::IdentifierActions actions_scene;
+		ShaderCompiler::IdentifierActions actions_particles;
 
 	} shaders;
 
@@ -183,62 +180,6 @@ public:
 	void bind_quad_array() const;
 
 	/////////////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////DATA///////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////
-
-	/*
-	struct Instantiable {
-		RID self;
-
-		SelfList<InstanceBaseDependency>::List instance_list;
-
-		_FORCE_INLINE_ void instance_change_notify(bool p_aabb, bool p_materials) {
-			SelfList<InstanceBaseDependency> *instances = instance_list.first();
-			while (instances) {
-				instances->self()->base_changed(p_aabb, p_materials);
-				instances = instances->next();
-			}
-		}
-
-		_FORCE_INLINE_ void instance_remove_deps() {
-			SelfList<InstanceBaseDependency> *instances = instance_list.first();
-
-			while (instances) {
-				instances->self()->base_removed();
-				instances = instances->next();
-			}
-		}
-
-		Instantiable() {}
-
-		~Instantiable() {}
-	};
-
-	struct GeometryOwner : public Instantiable {
-	};
-
-	struct Geometry : public Instantiable {
-		enum Type {
-			GEOMETRY_INVALID,
-			GEOMETRY_SURFACE,
-			GEOMETRY_IMMEDIATE,
-			GEOMETRY_MULTISURFACE
-		};
-
-		Type type;
-		RID material;
-		uint64_t last_pass;
-		uint32_t index;
-
-		void material_changed_notify() {}
-
-		Geometry() {
-			last_pass = 0;
-			index = 0;
-		}
-	};
-*/
-	/////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////API////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
 
@@ -256,6 +197,26 @@ public:
 		TEXTURE_FLAG_USED_FOR_STREAMING = 2048,
 		TEXTURE_FLAGS_DEFAULT = TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_MIPMAPS | TEXTURE_FLAG_FILTER
 	};
+
+	/* CANVAS TEXTURE API (2D) */
+
+	struct CanvasTexture {
+		RID diffuse;
+		RID normal_map;
+		RID specular;
+		Color specular_color = Color(1, 1, 1, 1);
+		float shininess = 1.0;
+
+		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
+		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
+
+		Size2i size_cache = Size2i(1, 1);
+		bool use_normal_cache = false;
+		bool use_specular_cache = false;
+		bool cleared_cache = true;
+	};
+
+	RID_Owner<CanvasTexture, true> canvas_texture_owner;
 
 	struct RenderTarget;
 
@@ -308,6 +269,8 @@ public:
 
 		RS::TextureDetectCallback detect_normal;
 		void *detect_normal_ud;
+
+		CanvasTexture *canvas_texture = nullptr;
 
 		// some silly opengl shenanigans where
 		// texture coords start from bottom left, means we need to draw render target textures upside down
@@ -436,7 +399,7 @@ public:
 			glTexParameteri(p_target, GL_TEXTURE_MIN_FILTER, pmin);
 			glTexParameteri(p_target, GL_TEXTURE_MAG_FILTER, pmag);
 		}
-		void GLSetRepeat(RS::CanvasItemTextureRepeat p_repeat) {
+		void GLSetRepeat(GLenum p_target, RS::CanvasItemTextureRepeat p_repeat) {
 			if (p_repeat == state_repeat)
 				return;
 			state_repeat = p_repeat;
@@ -451,8 +414,8 @@ public:
 					prep = GL_MIRRORED_REPEAT;
 				} break;
 			}
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, prep);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, prep);
+			glTexParameteri(p_target, GL_TEXTURE_WRAP_S, prep);
+			glTexParameteri(p_target, GL_TEXTURE_WRAP_T, prep);
 		}
 
 	private:
@@ -540,10 +503,10 @@ public:
 	void canvas_texture_initialize(RID p_rid) override;
 
 	void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) override;
-	void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) override;
+	void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) override;
 
-	void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override;
-	void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override;
+	void canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) override;
+	void canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) override;
 
 	/* SKY API */
 	// not sure if used in godot 4?
@@ -573,16 +536,13 @@ public:
 
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 
-		uint32_t texture_count;
-
-		uint32_t custom_code_id;
-		uint32_t version;
+		RID version;
 
 		SelfList<Shader> dirty_list;
 
 		Map<StringName, Map<int, RID>> default_textures;
 
-		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
+		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		bool valid;
 
@@ -609,12 +569,6 @@ public:
 			};
 
 			int light_mode;
-
-			// these flags are specifically for batching
-			// some of the logic is thus in rasterizer_storage.cpp
-			// we could alternatively set bitflags for each 'uses' and test on the fly
-			// defined in RasterizerStorageCommon::BatchFlags
-			unsigned int batch_flags;
 
 			bool uses_screen_texture;
 			bool uses_screen_uv;
@@ -686,8 +640,7 @@ public:
 				dirty_list(this) {
 			shader = NULL;
 			valid = false;
-			custom_code_id = 0;
-			version = 1;
+			version = RID();
 			last_pass = 0;
 		}
 	};
@@ -710,10 +663,6 @@ public:
 	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index) const override;
 
 	RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RS::ShaderNativeSourceCode(); };
-
-	void shader_add_custom_define(RID p_shader, const String &p_define);
-	void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const;
-	void shader_remove_custom_define(RID p_shader, const String &p_define);
 
 	void _update_shader(Shader *p_shader) const;
 	void update_dirty_shaders();
@@ -838,6 +787,44 @@ public:
 
 	/* MULTIMESH API */
 
+	struct MultiMesh {
+		RID mesh;
+		int instances = 0;
+		RS::MultimeshTransformFormat xform_format = RS::MULTIMESH_TRANSFORM_3D;
+		bool uses_colors = false;
+		bool uses_custom_data = false;
+		int visible_instances = -1;
+		AABB aabb;
+		bool aabb_dirty = false;
+		bool buffer_set = false;
+		uint32_t stride_cache = 0;
+		uint32_t color_offset_cache = 0;
+		uint32_t custom_data_offset_cache = 0;
+
+		Vector<float> data_cache; //used if individual setting is used
+		bool *data_cache_dirty_regions = nullptr;
+		uint32_t data_cache_used_dirty_regions = 0;
+
+		RID buffer; //storage buffer
+		RID uniform_set_3d;
+		RID uniform_set_2d;
+
+		bool dirty = false;
+		MultiMesh *dirty_list = nullptr;
+
+		Dependency dependency;
+	};
+
+	mutable RID_Owner<MultiMesh, true> multimesh_owner;
+
+	MultiMesh *multimesh_dirty_list = nullptr;
+
+	_FORCE_INLINE_ void _multimesh_make_local(MultiMesh *multimesh) const;
+	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
+	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
+	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
+	void _update_dirty_multimeshes();
+
 	RID multimesh_allocate() override;
 	void multimesh_initialize(RID p_rid) override;
 	void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) override;
@@ -861,6 +848,29 @@ public:
 
 	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) override;
 	int multimesh_get_visible_instances(RID p_multimesh) const override;
+
+	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->xform_format;
+	}
+
+	_FORCE_INLINE_ bool multimesh_uses_colors(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->uses_colors;
+	}
+
+	_FORCE_INLINE_ bool multimesh_uses_custom_data(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->uses_custom_data;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_instances_to_draw(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		if (multimesh->visible_instances >= 0) {
+			return multimesh->visible_instances;
+		}
+		return multimesh->instances;
+	}
 
 	/* SKELETON API */
 
@@ -1258,6 +1268,7 @@ public:
 	RID render_target_create() override;
 	void render_target_set_position(RID p_render_target, int p_x, int p_y) override;
 	void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override;
+	Size2i render_target_get_size(RID p_render_target);
 	RID render_target_get_texture(RID p_render_target) override;
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override;
 
@@ -1330,7 +1341,7 @@ public:
 		bool clear_request;
 		Color clear_request_color;
 
-		float time[4];
+		float time;
 		float delta;
 		uint64_t count;
 
@@ -1410,6 +1421,7 @@ public:
 	}
 
 	RasterizerStorageGLES3();
+	~RasterizerStorageGLES3();
 };
 
 inline bool RasterizerStorageGLES3::safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const {
@@ -1445,10 +1457,9 @@ inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buff
 		}
 #endif
 	}
-	RAST_DEV_DEBUG_ASSERT((p_offset + p_data_size) <= p_buffer_size);
 	glBufferSubData(p_target, p_offset, p_data_size, p_data);
 }
 
-#endif // GLES3_BACKEND_ENABLED
+#endif // GLES3_ENABLED
 
 #endif // RASTERIZER_STORAGE_OPENGL_H

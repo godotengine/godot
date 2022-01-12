@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  shader_compiler_rd.h                                                 */
+/*  shader_compiler.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADER_COMPILER_RD_H
-#define SHADER_COMPILER_RD_H
+#ifndef SHADER_COMPILER_H
+#define SHADER_COMPILER_H
 
 #include "core/templates/pair.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"
 
-class ShaderCompilerRD {
+class ShaderCompiler {
 public:
 	enum Stage {
 		STAGE_VERTEX,
@@ -127,7 +127,7 @@ public:
 	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
 
 	void initialize(DefaultIdentifierActions p_actions);
-	ShaderCompilerRD();
+	ShaderCompiler();
 };
 
-#endif // SHADERCOMPILERRD_H
+#endif // SHADER_COMPILER_H

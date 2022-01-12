@@ -10,9 +10,9 @@ precision highp float;
 precision highp int;
 #endif
 
-layout(location = 0) vec2 vertex_attrib;
+layout(location = 0) in vec2 vertex_attrib;
 /* clang-format on */
-layout(location = 4) vec2 uv_in;
+layout(location = 4) in vec2 uv_in;
 
 out vec2 uv_interp;
 

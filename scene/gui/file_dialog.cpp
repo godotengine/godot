@@ -649,6 +649,7 @@ void FileDialog::clear_filters() {
 }
 
 void FileDialog::add_filter(const String &p_filter) {
+	ERR_FAIL_COND_MSG(p_filter.begins_with("."), "Filter must be \"filename.extension\", can't start with dot.");
 	filters.push_back(p_filter);
 	update_filters();
 	invalidate();

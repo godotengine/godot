@@ -104,20 +104,16 @@ _repack (hb_tag_t tag, const hb_serialize_context_t& c)
   if (!c.offset_overflow ())
     return c.copy_blob ();
 
-  hb_vector_t<char> buf;
-  int buf_size = c.end - c.start;
-  if (unlikely (!buf.alloc (buf_size)))
+  hb_blob_t* result = hb_resolve_overflows (c.object_graph (), tag);
+
+  if (unlikely (!result))
+  {
+    DEBUG_MSG (SUBSET, nullptr, "OT::%c%c%c%c offset overflow resolution failed.",
+               HB_UNTAG (tag));
     return nullptr;
+  }
 
-  hb_serialize_context_t repacked ((void *) buf, buf_size);
-  hb_resolve_overflows (c.object_graph (), tag, &repacked);
-
-  if (unlikely (repacked.in_error ()))
-    // TODO(garretrieger): refactor so we can share the resize/retry logic with the subset
-    //                     portion.
-    return nullptr;
-
-  return repacked.copy_blob ();
+  return result;
 }
 
 template<typename TableType>

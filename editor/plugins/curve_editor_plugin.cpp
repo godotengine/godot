@@ -803,11 +803,8 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 	im.create(thumbnail_size, thumbnail_size / 2, false, Image::FORMAT_RGBA8);
 
 	Color bg_color(0.1, 0.1, 0.1, 1.0);
-	for (int i = 0; i < thumbnail_size; i++) {
-		for (int j = 0; j < thumbnail_size / 2; j++) {
-			im.set_pixel(i, j, bg_color);
-		}
-	}
+
+	im.fill(bg_color);
 
 	Color line_color(0.8, 0.8, 0.8, 1.0);
 	float range_y = curve.get_max_value() - curve.get_min_value();

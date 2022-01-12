@@ -206,11 +206,11 @@ Copyright: 2010-2020, Google, Inc.
  2019-2020, Facebook, Inc.
  2012, Mozilla Foundation
  2011, Codethink Limited
- 2008, 2010 Nokia Corporation and/or its subsidiary(-ies)
+ 2008, 2010, Nokia Corporation and/or its subsidiary(-ies)
  2009, Keith Stribley
  2009, Martin Hosken and SIL International
  2007, Chris Wilson
- 2006, Behdad Esfahbod
+ 2005-2006, 2020-2021, Behdad Esfahbod
  2005, David Turner
  2004, 2007-2010, Red Hat, Inc.
  1998-2004, David Turner and Werner Lemberg

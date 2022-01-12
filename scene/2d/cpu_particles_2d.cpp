@@ -152,11 +152,14 @@ void CPUParticles2D::_update_mesh_texture() {
 	} else {
 		tex_size = Size2(1, 1);
 	}
-	Vector<Vector2> vertices;
-	vertices.push_back(-tex_size * 0.5);
-	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, 0));
-	vertices.push_back(-tex_size * 0.5 + tex_size);
-	vertices.push_back(-tex_size * 0.5 + Vector2(0, tex_size.y));
+
+	Vector<Vector2> vertices = {
+		-tex_size * 0.5,
+		-tex_size * 0.5 + Vector2(tex_size.x, 0),
+		-tex_size * 0.5 + tex_size,
+		-tex_size * 0.5 + Vector2(0, tex_size.y)
+	};
+
 	Vector<Vector2> uvs;
 	AtlasTexture *atlas_texure = Object::cast_to<AtlasTexture>(*texture);
 	if (atlas_texure && atlas_texure->get_atlas().is_valid()) {
@@ -172,18 +175,15 @@ void CPUParticles2D::_update_mesh_texture() {
 		uvs.push_back(Vector2(1, 1));
 		uvs.push_back(Vector2(0, 1));
 	}
-	Vector<Color> colors;
-	colors.push_back(Color(1, 1, 1, 1));
-	colors.push_back(Color(1, 1, 1, 1));
-	colors.push_back(Color(1, 1, 1, 1));
-	colors.push_back(Color(1, 1, 1, 1));
-	Vector<int> indices;
-	indices.push_back(0);
-	indices.push_back(1);
-	indices.push_back(2);
-	indices.push_back(2);
-	indices.push_back(3);
-	indices.push_back(0);
+
+	Vector<Color> colors = {
+		Color(1, 1, 1, 1),
+		Color(1, 1, 1, 1),
+		Color(1, 1, 1, 1),
+		Color(1, 1, 1, 1)
+	};
+
+	Vector<int> indices = { 0, 1, 2, 2, 3, 0 };
 
 	Array arr;
 	arr.resize(RS::ARRAY_MAX);

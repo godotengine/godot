@@ -1005,7 +1005,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				float y_off = TS->shaped_text_get_underline_position(rid);
 				float underline_width = TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale();
 				draw_line(p_ofs + Vector2(off.x, off.y + y_off), p_ofs + Vector2(off.x + glyphs[i].advance * glyphs[i].repeat, off.y + y_off), uc, underline_width);
-			} else if (_find_strikethrough(it)) {
+			}
+			if (_find_strikethrough(it)) {
 				Color uc = font_color;
 				uc.a *= 0.5;
 				float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
@@ -2363,6 +2364,7 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 		// Then remove the provided item itself.
 		p_item->parent->subitems.erase(p_item);
 	}
+	memdelete(p_item);
 }
 
 void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment) {
@@ -3064,6 +3066,12 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag == "lb") {
+			add_text("[");
+			pos = brk_end + 1;
+		} else if (tag == "rb") {
+			add_text("]");
+			pos = brk_end + 1;
 		} else if (tag == "lrm") {
 			add_text(String::chr(0x200E));
 			pos = brk_end + 1;

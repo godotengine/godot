@@ -350,6 +350,9 @@ public:
 	virtual void font_remove_script_support_override(RID p_font_rid, const String &p_script) = 0;
 	virtual Vector<String> font_get_script_support_overrides(RID p_font_rid) = 0;
 
+	virtual void font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) = 0;
+	virtual Dictionary font_get_opentype_feature_overrides(RID p_font_rid) const = 0;
+
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const = 0;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const = 0;
 

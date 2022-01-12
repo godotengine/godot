@@ -35,7 +35,7 @@
 void XRPose::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_has_tracking_data", "has_tracking_data"), &XRPose::set_has_tracking_data);
 	ClassDB::bind_method(D_METHOD("get_has_tracking_data"), &XRPose::get_has_tracking_data);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "has_tracking_data"), "set_has_tracking_data", "get_has_tracking_data");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "has_tracking_data"), "set_has_tracking_data", "get_has_tracking_data");
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &XRPose::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &XRPose::get_name);

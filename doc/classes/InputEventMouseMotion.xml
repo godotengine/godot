@@ -4,7 +4,7 @@
 		Input event type for mouse motion events.
 	</brief_description>
 	<description>
-		Contains mouse and pen motion information. Supports relative, absolute positions and speed. See [method Node._input].
+		Contains mouse and pen motion information. Supports relative, absolute positions and velocity. See [method Node._input].
 		[b]Note:[/b] By default, this event is only emitted once per frame rendered at most. If you need more precise input reporting, call [method Input.set_use_accumulated_input] with [code]false[/code] to make events emitted as often as possible. If you use InputEventMouseMotion to draw lines, consider implementing [url=https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to avoid visible gaps in lines if the user is moving the mouse quickly.
 	</description>
 	<tutorials>
@@ -19,11 +19,11 @@
 			The mouse position relative to the previous position (position at the last frame).
 			[b]Note:[/b] Since [InputEventMouseMotion] is only emitted when the mouse moves, the last event won't have a relative position of [code]Vector2(0, 0)[/code] when the user stops moving the mouse.
 		</member>
-		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed" default="Vector2(0, 0)">
-			The mouse speed in pixels per second.
-		</member>
 		<member name="tilt" type="Vector2" setter="set_tilt" getter="get_tilt" default="Vector2(0, 0)">
 			Represents the angles of tilt of the pen. Positive X-coordinate value indicates a tilt to the right. Positive Y-coordinate value indicates a tilt toward the user. Ranges from [code]-1.0[/code] to [code]1.0[/code] for both axes.
+		</member>
+		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
+			The mouse velocity in pixels per second.
 		</member>
 	</members>
 </class>

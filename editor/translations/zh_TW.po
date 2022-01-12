@@ -344,6 +344,11 @@ msgid "Duplicate Key(s)"
 msgstr "重複關鍵畫格"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add RESET Value(s)"
+msgstr "新增 %d 個影格"
+
+#: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
 msgstr "刪除關鍵畫格"
 
@@ -508,6 +513,11 @@ msgstr "動畫縮放關鍵影格"
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr "該選項不適用貝茲曲線編輯，因曲線僅有單一軌道。"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Add RESET Keys"
+msgstr "動畫縮放關鍵影格"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -1479,6 +1489,10 @@ msgid "Invalid name."
 msgstr "無效的名稱。"
 
 #: editor/editor_autoload_settings.cpp
+msgid "Cannot begin with a digit."
+msgstr ""
+
+#: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
 msgstr "可使用的字元："
 
@@ -1583,7 +1597,9 @@ msgstr "正在更新場景…"
 msgid "[empty]"
 msgstr "[空]"
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
 msgid "[unsaved]"
 msgstr "[未保存]"
 
@@ -1604,6 +1620,7 @@ msgstr "建立資料夾"
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "名稱："
@@ -2087,7 +2104,8 @@ msgid "Properties"
 msgstr "屬性"
 
 #: editor/editor_help.cpp
-msgid "override:"
+#, fuzzy
+msgid "overrides %s:"
 msgstr "複寫："
 
 #: editor/editor_help.cpp
@@ -2225,6 +2243,20 @@ msgstr "主題屬性"
 msgid "Property:"
 msgstr "屬性："
 
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Pin value"
+msgstr "（數值）"
+
+#: editor/editor_inspector.cpp
+msgid ""
+"Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Pin value [Disabled because '%s' is editor-only]"
+msgstr ""
+
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
@@ -2233,6 +2265,29 @@ msgstr "設定 %s"
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
 msgstr "設定多個："
+
+#: editor/editor_inspector.cpp
+msgid "Pinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Unpinned %s"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property"
+msgstr "複製屬性"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Paste Property"
+msgstr "貼上屬性"
+
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Copy Property Path"
+msgstr "複製腳本路徑"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -3009,6 +3064,20 @@ msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr "開啟該選項後，導航網格與多邊形將在專案執行時可見。"
+
+#: editor/editor_node.cpp
+msgid "Force Shader Fallbacks"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, shaders will be used in their fallback form "
+"(either visible via an ubershader or hidden) during all the run time.\n"
+"This is useful for verifying the look and performance of fallbacks, which "
+"are normally displayed briefly.\n"
+"Asynchronous shader compilation must be enabled in the project settings for "
+"this option to make a difference."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -4104,6 +4173,10 @@ msgstr "在檔案中搜尋"
 msgid "Find:"
 msgstr "搜尋："
 
+#: editor/find_in_files.cpp editor/rename_dialog.cpp
+msgid "Replace:"
+msgstr "取代："
+
 #: editor/find_in_files.cpp
 msgid "Folder:"
 msgstr "資料夾："
@@ -4127,6 +4200,11 @@ msgstr "搜尋..."
 msgid "Replace..."
 msgstr "取代..."
 
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Replace in Files"
+msgstr "取代全部"
+
 #: editor/find_in_files.cpp
 msgid "Find: "
 msgstr "搜尋： "
@@ -4136,8 +4214,9 @@ msgid "Replace: "
 msgstr "取代： "
 
 #: editor/find_in_files.cpp
-msgid "Replace all (no undo)"
-msgstr "全部取代（無法復原）"
+#, fuzzy
+msgid "Replace All (NO UNDO)"
+msgstr "取代全部"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4352,6 +4431,12 @@ msgstr "修改匯入檔案的型別需要重新啟動編輯器。"
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr "警告：有素材使用該資源，將無法正確加載。"
+
+#: editor/import_dock.cpp
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust "
+"import settings."
+msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -5790,6 +5875,11 @@ msgid "Alt+Drag: Move selected node."
 msgstr "Alt+拖移：移動所選的節點。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Alt+Drag: Scale selected node."
+msgstr "Alt+拖移：移動所選的節點。"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "V: Set selected node's pivot position."
 msgstr "V：設定所選節點之支點位置。"
 
@@ -5816,6 +5906,10 @@ msgstr "旋轉模式"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
 msgstr "縮放模式"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Shift: Scale proportionally."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5914,8 +6008,20 @@ msgstr "在其位置上鎖定所選物件（無法移動）。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock Selected Node(s)"
+msgstr "鎖定所選"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
 msgstr "解鎖所選物件（可移動）。"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Unlock Selected Node(s)"
+msgstr "取消鎖定所選"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5924,8 +6030,20 @@ msgstr "確保物件的子級項目無法被選擇。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Group Selected Node(s)"
+msgstr "為所選的項目建立群組"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "恢復讓物件的子級項目可選擇。"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Ungroup Selected Node(s)"
+msgstr "移除所選項目的群組"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -7550,6 +7668,11 @@ msgid "Find in Files..."
 msgstr "在檔案中搜尋..."
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Replace in Files..."
+msgstr "取代..."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "上下文說明"
 
@@ -8069,6 +8192,19 @@ msgstr "聚焦所選"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr "開啟／關閉自由視圖"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Decrease Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Increase Field of View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Reset Field of View to Default"
+msgstr "重設為預設值"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8788,6 +8924,29 @@ msgid "Another Theme"
 msgstr "其他主題"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Type"
+msgstr "新增類別"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Filter the list of types or create a new custom type:"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Available Node-based types:"
+msgstr "可用設定檔："
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Type name is empty!"
+msgstr "檔案名稱為空。"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Are you sure you want to create an empty type?"
+msgstr "確定要打開多個專案嗎？"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Confirm Item Rename"
 msgstr "確認項目重新命名"
 
@@ -8811,18 +8970,6 @@ msgstr ""
 "釘選該樣式盒為主要樣式。編輯其屬性將更新所有其他同類別的樣式盒之相同屬性。"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Type"
-msgstr "新增類別"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Add Item Type"
-msgstr "新增項目類型"
-
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Node Types:"
-msgstr "節點類別："
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
 msgstr "顯示預設"
 
@@ -8837,6 +8984,10 @@ msgstr "複寫全部"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
 msgstr "複寫所有預設類別項目。"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item Type"
+msgstr "新增項目類型"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -11275,10 +11426,6 @@ msgid "Batch Rename"
 msgstr "批次重新命名"
 
 #: editor/rename_dialog.cpp
-msgid "Replace:"
-msgstr "取代："
-
-#: editor/rename_dialog.cpp
 msgid "Prefix:"
 msgstr "前置："
 
@@ -11559,6 +11706,20 @@ msgstr ""
 "無法保存已實體化場景的分支。\n"
 "若要建立場景變體，您可使用場景 > 新增繼承場景...根據實體化的場景建立一個繼承"
 "場景。"
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is a child of an already instantiated scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Can't save a branch which is part of an inherited scene.\n"
+"To save this branch into its own scene, open the original scene, right click "
+"on this branch, and select \"Save Branch as Scene\"."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -12508,63 +12669,68 @@ msgstr "建構解決方案"
 msgid "End of inner exception stack trace"
 msgstr "內部異常堆疊回溯結束"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr "必須先為該節點建立 NavigationMesh 資源才可運作。"
+
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
 msgstr "製作 NavMesh"
 
-#: modules/recast/navigation_mesh_editor_plugin.cpp
+#: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
 msgstr "清除導航網格。"
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
 msgstr "正在設定組態..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
 msgstr "正在計算網格大小..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
 msgstr "正在建立 Heightfield..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
 msgstr "正在標記可移動的三角形..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
 msgstr "正在建置緊湊 Heightfield..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
 msgstr "正在建立可移動區域..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Partitioning..."
 msgstr "正在分割..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating contours..."
 msgstr "正在建立輪廓..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
 msgstr "正在建立多邊形網格..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
 msgstr "正在轉換為原生導航網格..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
 msgstr "導航網格產生器設定："
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
 msgstr "正在解析多邊形..."
 
-#: modules/recast/navigation_mesh_generator.cpp
+#: modules/navigation/navigation_mesh_generator.cpp
 msgid "Done!"
 msgstr "完成！"
 
@@ -13536,6 +13702,16 @@ msgstr "該遮光體必須要有設定（或繪製）遮光體形狀才會有作
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "遮光體無遮光體多邊形。請先繪製一個多邊形。"
 
+#: scene/2d/navigation_agent_2d.cpp
+msgid "The NavigationAgent2D can be used only under a Node2D node."
+msgstr ""
+
+#: scene/2d/navigation_obstacle_2d.cpp
+msgid ""
+"The NavigationObstacle2D only serves to provide collision avoidance to a "
+"Node2D object."
+msgstr ""
+
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
@@ -13767,17 +13943,23 @@ msgstr ""
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "角度大於 90 度的 SpotLight 無法投射出陰影。"
 
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr "必須先為該節點建立 NavigationMesh 資源才可運作。"
+#: scene/3d/navigation_agent.cpp
+msgid "The NavigationAgent can be used only under a spatial node."
+msgstr ""
 
-#: scene/3d/navigation_mesh.cpp
+#: scene/3d/navigation_mesh_instance.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
 "NavigationMeshInstance 必須為 Navigation 節點的子節點或次級子節點。其僅提供導"
 "航資料。"
+
+#: scene/3d/navigation_obstacle.cpp
+msgid ""
+"The NavigationObstacle only serves to provide collision avoidance to a "
+"spatial object."
+msgstr ""
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
@@ -14231,10 +14413,6 @@ msgid ""
 msgstr ""
 "在「fragment」函數中已被指派的Varying變數不能在「vertex」或是「light」中再被"
 "指派。"
-
-#: servers/visual/shader_language.cpp
-msgid "Fragment-stage varying could not been accessed in custom function!"
-msgstr "無法在自定義函式中存取片段階段（Fragment-stage）中的Varying變數！"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

@@ -324,37 +324,34 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
 
-	Vector<Vector3> vs;
-	Vector<Vector2> uv;
-	Vector<Color> colors;
+	Vector<Vector3> vs = {
+		Vector3(-p_scale, p_scale, 0),
+		Vector3(p_scale, p_scale, 0),
+		Vector3(p_scale, -p_scale, 0),
+		Vector3(-p_scale, -p_scale, 0)
+	};
 
-	vs.push_back(Vector3(-p_scale, p_scale, 0));
-	vs.push_back(Vector3(p_scale, p_scale, 0));
-	vs.push_back(Vector3(p_scale, -p_scale, 0));
-	vs.push_back(Vector3(-p_scale, -p_scale, 0));
+	Vector<Vector2> uv = {
+		Vector2(0, 0),
+		Vector2(1, 0),
+		Vector2(1, 1),
+		Vector2(0, 1)
+	};
 
-	uv.push_back(Vector2(0, 0));
-	uv.push_back(Vector2(1, 0));
-	uv.push_back(Vector2(1, 1));
-	uv.push_back(Vector2(0, 1));
+	Vector<Color> colors = {
+		p_modulate,
+		p_modulate,
+		p_modulate,
+		p_modulate
+	};
 
-	colors.push_back(p_modulate);
-	colors.push_back(p_modulate);
-	colors.push_back(p_modulate);
-	colors.push_back(p_modulate);
+	Vector<int> indices = { 0, 1, 2, 0, 2, 3 };
 
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
 	a[Mesh::ARRAY_VERTEX] = vs;
 	a[Mesh::ARRAY_TEX_UV] = uv;
-	Vector<int> indices;
-	indices.push_back(0);
-	indices.push_back(1);
-	indices.push_back(2);
-	indices.push_back(0);
-	indices.push_back(2);
-	indices.push_back(3);
 	a[Mesh::ARRAY_INDEX] = indices;
 	a[Mesh::ARRAY_COLOR] = colors;
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
@@ -1477,9 +1474,10 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(points_primary, material_primary, false, color);
 		p_gizmo->add_lines(points_secondary, material_secondary, false, color);
 
-		Vector<Vector3> handles;
-		handles.push_back(Vector3(0, 0, -r));
-		handles.push_back(Vector3(w, 0, -d));
+		Vector<Vector3> handles = {
+			Vector3(0, 0, -r),
+			Vector3(w, 0, -d)
+		};
 
 		p_gizmo->add_handles(handles, get_material("handles"));
 		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
@@ -2210,10 +2208,10 @@ void SpringArm3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Vector<Vector3> lines;
-
-	lines.push_back(Vector3());
-	lines.push_back(Vector3(0, 0, 1.0) * spring_arm->get_length());
+	Vector<Vector3> lines = {
+		Vector3(),
+		Vector3(0, 0, 1.0) * spring_arm->get_length()
+	};
 
 	Ref<StandardMaterial3D> material = get_material("shape_material", p_gizmo);
 
@@ -4296,9 +4294,10 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		p_gizmo->add_collision_segments(collision_segments);
 
-		Vector<Vector3> handles;
-		handles.push_back(Vector3(cs2->get_radius(), 0, 0));
-		handles.push_back(Vector3(0, cs2->get_height() * 0.5, 0));
+		Vector<Vector3> handles = {
+			Vector3(cs2->get_radius(), 0, 0),
+			Vector3(0, cs2->get_height() * 0.5, 0)
+		};
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
@@ -4352,16 +4351,16 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		p_gizmo->add_collision_segments(collision_segments);
 
-		Vector<Vector3> handles;
-		handles.push_back(Vector3(cs2->get_radius(), 0, 0));
-		handles.push_back(Vector3(0, cs2->get_height() * 0.5, 0));
+		Vector<Vector3> handles = {
+			Vector3(cs2->get_radius(), 0, 0),
+			Vector3(0, cs2->get_height() * 0.5, 0)
+		};
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
 	if (Object::cast_to<WorldBoundaryShape3D>(*s)) {
 		Ref<WorldBoundaryShape3D> wbs = s;
 		const Plane &p = wbs->get_plane();
-		Vector<Vector3> points;
 
 		Vector3 n1 = p.get_any_perpendicular_normal();
 		Vector3 n2 = p.normal.cross(n1).normalized();
@@ -4373,16 +4372,18 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			p.normal * p.d + n1 * -10.0 + n2 * 10.0,
 		};
 
-		points.push_back(pface[0]);
-		points.push_back(pface[1]);
-		points.push_back(pface[1]);
-		points.push_back(pface[2]);
-		points.push_back(pface[2]);
-		points.push_back(pface[3]);
-		points.push_back(pface[3]);
-		points.push_back(pface[0]);
-		points.push_back(p.normal * p.d);
-		points.push_back(p.normal * p.d + p.normal * 3);
+		Vector<Vector3> points = {
+			pface[0],
+			pface[1],
+			pface[1],
+			pface[2],
+			pface[2],
+			pface[3],
+			pface[3],
+			pface[0],
+			p.normal * p.d,
+			p.normal * p.d + p.normal * 3
+		};
 
 		p_gizmo->add_lines(points, material);
 		p_gizmo->add_collision_segments(points);
@@ -4419,9 +4420,10 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
 		Ref<SeparationRayShape3D> rs = s;
 
-		Vector<Vector3> points;
-		points.push_back(Vector3());
-		points.push_back(Vector3(0, 0, rs->get_length()));
+		Vector<Vector3> points = {
+			Vector3(),
+			Vector3(0, 0, rs->get_length())
+		};
 		p_gizmo->add_lines(points, material);
 		p_gizmo->add_collision_segments(points);
 		Vector<Vector3> handles;

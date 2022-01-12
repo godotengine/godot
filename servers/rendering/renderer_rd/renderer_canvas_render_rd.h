@@ -35,10 +35,10 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
-#include "servers/rendering/renderer_rd/shader_compiler_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_occlusion.glsl.gen.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/shader_compiler.h"
 
 class RendererCanvasRenderRD : public RendererCanvasRender {
 	RendererStorageRD *storage;
@@ -148,7 +148,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID default_skeleton_uniform_buffer;
 		RID default_skeleton_texture_buffer;
 
-		ShaderCompilerRD compiler;
+		ShaderCompiler compiler;
 	} shader;
 
 	struct ShaderData : public RendererStorageRD::ShaderData {
@@ -167,7 +167,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		String path;
 
 		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
-		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size;

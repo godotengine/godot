@@ -374,7 +374,7 @@ private:
 
 	bool move_caret_on_right_click = true;
 
-	bool caret_mid_grapheme_enabled = false;
+	bool caret_mid_grapheme_enabled = true;
 
 	bool drag_action = false;
 	bool drag_caret_force_displayed = false;

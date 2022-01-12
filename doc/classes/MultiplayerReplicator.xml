@@ -24,7 +24,7 @@
 			<argument index="1" name="object" type="Object" />
 			<argument index="2" name="peer_id" type="int" default="0" />
 			<description>
-				Request a despawn for the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code]. This will either trigger the default behaviour, or invoke the custom spawn/despawn callables specified in [method spawn_config]. See [method send_despawn] for the default behavior.
+				Request a despawn for the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code]. This will either trigger the default behavior, or invoke the custom spawn/despawn callables specified in [method spawn_config]. See [method send_despawn] for the default behavior.
 			</description>
 		</method>
 		<method name="encode_state">
@@ -74,7 +74,7 @@
 			<argument index="1" name="object" type="Object" />
 			<argument index="2" name="peer_id" type="int" default="0" />
 			<description>
-				Request a spawn for the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code]. This will either trigger the default behaviour, or invoke the custom spawn/despawn callables specified in [method spawn_config]. See [method send_spawn] for the default behavior.
+				Request a spawn for the scene identified by [code]scene_id[/code] to the given [code]peer_id[/code]. This will either trigger the default behavior, or invoke the custom spawn/despawn callables specified in [method spawn_config]. See [method send_spawn] for the default behavior.
 			</description>
 		</method>
 		<method name="spawn_config">
@@ -85,7 +85,7 @@
 			<argument index="3" name="custom_send" type="Callable" />
 			<argument index="4" name="custom_receive" type="Callable" />
 			<description>
-				Configures the MultiplayerReplicator to track instances of the [PackedScene] identified by [code]scene_id[/code] (see [method ResourceLoader.get_resource_uid]) for the purpose of network replication. When [code]mode[/code] is [constant REPLICATION_MODE_SERVER], the specified [code]properties[/code] will also be replicated to clients during the initial spawn. You can optionally specify a [code]custom_send[/code] and a [code]custom_receive[/code] to override the default behaviour and customize the spawn/despawn proecess.
+				Configures the MultiplayerReplicator to track instances of the [PackedScene] identified by [code]scene_id[/code] (see [method ResourceLoader.get_resource_uid]) for the purpose of network replication. When [code]mode[/code] is [constant REPLICATION_MODE_SERVER], the specified [code]properties[/code] will also be replicated to clients during the initial spawn. You can optionally specify a [code]custom_send[/code] and a [code]custom_receive[/code] to override the default behavior and customize the spawn/despawn proecess.
 				Tip: You can use a custom property in the scene main script to return a customly optimized state representation.
 			</description>
 		</method>
@@ -94,7 +94,7 @@
 			<argument index="0" name="scene_id" type="int" />
 			<argument index="1" name="peer_id" type="int" default="0" />
 			<description>
-				Manually request a sync for all the instances of the scene identified by [code]scene_id[/code]. This function will trigger the default sync behaviour, or call your send custom send callable if specified in [method sync_config].
+				Manually request a sync for all the instances of the scene identified by [code]scene_id[/code]. This function will trigger the default sync behavior, or call your send custom send callable if specified in [method sync_config].
 				[b]Note:[/b] The default implementation only allow syncing from server to clients.
 			</description>
 		</method>
@@ -106,7 +106,7 @@
 			<argument index="3" name="custom_send" type="Callable" />
 			<argument index="4" name="custom_receive" type="Callable" />
 			<description>
-				Configures the MultiplayerReplicator to sync instances of the [PackedScene] identified by [code]scene_id[/code] (see [method ResourceLoader.get_resource_uid]) for the purpose of network replication at the desired [code]interval[/code] (in milliseconds). The specified [code]properties[/code] will be part of the state sync. You can optionally specify a [code]custom_send[/code] and a [code]custom_receive[/code] to override the default behaviour and customize the synchronization proecess.
+				Configures the MultiplayerReplicator to sync instances of the [PackedScene] identified by [code]scene_id[/code] (see [method ResourceLoader.get_resource_uid]) for the purpose of network replication at the desired [code]interval[/code] (in milliseconds). The specified [code]properties[/code] will be part of the state sync. You can optionally specify a [code]custom_send[/code] and a [code]custom_receive[/code] to override the default behavior and customize the synchronization proecess.
 				Tip: You can use a custom property in the scene main script to return a customly optimized state representation (having a single property that returns a PackedByteArray is highly recommended when dealing with many instances).
 			</description>
 		</method>

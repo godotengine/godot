@@ -97,7 +97,7 @@ private:
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
 
-	bool caret_mid_grapheme_enabled = false;
+	bool caret_mid_grapheme_enabled = true;
 
 	int caret_column = 0;
 	int scroll_offset = 0;

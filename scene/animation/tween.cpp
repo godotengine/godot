@@ -260,10 +260,8 @@ bool Tween::step(float p_delta) {
 	}
 
 	if (is_bound) {
-		Object *bound_instance = ObjectDB::get_instance(bound_node);
-		if (bound_instance) {
-			Node *bound_node = Object::cast_to<Node>(bound_instance);
-			// This can't by anything else than Node, so we can omit checking if casting succeeded.
+		Node *bound_node = get_bound_node();
+		if (bound_node) {
 			if (!bound_node->is_inside_tree()) {
 				return true;
 			}
@@ -320,16 +318,23 @@ bool Tween::step(float p_delta) {
 	return true;
 }
 
-bool Tween::should_pause() {
+bool Tween::can_process(bool p_tree_paused) const {
 	if (is_bound && pause_mode == TWEEN_PAUSE_BOUND) {
-		Object *bound_instance = ObjectDB::get_instance(bound_node);
-		if (bound_instance) {
-			Node *bound_node = Object::cast_to<Node>(bound_instance);
-			return !bound_node->can_process();
+		Node *bound_node = get_bound_node();
+		if (bound_node) {
+			return bound_node->can_process();
 		}
 	}
 
-	return pause_mode != TWEEN_PAUSE_PROCESS;
+	return !p_tree_paused || pause_mode == TWEEN_PAUSE_PROCESS;
+}
+
+Node *Tween::get_bound_node() const {
+	if (is_bound) {
+		return Object::cast_to<Node>(ObjectDB::get_instance(bound_node));
+	} else {
+		return nullptr;
+	}
 }
 
 real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {

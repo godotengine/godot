@@ -10,7 +10,7 @@ precision highp float;
 precision highp int;
 #endif
 
-layout(location = 0) highp vec3 vertex;
+layout(location = 0) in highp vec3 vertex;
 
 uniform highp mat4 projection_matrix;
 /* clang-format on */

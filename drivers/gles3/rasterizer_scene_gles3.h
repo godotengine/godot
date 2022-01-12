@@ -31,8 +31,7 @@
 #ifndef RASTERIZER_SCENE_OPENGL_H
 #define RASTERIZER_SCENE_OPENGL_H
 
-#include "drivers/gles3/rasterizer_platforms.h"
-#ifdef GLES3_BACKEND_ENABLED
+#ifdef GLES3_ENABLED
 
 #include "core/math/camera_matrix.h"
 #include "core/templates/rid_owner.h"
@@ -41,12 +40,11 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
-#include "shaders/scene.glsl.gen.h"
 
 class RasterizerSceneGLES3 : public RendererSceneRender {
 public:
 	struct State {
-		SceneShaderGLES3 scene_shader;
+		//SceneShaderGLES3 scene_shader;
 	} state;
 
 	GeometryInstance *geometry_instance_create(RID p_base) override;
@@ -227,6 +225,6 @@ public:
 	RasterizerSceneGLES3();
 };
 
-#endif // GLES3_BACKEND_ENABLED
+#endif // GLES3_ENABLED
 
 #endif // RASTERIZER_SCENE_OPENGL_H

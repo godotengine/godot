@@ -699,8 +699,7 @@ Vector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
 	ERR_FAIL_COND_V_MSG(!to_exists, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
-		Vector<Vector2> ret;
-		ret.push_back(Vector2(a->pos.x, a->pos.y));
+		Vector<Vector2> ret = { Vector2(a->pos.x, a->pos.y) };
 		return ret;
 	}
 

@@ -285,6 +285,11 @@ public:
 	GDVIRTUAL2(_font_remove_script_support_override, RID, const String &);
 	GDVIRTUAL1R(Vector<String>, _font_get_script_support_overrides, RID);
 
+	virtual void font_set_opentype_feature_overrides(RID p_font_rid, const Dictionary &p_overrides) override;
+	virtual Dictionary font_get_opentype_feature_overrides(RID p_font_rid) const override;
+	GDVIRTUAL2(_font_set_opentype_feature_overrides, RID, const Dictionary &);
+	GDVIRTUAL1RC(Dictionary, _font_get_opentype_feature_overrides, RID);
+
 	virtual Dictionary font_supported_feature_list(RID p_font_rid) const override;
 	virtual Dictionary font_supported_variation_list(RID p_font_rid) const override;
 	GDVIRTUAL1RC(Dictionary, _font_supported_feature_list, RID);

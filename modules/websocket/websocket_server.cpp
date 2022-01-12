@@ -67,7 +67,7 @@ void WebSocketServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_handshake_timeout"), &WebSocketServer::get_handshake_timeout);
 	ClassDB::bind_method(D_METHOD("set_handshake_timeout", "timeout"), &WebSocketServer::set_handshake_timeout);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handshake_timeout"), "set_handshake_timeout", "get_handshake_timeout");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "handshake_timeout"), "set_handshake_timeout", "get_handshake_timeout");
 
 	ADD_SIGNAL(MethodInfo("client_close_request", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "reason")));
 	ADD_SIGNAL(MethodInfo("client_disconnected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::BOOL, "was_clean_close")));

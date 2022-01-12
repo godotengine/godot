@@ -343,6 +343,16 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_collision_segments(lines);
 
+	Array csg_meshes = cs->get_meshes();
+	if (csg_meshes.size() != 2) {
+		return;
+	}
+
+	Ref<Mesh> csg_mesh = csg_meshes[1];
+	if (csg_mesh.is_valid()) {
+		p_gizmo->add_collision_triangles(csg_mesh->generate_triangle_mesh());
+	}
+
 	if (p_gizmo->is_selected()) {
 		// Draw a translucent representation of the CSG node
 		Ref<ArrayMesh> mesh = memnew(ArrayMesh);

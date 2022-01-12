@@ -6,7 +6,7 @@
  *
  * on files with these headers:
  *
- * <meta name="updated_at" content="2021-09-02 09:40 PM" />
+ * <meta name="updated_at" content="2021-12-09 12:01 AM" />
  * File-Date: 2021-08-06
  */
 
@@ -933,6 +933,7 @@ static const LangTag ot_languages[] = {
   {"mnp",	HB_TAG('Z','H','S',' ')},	/* Min Bei Chinese -> Chinese, Simplified */
   {"mns",	HB_TAG('M','A','N',' ')},	/* Mansi */
   {"mnw",	HB_TAG('M','O','N',' ')},	/* Mon */
+  {"mnw",	HB_TAG('M','O','N','T')},	/* Mon -> Thailand Mon */
   {"mnx",	HB_TAG_NONE	       },	/* Manikion != Manx */
   {"mo",	HB_TAG('M','O','L',' ')},	/* Moldavian (retired code) */
   {"mod",	HB_TAG('C','P','P',' ')},	/* Mobilian -> Creoles */
@@ -1422,6 +1423,7 @@ static const LangTag ot_languages[] = {
   {"tia",	HB_TAG('B','B','R',' ')},	/* Tidikelt Tamazight -> Berber */
   {"tig",	HB_TAG('T','G','R',' ')},	/* Tigre */
 /*{"tiv",	HB_TAG('T','I','V',' ')},*/	/* Tiv */
+/*{"tjl",	HB_TAG('T','J','L',' ')},*/	/* Tai Laing */
   {"tjo",	HB_TAG('B','B','R',' ')},	/* Temacine Tamazight -> Berber */
   {"tk",	HB_TAG('T','K','M',' ')},	/* Turkmen */
   {"tkg",	HB_TAG('M','L','G',' ')},	/* Tesaka Malagasy -> Malagasy */
@@ -2521,6 +2523,14 @@ hb_ot_tags_from_complex_language (const char   *lang_str,
       *count = 1;
       return true;
     }
+    if (0 == strncmp (&lang_str[1], "nw-", 3)
+	&& subtag_matches (lang_str, limit, "-th"))
+    {
+      /* Mon; Thailand */
+      tags[0] = HB_TAG('M','O','N','T');  /* Thailand Mon */
+      *count = 1;
+      return true;
+    }
     break;
   case 'n':
     if (lang_matches (&lang_str[1], "an-hant-hk"))
@@ -2884,6 +2894,8 @@ hb_ot_ambiguous_tag_to_language (hb_tag_t tag)
     return hb_language_from_string ("man", -1);  /* Mandingo [macrolanguage] */
   case HB_TAG('M','O','L',' '):  /* Moldavian */
     return hb_language_from_string ("ro-MD", -1);  /* Romanian; Moldova */
+  case HB_TAG('M','O','N','T'):  /* Thailand Mon */
+    return hb_language_from_string ("mnw-TH", -1);  /* Mon; Thailand */
   case HB_TAG('M','Y','N',' '):  /* Mayan */
     return hb_language_from_string ("myn", -1);  /* Mayan [family] */
   case HB_TAG('N','A','H',' '):  /* Nahuatl */

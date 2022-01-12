@@ -327,6 +327,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_remove_script_support_override", "font_rid", "script"), &TextServer::font_remove_script_support_override);
 	ClassDB::bind_method(D_METHOD("font_get_script_support_overrides", "font_rid"), &TextServer::font_get_script_support_overrides);
 
+	ClassDB::bind_method(D_METHOD("font_set_opentype_feature_overrides", "font_rid", "overrides"), &TextServer::font_set_opentype_feature_overrides);
+	ClassDB::bind_method(D_METHOD("font_get_opentype_feature_overrides", "font_rid"), &TextServer::font_get_opentype_feature_overrides);
+
 	ClassDB::bind_method(D_METHOD("font_supported_feature_list", "font_rid"), &TextServer::font_supported_feature_list);
 	ClassDB::bind_method(D_METHOD("font_supported_variation_list", "font_rid"), &TextServer::font_supported_variation_list);
 
@@ -989,9 +992,9 @@ Vector<Vector2> TextServer::shaped_text_get_selection(RID p_shaped, int p_start,
 						}
 						real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-							ranges.push_back(Vector2(off, off + char_adv * (start - glyphs[i].start)));
+							ranges.push_back(Vector2(off, off + char_adv * (glyphs[i].end - start)));
 						} else {
-							ranges.push_back(Vector2(off + char_adv * (glyphs[i].end - start), off + advance));
+							ranges.push_back(Vector2(off + char_adv * (start - glyphs[i].start), off + advance));
 						}
 					}
 					// Selection range is within grapheme.
@@ -1097,6 +1100,31 @@ int TextServer::shaped_text_hit_test_position(RID p_shaped, float p_coords) cons
 					return glyphs[i].end;
 				} else {
 					return glyphs[i].start;
+				}
+			}
+			// Ligature, handle mid-grapheme hit.
+			if (p_coords >= off && p_coords < off + advance && glyphs[i].end > glyphs[i].start + 1) {
+				int cnt = glyphs[i].end - glyphs[i].start;
+				real_t char_adv = advance / (real_t)(cnt);
+				real_t sub_off = off;
+				for (int j = 0; j < cnt; j++) {
+					// Place caret to the left of clicked sub-grapheme.
+					if (p_coords >= sub_off && p_coords < sub_off + char_adv / 2) {
+						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+							return glyphs[i].end - j;
+						} else {
+							return glyphs[i].start + j;
+						}
+					}
+					// Place caret to the right of clicked sub-grapheme.
+					if (p_coords >= sub_off + char_adv / 2 && p_coords < sub_off + char_adv) {
+						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+							return glyphs[i].start + (cnt - 1) - j;
+						} else {
+							return glyphs[i].end - (cnt - 1) + j;
+						}
+					}
+					sub_off += char_adv;
 				}
 			}
 			// Place caret to the left of clicked grapheme.

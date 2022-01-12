@@ -362,7 +362,6 @@ private:
 		bool dragging = false;
 		bool drag_successful = false;
 		bool embed_subwindows_hint = false;
-		bool embedding_subwindows = false;
 
 		Window *subwindow_focused = nullptr;
 		SubWindowDrag subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
@@ -373,7 +372,7 @@ private:
 		SubWindowResize subwindow_resize_mode;
 		Rect2i subwindow_resize_from_rect;
 
-		Vector<SubWindow> sub_windows;
+		Vector<SubWindow> sub_windows; // Don't obtain references or pointers to the elements, as their location can change.
 	} gui;
 
 	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;

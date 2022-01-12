@@ -644,14 +644,15 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 		Vector3 right = p.normal.cross(ref).normalized();
 		Vector3 up = p.normal.cross(right).normalized();
 
-		Vector<Vector3> vertices;
-
 		Vector3 center = p.center();
+
 		// make a quad clockwise
-		vertices.push_back(center - up * subplane_size + right * subplane_size);
-		vertices.push_back(center - up * subplane_size - right * subplane_size);
-		vertices.push_back(center + up * subplane_size - right * subplane_size);
-		vertices.push_back(center + up * subplane_size + right * subplane_size);
+		Vector<Vector3> vertices = {
+			center - up * subplane_size + right * subplane_size,
+			center - up * subplane_size - right * subplane_size,
+			center + up * subplane_size - right * subplane_size,
+			center + up * subplane_size + right * subplane_size
+		};
 
 		for (int j = 0; j < p_planes.size(); j++) {
 			if (j == i) {
@@ -762,14 +763,14 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 }
 
 Vector<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
-	Vector<Plane> planes;
-
-	planes.push_back(Plane(Vector3(1, 0, 0), p_extents.x));
-	planes.push_back(Plane(Vector3(-1, 0, 0), p_extents.x));
-	planes.push_back(Plane(Vector3(0, 1, 0), p_extents.y));
-	planes.push_back(Plane(Vector3(0, -1, 0), p_extents.y));
-	planes.push_back(Plane(Vector3(0, 0, 1), p_extents.z));
-	planes.push_back(Plane(Vector3(0, 0, -1), p_extents.z));
+	Vector<Plane> planes = {
+		Plane(Vector3(1, 0, 0), p_extents.x),
+		Plane(Vector3(-1, 0, 0), p_extents.x),
+		Plane(Vector3(0, 1, 0), p_extents.y),
+		Plane(Vector3(0, -1, 0), p_extents.y),
+		Plane(Vector3(0, 0, 1), p_extents.z),
+		Plane(Vector3(0, 0, -1), p_extents.z)
+	};
 
 	return planes;
 }

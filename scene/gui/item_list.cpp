@@ -1492,6 +1492,9 @@ bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (components[1] == "disabled") {
 			set_item_disabled(item_index, p_value);
 			return true;
+		} else if (components[1] == "selectable") {
+			set_item_selectable(item_index, p_value);
+			return true;
 		}
 	}
 #ifndef DISABLE_DEPRECATED
@@ -1528,6 +1531,9 @@ bool ItemList::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "disabled") {
 			r_ret = is_item_disabled(item_index);
 			return true;
+		} else if (components[1] == "selectable") {
+			r_ret = is_item_selectable(item_index);
+			return true;
 		}
 	}
 	return false;
@@ -1539,6 +1545,10 @@ void ItemList::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
 		pi.usage &= ~(get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/selectable", i));
+		pi.usage &= ~(is_item_selectable(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
 		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/disabled", i));

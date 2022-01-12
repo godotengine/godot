@@ -235,7 +235,7 @@
 			<argument index="0" name="tab" type="int" />
 			<description>
 				Emitted when a tab's close button is pressed.
-				[b]Note:[/b] Tabs are not removed automatically once the close button is pressed, this behaviour needs to be programmed manually. For example:
+				[b]Note:[/b] Tabs are not removed automatically once the close button is pressed, this behavior needs to be programmed manually. For example:
 				[codeblocks]
 				[gdscript]
 				$TabBar.tab_close_pressed.connect($TabBar.remove_tab)

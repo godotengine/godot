@@ -54,13 +54,18 @@ class VisualScriptEditor : public ScriptEditorBase {
 	};
 
 	enum {
+		EDIT_ADD_NODE,
+		EDIT_SEPARATOR, // popup menu separator - ignored
+		EDIT_CUT_NODES,
+		EDIT_COPY_NODES,
+		EDIT_PASTE_NODES,
 		EDIT_DELETE_NODES,
+		EDIT_DUPLICATE_NODES,
+		EDIT_CLEAR_COPY_BUFFER,
+
+		EDIT_CREATE_FUNCTION,
 		EDIT_TOGGLE_BREAKPOINT,
 		EDIT_FIND_NODE_TYPE,
-		EDIT_COPY_NODES,
-		EDIT_CUT_NODES,
-		EDIT_PASTE_NODES,
-		EDIT_CREATE_FUNCTION,
 		REFRESH_GRAPH,
 	};
 
@@ -123,7 +128,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	Label *select_func_text;
 
-	bool updating_graph;
+	bool updating_graph = false;
 
 	void _show_hint(const String &p_hint);
 	void _hide_timer();
@@ -162,7 +167,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	static Clipboard *clipboard;
 
-	PopupMenu *member_popup;
+	PopupMenu *popup_menu = nullptr;
+	PopupMenu *member_popup = nullptr;
 	MemberType member_type;
 	String member_name;
 
@@ -172,8 +178,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	Vector2 port_action_pos;
 	int port_action_new_node;
 
-	bool saved_pos_dirty;
-	Vector2 saved_position;
+	bool saved_pos_dirty = false;
 
 	Vector2 mouse_up_position;
 

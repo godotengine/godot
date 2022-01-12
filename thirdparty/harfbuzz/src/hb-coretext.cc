@@ -1213,7 +1213,7 @@ resize_and_retry:
     }
   }
 
-  buffer->unsafe_to_break_all ();
+  buffer->clear_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_BREAK);
 
 #undef FAIL
 
