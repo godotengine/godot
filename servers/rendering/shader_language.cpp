@@ -7563,17 +7563,13 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 		return ERR_PARSE_ERROR;
 	}
 
-	tk = _get_token();
+	StringName shader_type_identifier;
+	_get_completable_identifier(nullptr, COMPLETION_SHADER_TYPE, shader_type_identifier);
 
-	if (tk.type != TK_IDENTIFIER) {
+	if (shader_type_identifier == StringName()) {
 		_set_error("Expected identifier after 'shader_type', indicating type of shader. Valid types are: " + _get_shader_type_list(p_shader_types));
 		return ERR_PARSE_ERROR;
 	}
-
-	String shader_type_identifier;
-
-	shader_type_identifier = tk.text;
-
 	if (!p_shader_types.has(shader_type_identifier)) {
 		_set_error("Invalid shader type. Valid types are: " + _get_shader_type_list(p_shader_types));
 		return ERR_PARSE_ERROR;
@@ -8345,6 +8341,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 #endif // DEBUG_ENABLED
 				}
 
+			} break;
+			case TK_SHADER_TYPE: {
+				_set_error("Shader type is already defined.");
+				return ERR_PARSE_ERROR;
 			} break;
 			default: {
 				//function or constant variable
@@ -9267,6 +9267,13 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			//do nothing
 			return OK;
 		} break;
+		case COMPLETION_SHADER_TYPE: {
+			for (const String &shader_type : p_info.shader_types) {
+				ScriptCodeCompletionOption option(shader_type, ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+				r_options->push_back(option);
+			}
+			return OK;
+		} break;
 		case COMPLETION_RENDER_MODE: {
 			for (int i = 0; i < p_info.render_modes.size(); i++) {
 				const ModeInfo &info = p_info.render_modes[i];
@@ -9282,7 +9289,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 					if (!found) {
 						for (int j = 0; j < info.options.size(); j++) {
-							ScriptCodeCompletionOption option(String(info.name) + "_" + String(info.options[j]), ScriptCodeCompletionOption::KIND_ENUM);
+							ScriptCodeCompletionOption option(String(info.name) + "_" + String(info.options[j]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
 							r_options->push_back(option);
 						}
 					}
@@ -9290,7 +9297,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					const String name = String(info.name);
 
 					if (!shader->render_modes.has(name)) {
-						ScriptCodeCompletionOption option(name, ScriptCodeCompletionOption::KIND_ENUM);
+						ScriptCodeCompletionOption option(name, ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
 						r_options->push_back(option);
 					}
 				}
