@@ -107,7 +107,7 @@ public:
 	virtual void vibrate_handheld(int p_duration_ms = 500) = 0;
 
 	virtual Point2 get_mouse_position() const = 0;
-	virtual Point2 get_last_mouse_speed() const = 0;
+	virtual Point2 get_last_mouse_speed() = 0;
 	virtual int get_mouse_button_mask() const = 0;
 
 	virtual void warp_mouse_position(const Vector2 &p_to) = 0;
