@@ -1223,7 +1223,7 @@
 			[Color] of the text behind the caret when using a block caret.
 		</theme_item>
 		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
-			[Color] of the caret.
+			[Color] of the caret. This can be set to a fully transparent color to hide the caret entirely.
 		</theme_item>
 		<theme_item name="current_line_color" data_type="color" type="Color" default="Color(0.25, 0.25, 0.26, 0.8)">
 			Background [Color] of the line containing the caret.
@@ -1251,6 +1251,9 @@
 		</theme_item>
 		<theme_item name="word_highlighted_color" data_type="color" type="Color" default="Color(0.8, 0.9, 0.9, 0.15)">
 			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
+		</theme_item>
+		<theme_item name="caret_width" data_type="constant" type="int" default="1">
+			The caret's width in pixels. Greater values can be used to improve accessibility by ensuring the caret is easily visible, or to ensure consistency with a large font size. If set to [code]0[/code] or lower, the caret width is automatically set to 1 pixel and multiplied by the display scaling factor.
 		</theme_item>
 		<theme_item name="line_spacing" data_type="constant" type="int" default="4">
 			Sets the spacing between the lines.

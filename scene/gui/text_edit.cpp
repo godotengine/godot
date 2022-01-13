@@ -1244,7 +1244,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					// Carets.
-					int caret_width = Math::round(1 * get_theme_default_base_scale());
+					const int caret_width = get_theme_constant(SNAME("caret_width")) * get_theme_default_base_scale();
 
 					if (!clipped && caret.line == line && line_wrap_index == caret_wrap_index) {
 						caret.draw_pos.y = ofs_y + ldata->get_line_descent(line_wrap_index);

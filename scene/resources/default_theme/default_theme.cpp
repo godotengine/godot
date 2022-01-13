@@ -407,6 +407,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("minimum_character_width", "LineEdit", 4);
 	theme->set_constant("outline_size", "LineEdit", 0);
+	theme->set_constant("caret_width", "LineEdit", 1);
 
 	theme->set_icon("clear", "LineEdit", make_icon(line_edit_clear_png));
 
@@ -451,6 +452,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("line_spacing", "TextEdit", 4 * scale);
 	theme->set_constant("outline_size", "TextEdit", 0);
+	theme->set_constant("caret_width", "TextEdit", 1);
 
 	// CodeEdit
 

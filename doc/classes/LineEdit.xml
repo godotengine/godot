@@ -383,7 +383,7 @@
 	</constants>
 	<theme_items>
 		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
-			Color of the [LineEdit]'s caret (text cursor).
+			Color of the [LineEdit]'s caret (text cursor). This can be set to a fully transparent color to hide the caret entirely.
 		</theme_item>
 		<theme_item name="clear_button_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Color used as default tint for the clear button.
@@ -405,6 +405,9 @@
 		</theme_item>
 		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
 			Color of the selection rectangle.
+		</theme_item>
+		<theme_item name="caret_width" data_type="constant" type="int" default="1">
+			The caret's width in pixels. Greater values can be used to improve accessibility by ensuring the caret is easily visible, or to ensure consistency with a large font size.
 		</theme_item>
 		<theme_item name="minimum_character_width" data_type="constant" type="int" default="4">
 			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'M' characters (i.e. this amount of 'M' characters can be displayed without scrolling).
