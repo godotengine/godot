@@ -331,11 +331,13 @@ Vector<Vector3> Camera3D::get_near_plane_points() const {
 	Vector3 endpoints[8];
 	cm.get_endpoints(Transform3D(), endpoints);
 
-	Vector<Vector3> points;
-	points.push_back(Vector3());
-	for (int i = 0; i < 4; i++) {
-		points.push_back(endpoints[i + 4]);
-	}
+	Vector<Vector3> points = {
+		Vector3(),
+		endpoints[4],
+		endpoints[5],
+		endpoints[6],
+		endpoints[7]
+	};
 	return points;
 }
 
