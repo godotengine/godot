@@ -806,7 +806,6 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	mm->set_relative(relativeMotion);
 	get_key_modifier_state([event modifierFlags], mm);
 
-	OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
 	OS_OSX::singleton->push_input(mm);
 }
 
