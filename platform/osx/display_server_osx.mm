@@ -792,7 +792,6 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, M
 	mm->set_relative(relativeMotion);
 	_get_key_modifier_state([event modifierFlags], mm);
 
-	Input::get_singleton()->set_mouse_position(wd.mouse_pos);
 	Input::get_singleton()->parse_input_event(mm);
 }
 

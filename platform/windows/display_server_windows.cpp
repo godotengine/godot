@@ -2078,7 +2078,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 				mm->set_position(c);
 				mm->set_global_position(c);
-				Input::get_singleton()->set_mouse_position(c);
 				mm->set_velocity(Vector2(0, 0));
 
 				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
@@ -2183,7 +2182,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						SetCursorPos(pos.x, pos.y);
 					}
 
-					Input::get_singleton()->set_mouse_position(mm->get_position());
 					mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 					if (old_invalid) {
@@ -2325,7 +2323,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				SetCursorPos(pos.x, pos.y);
 			}
 
-			Input::get_singleton()->set_mouse_position(mm->get_position());
 			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 			if (old_invalid) {
@@ -2426,7 +2423,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				SetCursorPos(pos.x, pos.y);
 			}
 
-			Input::get_singleton()->set_mouse_position(mm->get_position());
 			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 			if (old_invalid) {

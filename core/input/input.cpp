@@ -504,18 +504,20 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		Point2 pos = mm->get_global_position();
-		if (mouse_pos != pos) {
-			set_mouse_position(pos);
+		Point2 position = mm->get_global_position();
+		if (mouse_pos != position) {
+			set_mouse_position(position);
 		}
+		Vector2 relative = mm->get_relative();
+		mouse_velocity_track.update(relative);
 
 		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && (mm->get_button_mask() & MouseButton::LEFT) != MouseButton::NONE) {
 			Ref<InputEventScreenDrag> drag_event;
 			drag_event.instantiate();
 
-			drag_event->set_position(mm->get_position());
-			drag_event->set_relative(mm->get_relative());
-			drag_event->set_velocity(mm->get_velocity());
+			drag_event->set_position(position);
+			drag_event->set_relative(relative);
+			drag_event->set_velocity(get_last_mouse_velocity());
 
 			event_dispatch_function(drag_event);
 		}
@@ -696,7 +698,6 @@ void Input::set_gyroscope(const Vector3 &p_gyroscope) {
 }
 
 void Input::set_mouse_position(const Point2 &p_posf) {
-	mouse_velocity_track.update(p_posf - mouse_pos);
 	mouse_pos = p_posf;
 }
 

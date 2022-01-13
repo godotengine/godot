@@ -137,7 +137,6 @@ int DisplayServerJavaScript::mouse_button_callback(int p_pressed, int p_button, 
 	DisplayServerJavaScript *ds = get_singleton();
 
 	Point2 pos(p_x, p_y);
-	Input::get_singleton()->set_mouse_position(pos);
 	Ref<InputEventMouseButton> ev;
 	ev.instantiate();
 	ev->set_position(pos);
@@ -219,7 +218,6 @@ void DisplayServerJavaScript::mouse_move_callback(double p_x, double p_y, double
 	}
 
 	Point2 pos(p_x, p_y);
-	Input::get_singleton()->set_mouse_position(pos);
 	Ref<InputEventMouseMotion> ev;
 	ev.instantiate();
 	dom2godot_mod(ev, p_modifiers);
@@ -229,7 +227,6 @@ void DisplayServerJavaScript::mouse_move_callback(double p_x, double p_y, double
 	ev->set_global_position(pos);
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
-	Input::get_singleton()->set_mouse_position(ev->get_position());
 	ev->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 	Input::get_singleton()->parse_input_event(ev);
