@@ -43,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+Copyright: 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -59,15 +59,15 @@ Files: ./core/math/convex_hull.cpp
  ./core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./modules/fbx/fbx_parser/
 Comment: Open Asset Import Library (FBX parser)
 Copyright: 2006-2020, assimp team
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: BSD-3-clause
 
 Files: ./platform/android/java/lib/aidl/com/android/vending/licensing/
@@ -92,8 +92,8 @@ Files: ./platform/android/power_android.cpp
  ./platform/x11/power_x11.cpp
 Comment: Simple DirectMedia Layer
 Copyright: 1997-2017, Sam Lantinga
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/collision_solver_sat.cpp
@@ -115,16 +115,16 @@ Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/shape_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
  ./servers/physics/joints/cone_twist_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2007-2022, Juan Linietsky, Ariel Manzur.
+ 2014-2022, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./thirdparty/bullet/

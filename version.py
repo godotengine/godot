@@ -5,5 +5,5 @@ minor = 4
 patch = 3
 status = "rc"
 module_config = ""
-year = 2021
+year = 2022
 website = "https://godotengine.org"
