@@ -38,13 +38,13 @@ private:
 	Status status = STATUS_DISCONNECTED;
 	IP::ResolverID resolving = IP::RESOLVER_INVALID_ID;
 	Array ip_candidates;
-	int conn_port = -1; // Server to make requests to
+	int conn_port = -1; // Server to make requests to.
 	String conn_host;
-	int server_port = -1; // Server to connect to (might be a proxy server)
+	int server_port = -1; // Server to connect to (might be a proxy server).
 	String server_host;
-	int http_proxy_port = -1; // Proxy server for http requests
+	int http_proxy_port = -1; // Proxy server for http requests.
 	String http_proxy_host;
-	int https_proxy_port = -1; // Proxy server for https requests
+	int https_proxy_port = -1; // Proxy server for https requests.
 	String https_proxy_host;
 	bool ssl = false;
 	bool ssl_verify_host = false;
@@ -64,7 +64,7 @@ private:
 
 	Ref<StreamPeerTCP> tcp_connection;
 	Ref<StreamPeer> connection;
-	Ref<HTTPClientTCP> proxy_client; // Negotiate with proxy server
+	Ref<HTTPClientTCP> proxy_client; // Negotiate with proxy server.
 
 	int response_num = 0;
 	Vector<String> response_headers;

@@ -99,7 +99,7 @@ String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const S
 }
 
 Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
-	// Copy the string into a raw buffer
+	// Copy the string into a raw buffer.
 	Vector<uint8_t> raw_data;
 
 	CharString charstr = p_request_data.utf8();
@@ -134,7 +134,7 @@ Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_cust
 	headers = p_custom_headers;
 
 	if (accept_gzip) {
-		// If the user has specified a different Accept-Encoding, don't overwrite it
+		// If the user has specified a Accept-Encoding header, don't overwrite it.
 		if (!has_header(headers, "Accept-Encoding")) {
 			headers.push_back("Accept-Encoding: gzip, deflate");
 		}
@@ -227,7 +227,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 	}
 
 	if (response_code == 301 || response_code == 302) {
-		// Handle redirect
+		// Handle redirect.
 
 		if (max_redirects >= 0 && redirections >= max_redirects) {
 			call_deferred(SNAME("_request_done"), RESULT_REDIRECT_LIMIT_REACHED, response_code, response_headers, PackedByteArray());
@@ -244,12 +244,12 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		}
 
 		if (!new_request.is_empty()) {
-			// Process redirect
+			// Process redirect.
 			client->close();
-			int new_redirs = redirections + 1; // Because _request() will clear it
+			int new_redirs = redirections + 1; // Because _request() will clear it.
 			Error err;
 			if (new_request.begins_with("http")) {
-				// New url, request all again
+				// New url, new request.
 				_parse_url(new_request);
 			} else {
 				request_string = new_request;
@@ -276,11 +276,11 @@ bool HTTPRequest::_update_connection() {
 	switch (client->get_status()) {
 		case HTTPClient::STATUS_DISCONNECTED: {
 			call_deferred(SNAME("_request_done"), RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
-			return true; // End it, since it's doing something
+			return true; // End it, since it's disconnected.
 		} break;
 		case HTTPClient::STATUS_RESOLVING: {
 			client->poll();
-			// Must wait
+			// Must wait.
 			return false;
 		} break;
 		case HTTPClient::STATUS_CANT_RESOLVE: {
@@ -290,9 +290,9 @@ bool HTTPRequest::_update_connection() {
 		} break;
 		case HTTPClient::STATUS_CONNECTING: {
 			client->poll();
-			// Must wait
+			// Must wait.
 			return false;
-		} break; // Connecting to IP
+		} break; // Connecting to IP.
 		case HTTPClient::STATUS_CANT_CONNECT: {
 			call_deferred(SNAME("_request_done"), RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray());
 			return true;
@@ -301,7 +301,7 @@ bool HTTPRequest::_update_connection() {
 		case HTTPClient::STATUS_CONNECTED: {
 			if (request_sent) {
 				if (!got_response) {
-					// No body
+					// No body.
 
 					bool ret_value;
 
@@ -313,16 +313,16 @@ bool HTTPRequest::_update_connection() {
 					return true;
 				}
 				if (body_len < 0) {
-					// Chunked transfer is done
+					// Chunked transfer is done.
 					call_deferred(SNAME("_request_done"), RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
 				}
 
 				call_deferred(SNAME("_request_done"), RESULT_CHUNKED_BODY_SIZE_MISMATCH, response_code, response_headers, PackedByteArray());
 				return true;
-				// Request might have been done
+				// Request might have been done.
 			} else {
-				// Did not request yet, do request
+				// Did not request yet, do request.
 
 				int size = request_data.size();
 				Error err = client->request(method, request_string, headers, size > 0 ? request_data.ptr() : nullptr, size);
@@ -334,13 +334,13 @@ bool HTTPRequest::_update_connection() {
 				request_sent = true;
 				return false;
 			}
-		} break; // Connected: break requests only accepted here
+		} break; // Connected: break requests only accepted here.
 		case HTTPClient::STATUS_REQUESTING: {
-			// Must wait, still requesting
+			// Must wait, still requesting.
 			client->poll();
 			return false;
 
-		} break; // Request in progress
+		} break; // Request in progress.
 		case HTTPClient::STATUS_BODY: {
 			if (!got_response) {
 				bool ret_value;
@@ -411,7 +411,7 @@ bool HTTPRequest::_update_connection() {
 
 			return false;
 
-		} break; // Request resulted in body: break which must be read
+		} break; // Request resulted in body: break which must be read.
 		case HTTPClient::STATUS_CONNECTION_ERROR: {
 			call_deferred(SNAME("_request_done"), RESULT_CONNECTION_ERROR, 0, PackedStringArray(), PackedByteArray());
 			return true;
@@ -428,7 +428,7 @@ bool HTTPRequest::_update_connection() {
 void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data) {
 	cancel_request();
 
-	// Determine if the request body is compressed
+	// Determine if the request body is compressed.
 	bool is_compressed;
 	String content_encoding = get_header_value(p_headers, "Content-Encoding").to_lower();
 	Compression::Mode mode;
@@ -452,11 +452,11 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 		} else if (result == -5) {
 			WARN_PRINT("Decompressed size of HTTP response body exceeded body_size_limit");
 			p_status = RESULT_BODY_SIZE_LIMIT_EXCEEDED;
-			// Just return the raw data if we failed to decompress it
+			// Just return the raw data if we failed to decompress it.
 		} else {
 			WARN_PRINT("Failed to decompress HTTP response body");
 			p_status = RESULT_BODY_DECOMPRESS_FAILED;
-			// Just return the raw data if we failed to decompress it
+			// Just return the raw data if we failed to decompress it.
 		}
 	}
 
@@ -471,7 +471,6 @@ void HTTPRequest::_notification(int p_what) {
 		bool done = _update_connection();
 		if (done) {
 			set_process_internal(false);
-			// cancel_request(); called from _request done now
 		}
 	}
 
@@ -619,7 +618,6 @@ void HTTPRequest::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("request_completed", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "response_code"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "headers"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "body")));
 
 	BIND_ENUM_CONSTANT(RESULT_SUCCESS);
-	//BIND_ENUM_CONSTANT( RESULT_NO_BODY );
 	BIND_ENUM_CONSTANT(RESULT_CHUNKED_BODY_SIZE_MISMATCH);
 	BIND_ENUM_CONSTANT(RESULT_CANT_CONNECT);
 	BIND_ENUM_CONSTANT(RESULT_CANT_RESOLVE);
