@@ -1051,6 +1051,13 @@
 				Returns composite character's bounds as offsets from the start of the line.
 			</description>
 		</method>
+		<method name="shaped_text_get_inferred_direction" qualifiers="const">
+			<return type="int" enum="TextServer.Direction" />
+			<argument index="0" name="shaped" type="RID" />
+			<description>
+				Returns direction of the text, inferred by the BiDi algorithm.
+			</description>
+		</method>
 		<method name="shaped_text_get_line_breaks" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="shaped" type="RID" />

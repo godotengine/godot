@@ -183,11 +183,9 @@ void Label::_shape() {
 						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
 					}
 				}
-
 			} else if (lines_hidden) {
 				TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
 			}
-
 		} else {
 			// Autowrap disabled.
 			for (int i = 0; i < lines_rid.size(); i++) {
@@ -294,7 +292,7 @@ void Label::_notification(int p_what) {
 		Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
 		int outline_size = get_theme_constant(SNAME("outline_size"));
 		int shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
-		bool rtl = TS->shaped_text_get_direction(text_rid);
+		bool rtl = (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL);
 		bool rtl_layout = is_layout_rtl();
 
 		style->draw(ci, Rect2(Point2(0, 0), get_size()));
@@ -422,19 +420,19 @@ void Label::_notification(int p_what) {
 
 				// Draw main text.
 				for (int j = 0; j < gl_size; j++) {
-					for (int k = 0; k < glyphs[j].repeat; k++) {
-						// Trim when necessary.
-						if (trim_pos >= 0) {
-							if (rtl) {
-								if (j < trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-									continue;
-								}
-							} else {
-								if (j >= trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-									break;
-								}
+					// Trim when necessary.
+					if (trim_pos >= 0) {
+						if (rtl) {
+							if (j < trim_pos) {
+								continue;
+							}
+						} else {
+							if (j >= trim_pos) {
+								break;
 							}
 						}
+					}
+					for (int k = 0; k < glyphs[j].repeat; k++) {
 						bool skip = (trim_chars && glyphs[j].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 
 						// Draw glyph outlines and shadow.
@@ -480,19 +478,19 @@ void Label::_notification(int p_what) {
 
 			// Draw main text.
 			for (int j = 0; j < gl_size; j++) {
-				for (int k = 0; k < glyphs[j].repeat; k++) {
-					// Trim when necessary.
-					if (trim_pos >= 0) {
-						if (rtl) {
-							if (j < trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-								continue;
-							}
-						} else {
-							if (j >= trim_pos && (glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-								break;
-							}
+				// Trim when necessary.
+				if (trim_pos >= 0) {
+					if (rtl) {
+						if (j < trim_pos) {
+							continue;
+						}
+					} else {
+						if (j >= trim_pos) {
+							break;
 						}
 					}
+				}
+				for (int k = 0; k < glyphs[j].repeat; k++) {
 					bool skip = (trim_chars && glyphs[j].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
 
 					// Draw glyph outlines and shadow.

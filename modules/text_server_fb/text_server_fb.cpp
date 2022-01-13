@@ -2128,6 +2128,10 @@ TextServer::Direction TextServerFallback::shaped_text_get_direction(RID p_shaped
 	return TextServer::DIRECTION_LTR;
 }
 
+TextServer::Direction TextServerFallback::shaped_text_get_inferred_direction(RID p_shaped) const {
+	return TextServer::DIRECTION_LTR;
+}
+
 void TextServerFallback::shaped_text_set_custom_punctuation(RID p_shaped, const String &p_punct) {
 	_THREAD_SAFE_METHOD_
 	ShapedTextData *sd = shaped_owner.get_or_null(p_shaped);
@@ -2631,15 +2635,36 @@ float TextServerFallback::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 		}
 	}
 
+	float justification_width;
+	if ((p_jst_flags & JUSTIFICATION_CONSTRAIN_ELLIPSIS) == JUSTIFICATION_CONSTRAIN_ELLIPSIS) {
+		if (sd->overrun_trim_data.trim_pos >= 0) {
+			end_pos = sd->overrun_trim_data.trim_pos;
+			justification_width = sd->width_trimmed;
+		} else {
+			return sd->width;
+		}
+	} else {
+		justification_width = sd->width;
+	}
+
 	if ((p_jst_flags & JUSTIFICATION_TRIM_EDGE_SPACES) == JUSTIFICATION_TRIM_EDGE_SPACES) {
+		// Trim spaces.
 		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
-			sd->width -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
+			justification_width -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
 			sd->glyphs.write[start_pos].advance = 0;
 			start_pos += sd->glyphs[start_pos].count;
 		}
 		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
-			sd->width -= sd->glyphs[end_pos].advance * sd->glyphs[end_pos].repeat;
+			justification_width -= sd->glyphs[end_pos].advance * sd->glyphs[end_pos].repeat;
 			sd->glyphs.write[end_pos].advance = 0;
+			end_pos -= sd->glyphs[end_pos].count;
+		}
+	} else {
+		// Skip breaks, but do not reset size.
+		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD)) {
+			start_pos += sd->glyphs[start_pos].count;
+		}
+		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD)) {
 			end_pos -= sd->glyphs[end_pos].count;
 		}
 	}
@@ -2655,20 +2680,28 @@ float TextServerFallback::shaped_text_fit_to_width(RID p_shaped, float p_width, 
 	}
 
 	if ((space_count > 0) && ((p_jst_flags & JUSTIFICATION_WORD_BOUND) == JUSTIFICATION_WORD_BOUND)) {
-		float delta_width_per_space = (p_width - sd->width) / space_count;
+		float delta_width_per_space = (p_width - justification_width) / space_count;
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.write[i];
 			if (gl.count > 0) {
 				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
 					float old_adv = gl.advance;
 					gl.advance = MAX(gl.advance + delta_width_per_space, Math::round(0.1 * gl.font_size));
-					sd->width += (gl.advance - old_adv);
+					justification_width += (gl.advance - old_adv);
 				}
 			}
 		}
 	}
 
-	return sd->width;
+	if (Math::floor(p_width) < Math::floor(justification_width)) {
+		sd->fit_width_minimum_reached = true;
+	}
+
+	if ((p_jst_flags & JUSTIFICATION_CONSTRAIN_ELLIPSIS) != JUSTIFICATION_CONSTRAIN_ELLIPSIS) {
+		sd->width = justification_width;
+	}
+
+	return justification_width;
 }
 
 float TextServerFallback::shaped_text_tab_align(RID p_shaped, const PackedFloat32Array &p_tab_stops) {
@@ -2769,6 +2802,7 @@ bool TextServerFallback::shaped_text_update_breaks(RID p_shaped) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
 			}
 			if (is_linebreak(c)) {
+				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
 				sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_HARD;
 			}
 			if (c == 0x0009 || c == 0x000b) {
@@ -2827,17 +2861,50 @@ void TextServerFallback::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 		return;
 	}
 
+	Vector<ShapedTextData::Span> &spans = sd->spans;
+	if (sd->parent != RID()) {
+		ShapedTextData *parent_sd = shaped_owner.get_or_null(sd->parent);
+		ERR_FAIL_COND(!parent_sd->valid);
+		spans = parent_sd->spans;
+	}
+
+	if (spans.size() == 0) {
+		return;
+	}
+
 	int sd_size = sd->glyphs.size();
-	RID last_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
 	int last_gl_font_size = sd_glyphs[sd_size - 1].font_size;
-	int32_t dot_gl_idx = font_get_glyph_index(last_gl_font_rid, '.', 0);
-	Vector2 dot_adv = font_get_glyph_advance(last_gl_font_rid, last_gl_font_size, dot_gl_idx);
-	int32_t whitespace_gl_idx = font_get_glyph_index(last_gl_font_rid, ' ', 0);
-	Vector2 whitespace_adv = font_get_glyph_advance(last_gl_font_rid, last_gl_font_size, whitespace_gl_idx);
+
+	// Find usable fonts, if fonts from the last glyph do not have required chars.
+	RID dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
+	if (!font_has_char(dot_gl_font_rid, '.')) {
+		const Vector<RID> &fonts = spans[spans.size() - 1].fonts;
+		for (const RID &font : fonts) {
+			if (font_has_char(font, '.')) {
+				dot_gl_font_rid = font;
+				break;
+			}
+		}
+	}
+	RID whitespace_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
+	if (!font_has_char(whitespace_gl_font_rid, '.')) {
+		const Vector<RID> &fonts = spans[spans.size() - 1].fonts;
+		for (const RID &font : fonts) {
+			if (font_has_char(font, ' ')) {
+				whitespace_gl_font_rid = font;
+				break;
+			}
+		}
+	}
+
+	int32_t dot_gl_idx = dot_gl_font_rid.is_valid() ? font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, '.') : -10;
+	Vector2 dot_adv = dot_gl_font_rid.is_valid() ? font_get_glyph_advance(dot_gl_font_rid, last_gl_font_size, dot_gl_idx) : Vector2();
+	int32_t whitespace_gl_idx = whitespace_gl_font_rid.is_valid() ? font_get_glyph_index(whitespace_gl_font_rid, last_gl_font_size, ' ') : -10;
+	Vector2 whitespace_adv = whitespace_gl_font_rid.is_valid() ? font_get_glyph_advance(whitespace_gl_font_rid, last_gl_font_size, whitespace_gl_idx) : Vector2();
 
 	int ellipsis_width = 0;
-	if (add_ellipsis) {
-		ellipsis_width = 3 * dot_adv.x + font_get_spacing(last_gl_font_rid, last_gl_font_size, TextServer::SPACING_GLYPH) + (cut_per_word ? whitespace_adv.x : 0);
+	if (add_ellipsis && whitespace_gl_font_rid.is_valid()) {
+		ellipsis_width = 3 * dot_adv.x + font_get_spacing(whitespace_gl_font_rid, last_gl_font_size, SPACING_GLYPH) + (cut_per_word ? whitespace_adv.x : 0);
 	}
 
 	int ell_min_characters = 6;
@@ -2891,23 +2958,25 @@ void TextServerFallback::shaped_text_overrun_trim_to_width(RID p_shaped_line, fl
 				gl.count = 1;
 				gl.advance = whitespace_adv.x;
 				gl.index = whitespace_gl_idx;
-				gl.font_rid = last_gl_font_rid;
+				gl.font_rid = whitespace_gl_font_rid;
 				gl.font_size = last_gl_font_size;
 				gl.flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_BREAK_SOFT | GRAPHEME_IS_VIRTUAL;
 
 				sd->overrun_trim_data.ellipsis_glyph_buf.append(gl);
 			}
 			// Add ellipsis dots.
-			Glyph gl;
-			gl.count = 1;
-			gl.repeat = 3;
-			gl.advance = dot_adv.x;
-			gl.index = dot_gl_idx;
-			gl.font_rid = last_gl_font_rid;
-			gl.font_size = last_gl_font_size;
-			gl.flags = GRAPHEME_IS_PUNCTUATION | GRAPHEME_IS_VIRTUAL;
+			if (dot_gl_idx != 0) {
+				Glyph gl;
+				gl.count = 1;
+				gl.repeat = 3;
+				gl.advance = dot_adv.x;
+				gl.index = dot_gl_idx;
+				gl.font_rid = dot_gl_font_rid;
+				gl.font_size = last_gl_font_size;
+				gl.flags = GRAPHEME_IS_PUNCTUATION | GRAPHEME_IS_VIRTUAL;
 
-			sd->overrun_trim_data.ellipsis_glyph_buf.append(gl);
+				sd->overrun_trim_data.ellipsis_glyph_buf.append(gl);
+			}
 		}
 
 		sd->text_trimmed = true;
@@ -3023,13 +3092,13 @@ bool TextServerFallback::shaped_text_shape(RID p_shaped) {
 				if (gl.font_rid.is_valid()) {
 					if (sd->text[j - sd->start] != 0 && !is_linebreak(sd->text[j - sd->start])) {
 						if (sd->orientation == ORIENTATION_HORIZONTAL) {
-							gl.advance = font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x;
+							gl.advance = Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x);
 							gl.x_off = 0;
 							gl.y_off = 0;
 							sd->ascent = MAX(sd->ascent, font_get_ascent(gl.font_rid, gl.font_size));
 							sd->descent = MAX(sd->descent, font_get_descent(gl.font_rid, gl.font_size));
 						} else {
-							gl.advance = font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).y;
+							gl.advance = Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).y);
 							gl.x_off = -Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5);
 							gl.y_off = font_get_ascent(gl.font_rid, gl.font_size);
 							sd->ascent = MAX(sd->ascent, Math::round(font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
