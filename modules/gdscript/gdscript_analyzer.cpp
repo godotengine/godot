@@ -3126,7 +3126,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
 			GDScriptParser::DataType index_type = p_subscript->index->get_datatype();
 
-			if (base_type.is_variant()) {
+			if (!base_type.is_hard_type() || base_type.is_variant()) {
 				result_type.kind = GDScriptParser::DataType::VARIANT;
 				mark_node_unsafe(p_subscript);
 			} else {
