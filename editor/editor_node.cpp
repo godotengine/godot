@@ -4236,8 +4236,9 @@ void EditorNode::_dock_make_float() {
 	Control *dock = dock_slot[dock_popup_selected]->get_current_tab_control();
 	ERR_FAIL_COND(!dock);
 
-	const Size2i borders = Size2i(4, 4) * EDSCALE;
-	Size2 dock_size = dock->get_size() + borders * 2; // remember size
+	Size2 borders = Size2(4, 4) * EDSCALE;
+	// Remember size and position before removing it from the main window.
+	Size2 dock_size = dock->get_size() + borders * 2;
 	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position() - borders;
 
 	int dock_index = dock->get_index();
@@ -4246,7 +4247,7 @@ void EditorNode::_dock_make_float() {
 	Window *window = memnew(Window);
 	window->set_title(dock->get_name());
 	Panel *p = memnew(Panel);
-	p->set_mode(Panel::MODE_FOREGROUND);
+	p->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("PanelForeground"), SNAME("EditorStyles")));
 	p->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	window->add_child(p);
 	MarginContainer *margin = memnew(MarginContainer);
