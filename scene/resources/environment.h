@@ -70,12 +70,6 @@ public:
 		TONE_MAPPER_ACES,
 	};
 
-	enum SDFGICascades {
-		SDFGI_CASCADES_4,
-		SDFGI_CASCADES_6,
-		SDFGI_CASCADES_8,
-	};
-
 	enum SDFGIYScale {
 		SDFGI_Y_SCALE_DISABLED,
 		SDFGI_Y_SCALE_75_PERCENT,
@@ -153,7 +147,7 @@ private:
 
 	// SDFGI
 	bool sdfgi_enabled = false;
-	SDFGICascades sdfgi_cascades = SDFGI_CASCADES_6;
+	int sdfgi_cascades = 6;
 	float sdfgi_min_cell_size = 0.2;
 	SDFGIYScale sdfgi_y_scale = SDFGI_Y_SCALE_DISABLED;
 	bool sdfgi_use_occlusion = false;
@@ -320,8 +314,8 @@ public:
 	// SDFGI
 	void set_sdfgi_enabled(bool p_enabled);
 	bool is_sdfgi_enabled() const;
-	void set_sdfgi_cascades(SDFGICascades p_cascades);
-	SDFGICascades get_sdfgi_cascades() const;
+	void set_sdfgi_cascades(int p_cascades);
+	int get_sdfgi_cascades() const;
 	void set_sdfgi_min_cell_size(float p_size);
 	float get_sdfgi_min_cell_size() const;
 	void set_sdfgi_max_distance(float p_distance);
@@ -433,7 +427,6 @@ VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
-VARIANT_ENUM_CAST(Environment::SDFGICascades)
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 

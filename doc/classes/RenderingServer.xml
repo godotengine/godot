@@ -1001,7 +1001,7 @@
 			<return type="void" />
 			<argument index="0" name="env" type="RID" />
 			<argument index="1" name="enable" type="bool" />
-			<argument index="2" name="cascades" type="int" enum="RenderingServer.EnvironmentSDFGICascades" />
+			<argument index="2" name="cascades" type="int" />
 			<argument index="3" name="min_cell_size" type="float" />
 			<argument index="4" name="y_scale" type="int" enum="RenderingServer.EnvironmentSDFGIYScale" />
 			<argument index="5" name="use_occlusion" type="bool" />
@@ -4179,12 +4179,6 @@
 		</constant>
 		<constant name="ENV_SSIL_QUALITY_ULTRA" value="4" enum="EnvironmentSSILQuality">
 			Highest quality screen-space indirect lighting. Uses the adaptive target setting which can be dynamically adjusted to smoothly balance performance and visual quality.
-		</constant>
-		<constant name="ENV_SDFGI_CASCADES_4" value="0" enum="EnvironmentSDFGICascades">
-		</constant>
-		<constant name="ENV_SDFGI_CASCADES_6" value="1" enum="EnvironmentSDFGICascades">
-		</constant>
-		<constant name="ENV_SDFGI_CASCADES_8" value="2" enum="EnvironmentSDFGICascades">
 		</constant>
 		<constant name="ENV_SDFGI_Y_SCALE_DISABLED" value="0" enum="EnvironmentSDFGIYScale">
 		</constant>

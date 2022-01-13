@@ -168,7 +168,8 @@
 		</member>
 		<member name="sdfgi_cascade0_distance" type="float" setter="set_sdfgi_cascade0_distance" getter="get_sdfgi_cascade0_distance" default="12.8">
 		</member>
-		<member name="sdfgi_cascades" type="int" setter="set_sdfgi_cascades" getter="get_sdfgi_cascades" enum="Environment.SDFGICascades" default="1">
+		<member name="sdfgi_cascades" type="int" setter="set_sdfgi_cascades" getter="get_sdfgi_cascades" default="6">
+			The number of cascades to use for SDFGI (between 1 and 8). A higher number of cascades allows displaying SDFGI further away while preserving detail up close, at the cost of performance. When using SDFGI on small-scale levels, [member sdfgi_cascades] can often be decreased between [code]1[/code] and [code]4[/code] to improve performance.
 		</member>
 		<member name="sdfgi_enabled" type="bool" setter="set_sdfgi_enabled" getter="is_sdfgi_enabled" default="false">
 			If [code]true[/code], enables signed distance field global illumination for meshes that have their [member GeometryInstance3D.gi_mode] set to [constant GeometryInstance3D.GI_MODE_BAKED]. SDFGI is a real-time global illumination technique that works well with procedurally generated and user-built levels, including in situations where geometry is created during gameplay. The signed distance field is automatically generated around the camera as it moves. Dynamic lights are supported, but dynamic occluders and emissive surfaces are not.
@@ -370,12 +371,6 @@
 		</constant>
 		<constant name="GLOW_BLEND_MODE_MIX" value="4" enum="GlowBlendMode">
 			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
-		</constant>
-		<constant name="SDFGI_CASCADES_4" value="0" enum="SDFGICascades">
-		</constant>
-		<constant name="SDFGI_CASCADES_6" value="1" enum="SDFGICascades">
-		</constant>
-		<constant name="SDFGI_CASCADES_8" value="2" enum="SDFGICascades">
 		</constant>
 		<constant name="SDFGI_Y_SCALE_DISABLED" value="0" enum="SDFGIYScale">
 		</constant>
