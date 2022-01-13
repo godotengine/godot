@@ -8774,6 +8774,13 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					}
 				}
 
+				for (int i = 0; i < shader->functions.size(); i++) {
+					if (!shader->functions[i].callable && shader->functions[i].name == name) {
+						_set_error("Redefinition of '" + String(name) + "'");
+						return ERR_PARSE_ERROR;
+					}
+				}
+
 				ShaderNode::Function function;
 
 				function.callable = !p_functions.has(name);
