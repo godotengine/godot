@@ -33,6 +33,8 @@
 
 #include "animation_track_editor.h"
 
+class ViewPanner;
+
 class AnimationBezierTrackEdit : public Control {
 	GDCLASS(AnimationBezierTrackEdit, Control);
 
@@ -123,9 +125,10 @@ class AnimationBezierTrackEdit : public Control {
 
 	Set<int> selection;
 
-	bool panning_timeline = false;
-	float panning_timeline_from;
-	float panning_timeline_at;
+	Ref<ViewPanner> panner;
+	void _scroll_callback(Vector2 p_scroll_vec);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin);
 
 	void _draw_line_clipped(const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, int p_clip_left, int p_clip_right);
 	void _draw_track(int p_track, const Color &p_color);

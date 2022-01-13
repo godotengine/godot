@@ -38,6 +38,8 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/2d/skeleton_2d.h"
+#include "scene/gui/scroll_container.h"
+#include "scene/gui/view_panner.h"
 
 Node2D *Polygon2DEditor::_get_node() const {
 	return node;
@@ -63,9 +65,8 @@ int Polygon2DEditor::_get_polygon_count() const {
 void Polygon2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED: {
-			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			bone_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			uv_panner->set_control_scheme((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/sub_editor_panning_scheme").operator int());
 		} break;
 		case NOTIFICATION_READY: {
 			button_uv->set_icon(get_theme_icon(SNAME("Uv"), SNAME("EditorIcons")));
@@ -88,6 +89,11 @@ void Polygon2DEditor::_notification(int p_what) {
 
 			uv_vscroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
 			uv_hscroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			bone_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
@@ -440,6 +446,11 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 		return;
 	}
 
+	if (uv_panner->gui_input(p_input)) {
+		accept_event();
+		return;
+	}
+
 	Transform2D mtx;
 	mtx.elements[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
@@ -767,23 +778,13 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 			}
 
 			uv_edit_draw->update();
-
-		} else if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed()) {
-			uv_zoom->set_value(uv_zoom->get_value() / (1 - (0.1 * mb->get_factor())));
-		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed()) {
-			uv_zoom->set_value(uv_zoom->get_value() * (1 - (0.1 * mb->get_factor())));
 		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_input;
 
 	if (mm.is_valid()) {
-		if ((mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE || Input::get_singleton()->is_key_pressed(Key::SPACE)) {
-			Vector2 drag = mm->get_relative();
-			uv_hscroll->set_value(uv_hscroll->get_value() - drag.x);
-			uv_vscroll->set_value(uv_vscroll->get_value() - drag.y);
-
-		} else if (uv_drag) {
+		if (uv_drag) {
 			Vector2 uv_drag_to = mm->get_position();
 			uv_drag_to = snap_point(uv_drag_to); // FIXME: Only works correctly with 'UV_MODE_EDIT_POINT', it's imprecise with the rest.
 			Vector2 drag = mtx.affine_inverse().xform(uv_drag_to) - mtx.affine_inverse().xform(uv_drag_from);
@@ -922,6 +923,23 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	if (pan_gesture.is_valid()) {
 		uv_hscroll->set_value(uv_hscroll->get_value() + uv_hscroll->get_page() * pan_gesture->get_delta().x / 8);
 		uv_vscroll->set_value(uv_vscroll->get_value() + uv_vscroll->get_page() * pan_gesture->get_delta().y / 8);
+	}
+}
+
+void Polygon2DEditor::_uv_scroll_callback(Vector2 p_scroll_vec) {
+	_uv_pan_callback(-p_scroll_vec * 32);
+}
+
+void Polygon2DEditor::_uv_pan_callback(Vector2 p_scroll_vec) {
+	uv_hscroll->set_value(uv_hscroll->get_value() - p_scroll_vec.x);
+	uv_vscroll->set_value(uv_vscroll->get_value() - p_scroll_vec.y);
+}
+
+void Polygon2DEditor::_uv_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin) {
+	if (p_scroll_vec.y < 0) {
+		uv_zoom->set_value(uv_zoom->get_value() / (1 - (0.1 * Math::abs(p_scroll_vec.y))));
+	} else {
+		uv_zoom->set_value(uv_zoom->get_value() * (1 - (0.1 * Math::abs(p_scroll_vec.y))));
 	}
 }
 
@@ -1261,6 +1279,10 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_edit_mode[1]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(1));
 	uv_edit_mode[2]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(2));
 	uv_edit_mode[3]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_edit_mode_select), varray(3));
+
+	uv_panner.instantiate();
+	uv_panner->set_callbacks(callable_mp(this, &Polygon2DEditor::_uv_scroll_callback), callable_mp(this, &Polygon2DEditor::_uv_pan_callback), callable_mp(this, &Polygon2DEditor::_uv_zoom_callback));
+	uv_panner->set_disable_rmb(true);
 
 	uv_mode_hb->add_child(memnew(VSeparator));
 
