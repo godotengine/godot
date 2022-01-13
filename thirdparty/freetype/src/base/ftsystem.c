@@ -4,7 +4,7 @@
  *
  *   ANSI-specific FreeType low-level system interface (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -275,7 +275,7 @@
     stream->close = ft_ansi_stream_close;
 
     FT_TRACE1(( "FT_Stream_Open:" ));
-    FT_TRACE1(( " opened `%s' (%d bytes) successfully\n",
+    FT_TRACE1(( " opened `%s' (%ld bytes) successfully\n",
                 filepathname, stream->size ));
 
     return FT_Err_Ok;

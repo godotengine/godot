@@ -5,7 +5,7 @@
  *   TrueTypeGX/AAT morx table validation
  *   body for type2 (Ligature Substitution) subtable.
  *
- * Copyright (C) 2005-2020 by
+ * Copyright (C) 2005-2021 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -72,11 +72,11 @@
     optdata->componentTable = FT_NEXT_ULONG( p );
     optdata->ligatureTable  = FT_NEXT_ULONG( p );
 
-    GXV_TRACE(( "offset to ligActionTable=0x%08x\n",
+    GXV_TRACE(( "offset to ligActionTable=0x%08lx\n",
                 optdata->ligActionTable ));
-    GXV_TRACE(( "offset to componentTable=0x%08x\n",
+    GXV_TRACE(( "offset to componentTable=0x%08lx\n",
                 optdata->componentTable ));
-    GXV_TRACE(( "offset to ligatureTable=0x%08x\n",
+    GXV_TRACE(( "offset to ligatureTable=0x%08lx\n",
                 optdata->ligatureTable ));
   }
 
@@ -116,19 +116,19 @@
 
     gxv_set_length_by_ulong_offset( o, l, buff, 6, table_size, gxvalid );
 
-    GXV_TRACE(( "classTable: offset=0x%08x length=0x%08x\n",
+    GXV_TRACE(( "classTable: offset=0x%08lx length=0x%08lx\n",
                 classTable, *classTable_length_p ));
-    GXV_TRACE(( "stateArray: offset=0x%08x length=0x%08x\n",
+    GXV_TRACE(( "stateArray: offset=0x%08lx length=0x%08lx\n",
                 stateArray, *stateArray_length_p ));
-    GXV_TRACE(( "entryTable: offset=0x%08x length=0x%08x\n",
+    GXV_TRACE(( "entryTable: offset=0x%08lx length=0x%08lx\n",
                 entryTable, *entryTable_length_p ));
-    GXV_TRACE(( "ligActionTable: offset=0x%08x length=0x%08x\n",
+    GXV_TRACE(( "ligActionTable: offset=0x%08lx length=0x%08lx\n",
                 optdata->ligActionTable,
                 optdata->ligActionTable_length ));
-    GXV_TRACE(( "componentTable: offset=0x%08x length=0x%08x\n",
+    GXV_TRACE(( "componentTable: offset=0x%08lx length=0x%08lx\n",
                 optdata->componentTable,
                 optdata->componentTable_length ));
-    GXV_TRACE(( "ligatureTable:  offset=0x%08x length=0x%08x\n",
+    GXV_TRACE(( "ligatureTable:  offset=0x%08lx length=0x%08lx\n",
                 optdata->ligatureTable,
                 optdata->ligatureTable_length ));
 
@@ -157,12 +157,12 @@
 
     if ( p < lat_base )
     {
-      GXV_TRACE(( "p < lat_base (%d byte rewind)\n", lat_base - p ));
+      GXV_TRACE(( "p < lat_base (%ld byte rewind)\n", lat_base - p ));
       FT_INVALID_OFFSET;
     }
     else if ( lat_limit < p )
     {
-      GXV_TRACE(( "lat_limit < p (%d byte overrun)\n", p - lat_limit ));
+      GXV_TRACE(( "lat_limit < p (%ld byte overrun)\n", p - lat_limit ));
       FT_INVALID_OFFSET;
     }
 
@@ -196,7 +196,7 @@
 
         GXV_TRACE(( "ligature action table includes"
                     " too negative offset moving all GID"
-                    " below defined range: 0x%04x\n",
+                    " below defined range: 0x%04lx\n",
                     offset & 0xFFFFU ));
         GXV_SET_ERR_IF_PARANOID( FT_INVALID_OFFSET );
       }
@@ -207,14 +207,14 @@
 
         GXV_TRACE(( "ligature action table includes"
                     " too large offset moving all GID"
-                    " over defined range: 0x%04x\n",
+                    " over defined range: 0x%04lx\n",
                     offset & 0xFFFFU ));
         GXV_SET_ERR_IF_PARANOID( FT_INVALID_OFFSET );
       }
 
       GXV_TRACE(( "ligature action table includes"
                   " invalid offset to add to 16-bit GID:"
-                  " 0x%08x\n", offset ));
+                  " 0x%08lx\n", offset ));
       GXV_SET_ERR_IF_PARANOID( FT_INVALID_OFFSET );
     }
   }

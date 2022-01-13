@@ -4,7 +4,7 @@
  *
  *   Auto-fitter types (specification only).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -92,63 +92,6 @@ extern void*  _af_debug_hints;
                                FT_Pos    threshold );
 
 
-  /*************************************************************************/
-  /*************************************************************************/
-  /*****                                                               *****/
-  /*****                   A N G L E   T Y P E S                       *****/
-  /*****                                                               *****/
-  /*************************************************************************/
-  /*************************************************************************/
-
-  /*
-   * The auto-fitter doesn't need a very high angular accuracy;
-   * this allows us to speed up some computations considerably with a
-   * light Cordic algorithm (see afangles.c).
-   */
-
-  typedef FT_Int  AF_Angle;
-
-
-#define AF_ANGLE_PI   256
-#define AF_ANGLE_2PI  ( AF_ANGLE_PI * 2 )
-#define AF_ANGLE_PI2  ( AF_ANGLE_PI / 2 )
-#define AF_ANGLE_PI4  ( AF_ANGLE_PI / 4 )
-
-
-#if 0
-  /*
-   * compute the angle of a given 2-D vector
-   */
-  FT_LOCAL( AF_Angle )
-  af_angle_atan( FT_Pos  dx,
-                 FT_Pos  dy );
-
-
-  /*
-   * compute `angle2 - angle1'; the result is always within
-   * the range [-AF_ANGLE_PI .. AF_ANGLE_PI - 1]
-   */
-  FT_LOCAL( AF_Angle )
-  af_angle_diff( AF_Angle  angle1,
-                 AF_Angle  angle2 );
-#endif /* 0 */
-
-
-#define AF_ANGLE_DIFF( result, angle1, angle2 ) \
-  FT_BEGIN_STMNT                                \
-    AF_Angle  _delta = (angle2) - (angle1);     \
-                                                \
-                                                \
-    while ( _delta <= -AF_ANGLE_PI )            \
-      _delta += AF_ANGLE_2PI;                   \
-                                                \
-    while ( _delta > AF_ANGLE_PI )              \
-      _delta -= AF_ANGLE_2PI;                   \
-                                                \
-    result = _delta;                            \
-  FT_END_STMNT
-
-
   /*
    * opaque handle to glyph-specific hints -- see `afhints.h' for more
    * details
@@ -172,7 +115,6 @@ extern void*  _af_debug_hints;
 #define AF_SCALER_FLAG_NO_HORIZONTAL  1U /* disable horizontal hinting */
 #define AF_SCALER_FLAG_NO_VERTICAL    2U /* disable vertical hinting   */
 #define AF_SCALER_FLAG_NO_ADVANCE     4U /* disable advance hinting    */
-#define AF_SCALER_FLAG_NO_WARPER      8U /* disable warper             */
 
 
   typedef struct  AF_ScalerRec_
@@ -256,7 +198,6 @@ extern void*  _af_debug_hints;
    *   outline according to the results of the glyph analyzer.
    */
 
-#define AFWRTSYS_H_  /* don't load header files */
 #undef  WRITING_SYSTEM
 #define WRITING_SYSTEM( ws, WS )    \
           AF_WRITING_SYSTEM_ ## WS,
@@ -265,13 +206,11 @@ extern void*  _af_debug_hints;
   typedef enum  AF_WritingSystem_
   {
 
-#include "afwrtsys.h"
+#include "afws-iter.h"
 
     AF_WRITING_SYSTEM_MAX   /* do not remove */
 
   } AF_WritingSystem;
-
-#undef  AFWRTSYS_H_
 
 
   typedef struct  AF_WritingSystemClassRec_

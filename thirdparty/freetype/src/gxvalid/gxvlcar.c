@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT lcar table validation (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2021 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *

@@ -54,20 +54,18 @@
                   FT_Error*  e,
                   FT_UInt    stackSize )
   {
-    FT_Error  error = FT_Err_Ok;     /* for FT_NEW */
-
+    FT_Error   error;        /* for FT_QNEW */
     CF2_Stack  stack = NULL;
 
 
-    if ( FT_NEW( stack ) )
+    if ( FT_QNEW( stack ) )
       return NULL;
 
-    /* initialize the structure; FT_NEW zeroes it */
     stack->memory = memory;
     stack->error  = e;
 
     /* allocate the stack buffer */
-    if ( FT_NEW_ARRAY( stack->buffer, stackSize ) )
+    if ( FT_QNEW_ARRAY( stack->buffer, stackSize ) )
     {
       FT_FREE( stack );
       return NULL;

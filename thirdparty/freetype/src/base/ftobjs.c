@@ -4,7 +4,7 @@
  *
  *   The FreeType private base classes (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -78,6 +78,9 @@
 #pragma warning( pop )
 #endif
 
+  /* This array must stay in sync with the @FT_Pixel_Mode enumeration */
+  /* (in file `ftimage.h`).                                           */
+
   static const char* const  pixel_modes[] =
   {
     "none",
@@ -87,7 +90,8 @@
     "gray 4-bit bitmap",
     "LCD 8-bit bitmap",
     "vertical LCD 8-bit bitmap",
-    "BGRA 32-bit color image bitmap"
+    "BGRA 32-bit color image bitmap",
+    "SDF 8-bit bitmap"
   };
 
 #endif /* FT_DEBUG_LEVEL_TRACE */
@@ -193,6 +197,7 @@
     FT_Error   error;
     FT_Memory  memory;
     FT_Stream  stream = NULL;
+    FT_UInt    mode;
 
 
     *astream = NULL;
@@ -204,49 +209,56 @@
       return FT_THROW( Invalid_Argument );
 
     memory = library->memory;
+    mode   = args->flags &
+               ( FT_OPEN_MEMORY | FT_OPEN_STREAM | FT_OPEN_PATHNAME );
 
-    if ( FT_NEW( stream ) )
-      goto Exit;
-
-    stream->memory = memory;
-
-    if ( args->flags & FT_OPEN_MEMORY )
+    if ( mode == FT_OPEN_MEMORY )
     {
       /* create a memory-based stream */
+      if ( FT_NEW( stream ) )
+        goto Exit;
+
       FT_Stream_OpenMemory( stream,
                             (const FT_Byte*)args->memory_base,
                             (FT_ULong)args->memory_size );
+      stream->memory = memory;
     }
 
 #ifndef FT_CONFIG_OPTION_DISABLE_STREAM_SUPPORT
 
-    else if ( args->flags & FT_OPEN_PATHNAME )
+    else if ( mode == FT_OPEN_PATHNAME )
     {
       /* create a normal system stream */
+      if ( FT_NEW( stream ) )
+        goto Exit;
+
+      stream->memory = memory;
       error = FT_Stream_Open( stream, args->pathname );
-      stream->pathname.pointer = args->pathname;
+      if ( error )
+        FT_FREE( stream );
     }
-    else if ( ( args->flags & FT_OPEN_STREAM ) && args->stream )
+    else if ( ( mode == FT_OPEN_STREAM ) && args->stream )
     {
       /* use an existing, user-provided stream */
 
       /* in this case, we do not need to allocate a new stream object */
       /* since the caller is responsible for closing it himself       */
-      FT_FREE( stream );
-      stream = args->stream;
+      stream         = args->stream;
+      stream->memory = memory;
+      error          = FT_Err_Ok;
     }
 
 #endif
 
     else
+    {
       error = FT_THROW( Invalid_Argument );
+      if ( ( args->flags & FT_OPEN_STREAM ) && args->stream )
+        FT_Stream_Close( args->stream );
+    }
 
-    if ( error )
-      FT_FREE( stream );
-    else
-      stream->memory = memory;  /* just to be certain */
-
-    *astream = stream;
+    if ( !error )
+      *astream       = stream;
 
   Exit:
     return error;
@@ -523,7 +535,7 @@
     else
       slot->internal->flags |= FT_GLYPH_OWN_BITMAP;
 
-    (void)FT_ALLOC( slot->bitmap.buffer, size );
+    FT_MEM_ALLOC( slot->bitmap.buffer, size );
     return error;
   }
 
@@ -535,6 +547,8 @@
     ft_glyphslot_free_bitmap( slot );
 
     /* clear all public fields in the glyph slot */
+    slot->glyph_index = 0;
+
     FT_ZERO( &slot->metrics );
     FT_ZERO( &slot->outline );
 
@@ -555,6 +569,8 @@
 
     slot->linearHoriAdvance = 0;
     slot->linearVertAdvance = 0;
+    slot->advance.x         = 0;
+    slot->advance.y         = 0;
     slot->lsb_delta         = 0;
     slot->rsb_delta         = 0;
   }
@@ -731,6 +747,29 @@
     /* set transform_flags bit flag 1 if `delta' isn't the null vector */
     if ( delta->x | delta->y )
       internal->transform_flags |= 2;
+  }
+
+
+  /* documentation is in freetype.h */
+
+  FT_EXPORT_DEF( void )
+  FT_Get_Transform( FT_Face     face,
+                    FT_Matrix*  matrix,
+                    FT_Vector*  delta )
+  {
+    FT_Face_Internal  internal;
+
+
+    if ( !face )
+      return;
+
+    internal = face->internal;
+
+    if ( matrix )
+      *matrix = internal->transform_matrix;
+
+    if ( delta )
+      *delta = internal->transform_delta;
   }
 
 
@@ -1056,19 +1095,24 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
     FT_TRACE5(( "FT_Load_Glyph: index %d, flags 0x%x\n",
                 glyph_index, load_flags ));
+    FT_TRACE5(( "  bitmap %dx%d %s, %s (mode %d)\n",
+                slot->bitmap.width,
+                slot->bitmap.rows,
+                slot->outline.points ?
+                  slot->bitmap.buffer ? "rendered"
+                                      : "preset"
+                                     :
+                  slot->internal->flags & FT_GLYPH_OWN_BITMAP ? "owned"
+                                                              : "unowned",
+                pixel_modes[slot->bitmap.pixel_mode],
+                slot->bitmap.pixel_mode ));
+    FT_TRACE5(( "\n" ));
     FT_TRACE5(( "  x advance: %f\n", slot->advance.x / 64.0 ));
     FT_TRACE5(( "  y advance: %f\n", slot->advance.y / 64.0 ));
     FT_TRACE5(( "  linear x advance: %f\n",
                 slot->linearHoriAdvance / 65536.0 ));
     FT_TRACE5(( "  linear y advance: %f\n",
                 slot->linearVertAdvance / 65536.0 ));
-    FT_TRACE5(( "\n" ));
-    FT_TRACE5(( "  bitmap %dx%d, %s (mode %d)\n",
-                slot->bitmap.width,
-                slot->bitmap.rows,
-                pixel_modes[slot->bitmap.pixel_mode],
-                slot->bitmap.pixel_mode ));
-    FT_TRACE5(( "\n" ));
 
     {
       FT_Glyph_Metrics*  metrics = &slot->metrics;
@@ -1782,7 +1826,7 @@
     if ( error )
       goto Exit;
 
-    if ( FT_ALLOC( sfnt_ps, (FT_Long)length ) )
+    if ( FT_QALLOC( sfnt_ps, (FT_Long)length ) )
       goto Exit;
 
     error = FT_Stream_Read( stream, (FT_Byte *)sfnt_ps, length );
@@ -1892,7 +1936,7 @@
       goto Exit;
     }
 
-    if ( FT_ALLOC( pfb_data, (FT_Long)pfb_len + 2 ) )
+    if ( FT_QALLOC( pfb_data, (FT_Long)pfb_len + 2 ) )
       goto Exit;
 
     pfb_data[0] = 0x80;
@@ -1956,7 +2000,7 @@
       {
         FT_TRACE3(( "    Write POST fragment #%d header (4-byte) to buffer"
                     " %p + 0x%08lx\n",
-                    i, pfb_data, pfb_lenpos ));
+                    i, (void*)pfb_data, pfb_lenpos ));
 
         if ( pfb_lenpos + 3 > pfb_len + 2 )
           goto Exit2;
@@ -1971,7 +2015,7 @@
 
         FT_TRACE3(( "    Write POST fragment #%d header (6-byte) to buffer"
                     " %p + 0x%08lx\n",
-                    i, pfb_data, pfb_pos ));
+                    i, (void*)pfb_data, pfb_pos ));
 
         if ( pfb_pos + 6 > pfb_len + 2 )
           goto Exit2;
@@ -1994,7 +2038,7 @@
 
       FT_TRACE3(( "    Load POST fragment #%d (%ld byte) to buffer"
                   " %p + 0x%08lx\n",
-                  i, rlen, pfb_data, pfb_pos ));
+                  i, rlen, (void*)pfb_data, pfb_pos ));
 
       error = FT_Stream_Read( stream, (FT_Byte *)pfb_data + pfb_pos, rlen );
       if ( error )
@@ -2092,7 +2136,7 @@
     if ( error )
       goto Exit;
 
-    if ( FT_ALLOC( sfnt_data, rlen ) )
+    if ( FT_QALLOC( sfnt_data, rlen ) )
       return error;
     error = FT_Stream_Read( stream, (FT_Byte *)sfnt_data, (FT_ULong)rlen );
     if ( error ) {
@@ -2566,7 +2610,7 @@
     FT_TRACE4(( "FT_Open_Face: New face object, adding to list\n" ));
 
     /* add the face object to its driver's list */
-    if ( FT_NEW( node ) )
+    if ( FT_QNEW( node ) )
       goto Fail;
 
     node->data = face;
@@ -2681,10 +2725,10 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
     if ( !error && face_index < 0 )
     {
-      FT_TRACE3(( "FT_Open_Face: The font has %ld face%s\n"
-                  "              and %ld named instance%s for face %ld\n",
+      FT_TRACE3(( "FT_Open_Face: The font has %ld face%s\n",
                   face->num_faces,
-                  face->num_faces == 1 ? "" : "s",
+                  face->num_faces == 1 ? "" : "s" ));
+      FT_TRACE3(( "              and %ld named instance%s for face %ld\n",
                   face->style_flags >> 16,
                   ( face->style_flags >> 16 ) == 1 ? "" : "s",
                   -face_index - 1 ));
@@ -2851,7 +2895,7 @@
     memory = face->memory;
 
     /* Allocate new size object and perform basic initialisation */
-    if ( FT_ALLOC( size, clazz->size_object_size ) || FT_NEW( node ) )
+    if ( FT_ALLOC( size, clazz->size_object_size ) || FT_QNEW( node ) )
       goto Exit;
 
     size->face = face;
@@ -3088,10 +3132,12 @@
   }
 
 
-  FT_BASE_DEF( void )
+  FT_BASE_DEF( FT_Error )
   FT_Request_Metrics( FT_Face          face,
                       FT_Size_Request  req )
   {
+    FT_Error  error = FT_Err_Ok;
+
     FT_Size_Metrics*  metrics;
 
 
@@ -3182,8 +3228,18 @@
         scaled_h = FT_MulFix( face->units_per_EM, metrics->y_scale );
       }
 
-      metrics->x_ppem = (FT_UShort)( ( scaled_w + 32 ) >> 6 );
-      metrics->y_ppem = (FT_UShort)( ( scaled_h + 32 ) >> 6 );
+      scaled_w = ( scaled_w + 32 ) >> 6;
+      scaled_h = ( scaled_h + 32 ) >> 6;
+      if ( scaled_w > (FT_Long)FT_USHORT_MAX ||
+           scaled_h > (FT_Long)FT_USHORT_MAX )
+      {
+        FT_ERROR(( "FT_Request_Metrics: Resulting ppem size too large\n" ));
+        error = FT_ERR( Invalid_Pixel_Size );
+        goto Exit;
+      }
+
+      metrics->x_ppem = (FT_UShort)scaled_w;
+      metrics->y_ppem = (FT_UShort)scaled_h;
 
       ft_recompute_scaled_metrics( face, metrics );
     }
@@ -3193,6 +3249,9 @@
       metrics->x_scale = 1L << 16;
       metrics->y_scale = 1L << 16;
     }
+
+  Exit:
+    return error;
   }
 
 
@@ -3256,7 +3315,7 @@
   FT_Request_Size( FT_Face          face,
                    FT_Size_Request  req )
   {
-    FT_Error         error = FT_Err_Ok;
+    FT_Error         error;
     FT_Driver_Class  clazz;
     FT_ULong         strike_index;
 
@@ -3292,13 +3351,15 @@
        */
       error = FT_Match_Size( face, req, 0, &strike_index );
       if ( error )
-        return error;
+        goto Exit;
 
       return FT_Select_Size( face, (FT_Int)strike_index );
     }
     else
     {
-      FT_Request_Metrics( face, req );
+      error = FT_Request_Metrics( face, req );
+      if ( error )
+        goto Exit;
 
       FT_TRACE5(( "FT_Request_Size:\n" ));
     }
@@ -3321,6 +3382,7 @@
     }
 #endif
 
+  Exit:
     return error;
   }
 
@@ -3645,9 +3707,9 @@
           FT_CharMap  last_charmap = face->charmaps[face->num_charmaps - 1];
 
 
-          if ( FT_RENEW_ARRAY( face->charmaps,
-                               face->num_charmaps,
-                               face->num_charmaps - 1 ) )
+          if ( FT_QRENEW_ARRAY( face->charmaps,
+                                face->num_charmaps,
+                                face->num_charmaps - 1 ) )
             return;
 
           /* remove it from our list of charmaps */
@@ -3679,7 +3741,7 @@
                FT_CharMap     charmap,
                FT_CMap       *acmap )
   {
-    FT_Error   error = FT_Err_Ok;
+    FT_Error   error;
     FT_Face    face;
     FT_Memory  memory;
     FT_CMap    cmap = NULL;
@@ -3704,9 +3766,9 @@
       }
 
       /* add it to our list of charmaps */
-      if ( FT_RENEW_ARRAY( face->charmaps,
-                           face->num_charmaps,
-                           face->num_charmaps + 1 ) )
+      if ( FT_QRENEW_ARRAY( face->charmaps,
+                            face->num_charmaps,
+                            face->num_charmaps + 1 ) )
         goto Fail;
 
       face->charmaps[face->num_charmaps++] = (FT_CharMap)cmap;
@@ -4400,7 +4462,7 @@
     FT_ListNode  node    = NULL;
 
 
-    if ( FT_NEW( node ) )
+    if ( FT_QNEW( node ) )
       goto Exit;
 
     {
@@ -4412,8 +4474,7 @@
       render->glyph_format = clazz->glyph_format;
 
       /* allocate raster object if needed */
-      if ( clazz->glyph_format == FT_GLYPH_FORMAT_OUTLINE &&
-           clazz->raster_class->raster_new                )
+      if ( clazz->raster_class->raster_new )
       {
         error = clazz->raster_class->raster_new( memory, &render->raster );
         if ( error )
@@ -4460,8 +4521,7 @@
 
 
       /* release raster object, if any */
-      if ( render->clazz->glyph_format == FT_GLYPH_FORMAT_OUTLINE &&
-           render->raster                                         )
+      if ( render->raster )
         render->clazz->raster_class->raster_done( render->raster );
 
       /* remove from list */
@@ -4556,9 +4616,6 @@
 
     switch ( slot->format )
     {
-    case FT_GLYPH_FORMAT_BITMAP:   /* already a bitmap, don't do anything */
-      break;
-
     default:
       if ( slot->internal->load_flags & FT_LOAD_COLOR )
       {
@@ -4646,7 +4703,7 @@
         else
           renderer = FT_Lookup_Renderer( library, slot->format, &node );
 
-        error = FT_ERR( Unimplemented_Feature );
+        error = FT_ERR( Cannot_Render_Glyph );
         while ( renderer )
         {
           error = renderer->render( renderer, slot, render_mode, NULL );
@@ -4662,6 +4719,11 @@
           /* format.                                               */
           renderer = FT_Lookup_Renderer( library, slot->format, &node );
         }
+
+        /* it is not an error if we cannot render a bitmap glyph */
+        if ( FT_ERR_EQ( error, Cannot_Render_Glyph ) &&
+             slot->format == FT_GLYPH_FORMAT_BITMAP  )
+          error = FT_Err_Ok;
       }
     }
 
@@ -4734,11 +4796,11 @@
 
     /* we use FT_TRACE7 in this block */
     if ( !error                               &&
-         ft_trace_levels[trace_checksum] >= 7 )
+         ft_trace_levels[trace_checksum] >= 7 &&
+         slot->bitmap.buffer                  )
     {
       if ( slot->bitmap.rows  < 128U &&
-           slot->bitmap.width < 128U &&
-           slot->bitmap.buffer       )
+           slot->bitmap.width < 128U )
       {
         int  rows  = (int)slot->bitmap.rows;
         int  width = (int)slot->bitmap.width;
@@ -5149,16 +5211,16 @@
 
     if ( cur == limit )
     {
-      FT_ERROR(( "%s: can't find module `%s'\n",
-                 func_name, module_name ));
+      FT_TRACE2(( "%s: can't find module `%s'\n",
+                  func_name, module_name ));
       return FT_THROW( Missing_Module );
     }
 
     /* check whether we have a service interface */
     if ( !cur[0]->clazz->get_interface )
     {
-      FT_ERROR(( "%s: module `%s' doesn't support properties\n",
-                 func_name, module_name ));
+      FT_TRACE2(( "%s: module `%s' doesn't support properties\n",
+                  func_name, module_name ));
       return FT_THROW( Unimplemented_Feature );
     }
 
@@ -5167,8 +5229,8 @@
                                               FT_SERVICE_ID_PROPERTIES );
     if ( !interface )
     {
-      FT_ERROR(( "%s: module `%s' doesn't support properties\n",
-                 func_name, module_name ));
+      FT_TRACE2(( "%s: module `%s' doesn't support properties\n",
+                  func_name, module_name ));
       return FT_THROW( Unimplemented_Feature );
     }
 
@@ -5181,8 +5243,8 @@
 
     if ( missing_func )
     {
-      FT_ERROR(( "%s: property service of module `%s' is broken\n",
-                 func_name, module_name ));
+      FT_TRACE2(( "%s: property service of module `%s' is broken\n",
+                  func_name, module_name ));
       return FT_THROW( Unimplemented_Feature );
     }
 
@@ -5292,10 +5354,12 @@
     if ( !memory || !alibrary )
       return FT_THROW( Invalid_Argument );
 
+#ifndef FT_DEBUG_LOGGING
 #ifdef FT_DEBUG_LEVEL_ERROR
     /* init debugging support */
     ft_debug_init();
-#endif
+#endif /* FT_DEBUG_LEVEL_ERROR */
+#endif /* !FT_DEBUG_LOGGING */
 
     /* first of all, allocate the library object */
     if ( FT_NEW( library ) )
@@ -5562,6 +5626,147 @@
                                    aglyph_index,
                                    acolor_index,
                                    iterator );
+    else
+      return 0;
+  }
+
+
+  /* documentation is in freetype.h */
+
+  FT_EXPORT_DEF( FT_Bool )
+  FT_Get_Color_Glyph_Paint( FT_Face                  face,
+                            FT_UInt                  base_glyph,
+                            FT_Color_Root_Transform  root_transform,
+                            FT_OpaquePaint*          paint )
+  {
+    TT_Face       ttface;
+    SFNT_Service  sfnt;
+
+
+    if ( !face || !paint )
+      return 0;
+
+    if ( !FT_IS_SFNT( face ) )
+      return 0;
+
+    ttface = (TT_Face)face;
+    sfnt   = (SFNT_Service)ttface->sfnt;
+
+    if ( sfnt->get_colr_layer )
+      return sfnt->get_colr_glyph_paint( ttface,
+                                         base_glyph,
+                                         root_transform,
+                                         paint );
+    else
+      return 0;
+  }
+
+
+  /* documentation is in ftcolor.h */
+
+  FT_EXPORT_DEF( FT_Bool )
+  FT_Get_Color_Glyph_ClipBox( FT_Face      face,
+                              FT_UInt      base_glyph,
+                              FT_ClipBox*  clip_box )
+  {
+    TT_Face       ttface;
+    SFNT_Service  sfnt;
+
+
+    if ( !face || !clip_box )
+      return 0;
+
+    if ( !FT_IS_SFNT( face ) )
+      return 0;
+
+    ttface = (TT_Face)face;
+    sfnt   = (SFNT_Service)ttface->sfnt;
+
+    if ( sfnt->get_color_glyph_clipbox )
+      return sfnt->get_color_glyph_clipbox( ttface,
+                                            base_glyph,
+                                            clip_box );
+    else
+      return 0;
+  }
+
+
+  /* documentation is in freetype.h */
+
+  FT_EXPORT_DEF( FT_Bool )
+  FT_Get_Paint_Layers( FT_Face            face,
+                       FT_LayerIterator*  layer_iterator,
+                       FT_OpaquePaint*    paint )
+  {
+    TT_Face       ttface;
+    SFNT_Service  sfnt;
+
+
+    if ( !face || !paint || !layer_iterator )
+      return 0;
+
+    if ( !FT_IS_SFNT( face ) )
+      return 0;
+
+    ttface = (TT_Face)face;
+    sfnt   = (SFNT_Service)ttface->sfnt;
+
+    if ( sfnt->get_paint_layers )
+      return sfnt->get_paint_layers( ttface, layer_iterator, paint );
+    else
+      return 0;
+  }
+
+
+  /* documentation is in freetype.h */
+
+  FT_EXPORT_DEF( FT_Bool )
+  FT_Get_Paint( FT_Face face,
+                FT_OpaquePaint  opaque_paint,
+                FT_COLR_Paint*  paint )
+  {
+    TT_Face       ttface;
+    SFNT_Service  sfnt;
+
+
+    if ( !face || !paint || !paint )
+      return 0;
+
+    if ( !FT_IS_SFNT( face ) )
+      return 0;
+
+    ttface = (TT_Face)face;
+    sfnt   = (SFNT_Service)ttface->sfnt;
+
+    if ( sfnt->get_paint )
+      return sfnt->get_paint( ttface, opaque_paint, paint );
+    else
+      return 0;
+  }
+
+
+  /* documentation is in freetype.h */
+
+  FT_EXPORT_DEF( FT_Bool )
+  FT_Get_Colorline_Stops ( FT_Face                face,
+                           FT_ColorStop *         color_stop,
+                           FT_ColorStopIterator  *iterator )
+  {
+    TT_Face       ttface;
+    SFNT_Service  sfnt;
+
+
+    if ( !face || !color_stop || !iterator )
+      return 0;
+
+    if ( !FT_IS_SFNT( face ) )
+      return 0;
+
+    ttface = (TT_Face)face;
+    sfnt   = (SFNT_Service)ttface->sfnt;
+
+    if ( sfnt->get_colorline_stops )
+      return sfnt->get_colorline_stops ( ttface, color_stop, iterator );
     else
       return 0;
   }

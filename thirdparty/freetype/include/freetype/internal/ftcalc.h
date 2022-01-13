@@ -4,7 +4,7 @@
  *
  *   Arithmetic computations (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -359,8 +359,8 @@ FT_BEGIN_HEADER
 
 #ifndef  FT_CONFIG_OPTION_NO_ASSEMBLER
 
-#if defined( __GNUC__ )                                          && \
-    ( __GNUC__ > 3 || ( __GNUC__ == 3 && __GNUC_MINOR__ >= 4 ) )
+#if defined( __clang__ ) || ( defined( __GNUC__ )                &&  \
+    ( __GNUC__ > 3 || ( __GNUC__ == 3 && __GNUC_MINOR__ >= 4 ) ) )
 
 #if FT_SIZEOF_INT == 4
 
@@ -370,12 +370,25 @@ FT_BEGIN_HEADER
 
 #define FT_MSB( x )  ( 31 - __builtin_clzl( x ) )
 
-#endif /* __GNUC__ */
+#endif
 
+#elif defined( _MSC_VER ) && _MSC_VER >= 1400
 
-#elif defined( _MSC_VER ) && ( _MSC_VER >= 1400 )
+#if defined( _WIN32_WCE )
 
-#if FT_SIZEOF_INT == 4
+#include <cmnintrin.h>
+#pragma intrinsic( _CountLeadingZeros )
+
+#define FT_MSB( x )  ( 31 - _CountLeadingZeros( x ) )
+
+#elif defined( _M_ARM64 ) || defined( _M_ARM )
+
+#include <intrin.h>
+#pragma intrinsic( _CountLeadingZeros )
+
+#define FT_MSB( x )  ( 31 - _CountLeadingZeros( x ) )
+
+#elif defined( _M_IX86 ) || defined( _M_AMD64 ) || defined( _M_IA64 )
 
 #include <intrin.h>
 #pragma intrinsic( _BitScanReverse )
@@ -391,14 +404,26 @@ FT_BEGIN_HEADER
     return (FT_Int32)where;
   }
 
-#define FT_MSB( x )  ( FT_MSB_i386( x ) )
+#define FT_MSB( x )  FT_MSB_i386( x )
 
 #endif
 
-#endif /* _MSC_VER */
+#elif defined( __DECC ) || defined( __DECCXX )
 
+#include <builtins.h>
+
+#define FT_MSB( x )  (FT_Int)( 63 - _leadz( x ) )
+
+#elif defined( _CRAYC )
+
+#include <intrinsics.h>
+
+#define FT_MSB( x )  (FT_Int)( 31 - _leadz32( x ) )
+
+#endif /* FT_MSB macro definitions */
 
 #endif /* !FT_CONFIG_OPTION_NO_ASSEMBLER */
+
 
 #ifndef FT_MSB
 
@@ -487,7 +512,7 @@ FT_BEGIN_HEADER
 #define NEG_INT32( a )                                  \
           (FT_Int32)( (FT_UInt32)0 - (FT_UInt32)(a) )
 
-#ifdef FT_LONG64
+#ifdef FT_INT64
 
 #define ADD_INT64( a, b )                               \
           (FT_Int64)( (FT_UInt64)(a) + (FT_UInt64)(b) )
@@ -498,7 +523,7 @@ FT_BEGIN_HEADER
 #define NEG_INT64( a )                                  \
           (FT_Int64)( (FT_UInt64)0 - (FT_UInt64)(a) )
 
-#endif /* FT_LONG64 */
+#endif /* FT_INT64 */
 
 
 FT_END_HEADER

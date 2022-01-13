@@ -4,7 +4,7 @@
  *
  *   TrueType font driver implementation (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -108,7 +108,7 @@
       return error;
     }
 
-    FT_TRACE0(( "tt_property_set: missing property `%s'\n",
+    FT_TRACE2(( "tt_property_set: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -135,7 +135,7 @@
       return error;
     }
 
-    FT_TRACE0(( "tt_property_get: missing property `%s'\n",
+    FT_TRACE2(( "tt_property_get: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -354,7 +354,16 @@
 
 #endif /* TT_CONFIG_OPTION_EMBEDDED_BITMAPS */
 
-    FT_Request_Metrics( size->face, req );
+    {
+      FT_Error  err = FT_Request_Metrics( size->face, req );
+
+
+      if ( err )
+      {
+        error = err;
+        goto Exit;
+      }
+    }
 
     if ( FT_IS_SCALABLE( size->face ) )
     {
@@ -382,6 +391,7 @@
 #endif
     }
 
+  Exit:
     return error;
   }
 

@@ -4,7 +4,7 @@
  *
  *   The FreeType CID font services (specification).
  *
- * Copyright (C) 2007-2020 by
+ * Copyright (C) 2007-2021 by
  * Derek Clegg and Michael Toftdal.
  *
  * This file is part of the FreeType project, and may only be used,

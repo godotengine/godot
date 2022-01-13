@@ -4,7 +4,7 @@
  *
  *   CFF token stream parser (body)
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -62,7 +62,7 @@
     parser->num_axes    = num_axes;
 
     /* allocate the stack buffer */
-    if ( FT_NEW_ARRAY( parser->stack, stackSize ) )
+    if ( FT_QNEW_ARRAY( parser->stack, stackSize ) )
     {
       FT_FREE( parser->stack );
       goto Exit;
@@ -713,9 +713,10 @@
            ( max_scaling - min_scaling ) > 9 )
       {
         FT_TRACE1(( "cff_parse_font_matrix:"
-                    " strange scaling values (minimum %ld, maximum %ld),\n"
-                    "                      "
-                    " using default matrix\n", min_scaling, max_scaling ));
+                    " strange scaling values (minimum %ld, maximum %ld),\n",
+                    min_scaling, max_scaling ));
+        FT_TRACE1(( "                      "
+                    " using default matrix\n" ));
         goto Unlikely;
       }
 
@@ -1515,6 +1516,7 @@
 
               case cff_kind_fixed_thousand:
                 FT_TRACE4(( " %f\n", (double)val / 65536 / 1000 ));
+                break;
 
               default:
                 ; /* never reached */

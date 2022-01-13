@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines (body).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -31,6 +31,104 @@
 #undef  FT_COMPONENT
 #define FT_COMPONENT  afhints
 
+
+  FT_LOCAL_DEF( void )
+  af_sort_pos( FT_UInt  count,
+               FT_Pos*  table )
+  {
+    FT_UInt  i, j;
+    FT_Pos   swap;
+
+
+    for ( i = 1; i < count; i++ )
+    {
+      for ( j = i; j > 0; j-- )
+      {
+        if ( table[j] >= table[j - 1] )
+          break;
+
+        swap         = table[j];
+        table[j]     = table[j - 1];
+        table[j - 1] = swap;
+      }
+    }
+  }
+
+
+  FT_LOCAL_DEF( void )
+  af_sort_and_quantize_widths( FT_UInt*  count,
+                               AF_Width  table,
+                               FT_Pos    threshold )
+  {
+    FT_UInt      i, j;
+    FT_UInt      cur_idx;
+    FT_Pos       cur_val;
+    FT_Pos       sum;
+    AF_WidthRec  swap;
+
+
+    if ( *count == 1 )
+      return;
+
+    /* sort */
+    for ( i = 1; i < *count; i++ )
+    {
+      for ( j = i; j > 0; j-- )
+      {
+        if ( table[j].org >= table[j - 1].org )
+          break;
+
+        swap         = table[j];
+        table[j]     = table[j - 1];
+        table[j - 1] = swap;
+      }
+    }
+
+    cur_idx = 0;
+    cur_val = table[cur_idx].org;
+
+    /* compute and use mean values for clusters not larger than  */
+    /* `threshold'; this is very primitive and might not yield   */
+    /* the best result, but normally, using reference character  */
+    /* `o', `*count' is 2, so the code below is fully sufficient */
+    for ( i = 1; i < *count; i++ )
+    {
+      if ( table[i].org - cur_val > threshold ||
+           i == *count - 1                    )
+      {
+        sum = 0;
+
+        /* fix loop for end of array */
+        if ( table[i].org - cur_val <= threshold &&
+             i == *count - 1                     )
+          i++;
+
+        for ( j = cur_idx; j < i; j++ )
+        {
+          sum         += table[j].org;
+          table[j].org = 0;
+        }
+        table[cur_idx].org = sum / (FT_Pos)j;
+
+        if ( i < *count - 1 )
+        {
+          cur_idx = i + 1;
+          cur_val = table[cur_idx].org;
+        }
+      }
+    }
+
+    cur_idx = 1;
+
+    /* compress array to remove zero values */
+    for ( i = 1; i < *count; i++ )
+    {
+      if ( table[i].org )
+        table[cur_idx++] = table[i];
+    }
+
+    *count = cur_idx;
+  }
 
   /* Get new segment for given axis. */
 
@@ -764,7 +862,7 @@
   {
     FT_Error   error   = FT_Err_Ok;
     AF_Point   points;
-    FT_UInt    old_max, new_max;
+    FT_Int     old_max, new_max;
     FT_Fixed   x_scale = hints->x_scale;
     FT_Fixed   y_scale = hints->y_scale;
     FT_Pos     x_delta = hints->x_delta;
@@ -781,8 +879,8 @@
     hints->axis[1].num_edges    = 0;
 
     /* first of all, reallocate the contours array if necessary */
-    new_max = (FT_UInt)outline->n_contours;
-    old_max = (FT_UInt)hints->max_contours;
+    new_max = outline->n_contours;
+    old_max = hints->max_contours;
 
     if ( new_max <= AF_CONTOURS_EMBEDDED )
     {
@@ -797,12 +895,12 @@
       if ( hints->contours == hints->embedded.contours )
         hints->contours = NULL;
 
-      new_max = ( new_max + 3 ) & ~3U; /* round up to a multiple of 4 */
+      new_max = ( new_max + 3 ) & ~3; /* round up to a multiple of 4 */
 
       if ( FT_RENEW_ARRAY( hints->contours, old_max, new_max ) )
         goto Exit;
 
-      hints->max_contours = (FT_Int)new_max;
+      hints->max_contours = new_max;
     }
 
     /*
@@ -810,8 +908,8 @@
      * note that we reserve two additional point positions, used to
      * hint metrics appropriately
      */
-    new_max = (FT_UInt)( outline->n_points + 2 );
-    old_max = (FT_UInt)hints->max_points;
+    new_max = outline->n_points + 2;
+    old_max = hints->max_points;
 
     if ( new_max <= AF_POINTS_EMBEDDED )
     {
@@ -826,12 +924,12 @@
       if ( hints->points == hints->embedded.points )
         hints->points = NULL;
 
-      new_max = ( new_max + 2 + 7 ) & ~7U; /* round up to a multiple of 8 */
+      new_max = ( new_max + 2 + 7 ) & ~7; /* round up to a multiple of 8 */
 
       if ( FT_RENEW_ARRAY( hints->points, old_max, new_max ) )
         goto Exit;
 
-      hints->max_points = (FT_Int)new_max;
+      hints->max_points = new_max;
     }
 
     hints->num_points   = outline->n_points;
@@ -854,9 +952,6 @@
     hints->y_scale = y_scale;
     hints->x_delta = x_delta;
     hints->y_delta = y_delta;
-
-    hints->xmin_delta = 0;
-    hints->xmax_delta = 0;
 
     points = hints->points;
     if ( hints->num_points == 0 )
@@ -1687,34 +1782,5 @@
     }
   }
 
-
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-
-  /* Apply (small) warp scale and warp delta for given dimension. */
-
-  FT_LOCAL_DEF( void )
-  af_glyph_hints_scale_dim( AF_GlyphHints  hints,
-                            AF_Dimension   dim,
-                            FT_Fixed       scale,
-                            FT_Pos         delta )
-  {
-    AF_Point  points       = hints->points;
-    AF_Point  points_limit = points + hints->num_points;
-    AF_Point  point;
-
-
-    if ( dim == AF_DIMENSION_HORZ )
-    {
-      for ( point = points; point < points_limit; point++ )
-        point->x = FT_MulFix( point->fx, scale ) + delta;
-    }
-    else
-    {
-      for ( point = points; point < points_limit; point++ )
-        point->y = FT_MulFix( point->fy, scale ) + delta;
-    }
-  }
-
-#endif /* AF_CONFIG_OPTION_USE_WARPER */
 
 /* END */

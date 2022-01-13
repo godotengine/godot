@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT opbd table validation (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2021 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -188,7 +188,7 @@
 
 
     /* only 0x00010000 is defined (1996) */
-    GXV_TRACE(( "(version=0x%08x)\n", version ));
+    GXV_TRACE(( "(version=0x%08lx)\n", version ));
     if ( 0x00010000UL != version )
       FT_INVALID_FORMAT;
 

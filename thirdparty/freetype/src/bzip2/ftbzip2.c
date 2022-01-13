@@ -8,7 +8,7 @@
  * parse compressed PCF fonts, as found with many X11 server
  * distributions.
  *
- * Copyright (C) 2010-2020 by
+ * Copyright (C) 2010-2021 by
  * Joel Klinghed.
  *
  * based on `src/gzip/ftgzip.c'
@@ -70,7 +70,7 @@
     FT_Pointer  p  = NULL;
 
 
-    (void)FT_ALLOC( p, sz );
+    FT_MEM_QALLOC( p, sz );
     return p;
   }
 
@@ -327,12 +327,13 @@
                              FT_ULong      count )
   {
     FT_Error  error = FT_Err_Ok;
-    FT_ULong  delta;
 
 
     for (;;)
     {
-      delta = (FT_ULong)( zip->limit - zip->cursor );
+      FT_ULong  delta = (FT_ULong)( zip->limit - zip->cursor );
+
+
       if ( delta >= count )
         delta = count;
 
@@ -494,7 +495,7 @@
 
     stream->size  = 0x7FFFFFFFL;  /* don't know the real size! */
     stream->pos   = 0;
-    stream->base  = 0;
+    stream->base  = NULL;
     stream->read  = ft_bzip2_stream_io;
     stream->close = ft_bzip2_stream_close;
 

@@ -4,7 +4,7 @@
  *
  *   TrueType and OpenType embedded bitmap support (body).
  *
- * Copyright (C) 2005-2020 by
+ * Copyright (C) 2005-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Copyright 2013 by Google, Inc.
@@ -172,13 +172,17 @@
           goto Exit;
         }
 
+#ifdef FT_DEBUG_LEVEL_TRACE
         /* we currently don't support bit 1; however, it is better to */
         /* draw at least something...                                 */
         if ( flags == 3 )
+        {
           FT_TRACE1(( "tt_face_load_sbit_strikes:"
-                      " sbix overlay not supported yet\n"
-                      "                          "
+                      " sbix overlay not supported yet\n" ));
+          FT_TRACE1(( "                          "
                       " expect bad rendering results\n" ));
+        }
+#endif
 
         /*
          * Count the number of strikes available in the table.  We are a bit
@@ -240,8 +244,8 @@
     if ( !face->ebdt_size )
     {
       FT_TRACE2(( "tt_face_load_sbit_strikes:"
-                  " no embedded bitmap data table found;\n"
-                  "                          "
+                  " no embedded bitmap data table found;\n" ));
+      FT_TRACE2(( "                          "
                   " resetting number of strikes to zero\n" ));
       face->sbit_num_strikes = 0;
     }
@@ -345,8 +349,8 @@
           if ( metrics->ascender == 0 )
           {
             FT_TRACE2(( "tt_face_load_strike_metrics:"
-                        " sanitizing invalid ascender and descender\n"
-                        "                            "
+                        " sanitizing invalid ascender and descender\n" ));
+            FT_TRACE2(( "                            "
                         " values for strike %ld (%dppem, %dppem)\n",
                         strike_index,
                         metrics->x_ppem, metrics->y_ppem ));
@@ -374,8 +378,8 @@
         if ( metrics->height == 0 )
         {
           FT_TRACE2(( "tt_face_load_strike_metrics:"
-                      " sanitizing invalid height value\n"
-                      "                            "
+                      " sanitizing invalid height value\n" ));
+          FT_TRACE2(( "                            "
                       " for strike (%d, %d)\n",
                       metrics->x_ppem, metrics->y_ppem ));
           metrics->height    = metrics->y_ppem * 64;

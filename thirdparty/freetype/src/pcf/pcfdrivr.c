@@ -606,7 +606,7 @@ THE SOFTWARE.
         if ( prop->value.l > 0x7FFFFFFFL          ||
              prop->value.l < ( -1 - 0x7FFFFFFFL ) )
         {
-          FT_TRACE1(( "pcf_get_bdf_property:"
+          FT_TRACE2(( "pcf_get_bdf_property:"
                       " too large integer 0x%lx is truncated\n",
                       prop->value.l ));
         }
@@ -705,7 +705,7 @@ THE SOFTWARE.
 
 #endif /* !PCF_CONFIG_OPTION_LONG_FAMILY_NAMES */
 
-    FT_TRACE0(( "pcf_property_set: missing property `%s'\n",
+    FT_TRACE2(( "pcf_property_set: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -743,7 +743,7 @@ THE SOFTWARE.
 
 #endif /* !PCF_CONFIG_OPTION_LONG_FAMILY_NAMES */
 
-    FT_TRACE0(( "pcf_property_get: missing property `%s'\n",
+    FT_TRACE2(( "pcf_property_get: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }

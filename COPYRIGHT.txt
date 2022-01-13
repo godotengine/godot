@@ -176,7 +176,7 @@ License: Expat and Bitstream Vera Fonts Copyright
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2021, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glad/

@@ -5,7 +5,7 @@
  *   PostScript name table processing for TrueType and OpenType fonts
  *   (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -158,7 +158,7 @@
   static FT_Error
   load_format_20( TT_Face    face,
                   FT_Stream  stream,
-                  FT_ULong   post_limit )
+                  FT_ULong   post_len )
   {
     FT_Memory   memory = stream->memory;
     FT_Error    error;
@@ -168,6 +168,7 @@
 
     FT_UShort*  glyph_indices = NULL;
     FT_Char**   name_strings  = NULL;
+    FT_Byte*    strings       = NULL;
 
 
     if ( FT_READ_USHORT( num_glyphs ) )
@@ -179,7 +180,8 @@
     /* There already exist fonts which have more than 32768 glyph names */
     /* in this table, so the test for this threshold has been dropped.  */
 
-    if ( num_glyphs > face->max_profile.numGlyphs )
+    if ( num_glyphs > face->max_profile.numGlyphs  ||
+         (FT_ULong)num_glyphs * 2UL > post_len - 2 )
     {
       error = FT_THROW( Invalid_File_Format );
       goto Exit;
@@ -190,7 +192,7 @@
       FT_Int  n;
 
 
-      if ( FT_NEW_ARRAY ( glyph_indices, num_glyphs ) ||
+      if ( FT_QNEW_ARRAY( glyph_indices, num_glyphs ) ||
            FT_FRAME_ENTER( num_glyphs * 2L )          )
         goto Fail;
 
@@ -223,60 +225,56 @@
     }
 
     /* now load the name strings */
+    if ( num_names )
     {
       FT_UShort  n;
+      FT_ULong   p;
 
 
-      if ( FT_NEW_ARRAY( name_strings, num_names ) )
+      post_len -= (FT_ULong)num_glyphs * 2UL + 2;
+
+      if ( FT_QALLOC( strings, post_len + 1 )       ||
+           FT_STREAM_READ( strings, post_len )      ||
+           FT_QNEW_ARRAY( name_strings, num_names ) )
         goto Fail;
 
-      for ( n = 0; n < num_names; n++ )
+      /* convert from Pascal- to C-strings and set pointers */
+      for ( p = 0, n = 0; p < post_len && n < num_names; n++ )
       {
-        FT_UInt  len;
+        FT_UInt  len = strings[p];
 
 
-        if ( FT_STREAM_POS() >= post_limit )
-          break;
-        else
+        if ( len > 63U )
         {
-          FT_TRACE6(( "load_format_20: %ld byte left in post table\n",
-                      post_limit - FT_STREAM_POS() ));
-
-          if ( FT_READ_BYTE( len ) )
-            goto Fail1;
+          error = FT_THROW( Invalid_File_Format );
+          goto Fail;
         }
 
-        if ( len > post_limit                   ||
-             FT_STREAM_POS() > post_limit - len )
-        {
-          FT_Int  d = (FT_Int)post_limit - (FT_Int)FT_STREAM_POS();
-
-
-          FT_ERROR(( "load_format_20:"
-                     " exceeding string length (%d),"
-                     " truncating at end of post table (%d byte left)\n",
-                     len, d ));
-          len = (FT_UInt)FT_MAX( 0, d );
-        }
-
-        if ( FT_NEW_ARRAY( name_strings[n], len + 1 ) ||
-             FT_STREAM_READ( name_strings[n], len   ) )
-          goto Fail1;
-
-        name_strings[n][len] = '\0';
+        strings[p]      = 0;
+        name_strings[n] = (FT_Char*)strings + p + 1;
+        p              += len + 1;
       }
+      strings[post_len] = 0;
 
+      /* deal with missing or insufficient string data */
       if ( n < num_names )
       {
+        if ( post_len == 0 )
+        {
+          /* fake empty string */
+          if ( FT_QREALLOC( strings, 1, 2 ) )
+            goto Fail;
+
+          post_len          = 1;
+          strings[post_len] = 0;
+        }
+
         FT_ERROR(( "load_format_20:"
                    " all entries in post table are already parsed,"
                    " using NULL names for gid %d - %d\n",
                     n, num_names - 1 ));
         for ( ; n < num_names; n++ )
-          if ( FT_NEW_ARRAY( name_strings[n], 1 ) )
-            goto Fail1;
-          else
-            name_strings[n][0] = '\0';
+          name_strings[n] = (FT_Char*)strings + post_len;
       }
     }
 
@@ -292,17 +290,9 @@
     }
     return FT_Err_Ok;
 
-  Fail1:
-    {
-      FT_UShort  n;
-
-
-      for ( n = 0; n < num_names; n++ )
-        FT_FREE( name_strings[n] );
-    }
-
   Fail:
     FT_FREE( name_strings );
+    FT_FREE( strings );
     FT_FREE( glyph_indices );
 
   Exit:
@@ -313,7 +303,7 @@
   static FT_Error
   load_format_25( TT_Face    face,
                   FT_Stream  stream,
-                  FT_ULong   post_limit )
+                  FT_ULong   post_len )
   {
     FT_Memory  memory = stream->memory;
     FT_Error   error;
@@ -321,7 +311,7 @@
     FT_Int     num_glyphs;
     FT_Char*   offset_table = NULL;
 
-    FT_UNUSED( post_limit );
+    FT_UNUSED( post_len );
 
 
     if ( FT_READ_USHORT( num_glyphs ) )
@@ -336,7 +326,7 @@
       goto Exit;
     }
 
-    if ( FT_NEW_ARRAY( offset_table, num_glyphs )   ||
+    if ( FT_QNEW_ARRAY( offset_table, num_glyphs )  ||
          FT_STREAM_READ( offset_table, num_glyphs ) )
       goto Fail;
 
@@ -384,7 +374,6 @@
     FT_Error   error;
     FT_Fixed   format;
     FT_ULong   post_len;
-    FT_ULong   post_limit;
 
 
     /* get a stream for the face's resource */
@@ -395,8 +384,6 @@
     if ( error )
       goto Exit;
 
-    post_limit = FT_STREAM_POS() + post_len;
-
     format = face->postscript.FormatType;
 
     /* go to beginning of subtable */
@@ -404,10 +391,10 @@
       goto Exit;
 
     /* now read postscript table */
-    if ( format == 0x00020000L )
-      error = load_format_20( face, stream, post_limit );
-    else if ( format == 0x00025000L )
-      error = load_format_25( face, stream, post_limit );
+    if ( format == 0x00020000L && post_len >= 34 )
+      error = load_format_20( face, stream, post_len - 32 );
+    else if ( format == 0x00025000L && post_len >= 34 )
+      error = load_format_25( face, stream, post_len - 32 );
     else
       error = FT_THROW( Invalid_File_Format );
 
@@ -433,17 +420,19 @@
       if ( format == 0x00020000L )
       {
         TT_Post_20  table = &names->names.format_20;
-        FT_UShort   n;
 
 
         FT_FREE( table->glyph_indices );
         table->num_glyphs = 0;
 
-        for ( n = 0; n < table->num_names; n++ )
-          FT_FREE( table->glyph_names[n] );
+        if ( table->num_names )
+        {
+          table->glyph_names[0]--;
+          FT_FREE( table->glyph_names[0] );
 
-        FT_FREE( table->glyph_names );
-        table->num_names = 0;
+          FT_FREE( table->glyph_names );
+          table->num_names = 0;
+        }
       }
       else if ( format == 0x00025000L )
       {

@@ -4,7 +4,7 @@
  *
  *   Embedded resource forks accessor (specification).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2021 by
  * Masatake YAMATO and Redhat K.K.
  *
  * This file is part of the FreeType project, and may only be used,

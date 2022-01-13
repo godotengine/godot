@@ -4,7 +4,7 @@
  *
  *   FreeType high-level API and common types (specification only).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -28,6 +28,34 @@
 
 FT_BEGIN_HEADER
 
+
+
+  /**************************************************************************
+   *
+   * @section:
+   *   preamble
+   *
+   * @title:
+   *   Preamble
+   *
+   * @abstract:
+   *   What FreeType is and isn't
+   *
+   * @description:
+   *   FreeType is a library that provides access to glyphs in font files.  It
+   *   scales the glyph images and their metrics to a requested size, and it
+   *   rasterizes the glyph images to produce pixel or subpixel alpha coverage
+   *   bitmaps.
+   *
+   *   Note that FreeType is _not_ a text layout engine.  You have to use
+   *   higher-level libraries like HarfBuzz, Pango, or ICU for that.
+   *
+   *   Note also that FreeType does _not_ perform alpha blending or
+   *   compositing the resulting bitmaps or pixmaps by itself.  Use your
+   *   favourite graphics library (for example, Cairo or Skia) to further
+   *   process FreeType's output.
+   *
+   */
 
 
   /**************************************************************************
@@ -176,6 +204,7 @@ FT_BEGIN_HEADER
    *   FT_Size_RequestRec
    *   FT_Size_Request
    *   FT_Set_Transform
+   *   FT_Get_Transform
    *   FT_Load_Glyph
    *   FT_Get_Char_Index
    *   FT_Get_First_Char
@@ -587,11 +616,12 @@ FT_BEGIN_HEADER
    */
 
 #ifndef FT_ENC_TAG
-#define FT_ENC_TAG( value, a, b, c, d )         \
-          value = ( ( (FT_UInt32)(a) << 24 ) |  \
-                    ( (FT_UInt32)(b) << 16 ) |  \
-                    ( (FT_UInt32)(c) <<  8 ) |  \
-                      (FT_UInt32)(d)         )
+
+#define FT_ENC_TAG( value, a, b, c, d )                             \
+          value = ( ( FT_STATIC_BYTE_CAST( FT_UInt32, a ) << 24 ) | \
+                    ( FT_STATIC_BYTE_CAST( FT_UInt32, b ) << 16 ) | \
+                    ( FT_STATIC_BYTE_CAST( FT_UInt32, c ) <<  8 ) | \
+                      FT_STATIC_BYTE_CAST( FT_UInt32, d )         )
 
 #endif /* FT_ENC_TAG */
 
@@ -701,11 +731,16 @@ FT_BEGIN_HEADER
    *     Same as FT_ENCODING_JOHAB.  Deprecated.
    *
    * @note:
-   *   By default, FreeType enables a Unicode charmap and tags it with
-   *   `FT_ENCODING_UNICODE` when it is either provided or can be generated
-   *   from PostScript glyph name dictionaries in the font file.  All other
-   *   encodings are considered legacy and tagged only if explicitly defined
-   *   in the font file.  Otherwise, `FT_ENCODING_NONE` is used.
+   *   When loading a font, FreeType makes a Unicode charmap active if
+   *   possible (either if the font provides such a charmap, or if FreeType
+   *   can synthesize one from PostScript glyph name dictionaries; in either
+   *   case, the charmap is tagged with `FT_ENCODING_UNICODE`).  If such a
+   *   charmap is synthesized, it is placed at the first position of the
+   *   charmap array.
+   *
+   *   All other encodings are considered legacy and tagged only if
+   *   explicitly defined in the font file.  Otherwise, `FT_ENCODING_NONE` is
+   *   used.
    *
    *   `FT_ENCODING_NONE` is set by the BDF and PCF drivers if the charmap is
    *   neither Unicode nor ISO-8859-1 (otherwise it is set to
@@ -2065,7 +2100,8 @@ FT_BEGIN_HEADER
    *     The size in bytes of the file in memory.
    *
    *   pathname ::
-   *     A pointer to an 8-bit file pathname.  The pointer is not owned by
+   *     A pointer to an 8-bit file pathname, which must be a C~string (i.e.,
+   *     no null bytes except at the very end).  The pointer is not owned by
    *     FreeType.
    *
    *   stream ::
@@ -2084,8 +2120,7 @@ FT_BEGIN_HEADER
    *     Extra parameters passed to the font driver when opening a new face.
    *
    * @note:
-   *   The stream type is determined by the contents of `flags` that are
-   *   tested in the following order by @FT_Open_Face:
+   *   The stream type is determined by the contents of `flags`:
    *
    *   If the @FT_OPEN_MEMORY bit is set, assume that this is a memory file
    *   of `memory_size` bytes, located at `memory_address`.  The data are not
@@ -2097,6 +2132,9 @@ FT_BEGIN_HEADER
    *
    *   Otherwise, if the @FT_OPEN_PATHNAME bit is set, assume that this is a
    *   normal file and use `pathname` to open it.
+   *
+   *   If none of the above bits are set or if multiple are set at the same
+   *   time, the flags are invalid and @FT_Open_Face fails.
    *
    *   If the @FT_OPEN_DRIVER bit is set, @FT_Open_Face only tries to open
    *   the file with the driver whose handler is in `driver`.
@@ -2150,6 +2188,13 @@ FT_BEGIN_HEADER
    *   FreeType error code.  0~means success.
    *
    * @note:
+   *   The `pathname` string should be recognizable as such by a standard
+   *   `fopen` call on your system; in particular, this means that `pathname`
+   *   must not contain null bytes.  If that is not sufficient to address all
+   *   file name possibilities (for example, to handle wide character file
+   *   names on Windows in UTF-16 encoding) you might use @FT_Open_Face to
+   *   pass a memory array or a stream object instead.
+   *
    *   Use @FT_Done_Face to destroy the created @FT_Face object (along with
    *   its slot and sizes).
    */
@@ -2269,6 +2314,10 @@ FT_BEGIN_HEADER
    *
    *   See the discussion of reference counters in the description of
    *   @FT_Reference_Face.
+   *
+   *   If `FT_OPEN_STREAM` is set in `args->flags`, the stream in
+   *   `args->stream` is automatically closed before this function returns
+   *   any error (including `FT_Err_Invalid_Argument`).
    *
    * @example:
    *   To loop over all faces, use code similar to the following snippet
@@ -2428,6 +2477,7 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.4.2
+   *
    */
   FT_EXPORT( FT_Error )
   FT_Reference_Face( FT_Face  face );
@@ -2874,7 +2924,7 @@ FT_BEGIN_HEADER
    *
    *     If the font is 'tricky' (see @FT_FACE_FLAG_TRICKY for more), using
    *     `FT_LOAD_NO_SCALE` usually yields meaningless outlines because the
-   *     subglyphs must be scaled and positioned with hinting instructions. 
+   *     subglyphs must be scaled and positioned with hinting instructions.
    *     This can be solved by loading the font without `FT_LOAD_NO_SCALE`
    *     and setting the character size to `font->units_per_EM`.
    *
@@ -3132,7 +3182,7 @@ FT_BEGIN_HEADER
    *   necessary to empty the cache after a mode switch to avoid false hits.
    *
    */
-#define FT_LOAD_TARGET_( x )   ( (FT_Int32)( (x) & 15 ) << 16 )
+#define FT_LOAD_TARGET_( x )   ( FT_STATIC_CAST( FT_Int32, (x) & 15 ) << 16 )
 
 #define FT_LOAD_TARGET_NORMAL  FT_LOAD_TARGET_( FT_RENDER_MODE_NORMAL )
 #define FT_LOAD_TARGET_LIGHT   FT_LOAD_TARGET_( FT_RENDER_MODE_LIGHT  )
@@ -3151,7 +3201,8 @@ FT_BEGIN_HEADER
    *   @FT_LOAD_TARGET_XXX value.
    *
    */
-#define FT_LOAD_TARGET_MODE( x )  ( (FT_Render_Mode)( ( (x) >> 16 ) & 15 ) )
+#define FT_LOAD_TARGET_MODE( x )                               \
+          FT_STATIC_CAST( FT_Render_Mode, ( (x) >> 16 ) & 15 )
 
 
   /**************************************************************************
@@ -3172,11 +3223,12 @@ FT_BEGIN_HEADER
    *     A pointer to the transformation's 2x2 matrix.  Use `NULL` for the
    *     identity matrix.
    *   delta ::
-   *     A pointer to the translation vector.  Use `NULL` for the null vector.
+   *     A pointer to the translation vector.  Use `NULL` for the null
+   *     vector.
    *
    * @note:
    *   This function is provided as a convenience, but keep in mind that
-   *   @FT_Matrix coefficients are only 16.16 fixed point values, which can
+   *   @FT_Matrix coefficients are only 16.16 fixed-point values, which can
    *   limit the accuracy of the results.  Using floating-point computations
    *   to perform the transform directly in client code instead will always
    *   yield better numbers.
@@ -3191,6 +3243,39 @@ FT_BEGIN_HEADER
    */
   FT_EXPORT( void )
   FT_Set_Transform( FT_Face     face,
+                    FT_Matrix*  matrix,
+                    FT_Vector*  delta );
+
+
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_Get_Transform
+   *
+   * @description:
+   *   Return the transformation that is applied to glyph images when they
+   *   are loaded into a glyph slot through @FT_Load_Glyph.  See
+   *   @FT_Set_Transform for more details.
+   *
+   * @input:
+   *   face ::
+   *     A handle to the source face object.
+   *
+   * @output:
+   *   matrix ::
+   *     A pointer to a transformation's 2x2 matrix.  Set this to NULL if you
+   *     are not interested in the value.
+   *
+   *   delta ::
+   *     A pointer a translation vector.  Set this to NULL if you are not
+   *     interested in the value.
+   *
+   * @since:
+   *   2.11
+   *
+   */
+  FT_EXPORT( void )
+  FT_Get_Transform( FT_Face     face,
                     FT_Matrix*  matrix,
                     FT_Vector*  delta );
 
@@ -3212,6 +3297,10 @@ FT_BEGIN_HEADER
    *   indicating pixel coverage.  Use linear alpha blending and gamma
    *   correction to correctly render non-monochrome glyph bitmaps onto a
    *   surface; see @FT_Render_Glyph.
+   *
+   *   The @FT_RENDER_MODE_SDF is a special render mode that uses up to 256
+   *   distance values, indicating the signed distance from the grid position
+   *   to the nearest outline.
    *
    * @values:
    *   FT_RENDER_MODE_NORMAL ::
@@ -3238,11 +3327,49 @@ FT_BEGIN_HEADER
    *     bitmaps that are 3~times the height of the original glyph outline in
    *     pixels and use the @FT_PIXEL_MODE_LCD_V mode.
    *
+   *   FT_RENDER_MODE_SDF ::
+   *     This mode corresponds to 8-bit, single-channel signed distance field
+   *     (SDF) bitmaps.  Each pixel in the SDF grid is the value from the
+   *     pixel's position to the nearest glyph's outline.  The distances are
+   *     calculated from the center of the pixel and are positive if they are
+   *     filled by the outline (i.e., inside the outline) and negative
+   *     otherwise.  Check the note below on how to convert the output values
+   *     to usable data.
+   *
    * @note:
    *   The selected render mode only affects vector glyphs of a font.
    *   Embedded bitmaps often have a different pixel mode like
    *   @FT_PIXEL_MODE_MONO.  You can use @FT_Bitmap_Convert to transform them
    *   into 8-bit pixmaps.
+   *
+   *   For @FT_RENDER_MODE_SDF the output bitmap buffer contains normalized
+   *   distances that are packed into unsigned 8-bit values.  To get pixel
+   *   values in floating point representation use the following pseudo-C
+   *   code for the conversion.
+   *
+   *   ```
+   *   // Load glyph and render using FT_RENDER_MODE_SDF,
+   *   // then use the output buffer as follows.
+   *
+   *   ...
+   *   FT_Byte  buffer = glyph->bitmap->buffer;
+   *
+   *
+   *   for pixel in buffer
+   *   {
+   *     // `sd` is the signed distance and `spread` is the current spread;
+   *     // the default spread is 2 and can be changed.
+   *
+   *     float  sd = (float)pixel - 128.0f;
+   *
+   *
+   *     // Convert to pixel values.
+   *     sd = ( sd / 128.0f ) * spread;
+   *
+   *     // Store `sd` in a buffer or use as required.
+   *   }
+   *
+   *   ```
    */
   typedef enum  FT_Render_Mode_
   {
@@ -3251,6 +3378,7 @@ FT_BEGIN_HEADER
     FT_RENDER_MODE_MONO,
     FT_RENDER_MODE_LCD,
     FT_RENDER_MODE_LCD_V,
+    FT_RENDER_MODE_SDF,
 
     FT_RENDER_MODE_MAX
 
@@ -3338,7 +3466,8 @@ FT_BEGIN_HEADER
    *
    *   which is known as the OVER operator.
    *
-   *   To correctly composite an antialiased pixel of a glyph onto a surface,
+   *   To correctly composite an anti-aliased pixel of a glyph onto a
+   *   surface,
    *
    *   1. take the foreground and background colors (e.g., in sRGB space)
    *      and apply gamma to get them in a linear space,
@@ -4018,168 +4147,6 @@ FT_BEGIN_HEADER
   /**************************************************************************
    *
    * @section:
-   *   layer_management
-   *
-   * @title:
-   *   Glyph Layer Management
-   *
-   * @abstract:
-   *   Retrieving and manipulating OpenType's 'COLR' table data.
-   *
-   * @description:
-   *   The functions described here allow access of colored glyph layer data
-   *   in OpenType's 'COLR' tables.
-   */
-
-
-  /**************************************************************************
-   *
-   * @struct:
-   *   FT_LayerIterator
-   *
-   * @description:
-   *   This iterator object is needed for @FT_Get_Color_Glyph_Layer.
-   *
-   * @fields:
-   *   num_layers ::
-   *     The number of glyph layers for the requested glyph index.  Will be
-   *     set by @FT_Get_Color_Glyph_Layer.
-   *
-   *   layer ::
-   *     The current layer.  Will be set by @FT_Get_Color_Glyph_Layer.
-   *
-   *   p ::
-   *     An opaque pointer into 'COLR' table data.  The caller must set this
-   *     to `NULL` before the first call of @FT_Get_Color_Glyph_Layer.
-   */
-  typedef struct  FT_LayerIterator_
-  {
-    FT_UInt   num_layers;
-    FT_UInt   layer;
-    FT_Byte*  p;
-
-  } FT_LayerIterator;
-
-
-  /**************************************************************************
-   *
-   * @function:
-   *   FT_Get_Color_Glyph_Layer
-   *
-   * @description:
-   *   This is an interface to the 'COLR' table in OpenType fonts to
-   *   iteratively retrieve the colored glyph layers associated with the
-   *   current glyph slot.
-   *
-   *     https://docs.microsoft.com/en-us/typography/opentype/spec/colr
-   *
-   *   The glyph layer data for a given glyph index, if present, provides an
-   *   alternative, multi-color glyph representation: Instead of rendering
-   *   the outline or bitmap with the given glyph index, glyphs with the
-   *   indices and colors returned by this function are rendered layer by
-   *   layer.
-   *
-   *   The returned elements are ordered in the z~direction from bottom to
-   *   top; the 'n'th element should be rendered with the associated palette
-   *   color and blended on top of the already rendered layers (elements 0,
-   *   1, ..., n-1).
-   *
-   * @input:
-   *   face ::
-   *     A handle to the parent face object.
-   *
-   *   base_glyph ::
-   *     The glyph index the colored glyph layers are associated with.
-   *
-   * @inout:
-   *   iterator ::
-   *     An @FT_LayerIterator object.  For the first call you should set
-   *     `iterator->p` to `NULL`.  For all following calls, simply use the
-   *     same object again.
-   *
-   * @output:
-   *   aglyph_index ::
-   *     The glyph index of the current layer.
-   *
-   *   acolor_index ::
-   *     The color index into the font face's color palette of the current
-   *     layer.  The value 0xFFFF is special; it doesn't reference a palette
-   *     entry but indicates that the text foreground color should be used
-   *     instead (to be set up by the application outside of FreeType).
-   *
-   *     The color palette can be retrieved with @FT_Palette_Select.
-   *
-   * @return:
-   *   Value~1 if everything is OK.  If there are no more layers (or if there
-   *   are no layers at all), value~0 gets returned.  In case of an error,
-   *   value~0 is returned also.
-   *
-   * @note:
-   *   This function is necessary if you want to handle glyph layers by
-   *   yourself.  In particular, functions that operate with @FT_GlyphRec
-   *   objects (like @FT_Get_Glyph or @FT_Glyph_To_Bitmap) don't have access
-   *   to this information.
-   *
-   *   Note that @FT_Render_Glyph is able to handle colored glyph layers
-   *   automatically if the @FT_LOAD_COLOR flag is passed to a previous call
-   *   to @FT_Load_Glyph.  [This is an experimental feature.]
-   *
-   * @example:
-   *   ```
-   *     FT_Color*         palette;
-   *     FT_LayerIterator  iterator;
-   *
-   *     FT_Bool  have_layers;
-   *     FT_UInt  layer_glyph_index;
-   *     FT_UInt  layer_color_index;
-   *
-   *
-   *     error = FT_Palette_Select( face, palette_index, &palette );
-   *     if ( error )
-   *       palette = NULL;
-   *
-   *     iterator.p  = NULL;
-   *     have_layers = FT_Get_Color_Glyph_Layer( face,
-   *                                             glyph_index,
-   *                                             &layer_glyph_index,
-   *                                             &layer_color_index,
-   *                                             &iterator );
-   *
-   *     if ( palette && have_layers )
-   *     {
-   *       do
-   *       {
-   *         FT_Color  layer_color;
-   *
-   *
-   *         if ( layer_color_index == 0xFFFF )
-   *           layer_color = text_foreground_color;
-   *         else
-   *           layer_color = palette[layer_color_index];
-   *
-   *         // Load and render glyph `layer_glyph_index', then
-   *         // blend resulting pixmap (using color `layer_color')
-   *         // with previously created pixmaps.
-   *
-   *       } while ( FT_Get_Color_Glyph_Layer( face,
-   *                                           glyph_index,
-   *                                           &layer_glyph_index,
-   *                                           &layer_color_index,
-   *                                           &iterator ) );
-   *     }
-   *   ```
-   */
-  FT_EXPORT( FT_Bool )
-  FT_Get_Color_Glyph_Layer( FT_Face            face,
-                            FT_UInt            base_glyph,
-                            FT_UInt           *aglyph_index,
-                            FT_UInt           *acolor_index,
-                            FT_LayerIterator*  iterator );
-
-
-  /**************************************************************************
-   *
-   * @section:
    *   base_interface
    *
    */
@@ -4267,6 +4234,7 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.3.8
+   *
    */
   FT_EXPORT( FT_UShort )
   FT_Get_FSType_Flags( FT_Face  face );
@@ -4360,6 +4328,7 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.3.6
+   *
    */
   FT_EXPORT( FT_UInt )
   FT_Face_GetCharVariantIndex( FT_Face   face,
@@ -4396,6 +4365,7 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.3.6
+   *
    */
   FT_EXPORT( FT_Int )
   FT_Face_GetCharVariantIsDefault( FT_Face   face,
@@ -4427,6 +4397,7 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.3.6
+   *
    */
   FT_EXPORT( FT_UInt32* )
   FT_Face_GetVariantSelectors( FT_Face  face );
@@ -4460,6 +4431,7 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.3.6
+   *
    */
   FT_EXPORT( FT_UInt32* )
   FT_Face_GetVariantsOfChar( FT_Face   face,
@@ -4494,6 +4466,7 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.3.6
+   *
    */
   FT_EXPORT( FT_UInt32* )
   FT_Face_GetCharsOfVariant( FT_Face   face,
@@ -4766,8 +4739,8 @@ FT_BEGIN_HEADER
    *
    */
 #define FREETYPE_MAJOR  2
-#define FREETYPE_MINOR  10
-#define FREETYPE_PATCH  4
+#define FREETYPE_MINOR  11
+#define FREETYPE_PATCH  1
 
 
   /**************************************************************************
@@ -4829,6 +4802,7 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.3.5
+   *
    */
   FT_EXPORT( FT_Bool )
   FT_Face_CheckTrueTypePatents( FT_Face  face );
@@ -4857,6 +4831,7 @@ FT_BEGIN_HEADER
    *
    * @since:
    *   2.3.5
+   *
    */
   FT_EXPORT( FT_Bool )
   FT_Face_SetUnpatentedHinting( FT_Face  face,

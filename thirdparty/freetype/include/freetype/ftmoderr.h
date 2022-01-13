@@ -4,7 +4,7 @@
  *
  *   FreeType module error offsets (specification).
  *
- * Copyright (C) 2001-2020 by
+ * Copyright (C) 2001-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -171,6 +171,7 @@
   FT_MODERRDEF( Type42,   0x1400, "Type 42 module" )
   FT_MODERRDEF( Winfonts, 0x1500, "Windows FON/FNT module" )
   FT_MODERRDEF( GXvalid,  0x1600, "GX validation module" )
+  FT_MODERRDEF( Sdf,      0x1700, "Signed distance field raster module" )
 
 
 #ifdef FT_MODERR_END_LIST

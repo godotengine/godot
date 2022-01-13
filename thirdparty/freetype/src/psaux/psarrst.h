@@ -55,7 +55,6 @@ FT_BEGIN_HEADER
 
     size_t  sizeItem;       /* bytes per element             */
     size_t  allocated;      /* items allocated               */
-    size_t  chunk;          /* allocation increment in items */
     size_t  count;          /* number of elements allocated  */
     size_t  totalSize;      /* total bytes allocated         */
 
