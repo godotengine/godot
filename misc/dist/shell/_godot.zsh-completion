@@ -49,7 +49,6 @@ _arguments \
   '(-t --always-on-top)'{-t,--always-on-top}'[request an always-on-top window]' \
   '--resolution[request window resolution]:resolution in WxH format' \
   '--position[request window position]:position in X,Y format' \
-  '--low-dpi[force low-DPI mode (macOS and Windows only)]' \
   '--headless[enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script]' \
   '(-d --debug)'{-d,--debug}'[debug (local stdout debugger)]' \
   '(-b --breakpoints)'{-b,--breakpoints}'[specify the breakpoint list as source::line comma-separated pairs, no spaces (use %20 instead)]:breakpoint list' \

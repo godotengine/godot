@@ -164,7 +164,6 @@ static bool init_windowed = false;
 static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
 static Vector2 init_custom_pos;
-static bool force_lowdpi = false;
 
 // Debug
 
@@ -340,7 +339,6 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -t, --always-on-top                          Request an always-on-top window.\n");
 	OS::get_singleton()->print("  --resolution <W>x<H>                         Request window resolution.\n");
 	OS::get_singleton()->print("  --position <X>,<Y>                           Request window position.\n");
-	OS::get_singleton()->print("  --low-dpi                                    Force low-DPI mode (macOS and Windows only).\n");
 	OS::get_singleton()->print("  --single-window                              Use a single window (no separate subwindows).\n");
 	OS::get_singleton()->print("  --tablet-driver                              Pen tablet input driver.\n");
 	OS::get_singleton()->print("\n");
@@ -870,9 +868,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
-		} else if (I->get() == "--low-dpi") { // force low DPI (macOS only)
-
-			force_lowdpi = true;
 		} else if (I->get() == "--headless") { // enable headless mode (no audio, no rendering).
 
 			audio_driver = "Dummy";
@@ -1365,9 +1360,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
-	if (!force_lowdpi) {
-		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
-	}
+	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 
 	// FIXME: Restore support.
 #if 0
