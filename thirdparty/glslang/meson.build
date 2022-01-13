@@ -3,7 +3,6 @@ if get_option('builtin_glslang')
 
     _glslang_srcs = files([
         'OGLCompilersDLL/InitializeDll.cpp',
-        'SPIRV/CInterface/spirv_c_interface.cpp',
         'SPIRV/GlslangToSpv.cpp',
         'SPIRV/InReadableOrder.cpp',
         'SPIRV/Logger.cpp',
@@ -13,8 +12,6 @@ if get_option('builtin_glslang')
         'SPIRV/SpvTools.cpp',
         'SPIRV/disassemble.cpp',
         'SPIRV/doc.cpp',
-        'StandAlone/ResourceLimits.cpp',
-        'glslang/CInterface/glslang_c_interface.cpp',
         'glslang/GenericCodeGen/CodeGen.cpp',
         'glslang/GenericCodeGen/Link.cpp',
         'glslang/MachineIndependent/Constant.cpp',
