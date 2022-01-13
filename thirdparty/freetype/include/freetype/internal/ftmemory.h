@@ -4,7 +4,7 @@
  *
  *   The FreeType memory management macros (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg
  *
  * This file is part of the FreeType project, and may only be used,
@@ -344,14 +344,13 @@ extern "C++"
 #define FT_RENEW_ARRAY( ptr, curcnt, newcnt )                           \
           FT_MEM_SET_ERROR( FT_MEM_RENEW_ARRAY( ptr, curcnt, newcnt ) )
 
-#define FT_QNEW( ptr )                           \
-          FT_MEM_SET_ERROR( FT_MEM_QNEW( ptr ) )
+#define FT_QNEW( ptr )  FT_MEM_SET_ERROR( FT_MEM_QNEW( ptr ) )
 
-#define FT_QNEW_ARRAY( ptr, count )                          \
-          FT_MEM_SET_ERROR( FT_MEM_NEW_ARRAY( ptr, count ) )
+#define FT_QNEW_ARRAY( ptr, count )                           \
+          FT_MEM_SET_ERROR( FT_MEM_QNEW_ARRAY( ptr, count ) )
 
-#define FT_QRENEW_ARRAY( ptr, curcnt, newcnt )                          \
-          FT_MEM_SET_ERROR( FT_MEM_RENEW_ARRAY( ptr, curcnt, newcnt ) )
+#define FT_QRENEW_ARRAY( ptr, curcnt, newcnt )                           \
+          FT_MEM_SET_ERROR( FT_MEM_QRENEW_ARRAY( ptr, curcnt, newcnt ) )
 
 
   FT_BASE( FT_Pointer )
