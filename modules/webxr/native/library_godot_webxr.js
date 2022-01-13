@@ -186,7 +186,7 @@ const GodotWebXR = {
 		// the first element, and the right hand is the second element, and any
 		// others placed at the 3rd position and up.
 		sampleControllers: () => {
-			if (!GodotWebXR.session || !GodotWebXR.frame) {
+			if (!GodotWebXR.session) {
 				return;
 			}
 
@@ -279,11 +279,12 @@ const GodotWebXR = {
 				}
 			});
 
-			['selectstart', 'select', 'selectend', 'squeezestart', 'squeeze', 'squeezeend'].forEach((input_event) => {
+			['selectstart', 'selectend', 'select', 'squeezestart', 'squeezeend', 'squeeze'].forEach((input_event, index) => {
 				session.addEventListener(input_event, function (evt) {
-					const c_str = GodotRuntime.allocString(input_event);
-					oninputevent(c_str, GodotWebXR.getControllerId(evt.inputSource));
-					GodotRuntime.free(c_str);
+					// Some controllers won't exist until an event occurs,
+					// for example, with "screen" input sources (touch).
+					GodotWebXR.sampleControllers();
+					oninputevent(index, GodotWebXR.getControllerId(evt.inputSource));
 				});
 			});
 
@@ -570,6 +571,35 @@ const GodotWebXR = {
 			GodotRuntime.setHeapValue(buf + 4 + (i * 4), value, 'float');
 		}
 		return buf;
+	},
+
+	godot_webxr_get_controller_target_ray_mode__proxy: 'sync',
+	godot_webxr_get_controller_target_ray_mode__sig: 'ii',
+	godot_webxr_get_controller_target_ray_mode: function (p_controller) {
+		if (p_controller < 0 || p_controller >= GodotWebXR.controllers.length) {
+			return 0;
+		}
+
+		const controller = GodotWebXR.controllers[p_controller];
+		if (!controller) {
+			return 0;
+		}
+
+		switch (controller.targetRayMode) {
+		case 'gaze':
+			return 1;
+
+		case 'tracked-pointer':
+			return 2;
+
+		case 'screen':
+			return 3;
+
+		default:
+			break;
+		}
+
+		return 0;
 	},
 
 	godot_webxr_get_visibility_state__proxy: 'sync',

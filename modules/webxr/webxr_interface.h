@@ -47,6 +47,13 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum TargetRayMode {
+		TARGET_RAY_MODE_UNKNOWN,
+		TARGET_RAY_MODE_GAZE,
+		TARGET_RAY_MODE_TRACKED_POINTER,
+		TARGET_RAY_MODE_SCREEN,
+	};
+
 	virtual void is_session_supported(const String &p_session_mode) = 0;
 	virtual void set_session_mode(String p_session_mode) = 0;
 	virtual String get_session_mode() const = 0;
@@ -58,8 +65,11 @@ public:
 	virtual String get_requested_reference_space_types() const = 0;
 	virtual String get_reference_space_type() const = 0;
 	virtual Ref<ARVRPositionalTracker> get_controller(int p_controller_id) const = 0;
+	virtual TargetRayMode get_controller_target_ray_mode(int p_controller_id) const = 0;
 	virtual String get_visibility_state() const = 0;
 	virtual PoolVector3Array get_bounds_geometry() const = 0;
 };
+
+VARIANT_ENUM_CAST(WebXRInterface::TargetRayMode);
 
 #endif // WEBXR_INTERFACE_H
