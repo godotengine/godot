@@ -223,7 +223,7 @@
 			<argument index="2" name="content" type="String" />
 			<argument index="3" name="status" type="String" />
 			<description>
-				Helper function to create a [code]Dictionary[/code] for storing a line diff. [code]new_line_no[/code] is the line number in the new file (can be [code]-1[/code] if the line is deleted). [code]old_line_no[/code] is the line number in the old file (can be [code]-1[/code] if the line is added). [code]content[/code] is the diff text. [code]content[/code] is the diff text. [code]status[/code] is a single character string which stores the line origin.
+				Helper function to create a [code]Dictionary[/code] for storing a line diff. [code]new_line_no[/code] is the line number in the new file (can be [code]-1[/code] if the line is deleted). [code]old_line_no[/code] is the line number in the old file (can be [code]-1[/code] if the line is added). [code]content[/code] is the diff text. [code]status[/code] is a single character string which stores the line origin.
 			</description>
 		</method>
 		<method name="create_status_file">
