@@ -246,6 +246,8 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 
 		if (res < 0) {
 			pcre2_match_data_free_16(match);
+			pcre2_match_context_free_16(mctx);
+
 			return nullptr;
 		}
 
