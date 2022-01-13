@@ -109,6 +109,14 @@
 				- [signal squeezestart]
 			</description>
 		</method>
+		<method name="get_controller_target_ray_mode" qualifiers="const">
+			<return type="int" enum="WebXRInterface.TargetRayMode" />
+			<argument index="0" name="controller_id" type="int" />
+			<description>
+				Returns the target ray mode for the given [code]controller_id[/code].
+				This can help interpret the input coming from that controller. See [url=https://developer.mozilla.org/en-US/docs/Web/API/XRInputSource/targetRayMode]XRInputSource.targetRayMode[/url] for more information.
+			</description>
+		</method>
 		<method name="is_session_supported">
 			<return type="void" />
 			<argument index="0" name="session_mode" type="String" />
@@ -240,5 +248,17 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="TARGET_RAY_MODE_UNKNOWN" value="0" enum="TargetRayMode">
+			We don't know the the target ray mode.
+		</constant>
+		<constant name="TARGET_RAY_MODE_GAZE" value="1" enum="TargetRayMode">
+			Target ray originates at the viewer's eyes and points in the direction they are looking.
+		</constant>
+		<constant name="TARGET_RAY_MODE_TRACKED_POINTER" value="2" enum="TargetRayMode">
+			Target ray from a handheld pointer, most likely a VR touch controller.
+		</constant>
+		<constant name="TARGET_RAY_MODE_SCREEN" value="3" enum="TargetRayMode">
+			Target ray from touch screen, mouse or other tactile input device.
+		</constant>
 	</constants>
 </class>

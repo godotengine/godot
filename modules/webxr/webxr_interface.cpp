@@ -43,6 +43,7 @@ void WebXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_requested_reference_space_types", "requested_reference_space_types"), &WebXRInterface::set_requested_reference_space_types);
 	ClassDB::bind_method(D_METHOD("get_requested_reference_space_types"), &WebXRInterface::get_requested_reference_space_types);
 	ClassDB::bind_method(D_METHOD("get_controller", "controller_id"), &WebXRInterface::get_controller);
+	ClassDB::bind_method(D_METHOD("get_controller_target_ray_mode", "controller_id"), &WebXRInterface::get_controller_target_ray_mode);
 	ClassDB::bind_method(D_METHOD("get_visibility_state"), &WebXRInterface::get_visibility_state);
 	ClassDB::bind_method(D_METHOD("get_bounds_geometry"), &WebXRInterface::get_bounds_geometry);
 
@@ -68,4 +69,9 @@ void WebXRInterface::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("visibility_state_changed"));
 	ADD_SIGNAL(MethodInfo("reference_space_reset"));
+
+	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_UNKNOWN);
+	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_GAZE);
+	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_TRACKED_POINTER);
+	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_SCREEN);
 }
