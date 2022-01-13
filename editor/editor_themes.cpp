@@ -30,7 +30,9 @@
 
 #include "editor_themes.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
+#include "core/variant/dictionary.h"
 #include "editor_fonts.h"
 #include "editor_icons.gen.h"
 #include "editor_scale.h"
@@ -95,6 +97,7 @@ static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false,
 
 	Ref<ImageTexture> texture(memnew(ImageTexture));
 	Ref<Image> img = p_texture->get_image();
+	ERR_FAIL_NULL_V(img, Ref<Texture2D>());
 	img = img->duplicate();
 
 	if (p_flip_y) {
@@ -109,7 +112,7 @@ static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false,
 }
 
 #ifdef MODULE_SVG_ENABLED
-static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, float p_saturation = 1.0) {
+static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, float p_saturation = 1.0, Dictionary p_convert_colors = Dictionary()) {
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
@@ -117,8 +120,9 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color,
 	// Generating upsampled icons is slower, and the benefit is hardly visible
 	// with integer editor scales.
 	const bool upsample = !Math::is_equal_approx(Math::round(p_scale), p_scale);
-	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_color);
-
+	ImageLoaderSVG img_loader;
+	img_loader.set_replace_colors(p_convert_colors);
+	img_loader.create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_color);
 	if (p_saturation != 1.0) {
 		img->adjust_bcs(1.0, 1.0, p_saturation);
 	}
@@ -135,8 +139,10 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color,
 void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = true, int p_thumb_size = 32, bool p_only_thumbs = false, float p_icon_saturation = 1.0) {
 #ifdef MODULE_SVG_ENABLED
 	// The default icon theme is designed to be used for a dark theme.
-	// This dictionary stores color codes to convert to other colors
+	// This dictionary stores Color values to convert to other colors
 	// for better readability on a light theme.
+	// Godot Color values are used to avoid the ambiguity of strings
+	// (where "#ffffff", "fff", and "white" are all equivalent).
 	Dictionary dark_icon_color_dictionary;
 
 	// The names of the icons to never convert, even if one of their colors
@@ -243,8 +249,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	dark_icon_color_dictionary[Color::html("#45ff8b")] = success_color;
 	dark_icon_color_dictionary[Color::html("#dbab09")] = warning_color;
 
-	ImageLoaderSVG::set_convert_colors(&dark_icon_color_dictionary);
-
 	// Generate icons.
 	if (!p_only_thumbs) {
 		for (int i = 0; i < editor_icons_count; i++) {
@@ -255,7 +259,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 			}
 
 			const int is_exception = exceptions.has(editor_icons_names[i]);
-			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception, EDSCALE, saturation);
+			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception, EDSCALE, saturation, dark_icon_color_dictionary);
 
 			p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
 		}
@@ -269,7 +273,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
 			const int index = editor_bg_thumbs_indices[i];
 			const int is_exception = exceptions.has(editor_icons_names[index]);
-			const Ref<ImageTexture> icon = editor_generate_icon(index, !p_dark_theme && !is_exception, scale, force_filter);
+			const Ref<ImageTexture> icon = editor_generate_icon(index, !p_dark_theme && !is_exception, scale, force_filter, dark_icon_color_dictionary);
 
 			p_theme->set_icon(editor_icons_names[index], "EditorIcons", icon);
 		}
@@ -278,13 +282,11 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		for (int i = 0; i < editor_md_thumbs_count; i++) {
 			const int index = editor_md_thumbs_indices[i];
 			const bool is_exception = exceptions.has(editor_icons_names[index]);
-			const Ref<ImageTexture> icon = editor_generate_icon(index, !p_dark_theme && !is_exception, scale, force_filter);
+			const Ref<ImageTexture> icon = editor_generate_icon(index, !p_dark_theme && !is_exception, scale, force_filter, dark_icon_color_dictionary);
 
 			p_theme->set_icon(editor_icons_names[index], "EditorIcons", icon);
 		}
 	}
-
-	ImageLoaderSVG::set_convert_colors(nullptr);
 #else
 	WARN_PRINT("SVG support disabled, editor icons won't be rendered.");
 #endif

@@ -362,10 +362,6 @@ Comment: Multi-channel signed distance field generator
 Copyright: 2016, Viktor Chlumsky
 License: MIT
 
-Files: ./thirdparty/nanosvg/
-Comment: NanoSVG
-Copyright: 2013-2014, Mikko Mononen
-License: Zlib
 
 Files: ./thirdparty/oidn/
 Comment: Intel Open Image Denoise
@@ -401,6 +397,11 @@ License: Apache-2.0
 Files: ./thirdparty/squish/
 Comment: libSquish
 Copyright: 2006, Simon Brown
+License: Expat
+
+Files: ./thirdparty/thorvg/
+Comment: ThorVG
+Copyright: 2020-2021, Samsung Electronics Co., Ltd.
 License: Expat
 
 Files: ./thirdparty/tinyexr/
