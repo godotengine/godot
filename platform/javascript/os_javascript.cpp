@@ -316,7 +316,6 @@ void OS_JavaScript::mouse_move_callback(double p_x, double p_y, double p_rel_x, 
 	ev->set_global_position(ev->get_position());
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
-	os->input->set_mouse_position(ev->get_position());
 	ev->set_speed(os->input->get_last_mouse_speed());
 
 	os->input->parse_input_event(ev);
