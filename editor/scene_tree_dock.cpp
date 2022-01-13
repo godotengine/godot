@@ -2721,6 +2721,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
 		}
+		menu->add_icon_shortcut(get_theme_icon(SNAME("Collapse"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
 		menu->add_separator();
 
 		existing_script = selected->get_script();
@@ -2861,7 +2862,6 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 void SceneTreeDock::_open_tree_menu() {
 	menu->clear();
 
-	menu->add_icon_shortcut(get_theme_icon(SNAME("Collapse"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
 	menu->add_check_item(TTR("Auto Expand to Selected"), TOOL_AUTO_EXPAND);
 	menu->set_item_checked(menu->get_item_idx_from_text(TTR("Auto Expand to Selected")), EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"));
 
@@ -3260,7 +3260,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	ED_SHORTCUT("scene_tree/add_child_node", TTR("Add Child Node"), KeyModifierMask::CMD | Key::A);
 	ED_SHORTCUT("scene_tree/instance_scene", TTR("Instantiate Child Scene"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::A);
-	ED_SHORTCUT("scene_tree/expand_collapse_all", TTR("Expand/Collapse All"));
+	ED_SHORTCUT("scene_tree/expand_collapse_all", TTR("Expand/Collapse Branch"));
 	ED_SHORTCUT("scene_tree/cut_node", TTR("Cut"), KeyModifierMask::CMD | Key::X);
 	ED_SHORTCUT("scene_tree/copy_node", TTR("Copy"), KeyModifierMask::CMD | Key::C);
 	ED_SHORTCUT("scene_tree/paste_node", TTR("Paste"), KeyModifierMask::CMD | Key::V);
