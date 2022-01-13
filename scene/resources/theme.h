@@ -189,6 +189,7 @@ public:
 	void get_theme_item_types(DataType p_data_type, List<StringName> *p_list) const;
 
 	void get_type_list(List<StringName> *p_list) const;
+	void get_type_dependencies(const StringName &p_base_type, List<StringName> *p_list);
 
 	void copy_default_theme();
 	void copy_theme(const Ref<Theme> &p_other);

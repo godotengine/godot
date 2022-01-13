@@ -126,7 +126,7 @@
 			<argument index="0" name="name" type="String" />
 			<argument index="1" name="node_type" type="String" />
 			<description>
-				Returns the [Font] at [code]name[/code] if the theme has [code]node_type[/code].
+				Returns the [Font] at [code]name[/code] if the theme has [code]node_type[/code]. If such item does not exist and [member default_font] is set on the theme, the default font will be returned.
 			</description>
 		</method>
 		<method name="get_font_list" qualifiers="const">
