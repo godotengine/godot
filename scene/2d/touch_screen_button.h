@@ -46,7 +46,7 @@ public:
 	};
 
 private:
-	Ref<Texture2D> texture;
+	Ref<Texture2D> texture_normal;
 	Ref<Texture2D> texture_pressed;
 	Ref<BitMap> bitmask;
 	Ref<Shape2D> shape;
@@ -78,8 +78,8 @@ public:
 	virtual bool _edit_use_rect() const override;
 #endif
 
-	void set_texture(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_texture() const;
+	void set_texture_normal(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture_normal() const;
 
 	void set_texture_pressed(const Ref<Texture2D> &p_texture_pressed);
 	Ref<Texture2D> get_texture_pressed() const;
