@@ -274,7 +274,7 @@ public:
 	Vector3 get_gyroscope() const;
 
 	Point2 get_mouse_position() const;
-	Vector2 get_last_mouse_velocity() const;
+	Vector2 get_last_mouse_velocity();
 	MouseButton get_mouse_button_mask() const;
 
 	void warp_mouse_position(const Vector2 &p_to);

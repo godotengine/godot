@@ -189,32 +189,37 @@ void Input::VelocityTrack::update(const Vector2 &p_delta_p) {
 	float delta_t = tdiff / 1000000.0;
 	last_tick = tick;
 
+	if (delta_t > max_ref_frame) {
+		// First movement in a long time, reset and start again.
+		velocity = Vector2();
+		accum = p_delta_p;
+		accum_t = 0;
+		return;
+	}
+
 	accum += p_delta_p;
 	accum_t += delta_t;
 
-	if (accum_t > max_ref_frame * 10) {
-		accum_t = max_ref_frame * 10;
+	if (accum_t < min_ref_frame) {
+		// Not enough time has passed to calculate speed precisely.
+		return;
 	}
 
-	while (accum_t >= min_ref_frame) {
-		float slice_t = min_ref_frame / accum_t;
-		Vector2 slice = accum * slice_t;
-		accum = accum - slice;
-		accum_t -= min_ref_frame;
-
-		velocity = (slice / min_ref_frame).lerp(velocity, min_ref_frame / max_ref_frame);
-	}
+	velocity = accum / accum_t;
+	accum = Vector2();
+	accum_t = 0;
 }
 
 void Input::VelocityTrack::reset() {
 	last_tick = OS::get_singleton()->get_ticks_usec();
 	velocity = Vector2();
+	accum = Vector2();
 	accum_t = 0;
 }
 
 Input::VelocityTrack::VelocityTrack() {
 	min_ref_frame = 0.1;
-	max_ref_frame = 0.3;
+	max_ref_frame = 3.0;
 	reset();
 }
 
@@ -704,7 +709,8 @@ Point2 Input::get_mouse_position() const {
 	return mouse_pos;
 }
 
-Point2 Input::get_last_mouse_velocity() const {
+Point2 Input::get_last_mouse_velocity() {
+	mouse_velocity_track.update(Vector2());
 	return mouse_velocity_track.velocity;
 }
 
