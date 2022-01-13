@@ -9383,6 +9383,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						}
 					}
 
+					for (const KeyValue<StringName, ShaderNode::Constant> &E : shader->constants) {
+						matches.insert(E.key, ScriptCodeCompletionOption::KIND_CONSTANT);
+					}
 					for (const KeyValue<StringName, ShaderNode::Varying> &E : shader->varyings) {
 						matches.insert(E.key, ScriptCodeCompletionOption::KIND_VARIABLE);
 					}
