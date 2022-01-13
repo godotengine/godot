@@ -1148,6 +1148,7 @@ void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p
 		property_editor->set_label(p_label);
 	}
 	property_editor->connect("property_changed", callable_mp(this, &TileDataDefaultEditor::_property_value_changed).unbind(1));
+	property_editor->set_tooltip(p_property);
 	property_editor->update_property();
 	add_child(property_editor);
 }
@@ -1356,6 +1357,7 @@ void TileDataCollisionEditor::_polygons_changed() {
 			one_way_property_editor->set_label(one_way_property);
 			one_way_property_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
 			one_way_property_editor->connect("selected", callable_mp(this, &TileDataCollisionEditor::_property_selected));
+			one_way_property_editor->set_tooltip(one_way_property_editor->get_edited_property());
 			one_way_property_editor->update_property();
 			add_child(one_way_property_editor);
 			property_editors[one_way_property] = one_way_property_editor;
@@ -1367,6 +1369,7 @@ void TileDataCollisionEditor::_polygons_changed() {
 			one_way_margin_property_editor->set_label(one_way_margin_property);
 			one_way_margin_property_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
 			one_way_margin_property_editor->connect("selected", callable_mp(this, &TileDataCollisionEditor::_property_selected));
+			one_way_margin_property_editor->set_tooltip(one_way_margin_property_editor->get_edited_property());
 			one_way_margin_property_editor->update_property();
 			add_child(one_way_margin_property_editor);
 			property_editors[one_way_margin_property] = one_way_margin_property_editor;
@@ -1527,6 +1530,7 @@ TileDataCollisionEditor::TileDataCollisionEditor() {
 	linear_velocity_editor->set_label("linear_velocity");
 	linear_velocity_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
 	linear_velocity_editor->connect("selected", callable_mp(this, &TileDataCollisionEditor::_property_selected));
+	linear_velocity_editor->set_tooltip(linear_velocity_editor->get_edited_property());
 	linear_velocity_editor->update_property();
 	add_child(linear_velocity_editor);
 	property_editors["linear_velocity"] = linear_velocity_editor;
@@ -1536,6 +1540,7 @@ TileDataCollisionEditor::TileDataCollisionEditor() {
 	angular_velocity_editor->set_label("angular_velocity");
 	angular_velocity_editor->connect("property_changed", callable_mp(this, &TileDataCollisionEditor::_property_value_changed).unbind(1));
 	angular_velocity_editor->connect("selected", callable_mp(this, &TileDataCollisionEditor::_property_selected));
+	angular_velocity_editor->set_tooltip(angular_velocity_editor->get_edited_property());
 	angular_velocity_editor->update_property();
 	add_child(angular_velocity_editor);
 	property_editors["angular_velocity"] = angular_velocity_editor;
@@ -2505,6 +2510,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 	terrain_set_property_editor->set_object_and_property(dummy_object, "terrain_set");
 	terrain_set_property_editor->set_label("Terrain Set");
 	terrain_set_property_editor->connect("property_changed", callable_mp(this, &TileDataTerrainsEditor::_property_value_changed).unbind(1));
+	terrain_set_property_editor->set_tooltip(terrain_set_property_editor->get_edited_property());
 	add_child(terrain_set_property_editor);
 
 	terrain_property_editor = memnew(EditorPropertyEnum);
