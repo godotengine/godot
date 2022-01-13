@@ -155,14 +155,14 @@ Files extracted from upstream source:
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.10.4 (6a2b3e4007e794bfc6c91030d0ed987f925164a8, 2020)
+- Version: 2.11.1 (3f83daeecb1a78d851b660eed025eeba362c0e4a, 2021)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
 
-- the `src/` folder, stripped of the `Jamfile` files and the `tools` subfolder
-- the `include/` folder
-- `docs/{FTL.TXT,LICENSE.TXT}`
+- the `src/` folder, minus the `.mk` files and the `dlg` and `tools` subfolders
+- the `include/` folder, minus the `dlg` subfolder
+- `LICENSE.TXT` and `docs/FTL.TXT`
 
 
 ## glslang

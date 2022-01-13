@@ -4,7 +4,7 @@
  *
  *   OpenType font driver implementation (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -345,8 +345,8 @@
       else
       {
         FT_ERROR(( "cff_get_glyph_name:"
-                   " cannot get glyph name from a CFF2 font\n"
-                   "                   "
+                   " cannot get glyph name from a CFF2 font\n" ));
+        FT_ERROR(( "                   "
                    " without the `psnames' module\n" ));
         error = FT_THROW( Missing_Module );
         goto Exit;
@@ -356,8 +356,8 @@
     if ( !font->psnames )
     {
       FT_ERROR(( "cff_get_glyph_name:"
-                 " cannot get glyph name from CFF & CEF fonts\n"
-                 "                   "
+                 " cannot get glyph name from CFF & CEF fonts\n" ));
+      FT_ERROR(( "                   "
                  " without the `psnames' module\n" ));
       error = FT_THROW( Missing_Module );
       goto Exit;
@@ -412,8 +412,8 @@
       else
       {
         FT_ERROR(( "cff_get_name_index:"
-                   " cannot get glyph index from a CFF2 font\n"
-                   "                   "
+                   " cannot get glyph index from a CFF2 font\n" ));
+        FT_ERROR(( "                   "
                    " without the `psnames' module\n" ));
         return 0;
       }
@@ -474,11 +474,11 @@
     if ( cff && !cff->font_info )
     {
       CFF_FontRecDict  dict      = &cff->top_font.font_dict;
-      PS_FontInfoRec  *font_info = NULL;
       FT_Memory        memory    = face->root.memory;
+      PS_FontInfoRec*  font_info = NULL;
 
 
-      if ( FT_ALLOC( font_info, sizeof ( *font_info ) ) )
+      if ( FT_QNEW( font_info ) )
         goto Fail;
 
       font_info->version     = cff_index_get_sid_string( cff,
@@ -515,15 +515,15 @@
     FT_Error  error = FT_Err_Ok;
 
 
-    if ( cff && cff->font_extra == NULL )
+    if ( cff && !cff->font_extra )
     {
       CFF_FontRecDict   dict       = &cff->top_font.font_dict;
-      PS_FontExtraRec*  font_extra = NULL;
       FT_Memory         memory     = face->root.memory;
+      PS_FontExtraRec*  font_extra = NULL;
       FT_String*        embedded_postscript;
 
 
-      if ( FT_ALLOC( font_extra, sizeof ( *font_extra ) ) )
+      if ( FT_QNEW( font_extra ) )
         goto Fail;
 
       font_extra->fs_type = 0U;

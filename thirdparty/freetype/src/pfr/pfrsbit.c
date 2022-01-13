@@ -4,7 +4,7 @@
  *
  *   FreeType PFR bitmap loader (body).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -310,8 +310,8 @@
       if ( lim > limit )
       {
         FT_TRACE0(( "pfr_lookup_bitmap_data:"
-                    " number of bitmap records too large,\n"
-                    "                       "
+                    " number of bitmap records too large,\n" ));
+        FT_TRACE0(( "                       "
                     " thus ignoring all bitmaps in this strike\n" ));
         *flags &= ~PFR_BITMAP_VALID_CHARCODES;
       }
@@ -328,8 +328,8 @@
           if ( (FT_Long)code <= prev_code )
           {
             FT_TRACE0(( "pfr_lookup_bitmap_data:"
-                        " bitmap records are not sorted,\n"
-                        "                       "
+                        " bitmap records are not sorted,\n" ));
+            FT_TRACE0(( "                       "
                         " thus ignoring all bitmaps in this strike\n" ));
             *flags &= ~PFR_BITMAP_VALID_CHARCODES;
             break;
