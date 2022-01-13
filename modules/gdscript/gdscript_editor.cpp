@@ -966,8 +966,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 				if (!_static || Engine::get_singleton()->has_singleton(type)) {
 					List<MethodInfo> methods;
-					bool is_autocompleting_getters = GLOBAL_GET("debug/gdscript/completion/autocomplete_setters_and_getters").booleanize();
-					ClassDB::get_method_list(type, &methods, false, !is_autocompleting_getters);
+					ClassDB::get_method_list(type, &methods, false, true);
 					for (const MethodInfo &E : methods) {
 						if (E.name.begins_with("_")) {
 							continue;

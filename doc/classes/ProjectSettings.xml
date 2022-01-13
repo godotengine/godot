@@ -331,9 +331,6 @@
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
-		<member name="debug/gdscript/completion/autocomplete_setters_and_getters" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], displays getters and setters in autocompletion results in the script editor. This setting is meant to be used when porting old projects (Godot 2), as using member variables is the preferred style from Godot 3 onwards.
-		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_true" type="bool" setter="" getter="" default="true">
