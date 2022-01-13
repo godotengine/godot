@@ -742,7 +742,7 @@ void ActionMapEditor::_event_config_confirmed() {
 	Ref<InputEvent> ev = event_config_dialog->get_event();
 
 	Dictionary new_action = current_action.duplicate();
-	Array events = new_action["events"];
+	Array events = new_action["events"].duplicate();
 
 	if (current_action_event_index == -1) {
 		// Add new event
@@ -839,7 +839,6 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			current_action_event_index = -1;
 
 			event_config_dialog->popup_and_configure();
-
 		} break;
 		case ActionMapEditor::BUTTON_EDIT_EVENT: {
 			// Action and Action name is located on the parent of the event.
@@ -852,7 +851,6 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			if (ie.is_valid()) {
 				event_config_dialog->popup_and_configure(ie);
 			}
-
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_ACTION: {
 			// Send removed action name
@@ -861,12 +859,12 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_EVENT: {
 			// Remove event and send updated action
-			Dictionary action = item->get_parent()->get_meta("__action");
+			Dictionary action = item->get_parent()->get_meta("__action").duplicate();
 			String action_name = item->get_parent()->get_meta("__name");
 
 			int event_index = item->get_meta("__index");
 
-			Array events = action["events"];
+			Array events = action["events"].duplicate();
 			events.remove_at(event_index);
 			action["events"] = events;
 
