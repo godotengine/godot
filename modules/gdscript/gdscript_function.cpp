@@ -473,7 +473,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Left operand of 'is' was already freed.";
 					OPCODE_BREAK;
 				}
-				if (b->is_invalid_object()) {
+				if (b->get_type() != Variant::OBJECT || b->is_invalid_object()) {
 					err_text = "Right operand of 'is' is not a class.";
 					OPCODE_BREAK;
 				}
