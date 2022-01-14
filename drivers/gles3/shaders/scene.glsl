@@ -212,7 +212,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float roughness, in
 		float t = mix(1.0, max(NdotL, NdotV), step(0.0, s));
 
 		float sigma2 = roughness * roughness; // TODO: this needs checking
-		vec3 A = 1.0 + sigma2 * (-0.5 / (sigma2 + 0.33) + 0.17 * diffuse_color / (sigma2 + 0.13));
+		vec3 A = 1.0 + sigma2 * (-0.5 / (sigma2 + 0.33) + 0.17 * diffuse / (sigma2 + 0.13));
 		float B = 0.45 * sigma2 / (sigma2 + 0.09);
 
 		diffuse_brdf_NL = cNdotL * (A + vec3(B) * s / t) * (1.0 / M_PI);
