@@ -3497,7 +3497,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 	variable->export_info.hint_string = hint_string;
 
-	// This is called after tne analyzer is done finding the type, so this should be set here.
+	// This is called after the analyzer is done finding the type, so this should be set here.
 	DataType export_type = variable->get_datatype();
 
 	if (p_annotation->name == "@export") {

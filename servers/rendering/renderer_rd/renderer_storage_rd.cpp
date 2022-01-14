@@ -2612,7 +2612,7 @@ void RendererStorageRD::MaterialData::update_uniform_buffer(const Map<StringName
 		}
 
 		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
-			continue; //instance uniforms don't appear in the bufferr
+			continue; //instance uniforms don't appear in the buffer
 		}
 
 		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
