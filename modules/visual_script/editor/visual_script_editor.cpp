@@ -2655,6 +2655,15 @@ String VisualScriptEditor::get_name() {
 }
 
 Ref<Texture2D> VisualScriptEditor::get_theme_icon() {
+	String icon_name = "VisualScript";
+	if (script->is_built_in()) {
+		icon_name += "Internal";
+	}
+
+	if (Control::has_theme_icon(icon_name, "EditorIcons")) {
+		return get_parent_control()->get_theme_icon(icon_name, "EditorIcons");
+	}
+
 	return Control::get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons"));
 }
 
