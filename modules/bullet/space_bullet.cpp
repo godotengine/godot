@@ -1290,6 +1290,8 @@ bool SpaceBullet::RFP_convex_convex_test(const btConvexShape *p_shapeA, const bt
 	// Initialize GJK input
 	btGjkPairDetector::ClosestPointInput gjk_input;
 	gjk_input.m_transformA = p_transformA;
+	// Avoid repeat penetrations
+	gjk_input.m_transformA.getOrigin() += r_delta_recover_movement;
 	gjk_input.m_transformB = p_transformB;
 
 	// Perform GJK test
@@ -1320,6 +1322,8 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 	/// Contact test
 
 	btTransform tA(p_transformA);
+	// Avoid repeat penetrations
+	tA.getOrigin() += r_delta_recover_movement;
 
 	btCollisionObjectWrapper obA(nullptr, p_shapeA, p_objectA, tA, -1, p_shapeId_A);
 	btCollisionObjectWrapper obB(nullptr, p_shapeB, p_objectB, p_transformB, -1, p_shapeId_B);
