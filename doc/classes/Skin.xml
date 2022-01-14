@@ -14,6 +14,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="add_named_bind">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="pose" type="Transform3D" />
+			<description>
+			</description>
+		</method>
 		<method name="clear_binds">
 			<return type="void" />
 			<description>
