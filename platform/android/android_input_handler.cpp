@@ -40,10 +40,7 @@ void AndroidInputHandler::process_joy_event(const JoypadEvent &p_event) {
 			input->joy_button(p_event.device, p_event.index, p_event.pressed);
 			break;
 		case JOY_EVENT_AXIS:
-			InputDefault::JoyAxis value;
-			value.min = -1;
-			value.value = p_event.value;
-			input->joy_axis(p_event.device, p_event.index, value);
+			input->joy_axis(p_event.device, p_event.index, p_event.value);
 			break;
 		case JOY_EVENT_HAT:
 			input->joy_hat(p_event.device, p_event.hat);

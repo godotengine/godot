@@ -409,10 +409,12 @@ void GDAPI godot_arvr_set_controller_axis(godot_int p_controller_id, godot_int p
 	if (tracker.is_valid()) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
-			InputDefault::JoyAxis jx;
-			jx.min = p_can_be_negative ? -1 : 0;
-			jx.value = p_value;
-			input->joy_axis(joyid, p_axis, jx);
+			float value = p_value;
+			if (!p_can_be_negative) {
+				// Convert to a value between -1.0f and 1.0f.
+				value = p_value * 2.0f - 1.0f;
+			}
+			input->joy_axis(joyid, p_axis, value);
 		}
 	}
 }

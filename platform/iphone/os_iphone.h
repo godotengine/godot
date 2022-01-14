@@ -149,7 +149,7 @@ public:
 	int get_unused_joy_id();
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name);
 	void joy_button(int p_device, int p_button, bool p_pressed);
-	void joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p_value);
+	void joy_axis(int p_device, int p_axis, float p_value);
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);

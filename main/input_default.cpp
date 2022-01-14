@@ -805,47 +805,32 @@ void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
 	// no event?
 }
 
-void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
+void InputDefault::joy_axis(int p_device, int p_axis, float p_value) {
 	_THREAD_SAFE_METHOD_;
 
 	ERR_FAIL_INDEX(p_axis, JOY_AXIS_MAX);
 
 	Joypad &joy = joy_names[p_device];
 
-	if (joy.last_axis[p_axis] == p_value.value) {
+	if (joy.last_axis[p_axis] == p_value) {
 		return;
 	}
 
-	//when changing direction quickly, insert fake event to release pending inputmap actions
-	float last = joy.last_axis[p_axis];
-	if (p_value.min == 0 && (last < 0.25 || last > 0.75) && (last - 0.5) * (p_value.value - 0.5) < 0) {
-		JoyAxis jx;
-		jx.min = p_value.min;
-		jx.value = p_value.value < 0.5 ? 0.6 : 0.4;
-		joy_axis(p_device, p_axis, jx);
-	} else if (ABS(last) > 0.5 && last * p_value.value <= 0) {
-		JoyAxis jx;
-		jx.min = p_value.min;
-		jx.value = last > 0 ? 0.1 : -0.1;
-		joy_axis(p_device, p_axis, jx);
-	}
-
-	joy.last_axis[p_axis] = p_value.value;
-	float val = p_value.min == 0 ? -1.0f + 2.0f * p_value.value : p_value.value;
+	joy.last_axis[p_axis] = p_value;
 
 	if (joy.mapping == -1) {
-		_axis_event(p_device, p_axis, val);
+		_axis_event(p_device, p_axis, p_value);
 		return;
 	};
 
-	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, val);
+	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, p_value);
 
 	if (map.type == TYPE_BUTTON) {
-		//send axis event for triggers
+		// Send axis event for triggers
 		if (map.index == JOY_L2 || map.index == JOY_R2) {
-			float value = p_value.min == 0 ? p_value.value : 0.5f + p_value.value / 2.0f;
-			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
-			_axis_event(p_device, axis, value);
+			// Convert to a value between 0.0f and 1.0f.
+			float value = 0.5f + p_value / 2.0f;
+			_axis_event(p_device, map.index, value);
 		}
 
 		bool pressed = map.value > 0.5;
@@ -885,10 +870,9 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 	}
 
 	if (map.type == TYPE_AXIS) {
-		_axis_event(p_device, map.index, val);
+		_axis_event(p_device, map.index, p_value);
 		return;
 	}
-	//printf("invalid mapping\n");
 }
 
 void InputDefault::joy_hat(int p_device, int p_val) {
