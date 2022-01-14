@@ -10,6 +10,7 @@ import os
 import pickle
 import sys
 import time
+from types import ModuleType
 from collections import OrderedDict
 from importlib.util import spec_from_file_location, module_from_spec
 
@@ -24,6 +25,21 @@ def _helper_module(name, path):
     module = module_from_spec(spec)
     spec.loader.exec_module(module)
     sys.modules[name] = module
+    # Ensure the module's parents are in loaded to avoid loading the wrong parent
+    # when doing "import foo.bar" while only "foo.bar" as declared as helper module
+    child_module = module
+    parent_name = name
+    while True:
+        try:
+            parent_name, child_name = parent_name.rsplit(".", 1)
+        except ValueError:
+            break
+        try:
+            parent_module = sys.modules[parent_name]
+        except KeyError:
+            parent_module = ModuleType(parent_name)
+            sys.modules[parent_name] = parent_module
+        setattr(parent_module, child_name, child_module)
 
 
 _helper_module("gles3_builders", "gles3_builders.py")
