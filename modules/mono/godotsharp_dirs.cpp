@@ -68,7 +68,14 @@ String _get_mono_user_dir() {
 	} else {
 		String settings_path;
 
+		// Self-contained mode if a `._sc_` or `_sc_` file is present in executable dir.
 		String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+
+		// On macOS, look outside .app bundle, since .app bundle is read-only.
+		if (OS::get_singleton()->has_feature("macos") && exe_dir.ends_with("MacOS") && exe_dir.plus_file("..").simplify_path().ends_with("Contents")) {
+			exe_dir = exe_dir.plus_file("../../..").simplify_path();
+		}
+
 		DirAccessRef d = DirAccess::create_for_path(exe_dir);
 
 		if (d->file_exists("._sc_") || d->file_exists("_sc_")) {
