@@ -692,17 +692,36 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				vcode += _prestr(varying.precision, ShaderLanguage::is_float_type(varying.type));
 				vcode += _typestr(varying.type);
 				vcode += " " + _mkid(varying_name);
+				uint32_t inc = 1U;
+
 				if (varying.array_size > 0) {
+					inc = (uint32_t)varying.array_size;
+
 					vcode += "[";
 					vcode += itos(varying.array_size);
 					vcode += "]";
 				}
+
+				switch (varying.type) {
+					case SL::TYPE_MAT2:
+						inc *= 2U;
+						break;
+					case SL::TYPE_MAT3:
+						inc *= 3U;
+						break;
+					case SL::TYPE_MAT4:
+						inc *= 4U;
+						break;
+					default:
+						break;
+				}
+
 				vcode += ";\n";
 
 				r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") " + interp_mode + "out " + vcode;
 				r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") " + interp_mode + "in " + vcode;
 
-				index++;
+				index += inc;
 			}
 
 			if (var_frag_to_light.size() > 0) {
