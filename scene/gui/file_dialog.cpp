@@ -42,6 +42,17 @@ FileDialog::RegisterFunc FileDialog::unregister_func = nullptr;
 
 void FileDialog::popup_file_dialog() {
 	popup_centered_clamped(Size2i(700, 500), 0.8f);
+	_focus_file_text();
+}
+
+void FileDialog::_focus_file_text() {
+	int lp = file->get_text().rfind(".");
+	if (lp != -1) {
+		file->select(0, lp);
+		if (file->is_inside_tree() && !get_tree()->is_node_being_edited(file)) {
+			file->grab_focus();
+		}
+	}
 }
 
 VBoxContainer *FileDialog::get_vbox() {
@@ -688,13 +699,7 @@ void FileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
-	int lp = p_file.rfind(".");
-	if (lp != -1) {
-		file->select(0, lp);
-		if (file->is_inside_tree() && !get_tree()->is_node_being_edited(file)) {
-			file->grab_focus();
-		}
-	}
+	_focus_file_text();
 }
 
 void FileDialog::set_current_path(const String &p_path) {
