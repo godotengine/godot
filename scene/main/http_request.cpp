@@ -86,9 +86,9 @@ String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const S
 
 	String lowwer_case_header_name = p_header_name.to_lower();
 	for (int i = 0; i < p_headers.size(); i++) {
-		if (p_headers[i].find(":", 0) >= 0) {
+		if (p_headers[i].find(":") > 0) {
 			Vector<String> parts = p_headers[i].split(":", false, 1);
-			if (parts[0].strip_edges().to_lower() == lowwer_case_header_name) {
+			if (parts.size() > 1 && parts[0].strip_edges().to_lower() == lowwer_case_header_name) {
 				value = parts[1].strip_edges();
 				break;
 			}
@@ -134,7 +134,7 @@ Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_cust
 	headers = p_custom_headers;
 
 	if (accept_gzip) {
-		// If the user has specified a Accept-Encoding header, don't overwrite it.
+		// If the user has specified an Accept-Encoding header, don't overwrite it.
 		if (!has_header(headers, "Accept-Encoding")) {
 			headers.push_back("Accept-Encoding: gzip, deflate");
 		}

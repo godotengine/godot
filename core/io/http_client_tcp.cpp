@@ -146,6 +146,11 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(connection.is_null(), ERR_INVALID_DATA);
 
+	Error err = verify_headers(p_headers);
+	if (err) {
+		return err;
+	}
+
 	String uri = p_url;
 	if (!ssl && http_proxy_port != -1) {
 		uri = vformat("http://%s:%d%s", conn_host, conn_port, p_url);
