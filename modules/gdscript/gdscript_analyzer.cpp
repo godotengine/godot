@@ -2201,7 +2201,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				// If there's one argument, try to use copy constructor (those aren't explicitly defined).
 				if (p_call->arguments.size() == 1) {
 					GDScriptParser::DataType arg_type = p_call->arguments[0]->get_datatype();
-					if (arg_type.is_variant()) {
+					if (!arg_type.is_hard_type() || arg_type.is_variant()) {
 						mark_node_unsafe(p_call->arguments[0]);
 					} else {
 						if (arg_type.kind == GDScriptParser::DataType::BUILTIN && arg_type.builtin_type == builtin_type) {
@@ -2227,13 +2227,17 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 					for (int i = 0; i < p_call->arguments.size(); i++) {
 						GDScriptParser::DataType par_type = type_from_property(info.arguments[i]);
+						GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
 
-						if (!is_type_compatible(par_type, p_call->arguments[i]->get_datatype(), true)) {
+						if (!arg_type.is_hard_type() || arg_type.is_variant()) {
+							continue;
+						}
+						if (!is_type_compatible(par_type, arg_type, true)) {
 							types_match = false;
 							break;
 #ifdef DEBUG_ENABLED
 						} else {
-							if (par_type.builtin_type == Variant::INT && p_call->arguments[i]->get_datatype().builtin_type == Variant::FLOAT) {
+							if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT) {
 								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, p_call->function_name);
 							}
 #endif
@@ -3699,7 +3703,7 @@ bool GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 		GDScriptParser::DataType par_type = p_par_types[i];
 		GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
 
-		if (arg_type.is_variant()) {
+		if (!arg_type.is_hard_type() || arg_type.is_variant()) {
 			// Argument can be anything, so this is unsafe.
 			mark_node_unsafe(p_call->arguments[i]);
 		} else if (par_type.is_hard_type() && !is_type_compatible(par_type, arg_type, true)) {
