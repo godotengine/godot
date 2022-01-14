@@ -262,11 +262,18 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {
 	variables->prop_values[type + n] = v;
 	variables->update();
 	edit(variables);
+
+	// To prevent constantly resizing when using filtering.
+	int size_x = get_size().x;
+	if (size_x > get_custom_minimum_size().x) {
+		set_custom_minimum_size(Size2(size_x, 0));
+	}
 }
 
 void EditorDebuggerInspector::clear_stack_variables() {
 	variables->clear();
 	variables->update();
+	set_custom_minimum_size(Size2(0, 0));
 }
 
 String EditorDebuggerInspector::get_stack_variable(const String &p_var) {
