@@ -22,8 +22,5 @@
 		<member name="tilt" type="Vector2" setter="set_tilt" getter="get_tilt" default="Vector2(0, 0)">
 			Represents the angles of tilt of the pen. Positive X-coordinate value indicates a tilt to the right. Positive Y-coordinate value indicates a tilt toward the user. Ranges from [code]-1.0[/code] to [code]1.0[/code] for both axes.
 		</member>
-		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
-			The mouse velocity in pixels per second.
-		</member>
 	</members>
 </class>

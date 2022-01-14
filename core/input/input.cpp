@@ -123,6 +123,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
+	ClassDB::bind_method(D_METHOD("get_last_drag_velocity", "index"), &Input::get_last_drag_velocity);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
 	ClassDB::bind_method(D_METHOD("set_mouse_mode", "mode"), &Input::set_mouse_mode);
 	ClassDB::bind_method(D_METHOD("get_mouse_mode"), &Input::get_mouse_mode);
@@ -531,7 +532,6 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 			drag_event->set_position(position);
 			drag_event->set_relative(relative);
-			drag_event->set_velocity(get_last_mouse_velocity());
 
 			event_dispatch_function(drag_event);
 		}
@@ -588,7 +588,6 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	if (sd.is_valid()) {
 		VelocityTrack &track = touch_velocity_track[sd->get_index()];
 		track.update(sd->get_relative());
-		sd->set_velocity(track.velocity);
 
 		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
 			Ref<InputEventMouseMotion> motion_event;
@@ -598,7 +597,6 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event->set_position(sd->get_position());
 			motion_event->set_global_position(sd->get_position());
 			motion_event->set_relative(sd->get_relative());
-			motion_event->set_velocity(sd->get_velocity());
 			motion_event->set_button_mask(mouse_button_mask);
 
 			_parse_input_event_impl(motion_event, true);
@@ -721,6 +719,13 @@ Point2 Input::get_mouse_position() const {
 
 Point2 Input::get_last_mouse_velocity() const {
 	return mouse_velocity_track.velocity;
+}
+
+Vector2 Input::get_last_drag_velocity(int p_index) const {
+	if (!touch_velocity_track.has(p_index)) {
+		return Vector2();
+	}
+	return touch_velocity_track[p_index].velocity;
 }
 
 MouseButton Input::get_mouse_button_mask() const {

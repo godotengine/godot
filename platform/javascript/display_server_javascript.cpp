@@ -222,12 +222,9 @@ void DisplayServerJavaScript::mouse_move_callback(double p_x, double p_y, double
 	ev.instantiate();
 	dom2godot_mod(ev, p_modifiers);
 	ev->set_button_mask(input_mask);
-
 	ev->set_position(pos);
 	ev->set_global_position(pos);
-
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
-	ev->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
 	Input::get_singleton()->parse_input_event(ev);
 }

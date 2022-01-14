@@ -3232,7 +3232,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		if (drag_touching && !drag_touching_deaccel) {
 			drag_accum -= mm->get_relative().y;
 			v_scroll->set_value(drag_from + drag_accum);
-			drag_speed = -mm->get_velocity().y;
+			drag_speed = -Input::get_singleton()->get_last_mouse_velocity().y;
 		}
 	}
 
