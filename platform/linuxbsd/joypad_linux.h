@@ -52,7 +52,7 @@ private:
 	};
 
 	struct Joypad {
-		Input::JoyAxisValue curr_axis[MAX_ABS];
+		float curr_axis[MAX_ABS];
 		int key_map[MAX_KEY];
 		int abs_map[MAX_ABS];
 		HatMask dpad = HatMask::CENTER;
@@ -96,7 +96,7 @@ private:
 	void joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
 
-	Input::JoyAxisValue axis_correct(const input_absinfo *p_abs, int p_value) const;
+	float axis_correct(const input_absinfo *p_abs, int p_value) const;
 };
 
 #endif // JOYDEV_ENABLED

@@ -558,24 +558,16 @@ void DisplayServerJavaScript::process_joypads() {
 			continue;
 		}
 		for (int b = 0; b < s_btns_num; b++) {
-			float value = s_btns[b];
 			// Buttons 6 and 7 in the standard mapping need to be
 			// axis to be handled as JoyAxis::TRIGGER by Godot.
 			if (s_standard && (b == 6 || b == 7)) {
-				Input::JoyAxisValue joy_axis;
-				joy_axis.min = 0;
-				joy_axis.value = value;
-				JoyAxis a = b == 6 ? JoyAxis::TRIGGER_LEFT : JoyAxis::TRIGGER_RIGHT;
-				input->joy_axis(idx, a, joy_axis);
+				input->joy_axis(idx, (JoyAxis)b, s_btns[b]);
 			} else {
-				input->joy_button(idx, (JoyButton)b, value);
+				input->joy_button(idx, (JoyButton)b, s_btns[b]);
 			}
 		}
 		for (int a = 0; a < s_axes_num; a++) {
-			Input::JoyAxisValue joy_axis;
-			joy_axis.min = -1;
-			joy_axis.value = s_axes[a];
-			input->joy_axis(idx, (JoyAxis)a, joy_axis);
+			input->joy_axis(idx, (JoyAxis)a, s_axes[a]);
 		}
 	}
 }
