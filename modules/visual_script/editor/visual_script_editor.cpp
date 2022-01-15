@@ -2661,7 +2661,7 @@ Ref<Texture2D> VisualScriptEditor::get_theme_icon() {
 	}
 
 	if (Control::has_theme_icon(icon_name, "EditorIcons")) {
-		return get_parent_control()->get_theme_icon(icon_name, "EditorIcons");
+		return Control::get_theme_icon(icon_name, SNAME("EditorIcons"));
 	}
 
 	return Control::get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons"));
