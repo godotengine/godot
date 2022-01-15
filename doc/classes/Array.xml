@@ -470,6 +470,12 @@
 				// There is no sort support for Godot.Collections.Array
 				[/csharp]
 				[/codeblocks]
+				To perform natural order sorting, you can use [method sort_custom] with [method String.naturalnocasecmp_to] as follows:
+				[codeblock]
+				var strings = ["string1", "string2", "string10", "string11"]
+				strings.sort_custom(func(a, b): return a.naturalnocasecmp_to(b) &lt; 0)
+				print(strings) # Prints [string1, string2, string10, string11]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sort_custom">
