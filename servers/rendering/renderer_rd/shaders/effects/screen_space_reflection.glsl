@@ -66,6 +66,19 @@ void main() {
 
 	vec4 normal_roughness = imageLoad(source_normal_roughness, ssC);
 	vec3 normal = normal_roughness.xyz * 2.0 - 1.0;
+	float roughness = normal_roughness.w;
+
+	// The roughness cutoff of 0.6 is chosen to match the roughness fadeout from GH-69828.
+	if (roughness > 0.6) {
+		// Do not compute SSR for rough materials to improve performance at the cost of
+		// subtle artifacting.
+#ifdef MODE_ROUGH
+		imageStore(blur_radius_image, ssC, vec4(0.0));
+#endif
+		imageStore(ssr_image, ssC, vec4(0.0));
+		return;
+	}
+
 	normal = normalize(normal);
 	normal.y = -normal.y; //because this code reads flipped
 
@@ -81,8 +94,6 @@ void main() {
 		imageStore(ssr_image, ssC, vec4(0.0));
 		return;
 	}
-	//ray_dir = normalize(view_dir - normal * dot(normal,view_dir) * 2.0);
-	//ray_dir = normalize(vec3(1.0, 1.0, -1.0));
 
 	////////////////
 
@@ -220,7 +231,6 @@ void main() {
 
 		// if roughness is enabled, do screen space cone tracing
 		float blur_radius = 0.0;
-		float roughness = normal_roughness.w;
 
 		if (roughness > 0.001) {
 			float cone_angle = min(roughness, 0.999) * M_PI * 0.5;
