@@ -780,9 +780,10 @@ def generate_vs_project(env, num_jobs):
             env.vs_incs.append(str(header))
 
         module_configs = ModuleConfigs()
-        import modules.mono.build_scripts.mono_reg_utils as mono_reg
 
         if env.get("module_mono_enabled"):
+            import modules.mono.build_scripts.mono_reg_utils as mono_reg
+
             mono_root = env.get("mono_prefix") or mono_reg.find_mono_root_dir(env["bits"])
             if mono_root:
                 module_configs.add_mode(
