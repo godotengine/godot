@@ -181,7 +181,15 @@ Ref<NavigationMesh> NavigationPolygon::get_mesh() {
 		navmesh->set_vertices(verts);
 
 		for (int i(0); i < get_polygon_count(); i++) {
-			navmesh->add_polygon(get_polygon(i));
+			Vector<int> polygon = get_polygon(i);
+			bool is_open = polygon.size() > 0 && polygon[0] != polygon[polygon.size() - 1];
+			if (is_open) {
+				Vector<int> closed_polygon(polygon);
+				closed_polygon.push_back(closed_polygon[0]);
+				navmesh->add_polygon(closed_polygon);
+			} else {
+				navmesh->add_polygon(polygon);
+			}
 		}
 	}
 	return navmesh;
