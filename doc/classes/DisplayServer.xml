@@ -321,11 +321,6 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
-		<method name="mouse_get_absolute_position" qualifiers="const">
-			<return type="Vector2i" />
-			<description>
-			</description>
-		</method>
 		<method name="mouse_get_button_state" qualifiers="const">
 			<return type="int" enum="MouseButton" />
 			<description>

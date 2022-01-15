@@ -98,6 +98,8 @@ public:
 	NSTimeInterval last_warp = 0;
 	bool ignore_warp = false;
 
+	float display_max_scale = 1.f;
+
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos;
 
@@ -214,7 +216,6 @@ public:
 
 	virtual void mouse_warp_to_position(const Point2i &p_to) override;
 	virtual Point2i mouse_get_position() const override;
-	virtual Point2i mouse_get_absolute_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;

@@ -674,8 +674,20 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	ERR_FAIL_COND(!windows.has(p_window));
 	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
-	Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
-	window_set_position(ofs + screen_get_position(p_screen), p_window);
+	const WindowData &wd = windows[p_window];
+	if (wd.fullscreen) {
+		int cs = window_get_current_screen(p_window);
+		if (cs == p_screen) {
+			return;
+		}
+		Point2 pos = screen_get_position(p_screen);
+		Size2 size = screen_get_size(p_screen);
+
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+	} else {
+		Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
+		window_set_position(ofs + screen_get_position(p_screen), p_window);
+	}
 }
 
 Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {

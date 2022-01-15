@@ -158,12 +158,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	}
 
 	if (wd.transient_parent != DisplayServerOSX::INVALID_WINDOW_ID) {
-		DisplayServerOSX::WindowData &pwd = DS_OSX->windows[wd.transient_parent];
-		[pwd.window_object makeKeyAndOrderFront:nil]; // Move focus back to parent.
 		DS_OSX->window_set_transient(window_id, DisplayServerOSX::INVALID_WINDOW_ID);
-	} else if ((window_id != DisplayServerOSX::MAIN_WINDOW_ID) && (DS_OSX->windows.size() == 1)) {
-		DisplayServerOSX::WindowData &pwd = DS_OSX->windows[DisplayServerOSX::MAIN_WINDOW_ID];
-		[pwd.window_object makeKeyAndOrderFront:nil]; // Move focus back to main window if there is no parent or other windows left.
 	}
 
 #if defined(GLES3_ENABLED)
@@ -2001,10 +1996,6 @@ void DisplayServerOSX::mouse_warp_to_position(const Point2i &p_to) {
 }
 
 Point2i DisplayServerOSX::mouse_get_position() const {
-	return last_mouse_pos;
-}
-
-Point2i DisplayServerOSX::mouse_get_absolute_position() const {
 	_THREAD_SAFE_METHOD_
 
 	const NSPoint mouse_pos = [NSEvent mouseLocation];
@@ -2071,10 +2062,8 @@ int DisplayServerOSX::get_screen_count() const {
 // to convert between OS X native screen coordinates and the ones expected by Godot
 
 static bool displays_arrangement_dirty = true;
-static bool displays_scale_dirty = true;
 static void displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info) {
 	displays_arrangement_dirty = true;
-	displays_scale_dirty = true;
 }
 
 Point2i DisplayServerOSX::_get_screens_origin() const {
@@ -2185,15 +2174,8 @@ float DisplayServerOSX::screen_get_scale(int p_screen) const {
 float DisplayServerOSX::screen_get_max_scale() const {
 	_THREAD_SAFE_METHOD_
 
-	static float scale = 1.f;
-	if (displays_scale_dirty) {
-		int screen_count = get_screen_count();
-		for (int i = 0; i < screen_count; i++) {
-			scale = fmax(scale, screen_get_scale(i));
-		}
-		displays_scale_dirty = false;
-	}
-	return scale;
+	// Note: Do not update max display scale on screen configuration change, existing editor windows can't be rescaled on the fly.
+	return display_max_scale;
 }
 
 Rect2i DisplayServerOSX::screen_get_usable_rect(int p_screen) const {
@@ -2380,8 +2362,24 @@ int DisplayServerOSX::window_get_current_screen(WindowID p_window) const {
 
 void DisplayServerOSX::window_set_current_screen(int p_screen, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	bool was_fullscreen = false;
+	if (wd.fullscreen) {
+		// Temporary exit fullscreen mode to move window.
+		[wd.window_object toggleFullScreen:nil];
+		was_fullscreen = true;
+	}
+
 	Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
 	window_set_position(wpos + screen_get_position(p_screen), p_window);
+
+	if (was_fullscreen) {
+		// Re-enter fullscreen mode.
+		[wd.window_object toggleFullScreen:nil];
+	}
 }
 
 void DisplayServerOSX::window_set_transient(WindowID p_window, WindowID p_parent) {
@@ -2404,7 +2402,7 @@ void DisplayServerOSX::window_set_transient(WindowID p_window, WindowID p_parent
 		wd_window.transient_parent = INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
 
-		[wd_parent.window_object removeChildWindow:wd_window.window_object];
+		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
@@ -2413,7 +2411,7 @@ void DisplayServerOSX::window_set_transient(WindowID p_window, WindowID p_parent
 		wd_window.transient_parent = p_parent;
 		wd_parent.transient_children.insert(p_window);
 
-		[wd_parent.window_object addChildWindow:wd_window.window_object ordered:NSWindowAbove];
+		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
 	}
 }
 
@@ -2423,7 +2421,9 @@ Point2i DisplayServerOSX::window_get_position(WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
 	const WindowData &wd = windows[p_window];
 
-	NSRect nsrect = [wd.window_object frame];
+	// Use content rect position (without titlebar / window border).
+	const NSRect contentRect = [wd.window_view frame];
+	const NSRect nsrect = [wd.window_object convertRectToScreen:contentRect];
 	Point2i pos;
 
 	// Return the position of the top-left corner, for OS X the y starts at the bottom
@@ -2451,7 +2451,16 @@ void DisplayServerOSX::window_set_position(const Point2i &p_position, WindowID p
 	position += _get_screens_origin();
 	position /= screen_get_max_scale();
 
-	[wd.window_object setFrameTopLeftPoint:NSMakePoint(position.x, position.y)];
+	// Remove titlebar / window border size.
+	const NSRect contentRect = [wd.window_view frame];
+	const NSRect windowRect = [wd.window_object frame];
+	const NSRect nsrect = [wd.window_object convertRectToScreen:contentRect];
+	Point2i offset;
+	offset.x = (nsrect.origin.x - windowRect.origin.x);
+	offset.y = (nsrect.origin.y + nsrect.size.height);
+	offset.y -= (windowRect.origin.y + windowRect.size.height);
+
+	[wd.window_object setFrameTopLeftPoint:NSMakePoint(position.x - offset.x, position.y - offset.y)];
 
 	_update_window(wd);
 	_get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
@@ -3699,7 +3708,11 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 
 	keyboard_layout_dirty = true;
 	displays_arrangement_dirty = true;
-	displays_scale_dirty = true;
+
+	int screen_count = get_screen_count();
+	for (int i = 0; i < screen_count; i++) {
+		display_max_scale = fmax(display_max_scale, screen_get_scale(i));
+	}
 
 	// Register to be notified on keyboard layout changes
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
