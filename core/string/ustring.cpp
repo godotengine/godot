@@ -1527,115 +1527,24 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 }
 
 String String::num_real(double p_num, bool p_trailing) {
-	if (Math::is_nan(p_num)) {
-		return "nan";
-	}
-
-	if (Math::is_inf(p_num)) {
-		if (signbit(p_num)) {
-			return "-inf";
+	if (p_num == (double)(int64_t)p_num) {
+		if (p_trailing) {
+			return num_int64((int64_t)p_num) + ".0";
 		} else {
-			return "inf";
+			return num_int64((int64_t)p_num);
 		}
 	}
-
-	String s;
-	String sd;
-
-	// Integer part.
-
-	bool neg = p_num < 0;
-	p_num = ABS(p_num);
-	int64_t intn = (int64_t)p_num;
-
-	// Decimal part.
-
-	if (intn != p_num) {
-		double dec = p_num - (double)intn;
-
-		int digit = 0;
-
 #ifdef REAL_T_IS_DOUBLE
-		int decimals = 14;
-		double tolerance = 1e-14;
+	int decimals = 14;
 #else
-		int decimals = 6;
-		double tolerance = 1e-6;
+	int decimals = 6;
 #endif
-		// We want to align the digits to the above sane default, so we only
-		// need to subtract log10 for numbers with a positive power of ten.
-		if (p_num > 10) {
-			decimals -= (int)floor(log10(p_num));
-		}
-
-		if (decimals > MAX_DECIMALS) {
-			decimals = MAX_DECIMALS;
-		}
-
-		// In case the value ends up ending in "99999", we want to add a
-		// tiny bit to the value we're checking when deciding when to stop,
-		// so we multiply by slightly above 1 (1 + 1e-7 or 1e-15).
-		double check_multiplier = 1 + tolerance / 10;
-
-		int64_t dec_int = 0;
-		int64_t dec_max = 0;
-
-		while (true) {
-			dec *= 10.0;
-			dec_int = dec_int * 10 + (int64_t)dec % 10;
-			dec_max = dec_max * 10 + 9;
-			digit++;
-
-			if ((dec - (double)(int64_t)(dec * check_multiplier)) < tolerance) {
-				break;
-			}
-
-			if (digit == decimals) {
-				break;
-			}
-		}
-
-		dec *= 10;
-		int last = (int64_t)dec % 10;
-
-		if (last > 5) {
-			if (dec_int == dec_max) {
-				dec_int = 0;
-				intn++;
-			} else {
-				dec_int++;
-			}
-		}
-
-		String decimal;
-		for (int i = 0; i < digit; i++) {
-			char num[2] = { 0, 0 };
-			num[0] = '0' + dec_int % 10;
-			decimal = num + decimal;
-			dec_int /= 10;
-		}
-		sd = '.' + decimal;
-	} else if (p_trailing) {
-		sd = ".0";
-	} else {
-		sd = "";
+	// We want to align the digits to the above sane default, so we only
+	// need to subtract log10 for numbers with a positive power of ten.
+	if (p_num > 10) {
+		decimals -= (int)floor(log10(p_num));
 	}
-
-	if (intn == 0) {
-		s = "0";
-	} else {
-		while (intn) {
-			char32_t num = '0' + (intn % 10);
-			intn /= 10;
-			s = num + s;
-		}
-	}
-
-	s = s + sd;
-	if (neg) {
-		s = "-" + s;
-	}
-	return s;
+	return num(p_num, decimals);
 }
 
 String String::num_scientific(double p_num) {
