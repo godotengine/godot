@@ -1334,7 +1334,7 @@
 			<return type="bool" />
 			<argument index="0" name="feature" type="String" />
 			<description>
-				Returns [code]true[/code] if the OS supports a certain feature. Features might be [code]s3tc[/code], [code]etc[/code], [code]etc2[/code] and [code]pvrtc[/code].
+				Returns [code]true[/code] if the OS supports a certain feature. Features might be [code]s3tc[/code], [code]etc[/code], and [code]etc2[/code].
 			</description>
 		</method>
 		<method name="instance_attach_object_instance_id">

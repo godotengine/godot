@@ -2822,7 +2822,6 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc", true);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc", false);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2", true);
-	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_pvrtc", false);
 
 	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);
 	GLOBAL_DEF("rendering/textures/lossless_compression/webp_compression_level", 2);

@@ -374,11 +374,6 @@ Copyright: 1997-2021, University of Cambridge
  2009-2021, Zoltan Herczeg
 License: BSD-3-clause
 
-Files: ./thirdparty/pvrtccompressor/
-Comment: PvrTcCompressor
-Copyright: 2014, Jeffrey Lim.
-License: BSD-3-clause
-
 Files: ./thirdparty/recastnavigation/
 Comment: Recast
 Copyright: 2009, Mikko Mononen

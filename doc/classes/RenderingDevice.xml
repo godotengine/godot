@@ -1135,23 +1135,7 @@
 		</constant>
 		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM" value="217" enum="DataFormat">
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG" value="218" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG" value="219" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG" value="220" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG" value="221" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG" value="222" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG" value="223" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG" value="224" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG" value="225" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_MAX" value="226" enum="DataFormat">
+		<constant name="DATA_FORMAT_MAX" value="218" enum="DataFormat">
 		</constant>
 		<constant name="TEXTURE_TYPE_1D" value="0" enum="TextureType">
 		</constant>

@@ -324,75 +324,6 @@ Ref<Image> RendererStorageRD::_validate_texture_format(const Ref<Image> &p_image
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break; //unsigned float bc6hu
-		case Image::FORMAT_PVRTC1_2: {
-			//this is not properly supported by MoltekVK it seems, so best to use ETC2
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG;
-				r_format.format_srgb = RD::DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-
-		} break; //pvrtc
-		case Image::FORMAT_PVRTC1_2A: {
-			//this is not properly supported by MoltekVK it seems, so best to use ETC2
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG;
-				r_format.format_srgb = RD::DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-		} break;
-		case Image::FORMAT_PVRTC1_4: {
-			//this is not properly supported by MoltekVK it seems, so best to use ETC2
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG;
-				r_format.format_srgb = RD::DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
-		case Image::FORMAT_PVRTC1_4A: {
-			//this is not properly supported by MoltekVK it seems, so best to use ETC2
-			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
-				r_format.format = RD::DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG;
-				r_format.format_srgb = RD::DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG;
-			} else {
-				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
-			}
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
-			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
-		} break;
 		case Image::FORMAT_ETC2_R11: {
 			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_EAC_R11_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 				r_format.format = RD::DATA_FORMAT_EAC_R11_UNORM_BLOCK;
@@ -9281,10 +9212,6 @@ bool RendererStorageRD::has_os_feature(const String &p_feature) const {
 	}
 
 	if ((p_feature == "etc" || p_feature == "etc2") && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
-		return true;
-	}
-
-	if (p_feature == "pvrtc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
 		return true;
 	}
 

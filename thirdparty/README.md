@@ -350,7 +350,7 @@ Files extracted from upstream repository:
 - `LICENSE.md`.
 
 An [experimental upstream feature](https://github.com/zeux/meshoptimizer/tree/simplify-attr),
-has been backported. On top of that, it was modified to report only distance error metrics 
+has been backported. On top of that, it was modified to report only distance error metrics
 instead of a combination of distance and attribute errors. Patches for both changes can be
 found in the `patches` directory.
 
@@ -522,19 +522,6 @@ Files extracted from upstream source:
 - src/pcre2_jit_misc.c
 - src/sljit/
 - AUTHORS and LICENCE
-
-
-## pvrtccompressor
-
-- Upstream: https://bitbucket.org/jthlim/pvrtccompressor (dead link)
-  Unofficial backup fork: https://github.com/LibreGamesArchive/PVRTCCompressor
-- Version: hg (cf7177748ee0dcdccfe89716dc11a47d2dc81af5, 2015)
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-- all .cpp and .h files apart from `main.cpp`
-- LICENSE.TXT
 
 
 ## recastnavigation
@@ -737,4 +724,3 @@ Files extracted from upstream source:
 
 - `lib/{common/,compress/,decompress/,zstd.h,zstd_errors.h}`
 - `LICENSE`
-

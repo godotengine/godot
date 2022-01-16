@@ -79,7 +79,6 @@ public:
 		bool bptc_supported;
 		bool etc_supported;
 		bool etc2_supported;
-		bool pvrtc_supported;
 		bool srgb_decode_supported;
 
 		bool keep_original_textures;
