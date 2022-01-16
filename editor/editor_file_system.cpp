@@ -1604,6 +1604,10 @@ void EditorFileSystem::update_file(const String &p_file) {
 	_queue_update_script_classes();
 }
 
+Set<String> EditorFileSystem::get_valid_extensions() const {
+	return valid_extensions;
+}
+
 Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector<String> &p_files) {
 	String importer_name;
 
