@@ -788,6 +788,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			le_clear->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
 			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
+			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
 			vmem_refresh->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 			vmem_export->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
 			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
@@ -893,6 +894,13 @@ void ScriptEditorDebugger::_set_breakpoint(const String &p_file, const int &p_li
 
 void ScriptEditorDebugger::_clear_breakpoints() {
 	emit_signal("clear_breakpoints");
+}
+
+void ScriptEditorDebugger::_breakpoint_tree_clicked() {
+	TreeItem *selected = breakpoints_tree->get_selected();
+	if (selected->has_meta("line")) {
+		emit_signal(SNAME("breakpoint_selected"), selected->get_parent()->get_text(0), int(selected->get_meta("line")));
+	}
 }
 
 void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
@@ -1353,6 +1361,45 @@ void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool
 	msg.push_back(p_line);
 	msg.push_back(p_enabled);
 	_put_msg("breakpoint", msg);
+
+	TreeItem *path_item = breakpoints_tree->search_item_text(p_path);
+	if (path_item == nullptr) {
+		if (!p_enabled) {
+			return;
+		}
+		path_item = breakpoints_tree->create_item();
+		path_item->set_text(0, p_path);
+	}
+
+	int idx = 0;
+	TreeItem *breakpoint_item;
+	for (breakpoint_item = path_item->get_first_child(); breakpoint_item; breakpoint_item = breakpoint_item->get_next()) {
+		if ((int)breakpoint_item->get_meta("line") < p_line) {
+			idx++;
+			continue;
+		}
+
+		if ((int)breakpoint_item->get_meta("line") == p_line) {
+			break;
+		}
+	}
+
+	if (breakpoint_item == nullptr) {
+		if (!p_enabled) {
+			return;
+		}
+		breakpoint_item = breakpoints_tree->create_item(path_item, idx);
+		breakpoint_item->set_meta("line", p_line);
+		breakpoint_item->set_text(0, vformat(TTR("Line %d"), p_line));
+		return;
+	}
+
+	if (!p_enabled) {
+		path_item->remove_child(breakpoint_item);
+		if (path_item->get_first_child() == nullptr) {
+			breakpoints_tree->get_root()->remove_child(path_item);
+		}
+	}
 }
 
 void ScriptEditorDebugger::reload_scripts() {
@@ -1417,6 +1464,23 @@ void ScriptEditorDebugger::_clear_errors_list() {
 	expand_all_button->set_disabled(true);
 	collapse_all_button->set_disabled(true);
 	clear_button->set_disabled(true);
+}
+
+void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos) {
+	breakpoints_menu->clear();
+	breakpoints_menu->set_size(Size2(1, 1));
+
+	const TreeItem *selected = breakpoints_tree->get_selected();
+	String file = selected->get_text(0);
+	if (selected->has_meta("line")) {
+		breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete Breakpoint"), ACTION_DELETE_BREAKPOINT);
+		file = selected->get_parent()->get_text(0);
+	}
+	breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete All Breakpoints in: ") + file, ACTION_DELETE_BREAKPOINTS_IN_FILE);
+	breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete All Breakpoints"), ACTION_DELETE_ALL_BREAKPOINTS);
+
+	breakpoints_menu->set_position(breakpoints_tree->get_global_position() + p_pos);
+	breakpoints_menu->popup();
 }
 
 // Right click on specific file(s) or folder(s).
@@ -1493,6 +1557,29 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 						line_number));
 			}
 		} break;
+		case ACTION_DELETE_BREAKPOINT: {
+			const TreeItem *selected = breakpoints_tree->get_selected();
+			_set_breakpoint(selected->get_parent()->get_text(0), selected->get_meta("line"), false);
+		} break;
+		case ACTION_DELETE_BREAKPOINTS_IN_FILE: {
+			TreeItem *file_item = breakpoints_tree->get_selected();
+			if (file_item->has_meta("line")) {
+				file_item = file_item->get_parent();
+			}
+
+			// Store first else we will be removing as we loop.
+			List<int> lines;
+			for (TreeItem *breakpoint_item = file_item->get_first_child(); breakpoint_item; breakpoint_item = breakpoint_item->get_next()) {
+				lines.push_back(breakpoint_item->get_meta("line"));
+			}
+
+			for (const int &line : lines) {
+				_set_breakpoint(file_item->get_text(0), line, false);
+			}
+		} break;
+		case ACTION_DELETE_ALL_BREAKPOINTS: {
+			_clear_breakpoints();
+		} break;
 	}
 }
 
@@ -1519,6 +1606,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("stop_requested"));
 	ADD_SIGNAL(MethodInfo("stack_frame_selected", PropertyInfo(Variant::INT, "frame")));
 	ADD_SIGNAL(MethodInfo("error_selected", PropertyInfo(Variant::INT, "error")));
+	ADD_SIGNAL(MethodInfo("breakpoint_selected", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
 	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug"), PropertyInfo(Variant::STRING, "reason"), PropertyInfo(Variant::BOOL, "has_stackdump")));
@@ -1646,9 +1734,15 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
 		docontinue->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_continue));
 
+		HSplitContainer *parent_sc = memnew(HSplitContainer);
+		vbc->add_child(parent_sc);
+		parent_sc->set_v_size_flags(SIZE_EXPAND_FILL);
+		parent_sc->set_split_offset(500 * EDSCALE);
+
 		HSplitContainer *sc = memnew(HSplitContainer);
-		vbc->add_child(sc);
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);
+		sc->set_h_size_flags(SIZE_EXPAND_FILL);
+		parent_sc->add_child(sc);
 
 		stack_dump = memnew(Tree);
 		stack_dump->set_allow_reselect(true);
@@ -1661,6 +1755,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		sc->add_child(stack_dump);
 
 		VBoxContainer *inspector_vbox = memnew(VBoxContainer);
+		inspector_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		sc->add_child(inspector_vbox);
 
 		HBoxContainer *tools_hb = memnew(HBoxContainer);
@@ -1683,7 +1778,24 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspector->register_text_enter(search);
 		inspector->set_use_filter(true);
 		inspector_vbox->add_child(inspector);
+		sc->add_child(inspector);
+
+		breakpoints_tree = memnew(Tree);
+		breakpoints_tree->set_h_size_flags(SIZE_EXPAND_FILL);
+		breakpoints_tree->set_column_titles_visible(true);
+		breakpoints_tree->set_column_title(0, TTR("Breakpoints"));
+		breakpoints_tree->set_allow_reselect(true);
+		breakpoints_tree->set_allow_rmb_select(true);
+		breakpoints_tree->set_hide_root(true);
+		breakpoints_tree->connect("item_rmb_selected", callable_mp(this, &ScriptEditorDebugger::_breakpoints_item_rmb_selected));
+		breakpoints_tree->create_item();
+
+		parent_sc->add_child(breakpoints_tree);
 		tabs->add_child(dbg);
+
+		breakpoints_menu = memnew(PopupMenu);
+		breakpoints_menu->connect("id_pressed", callable_mp(this, &ScriptEditorDebugger::_item_menu_id_pressed));
+		breakpoints_tree->add_child(breakpoints_menu);
 	}
 
 	{ //errors

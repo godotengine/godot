@@ -95,6 +95,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("stopped", callable_mp(this, &EditorDebuggerNode::_debugger_stopped), varray(id));
 	node->connect("stack_frame_selected", callable_mp(this, &EditorDebuggerNode::_stack_frame_selected), varray(id));
 	node->connect("error_selected", callable_mp(this, &EditorDebuggerNode::_error_selected), varray(id));
+	node->connect("breakpoint_selected", callable_mp(this, &EditorDebuggerNode::_error_selected), varray(id));
 	node->connect("clear_execution", callable_mp(this, &EditorDebuggerNode::_clear_execution));
 	node->connect("breaked", callable_mp(this, &EditorDebuggerNode::_breaked), varray(id));
 	node->connect("remote_tree_updated", callable_mp(this, &EditorDebuggerNode::_remote_tree_updated), varray(id));
