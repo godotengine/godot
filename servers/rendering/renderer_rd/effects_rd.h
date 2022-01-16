@@ -728,7 +728,6 @@ private:
 		uint8_t metallic_mask[4];
 
 		float projection[16];
-		float prev_projection[16];
 	};
 
 	struct ScreenSpaceReflection {
