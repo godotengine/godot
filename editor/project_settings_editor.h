@@ -99,6 +99,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _action_renamed(const String &p_old_name, const String &p_new_name);
 	void _action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before);
 	void _update_action_map_editor();
+	void _update_theme();
 
 protected:
 	void _notification(int p_what);

@@ -922,8 +922,14 @@ void ConnectionsDock::_connect_pressed() {
 }
 
 void ConnectionsDock::_notification(int p_what) {
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		update_tree();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+		} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			update_tree();
+		} break;
 	}
 }
 
@@ -1135,7 +1141,6 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter signals"));
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
 	search_box->connect("text_changed", callable_mp(this, &ConnectionsDock::_filter_changed));
 	vbc->add_child(search_box);

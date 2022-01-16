@@ -1256,6 +1256,10 @@ void SceneTreeDialog::popup_scenetree_dialog() {
 	popup_centered_clamped(Size2(350, 700) * EDSCALE);
 }
 
+void SceneTreeDialog::_update_theme() {
+	filter->set_right_icon(tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+}
+
 void SceneTreeDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1265,8 +1269,10 @@ void SceneTreeDialog::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
-			filter->set_right_icon(tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			filter->set_clear_button_enabled(true);
+			_update_theme();
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_theme();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
@@ -1303,6 +1309,7 @@ SceneTreeDialog::SceneTreeDialog() {
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTR("Filter nodes"));
+	filter->set_clear_button_enabled(true);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDialog::_filter_changed));
 	vbc->add_child(filter);

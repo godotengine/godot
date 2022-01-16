@@ -193,7 +193,8 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 
 void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox(SNAME("normal"), SNAME("TextEdit")));
 		} break;
 	}
@@ -398,7 +399,8 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
 		// FIXME: The editor crashes if 'NOTICATION_THEME_CHANGED' is used.
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 			add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
 			dismiss->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 		} break;
@@ -562,11 +564,15 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			error_label->raise();
+		} break;
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			filter->set_clear_button_enabled(true);
-
-			error_label->raise();
+			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
@@ -596,14 +602,6 @@ void EditorAssetLibrary::_notification(int p_what) {
 			}
 
 		} break;
-		case NOTIFICATION_THEME_CHANGED: {
-			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
-			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			filter->set_clear_button_enabled(true);
-		} break;
-
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_repository_options();
 		} break;
@@ -1354,6 +1352,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	} else {
 		filter->set_placeholder(TTR("Search assets (excluding templates, projects, and demos)"));
 	}
+	filter->set_clear_button_enabled(true);
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->connect("text_changed", callable_mp(this, &EditorAssetLibrary::_search_text_changed));
@@ -1495,7 +1494,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
 	error_label = memnew(Label);
-	error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	error_hb->add_child(error_label);
 	error_tr = memnew(TextureRect);
 	error_tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);

@@ -466,6 +466,14 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 	action_map->update_action_list(actions);
 }
 
+void ProjectSettingsEditor::_update_theme() {
+	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	restart_close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+	restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+}
+
 void ProjectSettingsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -475,21 +483,12 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			inspector->edit(ps);
-
-			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			search_box->set_clear_button_enabled(true);
-
-			restart_close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-			restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-
 			_update_action_map_editor();
+			_update_theme();
 		} break;
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			search_box->set_clear_button_enabled(true);
-		} break;
+		case NOTIFICATION_THEME_CHANGED:
+			_update_theme();
+			break;
 	}
 }
 
@@ -523,6 +522,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Filter Settings"));
+	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_bar->add_child(search_box);
 
