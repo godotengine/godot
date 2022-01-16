@@ -1986,6 +1986,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 #endif
 		node = res->instantiate(ges);
 		ERR_FAIL_COND_V(!node, nullptr);
+		node->set_scene_instance_load_placeholder(get_scene_instance_load_placeholder());
 
 		instantiated = true;
 
