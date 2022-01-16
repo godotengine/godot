@@ -398,10 +398,9 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 
 void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
-		// FIXME: The editor crashes if 'NOTICATION_THEME_CHANGED' is used.
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
 			dismiss->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -494,8 +493,11 @@ void EditorAssetLibraryItemDownload::_bind_methods() {
 }
 
 EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
+	panel = memnew(PanelContainer);
+	add_child(panel);
+
 	HBoxContainer *hb = memnew(HBoxContainer);
-	add_child(hb);
+	panel->add_child(hb);
 	icon = memnew(TextureRect);
 	hb->add_child(icon);
 
@@ -543,16 +545,16 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	set_custom_minimum_size(Size2(310, 0) * EDSCALE);
 
 	download = memnew(HTTPRequest);
-	add_child(download);
+	panel->add_child(download);
 	download->connect("request_completed", callable_mp(this, &EditorAssetLibraryItemDownload::_http_download_completed));
 	setup_http_request(download);
 
 	download_error = memnew(AcceptDialog);
-	add_child(download_error);
+	panel->add_child(download_error);
 	download_error->set_title(TTR("Download Error"));
 
 	asset_installer = memnew(EditorAssetInstaller);
-	add_child(asset_installer);
+	panel->add_child(asset_installer);
 	asset_installer->connect("confirmed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
 
 	prev_status = -1;

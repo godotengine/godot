@@ -126,9 +126,10 @@ public:
 	EditorAssetLibraryItemDescription();
 };
 
-class EditorAssetLibraryItemDownload : public PanelContainer {
-	GDCLASS(EditorAssetLibraryItemDownload, PanelContainer);
+class EditorAssetLibraryItemDownload : public Control {
+	GDCLASS(EditorAssetLibraryItemDownload, Control);
 
+	PanelContainer *panel;
 	TextureRect *icon;
 	Label *title;
 	ProgressBar *progress;
