@@ -262,6 +262,7 @@ public:
 	void scan_changes();
 	void get_changed_sources(List<String> *r_changed);
 	void update_file(const String &p_file);
+	Set<String> get_valid_extensions() const;
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;
