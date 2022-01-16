@@ -684,13 +684,24 @@
 		<method name="to_float" qualifiers="const">
 			<return type="float" />
 			<description>
-				Converts a string containing a decimal number into a [code]float[/code].
+				Converts a string containing a decimal number into a [code]float[/code]. The method will stop on the first non-number character except the first [code].[/code] (decimal point), and [code]e[/code] which is used for exponential.
+				[codeblock]
+				print("12.3".to_float()) # 12.3
+				print("1.2.3".to_float()) # 1.2
+				print("12ab3".to_float()) # 12
+				print("1e3".to_float()) # 1000
+				[/codeblock]
 			</description>
 		</method>
 		<method name="to_int" qualifiers="const">
 			<return type="int" />
 			<description>
-				Converts a string containing an integer number into an [code]int[/code].
+				Converts a string containing an integer number into an [code]int[/code]. The method will remove any non-number character and stop if it encounters a [code].[/code].
+				[codeblock]
+				print("123".to_int()) # 123
+				print("a1b2c3".to_int()) # 123
+				print("1.2.3".to_int()) # 1
+				[/codeblock]
 			</description>
 		</method>
 		<method name="to_lower" qualifiers="const">
