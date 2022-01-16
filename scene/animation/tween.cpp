@@ -795,8 +795,7 @@ void Tween::_tween_process(float p_delta) {
 			Variant final_val = _get_final_val(data);
 			_apply_tween_value(data, final_val);
 
-			// Mark the tween as completed and emit the signal
-			data.elapsed = 0;
+			// Emit the signal
 			emit_signal("tween_completed", object, NodePath(Vector<StringName>(), data.key, false));
 
 			// If we are not repeating the tween, remove it
