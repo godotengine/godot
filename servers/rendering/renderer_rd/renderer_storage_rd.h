@@ -2339,6 +2339,7 @@ public:
 	RID render_target_get_texture(RID p_render_target);
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
+	bool render_target_get_flag(RID p_render_target, RenderTargetFlags p_flag);
 	bool render_target_was_used(RID p_render_target);
 	void render_target_set_as_unused(RID p_render_target);
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);

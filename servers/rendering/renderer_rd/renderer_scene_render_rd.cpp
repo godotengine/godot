@@ -2536,6 +2536,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 		tonemap.view_count = p_render_data->view_count;
 
+		tonemap.linear_to_srgb = !storage->render_target_get_flag(rb->render_target, RendererStorage::RENDER_TARGET_KEEP_3D_LINEAR);
+
 		storage->get_effects()->tonemapper(rb->internal_texture, storage->render_target_get_rd_framebuffer(rb->render_target), tonemap);
 
 		RD::get_singleton()->draw_command_end_label();
@@ -2614,6 +2616,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 	tonemap.view_count = p_render_data->view_count;
+	tonemap.linear_to_srgb = storage->render_target_get_flag(rb->render_target, RendererStorage::RENDER_TARGET_KEEP_3D_LINEAR);
 
 	storage->get_effects()->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
 

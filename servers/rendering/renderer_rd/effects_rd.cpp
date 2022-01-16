@@ -858,6 +858,8 @@ void EffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Tone
 	tonemap.push_constant.pixel_size[0] = 1.0 / p_settings.texture_size.x;
 	tonemap.push_constant.pixel_size[1] = 1.0 / p_settings.texture_size.y;
 
+	tonemap.push_constant.linear_to_srgb = p_settings.linear_to_srgb;
+
 	if (p_settings.view_count > 1) {
 		// Use MULTIVIEW versions
 		mode += 6;
@@ -903,6 +905,8 @@ void EffectsRD::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_colo
 
 	tonemap.push_constant.use_debanding = p_settings.use_debanding;
 	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
+
+	tonemap.push_constant.linear_to_srgb = p_settings.linear_to_srgb;
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(p_subpass_draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, p_dst_format_id, false, RD::get_singleton()->draw_list_get_current_pass()));
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_for_input(p_source_color), 0);

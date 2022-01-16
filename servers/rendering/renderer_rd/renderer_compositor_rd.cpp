@@ -45,8 +45,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		ERR_CONTINUE(texture.is_null());
 		RID rd_texture = storage->texture_get_rd_texture(texture);
 		ERR_CONTINUE(rd_texture.is_null());
-
-		// TODO if keep_3d_linear was set when rendering to this render target we need to add a linear->sRGB conversion in.
+		bool keep_3d_linear = storage->render_target_get_flag(p_render_targets[i].render_target, RendererStorage::RENDER_TARGET_KEEP_3D_LINEAR);
 
 		if (!render_target_descriptors.has(rd_texture) || !RD::get_singleton()->uniform_set_is_valid(render_target_descriptors[rd_texture])) {
 			Vector<RD::Uniform> uniforms;
@@ -82,6 +81,12 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		blit.push_constant.k2 = p_render_targets[i].lens_distortion.k2;
 		blit.push_constant.upscale = p_render_targets[i].lens_distortion.upscale;
 		blit.push_constant.aspect_ratio = p_render_targets[i].lens_distortion.aspect_ratio;
+
+		// If we didn't do our linear to sRGB conversion after rendering, we do it now
+		// Keep 3d linear in this use case is mostly used for XR where the headset requires
+		// the render buffer in linear color space, but we're displaying a spectator view
+		// on screen that needs to be converted to sRGB.
+		blit.push_constant.linear_to_srgb = keep_3d_linear;
 
 		RD::get_singleton()->draw_list_set_push_constant(draw_list, &blit.push_constant, sizeof(BlitPushConstant));
 		RD::get_singleton()->draw_list_draw(draw_list, true);

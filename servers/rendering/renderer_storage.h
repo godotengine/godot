@@ -584,6 +584,7 @@ public:
 	enum RenderTargetFlags {
 		RENDER_TARGET_TRANSPARENT,
 		RENDER_TARGET_DIRECT_TO_SCREEN,
+		RENDER_TARGET_KEEP_3D_LINEAR,
 		RENDER_TARGET_FLAG_MAX
 	};
 
@@ -593,6 +594,7 @@ public:
 	virtual RID render_target_get_texture(RID p_render_target) = 0;
 	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) = 0;
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) = 0;
+	virtual bool render_target_get_flag(RID p_render_target, RenderTargetFlags p_flag) = 0;
 	virtual bool render_target_was_used(RID p_render_target) = 0;
 	virtual void render_target_set_as_unused(RID p_render_target) = 0;
 

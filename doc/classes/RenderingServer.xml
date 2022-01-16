@@ -3158,6 +3158,14 @@
 				Sets the viewport's global transformation matrix.
 			</description>
 		</method>
+		<method name="viewport_set_keep_3d_linear">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="enabled" type="bool" />
+			<description>
+				Sets the viewport's keep 3D linear setting, this skips the linear to sRGB conversion which happens after rendering 3D content.
+			</description>
+		</method>
 		<method name="viewport_set_measure_render_time">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />

@@ -215,6 +215,9 @@
 		</member>
 		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally" default="true">
 		</member>
+		<member name="keep_3d_linear" type="bool" setter="set_keep_3d_linear" getter="keeps_3d_linear" default="false">
+			This disabled the linear to sRGB color conversion that happens in the viewport after 3D content has been rendered. This can be needed if the end result needs to be sent to a secondary system such as an XR runtime. If the viewport is shown on screen the linear to sRGB conversion will be performed at the time of copying the render to screen.
+		</member>
 		<member name="mesh_lod_threshold" type="float" setter="set_mesh_lod_threshold" getter="get_mesh_lod_threshold" default="1.0">
 			The automatic LOD bias to use for meshes rendered within the [Viewport] (this is analogous to [member ReflectionProbe.mesh_lod_threshold]). Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member mesh_lod_threshold] to improve performance at the cost of geometry detail.
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/mesh_lod/lod_change/threshold_pixels] project setting.

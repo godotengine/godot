@@ -2198,6 +2198,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_canvas_stacking", "viewport", "canvas", "layer", "sublayer"), &RenderingServer::viewport_set_canvas_stacking);
 
 	ClassDB::bind_method(D_METHOD("viewport_set_transparent_background", "viewport", "enabled"), &RenderingServer::viewport_set_transparent_background);
+	ClassDB::bind_method(D_METHOD("viewport_set_keep_3d_linear", "viewport", "enabled"), &RenderingServer::viewport_set_keep_3d_linear);
 	ClassDB::bind_method(D_METHOD("viewport_set_global_canvas_transform", "viewport", "transform"), &RenderingServer::viewport_set_global_canvas_transform);
 
 	ClassDB::bind_method(D_METHOD("viewport_set_sdf_oversize_and_scale", "viewport", "oversize", "scale"), &RenderingServer::viewport_set_sdf_oversize_and_scale);

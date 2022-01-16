@@ -230,6 +230,7 @@ private:
 	Rect2 last_vp_rect;
 
 	bool transparent_bg = false;
+	bool keep_3d_linear = false;
 	bool filter;
 	bool gen_mipmaps = false;
 
@@ -497,6 +498,9 @@ public:
 
 	void set_transparent_background(bool p_enable);
 	bool has_transparent_background() const;
+
+	void set_keep_3d_linear(bool p_enable);
+	bool keeps_3d_linear() const;
 
 	Ref<ViewportTexture> get_texture() const;
 

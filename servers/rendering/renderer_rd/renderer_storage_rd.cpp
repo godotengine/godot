@@ -7724,6 +7724,13 @@ void RendererStorageRD::render_target_set_flag(RID p_render_target, RenderTarget
 	_update_render_target(rt);
 }
 
+bool RendererStorageRD::render_target_get_flag(RID p_render_target, RenderTargetFlags p_flag) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+
+	return rt->flags[p_flag];
+}
+
 bool RendererStorageRD::render_target_was_used(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, false);

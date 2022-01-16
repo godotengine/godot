@@ -274,7 +274,7 @@ private:
 
 		uint32_t glow_texture_size[2]; //  8 - 40
 		float glow_intensity; //  4 - 44
-		uint32_t pad3; //  4 - 48
+		uint32_t linear_to_srgb; //  4 - 48
 
 		uint32_t glow_mode; //  4 - 52
 		float glow_levels[7]; // 28 - 80
@@ -970,6 +970,8 @@ public:
 		bool use_debanding = false;
 		Vector2i texture_size;
 		uint32_t view_count = 1;
+
+		bool linear_to_srgb;
 	};
 
 	struct SSAOSettings {

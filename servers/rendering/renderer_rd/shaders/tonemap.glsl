@@ -63,7 +63,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 
 	uvec2 glow_texture_size;
 	float glow_intensity;
-	uint pad3;
+	bool linear_to_srgb;
 
 	uint glow_mode;
 	float glow_levels[7];
@@ -421,7 +421,9 @@ void main() {
 
 	color = apply_tonemapping(color, params.white);
 
-	color = linear_to_srgb(color); // regular linear -> SRGB conversion
+	if (!params.linear_to_srgb) {
+		color = linear_to_srgb(color); // regular linear -> SRGB conversion
+	}
 
 #ifndef SUBPASS
 	// Glow

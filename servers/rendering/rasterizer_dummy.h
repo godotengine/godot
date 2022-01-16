@@ -667,6 +667,7 @@ public:
 	RID render_target_get_texture(RID p_render_target) override { return RID(); }
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override {}
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) override {}
+	bool render_target_get_flag(RID p_render_target, RenderTargetFlags p_flag) override { return false; }
 	bool render_target_was_used(RID p_render_target) override { return false; }
 	void render_target_set_as_unused(RID p_render_target) override {}
 

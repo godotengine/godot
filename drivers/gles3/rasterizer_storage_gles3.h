@@ -1272,6 +1272,7 @@ public:
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override;
 
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) override;
+	bool render_target_get_flag(RID p_render_target, RenderTargetFlags p_flag) override;
 	bool render_target_was_used(RID p_render_target) override;
 	void render_target_clear_used(RID p_render_target);
 	void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa);

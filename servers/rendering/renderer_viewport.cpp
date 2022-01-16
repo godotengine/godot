@@ -993,6 +993,14 @@ void RendererViewport::viewport_set_transparent_background(RID p_viewport, bool 
 	viewport->transparent_bg = p_enabled;
 }
 
+void RendererViewport::viewport_set_keep_3d_linear(RID p_viewport, bool p_enabled) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	RSG::storage->render_target_set_flag(viewport->render_target, RendererStorage::RENDER_TARGET_KEEP_3D_LINEAR, p_enabled);
+	viewport->transparent_bg = p_enabled;
+}
+
 void RendererViewport::viewport_set_global_canvas_transform(RID p_viewport, const Transform2D &p_transform) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
