@@ -132,14 +132,31 @@ void gd_mono_debug_init() {
 	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
 
 	if (da_args.length()) {
+		// Clear to avoid passing it to child processes
 		OS::get_singleton()->set_environment("GODOT_MONO_DEBUGGER_AGENT", String());
+	} else {
+		// Try with command line arguments. This is useful on platforms where it's difficult to pass
+		// environment variables. The command line arguments can be specified in the export options.
+
+		String da_cmdline_arg;
+		List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
+
+		for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
+			const String &arg = E->get();
+
+			if (arg.begins_with("--mono-debugger-agent=")) {
+				da_cmdline_arg = arg;
+				break;
+			}
+		}
+
+		if (da_cmdline_arg.length()) {
+			da_cmdline_arg.replace_first("--mono-debugger-agent=", "--debugger-agent=");
+			da_args = da_cmdline_arg.utf8();
+		}
 	}
 
 #ifdef TOOLS_ENABLED
-	int da_port = GLOBAL_DEF("mono/debugger_agent/port", 23685);
-	bool da_suspend = GLOBAL_DEF("mono/debugger_agent/wait_for_debugger", false);
-	int da_timeout = GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
-
 	if (Engine::get_singleton()->is_editor_hint() ||
 			ProjectSettings::get_singleton()->get_resource_path().empty() ||
 			Main::is_project_manager()) {
@@ -148,6 +165,12 @@ void gd_mono_debug_init() {
 	}
 
 	if (da_args.length() == 0) {
+		// Use project settings defaults for the editor player
+
+		int da_port = GLOBAL_DEF("mono/debugger_agent/port", 23685);
+		bool da_suspend = GLOBAL_DEF("mono/debugger_agent/wait_for_debugger", false);
+		int da_timeout = GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
+
 		da_args = String("--debugger-agent=transport=dt_socket,address=127.0.0.1:" + itos(da_port) +
 				",embedding=1,server=y,suspend=" + (da_suspend ? "y,timeout=" + itos(da_timeout) : "n"))
 						  .utf8();
