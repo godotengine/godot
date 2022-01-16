@@ -8129,14 +8129,11 @@ void RasterizerStorageGLES3::initialize() {
 #endif
 	config.parallel_shader_compile_supported = config.extensions.has("GL_KHR_parallel_shader_compile") || config.extensions.has("GL_ARB_parallel_shader_compile");
 #endif
-	if (Engine::get_singleton()->is_editor_hint()) {
-		config.async_compilation_enabled = false;
-		config.shader_cache_enabled = false;
-	} else {
-		int compilation_mode = ProjectSettings::get_singleton()->get("rendering/gles3/shaders/shader_compilation_mode");
-		config.async_compilation_enabled = compilation_mode >= 1;
-		config.shader_cache_enabled = compilation_mode == 2;
-	}
+
+	const int compilation_mode = ProjectSettings::get_singleton()->get("rendering/gles3/shaders/shader_compilation_mode");
+	config.async_compilation_enabled = compilation_mode >= 1;
+	config.shader_cache_enabled = compilation_mode == 2;
+
 	if (config.async_compilation_enabled) {
 		ShaderGLES3::max_simultaneous_compiles = MAX(1, (int)ProjectSettings::get_singleton()->get("rendering/gles3/shaders/max_simultaneous_compiles"));
 #ifdef GLES_OVER_GL
