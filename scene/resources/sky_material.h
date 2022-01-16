@@ -110,9 +110,11 @@ private:
 	Ref<Texture2D> panorama;
 
 	static Mutex shader_mutex;
-	static RID shader;
+	static RID shader_cache[2];
 	static void _update_shader();
 	mutable bool shader_set = false;
+
+	bool filter = true;
 
 protected:
 	static void _bind_methods();
@@ -120,6 +122,9 @@ protected:
 public:
 	void set_panorama(const Ref<Texture2D> &p_panorama);
 	Ref<Texture2D> get_panorama() const;
+
+	void set_filtering_enabled(bool p_enabled);
+	bool is_filtering_enabled() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;
