@@ -121,6 +121,10 @@ const Engine = (function () {
 					});
 				}
 				preloader.setProgressFunc(this.config.onProgress);
+				if (typeof this.config.cacheBuster === 'string') {
+					this.preloader.setCacheBuster(this.config.cacheBuster);
+				}
+
 				initPromise = doInit(loadPromise);
 				return initPromise;
 			},
