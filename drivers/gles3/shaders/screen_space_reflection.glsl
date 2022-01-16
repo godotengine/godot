@@ -186,8 +186,7 @@ void main() {
 		}
 
 		vec2 final_pos;
-		float grad;
-		grad = steps_taken / float(num_steps);
+		float grad = (steps_taken + 1.0) / float(num_steps);
 		float initial_fade = curve_fade_in == 0.0 ? 1.0 : pow(clamp(grad, 0.0, 1.0), curve_fade_in);
 		float fade = pow(clamp(1.0 - grad, 0.0, 1.0), distance_fade) * initial_fade;
 		final_pos = pos;
