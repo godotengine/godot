@@ -310,6 +310,18 @@ unsigned int KeyMappingX11::get_scancode(unsigned int p_code) {
 	return keycode;
 }
 
+unsigned int KeyMappingX11::get_xlibcode(unsigned int p_keysym) {
+	unsigned int code = 0;
+	for (int i = 0; _scancode_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
+		if (_scancode_to_keycode[i].keysym == p_keysym) {
+			code = _scancode_to_keycode[i].keycode;
+			break;
+		}
+	}
+
+	return code;
+}
+
 unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
 	// kinda bruteforce.. could optimize.
 

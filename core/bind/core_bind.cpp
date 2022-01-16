@@ -573,6 +573,10 @@ String _OS::keyboard_get_layout_name(int p_index) const {
 	return OS::get_singleton()->keyboard_get_layout_name(p_index);
 }
 
+uint32_t _OS::keyboard_get_scancode_from_physical(uint32_t p_scancode) const {
+	return OS::get_singleton()->keyboard_get_scancode_from_physical(p_scancode);
+}
+
 String _OS::get_model_name() const {
 	return OS::get_singleton()->get_model_name();
 }
@@ -1355,6 +1359,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("keyboard_set_current_layout", "index"), &_OS::keyboard_set_current_layout);
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_language", "index"), &_OS::keyboard_get_layout_language);
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_name", "index"), &_OS::keyboard_get_layout_name);
+	ClassDB::bind_method(D_METHOD("keyboard_get_scancode_from_physical", "scancode"), &_OS::keyboard_get_scancode_from_physical);
 
 	ClassDB::bind_method(D_METHOD("can_draw"), &_OS::can_draw);
 	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &_OS::is_userfs_persistent);
