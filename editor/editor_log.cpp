@@ -84,6 +84,7 @@ void EditorLog::_update_theme() {
 	copy_button->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
 	collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
 	show_search_button->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 }
 
 void EditorLog::_notification(int p_what) {
@@ -348,7 +349,6 @@ EditorLog::EditorLog() {
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter messages"));
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_visible(true);
 	search_box->connect("text_changed", callable_mp(this, &EditorLog::_search_changed));

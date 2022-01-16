@@ -367,13 +367,16 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
+void CreateDialog::_update_theme() {
+	search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	favorite->set_icon(search_options->get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
+}
+
 void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
-			search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			search_box->set_clear_button_enabled(true);
-			favorite->set_icon(search_options->get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
+			_update_theme();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
@@ -385,6 +388,9 @@ void CreateDialog::_notification(int p_what) {
 			} else {
 				EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
 			}
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_theme();
 		} break;
 	}
 }
@@ -711,6 +717,7 @@ CreateDialog::CreateDialog() {
 	hsc->add_child(vbc);
 
 	search_box = memnew(LineEdit);
+	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect("text_changed", callable_mp(this, &CreateDialog::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &CreateDialog::_sbox_input));

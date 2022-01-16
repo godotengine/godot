@@ -95,6 +95,8 @@ class CreateDialog : public ConfirmationDialog {
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class) const;
 	void _load_favorites_and_history();
 
+	void _update_theme();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

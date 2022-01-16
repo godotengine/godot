@@ -1028,6 +1028,13 @@ void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
 	}
 }
 
+void GridMapEditor::_update_theme() {
+	options->set_icon(get_theme_icon(SNAME("GridMap"), SNAME("EditorIcons")));
+	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	mode_thumbnail->set_icon(get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
+	mode_list->set_icon(get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
+}
+
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -1048,6 +1055,7 @@ void GridMapEditor::_notification(int p_what) {
 
 			_update_selection_transform();
 			_update_paste_indicator();
+			_update_theme();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1088,8 +1096,7 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_theme_icon(SNAME("GridMap"), SNAME("EditorIcons")));
-			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			_update_theme();
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
@@ -1250,7 +1257,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mode_thumbnail->set_flat(true);
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
-	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
 	hb->add_child(mode_thumbnail);
 	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_THUMBNAIL));
 
@@ -1258,7 +1264,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mode_list->set_flat(true);
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
-	mode_list->set_icon(p_editor->get_gui_base()->get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
 	hb->add_child(mode_list);
 	mode_list->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_LIST));
 

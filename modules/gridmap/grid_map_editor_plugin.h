@@ -201,6 +201,7 @@ class GridMapEditor : public VBoxContainer {
 	void _update_cursor_transform();
 	void _update_cursor_instance();
 	void _update_clip();
+	void _update_theme();
 
 	void _text_changed(const String &p_text);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
