@@ -45,7 +45,7 @@
 			When enabled, an octree containing the scene's lighting information will be computed. This octree will then be used to light dynamic objects in the scene.
 		</member>
 		<member name="capture_propagation" type="float" setter="set_capture_propagation" getter="get_capture_propagation" default="1.0">
-			Bias value to reduce the amount of light proagation in the captured octree.
+			Bias value to reduce the amount of light propagation in the captured octree.
 		</member>
 		<member name="capture_quality" type="int" setter="set_capture_quality" getter="get_capture_quality" enum="BakedLightmap.BakeQuality" default="1">
 			Bake quality of the capture data.
