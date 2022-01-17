@@ -77,7 +77,6 @@ void ResourceFormatDummyTexture::get_recognized_extensions(List<String> *p_exten
 	p_extensions->push_back("png");
 	p_extensions->push_back("pvr");
 	p_extensions->push_back("svg");
-	p_extensions->push_back("svgz");
 	p_extensions->push_back("tga");
 	p_extensions->push_back("webp");
 }
@@ -99,7 +98,6 @@ String ResourceFormatDummyTexture::get_resource_type(const String &p_path) const
 			extension == "png" ||
 			extension == "pvr" ||
 			extension == "svg" ||
-			extension == "svgz" ||
 			extension == "tga" ||
 			extension == "webp") {
 		return "ImageTexture";

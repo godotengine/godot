@@ -152,7 +152,6 @@ Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("svg");
-	p_extensions->push_back("svgz");
 }
 
 ImageLoaderSVG::ImageLoaderSVG() {
