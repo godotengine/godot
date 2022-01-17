@@ -430,6 +430,9 @@ public:
 	virtual float shaped_text_get_underline_position(RID p_shaped) const override;
 	virtual float shaped_text_get_underline_thickness(RID p_shaped) const override;
 
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
+
 	TextServerFallback();
 	~TextServerFallback();
 };

@@ -83,6 +83,7 @@ void Label::_shape() {
 	int width = (get_size().width - style->get_minimum_size().width);
 
 	if (dirty) {
+		String lang = (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale();
 		TS->shaped_text_clear(text_rid);
 		if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
 			TS->shaped_text_set_direction(text_rid, is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
@@ -92,11 +93,11 @@ void Label::_shape() {
 		const Ref<Font> &font = get_theme_font(SNAME("font"));
 		int font_size = get_theme_font_size(SNAME("font_size"));
 		ERR_FAIL_COND(font.is_null());
-		String text = (uppercase) ? xl_text.to_upper() : xl_text;
+		String text = (uppercase) ? TS->string_to_upper(xl_text, lang) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
 			text = text.substr(0, visible_chars);
 		}
-		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, opentype_features, lang);
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, text));
 		dirty = false;
 		lines_dirty = true;

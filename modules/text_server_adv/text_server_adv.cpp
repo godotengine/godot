@@ -322,7 +322,7 @@ _FORCE_INLINE_ bool is_underscore(char32_t p_char) {
 /*************************************************************************/
 
 String TextServerAdvanced::interface_name = "ICU / HarfBuzz / Graphite";
-uint32_t TextServerAdvanced::interface_features = FEATURE_BIDI_LAYOUT | FEATURE_VERTICAL_LAYOUT | FEATURE_SHAPING | FEATURE_KASHIDA_JUSTIFICATION | FEATURE_BREAK_ITERATORS | FEATURE_USE_SUPPORT_DATA | FEATURE_FONT_VARIABLE;
+uint32_t TextServerAdvanced::interface_features = FEATURE_BIDI_LAYOUT | FEATURE_VERTICAL_LAYOUT | FEATURE_SHAPING | FEATURE_KASHIDA_JUSTIFICATION | FEATURE_BREAK_ITERATORS | FEATURE_USE_SUPPORT_DATA | FEATURE_FONT_VARIABLE | FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION;
 
 bool TextServerAdvanced::has_feature(Feature p_feature) const {
 	return (interface_features & p_feature) == p_feature;
@@ -5227,6 +5227,40 @@ String TextServerAdvanced::strip_diacritics(const String &p_string) const {
 		}
 	}
 	return result;
+}
+
+String TextServerAdvanced::string_to_upper(const String &p_string, const String &p_language) const {
+	// Convert to UTF-16.
+	Char16String utf16 = p_string.utf16();
+
+	Char16String upper;
+	UErrorCode err = U_ZERO_ERROR;
+	int32_t len = u_strToUpper(nullptr, 0, utf16.ptr(), -1, p_language.ascii().get_data(), &err);
+	ERR_FAIL_COND_V_MSG(err != U_BUFFER_OVERFLOW_ERROR, p_string, u_errorName(err));
+	upper.resize(len);
+	err = U_ZERO_ERROR;
+	u_strToUpper(upper.ptrw(), len, utf16.ptr(), -1, p_language.ascii().get_data(), &err);
+	ERR_FAIL_COND_V_MSG(U_FAILURE(err), p_string, u_errorName(err));
+
+	// Convert back to UTF-32.
+	return String::utf16(upper.ptr(), len);
+}
+
+String TextServerAdvanced::string_to_lower(const String &p_string, const String &p_language) const {
+	// Convert to UTF-16.
+	Char16String utf16 = p_string.utf16();
+
+	Char16String lower;
+	UErrorCode err = U_ZERO_ERROR;
+	int32_t len = u_strToLower(nullptr, 0, utf16.ptr(), -1, p_language.ascii().get_data(), &err);
+	ERR_FAIL_COND_V_MSG(err != U_BUFFER_OVERFLOW_ERROR, p_string, u_errorName(err));
+	lower.resize(len);
+	err = U_ZERO_ERROR;
+	u_strToLower(lower.ptrw(), len, utf16.ptr(), -1, p_language.ascii().get_data(), &err);
+	ERR_FAIL_COND_V_MSG(U_FAILURE(err), p_string, u_errorName(err));
+
+	// Convert back to UTF-32.
+	return String::utf16(lower.ptr(), len);
 }
 
 TextServerAdvanced::TextServerAdvanced() {

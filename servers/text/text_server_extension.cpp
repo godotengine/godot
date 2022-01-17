@@ -271,6 +271,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_format_number, "string", "language");
 	GDVIRTUAL_BIND(_parse_number, "string", "language");
 	GDVIRTUAL_BIND(_percent_sign, "language");
+
+	GDVIRTUAL_BIND(_string_to_upper, "string", "language");
+	GDVIRTUAL_BIND(_string_to_lower, "string", "language");
 }
 
 bool TextServerExtension::has_feature(Feature p_feature) const {
@@ -1363,6 +1366,22 @@ String TextServerExtension::percent_sign(const String &p_language) const {
 		return ret;
 	}
 	return TextServer::percent_sign(p_language);
+}
+
+String TextServerExtension::string_to_upper(const String &p_string, const String &p_language) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_string_to_upper, p_string, p_language, ret)) {
+		return ret;
+	}
+	return p_string;
+}
+
+String TextServerExtension::string_to_lower(const String &p_string, const String &p_language) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_string_to_lower, p_string, p_language, ret)) {
+		return ret;
+	}
+	return p_string;
 }
 
 TextServerExtension::TextServerExtension() {

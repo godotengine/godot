@@ -21,8 +21,8 @@
 			<argument index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Creates new buffer for complex text layout, with the given [code]direction[/code] and [code]orientation[/code]. To free the resulting buffer, use [method free_rid] method.
-				[b]Note:[/b] Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
-				[b]Note:[/b] Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
+				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).
 			</description>
 		</method>
 		<method name="draw_hex_code_box" qualifiers="const">
@@ -1263,7 +1263,7 @@
 			<argument index="1" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<description>
 				Sets desired text direction. If set to [code]TEXT_DIRECTION_AUTO[/code], direction will be detected based on the buffer contents and current locale.
-				[b]Note:[/b] Direction is ignored if server does not support [code]FEATURE_BIDI_LAYOUT[/code] feature.
+				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
 			</description>
 		</method>
 		<method name="shaped_text_set_orientation">
@@ -1272,7 +1272,7 @@
 			<argument index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Sets desired text orientation.
-				[b]Note:[/b] Orientation is ignored if server does not support [code]FEATURE_VERTICAL_LAYOUT[/code] feature.
+				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).
 			</description>
 		</method>
 		<method name="shaped_text_set_preserve_control">
@@ -1321,6 +1321,26 @@
 			<argument index="1" name="tab_stops" type="PackedFloat32Array" />
 			<description>
 				Aligns shaped text to the given tab-stops.
+			</description>
+		</method>
+		<method name="string_to_lower" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="string" type="String" />
+			<argument index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Returns the string converted to lowercase.
+				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] The result may be longer or shorter than the original.
+			</description>
+		</method>
+		<method name="string_to_upper" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="string" type="String" />
+			<argument index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Returns the string converted to uppercase.
+				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
 		</method>
 		<method name="strip_diacritics" qualifiers="const">
@@ -1468,7 +1488,10 @@
 		<constant name="FEATURE_FONT_VARIABLE" value="64" enum="Feature">
 			TextServer supports variable fonts.
 		</constant>
-		<constant name="FEATURE_USE_SUPPORT_DATA" value="128" enum="Feature">
+		<constant name="FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION" value="128" enum="Feature">
+			TextServer supports locale dependent and context sensitive case conversion.
+		</constant>
+		<constant name="FEATURE_USE_SUPPORT_DATA" value="256" enum="Feature">
 			TextServer require external data file for some features.
 		</constant>
 		<constant name="CONTOUR_CURVE_TAG_ON" value="1" enum="ContourPointTag">

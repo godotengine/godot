@@ -422,6 +422,9 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("strip_diacritics", "string"), &TextServer::strip_diacritics);
 
+	ClassDB::bind_method(D_METHOD("string_to_upper", "string", "language"), &TextServer::string_to_upper, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("string_to_lower", "string", "language"), &TextServer::string_to_lower, DEFVAL(""));
+
 	/* Direction */
 	BIND_ENUM_CONSTANT(DIRECTION_AUTO);
 	BIND_ENUM_CONSTANT(DIRECTION_LTR);
@@ -480,6 +483,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_BREAK_ITERATORS);
 	BIND_ENUM_CONSTANT(FEATURE_FONT_SYSTEM);
 	BIND_ENUM_CONSTANT(FEATURE_FONT_VARIABLE);
+	BIND_ENUM_CONSTANT(FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION);
 	BIND_ENUM_CONSTANT(FEATURE_USE_SUPPORT_DATA);
 
 	/* FT Contour Point Types */
