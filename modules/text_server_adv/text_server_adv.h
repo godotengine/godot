@@ -527,6 +527,9 @@ public:
 
 	virtual String strip_diacritics(const String &p_string) const override;
 
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
+
 	TextServerAdvanced();
 	~TextServerAdvanced();
 };

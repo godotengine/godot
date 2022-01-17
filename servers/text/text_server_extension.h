@@ -449,6 +449,11 @@ public:
 	GDVIRTUAL2RC(String, _parse_number, const String &, const String &);
 	GDVIRTUAL1RC(String, _percent_sign, const String &);
 
+	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
+	GDVIRTUAL2RC(String, _string_to_upper, const String &, const String &);
+	GDVIRTUAL2RC(String, _string_to_lower, const String &, const String &);
+
 	TextServerExtension();
 	~TextServerExtension();
 };

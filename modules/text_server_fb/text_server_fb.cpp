@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
+#include "core/string/ucaps.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
 
@@ -3354,6 +3355,34 @@ float TextServerFallback::shaped_text_get_underline_thickness(RID p_shaped) cons
 	}
 
 	return sd->uthk;
+}
+
+String TextServerFallback::string_to_upper(const String &p_string, const String &p_language) const {
+	String upper = p_string;
+
+	for (int i = 0; i < upper.size(); i++) {
+		const char32_t s = upper[i];
+		const char32_t t = _find_upper(s);
+		if (s != t) { // avoid copy on write
+			upper[i] = t;
+		}
+	}
+
+	return upper;
+}
+
+String TextServerFallback::string_to_lower(const String &p_string, const String &p_language) const {
+	String lower = p_string;
+
+	for (int i = 0; i < lower.size(); i++) {
+		const char32_t s = lower[i];
+		const char32_t t = _find_lower(s);
+		if (s != t) { // avoid copy on write
+			lower[i] = t;
+		}
+	}
+
+	return lower;
 }
 
 TextServerFallback::TextServerFallback() {
