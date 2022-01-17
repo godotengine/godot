@@ -96,15 +96,14 @@ void _emwebxr_on_controller_changed() {
 	((WebXRInterfaceJS *)interface.ptr())->_on_controller_changed();
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_input_event(char *p_signal_name, int p_input_source) {
+extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_input_event(int p_event_type, int p_input_source) {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 
 	Ref<ARVRInterface> interface = arvr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
-	StringName signal_name = StringName(p_signal_name);
-	interface->emit_signal(signal_name, p_input_source + 1);
+	((WebXRInterfaceJS *)interface.ptr())->_on_input_event(p_event_type, p_input_source);
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_simple_event(char *p_signal_name) {
@@ -169,6 +168,15 @@ Ref<ARVRPositionalTracker> WebXRInterfaceJS::get_controller(int p_controller_id)
 	return arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
 }
 
+WebXRInterface::TargetRayMode WebXRInterfaceJS::get_controller_target_ray_mode(int p_controller_id) const {
+	ERR_FAIL_COND_V(p_controller_id <= 0, WebXRInterface::TARGET_RAY_MODE_UNKNOWN);
+
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, WebXRInterface::TARGET_RAY_MODE_UNKNOWN);
+
+	return (WebXRInterface::TargetRayMode)godot_webxr_get_controller_target_ray_mode(p_controller_id - 1);
+}
+
 String WebXRInterfaceJS::get_visibility_state() const {
 	char *c_str = godot_webxr_get_visibility_state();
 	if (c_str) {
@@ -227,6 +235,10 @@ bool WebXRInterfaceJS::initialize() {
 
 		// make this our primary interface
 		arvr_server->set_primary_interface(this);
+
+		// Clear state variables.
+		memset(controllers_state, 0, sizeof controllers_state);
+		memset(touching, 0, sizeof touching);
 
 		// Clear render_targetsize to make sure it gets reset to the new size.
 		// Clearing in uninitialize() doesn't work because a frame can still be
@@ -395,6 +407,7 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 		}
 
 		InputDefault *input = (InputDefault *)Input::get_singleton();
+		int joy_id = p_controller_id + 100;
 
 		float *tracker_matrix = godot_webxr_get_controller_transform(p_controller_id);
 		if (tracker_matrix) {
@@ -407,17 +420,39 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 		int *buttons = godot_webxr_get_controller_buttons(p_controller_id);
 		if (buttons) {
 			for (int i = 0; i < buttons[0]; i++) {
-				input->joy_button(p_controller_id + 100, i, *((float *)buttons + (i + 1)));
+				input->joy_button(joy_id, i, *((float *)buttons + (i + 1)));
 			}
 			free(buttons);
 		}
 
 		int *axes = godot_webxr_get_controller_axes(p_controller_id);
 		if (axes) {
+			WebXRInterface::TargetRayMode target_ray_mode = (WebXRInterface::TargetRayMode)godot_webxr_get_controller_target_ray_mode(p_controller_id);
+			if (target_ray_mode == WebXRInterface::TARGET_RAY_MODE_SCREEN) {
+				int touch_index = _get_touch_index(p_controller_id);
+				if (touch_index < 5 && touching[touch_index]) {
+					Vector2 joy_vector = _get_joy_vector_from_axes(axes);
+					Vector2 previous_joy_vector(input->get_joy_axis(joy_id, 0), input->get_joy_axis(joy_id, 1));
+
+					if (!joy_vector.is_equal_approx(previous_joy_vector)) {
+						Vector2 position = _get_screen_position_from_joy_vector(joy_vector);
+						Vector2 previous_position = _get_screen_position_from_joy_vector(previous_joy_vector);
+
+						Ref<InputEventScreenDrag> event;
+						event.instance();
+						event->set_index(touch_index);
+						event->set_position(position);
+						event->set_relative(position - previous_position);
+						input->parse_input_event(event);
+					}
+				}
+			}
+
 			for (int i = 0; i < axes[0]; i++) {
 				float value = *((float *)axes + (i + 1));
-				input->joy_axis(p_controller_id + 100, i, value);
+				input->joy_axis(joy_id, i, value);
 			}
+
 			free(axes);
 		}
 	} else if (tracker.is_valid()) {
@@ -435,6 +470,102 @@ void WebXRInterfaceJS::_on_controller_changed() {
 			controllers_state[i] = controller_connected;
 		}
 	}
+}
+
+void WebXRInterfaceJS::_on_input_event(int p_event_type, int p_input_source) {
+	if (p_event_type == WEBXR_INPUT_EVENT_SELECTSTART || p_event_type == WEBXR_INPUT_EVENT_SELECTEND) {
+		int target_ray_mode = godot_webxr_get_controller_target_ray_mode(p_input_source);
+		if (target_ray_mode == WebXRInterface::TARGET_RAY_MODE_SCREEN) {
+			int touch_index = _get_touch_index(p_input_source);
+			if (touch_index < 5) {
+				touching[touch_index] = (p_event_type == WEBXR_INPUT_EVENT_SELECTSTART);
+			}
+
+			int *axes = godot_webxr_get_controller_axes(p_input_source);
+			if (axes) {
+				Vector2 joy_vector = _get_joy_vector_from_axes(axes);
+				Vector2 position = _get_screen_position_from_joy_vector(joy_vector);
+				free(axes);
+
+				InputDefault *input = (InputDefault *)Input::get_singleton();
+
+				int joy_id = p_input_source + 100;
+				input->set_joy_axis(joy_id, 0, joy_vector.x);
+				input->set_joy_axis(joy_id, 1, joy_vector.y);
+
+				Ref<InputEventScreenTouch> event;
+				event.instance();
+				event->set_index(touch_index);
+				event->set_position(position);
+				event->set_pressed(p_event_type == WEBXR_INPUT_EVENT_SELECTSTART);
+				Input::get_singleton()->parse_input_event(event);
+			}
+		}
+	}
+
+	int controller_id = p_input_source + 1;
+	switch (p_event_type) {
+		case WEBXR_INPUT_EVENT_SELECTSTART:
+			emit_signal("selectstart", controller_id);
+			break;
+
+		case WEBXR_INPUT_EVENT_SELECTEND:
+			emit_signal("selectend", controller_id);
+			break;
+
+		case WEBXR_INPUT_EVENT_SELECT:
+			emit_signal("select", controller_id);
+			break;
+
+		case WEBXR_INPUT_EVENT_SQUEEZESTART:
+			emit_signal("squeezestart", controller_id);
+			break;
+
+		case WEBXR_INPUT_EVENT_SQUEEZEEND:
+			emit_signal("squeezeend", controller_id);
+			break;
+
+		case WEBXR_INPUT_EVENT_SQUEEZE:
+			emit_signal("squeeze", controller_id);
+			break;
+	}
+}
+
+int WebXRInterfaceJS::_get_touch_index(int p_input_source) {
+	int index = 0;
+	for (int i = 0; i < p_input_source; i++) {
+		if (godot_webxr_get_controller_target_ray_mode(i) == WebXRInterface::TARGET_RAY_MODE_SCREEN) {
+			index++;
+		}
+	}
+	return index;
+}
+
+Vector2 WebXRInterfaceJS::_get_joy_vector_from_axes(int *p_axes) {
+	float x_axis = 0.0;
+	float y_axis = 0.0;
+
+	if (p_axes[0] >= 2) {
+		x_axis = *((float *)p_axes + 1);
+		y_axis = *((float *)p_axes + 2);
+	}
+
+	return Vector2(x_axis, y_axis);
+}
+
+Vector2 WebXRInterfaceJS::_get_screen_position_from_joy_vector(const Vector2 &p_joy_vector) {
+	SceneTree *scene_tree = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+	if (!scene_tree) {
+		return Vector2();
+	}
+
+	Viewport *viewport = scene_tree->get_root();
+
+	// Invert the y-axis.
+	Vector2 position_percentage((p_joy_vector.x + 1.0f) / 2.0f, ((-p_joy_vector.y) + 1.0f) / 2.0f);
+	Vector2 position = viewport->get_size() * position_percentage;
+
+	return position;
 }
 
 void WebXRInterfaceJS::notification(int p_what) {
