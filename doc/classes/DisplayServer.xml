@@ -35,12 +35,6 @@
 				[b]Note:[/b] This method is only implemented on Linux.
 			</description>
 		</method>
-		<method name="console_set_visible">
-			<return type="void" />
-			<argument index="0" name="console_visible" type="bool" />
-			<description>
-			</description>
-		</method>
 		<method name="create_sub_window">
 			<return type="int" />
 			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode" />
@@ -278,11 +272,6 @@
 		</method>
 		<method name="ime_get_text" qualifiers="const">
 			<return type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="is_console_visible" qualifiers="const">
-			<return type="bool" />
 			<description>
 			</description>
 		</method>
@@ -803,23 +792,21 @@
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG" value="9" enum="Feature">
 		</constant>
-		<constant name="FEATURE_CONSOLE_WINDOW" value="10" enum="Feature">
+		<constant name="FEATURE_IME" value="10" enum="Feature">
 		</constant>
-		<constant name="FEATURE_IME" value="11" enum="Feature">
+		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="11" enum="Feature">
 		</constant>
-		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="12" enum="Feature">
+		<constant name="FEATURE_HIDPI" value="12" enum="Feature">
 		</constant>
-		<constant name="FEATURE_HIDPI" value="13" enum="Feature">
+		<constant name="FEATURE_ICON" value="13" enum="Feature">
 		</constant>
-		<constant name="FEATURE_ICON" value="14" enum="Feature">
+		<constant name="FEATURE_NATIVE_ICON" value="14" enum="Feature">
 		</constant>
-		<constant name="FEATURE_NATIVE_ICON" value="15" enum="Feature">
+		<constant name="FEATURE_ORIENTATION" value="15" enum="Feature">
 		</constant>
-		<constant name="FEATURE_ORIENTATION" value="16" enum="Feature">
+		<constant name="FEATURE_SWAP_BUFFERS" value="16" enum="Feature">
 		</constant>
-		<constant name="FEATURE_SWAP_BUFFERS" value="17" enum="Feature">
-		</constant>
-		<constant name="FEATURE_CLIPBOARD_PRIMARY" value="19" enum="Feature">
+		<constant name="FEATURE_CLIPBOARD_PRIMARY" value="18" enum="Feature">
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.

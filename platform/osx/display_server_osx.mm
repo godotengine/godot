@@ -1480,7 +1480,6 @@ bool DisplayServerOSX::has_feature(Feature p_feature) const {
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_NATIVE_DIALOG:
-		//case FEATURE_CONSOLE_WINDOW:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:
@@ -3677,14 +3676,6 @@ void DisplayServerOSX::swap_buffers() {
 #if defined(GLES3_ENABLED)
 	gl_manager->swap_buffers();
 #endif
-}
-
-void DisplayServerOSX::console_set_visible(bool p_enabled) {
-	//TODO - open terminal and redirect
-}
-
-bool DisplayServerOSX::is_console_visible() const {
-	return isatty(STDIN_FILENO);
 }
 
 DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
