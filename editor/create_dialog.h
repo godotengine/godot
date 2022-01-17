@@ -41,6 +41,12 @@
 class CreateDialog : public ConfirmationDialog {
 	GDCLASS(CreateDialog, ConfirmationDialog);
 
+	enum TypeCategory {
+		CPP_TYPE,
+		PATH_TYPE,
+		OTHER_TYPE
+	};
+
 	LineEdit *search_box;
 	Tree *search_options;
 
@@ -62,8 +68,8 @@ class CreateDialog : public ConfirmationDialog {
 
 	void _update_search();
 	bool _should_hide_type(const String &p_type) const;
-	void _add_type(const String &p_current, bool p_cpp_type);
-	void _configure_search_option_item(TreeItem *r_item, const String &p_type, const bool p_cpp_type);
+	void _add_type(const String &p_type, const TypeCategory p_type_category);
+	void _configure_search_option_item(TreeItem *r_item, const String &p_type, const TypeCategory p_type_category);
 	String _top_result(const Vector<String> p_candidates, const String &p_search_text) const;
 	float _score_type(const String &p_type, const String &p_search) const;
 	bool _is_type_preferred(const String &p_type) const;
