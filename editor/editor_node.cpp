@@ -3000,7 +3000,7 @@ void EditorNode::_exit_editor() {
 	// Dim the editor window while it's quitting to make it clearer that it's busy
 	dim_editor(true);
 
-	get_tree()->quit();
+	get_tree()->quit(OS::get_singleton()->get_exit_code());
 }
 
 void EditorNode::_discard_changes(const String &p_str) {
