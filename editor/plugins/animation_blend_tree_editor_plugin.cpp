@@ -103,7 +103,7 @@ void AnimationNodeBlendTreeEditor::_property_changed(const StringName &p_propert
 }
 
 void AnimationNodeBlendTreeEditor::_update_graph() {
-	if (updating) {
+	if (updating || blend_tree.is_null()) {
 		return;
 	}
 
