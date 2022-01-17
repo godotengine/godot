@@ -218,7 +218,10 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "svg/scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
+
+	if (p_path.get_extension() == "svg") {
+		r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "svg/scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
+	}
 }
 
 void ResourceImporterTexture::save_to_stex_format(FileAccess *f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
@@ -408,11 +411,14 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	int size_limit = p_options["process/size_limit"];
 	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
 	int normal = p_options["compress/normal_map"];
-	float scale = p_options["svg/scale"];
 	int hdr_compression = p_options["compress/hdr_compression"];
 	int bptc_ldr = p_options["compress/bptc_ldr"];
 	int roughness = p_options["roughness/mode"];
 	String normal_map = p_options["roughness/src_normal"];
+	float scale = 1.0;
+	if (p_options.has("svg/scale")) {
+		scale = p_options["svg/scale"];
+	}
 
 	Ref<Image> normal_image;
 	Image::RoughnessChannel roughness_channel = Image::ROUGHNESS_CHANNEL_R;
