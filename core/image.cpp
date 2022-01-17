@@ -3020,6 +3020,7 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_GENERIC);
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_SRGB);
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_NORMAL);
+	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_LAYERED);
 }
 
 void Image::set_compress_bc_func(void (*p_compress_func)(Image *, float, CompressSource)) {
