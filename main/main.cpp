@@ -325,6 +325,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("].\n");
 
 	OS::get_singleton()->print("  --rendering-driver <driver>                  Rendering driver (depends on display driver).\n");
+	OS::get_singleton()->print("  --gpu-index <device_index>                   Use a specific GPU (run with --verbose to get available device list).\n");
 
 	OS::get_singleton()->print("  --text-driver <driver>                       Text driver (Fonts, BiDi, shaping)\n");
 
@@ -793,6 +794,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-w" || I->get() == "--windowed") { // force windowed window
 
 			init_windowed = true;
+		} else if (I->get() == "--gpu-index") {
+			if (I->next()) {
+				Engine::singleton->gpu_idx = I->next()->get().to_int();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing gpu index argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--vk-layers") {
 			Engine::singleton->use_validation_layers = true;
 #ifdef DEBUG_ENABLED

@@ -186,6 +186,10 @@ bool Engine::is_abort_on_gpu_errors_enabled() const {
 	return abort_on_gpu_errors;
 }
 
+int32_t Engine::get_gpu_index() const {
+	return gpu_idx;
+}
+
 bool Engine::is_validation_layers_enabled() const {
 	return use_validation_layers;
 }
