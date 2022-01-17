@@ -361,8 +361,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				tree->edit_selected();
 			}
 		} break;
-		case TOOL_NEW:
-		case TOOL_REPARENT_TO_NEW_NODE: {
+		case TOOL_REPARENT_TO_NEW_NODE:
+			if (!_validate_no_foreign()) {
+				break;
+			}
+			[[fallthrough]];
+		case TOOL_NEW: {
 			if (!profile_allow_editing) {
 				break;
 			}
@@ -2603,6 +2607,10 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 }
 
 void SceneTreeDock::_nodes_dragged(Array p_nodes, NodePath p_to, int p_type) {
+	if (!_validate_no_foreign()) {
+		return;
+	}
+
 	List<Node *> selection = editor_selection->get_selected_node_list();
 
 	if (selection.is_empty()) {
