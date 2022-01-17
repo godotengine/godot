@@ -246,6 +246,25 @@ TEST_CASE("[Vector2] Operators") {
 	CHECK_MESSAGE(
 			Vector2(Vector2i(1, 2)) == Vector2(1, 2),
 			"Vector2 constructed from Vector2i should work as expected.");
+
+	CHECK_MESSAGE(
+			((String)decimal1) == "(2.3, 4.9)",
+			"Vector2 cast to String should work as expected.");
+	CHECK_MESSAGE(
+			((String)decimal2) == "(1.2, 3.4)",
+			"Vector2 cast to String should work as expected.");
+	CHECK_MESSAGE(
+			((String)Vector2(9.8, 9.9)) == "(9.8, 9.9)",
+			"Vector2 cast to String should work as expected.");
+#ifdef REAL_T_IS_DOUBLE
+	CHECK_MESSAGE(
+			((String)Vector2(Math_PI, Math_TAU)) == "(3.14159265358979, 6.28318530717959)",
+			"Vector2 cast to String should print the correct amount of digits for real_t = double.");
+#else
+	CHECK_MESSAGE(
+			((String)Vector2(Math_PI, Math_TAU)) == "(3.141593, 6.283185)",
+			"Vector2 cast to String should print the correct amount of digits for real_t = float.");
+#endif // REAL_T_IS_DOUBLE
 }
 
 TEST_CASE("[Vector2] Other methods") {

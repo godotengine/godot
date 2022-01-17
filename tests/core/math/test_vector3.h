@@ -271,6 +271,25 @@ TEST_CASE("[Vector3] Operators") {
 	CHECK_MESSAGE(
 			Vector3(Vector3i(1, 2, 3)) == Vector3(1, 2, 3),
 			"Vector3 constructed from Vector3i should work as expected.");
+
+	CHECK_MESSAGE(
+			((String)decimal1) == "(2.3, 4.9, 7.8)",
+			"Vector3 cast to String should work as expected.");
+	CHECK_MESSAGE(
+			((String)decimal2) == "(1.2, 3.4, 5.6)",
+			"Vector3 cast to String should work as expected.");
+	CHECK_MESSAGE(
+			((String)Vector3(9.7, 9.8, 9.9)) == "(9.7, 9.8, 9.9)",
+			"Vector3 cast to String should work as expected.");
+#ifdef REAL_T_IS_DOUBLE
+	CHECK_MESSAGE(
+			((String)Vector3(Math_E, Math_SQRT2, Math_SQRT3)) == "(2.71828182845905, 1.4142135623731, 1.73205080756888)",
+			"Vector3 cast to String should print the correct amount of digits for real_t = double.");
+#else
+	CHECK_MESSAGE(
+			((String)Vector3(Math_E, Math_SQRT2, Math_SQRT3)) == "(2.718282, 1.414214, 1.732051)",
+			"Vector3 cast to String should print the correct amount of digits for real_t = float.");
+#endif // REAL_T_IS_DOUBLE
 }
 
 TEST_CASE("[Vector3] Other methods") {
