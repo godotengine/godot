@@ -1279,6 +1279,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_icon("bg", "ColorPickerButton", theme->get_icon("GuiMiniCheckerboard", "EditorIcons"));
 
+	// ColorPresetButton
+	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color(1, 1, 1), 2, 2, 2, 2);
+
+	preset_sb->set_anti_aliased(false);
+	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
+	theme->set_icon("preset_bg_icon", "ColorPresetButton", theme->get_icon("GuiMiniCheckerboard", "EditorIcons"));
+	theme->set_icon("overbright_indicator", "ColorPresetButton", theme->get_icon("OverbrightIndicator", "EditorIcons"));
+
 	// Information on 3D viewport
 	Ref<StyleBoxFlat> style_info_3d_viewport = style_default->duplicate();
 	style_info_3d_viewport->set_bg_color(style_info_3d_viewport->get_bg_color() * Color(1, 1, 1, 0.5));
