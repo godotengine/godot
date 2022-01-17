@@ -611,5 +611,8 @@
 		<constant name="COMPRESS_SOURCE_NORMAL" value="2" enum="CompressSource">
 			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
 		</constant>
+		<constant name="COMPRESS_SOURCE_LAYERED" value="3" enum="CompressSource">
+			Source texture (before compression) is a [TextureLayered].
+		</constant>
 	</constants>
 </class>
