@@ -140,7 +140,6 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["jpeg"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["png"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["svg"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
-		extension_guess["svgz"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["tga"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["webp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 
