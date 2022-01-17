@@ -967,16 +967,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 		return;
 	}
 
-	Ref<Animation> new_anim = memnew(Animation);
-	List<PropertyInfo> plist;
-	anim->get_property_list(&plist);
-	for (const PropertyInfo &E : plist) {
-		if (E.usage & PROPERTY_USAGE_STORAGE) {
-			new_anim->set(E.name, anim->get(E.name));
-		}
-	}
-	new_anim->set_path("");
-
+	Ref<Animation> new_anim = _animation_clone(anim);
 	String new_name = current;
 	while (player->has_animation(new_name)) {
 		new_name = new_name + " (copy)";
@@ -998,6 +989,44 @@ void AnimationPlayerEditor::_animation_duplicate() {
 			return;
 		}
 	}
+}
+
+Ref<Animation> AnimationPlayerEditor::_animation_clone(Ref<Animation> p_anim) {
+	Ref<Animation> new_anim = memnew(Animation);
+	List<PropertyInfo> plist;
+	p_anim->get_property_list(&plist);
+
+	for (const PropertyInfo &E : plist) {
+		if (E.usage & PROPERTY_USAGE_STORAGE) {
+			new_anim->set(E.name, p_anim->get(E.name));
+		}
+	}
+	new_anim->set_path("");
+
+	return new_anim;
+}
+
+void AnimationPlayerEditor::_animation_paste(Ref<Animation> p_anim) {
+	String name = p_anim->get_name();
+	if (name.is_empty()) {
+		name = TTR("Pasted Animation");
+	}
+
+	int idx = 1;
+	String base = name;
+	while (player->has_animation(name)) {
+		idx++;
+		name = base + " " + itos(idx);
+	}
+
+	undo_redo->create_action(TTR("Paste Animation"));
+	undo_redo->add_do_method(player, "add_animation", name, p_anim);
+	undo_redo->add_undo_method(player, "remove_animation", name);
+	undo_redo->add_do_method(this, "_animation_player_changed", player);
+	undo_redo->add_undo_method(this, "_animation_player_changed", player);
+	undo_redo->commit_action();
+
+	_select_anim_by_name(name);
 }
 
 void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool p_timeline_only) {
@@ -1135,31 +1164,22 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		case TOOL_PASTE_ANIM: {
 			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
 			if (!anim2.is_valid()) {
-				error_dialog->set_text(TTR("No animation resource on clipboard!"));
+				error_dialog->set_text(TTR("No animation resource in clipboard!"));
+				error_dialog->popup_centered();
+				return;
+			}
+			Ref<Animation> new_anim = _animation_clone(anim2);
+			_animation_paste(new_anim);
+		} break;
+		case TOOL_PASTE_ANIM_REF: {
+			Ref<Animation> anim2 = EditorSettings::get_singleton()->get_resource_clipboard();
+			if (!anim2.is_valid()) {
+				error_dialog->set_text(TTR("No animation resource in clipboard!"));
 				error_dialog->popup_centered();
 				return;
 			}
 
-			String name = anim2->get_name();
-			if (name.is_empty()) {
-				name = TTR("Pasted Animation");
-			}
-
-			int idx = 1;
-			String base = name;
-			while (player->has_animation(name)) {
-				idx++;
-				name = base + " " + itos(idx);
-			}
-
-			undo_redo->create_action(TTR("Paste Animation"));
-			undo_redo->add_do_method(player, "add_animation", name, anim2);
-			undo_redo->add_undo_method(player, "remove_animation", name);
-			undo_redo->add_do_method(this, "_animation_player_changed", player);
-			undo_redo->add_undo_method(this, "_animation_player_changed", player);
-			undo_redo->commit_action();
-
-			_select_anim_by_name(name);
+			_animation_paste(anim2);
 		} break;
 		case TOOL_EDIT_RESOURCE: {
 			if (!animation->get_item_count()) {
@@ -1587,6 +1607,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/copy_animation", TTR("Copy")), TOOL_COPY_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation", TTR("Paste")), TOOL_PASTE_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/paste_animation_as_reference", TTR("Paste As Reference")), TOOL_PASTE_ANIM_REF);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate")), TOOL_DUPLICATE_ANIM);
 	tool_anim->get_popup()->add_separator();
