@@ -311,6 +311,7 @@ private:
 		Point2 mouse_pos;
 		Point2 original_mouse_pos;
 		bool snap = false;
+		bool show_rotation_line = false;
 		Ref<EditorNode3DGizmo> gizmo;
 		int gizmo_handle = 0;
 		bool gizmo_handle_secondary = false;
