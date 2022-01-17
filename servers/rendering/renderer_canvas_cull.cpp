@@ -1440,7 +1440,7 @@ void RendererCanvasCull::canvas_light_occluder_set_polygon(RID p_occluder, RID p
 	ERR_FAIL_COND(!occluder);
 
 	if (occluder->polygon.is_valid()) {
-		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(p_polygon);
+		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(occluder->polygon);
 		if (occluder_poly) {
 			occluder_poly->owners.erase(occluder);
 		}
