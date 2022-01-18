@@ -529,7 +529,7 @@ private:
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 	String _recent_scene;
 
-	void _exit_editor();
+	void _exit_editor(int p_exit_code);
 
 	bool convert_old;
 

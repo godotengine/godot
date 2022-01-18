@@ -295,6 +295,9 @@ public:
 	virtual void debug_break();
 
 	virtual int get_exit_code() const;
+	// `set_exit_code` should only be used from `SceneTree` (or from a similar
+	// level, e.g. from the `Main::start` if leaving without creating a `SceneTree`).
+	// For other components, `SceneTree.quit()` should be used instead.
 	virtual void set_exit_code(int p_code);
 
 	virtual int get_processor_count() const;
