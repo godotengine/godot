@@ -91,7 +91,7 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	ogg_stream.instance();
 
 	ogg_stream->set_data(data);
-	ERR_FAIL_COND_V(!ogg_stream->get_data().size(), ERR_FILE_CORRUPT);
+	ERR_FAIL_COND_V_MSG(!ogg_stream->get_data().size(), ERR_FILE_CORRUPT, "Couldn't import file as AudioStreamOGGVorbis: " + p_source_file);
 	ogg_stream->set_loop(loop);
 	ogg_stream->set_loop_offset(loop_offset);
 
