@@ -4011,6 +4011,9 @@ void RendererSceneRenderRD::_volumetric_fog_erase(RenderBuffers *rb) {
 	RD::get_singleton()->free(rb->volumetric_fog->prev_light_density_map);
 	RD::get_singleton()->free(rb->volumetric_fog->light_density_map);
 	RD::get_singleton()->free(rb->volumetric_fog->fog_map);
+	RD::get_singleton()->free(rb->volumetric_fog->density_map);
+	RD::get_singleton()->free(rb->volumetric_fog->light_map);
+	RD::get_singleton()->free(rb->volumetric_fog->emissive_map);
 
 	if (rb->volumetric_fog->fog_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->fog_uniform_set)) {
 		RD::get_singleton()->free(rb->volumetric_fog->fog_uniform_set);
