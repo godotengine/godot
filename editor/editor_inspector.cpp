@@ -2346,6 +2346,9 @@ void EditorInspector::update_tree() {
 		}
 	}
 
+	Map<String, int> capitalized_script_vars_freq;
+	int script_vars_remaining = 0;
+
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
 	String group_base;
@@ -2570,15 +2573,41 @@ void EditorInspector::update_tree() {
 		// Get the property label's string.
 		String property_label_string = (path.find("/") != -1) ? path.substr(path.rfind("/") + 1) : path;
 		if (capitalize_paths) {
-			// Capitalize paths.
-			int dot = property_label_string.find(".");
-			if (dot != -1) {
-				String ov = property_label_string.substr(dot);
-				property_label_string = property_label_string.substr(0, dot);
-				property_label_string = property_label_string.capitalize();
-				property_label_string += ov;
+			// Capitalize a script variable only if it does not clash with any other script variable after capitalization
+			if (p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) {
+				// Create a frequency map of the capitalized script variables to check for clashes
+				if (script_vars_remaining == 0) {
+					List<PropertyInfo>::Element *E = E_property;
+					capitalized_script_vars_freq.clear();
+					while (E) {
+						if (E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE) {
+							String el_path = E->get().name;
+							String el_property_label_string = (el_path.find("/") != -1) ? el_path.substr(el_path.rfind("/") + 1) : el_path;
+							capitalized_script_vars_freq[el_property_label_string.capitalize()]++;
+							script_vars_remaining++;
+							E = E->next();
+						} else {
+							break;
+						}
+					}
+				}
+				// Capitalize the script variable only if its frequency in the frequency map is 1
+				String captialized_script_var = property_label_string.capitalize();
+				if (capitalized_script_vars_freq[captialized_script_var] == 1) {
+					property_label_string = captialized_script_var;
+				}
+				script_vars_remaining--;
 			} else {
-				property_label_string = property_label_string.capitalize();
+				// Capitalize paths of all other properties
+				int dot = property_label_string.find(".");
+				if (dot != -1) {
+					String ov = property_label_string.substr(dot);
+					property_label_string = property_label_string.substr(0, dot);
+					property_label_string = property_label_string.capitalize();
+					property_label_string += ov;
+				} else {
+					property_label_string = property_label_string.capitalize();
+				}
 			}
 		}
 
