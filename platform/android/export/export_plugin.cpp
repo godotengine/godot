@@ -1514,7 +1514,7 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 	}
 
 	if (scale_splash) {
-		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
 		int width, height;
 		if (screen_size.width > screen_size.height) {
 			// scale horizontally
