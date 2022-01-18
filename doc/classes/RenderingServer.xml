@@ -1838,8 +1838,7 @@
 			<argument index="1" name="primitive" type="int" enum="RenderingServer.PrimitiveType" />
 			<argument index="2" name="arrays" type="Array" />
 			<argument index="3" name="blend_shapes" type="Array" default="[]" />
-			<argument index="4" name="lods" type="Dictionary" default="{
-}" />
+			<argument index="4" name="lods" type="Dictionary" default="{}" />
 			<argument index="5" name="compress_format" type="int" default="0" />
 			<description>
 			</description>
