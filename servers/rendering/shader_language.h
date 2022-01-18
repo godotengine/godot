@@ -362,7 +362,6 @@ public:
 			TYPE_CONTROL_FLOW,
 			TYPE_MEMBER,
 			TYPE_ARRAY,
-			TYPE_ARRAY_DECLARATION,
 			TYPE_ARRAY_CONSTRUCT,
 			TYPE_STRUCT,
 		};
@@ -428,7 +427,10 @@ public:
 
 		struct Declaration {
 			StringName name;
-			Node *initializer;
+			uint32_t size = 0U;
+			Node *size_expression = nullptr;
+			Vector<Node *> initializer;
+			bool single_expression = false;
 		};
 		Vector<Declaration> declarations;
 
@@ -471,27 +473,6 @@ public:
 				Node(TYPE_ARRAY_CONSTRUCT) {}
 	};
 
-	struct ArrayDeclarationNode : public Node {
-		DataPrecision precision = PRECISION_DEFAULT;
-		DataType datatype = TYPE_VOID;
-		String struct_name;
-		bool is_const = false;
-		Node *size_expression = nullptr;
-
-		struct Declaration {
-			StringName name;
-			uint32_t size;
-			Vector<Node *> initializer;
-			bool single_expression;
-		};
-		Vector<Declaration> declarations;
-
-		virtual DataType get_datatype() const override { return datatype; }
-
-		ArrayDeclarationNode() :
-				Node(TYPE_ARRAY_DECLARATION) {}
-	};
-
 	struct ConstantNode : public Node {
 		DataType datatype = TYPE_VOID;
 		String struct_name = "";
@@ -505,7 +486,7 @@ public:
 		};
 
 		Vector<Value> values;
-		Vector<ArrayDeclarationNode::Declaration> array_declarations;
+		Vector<VariableDeclarationNode::Declaration> array_declarations;
 
 		virtual DataType get_datatype() const override { return datatype; }
 		virtual String get_datatype_name() const override { return struct_name; }
