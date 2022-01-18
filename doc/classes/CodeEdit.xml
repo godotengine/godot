@@ -442,7 +442,7 @@
 		<member name="auto_brace_completion_highlight_matching" type="bool" setter="set_highlight_matching_braces_enabled" getter="is_highlight_matching_braces_enabled" default="false">
 			Highlight mismatching brace pairs.
 		</member>
-		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{&quot;\&quot;&quot;: &quot;\&quot;&quot;,&quot;&apos;&quot;: &quot;&apos;&quot;,&quot;(&quot;: &quot;)&quot;,&quot;[&quot;: &quot;]&quot;,&quot;{&quot;: &quot;}&quot;}">
+		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{ &quot;\&quot;&quot;: &quot;\&quot;&quot;, &quot;&apos;&quot;: &quot;&apos;&quot;, &quot;(&quot;: &quot;)&quot;, &quot;[&quot;: &quot;]&quot;, &quot;{&quot;: &quot;}&quot; }">
 			Sets the brace pairs to be autocompleted.
 		</member>
 		<member name="code_completion_enabled" type="bool" setter="set_code_completion_enabled" getter="is_code_completion_enabled" default="false">
