@@ -123,6 +123,7 @@ class SceneTreeDock : public VBoxContainer {
 	Button *button_3d;
 	Button *button_ui;
 	Button *button_custom;
+	Button *button_clipboard;
 
 	HBoxContainer *button_hb;
 	Button *edit_local, *edit_remote;
@@ -307,6 +308,8 @@ public:
 
 	void open_add_child_dialog();
 	void open_instance_child_dialog();
+
+	List<Node *> paste_nodes();
 
 	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 
