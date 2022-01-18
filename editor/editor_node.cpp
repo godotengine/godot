@@ -957,9 +957,10 @@ void EditorNode::_fs_changed() {
 
 		if (!export_error.is_empty()) {
 			ERR_PRINT(export_error);
-			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
+			_exit_editor(EXIT_FAILURE);
+		} else {
+			_exit_editor(EXIT_SUCCESS);
 		}
-		_exit_editor();
 	}
 }
 
@@ -1775,7 +1776,7 @@ void EditorNode::restart_editor() {
 		to_reopen = get_tree()->get_edited_scene_root()->get_scene_file_path();
 	}
 
-	_exit_editor();
+	_exit_editor(EXIT_SUCCESS);
 
 	List<String> args;
 	args.push_back("--path");
@@ -3000,7 +3001,7 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 	return -1;
 }
 
-void EditorNode::_exit_editor() {
+void EditorNode::_exit_editor(int p_exit_code) {
 	exiting = true;
 	resource_preview->stop(); // stop early to avoid crashes
 	_save_docks();
@@ -3008,7 +3009,7 @@ void EditorNode::_exit_editor() {
 	// Dim the editor window while it's quitting to make it clearer that it's busy
 	dim_editor(true);
 
-	get_tree()->quit();
+	get_tree()->quit(p_exit_code);
 }
 
 void EditorNode::_discard_changes(const String &p_str) {
@@ -3058,12 +3059,12 @@ void EditorNode::_discard_changes(const String &p_str) {
 		} break;
 		case FILE_QUIT: {
 			_menu_option_confirm(RUN_STOP, true);
-			_exit_editor();
+			_exit_editor(EXIT_SUCCESS);
 
 		} break;
 		case RUN_PROJECT_MANAGER: {
 			_menu_option_confirm(RUN_STOP, true);
-			_exit_editor();
+			_exit_editor(EXIT_SUCCESS);
 			String exec = OS::get_singleton()->get_executable_path();
 
 			List<String> args;
