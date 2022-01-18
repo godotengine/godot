@@ -3639,7 +3639,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			if (track_path == np) {
 				value = p_value; //all good
 			} else {
-				int sep = track_path.find_last(":");
+				int sep = track_path.rfind(":");
 				if (sep != -1) {
 					String base_path = track_path.substr(0, sep);
 					if (base_path == np) {
@@ -3738,7 +3738,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 				value = p_value; //all good
 			} else {
 				String tpath = animation->track_get_path(i);
-				int index = tpath.find_last(":");
+				int index = tpath.rfind(":");
 				if (NodePath(tpath.substr(0, index + 1)) == np) {
 					String subindex = tpath.substr(index + 1, tpath.length() - index);
 					value = p_value.get(subindex);

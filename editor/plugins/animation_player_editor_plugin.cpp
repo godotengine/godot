@@ -722,11 +722,11 @@ void AnimationPlayerEditor::_dialog_action(String p_file) {
 			Ref<Resource> res = ResourceLoader::load(p_file, "Animation");
 			ERR_FAIL_COND_MSG(res.is_null(), "Cannot load Animation from file '" + p_file + "'.");
 			ERR_FAIL_COND_MSG(!res->is_class("Animation"), "Loaded resource from file '" + p_file + "' is not Animation.");
-			if (p_file.find_last("/") != -1) {
-				p_file = p_file.substr(p_file.find_last("/") + 1, p_file.length());
+			if (p_file.rfind("/") != -1) {
+				p_file = p_file.substr(p_file.rfind("/") + 1, p_file.length());
 			}
-			if (p_file.find_last("\\") != -1) {
-				p_file = p_file.substr(p_file.find_last("\\") + 1, p_file.length());
+			if (p_file.rfind("\\") != -1) {
+				p_file = p_file.substr(p_file.rfind("\\") + 1, p_file.length());
 			}
 
 			if (p_file.find(".") != -1) {
