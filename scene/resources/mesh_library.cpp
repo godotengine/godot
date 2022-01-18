@@ -30,6 +30,8 @@
 
 #include "mesh_library.h"
 
+#include "box_shape.h"
+
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 	if (name.begins_with("item/")) {
@@ -254,12 +256,35 @@ int MeshLibrary::get_last_unused_item_id() const {
 }
 
 void MeshLibrary::_set_item_shapes(int p_item, const Array &p_shapes) {
-	ERR_FAIL_COND(p_shapes.size() & 1);
+	Array arr_shapes = p_shapes;
+	int size = p_shapes.size();
+	if (size & 1) {
+		ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+		int prev_size = item_map[p_item].shapes.size() * 2;
+
+		if (prev_size < size) {
+			// Check if last element is a shape.
+			Ref<Shape> shape = arr_shapes[size - 1];
+			if (shape.is_null()) {
+				Ref<BoxShape> box_shape;
+				box_shape.instance();
+				arr_shapes[size - 1] = box_shape;
+			}
+
+			// Make sure the added element is a Transform.
+			arr_shapes.push_back(Transform());
+			size++;
+		} else {
+			size--;
+			arr_shapes.resize(size);
+		}
+	}
+
 	Vector<ShapeData> shapes;
-	for (int i = 0; i < p_shapes.size(); i += 2) {
+	for (int i = 0; i < size; i += 2) {
 		ShapeData sd;
-		sd.shape = p_shapes[i + 0];
-		sd.local_transform = p_shapes[i + 1];
+		sd.shape = arr_shapes[i + 0];
+		sd.local_transform = arr_shapes[i + 1];
 
 		if (sd.shape.is_valid()) {
 			shapes.push_back(sd);
