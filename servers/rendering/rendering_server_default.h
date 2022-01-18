@@ -907,7 +907,7 @@ public:
 
 	virtual double get_frame_setup_time_cpu() const override;
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) override;
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter = true) override;
 	virtual void set_default_clear_color(const Color &p_color) override;
 
 	virtual bool has_feature(Features p_feature) const override;
