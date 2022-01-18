@@ -24,6 +24,46 @@
 				Clears the server from all translations.
 			</description>
 		</method>
+		<method name="compare_locales" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="locale_a" type="String" />
+			<argument index="1" name="locale_b" type="String" />
+			<description>
+				Compares two locales and return similarity score between [code]0[/code](no match) and [code]10[/code](full match).
+			</description>
+		</method>
+		<method name="get_all_countries" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of known country codes.
+			</description>
+		</method>
+		<method name="get_all_languages" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of known language codes.
+			</description>
+		</method>
+		<method name="get_all_scripts" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of known script codes.
+			</description>
+		</method>
+		<method name="get_country_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="country" type="String" />
+			<description>
+				Returns readable country name for the [code]country[/code] code.
+			</description>
+		</method>
+		<method name="get_language_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="language" type="String" />
+			<description>
+				Returns readable language name for the [code]language[/code] code.
+			</description>
+		</method>
 		<method name="get_loaded_locales" qualifiers="const">
 			<return type="Array" />
 			<description>
@@ -42,6 +82,13 @@
 			<argument index="0" name="locale" type="String" />
 			<description>
 				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
+			</description>
+		</method>
+		<method name="get_script_name" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="script" type="String" />
+			<description>
+				Returns readable script name for the [code]script[/code] code.
 			</description>
 		</method>
 		<method name="get_translation_object">
@@ -78,6 +125,13 @@
 			<description>
 				Sets the locale of the project. The [code]locale[/code] string will be standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
 				If translations have been loaded beforehand for the new locale, they will be applied.
+			</description>
+		</method>
+		<method name="standardize_locale" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="locale" type="String" />
+			<description>
+				Retunrs [code]locale[/code] string standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">

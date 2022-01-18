@@ -33,6 +33,7 @@
 
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_locale_dialog.h"
 
 #include "editor/import/resource_importer_dynamicfont.h"
 
@@ -66,6 +67,9 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 	Ref<DynamicFontImportSettingsData> import_settings_data;
 	List<ResourceImporter::ImportOption> options_variations;
 	List<ResourceImporter::ImportOption> options_general;
+
+	EditorLocaleDialog *locale_select;
+	Vector<String> script_codes;
 
 	// Root layout
 	Label *label_warn = nullptr;
@@ -122,7 +126,6 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 	Button *add_script = nullptr;
 	Button *add_ot = nullptr;
 
-	PopupMenu *menu_langs = nullptr;
 	PopupMenu *menu_scripts = nullptr;
 	PopupMenu *menu_ot = nullptr;
 	PopupMenu *menu_ot_ss = nullptr;
@@ -142,7 +145,7 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 	Label *label_ot = nullptr;
 
 	void _lang_add();
-	void _lang_add_item(int p_option);
+	void _lang_add_item(const String &p_locale);
 	void _lang_remove(Object *p_item, int p_column, int p_id);
 
 	void _script_add();

@@ -32,6 +32,7 @@
 #define PROPERTY_EDITOR_H
 
 #include "editor/editor_file_dialog.h"
+#include "editor/editor_locale_dialog.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
@@ -97,6 +98,7 @@ class CustomPropertyEditor : public PopupPanel {
 	PopupMenu *menu;
 	SceneTreeDialog *scene_tree;
 	EditorFileDialog *file;
+	EditorLocaleDialog *locale;
 	ConfirmationDialog *error;
 	String name;
 	Variant::Type type;
@@ -136,6 +138,7 @@ class CustomPropertyEditor : public PopupPanel {
 
 	void _text_edit_changed();
 	void _file_selected(String p_file);
+	void _locale_selected(String p_locale);
 	void _modified(String p_string);
 
 	real_t _parse_real_expression(String text);

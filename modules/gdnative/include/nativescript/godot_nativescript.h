@@ -79,6 +79,7 @@ typedef enum {
 	GODOT_PROPERTY_HINT_PROPERTY_OF_BASE_TYPE, ///< a property of a base type
 	GODOT_PROPERTY_HINT_PROPERTY_OF_INSTANCE, ///< a property of an instance
 	GODOT_PROPERTY_HINT_PROPERTY_OF_SCRIPT, ///< a property of a script & base
+	GODOT_PROPERTY_HINT_LOCALE_ID,
 	GODOT_PROPERTY_HINT_MAX,
 } godot_nativescript_property_hint;
 
