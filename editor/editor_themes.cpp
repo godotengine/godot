@@ -1123,6 +1123,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("margin_bottom", "MarginContainer", 0);
 	theme->set_constant("hseparation", "GridContainer", default_margin_size * EDSCALE);
 	theme->set_constant("vseparation", "GridContainer", default_margin_size * EDSCALE);
+	theme->set_constant("hseparation", "FlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("vseparation", "FlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("hseparation", "HFlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("vseparation", "HFlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("hseparation", "VFlowContainer", default_margin_size * EDSCALE);
+	theme->set_constant("vseparation", "VFlowContainer", default_margin_size * EDSCALE);
 
 	// Window
 
