@@ -445,8 +445,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
+			bool was_empty = false;
 			if (!node_clipboard.is_empty()) {
 				_clear_clipboard();
+			} else {
+				was_empty = true;
 			}
 			clipboard_source_scene = editor->get_edited_scene()->get_scene_file_path();
 
@@ -464,81 +467,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (p_tool == TOOL_CUT) {
 				_delete_confirm(true);
 			}
+
+			if (was_empty) {
+				_update_create_root_dialog();
+			}
 		} break;
 		case TOOL_PASTE: {
-			if (node_clipboard.is_empty() || !edited_scene) {
-				break;
-			}
-
-			bool has_cycle = false;
-			if (!edited_scene->get_scene_file_path().is_empty()) {
-				for (Node *E : node_clipboard) {
-					if (edited_scene->get_scene_file_path() == E->get_scene_file_path()) {
-						has_cycle = true;
-						break;
-					}
-				}
-			}
-
-			if (has_cycle) {
-				current_option = -1;
-				accept->set_text(TTR("Can't paste root node into the same scene."));
-				accept->popup_centered();
-				break;
-			}
-
-			Node *paste_parent = edited_scene;
-			List<Node *> selection = editor_selection->get_selected_node_list();
-			if (selection.size() > 0) {
-				paste_parent = selection.back()->get();
-			}
-
-			Node *owner = paste_parent->get_owner();
-			if (!owner) {
-				owner = paste_parent;
-			}
-
-			editor_data->get_undo_redo().create_action(TTR("Paste Node(s)"));
-			editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
-
-			Map<RES, RES> resource_remap;
-			String target_scene = editor->get_edited_scene()->get_scene_file_path();
-			if (target_scene != clipboard_source_scene) {
-				if (!clipboard_resource_remap.has(target_scene)) {
-					Map<RES, RES> remap;
-					for (Node *E : node_clipboard) {
-						_create_remap_for_node(E, remap);
-					}
-					clipboard_resource_remap[target_scene] = remap;
-				}
-				resource_remap = clipboard_resource_remap[target_scene];
-			}
-
-			for (Node *node : node_clipboard) {
-				Map<const Node *, Node *> duplimap;
-
-				Node *dup = node->duplicate_from_editor(duplimap, resource_remap);
-
-				ERR_CONTINUE(!dup);
-
-				editor_data->get_undo_redo().add_do_method(paste_parent, "add_child", dup, true);
-
-				for (KeyValue<const Node *, Node *> &E2 : duplimap) {
-					Node *d = E2.value;
-					editor_data->get_undo_redo().add_do_method(d, "set_owner", owner);
-				}
-
-				editor_data->get_undo_redo().add_do_method(dup, "set_owner", owner);
-				editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", dup);
-				editor_data->get_undo_redo().add_undo_method(paste_parent, "remove_child", dup);
-				editor_data->get_undo_redo().add_do_reference(dup);
-
-				if (node_clipboard.size() == 1) {
-					editor_data->get_undo_redo().add_do_method(editor, "push_item", dup);
-				}
-			}
-
-			editor_data->get_undo_redo().commit_action();
+			paste_nodes();
 		} break;
 		case TOOL_REPLACE: {
 			if (!profile_allow_editing) {
@@ -1306,6 +1241,12 @@ void SceneTreeDock::_notification(int p_what) {
 			button_custom->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_custom->connect("pressed", callable_bind(callable_mp(this, &SceneTreeDock::_tool_selected), TOOL_NEW, false));
 
+			button_clipboard = memnew(Button);
+			node_shortcuts->add_child(button_clipboard);
+			button_clipboard->set_text(TTR("Paste From Clipboard"));
+			button_clipboard->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
+			button_clipboard->connect("pressed", callable_bind(callable_mp(this, &SceneTreeDock::_tool_selected), TOOL_PASTE, false));
+
 			node_shortcuts->add_spacer();
 			create_root_dialog->add_child(node_shortcuts);
 			_update_create_root_dialog();
@@ -1330,6 +1271,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_3d->set_icon(get_theme_icon(SNAME("Node3D"), SNAME("EditorIcons")));
 			button_ui->set_icon(get_theme_icon(SNAME("Control"), SNAME("EditorIcons")));
 			button_custom->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			button_clipboard->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
 
 			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter->set_clear_button_enabled(true);
@@ -2740,10 +2682,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 
 	if (profile_allow_editing) {
-		menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
-		menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/copy_node"), TOOL_COPY);
+		menu->add_icon_shortcut(get_theme_icon(SNAME("ActionCut"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
+		menu->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/copy_node"), TOOL_COPY);
 		if (selection.size() == 1 && !node_clipboard.is_empty()) {
-			menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
 		}
 		menu->add_separator();
 	}
@@ -3022,6 +2964,108 @@ void SceneTreeDock::open_instance_child_dialog() {
 	_tool_selected(TOOL_INSTANTIATE, true);
 }
 
+List<Node *> SceneTreeDock::paste_nodes() {
+	List<Node *> pasted_nodes;
+
+	if (node_clipboard.is_empty()) {
+		return pasted_nodes;
+	}
+
+	bool has_cycle = false;
+	if (edited_scene && !edited_scene->get_scene_file_path().is_empty()) {
+		for (Node *E : node_clipboard) {
+			if (edited_scene->get_scene_file_path() == E->get_scene_file_path()) {
+				has_cycle = true;
+				break;
+			}
+		}
+	}
+
+	if (has_cycle) {
+		current_option = -1;
+		accept->set_text(TTR("Can't paste root node into the same scene."));
+		accept->popup_centered();
+		return pasted_nodes;
+	}
+
+	Node *paste_parent = edited_scene;
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	if (selection.size() > 0) {
+		paste_parent = selection.back()->get();
+	}
+
+	Node *owner = nullptr;
+	if (paste_parent) {
+		owner = paste_parent->get_owner();
+	}
+	if (!owner) {
+		owner = paste_parent;
+	}
+
+	UndoRedo &ur = editor_data->get_undo_redo();
+	ur.create_action(TTR("Paste Node(s)"));
+	ur.add_do_method(editor_selection, "clear");
+
+	Map<RES, RES> resource_remap;
+	String target_scene;
+	if (edited_scene) {
+		target_scene = edited_scene->get_scene_file_path();
+	}
+	if (target_scene != clipboard_source_scene) {
+		if (!clipboard_resource_remap.has(target_scene)) {
+			Map<RES, RES> remap;
+			for (Node *E : node_clipboard) {
+				_create_remap_for_node(E, remap);
+			}
+			clipboard_resource_remap[target_scene] = remap;
+		}
+		resource_remap = clipboard_resource_remap[target_scene];
+	}
+
+	for (Node *node : node_clipboard) {
+		Map<const Node *, Node *> duplimap;
+
+		Node *dup = node->duplicate_from_editor(duplimap, resource_remap);
+		ERR_CONTINUE(!dup);
+
+		pasted_nodes.push_back(dup);
+
+		if (!paste_parent) {
+			paste_parent = dup;
+			owner = dup;
+			ur.add_do_method(editor, "set_edited_scene", dup);
+		} else {
+			ur.add_do_method(paste_parent, "add_child", dup, true);
+		}
+
+		for (KeyValue<const Node *, Node *> &E2 : duplimap) {
+			Node *d = E2.value;
+			if (d != dup) {
+				ur.add_do_method(d, "set_owner", owner);
+			}
+		}
+
+		if (dup != owner) {
+			ur.add_do_method(dup, "set_owner", owner);
+		}
+		ur.add_do_method(editor_selection, "add_node", dup);
+
+		if (dup == paste_parent) {
+			ur.add_undo_method(editor, "set_edited_scene", (Object *)nullptr);
+		} else {
+			ur.add_undo_method(paste_parent, "remove_child", dup);
+		}
+		ur.add_do_reference(dup);
+
+		if (node_clipboard.size() == 1) {
+			ur.add_do_method(editor, "push_item", dup);
+		}
+	}
+
+	ur.commit_action();
+	return pasted_nodes;
+}
+
 void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
 	ERR_FAIL_COND(remote_tree != nullptr);
 	add_child(p_remote);
@@ -3121,6 +3165,7 @@ void SceneTreeDock::_update_create_root_dialog() {
 			beginner_nodes->show();
 			favorite_nodes->hide();
 		}
+		button_clipboard->set_visible(!node_clipboard.is_empty());
 	}
 }
 
