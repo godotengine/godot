@@ -1219,7 +1219,22 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
 	theme->set_stylebox("normal", "RichTextLabel", style_tree_bg);
 
+	// Editor help.
+	theme->set_color("title_color", "EditorHelp", accent_color);
 	theme->set_color("headline_color", "EditorHelp", mono_color);
+	theme->set_color("text_color", "EditorHelp", font_color);
+	theme->set_color("comment_color", "EditorHelp", font_color * Color(1, 1, 1, 0.6));
+	theme->set_color("symbol_color", "EditorHelp", font_color * Color(1, 1, 1, 0.6));
+	theme->set_color("value_color", "EditorHelp", font_color * Color(1, 1, 1, 0.6));
+	theme->set_color("qualifier_color", "EditorHelp", font_color * Color(1, 1, 1, 0.8));
+	theme->set_color("type_color", "EditorHelp", accent_color.lerp(font_color, 0.5));
+	theme->set_color("selection_color", "EditorHelp", accent_color * Color(1, 1, 1, 0.4));
+	theme->set_color("link_color", "EditorHelp", accent_color.lerp(mono_color, 0.8));
+	theme->set_color("code_color", "EditorHelp", accent_color.lerp(mono_color, 0.6));
+	theme->set_color("kbd_color", "EditorHelp", accent_color.lerp(property_color, 0.6));
+	theme->set_constant("line_separation", "EditorHelp", Math::round(6 * EDSCALE));
+	theme->set_constant("table_hseparation", "EditorHelp", 16 * EDSCALE);
+	theme->set_constant("table_vseparation", "EditorHelp", 6 * EDSCALE);
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4, corner_width));

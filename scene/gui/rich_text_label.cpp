@@ -325,13 +325,16 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 						table->columns.write[column].width = MAX(table->columns.write[column].width, ceil(frame->lines[i].text_buf->get_size().x));
 
 						if (i > 0) {
-							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y;
+							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
 						} else {
 							frame->lines.write[i].offset.y = 0;
 						}
 						frame->lines.write[i].offset += offset;
 
-						float h = frame->lines[i].text_buf->get_size().y;
+						float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * get_theme_constant(SNAME("line_separation"));
+						if (i > 0) {
+							h += get_theme_constant(SNAME("line_separation"));
+						}
 						if (frame->min_size_over.y > 0) {
 							h = MAX(h, frame->min_size_over.y);
 						}
@@ -570,13 +573,16 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 						table->columns.write[column].width = MAX(table->columns.write[column].width, ceil(frame->lines[i].text_buf->get_size().x));
 
 						if (i > 0) {
-							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y;
+							frame->lines.write[i].offset.y = frame->lines[i - 1].offset.y + frame->lines[i - 1].text_buf->get_size().y + get_theme_constant(SNAME("line_separation"));
 						} else {
 							frame->lines.write[i].offset.y = 0;
 						}
 						frame->lines.write[i].offset += offset;
 
-						float h = frame->lines[i].text_buf->get_size().y;
+						float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * get_theme_constant(SNAME("line_separation"));
+						if (i > 0) {
+							h += get_theme_constant(SNAME("line_separation"));
+						}
 						if (frame->min_size_over.y > 0) {
 							h = MAX(h, frame->min_size_over.y);
 						}
@@ -622,10 +628,11 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 }
 
 int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs) {
-	Vector2 off;
-
 	ERR_FAIL_COND_V(p_frame == nullptr, 0);
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= p_frame->lines.size(), 0);
+
+	Vector2 off;
+	int line_spacing = get_theme_constant(SNAME("line_separation"));
 
 	Line &l = p_frame->lines.write[p_line];
 
@@ -712,6 +719,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	Size2 ctrl_size = get_size();
 	// Draw text.
 	for (int line = 0; line < l.text_buf->get_line_count(); line++) {
+		if (line > 0) {
+			off.y += line_spacing;
+		}
+
 		RID rid = l.text_buf->get_line_rid(line);
 		if (p_ofs.y + off.y >= ctrl_size.height) {
 			break;

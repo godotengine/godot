@@ -44,18 +44,25 @@
 
 DocTools *EditorHelp::doc = nullptr;
 
-void EditorHelp::_init_colors() {
-	title_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-	text_color = get_theme_color(SNAME("default_color"), SNAME("RichTextLabel"));
-	headline_color = get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
-	base_type_color = title_color.lerp(text_color, 0.5);
-	comment_color = text_color * Color(1, 1, 1, 0.6);
-	symbol_color = comment_color;
-	value_color = text_color * Color(1, 1, 1, 0.6);
-	qualifier_color = text_color * Color(1, 1, 1, 0.8);
-	type_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")).lerp(text_color, 0.5);
-	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
-	class_desc->add_theme_constant_override("line_separation", Math::round(5 * EDSCALE));
+void EditorHelp::_update_theme() {
+	text_color = get_theme_color("text_color", "EditorHelp");
+	title_color = get_theme_color("title_color", "EditorHelp");
+	headline_color = get_theme_color("headline_color", "EditorHelp");
+	comment_color = get_theme_color("comment_color", "EditorHelp");
+	symbol_color = get_theme_color("symbol_color", "EditorHelp");
+	value_color = get_theme_color("value_color", "EditorHelp");
+	qualifier_color = get_theme_color("qualifier_color", "EditorHelp");
+	type_color = get_theme_color("type_color", "EditorHelp");
+
+	class_desc->add_theme_color_override("selection_color", get_theme_color("selection_color", "EditorHelp"));
+	class_desc->add_theme_constant_override("line_separation", get_theme_constant("line_separation", "EditorHelp"));
+	class_desc->add_theme_constant_override("table_hseparation", get_theme_constant("table_hseparation", "EditorHelp"));
+	class_desc->add_theme_constant_override("table_vseparation", get_theme_constant("table_vseparation", "EditorHelp"));
+
+	doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
+	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+	doc_title_font = get_theme_font(SNAME("doc_title"), SNAME("EditorFonts"));
+	doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 }
 
 void EditorHelp::_search(bool p_search_previous) {
@@ -184,8 +191,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 			t = p_enum.get_slice(".", 0);
 		}
 	}
-	const Color text_color = get_theme_color(SNAME("default_color"), SNAME("RichTextLabel"));
-	const Color type_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")).lerp(text_color, 0.5);
+
 	class_desc->push_color(type_color);
 	bool add_array = false;
 	if (can_ref) {
@@ -496,15 +502,10 @@ void EditorHelp::_update_doc() {
 	method_line.clear();
 	section_line.clear();
 
-	_init_colors();
-
-	DocData::ClassDoc cd = doc->class_list[edited_class]; //make a copy, so we can sort without worrying
-
-	Ref<Font> doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
-	Ref<Font> doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
-	Ref<Font> doc_title_font = get_theme_font(SNAME("doc_title"), SNAME("EditorFonts"));
-	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+	_update_theme();
 	String link_color_text = title_color.to_html(false);
+
+	DocData::ClassDoc cd = doc->class_list[edited_class]; // Make a copy, so we can sort without worrying.
 
 	// Class name
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
@@ -1476,11 +1477,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	Ref<Font> doc_kbd_font = p_rt->get_theme_font(SNAME("doc_keyboard"), SNAME("EditorFonts"));
 
 	Color headline_color = p_rt->get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
-	Color accent_color = p_rt->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-	Color property_color = p_rt->get_theme_color(SNAME("property_color"), SNAME("Editor"));
-	Color link_color = accent_color.lerp(headline_color, 0.8);
-	Color code_color = accent_color.lerp(headline_color, 0.6);
-	Color kbd_color = accent_color.lerp(property_color, 0.6);
+	Color link_color = p_rt->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
+	Color code_color = p_rt->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
+	Color kbd_color = p_rt->get_theme_color(SNAME("kbd_color"), SNAME("EditorHelp"));
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 
@@ -1941,16 +1940,16 @@ void EditorHelpBit::_bind_methods() {
 
 void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
+		} break;
+
 		case NOTIFICATION_READY: {
 			rich_text->clear();
 			_add_text_to_rt(text, rich_text);
 
 		} break;
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
-		} break;
-		default:
-			break;
 	}
 }
 
@@ -1964,7 +1963,6 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
 	rich_text->connect("meta_clicked", callable_mp(this, &EditorHelpBit::_meta_clicked));
-	rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.4));
 	rich_text->set_override_selected_font_color(false);
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
 }
