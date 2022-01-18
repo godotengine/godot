@@ -6880,8 +6880,46 @@ VSplitContainer *Node3DEditor::get_shader_split() {
 	return shader_split;
 }
 
-HSplitContainer *Node3DEditor::get_palette_split() {
-	return palette_split;
+void Node3DEditor::add_control_to_left_panel(Control *p_control) {
+	left_panel_split->add_child(p_control);
+	left_panel_split->move_child(p_control, 0);
+}
+
+void Node3DEditor::add_control_to_right_panel(Control *p_control) {
+	right_panel_split->add_child(p_control);
+	right_panel_split->move_child(p_control, 1);
+}
+
+void Node3DEditor::remove_control_from_left_panel(Control *p_control) {
+	left_panel_split->remove_child(p_control);
+}
+
+void Node3DEditor::remove_control_from_right_panel(Control *p_control) {
+	right_panel_split->remove_child(p_control);
+}
+
+void Node3DEditor::move_control_to_left_panel(Control *p_control) {
+	ERR_FAIL_NULL(p_control);
+	if (p_control->get_parent() == left_panel_split) {
+		return;
+	}
+
+	ERR_FAIL_COND(p_control->get_parent() != right_panel_split);
+	right_panel_split->remove_child(p_control);
+
+	add_control_to_left_panel(p_control);
+}
+
+void Node3DEditor::move_control_to_right_panel(Control *p_control) {
+	ERR_FAIL_NULL(p_control);
+	if (p_control->get_parent() == right_panel_split) {
+		return;
+	}
+
+	ERR_FAIL_COND(p_control->get_parent() != left_panel_split);
+	left_panel_split->remove_child(p_control);
+
+	add_control_to_right_panel(p_control);
 }
 
 void Node3DEditor::_request_gizmo(Object *p_obj) {
@@ -7534,13 +7572,17 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	/* REST OF MENU */
 
-	palette_split = memnew(HSplitContainer);
-	palette_split->set_v_size_flags(SIZE_EXPAND_FILL);
-	vbc->add_child(palette_split);
+	left_panel_split = memnew(HSplitContainer);
+	left_panel_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	vbc->add_child(left_panel_split);
+
+	right_panel_split = memnew(HSplitContainer);
+	right_panel_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	left_panel_split->add_child(right_panel_split);
 
 	shader_split = memnew(VSplitContainer);
 	shader_split->set_h_size_flags(SIZE_EXPAND_FILL);
-	palette_split->add_child(shader_split);
+	right_panel_split->add_child(shader_split);
 	viewport_base = memnew(Node3DEditorViewportContainer);
 	shader_split->add_child(viewport_base);
 	viewport_base->set_v_size_flags(SIZE_EXPAND_FILL);

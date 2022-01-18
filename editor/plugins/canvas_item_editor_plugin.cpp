@@ -5129,8 +5129,22 @@ void CanvasItemEditor::remove_control_from_menu_panel(Control *p_control) {
 	hbc_context_menu->remove_child(p_control);
 }
 
-HSplitContainer *CanvasItemEditor::get_palette_split() {
-	return palette_split;
+void CanvasItemEditor::add_control_to_left_panel(Control *p_control) {
+	left_panel_split->add_child(p_control);
+	left_panel_split->move_child(p_control, 0);
+}
+
+void CanvasItemEditor::add_control_to_right_panel(Control *p_control) {
+	right_panel_split->add_child(p_control);
+	right_panel_split->move_child(p_control, 1);
+}
+
+void CanvasItemEditor::remove_control_from_left_panel(Control *p_control) {
+	left_panel_split->remove_child(p_control);
+}
+
+void CanvasItemEditor::remove_control_from_right_panel(Control *p_control) {
+	right_panel_split->remove_child(p_control);
 }
 
 VSplitContainer *CanvasItemEditor::get_bottom_split() {
@@ -5221,12 +5235,16 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	add_child(bottom_split);
 	bottom_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	palette_split = memnew(HSplitContainer);
-	bottom_split->add_child(palette_split);
-	palette_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	left_panel_split = memnew(HSplitContainer);
+	bottom_split->add_child(left_panel_split);
+	left_panel_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	right_panel_split = memnew(HSplitContainer);
+	left_panel_split->add_child(right_panel_split);
+	right_panel_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	viewport_scrollable = memnew(Control);
-	palette_split->add_child(viewport_scrollable);
+	right_panel_split->add_child(viewport_scrollable);
 	viewport_scrollable->set_mouse_filter(MOUSE_FILTER_PASS);
 	viewport_scrollable->set_clip_contents(true);
 	viewport_scrollable->set_v_size_flags(Control::SIZE_EXPAND_FILL);
