@@ -42,6 +42,7 @@
 #include "core/templates/search_array.h"
 #include "core/templates/sort_array.h"
 
+#include <climits>
 #include <initializer_list>
 
 template <class T>
@@ -144,25 +145,29 @@ public:
 		return ret;
 	}
 
-	Vector<T> slice(int p_begin, int p_end) const {
+	Vector<T> slice(int p_begin, int p_end = INT_MAX) const {
 		Vector<T> result;
 
-		if (p_end < 0) {
-			p_end += size() + 1;
+		const int s = size();
+
+		int begin = CLAMP(p_begin, -s, s);
+		if (begin < 0) {
+			begin += s;
+		}
+		int end = CLAMP(p_end, -s, s);
+		if (end < 0) {
+			end += s;
 		}
 
-		ERR_FAIL_INDEX_V(p_begin, size(), result);
-		ERR_FAIL_INDEX_V(p_end, size() + 1, result);
+		ERR_FAIL_COND_V(begin > end, result);
 
-		ERR_FAIL_COND_V(p_begin > p_end, result);
-
-		int result_size = p_end - p_begin;
+		int result_size = end - begin;
 		result.resize(result_size);
 
 		const T *const r = ptr();
 		T *const w = result.ptrw();
 		for (int i = 0; i < result_size; ++i) {
-			w[i] = r[p_begin + i];
+			w[i] = r[begin + i];
 		}
 
 		return result;

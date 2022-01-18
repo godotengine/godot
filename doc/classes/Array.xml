@@ -445,13 +445,14 @@
 		<method name="slice" qualifiers="const">
 			<return type="Array" />
 			<argument index="0" name="begin" type="int" />
-			<argument index="1" name="end" type="int" />
+			<argument index="1" name="end" type="int" default="2147483647" />
 			<argument index="2" name="step" type="int" default="1" />
 			<argument index="3" name="deep" type="bool" default="false" />
 			<description>
 				Returns the slice of the [Array], from [code]begin[/code] (inclusive) to [code]end[/code] (exclusive), as a new [Array].
-				If [code]end[/code] is negative, it will be relative to the end of the array.
-				If specified, [code]step[/code] is the relative index between source elements.
+				The absolute value of [code]begin[/code] and [code]end[/code] will be clamped to the array size, so the default value for [code]end[/code] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [code]begin[/code] or [code]end[/code] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
+				If specified, [code]step[/code] is the relative index between source elements. It can be negative, then [code]begin[/code] must be higher than [code]end[/code]. For example, [code][0, 1, 2, 3, 4, 5].slice(5, 1, -2)[/code] returns [code][5, 3][/code]).
 				If [code]deep[/code] is true, each element will be copied by value rather than by reference.
 			</description>
 		</method>
