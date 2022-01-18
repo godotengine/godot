@@ -613,6 +613,8 @@ Files extracted from upstream source:
 See `thorvg/update-thorvg.sh` for extraction instructions. Set the version
 number and run the script.
 
+Patches in the `patches` directory should be re-applied after updates.
+
 
 ## vhacd
 

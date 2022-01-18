@@ -1,0 +1,73 @@
+diff --git a/thirdparty/thorvg/src/loaders/svg/tvgSvgLoader.cpp b/thirdparty/thorvg/src/loaders/svg/tvgSvgLoader.cpp
+index def8ae169a..cf103774c5 100644
+--- a/thirdparty/thorvg/src/loaders/svg/tvgSvgLoader.cpp
++++ b/thirdparty/thorvg/src/loaders/svg/tvgSvgLoader.cpp
+@@ -51,6 +51,7 @@
+ 
+ #define _USE_MATH_DEFINES       //Math Constants are not defined in Standard C/C++.
+ 
++#include <cstring>
+ #include <fstream>
+ #include <float.h>
+ #include <math.h>
+diff --git a/thirdparty/thorvg/src/loaders/svg/tvgSvgPath.cpp b/thirdparty/thorvg/src/loaders/svg/tvgSvgPath.cpp
+index 2b62315de8..32685ee620 100644
+--- a/thirdparty/thorvg/src/loaders/svg/tvgSvgPath.cpp
++++ b/thirdparty/thorvg/src/loaders/svg/tvgSvgPath.cpp
+@@ -50,6 +50,7 @@
+ 
+ #define _USE_MATH_DEFINES       //Math Constants are not defined in Standard C/C++.
+ 
++#include <cstring>
+ #include <math.h>
+ #include <clocale>
+ #include <ctype.h>
+diff --git a/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp b/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp
+index 8701fe32b1..ae17634f31 100644
+--- a/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp
++++ b/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp
+@@ -49,6 +49,7 @@
+ */
+ 
+ 
++#include <cstring>
+ #include <string>
+ #include "tvgMath.h"
+ #include "tvgSvgLoaderCommon.h"
+diff --git a/thirdparty/thorvg/src/loaders/svg/tvgSvgUtil.cpp b/thirdparty/thorvg/src/loaders/svg/tvgSvgUtil.cpp
+index d5b9cdcf7b..9f269b29a2 100644
+--- a/thirdparty/thorvg/src/loaders/svg/tvgSvgUtil.cpp
++++ b/thirdparty/thorvg/src/loaders/svg/tvgSvgUtil.cpp
+@@ -20,6 +20,7 @@
+  * SOFTWARE.
+  */
+ 
++#include <cstring>
+ #include <math.h>
+ #include <memory.h>
+ #include "tvgSvgUtil.h"
+diff --git a/thirdparty/thorvg/src/loaders/svg/tvgXmlParser.cpp b/thirdparty/thorvg/src/loaders/svg/tvgXmlParser.cpp
+index 2e3d5928d9..1571aa4e25 100644
+--- a/thirdparty/thorvg/src/loaders/svg/tvgXmlParser.cpp
++++ b/thirdparty/thorvg/src/loaders/svg/tvgXmlParser.cpp
+@@ -20,6 +20,7 @@
+  * SOFTWARE.
+  */
+ 
++#include <cstring>
+ #include <ctype.h>
+ #include <string>
+ 
+diff --git a/thirdparty/thorvg/src/savers/tvg/tvgTvgSaver.cpp b/thirdparty/thorvg/src/savers/tvg/tvgTvgSaver.cpp
+index 9450d80e88..9dd57e5a89 100644
+--- a/thirdparty/thorvg/src/savers/tvg/tvgTvgSaver.cpp
++++ b/thirdparty/thorvg/src/savers/tvg/tvgTvgSaver.cpp
+@@ -24,6 +24,8 @@
+ #include "tvgTvgSaver.h"
+ #include "tvgLzw.h"
+ 
++#include <cstring>
++
+ #ifdef _WIN32
+     #include <malloc.h>
+ #else

@@ -49,6 +49,7 @@
 */
 
 
+#include <cstring>
 #include <string>
 #include "tvgMath.h"
 #include "tvgSvgLoaderCommon.h"

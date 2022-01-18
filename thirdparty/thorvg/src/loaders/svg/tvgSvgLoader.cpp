@@ -51,6 +51,7 @@
 
 #define _USE_MATH_DEFINES       //Math Constants are not defined in Standard C/C++.
 
+#include <cstring>
 #include <fstream>
 #include <float.h>
 #include <math.h>
