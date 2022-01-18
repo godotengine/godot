@@ -2091,6 +2091,7 @@ bool Main::start() {
 		GLOBAL_DEF("mono/runtime/unhandled_exception_policy", 0);
 #endif
 
+		Error err;
 		DocTools doc;
 		doc.generate(doc_base);
 
@@ -2112,34 +2113,42 @@ bool Main::start() {
 
 				// Create the module documentation directory if it doesn't exist
 				DirAccess *da = DirAccess::create_for_path(path);
-				da->make_dir_recursive(path);
+				err = da->make_dir_recursive(path);
 				memdelete(da);
+				ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create directory: " + path + ": " + itos(err));
 
-				docsrc.load_classes(path);
 				print_line("Loading docs from: " + path);
+				err = docsrc.load_classes(path);
+				ERR_FAIL_COND_V_MSG(err != OK, false, "Error loading docs from: " + path + ": " + itos(err));
 			}
 		}
 
 		String index_path = doc_tool_path.plus_file("doc/classes");
 		// Create the main documentation directory if it doesn't exist
 		DirAccess *da = DirAccess::create_for_path(index_path);
-		da->make_dir_recursive(index_path);
+		err = da->make_dir_recursive(index_path);
 		memdelete(da);
+		ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create index directory: " + index_path + ": " + itos(err));
 
-		docsrc.load_classes(index_path);
+		print_line("Loading classes from: " + index_path);
+		err = docsrc.load_classes(index_path);
+		ERR_FAIL_COND_V_MSG(err != OK, false, "Error loading classes from: " + index_path + ": " + itos(err));
 		checked_paths.insert(index_path);
-		print_line("Loading docs from: " + index_path);
 
 		print_line("Merging docs...");
 		doc.merge_from(docsrc);
+
 		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
 			print_line("Erasing old docs at: " + E->get());
-			DocTools::erase_classes(E->get());
+			err = DocTools::erase_classes(E->get());
+			ERR_FAIL_COND_V_MSG(err != OK, false, "Error erasing old docs at: " + E->get() + ": " + itos(err));
 		}
 
 		print_line("Generating new docs...");
-		doc.save_classes(index_path, doc_data_classes);
+		err = doc.save_classes(index_path, doc_data_classes);
+		ERR_FAIL_COND_V_MSG(err != OK, false, "Error saving new docs:" + itos(err));
 
+		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
 		return false;
 	}
 
