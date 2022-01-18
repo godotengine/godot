@@ -411,14 +411,10 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT: {
-			SpatialEditor::get_singleton()->get_palette_split()->add_child(p_control);
-			SpatialEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
-
+			SpatialEditor::get_singleton()->add_control_to_left_panel(p_control);
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
-			SpatialEditor::get_singleton()->get_palette_split()->add_child(p_control);
-			SpatialEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
-
+			SpatialEditor::get_singleton()->add_control_to_right_panel(p_control);
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
 			SpatialEditor::get_singleton()->get_shader_split()->add_child(p_control);
@@ -429,14 +425,10 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT: {
-			CanvasItemEditor::get_singleton()->get_palette_split()->add_child(p_control);
-			CanvasItemEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
-
+			CanvasItemEditor::get_singleton()->add_control_to_left_panel(p_control);
 		} break;
 		case CONTAINER_CANVAS_EDITOR_SIDE_RIGHT: {
-			CanvasItemEditor::get_singleton()->get_palette_split()->add_child(p_control);
-			CanvasItemEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
-
+			CanvasItemEditor::get_singleton()->add_control_to_right_panel(p_control);
 		} break;
 		case CONTAINER_CANVAS_EDITOR_BOTTOM: {
 			CanvasItemEditor::get_singleton()->get_bottom_split()->add_child(p_control);
@@ -471,10 +463,11 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 			SpatialEditor::get_singleton()->remove_control_from_menu_panel(p_control);
 
 		} break;
-		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT:
+		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT: {
+			SpatialEditor::get_singleton()->remove_control_from_left_panel(p_control);
+		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
-			SpatialEditor::get_singleton()->get_palette_split()->remove_child(p_control);
-
+			SpatialEditor::get_singleton()->remove_control_from_right_panel(p_control);
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
 			SpatialEditor::get_singleton()->get_shader_split()->remove_child(p_control);
@@ -484,10 +477,11 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 			CanvasItemEditor::get_singleton()->remove_control_from_menu_panel(p_control);
 
 		} break;
-		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT:
+		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT: {
+			CanvasItemEditor::get_singleton()->remove_control_from_left_panel(p_control);
+		} break;
 		case CONTAINER_CANVAS_EDITOR_SIDE_RIGHT: {
-			CanvasItemEditor::get_singleton()->get_palette_split()->remove_child(p_control);
-
+			CanvasItemEditor::get_singleton()->remove_control_from_right_panel(p_control);
 		} break;
 		case CONTAINER_CANVAS_EDITOR_BOTTOM: {
 			CanvasItemEditor::get_singleton()->get_bottom_split()->remove_child(p_control);

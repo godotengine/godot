@@ -584,7 +584,8 @@ private:
 	SpatialEditorViewportContainer *viewport_base;
 	SpatialEditorViewport *viewports[VIEWPORTS_COUNT];
 	VSplitContainer *shader_split;
-	HSplitContainer *palette_split;
+	HSplitContainer *left_panel_split;
+	HSplitContainer *right_panel_split;
 
 	/////
 
@@ -801,8 +802,16 @@ public:
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
 
+	void add_control_to_left_panel(Control *p_control);
+	void remove_control_from_left_panel(Control *p_control);
+
+	void add_control_to_right_panel(Control *p_control);
+	void remove_control_from_right_panel(Control *p_control);
+
+	void move_control_to_left_panel(Control *p_control);
+	void move_control_to_right_panel(Control *p_control);
+
 	VSplitContainer *get_shader_split();
-	HSplitContainer *get_palette_split();
 
 	Spatial *get_selected() { return selected; }
 
