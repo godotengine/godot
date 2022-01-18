@@ -211,9 +211,6 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			SL::ArrayNode *vnode = (SL::ArrayNode *)p_node;
 			code = vnode->name;
 		} break;
-		case SL::Node::TYPE_ARRAY_DECLARATION: {
-			// FIXME: Implement
-		} break;
 		case SL::Node::TYPE_ARRAY_CONSTRUCT: {
 			// FIXME: Implement
 		} break;

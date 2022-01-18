@@ -6428,17 +6428,23 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				return ERR_PARSE_ERROR;
 			}
 
-			Node *vardecl = nullptr;
 			int array_size = 0;
 			bool fixed_array_size = false;
 			bool first = true;
 
+			VariableDeclarationNode *vdnode = alloc_node<VariableDeclarationNode>();
+			vdnode->precision = precision;
+			if (is_struct) {
+				vdnode->struct_name = struct_name;
+				vdnode->datatype = TYPE_STRUCT;
+			} else {
+				vdnode->datatype = type;
+			};
+			vdnode->is_const = is_const;
+
 			do {
 				bool unknown_size = false;
-				Node *size_expr = nullptr;
-
-				ArrayDeclarationNode *anode = nullptr;
-				ArrayDeclarationNode::Declaration adecl;
+				VariableDeclarationNode::Declaration decl;
 
 				tk = _get_token();
 
@@ -6451,12 +6457,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					}
 
 					if (tk.type == TK_BRACKET_OPEN) {
-						Error error = _parse_array_size(p_block, p_function_info, false, &size_expr, &array_size, &unknown_size);
+						Error error = _parse_array_size(p_block, p_function_info, false, &decl.size_expression, &array_size, &unknown_size);
 						if (error != OK) {
 							return error;
 						}
-						adecl.single_expression = false;
-						adecl.size = array_size;
+						decl.size = array_size;
 
 						fixed_array_size = true;
 						tk = _get_token();
@@ -6476,8 +6481,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 						return ERR_PARSE_ERROR;
 					}
 				}
-
-				adecl.name = name;
+				decl.name = name;
 
 #ifdef DEBUG_ENABLED
 				if (check_warnings && HAS_WARNING(ShaderWarning::UNUSED_LOCAL_VARIABLE_FLAG)) {
@@ -6503,45 +6507,24 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 				tk = _get_token();
 
-				bool is_array_decl = var.array_size > 0 || unknown_size;
-
 				if (tk.type == TK_BRACKET_OPEN) {
 					if (RenderingServer::get_singleton()->is_low_end() && is_const) {
 						_set_error("Local const arrays are supported only on high-end platform!");
 						return ERR_PARSE_ERROR;
 					}
 
-					Error error = _parse_array_size(p_block, p_function_info, false, &size_expr, &var.array_size, &unknown_size);
+					Error error = _parse_array_size(p_block, p_function_info, false, &decl.size_expression, &var.array_size, &unknown_size);
 					if (error != OK) {
 						return error;
 					}
 
-					adecl.single_expression = false;
-					adecl.size = var.array_size;
+					decl.size = var.array_size;
 					array_size = var.array_size;
 
-					is_array_decl = true;
 					tk = _get_token();
 				}
 
-				if (is_array_decl) {
-					{
-						anode = alloc_node<ArrayDeclarationNode>();
-
-						if (is_struct) {
-							anode->struct_name = struct_name;
-							anode->datatype = TYPE_STRUCT;
-						} else {
-							anode->datatype = type;
-						}
-
-						anode->precision = precision;
-						anode->is_const = is_const;
-						anode->size_expression = size_expr;
-
-						vardecl = (Node *)anode;
-					}
-
+				if (var.array_size > 0 || unknown_size) {
 					bool full_def = false;
 
 					if (tk.type == TK_OP_ASSIGN) {
@@ -6562,7 +6545,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 								return ERR_PARSE_ERROR;
 							} else {
 								if (unknown_size) {
-									adecl.size = n->get_array_size();
+									decl.size = n->get_array_size();
 									var.array_size = n->get_array_size();
 								}
 
@@ -6570,8 +6553,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									return ERR_PARSE_ERROR;
 								}
 
-								adecl.single_expression = true;
-								adecl.initializer.push_back(n);
+								decl.single_expression = true;
+								decl.initializer.push_back(n);
 							}
 
 							tk = _get_token();
@@ -6685,7 +6668,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 										return ERR_PARSE_ERROR;
 									}
 
-									if (anode->is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+									if (is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
 										_set_error("Expected constant expression");
 										return ERR_PARSE_ERROR;
 									}
@@ -6696,13 +6679,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 									tk = _get_token();
 									if (tk.type == TK_COMMA) {
-										adecl.initializer.push_back(n);
+										decl.initializer.push_back(n);
 										continue;
 									} else if (!curly && tk.type == TK_PARENTHESIS_CLOSE) {
-										adecl.initializer.push_back(n);
+										decl.initializer.push_back(n);
 										break;
 									} else if (curly && tk.type == TK_CURLY_BRACKET_CLOSE) {
-										adecl.initializer.push_back(n);
+										decl.initializer.push_back(n);
 										break;
 									} else {
 										if (curly) {
@@ -6714,9 +6697,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 									}
 								}
 								if (unknown_size) {
-									adecl.size = adecl.initializer.size();
-									var.array_size = adecl.initializer.size();
-								} else if (adecl.initializer.size() != var.array_size) {
+									decl.size = decl.initializer.size();
+									var.array_size = decl.initializer.size();
+								} else if (decl.initializer.size() != var.array_size) {
 									_set_error("Array size mismatch");
 									return ERR_PARSE_ERROR;
 								}
@@ -6728,36 +6711,20 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 							_set_error("Expected array initialization");
 							return ERR_PARSE_ERROR;
 						}
-						if (anode->is_const) {
+						if (is_const) {
 							_set_error("Expected initialization of constant");
 							return ERR_PARSE_ERROR;
 						}
 					}
 
 					array_size = var.array_size;
-					anode->declarations.push_back(adecl);
 				} else if (tk.type == TK_OP_ASSIGN) {
-					VariableDeclarationNode *node = alloc_node<VariableDeclarationNode>();
-					if (is_struct) {
-						node->struct_name = struct_name;
-						node->datatype = TYPE_STRUCT;
-					} else {
-						node->datatype = type;
-					}
-					node->precision = precision;
-					node->is_const = is_const;
-					vardecl = (Node *)node;
-
-					VariableDeclarationNode::Declaration decl;
-					decl.name = name;
-					decl.initializer = nullptr;
-
 					//variable created with assignment! must parse an expression
 					Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 					if (!n) {
 						return ERR_PARSE_ERROR;
 					}
-					if (node->is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+					if (is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
 						OperatorNode *op = ((OperatorNode *)n);
 						for (int i = 1; i < op->arguments.size(); i++) {
 							if (!_check_node_constness(op->arguments[i])) {
@@ -6766,7 +6733,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 							}
 						}
 					}
-					decl.initializer = n;
 
 					if (n->type == Node::TYPE_CONSTANT) {
 						ConstantNode *const_node = static_cast<ConstantNode *>(n);
@@ -6778,31 +6744,17 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					if (!_compare_datatypes(var.type, var.struct_name, var.array_size, n->get_datatype(), n->get_datatype_name(), n->get_array_size())) {
 						return ERR_PARSE_ERROR;
 					}
+
+					decl.initializer.push_back(n);
 					tk = _get_token();
-					node->declarations.push_back(decl);
 				} else {
 					if (is_const) {
 						_set_error("Expected initialization of constant");
 						return ERR_PARSE_ERROR;
 					}
-
-					VariableDeclarationNode *node = alloc_node<VariableDeclarationNode>();
-					if (is_struct) {
-						node->struct_name = struct_name;
-						node->datatype = TYPE_STRUCT;
-					} else {
-						node->datatype = type;
-					}
-					node->precision = precision;
-					vardecl = (Node *)node;
-
-					VariableDeclarationNode::Declaration decl;
-					decl.name = name;
-					decl.initializer = nullptr;
-					node->declarations.push_back(decl);
 				}
 
-				p_block->statements.push_back(vardecl);
+				vdnode->declarations.push_back(decl);
 				p_block->variables[name] = var;
 
 				if (!fixed_array_size) {
@@ -6821,6 +6773,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					return ERR_PARSE_ERROR;
 				}
 			} while (tk.type == TK_COMMA); //another variable
+
+			p_block->statements.push_back((Node *)vdnode);
 		} else if (tk.type == TK_CURLY_BRACKET_OPEN) {
 			//a sub block, just because..
 			BlockNode *block = alloc_node<BlockNode>();
@@ -8337,7 +8291,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							if (constant.array_size > 0 || unknown_size) {
 								bool full_def = false;
 
-								ArrayDeclarationNode::Declaration decl;
+								VariableDeclarationNode::Declaration decl;
 								decl.name = name;
 								decl.size = constant.array_size;
 
