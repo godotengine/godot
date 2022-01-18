@@ -68,13 +68,13 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
 	void _zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);
 
-#ifdef OSX_ENABLED
 	bool use_codesign() const { return true; }
+#ifdef OSX_ENABLED
 	bool use_dmg() const { return true; }
 #else
-	bool use_codesign() const { return false; }
 	bool use_dmg() const { return false; }
 #endif
+
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
 		String pname = p_package;
 
@@ -113,6 +113,7 @@ public:
 			list.push_back("dmg");
 		}
 		list.push_back("zip");
+		list.push_back("app");
 		return list;
 	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
