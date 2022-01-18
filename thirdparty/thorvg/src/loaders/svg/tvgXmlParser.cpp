@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+#include <cstring>
 #include <ctype.h>
 #include <string>
 

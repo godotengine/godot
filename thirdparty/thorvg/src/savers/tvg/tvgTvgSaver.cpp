@@ -24,6 +24,8 @@
 #include "tvgTvgSaver.h"
 #include "tvgLzw.h"
 
+#include <cstring>
+
 #ifdef _WIN32
     #include <malloc.h>
 #else
