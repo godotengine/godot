@@ -73,6 +73,12 @@
 				Returns an array of [Transform3D] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in world space.
 			</description>
 		</method>
+		<method name="get_static_bodies_rids" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an array of [RID]s corresponding to the static bodies in each octant of the grid.
+			</description>
+		</method>
 		<method name="get_used_cells" qualifiers="const">
 			<return type="Array" />
 			<description>

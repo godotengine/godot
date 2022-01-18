@@ -33,6 +33,11 @@
 #include "collision_object_3d.h"
 #include "mesh_instance_3d.h"
 
+#include "modules/modules_enabled.gen.h" // For gridmap.
+#ifdef MODULE_GRIDMAP_ENABLED
+#include "modules/gridmap/grid_map.h"
+#endif
+
 void RayCast3D::set_target_position(const Vector3 &p_point) {
 	target_position = p_point;
 	update_gizmos();
@@ -246,10 +251,17 @@ void RayCast3D::add_exception_rid(const RID &p_rid) {
 void RayCast3D::add_exception(const Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_object);
-	if (!co) {
-		return;
+	if (co) {
+		add_exception_rid(co->get_rid());
+#ifdef MODULE_GRIDMAP_ENABLED
+	} else if (Object::cast_to<GridMap>(p_object)) {
+		const GridMap *gm = Object::cast_to<GridMap>(p_object);
+		Vector<RID> rids = gm->get_static_bodies_rids();
+		for (int i = 0; i < rids.size(); i++) {
+			add_exception_rid(rids[i]);
+		}
+#endif
 	}
-	add_exception_rid(co->get_rid());
 }
 
 void RayCast3D::remove_exception_rid(const RID &p_rid) {
