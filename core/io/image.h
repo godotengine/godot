@@ -399,6 +399,8 @@ public:
 		mipmaps = p_image->mipmaps;
 		data = p_image->data;
 	}
+
+	Dictionary compute_image_metrics(const Ref<Image> p_compared_image, bool p_luma_metric = true);
 };
 
 VARIANT_ENUM_CAST(Image::Format)
