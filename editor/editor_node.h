@@ -217,6 +217,12 @@ private:
 		TOOL_MENU_BASE = 1000
 	};
 
+	enum ScriptNameCasing {
+		SCENE_NAME_CASING_AUTO,
+		SCENE_NAME_CASING_PASCAL_CASE,
+		SCENE_NAME_CASING_SNAKE_CASE
+	};
+
 	Viewport *scene_root; //root of the scene being edited
 
 	PanelContainer *scene_root_parent;
