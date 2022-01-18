@@ -208,7 +208,7 @@
 			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED]. See [enum DisableMode] for more details about the different modes.
 		</member>
 		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" default="true">
-			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [code]collision_layer[/code] bit to be set.
+			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [member collision_layer] bit to be set.
 		</member>
 	</members>
 	<signals>
