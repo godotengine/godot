@@ -350,7 +350,7 @@ void DocTools::generate(bool p_basic_types) {
 		List<PropertyInfo> properties;
 		List<PropertyInfo> own_properties;
 		if (name == "ProjectSettings") {
-			//special case for project settings, so settings can be documented
+			// Special case for project settings, so settings can be documented.
 			ProjectSettings::get_singleton()->get_property_list(&properties);
 			own_properties = properties;
 		} else {
@@ -358,9 +358,12 @@ void DocTools::generate(bool p_basic_types) {
 			ClassDB::get_property_list(name, &own_properties, true);
 		}
 
+		properties.sort();
+		own_properties.sort();
+
 		List<PropertyInfo>::Element *EO = own_properties.front();
 		for (const PropertyInfo &E : properties) {
-			bool inherited = EO == nullptr;
+			bool inherited = true;
 			if (EO && EO->get() == E) {
 				inherited = false;
 				EO = EO->next();
