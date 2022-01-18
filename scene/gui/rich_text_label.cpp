@@ -254,7 +254,12 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				for (int i = 0; i < col_count; i++) {
 					remaining_width -= table->columns[i].min_width;
 					if (table->columns[i].max_width > table->columns[i].min_width) {
+						// If the column can grow, allow it to grow.
 						table->columns.write[i].expand = true;
+					} else {
+						// Otherwise make it shrink as much as possible, so that other columns can grow if needs be.
+						// We keep the max width as is to spread the remaining space between the columns later.
+						table->columns.write[i].min_width = 0;
 					}
 					if (table->columns[i].expand) {
 						total_ratio += table->columns[i].expand_ratio;
@@ -264,7 +269,7 @@ void RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				// Assign actual widths.
 				for (int i = 0; i < col_count; i++) {
 					table->columns.write[i].width = table->columns[i].min_width;
-					if (table->columns[i].expand && total_ratio > 0) {
+					if (table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
 						table->columns.write[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 					}
 					table->total_width += table->columns[i].width + hseparation;
@@ -502,7 +507,12 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				for (int i = 0; i < col_count; i++) {
 					remaining_width -= table->columns[i].min_width;
 					if (table->columns[i].max_width > table->columns[i].min_width) {
+						// If the column can grow, allow it to grow.
 						table->columns.write[i].expand = true;
+					} else {
+						// Otherwise make it shrink as much as possible, so that other columns can grow if needs be.
+						// We keep the max width as is to spread the remaining space between the columns later.
+						table->columns.write[i].min_width = 0;
 					}
 					if (table->columns[i].expand) {
 						total_ratio += table->columns[i].expand_ratio;
@@ -512,7 +522,7 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 				// Assign actual widths.
 				for (int i = 0; i < col_count; i++) {
 					table->columns.write[i].width = table->columns[i].min_width;
-					if (table->columns[i].expand && total_ratio > 0) {
+					if (table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
 						table->columns.write[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 					}
 					table->total_width += table->columns[i].width + hseparation;
