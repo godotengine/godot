@@ -496,13 +496,13 @@ bool Environment::is_sdfgi_enabled() const {
 	return sdfgi_enabled;
 }
 
-void Environment::set_sdfgi_cascades(SDFGICascades p_cascades) {
-	ERR_FAIL_INDEX(p_cascades, SDFGI_CASCADES_8 + 1);
+void Environment::set_sdfgi_cascades(int p_cascades) {
+	ERR_FAIL_COND_MSG(p_cascades < 1 || p_cascades > 8, "Invalid number of SDFGI cascades (must be between 1 and 8).");
 	sdfgi_cascades = p_cascades;
 	_update_sdfgi();
 }
 
-Environment::SDFGICascades Environment::get_sdfgi_cascades() const {
+int Environment::get_sdfgi_cascades() const {
 	return sdfgi_cascades;
 }
 
@@ -517,9 +517,7 @@ float Environment::get_sdfgi_min_cell_size() const {
 
 void Environment::set_sdfgi_max_distance(float p_distance) {
 	p_distance /= 64.0;
-	int cc[3] = { 4, 6, 8 };
-	int cascades = cc[sdfgi_cascades];
-	for (int i = 0; i < cascades; i++) {
+	for (int i = 0; i < sdfgi_cascades; i++) {
 		p_distance *= 0.5; //halve for each cascade
 	}
 	sdfgi_min_cell_size = p_distance;
@@ -529,9 +527,7 @@ void Environment::set_sdfgi_max_distance(float p_distance) {
 float Environment::get_sdfgi_max_distance() const {
 	float md = sdfgi_min_cell_size;
 	md *= 64.0;
-	int cc[3] = { 4, 6, 8 };
-	int cascades = cc[sdfgi_cascades];
-	for (int i = 0; i < cascades; i++) {
+	for (int i = 0; i < sdfgi_cascades; i++) {
 		md *= 2.0;
 	}
 	return md;
@@ -612,7 +608,7 @@ void Environment::_update_sdfgi() {
 	RS::get_singleton()->environment_set_sdfgi(
 			environment,
 			sdfgi_enabled,
-			RS::EnvironmentSDFGICascades(sdfgi_cascades),
+			sdfgi_cascades,
 			sdfgi_min_cell_size,
 			RS::EnvironmentSDFGIYScale(sdfgi_y_scale),
 			sdfgi_use_occlusion,
@@ -1303,7 +1299,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_use_occlusion"), "set_sdfgi_use_occlusion", "is_sdfgi_using_occlusion");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sdfgi_read_sky_light"), "set_sdfgi_read_sky_light", "is_sdfgi_reading_sky_light");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_bounce_feedback", PROPERTY_HINT_RANGE, "0,1.99,0.01"), "set_sdfgi_bounce_feedback", "get_sdfgi_bounce_feedback");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_cascades", PROPERTY_HINT_ENUM, "4 Cascades,6 Cascades,8 Cascades"), "set_sdfgi_cascades", "get_sdfgi_cascades");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdfgi_cascades", PROPERTY_HINT_RANGE, "1,8,1"), "set_sdfgi_cascades", "get_sdfgi_cascades");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_min_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_sdfgi_min_cell_size", "get_sdfgi_min_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_cascade0_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_cascade0_distance", "get_sdfgi_cascade0_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sdfgi_max_distance", PROPERTY_HINT_RANGE, "0.1,16384,0.1,or_greater"), "set_sdfgi_max_distance", "get_sdfgi_max_distance");
@@ -1479,10 +1475,6 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_SOFTLIGHT);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_REPLACE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_MIX);
-
-	BIND_ENUM_CONSTANT(SDFGI_CASCADES_4);
-	BIND_ENUM_CONSTANT(SDFGI_CASCADES_6);
-	BIND_ENUM_CONSTANT(SDFGI_CASCADES_8);
 
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_DISABLED);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);
