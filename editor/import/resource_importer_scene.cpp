@@ -370,16 +370,17 @@ static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r
 	}
 }
 
-Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map) {
-	// children first
+Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, List<Pair<NodePath, Node *>> &r_node_renames) {
+	// Children first.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _pre_fix_node(p_node->get_child(i), p_root, collision_map);
+		Node *r = _pre_fix_node(p_node->get_child(i), p_root, collision_map, r_node_renames);
 		if (!r) {
-			i--; //was erased
+			i--; // Was erased.
 		}
 	}
 
 	String name = p_node->get_name();
+	NodePath original_path = p_root->get_path_to(p_node); // Used to detect renames due to import hints.
 
 	bool isroot = p_node == p_root;
 
@@ -414,14 +415,21 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 	}
 
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
-		//remove animations referencing non-importable nodes
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
+
+		// Node paths in animation tracks are relative to the following path (this is used to fix node paths below).
+		Node *ap_root = ap->get_node(ap->get_root());
+		NodePath path_prefix = p_root->get_path_to(ap_root);
+
+		bool nodes_were_renamed = r_node_renames.size() != 0;
 
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
 		for (const StringName &E : anims) {
 			Ref<Animation> anim = ap->get_animation(E);
 			ERR_CONTINUE(anim.is_null());
+
+			// Remove animation tracks referencing non-importable nodes.
 			for (int i = 0; i < anim->get_track_count(); i++) {
 				NodePath path = anim->track_get_path(i);
 
@@ -431,6 +439,27 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 						anim->remove_track(i);
 						i--;
 						break;
+					}
+				}
+			}
+
+			// Fix node paths in animations, in case nodes were renamed earlier due to import hints.
+			if (nodes_were_renamed) {
+				for (int i = 0; i < anim->get_track_count(); i++) {
+					NodePath path = anim->track_get_path(i);
+					// Convert track path to absolute node path without subnames (some manual work because we are not in the scene tree).
+					Vector<StringName> absolute_path_names = path_prefix.get_names();
+					absolute_path_names.append_array(path.get_names());
+					NodePath absolute_path(absolute_path_names, false);
+					absolute_path.simplify();
+					// Fix paths to renamed nodes.
+					for (const Pair<NodePath, Node *> &F : r_node_renames) {
+						if (F.first == absolute_path) {
+							NodePath new_path(ap_root->get_path_to(F.second).get_names(), path.get_subnames(), false);
+							print_verbose(vformat("Fix: Correcting node path in animation track: %s should be %s", path, new_path));
+							anim->track_set_path(i, new_path);
+							break; // Only one match is possible.
+						}
 					}
 				}
 			}
@@ -452,13 +481,22 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 		if (isroot) {
 			return p_node;
 		}
+
+		String fixed_name;
+		if (_teststr(name, "colonly")) {
+			fixed_name = _fixstr(name, "colonly");
+		} else if (_teststr(name, "convcolonly")) {
+			fixed_name = _fixstr(name, "convcolonly");
+		}
+
+		ERR_FAIL_COND_V(fixed_name.is_empty(), nullptr);
+
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 		if (mi) {
 			Ref<ImporterMesh> mesh = mi->get_mesh();
 
 			if (mesh.is_valid()) {
 				Vector<Ref<Shape3D>> shapes;
-				String fixed_name;
 				if (collision_map.has(mesh)) {
 					shapes = collision_map[mesh];
 				} else if (_teststr(name, "colonly")) {
@@ -468,14 +506,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 					_pre_gen_shape_list(mesh, shapes, true);
 					collision_map[mesh] = shapes;
 				}
-
-				if (_teststr(name, "colonly")) {
-					fixed_name = _fixstr(name, "colonly");
-				} else if (_teststr(name, "convcolonly")) {
-					fixed_name = _fixstr(name, "convcolonly");
-				}
-
-				ERR_FAIL_COND_V(fixed_name.is_empty(), nullptr);
 
 				if (shapes.size()) {
 					StaticBody3D *col = memnew(StaticBody3D);
@@ -492,11 +522,11 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 		} else if (p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
 			StaticBody3D *sb = memnew(StaticBody3D);
-			sb->set_name(_fixstr(name, "colonly"));
+			sb->set_name(fixed_name);
 			Object::cast_to<Node3D>(sb)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
 			p_node->replace_by(sb);
 			memdelete(p_node);
-			p_node = nullptr;
+			p_node = sb;
 			CollisionShape3D *colshape = memnew(CollisionShape3D);
 			if (empty_draw_type == "CUBE") {
 				BoxShape3D *boxShape = memnew(BoxShape3D);
@@ -632,6 +662,14 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<I
 
 				_add_shapes(col, shapes);
 			}
+		}
+	}
+
+	if (p_node) {
+		NodePath new_path = p_root->get_path_to(p_node);
+		if (new_path != original_path) {
+			print_verbose(vformat("Fix: Renamed %s to %s", original_path, new_path));
+			r_node_renames.push_back({ original_path, p_node });
 		}
 	}
 
@@ -1828,8 +1866,8 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 	}
 
 	Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
-
-	_pre_fix_node(scene, scene, collision_map);
+	List<Pair<NodePath, Node *>> node_renames;
+	_pre_fix_node(scene, scene, collision_map, node_renames);
 
 	return scene;
 }
@@ -1904,8 +1942,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	Set<Ref<ImporterMesh>> scanned_meshes;
 	Map<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
+	List<Pair<NodePath, Node *>> node_renames;
 
-	_pre_fix_node(scene, scene, collision_map);
+	_pre_fix_node(scene, scene, collision_map, node_renames);
 
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->pre_process(scene, p_options);
