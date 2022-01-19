@@ -151,6 +151,7 @@ public:
 	virtual String get_locale() const;
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
+	virtual bool has_clipboard() const;
 	virtual String get_model_name() const;
 	virtual int get_screen_dpi(int p_screen = 0) const;
 

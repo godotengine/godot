@@ -423,6 +423,15 @@ String OS_Android::get_clipboard() const {
 	return OS_Unix::get_clipboard();
 }
 
+bool OS_Android::has_clipboard() const {
+	// DO we really need the fallback to OS_Unix here?!
+	if (godot_java->has_has_clipboard()) {
+		return godot_java->has_clipboard();
+	}
+
+	return OS_Unix::has_clipboard();
+}
+
 String OS_Android::get_model_name() const {
 	String model = godot_io_java->get_model();
 	if (model != "")

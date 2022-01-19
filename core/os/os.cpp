@@ -157,8 +157,13 @@ int OS::get_low_processor_usage_mode_sleep_usec() const {
 void OS::set_clipboard(const String &p_text) {
 	_local_clipboard = p_text;
 }
+
 String OS::get_clipboard() const {
 	return _local_clipboard;
+}
+
+bool OS::has_clipboard() const {
+	return !get_clipboard().empty();
 }
 
 String OS::get_executable_path() const {
