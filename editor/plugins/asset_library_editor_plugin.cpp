@@ -369,11 +369,11 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		download_error->set_text(TTR("Asset Download Error:") + "\n" + error_text);
 		download_error->popup_centered();
 		// Let the user retry the download.
-		retry->show();
+		retry_button->show();
 		return;
 	}
 
-	install->set_disabled(false);
+	install_button->set_disabled(false);
 	status->set_text(TTR("Success!"));
 	// Make the progress bar invisible but don't reflow other Controls around it.
 	progress->set_modulate(Color(0, 0, 0, 0));
@@ -381,7 +381,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	set_process(false);
 
 	// Automatically prompt for installation once the download is completed.
-	_install();
+	install();
 }
 
 void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash) {
@@ -400,8 +400,9 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
-			dismiss->set_normal_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("AssetLib")));
+			status->add_theme_color_override("font_color", get_theme_color(SNAME("status_color"), SNAME("AssetLib")));
+			dismiss_button->set_normal_texture(get_theme_icon(SNAME("dismiss"), SNAME("AssetLib")));
 		} break;
 		case NOTIFICATION_PROCESS: {
 			// Make the progress bar visible again when retrying the download.
@@ -461,7 +462,7 @@ void EditorAssetLibraryItemDownload::_close() {
 	queue_delete();
 }
 
-void EditorAssetLibraryItemDownload::_install() {
+void EditorAssetLibraryItemDownload::install() {
 	String file = download->get_download_file();
 
 	if (external_install) {
@@ -475,7 +476,7 @@ void EditorAssetLibraryItemDownload::_install() {
 
 void EditorAssetLibraryItemDownload::_make_request() {
 	// Hide the Retry button if we've just pressed it.
-	retry->hide();
+	retry_button->hide();
 
 	download->cancel_request();
 	download->set_download_file(EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
@@ -499,6 +500,8 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	panel->add_child(hb);
 	icon = memnew(TextureRect);
+	icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+	icon->set_v_size_flags(0);
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -511,9 +514,9 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	title_hb->add_child(title);
 	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	dismiss = memnew(TextureButton);
-	dismiss->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
-	title_hb->add_child(dismiss);
+	dismiss_button = memnew(TextureButton);
+	dismiss_button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_close));
+	title_hb->add_child(dismiss_button);
 
 	title->set_clip_text(true);
 
@@ -521,7 +524,6 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	status = memnew(Label(TTR("Idle")));
 	vb->add_child(status);
-	status->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 	progress = memnew(ProgressBar);
 	vb->add_child(progress);
 
@@ -529,19 +531,19 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	vb->add_child(hb2);
 	hb2->add_spacer();
 
-	install = memnew(Button);
-	install->set_text(TTR("Install..."));
-	install->set_disabled(true);
-	install->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_install));
+	install_button = memnew(Button);
+	install_button->set_text(TTR("Install..."));
+	install_button->set_disabled(true);
+	install_button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::install));
 
-	retry = memnew(Button);
-	retry->set_text(TTR("Retry"));
-	retry->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_make_request));
+	retry_button = memnew(Button);
+	retry_button->set_text(TTR("Retry"));
+	retry_button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDownload::_make_request));
 	// Only show the Retry button in case of a failure.
-	retry->hide();
+	retry_button->hide();
 
-	hb2->add_child(retry);
-	hb2->add_child(install);
+	hb2->add_child(retry_button);
+	hb2->add_child(install_button);
 	set_custom_minimum_size(Size2(310, 0) * EDSCALE);
 
 	download = memnew(HTTPRequest);
@@ -640,14 +642,10 @@ void EditorAssetLibrary::unhandled_key_input(const Ref<InputEvent> &p_event) {
 void EditorAssetLibrary::_install_asset() {
 	ERR_FAIL_COND(!description);
 
-	for (int i = 0; i < downloads_hb->get_child_count(); i++) {
-		EditorAssetLibraryItemDownload *d = Object::cast_to<EditorAssetLibraryItemDownload>(downloads_hb->get_child(i));
-		if (d && d->get_asset_id() == description->get_asset_id()) {
-			if (EditorNode::get_singleton() != nullptr) {
-				EditorNode::get_singleton()->show_warning(TTR("Download for this asset is already in progress!"));
-			}
-			return;
-		}
+	EditorAssetLibraryItemDownload *d = _get_asset_in_progress(description->get_asset_id());
+	if (d) {
+		d->install();
+		return;
 	}
 
 	EditorAssetLibraryItemDownload *download = memnew(EditorAssetLibraryItemDownload);
@@ -1265,6 +1263,13 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
 
+			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(description->get_asset_id());
+			if (download_item) {
+				description->get_ok_button()->set_text(TTR("Install"));
+			} else {
+				description->get_ok_button()->set_text(TTR("Download"));
+			}
+
 			if (r.has("icon_url") && !r["icon_url"].operator String().is_empty()) {
 				_request_image(description->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
 			}
@@ -1320,6 +1325,17 @@ void EditorAssetLibrary::_asset_open() {
 void EditorAssetLibrary::_manage_plugins() {
 	ProjectSettingsEditor::get_singleton()->popup_project_settings();
 	ProjectSettingsEditor::get_singleton()->set_plugins_page();
+}
+
+EditorAssetLibraryItemDownload *EditorAssetLibrary::_get_asset_in_progress(int p_asset_id) const {
+	for (int i = 0; i < downloads_hb->get_child_count(); i++) {
+		EditorAssetLibraryItemDownload *d = Object::cast_to<EditorAssetLibraryItemDownload>(downloads_hb->get_child(i));
+		if (d && d->get_asset_id() == p_asset_id) {
+			return d;
+		}
+	}
+
+	return nullptr;
 }
 
 void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_title) {
