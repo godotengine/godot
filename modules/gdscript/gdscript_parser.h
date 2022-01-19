@@ -1365,8 +1365,9 @@ private:
 	bool tool_annotation(const AnnotationNode *p_annotation, Node *p_target);
 	bool icon_annotation(const AnnotationNode *p_annotation, Node *p_target);
 	bool onready_annotation(const AnnotationNode *p_annotation, Node *p_target);
-	template <PropertyHint t_hint, Variant::Type t_type>
-	bool export_annotations(const AnnotationNode *p_annotation, Node *p_target);
+	bool export_annotation(const AnnotationNode *p_annotation, Node *p_target);
+	template <PropertyHint t_hint, Variant::Type t_type, Variant::Type t_convertable_type = Variant::VARIANT_MAX, Variant::Type t_alternative_type = Variant::VARIANT_MAX>
+	bool typed_export_annotations(const AnnotationNode *p_annotation, Node *p_target);
 	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target);
 	bool warning_annotations(const AnnotationNode *p_annotation, Node *p_target);
