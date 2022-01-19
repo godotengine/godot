@@ -66,7 +66,7 @@
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
 				[b]Note:[/b] If [code]full_precision[/code] is true, when stringifying floats, the unreliable digits are stringified in addition to the reliable digits to guarantee exact decoding.
-				Use [code]indent[/code] parameter to pretty stringify the output.
+				The [code]indent[/code] parameter controls if and how something is indented, the string used for this parameter will be used where there should be an indent in the output, even spaces like [code]"   "[/code] will work. [code]\t[/code] and [code]\n[/code] can also be used for a tab indent, or to make a newline for each indent respectively.
 				[b]Example output:[/b]
 				[codeblock]
 				## JSON.stringify(my_dictionary)
@@ -74,18 +74,34 @@
 
 				## JSON.stringify(my_dictionary, "\t")
 				{
-				        "name": "my_dictionary",
-				        "version": "1.0.0",
-				        "entities": [
-				                {
-				                        "name": "entity_0",
-				                        "value": "value_0"
-				                },
-				                {
-				                        "name": "entity_1",
-				                        "value": "value_1"
-				                }
-				        ]
+				    "name": "my_dictionary",
+				    "version": "1.0.0",
+				    "entities": [
+				        {
+				            "name": "entity_0",
+				            "value": "value_0"
+				        },
+				        {
+				            "name": "entity_1",
+				            "value": "value_1"
+				        }
+				    ]
+				}
+
+				## JSON.stringify(my_dictionary, "...")
+				{
+				..."name": "my_dictionary",
+				..."version": "1.0.0",
+				..."entities": [
+				......{
+				........."name": "entity_0",
+				........."value": "value_0"
+				......},
+				......{
+				........."name": "entity_1",
+				........."value": "value_1"
+				......}
+				...]
 				}
 				[/codeblock]
 			</description>
