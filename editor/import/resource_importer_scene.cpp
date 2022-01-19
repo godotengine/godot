@@ -258,8 +258,8 @@ String ResourceImporterScene::get_visible_name() const {
 }
 
 void ResourceImporterScene::get_recognized_extensions(List<String> *p_extensions) const {
-	for (Set<Ref<EditorSceneFormatImporter>>::Element *E = importers.front(); E; E = E->next()) {
-		E->get()->get_extensions(p_extensions);
+	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
+		importer_elem->get_extensions(p_extensions);
 	}
 }
 
@@ -1489,8 +1489,8 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 		post_importer_plugins.write[i]->get_import_options(p_path, r_options);
 	}
 
-	for (Ref<EditorSceneFormatImporter> importer : importers) {
-		importer->get_import_options(p_path, r_options);
+	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
+		importer_elem->get_import_options(p_path, r_options);
 	}
 }
 
@@ -1841,13 +1841,13 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 	EditorProgress progress("pre-import", TTR("Pre-Import Scene"), 0);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Set<Ref<EditorSceneFormatImporter>>::Element *E = importers.front(); E; E = E->next()) {
+	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
 		List<String> extensions;
-		E->get()->get_extensions(&extensions);
+		importer_elem->get_extensions(&extensions);
 
 		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
-				importer = E->get();
+				importer = importer_elem;
 				break;
 			}
 		}
@@ -1881,13 +1881,13 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	EditorProgress progress("import", TTR("Import Scene"), 104);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Set<Ref<EditorSceneFormatImporter>>::Element *E = importers.front(); E; E = E->next()) {
+	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
 		List<String> extensions;
-		E->get()->get_extensions(&extensions);
+		importer_elem->get_extensions(&extensions);
 
 		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
-				importer = E->get();
+				importer = importer_elem;
 				break;
 			}
 		}
@@ -2084,6 +2084,24 @@ void ResourceImporterScene::ResourceImporterScene::show_advanced_options(const S
 
 ResourceImporterScene::ResourceImporterScene() {
 	singleton = this;
+}
+
+void ResourceImporterScene::add_importer(Ref<EditorSceneFormatImporter> p_importer) {
+	ERR_FAIL_COND(p_importer.is_null());
+	importers.insert(0, p_importer);
+}
+
+void ResourceImporterScene::remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
+	post_importer_plugins.erase(p_plugin);
+}
+
+void ResourceImporterScene::add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	post_importer_plugins.insert(0, p_plugin);
+}
+
+void ResourceImporterScene::remove_importer(Ref<EditorSceneFormatImporter> p_importer) {
+	importers.erase(p_importer);
 }
 
 ///////////////////////////////////////

@@ -153,7 +153,7 @@ VARIANT_ENUM_CAST(EditorScenePostImportPlugin::InternalImportCategory)
 class ResourceImporterScene : public ResourceImporter {
 	GDCLASS(ResourceImporterScene, ResourceImporter);
 
-	Set<Ref<EditorSceneFormatImporter>> importers;
+	Vector<Ref<EditorSceneFormatImporter>> importers;
 
 	static ResourceImporterScene *singleton;
 
@@ -224,13 +224,13 @@ class ResourceImporterScene : public ResourceImporter {
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
 
-	void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) { post_importer_plugins.push_back(p_plugin); }
-	void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) { post_importer_plugins.erase(p_plugin); }
+	void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
+	void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
 
-	const Set<Ref<EditorSceneFormatImporter>> &get_importers() const { return importers; }
+	const Vector<Ref<EditorSceneFormatImporter>> &get_importers() const { return importers; }
 
-	void add_importer(Ref<EditorSceneFormatImporter> p_importer) { importers.insert(p_importer); }
-	void remove_importer(Ref<EditorSceneFormatImporter> p_importer) { importers.erase(p_importer); }
+	void add_importer(Ref<EditorSceneFormatImporter> p_importer);
+	void remove_importer(Ref<EditorSceneFormatImporter> p_importer);
 
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;

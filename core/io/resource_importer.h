@@ -80,9 +80,8 @@ public:
 	String get_internal_resource_path(const String &p_path) const;
 	void get_internal_resource_path_list(const String &p_path, List<String> *r_paths);
 
-	void add_importer(const Ref<ResourceImporter> &p_importer) {
-		importers.push_back(p_importer);
-	}
+	void add_importer(const Ref<ResourceImporter> &p_importer);
+
 	void remove_importer(const Ref<ResourceImporter> &p_importer) { importers.erase(p_importer); }
 	Ref<ResourceImporter> get_importer_by_name(const String &p_name) const;
 	Ref<ResourceImporter> get_importer_by_extension(const String &p_extension) const;
