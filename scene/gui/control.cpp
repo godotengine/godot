@@ -733,8 +733,10 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			data.is_rtl_dirty = true;
-			_size_changed();
+			if (is_inside_tree()) {
+				data.is_rtl_dirty = true;
+				_size_changed();
+			}
 		} break;
 	}
 }
