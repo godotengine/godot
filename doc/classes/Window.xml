@@ -368,6 +368,10 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="theme_changed">
+			<description>
+			</description>
+		</signal>
 		<signal name="visibility_changed">
 			<description>
 			</description>
