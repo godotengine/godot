@@ -729,8 +729,7 @@
 		<method name="set_gutter_custom_draw">
 			<return type="void" />
 			<argument index="0" name="column" type="int" />
-			<argument index="1" name="object" type="Object" />
-			<argument index="2" name="callback" type="StringName" />
+			<argument index="1" name="draw_callback" type="Callable" />
 			<description>
 				Set a custom draw method for the gutter. The callback method must take the following args: [code]line: int, gutter: int, Area: Rect2[/code].
 			</description>
@@ -907,11 +906,9 @@
 		</method>
 		<method name="set_tooltip_request_func">
 			<return type="void" />
-			<argument index="0" name="object" type="Object" />
-			<argument index="1" name="callback" type="StringName" />
-			<argument index="2" name="data" type="Variant" />
+			<argument index="0" name="callback" type="Callable" />
 			<description>
-				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String, data: Variant[/code]
+				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code]
 			</description>
 		</method>
 		<method name="swap_lines">
