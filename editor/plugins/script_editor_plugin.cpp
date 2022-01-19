@@ -3689,7 +3689,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("script_editor/next_script", TTR("Next Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::PERIOD);
 	ED_SHORTCUT("script_editor/prev_script", TTR("Previous Script"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::COMMA);
 	set_process_input(true);
-	set_process_unhandled_input(true);
+	set_process_unhandled_key_input(true);
 
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("File"));
