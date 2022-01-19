@@ -942,7 +942,6 @@ private:
 	};
 
 	struct FogMaterialData : public RendererStorageRD::MaterialData {
-		uint64_t last_frame;
 		FogShaderData *shader_data;
 		RID uniform_set;
 		bool uniform_set_updated;

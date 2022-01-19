@@ -2962,21 +2962,16 @@ bool RendererStorageRD::MaterialData::update_parameters_uniform_set(const Map<St
 	return true;
 }
 
-void RendererStorageRD::_material_uniform_set_erased(const RID &p_set, void *p_material) {
+void RendererStorageRD::_material_uniform_set_erased(void *p_material) {
 	RID rid = *(RID *)p_material;
 	Material *material = base_singleton->material_owner.get_or_null(rid);
 	if (material) {
+		if (material->data) {
+			// Uniform set may be gone because a dependency was erased. This happens
+			// if a texture is deleted, so re-create it.
+			base_singleton->_material_queue_update(material, false, true);
+		}
 		material->dependency.changed_notify(DEPENDENCY_CHANGED_MATERIAL);
-	}
-}
-
-void RendererStorageRD::material_force_update_textures(RID p_material, ShaderType p_shader_type) {
-	Material *material = material_owner.get_or_null(p_material);
-	if (material->shader_type != p_shader_type) {
-		return;
-	}
-	if (material->data) {
-		material->data->update_parameters(material->params, false, true);
 	}
 }
 
@@ -5882,8 +5877,6 @@ RendererStorageRD::ShaderData *RendererStorageRD::_create_particles_shader_func(
 }
 
 bool RendererStorageRD::ParticlesMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	uniform_set_updated = true;
-
 	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, base_singleton->particles_shader.shader.version_get_shader(shader_data->version, 0), 3);
 }
 
@@ -5894,7 +5887,6 @@ RendererStorageRD::ParticlesMaterialData::~ParticlesMaterialData() {
 RendererStorageRD::MaterialData *RendererStorageRD::_create_particles_material_func(ParticlesShaderData *p_shader) {
 	ParticlesMaterialData *material_data = memnew(ParticlesMaterialData);
 	material_data->shader_data = p_shader;
-	material_data->last_frame = false;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }
