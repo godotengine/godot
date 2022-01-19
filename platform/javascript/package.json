@@ -2,9 +2,8 @@
   "name": "godot",
   "private": true,
   "version": "1.0.0",
-  "description": "Linting setup for Godot's HTML5 platform code",
+  "description": "Development and linting setup for Godot's HTML5 platform code",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "docs": "jsdoc --template js/jsdoc2rst/ js/engine/engine.js js/engine/config.js --destination ''",
     "lint": "npm run lint:engine && npm run lint:libs && npm run lint:modules && npm run lint:tools",
     "lint:engine": "eslint \"js/engine/*.js\" --no-eslintrc -c .eslintrc.engine.js",
@@ -15,7 +14,8 @@
     "format:engine": "npm run lint:engine -- --fix",
     "format:libs": "npm run lint:libs -- --fix",
     "format:modules": "npm run lint:modules -- --fix",
-    "format:tools": "npm run lint:tools -- --fix"
+    "format:tools": "npm run lint:tools -- --fix",
+		"serve": "serve"
   },
   "author": "Godot Engine contributors",
   "license": "MIT",
@@ -23,6 +23,7 @@
     "eslint": "^7.28.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.23.4",
-    "jsdoc": "^3.6.7"
+    "jsdoc": "^3.6.7",
+    "serve": "^13.0.2"
   }
 }
