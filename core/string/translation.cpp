@@ -544,7 +544,7 @@ Ref<Translation> TranslationServer::get_translation_object(const String &p_local
 		String l = t->get_locale();
 
 		int score = compare_locales(p_locale, l);
-		if (score >= best_score) {
+		if (score > best_score) {
 			res = t;
 			best_score = score;
 			if (score == 10) {
@@ -617,7 +617,7 @@ StringName TranslationServer::_get_message_from_translations(const StringName &p
 		String l = t->get_locale();
 
 		int score = compare_locales(p_locale, l);
-		if (score >= best_score) {
+		if (score > best_score) {
 			StringName r;
 			if (!plural) {
 				res = t->get_message(p_message, p_context);
