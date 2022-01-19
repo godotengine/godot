@@ -136,9 +136,11 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					continue;
 				}
 
-				//Transform3D shape_transform = sb->shape_owner_get_transform(E);
-
-				//shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
+				Transform3D shape_transform;
+				if (p_apply_xforms) {
+					shape_transform = mi->get_transform();
+				}
+				shape_transform *= sb->get_transform() * sb->shape_owner_get_transform(E);
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E); k++) {
 					Ref<Shape3D> collision = sb->shape_owner_get_shape(E, k);
@@ -147,7 +149,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					}
 					MeshLibrary::ShapeData shape_data;
 					shape_data.shape = collision;
-					shape_data.local_transform = sb->get_transform() * sb->shape_owner_get_transform(E);
+					shape_data.local_transform = shape_transform;
 					collisions.push_back(shape_data);
 				}
 			}
