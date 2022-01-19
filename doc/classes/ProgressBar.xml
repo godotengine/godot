@@ -16,7 +16,7 @@
 		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="0.01" />
 	</members>
 	<theme_items>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			The color of the text.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">

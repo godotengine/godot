@@ -3158,7 +3158,7 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 	code_edit->set_text("this is some text");
 
 	Point2 caret_pos = code_edit->get_caret_draw_pos();
-	caret_pos.x += 55;
+	caret_pos.x += 58;
 	SEND_GUI_MOUSE_EVENT(code_edit, caret_pos, MouseButton::NONE, MouseButton::NONE);
 	CHECK(code_edit->get_text_for_symbol_lookup() == "this is s" + String::chr(0xFFFF) + "ome text");
 

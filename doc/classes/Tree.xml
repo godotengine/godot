@@ -467,13 +467,13 @@
 		<theme_item name="children_hl_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
 			The [Color] of the relationship lines between the selected [TreeItem] and its children.
 		</theme_item>
-		<theme_item name="custom_button_font_highlight" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
+		<theme_item name="custom_button_font_highlight" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Text [Color] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's hovered.
 		</theme_item>
 		<theme_item name="drop_position_color" data_type="color" type="Color" default="Color(1, 0.3, 0.2, 1)">
 			[Color] used to draw possible drop locations. See [enum DropModeFlags] constants for further description of drop locations.
 		</theme_item>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.69, 0.69, 0.69, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Default text [Color] of the item.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
@@ -482,7 +482,7 @@
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the item is selected.
 		</theme_item>
-		<theme_item name="guide_color" data_type="color" type="Color" default="Color(0, 0, 0, 0.1)">
+		<theme_item name="guide_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.25)">
 			[Color] of the guideline.
 		</theme_item>
 		<theme_item name="parent_hl_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
@@ -491,7 +491,7 @@
 		<theme_item name="relationship_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
 			The default [Color] of the relationship lines.
 		</theme_item>
-		<theme_item name="title_button_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="title_button_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Default text [Color] of the title button.
 		</theme_item>
 		<theme_item name="button_margin" data_type="constant" type="int" default="4">
@@ -509,7 +509,7 @@
 		<theme_item name="hseparation" data_type="constant" type="int" default="4">
 			The horizontal space between item cells. This is also used as the margin at the start of an item when folding is disabled.
 		</theme_item>
-		<theme_item name="item_margin" data_type="constant" type="int" default="12">
+		<theme_item name="item_margin" data_type="constant" type="int" default="16">
 			The horizontal margin at the start of an item. This is used when folding is enabled for the item.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">

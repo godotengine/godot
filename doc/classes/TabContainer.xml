@@ -178,16 +178,16 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.9, 0.9, 0.9, 0.2)">
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Font color of disabled tabs.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the tab name.
 		</theme_item>
-		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
+		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Font color of the currently selected tab.
 		</theme_item>
-		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.69, 0.69, 0.69, 1)">
+		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Font color of the other, unselected tabs.
 		</theme_item>
 		<theme_item name="icon_separation" data_type="constant" type="int" default="4">
