@@ -826,7 +826,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
 	theme->set_icon("preset_bg_icon", "ColorPresetButton", make_icon(mini_checkerboard_png));
-	theme->set_icon("overbright_indicator", "ColorPicker", make_icon(overbright_indicator_png));
+	theme->set_icon("overbright_indicator", "ColorPresetButton", make_icon(overbright_indicator_png));
 
 	// TooltipPanel
 
