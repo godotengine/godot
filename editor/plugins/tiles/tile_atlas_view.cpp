@@ -58,7 +58,7 @@ void TileAtlasView::_pan_callback(Vector2 p_scroll_vec) {
 	_update_zoom_and_panning(true);
 }
 
-void TileAtlasView::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin) {
+void TileAtlasView::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
 	zoom_widget->set_zoom_by_increments(-p_scroll_vec.y * 2);
 	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 	_update_zoom_and_panning(true);
@@ -524,7 +524,7 @@ void TileAtlasView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED:
-			panner->set_control_scheme((ViewPanner::ControlScheme)EDITOR_GET("interface/editors/sub_editor_panning_scheme").operator int());
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 			break;
 
 		case NOTIFICATION_READY:
@@ -539,9 +539,6 @@ void TileAtlasView::_bind_methods() {
 
 TileAtlasView::TileAtlasView() {
 	set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-
-	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &TileAtlasView::_scroll_callback), callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback));
 
 	Panel *panel = memnew(Panel);
 	panel->set_clip_contents(true);
@@ -566,10 +563,16 @@ TileAtlasView::TileAtlasView() {
 	button_center_view->set_tooltip(TTR("Center View"));
 	add_child(button_center_view);
 
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &TileAtlasView::_scroll_callback), callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback));
+	panner->set_enable_rmb(true);
+
 	center_container = memnew(CenterContainer);
 	center_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	center_container->set_anchors_preset(Control::PRESET_CENTER);
 	center_container->connect("gui_input", callable_mp(this, &TileAtlasView::gui_input));
+	center_container->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
+	center_container->set_focus_mode(FOCUS_CLICK);
 	panel->add_child(center_container);
 
 	missing_source_label = memnew(Label);

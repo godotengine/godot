@@ -130,9 +130,10 @@ private:
 	float port_grab_distance_vertical;
 
 	Ref<ViewPanner> panner;
+	bool warped_panning = true;
 	void _scroll_callback(Vector2 p_scroll_vec);
 	void _pan_callback(Vector2 p_scroll_vec);
-	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	bool connecting = false;
 	String connecting_from;
@@ -348,6 +349,8 @@ public:
 	bool is_connection_lines_antialiased() const;
 
 	HBoxContainer *get_zoom_hbox();
+	Ref<ViewPanner> get_panner();
+	void set_warped_panning(bool p_warped);
 
 	void arrange_nodes();
 

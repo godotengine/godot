@@ -1070,7 +1070,9 @@ void GraphEdit::set_selected(Node *p_child) {
 
 void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
-	panner->gui_input(p_ev);
+	if (panner->gui_input(p_ev, warped_panning ? get_global_rect() : Rect2())) {
+		return;
+	}
 
 	Ref<InputEventMouseMotion> mm = p_ev;
 
@@ -1272,7 +1274,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				if (_filter_input(b->get_position())) {
 					return;
 				}
-				if (Input::get_singleton()->is_key_pressed(Key::SPACE)) {
+				if (panner->is_panning()) {
 					return;
 				}
 
@@ -1367,7 +1369,7 @@ void GraphEdit::_pan_callback(Vector2 p_scroll_vec) {
 	v_scroll->set_value(v_scroll->get_value() - p_scroll_vec.y);
 }
 
-void GraphEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin) {
+void GraphEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
 	set_zoom_custom(p_scroll_vec.y < 0 ? zoom * zoom_step : zoom / zoom_step, p_origin);
 }
 
@@ -1676,6 +1678,14 @@ bool GraphEdit::is_connection_lines_antialiased() const {
 
 HBoxContainer *GraphEdit::get_zoom_hbox() {
 	return zoom_hb;
+}
+
+Ref<ViewPanner> GraphEdit::get_panner() {
+	return panner;
+}
+
+void GraphEdit::set_warped_panning(bool p_warped) {
+	warped_panning = p_warped;
 }
 
 int GraphEdit::_set_operations(SET_OPERATIONS p_operation, Set<StringName> &r_u, const Set<StringName> &r_v) {
@@ -2305,7 +2315,6 @@ GraphEdit::GraphEdit() {
 
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &GraphEdit::_scroll_callback), callable_mp(this, &GraphEdit::_pan_callback), callable_mp(this, &GraphEdit::_zoom_callback));
-	panner->set_disable_rmb(true);
 
 	top_layer = memnew(GraphEditFilter(this));
 	add_child(top_layer, false, INTERNAL_MODE_BACK);
@@ -2313,6 +2322,7 @@ GraphEdit::GraphEdit() {
 	top_layer->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	top_layer->connect("draw", callable_mp(this, &GraphEdit::_top_layer_draw));
 	top_layer->connect("gui_input", callable_mp(this, &GraphEdit::_top_layer_input));
+	top_layer->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	connections_layer = memnew(Control);
 	add_child(connections_layer, false, INTERNAL_MODE_FRONT);

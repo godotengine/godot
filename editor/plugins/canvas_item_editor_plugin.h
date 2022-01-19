@@ -42,6 +42,7 @@
 #include "scene/main/canvas_item.h"
 
 class CanvasItemEditorViewport;
+class ViewPanner;
 
 class CanvasItemEditorSelectedItem : public Object {
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
@@ -276,7 +277,6 @@ private:
 	bool key_pos;
 	bool key_rot;
 	bool key_scale;
-	bool panning;
 	bool pan_pressed;
 
 	bool ruler_tool_active;
@@ -402,7 +402,13 @@ private:
 	Ref<Shortcut> set_pivot_shortcut;
 	Ref<Shortcut> multiply_grid_step_shortcut;
 	Ref<Shortcut> divide_grid_step_shortcut;
-	Ref<Shortcut> pan_view_shortcut;
+
+	Ref<ViewPanner> panner;
+	bool warped_panning = true;
+	int pan_speed = 20;
+	void _scroll_callback(Vector2 p_scroll_vec);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);

@@ -35,6 +35,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/view_panner.h"
 
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;
@@ -259,6 +260,10 @@ void TextureRegionEditor::_region_draw() {
 }
 
 void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
+	if (panner->gui_input(p_input)) {
+		return;
+	}
+
 	Transform2D mtx;
 	mtx.elements[2] = -draw_ofs * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
@@ -281,7 +286,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
-			if (mb->is_pressed()) {
+			if (mb->is_pressed() && !panner->is_panning()) {
 				if (node_ninepatch || obj_styleBox.is_valid()) {
 					edited_margin = -1;
 					float margins[4] = { 0 };
@@ -400,7 +405,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					}
 				}
 
-			} else if (drag) {
+			} else if (!mb->is_pressed() && drag) {
 				if (edited_margin >= 0) {
 					undo_redo->create_action(TTR("Set Margin"));
 					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
@@ -461,21 +466,13 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					drag_index = -1;
 				}
 			}
-		} else if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed()) {
-			_zoom_on_position(draw_zoom * ((0.95 + (0.05 * mb->get_factor())) / 0.95), mb->get_position());
-		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed()) {
-			_zoom_on_position(draw_zoom * (1 - (0.05 * mb->get_factor())), mb->get_position());
 		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_input;
 
 	if (mm.is_valid()) {
-		if ((mm->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE || Input::get_singleton()->is_key_pressed(Key::SPACE)) {
-			Vector2 dragged(mm->get_relative().x / draw_zoom, mm->get_relative().y / draw_zoom);
-			hscroll->set_value(hscroll->get_value() - dragged.x);
-			vscroll->set_value(vscroll->get_value() - dragged.y);
-		} else if (drag) {
+		if (drag) {
 			if (edited_margin >= 0) {
 				float new_margin = 0;
 
@@ -602,6 +599,24 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	if (pan_gesture.is_valid()) {
 		hscroll->set_value(hscroll->get_value() + hscroll->get_page() * pan_gesture->get_delta().x / 8);
 		vscroll->set_value(vscroll->get_value() + vscroll->get_page() * pan_gesture->get_delta().y / 8);
+	}
+}
+
+void TextureRegionEditor::_scroll_callback(Vector2 p_scroll_vec) {
+	_pan_callback(-p_scroll_vec * 32);
+}
+
+void TextureRegionEditor::_pan_callback(Vector2 p_scroll_vec) {
+	p_scroll_vec /= draw_zoom;
+	hscroll->set_value(hscroll->get_value() - p_scroll_vec.x);
+	vscroll->set_value(vscroll->get_value() - p_scroll_vec.y);
+}
+
+void TextureRegionEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
+	if (p_scroll_vec.y < 0) {
+		_zoom_on_position(draw_zoom * ((0.95 + (0.05 * Math::abs(p_scroll_vec.y))) / 0.95), p_origin);
+	} else {
+		_zoom_on_position(draw_zoom * (1 - (0.05 * Math::abs(p_scroll_vec.y))), p_origin);
 	}
 }
 
@@ -802,6 +817,10 @@ void TextureRegionEditor::_notification(int p_what) {
 
 			vscroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
 			hscroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
+			[[fallthrough]];
+		}
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (snap_mode == SNAP_AUTOSLICE && is_visible() && autoslice_is_dirty) {
@@ -1058,11 +1077,16 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 
 	hb_grid->hide();
 
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &TextureRegionEditor::_scroll_callback), callable_mp(this, &TextureRegionEditor::_pan_callback), callable_mp(this, &TextureRegionEditor::_zoom_callback));
+
 	edit_draw = memnew(Panel);
 	add_child(edit_draw);
 	edit_draw->set_v_size_flags(SIZE_EXPAND_FILL);
 	edit_draw->connect("draw", callable_mp(this, &TextureRegionEditor::_region_draw));
 	edit_draw->connect("gui_input", callable_mp(this, &TextureRegionEditor::_region_input));
+	edit_draw->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
+	edit_draw->set_focus_mode(FOCUS_CLICK);
 
 	draw_zoom = 1.0;
 	edit_draw->set_clip_contents(true);

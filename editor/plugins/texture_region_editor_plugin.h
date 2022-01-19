@@ -40,6 +40,8 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
+class ViewPanner;
+
 class TextureRegionEditor : public VBoxContainer {
 	GDCLASS(TextureRegionEditor, VBoxContainer);
 
@@ -97,6 +99,11 @@ class TextureRegionEditor : public VBoxContainer {
 	bool creating;
 	Vector2 drag_from;
 	int drag_index;
+
+	Ref<ViewPanner> panner;
+	void _scroll_callback(Vector2 p_scroll_vec);
+	void _pan_callback(Vector2 p_scroll_vec);
+	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
 	void _set_snap_mode(int p_mode);
 	void _set_snap_off_x(float p_val);
