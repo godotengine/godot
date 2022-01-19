@@ -2197,10 +2197,6 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 		}
 
 		// Resize lines without reshaping.
-		Size2 size = get_size();
-		if (fixed_width != -1) {
-			size.width = fixed_width;
-		}
 		Rect2 text_rect = _get_text_rect();
 
 		Ref<Font> base_font = get_theme_font(SNAME("normal_font"));
@@ -2221,7 +2217,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 		vscroll->set_max(total_height);
 		vscroll->set_page(text_rect.size.height);
 		if (scroll_follow && scroll_following) {
-			vscroll->set_value(total_height - size.height);
+			vscroll->set_value(total_height);
 		}
 		updating_scroll = false;
 
@@ -2232,10 +2228,6 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 	}
 
 	// Shape invalid lines.
-	Size2 size = get_size();
-	if (fixed_width != -1) {
-		size.width = fixed_width;
-	}
 	Rect2 text_rect = _get_text_rect();
 
 	Ref<Font> base_font = get_theme_font(SNAME("normal_font"));
@@ -2258,7 +2250,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 	vscroll->set_max(total_height);
 	vscroll->set_page(text_rect.size.height);
 	if (scroll_follow && scroll_following) {
-		vscroll->set_value(total_height - size.height);
+		vscroll->set_value(total_height);
 	}
 	updating_scroll = false;
 
