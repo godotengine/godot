@@ -349,9 +349,32 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			switch (image_scale_mode) {
 				case 0: {
 					String logo_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
-					bool is_on = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
 					// If custom logo is not specified, Godot does not scale default one, so we should do the same.
-					value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
+					if (logo_path.is_empty()) {
+						value = "center";
+					} else {
+						RenderingServer::SplashStretchMode stretch_mode = (RenderingServer::SplashStretchMode)(int)ProjectSettings::get_singleton()->get("application/boot_splash/stretch_mode");
+						switch (stretch_mode) {
+							case RenderingServer::SPLASH_STRETCH_MODE_DISABLED:
+								value = "center";
+								break;
+							case RenderingServer::SPLASH_STRETCH_MODE_KEEP:
+								value = "scaleAspectFit";
+								break;
+							case RenderingServer::SPLASH_STRETCH_MODE_KEEP_WIDTH:
+							case RenderingServer::SPLASH_STRETCH_MODE_KEEP_HEIGHT:
+								// Neither has a matching UIView.ContentMode preset.
+								// Falling back to KEEP.
+								value = "scaleAspectFit";
+								break;
+							case RenderingServer::SPLASH_STRETCH_MODE_COVER:
+								value = "scaleAspectFill";
+								break;
+							case RenderingServer::SPLASH_STRETCH_MODE_EXPAND:
+								value = "scaleToFill";
+								break;
+						}
+					}
 				} break;
 				default: {
 					value = storyboard_image_scale_mode[image_scale_mode - 1];
@@ -640,7 +663,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 
 		Color boot_bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color");
 		String boot_logo_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
-		bool boot_logo_scale = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
+		RenderingServer::SplashStretchMode stretch_mode = (RenderingServer::SplashStretchMode)(int)ProjectSettings::get_singleton()->get("application/boot_splash/stretch_mode");
 
 		if (loading_screen_file.size() > 0) {
 			// Load custom loading screens, and resize if required.
@@ -653,7 +676,8 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 			if (img->get_width() != info.width || img->get_height() != info.height) {
 				WARN_PRINT("Loading screen (" + String(info.preset_key) + "): '" + loading_screen_file + "' has incorrect size (" + String::num_int64(img->get_width()) + "x" + String::num_int64(img->get_height()) + ") and was automatically resized to " + String::num_int64(info.width) + "x" + String::num_int64(info.height) + ".");
 				float aspect_ratio = (float)img->get_width() / (float)img->get_height();
-				if (boot_logo_scale) {
+				// FIXME: Handle the scale modes properly (also below).
+				if (stretch_mode != RenderingServer::SPLASH_STRETCH_MODE_DISABLED) {
 					if (info.height * aspect_ratio <= info.width) {
 						img->resize(info.height * aspect_ratio, info.height);
 					} else {
@@ -692,7 +716,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 			if (img_bs.is_valid()) {
 				float aspect_ratio = (float)img_bs->get_width() / (float)img_bs->get_height();
 				if (info.rotate) {
-					if (boot_logo_scale) {
+					if (stretch_mode != RenderingServer::SPLASH_STRETCH_MODE_DISABLED) {
 						if (info.width * aspect_ratio <= info.height) {
 							img_bs->resize(info.width * aspect_ratio, info.width);
 						} else {
@@ -700,7 +724,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 						}
 					}
 				} else {
-					if (boot_logo_scale) {
+					if (stretch_mode != RenderingServer::SPLASH_STRETCH_MODE_DISABLED) {
 						if (info.height * aspect_ratio <= info.width) {
 							img_bs->resize(info.height * aspect_ratio, info.height);
 						} else {

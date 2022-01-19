@@ -1491,9 +1491,9 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 }
 
 String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, Ref<Image> &splash_bg_color_image) {
-	bool scale_splash = ProjectSettings::get_singleton()->get("application/boot_splash/fullsize");
-	bool apply_filter = ProjectSettings::get_singleton()->get("application/boot_splash/use_filter");
 	String project_splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+	bool apply_filter = ProjectSettings::get_singleton()->get("application/boot_splash/use_filter");
+	RenderingServer::SplashStretchMode stretch_mode = (RenderingServer::SplashStretchMode)(int)ProjectSettings::get_singleton()->get("application/boot_splash/stretch_mode");
 
 	if (!project_splash_path.is_empty()) {
 		splash_image.instantiate();
@@ -1507,25 +1507,15 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 		}
 	}
 
+	// If custom logo is not specified, Godot does not scale default one, so we should do the same.
 	if (splash_image.is_null()) {
 		// Use the default
 		print_verbose("Using default splash image.");
 		splash_image = Ref<Image>(memnew(Image(boot_splash_png)));
-	}
-
-	if (scale_splash) {
+	} else if (stretch_mode != RenderingServer::SPLASH_STRETCH_MODE_DISABLED) {
 		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
-		int width, height;
-		if (screen_size.width > screen_size.height) {
-			// scale horizontally
-			height = screen_size.height;
-			width = splash_image->get_width() * screen_size.height / splash_image->get_height();
-		} else {
-			// scale vertically
-			width = screen_size.width;
-			height = splash_image->get_height() * screen_size.width / splash_image->get_width();
-		}
-		splash_image->resize(width, height);
+		Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(splash_image->get_size(), screen_size, stretch_mode);
+		splash_image->resize(screenrect.size.x, screenrect.size.y);
 	}
 
 	// Setup the splash bg color

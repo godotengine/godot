@@ -159,7 +159,7 @@ void RendererCompositorRD::finalize() {
 	RD::get_singleton()->free(blit.sampler);
 }
 
-void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	RD::get_singleton()->prepare_screen_for_drawing();
 
 	RID texture = storage->texture_allocate();
@@ -179,27 +179,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	}
 
 	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
-
-	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
-	Rect2 screenrect;
-	if (p_scale) {
-		if (window_size.width > window_size.height) {
-			//scale horizontally
-			screenrect.size.y = window_size.height;
-			screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
-			screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-
-		} else {
-			//scale vertically
-			screenrect.size.x = window_size.width;
-			screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-			screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-		}
-	} else {
-		screenrect = imgrect;
-		screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
-	}
-
+	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), window_size, p_stretch_mode);
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
