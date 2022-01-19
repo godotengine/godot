@@ -374,7 +374,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	}
 
 	install_button->set_disabled(false);
-	status->set_text(TTR("Success!"));
+	status->set_text(TTR("Ready to install!"));
 	// Make the progress bar invisible but don't reflow other Controls around it.
 	progress->set_modulate(Color(0, 0, 0, 0));
 
@@ -460,6 +460,10 @@ void EditorAssetLibraryItemDownload::_close() {
 	// Clean up downloaded file.
 	DirAccess::remove_file_or_error(download->get_download_file());
 	queue_delete();
+}
+
+bool EditorAssetLibraryItemDownload::can_install() const {
+	return !install_button->is_disabled();
 }
 
 void EditorAssetLibraryItemDownload::install() {
@@ -1265,9 +1269,16 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(description->get_asset_id());
 			if (download_item) {
-				description->get_ok_button()->set_text(TTR("Install"));
+				if (download_item->can_install()) {
+					description->get_ok_button()->set_text(TTR("Install"));
+					description->get_ok_button()->set_disabled(false);
+				} else {
+					description->get_ok_button()->set_text(TTR("Downloading..."));
+					description->get_ok_button()->set_disabled(true);
+				}
 			} else {
 				description->get_ok_button()->set_text(TTR("Download"));
+				description->get_ok_button()->set_disabled(false);
 			}
 
 			if (r.has("icon_url") && !r["icon_url"].operator String().is_empty()) {

@@ -275,7 +275,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		asset_contents->set_text(vformat(TTR("Contents of asset \"%s\" - No files conflict with your project:"), asset_name));
 	}
 
-	popup_centered_ratio();
+	popup_centered_ratio(0.5);
 	updating = false;
 }
 
