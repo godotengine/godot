@@ -1520,6 +1520,7 @@ public:
 	};
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter = true) = 0;
+	static Rect2 get_splash_stretched_screen_rect(const Size2 &p_image_size, const Size2 &p_window_size, SplashStretchMode p_stretch_mode); // Helper for splash screen stretch handling.
 	virtual void set_default_clear_color(const Color &p_color) = 0;
 
 	enum Features {

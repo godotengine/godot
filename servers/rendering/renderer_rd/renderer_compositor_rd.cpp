@@ -179,61 +179,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	}
 
 	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
-
-	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
-	Rect2 screenrect;
-	switch (p_stretch_mode) {
-		case RenderingServer::SPLASH_STRETCH_MODE_DISABLED: {
-			screenrect = imgrect;
-			screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_KEEP: {
-			if (window_size.width > window_size.height) {
-				// Scale horizontally.
-				screenrect.size.y = window_size.height;
-				screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
-				screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-			} else {
-				// Scale vertically.
-				screenrect.size.x = window_size.width;
-				screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-				screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-			}
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
-			// Scale vertically.
-			screenrect.size.x = window_size.width;
-			screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-			screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
-			// Scale horizontally.
-			screenrect.size.y = window_size.height;
-			screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
-			screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_COVER: {
-			double window_aspect = (double)window_size.width / window_size.height;
-			double img_aspect = imgrect.size.x / imgrect.size.y;
-
-			if (window_aspect > img_aspect) {
-				// Scale vertically.
-				screenrect.size.x = window_size.width;
-				screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-				screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-			} else {
-				// Scale horizontally.
-				screenrect.size.y = window_size.height;
-				screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
-				screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-			}
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_EXPAND: {
-			screenrect.size.x = window_size.width;
-			screenrect.size.y = window_size.height;
-		} break;
-	}
-
+	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), window_size, p_stretch_mode);
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
