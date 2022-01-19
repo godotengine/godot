@@ -88,10 +88,10 @@ def configure(env):
 
     if env["tools"]:
         if not env["threads_enabled"]:
-            print("Threads must be enabled to build the editor. Please add the 'threads_enabled=yes' option")
-            sys.exit(255)
+            print('Note: Forcing "threads_enabled=yes" as it is required for the web editor.')
+            env["threads_enabled"] = "yes"
         if env["initial_memory"] < 64:
-            print("Editor build requires at least 64MiB of initial memory. Forcing it.")
+            print('Note: Forcing "initial_memory=64" as it is required for the web editor.')
             env["initial_memory"] = 64
     else:
         # Disable exceptions and rtti on non-tools (template) builds
