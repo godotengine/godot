@@ -298,89 +298,54 @@ void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_sc
 	}
 }
 
-void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
-	if (p_image.is_null() || p_image->is_empty()) {
+void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+	if (p_image.is_null() || p_image->is_empty())
 		return;
-	}
 
-	Size2 window_size = DisplayServer::get_singleton()->screen_get_size();
+	Size2i win_size = DisplayServer::get_singleton()->screen_get_size();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, window_size.width, window_size.height);
+	glViewport(0, 0, win_size.width, win_size.height);
 	glDisable(GL_BLEND);
 	glDepthMask(GL_FALSE);
-	glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
+	if (false) {
+		//	if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+	} else {
+		glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
+	}
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	canvas.canvas_begin();
 
 	RID texture = storage.texture_create();
-	// FIXME: Handle p_filter.
 	//storage.texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
 	storage._texture_allocate_internal(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), RenderingDevice::TEXTURE_TYPE_2D);
 	storage.texture_set_data(texture, p_image);
 
-	// Stretch code synced with RendererCompositorRD.
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
-	switch (p_stretch_mode) {
-		case RenderingServer::SPLASH_STRETCH_MODE_DISABLED: {
-			screenrect = imgrect;
-			screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_KEEP: {
-			if (window_size.width > window_size.height) {
-				// Scale horizontally.
-				screenrect.size.y = window_size.height;
-				screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
-				screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-			} else {
-				// Scale vertically.
-				screenrect.size.x = window_size.width;
-				screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-				screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-			}
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
-			// Scale vertically.
-			screenrect.size.x = window_size.width;
-			screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-			screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
-			// Scale horizontally.
-			screenrect.size.y = window_size.height;
-			screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
-			screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_COVER: {
-			double window_aspect = (double)window_size.width / window_size.height;
-			double img_aspect = imgrect.size.x / imgrect.size.y;
+	if (p_scale) {
+		if (win_size.width > win_size.height) {
+			//scale horizontally
+			screenrect.size.y = win_size.height;
+			screenrect.size.x = imgrect.size.x * win_size.height / imgrect.size.y;
+			screenrect.position.x = (win_size.width - screenrect.size.x) / 2;
 
-			if (window_aspect > img_aspect) {
-				// Scale vertically.
-				screenrect.size.x = window_size.width;
-				screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-				screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-			} else {
-				// Scale horizontally.
-				screenrect.size.y = window_size.height;
-				screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
-				screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-			}
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_EXPAND: {
-			screenrect.size.x = window_size.width;
-			screenrect.size.y = window_size.height;
-		} break;
+		} else {
+			//scale vertically
+			screenrect.size.x = win_size.width;
+			screenrect.size.y = imgrect.size.y * win_size.width / imgrect.size.x;
+			screenrect.position.y = (win_size.height - screenrect.size.y) / 2;
+		}
+	} else {
+		screenrect = imgrect;
+		screenrect.position += ((Size2(win_size.width, win_size.height) - screenrect.size) / 2.0).floor();
 	}
-
-	// FIXME: Actually draw the image after binding it, using screenrect for scaling.
 
 	RasterizerStorageGLES3::Texture *t = storage.texture_owner.get_or_null(texture);
 	glActiveTexture(GL_TEXTURE0 + storage.config.max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
-	//canvas->draw_generic_textured_rect(screenrect, Rect2(0, 0, 1, 1));
 	glBindTexture(GL_TEXTURE_2D, 0);
 	canvas.canvas_end();
 

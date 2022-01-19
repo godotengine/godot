@@ -159,7 +159,7 @@ void RendererCompositorRD::finalize() {
 	RD::get_singleton()->free(blit.sampler);
 }
 
-void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
+void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 	RD::get_singleton()->prepare_screen_for_drawing();
 
 	RID texture = storage->texture_allocate();
@@ -182,56 +182,22 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
-	switch (p_stretch_mode) {
-		case RenderingServer::SPLASH_STRETCH_MODE_DISABLED: {
-			screenrect = imgrect;
-			screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_KEEP: {
-			if (window_size.width > window_size.height) {
-				// Scale horizontally.
-				screenrect.size.y = window_size.height;
-				screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
-				screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-			} else {
-				// Scale vertically.
-				screenrect.size.x = window_size.width;
-				screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-				screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-			}
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
-			// Scale vertically.
-			screenrect.size.x = window_size.width;
-			screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-			screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
-			// Scale horizontally.
+	if (p_scale) {
+		if (window_size.width > window_size.height) {
+			//scale horizontally
 			screenrect.size.y = window_size.height;
 			screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
 			screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_COVER: {
-			double window_aspect = (double)window_size.width / window_size.height;
-			double img_aspect = imgrect.size.x / imgrect.size.y;
 
-			if (window_aspect > img_aspect) {
-				// Scale vertically.
-				screenrect.size.x = window_size.width;
-				screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
-				screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
-			} else {
-				// Scale horizontally.
-				screenrect.size.y = window_size.height;
-				screenrect.size.x = imgrect.size.x * window_size.height / imgrect.size.y;
-				screenrect.position.x = (window_size.width - screenrect.size.x) / 2;
-			}
-		} break;
-		case RenderingServer::SPLASH_STRETCH_MODE_EXPAND: {
+		} else {
+			//scale vertically
 			screenrect.size.x = window_size.width;
-			screenrect.size.y = window_size.height;
-		} break;
+			screenrect.size.y = imgrect.size.y * window_size.width / imgrect.size.x;
+			screenrect.position.y = (window_size.height - screenrect.size.y) / 2;
+		}
+	} else {
+		screenrect = imgrect;
+		screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
 	}
 
 	screenrect.position /= window_size;

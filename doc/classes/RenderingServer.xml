@@ -2657,10 +2657,10 @@
 			<return type="void" />
 			<argument index="0" name="image" type="Image" />
 			<argument index="1" name="color" type="Color" />
-			<argument index="2" name="stretch_mode" type="int" enum="RenderingServer.SplashStretchMode" />
+			<argument index="2" name="scale" type="bool" />
 			<argument index="3" name="use_filter" type="bool" default="true" />
 			<description>
-				Sets a boot image. The color defines the background color. The value of [code]stretch_mode[/code] indicates how the image will be stretched (see [enum SplashStretchMode] for possible values). If [code]use_filter[/code] is [code]true[/code], the image will be scaled with linear interpolation. If [code]use_filter[/code] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
+				Sets a boot image. The color defines the background color. If [code]scale[/code] is [code]true[/code], the image will be scaled to fit the screen size. If [code]use_filter[/code] is [code]true[/code], the image will be scaled with linear interpolation. If [code]use_filter[/code] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>
 		</method>
 		<method name="set_debug_generate_wireframes">
@@ -4503,24 +4503,6 @@
 		<constant name="RENDERING_INFO_BUFFER_MEM_USED" value="4" enum="RenderingInfo">
 		</constant>
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
-		</constant>
-		<constant name="SPLASH_STRETCH_MODE_DISABLED" value="0" enum="SplashStretchMode">
-			The splash image uses its default pixel size.
-		</constant>
-		<constant name="SPLASH_STRETCH_MODE_KEEP" value="1" enum="SplashStretchMode">
-			If the window width is greater than its height, the splash image will be stretched to have the same height as the window. Otherwise, the image will be stretched to have the same width as the window. Both cases keep the original image's aspect ratio.
-		</constant>
-		<constant name="SPLASH_STRETCH_MODE_KEEP_WIDTH" value="2" enum="SplashStretchMode">
-			The splash image is stretched to have the same width as the window. It keeps the image's aspect ratio.
-		</constant>
-		<constant name="SPLASH_STRETCH_MODE_KEEP_HEIGHT" value="3" enum="SplashStretchMode">
-			The splash image is stretched to have the same height as the window. It keeps the image's aspect ratio.
-		</constant>
-		<constant name="SPLASH_STRETCH_MODE_COVER" value="4" enum="SplashStretchMode">
-			The splash image covers the window while keeping the aspect ratio.
-		</constant>
-		<constant name="SPLASH_STRETCH_MODE_EXPAND" value="5" enum="SplashStretchMode">
-			The splash image covers the window without keeping the aspect ratio.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">
 			Hardware supports shaders. This enum is currently unused in Godot 3.x.

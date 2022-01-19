@@ -2730,7 +2730,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_test_texture"), &RenderingServer::get_test_texture);
 	ClassDB::bind_method(D_METHOD("get_white_texture"), &RenderingServer::get_white_texture);
 
-	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "stretch_mode", "use_filter"), &RenderingServer::set_boot_image, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "scale", "use_filter"), &RenderingServer::set_boot_image, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &RenderingServer::set_default_clear_color);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &RenderingServer::has_feature);
@@ -2750,13 +2750,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RENDERING_INFO_TEXTURE_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDERING_INFO_BUFFER_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDERING_INFO_VIDEO_MEM_USED);
-
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP_WIDTH);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_KEEP_HEIGHT);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_COVER);
-	BIND_ENUM_CONSTANT(SPLASH_STRETCH_MODE_EXPAND);
 
 	BIND_ENUM_CONSTANT(FEATURE_SHADERS);
 	BIND_ENUM_CONSTANT(FEATURE_MULTITHREADED);

@@ -1728,15 +1728,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (show_logo) { //boot logo!
 		const bool boot_logo_image = GLOBAL_DEF("application/boot_splash/show_image", true);
 		const String boot_logo_path = String(GLOBAL_DEF("application/boot_splash/image", String())).strip_edges();
-		const RenderingServer::SplashStretchMode boot_stretch_mode =
-				(RenderingServer::SplashStretchMode)(int)GLOBAL_DEF("application/boot_splash/stretch_mode", RenderingServer::SPLASH_STRETCH_MODE_KEEP);
+		const bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
 		const bool boot_logo_filter = GLOBAL_DEF("application/boot_splash/use_filter", true);
-
-		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/stretch_mode",
-				PropertyInfo(Variant::INT, "application/boot_splash/stretch_mode",
-						PROPERTY_HINT_ENUM, "Disabled,Keep,Keep Width,Keep Height,Cover,Expand")); // Sync with RenderingServer::SplashStretchMode.
 		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/image",
-				PropertyInfo(Variant::STRING, "application/boot_splash/image",
+				PropertyInfo(Variant::STRING,
+						"application/boot_splash/image",
 						PROPERTY_HINT_FILE, "*.png"));
 
 		Ref<Image> boot_logo;
@@ -1764,8 +1760,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		const Color boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
 #endif
 		if (boot_logo.is_valid()) {
-			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color,
-					boot_stretch_mode, boot_logo_filter);
+			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale,
+					boot_logo_filter);
+
 		} else {
 #ifndef NO_DEFAULT_BOOT_LOGO
 			MAIN_PRINT("Main: Create bootsplash");
@@ -1778,7 +1775,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			MAIN_PRINT("Main: ClearColor");
 			RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
 			MAIN_PRINT("Main: Image");
-			RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, RenderingServer::SPLASH_STRETCH_MODE_DISABLED);
+			RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
 #endif
 		}
 
