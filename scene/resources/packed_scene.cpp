@@ -175,14 +175,12 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 #endif
 			}
 		} else {
-			Object *obj = nullptr;
+			//node belongs to this scene and must be created
+			Object *obj = ClassDB::instance(snames[n.type]);
 
-			if (ClassDB::is_class_enabled(snames[n.type])) {
-				//node belongs to this scene and must be created
-				obj = ClassDB::instance(snames[n.type]);
-			}
+			node = Object::cast_to<Node>(obj);
 
-			if (!Object::cast_to<Node>(obj)) {
+			if (!node) {
 				if (obj) {
 					memdelete(obj);
 					obj = nullptr;
@@ -201,9 +199,9 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				if (!obj) {
 					obj = memnew(Node);
 				}
-			}
 
-			node = Object::cast_to<Node>(obj);
+				node = Object::cast_to<Node>(obj);
+			}
 		}
 
 		if (node) {

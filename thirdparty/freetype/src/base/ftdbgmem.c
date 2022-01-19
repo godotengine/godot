@@ -4,7 +4,7 @@
  *
  *   Memory debugger (body).
  *
- * Copyright (C) 2001-2020 by
+ * Copyright (C) 2001-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -302,46 +302,6 @@
   }
 
 
-  static FT_MemTable
-  ft_mem_table_new( FT_Memory  memory )
-  {
-    FT_MemTable  table;
-
-
-    table = (FT_MemTable)memory->alloc( memory, sizeof ( *table ) );
-    if ( !table )
-      goto Exit;
-
-    FT_ZERO( table );
-
-    table->size  = FT_MEM_SIZE_MIN;
-    table->nodes = 0;
-
-    table->memory = memory;
-
-    table->memory_user = memory->user;
-
-    table->alloc   = memory->alloc;
-    table->realloc = memory->realloc;
-    table->free    = memory->free;
-
-    table->buckets = (FT_MemNode *)
-                       memory->alloc(
-                         memory,
-                         table->size * (FT_Long)sizeof ( FT_MemNode ) );
-    if ( table->buckets )
-      FT_ARRAY_ZERO( table->buckets, table->size );
-    else
-    {
-      memory->free( memory, table );
-      table = NULL;
-    }
-
-  Exit:
-    return table;
-  }
-
-
   static void
   ft_mem_table_destroy( FT_MemTable  table )
   {
@@ -349,8 +309,6 @@
     FT_Long  leak_count = 0;
     FT_Long  leaks      = 0;
 
-
-    FT_DumpMemory( table->memory );
 
     /* remove all blocks from the table, revealing leaked ones */
     for ( i = 0; i < table->size; i++ )
@@ -412,8 +370,6 @@
             table->alloc_total );
     printf( "FreeType: maximum memory footprint = %ld\n",
             table->alloc_max );
-
-    ft_mem_table_free( table, table );
 
     if ( leak_count > 0 )
       ft_mem_debug_panic(
@@ -821,17 +777,30 @@
   }
 
 
-  extern FT_Int
+  extern void
   ft_mem_debug_init( FT_Memory  memory )
   {
     FT_MemTable  table;
-    FT_Int       result = 0;
 
 
-    if ( ft_getenv( "FT2_DEBUG_MEMORY" ) )
+    if ( !ft_getenv( "FT2_DEBUG_MEMORY" ) )
+      return;
+
+    table = (FT_MemTable)memory->alloc( memory, sizeof ( *table ) );
+
+    if ( table )
     {
-      table = ft_mem_table_new( memory );
-      if ( table )
+      FT_ZERO( table );
+
+      table->memory      = memory;
+      table->memory_user = memory->user;
+      table->alloc       = memory->alloc;
+      table->realloc     = memory->realloc;
+      table->free        = memory->free;
+
+      ft_mem_table_resize( table );
+
+      if ( table->size )
       {
         const char*  p;
 
@@ -876,28 +845,31 @@
           if ( keep_alive > 0 )
             table->keep_alive = 1;
         }
-
-        result = 1;
       }
+      else
+        memory->free( memory, table );
     }
-    return result;
   }
 
 
   extern void
   ft_mem_debug_done( FT_Memory  memory )
   {
-    FT_MemTable  table = (FT_MemTable)memory->user;
-
-
-    if ( table )
+    if ( memory->free == ft_mem_debug_free )
     {
+      FT_MemTable  table = (FT_MemTable)memory->user;
+
+
+      FT_DumpMemory( memory );
+
+      ft_mem_table_destroy( table );
+
       memory->free    = table->free;
       memory->realloc = table->realloc;
       memory->alloc   = table->alloc;
+      memory->user    = table->memory_user;
 
-      ft_mem_table_destroy( table );
-      memory->user = NULL;
+      memory->free( memory, table );
     }
   }
 
@@ -922,11 +894,9 @@
   extern void
   FT_DumpMemory( FT_Memory  memory )
   {
-    FT_MemTable  table = (FT_MemTable)memory->user;
-
-
-    if ( table )
+    if ( memory->free == ft_mem_debug_free )
     {
+      FT_MemTable    table = (FT_MemTable)memory->user;
       FT_MemSource*  bucket = table->sources;
       FT_MemSource*  limit  = bucket + FT_MEM_SOURCE_BUCKETS;
       FT_MemSource*  sources;

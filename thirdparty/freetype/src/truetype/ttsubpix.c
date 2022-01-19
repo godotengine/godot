@@ -4,7 +4,7 @@
  *
  *   TrueType Subpixel Hinting.
  *
- * Copyright (C) 2010-2020 by
+ * Copyright (C) 2010-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -315,7 +315,7 @@
   static const SPH_TweakRule  SKIP_NONPIXEL_Y_MOVES_Rules
                               [SKIP_NONPIXEL_Y_MOVES_RULES_SIZE] =
   {
-    /* fix vwxyz thinness*/
+    /* fix vwxyz thinness */
     { "Consolas", 0, "", 0 },
     /* Fix thin middle stems */
     { "Core MS Legacy Fonts", 0, "Regular", 0 },
@@ -891,12 +891,12 @@
 #define TWEAK_RULES( x )                                       \
   if ( sph_test_tweak( face, family, ppem, style, glyph_index, \
                        x##_Rules, x##_RULES_SIZE ) )           \
-    loader->exec->sph_tweak_flags |= SPH_TWEAK_##x;
+    loader->exec->sph_tweak_flags |= SPH_TWEAK_##x
 
 #define TWEAK_RULES_EXCEPTIONS( x )                                        \
   if ( sph_test_tweak( face, family, ppem, style, glyph_index,             \
                        x##_Rules_Exceptions, x##_RULES_EXCEPTIONS_SIZE ) ) \
-    loader->exec->sph_tweak_flags &= ~SPH_TWEAK_##x;
+    loader->exec->sph_tweak_flags &= ~SPH_TWEAK_##x
 
 
   FT_LOCAL_DEF( void )

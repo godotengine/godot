@@ -207,7 +207,7 @@
 			[b]Note:[/b] A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" default="true">
-			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [code]collision_layer[/code] bit to be set.
+			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [member collision_layer] bit to be set.
 		</member>
 	</members>
 	<signals>

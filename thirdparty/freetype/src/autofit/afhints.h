@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines (specification).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -362,9 +362,6 @@ FT_BEGIN_HEADER
                                     /* implementations         */
     AF_StyleMetrics  metrics;
 
-    FT_Pos           xmin_delta;    /* used for warping */
-    FT_Pos           xmax_delta;
-
     /* Two arrays to avoid allocation penalty.            */
     /* The `embedded' structure must be the last element! */
     struct
@@ -407,10 +404,6 @@ FT_BEGIN_HEADER
 
 #define AF_HINTS_DO_ADVANCE( h )                                \
           !AF_HINTS_TEST_SCALER( h, AF_SCALER_FLAG_NO_ADVANCE )
-
-#define AF_HINTS_DO_WARP( h )                                  \
-          !AF_HINTS_TEST_SCALER( h, AF_SCALER_FLAG_NO_WARPER )
-
 
 
   FT_LOCAL( AF_Direction )
@@ -458,14 +451,6 @@ FT_BEGIN_HEADER
   FT_LOCAL( void )
   af_glyph_hints_align_weak_points( AF_GlyphHints  hints,
                                     AF_Dimension   dim );
-
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-  FT_LOCAL( void )
-  af_glyph_hints_scale_dim( AF_GlyphHints  hints,
-                            AF_Dimension   dim,
-                            FT_Fixed       scale,
-                            FT_Pos         delta );
-#endif
 
   FT_LOCAL( void )
   af_glyph_hints_done( AF_GlyphHints  hints );

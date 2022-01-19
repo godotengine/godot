@@ -4,7 +4,7 @@
  *
  *   WOFF2 format management (base).
  *
- * Copyright (C) 2019-2020 by
+ * Copyright (C) 2019-2021 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -25,8 +25,6 @@
 #ifdef FT_CONFIG_OPTION_USE_BROTLI
 
 #include <brotli/decode.h>
-
-#endif
 
 
   /**************************************************************************
@@ -101,15 +99,15 @@
   }
 
 
-  FT_CALLBACK_DEF( int )
+  FT_COMPARE_DEF( int )
   compare_tags( const void*  a,
                 const void*  b )
   {
     WOFF2_Table  table1 = *(WOFF2_Table*)a;
     WOFF2_Table  table2 = *(WOFF2_Table*)b;
 
-    FT_ULong  tag1 = table1->Tag;
-    FT_ULong  tag2 = table2->Tag;
+    FT_Tag  tag1 = table1->Tag;
+    FT_Tag  tag2 = table2->Tag;
 
 
     if ( tag1 > tag2 )
@@ -316,8 +314,6 @@
                     const FT_Byte*  src,
                     FT_ULong        src_size )
   {
-#ifdef FT_CONFIG_OPTION_USE_BROTLI
-
     /* this cast is only of importance on 32bit systems; */
     /* we don't validate it                              */
     FT_Offset            uncompressed_size = (FT_Offset)dst_size;
@@ -338,20 +334,13 @@
 
     FT_TRACE2(( "woff2_decompress: Brotli stream decompressed.\n" ));
     return FT_Err_Ok;
-
-#else /* !FT_CONFIG_OPTION_USE_BROTLI */
-
-    FT_ERROR(( "woff2_decompress: Brotli support not available.\n" ));
-    return FT_THROW( Unimplemented_Feature );
-
-#endif /* !FT_CONFIG_OPTION_USE_BROTLI */
   }
 
 
   static WOFF2_Table
   find_table( WOFF2_Table*  tables,
               FT_UShort     num_tables,
-              FT_ULong      tag )
+              FT_Tag        tag )
   {
     FT_Int  i;
 
@@ -790,7 +779,7 @@
       goto Fail;
 
     loca_buf_size = loca_values_size * offset_size;
-    if ( FT_NEW_ARRAY( loca_buf, loca_buf_size ) )
+    if ( FT_QNEW_ARRAY( loca_buf, loca_buf_size ) )
       goto Fail;
 
     dst = loca_buf;
@@ -1852,11 +1841,10 @@
          FT_NEW_ARRAY( indices, woff2.num_tables ) )
       goto Exit;
 
-    FT_TRACE2((
-      "\n"
-      "  tag    flags    transform  origLen   transformLen   offset\n"
-      "  -----------------------------------------------------------\n" ));
-   /* "  XXXX  XXXXXXXX  XXXXXXXX   XXXXXXXX    XXXXXXXX    XXXXXXXX" */
+    FT_TRACE2(( "\n" ));
+    FT_TRACE2(( "  tag    flags    transform  origLen   transformLen   offset\n" ));
+    FT_TRACE2(( "  -----------------------------------------------------------\n" ));
+             /* "  XXXX  XXXXXXXX  XXXXXXXX   XXXXXXXX    XXXXXXXX    XXXXXXXX" */
 
     for ( nn = 0; nn < woff2.num_tables; nn++ )
     {
@@ -2119,8 +2107,8 @@
 
 
       /* Create a temporary array. */
-      if ( FT_NEW_ARRAY( temp_indices,
-                         ttc_font->num_tables ) )
+      if ( FT_QNEW_ARRAY( temp_indices,
+                          ttc_font->num_tables ) )
         goto Exit;
 
       FT_TRACE4(( "Storing tables for TTC face index %d.\n", face_index ));
@@ -2128,9 +2116,9 @@
         temp_indices[nn] = indices[ttc_font->table_indices[nn]];
 
       /* Resize array to required size. */
-      if ( FT_RENEW_ARRAY( indices,
-                           woff2.num_tables,
-                           ttc_font->num_tables ) )
+      if ( FT_QRENEW_ARRAY( indices,
+                            woff2.num_tables,
+                            ttc_font->num_tables ) )
         goto Exit;
 
       for ( nn = 0; nn < ttc_font->num_tables; nn++ )
@@ -2170,8 +2158,8 @@
     }
 
     /* Write sfnt header. */
-    if ( FT_ALLOC( sfnt, sfnt_size ) ||
-         FT_NEW( sfnt_stream )       )
+    if ( FT_QALLOC( sfnt, sfnt_size ) ||
+         FT_NEW( sfnt_stream )        )
       goto Exit;
 
     sfnt_header = sfnt;
@@ -2209,6 +2197,25 @@
               sizeof ( WOFF2_Table ),
               compare_tags );
 
+    /* reject fonts that have multiple tables with the same tag */
+    for ( nn = 1; nn < woff2.num_tables; nn++ )
+    {
+      FT_Tag  tag = indices[nn]->Tag;
+
+
+      if ( tag == indices[nn - 1]->Tag )
+      {
+        FT_ERROR(( "woff2_open_font:"
+                   " multiple tables with tag `%c%c%c%c'.\n",
+                   (FT_Char)( tag >> 24 ),
+                   (FT_Char)( tag >> 16 ),
+                   (FT_Char)( tag >> 8  ),
+                   (FT_Char)( tag       ) ));
+        error = FT_THROW( Invalid_Table );
+        goto Exit;
+      }
+    }
+
     if ( woff2.uncompressed_size < 1 )
     {
       error = FT_THROW( Invalid_Table );
@@ -2223,8 +2230,8 @@
     }
 
     /* Allocate memory for uncompressed table data. */
-    if ( FT_ALLOC( uncompressed_buf, woff2.uncompressed_size ) ||
-         FT_FRAME_ENTER( woff2.totalCompressedSize )           )
+    if ( FT_QALLOC( uncompressed_buf, woff2.uncompressed_size ) ||
+         FT_FRAME_ENTER( woff2.totalCompressedSize )            )
       goto Exit;
 
     /* Uncompress the stream. */
@@ -2332,6 +2339,13 @@
 #undef COMPOSITE_STREAM
 #undef BBOX_STREAM
 #undef INSTRUCTION_STREAM
+
+#else /* !FT_CONFIG_OPTION_USE_BROTLI */
+
+  /* ANSI C doesn't like empty source files */
+  typedef int  _sfwoff2_dummy;
+
+#endif /* !FT_CONFIG_OPTION_USE_BROTLI */
 
 
 /* END */

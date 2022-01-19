@@ -104,6 +104,18 @@ void EditorFileDialog::_notification(int p_what) {
 		fav_down->set_icon(get_icon("MoveDown", "EditorIcons"));
 		// DO NOT CALL UPDATE FILE LIST HERE, ALL HUNDREDS OF HIDDEN DIALOGS WILL RESPOND, CALL INVALIDATE INSTEAD
 		invalidate();
+	} else if (p_what == NOTIFICATION_WM_FOCUS_IN) {
+		// Check if the current directory was removed externally (much less likely to happen while editor window is focused).
+		String previous_dir = get_current_dir();
+		while (!dir_access->dir_exists(get_current_dir())) {
+			_go_up();
+
+			// In case we can't go further up, use some fallback and break.
+			if (get_current_dir() == previous_dir) {
+				_dir_entered(OS::get_singleton()->get_user_data_dir());
+				break;
+			}
+		}
 	}
 }
 
@@ -1269,7 +1281,7 @@ void EditorFileDialog::_recent_selected(int p_idx) {
 }
 
 void EditorFileDialog::_go_up() {
-	dir_access->change_dir("..");
+	dir_access->change_dir(get_current_dir().get_base_dir());
 	update_file_list();
 	update_dir();
 	_push_history();

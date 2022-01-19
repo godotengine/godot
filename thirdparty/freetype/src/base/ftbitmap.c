@@ -4,7 +4,7 @@
  *
  *   FreeType utility functions for bitmaps (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -112,10 +112,10 @@
       target_size = (FT_ULong)target_pitch * target->rows;
 
       if ( target_size != size )
-        (void)FT_QREALLOC( target->buffer, target_size, size );
+        FT_MEM_QREALLOC( target->buffer, target_size, size );
     }
     else
-      (void)FT_QALLOC( target->buffer, size );
+      FT_MEM_QALLOC( target->buffer, size );
 
     if ( !error )
     {
@@ -907,8 +907,8 @@
     final_rows  = ( final_ury - final_lly ) >> 6;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
-    FT_TRACE5(( "FT_Bitmap_Blend:\n"
-                "  source bitmap: (%ld, %ld) -- (%ld, %ld); %d x %d\n",
+    FT_TRACE5(( "FT_Bitmap_Blend:\n" ));
+    FT_TRACE5(( "  source bitmap: (%ld, %ld) -- (%ld, %ld); %d x %d\n",
       source_llx / 64, source_lly / 64,
       source_urx / 64, source_ury / 64,
       source_->width, source_->rows ));

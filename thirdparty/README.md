@@ -118,14 +118,14 @@ comments.
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.10.4 (6a2b3e4007e794bfc6c91030d0ed987f925164a8, 2020)
+- Version: 2.11.1 (3f83daeecb1a78d851b660eed025eeba362c0e4a, 2021)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
 
-- the `src/` folder, stripped of the `Jamfile` files and the `tools` subfolder
-- the `include/` folder
-- `docs/{FTL.TXT,LICENSE.TXT}`
+- the `src/` folder, minus the `.mk` files and the `dlg` and `tools` subfolders
+- the `include/` folder, minus the `dlg` subfolder
+- `LICENSE.TXT` and `docs/FTL.TXT`
 
 
 ## glad
@@ -267,14 +267,11 @@ changes are marked with `// -- GODOT --` comments.
 
 File extracted from upstream release tarball:
 
-- All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`.
-- All `*.c` from `library/` to `thirdparty/mbedtls/library/`.
+- All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/` except `config_psa.h` and `psa_util.h`.
+- All `*.c` and `*.h` from `library/` to `thirdparty/mbedtls/library/` except those starting with `psa_*`.
 - `LICENSE` and `apache-2.0.txt` files.
 - Applied the patch in `patches/1453.diff` (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
-- Applied the patch in `patches/padlock.diff`. This disables VIA padlock
-  support which defines a symbol `unsupported` which clashes with a
-  pre-defined symbol.
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 
