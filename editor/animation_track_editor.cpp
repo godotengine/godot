@@ -3375,7 +3375,13 @@ Node *AnimationTrackEditor::get_root() const {
 }
 
 void AnimationTrackEditor::update_keying() {
-	bool keying_enabled = is_visible_in_tree() && animation.is_valid();
+	bool keying_enabled = false;
+
+	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	if (is_visible_in_tree() && animation.is_valid() && editor_history->get_path_size() > 0) {
+		Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));
+		keying_enabled = Object::cast_to<Node>(obj) != nullptr;
+	}
 
 	if (keying_enabled == keying) {
 		return;
@@ -4525,8 +4531,6 @@ void AnimationTrackEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		update_keying();
-		EditorNode::get_singleton()->update_keying();
-		emit_signal(SNAME("keying_changed"));
 	}
 }
 

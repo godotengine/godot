@@ -2905,6 +2905,7 @@ void EditorInspector::edit(Object *p_object) {
 		object->connect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
 		update_tree();
 	}
+	emit_signal("edited_object_changed");
 }
 
 void EditorInspector::set_keying(bool p_active) {
@@ -3543,6 +3544,7 @@ void EditorInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("property_edited", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_toggled", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::BOOL, "checked")));
+	ADD_SIGNAL(MethodInfo("edited_object_changed"));
 	ADD_SIGNAL(MethodInfo("restart_requested"));
 }
 

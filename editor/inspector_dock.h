@@ -117,16 +117,12 @@ class InspectorDock : public VBoxContainer {
 	void _select_history(int p_idx);
 	void _prepare_history();
 
-	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
-	void _transform_keyed(Object *sp, const String &p_sub, const Transform3D &p_key);
-
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
 	void go_back();
-	void update_keying();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void open_resource(const String &p_type);
 	void clear();
