@@ -92,9 +92,13 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		const gd::Polygon &p = polygons[i];
 
 		// For each point cast a face and check the distance between the origin/destination
-		for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
-			Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
-			Vector3 spoint = f.get_closest_point_to(p_origin);
+		for (size_t point_id = 0; point_id < p.points.size(); point_id++) {
+			const Vector3 p1 = p.points[point_id].pos;
+			const Vector3 p2 = p.points[(point_id + 1) % p.points.size()].pos;
+			const Vector3 p3 = p.points[(point_id + 2) % p.points.size()].pos;
+			const Face3 face(p1, p2, p3);
+
+			Vector3 spoint = face.get_closest_point_to(p_origin);
 			float dpoint = spoint.distance_to(p_origin);
 			if (dpoint < begin_d) {
 				begin_d = dpoint;
@@ -102,7 +106,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				begin_point = spoint;
 			}
 
-			spoint = f.get_closest_point_to(p_destination);
+			spoint = face.get_closest_point_to(p_destination);
 			dpoint = spoint.distance_to(p_destination);
 			if (dpoint < end_d) {
 				end_d = dpoint;
