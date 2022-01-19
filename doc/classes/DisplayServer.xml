@@ -20,6 +20,12 @@
 				[b]Note:[/b] This method is only implemented on Linux.
 			</description>
 		</method>
+		<method name="clipboard_has" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if there is content on the user's clipboard.
+			</description>
+		</method>
 		<method name="clipboard_set">
 			<return type="void" />
 			<argument index="0" name="clipboard" type="String" />

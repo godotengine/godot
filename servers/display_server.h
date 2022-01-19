@@ -160,6 +160,7 @@ public:
 
 	virtual void clipboard_set(const String &p_text);
 	virtual String clipboard_get() const;
+	virtual bool clipboard_has() const;
 	virtual void clipboard_set_primary(const String &p_text);
 	virtual String clipboard_get_primary() const;
 
