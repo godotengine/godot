@@ -277,6 +277,7 @@ public:
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) = 0;
+	virtual void window_set_exclusive(WindowID p_window, bool p_exclusive);
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const = 0;

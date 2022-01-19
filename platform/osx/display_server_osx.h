@@ -95,6 +95,7 @@ public:
 		ObjectID instance_id;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
+		bool exclusive = false;
 		Set<WindowID> transient_children;
 
 		bool layered_window = false;
@@ -274,6 +275,7 @@ public:
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
+	virtual void window_set_exclusive(WindowID p_window, bool p_exclusive) override;
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override;
