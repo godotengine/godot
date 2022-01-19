@@ -164,7 +164,10 @@ public:
 	void set_external_install(bool p_enable) { external_install = p_enable; }
 	int get_asset_id() { return asset_id; }
 	void configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash);
+
+	bool can_install() const;
 	void install();
+
 	EditorAssetLibraryItemDownload();
 };
 
