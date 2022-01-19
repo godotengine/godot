@@ -945,6 +945,26 @@ private:
 		error_str = p_str;
 	}
 
+	void _set_expected_error(const String &p_what) {
+		_set_error(vformat(RTR("Expected a '%s'."), p_what));
+	}
+
+	void _set_expected_error(const String &p_first, const String p_second) {
+		_set_error(vformat(RTR("Expected a '%s' or '%s'."), p_first, p_second));
+	}
+
+	void _set_expected_after_error(const String &p_what, const String &p_after) {
+		_set_error(vformat(RTR("Expected a '%s' after '%s'."), p_what, p_after));
+	}
+
+	void _set_redefinition_error(const String &p_what) {
+		_set_error(vformat(RTR("Redefinition of '%s'."), p_what));
+	}
+
+	void _set_parsing_error() {
+		_set_error("Parser bug.");
+	}
+
 	static const char *token_names[TK_MAX];
 
 	Token _make_token(TokenType p_type, const StringName &p_text = StringName());
