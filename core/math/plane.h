@@ -35,7 +35,7 @@
 
 class Variant;
 
-class Plane {
+class _NO_DISCARD_ Plane {
 public:
 	Vector3 normal;
 	real_t d = 0;

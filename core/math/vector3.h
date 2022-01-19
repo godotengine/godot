@@ -37,7 +37,7 @@
 #include "core/string/ustring.h"
 class Basis;
 
-struct Vector3 {
+struct _NO_DISCARD_ Vector3 {
 	static const int AXIS_COUNT = 3;
 
 	enum Axis {

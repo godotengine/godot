@@ -36,7 +36,7 @@
 #include "core/math/vector3.h"
 #include "core/string/ustring.h"
 
-class Quaternion {
+class _NO_DISCARD_ Quaternion {
 public:
 	union {
 		struct {

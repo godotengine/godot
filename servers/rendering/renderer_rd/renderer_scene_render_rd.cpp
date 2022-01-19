@@ -514,7 +514,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		ambient_color_sky_mix = env->ambient_sky_contribution;
 		const float ambient_energy = env->ambient_light_energy;
 		ambient_color = env->ambient_light;
-		ambient_color.to_linear();
+		ambient_color = ambient_color.to_linear();
 		ambient_color.r *= ambient_energy;
 		ambient_color.g *= ambient_energy;
 		ambient_color.b *= ambient_energy;
@@ -533,7 +533,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 	} else {
 		const float bg_energy = env->bg_energy;
 		Color panorama_color = ((environment_background == RS::ENV_BG_CLEAR_COLOR) ? storage->get_default_clear_color() : env->bg_color);
-		panorama_color.to_linear();
+		panorama_color = panorama_color.to_linear();
 		panorama_color.r *= bg_energy;
 		panorama_color.g *= bg_energy;
 		panorama_color.b *= bg_energy;

@@ -316,7 +316,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
 	} else {
-		_get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
+		_ALLOW_DISCARD_ _get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 		Input::get_singleton()->set_mouse_position(wd.mouse_pos);
 	}
 
@@ -1391,7 +1391,7 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 
 	double deltaX, deltaY;
 
-	_get_mouse_pos(wd, [event locationInWindow]);
+	_ALLOW_DISCARD_ _get_mouse_pos(wd, [event locationInWindow]);
 
 	deltaX = [event scrollingDeltaX];
 	deltaY = [event scrollingDeltaY];
@@ -2463,7 +2463,7 @@ void DisplayServerOSX::window_set_position(const Point2i &p_position, WindowID p
 	[wd.window_object setFrameTopLeftPoint:NSMakePoint(position.x - offset.x, position.y - offset.y)];
 
 	_update_window(wd);
-	_get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
+	_ALLOW_DISCARD_ _get_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 }
 
 void DisplayServerOSX::window_set_max_size(const Size2i p_size, WindowID p_window) {

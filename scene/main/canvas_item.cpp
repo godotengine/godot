@@ -1017,8 +1017,8 @@ void CanvasItem::set_notify_transform(bool p_enable) {
 	notify_transform = p_enable;
 
 	if (notify_transform && is_inside_tree()) {
-		//this ensures that invalid globals get resolved, so notifications can be received
-		get_global_transform();
+		// This ensures that invalid globals get resolved, so notifications can be received.
+		_ALLOW_DISCARD_ get_global_transform();
 	}
 }
 
