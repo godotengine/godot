@@ -1442,6 +1442,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_info_3d_viewport->set_border_width_all(0);
 	theme->set_stylebox("Information3dViewport", "EditorStyles", style_info_3d_viewport);
 
+	// Asset Library.
+	theme->set_stylebox("panel", "AssetLib", style_content_panel);
+	theme->set_color("status_color", "AssetLib", Color(0.5, 0.5, 0.5));
+	theme->set_icon("dismiss", "AssetLib", theme->get_icon("Close", "EditorIcons"));
+
 	// Theme editor.
 	theme->set_color("preview_picker_overlay_color", "ThemeEditor", Color(0.1, 0.1, 0.1, 0.25));
 	Color theme_preview_picker_bg_color = accent_color;
