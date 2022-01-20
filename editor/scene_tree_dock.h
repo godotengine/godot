@@ -117,7 +117,7 @@ class SceneTreeDock : public VBoxContainer {
 	Button *button_instance;
 	Button *button_create_script;
 	Button *button_detach_script;
-	Button *button_tree_menu;
+	MenuButton *button_tree_menu;
 
 	Button *button_2d;
 	Button *button_3d;
@@ -242,7 +242,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _quick_open();
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
-	void _open_tree_menu();
+	void _update_tree_menu();
 
 	void _filter_changed(const String &p_filter);
 
