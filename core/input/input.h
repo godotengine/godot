@@ -242,6 +242,7 @@ public:
 
 	static Input *get_singleton();
 
+	bool is_anything_pressed() const;
 	bool is_key_pressed(Key p_keycode) const;
 	bool is_physical_key_pressed(Key p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
