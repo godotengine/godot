@@ -2705,6 +2705,7 @@ void RichTextLabel::install_effect(const Variant effect) {
 
 int RichTextLabel::get_content_height() const {
 	int total_height = 0;
+	const_cast<RichTextLabel *>(this)->_validate_line_caches(main);
 	if (main->lines.size()) {
 		total_height = main->lines[main->lines.size() - 1].height_accum_cache + get_stylebox("normal")->get_minimum_size().height;
 	}
@@ -2886,7 +2887,6 @@ Size2 RichTextLabel::get_minimum_size() const {
 	}
 
 	if (fixed_width != -1 || fit_content_height) {
-		const_cast<RichTextLabel *>(this)->_validate_line_caches(main);
 		size.y = get_content_height();
 	}
 
