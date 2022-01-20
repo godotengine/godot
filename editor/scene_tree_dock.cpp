@@ -3214,7 +3214,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<RES, RES> &r_remap)
 		}
 
 		Variant v = p_node->get(E.name);
-		if (v.is_ref()) {
+		if (v.is_ref_counted()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (!states_stack_ready) {
@@ -3252,7 +3252,7 @@ void SceneTreeDock::_create_remap_for_resource(RES p_resource, Map<RES, RES> &r_
 		}
 
 		Variant v = p_resource->get(E.name);
-		if (v.is_ref()) {
+		if (v.is_ref_counted()) {
 			RES res = v;
 			if (res.is_valid()) {
 				if (res->is_built_in() && !r_remap.has(res)) {
