@@ -179,7 +179,14 @@ void OptionButton::pressed() {
 	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
-	popup->set_current_index(current);
+
+	// If not triggered by the mouse, start the popup with the checked item selected.
+	if (popup->get_item_count() > 0 &&
+			((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
+					(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept")))) {
+		popup->set_current_index(current > -1 ? current : 0);
+	}
+
 	popup->popup();
 }
 
