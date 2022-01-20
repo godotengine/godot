@@ -36,7 +36,7 @@
 
 class Basis;
 
-struct Vector3 {
+struct _NO_DISCARD_CLASS_ Vector3 {
 	static const int AXIS_COUNT = 3;
 
 	enum Axis {

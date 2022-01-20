@@ -36,7 +36,7 @@
 #include "core/math/transform.h"
 #include "core/math/vector3.h"
 
-class Face3 {
+class _NO_DISCARD_CLASS_ Face3 {
 public:
 	enum Side {
 		SIDE_OVER,

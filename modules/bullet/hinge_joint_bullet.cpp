@@ -43,14 +43,14 @@
 HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameA, const Transform &frameB) :
 		JointBullet() {
 	Transform scaled_AFrame(frameA.scaled(rbA->get_body_scale()));
-	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
+	_ALLOW_DISCARD_ scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
 	btTransform btFrameA;
 	G_TO_B(scaled_AFrame, btFrameA);
 
 	if (rbB) {
 		Transform scaled_BFrame(frameB.scaled(rbB->get_body_scale()));
-		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
+		_ALLOW_DISCARD_ scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 
 		btTransform btFrameB;
 		G_TO_B(scaled_BFrame, btFrameB);

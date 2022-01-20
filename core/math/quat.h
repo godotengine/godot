@@ -36,7 +36,7 @@
 #include "core/math/vector3.h"
 #include "core/ustring.h"
 
-class Quat {
+class _NO_DISCARD_CLASS_ Quat {
 public:
 	real_t x, y, z, w;
 
@@ -127,7 +127,7 @@ public:
 			w(p_q.w) {
 	}
 
-	Quat operator=(const Quat &p_q) {
+	Quat &operator=(const Quat &p_q) {
 		x = p_q.x;
 		y = p_q.y;
 		z = p_q.z;
