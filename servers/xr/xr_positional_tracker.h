@@ -82,7 +82,7 @@ public:
 	bool has_pose(const StringName &p_action_name) const;
 	Ref<XRPose> get_pose(const StringName &p_action_name) const;
 	void invalidate_pose(const StringName &p_action_name);
-	void set_pose(const StringName &p_action_name, const Transform3D &p_transform, const Vector3 &p_linear_velocity, const Vector3 &p_angular_velocity);
+	void set_pose(const StringName &p_action_name, const Transform3D &p_transform, const Vector3 &p_linear_velocity, const Vector3 &p_angular_velocity, const XRPose::TrackingConfidence p_tracking_confidence = XRPose::XR_TRACKING_CONFIDENCE_HIGH);
 
 	Variant get_input(const StringName &p_action_name) const;
 	void set_input(const StringName &p_action_name, const Variant &p_value);

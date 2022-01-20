@@ -51,6 +51,7 @@ class MobileVRInterface : public XRInterface {
 private:
 	bool initialized = false;
 	XRInterface::TrackingStatus tracking_state;
+	XRPose::TrackingConfidence tracking_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
 
 	// Just set some defaults for these. At some point we need to look at adding a lookup table for common device + headset combos and/or support reading cardboard QR codes
 	double eye_height = 1.85;

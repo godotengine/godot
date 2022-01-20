@@ -34,8 +34,22 @@
 			- [code]grip[/code] defines the location where the user grips the controller
 			- [code]skeleton[/code] defines the root location a hand mesh should be placed when using hand tracking and the animated skeleton supplied by the XR runtime.
 		</member>
+		<member name="tracking_confidence" type="int" setter="set_tracking_confidence" getter="get_tracking_confidence" enum="XRPose.TrackingConfidence" default="0">
+			The tracking confidence for this pose, provides insight on how accurate the spatial positioning of this record is.
+		</member>
 		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			The transform containing the original and transform as reported by the XR runtime.
 		</member>
 	</members>
+	<constants>
+		<constant name="XR_TRACKING_CONFIDENCE_NONE" value="0" enum="TrackingConfidence">
+			No tracking information is available for this pose.
+		</constant>
+		<constant name="XR_TRACKING_CONFIDENCE_LOW" value="1" enum="TrackingConfidence">
+			Tracking information may be inaccurate or estimated. For instance with inside out tracking this would indicate a controller may be (partially) obscured.
+		</constant>
+		<constant name="XR_TRACKING_CONFIDENCE_HIGH" value="2" enum="TrackingConfidence">
+			Tracking information is deemed accurate and up to date.
+		</constant>
+	</constants>
 </class>
