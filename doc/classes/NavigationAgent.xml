@@ -45,6 +45,12 @@
 				Returns a [Vector3] in global coordinates, that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the origin of the agent's parent.
 			</description>
 		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the object's [RID].
+			</description>
+		</method>
 		<method name="get_target_location" qualifiers="const">
 			<return type="Vector3" />
 			<description>
