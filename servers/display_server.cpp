@@ -155,6 +155,10 @@ String DisplayServer::clipboard_get() const {
 	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
 }
 
+bool DisplayServer::clipboard_has() const {
+	return !clipboard_get().is_empty();
+}
+
 void DisplayServer::clipboard_set_primary(const String &p_text) {
 	WARN_PRINT("Primary clipboard is not supported by this display server.");
 }
@@ -359,6 +363,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clipboard_set", "clipboard"), &DisplayServer::clipboard_set);
 	ClassDB::bind_method(D_METHOD("clipboard_get"), &DisplayServer::clipboard_get);
+	ClassDB::bind_method(D_METHOD("clipboard_has"), &DisplayServer::clipboard_has);
 	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
 	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
 

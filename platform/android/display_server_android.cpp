@@ -95,6 +95,17 @@ String DisplayServerAndroid::clipboard_get() const {
 	}
 }
 
+bool DisplayServerAndroid::clipboard_has() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_COND_V(!godot_java, false);
+
+	if (godot_java->has_has_clipboard()) {
+		return godot_java->has_clipboard();
+	} else {
+		return DisplayServer::clipboard_has();
+	}
+}
+
 void DisplayServerAndroid::screen_set_keep_on(bool p_enable) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_COND(!godot_java);

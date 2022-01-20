@@ -66,6 +66,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_GLES_version_code = p_env->GetMethodID(godot_class, "getGLESVersionCode", "()I");
 	_get_clipboard = p_env->GetMethodID(godot_class, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(godot_class, "setClipboard", "(Ljava/lang/String;)V");
+	_has_clipboard = p_env->GetMethodID(godot_class, "hasClipboard", "()Z");
 	_request_permission = p_env->GetMethodID(godot_class, "requestPermission", "(Ljava/lang/String;)Z");
 	_request_permissions = p_env->GetMethodID(godot_class, "requestPermissions", "()Z");
 	_get_granted_permissions = p_env->GetMethodID(godot_class, "getGrantedPermissions", "()[Ljava/lang/String;");
@@ -245,6 +246,21 @@ void GodotJavaWrapper::set_clipboard(const String &p_text) {
 
 		jstring jStr = env->NewStringUTF(p_text.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _set_clipboard, jStr);
+	}
+}
+
+bool GodotJavaWrapper::has_has_clipboard() {
+	return _has_clipboard != 0;
+}
+
+bool GodotJavaWrapper::has_clipboard() {
+	if (_has_clipboard) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, false);
+
+		return env->CallBooleanMethod(godot_instance, _has_clipboard);
+	} else {
+		return false;
 	}
 }
 
