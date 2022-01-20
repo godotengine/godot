@@ -48,6 +48,8 @@
 #include "servers/display_server.h"
 #include "shader_create_dialog.h"
 
+FileSystemDock *FileSystemDock::singleton = nullptr;
+
 Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_file_type) {
 	Ref<Texture2D> file_icon;
 	if (!p_is_valid) {
@@ -2335,7 +2337,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		EditorNode::get_singleton()->get_scene_tree_dock()->save_branch_to_file(to_dir);
+		SceneTreeDock::get_singleton()->save_branch_to_file(to_dir);
 	}
 }
 
@@ -2743,11 +2745,11 @@ void FileSystemDock::_update_import_dock() {
 	}
 
 	if (imports.size() == 0) {
-		EditorNode::get_singleton()->get_import_dock()->clear();
+		ImportDock::get_singleton()->clear();
 	} else if (imports.size() == 1) {
-		EditorNode::get_singleton()->get_import_dock()->set_edit_path(imports[0]);
+		ImportDock::get_singleton()->set_edit_path(imports[0]);
 	} else {
-		EditorNode::get_singleton()->get_import_dock()->set_edit_multiple_paths(imports);
+		ImportDock::get_singleton()->set_edit_multiple_paths(imports);
 	}
 
 	import_dock_needs_update = false;
@@ -2816,6 +2818,7 @@ void FileSystemDock::_bind_methods() {
 }
 
 FileSystemDock::FileSystemDock(EditorNode *p_editor) {
+	singleton = this;
 	set_name("FileSystem");
 	editor = p_editor;
 	path = "res://";
@@ -3051,4 +3054,5 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 }
 
 FileSystemDock::~FileSystemDock() {
+	singleton = nullptr;
 }

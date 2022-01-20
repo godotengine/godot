@@ -1505,7 +1505,7 @@ void AnimationPlayerEditor::_stop_onion_skinning() {
 }
 
 void AnimationPlayerEditor::_pin_pressed() {
-	EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->update_tree();
+	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
 }
 
 void AnimationPlayerEditor::_bind_methods() {
@@ -1794,9 +1794,9 @@ void AnimationPlayerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Node3DEditor::get_singleton()->connect("transform_key_request", callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
-			editor->get_inspector()->connect("property_keyed", callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
+			InspectorDock::get_singleton()->connect("property_keyed", callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
 			anim_editor->get_track_editor()->connect("keying_changed", callable_mp(this, &AnimationPlayerEditorPlugin::_update_keying));
-			editor->get_inspector()->connect("edited_object_changed", callable_mp(anim_editor->get_track_editor(), &AnimationTrackEditor::update_keying));
+			InspectorDock::get_singleton()->connect("edited_object_changed", callable_mp(anim_editor->get_track_editor(), &AnimationTrackEditor::update_keying));
 			set_force_draw_over_forwarding_enabled();
 		} break;
 	}
@@ -1823,7 +1823,7 @@ void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const Strin
 }
 
 void AnimationPlayerEditorPlugin::_update_keying() {
-	editor->get_inspector()->set_keying(anim_editor->get_track_editor()->has_keying());
+	InspectorDock::get_inspector_singleton()->set_keying(anim_editor->get_track_editor()->has_keying());
 }
 
 void AnimationPlayerEditorPlugin::edit(Object *p_object) {

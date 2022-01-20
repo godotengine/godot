@@ -75,8 +75,8 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	remote_scene_tree = memnew(EditorDebuggerTree);
 	remote_scene_tree->connect("object_selected", callable_mp(this, &EditorDebuggerNode::_remote_object_requested));
 	remote_scene_tree->connect("save_node", callable_mp(this, &EditorDebuggerNode::_save_node_requested));
-	EditorNode::get_singleton()->get_scene_tree_dock()->add_remote_tree_editor(remote_scene_tree);
-	EditorNode::get_singleton()->get_scene_tree_dock()->connect("remote_tree_selected", callable_mp(this, &EditorDebuggerNode::request_remote_tree));
+	SceneTreeDock::get_singleton()->add_remote_tree_editor(remote_scene_tree);
+	SceneTreeDock::get_singleton()->connect("remote_tree_selected", callable_mp(this, &EditorDebuggerNode::request_remote_tree));
 
 	remote_scene_tree_timeout = EDITOR_DEF("debugger/remote_scene_tree_refresh_interval", 1.0);
 	inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
@@ -332,10 +332,10 @@ void EditorDebuggerNode::_notification(int p_what) {
 		// Switch to remote tree view if so desired.
 		auto_switch_remote_scene_tree = (bool)EditorSettings::get_singleton()->get("debugger/auto_switch_to_remote_scene_tree");
 		if (auto_switch_remote_scene_tree) {
-			EditorNode::get_singleton()->get_scene_tree_dock()->show_remote_tree();
+			SceneTreeDock::get_singleton()->show_remote_tree();
 		}
 		// Good to go.
-		EditorNode::get_singleton()->get_scene_tree_dock()->show_tab_buttons();
+		SceneTreeDock::get_singleton()->show_tab_buttons();
 		debugger->set_editor_remote_tree(remote_scene_tree);
 		debugger->start(server->take_connection());
 		// Send breakpoints.
@@ -361,8 +361,8 @@ void EditorDebuggerNode::_debugger_stopped(int p_id) {
 	if (!found) {
 		EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
 		EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
-		EditorNode::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
-		EditorNode::get_singleton()->get_scene_tree_dock()->hide_tab_buttons();
+		SceneTreeDock::get_singleton()->hide_remote_tree();
+		SceneTreeDock::get_singleton()->hide_tab_buttons();
 		EditorNode::get_singleton()->notify_all_debug_sessions_exited();
 	}
 }
@@ -576,7 +576,7 @@ void EditorDebuggerNode::_remote_object_property_updated(ObjectID p_id, const St
 		if (obj->remote_object_id != p_id) {
 			return;
 		}
-		EditorNode::get_singleton()->get_inspector()->update_property(p_property);
+		InspectorDock::get_inspector_singleton()->update_property(p_property);
 	}
 }
 

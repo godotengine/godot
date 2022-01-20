@@ -87,8 +87,8 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 		ur->add_undo_property(n, name, n->get(name));
 	}
-	ur->add_do_method(EditorNode::get_singleton()->get_inspector(), "refresh");
-	ur->add_undo_method(EditorNode::get_singleton()->get_inspector(), "refresh");
+	ur->add_do_method(InspectorDock::get_inspector_singleton(), "refresh");
+	ur->add_undo_method(InspectorDock::get_inspector_singleton(), "refresh");
 
 	ur->commit_action();
 	return true;

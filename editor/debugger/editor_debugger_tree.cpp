@@ -128,7 +128,7 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position) {
 void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger) {
 	updating_scene_tree = true;
 	const String last_path = get_selected_path();
-	const String filter = EditorNode::get_singleton()->get_scene_tree_dock()->get_filter();
+	const String filter = SceneTreeDock::get_singleton()->get_filter();
 	bool filter_changed = filter != last_filter;
 	TreeItem *scroll_item = nullptr;
 

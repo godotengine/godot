@@ -117,6 +117,13 @@ class InspectorDock : public VBoxContainer {
 	void _select_history(int p_idx);
 	void _prepare_history();
 
+private:
+	static InspectorDock *singleton;
+
+public:
+	static InspectorDock *get_singleton() { return singleton; }
+	static EditorInspector *get_inspector_singleton() { return singleton->inspector; }
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);

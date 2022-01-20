@@ -33,6 +33,8 @@
 #include "editor/editor_scale.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 
+InspectorDock *InspectorDock::singleton = nullptr;
+
 void InspectorDock::_menu_option(int p_option) {
 	_menu_option_confirm(p_option, false);
 }
@@ -156,7 +158,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 									res = duplicates[res];
 
 									current->set(prop_info.name, res);
-									editor->get_inspector()->update_property(prop_info.name);
+									get_inspector_singleton()->update_property(prop_info.name);
 								}
 							}
 						}
@@ -531,6 +533,7 @@ void InspectorDock::go_back() {
 }
 
 InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
+	singleton = this;
 	set_name("Inspector");
 
 	editor = p_editor;
@@ -686,4 +689,5 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 }
 
 InspectorDock::~InspectorDock() {
+	singleton = nullptr;
 }

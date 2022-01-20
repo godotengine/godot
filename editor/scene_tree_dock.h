@@ -264,11 +264,16 @@ class SceneTreeDock : public VBoxContainer {
 	bool profile_allow_editing;
 	bool profile_allow_script_editing;
 
-	static SceneTreeDock *singleton;
 	static void _update_configuration_warning();
 
 	bool _update_node_path(Node *p_root_node, NodePath &r_node_path, Map<Node *, NodePath> *p_renames) const;
 	bool _check_node_path_recursive(Node *p_root_node, Variant &r_variant, Map<Node *, NodePath> *p_renames) const;
+
+private:
+	static SceneTreeDock *singleton;
+
+public:
+	static SceneTreeDock *get_singleton() { return singleton; }
 
 protected:
 	void _notification(int p_what);

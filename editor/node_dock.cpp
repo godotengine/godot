@@ -134,3 +134,7 @@ NodeDock::NodeDock() {
 	select_a_node->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	add_child(select_a_node);
 }
+
+NodeDock::~NodeDock() {
+	singleton = nullptr;
+}

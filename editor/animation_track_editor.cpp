@@ -5012,7 +5012,7 @@ struct _AnimMoveRestore {
 void AnimationTrackEditor::_clear_key_edit() {
 	if (key_edit) {
 		// If key edit is the object being inspected, remove it first.
-		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == key_edit) {
+		if (InspectorDock::get_inspector_singleton()->get_edited_object() == key_edit) {
 			EditorNode::get_singleton()->push_item(nullptr);
 		}
 
@@ -5022,7 +5022,7 @@ void AnimationTrackEditor::_clear_key_edit() {
 	}
 
 	if (multi_key_edit) {
-		if (EditorNode::get_singleton()->get_inspector()->get_edited_object() == multi_key_edit) {
+		if (InspectorDock::get_inspector_singleton()->get_edited_object() == multi_key_edit) {
 			EditorNode::get_singleton()->push_item(nullptr);
 		}
 
