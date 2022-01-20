@@ -23,6 +23,7 @@
 #include "tvgSwCommon.h"
 #include "tvgTaskScheduler.h"
 #include "tvgSwRenderer.h"
+#include "tvgMath.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -594,10 +595,10 @@ void* SwRenderer::prepareCommon(SwTask* task, const RenderTransform* transform, 
     task->surface = surface;
     task->mpool = mpool;
     task->flags = flags;
-    task->bbox.min.x = max(static_cast<SwCoord>(0), static_cast<SwCoord>(vport.x));
-    task->bbox.min.y = max(static_cast<SwCoord>(0), static_cast<SwCoord>(vport.y));
-    task->bbox.max.x = min(static_cast<SwCoord>(surface->w), static_cast<SwCoord>(vport.x + vport.w));
-    task->bbox.max.y = min(static_cast<SwCoord>(surface->h), static_cast<SwCoord>(vport.y + vport.h));
+    task->bbox.min.x = mathMax(static_cast<SwCoord>(0), static_cast<SwCoord>(vport.x));
+    task->bbox.min.y = mathMax(static_cast<SwCoord>(0), static_cast<SwCoord>(vport.y));
+    task->bbox.max.x = mathMin(static_cast<SwCoord>(surface->w), static_cast<SwCoord>(vport.x + vport.w));
+    task->bbox.max.y = mathMin(static_cast<SwCoord>(surface->h), static_cast<SwCoord>(vport.y + vport.h));
 
     if (!task->pushed) {
         task->pushed = true;
