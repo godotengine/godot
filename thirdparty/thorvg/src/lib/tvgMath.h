@@ -29,6 +29,10 @@
 #include "tvgCommon.h"
 
 
+#define mathMin(x, y) (((x) < (y)) ? (x) : (y))
+#define mathMax(x, y) (((x) > (y)) ? (x) : (y))
+
+
 static inline bool mathZero(float a)
 {
     return (fabsf(a) < FLT_EPSILON) ? true : false;

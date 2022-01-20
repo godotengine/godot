@@ -1,0 +1,49 @@
+diff --git a/thirdparty/thorvg/src/lib/sw_engine/tvgSwRenderer.cpp b/thirdparty/thorvg/src/lib/sw_engine/tvgSwRenderer.cpp
+index 78537e7726..c75e73760e 100644
+--- a/thirdparty/thorvg/src/lib/sw_engine/tvgSwRenderer.cpp
++++ b/thirdparty/thorvg/src/lib/sw_engine/tvgSwRenderer.cpp
+@@ -23,6 +23,7 @@
+ #include "tvgSwCommon.h"
+ #include "tvgTaskScheduler.h"
+ #include "tvgSwRenderer.h"
++#include "tvgMath.h"
+ 
+ /************************************************************************/
+ /* Internal Class Implementation                                        */
+@@ -594,10 +595,10 @@ void* SwRenderer::prepareCommon(SwTask* task, const RenderTransform* transform,
+     task->surface = surface;
+     task->mpool = mpool;
+     task->flags = flags;
+-    task->bbox.min.x = max(static_cast<SwCoord>(0), static_cast<SwCoord>(vport.x));
+-    task->bbox.min.y = max(static_cast<SwCoord>(0), static_cast<SwCoord>(vport.y));
+-    task->bbox.max.x = min(static_cast<SwCoord>(surface->w), static_cast<SwCoord>(vport.x + vport.w));
+-    task->bbox.max.y = min(static_cast<SwCoord>(surface->h), static_cast<SwCoord>(vport.y + vport.h));
++    task->bbox.min.x = mathMax(static_cast<SwCoord>(0), static_cast<SwCoord>(vport.x));
++    task->bbox.min.y = mathMax(static_cast<SwCoord>(0), static_cast<SwCoord>(vport.y));
++    task->bbox.max.x = mathMin(static_cast<SwCoord>(surface->w), static_cast<SwCoord>(vport.x + vport.w));
++    task->bbox.max.y = mathMin(static_cast<SwCoord>(surface->h), static_cast<SwCoord>(vport.y + vport.h));
+ 
+     if (!task->pushed) {
+         task->pushed = true;
+diff --git a/thirdparty/thorvg/src/lib/tvgMath.h b/thirdparty/thorvg/src/lib/tvgMath.h
+index 9e5c915fc3..94b4fe1cf1 100644
+--- a/thirdparty/thorvg/src/lib/tvgMath.h
++++ b/thirdparty/thorvg/src/lib/tvgMath.h
+@@ -29,6 +29,10 @@
+ #include "tvgCommon.h"
+ 
+ 
++#define mathMin(x, y) (((x) < (y)) ? (x) : (y))
++#define mathMax(x, y) (((x) > (y)) ? (x) : (y))
++
++
+ static inline bool mathZero(float a)
+ {
+     return (fabsf(a) < FLT_EPSILON) ? true : false;
+@@ -154,4 +158,4 @@ static inline Matrix mathMultiply(const Matrix* lhs, const Matrix* rhs)
+ }
+ 
+ 
+-#endif //_TVG_MATH_H_
+\ No newline at end of file
++#endif //_TVG_MATH_H_
