@@ -149,9 +149,9 @@ class ThemeItemImportTree : public VBoxContainer {
 	void _update_total_selected(Theme::DataType p_data_type);
 
 	void _tree_item_edited();
+	void _check_propagated_to_tree_item(Object *p_obj, int p_column);
 	void _select_all_subitems(TreeItem *p_root_item, bool p_select_with_data);
 	void _deselect_all_subitems(TreeItem *p_root_item, bool p_deselect_completely);
-	void _update_parent_items(TreeItem *p_root_item);
 
 	void _select_all_items_pressed();
 	void _select_full_items_pressed();

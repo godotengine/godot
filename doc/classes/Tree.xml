@@ -357,6 +357,13 @@
 				Emitted when a cell is selected.
 			</description>
 		</signal>
+		<signal name="check_propagated_to_item">
+			<argument index="0" name="item" type="TreeItem" />
+			<argument index="1" name="column" type="int" />
+			<description>
+				Emitted when [method TreeItem.propagate_check] is called. Connect to this signal to process the items that are affected when [method TreeItem.propagate_check] is invoked. The order that the items affected will be processed is as follows: the item that invoked the method, children of that item, and finally parents of that item.
+			</description>
+		</signal>
 		<signal name="column_title_pressed">
 			<argument index="0" name="column" type="int" />
 			<description>
