@@ -229,6 +229,8 @@ public:
 	void set_physics_material(Ref<PhysicsMaterial> p_material);
 	Ref<PhysicsMaterial> get_physics_material() const;
 
+	Array get_collision_shapes() const;
+
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
 
@@ -265,7 +267,7 @@ public:
 
 	Array get_used_cells() const;
 
-	Array get_meshes();
+	Array get_meshes() const;
 
 	void clear_baked_meshes();
 	void make_baked_meshes(bool p_gen_lightmap_uv = false, float p_lightmap_uv_texel_size = 0.1);
