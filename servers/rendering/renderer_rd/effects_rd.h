@@ -274,7 +274,7 @@ private:
 
 		uint32_t glow_texture_size[2]; //  8 - 40
 		float glow_intensity; //  4 - 44
-		uint32_t pad3; //  4 - 48
+		float glow_map_strength; //  4 - 48
 
 		uint32_t glow_mode; //  4 - 52
 		float glow_levels[7]; // 28 - 80
@@ -874,6 +874,7 @@ private:
 		}
 	};
 
+	Map<TexturePair, RID> texture_pair_to_uniform_set_cache;
 	Map<RID, RID> texture_to_compute_uniform_set_cache;
 	Map<TexturePair, RID> texture_pair_to_compute_uniform_set_cache;
 	Map<TexturePair, RID> image_pair_to_compute_uniform_set_cache;
@@ -882,6 +883,7 @@ private:
 	RID _get_uniform_set_from_image(RID p_texture);
 	RID _get_uniform_set_for_input(RID p_texture);
 	RID _get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
+	RID _get_uniform_set_from_texture_pair(RID p_texture1, RID p_texture2, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture_and_sampler(RID p_texture, RID p_sampler);
 	RID _get_compute_uniform_set_from_texture_pair(RID p_texture, RID p_texture2, bool p_use_mipmaps = false);
@@ -943,10 +945,12 @@ public:
 
 		GlowMode glow_mode = GLOW_MODE_ADD;
 		float glow_intensity = 1.0;
+		float glow_map_strength = 0.0f;
 		float glow_levels[7] = { 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 };
 		Vector2i glow_texture_size;
 		bool glow_use_bicubic_upscale = false;
 		RID glow_texture;
+		RID glow_map;
 
 		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
 		float exposure = 1.0;

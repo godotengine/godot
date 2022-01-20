@@ -115,6 +115,43 @@ RID EffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) 
 	return uniform_set;
 }
 
+RID EffectsRD::_get_uniform_set_from_texture_pair(RID p_texture1, RID p_texture2, bool p_use_mipmaps) {
+	TexturePair tp;
+	tp.texture1 = p_texture1;
+	tp.texture2 = p_texture2;
+
+	if (texture_pair_to_uniform_set_cache.has(tp)) {
+		RID uniform_set = texture_pair_to_uniform_set_cache[tp];
+		if (RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			return uniform_set;
+		}
+	}
+
+	Vector<RD::Uniform> uniforms;
+	{
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.binding = 0;
+		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+		u.ids.push_back(p_texture1);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.binding = 1;
+		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
+		u.ids.push_back(p_texture2);
+		uniforms.push_back(u);
+	}
+	// anything with the same configuration (one texture in binding 0 for set 0), is good
+	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 2);
+
+	texture_pair_to_uniform_set_cache[tp] = uniform_set;
+
+	return uniform_set;
+}
+
 RID EffectsRD::_get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) {
 	if (texture_to_compute_uniform_set_cache.has(p_texture)) {
 		RID uniform_set = texture_to_compute_uniform_set_cache[p_texture];
@@ -828,6 +865,7 @@ void EffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Tone
 
 	tonemap.push_constant.use_glow = p_settings.use_glow;
 	tonemap.push_constant.glow_intensity = p_settings.glow_intensity;
+	tonemap.push_constant.glow_map_strength = p_settings.glow_map_strength;
 	tonemap.push_constant.glow_levels[0] = p_settings.glow_levels[0]; // clean this up to just pass by pointer or something
 	tonemap.push_constant.glow_levels[1] = p_settings.glow_levels[1];
 	tonemap.push_constant.glow_levels[2] = p_settings.glow_levels[2];
@@ -867,7 +905,7 @@ void EffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Tone
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer), false, RD::get_singleton()->draw_list_get_current_pass()));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_color), 0);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.exposure_texture), 1);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.glow_texture, true), 2);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture_pair(p_settings.glow_texture, p_settings.glow_map, true), 2);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.color_correction_texture), 3);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 
@@ -907,7 +945,7 @@ void EffectsRD::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_colo
 	RD::get_singleton()->draw_list_bind_render_pipeline(p_subpass_draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, p_dst_format_id, false, RD::get_singleton()->draw_list_get_current_pass()));
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_for_input(p_source_color), 0);
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture(p_settings.exposure_texture), 1); // should be set to a default texture, it's ignored
-	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture(p_settings.glow_texture, true), 2); // should be set to a default texture, it's ignored
+	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture_pair(p_settings.glow_texture, p_settings.glow_map, true), 2); // should be set to a default texture, it's ignored
 	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, _get_uniform_set_from_texture(p_settings.color_correction_texture), 3);
 
 	RD::get_singleton()->draw_list_bind_index_array(p_subpass_draw_list, index_array);
