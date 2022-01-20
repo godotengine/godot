@@ -1403,12 +1403,12 @@ void PopupMenu::activate_item(int p_item) {
 		need_hide = false;
 	}
 
-	emit_signal(SNAME("id_pressed"), id);
-	emit_signal(SNAME("index_pressed"), p_item);
-
 	if (need_hide) {
 		hide();
 	}
+
+	emit_signal(SNAME("id_pressed"), id);
+	emit_signal(SNAME("index_pressed"), p_item);
 }
 
 void PopupMenu::remove_item(int p_idx) {
