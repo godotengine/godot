@@ -1632,7 +1632,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 }
 
 bool String::parse_utf8(const char *p_utf8, int p_len) {
-#define _UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
+#define UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
 
 	if (!p_utf8) {
 		return true;
@@ -1673,12 +1673,12 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 				} else if ((c & 0xf8) == 0xf0) {
 					skip = 3;
 				} else {
-					_UNICERROR("invalid skip at " + num_int64(cstr_size));
+					UNICERROR("invalid skip at " + num_int64(cstr_size));
 					return true; //invalid utf8
 				}
 
 				if (skip == 1 && (c & 0x1e) == 0) {
-					_UNICERROR("overlong rejected at " + num_int64(cstr_size));
+					UNICERROR("overlong rejected at " + num_int64(cstr_size));
 					return true; //reject overlong
 				}
 
@@ -1693,7 +1693,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		}
 
 		if (skip) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 	}
@@ -1720,17 +1720,17 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		} else if ((*p_utf8 & 0xf8) == 0xf0) {
 			len = 4;
 		} else {
-			_UNICERROR("invalid len");
+			UNICERROR("invalid len");
 			return true; //invalid UTF8
 		}
 
 		if (len > cstr_size) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 
 		if (len == 2 && (*p_utf8 & 0x1E) == 0) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //reject overlong
 		}
 
@@ -1745,18 +1745,18 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 			for (int i = 1; i < len; i++) {
 				if ((p_utf8[i] & 0xc0) != 0x80) {
-					_UNICERROR("invalid utf8");
+					UNICERROR("invalid utf8");
 					return true; //invalid utf8
 				}
 				if (unichar == 0 && i == 2 && ((p_utf8[i] & 0x7f) >> (7 - len)) == 0) {
-					_UNICERROR("invalid utf8 overlong");
+					UNICERROR("invalid utf8 overlong");
 					return true; //no overlong
 				}
 				unichar = (unichar << 6) | (p_utf8[i] & 0x3f);
 			}
 		}
 		if (unichar >= 0xd800 && unichar <= 0xdfff) {
-			_UNICERROR("invalid code point");
+			UNICERROR("invalid code point");
 			return CharString();
 		}
 
@@ -1766,7 +1766,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 	}
 
 	return false;
-#undef _UNICERROR
+#undef UNICERROR
 }
 
 CharString String::utf8() const {
@@ -1840,7 +1840,7 @@ String String::utf16(const char16_t *p_utf16, int p_len) {
 }
 
 bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
-#define _UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-16?");
+#define UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-16?");
 
 	if (!p_utf16) {
 		return true;
@@ -1880,7 +1880,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 				if ((c & 0xfffffc00) == 0xd800) {
 					skip = 1; // lead surrogate
 				} else if ((c & 0xfffffc00) == 0xdc00) {
-					_UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
+					UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
 					return true; // invalid UTF16
 				} else {
 					skip = 0;
@@ -1890,7 +1890,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 				if ((c & 0xfffffc00) == 0xdc00) { // trail surrogate
 					--skip;
 				} else {
-					_UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
+					UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
 					return true; // invalid UTF16
 				}
 			}
@@ -1900,7 +1900,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 		}
 
 		if (skip) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; // not enough space
 		}
 	}
@@ -1925,7 +1925,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 		}
 
 		if (len > cstr_size) {
-			_UNICERROR("no space left");
+			UNICERROR("no space left");
 			return true; //not enough space
 		}
 
@@ -1943,7 +1943,7 @@ bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
 	}
 
 	return false;
-#undef _UNICERROR
+#undef UNICERROR
 }
 
 Char16String String::utf16() const {

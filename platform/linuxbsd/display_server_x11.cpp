@@ -64,7 +64,6 @@
 // EWMH
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
-#define _NET_WM_STATE_TOGGLE 2L // toggle property
 
 #include <dlfcn.h>
 #include <fcntl.h>

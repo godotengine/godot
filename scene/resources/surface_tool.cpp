@@ -30,7 +30,6 @@
 
 #include "surface_tool.h"
 
-#define _VERTEX_SNAP 0.0001
 #define EQ_VERTEX_DIST 0.00001
 
 SurfaceTool::OptimizeVertexCacheFunc SurfaceTool::optimize_vertex_cache_func = nullptr;
