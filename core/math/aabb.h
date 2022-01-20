@@ -40,7 +40,7 @@
  * This is implemented by a point (position) and the box size
  */
 
-class AABB {
+class _NO_DISCARD_CLASS_ AABB {
 public:
 	Vector3 position;
 	Vector3 size;

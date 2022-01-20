@@ -69,6 +69,47 @@
 
 #endif
 
+// No discard allows the compiler to flag warnings if we don't use the return value of functions / classes
+#ifndef _NO_DISCARD_
+// c++ 17 onwards
+#if __cplusplus >= 201703L
+#define _NO_DISCARD_ [[nodiscard]]
+#else
+// __warn_unused_result__ supported on clang and GCC
+#if (defined(__clang__) || defined(__GNUC__)) && defined(__has_attribute)
+#if __has_attribute(__warn_unused_result__)
+#define _NO_DISCARD_ __attribute__((__warn_unused_result__))
+#endif
+#endif
+
+// Visual Studio 2012 onwards
+#if _MSC_VER >= 1700
+#define _NO_DISCARD_ _Check_return_
+#endif
+
+// If nothing supported, just noop the macro
+#ifndef _NO_DISCARD_
+#define _NO_DISCARD_
+#endif
+#endif // not c++ 17
+#endif // not defined _NO_DISCARD_
+
+// In some cases _NO_DISCARD_ will get false positives,
+// we can prevent the warning in specific cases by preceding the call with a cast.
+#ifndef _ALLOW_DISCARD_
+#define _ALLOW_DISCARD_ (void)
+#endif
+
+// GCC (prior to c++ 17) Does not seem to support no discard with classes, only functions.
+// So we will use a specific macro for classes.
+#ifndef _NO_DISCARD_CLASS_
+#if (defined(__clang__) || defined(_MSC_VER))
+#define _NO_DISCARD_CLASS_ _NO_DISCARD_
+#else
+#define _NO_DISCARD_CLASS_
+#endif
+#endif
+
 //custom, gcc-safe offsetof, because gcc complains a lot.
 template <class T>
 T *_nullptr() {

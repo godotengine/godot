@@ -44,7 +44,7 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBu
 		JointBullet() {
 	Transform scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
 
-	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
+	_ALLOW_DISCARD_ scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
 	btTransform btFrameA;
 	G_TO_B(scaled_AFrame, btFrameA);
@@ -52,7 +52,7 @@ Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBu
 	if (rbB) {
 		Transform scaled_BFrame(frameInB.scaled(rbB->get_body_scale()));
 
-		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
+		_ALLOW_DISCARD_ scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 
 		btTransform btFrameB;
 		G_TO_B(scaled_BFrame, btFrameB);

@@ -36,7 +36,7 @@
 #include "core/math/plane.h"
 #include "core/pool_vector.h"
 
-class Transform {
+class _NO_DISCARD_CLASS_ Transform {
 public:
 	Basis basis;
 	Vector3 origin;

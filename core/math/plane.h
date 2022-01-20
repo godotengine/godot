@@ -33,7 +33,7 @@
 
 #include "core/math/vector3.h"
 
-class Plane {
+class _NO_DISCARD_CLASS_ Plane {
 public:
 	Vector3 normal;
 	real_t d;
