@@ -34,7 +34,7 @@
 #include "core/math/quaternion.h"
 #include "core/math/vector3.h"
 
-class Basis {
+class _NO_DISCARD_ Basis {
 private:
 	void _set_diagonal(const Vector3 &p_diag);
 

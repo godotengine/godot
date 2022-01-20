@@ -1776,7 +1776,8 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 						if (bone_idx == -1) {
 							continue;
 						}
-						skel->get_bone_pose(bone_idx);
+						// Note that this is using get_bone_pose to update the bone pose cache.
+						_ALLOW_DISCARD_ skel->get_bone_pose(bone_idx);
 						loc = skel->get_bone_pose_position(bone_idx);
 						rot = skel->get_bone_pose_rotation(bone_idx);
 						scale = skel->get_bone_pose_scale(bone_idx);
