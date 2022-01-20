@@ -647,6 +647,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/simple_panning", false);
 	_initial_set("editors/2d/scroll_to_pan", false);
 	_initial_set("editors/2d/pan_speed", 20);
+	_initial_set("editors/2d/draw_collision_outlines", true);
 
 	// Tiles editor
 	_initial_set("editors/tiles_editor/display_grid", true);
