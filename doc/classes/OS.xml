@@ -604,6 +604,12 @@
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
+		<method name="has_clipboard" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if there is content on the clipboard.
+			</description>
+		</method>
 		<method name="has_environment" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="variable" type="String" />
