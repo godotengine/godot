@@ -210,9 +210,13 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_set_preserve_control, "shaped", "enabled");
 	GDVIRTUAL_BIND(_shaped_text_get_preserve_control, "shaped");
 
-	GDVIRTUAL_BIND(_shaped_text_add_string, "shaped", "text", "fonts", "size", "opentype_features", "language");
+	GDVIRTUAL_BIND(_shaped_text_add_string, "shaped", "text", "fonts", "size", "opentype_features", "language", "meta");
 	GDVIRTUAL_BIND(_shaped_text_add_object, "shaped", "key", "size", "inline_align", "length");
 	GDVIRTUAL_BIND(_shaped_text_resize_object, "shaped", "key", "size", "inline_align");
+
+	GDVIRTUAL_BIND(_shaped_get_span_count, "shaped");
+	GDVIRTUAL_BIND(_shaped_get_span_meta, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_set_span_update_font, "shaped", "index", "fonts", "size", "opentype_features");
 
 	GDVIRTUAL_BIND(_shaped_text_substr, "shaped", "start", "length");
 	GDVIRTUAL_BIND(_shaped_text_get_parent, "shaped");
@@ -1018,13 +1022,13 @@ bool TextServerExtension::shaped_text_get_preserve_control(RID p_shaped) const {
 	return false;
 }
 
-bool TextServerExtension::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language) {
+bool TextServerExtension::shaped_text_add_string(RID p_shaped, const String &p_text, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) {
 	bool ret;
 	Array fonts;
 	for (int i = 0; i < p_fonts.size(); i++) {
 		fonts.push_back(p_fonts[i]);
 	}
-	if (GDVIRTUAL_CALL(_shaped_text_add_string, p_shaped, p_text, fonts, p_size, p_opentype_features, p_language, ret)) {
+	if (GDVIRTUAL_CALL(_shaped_text_add_string, p_shaped, p_text, fonts, p_size, p_opentype_features, p_language, p_meta, ret)) {
 		return ret;
 	}
 	return false;
@@ -1044,6 +1048,30 @@ bool TextServerExtension::shaped_text_resize_object(RID p_shaped, Variant p_key,
 		return ret;
 	}
 	return false;
+}
+
+int TextServerExtension::shaped_get_span_count(RID p_shaped) const {
+	int ret;
+	if (GDVIRTUAL_CALL(_shaped_get_span_count, p_shaped, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+Variant TextServerExtension::shaped_get_span_meta(RID p_shaped, int p_index) const {
+	Variant ret;
+	if (GDVIRTUAL_CALL(_shaped_get_span_meta, p_shaped, p_index, ret)) {
+		return ret;
+	}
+	return false;
+}
+
+void TextServerExtension::shaped_set_span_update_font(RID p_shaped, int p_index, const Vector<RID> &p_fonts, int p_size, const Dictionary &p_opentype_features) {
+	Array fonts;
+	for (int i = 0; i < p_fonts.size(); i++) {
+		fonts.push_back(p_fonts[i]);
+	}
+	GDVIRTUAL_CALL(_shaped_set_span_update_font, p_shaped, p_index, fonts, p_size, p_opentype_features);
 }
 
 RID TextServerExtension::shaped_text_substr(RID p_shaped, int p_start, int p_length) const {

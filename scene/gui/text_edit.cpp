@@ -187,26 +187,41 @@ void TextEdit::Text::_calculate_max_line_width() {
 	max_width = width;
 }
 
-void TextEdit::Text::invalidate_cache(int p_line, int p_column, const String &p_ime_text, const Array &p_bidi_override) {
+void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_changed, const String &p_ime_text, const Array &p_bidi_override) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
 	if (font.is_null() || font_size <= 0) {
 		return; // Not in tree?
 	}
 
-	text.write[p_line].data_buf->clear();
+	if (p_text_changed) {
+		text.write[p_line].data_buf->clear();
+	}
+
 	text.write[p_line].data_buf->set_width(width);
 	text.write[p_line].data_buf->set_direction((TextServer::Direction)direction);
 	text.write[p_line].data_buf->set_preserve_control(draw_control_chars);
 	if (p_ime_text.length() > 0) {
-		text.write[p_line].data_buf->add_string(p_ime_text, font, font_size, opentype_features, language);
+		if (p_text_changed) {
+			text.write[p_line].data_buf->add_string(p_ime_text, font, font_size, opentype_features, language);
+		}
 		if (!p_bidi_override.is_empty()) {
 			TS->shaped_text_set_bidi_override(text.write[p_line].data_buf->get_rid(), p_bidi_override);
 		}
 	} else {
-		text.write[p_line].data_buf->add_string(text[p_line].data, font, font_size, opentype_features, language);
+		if (p_text_changed) {
+			text.write[p_line].data_buf->add_string(text[p_line].data, font, font_size, opentype_features, language);
+		}
 		if (!text[p_line].bidi_override.is_empty()) {
 			TS->shaped_text_set_bidi_override(text.write[p_line].data_buf->get_rid(), text[p_line].bidi_override);
+		}
+	}
+
+	if (!p_text_changed) {
+		RID r = text.write[p_line].data_buf->get_rid();
+		int spans = TS->shaped_get_span_count(r);
+		for (int i = 0; i < spans; i++) {
+			TS->shaped_set_span_update_font(r, i, font->get_rids(), font_size, opentype_features);
 		}
 	}
 
@@ -266,6 +281,24 @@ void TextEdit::Text::invalidate_all_lines() {
 	}
 }
 
+void TextEdit::Text::invalidate_font() {
+	if (!is_dirty) {
+		return;
+	}
+
+	max_width = -1;
+	line_height = -1;
+
+	if (!font.is_null() && font_size > 0) {
+		font_height = font->get_height(font_size);
+	}
+
+	for (int i = 0; i < text.size(); i++) {
+		invalidate_cache(i, -1, false);
+	}
+	is_dirty = false;
+}
+
 void TextEdit::Text::invalidate_all() {
 	if (!is_dirty) {
 		return;
@@ -279,7 +312,7 @@ void TextEdit::Text::invalidate_all() {
 	}
 
 	for (int i = 0; i < text.size(); i++) {
-		invalidate_cache(i);
+		invalidate_cache(i, -1, true);
 	}
 	is_dirty = false;
 }
@@ -294,7 +327,7 @@ void TextEdit::Text::clear() {
 	line.gutters.resize(gutter_count);
 	line.data = "";
 	text.insert(0, line);
-	invalidate_cache(0);
+	invalidate_cache(0, -1, true);
 }
 
 int TextEdit::Text::get_max_width() const {
@@ -306,7 +339,7 @@ void TextEdit::Text::set(int p_line, const String &p_text, const Array &p_bidi_o
 
 	text.write[p_line].data = p_text;
 	text.write[p_line].bidi_override = p_bidi_override;
-	invalidate_cache(p_line);
+	invalidate_cache(p_line, -1, true);
 }
 
 void TextEdit::Text::insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override) {
@@ -331,7 +364,7 @@ void TextEdit::Text::insert(int p_at, const Vector<String> &p_text, const Vector
 		line.data = p_text[i];
 		line.bidi_override = p_bidi_override[i];
 		text.write[p_at + i] = line;
-		invalidate_cache(p_at + i);
+		invalidate_cache(p_at + i, -1, true);
 	}
 }
 
@@ -1446,9 +1479,11 @@ void TextEdit::_notification(int p_what) {
 				DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
 				DisplayServer::get_singleton()->window_set_ime_active(false, get_viewport()->get_window_id());
 			}
-			ime_text = "";
-			ime_selection = Point2();
-			text.invalidate_cache(caret.line, caret.column, ime_text);
+			if (!ime_text.is_empty()) {
+				ime_text = "";
+				ime_selection = Point2();
+				text.invalidate_cache(caret.line, caret.column, true, ime_text);
+			}
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
@@ -1470,7 +1505,7 @@ void TextEdit::_notification(int p_what) {
 					t = ime_text;
 				}
 
-				text.invalidate_cache(caret.line, caret.column, t, structured_text_parser(st_parser, st_args, t));
+				text.invalidate_cache(caret.line, caret.column, true, t, structured_text_parser(st_parser, st_args, t));
 				update();
 			}
 		} break;
@@ -2538,7 +2573,7 @@ void TextEdit::_update_caches() {
 	text.set_draw_control_chars(draw_control_chars);
 	text.set_font(font);
 	text.set_font_size(font_size);
-	text.invalidate_all();
+	text.invalidate_font();
 	_update_placeholder();
 
 	/* Syntax highlighting. */
@@ -2718,7 +2753,7 @@ void TextEdit::set_text_direction(Control::TextDirection p_text_direction) {
 			dir = (TextServer::Direction)text_direction;
 		}
 		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
-		text.invalidate_all();
+		text.invalidate_font();
 		_update_placeholder();
 
 		if (menu_dir) {
@@ -2740,7 +2775,7 @@ void TextEdit::set_opentype_feature(const String &p_name, int p_value) {
 	if (!opentype_features.has(tag) || (int)opentype_features[tag] != p_value) {
 		opentype_features[tag] = p_value;
 		text.set_font_features(opentype_features);
-		text.invalidate_all();
+		text.invalidate_font();
 		_update_placeholder();
 		update();
 	}
@@ -2757,7 +2792,7 @@ int TextEdit::get_opentype_feature(const String &p_name) const {
 void TextEdit::clear_opentype_features() {
 	opentype_features.clear();
 	text.set_font_features(opentype_features);
-	text.invalidate_all();
+	text.invalidate_font();
 	_update_placeholder();
 	update();
 }
@@ -4852,7 +4887,7 @@ void TextEdit::set_draw_control_chars(bool p_enabled) {
 			menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
 		}
 		text.set_draw_control_chars(draw_control_chars);
-		text.invalidate_all();
+		text.invalidate_font();
 		_update_placeholder();
 		update();
 	}
@@ -5319,7 +5354,7 @@ bool TextEdit::_set(const StringName &p_name, const Variant &p_value) {
 			if (opentype_features.has(tag)) {
 				opentype_features.erase(tag);
 				text.set_font_features(opentype_features);
-				text.invalidate_all();
+				text.invalidate_font();
 				_update_placeholder();
 				update();
 			}
@@ -5327,7 +5362,7 @@ bool TextEdit::_set(const StringName &p_name, const Variant &p_value) {
 			if (!opentype_features.has(tag) || (int)opentype_features[tag] != value) {
 				opentype_features[tag] = value;
 				text.set_font_features(opentype_features);
-				text.invalidate_all();
+				text.invalidate_font();
 				_update_placeholder();
 				update();
 			}
