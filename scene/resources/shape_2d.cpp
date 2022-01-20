@@ -112,7 +112,7 @@ void Shape2D::_bind_methods() {
 bool Shape2D::is_collision_outline_enabled() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		return true;
+		return ProjectSettings::get_singleton()->get("debug/shapes/collision/draw_2d_outlines");
 	}
 #endif
 	return GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
