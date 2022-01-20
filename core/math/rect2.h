@@ -35,7 +35,7 @@
 
 struct Transform2D;
 
-struct Rect2 {
+struct _NO_DISCARD_CLASS_ Rect2 {
 	Point2 position;
 	Size2 size;
 
@@ -259,7 +259,7 @@ struct Rect2 {
 	}
 };
 
-struct Rect2i {
+struct _NO_DISCARD_CLASS_ Rect2i {
 	Point2i position;
 	Size2i size;
 

@@ -426,7 +426,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 
 - (void)windowDidBecomeKey:(NSNotification *)notification {
 	if (OS_OSX::singleton->get_main_loop()) {
-		get_mouse_pos([OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream]);
+		_ALLOW_DISCARD_ get_mouse_pos([OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream]);
 		OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
 
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
@@ -1370,7 +1370,7 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 - (void)scrollWheel:(NSEvent *)event {
 	double deltaX, deltaY;
 
-	get_mouse_pos([event locationInWindow]);
+	_ALLOW_DISCARD_ get_mouse_pos([event locationInWindow]);
 
 	deltaX = [event scrollingDeltaX];
 	deltaY = [event scrollingDeltaY];
@@ -2167,7 +2167,7 @@ void OS_OSX::warp_mouse_position(const Point2 &p_to) {
 }
 
 void OS_OSX::update_real_mouse_position() {
-	get_mouse_pos([window_object mouseLocationOutsideOfEventStream]);
+	_ALLOW_DISCARD_ get_mouse_pos([window_object mouseLocationOutsideOfEventStream]);
 	input->set_mouse_position(Point2(mouse_x, mouse_y));
 }
 

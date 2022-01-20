@@ -34,7 +34,7 @@
 #include "core/math/quat.h"
 #include "core/math/vector3.h"
 
-class Basis {
+class _NO_DISCARD_CLASS_ Basis {
 public:
 	Vector3 elements[3] = {
 		Vector3(1, 0, 0),
