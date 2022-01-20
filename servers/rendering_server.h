@@ -447,8 +447,8 @@ public:
 
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
-		LIGHT_BAKE_DYNAMIC,
 		LIGHT_BAKE_STATIC,
+		LIGHT_BAKE_DYNAMIC,
 	};
 
 	virtual void light_set_bake_mode(RID p_light, LightBakeMode p_bake_mode) = 0;
