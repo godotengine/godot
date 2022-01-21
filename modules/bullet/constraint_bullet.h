@@ -36,10 +36,6 @@
 
 #include <BulletDynamics/ConstraintSolver/btTypedConstraint.h>
 
-/**
-	@author AndreaCatania
-*/
-
 class RigidBodyBullet;
 class SpaceBullet;
 class btTypedConstraint;
@@ -68,4 +64,5 @@ public:
 
 	_FORCE_INLINE_ btTypedConstraint *get_bt_constraint() { return constraint; }
 };
-#endif
+
+#endif // CONSTRAINT_BULLET_H

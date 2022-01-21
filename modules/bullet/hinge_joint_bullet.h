@@ -33,10 +33,6 @@
 
 #include "joint_bullet.h"
 
-/**
-	@author AndreaCatania
-*/
-
 class HingeJointBullet : public JointBullet {
 	class btHingeConstraint *hingeConstraint;
 
@@ -54,4 +50,5 @@ public:
 	void set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_value);
 	bool get_flag(PhysicsServer3D::HingeJointFlag p_flag) const;
 };
-#endif
+
+#endif // HINGE_JOINT_BULLET_H

@@ -58,7 +58,7 @@
 # idleman <1524328475@qq.com>, 2019.
 # king <wangding1992@126.com>, 2019.
 # silentbird <silentbird520@outlook.com>, 2019.
-# Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020, 2021.
+# Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020, 2021, 2022.
 # Revan Ji <jiruifancr@gmail.com>, 2020.
 # nieyuanhong <15625988003@163.com>, 2020.
 # binotaliu <binota@protonmail.ch>, 2020.
@@ -88,7 +88,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2021-12-31 08:52+0000\n"
+"PO-Revision-Date: 2022-01-12 16:52+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -106,7 +106,7 @@ msgstr "convert() 的参数类型无效，请使用 TYPE_* 常量。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "应为长度为 1 的字符串（1个字符）。"
+msgstr "应为长度为 1 的字符串（单个字符）。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -399,9 +399,8 @@ msgid "Duplicate Key(s)"
 msgstr "复制关键帧"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add RESET Value(s)"
-msgstr "添加 %d 帧"
+msgstr "添加 RESET 值"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
@@ -438,6 +437,7 @@ msgstr "是否新建 %d 个轨道并插入关键帧？"
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -521,11 +521,11 @@ msgstr "添加贝塞尔轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr "轨道路径无效，因此无法添加键。"
+msgstr "轨道路径无效，因此无法添加关键帧。"
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr "轨道不是 Spatial 类型，无法插入帧"
+msgstr "轨道不是 Spatial 类型，无法插入关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Transform Track Key"
@@ -570,9 +570,8 @@ msgid ""
 msgstr "由于只有单一轨道，因此该选项不适用于贝塞尔编辑。"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Add RESET Keys"
-msgstr "缩放动画关键帧"
+msgstr "添加动画 RESET 关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -898,6 +897,7 @@ msgstr "添加"
 #: editor/groups_editor.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
@@ -947,8 +947,7 @@ msgstr "无法连接信号"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/plugins/version_control_editor_plugin.cpp editor/project_export.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -1386,15 +1385,15 @@ msgstr "修改音频总线音量"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr "开／关音频总线独奏"
+msgstr "开关音频总线独奏"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr "静音／取消静音音频总线"
+msgstr "开关音频总线静音"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "开启／关闭音频总线旁通效果"
+msgstr "开关音频总线旁通效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
@@ -1410,7 +1409,7 @@ msgstr "移动总线效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Bus Effect"
-msgstr "删除音频总线效果"
+msgstr "删除总线效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Drag & drop to rearrange."
@@ -1455,7 +1454,7 @@ msgstr "添加音频总线"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr "不能删除主音频总线！"
+msgstr "不能删除主总线！"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
@@ -1545,7 +1544,7 @@ msgstr "名称无效。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "无法以数字开头。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -1990,7 +1989,6 @@ msgid "New Folder..."
 msgstr "新建文件夹..."
 
 #: editor/editor_file_dialog.cpp editor/find_in_files.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "刷新"
 
@@ -2107,7 +2105,8 @@ msgstr "目录与文件："
 msgid "Preview:"
 msgstr "预览："
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "文件："
 
@@ -2155,9 +2154,8 @@ msgid "Properties"
 msgstr "属性"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "overrides %s:"
-msgstr "覆盖："
+msgstr "覆盖 %s："
 
 #: editor/editor_help.cpp
 msgid "default:"
@@ -2280,7 +2278,7 @@ msgstr "方法"
 msgid "Signal"
 msgstr "信号"
 
-#: editor/editor_help_search.cpp
+#: editor/editor_help_search.cpp modules/visual_script/visual_script_nodes.cpp
 msgid "Constant"
 msgstr "常量"
 
@@ -2297,20 +2295,21 @@ msgid "Property:"
 msgstr "属性："
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Pin value"
-msgstr "(值)"
+msgstr "固定值"
 
 #: editor/editor_inspector.cpp
 msgid ""
 "Pinning a value forces it to be saved even if it's equal to the default."
-msgstr ""
+msgstr "将值固定会强制保存这个值，即便它与默认值相等。"
 
 #: editor/editor_inspector.cpp
 msgid "Pin value [Disabled because '%s' is editor-only]"
-msgstr ""
+msgstr "固定值 [已禁用，因为“%s”仅适用于编辑器]"
 
 #: editor/editor_inspector.cpp editor/scene_tree_dock.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Set %s"
 msgstr "设置 %s"
@@ -2321,26 +2320,23 @@ msgstr "批量设置："
 
 #: editor/editor_inspector.cpp
 msgid "Pinned %s"
-msgstr ""
+msgstr "将 %s 固定"
 
 #: editor/editor_inspector.cpp
 msgid "Unpinned %s"
-msgstr ""
+msgstr "将 %s 解除固定"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property"
 msgstr "复制属性"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Paste Property"
 msgstr "粘贴属性"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Copy Property Path"
-msgstr "复制脚本路径"
+msgstr "复制属性路径"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2932,7 +2928,7 @@ msgstr "切换专注模式。"
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr "添加场景。"
+msgstr "添加新场景。"
 
 #: editor/editor_node.cpp
 msgid "Scene"
@@ -3038,8 +3034,9 @@ msgid "Install Android Build Template..."
 msgstr "安装 Android 构建模板..."
 
 #: editor/editor_node.cpp
-msgid "Open Project Data Folder"
-msgstr "打开项目数据文件夹"
+#, fuzzy
+msgid "Open User Data Folder"
+msgstr "打开 “编辑器数据” 文件夹"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -3120,7 +3117,7 @@ msgstr "启用该选项时，导航网格和多边形将在项目运行时可见
 
 #: editor/editor_node.cpp
 msgid "Force Shader Fallbacks"
-msgstr ""
+msgstr "强制备用着色器"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3131,6 +3128,10 @@ msgid ""
 "Asynchronous shader compilation must be enabled in the project settings for "
 "this option to make a difference."
 msgstr ""
+"启用该选项时，着色器在运行时会使用其备用形式（借助超级着色器显示或者不显"
+"示）。\n"
+"可用于验证备用外观和性能，正常情况下只会短暂显示。\n"
+"必须在项目设置中启用异步着色器编译，该选项才会有效果。"
 
 #: editor/editor_node.cpp
 msgid "Synchronize Scene Changes"
@@ -3183,10 +3184,6 @@ msgstr "截图将保存在编辑器数据或设置文件夹中。"
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "切换全屏模式"
-
-#: editor/editor_node.cpp
-msgid "Toggle System Console"
-msgstr "打开／关闭系统命令行"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -3415,6 +3412,7 @@ msgid "Load Errors"
 msgstr "加载错误"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Select"
 msgstr "选择"
 
@@ -3491,7 +3489,6 @@ msgid "Author"
 msgstr "作者"
 
 #: editor/editor_plugin_settings.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Status"
 msgstr "状态"
@@ -3726,6 +3723,12 @@ msgstr "场景路径："
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
 msgstr "从节点中导入："
+
+#. TRANSLATORS: %s refers to the name of a version control system (e.g. "Git").
+#: editor/editor_vcs_interface.cpp
+#, fuzzy
+msgid "%s Error"
+msgstr "错误"
 
 #: editor/export_template_manager.cpp
 msgid "Open the folder containing these templates."
@@ -4254,9 +4257,8 @@ msgid "Replace..."
 msgstr "替换..."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Replace in Files"
-msgstr "全部替换"
+msgstr "在文件中替换"
 
 #: editor/find_in_files.cpp
 msgid "Find: "
@@ -4267,9 +4269,8 @@ msgid "Replace: "
 msgstr "替换： "
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace All (NO UNDO)"
-msgstr "全部替换"
+msgstr "全部替换（无法撤销）"
 
 #: editor/find_in_files.cpp
 msgid "Searching..."
@@ -4489,7 +4490,7 @@ msgstr "警告：存在使用本资源的素材，将会停止加载。"
 msgid ""
 "Select a resource file in the filesystem or in the inspector to adjust "
 "import settings."
-msgstr ""
+msgstr "要调整导入设置，请在文件系统或检查器中选中资源文件。"
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -4598,6 +4599,7 @@ msgid "Subfolder:"
 msgstr "子文件夹："
 
 #: editor/plugin_config_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Author:"
 msgstr "作者："
 
@@ -5694,7 +5696,7 @@ msgstr "创建垂直水平参考线"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr "将 CanvasItem“%s”的 Pivot Offset 设为 (%d, %d)"
+msgstr "将 CanvasItem“%s”的轴心偏移量设为 (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate %d CanvasItems"
@@ -5922,20 +5924,19 @@ msgstr "选择模式"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Drag: Rotate selected node around pivot."
-msgstr "拖动：围绕中心点旋转所选节点。"
+msgstr "拖动：围绕轴心旋转所选节点。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+Drag: Move selected node."
 msgstr "Alt+拖动：移动所选节点。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+拖动：移动所选节点。"
+msgstr "Alt+拖动：缩放所选节点。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "V: Set selected node's pivot position."
-msgstr "V：设置所选节点的中心点位置。"
+msgstr "V：设置所选节点的轴心位置。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5963,7 +5964,7 @@ msgstr "缩放模式"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Shift: Scale proportionally."
-msgstr ""
+msgstr "Shift：按比例缩放。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5976,7 +5977,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
-msgstr "点击设置对象的旋转中心。"
+msgstr "点击更改对象的旋转轴心。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
@@ -6062,9 +6063,8 @@ msgstr "将所选对象锁定到该位置（无法移动）。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected Node(s)"
-msgstr "锁定所选项"
+msgstr "锁定所选节点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6073,9 +6073,8 @@ msgstr "解锁所选对象（可以移动）。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unlock Selected Node(s)"
-msgstr "解锁所选项"
+msgstr "解锁所选节点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6084,9 +6083,8 @@ msgstr "确保对象的子项不可选择。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Group Selected Node(s)"
-msgstr "编组所选项"
+msgstr "编组所选节点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6095,9 +6093,8 @@ msgstr "恢复选择对象的子级的功能。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Ungroup Selected Node(s)"
-msgstr "解组所选项"
+msgstr "解组所选节点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Skeleton Options"
@@ -6268,6 +6265,7 @@ msgid "Zoom to 1600%"
 msgstr "缩放至 1600%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Add %s"
 msgstr "添加 %s"
 
@@ -7291,7 +7289,7 @@ msgstr "翻转入口"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Occluder Set Transform"
-msgstr "遮挡集变换"
+msgstr "遮挡设置变换"
 
 #: editor/plugins/room_manager_editor_plugin.cpp
 msgid "Center Node"
@@ -7388,7 +7386,7 @@ msgstr "主题另存为..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "%s Class Reference"
-msgstr "%s 类参考手册"
+msgstr "%s 类参考"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -7541,7 +7539,7 @@ msgstr "打开 Godot 在线文档。"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
-msgstr "搜索文档。"
+msgstr "搜索参考文档。"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Go to previous edited document."
@@ -7722,9 +7720,8 @@ msgid "Find in Files..."
 msgstr "在文件中查找..."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Replace in Files..."
-msgstr "替换..."
+msgstr "在文件中替换..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
@@ -7785,7 +7782,7 @@ msgstr "着色器"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
-msgstr "该骨架没有骨骼绑定，请创建一些 Bone2D 骨骼子节点。"
+msgstr "该骨架没有骨骼，请创建一些 Bone2D 子节点。"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Rest Pose to Bones"
@@ -7797,7 +7794,7 @@ msgstr "从骨骼创建放松姿势"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
-msgstr "2D 骨骼节点"
+msgstr "Skeleton2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Reset to Rest Pose"
@@ -7813,7 +7810,7 @@ msgstr "创建物理骨骼"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Skeleton"
-msgstr "骨架"
+msgstr "Skeleton"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical skeleton"
@@ -7942,7 +7939,7 @@ msgstr "旋转 %s 度。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Keying is disabled (no key inserted)."
-msgstr "键控被禁用（未插入键）。"
+msgstr "已禁用关键帧插入（未插入关键帧）。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Animation Key Inserted."
@@ -8249,16 +8246,15 @@ msgstr "切换自由观看"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Decrease Field of View"
-msgstr ""
+msgstr "减小视野"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Increase Field of View"
-msgstr ""
+msgstr "增大视野"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Reset Field of View to Default"
-msgstr "重置为默认值"
+msgstr "重置为默认视野"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8460,7 +8456,7 @@ msgstr "创建 LightOccluder2D 兄弟节点"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
-msgstr "精灵"
+msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -8983,22 +8979,19 @@ msgstr "添加类型"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Filter the list of types or create a new custom type:"
-msgstr ""
+msgstr "过滤类型列表或新建自定义类型："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Available Node-based types:"
-msgstr "可用配置文件："
+msgstr "可用 Node 类型："
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Type name is empty!"
-msgstr "文件名为空。"
+msgstr "类型名称为空！"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Are you sure you want to create an empty type?"
-msgstr "您确定要打开多个项目吗？"
+msgstr "确定要创建空类型吗？"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Confirm Item Rename"
@@ -9609,7 +9602,8 @@ msgid "TileSet"
 msgstr "图块集"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No VCS addons are available."
+#, fuzzy
+msgid "No VCS plugins are available."
 msgstr "没有可用的 VCS 插件。"
 
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -9617,16 +9611,56 @@ msgid "Error"
 msgstr "错误"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "No files added to stage"
-msgstr "没有文件被添加到暂存区"
+msgid ""
+"Remote settings are empty. VCS features that use the network may not work."
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "No commit message was provided."
+msgstr "没有提供名称。"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Commit"
 msgstr "提交"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "VCS Addon is not initialized"
-msgstr "VCS 插件未初始化"
+#, fuzzy
+msgid "Staged Changes"
+msgstr "着色器变更："
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Unstaged Changes"
+msgstr "着色器变更："
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit:"
+msgstr "提交"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Date:"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Subtitle:"
+msgstr "子树"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Do you want to remove the %s branch?"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Do you want to remove the %s remote?"
+msgstr "确定要创建空类型吗？"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Apply"
+msgstr "应用重置"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control System"
@@ -9637,16 +9671,148 @@ msgid "Initialize"
 msgstr "初始化"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Staging area"
-msgstr "暂存区域"
+#, fuzzy
+msgid "Remote Login"
+msgstr "移除点"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Username"
+msgstr "重命名"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Password"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Public Key Path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Select SSH public key path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Private Key Path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Select SSH private key path"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "SSH Passphrase"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
 msgstr "检测新变化"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Changes"
-msgstr "修改"
+#, fuzzy
+msgid "Discard all changes"
+msgstr "关闭并保存更改吗？"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage all changes"
+msgstr "保存本地更改..."
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Unstage all changes"
+msgstr "材质变更："
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Message"
+msgstr "提交变更"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit Changes"
+msgstr "提交变更"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit List"
+msgstr "提交"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Commit list size"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "10"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "20"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "30"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Branches"
+msgstr "匹配项："
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Create New Branch"
+msgstr "新建项目"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Branch"
+msgstr "移除动画轨道"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Branch Name"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remotes"
+msgstr "远程"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Create New Remote"
+msgstr "新建项目"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Remote"
+msgstr "移除项目"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remote Name"
+msgstr "远程 "
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Remote URL"
+msgstr "远程 "
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Fetch"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Pull"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Push"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Force Push"
+msgstr "源网格："
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Modified"
@@ -9665,28 +9831,23 @@ msgid "Typechange"
 msgstr "类型更改"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Stage Selected"
-msgstr "将选定放入暂存区"
+msgid "Unmerged"
+msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Stage All"
-msgstr "暂存全部"
+#, fuzzy
+msgid "View:"
+msgstr "视图"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "Commit Changes"
-msgstr "提交变更"
+#, fuzzy
+msgid "Split"
+msgstr "拆分路径"
 
 #: editor/plugins/version_control_editor_plugin.cpp
-msgid "View file diffs before committing them to the latest version"
-msgstr "在提交到最新版本之前查看文件差异"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "No file diff is active"
-msgstr "没有文件差异处于活动状态"
-
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Detect changes in file diff"
-msgstr "检测文件差异的变化"
+#, fuzzy
+msgid "Unified"
+msgstr "已修改"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
@@ -9883,15 +10044,15 @@ msgstr "返回两个参数之间 %s 比较的布尔结果。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Equal (==)"
-msgstr "等于 (==)"
+msgstr "等于（==）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than (>)"
-msgstr "大于 (>)"
+msgstr "大于（>）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than or Equal (>=)"
-msgstr "大于或等于 (>=)"
+msgstr "大于等于（>=）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -9913,15 +10074,15 @@ msgstr "返回 NaN 和标量参数之间比较的布尔结果。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than (<)"
-msgstr "小于 (<)"
+msgstr "小于（<）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than or Equal (<=)"
-msgstr "小于或等于 (<=)"
+msgstr "小于等于（<=）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Not Equal (!=)"
-msgstr "不等于 (!=)"
+msgstr "不等于（!=）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10525,7 +10686,7 @@ msgstr "（仅限片段/光照模式）（标量）“x” 和 “y” 中的绝
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
-msgstr "可视着色器"
+msgstr "VisualShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Edit Visual Property:"
@@ -11766,6 +11927,9 @@ msgid ""
 "To save this branch into its own scene, open the original scene, right click "
 "on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
+"无法保存分支，该分支是实例化场景的子项。\n"
+"如果要将该分支保存为单独的场景，请先打开原始场景，右键单击该分支，然后选择“将"
+"分支保存为场景”。"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -11773,6 +11937,9 @@ msgid ""
 "To save this branch into its own scene, open the original scene, right click "
 "on this branch, and select \"Save Branch as Scene\"."
 msgstr ""
+"无法保存分支，该分支是继承场景的子项。\n"
+"如果要将该分支保存为单独的场景，请先打开原始场景，右键单击该分支，然后选择“将"
+"分支保存为场景”。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
@@ -12299,6 +12466,7 @@ msgid "Export list to a CSV file"
 msgstr "将列表导出为 CSV 文件"
 
 #: editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "Resource Path"
 msgstr "资源路径"
 
@@ -12696,11 +12864,11 @@ msgstr "生成缓冲区"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Direct lighting"
-msgstr "直接照明"
+msgstr "直接光照"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Indirect lighting"
-msgstr "间接照明"
+msgstr "间接光照"
 
 #: modules/lightmapper_cpu/lightmapper_cpu.cpp
 msgid "Post processing"
@@ -12937,19 +13105,19 @@ msgstr "复制 VisualScript 节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Getter. Hold Shift to drop a generic signature."
-msgstr "按住 %s 放置一个 Getter 节点，按住 Shift 键放置一个通用签名。"
+msgstr "按住 %s 放置 Getter 节点，按住 Shift 键放置通用签名。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
-msgstr "按住 Ctrl 键放置一个 Getter 节点。按住 Shift 键放置一个通用签名。"
+msgstr "按住 Ctrl 键放置 Getter 节点。按住 Shift 键放置通用签名。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a simple reference to the node."
-msgstr "按住 %s 放置一个场景节点的引用节点。"
+msgstr "按住 %s 放置该节点的简单引用。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
-msgstr "按住 Ctrl 键放置一个场景节点的引用节点。"
+msgstr "按住 Ctrl 键放置该节点的简单引用。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Variable Setter."
@@ -13131,6 +13299,40 @@ msgstr "刷新节点"
 msgid "Edit Member"
 msgstr "编辑成员"
 
+#: modules/visual_script/visual_script_expression.cpp
+#, fuzzy
+msgid "Expression"
+msgstr "设置表达式"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Return"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Condition"
+msgstr "动画"
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "if (cond) is:"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "While"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "while (cond):"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Iterator"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "for (elem) in (input):"
+msgstr ""
+
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
 msgstr "输入类型不可迭代： "
@@ -13142,6 +13344,88 @@ msgstr "迭代器失效"
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
 msgstr "迭代器失效： "
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Sequence"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "in order:"
+msgstr "重命名文件夹："
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Switch"
+msgstr "俯仰角："
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "'input' is:"
+msgstr ""
+
+#: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
+msgid "Type Cast"
+msgstr "类型："
+
+#: modules/visual_script/visual_script_flow_control.cpp
+msgid "Is %s?"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "On %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "On Self"
+msgstr "仅自己"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Subtract %s"
+msgstr "位于字符 %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Multiply %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "Divide %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Mod %s"
+msgstr "添加 %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "ShiftLeft %s"
+msgstr "设置 %s"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "ShiftRight %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "BitAnd %s"
+msgstr "将 %s 固定"
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitOr %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+msgid "BitXor %s"
+msgstr ""
+
+#: modules/visual_script/visual_script_func_nodes.cpp
+#: modules/visual_script/visual_script_nodes.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
+msgid "Get %s"
+msgstr "获取 %s"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
@@ -13159,6 +13443,21 @@ msgstr "路径必须指向节点！"
 msgid "Invalid index property name '%s' in node %s."
 msgstr "节点 “%s” 的索引属性名 “%s” 无效。"
 
+#: modules/visual_script/visual_script_func_nodes.cpp
+#, fuzzy
+msgid "Emit %s"
+msgstr "设置 %s"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Function"
+msgstr "函数"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Compose Array"
+msgstr "调整数组大小"
+
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
 msgstr ": 无效参数类型: "
@@ -13168,12 +13467,76 @@ msgid ": Invalid arguments: "
 msgstr ": 无效参数: "
 
 #: modules/visual_script/visual_script_nodes.cpp
+msgid "a if cond, else b"
+msgstr ""
+
+#: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
 msgstr "脚本中未找到 VariableGet： "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
 msgstr "脚本中未找到 VariableSet： "
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Preload"
+msgstr "重新加载"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Index"
+msgstr "Z 索引"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Set Index"
+msgstr "Z 索引"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Global Constant"
+msgstr "常量"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Class Constant"
+msgstr "常量"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Basic Constant"
+msgstr "常量"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Math Constant"
+msgstr "常量"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Engine Singleton"
+msgstr "启用的 GDNative 单例"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Scene Node"
+msgstr "TimeSeek 节点"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Scene Tree"
+msgstr "场景树编辑"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Self"
+msgstr "仅自己"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "CustomNode"
+msgstr "剪切节点"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -13185,13 +13548,75 @@ msgid ""
 "(error)."
 msgstr "_step() 的返回值无效，必须是整形 (Seq Out) 或字符串 (Error)。"
 
-#: modules/visual_script/visual_script_property_selector.cpp
-msgid "Search VisualScript"
-msgstr "搜索可视化脚本节点"
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "SubCall"
+msgstr "调用"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Construct %s"
+msgstr "常量"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Get Local Var"
+msgstr "使用本地空间"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Set Local Var"
+msgstr "使用本地空间"
+
+#: modules/visual_script/visual_script_nodes.cpp
+#, fuzzy
+msgid "Action %s"
+msgstr "动作"
+
+#: modules/visual_script/visual_script_nodes.cpp
+msgid "Deconstruct %s"
+msgstr ""
 
 #: modules/visual_script/visual_script_property_selector.cpp
-msgid "Get %s"
-msgstr "获取 %s"
+msgid "Search VisualScript"
+msgstr "搜索 VisualScript"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Yield"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "Wait"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Next Frame"
+msgstr "移动帧"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "Next Physics Frame"
+msgstr "物理帧 %"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+msgid "%s sec(s)"
+msgstr ""
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitSignal"
+msgstr "信号"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitNodeSignal"
+msgstr "信号"
+
+#: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
+msgid "WaitInstanceSignal"
+msgstr "实例化"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -13756,13 +14181,13 @@ msgstr "此遮光体的遮光多边形为空。请绘制一个多边形。"
 
 #: scene/2d/navigation_agent_2d.cpp
 msgid "The NavigationAgent2D can be used only under a Node2D node."
-msgstr ""
+msgstr "NavigationAgent2D 只能在 Node2D 节点下使用。"
 
 #: scene/2d/navigation_obstacle_2d.cpp
 msgid ""
 "The NavigationObstacle2D only serves to provide collision avoidance to a "
 "Node2D object."
-msgstr ""
+msgstr "NavigationObstacle2D 只能用于为 Node2D 对象避免碰撞。"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -13786,13 +14211,23 @@ msgstr ""
 "ParallaxLayer 类型的节点必须作为 ParallaxBackground 的子节点才能正常工作。"
 
 #: scene/2d/particles_2d.cpp
+#, fuzzy
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
-"CPUParticles\" option for this purpose."
+"CPUParticles2D\" toolbar option for this purpose."
 msgstr ""
 "基于 GPU 的粒子不受 GLES2 视频驱动程序的支持。\n"
 "改为使用 CPUParticles2D 节点。为此，可以使用 “转换为 CPUParticles” 选项。"
+
+#: scene/2d/particles_2d.cpp
+msgid ""
+"On macOS, Particles2D rendering is much slower than CPUParticles2D due to "
+"transform feedback being implemented on the CPU instead of the GPU.\n"
+"Consider using CPUParticles2D instead when targeting macOS.\n"
+"You can use the \"Convert to CPUParticles2D\" toolbar option for this "
+"purpose."
+msgstr ""
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -13981,7 +14416,7 @@ msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
-"GLES2 视频驱动程序不支持 GIProbes。\n"
+"GLES2 视频驱动程序不支持 GIProbe。\n"
 "请改用 BakedLightmap。"
 
 #: scene/3d/gi_probe.cpp
@@ -13999,7 +14434,7 @@ msgstr "角度宽于 90 度的 SpotLight 无法投射出阴影。"
 
 #: scene/3d/navigation_agent.cpp
 msgid "The NavigationAgent can be used only under a spatial node."
-msgstr ""
+msgstr "NavigationAgent 只能在 Spatial 节点下使用。"
 
 #: scene/3d/navigation_mesh_instance.cpp
 msgid ""
@@ -14013,7 +14448,7 @@ msgstr ""
 msgid ""
 "The NavigationObstacle only serves to provide collision avoidance to a "
 "spatial object."
-msgstr ""
+msgstr "NavigationObstacle 只能用于为 Spatial 对象避免碰撞。"
 
 #: scene/3d/occluder.cpp
 msgid "No shape is set."
@@ -14024,13 +14459,22 @@ msgid "Only uniform scales are supported."
 msgstr "仅支持统一的缩放。"
 
 #: scene/3d/particles.cpp
+#, fuzzy
 msgid ""
 "GPU-based particles are not supported by the GLES2 video driver.\n"
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
-"\" option for this purpose."
+"\" toolbar option for this purpose."
 msgstr ""
 "基于 GPU 的粒子不受 GLES2 视频驱动程序的支持。\n"
 "改为使用 CPUParticles 节点。为此，您可以使用 “转换为 CPUParticles” 选项。"
+
+#: scene/3d/particles.cpp
+msgid ""
+"On macOS, Particles rendering is much slower than CPUParticles due to "
+"transform feedback being implemented on the CPU instead of the GPU.\n"
+"Consider using CPUParticles instead when targeting macOS.\n"
+"You can use the \"Convert to CPUParticles\" toolbar option for this purpose."
+msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""

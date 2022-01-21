@@ -89,7 +89,7 @@ public:
 
 	enum GIMode {
 		GI_MODE_DISABLED,
-		GI_MODE_BAKED,
+		GI_MODE_STATIC,
 		GI_MODE_DYNAMIC
 	};
 

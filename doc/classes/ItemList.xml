@@ -463,7 +463,7 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.63, 0.63, 0.63, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.65, 0.65, 0.65, 1)">
 			Default text [Color] of the item.
 		</theme_item>
 		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">

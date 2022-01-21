@@ -85,6 +85,12 @@ class ImportDock : public VBoxContainer {
 		ITEM_CLEAR_DEFAULT,
 	};
 
+private:
+	static ImportDock *singleton;
+
+public:
+	static ImportDock *get_singleton() { return singleton; }
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);

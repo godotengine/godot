@@ -28,12 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/**
-	@author AndreaCatania
-*/
-
-#ifndef NAVIGATION_2D_SERVER_H
-#define NAVIGATION_2D_SERVER_H
+#ifndef NAVIGATION_SERVER_2D_H
+#define NAVIGATION_SERVER_2D_H
 
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
@@ -171,4 +167,4 @@ public:
 	virtual ~NavigationServer2D();
 };
 
-#endif
+#endif // NAVIGATION_SERVER_2D_H

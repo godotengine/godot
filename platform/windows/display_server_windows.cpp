@@ -77,7 +77,6 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_CLIPBOARD:
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
-		case FEATURE_CONSOLE_WINDOW:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:
@@ -675,8 +674,20 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	ERR_FAIL_COND(!windows.has(p_window));
 	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
-	Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
-	window_set_position(ofs + screen_get_position(p_screen), p_window);
+	const WindowData &wd = windows[p_window];
+	if (wd.fullscreen) {
+		int cs = window_get_current_screen(p_window);
+		if (cs == p_screen) {
+			return;
+		}
+		Point2 pos = screen_get_position(p_screen);
+		Size2 size = screen_get_size(p_screen);
+
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+	} else {
+		Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
+		window_set_position(ofs + screen_get_position(p_screen), p_window);
+	}
 }
 
 Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
@@ -1205,23 +1216,6 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 	cps.ptCurrentPos.y = wd.im_position.y;
 	ImmSetCompositionWindow(himc, &cps);
 	ImmReleaseContext(wd.hWnd, himc);
-}
-
-void DisplayServerWindows::console_set_visible(bool p_enabled) {
-	_THREAD_SAFE_METHOD_
-
-	if (console_visible == p_enabled) {
-		return;
-	}
-	if (!((OS_Windows *)OS::get_singleton())->_is_win11_terminal()) {
-		// GetConsoleWindow is not supported by the Windows Terminal.
-		ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
-		console_visible = p_enabled;
-	}
-}
-
-bool DisplayServerWindows::is_console_visible() const {
-	return console_visible;
 }
 
 void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
@@ -2819,6 +2813,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_DEVICECHANGE: {
 			joypad->probe_joypads();
 		} break;
+		case WM_DESTROY: {
+			Input::get_singleton()->flush_buffered_events();
+		} break;
 		case WM_SETCURSOR: {
 			if (LOWORD(lParam) == HTCLIENT) {
 				if (windows[window_id].window_has_focus && (mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN)) {
@@ -3240,7 +3237,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	shift_mem = false;
 	control_mem = false;
 	meta_mem = false;
-	console_visible = IsWindowVisible(GetConsoleWindow());
 	hInstance = ((OS_Windows *)OS::get_singleton())->get_hinstance();
 
 	pressrc = 0;

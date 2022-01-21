@@ -688,6 +688,7 @@ void GDScriptByteCodeGenerator::write_ternary_false_expr(const Address &p_expr) 
 void GDScriptByteCodeGenerator::write_end_ternary() {
 	patch_jump(ternary_jump_skip_pos.back()->get());
 	ternary_jump_skip_pos.pop_back();
+	ternary_result.pop_back();
 }
 
 void GDScriptByteCodeGenerator::write_set(const Address &p_target, const Address &p_index, const Address &p_source) {

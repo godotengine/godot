@@ -33,6 +33,9 @@
 #include "export_plugin.h"
 
 void register_osx_exporter() {
+	EDITOR_DEF("export/macos/force_builtin_codesign", false);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::BOOL, "export/macos/force_builtin_codesign", PROPERTY_HINT_NONE));
+
 	Ref<EditorExportPlatformOSX> platform;
 	platform.instantiate();
 

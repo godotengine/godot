@@ -212,6 +212,14 @@ public:
 	bool is_checked(int p_column) const;
 	bool is_indeterminate(int p_column) const;
 
+	void propagate_check(int p_column, bool p_emit_signal = true);
+
+private:
+	// Check helpers.
+	void _propagate_check_through_children(int p_column, bool p_checked, bool p_emit_signal);
+	void _propagate_check_through_parents(int p_column, bool p_emit_signal);
+
+public:
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
 

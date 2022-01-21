@@ -68,7 +68,7 @@ void RendererSceneEnvironmentRD::set_glow(bool p_enable, Vector<float> p_levels,
 	glow_hdr_luminance_cap = p_hdr_luminance_cap;
 }
 
-void RendererSceneEnvironmentRD::set_sdfgi(bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RendererSceneEnvironmentRD::set_sdfgi(bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	sdfgi_enabled = p_enable;
 	sdfgi_cascades = p_cascades;
 	sdfgi_min_cell_size = p_min_cell_size;

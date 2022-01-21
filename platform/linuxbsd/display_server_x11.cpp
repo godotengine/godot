@@ -64,7 +64,6 @@
 // EWMH
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
-#define _NET_WM_STATE_TOGGLE 2L // toggle property
 
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -365,21 +364,6 @@ void DisplayServerX11::mouse_warp_to_position(const Point2i &p_to) {
 }
 
 Point2i DisplayServerX11::mouse_get_position() const {
-	int root_x, root_y;
-	int win_x, win_y;
-	unsigned int mask_return;
-	Window window_returned;
-
-	Bool result = XQueryPointer(x11_display, RootWindow(x11_display, DefaultScreen(x11_display)), &window_returned,
-			&window_returned, &root_x, &root_y, &win_x, &win_y,
-			&mask_return);
-	if (result == True) {
-		return Point2i(root_x, root_y);
-	}
-	return Point2i();
-}
-
-Point2i DisplayServerX11::mouse_get_absolute_position() const {
 	int number_of_screens = XScreenCount(x11_display);
 	for (int i = 0; i < number_of_screens; i++) {
 		Window root, child;
@@ -3416,7 +3400,7 @@ void DisplayServerX11::process_events() {
 
 				if (mouse_mode_grab) {
 					for (const KeyValue<WindowID, WindowData> &E : windows) {
-						//dear X11, I try, I really try, but you never work, you do whathever you want.
+						//dear X11, I try, I really try, but you never work, you do whatever you want.
 						if (mouse_mode == MOUSE_MODE_CAPTURED) {
 							// Show the cursor if we're in captured mode so it doesn't look weird.
 							XUndefineCursor(x11_display, E.value.x11_window);

@@ -282,7 +282,7 @@ Vector3 VoxelGI::get_extents() const {
 
 void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
-	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_BAKED && mi->is_visible_in_tree()) {
+	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_STATIC && mi->is_visible_in_tree()) {
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
 			AABB aabb = mesh->get_aabb();

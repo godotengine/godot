@@ -423,6 +423,7 @@ Vector3 Node3DEditorViewport::_get_ray(const Vector2 &p_pos) const {
 void Node3DEditorViewport::_clear_selected() {
 	_edit.gizmo = Ref<EditorNode3DGizmo>();
 	_edit.gizmo_handle = -1;
+	_edit.gizmo_handle_secondary = false;
 	_edit.gizmo_initial_value = Variant();
 
 	Node3D *selected = spatial_editor->get_single_selected_node();
@@ -1358,7 +1359,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				if (b->is_pressed() && _edit.gizmo.is_valid()) {
 					//restore
-					_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_initial_value, true);
+					_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 					_edit.gizmo = Ref<EditorNode3DGizmo>();
 				}
 
@@ -1496,11 +1497,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							}
 
 							int gizmo_handle = -1;
-							seg->handles_intersect_ray(camera, _edit.mouse_pos, b->is_shift_pressed(), gizmo_handle);
+							bool gizmo_secondary = false;
+							seg->handles_intersect_ray(camera, _edit.mouse_pos, b->is_shift_pressed(), gizmo_handle, gizmo_secondary);
 							if (gizmo_handle != -1) {
 								_edit.gizmo = seg;
 								_edit.gizmo_handle = gizmo_handle;
-								_edit.gizmo_initial_value = seg->get_handle_value(gizmo_handle);
+								_edit.gizmo_handle_secondary = gizmo_secondary;
+								_edit.gizmo_initial_value = seg->get_handle_value(gizmo_handle, gizmo_secondary);
 								intersected_handle = true;
 								break;
 							}
@@ -1612,7 +1615,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					surface->update();
 				} else {
 					if (_edit.gizmo.is_valid()) {
-						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_initial_value, false);
+						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
 						break;
 					}
@@ -1694,6 +1697,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			Ref<EditorNode3DGizmo> found_gizmo;
 			int found_handle = -1;
+			bool found_handle_secondary = false;
 
 			for (int i = 0; i < gizmos.size(); i++) {
 				Ref<EditorNode3DGizmo> seg = gizmos[i];
@@ -1701,7 +1705,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					continue;
 				}
 
-				seg->handles_intersect_ray(camera, _edit.mouse_pos, false, found_handle);
+				seg->handles_intersect_ray(camera, _edit.mouse_pos, false, found_handle, found_handle_secondary);
 
 				if (found_handle != -1) {
 					found_gizmo = seg;
@@ -1713,9 +1717,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				spatial_editor->select_gizmo_highlight_axis(-1);
 			}
 
-			if (found_gizmo != spatial_editor->get_current_hover_gizmo() || found_handle != spatial_editor->get_current_hover_gizmo_handle()) {
+			bool current_hover_handle_secondary = false;
+			int curreny_hover_handle = spatial_editor->get_current_hover_gizmo_handle(current_hover_handle_secondary);
+			if (found_gizmo != spatial_editor->get_current_hover_gizmo() || found_handle != curreny_hover_handle || found_handle_secondary != current_hover_handle_secondary) {
 				spatial_editor->set_current_hover_gizmo(found_gizmo);
-				spatial_editor->set_current_hover_gizmo_handle(found_handle);
+				spatial_editor->set_current_hover_gizmo_handle(found_handle, found_handle_secondary);
 				spatial_editor->get_single_selected_node()->update_gizmos();
 			}
 		}
@@ -1728,9 +1734,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		NavigationMode nav_mode = NAVIGATION_NONE;
 
 		if (_edit.gizmo.is_valid()) {
-			_edit.gizmo->set_handle(_edit.gizmo_handle, camera, m->get_position());
-			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle);
-			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle);
+			_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, camera, m->get_position());
+			Variant v = _edit.gizmo->get_handle_value(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
+			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			set_message(n + ": " + String(v));
 
 		} else if ((m->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
@@ -2727,7 +2733,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		_update_freelook(delta);
 
-		Node *scene_root = editor->get_scene_tree_dock()->get_editor_data()->get_edited_scene_root();
+		Node *scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
 		if (previewing_cinema && scene_root != nullptr) {
 			Camera3D *cam = scene_root->get_viewport()->get_camera_3d();
 			if (cam != nullptr && cam != previewing) {
@@ -3058,7 +3064,7 @@ void Node3DEditorViewport::_draw() {
 				Math::round(2 * EDSCALE));
 	}
 	if (previewing) {
-		Size2 ss = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+		Size2 ss = Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
 		float aspect = ss.aspect();
 		Size2 s = get_size();
 
@@ -4278,7 +4284,7 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 			target_node = root_node;
 		} else {
 			// Create a root node so we can add child nodes to it.
-			EditorNode::get_singleton()->get_scene_tree_dock()->add_root_node(memnew(Node3D));
+			SceneTreeDock::get_singleton()->add_root_node(memnew(Node3D));
 			target_node = get_tree()->get_edited_scene_root();
 		}
 	} else {
@@ -4301,10 +4307,11 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	_edit.plane = TRANSFORM_VIEW;
 	_edit.snap = true;
 	_edit.gizmo_handle = -1;
+	_edit.gizmo_handle_secondary = false;
 
 	index = p_index;
 	editor = p_editor;
-	editor_data = editor->get_scene_tree_dock()->get_editor_data();
+	editor_data = SceneTreeDock::get_singleton()->get_editor_data();
 	editor_selection = editor->get_editor_selection();
 	undo_redo = editor->get_undo_redo();
 
@@ -5306,6 +5313,7 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 		selected = p_spatial;
 		current_hover_gizmo = Ref<EditorNode3DGizmo>();
 		current_hover_gizmo_handle = -1;
+		current_hover_gizmo_handle_secondary = false;
 
 		if (selected) {
 			Vector<Ref<Node3DGizmo>> gizmos = selected->get_gizmos();
@@ -6696,7 +6704,7 @@ void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	Node *base = get_tree()->get_edited_scene_root();
 	if (!base) {
 		// Create a root node so we can add child nodes to it.
-		EditorNode::get_singleton()->get_scene_tree_dock()->add_root_node(memnew(Node3D));
+		SceneTreeDock::get_singleton()->add_root_node(memnew(Node3D));
 		base = get_tree()->get_edited_scene_root();
 	}
 	ERR_FAIL_COND(!base);
@@ -6724,7 +6732,7 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 	Node *base = get_tree()->get_edited_scene_root();
 	if (!base) {
 		// Create a root node so we can add child nodes to it.
-		EditorNode::get_singleton()->get_scene_tree_dock()->add_root_node(memnew(Node3D));
+		SceneTreeDock::get_singleton()->add_root_node(memnew(Node3D));
 		base = get_tree()->get_edited_scene_root();
 	}
 	ERR_FAIL_COND(!base);
@@ -6782,7 +6790,7 @@ void Node3DEditor::_notification(int p_what) {
 
 			get_tree()->connect("node_removed", callable_mp(this, &Node3DEditor::_node_removed));
 			get_tree()->connect("node_added", callable_mp(this, &Node3DEditor::_node_added));
-			EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->connect("node_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
+			SceneTreeDock::get_singleton()->get_tree_editor()->connect("node_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
 			editor_selection->connect("selection_changed", callable_mp(this, &Node3DEditor::_selection_changed));
 
 			editor->connect("stop_pressed", callable_mp(this, &Node3DEditor::_update_camera_override_button), make_binds(false));
@@ -6872,8 +6880,46 @@ VSplitContainer *Node3DEditor::get_shader_split() {
 	return shader_split;
 }
 
-HSplitContainer *Node3DEditor::get_palette_split() {
-	return palette_split;
+void Node3DEditor::add_control_to_left_panel(Control *p_control) {
+	left_panel_split->add_child(p_control);
+	left_panel_split->move_child(p_control, 0);
+}
+
+void Node3DEditor::add_control_to_right_panel(Control *p_control) {
+	right_panel_split->add_child(p_control);
+	right_panel_split->move_child(p_control, 1);
+}
+
+void Node3DEditor::remove_control_from_left_panel(Control *p_control) {
+	left_panel_split->remove_child(p_control);
+}
+
+void Node3DEditor::remove_control_from_right_panel(Control *p_control) {
+	right_panel_split->remove_child(p_control);
+}
+
+void Node3DEditor::move_control_to_left_panel(Control *p_control) {
+	ERR_FAIL_NULL(p_control);
+	if (p_control->get_parent() == left_panel_split) {
+		return;
+	}
+
+	ERR_FAIL_COND(p_control->get_parent() != right_panel_split);
+	right_panel_split->remove_child(p_control);
+
+	add_control_to_left_panel(p_control);
+}
+
+void Node3DEditor::move_control_to_right_panel(Control *p_control) {
+	ERR_FAIL_NULL(p_control);
+	if (p_control->get_parent() == right_panel_split) {
+		return;
+	}
+
+	ERR_FAIL_COND(p_control->get_parent() != left_panel_split);
+	left_panel_split->remove_child(p_control);
+
+	add_control_to_right_panel(p_control);
 }
 
 void Node3DEditor::_request_gizmo(Object *p_obj) {
@@ -7526,13 +7572,17 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	/* REST OF MENU */
 
-	palette_split = memnew(HSplitContainer);
-	palette_split->set_v_size_flags(SIZE_EXPAND_FILL);
-	vbc->add_child(palette_split);
+	left_panel_split = memnew(HSplitContainer);
+	left_panel_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	vbc->add_child(left_panel_split);
+
+	right_panel_split = memnew(HSplitContainer);
+	right_panel_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	left_panel_split->add_child(right_panel_split);
 
 	shader_split = memnew(VSplitContainer);
 	shader_split->set_h_size_flags(SIZE_EXPAND_FILL);
-	palette_split->add_child(shader_split);
+	right_panel_split->add_child(shader_split);
 	viewport_base = memnew(Node3DEditorViewportContainer);
 	shader_split->add_child(viewport_base);
 	viewport_base->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -7676,6 +7726,7 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	EDITOR_DEF("editors/3d/navigation/show_viewport_rotation_gizmo", true);
 
 	current_hover_gizmo_handle = -1;
+	current_hover_gizmo_handle_secondary = false;
 	{
 		//sun popup
 
@@ -7992,7 +8043,6 @@ Node3DEditorPlugin::Node3DEditorPlugin(EditorNode *p_node) {
 	editor->get_main_control()->add_child(spatial_editor);
 
 	spatial_editor->hide();
-	spatial_editor->connect("transform_key_request", Callable(editor->get_inspector_dock(), "_transform_keyed"));
 }
 
 Node3DEditorPlugin::~Node3DEditorPlugin() {

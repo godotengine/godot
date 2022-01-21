@@ -208,19 +208,19 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 				} break;
 				case OBJ_MENU_NEW_SCRIPT: {
 					if (Object::cast_to<Node>(owner)) {
-						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(owner), false);
+						SceneTreeDock::get_singleton()->open_script_dialog(Object::cast_to<Node>(owner), false);
 					}
 
 				} break;
 				case OBJ_MENU_EXTEND_SCRIPT: {
 					if (Object::cast_to<Node>(owner)) {
-						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(Object::cast_to<Node>(owner), true);
+						SceneTreeDock::get_singleton()->open_script_dialog(Object::cast_to<Node>(owner), true);
 					}
 
 				} break;
 				case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
 					RES r = v;
-					FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+					FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
 					file_system_dock->navigate_to_path(r->get_path());
 					// Ensure that the FileSystem dock is visible.
 					TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
@@ -506,12 +506,16 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 		} break;
 		case Variant::STRING: {
-			if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
+			if (hint == PROPERTY_HINT_LOCALE_ID) {
+				List<String> names;
+				names.push_back(TTR("Locale..."));
+				names.push_back(TTR("Clear"));
+				config_action_buttons(names);
+			} else if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 				List<String> names;
 				names.push_back(TTR("File..."));
 				names.push_back(TTR("Clear"));
 				config_action_buttons(names);
-
 			} else if (hint == PROPERTY_HINT_DIR || hint == PROPERTY_HINT_GLOBAL_DIR) {
 				List<String> names;
 				names.push_back(TTR("Dir..."));
@@ -1034,6 +1038,14 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 	}
 }
 
+void CustomPropertyEditor::_locale_selected(String p_locale) {
+	if (type == Variant::STRING && hint == PROPERTY_HINT_LOCALE_ID) {
+		v = p_locale;
+		emit_signal(SNAME("variant_changed"));
+		hide();
+	}
+}
+
 void CustomPropertyEditor::_type_create_selected(int p_idx) {
 	if (type == Variant::INT || type == Variant::FLOAT) {
 		float newval = 0;
@@ -1177,7 +1189,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		case Variant::STRING: {
 			if (hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				hide();
-
+			} else if (hint == PROPERTY_HINT_LOCALE_ID) {
+				locale->popup_locale_dialog();
 			} else if (hint == PROPERTY_HINT_FILE || hint == PROPERTY_HINT_GLOBAL_FILE) {
 				if (p_which == 0) {
 					if (hint == PROPERTY_HINT_FILE) {
@@ -1243,7 +1256,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				if (owner->is_class("Node") && (v.get_type() == Variant::NODE_PATH) && Object::cast_to<Node>(owner)->has_node(v)) {
 					Node *target_node = Object::cast_to<Node>(owner)->get_node(v);
 					EditorNode::get_singleton()->get_editor_selection()->clear();
-					EditorNode::get_singleton()->get_scene_tree_dock()->set_selected(target_node);
+					SceneTreeDock::get_singleton()->set_selected(target_node);
 				}
 
 				hide();
@@ -1820,6 +1833,12 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	file->connect("file_selected", callable_mp(this, &CustomPropertyEditor::_file_selected));
 	file->connect("dir_selected", callable_mp(this, &CustomPropertyEditor::_file_selected));
+
+	locale = memnew(EditorLocaleDialog);
+	value_vbox->add_child(locale);
+	locale->hide();
+
+	locale->connect("locale_selected", callable_mp(this, &CustomPropertyEditor::_locale_selected));
 
 	error = memnew(ConfirmationDialog);
 	error->set_title(TTR("Error!"));

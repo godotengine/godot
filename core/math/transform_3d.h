@@ -35,7 +35,7 @@
 #include "core/math/basis.h"
 #include "core/math/plane.h"
 
-class Transform3D {
+class _NO_DISCARD_ Transform3D {
 public:
 	Basis basis;
 	Vector3 origin;

@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/shader_language.h"
 
 RenderingServer *RenderingServer::singleton = nullptr;
 RenderingServer *(*RenderingServer::create_func)() = nullptr;
@@ -1418,7 +1419,7 @@ Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_su
 }
 #endif
 
-ShaderLanguage::DataType RenderingServer::global_variable_type_get_shader_datatype(GlobalVariableType p_type) {
+int RenderingServer::global_variable_type_get_shader_datatype(GlobalVariableType p_type) {
 	switch (p_type) {
 		case RS::GLOBAL_VAR_TYPE_BOOL:
 			return ShaderLanguage::TYPE_BOOL;
@@ -1933,8 +1934,8 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(LIGHT_BAKE_DISABLED);
-	BIND_ENUM_CONSTANT(LIGHT_BAKE_DYNAMIC);
 	BIND_ENUM_CONSTANT(LIGHT_BAKE_STATIC);
+	BIND_ENUM_CONSTANT(LIGHT_BAKE_DYNAMIC);
 
 	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_DUAL_PARABOLOID);
 	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_CUBE);
@@ -2394,10 +2395,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_HIGH);
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_ULTRA);
 
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CASCADES_4);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CASCADES_6);
-	BIND_ENUM_CONSTANT(ENV_SDFGI_CASCADES_8);
-
 	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_DISABLED);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_75_PERCENT);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_50_PERCENT);
@@ -2781,13 +2778,14 @@ void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry
 		const Geometry3D::MeshData::Face &f = p_mesh_data.faces[i];
 
 		for (int j = 2; j < f.indices.size(); j++) {
-#define _ADD_VERTEX(m_idx)                                      \
-	vertices.push_back(p_mesh_data.vertices[f.indices[m_idx]]); \
-	normals.push_back(f.plane.normal);
+			vertices.push_back(p_mesh_data.vertices[f.indices[0]]);
+			normals.push_back(f.plane.normal);
 
-			_ADD_VERTEX(0);
-			_ADD_VERTEX(j - 1);
-			_ADD_VERTEX(j);
+			vertices.push_back(p_mesh_data.vertices[f.indices[j - 1]]);
+			normals.push_back(f.plane.normal);
+
+			vertices.push_back(p_mesh_data.vertices[f.indices[j]]);
+			normals.push_back(f.plane.normal);
 		}
 	}
 
@@ -2828,7 +2826,6 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc", true);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc", false);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2", true);
-	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_pvrtc", false);
 
 	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);
 	GLOBAL_DEF("rendering/textures/lossless_compression/webp_compression_level", 2);

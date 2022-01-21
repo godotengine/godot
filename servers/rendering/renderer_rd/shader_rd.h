@@ -40,11 +40,6 @@
 #include "core/variant/variant.h"
 #include "servers/rendering_server.h"
 
-#include <stdio.h>
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class ShaderRD {
 	//versions
 	CharString general_defines;
@@ -173,4 +168,4 @@ public:
 	virtual ~ShaderRD();
 };
 
-#endif
+#endif // SHADER_RD_H

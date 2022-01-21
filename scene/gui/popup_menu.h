@@ -212,6 +212,7 @@ public:
 	Ref<Shortcut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
+	void set_current_index(int p_idx);
 	int get_current_index() const;
 
 	void set_item_count(int p_count);

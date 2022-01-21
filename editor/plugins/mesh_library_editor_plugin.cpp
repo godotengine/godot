@@ -136,9 +136,11 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					continue;
 				}
 
-				//Transform3D shape_transform = sb->shape_owner_get_transform(E);
-
-				//shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
+				Transform3D shape_transform;
+				if (p_apply_xforms) {
+					shape_transform = mi->get_transform();
+				}
+				shape_transform *= sb->get_transform() * sb->shape_owner_get_transform(E);
 
 				for (int k = 0; k < sb->shape_owner_get_shape_count(E); k++) {
 					Ref<Shape3D> collision = sb->shape_owner_get_shape(E, k);
@@ -147,7 +149,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 					}
 					MeshLibrary::ShapeData shape_data;
 					shape_data.shape = collision;
-					shape_data.local_transform = sb->get_transform() * sb->shape_owner_get_transform(E);
+					shape_data.local_transform = shape_transform;
 					collisions.push_back(shape_data);
 				}
 			}
@@ -226,7 +228,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 			mesh_library->create_item(mesh_library->get_last_unused_item_id());
 		} break;
 		case MENU_OPTION_REMOVE_ITEM: {
-			String p = editor->get_inspector()->get_selected_path();
+			String p = InspectorDock::get_inspector_singleton()->get_selected_path();
 			if (p.begins_with("/MeshLibrary/item") && p.get_slice_count("/") >= 3) {
 				to_erase = p.get_slice("/", 3).to_int();
 				cd_remove->set_text(vformat(TTR("Remove item %d?"), to_erase));

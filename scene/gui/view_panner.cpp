@@ -36,11 +36,18 @@
 bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
+		// Alt modifier is unused, so ignore such events.
+		if (mb->is_alt_pressed()) {
+			return false;
+		}
+
 		Vector2i scroll_vec = Vector2((mb->get_button_index() == MouseButton::WHEEL_RIGHT) - (mb->get_button_index() == MouseButton::WHEEL_LEFT), (mb->get_button_index() == MouseButton::WHEEL_DOWN) - (mb->get_button_index() == MouseButton::WHEEL_UP));
 		if (scroll_vec != Vector2()) {
 			if (control_scheme == SCROLL_PANS) {
 				if (mb->is_ctrl_pressed()) {
+					scroll_vec.y *= mb->get_factor();
 					callback_helper(zoom_callback, scroll_vec, mb->get_position());
+					return true;
 				} else {
 					Vector2 panning;
 					if (mb->is_shift_pressed()) {
@@ -51,7 +58,6 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 						panning.x += mb->get_factor() * scroll_vec.x;
 					}
 					callback_helper(scroll_callback, panning);
-
 					return true;
 				}
 			} else {
@@ -65,16 +71,16 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 						panning.x += mb->get_factor() * scroll_vec.x;
 					}
 					callback_helper(scroll_callback, panning);
-
 					return true;
 				} else if (!mb->is_shift_pressed()) {
+					scroll_vec.y *= mb->get_factor();
 					callback_helper(zoom_callback, scroll_vec, mb->get_position());
 					return true;
 				}
 			}
 		}
 
-		if (mb->get_button_index() == MouseButton::MIDDLE || (mb->get_button_index() == MouseButton::RIGHT && !disable_rmb) || (mb->get_button_index() == MouseButton::LEFT && (Input::get_singleton()->is_key_pressed(Key::SPACE) || !mb->is_pressed()))) {
+		if (mb->get_button_index() == MouseButton::MIDDLE || (mb->get_button_index() == MouseButton::RIGHT && !disable_rmb) || (mb->get_button_index() == MouseButton::LEFT && (Input::get_singleton()->is_key_pressed(Key::SPACE) || (is_dragging && !mb->is_pressed())))) {
 			if (mb->is_pressed()) {
 				is_dragging = true;
 			} else {

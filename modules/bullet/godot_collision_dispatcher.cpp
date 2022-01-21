@@ -32,10 +32,6 @@
 
 #include "collision_object_bullet.h"
 
-/**
-	@author AndreaCatania
-*/
-
 const int GodotCollisionDispatcher::CASTED_TYPE_AREA = static_cast<int>(CollisionObjectBullet::TYPE_AREA);
 
 GodotCollisionDispatcher::GodotCollisionDispatcher(btCollisionConfiguration *collisionConfiguration) :

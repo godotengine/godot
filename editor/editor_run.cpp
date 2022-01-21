@@ -98,15 +98,15 @@ Error EditorRun::run(const String &p_scene) {
 	screen_rect.position = DisplayServer::get_singleton()->screen_get_position(screen);
 	screen_rect.size = DisplayServer::get_singleton()->screen_get_size(screen);
 
-	Size2 desired_size;
-	desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/width");
-	desired_size.y = ProjectSettings::get_singleton()->get("display/window/size/height");
+	Size2 window_size;
+	window_size.x = ProjectSettings::get_singleton()->get("display/window/size/viewport_width");
+	window_size.y = ProjectSettings::get_singleton()->get("display/window/size/viewport_height");
 
-	Size2 test_size;
-	test_size.x = ProjectSettings::get_singleton()->get("display/window/size/test_width");
-	test_size.y = ProjectSettings::get_singleton()->get("display/window/size/test_height");
-	if (test_size.x > 0 && test_size.y > 0) {
-		desired_size = test_size;
+	Size2 desired_size;
+	desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/window_width_override");
+	desired_size.y = ProjectSettings::get_singleton()->get("display/window/size/window_height_override");
+	if (desired_size.x > 0 && desired_size.y > 0) {
+		window_size = desired_size;
 	}
 
 	int window_placement = EditorSettings::get_singleton()->get("run/window_placement/rect");
@@ -136,7 +136,7 @@ Error EditorRun::run(const String &p_scene) {
 			args.push_back(itos(screen_rect.position.x) + "," + itos(screen_rect.position.y));
 		} break;
 		case 1: { // centered
-			Vector2 pos = (screen_rect.position) + ((screen_rect.size - desired_size) / 2).floor();
+			Vector2 pos = (screen_rect.position) + ((screen_rect.size - window_size) / 2).floor();
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 		} break;

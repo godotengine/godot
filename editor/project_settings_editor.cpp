@@ -215,7 +215,6 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("s3tc");
 	presets.insert("etc");
 	presets.insert("etc2");
-	presets.insert("pvrtc");
 	presets.insert("debug");
 	presets.insert("release");
 	presets.insert("editor");
@@ -275,10 +274,8 @@ void ProjectSettingsEditor::_editor_restart_close() {
 void ProjectSettingsEditor::_action_added(const String &p_name) {
 	String name = "input/" + p_name;
 
-	if (ProjectSettings::get_singleton()->has_setting(name)) {
-		action_map->show_message(vformat(TTR("An action with the name '%s' already exists."), name));
-		return;
-	}
+	ERR_FAIL_COND_MSG(ProjectSettings::get_singleton()->has_setting(name),
+			"An action with this name already exists.");
 
 	Dictionary action;
 	action["events"] = Array();
@@ -351,10 +348,8 @@ void ProjectSettingsEditor::_action_renamed(const String &p_old_name, const Stri
 	const String old_property_name = "input/" + p_old_name;
 	const String new_property_name = "input/" + p_new_name;
 
-	if (ProjectSettings::get_singleton()->has_setting(new_property_name)) {
-		action_map->show_message(vformat(TTR("An action with the name '%s' already exists."), new_property_name));
-		return;
-	}
+	ERR_FAIL_COND_MSG(ProjectSettings::get_singleton()->has_setting(new_property_name),
+			"An action with this name already exists.");
 
 	int order = ProjectSettings::get_singleton()->get_order(old_property_name);
 	Dictionary action = ProjectSettings::get_singleton()->get(old_property_name);
@@ -471,6 +466,14 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 	action_map->update_action_list(actions);
 }
 
+void ProjectSettingsEditor::_update_theme() {
+	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	restart_close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+	restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+}
+
 void ProjectSettingsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -480,21 +483,12 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			inspector->edit(ps);
-
-			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			search_box->set_clear_button_enabled(true);
-
-			restart_close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-			restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-			restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-
 			_update_action_map_editor();
+			_update_theme();
 		} break;
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			search_box->set_clear_button_enabled(true);
-		} break;
+		case NOTIFICATION_THEME_CHANGED:
+			_update_theme();
+			break;
 	}
 }
 
@@ -528,6 +522,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Filter Settings"));
+	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_bar->add_child(search_box);
 

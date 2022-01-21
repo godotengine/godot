@@ -98,6 +98,8 @@ public:
 	NSTimeInterval last_warp = 0;
 	bool ignore_warp = false;
 
+	float display_max_scale = 1.f;
+
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos;
 
@@ -214,7 +216,6 @@ public:
 
 	virtual void mouse_warp_to_position(const Point2i &p_to) override;
 	virtual Point2i mouse_get_position() const override;
-	virtual Point2i mouse_get_absolute_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
@@ -313,9 +314,6 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
-
-	virtual void console_set_visible(bool p_enabled) override;
-	virtual bool is_console_visible() const override;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();

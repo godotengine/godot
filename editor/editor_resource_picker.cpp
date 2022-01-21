@@ -328,7 +328,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
-			FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+			FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
 			file_system_dock->navigate_to_path(edited_resource->get_path());
 
 			// Ensure that the FileSystem dock is visible.
@@ -862,6 +862,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
 	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
 }
+
 EditorResourcePicker::EditorResourcePicker() {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
@@ -906,14 +907,14 @@ bool EditorScriptPicker::handle_menu_selected(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_NEW_SCRIPT: {
 			if (script_owner) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, false);
+				SceneTreeDock::get_singleton()->open_script_dialog(script_owner, false);
 			}
 			return true;
 		}
 
 		case OBJ_MENU_EXTEND_SCRIPT: {
 			if (script_owner) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, true);
+				SceneTreeDock::get_singleton()->open_script_dialog(script_owner, true);
 			}
 			return true;
 		}
@@ -958,7 +959,7 @@ bool EditorShaderPicker::handle_menu_selected(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_NEW_SHADER: {
 			if (material.is_valid()) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_shader_dialog(material, preferred_mode);
+				SceneTreeDock::get_singleton()->open_shader_dialog(material, preferred_mode);
 				return true;
 			}
 		} break;

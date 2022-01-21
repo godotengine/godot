@@ -52,8 +52,6 @@
 #include <regstr.h>
 #include <shlobj.h>
 
-static const WORD MAX_CONSOLE_LINES = 1500;
-
 extern "C" {
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
@@ -86,65 +84,17 @@ static String format_error_message(DWORD id) {
 }
 
 void RedirectIOToConsole() {
-	int hConHandle;
+	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+		FILE *fpstdin = stdin;
+		FILE *fpstdout = stdout;
+		FILE *fpstderr = stderr;
 
-	intptr_t lStdHandle;
+		freopen_s(&fpstdin, "CONIN$", "r", stdin);
+		freopen_s(&fpstdout, "CONOUT$", "w", stdout);
+		freopen_s(&fpstderr, "CONOUT$", "w", stderr);
 
-	CONSOLE_SCREEN_BUFFER_INFO coninfo;
-
-	FILE *fp;
-
-	// allocate a console for this app
-
-	AllocConsole();
-
-	// set the screen buffer to be big enough to let us scroll text
-
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
-
-	coninfo.dwSize.Y = MAX_CONSOLE_LINES;
-
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
-
-	// redirect unbuffered STDOUT to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_OUTPUT_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "w");
-
-	*stdout = *fp;
-
-	setvbuf(stdout, nullptr, _IONBF, 0);
-
-	// redirect unbuffered STDIN to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_INPUT_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "r");
-
-	*stdin = *fp;
-
-	setvbuf(stdin, nullptr, _IONBF, 0);
-
-	// redirect unbuffered STDERR to the console
-
-	lStdHandle = (intptr_t)GetStdHandle(STD_ERROR_HANDLE);
-
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
-	fp = _fdopen(hConHandle, "w");
-
-	*stderr = *fp;
-
-	setvbuf(stderr, nullptr, _IONBF, 0);
-
-	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
-
-	// point to console as well
+		printf("\n"); // Make sure our output is starting from the new line.
+	}
 }
 
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
@@ -172,7 +122,9 @@ void OS_Windows::initialize_debugging() {
 void OS_Windows::initialize() {
 	crash_handler.initialize();
 
-	//RedirectIOToConsole();
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+	RedirectIOToConsole();
+#endif
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
@@ -401,39 +353,11 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 	return p_text;
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
 		command += " " + _quote_command_line_argument(E);
-	}
-
-	if (r_pipe) {
-		if (read_stderr) {
-			command += " 2>&1"; // Include stderr
-		}
-		// Add extra quotes around the full command, to prevent it from stripping quotes in the command,
-		// because _wpopen calls command as "cmd.exe /c command", instead of executing it directly
-		command = _quote_command_line_argument(command);
-
-		FILE *f = _wpopen((LPCWSTR)(command.utf16().get_data()), L"r");
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command);
-		char buf[65535];
-		while (fgets(buf, 65535, f)) {
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
-			}
-			(*r_pipe) += String::utf8(buf);
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
-			}
-		}
-		int rv = _pclose(f);
-
-		if (r_exitcode) {
-			*r_exitcode = rv;
-		}
-		return OK;
 	}
 
 	ProcessInfo pi;
@@ -442,37 +366,74 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	DWORD dwCreationFlags = NORMAL_PRIORITY_CLASS;
-#ifndef DEBUG_ENABLED
-	dwCreationFlags |= CREATE_NO_WINDOW;
-#endif
+	bool inherit_handles = false;
+	HANDLE pipe[2] = { nullptr, nullptr };
+	if (r_pipe) {
+		// Create pipe for StdOut and StdErr.
+		SECURITY_ATTRIBUTES sa;
+		sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+		sa.bInheritHandle = true;
+		sa.lpSecurityDescriptor = nullptr;
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, dwCreationFlags, nullptr, nullptr, si_w, &pi.pi);
+		ERR_FAIL_COND_V(!CreatePipe(&pipe[0], &pipe[1], &sa, 0), ERR_CANT_FORK);
+		ERR_FAIL_COND_V(!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0), ERR_CANT_FORK); // Read handle is for host process only and should not be inherited.
+
+		pi.si.dwFlags |= STARTF_USESTDHANDLES;
+		pi.si.hStdOutput = pipe[1];
+		if (read_stderr) {
+			pi.si.hStdError = pipe[1];
+		}
+		inherit_handles = true;
+	}
+	DWORD creaton_flags = NORMAL_PRIORITY_CLASS;
+	if (p_open_console) {
+		creaton_flags |= CREATE_NEW_CONSOLE;
+	} else {
+		creaton_flags |= CREATE_NO_WINDOW;
+	}
+
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, inherit_handles, creaton_flags, nullptr, nullptr, si_w, &pi.pi);
+	if (!ret && r_pipe) {
+		CloseHandle(pipe[0]); // Cleanup pipe handles.
+		CloseHandle(pipe[1]);
+	}
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
-	WaitForSingleObject(pi.pi.hProcess, INFINITE);
+	if (r_pipe) {
+		CloseHandle(pipe[1]); // Close pipe write handle (only child process is writing).
+		char buf[4096];
+		DWORD read = 0;
+		for (;;) { // Read StdOut and StdErr from pipe.
+			bool success = ReadFile(pipe[0], buf, 4096, &read, NULL);
+			if (!success || read == 0) {
+				break;
+			}
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
+			(*r_pipe) += String::utf8(buf, read);
+			if (p_pipe_mutex) {
+				p_pipe_mutex->unlock();
+			}
+		};
+		CloseHandle(pipe[0]); // Close pipe read handle.
+	} else {
+		WaitForSingleObject(pi.pi.hProcess, INFINITE);
+	}
+
 	if (r_exitcode) {
 		DWORD ret2;
 		GetExitCodeProcess(pi.pi.hProcess, &ret2);
 		*r_exitcode = ret2;
 	}
+
 	CloseHandle(pi.pi.hProcess);
 	CloseHandle(pi.pi.hThread);
 
 	return OK;
 };
 
-bool OS_Windows::_is_win11_terminal() const {
-	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD dwMode = 0;
-	if (GetConsoleMode(hStdOut, &dwMode)) {
-		return ((dwMode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) == ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-	} else {
-		return false;
-	}
-}
-
-Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id) {
+Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
@@ -485,16 +446,14 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	DWORD dwCreationFlags = NORMAL_PRIORITY_CLASS;
-#ifndef DEBUG_ENABLED
-	dwCreationFlags |= CREATE_NO_WINDOW;
-#endif
-	if (p_path == get_executable_path() && GetConsoleWindow() != nullptr && _is_win11_terminal()) {
-		// Open a new terminal as a workaround for Windows Terminal bug.
-		dwCreationFlags |= CREATE_NEW_CONSOLE;
+	DWORD creaton_flags = NORMAL_PRIORITY_CLASS;
+	if (p_open_console) {
+		creaton_flags |= CREATE_NEW_CONSOLE;
+	} else {
+		creaton_flags |= CREATE_NO_WINDOW;
 	}
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, dwCreationFlags, nullptr, nullptr, si_w, &pi.pi);
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, creaton_flags, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
 	ProcessID pid = pi.pi.dwProcessId;

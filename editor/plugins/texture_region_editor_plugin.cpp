@@ -36,10 +36,6 @@
 #include "editor/editor_scale.h"
 #include "scene/gui/check_box.h"
 
-/**
-	@author Mariano Suligoy
-*/
-
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;
 

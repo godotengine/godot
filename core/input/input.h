@@ -77,11 +77,6 @@ public:
 		JOYPADS_MAX = 16,
 	};
 
-	struct JoyAxisValue {
-		int min;
-		float value;
-	};
-
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
 
 private:
@@ -247,6 +242,7 @@ public:
 
 	static Input *get_singleton();
 
+	bool is_anything_pressed() const;
 	bool is_key_pressed(Key p_keycode) const;
 	bool is_physical_key_pressed(Key p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
@@ -313,7 +309,7 @@ public:
 
 	void parse_mapping(String p_mapping);
 	void joy_button(int p_device, JoyButton p_button, bool p_pressed);
-	void joy_axis(int p_device, JoyAxis p_axis, const JoyAxisValue &p_value);
+	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
 	void joy_hat(int p_device, HatMask p_val);
 
 	void add_joy_mapping(String p_mapping, bool p_update_existing = false);

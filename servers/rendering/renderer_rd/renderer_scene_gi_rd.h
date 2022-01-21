@@ -495,7 +495,7 @@ public:
 		float solid_cell_ratio = 0;
 		uint32_t solid_cell_count = 0;
 
-		RS::EnvironmentSDFGICascades cascade_mode;
+		int num_cascades = 6;
 		float min_cell_size = 0;
 		uint32_t probe_axis_count = 0; //amount of probes per axis, this is an odd number because it encloses endpoints
 

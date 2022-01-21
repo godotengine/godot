@@ -49,10 +49,6 @@
 #define None 0L
 #endif
 
-/**
-	@author AndreaCatania
-*/
-
 class RenderingServerHandler;
 
 class SoftBodyBullet : public CollisionObjectBullet {

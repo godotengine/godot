@@ -42,10 +42,6 @@
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 #include <btBulletCollisionCommon.h>
 
-/**
-	@author AndreaCatania
-*/
-
 ShapeBullet::ShapeBullet() {}
 
 ShapeBullet::~ShapeBullet() {}

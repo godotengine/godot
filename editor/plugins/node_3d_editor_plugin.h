@@ -312,6 +312,7 @@ private:
 		bool snap = false;
 		Ref<EditorNode3DGizmo> gizmo;
 		int gizmo_handle = 0;
+		bool gizmo_handle_secondary = false;
 		Variant gizmo_initial_value;
 	} _edit;
 
@@ -526,7 +527,8 @@ private:
 	Node3DEditorViewportContainer *viewport_base;
 	Node3DEditorViewport *viewports[VIEWPORTS_COUNT];
 	VSplitContainer *shader_split;
-	HSplitContainer *palette_split;
+	HSplitContainer *left_panel_split;
+	HSplitContainer *right_panel_split;
 
 	/////
 
@@ -554,6 +556,7 @@ private:
 
 	Ref<Node3DGizmo> current_hover_gizmo;
 	int current_hover_gizmo_handle;
+	bool current_hover_gizmo_handle_secondary;
 
 	real_t snap_translate_value;
 	real_t snap_rotate_value;
@@ -799,8 +802,16 @@ public:
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
 
+	void add_control_to_left_panel(Control *p_control);
+	void remove_control_from_left_panel(Control *p_control);
+
+	void add_control_to_right_panel(Control *p_control);
+	void remove_control_from_right_panel(Control *p_control);
+
+	void move_control_to_left_panel(Control *p_control);
+	void move_control_to_right_panel(Control *p_control);
+
 	VSplitContainer *get_shader_split();
-	HSplitContainer *get_palette_split();
 
 	Node3D *get_single_selected_node() { return selected; }
 	bool is_current_selected_gizmo(const EditorNode3DGizmo *p_gizmo);
@@ -810,8 +821,15 @@ public:
 	Ref<EditorNode3DGizmo> get_current_hover_gizmo() const { return current_hover_gizmo; }
 	void set_current_hover_gizmo(Ref<EditorNode3DGizmo> p_gizmo) { current_hover_gizmo = p_gizmo; }
 
-	void set_current_hover_gizmo_handle(int p_id) { current_hover_gizmo_handle = p_id; }
-	int get_current_hover_gizmo_handle() const { return current_hover_gizmo_handle; }
+	void set_current_hover_gizmo_handle(int p_id, bool p_secondary) {
+		current_hover_gizmo_handle = p_id;
+		current_hover_gizmo_handle_secondary = p_secondary;
+	}
+
+	int get_current_hover_gizmo_handle(bool &r_secondary) const {
+		r_secondary = current_hover_gizmo_handle_secondary;
+		return current_hover_gizmo_handle;
+	}
 
 	void set_can_preview(Camera3D *p_preview);
 

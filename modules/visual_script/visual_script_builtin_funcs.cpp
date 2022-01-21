@@ -964,7 +964,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 				return;
 			}
 
-			if (p_inputs[0]->is_ref()) {
+			if (p_inputs[0]->is_ref_counted()) {
 				REF r = *p_inputs[0];
 				if (!r.is_valid()) {
 					return;

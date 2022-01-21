@@ -168,6 +168,7 @@ private:
 	void _event_config_confirmed();
 
 	void _add_action_pressed();
+	bool _has_action(const String &p_name) const;
 	void _add_action(const String &p_name);
 	void _action_edited();
 

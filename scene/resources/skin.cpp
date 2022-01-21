@@ -143,6 +143,7 @@ void Skin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bind_count"), &Skin::get_bind_count);
 
 	ClassDB::bind_method(D_METHOD("add_bind", "bone", "pose"), &Skin::add_bind);
+	ClassDB::bind_method(D_METHOD("add_named_bind", "name", "pose"), &Skin::add_named_bind);
 
 	ClassDB::bind_method(D_METHOD("set_bind_pose", "bind_index", "pose"), &Skin::set_bind_pose);
 	ClassDB::bind_method(D_METHOD("get_bind_pose", "bind_index"), &Skin::get_bind_pose);

@@ -35,10 +35,6 @@
 #include <BulletCollision/BroadphaseCollision/btBroadphaseProxy.h>
 #include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
 
-/**
-	@author AndreaCatania
-*/
-
 GodotCollisionConfiguration::GodotCollisionConfiguration(const btDiscreteDynamicsWorld *world, const btDefaultCollisionConstructionInfo &constructionInfo) :
 		btDefaultCollisionConfiguration(constructionInfo) {
 	void *mem = nullptr;

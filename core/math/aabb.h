@@ -41,7 +41,7 @@
  */
 class Variant;
 
-class AABB {
+class _NO_DISCARD_ AABB {
 public:
 	Vector3 position;
 	Vector3 size;

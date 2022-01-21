@@ -39,10 +39,6 @@
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <btBulletCollisionCommon.h>
 
-/**
-	@author AndreaCatania
-*/
-
 AreaBullet::AreaBullet() :
 		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA) {
 	btGhost = bulletnew(btGhostObject);

@@ -39,8 +39,6 @@
 struct BlitToScreen;
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The XR interface is a template class on top of which we build interface to different AR, VR and tracking SDKs.
 	The idea is that we subclass this class, implement the logic, and then instantiate a singleton of each interface
 	when Godot starts. These instances do not initialize themselves but register themselves with the AR/VR server.
@@ -138,4 +136,4 @@ VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 
-#endif // !XR_INTERFACE_H
+#endif // XR_INTERFACE_H

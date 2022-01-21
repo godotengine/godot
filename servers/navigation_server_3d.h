@@ -28,12 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/**
-	@author AndreaCatania
-*/
-
-#ifndef NAVIGATION_SERVER_H
-#define NAVIGATION_SERVER_H
+#ifndef NAVIGATION_SERVER_3D_H
+#define NAVIGATION_SERVER_3D_H
 
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
@@ -205,4 +201,4 @@ public:
 	static NavigationServer3D *new_default_server();
 };
 
-#endif
+#endif // NAVIGATION_SERVER_3D_H

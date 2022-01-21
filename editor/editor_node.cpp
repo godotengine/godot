@@ -429,7 +429,7 @@ void EditorNode::unhandled_input(const Ref<InputEvent> &p_event) {
 			_scene_tab_changed(next_tab);
 		}
 		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
-			filesystem_dock->focus_on_filter();
+			FileSystemDock::get_singleton()->focus_on_filter();
 		}
 
 		if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
@@ -957,9 +957,10 @@ void EditorNode::_fs_changed() {
 
 		if (!export_error.is_empty()) {
 			ERR_PRINT(export_error);
-			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
+			_exit_editor(EXIT_FAILURE);
+		} else {
+			_exit_editor(EXIT_SUCCESS);
 		}
-		_exit_editor();
 	}
 }
 
@@ -1099,8 +1100,8 @@ void EditorNode::_version_button_pressed() {
 }
 
 void EditorNode::_node_renamed() {
-	if (get_inspector()) {
-		get_inspector()->update_tree();
+	if (InspectorDock::get_inspector_singleton()) {
+		InspectorDock::get_inspector_singleton()->update_tree();
 	}
 }
 
@@ -1161,7 +1162,7 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
 
-	inspector_dock->edit_resource(res);
+	InspectorDock::get_singleton()->edit_resource(res);
 	return OK;
 }
 
@@ -1775,7 +1776,7 @@ void EditorNode::restart_editor() {
 		to_reopen = get_tree()->get_edited_scene_root()->get_scene_file_path();
 	}
 
-	_exit_editor();
+	_exit_editor(EXIT_SUCCESS);
 
 	List<String> args;
 	args.push_back("--path");
@@ -2069,10 +2070,10 @@ void EditorNode::edit_item(Object *p_object) {
 
 void EditorNode::push_item(Object *p_object, const String &p_property, bool p_inspector_only) {
 	if (!p_object) {
-		get_inspector()->edit(nullptr);
-		node_dock->set_node(nullptr);
-		scene_tree_dock->set_selected(nullptr);
-		inspector_dock->update(nullptr);
+		InspectorDock::get_inspector_singleton()->edit(nullptr);
+		NodeDock::get_singleton()->set_node(nullptr);
+		SceneTreeDock::get_singleton()->set_selected(nullptr);
+		InspectorDock::get_singleton()->update(nullptr);
 		_display_top_editors(false);
 		return;
 	}
@@ -2145,17 +2146,17 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	this->current = current_obj;
 
 	if (!current_obj) {
-		scene_tree_dock->set_selected(nullptr);
-		get_inspector()->edit(nullptr);
-		node_dock->set_node(nullptr);
-		inspector_dock->update(nullptr);
+		SceneTreeDock::get_singleton()->set_selected(nullptr);
+		InspectorDock::get_inspector_singleton()->edit(nullptr);
+		NodeDock::get_singleton()->set_node(nullptr);
+		InspectorDock::get_singleton()->update(nullptr);
 
 		_display_top_editors(false);
 
 		return;
 	}
 
-	Object *prev_inspected_object = get_inspector()->get_edited_object();
+	Object *prev_inspected_object = InspectorDock::get_inspector_singleton()->get_edited_object();
 
 	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
 	bool is_resource = current_obj->is_class("Resource");
@@ -2166,11 +2167,11 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	if (is_resource) {
 		Resource *current_res = Object::cast_to<Resource>(current_obj);
 		ERR_FAIL_COND(!current_res);
-		get_inspector()->edit(current_res);
-		scene_tree_dock->set_selected(nullptr);
-		node_dock->set_node(nullptr);
-		inspector_dock->update(nullptr);
-		EditorNode::get_singleton()->get_import_dock()->set_edit_path(current_res->get_path());
+		InspectorDock::get_inspector_singleton()->edit(current_res);
+		SceneTreeDock::get_singleton()->set_selected(nullptr);
+		NodeDock::get_singleton()->set_node(nullptr);
+		InspectorDock::get_singleton()->update(nullptr);
+		ImportDock::get_singleton()->set_edit_path(current_res->get_path());
 
 		int subr_idx = current_res->get_path().find("::");
 		if (subr_idx != -1) {
@@ -2191,15 +2192,15 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		Node *current_node = Object::cast_to<Node>(current_obj);
 		ERR_FAIL_COND(!current_node);
 
-		get_inspector()->edit(current_node);
+		InspectorDock::get_inspector_singleton()->edit(current_node);
 		if (current_node->is_inside_tree()) {
-			node_dock->set_node(current_node);
-			scene_tree_dock->set_selected(current_node);
-			inspector_dock->update(current_node);
+			NodeDock::get_singleton()->set_node(current_node);
+			SceneTreeDock::get_singleton()->set_selected(current_node);
+			InspectorDock::get_singleton()->update(current_node);
 		} else {
-			node_dock->set_node(nullptr);
-			scene_tree_dock->set_selected(nullptr);
-			inspector_dock->update(nullptr);
+			NodeDock::get_singleton()->set_node(nullptr);
+			SceneTreeDock::get_singleton()->set_selected(nullptr);
+			InspectorDock::get_singleton()->update(nullptr);
 		}
 
 		if (get_edited_scene() && !get_edited_scene()->get_scene_file_path().is_empty()) {
@@ -2237,21 +2238,21 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 			}
 		}
 
-		get_inspector()->edit(current_obj);
-		node_dock->set_node(nullptr);
-		scene_tree_dock->set_selected(selected_node);
-		inspector_dock->update(nullptr);
+		InspectorDock::get_inspector_singleton()->edit(current_obj);
+		NodeDock::get_singleton()->set_node(nullptr);
+		SceneTreeDock::get_singleton()->set_selected(selected_node);
+		InspectorDock::get_singleton()->update(nullptr);
 	}
 
 	if (current_obj == prev_inspected_object) {
 		// Make sure inspected properties are restored.
-		get_inspector()->update_tree();
+		InspectorDock::get_inspector_singleton()->update_tree();
 	}
 
-	inspector_dock->set_warning(editable_warning);
+	InspectorDock::get_singleton()->set_warning(editable_warning);
 
-	if (get_inspector()->is_using_folding() == disable_folding) {
-		get_inspector()->set_use_folding(!disable_folding);
+	if (InspectorDock::get_inspector_singleton()->is_using_folding() == disable_folding) {
+		InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding);
 	}
 
 	/* Take care of PLUGIN EDITOR */
@@ -2305,8 +2306,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		}
 	}
 
-	inspector_dock->update(current_obj);
-	inspector_dock->update_keying();
+	InspectorDock::get_singleton()->update(current_obj);
 }
 
 void EditorNode::_run(bool p_current, const String &p_custom) {
@@ -2593,13 +2593,21 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						file->set_current_path(path.replacen("." + ext, "." + extensions.front()->get()));
 					}
 				}
-			} else {
-				String existing;
-				if (extensions.size()) {
-					String root_name(scene->get_name());
-					existing = root_name + "." + extensions.front()->get().to_lower();
+			} else if (extensions.size()) {
+				String root_name = scene->get_name();
+				// Very similar to node naming logic.
+				switch (ProjectSettings::get_singleton()->get("editor/scene/scene_naming").operator int()) {
+					case SCENE_NAME_CASING_AUTO:
+						// Use casing of the root node.
+						break;
+					case SCENE_NAME_CASING_PASCAL_CASE: {
+						root_name = root_name.capitalize().replace(" ", "");
+					} break;
+					case SCENE_NAME_CASING_SNAKE_CASE:
+						root_name = root_name.capitalize().replace(" ", "").replace("-", "_").camelcase_to_underscore();
+						break;
 				}
-				file->set_current_path(existing);
+				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
 			}
 			file->popup_file_dialog();
 			file->set_title(TTR("Save Scene As..."));
@@ -2756,7 +2764,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_SHOW_IN_FILESYSTEM: {
 			String path = editor_data.get_scene_path(editor_data.get_edited_scene());
 			if (!path.is_empty()) {
-				filesystem_dock->navigate_to_path(path);
+				FileSystemDock::get_singleton()->navigate_to_path(path);
 			}
 		} break;
 
@@ -2780,8 +2788,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 			}
 		} break;
-		case RUN_PROJECT_DATA_FOLDER: {
-			// ensure_user_data_dir() to prevent the edge case: "Open Project Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved
+		case RUN_USER_DATA_FOLDER: {
+			// ensure_user_data_dir() to prevent the edge case: "Open User Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved
 			OS::get_singleton()->ensure_user_data_dir();
 			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
 		} break;
@@ -2860,11 +2868,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case SETTINGS_TOGGLE_FULLSCREEN: {
 			DisplayServer::get_singleton()->window_set_mode(DisplayServer::get_singleton()->window_get_mode() == DisplayServer::WINDOW_MODE_FULLSCREEN ? DisplayServer::WINDOW_MODE_WINDOWED : DisplayServer::WINDOW_MODE_FULLSCREEN);
 
-		} break;
-		case SETTINGS_TOGGLE_CONSOLE: {
-			bool was_visible = DisplayServer::get_singleton()->is_console_visible();
-			DisplayServer::get_singleton()->console_set_visible(!was_visible);
-			EditorSettings::get_singleton()->set_setting("interface/editor/hide_console_window", was_visible);
 		} break;
 		case EDITOR_SCREENSHOT: {
 			screenshot_timer->start();
@@ -2997,7 +3000,7 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 	return -1;
 }
 
-void EditorNode::_exit_editor() {
+void EditorNode::_exit_editor(int p_exit_code) {
 	exiting = true;
 	resource_preview->stop(); // stop early to avoid crashes
 	_save_docks();
@@ -3005,7 +3008,7 @@ void EditorNode::_exit_editor() {
 	// Dim the editor window while it's quitting to make it clearer that it's busy
 	dim_editor(true);
 
-	get_tree()->quit();
+	get_tree()->quit(p_exit_code);
 }
 
 void EditorNode::_discard_changes(const String &p_str) {
@@ -3055,12 +3058,12 @@ void EditorNode::_discard_changes(const String &p_str) {
 		} break;
 		case FILE_QUIT: {
 			_menu_option_confirm(RUN_STOP, true);
-			_exit_editor();
+			_exit_editor(EXIT_SUCCESS);
 
 		} break;
 		case RUN_PROJECT_MANAGER: {
 			_menu_option_confirm(RUN_STOP, true);
-			_exit_editor();
+			_exit_editor(EXIT_SUCCESS);
 			String exec = OS::get_singleton()->get_executable_path();
 
 			List<String> args;
@@ -3358,7 +3361,7 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 	if (Object::cast_to<Popup>(p_scene)) {
 		Object::cast_to<Popup>(p_scene)->show(); // show popups
 	}
-	scene_tree_dock->set_edited_scene(p_scene);
+	SceneTreeDock::get_singleton()->set_edited_scene(p_scene);
 	if (get_tree()) {
 		get_tree()->set_edited_scene_root(p_scene);
 	}
@@ -3383,10 +3386,10 @@ int EditorNode::_get_current_main_editor() {
 Dictionary EditorNode::_get_main_scene_state() {
 	Dictionary state;
 	state["main_tab"] = _get_current_main_editor();
-	state["scene_tree_offset"] = scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->get_value();
-	state["property_edit_offset"] = get_inspector()->get_scroll_offset();
+	state["scene_tree_offset"] = SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->get_value();
+	state["property_edit_offset"] = InspectorDock::get_inspector_singleton()->get_scroll_offset();
 	state["saved_version"] = saved_version;
-	state["node_filter"] = scene_tree_dock->get_filter();
+	state["node_filter"] = SceneTreeDock::get_singleton()->get_filter();
 	return state;
 }
 
@@ -3428,14 +3431,14 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 	}
 
 	if (p_state.has("scene_tree_offset")) {
-		scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_value(p_state["scene_tree_offset"]);
+		SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_value(p_state["scene_tree_offset"]);
 	}
 	if (p_state.has("property_edit_offset")) {
-		get_inspector()->set_scroll_offset(p_state["property_edit_offset"]);
+		InspectorDock::get_inspector_singleton()->set_scroll_offset(p_state["property_edit_offset"]);
 	}
 
 	if (p_state.has("node_filter")) {
-		scene_tree_dock->set_filter(p_state["node_filter"]);
+		SceneTreeDock::get_singleton()->set_filter(p_state["node_filter"]);
 	}
 
 	// this should only happen at the very end
@@ -3490,7 +3493,7 @@ void EditorNode::set_current_scene(int p_idx) {
 		Object::cast_to<Popup>(new_scene)->show(); // show popups
 	}
 
-	scene_tree_dock->set_edited_scene(new_scene);
+	SceneTreeDock::get_singleton()->set_edited_scene(new_scene);
 	if (get_tree()) {
 		get_tree()->set_edited_scene_root(new_scene);
 	}
@@ -3670,7 +3673,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	prev_scene->set_disabled(previous_scenes.size() == 0);
 	opening_prev = false;
-	scene_tree_dock->set_selected(new_scene);
+	SceneTreeDock::get_singleton()->set_selected(new_scene);
 
 	EditorDebuggerNode::get_singleton()->update_live_edit_root();
 
@@ -3695,27 +3698,11 @@ void EditorNode::open_request(const String &p_path) {
 }
 
 void EditorNode::request_instance_scene(const String &p_path) {
-	scene_tree_dock->instantiate(p_path);
+	SceneTreeDock::get_singleton()->instantiate(p_path);
 }
 
 void EditorNode::request_instantiate_scenes(const Vector<String> &p_files) {
-	scene_tree_dock->instantiate_scenes(p_files);
-}
-
-ImportDock *EditorNode::get_import_dock() {
-	return import_dock;
-}
-
-FileSystemDock *EditorNode::get_filesystem_dock() {
-	return filesystem_dock;
-}
-
-SceneTreeDock *EditorNode::get_scene_tree_dock() {
-	return scene_tree_dock;
-}
-
-InspectorDock *EditorNode::get_inspector_dock() {
-	return inspector_dock;
+	SceneTreeDock::get_singleton()->instantiate_scenes(p_files);
 }
 
 void EditorNode::_inherit_request(String p_file) {
@@ -4511,10 +4498,10 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 		}
 	}
 
-	p_layout->set_value(p_section, "dock_filesystem_split", filesystem_dock->get_split_offset());
-	p_layout->set_value(p_section, "dock_filesystem_display_mode", filesystem_dock->get_display_mode());
-	p_layout->set_value(p_section, "dock_filesystem_file_sort", filesystem_dock->get_file_sort());
-	p_layout->set_value(p_section, "dock_filesystem_file_list_display_mode", filesystem_dock->get_file_list_display_mode());
+	p_layout->set_value(p_section, "dock_filesystem_split", FileSystemDock::get_singleton()->get_split_offset());
+	p_layout->set_value(p_section, "dock_filesystem_display_mode", FileSystemDock::get_singleton()->get_display_mode());
+	p_layout->set_value(p_section, "dock_filesystem_file_sort", FileSystemDock::get_singleton()->get_file_sort());
+	p_layout->set_value(p_section, "dock_filesystem_file_list_display_mode", FileSystemDock::get_singleton()->get_file_list_display_mode());
 
 	for (int i = 0; i < vsplits.size(); i++) {
 		if (vsplits[i]->is_visible_in_tree()) {
@@ -4700,22 +4687,22 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 
 	if (p_layout->has_section_key(p_section, "dock_filesystem_split")) {
 		int fs_split_ofs = p_layout->get_value(p_section, "dock_filesystem_split");
-		filesystem_dock->set_split_offset(fs_split_ofs);
+		FileSystemDock::get_singleton()->set_split_offset(fs_split_ofs);
 	}
 
 	if (p_layout->has_section_key(p_section, "dock_filesystem_display_mode")) {
 		FileSystemDock::DisplayMode dock_filesystem_display_mode = FileSystemDock::DisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_display_mode")));
-		filesystem_dock->set_display_mode(dock_filesystem_display_mode);
+		FileSystemDock::get_singleton()->set_display_mode(dock_filesystem_display_mode);
 	}
 
 	if (p_layout->has_section_key(p_section, "dock_filesystem_file_sort")) {
 		FileSystemDock::FileSortOption dock_filesystem_file_sort = FileSystemDock::FileSortOption(int(p_layout->get_value(p_section, "dock_filesystem_file_sort")));
-		filesystem_dock->set_file_sort(dock_filesystem_file_sort);
+		FileSystemDock::get_singleton()->set_file_sort(dock_filesystem_file_sort);
 	}
 
 	if (p_layout->has_section_key(p_section, "dock_filesystem_file_list_display_mode")) {
 		FileSystemDock::FileListDisplayMode dock_filesystem_file_list_display_mode = FileSystemDock::FileListDisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_file_list_display_mode")));
-		filesystem_dock->set_file_list_display_mode(dock_filesystem_file_list_display_mode);
+		FileSystemDock::get_singleton()->set_file_list_display_mode(dock_filesystem_file_list_display_mode);
 	}
 
 	for (int i = 0; i < vsplits.size(); i++) {
@@ -4969,7 +4956,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 void EditorNode::_scene_tab_script_edited(int p_tab) {
 	Ref<Script> script = editor_data.get_scene_root_script(p_tab);
 	if (script.is_valid()) {
-		inspector_dock->edit_resource(script);
+		InspectorDock::get_singleton()->edit_resource(script);
 	}
 }
 
@@ -5434,7 +5421,7 @@ void EditorNode::_global_menu_new_window(const Variant &p_tag) {
 }
 
 void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
-	String to_path = ProjectSettings::get_singleton()->globalize_path(get_filesystem_dock()->get_selected_path());
+	String to_path = ProjectSettings::get_singleton()->globalize_path(FileSystemDock::get_singleton()->get_selected_path());
 
 	_add_dropped_files_recursive(p_files, to_path);
 
@@ -5640,15 +5627,15 @@ void EditorNode::_resource_loaded(RES p_resource, const String &p_path) {
 
 void EditorNode::_feature_profile_changed() {
 	Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
-	TabContainer *import_tabs = cast_to<TabContainer>(import_dock->get_parent());
-	TabContainer *node_tabs = cast_to<TabContainer>(node_dock->get_parent());
-	TabContainer *fs_tabs = cast_to<TabContainer>(filesystem_dock->get_parent());
+	TabContainer *import_tabs = cast_to<TabContainer>(ImportDock::get_singleton()->get_parent());
+	TabContainer *node_tabs = cast_to<TabContainer>(NodeDock::get_singleton()->get_parent());
+	TabContainer *fs_tabs = cast_to<TabContainer>(FileSystemDock::get_singleton()->get_parent());
 	if (profile.is_valid()) {
-		node_tabs->set_tab_hidden(node_dock->get_index(), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_NODE_DOCK));
+		node_tabs->set_tab_hidden(NodeDock::get_singleton()->get_index(), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_NODE_DOCK));
 		// The Import dock is useless without the FileSystem dock. Ensure the configuration is valid.
 		bool fs_dock_disabled = profile->is_feature_disabled(EditorFeatureProfile::FEATURE_FILESYSTEM_DOCK);
-		fs_tabs->set_tab_hidden(filesystem_dock->get_index(), fs_dock_disabled);
-		import_tabs->set_tab_hidden(import_dock->get_index(), fs_dock_disabled || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
+		fs_tabs->set_tab_hidden(FileSystemDock::get_singleton()->get_index(), fs_dock_disabled);
+		import_tabs->set_tab_hidden(ImportDock::get_singleton()->get_index(), fs_dock_disabled || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
 
 		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
@@ -5661,12 +5648,12 @@ void EditorNode::_feature_profile_changed() {
 			_editor_select(EDITOR_2D);
 		}
 	} else {
-		import_tabs->set_tab_hidden(import_dock->get_index(), false);
-		node_tabs->set_tab_hidden(node_dock->get_index(), false);
-		fs_tabs->set_tab_hidden(filesystem_dock->get_index(), false);
-		import_dock->set_visible(true);
-		node_dock->set_visible(true);
-		filesystem_dock->set_visible(true);
+		import_tabs->set_tab_hidden(ImportDock::get_singleton()->get_index(), false);
+		node_tabs->set_tab_hidden(NodeDock::get_singleton()->get_index(), false);
+		fs_tabs->set_tab_hidden(FileSystemDock::get_singleton()->get_index(), false);
+		ImportDock::get_singleton()->set_visible(true);
+		NodeDock::get_singleton()->set_visible(true);
+		FileSystemDock::get_singleton()->set_visible(true);
 		main_editor_buttons[EDITOR_3D]->set_visible(true);
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(true);
 		if (StreamPeerSSL::is_available()) {
@@ -5678,6 +5665,8 @@ void EditorNode::_feature_profile_changed() {
 }
 
 void EditorNode::_bind_methods() {
+	GLOBAL_DEF("editor/scene/scene_naming", SCENE_NAME_CASING_SNAKE_CASE);
+	ProjectSettings::get_singleton()->set_custom_property_info("editor/scene/scene_naming", PropertyInfo(Variant::INT, "editor/scene/scene_naming", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"));
 	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
@@ -5691,8 +5680,6 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_show_messages", &EditorNode::_show_messages);
 
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
-
-	ClassDB::bind_method("get_script_create_dialog", &EditorNode::get_script_create_dialog);
 
 	ClassDB::bind_method("set_current_scene", &EditorNode::set_current_scene);
 	ClassDB::bind_method("set_current_version", &EditorNode::set_current_version);
@@ -6039,8 +6026,10 @@ EditorNode::EditorNode() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle", PROPERTY_USAGE_DEFAULT));
 	EDITOR_DEF("run/auto_save/save_before_running", true);
 	EDITOR_DEF("interface/editors/sub_editor_panning_scheme", 0);
+	EDITOR_DEF("interface/editors/animation_editors_panning_scheme", 1);
 	// Should be in sync with ControlScheme in ViewPanner.
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/editors/sub_editor_panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans", PROPERTY_USAGE_DEFAULT));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/editors/animation_editors_panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans", PROPERTY_USAGE_DEFAULT));
 
 	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
 	for (const String &E : textfile_ext) {
@@ -6446,7 +6435,7 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTR("Export..."), Key::NONE, TTR("Export")), FILE_EXPORT_PROJECT);
 	p->add_item(TTR("Install Android Build Template..."), FILE_INSTALL_ANDROID_SOURCE);
-	p->add_item(TTR("Open Project Data Folder"), RUN_PROJECT_DATA_FOLDER);
+	p->add_item(TTR("Open User Data Folder"), RUN_USER_DATA_FOLDER);
 
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->connect("plugin_ready", callable_mp(this, &EditorNode::_on_plugin_ready));
@@ -6512,11 +6501,6 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/fullscreen_mode", "macos", KeyModifierMask::CMD | KeyModifierMask::CTRL | Key::F);
 	p->add_shortcut(ED_GET_SHORTCUT("editor/fullscreen_mode"), SETTINGS_TOGGLE_FULLSCREEN);
 
-#if defined(WINDOWS_ENABLED) && defined(WINDOWS_SUBSYSTEM_CONSOLE)
-	// The console can only be toggled if the application was built for the console subsystem,
-	// not the GUI subsystem.
-	p->add_item(TTR("Toggle System Console"), SETTINGS_TOGGLE_CONSOLE);
-#endif
 	p->add_separator();
 
 	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
@@ -6699,35 +6683,35 @@ EditorNode::EditorNode() {
 
 	// Instantiate and place editor docks
 
-	scene_tree_dock = memnew(SceneTreeDock(this, scene_root, editor_selection, editor_data));
-	inspector_dock = memnew(InspectorDock(this, editor_data));
-	import_dock = memnew(ImportDock);
-	node_dock = memnew(NodeDock);
+	memnew(SceneTreeDock(this, scene_root, editor_selection, editor_data));
+	memnew(InspectorDock(this, editor_data));
+	memnew(ImportDock);
+	memnew(NodeDock);
 
-	filesystem_dock = memnew(FileSystemDock(this));
+	FileSystemDock *filesystem_dock = memnew(FileSystemDock(this));
 	filesystem_dock->connect("inherit", callable_mp(this, &EditorNode::_inherit_request));
 	filesystem_dock->connect("instance", callable_mp(this, &EditorNode::_instantiate_request));
 	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_docks));
 
 	// Scene: Top left
-	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(scene_tree_dock);
-	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(scene_tree_dock->get_index(), TTR("Scene"));
+	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(SceneTreeDock::get_singleton());
+	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(SceneTreeDock::get_singleton()->get_index(), TTR("Scene"));
 
 	// Import: Top left, behind Scene
-	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(import_dock);
-	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(import_dock->get_index(), TTR("Import"));
+	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(ImportDock::get_singleton());
+	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(ImportDock::get_singleton()->get_index(), TTR("Import"));
 
 	// FileSystem: Bottom left
-	dock_slot[DOCK_SLOT_LEFT_BR]->add_child(filesystem_dock);
-	dock_slot[DOCK_SLOT_LEFT_BR]->set_tab_title(filesystem_dock->get_index(), TTR("FileSystem"));
+	dock_slot[DOCK_SLOT_LEFT_BR]->add_child(FileSystemDock::get_singleton());
+	dock_slot[DOCK_SLOT_LEFT_BR]->set_tab_title(FileSystemDock::get_singleton()->get_index(), TTR("FileSystem"));
 
 	// Inspector: Full height right
-	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(inspector_dock);
-	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(inspector_dock->get_index(), TTR("Inspector"));
+	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(InspectorDock::get_singleton());
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(InspectorDock::get_singleton()->get_index(), TTR("Inspector"));
 
 	// Node: Full height right, behind Inspector
-	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(node_dock);
-	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(node_dock->get_index(), TTR("Node"));
+	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(NodeDock::get_singleton());
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(NodeDock::get_singleton()->get_index(), TTR("Node"));
 
 	// Hide unused dock slots and vsplits
 	dock_slot[DOCK_SLOT_LEFT_UL]->hide();
@@ -7171,7 +7155,7 @@ EditorNode::EditorNode() {
 	editor_data.set_edited_scene(0);
 	_update_scene_tabs();
 
-	import_dock->initialize_import_options();
+	ImportDock::get_singleton()->initialize_import_options();
 
 	FileAccess::set_file_close_fail_notify_callback(_file_access_close_error_notify);
 

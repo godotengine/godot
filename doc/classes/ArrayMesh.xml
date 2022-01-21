@@ -62,8 +62,7 @@
 			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
 			<argument index="1" name="arrays" type="Array" />
 			<argument index="2" name="blend_shapes" type="Array" default="[]" />
-			<argument index="3" name="lods" type="Dictionary" default="{
-}" />
+			<argument index="3" name="lods" type="Dictionary" default="{}" />
 			<argument index="4" name="compress_flags" type="int" default="0" />
 			<description>
 				Creates a new surface.

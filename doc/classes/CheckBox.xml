@@ -14,16 +14,16 @@
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
 	</members>
 	<theme_items>
-		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The [CheckBox] text's font color.
 		</theme_item>
-		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.9, 0.9, 0.9, 0.2)">
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			The [CheckBox] text's font color when it's disabled.
 		</theme_item>
-		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
+		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			The [CheckBox] text's font color when it's focused. Only replaces the normal text color of the checkbox. Disabled, hovered, and pressed states take precedence over this color.
 		</theme_item>
-		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
+		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			The [CheckBox] text's font color when it's hovered.
 		</theme_item>
 		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">

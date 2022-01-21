@@ -29,8 +29,6 @@ while IFS= read -rd '' f; do
                 continue 2
             elif [[ "$f" == *"glsl" ]]; then
                 continue 2
-            elif [[ "$f" == *"theme_data.h" ]]; then
-                continue 2
             elif [[ "$f" == "platform/android/java/lib/src/org/godotengine/godot/input/InputManager"* ]]; then
                 continue 2
             fi

@@ -124,17 +124,17 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 		}
 	}
 
-#define _WSL_CHECK(NAME, VALUE)                                                         \
+#define WSL_CHECK(NAME, VALUE)                                                          \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
-#define _WSL_CHECK_NC(NAME, VALUE)                                           \
+#define WSL_CHECK_NC(NAME, VALUE)                                            \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME] != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
-	_WSL_CHECK("connection", "upgrade");
-	_WSL_CHECK("upgrade", "websocket");
-	_WSL_CHECK_NC("sec-websocket-accept", WSLPeer::compute_key_response(_key));
-#undef _WSL_CHECK_NC
-#undef _WSL_CHECK
+	WSL_CHECK("connection", "upgrade");
+	WSL_CHECK("upgrade", "websocket");
+	WSL_CHECK_NC("sec-websocket-accept", WSLPeer::compute_key_response(_key));
+#undef WSL_CHECK_NC
+#undef WSL_CHECK
 	if (_protocols.size() == 0) {
 		// We didn't request a custom protocol
 		ERR_FAIL_COND_V(headers.has("sec-websocket-protocol"), false);

@@ -139,10 +139,6 @@ void DisplayServer::mouse_warp_to_position(const Point2i &p_to) {
 	WARN_PRINT("Mouse warping is not supported by this display server.");
 }
 
-Point2i DisplayServer::mouse_get_absolute_position() const {
-	ERR_FAIL_V_MSG(Point2i(), "Mouse is not supported by this display server.");
-}
-
 Point2i DisplayServer::mouse_get_position() const {
 	ERR_FAIL_V_MSG(Point2i(), "Mouse is not supported by this display server.");
 }
@@ -157,6 +153,10 @@ void DisplayServer::clipboard_set(const String &p_text) {
 
 String DisplayServer::clipboard_get() const {
 	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
+}
+
+bool DisplayServer::clipboard_has() const {
+	return !clipboard_get().is_empty();
 }
 
 void DisplayServer::clipboard_set_primary(const String &p_text) {
@@ -226,14 +226,6 @@ Point2i DisplayServer::ime_get_selection() const {
 
 String DisplayServer::ime_get_text() const {
 	ERR_FAIL_V_MSG(String(), "IME or NOTIFICATION_WM_IME_UPDATEnot supported by this display server.");
-}
-
-void DisplayServer::console_set_visible(bool p_enabled) {
-	WARN_PRINT("Console window not supported by this display server.");
-}
-
-bool DisplayServer::is_console_visible() const {
-	return false;
 }
 
 void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
@@ -367,11 +359,11 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("mouse_warp_to_position", "position"), &DisplayServer::mouse_warp_to_position);
 	ClassDB::bind_method(D_METHOD("mouse_get_position"), &DisplayServer::mouse_get_position);
-	ClassDB::bind_method(D_METHOD("mouse_get_absolute_position"), &DisplayServer::mouse_get_absolute_position);
 	ClassDB::bind_method(D_METHOD("mouse_get_button_state"), &DisplayServer::mouse_get_button_state);
 
 	ClassDB::bind_method(D_METHOD("clipboard_set", "clipboard"), &DisplayServer::clipboard_set);
 	ClassDB::bind_method(D_METHOD("clipboard_get"), &DisplayServer::clipboard_get);
+	ClassDB::bind_method(D_METHOD("clipboard_has"), &DisplayServer::clipboard_has);
 	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
 	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
 
@@ -446,9 +438,6 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
 
-	ClassDB::bind_method(D_METHOD("console_set_visible", "console_visible"), &DisplayServer::console_set_visible);
-	ClassDB::bind_method(D_METHOD("is_console_visible"), &DisplayServer::is_console_visible);
-
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_show", "existing_text", "position", "multiline", "max_length", "cursor_start", "cursor_end"), &DisplayServer::virtual_keyboard_show, DEFVAL(Rect2i()), DEFVAL(false), DEFVAL(-1), DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_hide"), &DisplayServer::virtual_keyboard_hide);
 
@@ -493,7 +482,6 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_CURSOR_SHAPE);
 	BIND_ENUM_CONSTANT(FEATURE_CUSTOM_CURSOR_SHAPE);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG);
-	BIND_ENUM_CONSTANT(FEATURE_CONSOLE_WINDOW);
 	BIND_ENUM_CONSTANT(FEATURE_IME);
 	BIND_ENUM_CONSTANT(FEATURE_WINDOW_TRANSPARENCY);
 	BIND_ENUM_CONSTANT(FEATURE_HIDPI);

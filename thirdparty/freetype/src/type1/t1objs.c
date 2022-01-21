@@ -4,7 +4,7 @@
  *
  *   Type 1 objects manager (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -116,11 +116,15 @@
   T1_Size_Request( FT_Size          t1size,     /* T1_Size */
                    FT_Size_Request  req )
   {
+    FT_Error  error;
+
     T1_Size            size  = (T1_Size)t1size;
     PSH_Globals_Funcs  funcs = T1_Size_Get_Globals_Funcs( size );
 
 
-    FT_Request_Metrics( size->root.face, req );
+    error = FT_Request_Metrics( size->root.face, req );
+    if ( error )
+      goto Exit;
 
     if ( funcs )
       funcs->set_scale( (PSH_Globals)t1size->internal->module_data,
@@ -128,7 +132,8 @@
                         size->root.metrics.y_scale,
                         0, 0 );
 
-    return FT_Err_Ok;
+  Exit:
+    return error;
   }
 
 
@@ -217,7 +222,6 @@
     {
       FT_FREE( face->buildchar );
 
-      face->buildchar     = NULL;
       face->len_buildchar = 0;
     }
 
@@ -598,11 +602,7 @@
 
 
     /* set default property values, cf. `ftt1drv.h' */
-#ifdef T1_CONFIG_OPTION_OLD_ENGINE
-    driver->hinting_engine = FT_HINTING_FREETYPE;
-#else
     driver->hinting_engine = FT_HINTING_ADOBE;
-#endif
 
     driver->no_stem_darkening = TRUE;
 

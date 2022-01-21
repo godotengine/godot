@@ -451,7 +451,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compute_list_add_barrier", "compute_list"), &RenderingDevice::compute_list_add_barrier);
 	ClassDB::bind_method(D_METHOD("compute_list_end", "post_barrier"), &RenderingDevice::compute_list_end, DEFVAL(BARRIER_MASK_ALL));
 
-	ClassDB::bind_method(D_METHOD("free", "rid"), &RenderingDevice::free);
+	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingDevice::free);
 
 	ClassDB::bind_method(D_METHOD("capture_timestamp", "name"), &RenderingDevice::capture_timestamp);
 	ClassDB::bind_method(D_METHOD("get_captured_timestamps_count"), &RenderingDevice::get_captured_timestamps_count);
@@ -729,14 +729,6 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG);
-	BIND_ENUM_CONSTANT(DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_MAX);
 
 	BIND_ENUM_CONSTANT(TEXTURE_TYPE_1D);

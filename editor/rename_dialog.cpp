@@ -284,6 +284,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc->add_child(lbl_preview_title);
 
 	lbl_preview = memnew(Label);
+	lbl_preview->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
 	vbc->add_child(lbl_preview);
 
 	// ---- Dialog related
@@ -527,7 +528,7 @@ String RenameDialog::_postprocess(const String &subject) {
 		// To Lowercase
 		result = result.to_lower();
 	} else if (case_id == 2) {
-		// To Upercase
+		// To Uppercase
 		result = result.to_upper();
 	}
 

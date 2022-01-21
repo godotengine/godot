@@ -59,7 +59,6 @@ complete -c godot -s w -l windowed -d "Request windowed mode"
 complete -c godot -s t -l always-on-top -d "Request an always-on-top window"
 complete -c godot -l resolution -d "Request window resolution" -x
 complete -c godot -l position -d "Request window position" -x
-complete -c godot -l low-dpi -d "Force low-DPI mode (macOS and Windows only)"
 complete -c godot -l headless -d "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script"
 
 # Debug options:

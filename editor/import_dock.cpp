@@ -91,6 +91,8 @@ public:
 	}
 };
 
+ImportDock *ImportDock::singleton = nullptr;
+
 void ImportDock::set_edit_path(const String &p_path) {
 	Ref<ConfigFile> config;
 	config.instantiate();
@@ -606,6 +608,7 @@ void ImportDock::initialize_import_options() const {
 }
 
 ImportDock::ImportDock() {
+	singleton = this;
 	set_name("Import");
 
 	content = memnew(VBoxContainer);
@@ -687,5 +690,6 @@ ImportDock::ImportDock() {
 }
 
 ImportDock::~ImportDock() {
+	singleton = nullptr;
 	memdelete(params);
 }

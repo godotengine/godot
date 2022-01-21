@@ -530,7 +530,7 @@ Point2 Camera2D::get_camera_screen_center() const {
 Size2 Camera2D::_get_camera_screen_size() const {
 	// special case if the camera2D is in the root viewport
 	if (Engine::get_singleton()->is_editor_hint() && get_viewport()->get_parent_viewport() == get_tree()->get_root()) {
-		return Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+		return Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
 	}
 	return get_viewport_rect().size;
 }

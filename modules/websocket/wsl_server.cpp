@@ -58,17 +58,17 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols, St
 			headers[name] = value;
 		}
 	}
-#define _WSL_CHECK(NAME, VALUE)                                                         \
+#define WSL_CHECK(NAME, VALUE)                                                          \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
-#define _WSL_CHECK_EX(NAME) \
+#define WSL_CHECK_EX(NAME) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME), false, "Missing header '" + String(NAME) + "'.");
-	_WSL_CHECK("upgrade", "websocket");
-	_WSL_CHECK("sec-websocket-version", "13");
-	_WSL_CHECK_EX("sec-websocket-key");
-	_WSL_CHECK_EX("connection");
-#undef _WSL_CHECK_EX
-#undef _WSL_CHECK
+	WSL_CHECK("upgrade", "websocket");
+	WSL_CHECK("sec-websocket-version", "13");
+	WSL_CHECK_EX("sec-websocket-key");
+	WSL_CHECK_EX("connection");
+#undef WSL_CHECK_EX
+#undef WSL_CHECK
 	key = headers["sec-websocket-key"];
 	if (headers.has("sec-websocket-protocol")) {
 		Vector<String> protos = headers["sec-websocket-protocol"].split(",");

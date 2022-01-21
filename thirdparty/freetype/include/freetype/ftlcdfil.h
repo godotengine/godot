@@ -5,7 +5,7 @@
  *   FreeType API for color filtering of subpixel bitmap glyphs
  *   (specification).
  *
- * Copyright (C) 2006-2020 by
+ * Copyright (C) 2006-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -44,7 +44,7 @@ FT_BEGIN_HEADER
    *   API to control subpixel rendering.
    *
    * @description:
-   *   FreeType provides two alternative subpixel rendering technologies. 
+   *   FreeType provides two alternative subpixel rendering technologies.
    *   Should you define `FT_CONFIG_OPTION_SUBPIXEL_RENDERING` in your
    *   `ftoption.h` file, this enables ClearType-style rendering.
    *   Otherwise, Harmony LCD rendering is enabled.  These technologies are
@@ -55,13 +55,12 @@ FT_BEGIN_HEADER
    *   ClearType-style LCD rendering exploits the color-striped structure of
    *   LCD pixels, increasing the available resolution in the direction of
    *   the stripe (usually horizontal RGB) by a factor of~3.  Using the
-   *   subpixels coverages unfiltered can create severe color fringes
+   *   subpixel coverages unfiltered can create severe color fringes
    *   especially when rendering thin features.  Indeed, to produce
    *   black-on-white text, the nearby color subpixels must be dimmed
-   *   equally.
-   *
-   *   A good 5-tap FIR filter should be applied to subpixel coverages
-   *   regardless of pixel boundaries and should have these properties:
+   *   evenly.  Therefore, an equalizing 5-tap FIR filter should be applied
+   *   to subpixel coverages regardless of pixel boundaries and should have
+   *   these properties:
    *
    *   1. It should be symmetrical, like {~a, b, c, b, a~}, to avoid
    *      any shifts in appearance.
@@ -84,7 +83,7 @@ FT_BEGIN_HEADER
    *   Harmony LCD rendering is suitable to panels with any regular subpixel
    *   structure, not just monitors with 3 color striped subpixels, as long
    *   as the color subpixels have fixed positions relative to the pixel
-   *   center.  In this case, each color channel is then rendered separately
+   *   center.  In this case, each color channel can be rendered separately
    *   after shifting the outline opposite to the subpixel shift so that the
    *   coverage maps are aligned.  This method is immune to color fringes
    *   because the shifts do not change integral coverage.
@@ -101,9 +100,9 @@ FT_BEGIN_HEADER
    *   clockwise.  Harmony with default LCD geometry is equivalent to
    *   ClearType with light filter.
    *
-   *   As a result of ClearType filtering or Harmony rendering, the
-   *   dimensions of LCD bitmaps can be either wider or taller than the
-   *   dimensions of the corresponding outline with regard to the pixel grid.
+   *   As a result of ClearType filtering or Harmony shifts, the resulting
+   *   dimensions of LCD bitmaps can be slightly wider or taller than the
+   *   dimensions the original outline with regard to the pixel grid.
    *   For example, for @FT_RENDER_MODE_LCD, the filter adds 2~subpixels to
    *   the left, and 2~subpixels to the right.  The bitmap offset values are
    *   adjusted accordingly, so clients shouldn't need to modify their layout

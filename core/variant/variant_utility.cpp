@@ -433,7 +433,7 @@ struct VariantUtilityFunctions {
 	static inline Variant weakref(const Variant &obj, Callable::CallError &r_error) {
 		if (obj.get_type() == Variant::OBJECT) {
 			r_error.error = Callable::CallError::CALL_OK;
-			if (obj.is_ref()) {
+			if (obj.is_ref_counted()) {
 				Ref<WeakRef> wref = memnew(WeakRef);
 				REF r = obj;
 				if (r.is_valid()) {

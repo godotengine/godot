@@ -261,6 +261,10 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 	if (ci->clip) {
 		if (p_canvas_clip != nullptr) {
 			ci->final_clip_rect = p_canvas_clip->final_clip_rect.intersection(global_rect);
+			if (ci->final_clip_rect == Rect2()) {
+				// Clip rects do not intersect, so don't draw this item.
+				return;
+			}
 		} else {
 			ci->final_clip_rect = global_rect;
 		}
@@ -1436,7 +1440,7 @@ void RendererCanvasCull::canvas_light_occluder_set_polygon(RID p_occluder, RID p
 	ERR_FAIL_COND(!occluder);
 
 	if (occluder->polygon.is_valid()) {
-		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(p_polygon);
+		LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(occluder->polygon);
 		if (occluder_poly) {
 			occluder_poly->owners.erase(occluder);
 		}

@@ -60,7 +60,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool in_keyword = false;
 	bool in_word = false;
 	bool in_function_name = false;
+	bool in_lambda = false;
 	bool in_variable_declaration = false;
+	bool in_signal_declaration = false;
 	bool in_function_args = false;
 	bool in_member_variable = false;
 	bool in_node_path = false;
@@ -105,12 +107,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		/* color regions */
 		if (is_a_symbol || in_region != -1) {
 			int from = j;
-			for (; from < line_length; from++) {
-				if (str[from] == '\\') {
-					from++;
-					continue;
+
+			if (in_region == -1) {
+				for (; from < line_length; from++) {
+					if (str[from] == '\\') {
+						from++;
+						continue;
+					}
+					break;
 				}
-				break;
 			}
 
 			if (from != line_length) {
@@ -142,6 +147,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 						/* check if it's the whole line */
 						if (end_key_length == 0 || color_regions[c].line_only || from + end_key_length > line_length) {
+							if (from + end_key_length > line_length) {
+								// If it's key length and there is a '\', dont skip to highlight esc chars.
+								if (str.find("\\", from) >= 0) {
+									break;
+								}
+							}
 							prev_color = color_regions[in_region].color;
 							highlighter_info["color"] = color_regions[c].color;
 							color_map[j] = highlighter_info;
@@ -161,13 +172,25 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 				/* if we are in one find the end key */
 				if (in_region != -1) {
+					Color region_color = color_regions[in_region].color;
+					if (in_node_path && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
+						region_color = node_path_color;
+					}
+
+					prev_color = region_color;
+					highlighter_info["color"] = region_color;
+					color_map[j] = highlighter_info;
+
 					/* search the line */
 					int region_end_index = -1;
 					int end_key_length = color_regions[in_region].end_key.length();
 					const char32_t *end_key = color_regions[in_region].end_key.get_data();
 					for (; from < line_length; from++) {
 						if (line_length - from < end_key_length) {
-							break;
+							// Don't break if '\' to highlight esc chars.
+							if (str.find("\\", from) < 0) {
+								break;
+							}
 						}
 
 						if (!is_symbol(str[from])) {
@@ -175,7 +198,16 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						}
 
 						if (str[from] == '\\') {
+							Dictionary escape_char_highlighter_info;
+							escape_char_highlighter_info["color"] = symbol_color;
+							color_map[from] = escape_char_highlighter_info;
+
 							from++;
+
+							Dictionary region_continue_highlighter_info;
+							prev_color = region_color;
+							region_continue_highlighter_info["color"] = region_color;
+							color_map[from + 1] = region_continue_highlighter_info;
 							continue;
 						}
 
@@ -191,10 +223,6 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 							break;
 						}
 					}
-
-					prev_color = color_regions[in_region].color;
-					highlighter_info["color"] = color_regions[in_region].color;
-					color_map[j] = highlighter_info;
 
 					previous_type = REGION;
 					previous_text = "";
@@ -289,20 +317,36 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		}
 
 		if (!in_function_name && in_word && !in_keyword) {
-			int k = j;
-			while (k < str.length() && !is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
-				k++;
-			}
+			if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::SIGNAL)) {
+				in_signal_declaration = true;
+			} else {
+				int k = j;
+				while (k < str.length() && !is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
+					k++;
+				}
 
-			// check for space between name and bracket
-			while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
-				k++;
-			}
+				// check for space between name and bracket
+				while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
+					k++;
+				}
 
-			if (str[k] == '(') {
-				in_function_name = true;
-			} else if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR)) {
-				in_variable_declaration = true;
+				if (str[k] == '(') {
+					in_function_name = true;
+				} else if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR)) {
+					in_variable_declaration = true;
+				}
+
+				// Check for lambda.
+				if (in_function_name && previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
+					k = j - 1;
+					while (k > 0 && (str[k] == '\t' || str[k] == ' ')) {
+						k--;
+					}
+
+					if (str[k] == ':') {
+						in_lambda = true;
+					}
+				}
 			}
 		}
 
@@ -348,7 +392,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 
 			in_variable_declaration = false;
+			in_signal_declaration = false;
 			in_function_name = false;
+			in_lambda = false;
 			in_member_variable = false;
 		}
 
@@ -376,10 +422,14 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (in_member_variable) {
 			next_type = MEMBER;
 			color = member_color;
+		} else if (in_signal_declaration) {
+			next_type = SIGNAL;
+
+			color = member_color;
 		} else if (in_function_name) {
 			next_type = FUNCTION;
 
-			if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
+			if (!in_lambda && previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
 				color = function_definition_color;
 			} else {
 				color = function_color;

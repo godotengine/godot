@@ -28,10 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-/**
-@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
@@ -232,4 +228,4 @@ public:
 	~ConnectionsDock();
 };
 
-#endif
+#endif // CONNECTIONS_DIALOG_H

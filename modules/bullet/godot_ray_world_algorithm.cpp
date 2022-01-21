@@ -35,10 +35,6 @@
 
 #include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
 
-/**
-	@author AndreaCatania
-*/
-
 // Epsilon to account for floating point inaccuracies
 #define RAY_PENETRATION_DEPTH_EPSILON 0.01
 

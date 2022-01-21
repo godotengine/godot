@@ -58,6 +58,7 @@ private:
 		SYMBOL,
 		NUMBER,
 		FUNCTION,
+		SIGNAL,
 		KEYWORD,
 		MEMBER,
 		IDENTIFIER,

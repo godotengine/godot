@@ -35,10 +35,6 @@
 
 #include <BulletCollision/CollisionShapes/btConvexInternalShape.h>
 
-/**
-	@author AndreaCatania
-*/
-
 /// Ray shape around z axis
 ATTRIBUTE_ALIGNED16(class)
 btRayShape : public btConvexInternalShape {

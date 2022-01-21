@@ -171,12 +171,15 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 		/* color regions */
 		if (is_a_symbol || in_region != -1) {
 			int from = j;
-			for (; from < line_length; from++) {
-				if (str[from] == '\\') {
-					from++;
-					continue;
+
+			if (in_region == -1) {
+				for (; from < line_length; from++) {
+					if (str[from] == '\\') {
+						from++;
+						continue;
+					}
+					break;
 				}
-				break;
 			}
 
 			if (from != line_length) {
@@ -208,6 +211,12 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 
 						/* check if it's the whole line */
 						if (end_key_length == 0 || color_regions[c].line_only || from + end_key_length > line_length) {
+							if (from + end_key_length > line_length && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
+								// If it's key length and there is a '\', dont skip to highlight esc chars.
+								if (str.find("\\", from) >= 0) {
+									break;
+								}
+							}
 							prev_color = color_regions[in_region].color;
 							highlighter_info["color"] = color_regions[c].color;
 							color_map[j] = highlighter_info;
@@ -227,13 +236,23 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 
 				/* if we are in one find the end key */
 				if (in_region != -1) {
+					bool is_string = (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'");
+
+					Color region_color = color_regions[in_region].color;
+					prev_color = region_color;
+					highlighter_info["color"] = region_color;
+					color_map[j] = highlighter_info;
+
 					/* search the line */
 					int region_end_index = -1;
 					int end_key_length = color_regions[in_region].end_key.length();
 					const char32_t *end_key = color_regions[in_region].end_key.get_data();
 					for (; from < line_length; from++) {
 						if (line_length - from < end_key_length) {
-							break;
+							// Don't break if '\' to highlight esc chars.
+							if (!is_string || str.find("\\", from) < 0) {
+								break;
+							}
 						}
 
 						if (!is_symbol(str[from])) {
@@ -241,7 +260,20 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 						}
 
 						if (str[from] == '\\') {
+							if (is_string) {
+								Dictionary escape_char_highlighter_info;
+								escape_char_highlighter_info["color"] = symbol_color;
+								color_map[from] = escape_char_highlighter_info;
+							}
+
 							from++;
+
+							if (is_string) {
+								Dictionary region_continue_highlighter_info;
+								prev_color = region_color;
+								region_continue_highlighter_info["color"] = region_color;
+								color_map[from + 1] = region_continue_highlighter_info;
+							}
 							continue;
 						}
 
@@ -257,10 +289,6 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 							break;
 						}
 					}
-
-					prev_color = color_regions[in_region].color;
-					highlighter_info["color"] = color_regions[in_region].color;
-					color_map[j] = highlighter_info;
 
 					j = from + (end_key_length - 1);
 					if (region_end_index == -1) {

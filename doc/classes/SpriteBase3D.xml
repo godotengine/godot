@@ -66,9 +66,6 @@
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
 		</member>
-		<member name="opacity" type="float" setter="set_opacity" getter="get_opacity" default="1.0">
-			The objects' visibility on a scale from [code]0[/code] fully invisible to [code]1[/code] fully visible.
-		</member>
 		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
 			The size of one pixel's width on the sprite to scale it in 3D.
 		</member>

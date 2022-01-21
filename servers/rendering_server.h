@@ -41,7 +41,6 @@
 #include "servers/display_server.h"
 #include "servers/rendering/renderer_thread_pool.h"
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/shader_language.h"
 
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
@@ -448,8 +447,8 @@ public:
 
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
-		LIGHT_BAKE_DYNAMIC,
 		LIGHT_BAKE_STATIC,
+		LIGHT_BAKE_DYNAMIC,
 	};
 
 	virtual void light_set_bake_mode(RID p_light, LightBakeMode p_bake_mode) = 0;
@@ -1042,19 +1041,13 @@ public:
 
 	virtual void environment_set_ssil_quality(EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
-	enum EnvironmentSDFGICascades {
-		ENV_SDFGI_CASCADES_4,
-		ENV_SDFGI_CASCADES_6,
-		ENV_SDFGI_CASCADES_8,
-	};
-
 	enum EnvironmentSDFGIYScale {
 		ENV_SDFGI_Y_SCALE_DISABLED,
 		ENV_SDFGI_Y_SCALE_75_PERCENT,
 		ENV_SDFGI_Y_SCALE_50_PERCENT
 	};
 
-	virtual void environment_set_sdfgi(RID p_env, bool p_enable, EnvironmentSDFGICascades p_cascades, float p_min_cell_size, EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
+	virtual void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
 
 	enum EnvironmentSDFGIRayCount {
 		ENV_SDFGI_RAY_COUNT_4,
@@ -1456,7 +1449,7 @@ public:
 	virtual void global_variables_load_settings(bool p_load_textures) = 0;
 	virtual void global_variables_clear() = 0;
 
-	static ShaderLanguage::DataType global_variable_type_get_shader_datatype(GlobalVariableType p_type);
+	static int global_variable_type_get_shader_datatype(GlobalVariableType p_type);
 
 	/* FREE */
 
@@ -1609,7 +1602,6 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSILQuality);
-VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGICascades);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToConverge);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIRayCount);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToUpdateLight);

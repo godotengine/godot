@@ -164,7 +164,6 @@ static bool init_windowed = false;
 static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
 static Vector2 init_custom_pos;
-static bool force_lowdpi = false;
 
 // Debug
 
@@ -326,6 +325,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("].\n");
 
 	OS::get_singleton()->print("  --rendering-driver <driver>                  Rendering driver (depends on display driver).\n");
+	OS::get_singleton()->print("  --gpu-index <device_index>                   Use a specific GPU (run with --verbose to get available device list).\n");
 
 	OS::get_singleton()->print("  --text-driver <driver>                       Text driver (Fonts, BiDi, shaping)\n");
 
@@ -340,7 +340,6 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -t, --always-on-top                          Request an always-on-top window.\n");
 	OS::get_singleton()->print("  --resolution <W>x<H>                         Request window resolution.\n");
 	OS::get_singleton()->print("  --position <X>,<Y>                           Request window position.\n");
-	OS::get_singleton()->print("  --low-dpi                                    Force low-DPI mode (macOS and Windows only).\n");
 	OS::get_singleton()->print("  --single-window                              Use a single window (no separate subwindows).\n");
 	OS::get_singleton()->print("  --tablet-driver                              Pen tablet input driver.\n");
 	OS::get_singleton()->print("\n");
@@ -795,6 +794,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-w" || I->get() == "--windowed") { // force windowed window
 
 			init_windowed = true;
+		} else if (I->get() == "--gpu-index") {
+			if (I->next()) {
+				Engine::singleton->gpu_idx = I->next()->get().to_int();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing gpu index argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--vk-layers") {
 			Engine::singleton->use_validation_layers = true;
 #ifdef DEBUG_ENABLED
@@ -870,9 +877,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
-		} else if (I->get() == "--low-dpi") { // force low DPI (macOS only)
-
-			force_lowdpi = true;
 		} else if (I->get() == "--headless") { // enable headless mode (no audio, no rendering).
 
 			audio_driver = "Dummy";
@@ -1302,47 +1306,47 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
 
-	GLOBAL_DEF_BASIC("display/window/size/width", 1024);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width",
-			PropertyInfo(Variant::INT, "display/window/size/width",
+	GLOBAL_DEF_BASIC("display/window/size/viewport_width", 1024);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_width",
+			PropertyInfo(Variant::INT, "display/window/size/viewport_width",
 					PROPERTY_HINT_RANGE,
 					"0,7680,or_greater")); // 8K resolution
-	GLOBAL_DEF_BASIC("display/window/size/height", 600);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/height",
-			PropertyInfo(Variant::INT, "display/window/size/height",
+	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 600);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/viewport_height",
+			PropertyInfo(Variant::INT, "display/window/size/viewport_height",
 					PROPERTY_HINT_RANGE,
 					"0,4320,or_greater")); // 8K resolution
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
 	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
 	GLOBAL_DEF_BASIC("display/window/size/fullscreen", false);
 	GLOBAL_DEF("display/window/size/always_on_top", false);
-	GLOBAL_DEF("display/window/size/test_width", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/test_width",
+	GLOBAL_DEF("display/window/size/window_width_override", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_width_override",
 			PropertyInfo(Variant::INT,
-					"display/window/size/test_width",
+					"display/window/size/window_width_override",
 					PROPERTY_HINT_RANGE,
 					"0,7680,or_greater")); // 8K resolution
-	GLOBAL_DEF("display/window/size/test_height", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/test_height",
+	GLOBAL_DEF("display/window/size/window_height_override", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/window_height_override",
 			PropertyInfo(Variant::INT,
-					"display/window/size/test_height",
+					"display/window/size/window_height_override",
 					PROPERTY_HINT_RANGE,
 					"0,4320,or_greater")); // 8K resolution
 
 	if (use_custom_res) {
 		if (!force_res) {
-			window_size.width = GLOBAL_GET("display/window/size/width");
-			window_size.height = GLOBAL_GET("display/window/size/height");
+			window_size.width = GLOBAL_GET("display/window/size/viewport_width");
+			window_size.height = GLOBAL_GET("display/window/size/viewport_height");
 
-			if (globals->has_setting("display/window/size/test_width") &&
-					globals->has_setting("display/window/size/test_height")) {
-				int tw = globals->get("display/window/size/test_width");
-				if (tw > 0) {
-					window_size.width = tw;
+			if (globals->has_setting("display/window/size/window_width_override") &&
+					globals->has_setting("display/window/size/window_height_override")) {
+				int desired_width = globals->get("display/window/size/window_width_override");
+				if (desired_width > 0) {
+					window_size.width = desired_width;
 				}
-				int th = globals->get("display/window/size/test_height");
-				if (th > 0) {
-					window_size.height = th;
+				int desired_height = globals->get("display/window/size/window_height_override");
+				if (desired_height > 0) {
+					window_size.height = desired_height;
 				}
 			}
 		}
@@ -1365,9 +1369,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
-	if (!force_lowdpi) {
-		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
-	}
+	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 
 	// FIXME: Restore support.
 #if 0
@@ -1792,7 +1794,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	GLOBAL_DEF("application/config/icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon",
 			PropertyInfo(Variant::STRING, "application/config/icon",
-					PROPERTY_HINT_FILE, "*.png,*.webp,*.svg,*.svgz"));
+					PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"));
 
 	GLOBAL_DEF("application/config/macos_native_icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/macos_native_icon",
@@ -2089,6 +2091,7 @@ bool Main::start() {
 		GLOBAL_DEF("mono/runtime/unhandled_exception_policy", 0);
 #endif
 
+		Error err;
 		DocTools doc;
 		doc.generate(doc_base);
 
@@ -2110,34 +2113,42 @@ bool Main::start() {
 
 				// Create the module documentation directory if it doesn't exist
 				DirAccess *da = DirAccess::create_for_path(path);
-				da->make_dir_recursive(path);
+				err = da->make_dir_recursive(path);
 				memdelete(da);
+				ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create directory: " + path + ": " + itos(err));
 
-				docsrc.load_classes(path);
 				print_line("Loading docs from: " + path);
+				err = docsrc.load_classes(path);
+				ERR_FAIL_COND_V_MSG(err != OK, false, "Error loading docs from: " + path + ": " + itos(err));
 			}
 		}
 
 		String index_path = doc_tool_path.plus_file("doc/classes");
 		// Create the main documentation directory if it doesn't exist
 		DirAccess *da = DirAccess::create_for_path(index_path);
-		da->make_dir_recursive(index_path);
+		err = da->make_dir_recursive(index_path);
 		memdelete(da);
+		ERR_FAIL_COND_V_MSG(err != OK, false, "Error: Can't create index directory: " + index_path + ": " + itos(err));
 
-		docsrc.load_classes(index_path);
+		print_line("Loading classes from: " + index_path);
+		err = docsrc.load_classes(index_path);
+		ERR_FAIL_COND_V_MSG(err != OK, false, "Error loading classes from: " + index_path + ": " + itos(err));
 		checked_paths.insert(index_path);
-		print_line("Loading docs from: " + index_path);
 
 		print_line("Merging docs...");
 		doc.merge_from(docsrc);
+
 		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
 			print_line("Erasing old docs at: " + E->get());
-			DocTools::erase_classes(E->get());
+			err = DocTools::erase_classes(E->get());
+			ERR_FAIL_COND_V_MSG(err != OK, false, "Error erasing old docs at: " + E->get() + ": " + itos(err));
 		}
 
 		print_line("Generating new docs...");
-		doc.save_classes(index_path, doc_data_classes);
+		err = doc.save_classes(index_path, doc_data_classes);
+		ERR_FAIL_COND_V_MSG(err != OK, false, "Error saving new docs:" + itos(err));
 
+		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
 		return false;
 	}
 
@@ -2337,8 +2348,8 @@ bool Main::start() {
 
 			String stretch_mode = GLOBAL_DEF_BASIC("display/window/stretch/mode", "disabled");
 			String stretch_aspect = GLOBAL_DEF_BASIC("display/window/stretch/aspect", "keep");
-			Size2i stretch_size = Size2i(GLOBAL_DEF_BASIC("display/window/size/width", 0),
-					GLOBAL_DEF_BASIC("display/window/size/height", 0));
+			Size2i stretch_size = Size2i(GLOBAL_DEF_BASIC("display/window/size/viewport_width", 0),
+					GLOBAL_DEF_BASIC("display/window/size/viewport_height", 0));
 			real_t stretch_scale = GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
 
 			Window::ContentScaleMode cs_sm = Window::CONTENT_SCALE_MODE_DISABLED;
@@ -2547,13 +2558,6 @@ bool Main::start() {
 		}
 
 		if (project_manager || editor) {
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CONSOLE_WINDOW)) {
-				// Hide console window if requested (Windows-only).
-				bool hide_console = EditorSettings::get_singleton()->get_setting(
-						"interface/editor/hide_console_window");
-				DisplayServer::get_singleton()->console_set_visible(!hide_console);
-			}
-
 			// Load SSL Certificates from Editor Settings (or builtin)
 			Crypto::load_default_certificates(
 					EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String());

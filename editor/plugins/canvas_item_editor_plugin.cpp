@@ -882,9 +882,9 @@ void CanvasItemEditor::_selection_menu_hide() {
 
 void CanvasItemEditor::_add_node_pressed(int p_result) {
 	if (p_result == AddNodeOption::ADD_NODE) {
-		editor->get_scene_tree_dock()->open_add_child_dialog();
+		SceneTreeDock::get_singleton()->open_add_child_dialog();
 	} else if (p_result == AddNodeOption::ADD_INSTANCE) {
-		editor->get_scene_tree_dock()->open_instance_child_dialog();
+		SceneTreeDock::get_singleton()->open_instance_child_dialog();
 	}
 }
 
@@ -3517,7 +3517,7 @@ void CanvasItemEditor::_draw_axis() {
 
 		Color area_axis_color = EditorSettings::get_singleton()->get("editors/2d/viewport_border_color");
 
-		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
 
 		Vector2 screen_endpoints[4] = {
 			transform.xform(Vector2(0, 0)),
@@ -4010,7 +4010,7 @@ void CanvasItemEditor::_update_scrollbars() {
 	Size2 vmin = v_scroll->get_minimum_size();
 
 	// Get the visible frame.
-	Size2 screen_rect = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+	Size2 screen_rect = Size2(ProjectSettings::get_singleton()->get("display/window/size/viewport_width"), ProjectSettings::get_singleton()->get("display/window/size/viewport_height"));
 	Rect2 local_rect = Rect2(Point2(), viewport->get_size() - Size2(vmin.width, hmin.height));
 
 	// Calculate scrollable area.
@@ -5129,8 +5129,22 @@ void CanvasItemEditor::remove_control_from_menu_panel(Control *p_control) {
 	hbc_context_menu->remove_child(p_control);
 }
 
-HSplitContainer *CanvasItemEditor::get_palette_split() {
-	return palette_split;
+void CanvasItemEditor::add_control_to_left_panel(Control *p_control) {
+	left_panel_split->add_child(p_control);
+	left_panel_split->move_child(p_control, 0);
+}
+
+void CanvasItemEditor::add_control_to_right_panel(Control *p_control) {
+	right_panel_split->add_child(p_control);
+	right_panel_split->move_child(p_control, 1);
+}
+
+void CanvasItemEditor::remove_control_from_left_panel(Control *p_control) {
+	left_panel_split->remove_child(p_control);
+}
+
+void CanvasItemEditor::remove_control_from_right_panel(Control *p_control) {
+	right_panel_split->remove_child(p_control);
 }
 
 VSplitContainer *CanvasItemEditor::get_bottom_split() {
@@ -5207,8 +5221,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor_selection->connect("selection_changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
 	editor_selection->connect("selection_changed", callable_mp(this, &CanvasItemEditor::_selection_changed));
 
-	editor->get_scene_tree_dock()->connect("node_created", callable_mp(this, &CanvasItemEditor::_node_created));
-	editor->get_scene_tree_dock()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
+	SceneTreeDock::get_singleton()->connect("node_created", callable_mp(this, &CanvasItemEditor::_node_created));
+	SceneTreeDock::get_singleton()->connect("add_node_used", callable_mp(this, &CanvasItemEditor::_reset_create_position));
 
 	editor->call_deferred(SNAME("connect"), "play_pressed", Callable(this, "_update_override_camera_button"), make_binds(true));
 	editor->call_deferred(SNAME("connect"), "stop_pressed", Callable(this, "_update_override_camera_button"), make_binds(false));
@@ -5221,12 +5235,16 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	add_child(bottom_split);
 	bottom_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	palette_split = memnew(HSplitContainer);
-	bottom_split->add_child(palette_split);
-	palette_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	left_panel_split = memnew(HSplitContainer);
+	bottom_split->add_child(left_panel_split);
+	left_panel_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	right_panel_split = memnew(HSplitContainer);
+	left_panel_split->add_child(right_panel_split);
+	right_panel_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	viewport_scrollable = memnew(Control);
-	palette_split->add_child(viewport_scrollable);
+	right_panel_split->add_child(viewport_scrollable);
 	viewport_scrollable->set_mouse_filter(MOUSE_FILTER_PASS);
 	viewport_scrollable->set_clip_contents(true);
 	viewport_scrollable->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -5600,8 +5618,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	add_node_menu = memnew(PopupMenu);
 	add_child(add_node_menu);
-	add_node_menu->add_icon_item(editor->get_scene_tree_dock()->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), TTR("Add Node Here"));
-	add_node_menu->add_icon_item(editor->get_scene_tree_dock()->get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instance Scene Here"));
+	add_node_menu->add_icon_item(SceneTreeDock::get_singleton()->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), TTR("Add Node Here"));
+	add_node_menu->add_icon_item(SceneTreeDock::get_singleton()->get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instance Scene Here"));
 	add_node_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_add_node_pressed));
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), Key::KP_MULTIPLY);
@@ -6112,7 +6130,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 
 	target_node = nullptr;
 	editor = p_node;
-	editor_data = editor->get_scene_tree_dock()->get_editor_data();
+	editor_data = SceneTreeDock::get_singleton()->get_editor_data();
 	canvas_item_editor = p_canvas_item_editor;
 	preview_node = memnew(Control);
 

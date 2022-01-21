@@ -362,7 +362,6 @@ public:
 			TYPE_CONTROL_FLOW,
 			TYPE_MEMBER,
 			TYPE_ARRAY,
-			TYPE_ARRAY_DECLARATION,
 			TYPE_ARRAY_CONSTRUCT,
 			TYPE_STRUCT,
 		};
@@ -428,7 +427,10 @@ public:
 
 		struct Declaration {
 			StringName name;
-			Node *initializer;
+			uint32_t size = 0U;
+			Node *size_expression = nullptr;
+			Vector<Node *> initializer;
+			bool single_expression = false;
 		};
 		Vector<Declaration> declarations;
 
@@ -471,27 +473,6 @@ public:
 				Node(TYPE_ARRAY_CONSTRUCT) {}
 	};
 
-	struct ArrayDeclarationNode : public Node {
-		DataPrecision precision = PRECISION_DEFAULT;
-		DataType datatype = TYPE_VOID;
-		String struct_name;
-		bool is_const = false;
-		Node *size_expression = nullptr;
-
-		struct Declaration {
-			StringName name;
-			uint32_t size;
-			Vector<Node *> initializer;
-			bool single_expression;
-		};
-		Vector<Declaration> declarations;
-
-		virtual DataType get_datatype() const override { return datatype; }
-
-		ArrayDeclarationNode() :
-				Node(TYPE_ARRAY_DECLARATION) {}
-	};
-
 	struct ConstantNode : public Node {
 		DataType datatype = TYPE_VOID;
 		String struct_name = "";
@@ -505,7 +486,7 @@ public:
 		};
 
 		Vector<Value> values;
-		Vector<ArrayDeclarationNode::Declaration> array_declarations;
+		Vector<VariableDeclarationNode::Declaration> array_declarations;
 
 		virtual DataType get_datatype() const override { return datatype; }
 		virtual String get_datatype_name() const override { return struct_name; }
@@ -742,6 +723,7 @@ public:
 
 	enum CompletionType {
 		COMPLETION_NONE,
+		COMPLETION_SHADER_TYPE,
 		COMPLETION_RENDER_MODE,
 		COMPLETION_MAIN_FUNCTION,
 		COMPLETION_IDENTIFIER,
@@ -963,6 +945,26 @@ private:
 		error_str = p_str;
 	}
 
+	void _set_expected_error(const String &p_what) {
+		_set_error(vformat(RTR("Expected a '%s'."), p_what));
+	}
+
+	void _set_expected_error(const String &p_first, const String p_second) {
+		_set_error(vformat(RTR("Expected a '%s' or '%s'."), p_first, p_second));
+	}
+
+	void _set_expected_after_error(const String &p_what, const String &p_after) {
+		_set_error(vformat(RTR("Expected a '%s' after '%s'."), p_what, p_after));
+	}
+
+	void _set_redefinition_error(const String &p_what) {
+		_set_error(vformat(RTR("Redefinition of '%s'."), p_what));
+	}
+
+	void _set_parsing_error() {
+		_set_error("Parser bug.");
+	}
+
 	static const char *token_names[TK_MAX];
 
 	Token _make_token(TokenType p_type, const StringName &p_text = StringName());
@@ -1044,11 +1046,8 @@ private:
 	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
 	bool _check_node_constness(const Node *p_node) const;
 
-	Node *_parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, int &r_array_size);
-	Error _parse_global_array_size(int &r_array_size, const FunctionInfo &p_function_info);
-	Error _parse_local_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, Node *&r_size_expression, int &r_array_size, bool &r_is_unknown_size);
-
 	Node *_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info);
+	Error _parse_array_size(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_forbid_unknown_size, Node **r_size_expression, int *r_array_size, bool *r_unknown_size);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info, DataType p_type, const StringName &p_struct_name, int p_array_size);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);

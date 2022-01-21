@@ -1604,6 +1604,10 @@ void EditorFileSystem::update_file(const String &p_file) {
 	_queue_update_script_classes();
 }
 
+Set<String> EditorFileSystem::get_valid_extensions() const {
+	return valid_extensions;
+}
+
 Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector<String> &p_files) {
 	String importer_name;
 
@@ -1644,7 +1648,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			config->get_section_keys("params", &sk);
 			for (const String &param : sk) {
 				Variant value = config->get_value("params", param);
-				//override with whathever is in file
+				//override with whatever is in file
 				source_file_options[p_files[i]][param] = value;
 			}
 		}

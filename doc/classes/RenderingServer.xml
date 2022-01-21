@@ -1001,7 +1001,7 @@
 			<return type="void" />
 			<argument index="0" name="env" type="RID" />
 			<argument index="1" name="enable" type="bool" />
-			<argument index="2" name="cascades" type="int" enum="RenderingServer.EnvironmentSDFGICascades" />
+			<argument index="2" name="cascades" type="int" />
 			<argument index="3" name="min_cell_size" type="float" />
 			<argument index="4" name="y_scale" type="int" enum="RenderingServer.EnvironmentSDFGIYScale" />
 			<argument index="5" name="use_occlusion" type="bool" />
@@ -1334,7 +1334,7 @@
 			<return type="bool" />
 			<argument index="0" name="feature" type="String" />
 			<description>
-				Returns [code]true[/code] if the OS supports a certain feature. Features might be [code]s3tc[/code], [code]etc[/code], [code]etc2[/code] and [code]pvrtc[/code].
+				Returns [code]true[/code] if the OS supports a certain feature. Features might be [code]s3tc[/code], [code]etc[/code], and [code]etc2[/code].
 			</description>
 		</method>
 		<method name="instance_attach_object_instance_id">
@@ -1838,8 +1838,7 @@
 			<argument index="1" name="primitive" type="int" enum="RenderingServer.PrimitiveType" />
 			<argument index="2" name="arrays" type="Array" />
 			<argument index="3" name="blend_shapes" type="Array" default="[]" />
-			<argument index="4" name="lods" type="Dictionary" default="{
-}" />
+			<argument index="4" name="lods" type="Dictionary" default="{}" />
 			<argument index="5" name="compress_format" type="int" default="0" />
 			<description>
 			</description>
@@ -3758,9 +3757,9 @@
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
 		</constant>
-		<constant name="LIGHT_BAKE_DYNAMIC" value="1" enum="LightBakeMode">
+		<constant name="LIGHT_BAKE_STATIC" value="1" enum="LightBakeMode">
 		</constant>
-		<constant name="LIGHT_BAKE_STATIC" value="2" enum="LightBakeMode">
+		<constant name="LIGHT_BAKE_DYNAMIC" value="2" enum="LightBakeMode">
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
 			Use a dual paraboloid shadow map for omni lights.
@@ -4179,12 +4178,6 @@
 		</constant>
 		<constant name="ENV_SSIL_QUALITY_ULTRA" value="4" enum="EnvironmentSSILQuality">
 			Highest quality screen-space indirect lighting. Uses the adaptive target setting which can be dynamically adjusted to smoothly balance performance and visual quality.
-		</constant>
-		<constant name="ENV_SDFGI_CASCADES_4" value="0" enum="EnvironmentSDFGICascades">
-		</constant>
-		<constant name="ENV_SDFGI_CASCADES_6" value="1" enum="EnvironmentSDFGICascades">
-		</constant>
-		<constant name="ENV_SDFGI_CASCADES_8" value="2" enum="EnvironmentSDFGICascades">
 		</constant>
 		<constant name="ENV_SDFGI_Y_SCALE_DISABLED" value="0" enum="EnvironmentSDFGIYScale">
 		</constant>

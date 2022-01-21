@@ -58,6 +58,7 @@ private:
 	jmethodID _get_GLES_version_code = 0;
 	jmethodID _get_clipboard = 0;
 	jmethodID _set_clipboard = 0;
+	jmethodID _has_clipboard = 0;
 	jmethodID _request_permission = 0;
 	jmethodID _request_permissions = 0;
 	jmethodID _get_granted_permissions = 0;
@@ -92,6 +93,8 @@ public:
 	String get_clipboard();
 	bool has_set_clipboard();
 	void set_clipboard(const String &p_text);
+	bool has_has_clipboard();
+	bool has_clipboard();
 	bool request_permission(const String &p_name);
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
