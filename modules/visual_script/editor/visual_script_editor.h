@@ -85,55 +85,55 @@ class VisualScriptEditor : public ScriptEditorBase {
 		MEMBER_SIGNAL
 	};
 
-	VBoxContainer *members_section;
-	MenuButton *edit_menu;
+	VBoxContainer *members_section = nullptr;
+	MenuButton *edit_menu = nullptr;
 
 	Ref<VisualScript> script;
 
-	Button *base_type_select;
+	Button *base_type_select = nullptr;
 
-	LineEdit *func_name_box;
-	ScrollContainer *func_input_scroll;
-	VBoxContainer *func_input_vbox;
-	ConfirmationDialog *function_create_dialog;
+	LineEdit *func_name_box = nullptr;
+	ScrollContainer *func_input_scroll = nullptr;
+	VBoxContainer *func_input_vbox = nullptr;
+	ConfirmationDialog *function_create_dialog = nullptr;
 
-	GraphEdit *graph;
-	HBoxContainer *status_bar;
-	Button *toggle_scripts_button;
+	GraphEdit *graph = nullptr;
+	HBoxContainer *status_bar = nullptr;
+	Button *toggle_scripts_button = nullptr;
 
-	VisualScriptEditorSignalEdit *signal_editor;
+	VisualScriptEditorSignalEdit *signal_editor = nullptr;
 
-	AcceptDialog *edit_signal_dialog;
-	EditorInspector *edit_signal_edit;
+	AcceptDialog *edit_signal_dialog = nullptr;
+	EditorInspector *edit_signal_edit = nullptr;
 
-	VisualScriptPropertySelector *method_select;
-	VisualScriptPropertySelector *new_connect_node_select;
-	VisualScriptPropertySelector *new_virtual_method_select;
+	VisualScriptPropertySelector *method_select = nullptr;
+	VisualScriptPropertySelector *new_connect_node_select = nullptr;
+	VisualScriptPropertySelector *new_virtual_method_select = nullptr;
 
-	VisualScriptEditorVariableEdit *variable_editor;
+	VisualScriptEditorVariableEdit *variable_editor = nullptr;
 
-	AcceptDialog *edit_variable_dialog;
-	EditorInspector *edit_variable_edit;
+	AcceptDialog *edit_variable_dialog = nullptr;
+	EditorInspector *edit_variable_edit = nullptr;
 
-	CustomPropertyEditor *default_value_edit;
+	CustomPropertyEditor *default_value_edit = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
-	Tree *members;
-	AcceptDialog *function_name_edit;
-	LineEdit *function_name_box;
+	Tree *members = nullptr;
+	AcceptDialog *function_name_edit = nullptr;
+	LineEdit *function_name_box = nullptr;
 
-	Label *hint_text;
-	Timer *hint_text_timer;
+	Label *hint_text = nullptr;
+	Timer *hint_text_timer = nullptr;
 
-	Label *select_func_text;
+	Label *select_func_text = nullptr;
 
 	bool updating_graph = false;
 
 	void _show_hint(const String &p_hint);
 	void _hide_timer();
 
-	CreateDialog *select_base_type;
+	CreateDialog *select_base_type = nullptr;
 
 	struct VirtualInMenu {
 		String name;
@@ -241,7 +241,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	bool node_has_sequence_connections(int p_id);
 
-	void _generic_search(String p_base_type = "", Vector2 pos = Vector2(), bool node_centered = false);
+	void _generic_search(Vector2 pos = Vector2(), bool node_centered = false);
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	void _graph_gui_input(const Ref<InputEvent> &p_event);
