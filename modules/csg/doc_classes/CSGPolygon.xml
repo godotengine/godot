@@ -4,7 +4,7 @@
 		Extrudes a 2D polygon shape to create a 3D mesh.
 	</brief_description>
 	<description>
-		An array of 2D points is extruded to quickly and easily create a variety of 3D meshes.
+		An array of 2D points is extruded to quickly and easily create a variety of 3D meshes. See also [CSGMesh] for using 3D meshes as CSG nodes.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -48,7 +48,8 @@
 			When [member mode] is [constant MODE_PATH], this is the distance along the path, in meters, the texture coordinates will tile. When set to 0, texture coordinates will match geometry exactly with no tiling.
 		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon" default="PoolVector2Array( 0, 0, 0, 1, 1, 1, 1, 0 )">
-			The point array that defines the 2D polygon that is extruded.
+			The point array that defines the 2D polygon that is extruded. This can be a convex or concave polygon with 3 or more points. The polygon must [i]not[/i] have any intersecting edges. Otherwise, triangulation will fail and no mesh will be generated.
+			[b]Note:[/b] If only 1 or 2 points are defined in [member polygon], no mesh will be generated.
 		</member>
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="false">
 			If [code]true[/code], applies smooth shading to the extrusions.
